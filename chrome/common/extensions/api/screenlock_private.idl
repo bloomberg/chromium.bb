@@ -16,6 +16,14 @@ namespace screenlockPrivate {
   //                 in the password field.
   enum AuthType {offlinePassword, numericPin, userClick};
 
+  // Extension resource for a icon representation for a scale factor.
+  dictionary IconRepresentation {
+    // The scale factor the representation is for.
+    double scaleFactor;
+    // The image resource URL.
+    DOMString url;
+  };
+
   callback BooleanCallback = void(boolean locked);
   callback AuthTypeCallback = void(AuthType authType);
 
@@ -31,8 +39,10 @@ namespace screenlockPrivate {
     static void showMessage(DOMString message);
 
     // Show a custom icon beside the input field on the user pod.
-    // |icon|: An extension resource of the icon image.
-    static void showCustomIcon(DOMString icon);
+    // |icon|: Extension resoucres for the icon's multi-scale representations.
+    //     Currently, only scales 1 and 2 are supported. The list must have a
+    //     resource for at least scale 1.
+    static void showCustomIcon(IconRepresentation[] icon);
 
     // Hides the custom icon added by $(ref:showCustomIcon)().
     static void hideCustomIcon();

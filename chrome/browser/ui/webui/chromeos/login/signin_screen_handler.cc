@@ -71,6 +71,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 #if defined(USE_AURA)
 #include "ash/shell.h"
@@ -875,9 +877,16 @@ void SigninScreenHandler::ShowBannerMessage(const std::string& message) {
 void SigninScreenHandler::ShowUserPodCustomIcon(
     const std::string& username,
     const gfx::Image& icon) {
-  GURL icon_url(webui::GetBitmapDataUrl(icon.AsBitmap()));
+  gfx::ImageSkia icon_skia = icon.AsImageSkia();
+  base::DictionaryValue icon_representations;
+  icon_representations.SetString(
+      "scale1x",
+      webui::GetBitmapDataUrl(icon_skia.GetRepresentation(1.0f).sk_bitmap()));
+  icon_representations.SetString(
+      "scale2x",
+      webui::GetBitmapDataUrl(icon_skia.GetRepresentation(2.0f).sk_bitmap()));
   CallJS("login.AccountPickerScreen.showUserPodCustomIcon",
-      username, icon_url.spec());
+      username, icon_representations);
 
   // TODO(tengs): Move this code once we move unlocking to native code.
   if (ScreenLocker::default_screen_locker()) {

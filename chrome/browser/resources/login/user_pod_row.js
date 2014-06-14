@@ -1721,9 +1721,10 @@ cr.define('login', function() {
     /**
      * Shows a custom icon on a user pod besides the input field.
      * @param {string} username Username of pod to add button
-     * @param {string} iconURL URL of the button icon
+     * @param {{scale1x: string, scale2x: string}} icon Dictionary of URLs of
+     *     the custom icon's representations for 1x and 2x scale factors.
      */
-    showUserPodCustomIcon: function(username, iconURL) {
+    showUserPodCustomIcon: function(username, icon) {
       var pod = this.getPodWithUsername_(username);
       if (pod == null) {
         console.error('Unable to show user pod button for ' + username +
@@ -1732,7 +1733,10 @@ cr.define('login', function() {
       }
 
       pod.customIconElement.hidden = false;
-      pod.customIconElement.style.backgroundImage = url(iconURL);
+      pod.customIconElement.style.backgroundImage =
+          '-webkit-image-set(' +
+              'url(' + icon.scale1x + ') 1x,' +
+              'url(' + icon.scale2x + ') 2x)';
     },
 
     /**

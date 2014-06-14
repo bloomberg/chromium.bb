@@ -277,10 +277,11 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      * Shows a custom icon in the user pod of |username|. This function
      * is used by the chrome.screenlockPrivate API.
      * @param {string} username Username of pod to add button
-     * @param {string} iconURL URL of the button icon
+     * @param {{scale1x: string, scale2x: string}} icon Dictionary of URLs of
+     *     the custom icon's representations for 1x and 2x scale factors.
      */
-    showUserPodCustomIcon: function(username, iconURL) {
-      $('pod-row').showUserPodCustomIcon(username, iconURL);
+    showUserPodCustomIcon: function(username, icon) {
+      $('pod-row').showUserPodCustomIcon(username, icon);
     },
 
     /**

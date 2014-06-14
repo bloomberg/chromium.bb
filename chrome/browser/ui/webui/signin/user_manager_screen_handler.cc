@@ -34,6 +34,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_util.h"
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -223,11 +225,18 @@ void UserManagerScreenHandler::ShowBannerMessage(const std::string& message) {
 void UserManagerScreenHandler::ShowUserPodCustomIcon(
     const std::string& user_email,
     const gfx::Image& icon) {
-  GURL icon_url(webui::GetBitmapDataUrl(icon.AsBitmap()));
+  gfx::ImageSkia icon_skia = icon.AsImageSkia();
+  base::DictionaryValue icon_representations;
+  icon_representations.SetString(
+      "scale1x",
+      webui::GetBitmapDataUrl(icon_skia.GetRepresentation(1.0f).sk_bitmap()));
+  icon_representations.SetString(
+      "scale2x",
+      webui::GetBitmapDataUrl(icon_skia.GetRepresentation(2.0f).sk_bitmap()));
   web_ui()->CallJavascriptFunction(
       "login.AccountPickerScreen.showUserPodCustomIcon",
       base::StringValue(user_email),
-      base::StringValue(icon_url.spec()));
+      icon_representations);
 }
 
 void UserManagerScreenHandler::HideUserPodCustomIcon(

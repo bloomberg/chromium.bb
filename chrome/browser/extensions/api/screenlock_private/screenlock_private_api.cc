@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 
+#include <vector>
+
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/image_loader.h"
@@ -19,6 +21,7 @@ namespace extensions {
 namespace {
 
 const char kNotLockedError[] = "Screen is not currently locked.";
+const char kInvalidIconError[] = "Invalid custom icon data.";
 
 ScreenlockBridge::LockHandler::AuthType ToLockHandlerAuthType(
     screenlock::AuthType auth_type) {
@@ -111,16 +114,47 @@ bool ScreenlockPrivateShowCustomIconFunction::RunAsync() {
       ScreenlockBridge::Get()->lock_handler();
   if (!locker) {
     SetError(kNotLockedError);
-    SendResponse(false);
-    return true;
+    return false;
   }
 
   const int kMaxButtonIconSize = 40;
+  bool has_scale_100P = false;
+  std::vector<extensions::ImageLoader::ImageRepresentation> icon_info;
+  for (size_t i = 0; i < params->icon.size(); ++i) {
+    ui::ScaleFactor scale_factor;
+    if (params->icon[i]->scale_factor == 1.) {
+      scale_factor = ui::SCALE_FACTOR_100P;
+    } else if (params->icon[i]->scale_factor == 2.) {
+      scale_factor = ui::SCALE_FACTOR_200P;
+    } else {
+      continue;
+    }
+
+    ExtensionResource resource =
+        GetExtension()->GetResource(params->icon[i]->url);
+    if (resource.empty())
+      continue;
+
+    icon_info.push_back(
+        ImageLoader::ImageRepresentation(
+            resource,
+            ImageLoader::ImageRepresentation::RESIZE_WHEN_LARGER,
+            gfx::Size(kMaxButtonIconSize * params->icon[i]->scale_factor,
+                      kMaxButtonIconSize * params->icon[i]->scale_factor),
+            scale_factor));
+    if (scale_factor == ui::SCALE_FACTOR_100P)
+      has_scale_100P = true;
+  }
+
+  if (!has_scale_100P) {
+    SetError(kInvalidIconError);
+    return false;
+  }
+
   extensions::ImageLoader* loader = extensions::ImageLoader::Get(GetProfile());
-  loader->LoadImageAsync(
+  loader->LoadImagesAsync(
       GetExtension(),
-      GetExtension()->GetResource(params->icon),
-      gfx::Size(kMaxButtonIconSize, kMaxButtonIconSize),
+      icon_info,
       base::Bind(&ScreenlockPrivateShowCustomIconFunction::OnImageLoaded,
                  this));
   return true;
