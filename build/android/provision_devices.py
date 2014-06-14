@@ -147,11 +147,32 @@ def ProvisionDevices(options):
     _ConfigureLocalProperties(device)
     device_settings.ConfigureContentSettingsDict(
         device, device_settings.DETERMINISTIC_DEVICE_SETTINGS)
-    # TODO(tonyg): We eventually want network on. However, currently radios
-    # can cause perfbots to drain faster than they charge.
     if 'perf' in os.environ.get('BUILDBOT_BUILDERNAME', '').lower():
+      # TODO(tonyg): We eventually want network on. However, currently radios
+      # can cause perfbots to drain faster than they charge.
       device_settings.ConfigureContentSettingsDict(
           device, device_settings.NETWORK_DISABLED_SETTINGS)
+      # Some perf bots run benchmarks with USB charging disabled which leads
+      # to gradual draining of the battery. We must wait for a full charge
+      # before starting a run in order to keep the devices online.
+      try:
+        battery_info = device.old_interface.GetBatteryInfo()
+      except Exception as e:
+        battery_info = {}
+        logging.error('Unable to obtain battery info for %s, %s',
+                      device_serial, e)
+
+      while int(battery_info.get('level', 100)) < 95:
+        if not device.old_interface.IsDeviceCharging():
+          if device.old_interface.CanControlUsbCharging():
+            device.old_interface.EnableUsbCharging()
+          else:
+            logging.error('Device is not charging')
+            break
+        logging.info('Waiting for device to charge. Current level=%s',
+                     battery_info.get('level', 0))
+        time.sleep(60)
+        battery_info = device.old_interface.GetBatteryInfo()
     device.old_interface.RunShellCommandWithSU('date -u %f' % time.time())
   try:
     device_utils.DeviceUtils.parallel(devices).Reboot(True)

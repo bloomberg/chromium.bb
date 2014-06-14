@@ -52,9 +52,9 @@ def DeviceInfo(serial, options):
   device_product_name = device_adb.old_interface.GetProductName()
 
   try:
-    battery = device_adb.old_interface.GetBatteryInfo()
+    battery_info = device_adb.old_interface.GetBatteryInfo()
   except Exception as e:
-    battery = None
+    battery_info = {}
     logging.error('Unable to obtain battery info for %s, %s', serial, e)
 
   def _GetData(re_expression, line, lambda_function=lambda x:x):
@@ -65,21 +65,16 @@ def DeviceInfo(serial, options):
       return lambda_function(found[0])
     return 'Unknown'
 
-  def _GetBatteryInfo(battery):
-    if not battery:
-      return 'No battery info.'
-    battery_info = battery.split('\n')
-    return battery_info[0] + '\n  '.join(battery_info[1:])
-
-  ac_power = _GetData('AC powered: (\w+)', battery)
-  battery_level = _GetData('level: (\d+)', battery)
+  battery_level = int(battery_info.get('level', 100))
   imei_slice = _GetData('Device ID = (\d+)',
                         device_adb.old_interface.GetSubscriberInfo(),
                         lambda x: x[-6:])
   report = ['Device %s (%s)' % (serial, device_type),
             '  Build: %s (%s)' %
               (device_build, device_adb.old_interface.GetBuildFingerprint()),
-            '  %s' % _GetBatteryInfo(battery),
+            '  Current Battery Service state: ',
+            '\n'.join(['    %s: %s' % (k, v)
+                       for k, v in battery_info.iteritems()]),
             '  IMEI slice: %s' % imei_slice,
             '  Wifi IP: %s' % device_adb.old_interface.GetWifiIP(),
             '']
@@ -92,7 +87,8 @@ def DeviceInfo(serial, options):
         device_adb.old_interface.GetSetupWizardStatus() == 'DISABLED')
     if not setup_wizard_disabled and device_build_type != 'user':
       errors += ['Setup wizard not disabled. Was it provisioned correctly?']
-  if device_product_name == 'mantaray' and ac_power != 'true':
+  if (device_product_name == 'mantaray' and
+      battery_info.get('AC powered', None) != 'true'):
     errors += ['Mantaray device not connected to AC power.']
 
   # Turn off devices with low battery.

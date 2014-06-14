@@ -1357,10 +1357,14 @@ class AndroidCommands(object):
     return '\n'.join(iphone_sub)
 
   def GetBatteryInfo(self):
-    """Returns the device battery info (e.g. status, level, etc) as string."""
+    """Returns a {str: str} dict of battery info (e.g. status, level, etc)."""
     battery = self.RunShellCommand('dumpsys battery')
     assert battery
-    return '\n'.join(battery)
+    battery_info = {}
+    for line in battery[1:]:
+      k, _, v = line.partition(': ')
+      battery_info[k.strip()] = v.strip()
+    return battery_info
 
   def GetSetupWizardStatus(self):
     """Returns the status of the device setup wizard (e.g. DISABLED)."""
