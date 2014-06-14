@@ -143,6 +143,14 @@ DateView::~DateView() {
 }
 
 void DateView::SetAction(TrayDate::DateAction action) {
+  if (action == action_)
+    return;
+  if (IsMouseHovered()) {
+    date_label_->SetEnabledColor(
+        action == TrayDate::NONE ? kHeaderTextColorNormal :
+                                   kHeaderTextColorHover);
+    SchedulePaint();
+  }
   action_ = action;
   SetFocusable(action_ != TrayDate::NONE);
 }
