@@ -18,4 +18,3 @@ bool NoInterfaceStub::AcceptWithResponder(Message* message,
 }
 
 }  // namespace mojo
-

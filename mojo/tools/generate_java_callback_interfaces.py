@@ -32,8 +32,7 @@ package org.chromium.mojo.bindings;
  */
 public interface Callbacks {
 %s
-}
-""")
+}""")
 
 def GenerateCallback(nb_args):
    params = '\n      * '.join(

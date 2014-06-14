@@ -107,4 +107,3 @@ TEST(ThreadTest, DebugAssertionFailures) {
 
 }  // namespace
 }  // namespace mojo
-

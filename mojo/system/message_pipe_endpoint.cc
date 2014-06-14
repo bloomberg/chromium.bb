@@ -54,4 +54,3 @@ void MessagePipeEndpoint::OnRemove() {
 
 }  // namespace system
 }  // namespace mojo
-

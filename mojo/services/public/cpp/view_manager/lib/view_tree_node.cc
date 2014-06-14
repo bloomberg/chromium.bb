@@ -436,4 +436,3 @@ void ViewTreeNode::LocalSetBounds(const gfx::Rect& old_bounds,
 
 }  // namespace view_manager
 }  // namespace mojo
-

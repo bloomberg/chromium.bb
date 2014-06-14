@@ -21,4 +21,3 @@ ViewTreeNodeObserver::TreeChangeParams::TreeChangeParams()
 
 }  // namespace view_manager
 }  // namespace mojo
-

@@ -29,4 +29,3 @@ ScopedPlatformHandle DuplicatePlatformHandle(PlatformHandle platform_handle) {
 
 }  // namespace embedder
 }  // namespace mojo
-
