@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "base/debug/asan_invalid_access.h"
+#include "base/debug/profiler.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/ppapi_plugin_process_host.h"
@@ -18,6 +20,16 @@
 namespace content {
 
 namespace {
+
+// Define the Asan debug URLs.
+const char kAsanCrashDomain[] = "crash";
+const char kAsanHeapOverflow[] = "/browser-heap-overflow";
+const char kAsanHeapUnderflow[] = "/browser-heap-underflow";
+const char kAsanUseAfterFree[] = "/browser-use-after-free";
+#if defined(SYZYASAN)
+const char kAsanCorruptHeapBlock[] = "/browser-corrupt-heap-block";
+const char kAsanCorruptHeap[] = "/browser-corrupt-heap";
+#endif
 
 void HandlePpapiFlashDebugURL(const GURL& url) {
 #if defined(ENABLE_PLUGINS)
@@ -36,6 +48,61 @@ void HandlePpapiFlashDebugURL(const GURL& url) {
 #endif
 }
 
+bool IsAsanDebugURL(const GURL& url) {
+#if defined(SYZYASAN)
+  if (!base::debug::IsBinaryInstrumented())
+    return false;
+#endif
+
+  if (!(url.is_valid() && url.SchemeIs(kChromeUIScheme) &&
+        url.DomainIs(kAsanCrashDomain, sizeof(kAsanCrashDomain) - 1) &&
+        url.has_path())) {
+    return false;
+  }
+
+  if (url.path() == kAsanHeapOverflow || url.path() == kAsanHeapUnderflow ||
+      url.path() == kAsanUseAfterFree) {
+    return true;
+  }
+
+#if defined(SYZYASAN)
+  if (url.path() == kAsanCorruptHeapBlock || url.path() == kAsanCorruptHeap)
+    return true;
+#endif
+
+  return false;
+}
+
+bool HandleAsanDebugURL(const GURL& url) {
+#if defined(SYZYASAN)
+  if (!base::debug::IsBinaryInstrumented())
+    return false;
+
+  if (url.path() == kAsanCorruptHeapBlock) {
+    base::debug::AsanCorruptHeapBlock();
+    return true;
+  } else if (url.path() == kAsanCorruptHeap) {
+    base::debug::AsanCorruptHeap();
+    return true;
+  }
+#endif
+
+#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+  if (url.path() == kAsanHeapOverflow) {
+    base::debug::AsanHeapOverflow();
+  } else if (url.path() == kAsanHeapUnderflow) {
+    base::debug::AsanHeapUnderflow();
+  } else if (url.path() == kAsanUseAfterFree) {
+    base::debug::AsanHeapUseAfterFree();
+  } else {
+    return false;
+  }
+#endif
+
+  return true;
+}
+
+
 }  // namespace
 
 bool HandleDebugURL(const GURL& url, PageTransition transition) {
@@ -45,6 +112,9 @@ bool HandleDebugURL(const GURL& url, PageTransition transition) {
 
   // NOTE: when you add handling of any URLs to this function, also
   // update IsDebugURL, below.
+
+  if (IsAsanDebugURL(url))
+    return HandleAsanDebugURL(url);
 
   if (url.host() == kChromeUIBrowserCrashHost) {
     // Induce an intentional crash in the browser process.
@@ -86,7 +156,7 @@ bool HandleDebugURL(const GURL& url, PageTransition transition) {
 bool IsDebugURL(const GURL& url) {
   // NOTE: when you add any URLs to this list, also update
   // HandleDebugURL, above.
-  return IsRendererDebugURL(url) ||
+  return IsRendererDebugURL(url) || IsAsanDebugURL(url) ||
       (url.is_valid() &&
        (url.host() == kChromeUIBrowserCrashHost ||
         url == GURL(kChromeUIGpuCleanURL) ||

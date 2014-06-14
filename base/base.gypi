@@ -130,6 +130,8 @@
           'critical_closure_internal_ios.mm',
           'debug/alias.cc',
           'debug/alias.h',
+          'debug/asan_invalid_access.cc',
+          'debug/asan_invalid_access.h',
           'debug/crash_logging.cc',
           'debug/crash_logging.h',
           'debug/debugger.cc',

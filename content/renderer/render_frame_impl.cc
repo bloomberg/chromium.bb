@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/debug/asan_invalid_access.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/i18n/char_iterator.h"
 #include "base/metrics/histogram.h"
@@ -242,37 +243,19 @@ NOINLINE static void CrashIntentionally() {
   *zero = 0;
 }
 
-#if defined(SYZYASAN)
-NOINLINE static void CorruptMemoryBlock() {
-  // NOTE(sebmarchand): We intentionally corrupt a memory block here in order to
-  //     trigger an Address Sanitizer (ASAN) error report.
-  static const int kArraySize = 5;
-  int* array = new int[kArraySize];
-  // Encapsulate the invalid memory access into a try-catch statement to prevent
-  // this function from being instrumented. This way the underflow won't be
-  // detected but the corruption will (as the allocator will still be hooked).
-  __try {
-    int dummy = array[-1]--;
-    // Make sure the assignments to the dummy value aren't optimized away.
-    base::debug::Alias(&array);
-  } __except (EXCEPTION_EXECUTE_HANDLER) {
-  }
-  delete[] array;
-}
-#endif
-
 #if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
 NOINLINE static void MaybeTriggerAsanError(const GURL& url) {
   // NOTE(rogerm): We intentionally perform an invalid heap access here in
   //     order to trigger an Address Sanitizer (ASAN) error report.
-  static const char kCrashDomain[] = "crash";
-  static const char kHeapOverflow[] = "/heap-overflow";
-  static const char kHeapUnderflow[] = "/heap-underflow";
-  static const char kUseAfterFree[] = "/use-after-free";
+  const char kCrashDomain[] = "crash";
+  const char kHeapOverflow[] = "/heap-overflow";
+  const char kHeapUnderflow[] = "/heap-underflow";
+  const char kUseAfterFree[] = "/use-after-free";
 #if defined(SYZYASAN)
-  static const char kCorruptHeapBlock[] = "/corrupt-heap-block";
+  const char kCorruptHeapBlock[] = "/corrupt-heap-block";
+  const char kCorruptHeap[] = "/corrupt-heap";
 #endif
-  static const int kArraySize = 5;
+  const int kArraySize = 5;
 
   if (!url.DomainIs(kCrashDomain, sizeof(kCrashDomain) - 1))
     return;
@@ -280,25 +263,20 @@ NOINLINE static void MaybeTriggerAsanError(const GURL& url) {
   if (!url.has_path())
     return;
 
-  scoped_ptr<int[]> array(new int[kArraySize]);
   std::string crash_type(url.path());
-  int dummy = 0;
   if (crash_type == kHeapOverflow) {
-    dummy = array[kArraySize];
+    base::debug::AsanHeapOverflow();
   } else if (crash_type == kHeapUnderflow ) {
-    dummy = array[-1];
+    base::debug::AsanHeapUnderflow();
   } else if (crash_type == kUseAfterFree) {
-    int* dangling = array.get();
-    array.reset();
-    dummy = dangling[kArraySize / 2];
+    base::debug::AsanHeapUseAfterFree();
 #if defined(SYZYASAN)
   } else if (crash_type == kCorruptHeapBlock) {
-    CorruptMemoryBlock();
+    base::debug::AsanCorruptHeapBlock();
+  } else if (crash_type == kCorruptHeap) {
+    base::debug::AsanCorruptHeap();
 #endif
   }
-
-  // Make sure the assignments to the dummy value aren't optimized away.
-  base::debug::Alias(&dummy);
 }
 #endif  // ADDRESS_SANITIZER || SYZYASAN
 
