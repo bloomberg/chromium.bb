@@ -63,8 +63,9 @@ class BookmarkBarBridge : public BookmarkModelObserver {
   // Needed to react to kShowAppsShortcutInBookmarkBar changes.
   PrefChangeRegistrar profile_pref_registrar_;
 
-  // Updates the visibility of the apps shortcut based on the pref value.
-  void OnAppsPageShortcutVisibilityPrefChanged();
+  // Updates the visibility of the apps shortcut and the managed bookmarks
+  // folder based on the pref values.
+  void OnExtraButtonsVisibilityChanged();
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarBridge);
 };

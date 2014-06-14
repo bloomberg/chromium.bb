@@ -310,8 +310,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
 // Update the visible state of the bookmark bar.
 - (void)updateVisibility;
 
-// Update the visible state of the bookmark bar.
-- (void)updateAppsPageShortcutButtonVisibility;
+// Update the visible state of the extra butons on the bookmark bar: the
+// apps shortcut and the managed bookmarks folder.
+- (void)updateExtraButtonsVisibility;
 
 // Hides or shows the bookmark bar depending on the current state.
 - (void)updateHiddenState;
