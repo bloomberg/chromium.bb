@@ -35,6 +35,7 @@
 #include "platform/scroll/Scrollbar.h"
 
 #include "wtf/HashSet.h"
+#include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
@@ -293,6 +294,15 @@ protected:
     void updateScrollbars(const IntSize& desiredOffset);
 
     IntSize excludeScrollbars(const IntSize&) const;
+
+    class InUpdateScrollbarsScope {
+    public:
+        explicit InUpdateScrollbarsScope(ScrollView* view)
+            : m_scope(view->m_inUpdateScrollbars, true)
+        { }
+    private:
+        TemporaryChange<bool> m_scope;
+    };
 
 private:
     bool adjustScrollbarExistence(ComputeScrollbarExistenceOption = FirstPass);

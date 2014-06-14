@@ -31,7 +31,6 @@
 #include "platform/HostWindow.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/TemporaryChange.h"
 
 using namespace std;
 
@@ -458,7 +457,7 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
 {
     if (m_inUpdateScrollbars)
         return;
-    TemporaryChange<bool> inUpdateScrollbarsChange(m_inUpdateScrollbars, true);
+    InUpdateScrollbarsScope inUpdateScrollbarsScope(this);
 
     IntSize oldVisibleSize = visibleSize();
 

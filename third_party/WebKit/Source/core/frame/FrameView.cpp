@@ -638,8 +638,25 @@ void FrameView::recalcOverflowAfterStyleChange()
 
     renderView->recalcOverflowAfterStyleChange();
 
-    // FIXME: We should adjust frame scrollbar here, but that will make many
-    // tests flake in debug build.
+    if (needsLayout())
+        return;
+
+    InUpdateScrollbarsScope inUpdateScrollbarsScope(this);
+
+    bool shouldHaveHorizontalScrollbar = false;
+    bool shouldHaveVerticalScrollbar = false;
+    computeScrollbarExistence(shouldHaveHorizontalScrollbar, shouldHaveVerticalScrollbar);
+
+    bool hasHorizontalScrollbar = horizontalScrollbar();
+    bool hasVerticalScrollbar = verticalScrollbar();
+    if (hasHorizontalScrollbar != shouldHaveHorizontalScrollbar
+        || hasVerticalScrollbar != shouldHaveVerticalScrollbar) {
+        setNeedsLayout();
+        return;
+    }
+
+    adjustViewSize();
+    updateScrollbarGeometry();
 }
 
 bool FrameView::usesCompositedScrolling() const
