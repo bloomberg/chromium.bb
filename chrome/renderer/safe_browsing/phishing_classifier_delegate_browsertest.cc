@@ -573,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest,
 #define Maybe_DuplicatePageCapture DuplicatePageCapture
 #endif
 IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest,
-                       DISABLED_DuplicatePageCapture) {
+                       Maybe_DuplicatePageCapture) {
   // Tests that a second PageCaptured notification causes classification to
   // be cancelled.
   MockScorer scorer;
