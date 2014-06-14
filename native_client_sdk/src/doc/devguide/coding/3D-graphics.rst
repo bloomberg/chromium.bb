@@ -186,7 +186,7 @@ flags (all at once) and watching how your application responds:
 
 * ``--disable-webgl``
 * ``--disable-pepper-3d``
-* ``--disable-gl-multisampling``
+* ``--disable_multisampling``
 * ``--disable-accelerated-compositing``
 * ``--disable-accelerated-2d-canvas``
 

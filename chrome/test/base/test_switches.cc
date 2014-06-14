@@ -9,9 +9,6 @@ namespace switches {
 // Also emit full event trace logs for successful tests.
 const char kAlsoEmitSuccessLogs[] = "also-emit-success-logs";
 
-// Enable Chromium branding of the executable.
-const char kEnableChromiumBranding[] = "enable-chromium-branding";
-
 // Enable displaying error dialogs (for debugging).
 const char kEnableErrorDialogs[] = "enable-errdialogs";
 

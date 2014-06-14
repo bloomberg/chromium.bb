@@ -31,13 +31,6 @@ GL_EXPORT extern const char kEnableGPUServiceTracing[];
 GL_EXPORT extern const char kGpuNoContextLost[];
 
 GL_EXPORT extern const char kSupportsDualGpus[];
-GL_EXPORT extern const char kGpuSwitching[];
-
-// The GPU switching names that can be passed to --gpu-switching.
-GL_EXPORT extern const char kGpuSwitchingOptionNameForceIntegrated[];
-GL_EXPORT extern const char kGpuSwitchingOptionNameForceDiscrete[];
-// The last one (automatic) is not used as commandline switch option.
-GL_EXPORT extern const char kGpuSwitchingOptionNameAutomatic[];
 
 GL_EXPORT extern const char kUseGL[];
 GL_EXPORT extern const char kSwiftShaderPath[];

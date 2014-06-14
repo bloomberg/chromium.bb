@@ -21,23 +21,9 @@ using base::TimeTicks;
 
 namespace {
 
-// Returns the executable name of the current Chrome browser process.
-const base::FilePath::CharType* GetRunningBrowserExecutableName() {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kEnableChromiumBranding))
-    return chrome::kBrowserProcessExecutableNameChromium;
-  return chrome::kBrowserProcessExecutableName;
-}
-
 // Returns the executable name of the current Chrome helper process.
 std::vector<base::FilePath::StringType> GetRunningHelperExecutableNames() {
-  base::FilePath::StringType name;
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kEnableChromiumBranding)) {
-    name = chrome::kHelperProcessExecutableNameChromium;
-  } else {
-    name = chrome::kHelperProcessExecutableName;
-  }
+  base::FilePath::StringType name = chrome::kHelperProcessExecutableName;
 
   std::vector<base::FilePath::StringType> names;
   names.push_back(name);
@@ -95,7 +81,7 @@ class ChildProcessFilter : public base::ProcessFilter {
 
 ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
   const base::FilePath::CharType* executable_name =
-      GetRunningBrowserExecutableName();
+      chrome::kBrowserProcessExecutableName;
   ChromeProcessList result;
   if (browser_pid == static_cast<base::ProcessId>(-1))
     return result;

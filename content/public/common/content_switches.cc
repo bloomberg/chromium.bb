@@ -154,9 +154,6 @@ const char kDisableFlashStage3d[]           = "disable-flash-stage3d";
 
 const char kDisableGestureTapHighlight[]    = "disable-gesture-tap-highlight";
 
-// Disable GL multisampling.
-const char kDisableGLMultisampling[]        = "disable-gl-multisampling";
-
 // Disables GPU hardware acceleration.  If software renderer is not in place,
 // then the GPU process won't launch.
 const char kDisableGpu[]                    = "disable-gpu";

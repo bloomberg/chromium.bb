@@ -273,7 +273,7 @@ class WebGLMultisamplingTest : public GpuFeatureTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     GpuFeatureTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisableGLMultisampling);
+    command_line->AppendSwitch("disable_multisampling");
   }
 };
 

@@ -49,13 +49,6 @@ const char kGpuNoContextLost[]              = "gpu-no-context-lost";
 // Indicates whether the dual GPU switching is supported or not.
 const char kSupportsDualGpus[]              = "supports-dual-gpus";
 
-// Overwrite the default GPU automatic switching behavior to force on
-// integrated GPU or discrete GPU.
-const char kGpuSwitching[]                  = "gpu-switching";
-
-const char kGpuSwitchingOptionNameForceIntegrated[] = "force_integrated";
-const char kGpuSwitchingOptionNameForceDiscrete[]   = "force_discrete";
-
 // Flag used for Linux tests: for desktop GL bindings, try to load this GL
 // library first, but fall back to regular library if loading fails.
 const char kTestGLLib[]                     = "test-gl-lib";
