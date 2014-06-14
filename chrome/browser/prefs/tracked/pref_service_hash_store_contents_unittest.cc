@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/values.h"
+#include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PrefServiceHashStoreContentsTest : public testing::Test {
@@ -43,6 +44,8 @@ TEST_F(PrefServiceHashStoreContentsTest, IsInitialized) {
 }
 
 TEST_F(PrefServiceHashStoreContentsTest, Reset) {
+  ASSERT_FALSE(local_state_.GetUserPrefValue(prefs::kProfilePreferenceHashes));
+
   {
     PrefServiceHashStoreContents contents("store_id", &local_state_);
     ASSERT_FALSE(contents.IsInitialized());
@@ -53,12 +56,18 @@ TEST_F(PrefServiceHashStoreContentsTest, Reset) {
     (*other_contents.GetMutableContents())
         ->Set("foo", new base::StringValue("bar"));
   }
+
+  ASSERT_TRUE(local_state_.GetUserPrefValue(prefs::kProfilePreferenceHashes));
+
   {
     PrefServiceHashStoreContents contents("store_id", &local_state_);
     ASSERT_TRUE(contents.IsInitialized());
     contents.Reset();
     ASSERT_FALSE(contents.IsInitialized());
   }
+
+  ASSERT_TRUE(local_state_.GetUserPrefValue(prefs::kProfilePreferenceHashes));
+
   {
     PrefServiceHashStoreContents contents("store_id", &local_state_);
     ASSERT_FALSE(contents.IsInitialized());
@@ -66,34 +75,14 @@ TEST_F(PrefServiceHashStoreContentsTest, Reset) {
                                                 &local_state_);
     ASSERT_TRUE(other_contents.IsInitialized());
   }
-}
-
-TEST_F(PrefServiceHashStoreContentsTest, GetAndSetVersion) {
-  int version = 0;
-  {
-    PrefServiceHashStoreContents contents("store_id", &local_state_);
-    ASSERT_FALSE(contents.GetVersion(&version));
-    (*contents.GetMutableContents())->Set("foo", new base::StringValue("bar"));
-    ASSERT_FALSE(contents.GetVersion(&version));
-  }
-  {
-    PrefServiceHashStoreContents contents("store_id", &local_state_);
-    ASSERT_FALSE(contents.GetVersion(&version));
-    contents.SetVersion(1);
-    ASSERT_TRUE(contents.GetVersion(&version));
-    ASSERT_EQ(1, version);
-  }
-
-  version = 0;
 
   {
-    PrefServiceHashStoreContents contents("store_id", &local_state_);
-    ASSERT_TRUE(contents.GetVersion(&version));
-    ASSERT_EQ(1, version);
     PrefServiceHashStoreContents other_contents("other_store_id",
                                                 &local_state_);
-    ASSERT_FALSE(other_contents.GetVersion(&version));
+    other_contents.Reset();
   }
+
+  ASSERT_FALSE(local_state_.GetUserPrefValue(prefs::kProfilePreferenceHashes));
 }
 
 TEST_F(PrefServiceHashStoreContentsTest, GetAndSetContents) {

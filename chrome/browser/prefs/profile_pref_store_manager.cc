@@ -22,95 +22,6 @@
 
 namespace {
 
-// An adaptor that allows a PrefHashStoreImpl to access a preference store
-// directly as a dictionary. Uses an equivalent layout to
-// PrefStoreHashStoreContents.
-class DictionaryHashStoreContents : public HashStoreContents {
- public:
-  // Instantiates a HashStoreContents that is a copy of |to_copy|. The copy is
-  // mutable but does not affect the original, nor is it persisted to disk in
-  // any other way.
-  explicit DictionaryHashStoreContents(const HashStoreContents& to_copy)
-      : hash_store_id_(to_copy.hash_store_id()),
-        super_mac_(to_copy.GetSuperMac()) {
-    if (to_copy.IsInitialized())
-      dictionary_.reset(to_copy.GetContents()->DeepCopy());
-    int version = 0;
-    if (to_copy.GetVersion(&version))
-      version_.reset(new int(version));
-  }
-
-  // HashStoreContents implementation
-  virtual std::string hash_store_id() const OVERRIDE { return hash_store_id_; }
-
-  virtual void Reset() OVERRIDE {
-    dictionary_.reset();
-    super_mac_.clear();
-    version_.reset();
-  }
-
-  virtual bool IsInitialized() const OVERRIDE {
-    return dictionary_;
-  }
-
-  virtual const base::DictionaryValue* GetContents() const OVERRIDE{
-    return dictionary_.get();
-  }
-
-  virtual scoped_ptr<MutableDictionary> GetMutableContents() OVERRIDE {
-    return scoped_ptr<MutableDictionary>(
-        new SimpleMutableDictionary(this));
-  }
-
-  virtual std::string GetSuperMac() const OVERRIDE { return super_mac_; }
-
-  virtual void SetSuperMac(const std::string& super_mac) OVERRIDE {
-    super_mac_ = super_mac;
-  }
-
-  virtual bool GetVersion(int* version) const OVERRIDE {
-    if (!version_)
-      return false;
-    *version = *version_;
-    return true;
-  }
-
-  virtual void SetVersion(int version) OVERRIDE {
-    version_.reset(new int(version));
-  }
-
-  virtual void CommitPendingWrite() OVERRIDE {}
-
- private:
-  class SimpleMutableDictionary
-      : public HashStoreContents::MutableDictionary {
-   public:
-    explicit SimpleMutableDictionary(DictionaryHashStoreContents* outer)
-        : outer_(outer) {}
-
-    virtual ~SimpleMutableDictionary() {}
-
-    // MutableDictionary implementation
-    virtual base::DictionaryValue* operator->() OVERRIDE {
-      if (!outer_->dictionary_)
-        outer_->dictionary_.reset(new base::DictionaryValue);
-      return outer_->dictionary_.get();
-    }
-
-   private:
-    DictionaryHashStoreContents* outer_;
-
-    DISALLOW_COPY_AND_ASSIGN(SimpleMutableDictionary);
-  };
-
-  const std::string hash_store_id_;
-  std::string super_mac_;
-  scoped_ptr<int> version_;
-  scoped_ptr<base::DictionaryValue> dictionary_;
-
-  DISALLOW_COPY_AND_ASSIGN(DictionaryHashStoreContents);
-};
-
 // An in-memory PrefStore backed by an immutable DictionaryValue.
 class DictionaryPrefStore : public PrefStore {
  public:
@@ -135,63 +46,6 @@ class DictionaryPrefStore : public PrefStore {
 
   DISALLOW_COPY_AND_ASSIGN(DictionaryPrefStore);
 };
-
-// Waits for a PrefStore to be initialized and then initializes the
-// corresponding PrefHashStore.
-// The observer deletes itself when its work is completed.
-class InitializeHashStoreObserver : public PrefStore::Observer {
- public:
-  // Creates an observer that will initialize |pref_hash_store| with the
-  // contents of |pref_store| when the latter is fully loaded.
-  InitializeHashStoreObserver(
-      const std::vector<PrefHashFilter::TrackedPreferenceMetadata>&
-          tracking_configuration,
-      size_t reporting_ids_count,
-      const scoped_refptr<PrefStore>& pref_store,
-      scoped_ptr<PrefHashStoreImpl> pref_hash_store_impl)
-      : tracking_configuration_(tracking_configuration),
-        reporting_ids_count_(reporting_ids_count),
-        pref_store_(pref_store),
-        pref_hash_store_impl_(pref_hash_store_impl.Pass()) {}
-
-  virtual ~InitializeHashStoreObserver();
-
-  // PrefStore::Observer implementation.
-  virtual void OnPrefValueChanged(const std::string& key) OVERRIDE;
-  virtual void OnInitializationCompleted(bool succeeded) OVERRIDE;
-
- private:
-  const std::vector<PrefHashFilter::TrackedPreferenceMetadata>
-      tracking_configuration_;
-  const size_t reporting_ids_count_;
-  scoped_refptr<PrefStore> pref_store_;
-  scoped_ptr<PrefHashStoreImpl> pref_hash_store_impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(InitializeHashStoreObserver);
-};
-
-InitializeHashStoreObserver::~InitializeHashStoreObserver() {}
-
-void InitializeHashStoreObserver::OnPrefValueChanged(const std::string& key) {}
-
-void InitializeHashStoreObserver::OnInitializationCompleted(bool succeeded) {
-  // If we successfully loaded the preferences _and_ the PrefHashStoreImpl
-  // hasn't been initialized by someone else in the meantime, initialize it now.
-  const PrefHashStoreImpl::StoreVersion pre_update_version =
-      pref_hash_store_impl_->GetCurrentVersion();
-  if (succeeded && pre_update_version < PrefHashStoreImpl::VERSION_LATEST) {
-    PrefHashFilter(pref_hash_store_impl_.PassAs<PrefHashStore>(),
-                   tracking_configuration_,
-                   NULL,
-                   reporting_ids_count_).Initialize(*pref_store_);
-    UMA_HISTOGRAM_ENUMERATION(
-        "Settings.TrackedPreferencesAlternateStoreVersionUpdatedFrom",
-        pre_update_version,
-        PrefHashStoreImpl::VERSION_LATEST + 1);
-  }
-  pref_store_->RemoveObserver(this);
-  delete this;
-}
 
 }  // namespace
 
@@ -252,11 +106,6 @@ base::Time ProfilePrefStoreManager::GetResetTime(PrefService* pref_service) {
 // static
 void ProfilePrefStoreManager::ClearResetTime(PrefService* pref_service) {
   PrefHashFilter::ClearResetTime(pref_service);
-}
-
-void ProfilePrefStoreManager::ResetPrefHashStore() {
-  if (kPlatformSupportsPreferenceTracking)
-    GetPrefHashStoreImpl()->Reset();
 }
 
 PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
@@ -331,32 +180,6 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
                                  protected_pref_names);
 }
 
-void ProfilePrefStoreManager::UpdateProfileHashStoreIfRequired(
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
-  if (!kPlatformSupportsPreferenceTracking)
-    return;
-  scoped_ptr<PrefHashStoreImpl> pref_hash_store_impl(GetPrefHashStoreImpl());
-  const PrefHashStoreImpl::StoreVersion current_version =
-      pref_hash_store_impl->GetCurrentVersion();
-  UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferencesAlternateStoreVersion",
-                            current_version,
-                            PrefHashStoreImpl::VERSION_LATEST + 1);
-
-  // Update the pref hash store if it's not at the latest version.
-  if (current_version != PrefHashStoreImpl::VERSION_LATEST) {
-    scoped_refptr<JsonPrefStore> pref_store =
-        new JsonPrefStore(GetPrefFilePathFromProfilePath(profile_path_),
-                          io_task_runner,
-                          scoped_ptr<PrefFilter>());
-    pref_store->AddObserver(
-        new InitializeHashStoreObserver(tracking_configuration_,
-                                        reporting_ids_count_,
-                                        pref_store,
-                                        pref_hash_store_impl.Pass()));
-    pref_store->ReadPrefsAsync(NULL);
-  }
-}
-
 bool ProfilePrefStoreManager::InitializePrefsFromMasterPrefs(
     const base::DictionaryValue& master_prefs) {
   // Create the profile directory if it doesn't exist yet (very possible on
@@ -412,5 +235,6 @@ scoped_ptr<PrefHashStoreImpl> ProfilePrefStoreManager::GetPrefHashStoreImpl() {
       seed_,
       device_id_,
       scoped_ptr<HashStoreContents>(new PrefServiceHashStoreContents(
-          profile_path_.AsUTF8Unsafe(), local_state_))));
+          profile_path_.AsUTF8Unsafe(), local_state_)),
+      true));
 }

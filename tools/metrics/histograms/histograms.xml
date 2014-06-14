@@ -25332,6 +25332,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Settings.TrackedPreferencesAlternateStoreVersion"
     enum="PrefHashStoreVersion">
+  <obsolete>
+    Deprecated 2014-06.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The version of a PrefHashStore, reported once for each alternate
@@ -25342,6 +25345,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Settings.TrackedPreferencesAlternateStoreVersionUpdatedFrom"
     enum="PrefHashStoreVersion">
+  <obsolete>
+    Deprecated 2014-06.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The previous version of an alternate PrefHashStore (not associated to the

@@ -59,7 +59,11 @@ const char PrefServiceHashStoreContents::kStoreVersionsDict[] =
 PrefServiceHashStoreContents::PrefServiceHashStoreContents(
     const std::string& hash_store_id,
     PrefService* pref_service)
-    : hash_store_id_(hash_store_id), pref_service_(pref_service) {}
+    : hash_store_id_(hash_store_id), pref_service_(pref_service) {
+  // TODO(erikwright): Remove in M40+.
+  DictionaryPrefUpdate update(pref_service_, prefs::kProfilePreferenceHashes);
+  update->RemovePath(kStoreVersionsDict, NULL);
+}
 
 // static
 void PrefServiceHashStoreContents::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -83,17 +87,17 @@ void PrefServiceHashStoreContents::Reset() {
 
   update->RemoveWithoutPathExpansion(hash_store_id_, NULL);
 
-  // Remove this store's entry in the kStoreVersionsDict.
-  base::DictionaryValue* version_dict;
-  if (update->GetDictionary(kStoreVersionsDict, &version_dict))
-    version_dict->RemoveWithoutPathExpansion(hash_store_id_, NULL);
-
   // Remove this store's entry in the kHashOfHashesDict.
   base::DictionaryValue* hash_of_hashes_dict;
   if (update->GetDictionaryWithoutPathExpansion(kHashOfHashesDict,
                                                 &hash_of_hashes_dict)) {
     hash_of_hashes_dict->RemoveWithoutPathExpansion(hash_store_id_, NULL);
+    if (hash_of_hashes_dict->empty())
+      update->RemovePath(kHashOfHashesDict, NULL);
   }
+
+  if (update->empty())
+    pref_service_->ClearPref(prefs::kProfilePreferenceHashes);
 }
 
 bool PrefServiceHashStoreContents::IsInitialized() const {
@@ -101,21 +105,6 @@ bool PrefServiceHashStoreContents::IsInitialized() const {
       pref_service_->GetDictionary(prefs::kProfilePreferenceHashes);
   return pref_hash_dicts->GetDictionaryWithoutPathExpansion(hash_store_id_,
                                                             NULL);
-}
-
-bool PrefServiceHashStoreContents::GetVersion(int* version) const {
-  DCHECK(version);
-  const base::DictionaryValue* pref_hash_data =
-      pref_service_->GetDictionary(prefs::kProfilePreferenceHashes);
-
-  const base::DictionaryValue* version_dict;
-  return pref_hash_data->GetDictionary(kStoreVersionsDict, &version_dict) &&
-         version_dict->GetIntegerWithoutPathExpansion(hash_store_id_, version);
-}
-
-void PrefServiceHashStoreContents::SetVersion(int version) {
-  PrefServiceMutableDictionary(kStoreVersionsDict, pref_service_)
-      ->SetIntegerWithoutPathExpansion(hash_store_id_, version);
 }
 
 const base::DictionaryValue* PrefServiceHashStoreContents::GetContents() const {

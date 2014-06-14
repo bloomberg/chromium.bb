@@ -49,8 +49,6 @@ class PrefServiceHashStoreContents : public HashStoreContents {
   virtual std::string hash_store_id() const OVERRIDE;
   virtual void Reset() OVERRIDE;
   virtual bool IsInitialized() const OVERRIDE;
-  virtual bool GetVersion(int* version) const OVERRIDE;
-  virtual void SetVersion(int version) OVERRIDE;
   virtual const base::DictionaryValue* GetContents() const OVERRIDE;
   virtual scoped_ptr<MutableDictionary> GetMutableContents() OVERRIDE;
   virtual std::string GetSuperMac() const OVERRIDE;

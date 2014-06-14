@@ -1535,8 +1535,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   PostBrowserStart();
 
-  chrome_prefs::SchedulePrefHashStoresUpdateCheck(profile_->GetPath());
-
   if (parameters().ui_task) {
     // We end the startup timer here if we have parameters to run, because we
     // never start to run the main loop (where we normally stop the timer).

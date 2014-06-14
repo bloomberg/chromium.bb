@@ -42,7 +42,8 @@ class PrefHashStoreImpl : public PrefHashStore {
   // previously stored hashes in |contents|.
   PrefHashStoreImpl(const std::string& seed,
                     const std::string& device_id,
-                    scoped_ptr<HashStoreContents> contents);
+                    scoped_ptr<HashStoreContents> contents,
+                    bool use_super_mac);
 
   virtual ~PrefHashStoreImpl();
 
@@ -54,15 +55,13 @@ class PrefHashStoreImpl : public PrefHashStore {
   virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction() OVERRIDE;
   virtual void CommitPendingWrite() OVERRIDE;
 
-  // Returns the current version of this hash store.
-  StoreVersion GetCurrentVersion() const;
-
  private:
   class PrefHashStoreTransactionImpl;
 
   const PrefHashCalculator pref_hash_calculator_;
   scoped_ptr<HashStoreContents> contents_;
   const bool initial_hashes_dictionary_trusted_;
+  bool use_super_mac_;
 
   // True if hashes have been modified since the last call to
   // CommitPendingWriteIfRequired().

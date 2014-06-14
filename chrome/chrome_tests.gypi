@@ -1305,7 +1305,6 @@
         'browser/policy/policy_prefs_browsertest.cc',
         'browser/prefetch/prefetch_browsertest.cc',
         'browser/prefs/pref_functional_browsertest.cc',
-        'browser/prefs/pref_hash_browsertest.cc',
         'browser/prefs/pref_service_browsertest.cc',
         'browser/prefs/synced_pref_change_registrar_browsertest.cc',
         'browser/prerender/prerender_browsertest.cc',

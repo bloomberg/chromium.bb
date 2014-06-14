@@ -59,11 +59,15 @@ class PrefHashStoreImpl::PrefHashStoreTransactionImpl
 
 PrefHashStoreImpl::PrefHashStoreImpl(const std::string& seed,
                                      const std::string& device_id,
-                                     scoped_ptr<HashStoreContents> contents)
+                                     scoped_ptr<HashStoreContents> contents,
+                                     bool use_super_mac)
     : pref_hash_calculator_(seed, device_id),
       contents_(contents.Pass()),
       initial_hashes_dictionary_trusted_(
-          IsHashDictionaryTrusted(pref_hash_calculator_, *contents_)),
+          use_super_mac
+              ? IsHashDictionaryTrusted(pref_hash_calculator_, *contents_)
+              : false),
+      use_super_mac_(use_super_mac),
       has_pending_write_(false) {
   DCHECK(contents_);
   UMA_HISTOGRAM_BOOLEAN("Settings.HashesDictionaryTrusted",
@@ -79,19 +83,6 @@ void PrefHashStoreImpl::Reset() {
 scoped_ptr<PrefHashStoreTransaction> PrefHashStoreImpl::BeginTransaction() {
   return scoped_ptr<PrefHashStoreTransaction>(
       new PrefHashStoreTransactionImpl(this));
-}
-
-PrefHashStoreImpl::StoreVersion PrefHashStoreImpl::GetCurrentVersion() const {
-  if (!contents_->IsInitialized())
-    return VERSION_UNINITIALIZED;
-
-  int current_version;
-  if (!contents_->GetVersion(&current_version)) {
-    return VERSION_PRE_MIGRATION;
-  }
-
-  DCHECK_GT(current_version, VERSION_PRE_MIGRATION);
-  return static_cast<StoreVersion>(current_version);
 }
 
 void PrefHashStoreImpl::CommitPendingWrite() {
@@ -110,27 +101,16 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::
   // Update the super MAC if and only if the hashes dictionary has been
   // modified in this transaction.
   if (has_changed_) {
-    // Get the dictionary of hashes (or NULL if it doesn't exist).
-    const base::DictionaryValue* hashes_dict = outer_->contents_->GetContents();
-    outer_->contents_->SetSuperMac(outer_->pref_hash_calculator_.Calculate(
-        outer_->contents_->hash_store_id(), hashes_dict));
-
+    if (outer_->use_super_mac_) {
+      // Get the dictionary of hashes (or NULL if it doesn't exist).
+      const base::DictionaryValue* hashes_dict =
+          outer_->contents_->GetContents();
+      outer_->contents_->SetSuperMac(outer_->pref_hash_calculator_.Calculate(
+          outer_->contents_->hash_store_id(), hashes_dict));
+    }
     outer_->has_pending_write_ = true;
   }
 
-  // Mark this hash store has having been updated to the latest version (in
-  // practice only initialization transactions will actually do this, but
-  // since they always occur before minor update transaction it's okay
-  // to unconditionally do this here). Only do this if this store's version
-  // isn't already at VERSION_LATEST (to avoid scheduling a write when
-  // unecessary). Note, this is outside of |if (has_changed)| to also seed
-  // version number of otherwise unchanged profiles.
-  int current_version;
-  if (!outer_->contents_->GetVersion(&current_version) ||
-      current_version != VERSION_LATEST) {
-    outer_->contents_->SetVersion(VERSION_LATEST);
-    outer_->has_pending_write_ = true;
-  }
 }
 
 PrefHashStoreTransaction::ValueState

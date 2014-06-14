@@ -289,7 +289,6 @@ INSTANTIATE_TEST_CASE_P(
     FirstRunMasterPrefsWithTrackedPreferences,
     testing::Values(
         chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,
-        chrome_prefs::internals::kSettingsEnforcementGroupEnforceOnload,
         chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways,
         chrome_prefs::internals::
             kSettingsEnforcementGroupEnforceAlwaysWithExtensions,

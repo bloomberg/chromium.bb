@@ -32,8 +32,7 @@
 #include "chrome/browser/prefs/pref_service_syncable_factory.h"
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
 #include "chrome/browser/profiles/file_path_verifier_win.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/default_search_manager.h"
 #include "chrome/browser/search_engines/default_search_pref_migration.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
@@ -184,10 +183,7 @@ COMPILE_ASSERT(kTrackedPrefsReportingIDsCount >= arraysize(kTrackedPrefs),
 // one.
 enum SettingsEnforcementGroup {
   GROUP_NO_ENFORCEMENT,
-  // Only enforce settings on profile loads; still allow seeding of unloaded
-  // profiles.
-  GROUP_ENFORCE_ON_LOAD,
-  // Also disallow seeding of unloaded profiles.
+  // Enforce protected settings on profile loads.
   GROUP_ENFORCE_ALWAYS,
   // Also enforce extension settings.
   GROUP_ENFORCE_ALWAYS_WITH_EXTENSIONS,
@@ -218,8 +214,6 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
   } static const kEnforcementLevelMap[] = {
     { chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,
       GROUP_NO_ENFORCEMENT },
-    { chrome_prefs::internals::kSettingsEnforcementGroupEnforceOnload,
-      GROUP_ENFORCE_ON_LOAD },
     { chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways,
       GROUP_ENFORCE_ALWAYS },
     { chrome_prefs::internals::
@@ -231,9 +225,8 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
   };
 
   // Use the no enforcement setting in the absence of a field trial
-  // config. Remember to update the OFFICIAL_BUILD sections of
-  // pref_hash_browsertest.cc and extension_startup_browsertest.cc when updating
-  // the default value below.
+  // config. Remember to update the OFFICIAL_BUILD section of
+  // extension_startup_browsertest.cc when updating the default value below.
   // TODO(gab): Change this to the strongest enforcement on all platforms.
   SettingsEnforcementGroup enforcement_group = GROUP_NO_ENFORCEMENT;
   bool group_determined_from_trial = false;
@@ -388,25 +381,6 @@ void PrepareFactory(
   factory->set_user_prefs(user_pref_store);
 }
 
-// Initialize/update preference hash stores for all profiles but the one whose
-// path matches |ignored_profile_path|.
-void UpdateAllPrefHashStoresIfRequired(
-    const base::FilePath& ignored_profile_path) {
-  const ProfileInfoCache& profile_info_cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  const size_t n_profiles = profile_info_cache.GetNumberOfProfiles();
-  for (size_t i = 0; i < n_profiles; ++i) {
-    const base::FilePath profile_path =
-        profile_info_cache.GetPathOfProfileAtIndex(i);
-    if (profile_path != ignored_profile_path) {
-      CreateProfilePrefStoreManager(profile_path)
-          ->UpdateProfileHashStoreIfRequired(
-              JsonPrefStore::GetTaskRunnerForFile(
-                  profile_path, BrowserThread::GetBlockingPool()));
-    }
-  }
-}
-
 }  // namespace
 
 namespace chrome_prefs {
@@ -415,7 +389,6 @@ namespace internals {
 
 const char kSettingsEnforcementTrialName[] = "SettingsEnforcement";
 const char kSettingsEnforcementGroupNoEnforcement[] = "no_enforcement";
-const char kSettingsEnforcementGroupEnforceOnload[] = "enforce_on_load";
 const char kSettingsEnforcementGroupEnforceAlways[] = "enforce_always";
 const char kSettingsEnforcementGroupEnforceAlwaysWithExtensions[] =
     "enforce_always_with_extensions";
@@ -487,32 +460,6 @@ void SchedulePrefsFilePathVerification(const base::FilePath& profile_path) {
 
 void DisableDelaysAndDomainCheckForTesting() {
   g_disable_delays_and_domain_check_for_testing = true;
-}
-
-void SchedulePrefHashStoresUpdateCheck(
-    const base::FilePath& initial_profile_path) {
-  if (!ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking) {
-    ProfilePrefStoreManager::ResetAllPrefHashStores(
-        g_browser_process->local_state());
-    return;
-  }
-
-  if (GetSettingsEnforcementGroup() >= GROUP_ENFORCE_ALWAYS)
-    return;
-
-  const int kDefaultPrefHashStoresUpdateCheckDelaySeconds = 55;
-  BrowserThread::PostDelayedTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&UpdateAllPrefHashStoresIfRequired,
-                   initial_profile_path),
-        base::TimeDelta::FromSeconds(
-            g_disable_delays_and_domain_check_for_testing ?
-                0 : kDefaultPrefHashStoresUpdateCheckDelaySeconds));
-}
-
-void ResetPrefHashStore(const base::FilePath& profile_path) {
-  CreateProfilePrefStoreManager(profile_path)->ResetPrefHashStore();
 }
 
 bool InitializePrefsFromMasterPrefs(

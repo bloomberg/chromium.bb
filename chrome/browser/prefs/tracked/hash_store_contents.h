@@ -45,13 +45,6 @@ class HashStoreContents {
   // Indicates whether any data is currently stored for this hash store.
   virtual bool IsInitialized() const = 0;
 
-  // Retrieves a version number previously associated with this hash store via
-  // SetVersion. Returns false if no version number has been stored.
-  virtual bool GetVersion(int* version) const = 0;
-
-  // Associates a version number wih this hash store.
-  virtual void SetVersion(int version) = 0;
-
   // Retrieves the contents of this hash store. May return NULL if the hash
   // store has not been initialized.
   virtual const base::DictionaryValue* GetContents() const = 0;

@@ -39,7 +39,6 @@ namespace internals {
 
 extern const char kSettingsEnforcementTrialName[];
 extern const char kSettingsEnforcementGroupNoEnforcement[];
-extern const char kSettingsEnforcementGroupEnforceOnload[];
 extern const char kSettingsEnforcementGroupEnforceAlways[];
 extern const char kSettingsEnforcementGroupEnforceAlwaysWithExtensions[];
 extern const char kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE[];
@@ -92,10 +91,6 @@ void DisableDelaysAndDomainCheckForTesting();
 // state on platforms that don't yet support a pref hash store.
 void SchedulePrefHashStoresUpdateCheck(
     const base::FilePath& initial_profile_path);
-
-// Resets the contents of the preference hash store for the profile at
-// |profile_path|.
-void ResetPrefHashStore(const base::FilePath& profile_path);
 
 // Initializes the preferences for the profile at |profile_path| with the
 // preference values in |master_prefs|. Returns true on success.

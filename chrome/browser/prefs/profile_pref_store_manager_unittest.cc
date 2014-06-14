@@ -90,7 +90,8 @@ class ProfilePrefStoreManagerTest : public testing::Test {
       : configuration_(kConfiguration,
                        kConfiguration + arraysize(kConfiguration)),
         profile_pref_registry_(new user_prefs::PrefRegistrySyncable),
-        registry_verifier_(profile_pref_registry_) {}
+        registry_verifier_(profile_pref_registry_),
+        seed_("seed") {}
 
   virtual void SetUp() OVERRIDE {
     ProfilePrefStoreManager::RegisterPrefs(local_state_.registry());
@@ -132,7 +133,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     manager_.reset(new ProfilePrefStoreManager(profile_dir_.path(),
                                                configuration_,
                                                kReportingIdCount,
-                                               "seed",
+                                               seed_,
                                                "device_id",
                                                &local_state_));
   }
@@ -252,6 +253,8 @@ class ProfilePrefStoreManagerTest : public testing::Test {
   MockValidationDelegate mock_validation_delegate_;
   scoped_ptr<ProfilePrefStoreManager> manager_;
   scoped_refptr<PersistentPrefStore> pref_store_;
+
+  std::string seed_;
 };
 
 TEST_F(ProfilePrefStoreManagerTest, StoreValues) {
@@ -301,77 +304,11 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectValues) {
   ExpectValidationObserved(kProtectedAtomic);
 }
 
-TEST_F(ProfilePrefStoreManagerTest, ResetPrefHashStore) {
-  InitializePrefs();
-
-  manager_->ResetPrefHashStore();
-
-  LoadExistingPrefs();
-
-  // kTrackedAtomic is loaded as it appears on disk.
-  ExpectStringValueEquals(kTrackedAtomic, kFoobar);
-  // If preference tracking is supported, kProtectedAtomic will be undefined
-  // because the value was discarded due to loss of the hash store contents.
-  EXPECT_NE(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
-            pref_store_->GetValue(kProtectedAtomic, NULL));
-  EXPECT_EQ(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
-            WasResetRecorded());
-
-  ExpectValidationObserved(kTrackedAtomic);
-  ExpectValidationObserved(kProtectedAtomic);
-}
-
-TEST_F(ProfilePrefStoreManagerTest, ResetAllPrefHashStores) {
-  InitializePrefs();
-
-  ProfilePrefStoreManager::ResetAllPrefHashStores(&local_state_);
-
-  LoadExistingPrefs();
-
-  // kTrackedAtomic is loaded as it appears on disk.
-  ExpectStringValueEquals(kTrackedAtomic, kFoobar);
-  // If preference tracking is supported, kProtectedAtomic will be undefined
-  // because the value was discarded due to loss of the hash store contents.
-  EXPECT_NE(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
-            pref_store_->GetValue(kProtectedAtomic, NULL));
-  EXPECT_EQ(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
-            WasResetRecorded());
-
-  ExpectValidationObserved(kTrackedAtomic);
-  ExpectValidationObserved(kProtectedAtomic);
-}
-
 TEST_F(ProfilePrefStoreManagerTest, MigrateFromOneFile) {
   InitializeDeprecatedCombinedProfilePrefStore();
 
   LoadExistingPrefs();
 
-  ExpectStringValueEquals(kTrackedAtomic, kFoobar);
-  ExpectStringValueEquals(kProtectedAtomic, kHelloWorld);
-  EXPECT_FALSE(WasResetRecorded());
-}
-
-TEST_F(ProfilePrefStoreManagerTest, UpdateProfileHashStoreIfRequired) {
-  scoped_refptr<JsonPrefStore> legacy_prefs(
-      new JsonPrefStore(ProfilePrefStoreManager::GetPrefFilePathFromProfilePath(
-                            profile_dir_.path()),
-                        main_message_loop_.message_loop_proxy(),
-                        scoped_ptr<PrefFilter>()));
-  legacy_prefs->SetValue(kTrackedAtomic, new base::StringValue(kFoobar));
-  legacy_prefs->SetValue(kProtectedAtomic, new base::StringValue(kHelloWorld));
-  legacy_prefs = NULL;
-  base::RunLoop().RunUntilIdle();
-
-  // This is a no-op if !kPlatformSupportsPreferenceTracking.
-  manager_->UpdateProfileHashStoreIfRequired(
-      main_message_loop_.message_loop_proxy());
-  base::RunLoop().RunUntilIdle();
-
-  // At the moment, UpdateProfileHashStoreIfRequired will accept existing
-  // values.
-  LoadExistingPrefs();
-
-  // These expectations hold whether or not tracking is supported.
   ExpectStringValueEquals(kTrackedAtomic, kFoobar);
   ExpectStringValueEquals(kProtectedAtomic, kHelloWorld);
   EXPECT_FALSE(WasResetRecorded());
@@ -421,7 +358,7 @@ TEST_F(ProfilePrefStoreManagerTest, UnprotectedToProtected) {
   LoadExistingPrefs();
 
   // Since there was a valid super MAC we were able to extend the existing trust
-  // to the newly proteted preference.
+  // to the newly protected preference.
   ExpectStringValueEquals(kUnprotectedPref, kBarfoo);
   EXPECT_FALSE(WasResetRecorded());
 
@@ -449,8 +386,8 @@ TEST_F(ProfilePrefStoreManagerTest, UnprotectedToProtectedWithoutTrust) {
       kExtraReportingId, kUnprotectedPref, PrefHashFilter::ENFORCE_ON_LOAD,
       PrefHashFilter::TRACKING_STRATEGY_ATOMIC};
   configuration_.push_back(new_protected);
+  seed_ = "new-seed-to-break-trust";
   ReloadConfiguration();
-  ProfilePrefStoreManager::ResetAllPrefHashStores(&local_state_);
 
   // And try loading with the new configuration.
   LoadExistingPrefs();
@@ -483,10 +420,9 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
       break;
     }
   }
-  ReloadConfiguration();
 
-  // Reset the hash stores and then try loading the prefs.
-  ProfilePrefStoreManager::ResetAllPrefHashStores(&local_state_);
+  seed_ = "new-seed-to-break-trust";
+  ReloadConfiguration();
   LoadExistingPrefs();
 
   // Verify that the value was not reset.
