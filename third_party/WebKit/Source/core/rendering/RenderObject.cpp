@@ -1511,17 +1511,8 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
         "object", this->debugName().ascii(),
         "info", TracedValue::fromJSONValue(jsonObjectForPaintInvalidationInfo(r, invalidationReasonToString(invalidationReason))));
 
-    // FIXME: Don't read compositing state here since we do this in the middle of recalc/layout.
+    // For querying RenderLayer::compositingState()
     DisableCompositingQueryAsserts disabler;
-    if (paintInvalidationContainer->compositingState() == PaintsIntoGroupedBacking) {
-        ASSERT(paintInvalidationContainer->groupedMapping());
-        ASSERT(paintInvalidationContainer->layer());
-
-        // Not clean, but if squashing layer does not yet exist here (e.g. paint invalidation coming from within recomputing compositing requirements)
-        // then it's ok to just exit here, since the squashing layer will get invalidate when it is newly created.
-        if (!paintInvalidationContainer->groupedMapping()->squashingLayer())
-            return;
-    }
 
     if (paintInvalidationContainer->isRenderFlowThread()) {
         toRenderFlowThread(paintInvalidationContainer)->repaintRectangleInRegions(r);
