@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -100,7 +102,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
 
     if (snapshot_different_) {
       LOG(INFO) << "Rendering didn't match, see result " <<
-          snapshot_filename_.value().c_str();
+          snapshot_filename_.value();
     }
     return !snapshot_different_;
   }
@@ -192,10 +194,19 @@ class PDFBrowserTest : public InProcessBrowserTest,
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     if (type == content::NOTIFICATION_LOAD_STOP) {
       load_stop_notification_count_++;
     }
+  }
+
+  // InProcessBrowserTest
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+#if defined(OS_LINUX)
+    // Calling RenderWidgetHost::CopyFromBackingStore() with the GPU enabled
+    // fails on Linux.
+    command_line->AppendSwitch(switches::kDisableGpu);
+#endif
   }
 
   // True if the snapshot differed from the expected value.
@@ -213,10 +224,14 @@ class PDFBrowserTest : public InProcessBrowserTest,
 };
 
 
-// TODO(thestig): http://crbug.com/79837
 // Tests basic PDF rendering.  This can be broken depending on bad merges with
 // the vendor, so it's important that we have basic sanity checking.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, DISABLED_Basic) {
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX)
+#define MAYBE_Basic Basic
+#else
+#define MAYBE_Basic DISABLED_Basic
+#endif
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Basic) {
   ASSERT_NO_FATAL_FAILURE(Load());
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
   // OS X uses CoreText, and FreeType renders slightly different on Linux and
@@ -232,12 +247,11 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, DISABLED_Basic) {
 #endif
 }
 
-#if (!defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)) || \
-    (defined(OS_LINUX) || defined(OS_MACOSX))
-// TODO(sanjeevr): http://crbug.com/79837, http://crbug.com/332778
-#define MAYBE_Scroll DISABLED_Scroll
-#else
+#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX))
 #define MAYBE_Scroll Scroll
+#else
+// TODO(thestig): http://crbug.com/79837, http://crbug.com/332778
+#define MAYBE_Scroll DISABLED_Scroll
 #endif
 // Tests that scrolling works.
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
@@ -263,12 +277,11 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
   ASSERT_GT(y_offset, 0);
 }
 
-#if (!defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)) || \
-    (defined(OS_LINUX) || defined(OS_MACOSX))
+#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX))
+#define MAYBE_FindAndCopy FindAndCopy
+#else
 // TODO(thestig): http://crbug.com/79837, http://crbug.com/329912
 #define MAYBE_FindAndCopy DISABLED_FindAndCopy
-#else
-#define MAYBE_FindAndCopy FindAndCopy
 #endif
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   ASSERT_NO_FATAL_FAILURE(Load());
@@ -297,10 +310,10 @@ const int kLoadingNumberOfParts = 10;
 // This also loads all documents that used to crash, to ensure we don't have
 // regressions.
 // If it flakes, reopen http://crbug.com/74548.
-#if !defined(GOOGLE_CHROME_BUILD)
-#define MAYBE_Loading DISABLED_Loading
-#else
+#if defined(GOOGLE_CHROME_BUILD)
 #define MAYBE_Loading Loading
+#else
+#define MAYBE_Loading DISABLED_Loading
 #endif
 IN_PROC_BROWSER_TEST_P(PDFBrowserTest, MAYBE_Loading) {
   ASSERT_TRUE(pdf_test_server()->InitializeAndWaitUntilReady());
@@ -369,11 +382,11 @@ INSTANTIATE_TEST_CASE_P(PDFTestFiles,
                         PDFBrowserTest,
                         testing::Range(0, kLoadingNumberOfParts));
 
-#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_MACOSX)
+#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX))
+#define MAYBE_Action Action
+#else
 // http://crbug.com/315160
 #define MAYBE_Action DISABLED_Action
-#else
-#define MAYBE_Action Action
 #endif
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Action) {
   ASSERT_NO_FATAL_FAILURE(Load());
@@ -401,26 +414,29 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Action) {
   ASSERT_NE(zoom1, zoom2);
 }
 
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX)
+#define MAYBE_OnLoadAndReload OnLoadAndReload
+#else
 // Flaky as per http://crbug.com/74549.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, DISABLED_OnLoadAndReload) {
+#define MAYBE_OnLoadAndReload DISABLED_OnLoadAndReload
+#endif
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_OnLoadAndReload) {
   ASSERT_TRUE(pdf_test_server()->InitializeAndWaitUntilReady());
 
   GURL url = pdf_test_server()->GetURL("/onload_reload.html");
   ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
 
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->tab_strip_model()->GetActiveWebContents()->
-              GetController()));
+          &contents->GetController()));
   ASSERT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "reloadPDF();"));
   observer.Wait();
 
-  ASSERT_EQ("success",
-            browser()->tab_strip_model()->GetActiveWebContents()->
-                GetURL().query());
+  ASSERT_EQ("success", contents->GetURL().query());
 }
 
 }  // namespace
