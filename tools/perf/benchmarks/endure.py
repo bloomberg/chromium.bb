@@ -13,6 +13,7 @@ measurement class.
 from telemetry import test
 
 from measurements import endure
+import page_sets
 
 
 class _EndureBenchmark(test.Test):
@@ -29,42 +30,33 @@ class _EndureBenchmark(test.Test):
 
 
 class EndureCalendarForwardBackward(_EndureBenchmark):
-  page_set = 'page_sets/calendar_forward_backward.py'
+  page_set = page_sets.CalendarForwardBackwardPageSet
 
 
 class EndureBrowserControl(_EndureBenchmark):
-  page_set = 'page_sets/browser_control.py'
+  page_set = page_sets.BrowserControlPageSet
 
 
 class EndureBrowserControlClick(_EndureBenchmark):
-  page_set = 'page_sets/browser_control_click.py'
+  page_set = page_sets.BrowserControlClickPageSet
 
 
 class EndureGmailAltThreadlistConversation(_EndureBenchmark):
-  page_set = 'page_sets/gmail_alt_threadlist_conversation.py'
+  page_set = page_sets.GmailAltThreadlistConversationPageSet
 
 
 class EndureGmailAltTwoLabels(_EndureBenchmark):
-  page_set = 'page_sets/gmail_alt_two_labels.py'
+  page_set = page_sets.GmailAltTwoLabelsPageSet
 
 
 class EndureGmailExpandCollapseConversation(_EndureBenchmark):
-  page_set = 'page_sets/gmail_expand_collapse_conversation.py'
+  page_set = page_sets.GmailExpandCollapseConversationPageSet
 
 
 class EndureIndexedDBOffline(_EndureBenchmark):
-  page_set = 'page_sets/indexeddb_offline.py'
+  page_set = page_sets.IndexeddbOfflinePageSet
 
 
 class EndurePlusAltPostsPhotos(_EndureBenchmark):
-  page_set = 'page_sets/plus_alt_posts_photos.py'
+  page_set = page_sets.PlusAltPostsPhotosPageSet
 
-
-class EndureGmailRefresh(test.Test):
-  test = endure.Endure
-  # Options for endure gmail page refresh benchmark test.
-  options = {
-      'page_repeat': 20,
-      'perf_stats_interval': 1
-  }
-  page_set = 'page_sets/endure_gmail_refresh.py'

@@ -4,6 +4,7 @@
 
 from telemetry import test
 from measurements import smoothness
+import page_sets
 
 
 @test.Disabled('linux')  # crbug.com/368767
@@ -14,14 +15,14 @@ class SchedulerToughSchedulingCases(test.Test):
   https://docs.google.com/a/chromium.org/document/d/
       17yhE5Po9By0sCdM1yZT3LiUECaUr_94rQt9j-4tOQIM/view"""
   test = smoothness.Smoothness
-  page_set = 'page_sets/tough_scheduling_cases.py'
+  page_set = page_sets.ToughSchedulingCasesPageSet
 
 @test.Disabled('android')  # pepper plugin is not supported on android
 class SchedulerToughPepperCases(test.Test):
   """Measures rendering statistics while interacting with pages that have
   pepper plugins"""
   test = smoothness.Smoothness
-  page_set = 'page_sets/tough_pepper_cases.py'
+  page_set = page_sets.ToughPepperCasesPageSet
 
   def CustomizeBrowserOptions(self, options):
     # This is needed for testing pepper plugin.

@@ -4,10 +4,11 @@
 
 from telemetry import test
 from measurements import memory_pressure
+import page_sets
 
 
 @test.Disabled('android')  # crbug.com/379561
 class MemoryPressure(test.Test):
   test = memory_pressure.MemoryPressure
-  page_set = 'page_sets/typical_25.py'
+  page_set = page_sets.Typical25PageSet
   options = {'pageset_repeat': 6}

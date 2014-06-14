@@ -5,9 +5,10 @@
 from telemetry import test
 
 from measurements import image_decoding
+import page_sets
 
 
 class ImageDecodingToughImageCases(test.Test):
   test = image_decoding.ImageDecoding
   # TODO: Rename this page set to tough_image_cases.py
-  page_set = 'page_sets/image_decoding_measurement.py'
+  page_set = page_sets.ImageDecodingMeasurementPageSet

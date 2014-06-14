@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import page_sets
 from telemetry import test
 from telemetry.page import page_measurement
 
@@ -22,4 +23,4 @@ class _ServiceWorkerMeasurement(page_measurement.PageMeasurement):
 
 class ServiceWorkerPerfTest(test.Test):
   test = _ServiceWorkerMeasurement
-  page_set = 'page_sets/service_worker.py'
+  page_set = page_sets.ServiceWorkerPageSet

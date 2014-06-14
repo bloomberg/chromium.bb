@@ -4,6 +4,7 @@
 
 from benchmarks import silk_flags
 from measurements import repaint
+import page_sets
 from telemetry import test
 
 
@@ -12,7 +13,7 @@ class RepaintKeyMobileSites(test.Test):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = repaint.Repaint
-  page_set = 'page_sets/key_mobile_sites.py'
+  page_set = page_sets.KeyMobileSitesPageSet
 
 
 class RepaintGpuRasterizationKeyMobileSites(test.Test):
@@ -22,6 +23,6 @@ class RepaintGpuRasterizationKeyMobileSites(test.Test):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   tag = 'gpu_rasterization'
   test = repaint.Repaint
-  page_set = 'page_sets/key_mobile_sites.py'
+  page_set = page_sets.KeyMobileSitesPageSet
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)

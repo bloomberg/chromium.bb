@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import page_sets
 from telemetry import test
 from telemetry.page import page_measurement
 
@@ -18,4 +19,4 @@ class _PicaMeasurement(page_measurement.PageMeasurement):
 
 class Pica(test.Test):
   test = _PicaMeasurement
-  page_set = 'page_sets/pica.py'
+  page_set = page_sets.PicaPageSet

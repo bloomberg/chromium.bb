@@ -3,10 +3,11 @@
 # found in the LICENSE file.
 
 from measurements import webrtc
+import page_sets
 from telemetry import test
 
 
 class WebRTC(test.Test):
   """Obtains WebRTC metrics for a real-time video tests."""
   test = webrtc.WebRTC
-  page_set = 'page_sets/webrtc_cases.py'
+  page_set = page_sets.WebrtcCasesPageSet

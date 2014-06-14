@@ -7,6 +7,7 @@ import tempfile
 
 from measurements import session_restore
 from measurements import session_restore_with_url
+import page_sets
 from profile_creators import small_profile_creator
 from telemetry import test
 from telemetry.page import profile_generator
@@ -33,7 +34,7 @@ class _SessionRestoreTest(test.Test):
 class SessionRestoreColdTypical25(_SessionRestoreTest):
   tag = 'cold'
   test = session_restore.SessionRestore
-  page_set = 'page_sets/typical_25.py'
+  page_set = page_sets.Typical25PageSet
   options = {'cold': True,
              'pageset_repeat': 5}
 
@@ -42,7 +43,7 @@ class SessionRestoreColdTypical25(_SessionRestoreTest):
 class SessionRestoreWarmTypical25(_SessionRestoreTest):
   tag = 'warm'
   test = session_restore.SessionRestore
-  page_set = 'page_sets/typical_25.py'
+  page_set = page_sets.Typical25PageSet
   options = {'warm': True,
              'pageset_repeat': 20}
 
@@ -52,7 +53,7 @@ class SessionRestoreWithUrlCold(_SessionRestoreTest):
   """Measure Chrome cold session restore with startup URLs."""
   tag = 'cold'
   test = session_restore_with_url.SessionRestoreWithUrl
-  page_set = 'page_sets/startup_pages.py'
+  page_set = page_sets.StartupPagesPageSet
   options = {'cold': True,
              'pageset_repeat': 5}
 
@@ -62,6 +63,6 @@ class SessionRestoreWithUrlWarm(_SessionRestoreTest):
   """Measure Chrome warm session restore with startup URLs."""
   tag = 'warm'
   test = session_restore_with_url.SessionRestoreWithUrl
-  page_set = 'page_sets/startup_pages.py'
+  page_set = page_sets.StartupPagesPageSet
   options = {'warm': True,
              'pageset_repeat': 10}
