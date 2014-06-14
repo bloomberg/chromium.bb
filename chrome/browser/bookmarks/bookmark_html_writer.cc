@@ -457,8 +457,8 @@ bool BookmarkFaviconFetcher::FetchNextFavicon() {
     if (favicons_map_->end() == iter) {
       FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
           profile_, Profile::EXPLICIT_ACCESS);
-      favicon_service->GetRawFaviconForURL(
-          FaviconService::FaviconForURLParams(
+      favicon_service->GetRawFaviconForPageURL(
+          FaviconService::FaviconForPageURLParams(
               GURL(url), favicon_base::FAVICON, gfx::kFaviconSize),
           ui::SCALE_FACTOR_100P,
           base::Bind(&BookmarkFaviconFetcher::OnFaviconDataAvailable,
@@ -473,7 +473,7 @@ bool BookmarkFaviconFetcher::FetchNextFavicon() {
 }
 
 void BookmarkFaviconFetcher::OnFaviconDataAvailable(
-    const favicon_base::FaviconBitmapResult& bitmap_result) {
+    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   GURL url;
   if (!bookmark_urls_.empty()) {
     url = GURL(bookmark_urls_.front());

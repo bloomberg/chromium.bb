@@ -90,8 +90,8 @@ void UnregisterAndReplaceOverrideForWebContents(const std::string& page,
 void RunFaviconCallbackAsync(
     const favicon_base::FaviconResultsCallback& callback,
     const gfx::Image& image) {
-  std::vector<favicon_base::FaviconBitmapResult>* favicon_bitmap_results =
-      new std::vector<favicon_base::FaviconBitmapResult>();
+  std::vector<favicon_base::FaviconRawBitmapResult>* favicon_bitmap_results =
+      new std::vector<favicon_base::FaviconRawBitmapResult>();
 
   const std::vector<gfx::ImageSkiaRep>& image_reps =
       image.AsImageSkia().image_reps();
@@ -102,7 +102,7 @@ void RunFaviconCallbackAsync(
     if (gfx::PNGCodec::EncodeBGRASkBitmap(image_rep.sk_bitmap(),
                                           false,
                                           &bitmap_data->data())) {
-      favicon_base::FaviconBitmapResult bitmap_result;
+      favicon_base::FaviconRawBitmapResult bitmap_result;
       bitmap_result.bitmap_data = bitmap_data;
       bitmap_result.pixel_size = gfx::Size(image_rep.pixel_width(),
                                             image_rep.pixel_height());

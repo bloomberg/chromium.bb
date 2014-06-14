@@ -25,7 +25,7 @@ namespace {
 // |scale_factors| for which the image reps can be created without resizing
 // or decoding the bitmap data.
 std::vector<gfx::ImagePNGRep> SelectFaviconFramesFromPNGsWithoutResizing(
-    const std::vector<favicon_base::FaviconBitmapResult>& png_data,
+    const std::vector<favicon_base::FaviconRawBitmapResult>& png_data,
     const std::vector<ui::ScaleFactor>& scale_factors,
     int favicon_size) {
   std::vector<gfx::ImagePNGRep> png_reps;
@@ -173,7 +173,7 @@ void FaviconUtil::SetFaviconColorSpace(gfx::Image* image) {
 
 // static
 gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
-    const std::vector<favicon_base::FaviconBitmapResult>& png_data,
+    const std::vector<favicon_base::FaviconRawBitmapResult>& png_data,
     const std::vector<ui::ScaleFactor>& scale_factors,
     int favicon_size) {
   // Create image reps for as many scale factors as possible without resizing

@@ -84,7 +84,7 @@ void ShortcutBuilder::OnDidRetrieveWebappInformation(
   // Using favicon if its size is not smaller than platform required size,
   // otherwise using the largest icon among all avaliable icons.
   int threshold_to_get_any_largest_icon = launcher_large_icon_size_ - 1;
-  favicon_service->GetLargestRawFaviconForURL(profile, url_, icon_types,
+  favicon_service->GetLargestRawFaviconForPageURL(profile, url_, icon_types,
       threshold_to_get_any_largest_icon,
       base::Bind(&ShortcutBuilder::FinishAddingShortcut,
                  base::Unretained(this)),
@@ -92,7 +92,7 @@ void ShortcutBuilder::OnDidRetrieveWebappInformation(
 }
 
 void ShortcutBuilder::FinishAddingShortcut(
-    const favicon_base::FaviconBitmapResult& bitmap_result) {
+    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   base::WorkerPool::PostTask(
       FROM_HERE,
       base::Bind(&ShortcutHelper::AddShortcutInBackground,
@@ -140,7 +140,7 @@ void ShortcutHelper::AddShortcutInBackground(
     const GURL& url,
     const base::string16& title,
     ShortcutBuilder::ShortcutType shortcut_type,
-    const favicon_base::FaviconBitmapResult& bitmap_result) {
+    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   DCHECK(base::WorkerPool::RunsTasksOnCurrentThread());
 
   // Grab the average color from the bitmap.

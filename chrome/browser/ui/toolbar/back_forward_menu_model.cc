@@ -254,8 +254,8 @@ void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
   if (!favicon_service)
     return;
 
-  favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(
+  favicon_service->GetFaviconImageForPageURL(
+      FaviconService::FaviconForPageURLParams(
           entry->GetURL(), favicon_base::FAVICON, gfx::kFaviconSize),
       base::Bind(&BackForwardMenuModel::OnFavIconDataAvailable,
                  base::Unretained(this),

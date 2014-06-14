@@ -219,8 +219,8 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
 
   GURL favicon_url =
       AppLaunchInfo::GetFullLaunchURL(GetData(request_id)->extension);
-  favicon_service->GetRawFaviconForURL(
-      FaviconService::FaviconForURLParams(
+  favicon_service->GetRawFaviconForPageURL(
+      FaviconService::FaviconForPageURLParams(
           favicon_url, favicon_base::FAVICON, gfx::kFaviconSize),
       ui::SCALE_FACTOR_100P,
       base::Bind(&ExtensionIconSource::OnFaviconDataAvailable,
@@ -231,7 +231,7 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
 
 void ExtensionIconSource::OnFaviconDataAvailable(
     int request_id,
-    const favicon_base::FaviconBitmapResult& bitmap_result) {
+    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   ExtensionIconRequest* request = GetData(request_id);
 
   // Fallback to the default icon if there wasn't a favicon.

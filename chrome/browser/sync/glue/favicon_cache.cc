@@ -36,7 +36,7 @@ struct SyncedFaviconInfo {
   // The actual favicon data.
   // TODO(zea): don't keep around the actual data for locally sourced
   // favicons (UI can access those directly).
-  favicon_base::FaviconBitmapResult bitmap_data[NUM_SIZES];
+  favicon_base::FaviconRawBitmapResult bitmap_data[NUM_SIZES];
   // The URL this favicon was loaded from.
   const GURL favicon_url;
   // Is the favicon for a bookmarked page?
@@ -119,22 +119,22 @@ GURL GetFaviconURLFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return GURL(specifics.favicon_image().favicon_url());
 }
 
-// Convert protobuf image data into a FaviconBitmapResult.
-favicon_base::FaviconBitmapResult GetImageDataFromSpecifics(
+// Convert protobuf image data into a FaviconRawBitmapResult.
+favicon_base::FaviconRawBitmapResult GetImageDataFromSpecifics(
     const sync_pb::FaviconData& favicon_data) {
   base::RefCountedString* temp_string =
       new base::RefCountedString();
   temp_string->data() = favicon_data.favicon();
-  favicon_base::FaviconBitmapResult bitmap_result;
+  favicon_base::FaviconRawBitmapResult bitmap_result;
   bitmap_result.bitmap_data = temp_string;
   bitmap_result.pixel_size.set_height(favicon_data.height());
   bitmap_result.pixel_size.set_width(favicon_data.width());
   return bitmap_result;
 }
 
-// Convert a FaviconBitmapResult into protobuf image data.
+// Convert a FaviconRawBitmapResult into protobuf image data.
 void FillSpecificsWithImageData(
-    const favicon_base::FaviconBitmapResult& bitmap_result,
+    const favicon_base::FaviconRawBitmapResult& bitmap_result,
     sync_pb::FaviconData* favicon_data) {
   if (!bitmap_result.bitmap_data.get())
     return;
@@ -170,7 +170,7 @@ void BuildTrackingSpecifics(
 
 // Updates |favicon_info| with the image data in |bitmap_result|.
 bool UpdateFaviconFromBitmapResult(
-    const favicon_base::FaviconBitmapResult& bitmap_result,
+    const favicon_base::FaviconRawBitmapResult& bitmap_result,
     SyncedFaviconInfo* favicon_info) {
   DCHECK_EQ(favicon_info->favicon_url, bitmap_result.icon_url);
   if (!bitmap_result.is_valid()) {
@@ -441,13 +441,14 @@ void FaviconCache::OnPageFaviconUpdated(const GURL& page_url) {
   // TODO(zea): This appears to only fetch one favicon (best match based on
   // desired_size_in_dip). Figure out a way to fetch all favicons we support.
   // See crbug.com/181068.
-  base::CancelableTaskTracker::TaskId id = favicon_service->GetFaviconForURL(
-      FaviconService::FaviconForURLParams(
-          page_url, SupportedFaviconTypes(), kMaxFaviconResolution),
-      base::Bind(&FaviconCache::OnFaviconDataAvailable,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 page_url),
-      &cancelable_task_tracker_);
+  base::CancelableTaskTracker::TaskId id =
+      favicon_service->GetFaviconForPageURL(
+          FaviconService::FaviconForPageURLParams(
+              page_url, SupportedFaviconTypes(), kMaxFaviconResolution),
+          base::Bind(&FaviconCache::OnFaviconDataAvailable,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     page_url),
+          &cancelable_task_tracker_);
   page_task_map_[page_url] = id;
 }
 
@@ -617,7 +618,7 @@ bool FaviconCache::FaviconRecencyFunctor::operator()(
 
 void FaviconCache::OnFaviconDataAvailable(
     const GURL& page_url,
-    const std::vector<favicon_base::FaviconBitmapResult>& bitmap_results) {
+    const std::vector<favicon_base::FaviconRawBitmapResult>& bitmap_results) {
   PageTaskMap::iterator page_iter = page_task_map_.find(page_url);
   if (page_iter == page_task_map_.end())
     return;
@@ -633,7 +634,8 @@ void FaviconCache::OnFaviconDataAvailable(
   base::Time now = base::Time::Now();
   std::map<GURL, LocalFaviconUpdateInfo> favicon_updates;
   for (size_t i = 0; i < bitmap_results.size(); ++i) {
-    const favicon_base::FaviconBitmapResult& bitmap_result = bitmap_results[i];
+    const favicon_base::FaviconRawBitmapResult& bitmap_result =
+        bitmap_results[i];
     GURL favicon_url = bitmap_result.icon_url;
     if (!favicon_url.is_valid() || favicon_url.SchemeIs("data"))
       continue;  // Can happen if the page is still loading.
@@ -1039,7 +1041,7 @@ void FaviconCache::DropPartialFavicon(FaviconMap::iterator favicon_iter,
              << favicon_iter->second.get()->favicon_url;
     for (int i = 0; i < NUM_SIZES; ++i) {
       favicon_iter->second->bitmap_data[i] =
-          favicon_base::FaviconBitmapResult();
+          favicon_base::FaviconRawBitmapResult();
     }
     DCHECK(!FaviconInfoHasImages(*favicon_iter->second));
   } else {

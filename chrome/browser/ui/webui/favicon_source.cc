@@ -107,16 +107,14 @@ void FaviconSource::StartDataRequest(
       }
     }
 
-    favicon_service->GetRawFaviconForURL(
-        FaviconService::FaviconForURLParams(url, icon_types_,
-                                            parsed.size_in_dip),
+    favicon_service->GetRawFaviconForPageURL(
+        FaviconService::FaviconForPageURLParams(
+            url, icon_types_, parsed.size_in_dip),
         scale_factor,
-        base::Bind(&FaviconSource::OnFaviconDataAvailable,
-                   base::Unretained(this),
-                   IconRequest(callback,
-                               url,
-                               parsed.size_in_dip,
-                               scale_factor)),
+        base::Bind(
+            &FaviconSource::OnFaviconDataAvailable,
+            base::Unretained(this),
+            IconRequest(callback, url, parsed.size_in_dip, scale_factor)),
         &cancelable_task_tracker_);
   }
 }
@@ -158,7 +156,7 @@ bool FaviconSource::HandleMissingResource(const IconRequest& request) {
 
 void FaviconSource::OnFaviconDataAvailable(
     const IconRequest& request,
-    const favicon_base::FaviconBitmapResult& bitmap_result) {
+    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   if (bitmap_result.is_valid()) {
     // Forward the data along to the networking system.
     request.callback.Run(bitmap_result.bitmap_data.get());

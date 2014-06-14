@@ -578,7 +578,7 @@ void RecentTabsSubMenuModel::AddDeviceFavicon(
     case browser_sync::SyncedSession::TYPE_UNSET:
       favicon_id = IDR_LAPTOP_FAVICON;
       break;
-  };
+  }
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SetIcon(index_in_menu, rb.GetNativeImageNamed(favicon_id));
@@ -613,8 +613,8 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
   if (!favicon_service)
     return;
 
-  favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(
+  favicon_service->GetFaviconImageForPageURL(
+      FaviconService::FaviconForPageURLParams(
           url, favicon_base::FAVICON, gfx::kFaviconSize),
       base::Bind(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -653,7 +653,8 @@ void RecentTabsSubMenuModel::ClearLocalEntries() {
   while (last_local_model_index_ >= 0)
     RemoveItemAt(last_local_model_index_--);
 
-  // Cancel asynchronous FaviconService::GetFaviconImageForURL() tasks of all
+  // Cancel asynchronous FaviconService::GetFaviconImageForPageURL() tasks of
+  // all
   // local tabs.
   local_tab_cancelable_task_tracker_.TryCancelAll();
 

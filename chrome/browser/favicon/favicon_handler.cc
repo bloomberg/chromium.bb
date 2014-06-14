@@ -61,7 +61,7 @@ bool DoUrlAndIconMatch(const FaviconURL& favicon_url,
 // Returns false if |bitmap_results| is empty.
 bool DoUrlsAndIconsMatch(
     const FaviconURL& favicon_url,
-    const std::vector<favicon_base::FaviconBitmapResult>& bitmap_results) {
+    const std::vector<favicon_base::FaviconRawBitmapResult>& bitmap_results) {
   if (bitmap_results.empty())
     return false;
 
@@ -87,12 +87,12 @@ bool UrlMatches(const GURL& gurl_a, const GURL& gurl_b) {
 }
 
 // Return true if |bitmap_result| is expired.
-bool IsExpired(const favicon_base::FaviconBitmapResult& bitmap_result) {
+bool IsExpired(const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   return bitmap_result.expired;
 }
 
 // Return true if |bitmap_result| is valid.
-bool IsValid(const favicon_base::FaviconBitmapResult& bitmap_result) {
+bool IsValid(const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   return bitmap_result.is_valid();
 }
 
@@ -101,9 +101,9 @@ bool IsValid(const favicon_base::FaviconBitmapResult& bitmap_result) {
 // the scale factors in FaviconUtil::GetFaviconScaleFactors().
 bool HasExpiredOrIncompleteResult(
     int desired_size_in_dip,
-    const std::vector<favicon_base::FaviconBitmapResult>& bitmap_results) {
+    const std::vector<favicon_base::FaviconRawBitmapResult>& bitmap_results) {
   // Check if at least one of the bitmaps is expired.
-  std::vector<favicon_base::FaviconBitmapResult>::const_iterator it =
+  std::vector<favicon_base::FaviconRawBitmapResult>::const_iterator it =
       std::find_if(bitmap_results.begin(), bitmap_results.end(), IsExpired);
   if (it != bitmap_results.end())
     return true;
@@ -138,7 +138,7 @@ bool HasExpiredOrIncompleteResult(
 
 // Returns true if at least one of |bitmap_results| is valid.
 bool HasValidResult(
-    const std::vector<favicon_base::FaviconBitmapResult>& bitmap_results) {
+    const std::vector<favicon_base::FaviconRawBitmapResult>& bitmap_results) {
   return std::find_if(bitmap_results.begin(), bitmap_results.end(), IsValid) !=
       bitmap_results.end();
 }
@@ -314,7 +314,7 @@ void FaviconHandler::SetFavicon(const GURL& url,
 }
 
 void FaviconHandler::SetFaviconOnActivePage(const std::vector<
-    favicon_base::FaviconBitmapResult>& favicon_bitmap_results) {
+    favicon_base::FaviconRawBitmapResult>& favicon_bitmap_results) {
   gfx::Image resized_image = FaviconUtil::SelectFaviconFramesFromPNGs(
       favicon_bitmap_results,
       FaviconUtil::GetFaviconScaleFactors(),
@@ -512,8 +512,8 @@ void FaviconHandler::GetFaviconForURLFromFaviconService(
     int icon_types,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  client_->GetFaviconService()->GetFaviconForURL(
-      FaviconService::FaviconForURLParams(
+  client_->GetFaviconService()->GetFaviconForPageURL(
+      FaviconService::FaviconForPageURLParams(
           page_url, icon_types, preferred_icon_size()),
       callback,
       tracker);
@@ -540,7 +540,7 @@ void FaviconHandler::NotifyFaviconUpdated(bool icon_url_changed) {
 }
 
 void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
-    const std::vector<favicon_base::FaviconBitmapResult>&
+    const std::vector<favicon_base::FaviconRawBitmapResult>&
         favicon_bitmap_results) {
   if (PageChangedSinceFaviconWasRequested())
     return;
@@ -619,7 +619,7 @@ void FaviconHandler::DownloadFaviconOrAskFaviconService(
 }
 
 void FaviconHandler::OnFaviconData(const std::vector<
-    favicon_base::FaviconBitmapResult>& favicon_bitmap_results) {
+    favicon_base::FaviconRawBitmapResult>& favicon_bitmap_results) {
   if (PageChangedSinceFaviconWasRequested())
     return;
 

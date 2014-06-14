@@ -700,8 +700,8 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
   install_info->app_url = launch_url;
   install_info->page_ordinal = page_ordinal;
 
-  favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(
+  favicon_service->GetFaviconImageForPageURL(
+      FaviconService::FaviconForPageURLParams(
           launch_url, favicon_base::FAVICON, gfx::kFaviconSize),
       base::Bind(&AppLauncherHandler::OnFaviconForApp,
                  base::Unretained(this),

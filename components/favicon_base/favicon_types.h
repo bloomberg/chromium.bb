@@ -45,9 +45,9 @@ struct FaviconImageResult {
 
 // Defines a favicon bitmap which best matches the desired DIP size and one of
 // the desired scale factors.
-struct FaviconBitmapResult {
-  FaviconBitmapResult();
-  ~FaviconBitmapResult();
+struct FaviconRawBitmapResult {
+  FaviconRawBitmapResult();
+  ~FaviconRawBitmapResult();
 
   // Returns true if |bitmap_data| contains a valid bitmap.
   bool is_valid() const { return bitmap_data.get() && bitmap_data->size(); }
@@ -68,9 +68,9 @@ struct FaviconBitmapResult {
   IconType icon_type;
 };
 
-// Define type with same structure as FaviconBitmapResult for passing data to
+// Define type with same structure as FaviconRawBitmapResult for passing data to
 // HistoryBackend::SetFavicons().
-typedef FaviconBitmapResult FaviconBitmapData;
+typedef FaviconRawBitmapResult FaviconRawBitmapData;
 
 }  // namespace favicon_base
 

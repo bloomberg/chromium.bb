@@ -109,8 +109,8 @@ base::CancelableTaskTracker::TaskId ChromeBookmarkClient::GetFaviconImageForURL(
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (!favicon_service)
     return base::CancelableTaskTracker::kBadTaskId;
-  return favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(
+  return favicon_service->GetFaviconImageForPageURL(
+      FaviconService::FaviconForPageURLParams(
           page_url, icon_types, desired_size_in_dip),
       callback,
       tracker);

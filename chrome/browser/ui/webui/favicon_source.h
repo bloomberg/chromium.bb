@@ -120,7 +120,7 @@ class FaviconSource : public content::URLDataSource {
   // Called when favicon data is available from the history backend.
   void OnFaviconDataAvailable(
       const IconRequest& request,
-      const favicon_base::FaviconBitmapResult& bitmap_result);
+      const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // Sends the 16x16 DIP 1x default favicon.
   void SendDefaultResponse(

@@ -57,9 +57,9 @@ void OnLocalFaviconAvailable(
                                                j_icon_url.obj());
 }
 
-void OnFaviconBitmapResultAvailable(
+void OnFaviconRawBitmapResultAvailable(
     ScopedJavaGlobalRef<jobject>* j_favicon_image_callback,
-    const favicon_base::FaviconBitmapResult& favicon_bitmap_result) {
+    const favicon_base::FaviconRawBitmapResult& favicon_bitmap_result) {
   JNIEnv* env = AttachCurrentThread();
 
   // Convert favicon_image_result to java objects.
@@ -116,7 +116,7 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
   if (!favicon_service)
     return false;
 
-  FaviconService::FaviconForURLParams params(
+  FaviconService::FaviconForPageURLParams params(
       GURL(ConvertJavaStringToUTF16(env, j_page_url)),
       static_cast<int>(j_icon_types),
       static_cast<int>(j_desired_size_in_dip));
@@ -128,7 +128,7 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
   favicon_base::FaviconImageCallback callback_runner = base::Bind(
       &OnLocalFaviconAvailable, base::Owned(j_scoped_favicon_callback));
 
-  favicon_service->GetFaviconImageForURL(
+  favicon_service->GetFaviconImageForPageURL(
       params, callback_runner,
       cancelable_task_tracker_.get());
 
@@ -161,9 +161,10 @@ void FaviconHelper::GetLargestRawFaviconForUrl(
       new ScopedJavaGlobalRef<jobject>();
   j_scoped_favicon_callback->Reset(env, j_favicon_image_callback);
 
-  favicon_base::FaviconRawCallback callback_runner = base::Bind(
-      &OnFaviconBitmapResultAvailable, base::Owned(j_scoped_favicon_callback));
-  favicon_service->GetLargestRawFaviconForURL(
+  favicon_base::FaviconRawBitmapCallback callback_runner =
+      base::Bind(&OnFaviconRawBitmapResultAvailable,
+                 base::Owned(j_scoped_favicon_callback));
+  favicon_service->GetLargestRawFaviconForPageURL(
       profile,
       GURL(ConvertJavaStringToUTF16(env, j_page_url)),
       icon_types,

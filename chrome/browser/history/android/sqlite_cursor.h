@@ -153,10 +153,10 @@ class SQLiteCursor {
 
   void GetFaviconForIDInUIThread(
       favicon_base::FaviconID id,
-      const favicon_base::FaviconRawCallback& callback);
+      const favicon_base::FaviconRawBitmapCallback& callback);
 
   // The callback function of FaviconService::GetLargestRawFaviconForID().
-  void OnFaviconData(const favicon_base::FaviconBitmapResult& bitmap_result);
+  void OnFaviconData(const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // The callback function of MoveTo().
   void OnMoved(AndroidHistoryProviderService::Handle handle, int pos);
@@ -189,7 +189,7 @@ class SQLiteCursor {
   int count_;
 
   // The favicon image.
-  favicon_base::FaviconBitmapResult favicon_bitmap_result_;
+  favicon_base::FaviconRawBitmapResult favicon_bitmap_result_;
 
   TestObserver* test_observer_;
 

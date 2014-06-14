@@ -11,7 +11,7 @@
 
 namespace favicon_base {
 
-struct FaviconBitmapResult;
+struct FaviconRawBitmapResult;
 struct FaviconImageResult;
 
 // Callback for functions that can be used to return a |gfx::Image| and the
@@ -19,13 +19,14 @@ struct FaviconImageResult;
 typedef base::Callback<void(const FaviconImageResult&)> FaviconImageCallback;
 
 // Callback for functions returning raw data for a favicon. In
-// |FaviconBitmapResult|, the data is not yet converted as a |gfx::Image|.
-typedef base::Callback<void(const FaviconBitmapResult&)> FaviconRawCallback;
+// |FaviconRawBitmapResult|, the data is not yet converted as a |gfx::Image|.
+typedef base::Callback<void(const FaviconRawBitmapResult&)>
+    FaviconRawBitmapCallback;
 
 // Callback for functions returning raw data for a favicon in multiple
-// resolution. In |FaviconBitmapResult|, the data is not yet converted as a
+// resolution. In |FaviconRawBitmapResult|, the data is not yet converted as a
 // |gfx::Image|.
-typedef base::Callback<void(const std::vector<FaviconBitmapResult>&)>
+typedef base::Callback<void(const std::vector<FaviconRawBitmapResult>&)>
     FaviconResultsCallback;
 
 }  // namespace favicon_base

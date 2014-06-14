@@ -71,12 +71,13 @@ static const char* kHistoryThreadName = "Chrome_HistoryThread";
 
 void RunWithFaviconResults(
     const favicon_base::FaviconResultsCallback& callback,
-    std::vector<favicon_base::FaviconBitmapResult>* bitmap_results) {
+    std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results) {
   callback.Run(*bitmap_results);
 }
 
-void RunWithFaviconResult(const favicon_base::FaviconRawCallback& callback,
-                          favicon_base::FaviconBitmapResult* bitmap_result) {
+void RunWithFaviconResult(
+    const favicon_base::FaviconRawBitmapCallback& callback,
+    favicon_base::FaviconRawBitmapResult* bitmap_result) {
   callback.Run(*bitmap_result);
 }
 
@@ -547,8 +548,8 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFavicons(
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::vector<favicon_base::FaviconBitmapResult>* results =
-      new std::vector<favicon_base::FaviconBitmapResult>();
+  std::vector<favicon_base::FaviconRawBitmapResult>* results =
+      new std::vector<favicon_base::FaviconRawBitmapResult>();
   return tracker->PostTaskAndReply(
       thread_->message_loop_proxy().get(),
       FROM_HERE,
@@ -571,8 +572,8 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::vector<favicon_base::FaviconBitmapResult>* results =
-      new std::vector<favicon_base::FaviconBitmapResult>();
+  std::vector<favicon_base::FaviconRawBitmapResult>* results =
+      new std::vector<favicon_base::FaviconRawBitmapResult>();
   return tracker->PostTaskAndReply(
       thread_->message_loop_proxy().get(),
       FROM_HERE,
@@ -590,12 +591,12 @@ base::CancelableTaskTracker::TaskId HistoryService::GetLargestFaviconForURL(
     const GURL& page_url,
     const std::vector<int>& icon_types,
     int minimum_size_in_pixels,
-    const favicon_base::FaviconRawCallback& callback,
+    const favicon_base::FaviconRawBitmapCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  favicon_base::FaviconBitmapResult* result =
-      new favicon_base::FaviconBitmapResult();
+  favicon_base::FaviconRawBitmapResult* result =
+      new favicon_base::FaviconRawBitmapResult();
   return tracker->PostTaskAndReply(
       thread_->message_loop_proxy().get(),
       FROM_HERE,
@@ -616,8 +617,8 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconForID(
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::vector<favicon_base::FaviconBitmapResult>* results =
-      new std::vector<favicon_base::FaviconBitmapResult>();
+  std::vector<favicon_base::FaviconRawBitmapResult>* results =
+      new std::vector<favicon_base::FaviconRawBitmapResult>();
   return tracker->PostTaskAndReply(
       thread_->message_loop_proxy().get(),
       FROM_HERE,
@@ -641,8 +642,8 @@ HistoryService::UpdateFaviconMappingsAndFetch(
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::vector<favicon_base::FaviconBitmapResult>* results =
-      new std::vector<favicon_base::FaviconBitmapResult>();
+  std::vector<favicon_base::FaviconRawBitmapResult>* results =
+      new std::vector<favicon_base::FaviconRawBitmapResult>();
   return tracker->PostTaskAndReply(
       thread_->message_loop_proxy().get(),
       FROM_HERE,
@@ -674,7 +675,8 @@ void HistoryService::MergeFavicon(
 void HistoryService::SetFavicons(
     const GURL& page_url,
     favicon_base::IconType icon_type,
-    const std::vector<favicon_base::FaviconBitmapData>& favicon_bitmap_data) {
+    const std::vector<favicon_base::FaviconRawBitmapData>&
+        favicon_bitmap_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!CanAddURL(page_url))
     return;

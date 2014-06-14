@@ -926,8 +926,8 @@ bool ManagementGenerateAppForLinkFunction::RunAsync() {
   title_ = params->title;
   launch_url_ = launch_url;
 
-  favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(
+  favicon_service->GetFaviconImageForPageURL(
+      FaviconService::FaviconForPageURLParams(
           launch_url, favicon_base::FAVICON, gfx::kFaviconSize),
       base::Bind(&ManagementGenerateAppForLinkFunction::OnFaviconForApp, this),
       &cancelable_task_tracker_);

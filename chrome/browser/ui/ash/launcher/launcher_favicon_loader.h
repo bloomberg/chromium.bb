@@ -15,7 +15,7 @@ class GURL;
 class SkBitmap;
 
 namespace internal {
-class FaviconBitmapHandler;
+class FaviconRawBitmapHandler;
 }
 
 namespace content {
@@ -52,7 +52,7 @@ class LauncherFaviconLoader {
 
  private:
   content::WebContents* web_contents_;
-  scoped_ptr<internal::FaviconBitmapHandler> favicon_handler_;
+  scoped_ptr<internal::FaviconRawBitmapHandler> favicon_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherFaviconLoader);
 };

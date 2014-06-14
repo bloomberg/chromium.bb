@@ -191,7 +191,7 @@ class FaviconHandler {
 
   // See description above class for details.
   void OnFaviconDataForInitialURLFromFaviconService(const std::vector<
-      favicon_base::FaviconBitmapResult>& favicon_bitmap_results);
+      favicon_base::FaviconRawBitmapResult>& favicon_bitmap_results);
 
   // If the favicon has expired, asks the renderer to download the favicon.
   // Otherwise asks history to update the mapping between page url and icon
@@ -201,7 +201,7 @@ class FaviconHandler {
                                           favicon_base::IconType icon_type);
 
   // See description above class for details.
-  void OnFaviconData(const std::vector<favicon_base::FaviconBitmapResult>&
+  void OnFaviconData(const std::vector<favicon_base::FaviconRawBitmapResult>&
                          favicon_bitmap_results);
 
   // Schedules a download for the specified entry. This adds the request to
@@ -225,7 +225,7 @@ class FaviconHandler {
 
   // Sets the favicon's data.
   void SetFaviconOnActivePage(const std::vector<
-      favicon_base::FaviconBitmapResult>& favicon_bitmap_results);
+      favicon_base::FaviconRawBitmapResult>& favicon_bitmap_results);
   void SetFaviconOnActivePage(const GURL& icon_url, const gfx::Image& image);
 
   // Return the current candidate if any.
@@ -277,8 +277,8 @@ class FaviconHandler {
   // The prioritized favicon candidates from the page back from the renderer.
   std::vector<favicon::FaviconURL> image_urls_;
 
-  // The FaviconBitmapResults from history.
-  std::vector<favicon_base::FaviconBitmapResult> history_results_;
+  // The FaviconRawBitmapResults from history.
+  std::vector<favicon_base::FaviconRawBitmapResult> history_results_;
 
   // The client which implements embedder-specific Favicon operations.
   FaviconClient* client_;  // weak

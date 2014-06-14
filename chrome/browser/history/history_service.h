@@ -694,7 +694,7 @@ class HistoryService : public CancelableRequestProvider,
       const GURL& page_url,
       const std::vector<int>& icon_types,
       int minimum_size_in_pixels,
-      const favicon_base::FaviconRawCallback& callback,
+      const favicon_base::FaviconRawBitmapCallback& callback,
       base::CancelableTaskTracker* tracker);
 
   // Used by the FaviconService to get the favicon bitmap which most closely
@@ -773,10 +773,10 @@ class HistoryService : public CancelableRequestProvider,
   // deleting the 2x favicon bitmap if it is present in the history backend.
   // See HistoryBackend::ValidateSetFaviconsParams() for more details on the
   // criteria for |favicon_bitmap_data| to be valid.
-  void SetFavicons(
-      const GURL& page_url,
-      favicon_base::IconType icon_type,
-      const std::vector<favicon_base::FaviconBitmapData>& favicon_bitmap_data);
+  void SetFavicons(const GURL& page_url,
+                   favicon_base::IconType icon_type,
+                   const std::vector<favicon_base::FaviconRawBitmapData>&
+                       favicon_bitmap_data);
 
   // Used by the FaviconService to mark the favicon for the page as being out
   // of date.

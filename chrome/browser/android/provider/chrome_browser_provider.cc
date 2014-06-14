@@ -673,11 +673,11 @@ class BookmarkIconFetchTask : public FaviconServiceTask {
                            cancelable_consumer,
                            cancelable_tracker) {}
 
-  favicon_base::FaviconBitmapResult Run(const GURL& url) {
+  favicon_base::FaviconRawBitmapResult Run(const GURL& url) {
     RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&FaviconService::GetRawFaviconForURL,
+        base::Bind(&FaviconService::GetRawFaviconForPageURL,
                    base::Unretained(service()),
-                   FaviconService::FaviconForURLParams(
+                   FaviconService::FaviconForPageURLParams(
                        url,
                        favicon_base::FAVICON | favicon_base::TOUCH_ICON,
                        gfx::kFaviconSize),
@@ -690,12 +690,12 @@ class BookmarkIconFetchTask : public FaviconServiceTask {
 
  private:
   void OnFaviconRetrieved(
-      const favicon_base::FaviconBitmapResult& bitmap_result) {
+      const favicon_base::FaviconRawBitmapResult& bitmap_result) {
     result_ = bitmap_result;
     RequestCompleted();
   }
 
-  favicon_base::FaviconBitmapResult result_;
+  favicon_base::FaviconRawBitmapResult result_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkIconFetchTask);
 };
@@ -1551,7 +1551,7 @@ ScopedJavaLocalRef<jbyteArray> ChromeBrowserProvider::GetFaviconOrTouchIcon(
                                      profile_,
                                      &favicon_consumer_,
                                      &cancelable_task_tracker_);
-  favicon_base::FaviconBitmapResult bitmap_result = favicon_task.Run(url);
+  favicon_base::FaviconRawBitmapResult bitmap_result = favicon_task.Run(url);
 
   if (!bitmap_result.is_valid() || !bitmap_result.bitmap_data.get())
     return ScopedJavaLocalRef<jbyteArray>();

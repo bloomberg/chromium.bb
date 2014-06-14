@@ -48,8 +48,8 @@ void NavigationPopup::FetchFaviconForUrl(JNIEnv* env,
   GURL url(base::android::ConvertJavaStringToUTF16(env, jurl));
   // TODO(tedchoc): Request higher favicons based on screen density instead of
   //                hardcoding kFaviconSize.
-  favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(
+  favicon_service->GetFaviconImageForPageURL(
+      FaviconService::FaviconForPageURLParams(
           url, favicon_base::FAVICON, gfx::kFaviconSize),
       base::Bind(&NavigationPopup::OnFaviconDataAvailable,
                  base::Unretained(this),

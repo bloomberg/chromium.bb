@@ -203,7 +203,7 @@ bool SQLiteCursor::GetFavicon(favicon_base::FaviconID id,
 
 void SQLiteCursor::GetFaviconForIDInUIThread(
     favicon_base::FaviconID id,
-    const favicon_base::FaviconRawCallback& callback) {
+    const favicon_base::FaviconRawBitmapCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!tracker_.get())
     tracker_.reset(new base::CancelableTaskTracker());
@@ -211,7 +211,7 @@ void SQLiteCursor::GetFaviconForIDInUIThread(
 }
 
 void SQLiteCursor::OnFaviconData(
-    const favicon_base::FaviconBitmapResult& bitmap_result) {
+    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   favicon_bitmap_result_ = bitmap_result;
   event_.Signal();
   if (test_observer_)

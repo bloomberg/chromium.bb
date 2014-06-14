@@ -216,26 +216,26 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       int icon_types,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      std::vector<favicon_base::FaviconBitmapResult>* bitmap_results);
+      std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
 
   void GetLargestFaviconForURL(
       const GURL& page_url,
       const std::vector<int>& icon_types,
       int minimum_size_in_pixels,
-      favicon_base::FaviconBitmapResult* bitmap_result);
+      favicon_base::FaviconRawBitmapResult* bitmap_result);
 
   void GetFaviconsForURL(
       const GURL& page_url,
       int icon_types,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      std::vector<favicon_base::FaviconBitmapResult>* bitmap_results);
+      std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
 
   void GetFaviconForID(
       favicon_base::FaviconID favicon_id,
       int desired_size_in_dip,
       ui::ScaleFactor desired_scale_factor,
-      std::vector<favicon_base::FaviconBitmapResult>* bitmap_results);
+      std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
 
   void UpdateFaviconMappingsAndFetch(
       const GURL& page_url,
@@ -243,7 +243,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       int icon_types,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      std::vector<favicon_base::FaviconBitmapResult>* bitmap_results);
+      std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
 
   void MergeFavicon(const GURL& page_url,
                     const GURL& icon_url,
@@ -251,10 +251,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                     scoped_refptr<base::RefCountedMemory> bitmap_data,
                     const gfx::Size& pixel_size);
 
-  void SetFavicons(
-      const GURL& page_url,
-      favicon_base::IconType icon_type,
-      const std::vector<favicon_base::FaviconBitmapData>& favicon_bitmap_data);
+  void SetFavicons(const GURL& page_url,
+                   favicon_base::IconType icon_type,
+                   const std::vector<favicon_base::FaviconRawBitmapData>&
+                       favicon_bitmap_data);
 
   void SetFaviconsOutOfDateForPage(const GURL& page_url);
 
@@ -652,7 +652,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       int icon_types,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      std::vector<favicon_base::FaviconBitmapResult>* results);
+      std::vector<favicon_base::FaviconRawBitmapResult>* results);
 
   // Set the favicon bitmaps for |icon_id|.
   // For each entry in |favicon_bitmap_data|, if a favicon bitmap already
@@ -664,19 +664,19 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // data at |icon_id| is changed as a result of calling this method.
   // Computing |favicon_bitmaps_changed| requires additional database queries
   // so should be avoided if unnecessary.
-  void SetFaviconBitmaps(
-      favicon_base::FaviconID icon_id,
-      const std::vector<favicon_base::FaviconBitmapData>& favicon_bitmap_data,
-      bool* favicon_bitmaps_changed);
+  void SetFaviconBitmaps(favicon_base::FaviconID icon_id,
+                         const std::vector<favicon_base::FaviconRawBitmapData>&
+                             favicon_bitmap_data,
+                         bool* favicon_bitmaps_changed);
 
   // Returns true if |favicon_bitmap_data| passed to SetFavicons() is valid.
   // Criteria:
   // 1) |favicon_bitmap_data| contains no more than
   //      kMaxFaviconsPerPage unique icon URLs.
   //      kMaxFaviconBitmapsPerIconURL favicon bitmaps for each icon URL.
-  // 2) FaviconBitmapData::bitmap_data contains non NULL bitmap data.
+  // 2) FaviconRawBitmapData::bitmap_data contains non NULL bitmap data.
   bool ValidateSetFaviconsParams(const std::vector<
-      favicon_base::FaviconBitmapData>& favicon_bitmap_data) const;
+      favicon_base::FaviconRawBitmapData>& favicon_bitmap_data) const;
 
   // Returns true if the bitmap data at |bitmap_id| equals |new_bitmap_data|.
   bool IsFaviconBitmapDataEqual(
@@ -699,7 +699,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       int icon_types,
       const int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      std::vector<favicon_base::FaviconBitmapResult>* favicon_bitmap_results);
+      std::vector<favicon_base::FaviconRawBitmapResult>*
+          favicon_bitmap_results);
 
   // Returns the favicon bitmaps which most closely match |desired_size_in_dip|
   // and |desired_scale_factors| in |favicon_bitmap_results|. If
@@ -714,7 +715,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       const std::vector<favicon_base::FaviconID>& candidate_favicon_ids,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      std::vector<favicon_base::FaviconBitmapResult>* favicon_bitmap_results);
+      std::vector<favicon_base::FaviconRawBitmapResult>*
+          favicon_bitmap_results);
 
   // Maps the favicon ids in |icon_ids| to |page_url| (and all redirects)
   // for |icon_type|.

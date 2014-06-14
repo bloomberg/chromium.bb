@@ -18,22 +18,22 @@ namespace internal {
 const int kMaxBitmapSize = 256;
 
 ////////////////////////////////////////////////////////////////////////////////
-// FaviconBitmapHandler fetchs all bitmaps with the 'icon' (or 'shortcut icon')
+// FaviconRawBitmapHandler fetchs all bitmaps with the 'icon' (or 'shortcut
+// icon')
 // link tag, storing the one that best matches ash::kShelfSize.
 // These icon bitmaps are not resized and are not cached beyond the lifetime
 // of the class. Bitmaps larger than kMaxBitmapSize are ignored.
 
-class FaviconBitmapHandler : public content::WebContentsObserver {
+class FaviconRawBitmapHandler : public content::WebContentsObserver {
  public:
-  FaviconBitmapHandler(content::WebContents* web_contents,
-                       LauncherFaviconLoader::Delegate* delegate)
+  FaviconRawBitmapHandler(content::WebContents* web_contents,
+                          LauncherFaviconLoader::Delegate* delegate)
       : content::WebContentsObserver(web_contents),
         delegate_(delegate),
         web_contents_(web_contents),
-        weak_ptr_factory_(this) {
-  }
+        weak_ptr_factory_(this) {}
 
-  virtual ~FaviconBitmapHandler() {}
+  virtual ~FaviconRawBitmapHandler() {}
 
   const SkBitmap& bitmap() const { return bitmap_; }
 
@@ -66,12 +66,12 @@ class FaviconBitmapHandler : public content::WebContentsObserver {
   SkBitmap bitmap_;
   GURL bitmap_url_;
 
-  base::WeakPtrFactory<FaviconBitmapHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<FaviconRawBitmapHandler> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(FaviconBitmapHandler);
+  DISALLOW_COPY_AND_ASSIGN(FaviconRawBitmapHandler);
 };
 
-void FaviconBitmapHandler::DidUpdateFaviconURL(
+void FaviconRawBitmapHandler::DidUpdateFaviconURL(
     const std::vector<content::FaviconURL>& candidates) {
   // This function receives a complete list of faviocn urls for the page.
   // It may get called multiple times with the same list, and will also get
@@ -112,16 +112,16 @@ void FaviconBitmapHandler::DidUpdateFaviconURL(
         *iter,
         true,  // is a favicon
         0,     // no maximum size
-        base::Bind(&FaviconBitmapHandler::DidDownloadFavicon,
+        base::Bind(&FaviconRawBitmapHandler::DidDownloadFavicon,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-bool FaviconBitmapHandler::HasPendingDownloads() const {
+bool FaviconRawBitmapHandler::HasPendingDownloads() const {
   return !pending_requests_.empty();
 }
 
-void FaviconBitmapHandler::DidDownloadFavicon(
+void FaviconRawBitmapHandler::DidDownloadFavicon(
     int id,
     int http_status_code,
     const GURL& image_url,
@@ -139,8 +139,8 @@ void FaviconBitmapHandler::DidDownloadFavicon(
     AddFavicon(image_url, bitmaps[0]);
 }
 
-void FaviconBitmapHandler::AddFavicon(const GURL& image_url,
-                                      const SkBitmap& new_bitmap) {
+void FaviconRawBitmapHandler::AddFavicon(const GURL& image_url,
+                                         const SkBitmap& new_bitmap) {
   processed_requests_.insert(image_url);
   if (new_bitmap.height() > kMaxBitmapSize ||
       new_bitmap.width() > kMaxBitmapSize)
@@ -165,7 +165,7 @@ LauncherFaviconLoader::LauncherFaviconLoader(Delegate* delegate,
                                              content::WebContents* web_contents)
     : web_contents_(web_contents) {
   favicon_handler_.reset(
-      new internal::FaviconBitmapHandler(web_contents, delegate));
+      new internal::FaviconRawBitmapHandler(web_contents, delegate));
 }
 
 LauncherFaviconLoader::~LauncherFaviconLoader() {

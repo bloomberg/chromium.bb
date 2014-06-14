@@ -17,7 +17,7 @@ class Size;
 }
 
 // Score which is smaller than the minimum score returned by
-// SelectFaviconFrames() or SelectFaviconBitmapIDs().
+// SelectFaviconFrames() or SelectFaviconFrameIndices().
 extern const float kSelectFaviconFramesInvalidScore;
 
 // Takes a list of all bitmaps found in a .ico file, and creates an

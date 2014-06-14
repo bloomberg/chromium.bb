@@ -13,7 +13,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 namespace favicon_base {
-struct FaviconBitmapResult;
+struct FaviconRawBitmapResult;
 }  // namespace favicon_base
 
 namespace content {
@@ -53,7 +53,7 @@ class ShortcutBuilder : public content::WebContentsObserver {
                                       const GURL& expected_url);
 
   void FinishAddingShortcut(
-      const favicon_base::FaviconBitmapResult& bitmap_result);
+      const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // WebContentsObserver
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -84,7 +84,7 @@ class ShortcutHelper {
       const GURL& url,
       const base::string16& title,
       ShortcutBuilder::ShortcutType shortcut_type,
-      const favicon_base::FaviconBitmapResult& bitmap_result);
+      const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // Registers JNI hooks.
   static bool RegisterShortcutHelper(JNIEnv* env);

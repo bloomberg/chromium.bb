@@ -12,11 +12,14 @@ FaviconImageResult::FaviconImageResult() {}
 
 FaviconImageResult::~FaviconImageResult() {}
 
-// FaviconBitmapResult --------------------------------------------------------
+// FaviconRawBitmapResult
+// --------------------------------------------------------
 
-FaviconBitmapResult::FaviconBitmapResult()
-    : expired(false), icon_type(INVALID_ICON) {}
+FaviconRawBitmapResult::FaviconRawBitmapResult()
+    : expired(false), icon_type(INVALID_ICON) {
+}
 
-FaviconBitmapResult::~FaviconBitmapResult() {}
+FaviconRawBitmapResult::~FaviconRawBitmapResult() {
+}
 
 }  // namespace chrome

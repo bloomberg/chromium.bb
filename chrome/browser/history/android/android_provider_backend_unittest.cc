@@ -256,11 +256,11 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   // Set favicon to url2.
   std::vector<unsigned char> data;
   data.push_back('1');
-  favicon_base::FaviconBitmapData bitmap_data_element;
+  favicon_base::FaviconRawBitmapData bitmap_data_element;
   bitmap_data_element.bitmap_data = new base::RefCountedBytes(data);
   bitmap_data_element.pixel_size = gfx::Size();
   bitmap_data_element.icon_url = GURL();
-  std::vector<favicon_base::FaviconBitmapData> favicon_bitmap_data;
+  std::vector<favicon_base::FaviconRawBitmapData> favicon_bitmap_data;
   favicon_bitmap_data.push_back(bitmap_data_element);
 
   history_backend->SetFavicons(
@@ -409,11 +409,11 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   // Set favicon to url2.
   std::vector<unsigned char> data;
   data.push_back('1');
-  favicon_base::FaviconBitmapData bitmap_data_element;
+  favicon_base::FaviconRawBitmapData bitmap_data_element;
   bitmap_data_element.bitmap_data = new base::RefCountedBytes(data);
   bitmap_data_element.pixel_size = gfx::Size();
   bitmap_data_element.icon_url = GURL();
-  std::vector<favicon_base::FaviconBitmapData> favicon_bitmap_data;
+  std::vector<favicon_base::FaviconRawBitmapData> favicon_bitmap_data;
   favicon_bitmap_data.push_back(bitmap_data_element);
 
   history_backend->SetFavicons(
@@ -1860,11 +1860,11 @@ TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
   // Set favicon to url2.
   std::vector<unsigned char> data;
   data.push_back('1');
-  favicon_base::FaviconBitmapData bitmap_data_element;
+  favicon_base::FaviconRawBitmapData bitmap_data_element;
   bitmap_data_element.bitmap_data = new base::RefCountedBytes(data);
   bitmap_data_element.pixel_size = gfx::Size();
   bitmap_data_element.icon_url = GURL();
-  std::vector<favicon_base::FaviconBitmapData> favicon_bitmap_data;
+  std::vector<favicon_base::FaviconRawBitmapData> favicon_bitmap_data;
   favicon_bitmap_data.push_back(bitmap_data_element);
 
   history_backend->SetFavicons(
