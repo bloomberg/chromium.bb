@@ -881,7 +881,7 @@ class VideoEncodeAcceleratorTest
           Tuple7<int, bool, int, bool, bool, bool, bool> > {};
 
 TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
-  const int num_concurrent_encoders = GetParam().a;
+  const size_t num_concurrent_encoders = GetParam().a;
   const bool save_to_file = GetParam().b;
   const unsigned int keyframe_period = GetParam().c;
   const bool force_bitrate = GetParam().d;
@@ -896,13 +896,13 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
       mid_stream_bitrate_switch, mid_stream_framerate_switch, &test_streams);
 
   ScopedVector<ClientStateNotification<ClientState> > notes;
-  // The clients can only be deleted after the encoder threads are stopped.
   ScopedVector<VEAClient> clients;
-  ScopedVector<base::Thread> encoder_threads;
+  base::Thread encoder_thread("EncoderThread");
+  ASSERT_TRUE(encoder_thread.Start());
 
-  // Create all the encoders.
-  for (int i = 0; i < num_concurrent_encoders; i++) {
-    int test_stream_index = i % test_streams.size();
+  // Create all encoders.
+  for (size_t i = 0; i < num_concurrent_encoders; i++) {
+    size_t test_stream_index = i % test_streams.size();
     // Disregard save_to_file if we didn't get an output filename.
     bool encoder_save_to_file =
         (save_to_file &&
@@ -916,29 +916,35 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
                                     force_bitrate,
                                     test_perf));
 
-    // Initialize the encoder thread.
-    char thread_name[32];
-    sprintf(thread_name, "EncoderThread%d", i);
-    base::Thread* encoder_thread = new base::Thread(thread_name);
-    encoder_thread->Start();
-    encoder_thread->message_loop()->PostTask(
+    encoder_thread.message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&VEAClient::CreateEncoder,
                    base::Unretained(clients.back())));
-    encoder_threads.push_back(encoder_thread);
   }
 
-  // Wait all the encoders to finish.
-  for (int i = 0; i < num_concurrent_encoders; i++) {
-    ASSERT_EQ(notes[i]->Wait(), CS_ENCODER_SET);
-    ASSERT_EQ(notes[i]->Wait(), CS_INITIALIZED);
-    ASSERT_EQ(notes[i]->Wait(), CS_ENCODING);
-    ASSERT_EQ(notes[i]->Wait(), CS_FINISHED);
-    encoder_threads[i]->message_loop()->PostTask(
+  // All encoders must pass through states in this order.
+  enum ClientState state_transitions[] = {CS_ENCODER_SET, CS_INITIALIZED,
+                                          CS_ENCODING, CS_FINISHED};
+
+  // Wait for all encoders to go through all states and finish.
+  // Do this by waiting for all encoders to advance to state n before checking
+  // state n+1, to verify that they are able to operate concurrently.
+  // It also simulates the real-world usage better, as the main thread, on which
+  // encoders are created/destroyed, is a single GPU Process ChildThread.
+  // Moreover, we can't have proper multithreading on X11, so this could cause
+  // hard to debug issues there, if there were multiple "ChildThreads".
+  for (size_t state_no = 0; state_no < arraysize(state_transitions); ++state_no)
+    for (size_t i = 0; i < num_concurrent_encoders; i++)
+      ASSERT_EQ(notes[i]->Wait(), state_transitions[state_no]);
+
+  for (size_t i = 0; i < num_concurrent_encoders; ++i) {
+    encoder_thread.message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&VEAClient::DestroyEncoder, base::Unretained(clients[i])));
-    encoder_threads[i]->Stop();
   }
+
+  // This ensures all tasks have finished.
+  encoder_thread.Stop();
 }
 
 INSTANTIATE_TEST_CASE_P(
