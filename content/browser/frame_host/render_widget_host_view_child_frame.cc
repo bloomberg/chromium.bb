@@ -147,7 +147,6 @@ void RenderWidgetHostViewChildFrame::SetIsLoading(bool is_loading) {
 
 void RenderWidgetHostViewChildFrame::TextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
-  NOTREACHED();
 }
 
 void RenderWidgetHostViewChildFrame::RenderProcessGone(
