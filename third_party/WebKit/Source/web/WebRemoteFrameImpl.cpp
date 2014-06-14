@@ -11,9 +11,85 @@
 #include "public/web/WebDocument.h"
 #include "public/web/WebPerformance.h"
 #include "public/web/WebRange.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
 #include <v8/include/v8.h>
 
+using namespace WebCore;
+
 namespace blink {
+
+namespace {
+
+// Helper class to bridge communication for a local frame with a remote parent.
+// Currently, it serves two purposes:
+// 1. Allows the local frame's loader to retrieve sandbox flags associated with
+//    its owner element in another process.
+// 2. Trigger a load event on its owner element once it finishes a load.
+class RemoteBridgeFrameOwner : public FrameOwner {
+public:
+    explicit RemoteBridgeFrameOwner(PassRefPtr<WebLocalFrameImpl>);
+
+    virtual bool isLocal() const OVERRIDE;
+    virtual SandboxFlags sandboxFlags() const OVERRIDE;
+    virtual void dispatchLoad() OVERRIDE;
+
+private:
+    RefPtr<WebLocalFrameImpl> m_frame;
+};
+
+RemoteBridgeFrameOwner::RemoteBridgeFrameOwner(PassRefPtr<WebLocalFrameImpl> frame)
+    : m_frame(frame)
+{
+}
+
+bool RemoteBridgeFrameOwner::isLocal() const
+{
+    return false;
+}
+
+SandboxFlags RemoteBridgeFrameOwner::sandboxFlags() const
+{
+    // FIXME: Implement. Most likely grab it from m_frame.
+    return 0;
+}
+
+void RemoteBridgeFrameOwner::dispatchLoad()
+{
+    // FIXME: Implement. Most likely goes through m_frame->client().
+}
+
+// FIXME: This is just a placeholder frame owner to supply to RemoteFrame when
+// the parent is also a remote frame. Strictly speaking, this shouldn't be
+// necessary, since a remote frame shouldn't ever need to communicate with a
+// remote parent (there are no sandbox flags to retrieve in this case, nor can
+// the RemoteFrame itself load a document). In most circumstances, the check for
+// frame->owner() can be replaced with a check for frame->tree().parent(). Once
+// that's done, this class can be removed.
+class PlaceholderFrameOwner : public FrameOwner {
+public:
+    virtual bool isLocal() const OVERRIDE;
+    virtual SandboxFlags sandboxFlags() const OVERRIDE;
+    virtual void dispatchLoad() OVERRIDE;
+};
+
+bool PlaceholderFrameOwner::isLocal() const
+{
+    return false;
+}
+
+SandboxFlags PlaceholderFrameOwner::sandboxFlags() const
+{
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+void PlaceholderFrameOwner::dispatchLoad()
+{
+    ASSERT_NOT_REACHED();
+}
+
+} // namespace
 
 WebRemoteFrame* WebRemoteFrame::create(WebFrameClient*)
 {
@@ -160,6 +236,12 @@ WebView* WebRemoteFrameImpl::view() const
 {
     ASSERT_NOT_REACHED();
     return 0;
+}
+
+void WebRemoteFrameImpl::removeChild(WebFrame* frame)
+{
+    WebFrame::removeChild(frame);
+    m_ownersForChildren.remove(frame);
 }
 
 WebFrame* WebRemoteFrameImpl::traversePrevious(bool wrap) const
@@ -720,6 +802,45 @@ WebString WebRemoteFrameImpl::layerTreeAsText(bool showDebugInfo) const
 {
     ASSERT_NOT_REACHED();
     return WebString();
+}
+
+WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebFrameClient* client)
+{
+    WebLocalFrameImpl* child = toWebLocalFrameImpl(WebLocalFrame::create(client));
+    HashMap<WebFrame*, OwnPtr<FrameOwner> >::AddResult result =
+        m_ownersForChildren.add(child, adoptPtr(new RemoteBridgeFrameOwner(child)));
+    appendChild(child);
+    // FIXME: currently this calls LocalFrame::init() on the created LocalFrame, which may
+    // result in the browser observing two navigations to about:blank (one from the initial
+    // frame creation, and one from swapping it into the remote process). FrameLoader might
+    // need a special initialization function for this case to avoid that duplicate navigation.
+    child->initializeAsChildFrame(frame()->host(), result.storedValue->value.get(), name, AtomicString());
+    // Partially related with the above FIXME--the init() call may trigger JS dispatch. However,
+    // if the parent is remote, it should never be detached synchronously...
+    ASSERT(child->frame());
+    return child;
+}
+
+void WebRemoteFrameImpl::initializeAsMainFrame(Page* page)
+{
+    setWebCoreFrame(RemoteFrame::create(&m_frameClient, &page->frameHost(), 0));
+}
+
+WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(const WebString& name, WebFrameClient* client)
+{
+    WebRemoteFrameImpl* child = toWebRemoteFrameImpl(WebRemoteFrame::create(client));
+    HashMap<WebFrame*, OwnPtr<FrameOwner> >::AddResult result =
+        m_ownersForChildren.add(child, adoptPtr(new PlaceholderFrameOwner));
+    appendChild(child);
+    RefPtr<RemoteFrame> childFrame = RemoteFrame::create(&child->m_frameClient, frame()->host(), result.storedValue->value.get());
+    child->setWebCoreFrame(childFrame);
+    childFrame->tree().setName(name, AtomicString());
+    return child;
+}
+
+void WebRemoteFrameImpl::setWebCoreFrame(PassRefPtr<RemoteFrame> frame)
+{
+    m_frame = frame;
 }
 
 } // namespace blink

@@ -7,9 +7,15 @@
 
 #include "public/web/WebRemoteFrame.h"
 #include "web/RemoteFrameClient.h"
+#include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore { class RemoteFrame; }
+namespace WebCore {
+class FrameOwner;
+class Page;
+class RemoteFrame;
+}
 
 namespace blink {
 
@@ -43,6 +49,7 @@ public:
     virtual bool hasHorizontalScrollbar() const OVERRIDE;
     virtual bool hasVerticalScrollbar() const OVERRIDE;
     virtual WebView* view() const OVERRIDE;
+    virtual void removeChild(WebFrame*) OVERRIDE;
     virtual WebFrame* traversePrevious(bool wrap) const OVERRIDE;
     virtual WebFrame* traverseNext(bool wrap) const OVERRIDE;
     virtual WebFrame* findChildByName(const WebString&) const OVERRIDE;
@@ -170,15 +177,22 @@ public:
     virtual bool selectionStartHasSpellingMarkerFor(int from, int length) const OVERRIDE;
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const OVERRIDE;
 
+    virtual WebLocalFrame* createLocalChild(const WebString& name, WebFrameClient*) OVERRIDE;
+    virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebFrameClient*) OVERRIDE;
+
+    void initializeAsMainFrame(WebCore::Page*);
+
+    void setWebCoreFrame(PassRefPtr<WebCore::RemoteFrame>);
     WebCore::RemoteFrame* frame() const { return m_frame.get(); }
 
 private:
     RemoteFrameClient m_frameClient;
     RefPtr<WebCore::RemoteFrame> m_frame;
+
+    HashMap<WebFrame*, OwnPtr<WebCore::FrameOwner> > m_ownersForChildren;
 };
 
 DEFINE_TYPE_CASTS(WebRemoteFrameImpl, WebFrame, frame, frame->isWebRemoteFrame(), frame.isWebRemoteFrame());
-
 
 } // namespace blink
 

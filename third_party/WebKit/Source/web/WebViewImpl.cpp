@@ -145,6 +145,7 @@
 #include "web/WebPagePopupImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebPopupMenuImpl.h"
+#include "web/WebRemoteFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WorkerGlobalScopeProxyProviderImpl.h"
 #include "web/painting/ContinuousPainter.h"
@@ -314,7 +315,10 @@ void WebView::didExitModalLoop()
 
 void WebViewImpl::setMainFrame(WebFrame* frame)
 {
-    toWebLocalFrameImpl(frame)->initializeAsMainFrame(page());
+    if (frame->isWebLocalFrame())
+        toWebLocalFrameImpl(frame)->initializeAsMainFrame(page());
+    else
+        toWebRemoteFrameImpl(frame)->initializeAsMainFrame(page());
 }
 
 void WebViewImpl::setAutofillClient(WebAutofillClient* autofillClient)

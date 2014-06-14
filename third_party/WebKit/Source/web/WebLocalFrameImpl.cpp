@@ -1670,53 +1670,35 @@ void WebLocalFrameImpl::initializeAsMainFrame(WebCore::Page* page)
 PassRefPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& request, HTMLFrameOwnerElement* ownerElement)
 {
     ASSERT(m_client);
-    WebLocalFrameImpl* webframe = toWebLocalFrameImpl(m_client->createChildFrame(this, request.frameName()));
-    if (!webframe)
+    // Protect a reference to the new child frame, in case it gets detached.
+    RefPtr<WebLocalFrameImpl> child = toWebLocalFrameImpl(m_client->createChildFrame(this, request.frameName()));
+    if (!child)
         return nullptr;
-
-    RefPtr<LocalFrame> childFrame = LocalFrame::create(&webframe->m_frameLoaderClientImpl, frame()->host(), ownerElement);
-    webframe->setWebCoreFrame(childFrame);
 
     // FIXME: Using subResourceAttributeName as fallback is not a perfect
     // solution. subResourceAttributeName returns just one attribute name. The
     // element might not have the attribute, and there might be other attributes
     // which can identify the element.
-    childFrame->tree().setName(request.frameName(), ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
-
-    // FIXME: This comment is not quite accurate anymore.
-    // LocalFrame::init() can trigger onload event in the parent frame,
-    // which may detach this frame and trigger a null-pointer access
-    // in FrameTree::removeChild. Move init() after appendChild call
-    // so that webframe->mFrame is in the tree before triggering
-    // onload event handler.
-    // Because the event handler may set webframe->mFrame to null,
-    // it is necessary to check the value after calling init() and
-    // return without loading URL.
-    // NOTE: m_client will be null if this frame has been detached.
-    // (b:791612)
-    childFrame->init(); // create an empty document
-    if (!childFrame->tree().parent())
+    child->initializeAsChildFrame(frame()->host(), ownerElement, request.frameName(), ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
+    // Initializing the WebCore frame may cause the new child to be detached, since it may dispatch a load event in the parent.
+    if (!child->frame())
         return nullptr;
 
     // If we're moving in the back/forward list, we might want to replace the content
     // of this child frame with whatever was there at that point.
     RefPtr<HistoryItem> childItem;
     if (isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished())
-        childItem = PassRefPtr<HistoryItem>(webframe->client()->historyItemForNewChildFrame(webframe));
+        childItem = PassRefPtr<HistoryItem>(child->client()->historyItemForNewChildFrame(child.get()));
 
     if (childItem)
-        childFrame->loader().loadHistoryItem(childItem.get());
+        child->frame()->loader().loadHistoryItem(childItem.get());
     else
-        childFrame->loader().load(FrameLoadRequest(0, request.resourceRequest(), "_self"));
+        child->frame()->loader().load(FrameLoadRequest(0, request.resourceRequest(), "_self"));
 
-    // A synchronous navigation (about:blank) would have already processed
-    // onload, so it is possible for the frame to have already been destroyed by
+    // Note a synchronous navigation (about:blank) would have already processed
+    // onload, so it is possible for the child frame to have already been destroyed by
     // script in the page.
-    // NOTE: m_client will be null if this frame has been detached.
-    if (!childFrame->tree().parent())
-        return nullptr;
-
-    return childFrame.release();
+    return child->frame();
 }
 
 void WebLocalFrameImpl::didChangeContentsSize(const IntSize& size)
@@ -1960,6 +1942,14 @@ void WebLocalFrameImpl::invalidateAll() const
     FrameView* view = frame()->view();
     view->invalidateRect(view->frameRect());
     invalidateScrollbar();
+}
+
+void WebLocalFrameImpl::initializeAsChildFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
+{
+    setWebCoreFrame(LocalFrame::create(&m_frameLoaderClientImpl, host, owner));
+    frame()->tree().setName(name, fallbackName);
+    // May dispatch JS events; frame() may be null after this.
+    frame()->init();
 }
 
 } // namespace blink

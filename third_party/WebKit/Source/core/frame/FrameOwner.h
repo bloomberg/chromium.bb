@@ -11,6 +11,8 @@ namespace WebCore {
 
 class FrameOwner {
 public:
+    virtual ~FrameOwner() { }
+
     virtual bool isLocal() const = 0;
 
     virtual SandboxFlags sandboxFlags() const = 0;

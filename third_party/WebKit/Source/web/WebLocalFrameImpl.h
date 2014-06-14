@@ -313,6 +313,8 @@ public:
     // Invalidates both content area and the scrollbar.
     void invalidateAll() const;
 
+    void initializeAsChildFrame(WebCore::FrameHost*, WebCore::FrameOwner*, const AtomicString& name, const AtomicString& fallbackName);
+
 private:
     friend class FrameLoaderClientImpl;
 

@@ -98,11 +98,6 @@ HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tagName, Docum
 {
 }
 
-void HTMLFrameOwnerElement::dispatchLoad()
-{
-    dispatchEvent(Event::create(EventTypeNames::load));
-}
-
 RenderPart* HTMLFrameOwnerElement::renderPart() const
 {
     // HTMLObjectElement and HTMLEmbedElement may return arbitrary renderers
@@ -173,6 +168,11 @@ void HTMLFrameOwnerElement::setSandboxFlags(SandboxFlags flags)
 bool HTMLFrameOwnerElement::isKeyboardFocusable() const
 {
     return m_contentFrame && HTMLElement::isKeyboardFocusable();
+}
+
+void HTMLFrameOwnerElement::dispatchLoad()
+{
+    dispatchEvent(Event::create(EventTypeNames::load));
 }
 
 Document* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& exceptionState) const

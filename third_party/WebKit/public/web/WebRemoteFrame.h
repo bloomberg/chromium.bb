@@ -12,6 +12,9 @@ namespace blink {
 class WebRemoteFrame : public WebFrame {
 public:
     BLINK_EXPORT static WebRemoteFrame* create(WebFrameClient*);
+
+    virtual WebLocalFrame* createLocalChild(const WebString& name, WebFrameClient*) = 0;
+    virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebFrameClient*) = 0;
 };
 
 } // namespace blink
