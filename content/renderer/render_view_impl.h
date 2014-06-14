@@ -510,6 +510,7 @@ class CONTENT_EXPORT RenderViewImpl
                                       TopControlsState current,
                                       bool animate) OVERRIDE;
 #endif
+  bool uses_temporary_zoom_level() const { return uses_temporary_zoom_level_; }
 
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions
@@ -742,6 +743,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
   void OnSetZoomLevelForLoadingURL(const GURL& url, double zoom_level);
+  void OnSetZoomLevelForView(bool uses_temporary_zoom_level, double level);
   void OnStop();
   void OnStopFinding(StopFindAction action);
   void OnSuppressDialogsUntilSwapOut();
@@ -1009,6 +1011,9 @@ class CONTENT_EXPORT RenderViewImpl
 
   // The next target URL we want to send to the browser.
   GURL pending_target_url_;
+
+  // Indicates whether this view overrides url-based zoom settings.
+  bool uses_temporary_zoom_level_;
 
 #if defined(OS_ANDROID)
   // Cache the old top controls state constraints. Used when updating

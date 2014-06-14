@@ -196,7 +196,9 @@ class RenderViewZoomer : public RenderViewVisitor {
     GURL url(document.url());
     // Empty scheme works as wildcard that matches any scheme,
     if ((net::GetHostOrSpecFromURL(url) == host_) &&
-        (scheme_.empty() || scheme_ == url.scheme())) {
+        (scheme_.empty() || scheme_ == url.scheme()) &&
+        !static_cast<RenderViewImpl*>(render_view)
+             ->uses_temporary_zoom_level()) {
       webview->hidePopups();
       webview->setZoomLevel(zoom_level_);
     }

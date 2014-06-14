@@ -647,6 +647,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       history_list_length_(0),
       frames_in_progress_(0),
       target_url_status_(TARGET_NONE),
+      uses_temporary_zoom_level_(false),
 #if defined(OS_ANDROID)
       top_controls_constraints_(cc::BOTH),
 #endif
@@ -1081,6 +1082,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
                         OnSetZoomLevelForLoadingURL)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForView,
+                        OnSetZoomLevelForView)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
     IPC_MESSAGE_HANDLER(ViewMsg_ResetPageEncodingToDefault,
                         OnResetPageEncodingToDefault)
@@ -2612,6 +2615,14 @@ void RenderViewImpl::OnSetZoomLevelForLoadingURL(const GURL& url,
   // the zoom level from this map will be effectively resetting text zoom level.
   host_zoom_levels_[url] = zoom_level;
 #endif
+}
+
+void RenderViewImpl::OnSetZoomLevelForView(bool uses_temporary_zoom_level,
+                                           double level) {
+  uses_temporary_zoom_level_ = uses_temporary_zoom_level;
+
+  webview()->hidePopups();
+  webview()->setZoomLevel(level);
 }
 
 void RenderViewImpl::OnSetPageEncoding(const std::string& encoding_name) {

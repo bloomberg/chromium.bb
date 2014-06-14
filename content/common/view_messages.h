@@ -689,6 +689,11 @@ IPC_MESSAGE_CONTROL3(ViewMsg_SetZoomLevelForCurrentURL,
                      std::string /* host */,
                      double /* zoom_level */)
 
+// Set the zoom level for a particular render view.
+IPC_MESSAGE_ROUTED2(ViewMsg_SetZoomLevelForView,
+                    bool /* uses_temporary_zoom_level */,
+                    double /* zoom_level */)
+
 // Change encoding of page in the renderer.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetPageEncoding,
                     std::string /*new encoding name*/)

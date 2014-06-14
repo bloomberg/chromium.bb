@@ -1188,10 +1188,14 @@ void RenderViewHostImpl::OnDocumentAvailableInMainFrame(
     bool uses_temporary_zoom_level) {
   delegate_->DocumentAvailableInMainFrame(this);
 
+  if (!uses_temporary_zoom_level)
+    return;
+
   HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
       HostZoomMap::GetForBrowserContext(GetProcess()->GetBrowserContext()));
-  host_zoom_map->SetUsesTemporaryZoomLevel(
-      GetProcess()->GetID(), GetRoutingID(), uses_temporary_zoom_level);
+  host_zoom_map->SetTemporaryZoomLevel(GetProcess()->GetID(),
+                                       GetRoutingID(),
+                                       host_zoom_map->GetDefaultZoomLevel());
 }
 
 void RenderViewHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
