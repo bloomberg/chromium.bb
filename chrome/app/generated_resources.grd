@@ -9315,13 +9315,13 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
       You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because the website <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>uses certificate pinning<ph name="END_LINK">&lt;/a&gt;</ph>. Network errors and attacks are usually temporary, so this page will probably work later.
       </message>
       <message name="IDS_SSL_NONOVERRIDABLE_HSTS" desc="A sentence to explain why the user can't proceed, plus a link to a help page about HSTS.">
-      You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because the website <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>uses HSTS<ph name="END_LINK">&lt;/a&gt;</ph>.
+      You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because the website <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>uses HSTS<ph name="END_LINK">&lt;/a&gt;</ph>. Network errors and attacks are usually temporary, so this page will probably work later.
       </message>
       <message name="IDS_SSL_NONOVERRIDABLE_REVOKED" desc="A sentence to explain why the user can't proceed, plus a link to a help page about certificate revocation.">
-      You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>this certificate has been revoked<ph name="END_LINK">&lt;/a&gt;</ph>.
+      You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>this certificate has been revoked<ph name="END_LINK">&lt;/a&gt;</ph>. Network errors and attacks are usually temporary, so this page will probably work later.
       </message>
       <message name="IDS_SSL_NONOVERRIDABLE_INVALID" desc="A sentence to explain why the user can't proceed.">
-      You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because the website sent scrambled credentials that Chrome cannot process.
+      You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because the website sent scrambled credentials that Chrome cannot process. Network errors and attacks are usually temporary, so this page will probably work later.
       </message>
 
       <!-- SSL Interstitial V1: Overridable -->
