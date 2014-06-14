@@ -837,6 +837,8 @@ void WebPluginContainerImpl::handleGestureEvent(GestureEvent* event)
     WebGestureEventBuilder webEvent(this, m_element->renderer(), *event);
     if (webEvent.type == WebInputEvent::Undefined)
         return;
+    if (event->type() == EventTypeNames::gesturetapdown)
+        focusPlugin();
     WebCursorInfo cursorInfo;
     if (m_webPlugin->handleInputEvent(webEvent, cursorInfo)) {
         event->setDefaultHandled();
