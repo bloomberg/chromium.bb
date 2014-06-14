@@ -29,6 +29,7 @@ button {
   height: 36px;
   margin: -6px 0 0;
   padding: 8px 24px;
+  transition: box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 [dir='rtl'] button {
@@ -63,7 +64,7 @@ h1 {
   color: #585858;
   font-size: 1.6em;
   font-weight: normal;
-  line-height: 1.75em;
+  line-height: 1.25em;
 }
 
 .hidden {
@@ -82,7 +83,7 @@ h1 {
   box-sizing: border-box;
   font-size: 1em;
   line-height: 1.6em;
-  margin: 10% auto 0;
+  margin: 100px auto 0;
   max-width: 600px;
   width: 100%;
 }
@@ -128,7 +129,13 @@ h1 {
 
 @media (max-width: 700px) {
   .interstitial-wrapper {
-    padding: 0 15%;
+    padding: 0 10%;
+  }
+}
+
+@media (max-height: 600px) {
+  .interstitial-wrapper {
+    margin-top: 13%;
   }
 }
 
@@ -150,27 +157,16 @@ h1 {
 
   #details-button {
     display: block;
-    padding-top: 10px;
+    padding-top: 14px;
     text-align: center;
     width: 100%;
-  }
-
-  h1 {
-    line-height: normal;
-  }
-
-  .icon {
-    background-size: 40px 40px;
-    height: 40px;
-    margin: 0 0 20px;
-    width: 40px;
   }
 
   .interstitial-wrapper {
     padding: 0 5%;
   }
 
-  #main-message {
-    height: 160px;
+  .nav-wrapper {
+    margin-top: 30px;
   }
 }
