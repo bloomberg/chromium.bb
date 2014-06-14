@@ -1094,8 +1094,9 @@ gfx::Size Widget::GetMaximumSize() const {
 
 void Widget::OnNativeWidgetMove() {
   widget_delegate_->OnWidgetMove();
-  if (GetRootView()->GetFocusManager()) {
-    View* focused_view = GetRootView()->GetFocusManager()->GetFocusedView();
+  View* root = GetRootView();
+  if (root && root->GetFocusManager()) {
+    View* focused_view = root->GetFocusManager()->GetFocusedView();
     if (focused_view && focused_view->GetInputMethod())
       focused_view->GetInputMethod()->OnCaretBoundsChanged(focused_view);
   }
@@ -1105,14 +1106,15 @@ void Widget::OnNativeWidgetMove() {
 }
 
 void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
-  root_view_->SetSize(new_size);
-
-  if (GetRootView()->GetFocusManager()) {
-    View* focused_view = GetRootView()->GetFocusManager()->GetFocusedView();
-    if (focused_view && focused_view->GetInputMethod())
-      focused_view->GetInputMethod()->OnCaretBoundsChanged(focused_view);
+  View* root = GetRootView();
+  if (root) {
+    root->SetSize(new_size);
+    if (root->GetFocusManager()) {
+      View* focused_view = GetRootView()->GetFocusManager()->GetFocusedView();
+      if (focused_view && focused_view->GetInputMethod())
+        focused_view->GetInputMethod()->OnCaretBoundsChanged(focused_view);
+    }
   }
-
   // Size changed notifications can fire prior to full initialization
   // i.e. during session restore.  Avoid saving session state during these
   // startup procedures.

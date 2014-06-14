@@ -19,6 +19,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/native_widget_types.h"
@@ -1819,6 +1821,24 @@ TEST_F(WidgetTest, CloseDestroys) {
     widget->Detach();
     widget->CloseNow();
   }
+}
+
+// Tests that killing a widget while animating it does not crash.
+TEST_F(WidgetTest, CloseWidgetWhileAnimating) {
+  scoped_ptr<Widget> widget(new Widget);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget->Init(params);
+
+  // Normal animations for tests have ZERO_DURATION, make sure we are actually
+  // animating the movement.
+  ui::ScopedAnimationDurationScaleMode animation_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::ScopedLayerAnimationSettings animation_settings(
+      widget->GetNativeWindow()->layer()->GetAnimator());
+  widget->Show();
+  // Animate the bounds change.
+  widget->SetBounds(gfx::Rect(0, 0, 200, 200));
 }
 
 // A view that consumes mouse-pressed event and gesture-tap-down events.
