@@ -23,13 +23,17 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
       async_wait_id_(0),
       error_(false),
       drop_writes_(false),
-      enforce_errors_from_incoming_receiver_(true) {
+      enforce_errors_from_incoming_receiver_(true),
+      destroyed_flag_(NULL) {
   // Even though we don't have an incoming receiver, we still want to monitor
   // the message pipe to know if is closed or encounters an error.
   WaitToReadMore();
 }
 
 Connector::~Connector() {
+  if (destroyed_flag_)
+    *destroyed_flag_ = true;
+
   if (async_wait_id_)
     waiter_->CancelWait(async_wait_id_);
 }
@@ -97,7 +101,9 @@ void Connector::OnHandleReady(MojoResult result) {
   async_wait_id_ = 0;
 
   if (result == MOJO_RESULT_OK) {
-    ReadMore();
+    // Return immediately if |this| was destroyed. Do not touch any members!
+    if (!ReadMore())
+      return;
   } else {
     error_ = true;
   }
@@ -114,11 +120,26 @@ void Connector::WaitToReadMore() {
                                       this);
 }
 
-void Connector::ReadMore() {
+bool Connector::ReadMore() {
   while (true) {
     bool receiver_result = false;
+
+    // Detect if |this| was destroyed during message dispatch. Allow for the
+    // possibility of re-entering ReadMore() through message dispatch.
+    bool was_destroyed_during_dispatch = false;
+    bool* previous_destroyed_flag = destroyed_flag_;
+    destroyed_flag_ = &was_destroyed_during_dispatch;
+
     MojoResult rv = ReadAndDispatchMessage(
         message_pipe_.get(), incoming_receiver_, &receiver_result);
+
+    if (was_destroyed_during_dispatch) {
+      if (previous_destroyed_flag)
+        *previous_destroyed_flag = true;  // Propagate flag.
+      return false;
+    }
+    destroyed_flag_ = previous_destroyed_flag;
+
     if (rv == MOJO_RESULT_SHOULD_WAIT) {
       WaitToReadMore();
       break;
@@ -129,6 +150,7 @@ void Connector::ReadMore() {
       break;
     }
   }
+  return true;
 }
 
 }  // namespace internal

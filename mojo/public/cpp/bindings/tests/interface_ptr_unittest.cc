@@ -110,6 +110,45 @@ class MathCalculatorUIImpl : public math::CalculatorUI {
   double output_;
 };
 
+class SelfDestructingMathCalculatorUIImpl : public math::CalculatorUI {
+ public:
+  explicit SelfDestructingMathCalculatorUIImpl(math::CalculatorPtr calculator)
+      : calculator_(calculator.Pass()),
+        nesting_level_(0) {
+    ++num_instances_;
+    calculator_.set_client(this);
+  }
+
+  void BeginTest(bool nested) {
+    nesting_level_ = nested ? 2 : 1;
+    calculator_->Add(1.0);
+  }
+
+  static int num_instances() { return num_instances_; }
+
+ private:
+  virtual ~SelfDestructingMathCalculatorUIImpl() {
+    --num_instances_;
+  }
+
+  virtual void Output(double value) MOJO_OVERRIDE {
+    if (--nesting_level_ > 0) {
+      // Add some more and wait for re-entrant call to Output!
+      calculator_->Add(1.0);
+      RunLoop::current()->RunUntilIdle();
+    } else {
+      delete this;
+    }
+  }
+
+  math::CalculatorPtr calculator_;
+  int nesting_level_;
+  static int num_instances_;
+};
+
+// static
+int SelfDestructingMathCalculatorUIImpl::num_instances_ = 0;
+
 class InterfacePtrTest : public testing::Test {
  public:
   virtual ~InterfacePtrTest() {
@@ -243,6 +282,36 @@ TEST_F(InterfacePtrTest, NoClientAttribute) {
   sample::PortPtr port;
   MessagePipe pipe;
   port.Bind(pipe.handle0.Pass());
+}
+
+TEST_F(InterfacePtrTest, DestroyInterfacePtrOnClientMethod) {
+  math::CalculatorPtr proxy;
+  BindToProxy(new MathCalculatorImpl(), &proxy);
+
+  EXPECT_EQ(0, SelfDestructingMathCalculatorUIImpl::num_instances());
+
+  SelfDestructingMathCalculatorUIImpl* impl =
+      new SelfDestructingMathCalculatorUIImpl(proxy.Pass());
+  impl->BeginTest(false);
+
+  PumpMessages();
+
+  EXPECT_EQ(0, SelfDestructingMathCalculatorUIImpl::num_instances());
+}
+
+TEST_F(InterfacePtrTest, NestedDestroyInterfacePtrOnClientMethod) {
+  math::CalculatorPtr proxy;
+  BindToProxy(new MathCalculatorImpl(), &proxy);
+
+  EXPECT_EQ(0, SelfDestructingMathCalculatorUIImpl::num_instances());
+
+  SelfDestructingMathCalculatorUIImpl* impl =
+      new SelfDestructingMathCalculatorUIImpl(proxy.Pass());
+  impl->BeginTest(true);
+
+  PumpMessages();
+
+  EXPECT_EQ(0, SelfDestructingMathCalculatorUIImpl::num_instances());
 }
 
 }  // namespace

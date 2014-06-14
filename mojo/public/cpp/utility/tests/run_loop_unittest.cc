@@ -190,5 +190,7 @@ TEST_F(RunLoopTest, Current) {
   EXPECT_TRUE(RunLoop::current() == NULL);
 }
 
+// TODO(darin): Add tests for nested calls to RunLoop::Run(). See crbug/384633.
+
 }  // namespace
 }  // namespace mojo
