@@ -27,7 +27,7 @@ class PageCyclerIntlArFaHe(test.Test):
 
 class PageCyclerIntlEsFrPtBr(test.Test):
   test = page_cycler.PageCycler
-  page_set = page_sets.IntlArFaHePageSet
+  page_set = page_sets.IntlEsFrPtBrPageSet
   options = {'pageset_repeat': 10}
 
 
