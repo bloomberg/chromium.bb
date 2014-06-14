@@ -678,6 +678,25 @@ hooks = [
     {
     'action':
          [
+    'download_from_google_storage',
+    '--no_resume',
+    '--platform=win32',
+    '--directory',
+    '--recursive',
+    '--no_auth',
+    '--num_threads=16',
+    '--bucket',
+    'chromium-apache-win32',
+    'src/third_party/apache-win32'
+],
+    'pattern':
+         '\\.sha1',
+    'name':
+         'apache_win32'
+},
+    {
+    'action':
+         [
     'python',
     'src/build/gyp_chromium'
 ],
