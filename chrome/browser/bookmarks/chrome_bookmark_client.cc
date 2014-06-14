@@ -43,7 +43,7 @@ void NotifyHistoryOfRemovedURLs(Profile* profile,
 }  // namespace
 
 ChromeBookmarkClient::ChromeBookmarkClient(Profile* profile)
-    : profile_(profile), model_(NULL) {
+    : profile_(profile), model_(NULL), managed_node_(NULL) {
 }
 
 ChromeBookmarkClient::~ChromeBookmarkClient() {
