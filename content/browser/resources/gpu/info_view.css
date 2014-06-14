@@ -34,6 +34,8 @@
 #info-view table {
   border-collapse: collapse;
   cursor: text;
+  table-layout: fixed;
+  width: 100%;
 }
 
 #info-view table,
@@ -43,6 +45,10 @@
   padding-left: 4px;
   padding-right: 4px;
   text-align: top;
+}
+
+#info-view td {
+  overflow-x: auto;
 }
 
 #info-view .feature-green {
