@@ -380,6 +380,8 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
   if (!reset_cb_.is_null())
     return;
 
+  // TODO(xhwang): VideoDecoder doesn't need to return EOS after it's flushed.
+  // Fix all decoders and remove this block.
   if (state_ == STATE_FLUSHING_DECODER && output->end_of_stream()) {
     // ReinitializeDecoder() will be called from OnDecodeDone().
     return;

@@ -18,16 +18,15 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
-using ::testing::AtMost;
-using ::testing::IsNull;
-using ::testing::ReturnRef;
+using ::testing::Invoke;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 
 namespace media {
 
-static const uint8 kFakeKeyId[] = { 0x4b, 0x65, 0x79, 0x20, 0x49, 0x44 };
-static const uint8 kFakeIv[DecryptConfig::kDecryptionKeySize] = { 0 };
+const uint8 kFakeKeyId[] = { 0x4b, 0x65, 0x79, 0x20, 0x49, 0x44 };
+const uint8 kFakeIv[DecryptConfig::kDecryptionKeySize] = { 0 };
+const int kDecodingDelay = 3;
 
 // Create a fake non-empty encrypted buffer.
 static scoped_refptr<DecoderBuffer> CreateFakeEncryptedBuffer() {
@@ -54,10 +53,6 @@ ACTION_P2(ResetAndRunCallback, callback, param) {
   base::ResetAndReturn(callback).Run(param);
 }
 
-MATCHER(IsEndOfStream, "end of stream") {
-  return (arg->end_of_stream());
-}
-
 }  // namespace
 
 class DecryptingVideoDecoderTest : public testing::Test {
@@ -69,11 +64,12 @@ class DecryptingVideoDecoderTest : public testing::Test {
                 &DecryptingVideoDecoderTest::RequestDecryptorNotification,
                 base::Unretained(this)))),
         decryptor_(new StrictMock<MockDecryptor>()),
+        num_decrypt_and_decode_calls_(0),
+        num_frames_in_decryptor_(0),
         encrypted_buffer_(CreateFakeEncryptedBuffer()),
         decoded_video_frame_(VideoFrame::CreateBlackFrame(
             TestVideoConfig::NormalCodedSize())),
-        null_video_frame_(scoped_refptr<VideoFrame>()),
-        end_of_stream_video_frame_(VideoFrame::CreateEOSFrame()) {
+        null_video_frame_(scoped_refptr<VideoFrame>()) {
     EXPECT_CALL(*this, RequestDecryptorNotification(_))
         .WillRepeatedly(RunCallbackIfNotNull(decryptor_.get()));
   }
@@ -113,43 +109,54 @@ class DecryptingVideoDecoderTest : public testing::Test {
     InitializeAndExpectStatus(TestVideoConfig::LargeEncrypted(), PIPELINE_OK);
   }
 
-  void ReadAndExpectFrameReadyWith(
-      const scoped_refptr<DecoderBuffer>& buffer,
-      VideoDecoder::Status status,
-      const scoped_refptr<VideoFrame>& video_frame) {
-    if (video_frame.get()) {
-      if (video_frame->end_of_stream()) {
-        EXPECT_CALL(*this, FrameReady(IsEndOfStream()));
-      } else {
-        EXPECT_CALL(*this, FrameReady(video_frame));
-      }
-    }
+  // Decode |buffer| and expect DecodeDone to get called with |status|.
+  void DecodeAndExpect(const scoped_refptr<DecoderBuffer>& buffer,
+                       VideoDecoder::Status status) {
     EXPECT_CALL(*this, DecodeDone(status));
-
     decoder_->Decode(buffer,
                      base::Bind(&DecryptingVideoDecoderTest::DecodeDone,
                                 base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
 
+  // Helper function to simulate the decrypting and decoding process in the
+  // |decryptor_| with a decoding delay of kDecodingDelay buffers.
+  void DecryptAndDecodeVideo(const scoped_refptr<DecoderBuffer>& encrypted,
+                             const Decryptor::VideoDecodeCB& video_decode_cb) {
+    num_decrypt_and_decode_calls_++;
+    if (!encrypted->end_of_stream())
+      num_frames_in_decryptor_++;
+
+    if (num_decrypt_and_decode_calls_ <= kDecodingDelay ||
+        num_frames_in_decryptor_ == 0) {
+      video_decode_cb.Run(Decryptor::kNeedMoreData,
+                          scoped_refptr<VideoFrame>());
+      return;
+    }
+
+    num_frames_in_decryptor_--;
+    video_decode_cb.Run(Decryptor::kSuccess, decoded_video_frame_);
+  }
+
   // Sets up expectations and actions to put DecryptingVideoDecoder in an
   // active normal decoding state.
   void EnterNormalDecodingState() {
-    EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
-        .WillOnce(RunCallback<1>(Decryptor::kSuccess, decoded_video_frame_))
-        .WillRepeatedly(RunCallback<1>(Decryptor::kNeedMoreData,
-                                       scoped_refptr<VideoFrame>()));
-    ReadAndExpectFrameReadyWith(
-        encrypted_buffer_, VideoDecoder::kOk, decoded_video_frame_);
+    EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _)).WillRepeatedly(
+        Invoke(this, &DecryptingVideoDecoderTest::DecryptAndDecodeVideo));
+    EXPECT_CALL(*this, FrameReady(decoded_video_frame_));
+    for (int i = 0; i < kDecodingDelay + 1; ++i)
+      DecodeAndExpect(encrypted_buffer_, VideoDecoder::kOk);
   }
 
   // Sets up expectations and actions to put DecryptingVideoDecoder in an end
   // of stream state. This function must be called after
   // EnterNormalDecodingState() to work.
   void EnterEndOfStreamState() {
-    ReadAndExpectFrameReadyWith(DecoderBuffer::CreateEOSBuffer(),
-                                VideoDecoder::kOk,
-                                end_of_stream_video_frame_);
+    // The codec in the |decryptor_| will be flushed.
+    EXPECT_CALL(*this, FrameReady(decoded_video_frame_))
+        .Times(kDecodingDelay);
+    DecodeAndExpect(DecoderBuffer::CreateEOSBuffer(), VideoDecoder::kOk);
+    EXPECT_EQ(0, num_frames_in_decryptor_);
   }
 
   // Make the video decode callback pending by saving and not firing it.
@@ -220,6 +227,10 @@ class DecryptingVideoDecoderTest : public testing::Test {
   scoped_ptr<DecryptingVideoDecoder> decoder_;
   scoped_ptr<StrictMock<MockDecryptor> > decryptor_;
 
+  // Variables to help the |decryptor_| to simulate decoding delay and flushing.
+  int num_decrypt_and_decode_calls_;
+  int num_frames_in_decryptor_;
+
   Decryptor::DecoderInitCB pending_init_cb_;
   Decryptor::NewKeyCB key_added_cb_;
   Decryptor::VideoDecodeCB pending_video_decode_cb_;
@@ -228,7 +239,6 @@ class DecryptingVideoDecoderTest : public testing::Test {
   scoped_refptr<DecoderBuffer> encrypted_buffer_;
   scoped_refptr<VideoFrame> decoded_video_frame_;
   scoped_refptr<VideoFrame> null_video_frame_;
-  scoped_refptr<VideoFrame> end_of_stream_video_frame_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DecryptingVideoDecoderTest);
@@ -290,29 +300,10 @@ TEST_F(DecryptingVideoDecoderTest, DecryptAndDecode_DecodeError) {
       .WillRepeatedly(RunCallback<1>(Decryptor::kError,
                                      scoped_refptr<VideoFrame>(NULL)));
 
-  ReadAndExpectFrameReadyWith(
-      encrypted_buffer_, VideoDecoder::kDecodeError, null_video_frame_);
+  DecodeAndExpect(encrypted_buffer_, VideoDecoder::kDecodeError);
 
   // After a decode error occurred, all following decode returns kDecodeError.
-  ReadAndExpectFrameReadyWith(
-      encrypted_buffer_, VideoDecoder::kDecodeError, null_video_frame_);
-}
-
-// Test the case where the decryptor returns kNeedMoreData to ask for more
-// buffers before it can produce a frame.
-TEST_F(DecryptingVideoDecoderTest, DecryptAndDecode_NeedMoreData) {
-  Initialize();
-
-  EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
-      .WillOnce(RunCallback<1>(Decryptor::kNeedMoreData,
-                             scoped_refptr<VideoFrame>()))
-      .WillRepeatedly(RunCallback<1>(Decryptor::kSuccess,
-                                     decoded_video_frame_));
-
-  ReadAndExpectFrameReadyWith(
-      encrypted_buffer_, VideoDecoder::kOk, NULL);
-  ReadAndExpectFrameReadyWith(
-      encrypted_buffer_, VideoDecoder::kOk, decoded_video_frame_);
+  DecodeAndExpect(encrypted_buffer_, VideoDecoder::kDecodeError);
 }
 
 // Test the case where the decryptor receives end-of-stream buffer.

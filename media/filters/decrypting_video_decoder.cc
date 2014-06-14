@@ -31,7 +31,7 @@ DecryptingVideoDecoder::DecryptingVideoDecoder(
       weak_factory_(this) {}
 
 void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                        bool live_mode,
+                                        bool /* live_mode */,
                                         const PipelineStatusCB& status_cb,
                                         const OutputCB& output_cb) {
   DVLOG(2) << "Initialize()";
@@ -277,12 +277,8 @@ void DecryptingVideoDecoder::DeliverFrame(
 
   if (status == Decryptor::kNeedMoreData) {
     DVLOG(2) << "DeliverFrame() - kNeedMoreData";
-    if (scoped_pending_buffer_to_decode->end_of_stream()) {
-      state_ = kDecodeFinished;
-      output_cb_.Run(media::VideoFrame::CreateEOSFrame());
-    } else {
-      state_ = kIdle;
-    }
+    state_ = scoped_pending_buffer_to_decode->end_of_stream() ? kDecodeFinished
+                                                              : kIdle;
     base::ResetAndReturn(&decode_cb_).Run(kOk);
     return;
   }
@@ -290,8 +286,17 @@ void DecryptingVideoDecoder::DeliverFrame(
   DCHECK_EQ(status, Decryptor::kSuccess);
   // No frame returned with kSuccess should be end-of-stream frame.
   DCHECK(!frame->end_of_stream());
-  state_ = kIdle;
   output_cb_.Run(frame);
+
+  if (scoped_pending_buffer_to_decode->end_of_stream()) {
+    // Set |pending_buffer_to_decode_| back as we need to keep flushing the
+    // decryptor.
+    pending_buffer_to_decode_ = scoped_pending_buffer_to_decode;
+    DecodePendingBuffer();
+    return;
+  }
+
+  state_ = kIdle;
   base::ResetAndReturn(&decode_cb_).Run(kOk);
 }
 
