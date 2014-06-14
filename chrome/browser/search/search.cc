@@ -66,6 +66,8 @@ const uint64 kEmbeddedPageVersionDefault = 2;
 const char kHideVerbatimFlagName[] = "hide_verbatim";
 const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
 const char kPrefetchSearchResultsOnSRP[] = "prefetch_results_srp";
+const char kPrerenderInstantUrlOnOmniboxFocus[] =
+    "prerender_instant_url_on_omnibox_focus";
 
 // Controls whether to reuse prerendered Instant Search base page to commit any
 // search query.
@@ -566,6 +568,9 @@ GURL GetSearchResultPrefetchBaseURL(Profile* profile) {
 }
 
 bool ShouldPrefetchSearchResults() {
+  if (!IsInstantExtendedAPIEnabled())
+    return false;
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kPrefetchSearchResults)) {
     return true;
@@ -576,12 +581,16 @@ bool ShouldPrefetchSearchResults() {
       kPrefetchSearchResultsFlagName, false, flags);
 }
 
-bool ShouldReuseInstantSearchBasePage() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kPrefetchSearchResults)) {
-    return true;
-  }
+bool ShouldPrerenderInstantUrlOnOmniboxFocus() {
+  if (!ShouldPrefetchSearchResults())
+    return false;
 
+  FieldTrialFlags flags;
+  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
+      kPrerenderInstantUrlOnOmniboxFocus, false, flags);
+}
+
+bool ShouldReuseInstantSearchBasePage() {
   if (!ShouldPrefetchSearchResults())
     return false;
 

@@ -166,6 +166,11 @@ GURL GetSearchResultPrefetchBaseURL(Profile* profile);
 // prefetch high-confidence search suggestions.
 bool ShouldPrefetchSearchResults();
 
+// Returns true if 'prerender_instant_url_on_omnibox_focus' flag is enabled in
+// field trials to prerender Instant search base page when the omnibox is
+// focused.
+bool ShouldPrerenderInstantUrlOnOmniboxFocus();
+
 // Returns true if 'reuse_instant_search_base_page' flag is set to true in field
 // trials to reuse the prerendered page to commit any search query.
 bool ShouldReuseInstantSearchBasePage();
