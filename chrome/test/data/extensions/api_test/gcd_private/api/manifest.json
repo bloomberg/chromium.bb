@@ -1,0 +1,7 @@
+ {
+  "manifest_version": 2,
+  "name": "GCD Extension",
+  "version": "1.0",
+  "description": "Test GCD Extension",
+  "permissions": ["gcdPrivate"]
+}
