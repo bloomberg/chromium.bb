@@ -11,12 +11,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/common/extensions/api/bluetooth.h"
 #include "chrome/common/extensions/api/bluetooth_private.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
 class BrowserContext;
@@ -30,11 +32,12 @@ class BluetoothDiscoverySession;
 }  // namespace device
 
 namespace extensions {
-
 class BluetoothApiPairingDelegate;
+class ExtensionRegistry;
 
 class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
-                             public content::NotificationObserver {
+                             public content::NotificationObserver,
+                             public ExtensionRegistryObserver {
  public:
   explicit BluetoothEventRouter(content::BrowserContext* context);
   virtual ~BluetoothEventRouter();
@@ -106,6 +109,12 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Overridden from ExtensionRegistryObserver.
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "BluetoothEventRouter"; }
   static const bool kServiceRedirectedInIncognito = true;
@@ -141,6 +150,9 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
   PairingDelegateMap pairing_delegate_map_;
 
   content::NotificationRegistrar registrar_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   base::WeakPtrFactory<BluetoothEventRouter> weak_ptr_factory_;
 

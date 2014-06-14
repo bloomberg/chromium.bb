@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -17,10 +16,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 using content::BrowserThread;
-using extensions::TabCaptureRegistry;
 using extensions::tab_capture::TabCaptureState;
 
 namespace extensions {
@@ -105,14 +104,12 @@ TabCaptureRequest::~TabCaptureRequest() {
 }
 
 TabCaptureRegistry::TabCaptureRegistry(content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)) {
+    : browser_context_(context), extension_registry_observer_(this) {
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
   registrar_.Add(this,
                  chrome::NOTIFICATION_FULLSCREEN_CHANGED,
                  content::NotificationService::AllSources());
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 
 TabCaptureRegistry::~TabCaptureRegistry() {
@@ -150,54 +147,51 @@ void TabCaptureRegistry::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      // Cleanup all the requested media streams for this extension.
-      const std::string& extension_id =
-          content::Details<extensions::UnloadedExtensionInfo>(details)->
-              extension->id();
-      for (ScopedVector<TabCaptureRequest>::iterator it = requests_.begin();
-           it != requests_.end();) {
-        if ((*it)->extension_id == extension_id) {
-          it = requests_.erase(it);
-        } else {
-          ++it;
-        }
+  DCHECK_EQ(chrome::NOTIFICATION_FULLSCREEN_CHANGED, type);
+  FullscreenController* fullscreen_controller =
+      content::Source<FullscreenController>(source).ptr();
+  const bool is_fullscreen = *content::Details<bool>(details).ptr();
+  for (ScopedVector<TabCaptureRequest>::iterator it = requests_.begin();
+       it != requests_.end();
+       ++it) {
+    // If we are exiting fullscreen mode, we only need to check if any of
+    // the requests had the fullscreen flag toggled previously. The
+    // fullscreen controller no longer has the reference to the fullscreen
+    // web_contents here.
+    if (!is_fullscreen) {
+      if ((*it)->fullscreen) {
+        (*it)->fullscreen = false;
+        DispatchStatusChangeEvent(*it);
+        break;
       }
+      continue;
+    }
+
+    // If we are entering fullscreen mode, find whether the web_contents we
+    // are capturing entered fullscreen mode.
+    content::RenderViewHost* const rvh = content::RenderViewHost::FromID(
+        (*it)->render_process_id, (*it)->render_view_id);
+    if (rvh &&
+        fullscreen_controller->IsFullscreenForTabOrPending(
+            content::WebContents::FromRenderViewHost(rvh))) {
+      (*it)->fullscreen = true;
+      DispatchStatusChangeEvent(*it);
       break;
     }
-    case chrome::NOTIFICATION_FULLSCREEN_CHANGED: {
-      FullscreenController* fullscreen_controller =
-          content::Source<FullscreenController>(source).ptr();
-      const bool is_fullscreen = *content::Details<bool>(details).ptr();
-      for (ScopedVector<TabCaptureRequest>::iterator it = requests_.begin();
-           it != requests_.end(); ++it) {
-        // If we are exiting fullscreen mode, we only need to check if any of
-        // the requests had the fullscreen flag toggled previously. The
-        // fullscreen controller no longer has the reference to the fullscreen
-        // web_contents here.
-        if (!is_fullscreen) {
-          if ((*it)->fullscreen) {
-            (*it)->fullscreen = false;
-            DispatchStatusChangeEvent(*it);
-            break;
-          }
-          continue;
-        }
+  }
+}
 
-        // If we are entering fullscreen mode, find whether the web_contents we
-        // are capturing entered fullscreen mode.
-        content::RenderViewHost* const rvh =
-            content::RenderViewHost::FromID((*it)->render_process_id,
-                                            (*it)->render_view_id);
-        if (rvh && fullscreen_controller->IsFullscreenForTabOrPending(
-                content::WebContents::FromRenderViewHost(rvh))) {
-          (*it)->fullscreen = true;
-          DispatchStatusChangeEvent(*it);
-          break;
-        }
-      }
-      break;
+void TabCaptureRegistry::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  // Cleanup all the requested media streams for this extension.
+  for (ScopedVector<TabCaptureRequest>::iterator it = requests_.begin();
+       it != requests_.end();) {
+    if ((*it)->extension_id == extension->id()) {
+      it = requests_.erase(it);
+    } else {
+      ++it;
     }
   }
 }
@@ -315,7 +309,7 @@ void TabCaptureRegistry::OnRequestUpdate(
 
 void TabCaptureRegistry::DispatchStatusChangeEvent(
     const TabCaptureRequest* request) const {
-  EventRouter* router = profile_ ? EventRouter::Get(profile_) : NULL;
+  EventRouter* router = EventRouter::Get(browser_context_);
   if (!router)
     return;
 
@@ -328,7 +322,7 @@ void TabCaptureRegistry::DispatchStatusChangeEvent(
   args->Append(info->ToValue().release());
   scoped_ptr<Event> event(new Event(tab_capture::OnStatusChanged::kEventName,
       args.Pass()));
-  event->restrict_to_browser_context = profile_;
+  event->restrict_to_browser_context = browser_context_;
 
   router->DispatchEventToExtension(request->extension_id, event.Pass());
 }

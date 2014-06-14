@@ -29,6 +29,7 @@
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 
 namespace extensions {
 
@@ -39,15 +40,14 @@ BluetoothEventRouter::BluetoothEventRouter(content::BrowserContext* context)
     : browser_context_(context),
       adapter_(NULL),
       num_event_listeners_(0),
+      extension_registry_observer_(this),
       weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(browser_context_);
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<content::BrowserContext>(browser_context_));
-  registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::Source<content::BrowserContext>(browser_context_));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 
 BluetoothEventRouter::~BluetoothEventRouter() {
@@ -352,19 +352,16 @@ void BluetoothEventRouter::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      extensions::UnloadedExtensionInfo* info =
-          content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
-      CleanUpForExtension(info->extension->id());
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
-      ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
-      CleanUpForExtension(host->extension_id());
-      break;
-    }
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED, type);
+  ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
+  CleanUpForExtension(host->extension_id());
+}
+
+void BluetoothEventRouter::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  CleanUpForExtension(extension->id());
 }
 
 }  // namespace extensions

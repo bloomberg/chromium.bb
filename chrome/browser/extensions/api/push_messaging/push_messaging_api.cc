@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service.h"
@@ -26,10 +25,9 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
@@ -40,6 +38,9 @@
 
 using content::BrowserThread;
 
+namespace extensions {
+
+namespace {
 const char kChannelIdSeparator[] = "/";
 const char kUserNotSignedIn[] = "The user is not signed in.";
 const char kUserAccessTokenFailure[] =
@@ -47,13 +48,13 @@ const char kUserAccessTokenFailure[] =
 const char kAPINotAvailableForUser[] =
     "The API is not available for this user.";
 const int kObfuscatedGaiaIdTimeoutInDays = 30;
-
-namespace extensions {
+}
 
 namespace glue = api::push_messaging;
 
-PushMessagingEventRouter::PushMessagingEventRouter(Profile* profile)
-    : profile_(profile) {
+PushMessagingEventRouter::PushMessagingEventRouter(
+    content::BrowserContext* context)
+    : browser_context_(context) {
 }
 
 PushMessagingEventRouter::~PushMessagingEventRouter() {}
@@ -79,9 +80,9 @@ void PushMessagingEventRouter::OnMessage(const std::string& extension_id,
 
   scoped_ptr<base::ListValue> args(glue::OnMessage::Create(message));
   scoped_ptr<Event> event(new Event(glue::OnMessage::kEventName, args.Pass()));
-  event->restrict_to_browser_context = profile_;
-  EventRouter::Get(profile_)->DispatchEventToExtension(
-      extension_id, event.Pass());
+  event->restrict_to_browser_context = browser_context_;
+  EventRouter::Get(browser_context_)
+      ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
 // GetChannelId class functions
@@ -142,8 +143,7 @@ void PushMessagingGetChannelIdFunction::StartAccessTokenFetch() {
   IdentityProvider* identity_provider =
       invalidation_provider->GetInvalidationService()->GetIdentityProvider();
 
-  std::vector<std::string> scope_vector =
-      extensions::ObfuscatedGaiaIdFetcher::GetScopes();
+  std::vector<std::string> scope_vector = ObfuscatedGaiaIdFetcher::GetScopes();
   OAuth2TokenService::ScopeSet scopes(scope_vector.begin(), scope_vector.end());
   fetcher_access_token_request_ =
       identity_provider->GetTokenService()->StartRequest(
@@ -293,12 +293,8 @@ void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchFailure(
 }
 
 PushMessagingAPI::PushMessagingAPI(content::BrowserContext* context)
-    : extension_registry_observer_(this),
-      profile_(Profile::FromBrowserContext(context)) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
+    : extension_registry_observer_(this), browser_context_(context) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 
 PushMessagingAPI::~PushMessagingAPI() {
@@ -325,12 +321,13 @@ PushMessagingAPI::GetFactoryInstance() {
 
 bool PushMessagingAPI::InitEventRouterAndHandler() {
   invalidation::ProfileInvalidationProvider* invalidation_provider =
-      invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile_);
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context_));
   if (!invalidation_provider)
     return false;
 
   if (!event_router_)
-    event_router_.reset(new PushMessagingEventRouter(profile_));
+    event_router_.reset(new PushMessagingEventRouter(browser_context_));
   if (!handler_) {
     handler_.reset(new PushMessagingInvalidationHandler(
         invalidation_provider->GetInvalidationService(),
@@ -365,16 +362,14 @@ void PushMessagingAPI::OnExtensionUnloaded(
   }
 }
 
-void PushMessagingAPI::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED);
-  if (!InitEventRouterAndHandler())
-    return;
-
-  const Extension* extension =
-      content::Details<const InstalledExtensionInfo>(details)->extension;
-  if (extension->permissions_data()->HasAPIPermission(
+void PushMessagingAPI::OnExtensionWillBeInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    bool is_update,
+    bool from_ephemeral,
+    const std::string& old_name) {
+  if (InitEventRouterAndHandler() &&
+      extension->permissions_data()->HasAPIPermission(
           APIPermission::kPushMessaging)) {
     handler_->SuppressInitialInvalidationsForExtension(extension->id());
   }
@@ -388,6 +383,7 @@ void PushMessagingAPI::SetMapperForTest(
 template <>
 void
 BrowserContextKeyedAPIFactory<PushMessagingAPI>::DeclareFactoryDependencies() {
+  DependsOn(ExtensionRegistryFactory::GetInstance());
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
 }
