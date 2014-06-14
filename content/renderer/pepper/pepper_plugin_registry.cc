@@ -122,13 +122,13 @@ void PepperPluginRegistry::Initialize() {
     AddLiveModule(current.path, module.get());
     if (current.is_internal) {
       if (!module->InitAsInternalPlugin(current.internal_entry_points)) {
-        DLOG(ERROR) << "Failed to load pepper module: " << current.path.value();
+        DVLOG(1) << "Failed to load pepper module: " << current.path.value();
         continue;
       }
     } else {
       // Preload all external plugins we're not running out of process.
       if (!module->InitAsLibrary(current.path)) {
-        DLOG(ERROR) << "Failed to load pepper module: " << current.path.value();
+        DVLOG(1) << "Failed to load pepper module: " << current.path.value();
         continue;
       }
     }

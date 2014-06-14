@@ -649,7 +649,9 @@ bool PluginModule::InitializeModule(
   DCHECK(entry_points.initialize_module != NULL);
   int retval = entry_points.initialize_module(pp_module(), &GetInterface);
   if (retval != 0) {
+#if !defined(DISABLE_NACL)
     LOG(WARNING) << "PPP_InitializeModule returned failure " << retval;
+#endif  // !defined(DISABLE_NACL)
     return false;
   }
   return true;
