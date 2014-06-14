@@ -36,11 +36,20 @@ function on_exit {
 function index_one_file {
   local file=$1
   local basename=$(basename "$file")
+  local should_index="${SHOULD_INDEX}"
 
   local readelf_out=$(readelf -S "$file")
   if [[ $readelf_out =~ "gdb_index" ]]; then
-    echo "Skipped $basename -- already contains index."
-  else
+    if [ "${REMOVE_INDEX}" = 1 ]; then
+      objcopy --remove-section .gdb_index "$file"
+      echo "Removed index from $basename."
+    else
+      echo "Skipped $basename -- already contains index."
+      should_index=0
+    fi
+  fi
+
+  if [ "${should_index}" = 1 ]; then
     local start=$(date +"%s%N")
     echo "Adding index to $basename..."
 
@@ -83,8 +92,29 @@ function index_next {
 ########
 ### Main body of the script.
 
+REMOVE_INDEX=0
+SHOULD_INDEX=1
+while getopts ":f:r" opt; do
+  case $opt in
+    f)
+      REMOVE_INDEX=1
+      shift
+      ;;
+    r)
+      REMOVE_INDEX=1
+      SHOULD_INDEX=0
+      shift
+      ;;
+    *)
+      echo "Invalid option: -$OPTARG" >&2
+      ;;
+  esac
+done
+
 if [[ ! $# == 1 ]]; then
-  echo "Usage: $0 path-to-binary"
+  echo "Usage: $0 [-f] [-r] path-to-binary"
+  echo "  -f forces replacement of an existing index."
+  echo "  -r removes the index section."
   exit 1
 fi
 
