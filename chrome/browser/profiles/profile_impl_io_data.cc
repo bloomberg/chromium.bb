@@ -32,6 +32,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_pref_names.h"
 #include "components/domain_reliability/monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -353,6 +354,12 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
       pref_service);
   io_data_->safe_browsing_enabled()->MoveToThread(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+#endif
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  io_data_->data_reduction_proxy_enabled()->Init(
+      data_reduction_proxy::prefs::kDataReductionProxyEnabled, pref_service);
+  io_data_->data_reduction_proxy_enabled()->MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #endif
   io_data_->InitializeOnUIThread(profile_);
