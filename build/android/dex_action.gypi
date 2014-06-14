@@ -49,7 +49,7 @@
     '--dex-path=<(output_path)',
     '--android-sdk-tools=<(android_sdk_tools)',
     '--configuration-name=<(CONFIGURATION_NAME)',
-    '--proguard-enabled=<(proguard_enabled)',
+    '--proguard-enabled=>(proguard_enabled)',
     '--proguard-enabled-input-path=<(proguard_enabled_input_path)',
     '--no-locals=>(dex_no_locals)',
     '>@(dex_additional_options)',

@@ -27,11 +27,10 @@ def ParseArgs(argv):
                     help='path to Android SDK\'s android.jar')
   parser.add_option('--proguard-jar-path',
                     help='Path to proguard.jar in the sdk')
-
   parser.add_option('--input-jars-paths',
                     help='Path to jars to include in obfuscated jar')
 
-  parser.add_option('--proguard-config-files',
+  parser.add_option('--proguard-configs',
                     help='Paths to proguard config files')
 
   parser.add_option('--configuration-name',
@@ -44,6 +43,8 @@ def ParseArgs(argv):
 
   parser.add_option('--testapp', action='store_true',
                     help='Set this if building an instrumentation test apk')
+  parser.add_option('--tested-apk-obfuscated-jar-path',
+                    help='Path to obfusctated jar of the tested apk')
   parser.add_option('--test-jar-path',
                     help='Output path for jar containing all the test apk\'s '
                     'code.')
@@ -65,6 +66,12 @@ def ParseArgs(argv):
       'configuration_name',
       'obfuscated_jar_path',
       )
+
+  if options.testapp:
+    required_options += (
+        'test_jar_path',
+        )
+
   build_utils.CheckOptions(options, parser, required=required_options)
 
   return options, args
@@ -74,7 +81,7 @@ def main(argv):
   options, _ = ParseArgs(argv)
 
   library_classpath = [options.android_sdk_jar]
-  javac_custom_classpath = build_utils.ParseGypList(options.input_jars_paths)
+  input_jars = build_utils.ParseGypList(options.input_jars_paths)
 
   dependency_class_filters = [
       '*R.class', '*R$*.class', '*Manifest.class', '*BuildConfig.class']
@@ -87,35 +94,64 @@ def main(argv):
 
   if options.testapp:
     with zipfile.ZipFile(options.test_jar_path, 'w') as test_jar:
-      for jar in build_utils.ParseGypList(options.input_jars_paths):
+      for jar in input_jars:
         with zipfile.ZipFile(jar, 'r') as jar_zip:
           for name in filter(DependencyClassFilter, jar_zip.namelist()):
             with jar_zip.open(name) as zip_entry:
               test_jar.writestr(name, zip_entry.read())
 
   if options.configuration_name == 'Release' and options.proguard_enabled:
-    proguard_project_classpath = javac_custom_classpath
-
     proguard_cmd = [
         'java', '-jar', options.proguard_jar_path,
         '-forceprocessing',
-        '-injars', ':'.join(proguard_project_classpath),
         '-libraryjars', ':'.join(library_classpath),
-        '-outjars', options.obfuscated_jar_path,
         '-dump', options.obfuscated_jar_path + '.dump',
         '-printseeds', options.obfuscated_jar_path + '.seeds',
         '-printusage', options.obfuscated_jar_path + '.usage',
         '-printmapping', options.obfuscated_jar_path + '.mapping',
         ]
 
-    for proguard_file in build_utils.ParseGypList(
-        options.proguard_config_files):
-      proguard_cmd += ['-include', proguard_file]
+    exclude_paths = []
+    configs = build_utils.ParseGypList(options.proguard_configs)
+    if (options.tested_apk_obfuscated_jar_path and
+        options.tested_apk_obfuscated_jar_path != '/'):
+      # configs should only contain the process_resources.py generated config.
+      assert len(configs) == 1, (
+          'test apks should not have custom proguard configs: ' + str(configs))
+      tested_jar_info = build_utils.ReadJson(
+          options.tested_apk_obfuscated_jar_path + '.info')
+      exclude_paths = tested_jar_info['inputs']
+      configs = tested_jar_info['configs']
+      proguard_cmd += [
+          '-dontobfuscate',
+          '-dontoptimize',
+          '-dontskipnonpubliclibraryclassmembers',
+          '-libraryjars', options.tested_apk_obfuscated_jar_path,
+          '-applymapping', options.tested_apk_obfuscated_jar_path + '.mapping',
+          ]
+
+    proguard_injars = [p for p in input_jars if p not in exclude_paths]
+    proguard_cmd += ['-injars', ':'.join(proguard_injars)]
+
+    for config_file in configs:
+      proguard_cmd += ['-include', config_file]
+
+    # The output jar must be specified after inputs.
+    proguard_cmd += ['-outjars', options.obfuscated_jar_path]
 
     build_utils.CheckOutput(proguard_cmd)
+
+    this_info = {
+      'inputs': proguard_injars,
+      'configs': configs
+    }
+
+    build_utils.WriteJson(
+        this_info, options.obfuscated_jar_path + '.info')
   else:
     output_files = [
         options.obfuscated_jar_path,
+        options.obfuscated_jar_path + '.info',
         options.obfuscated_jar_path + '.dump',
         options.obfuscated_jar_path + '.seeds',
         options.obfuscated_jar_path + '.usage',

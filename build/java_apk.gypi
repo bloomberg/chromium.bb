@@ -52,6 +52,7 @@
 #  never_lint - Set to 1 to not run lint on this target.
 {
   'variables': {
+    'tested_apk_obfuscated_jar_path%': '/',
     'tested_apk_dex_path%': '/',
     'additional_input_paths': [],
     'input_jars_paths': [],
@@ -158,8 +159,16 @@
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
   # cannot be lifted in a dependent to all_dependent_settings.
   'all_dependent_settings': {
+    'conditions': [
+      ['proguard_enabled == "true"', {
+        'variables': {
+          'proguard_enabled': 'true',
+        }
+      }],
+    ],
     'variables': {
       'apk_output_jar_path': '<(jar_path)',
+      'tested_apk_obfuscated_jar_path': '<(obfuscated_jar_path)',
       'tested_apk_dex_path': '<(dex_path)',
     },
   },
@@ -604,15 +613,24 @@
       'message': 'Obfuscating <(_target_name)',
       'variables': {
         'additional_obfuscate_options': [],
+        'additional_obfuscate_input_paths': [],
         'proguard_out_dir': '<(intermediate_dir)/proguard',
         'proguard_input_jar_paths': [
           '>@(input_jars_paths)',
           '<(jar_path)',
         ],
-        'conditions': [
+        'target_conditions': [
           ['is_test_apk == 1', {
             'additional_obfuscate_options': [
               '--testapp',
+            ],
+          }],
+          ['is_test_apk == 1 and tested_apk_obfuscated_jar_path != "/"', {
+            'additional_obfuscate_options': [
+              '--tested-apk-obfuscated-jar-path', '>(tested_apk_obfuscated_jar_path)',
+            ],
+            'additional_obfuscate_input_paths': [
+              '>(tested_apk_obfuscated_jar_path).info',
             ],
           }],
           ['proguard_enabled == "true"', {
@@ -620,6 +638,10 @@
               '--proguard-enabled',
             ],
           }],
+        ],
+        'obfuscate_input_jars_paths': [
+          '>@(input_jars_paths)',
+          '<(jar_path)',
         ],
       },
       'conditions': [
@@ -633,15 +655,16 @@
         '<(DEPTH)/build/android/gyp/apk_obfuscate.py',
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '>@(proguard_flags_paths)',
-        '>@(proguard_input_jar_paths)',
+        '>@(obfuscate_input_jars_paths)',
+        '>@(additional_obfuscate_input_paths)',
+        '<(instr_stamp)',
       ],
       'outputs': [
-        # This lists obfuscate_stamp instead of obfuscated_jar_path because
-        # ant only writes the latter if the md5 of the inputs changes.
         '<(obfuscate_stamp)',
 
         # In non-Release builds, these paths will all be empty files.
         '<(obfuscated_jar_path)',
+        '<(obfuscated_jar_path).info',
         '<(obfuscated_jar_path).dump',
         '<(obfuscated_jar_path).seeds',
         '<(obfuscated_jar_path).mapping',
@@ -657,15 +680,17 @@
         '--android-sdk-jar', '<(android_sdk_jar)',
 
         '--input-jars-paths=>(proguard_input_jar_paths)',
+        '--proguard-configs=>(proguard_flags_paths)',
+
+
         '--test-jar-path', '<(test_jar_path)',
         '--obfuscated-jar-path', '<(obfuscated_jar_path)',
 
         '--proguard-jar-path', '<(android_sdk_root)/tools/proguard/lib/proguard.jar',
 
-        '--proguard-config-files=<(proguard_flags_paths)',
         '--stamp', '<(obfuscate_stamp)',
 
-        '<@(additional_obfuscate_options)',
+        '>@(additional_obfuscate_options)',
       ],
     },
     {
@@ -695,8 +720,6 @@
             '>(tested_apk_dex_path).inputs',
           ],
         }],
-      ],
-      'conditions': [
         ['proguard_enabled == "true"', {
           'inputs': [ '<(obfuscate_stamp)' ]
         }, {

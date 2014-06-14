@@ -85,7 +85,7 @@ def WriteJson(obj, path, only_if_changed=False):
     with open(path, 'r') as oldfile:
       old_dump = oldfile.read()
 
-  new_dump = json.dumps(obj)
+  new_dump = json.dumps(obj, sort_keys=True, indent=2, separators=(',', ': '))
 
   if not only_if_changed or old_dump != new_dump:
     with open(path, 'w') as outfile:
