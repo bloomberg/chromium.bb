@@ -11,6 +11,11 @@ class Extension;
 
 namespace sync_helper {
 
+// NOTE: The check in the functions here only considers the data in extension
+// itself, not the environment it is in. To determine whether an extension
+// should be synced, you probably want to use util::ShoudSyncExtension and
+// util::ShouldSyncApp.
+
 // Returns true if the extension should be synced.
 bool IsSyncable(const Extension* extension);
 

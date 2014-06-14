@@ -534,6 +534,9 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // found.
   base::Time GetInstallTime(const std::string& extension_id) const;
 
+  // Returns true if the extension should not be synced.
+  bool DoNotSync(const std::string& extension_id) const;
+
   // Gets/sets the last launch time of an extension.
   base::Time GetLastLaunchTime(const std::string& extension_id) const;
   void SetLastLaunchTime(const std::string& extension_id,

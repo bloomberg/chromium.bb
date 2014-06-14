@@ -196,6 +196,10 @@ const char kPrefInstallParam[] = "install_parameter";
 // A list of installed ids and a signature.
 const char kInstallSignature[] = "extensions.install_signature";
 
+// A boolean preference that indicates whether the extension should not be
+// synced. Default value is false.
+const char kPrefDoNotSync[] = "do_not_sync";
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -1745,6 +1749,14 @@ base::Time ExtensionPrefs::GetInstallTime(
   return base::Time::FromInternalValue(install_time_i64);
 }
 
+bool ExtensionPrefs::DoNotSync(const std::string& extension_id) const {
+  bool do_not_sync;
+  if (!ReadPrefAsBoolean(extension_id, kPrefDoNotSync, &do_not_sync))
+    return false;
+
+  return do_not_sync;
+}
+
 base::Time ExtensionPrefs::GetLastLaunchTime(
     const std::string& extension_id) const {
   const base::DictionaryValue* extension = GetExtensionPref(extension_id);
@@ -2130,6 +2142,12 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     extension_dict->Set(kPrefManifest,
                         extension->manifest()->value()->DeepCopy());
   }
+
+  // Only writes kPrefDoNotSync when it is not the default.
+  if (install_flags & kInstallFlagDoNotSync)
+    extension_dict->Set(kPrefDoNotSync, new base::FundamentalValue(true));
+  else
+    extension_dict->Remove(kPrefDoNotSync, NULL);
 }
 
 void ExtensionPrefs::InitExtensionControlledPrefs(

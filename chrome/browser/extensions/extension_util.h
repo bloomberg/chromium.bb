@@ -85,6 +85,10 @@ bool IsAppLaunchable(const std::string& extension_id,
 bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
                                     content::BrowserContext* context);
 
+// Returns true if |extension| should be synced.
+bool ShouldSyncExtension(const Extension* extension,
+                         content::BrowserContext* context);
+
 // Returns true if |app| should be synced.
 bool ShouldSyncApp(const Extension* app, content::BrowserContext* context);
 

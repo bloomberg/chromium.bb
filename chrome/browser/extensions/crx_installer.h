@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_CRX_INSTALLER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -194,6 +195,13 @@ class CrxInstaller
       install_flags_ |= kInstallFlagIsEphemeral;
     else
       install_flags_ &= ~kInstallFlagIsEphemeral;
+  }
+
+  void set_install_flag(int flag, bool val) {
+    if (val)
+      install_flags_ |= flag;
+    else
+      install_flags_ &= ~flag;
   }
 
   bool did_handle_successfully() const { return did_handle_successfully_; }

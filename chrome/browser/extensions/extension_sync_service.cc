@@ -132,7 +132,7 @@ void ExtensionSyncService::SyncEnableExtension(
   if (extensions::util::ShouldSyncApp(&extension, profile_))
     pending_app_enables_.OnExtensionEnabled(extension.id());
 
-  if (extensions::sync_helper::IsSyncableExtension(&extension))
+  if (extensions::util::ShouldSyncExtension(&extension, profile_))
     pending_extension_enables_.OnExtensionEnabled(extension.id());
 
   SyncExtensionChangeIfNeeded(extension);
@@ -145,7 +145,7 @@ void ExtensionSyncService::SyncDisableExtension(
   if (extensions::util::ShouldSyncApp(&extension, profile_))
     pending_app_enables_.OnExtensionDisabled(extension.id());
 
-  if (extensions::sync_helper::IsSyncableExtension(&extension))
+  if (extensions::util::ShouldSyncExtension(&extension, profile_))
     pending_extension_enables_.OnExtensionDisabled(extension.id());
 
   SyncExtensionChangeIfNeeded(extension);
@@ -474,9 +474,9 @@ bool ExtensionSyncService::ProcessExtensionSyncDataHelper(
   // what the disable reason is, so set it to that directly. Note that when
   // CheckPermissionsIncrease runs, it might still add permissions increase
   // as a disable reason for the extension.
-  if (extension_sync_data.enabled())
+  if (extension_sync_data.enabled()) {
     extension_service_->EnableExtension(id);
-  else if (!IsPendingEnable(id)) {
+  } else if (!IsPendingEnable(id)) {
     if (extension_sync_data.remote_install()) {
       extension_service_->DisableExtension(id,
                                            Extension::DISABLE_REMOTE_INSTALL);
@@ -546,7 +546,7 @@ void ExtensionSyncService::SyncExtensionChangeIfNeeded(
       app_sync_bundle_.SyncChangeIfNeeded(extension);
     else if (extension_service_->is_ready() && !flare_.is_null())
       flare_.Run(syncer::APPS);
-  } else if (extensions::sync_helper::IsSyncableExtension(&extension)) {
+  } else if (extensions::util::ShouldSyncExtension(&extension, profile_)) {
     if (extension_sync_bundle_.IsSyncing())
       extension_sync_bundle_.SyncChangeIfNeeded(extension);
     else if (extension_service_->is_ready() && !flare_.is_null())

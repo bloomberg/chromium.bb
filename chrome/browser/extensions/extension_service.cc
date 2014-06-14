@@ -582,8 +582,11 @@ bool ExtensionService::UpdateExtension(const std::string& id,
   if (extension && extension->was_installed_by_oem())
     creation_flags |= Extension::WAS_INSTALLED_BY_OEM;
 
-  if (extension)
+  if (extension) {
     installer->set_is_ephemeral(extension_prefs_->IsEphemeralApp(id));
+    installer->set_install_flag(extensions::kInstallFlagDoNotSync,
+                                extension_prefs_->DoNotSync(id));
+  }
 
   installer->set_creation_flags(creation_flags);
 

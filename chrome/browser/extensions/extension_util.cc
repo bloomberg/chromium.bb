@@ -180,9 +180,16 @@ bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
       extension_id, ExtensionRegistry::ENABLED) != NULL;
 }
 
+bool ShouldSyncExtension(const Extension* extension,
+                         content::BrowserContext* context) {
+  return sync_helper::IsSyncableExtension(extension) &&
+         !ExtensionPrefs::Get(context)->DoNotSync(extension->id());
+}
+
 bool ShouldSyncApp(const Extension* app, content::BrowserContext* context) {
   return sync_helper::IsSyncableApp(app) &&
-      !util::IsEphemeralApp(app->id(), context);
+         !util::IsEphemeralApp(app->id(), context) &&
+         !ExtensionPrefs::Get(context)->DoNotSync(app->id());
 }
 
 bool IsExtensionIdle(const std::string& extension_id,
