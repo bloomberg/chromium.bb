@@ -113,6 +113,7 @@ typedef NSUInteger NSWindowButton;
 @interface NSAnimationContext (LionSDK)
 + (void)runAnimationGroup:(void (^)(NSAnimationContext *context))changes
         completionHandler:(void (^)(void))completionHandler;
+@property(copy) void(^completionHandler)(void);
 @end
 
 @interface NSView (LionSDK)
