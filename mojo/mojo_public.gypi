@@ -161,6 +161,7 @@
       ],
       'sources': [
         'public/cpp/environment/tests/async_waiter_unittest.cc',
+        'public/cpp/environment/tests/logger_unittest.cc',
       ],
     },
     {
@@ -316,9 +317,13 @@
       'target_name': 'mojo_environment_standalone',
       'type': 'static_library',
       'sources': [
+        'public/c/environment/async_waiter.h',
+        'public/c/environment/logger.h',
         'public/cpp/environment/default_async_waiter.h',
+        'public/cpp/environment/default_logger.h',
         'public/cpp/environment/environment.h',
         'public/cpp/environment/lib/default_async_waiter.cc',
+        'public/cpp/environment/lib/default_logger.cc',
         'public/cpp/environment/lib/environment.cc',
       ],
       'include_dirs': [

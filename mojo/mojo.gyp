@@ -397,6 +397,7 @@
       ],
       'sources': [
         'environment/default_async_waiter.cc',
+        'environment/default_logger.cc',
         'environment/environment.cc',
       ],
       'include_dirs': [
@@ -421,6 +422,8 @@
       'sources': [
         'environment/default_async_waiter_impl.cc',
         'environment/default_async_waiter_impl.h',
+        'environment/default_logger_impl.cc',
+        'environment/default_logger_impl.h',
       ],
       'include_dirs': [
         '..',
