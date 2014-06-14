@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <setjmp.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -15,6 +16,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/nacl/nacl_exception.h"
 
 
@@ -22,6 +24,7 @@
 #define TEXT_LINE_SIZE 1024
 
 const char *example_file;
+const char *tmp_dir;
 
 /*
  * function failed(testname, msg)
@@ -62,6 +65,12 @@ static void assert_addr_is_unreadable(volatile char *addr) {
     fprintf(stderr, "Skipping assert_addr_is_unreadable() under Valgrind\n");
     return;
   }
+  /*
+   * TODO(hamaji): Non-SFI mode does not have signal handlers yet. Add
+   * support for it.
+   */
+  if (NONSFI_MODE)
+    return;
 
   int rc = nacl_exception_set_handler(exception_handler);
   assert(rc == 0);
@@ -93,6 +102,12 @@ static void assert_addr_is_unwritable(volatile char *addr, char value) {
     fprintf(stderr, "Skipping assert_addr_is_unwritable() under ASan\n");
     return;
   }
+  /*
+   * TODO(hamaji): Non-SFI mode does not have signal handlers yet. Add
+   * support for it.
+   */
+  if (NONSFI_MODE)
+    return;
 
   int rc = nacl_exception_set_handler(exception_handler);
   assert(rc == 0);
@@ -112,18 +127,18 @@ static void assert_addr_is_unwritable(volatile char *addr, char value) {
 }
 
 static void assert_page_is_allocated(void *addr) {
-  static const int page_size = 0x10000;
-  assert(((uintptr_t) addr & (page_size - 1)) == 0);
+  const int kPageSize = getpagesize();
+  assert(((uintptr_t) addr & (kPageSize - 1)) == 0);
   /*
    * Try mapping at addr without MAP_FIXED.  If something is already
    * mapped there, the system will pick another address.  Otherwise,
    * we will get the address we asked for.
    */
-  void *result = mmap(addr, page_size, PROT_READ | PROT_WRITE,
+  void *result = mmap(addr, kPageSize, PROT_READ | PROT_WRITE,
                       MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
   assert(result != MAP_FAILED);
   assert(result != addr);
-  int rc = munmap(result, page_size);
+  int rc = munmap(result, kPageSize);
   assert(rc == 0);
 }
 
@@ -177,6 +192,15 @@ bool test2() {
 
   printf("test2\n");
 
+  if (NONSFI_MODE) {
+    /*
+     * Unmapping SFI-NaCl's text page would succeed in non-SFI
+     * mode. We skip this test case.
+     */
+    printf("test2 skipped\n");
+    return true;
+  }
+
   /* text starts at 64K */
   rv = munmap(reinterpret_cast<void*>(1<<16), (size_t) (1<<16));
 
@@ -190,6 +214,7 @@ bool test2() {
     printf("munmap good (failed as expected)\n");
     return true;
   }
+  printf("munmap should not have succeeded, or failed with wrong error\n");
   return false;
 }
 
@@ -204,13 +229,13 @@ bool test3() {
   res = mmap(static_cast<void*>(0), (size_t) (1 << 16),
              PROT_READ, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, 0, 0);
   printf("res = %p\n", res);
-  if (MAP_FAILED == res && EINVAL == errno) {
+  const int kExpectedErrno = NONSFI_MODE ? EPERM : EINVAL;
+  if (MAP_FAILED == res && kExpectedErrno == errno) {
     printf("mmap okay\n");
     return true;
-  } else {
-    printf("mmap should not have succeeded, or failed with wrong error\n");
-    return false;
   }
+  printf("mmap should not have succeeded, or failed with wrong error\n");
+  return false;
 }
 
 /*
@@ -232,10 +257,9 @@ bool test4() {
   if (MAP_FAILED == res && EINVAL == errno) {
     printf("mmap gave an error as expected\n");
     return true;
-  } else {
-    printf("mmap should not have succeeded, or failed with wrong error\n");
-    return false;
   }
+  printf("mmap should not have succeeded, or failed with wrong error\n");
+  return false;
 }
 
 /*
@@ -365,10 +389,12 @@ bool test_mprotect_unmapped_memory() {
   printf("munmap done\n");
   /* Change the protection to make the page unreadable. */
   rc = mprotect(addr, map_size, PROT_NONE);
-  if (-1 == rc && EACCES == errno) {
+  const int kExpectedErrno = NONSFI_MODE ? ENOMEM : EACCES;
+  if (-1 == rc && kExpectedErrno == errno) {
     printf("mprotect good (failed as expected)\n");
     return true;
   }
+  printf("mprotect should not have succeeded, or failed with wrong error\n");
   return false;
 }
 
@@ -445,6 +471,59 @@ bool test_mmap_end_of_file() {
 }
 
 /*
+ *   Verify mmap with file offsets works properly.
+ */
+
+bool test_mmap_offset() {
+  printf("test_mmap_offset\n");
+
+  /*
+   * Prepare a file which is filled with raw integer values. These
+   * integer values are their offsets in the file.
+   */
+  char tmp_filename[PATH_MAX] = {};
+  snprintf(tmp_filename, PATH_MAX - 1, "%s/test.txt", tmp_dir);
+  int fd = open(tmp_filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+  ASSERT_GE(fd, 0);
+  const int map_size = 0x10000;
+  for (int i = 0; i < map_size * 2; i += sizeof(i)) {
+    ssize_t written = write(fd, &i, sizeof(i));
+    ASSERT_EQ(written, sizeof(i));
+  }
+  int rc = close(fd);
+  ASSERT_EQ(rc, 0);
+
+  fd = open(tmp_filename, O_RDONLY);
+  ASSERT_GE(fd, 0);
+
+  /* A valid mmap call with an offset specified. */
+  int file_offset = 0x10000;
+  char *addr = (char *) mmap(NULL, map_size, PROT_READ,
+                             MAP_PRIVATE, fd, file_offset);
+  ASSERT_NE(addr, MAP_FAILED);
+  for (int i = 0; i < map_size; i += sizeof(i)) {
+    int expected = i + file_offset;
+    int actual = *(int *) (addr + i);
+    ASSERT_EQ(expected, actual);
+  }
+  rc = munmap(addr, map_size);
+  ASSERT_EQ(rc, 0);
+
+  /* An invalid offset is specified to mmap. */
+  file_offset = 0x100;
+  addr = (char *) mmap(NULL, map_size, PROT_READ,
+                       MAP_PRIVATE, fd, file_offset);
+  ASSERT_MSG(addr == MAP_FAILED && EINVAL == errno,
+             "mmap should not have succeeded, or failed with wrong error");
+
+  rc = close(fd);
+  ASSERT_EQ(rc, 0);
+
+  printf("mmap with offset good\n");
+  return true;
+}
+
+/*
  * function testSuite()
  *
  *   Run through a complete sequence of file tests.
@@ -465,6 +544,7 @@ bool testSuite() {
   ret &= test_mprotect_offset();
   ret &= test_mprotect_unmapped_memory();
   ret &= test_mmap_end_of_file();
+  ret &= test_mmap_offset();
 
   return ret;
 }
@@ -480,11 +560,12 @@ bool testSuite() {
 int main(const int argc, const char *argv[]) {
   bool passed;
 
-  if (argc != 2) {
-    printf("Error: Expected test file arg\n");
+  if (argc != 3) {
+    printf("Error: Expected test file and temp dir args\n");
     return 1;
   }
   example_file = argv[1];
+  tmp_dir = argv[2];
 
   // run the full test suite
   passed = testSuite();
@@ -492,8 +573,7 @@ int main(const int argc, const char *argv[]) {
   if (passed) {
     printf("All tests PASSED\n");
     exit(0);
-  } else {
-    printf("One or more tests FAILED\n");
-    exit(-1);
   }
+  printf("One or more tests FAILED\n");
+  exit(-1);
 }

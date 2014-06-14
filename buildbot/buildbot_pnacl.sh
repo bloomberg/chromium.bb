@@ -51,6 +51,7 @@ readonly SCONS_NONSFI="nonsfi_nacl=1 ${SCONS_NONSFI_TESTS}"
 readonly SCONS_NONSFI_TC="\
     ${SCONS_NONSFI} \
     run_hello_world_test \
+    run_mmap_test \
     run_printf_test"
 
 # subset of tests used on toolchain builders

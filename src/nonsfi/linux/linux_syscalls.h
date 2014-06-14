@@ -13,8 +13,12 @@
 
 # define __NR_exit               1
 # define __NR_write              4
+# define __NR_open               5
+# define __NR_close              6
 # define __NR_gettimeofday       78
+# define __NR_munmap             91
 # define __NR_clone              120
+# define __NR_mprotect           125
 # define __NR_sched_yield        158
 # define __NR_mmap2              192
 # define __NR_futex              240
@@ -26,8 +30,12 @@
 
 # define __NR_exit               1
 # define __NR_write              4
+# define __NR_open               5
+# define __NR_close              6
 # define __NR_gettimeofday       78
+# define __NR_munmap             91
 # define __NR_clone              120
+# define __NR_mprotect           125
 # define __NR_sched_yield        158
 # define __NR_mmap2              192
 # define __NR_futex              240

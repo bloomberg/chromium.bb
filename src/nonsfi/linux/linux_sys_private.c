@@ -11,7 +11,10 @@
  */
 
 #include <errno.h>
+#include <fcntl.h>
 #include <sched.h>
+#include <stdarg.h>
+#include <sys/mman.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
@@ -76,21 +79,56 @@ long int sysconf(int name) {
 
 void *mmap(void *start, size_t length, int prot, int flags,
            int fd, off_t offset) {
-  /*
-   * The offset needs shifting by 12 bits for __NR_mmap2 on x86-32.
-   * TODO(mseaborn): Make this case work when it is covered by a test.
-   */
-  if (offset != 0)
-    __builtin_trap();
+#if defined(__i386__) || defined(__arm__)
+  static const int kPageBits = 12;
+  if (offset & ((1 << kPageBits) - 1)) {
+    /* An unaligned offset is specified. */
+    errno = EINVAL;
+    return MAP_FAILED;
+  }
+  offset >>= kPageBits;
 
   return (void *) errno_value_call(
       linux_syscall6(__NR_mmap2, (uintptr_t) start, length,
                      prot, flags, fd, offset));
+#else
+# error Unsupported architecture
+#endif
+}
+
+int munmap(void *start, size_t length) {
+  return errno_value_call(
+      linux_syscall2(__NR_munmap, (uintptr_t ) start, length));
+}
+
+int mprotect(void *start, size_t length, int prot) {
+  return errno_value_call(
+      linux_syscall3(__NR_mprotect, (uintptr_t ) start, length, prot));
 }
 
 int write(int fd, const void *buf, size_t count) {
   return errno_value_call(linux_syscall3(__NR_write, fd,
                                          (uintptr_t) buf, count));
+}
+
+int open(char const *pathname, int oflag, ...) {
+  mode_t cmode;
+  va_list ap;
+
+  if (oflag & O_CREAT) {
+    va_start(ap, oflag);
+    cmode = va_arg(ap, mode_t);
+    va_end(ap);
+  } else {
+    cmode = 0;
+  }
+
+  return errno_value_call(
+      linux_syscall3(__NR_open, (uintptr_t) pathname, oflag, cmode));
+}
+
+int close(int fd) {
+  return errno_value_call(linux_syscall1(__NR_close, fd));
 }
 
 /*
