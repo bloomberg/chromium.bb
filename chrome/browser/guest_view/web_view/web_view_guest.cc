@@ -24,6 +24,7 @@
 #include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
 #include "chrome/browser/renderer_context_menu/context_menu_delegate.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
+#include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -180,6 +181,7 @@ void AttachWebViewHelpers(WebContents* contents) {
   printing::PrintViewManagerBasic::CreateForWebContents(contents);
 #endif  // defined(ENABLE_FULL_PRINTING)
 #endif  // defined(ENABLE_PRINTING)
+  PDFTabHelper::CreateForWebContents(contents);
 }
 
 }  // namespace

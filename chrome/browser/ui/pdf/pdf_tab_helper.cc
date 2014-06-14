@@ -85,7 +85,9 @@ void PDFTabHelper::OnSaveURLAs(const GURL& url,
 void PDFTabHelper::OnUpdateContentRestrictions(int content_restrictions) {
   CoreTabHelper* core_tab_helper =
       CoreTabHelper::FromWebContents(web_contents());
-  core_tab_helper->UpdateContentRestrictions(content_restrictions);
+  // |core_tab_helper| is NULL for WebViewGuest.
+  if (core_tab_helper)
+    core_tab_helper->UpdateContentRestrictions(content_restrictions);
 }
 
 void PDFTabHelper::OnModalPromptForPasswordClosed(
