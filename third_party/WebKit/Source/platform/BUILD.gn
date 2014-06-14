@@ -7,17 +7,28 @@ import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/config.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
+# TODO(GYP) Remove when heap targets work
+enable_blink_platform_heap_targets = false
+
+
+if (enable_blink_platform_heap_targets) {
+import("//third_party/yasm/yasm_assemble.gni")
+}
+
 platform_gypi = exec_script(
     "//build/gypi_to_gn.py",
     [ rebase_path("blink_platform.gypi") ],
     "scope",
     [ "blink_platform.gypi" ])
-# TODO(GYP) Uncomment when the targets below that need this value are enabled.
-#heap_gypi = exec_script(
-#    "//build/gypi_to_gn.py",
-#    [ rebase_path("heap/blink_heap.gypi") ],
-#    "scope",
-#    [ "heap/blink_heap.gypi" ])
+
+if (enable_blink_platform_heap_targets) {
+heap_gypi = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("heap/blink_heap.gypi") ],
+    "scope",
+    [ "heap/blink_heap.gypi" ])
+}
+
 blink_platform_neon_files = [
   "graphics/cpu/arm/WebGLImageConversionNEON.h",
   "graphics/cpu/arm/filters/FEBlendNEON.h",
@@ -202,9 +213,12 @@ component("platform") {
     "//third_party/WebKit/Source/wtf",
     "//third_party/WebKit/Source/platform/heap",
     "//url",
-    #'blink_heap_asm_stubs',
     "//v8",
   ]
+
+  if (enable_blink_platform_heap_targets) {
+    deps += [ ":heap_asm_stubs" ]
+  }
 
   forward_dependent_configs_from = [
     "//gpu/command_buffer/client:gles2_c_lib",
@@ -333,6 +347,41 @@ component("platform") {
   }
 }
 
+
+if (enable_blink_platform_heap_targets) {
+
+yasm_assemble("heap_asm_stubs") {
+  if (cpu_arch == "x86" || cpu_arch == "x64") {
+    sources = [ "heap/asm/SaveRegisters_x86.asm" ]
+  } else if (cpu_arch == "arm") {
+    sources = [ "heap/asm/SaveRegisters_arm.S" ]
+  } else if (cpu_arch == "arm64") {
+    sources = [ "heap/asm/SaveRegisters_arm64.S" ]
+  } else if (cpu_arch == "mipsel") {
+    sources = [ "heap/asm/SaveRegisters_mips.S" ]
+  }
+
+  yasm_flags = []
+  if (is_mac) {
+    # Necessary to ensure symbols end up with a _ prefix; added by
+    # yasm_compile.gypi for Windows, but not Mac.
+    yasm_flags += [ "-DPREFIX" ]
+  }
+  if (cpu_arch == "x64") {
+    if (is_win) {
+      yasm_flags += [ "-DX64WIN=1" ]
+    } else {
+      yasm_flags += [ "-DX64POSIX=1" ]
+    }
+  } else if (cpu_arch == "x86") {
+    yasm_flags += [ "-DIA32=1" ]
+  } else if (cpu_arch == "arm") {
+    yasm_flags += [ "-DARM=1" ]
+  }
+}
+
+}
+
 source_set("heap_run_all_tests") {
   sources = [
     "heap/RunAllTests.cpp"
@@ -352,8 +401,7 @@ source_set("heap_run_all_tests") {
   ]
 }
 
-# TODO(GYP) enable this target when it links (blocked on WebP symbols).
-if (false) {
+if (enable_blink_platform_heap_targets) {
 
 test("heap_unittests") {
   output_name = "blink_heap_unittests"
@@ -376,7 +424,7 @@ test("heap_unittests") {
   ]
 }
 
-}  # TODO(GYP)
+}
 
 source_set("platform_run_all_tests") {
   sources = [
