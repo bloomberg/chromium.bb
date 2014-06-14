@@ -59,9 +59,10 @@ class FeedbackDataTest : public testing::Test {
  protected:
   FeedbackDataTest()
       : context_(new content::TestBrowserContext()),
+        prefs_(new TestingPrefServiceSimple()),
         data_(new FeedbackData()),
         ui_thread_(content::BrowserThread::UI, &message_loop_) {
-    user_prefs::UserPrefs::Set(context_.get(), new TestingPrefServiceSimple());
+    user_prefs::UserPrefs::Set(context_.get(), prefs_.get());
     data_->set_context(context_.get());
     data_->set_send_report_callback(base::Bind(
         &FeedbackDataTest::set_send_report_callback, base::Unretained(this)));
@@ -94,6 +95,7 @@ class FeedbackDataTest : public testing::Test {
   base::Closure quit_closure_;
   scoped_ptr<base::RunLoop> run_loop_;
   scoped_ptr<content::TestBrowserContext> context_;
+  scoped_ptr<PrefService> prefs_;
   scoped_refptr<FeedbackData> data_;
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
