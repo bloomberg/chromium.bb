@@ -8,7 +8,8 @@
 
 namespace gcm {
 
-FakeGCMAppHandler::FakeGCMAppHandler() : received_event_(NO_EVENT) {
+FakeGCMAppHandler::FakeGCMAppHandler()
+    : received_event_(NO_EVENT), connected_(false) {
 }
 
 FakeGCMAppHandler::~FakeGCMAppHandler() {
@@ -57,6 +58,14 @@ void FakeGCMAppHandler::ClearResults() {
   app_id_.clear();
   message_ = GCMClient::IncomingMessage();
   send_error_details_ = GCMClient::SendErrorDetails();
+}
+
+void FakeGCMAppHandler::OnConnected(const net::IPEndPoint& ip_endpoint) {
+  connected_ = true;
+}
+
+void FakeGCMAppHandler::OnDisconnected() {
+  connected_ = false;
 }
 
 }  // namespace gcm

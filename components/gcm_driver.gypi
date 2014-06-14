@@ -23,6 +23,7 @@
         'gcm_driver/default_gcm_app_handler.h',
         'gcm_driver/gcm_activity.cc',
         'gcm_driver/gcm_activity.h',
+        'gcm_driver/gcm_app_handler.cc',
         'gcm_driver/gcm_app_handler.h',
         'gcm_driver/gcm_client.cc',
         'gcm_driver/gcm_client.h',
@@ -97,7 +98,7 @@
           ],
         }],
       ],
-    },    
+    },
   ],
   'conditions': [
     ['OS == "android"', {

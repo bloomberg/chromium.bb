@@ -15,12 +15,15 @@
 
 template <class T> class scoped_refptr;
 
+class GURL;
+
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
 }
 
 namespace net {
+class IPEndPoint;
 class URLRequestContextGetter;
 }
 
@@ -189,6 +192,13 @@ class GCMClient {
     // Called when activities are being recorded and a new activity has just
     // been recorded.
     virtual void OnActivityRecorded() = 0;
+
+    // Called when a new connection is established and a successful handshake
+    // has been performed.
+    virtual void OnConnected(const net::IPEndPoint& ip_endpoint) = 0;
+
+    // Called when the connection is interrupted.
+    virtual void OnDisconnected() = 0;
   };
 
   GCMClient();

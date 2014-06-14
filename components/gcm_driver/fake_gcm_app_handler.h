@@ -33,10 +33,11 @@ class FakeGCMAppHandler : public GCMAppHandler {
   const GCMClient::SendErrorDetails& send_error_details() const {
     return send_error_details_;
   }
+  bool connected() const { return connected_; }
 
   void WaitForNotification();
 
-  // GCMAppHandler:
+  // GCMAppHandler implementation.
   virtual void ShutdownHandler() OVERRIDE;
   virtual void OnMessage(const std::string& app_id,
                          const GCMClient::IncomingMessage& message) OVERRIDE;
@@ -44,6 +45,8 @@ class FakeGCMAppHandler : public GCMAppHandler {
   virtual void OnSendError(
       const std::string& app_id,
       const GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
+  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE;
+  virtual void OnDisconnected() OVERRIDE;
 
  private:
   void ClearResults();
@@ -54,6 +57,7 @@ class FakeGCMAppHandler : public GCMAppHandler {
   std::string app_id_;
   GCMClient::IncomingMessage message_;
   GCMClient::SendErrorDetails send_error_details_;
+  bool connected_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGCMAppHandler);
 };

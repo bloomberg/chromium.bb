@@ -305,10 +305,15 @@ TEST_F(GCMDriverTest, CreateGCMDriverBeforeSignIn) {
   // Sign in. GCM is still not started.
   SignIn(kTestAccountID1);
   EXPECT_FALSE(driver()->IsStarted());
+  EXPECT_FALSE(driver()->IsConnected());
+  EXPECT_FALSE(gcm_app_handler()->connected());
 
-  // GCM will be started only after both sign-in and app handler being
+  // GCM will be started only after both sign-in and app handler being added.
   AddAppHandlers();
   EXPECT_TRUE(driver()->IsStarted());
+  PumpIOLoop();
+  EXPECT_TRUE(driver()->IsConnected());
+  EXPECT_TRUE(gcm_app_handler()->connected());
 }
 
 TEST_F(GCMDriverTest, CreateGCMDriverAfterSignIn) {
@@ -318,10 +323,15 @@ TEST_F(GCMDriverTest, CreateGCMDriverAfterSignIn) {
   // Create GCMDriver after sign-in. GCM is not started.
   CreateDriver(FakeGCMClient::NO_DELAY_START);
   EXPECT_FALSE(driver()->IsStarted());
+  EXPECT_FALSE(driver()->IsConnected());
+  EXPECT_FALSE(gcm_app_handler()->connected());
 
-  // GCM will be started only after both sign-in and app handler being
+  // GCM will be started only after both sign-in and app handler being added.
   AddAppHandlers();
   EXPECT_TRUE(driver()->IsStarted());
+  PumpIOLoop();
+  EXPECT_TRUE(driver()->IsConnected());
+  EXPECT_TRUE(gcm_app_handler()->connected());
 }
 
 TEST_F(GCMDriverTest, Shutdown) {
@@ -333,6 +343,8 @@ TEST_F(GCMDriverTest, Shutdown) {
 
   driver()->Shutdown();
   EXPECT_FALSE(HasAppHandlers());
+  EXPECT_FALSE(driver()->IsConnected());
+  EXPECT_FALSE(gcm_app_handler()->connected());
 }
 
 TEST_F(GCMDriverTest, SignInAndSignOutOnGCMEnabled) {

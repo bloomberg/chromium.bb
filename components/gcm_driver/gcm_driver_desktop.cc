@@ -17,9 +17,17 @@
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/system_encryptor.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace gcm {
+
+namespace {
+
+// Empty string is reserved for the default app handler.
+const char kDefaultAppHandler[] = "";
+
+}  // namespace
 
 // Helper class to save tasks to run until we're ready to execute them.
 class GCMDriverDesktop::DelayedTaskController {
@@ -103,6 +111,8 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
       const GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
   virtual void OnGCMReady() OVERRIDE;
   virtual void OnActivityRecorded() OVERRIDE;
+  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE;
+  virtual void OnDisconnected() OVERRIDE;
 
   // Called on IO thread.
   void Initialize(
@@ -250,6 +260,19 @@ void GCMDriverDesktop::IOWorker::OnActivityRecorded() {
   GetGCMStatistics(false);
 }
 
+void GCMDriverDesktop::IOWorker::OnConnected(
+    const net::IPEndPoint& ip_endpoint) {
+  ui_thread_->PostTask(FROM_HERE,
+                       base::Bind(&GCMDriverDesktop::OnConnected,
+                                  service_,
+                                  ip_endpoint));
+}
+
+void GCMDriverDesktop::IOWorker::OnDisconnected() {
+  ui_thread_->PostTask(FROM_HERE,
+                       base::Bind(&GCMDriverDesktop::OnDisconnected, service_));
+}
+
 void GCMDriverDesktop::IOWorker::Start(
     const base::WeakPtr<GCMDriverDesktop>& service) {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
@@ -337,6 +360,7 @@ GCMDriverDesktop::GCMDriverDesktop(
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
     : gcm_enabled_(true),
       gcm_client_ready_(false),
+      connected_(false),
       identity_provider_(identity_provider.Pass()),
       ui_thread_(ui_thread),
       io_thread_(io_thread),
@@ -534,6 +558,10 @@ bool GCMDriverDesktop::IsGCMClientReady() const {
   return gcm_client_ready_;
 }
 
+bool GCMDriverDesktop::IsConnected() const {
+  return connected_;
+}
+
 void GCMDriverDesktop::GetGCMStatistics(
     const GetGCMStatisticsCallback& callback,
     bool clear_logs) {
@@ -667,6 +695,42 @@ void GCMDriverDesktop::GCMClientReady() {
   delayed_task_controller_->SetReady();
 }
 
+void GCMDriverDesktop::OnConnected(const net::IPEndPoint& ip_endpoint) {
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+
+  connected_ = true;
+
+  // Drop the event if signed out.
+  if (account_id_.empty())
+    return;
+
+  const GCMAppHandlerMap& app_handler_map = app_handlers();
+  for (GCMAppHandlerMap::const_iterator iter = app_handler_map.begin();
+       iter != app_handler_map.end(); ++iter) {
+    iter->second->OnConnected(ip_endpoint);
+  }
+
+  GetAppHandler(kDefaultAppHandler)->OnConnected(ip_endpoint);
+}
+
+void GCMDriverDesktop::OnDisconnected() {
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+
+  connected_ = false;
+
+  // Drop the event if signed out.
+  if (account_id_.empty())
+    return;
+
+  const GCMAppHandlerMap& app_handler_map = app_handlers();
+  for (GCMAppHandlerMap::const_iterator iter = app_handler_map.begin();
+       iter != app_handler_map.end(); ++iter) {
+    iter->second->OnDisconnected();
+  }
+
+  GetAppHandler(kDefaultAppHandler)->OnDisconnected();
+}
+
 void GCMDriverDesktop::GetGCMStatisticsFinished(
     const GCMClient::GCMStatistics& stats) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
@@ -685,3 +749,4 @@ std::string GCMDriverDesktop::SignedInUserName() const {
 }
 
 }  // namespace gcm
+

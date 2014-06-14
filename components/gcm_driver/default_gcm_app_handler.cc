@@ -5,6 +5,7 @@
 #include "components/gcm_driver/default_gcm_app_handler.h"
 
 #include "base/logging.h"
+#include "net/base/ip_endpoint.h"
 
 namespace gcm {
 
@@ -34,6 +35,16 @@ void DefaultGCMAppHandler::OnSendError(
     const GCMClient::SendErrorDetails& send_error_details) {
   LOG(ERROR) << "No app handler is found to route send error message for "
              << app_id;
+}
+
+void DefaultGCMAppHandler::OnConnected(const net::IPEndPoint& ip_endpoint) {
+  // TODO(semenzato): update CrOS NIC state.
+  DVLOG(1) << "GCM connected to " << ip_endpoint.ToString();
+}
+
+void DefaultGCMAppHandler::OnDisconnected() {
+  // TODO(semenzato): update CrOS NIC state.
+  DVLOG(1) << "GCM disconnected";
 }
 
 }  // namespace gcm

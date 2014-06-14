@@ -40,6 +40,10 @@ bool FakeGCMDriver::IsGCMClientReady() const {
   return true;
 }
 
+bool FakeGCMDriver::IsConnected() const {
+  return true;
+}
+
 void FakeGCMDriver::GetGCMStatistics(const GetGCMStatisticsCallback& callback,
                                      bool clear_logs) {
 }

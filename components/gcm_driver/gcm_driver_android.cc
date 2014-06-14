@@ -111,6 +111,11 @@ bool GCMDriverAndroid::IsGCMClientReady() const {
   return true;
 }
 
+bool GCMDriverAndroid::IsConnected() const {
+  // TODO(gcm): hook up to GCM connected status
+  return true;
+}
+
 void GCMDriverAndroid::GetGCMStatistics(
     const GetGCMStatisticsCallback& callback,
     bool clear_logs) {

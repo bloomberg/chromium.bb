@@ -48,15 +48,17 @@ class GCMInvalidationBridge : public gcm::GCMAppHandler,
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                                  const GoogleServiceAuthError& error) OVERRIDE;
 
-  // gcm::GCMEventRouter implementation.
+  // gcm::GCMAppHandler implementation.
   virtual void ShutdownHandler() OVERRIDE;
-  virtual void OnMessage(const std::string& app_id,
-                         const gcm::GCMClient::IncomingMessage& message)
-      OVERRIDE;
+  virtual void OnMessage(
+      const std::string& app_id,
+      const gcm::GCMClient::IncomingMessage& message) OVERRIDE;
   virtual void OnMessagesDeleted(const std::string& app_id) OVERRIDE;
   virtual void OnSendError(
       const std::string& app_id,
       const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
+  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE;
+  virtual void OnDisconnected() OVERRIDE;
 
   scoped_ptr<syncer::GCMNetworkChannelDelegate> CreateDelegate();
 

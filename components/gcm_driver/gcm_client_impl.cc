@@ -250,6 +250,7 @@ scoped_ptr<ConnectionFactory> GCMInternalsBuilder::BuildConnectionFactory(
 GCMClientImpl::GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder)
     : internals_builder_(internals_builder.Pass()),
       state_(UNINITIALIZED),
+      delegate_(NULL),
       clock_(internals_builder_->BuildClock()),
       url_request_context_getter_(NULL),
       pending_registration_requests_deleter_(&pending_registration_requests_),
@@ -506,6 +507,7 @@ void GCMClientImpl::Stop() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   device_checkin_info_.Reset();
   connection_factory_.reset();
+  delegate_->OnDisconnected();
   mcs_client_.reset();
   checkin_request_.reset();
   pending_registration_requests_.clear();
@@ -736,13 +738,14 @@ void GCMClientImpl::OnActivityRecorded() {
 
 void GCMClientImpl::OnConnected(const GURL& current_server,
                                 const net::IPEndPoint& ip_endpoint) {
-  // TODO(zea): inform GCMClient::Delegate and app handlers as well.
+  // TODO(gcm): expose current server in debug page.
   delegate_->OnActivityRecorded();
+  delegate_->OnConnected(ip_endpoint);
 }
 
 void GCMClientImpl::OnDisconnected() {
-  // TODO(zea): inform GCMClient::Delegate and app handlers as well.
   delegate_->OnActivityRecorded();
+  delegate_->OnDisconnected();
 }
 
 void GCMClientImpl::OnMessageReceivedFromMCS(const gcm::MCSMessage& message) {

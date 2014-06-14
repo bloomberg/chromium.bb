@@ -66,6 +66,7 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
   virtual GCMClient* GetGCMClientForTesting() const OVERRIDE;
   virtual bool IsStarted() const OVERRIDE;
   virtual bool IsGCMClientReady() const OVERRIDE;
+  virtual bool IsConnected() const OVERRIDE;
   virtual void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
                                 bool clear_logs) OVERRIDE;
   virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,
@@ -110,6 +111,8 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
   void MessageSendError(const std::string& app_id,
                         const GCMClient::SendErrorDetails& send_error_details);
   void GCMClientReady();
+  void OnConnected(const net::IPEndPoint& ip_endpoint);
+  void OnDisconnected();
 
   void GetGCMStatisticsFinished(const GCMClient::GCMStatistics& stats);
 
@@ -118,6 +121,11 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
 
   // Flag to indicate if GCMClient is ready.
   bool gcm_client_ready_;
+
+  // Flag to indicate the last known state of the GCM client. Because this
+  // flag lives on the UI thread, while the GCM client lives on the IO thread,
+  // it may be out of date while connection changes are happening.
+  bool connected_;
 
   // The account ID that this service is responsible for. Empty when the service
   // is not running.

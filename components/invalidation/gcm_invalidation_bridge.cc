@@ -316,4 +316,13 @@ void GCMInvalidationBridge::OnSendError(
   NOTREACHED();
 }
 
+void GCMInvalidationBridge::OnConnected(const net::IPEndPoint& ip_endpoint) {
+  // TODO(pavely): update invalidator state.
+}
+
+void GCMInvalidationBridge::OnDisconnected() {
+  // TODO(pavely): update invalidator state.
+}
+
+
 }  // namespace invalidation

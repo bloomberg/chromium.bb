@@ -86,6 +86,9 @@ class GCMDriver {
   // Returns true if the gcm client is ready.
   virtual bool IsGCMClientReady() const = 0;
 
+  // Returns true if the gcm client has an open and active connection.
+  virtual bool IsConnected() const = 0;
+
   // Get GCM client internal states and statistics.
   // If clear_logs is true then activity logs will be cleared before the stats
   // are returned.

@@ -251,6 +251,8 @@ class GCMClientImplTest : public testing::Test,
       const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
   virtual void OnGCMReady() OVERRIDE;
   virtual void OnActivityRecorded() OVERRIDE {}
+  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE {}
+  virtual void OnDisconnected() OVERRIDE {}
 
   GCMClientImpl* gcm_client() const { return gcm_client_.get(); }
   FakeMCSClient* mcs_client() const {

@@ -25,6 +25,8 @@ class DefaultGCMAppHandler : public GCMAppHandler {
   virtual void OnSendError(
       const std::string& app_id,
       const GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
+  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE;
+  virtual void OnDisconnected() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultGCMAppHandler);
