@@ -136,8 +136,6 @@
         'browser/android/banners/app_banner_settings_helper.h',
         'browser/android/banners/app_banner_utilities.cc',
         'browser/android/banners/app_banner_utilities.h',
-        'browser/android/bookmarks/managed_bookmarks_shim.cc',
-        'browser/android/bookmarks/managed_bookmarks_shim.h',
         'browser/android/bookmarks/bookmarks_bridge.cc',
         'browser/android/bookmarks/bookmarks_bridge.h',
         'browser/android/bookmarks/partner_bookmarks_shim.cc',

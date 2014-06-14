@@ -7,6 +7,7 @@
 #include "base/android/jni_string.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -26,20 +27,21 @@ using base::android::ScopedJavaLocalRef;
 using base::android::ScopedJavaGlobalRef;
 using content::BrowserThread;
 
-// Should mirror constants in BookmarkBridge.java
+// Should mirror constants in BookmarksBridge.java
 static const int kBookmarkTypeNormal = 0;
-static const int kBookmarkTypeManaged = 1;
-static const int kBookmarkTypePartner = 2;
+static const int kBookmarkTypePartner = 1;
 
 BookmarksBridge::BookmarksBridge(JNIEnv* env,
                                  jobject obj,
                                  jobject j_profile)
     : weak_java_ref_(env, obj),
       bookmark_model_(NULL),
+      client_(NULL),
       partner_bookmarks_shim_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_ = ProfileAndroid::FromProfileAndroid(j_profile);
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
+  client_ = ChromeBookmarkClientFactory::GetForProfile(profile_);
 
   // Registers the notifications we are interested.
   bookmark_model_->AddObserver(this);
@@ -48,9 +50,6 @@ BookmarksBridge::BookmarksBridge(JNIEnv* env,
   partner_bookmarks_shim_ = PartnerBookmarksShim::BuildForBrowserContext(
       chrome::GetBrowserContextRedirectedInIncognito(profile_));
   partner_bookmarks_shim_->AddObserver(this);
-
-  managed_bookmarks_shim_.reset(new ManagedBookmarksShim(profile_->GetPrefs()));
-  managed_bookmarks_shim_->AddObserver(this);
 
   NotifyIfDoneLoading();
 
@@ -65,8 +64,6 @@ BookmarksBridge::~BookmarksBridge() {
   bookmark_model_->RemoveObserver(this);
   if (partner_bookmarks_shim_)
     partner_bookmarks_shim_->RemoveObserver(this);
-  if (managed_bookmarks_shim_)
-    managed_bookmarks_shim_->RemoveObserver(this);
 }
 
 void BookmarksBridge::Destroy(JNIEnv*, jobject) {
@@ -111,15 +108,7 @@ void BookmarksBridge::GetBookmarksForFolder(JNIEnv* env,
           env, folder->id(), GetBookmarkType(folder));
   j_folder_id_obj = folder_id_obj.obj();
 
-  // If this is the Mobile bookmarks folder then add the "Managed bookmarks"
-  // folder first, so that it's the first entry.
-  if (folder == bookmark_model_->mobile_node() &&
-      managed_bookmarks_shim_->HasManagedBookmarks()) {
-    ExtractBookmarkNodeInformation(
-        managed_bookmarks_shim_->GetManagedBookmarksRoot(),
-        j_result_obj);
-  }
-  // Get the folder contents
+  // Get the folder contents.
   for (int i = 0; i < folder->child_count(); ++i) {
     const BookmarkNode* node = folder->GetChild(i);
     if (!IsFolderAvailable(node))
@@ -157,7 +146,7 @@ void BookmarksBridge::GetCurrentFolderHierarchy(JNIEnv* env,
           env, folder->id(), GetBookmarkType(folder));
   j_folder_id_obj = folder_id_obj.obj();
 
-  // Get the folder heirarchy
+  // Get the folder hierarchy.
   const BookmarkNode* node = folder;
   while (node) {
     ExtractBookmarkNodeInformation(node, j_result_obj);
@@ -245,10 +234,7 @@ void BookmarksBridge::ExtractBookmarkNodeInformation(const BookmarkNode* node,
 
 const BookmarkNode* BookmarksBridge::GetNodeByID(long node_id, int type) {
   const BookmarkNode* node;
-  if (type == kBookmarkTypeManaged) {
-    node = managed_bookmarks_shim_->GetNodeByID(
-        static_cast<int64>(node_id));
-  } else if (type == kBookmarkTypePartner) {
+  if (type == kBookmarkTypePartner) {
     node = partner_bookmarks_shim_->GetNodeByID(
         static_cast<int64>(node_id));
   } else {
@@ -262,7 +248,10 @@ const BookmarkNode* BookmarksBridge::GetFolderWithFallback(long folder_id,
   const BookmarkNode* folder = GetNodeByID(folder_id, type);
   if (!folder || folder->type() == BookmarkNode::URL ||
       !IsFolderAvailable(folder)) {
-    folder = bookmark_model_->mobile_node();
+    if (!client_->managed_node()->empty())
+      folder = client_->managed_node();
+    else
+      folder = bookmark_model_->mobile_node();
   }
   return folder;
 }
@@ -276,13 +265,12 @@ bool BookmarksBridge::IsEditable(const BookmarkNode* node) const {
     return false;
   if (partner_bookmarks_shim_->IsPartnerBookmark(node))
     return partner_bookmarks_shim_->IsEditable(node);
-  return !managed_bookmarks_shim_->IsManagedBookmark(node);
+  return client_->CanBeEditedByUser(node);
 }
 
 const BookmarkNode* BookmarksBridge::GetParentNode(const BookmarkNode* node) {
   DCHECK(IsLoaded());
-  if (node == managed_bookmarks_shim_->GetManagedBookmarksRoot() ||
-      node == partner_bookmarks_shim_->GetPartnerBookmarksRoot()) {
+  if (node == partner_bookmarks_shim_->GetPartnerBookmarksRoot()) {
     return bookmark_model_->mobile_node();
   } else {
     return node->parent();
@@ -290,9 +278,7 @@ const BookmarkNode* BookmarksBridge::GetParentNode(const BookmarkNode* node) {
 }
 
 int BookmarksBridge::GetBookmarkType(const BookmarkNode* node) {
-  if (managed_bookmarks_shim_->IsManagedBookmark(node))
-    return kBookmarkTypeManaged;
-  else if (partner_bookmarks_shim_->IsPartnerBookmark(node))
+  if (partner_bookmarks_shim_->IsPartnerBookmark(node))
     return kBookmarkTypePartner;
   else
     return kBookmarkTypeNormal;
@@ -316,6 +302,11 @@ bool BookmarksBridge::IsLoaded() const {
 
 bool BookmarksBridge::IsFolderAvailable(
     const BookmarkNode* folder) const {
+  // The managed bookmarks folder is not shown if there are no bookmarks
+  // configured via policy.
+  if (folder == client_->managed_node() && folder->empty())
+    return false;
+
   SigninManager* signin = SigninManagerFactory::GetForProfile(
       profile_->GetOriginalProfile());
   return (folder->type() != BookmarkNode::BOOKMARK_BAR &&
@@ -340,7 +331,7 @@ void BookmarksBridge::BookmarkModelChanged() {
     return;
 
   // Called when there are changes to the bookmark model. It is most
-  // likely changes to either managed or partner bookmarks.
+  // likely changes to the partner bookmarks.
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
@@ -472,13 +463,6 @@ void BookmarksBridge::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
   if (obj.is_null())
     return;
   Java_BookmarksBridge_extensiveBookmarkChangesEnded(env, obj.obj());
-}
-
-void BookmarksBridge::OnManagedBookmarksChanged() {
-  if (!IsLoaded())
-    return;
-
-  BookmarkModelChanged();
 }
 
 void BookmarksBridge::PartnerShimChanged(PartnerBookmarksShim* shim) {

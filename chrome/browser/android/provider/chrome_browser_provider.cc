@@ -19,6 +19,8 @@
 #include "chrome/browser/android/provider/bookmark_model_observer_task.h"
 #include "chrome/browser/android/provider/run_on_ui_thread_blocking.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service.h"
@@ -281,26 +283,26 @@ class RemoveBookmarkTask : public BookmarkModelObserverTask {
   DISALLOW_COPY_AND_ASSIGN(RemoveBookmarkTask);
 };
 
-// Utility method to remove all bookmarks.
-class RemoveAllBookmarksTask : public BookmarkModelObserverTask {
+// Utility method to remove all bookmarks that the user can edit.
+class RemoveAllUserBookmarksTask : public BookmarkModelObserverTask {
  public:
-  explicit RemoveAllBookmarksTask(BookmarkModel* model)
+  explicit RemoveAllUserBookmarksTask(BookmarkModel* model)
       : BookmarkModelObserverTask(model) {}
 
-  virtual ~RemoveAllBookmarksTask() {}
+  virtual ~RemoveAllUserBookmarksTask() {}
 
   void Run() {
     RunOnUIThreadBlocking::Run(
-        base::Bind(&RemoveAllBookmarksTask::RunOnUIThread, model()));
+        base::Bind(&RemoveAllUserBookmarksTask::RunOnUIThread, model()));
   }
 
   static void RunOnUIThread(BookmarkModel* model) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    model->RemoveAll();
+    model->RemoveAllUserBookmarks();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RemoveAllBookmarksTask);
+  DISALLOW_COPY_AND_ASSIGN(RemoveAllUserBookmarksTask);
 };
 
 // Utility method to update a bookmark.
@@ -474,18 +476,20 @@ class CreateBookmarksFolderOnceTask : public BookmarkModelTask {
 };
 
 // Creates a Java BookmarkNode object for a node given its id.
-class GetAllBookmarkFoldersTask : public BookmarkModelTask {
+class GetEditableBookmarkFoldersTask : public BookmarkModelTask {
  public:
-  explicit GetAllBookmarkFoldersTask(BookmarkModel* model)
-      : BookmarkModelTask(model) {
-  }
+  GetEditableBookmarkFoldersTask(ChromeBookmarkClient* client,
+                                 BookmarkModel* model)
+      : BookmarkModelTask(model), client_(client) {}
 
   void Run(ScopedJavaGlobalRef<jobject>* jroot) {
     RunOnUIThreadBlocking::Run(
-        base::Bind(&GetAllBookmarkFoldersTask::RunOnUIThread, model(), jroot));
+        base::Bind(&GetEditableBookmarkFoldersTask::RunOnUIThread,
+                   client_, model(), jroot));
   }
 
-  static void RunOnUIThread(BookmarkModel* model,
+  static void RunOnUIThread(ChromeBookmarkClient* client,
+                            BookmarkModel* model,
                             ScopedJavaGlobalRef<jobject>* jroot) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     const BookmarkNode* root = model->root_node();
@@ -494,12 +498,13 @@ class GetAllBookmarkFoldersTask : public BookmarkModelTask {
 
     // The iterative approach is not possible because ScopedGlobalJavaRefs
     // cannot be copy-constructed, and therefore not used in STL containers.
-    ConvertFolderSubtree(AttachCurrentThread(), root,
+    ConvertFolderSubtree(client, AttachCurrentThread(), root,
                          ScopedJavaLocalRef<jobject>(), jroot);
   }
 
  private:
-  static void ConvertFolderSubtree(JNIEnv* env,
+  static void ConvertFolderSubtree(ChromeBookmarkClient* client,
+                                   JNIEnv* env,
                                    const BookmarkNode* node,
                                    const JavaRef<jobject>& parent_folder,
                                    ScopedJavaGlobalRef<jobject>* jfolder) {
@@ -513,9 +518,9 @@ class GetAllBookmarkFoldersTask : public BookmarkModelTask {
 
     for (int i = 0; i < node->child_count(); ++i) {
       const BookmarkNode* child = node->GetChild(i);
-      if (child->is_folder()) {
+      if (child->is_folder() && client->CanBeEditedByUser(child)) {
         ScopedJavaGlobalRef<jobject> jchild;
-        ConvertFolderSubtree(env, child, *jfolder, &jchild);
+        ConvertFolderSubtree(client, env, child, *jfolder, &jchild);
 
         Java_BookmarkNode_addChild(env, jfolder->obj(), jchild.obj());
         if (ClearException(env)) {
@@ -526,7 +531,9 @@ class GetAllBookmarkFoldersTask : public BookmarkModelTask {
     }
   }
 
-  DISALLOW_COPY_AND_ASSIGN(GetAllBookmarkFoldersTask);
+  ChromeBookmarkClient* client_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetEditableBookmarkFoldersTask);
 };
 
 // Creates a Java BookmarkNode object for a node given its id.
@@ -1501,17 +1508,20 @@ jlong ChromeBrowserProvider::CreateBookmarksFolderOnce(
   return task.Run(title, parent_id);
 }
 
-ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetAllBookmarkFolders(
+ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetEditableBookmarkFolders(
     JNIEnv* env,
     jobject obj) {
   ScopedJavaGlobalRef<jobject> jroot;
-  GetAllBookmarkFoldersTask task(bookmark_model_);
+  ChromeBookmarkClient* client =
+      ChromeBookmarkClientFactory::GetForProfile(profile_);
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
+  GetEditableBookmarkFoldersTask task(client, model);
   task.Run(&jroot);
   return ScopedJavaLocalRef<jobject>(jroot);
 }
 
-void ChromeBrowserProvider::RemoveAllBookmarks(JNIEnv* env, jobject obj) {
-  RemoveAllBookmarksTask task(bookmark_model_);
+void ChromeBrowserProvider::RemoveAllUserBookmarks(JNIEnv* env, jobject obj) {
+  RemoveAllUserBookmarksTask task(bookmark_model_);
   task.Run();
 }
 

@@ -22,8 +22,7 @@ public class BookmarksBridge {
 
     // Should mirror constants in chrome/browser/android/bookmarks/bookmarks_bridge.cc
     public static final int BOOKMARK_TYPE_NORMAL = 0;
-    public static final int BOOKMARK_TYPE_MANAGED = 1;
-    public static final int BOOKMARK_TYPE_PARTNER = 2;
+    public static final int BOOKMARK_TYPE_PARTNER = 1;
 
     public static final int INVALID_FOLDER_ID = -2;
     public static final int ROOT_FOLDER_ID = -1;
@@ -116,7 +115,7 @@ public class BookmarksBridge {
 
         /**
          *  Called when there are changes to the bookmark model that don't trigger any of the other
-         *  callback methods. For example, this is called when managed or partner bookmarks change.
+         *  callback methods. For example, this is called when partner bookmarks change.
          */
         void bookmarkModelChanged();
     }
@@ -323,7 +322,6 @@ public class BookmarksBridge {
      */
     public static class BookmarkId {
         private static final String LOG_TAG = "BookmarkId";
-        private static final char TYPE_MANAGED = 'm';
         private static final char TYPE_PARTNER = 'p';
 
         private final long mId;
@@ -340,8 +338,6 @@ public class BookmarksBridge {
          */
         private static int getBookmarkTypeFromChar(char c) {
             switch (c) {
-                case TYPE_MANAGED:
-                    return BOOKMARK_TYPE_MANAGED;
                 case TYPE_PARTNER:
                     return BOOKMARK_TYPE_PARTNER;
                 default:
@@ -354,11 +350,11 @@ public class BookmarksBridge {
          * @return Whether the char representing the bookmark type is a valid type.
          */
         private static boolean isValidBookmarkTypeFromChar(char c) {
-            return (c == TYPE_MANAGED || c == TYPE_PARTNER);
+            return c == TYPE_PARTNER;
         }
 
         /**
-         * @param s The bookmark id string (Eg: m1 for managed bookmark id 1).
+         * @param s The bookmark id string (Eg: p1 for partner bookmark id 1).
          * @return the Bookmark id from the string which is a concatenation of bookmark type and
          *         the bookmark id.
          */
@@ -397,8 +393,6 @@ public class BookmarksBridge {
 
         private String getBookmarkTypeString() {
             switch (mType) {
-                case BOOKMARK_TYPE_MANAGED:
-                    return String.valueOf(TYPE_MANAGED);
                 case BOOKMARK_TYPE_PARTNER:
                     return String.valueOf(TYPE_PARTNER);
                 case BOOKMARK_TYPE_NORMAL:
@@ -517,6 +511,4 @@ public class BookmarksBridge {
             }
         }
     }
-
 }
-

@@ -59,14 +59,15 @@ public class ChromeBrowserProvider extends ContentProvider {
     // Defines the API methods that the Client can call by name.
     static final String CLIENT_API_BOOKMARK_NODE_EXISTS = "BOOKMARK_NODE_EXISTS";
     static final String CLIENT_API_CREATE_BOOKMARKS_FOLDER_ONCE = "CREATE_BOOKMARKS_FOLDER_ONCE";
-    static final String CLIENT_API_GET_BOOKMARK_FOLDER_HIERARCHY = "GET_BOOKMARK_FOLDER_HIERARCHY";
+    static final String CLIENT_API_GET_EDITABLE_BOOKMARK_FOLDER_HIERARCHY =
+            "GET_EDITABLE_BOOKMARK_FOLDER_HIERARCHY";
     static final String CLIENT_API_GET_BOOKMARK_NODE = "GET_BOOKMARK_NODE";
     static final String CLIENT_API_GET_DEFAULT_BOOKMARK_FOLDER = "GET_DEFAULT_BOOKMARK_FOLDER";
     static final String CLIENT_API_GET_MOBILE_BOOKMARKS_FOLDER_ID =
             "GET_MOBILE_BOOKMARKS_FOLDER_ID";
     static final String CLIENT_API_IS_BOOKMARK_IN_MOBILE_BOOKMARKS_BRANCH =
             "IS_BOOKMARK_IN_MOBILE_BOOKMARKS_BRANCH";
-    static final String CLIENT_API_DELETE_ALL_BOOKMARKS = "DELETE_ALL_BOOKMARKS";
+    static final String CLIENT_API_DELETE_ALL_USER_BOOKMARKS = "DELETE_ALL_USER_BOOKMARKS";
     static final String CLIENT_API_RESULT_KEY = "result";
 
 
@@ -611,8 +612,8 @@ public class ChromeBrowserProvider extends ContentProvider {
         return nativeCreateBookmarksFolderOnce(mNativeChromeBrowserProvider, title, parentId);
     }
 
-    private BookmarkNode getBookmarkFolderHierarchy() {
-        return nativeGetAllBookmarkFolders(mNativeChromeBrowserProvider);
+    private BookmarkNode getEditableBookmarkFolderHierarchy() {
+        return nativeGetEditableBookmarkFolders(mNativeChromeBrowserProvider);
     }
 
     protected BookmarkNode getBookmarkNode(long nodeId, boolean getParent, boolean getChildren,
@@ -701,8 +702,8 @@ public class ChromeBrowserProvider extends ContentProvider {
             result.putLong(CLIENT_API_RESULT_KEY,
                     createBookmarksFolderOnce(extras.getString(argKey(0)),
                                               extras.getLong(argKey(1))));
-        } else if (CLIENT_API_GET_BOOKMARK_FOLDER_HIERARCHY.equals(method)) {
-            result.putParcelable(CLIENT_API_RESULT_KEY, getBookmarkFolderHierarchy());
+        } else if (CLIENT_API_GET_EDITABLE_BOOKMARK_FOLDER_HIERARCHY.equals(method)) {
+            result.putParcelable(CLIENT_API_RESULT_KEY, getEditableBookmarkFolderHierarchy());
         } else if (CLIENT_API_GET_BOOKMARK_NODE.equals(method)) {
             result.putParcelable(CLIENT_API_RESULT_KEY,
                     getBookmarkNode(extras.getLong(argKey(0)),
@@ -717,8 +718,8 @@ public class ChromeBrowserProvider extends ContentProvider {
         } else if (CLIENT_API_IS_BOOKMARK_IN_MOBILE_BOOKMARKS_BRANCH.equals(method)) {
             result.putBoolean(CLIENT_API_RESULT_KEY,
                     isBookmarkInMobileBookmarksBranch(extras.getLong(argKey(0))));
-        } else if (CLIENT_API_DELETE_ALL_BOOKMARKS.equals(method)) {
-            nativeRemoveAllBookmarks(mNativeChromeBrowserProvider);
+        } else if (CLIENT_API_DELETE_ALL_USER_BOOKMARKS.equals(method)) {
+            nativeRemoveAllUserBookmarks(mNativeChromeBrowserProvider);
         } else {
             Log.w(TAG, "Received invalid method " + method);
             return null;
@@ -1340,9 +1341,9 @@ public class ChromeBrowserProvider extends ContentProvider {
     private native long nativeCreateBookmarksFolderOnce(long nativeChromeBrowserProvider,
             String title, long parentId);
 
-    private native BookmarkNode nativeGetAllBookmarkFolders(long nativeChromeBrowserProvider);
+    private native BookmarkNode nativeGetEditableBookmarkFolders(long nativeChromeBrowserProvider);
 
-    private native void nativeRemoveAllBookmarks(long nativeChromeBrowserProvider);
+    private native void nativeRemoveAllUserBookmarks(long nativeChromeBrowserProvider);
 
     private native BookmarkNode nativeGetBookmarkNode(long nativeChromeBrowserProvider,
             long id, boolean getParent, boolean getChildren);
