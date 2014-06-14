@@ -25,12 +25,12 @@ namespace browser_sync {
 AutofillProfileDataTypeController::AutofillProfileDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
-    ProfileSyncService* sync_service)
+    const DisableTypeCallback& disable_callback)
     : NonUIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
-          profile_sync_factory,
-          sync_service),
+          disable_callback,
+          profile_sync_factory),
       profile_(profile),
       personal_data_(NULL),
       callback_registered_(false) {}

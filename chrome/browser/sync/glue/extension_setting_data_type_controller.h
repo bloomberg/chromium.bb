@@ -12,7 +12,6 @@
 
 class Profile;
 class ProfileSyncComponentsFactory;
-class ProfileSyncService;
 
 namespace syncer {
 class SyncableService;
@@ -32,7 +31,7 @@ class ExtensionSettingDataTypeController
       syncer::ModelType type,
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
-      ProfileSyncService* profile_sync_service);
+      const DisableTypeCallback& disable_callback);
 
   // NonFrontendDataTypeController implementation
   virtual syncer::ModelType type() const OVERRIDE;
@@ -50,9 +49,8 @@ class ExtensionSettingDataTypeController
   // Either EXTENSION_SETTINGS or APP_SETTINGS.
   syncer::ModelType type_;
 
-  // These only used on the UI thread.
+  // Only used on the UI thread.
   Profile* profile_;
-  ProfileSyncService* profile_sync_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingDataTypeController);
 };

@@ -39,9 +39,9 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
     // Feed the DTC test_util_'s profile so it is reused later.
     // This allows us to control the associated TemplateURLService.
     search_engine_dtc_ =
-        new SearchEngineDataTypeController(profile_sync_factory_.get(),
-                                           test_util_.profile(),
-                                           service_.get());
+        new SearchEngineDataTypeController(
+            profile_sync_factory_.get(), test_util_.profile(),
+            DataTypeController::DisableTypeCallback());
   }
 
   virtual void TearDown() {
@@ -150,23 +150,6 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::RUNNING, search_engine_dtc_->state());
   EXPECT_TRUE(syncable_service_.syncing());
   search_engine_dtc_->Stop();
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
-  EXPECT_FALSE(syncable_service_.syncing());
-}
-
-TEST_F(SyncSearchEngineDataTypeControllerTest,
-       OnSingleDatatypeUnrecoverableError) {
-  SetStartExpectations();
-  PreloadTemplateURLService();
-  EXPECT_CALL(*service_.get(), DisableBrokenDatatype(_, _, _)).
-      WillOnce(InvokeWithoutArgs(search_engine_dtc_.get(),
-                                 &SearchEngineDataTypeController::Stop));
-
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
-  Start();
-  // This should cause search_engine_dtc_->Stop() to be called.
-  search_engine_dtc_->OnSingleDatatypeUnrecoverableError(FROM_HERE, "Test");
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
 }

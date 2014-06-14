@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/shared_change_processor_ref.h"
 #include "components/sync_driver/sync_api_component_factory.h"
@@ -28,10 +27,9 @@ NonUIDataTypeController::CreateSharedChangeProcessor() {
 NonUIDataTypeController::NonUIDataTypeController(
     scoped_refptr<base::MessageLoopProxy> ui_thread,
     const base::Closure& error_callback,
-    SyncApiComponentFactory* sync_factory,
-    ProfileSyncService* sync_service)
-    : DataTypeController(ui_thread, error_callback),
-      sync_service_(sync_service),
+    const DisableTypeCallback& disable_callback,
+    SyncApiComponentFactory* sync_factory)
+    : DataTypeController(ui_thread, error_callback, disable_callback),
       sync_factory_(sync_factory),
       state_(NOT_RUNNING) {
 }
@@ -190,8 +188,9 @@ void NonUIDataTypeController::OnSingleDatatypeUnrecoverableError(
 }
 
 NonUIDataTypeController::NonUIDataTypeController()
-    : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
-      sync_service_(NULL), sync_factory_(NULL) {}
+    : DataTypeController(base::MessageLoopProxy::current(), base::Closure(),
+                         DisableTypeCallback()),
+      sync_factory_(NULL) {}
 
 NonUIDataTypeController::~NonUIDataTypeController() {}
 
@@ -290,7 +289,8 @@ void NonUIDataTypeController::DisableImpl(
     const tracked_objects::Location& from_here,
     const std::string& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  sync_service_->DisableBrokenDatatype(type(), from_here, message);
+  if (!disable_callback().is_null())
+    disable_callback().Run(from_here, message);
 }
 
 bool NonUIDataTypeController::StartAssociationAsync() {

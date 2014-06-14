@@ -14,8 +14,6 @@
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/shared_change_processor.h"
 
-class ProfileSyncService;
-
 namespace base {
 class TimeDelta;
 }
@@ -36,9 +34,9 @@ class UIDataTypeController : public DataTypeController {
   UIDataTypeController(
       scoped_refptr<base::MessageLoopProxy> ui_thread,
       const base::Closure& error_callback,
+      const DisableTypeCallback& disable_callback,
       syncer::ModelType type,
-      SyncApiComponentFactory* sync_factory,
-      ProfileSyncService* sync_service);
+      SyncApiComponentFactory* sync_factory);
 
   // DataTypeController interface.
   virtual void LoadModels(
@@ -93,7 +91,6 @@ class UIDataTypeController : public DataTypeController {
   virtual void RecordStartFailure(StartResult result);
 
   SyncApiComponentFactory* const sync_factory_;
-  ProfileSyncService* const sync_service_;
 
   State state_;
 

@@ -23,15 +23,14 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
     syncer::ModelType type,
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
-    ProfileSyncService* profile_sync_service)
+    const DisableTypeCallback& disable_callback)
     : NonUIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
-          profile_sync_factory,
-          profile_sync_service),
+          disable_callback,
+          profile_sync_factory),
       type_(type),
-      profile_(profile),
-      profile_sync_service_(profile_sync_service) {
+      profile_(profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(type == syncer::EXTENSION_SETTINGS || type == syncer::APP_SETTINGS);
 }

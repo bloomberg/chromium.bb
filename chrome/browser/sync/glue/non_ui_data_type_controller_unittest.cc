@@ -15,7 +15,7 @@
 #include "base/tracked_objects.h"
 #include "chrome/browser/sync/glue/non_ui_data_type_controller_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "content/public/test/test_browser_thread.h"
@@ -96,14 +96,14 @@ class NonUIDataTypeControllerFake
   NonUIDataTypeControllerFake(
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
-      ProfileSyncService* sync_service,
       NonUIDataTypeControllerMock* mock,
-      SharedChangeProcessor* change_processor)
+      SharedChangeProcessor* change_processor,
+      const DisableTypeCallback& disable_callback)
       : NonUIDataTypeController(
           base::MessageLoopProxy::current(),
           base::Closure(),
-          profile_sync_factory,
-          sync_service),
+          disable_callback,
+          profile_sync_factory),
         blocked_(false),
         mock_(mock),
         change_processor_(change_processor) {}
@@ -188,23 +188,25 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
  public:
   SyncNonUIDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB), service_(&profile_) {}
+        db_thread_(BrowserThread::DB),
+        disable_callback_invoked_(false) {}
 
   virtual void SetUp() OVERRIDE {
-    EXPECT_CALL(service_, GetUserShare()).WillRepeatedly(
-        Return((syncer::UserShare*)NULL));
     db_thread_.Start();
     profile_sync_factory_.reset(
         new StrictMock<ProfileSyncComponentsFactoryMock>());
     change_processor_ = new SharedChangeProcessorMock();
     // All of these are refcounted, so don't need to be released.
     dtc_mock_ = new StrictMock<NonUIDataTypeControllerMock>();
+    DataTypeController::DisableTypeCallback disable_callback =
+        base::Bind(&SyncNonUIDataTypeControllerTest::DisableTypeCallback,
+                   base::Unretained(this));
     non_ui_dtc_ =
         new NonUIDataTypeControllerFake(profile_sync_factory_.get(),
                                         &profile_,
-                                        &service_,
                                         dtc_mock_.get(),
-                                        change_processor_);
+                                        change_processor_,
+                                        disable_callback);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -270,12 +272,17 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
     done->Signal();
   }
 
+  void DisableTypeCallback(const tracked_objects::Location& location,
+                           const std::string& message) {
+    disable_callback_invoked_ = true;
+    non_ui_dtc_->Stop();
+  }
+
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   TestingProfile profile_;
   scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
-  StrictMock<ProfileSyncServiceMock> service_;
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;
   // Must be destroyed after non_ui_dtc_.
@@ -284,6 +291,8 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
   scoped_refptr<NonUIDataTypeControllerMock> dtc_mock_;
   scoped_refptr<SharedChangeProcessorMock> change_processor_;
   scoped_ptr<syncer::SyncChangeProcessor> saved_change_processor_;
+
+  bool disable_callback_invoked_;
 };
 
 TEST_F(SyncNonUIDataTypeControllerTest, StartOk) {
@@ -443,7 +452,6 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartAfterSyncShutdown) {
   non_ui_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Mock::VerifyAndClearExpectations(&profile_sync_factory_);
-  Mock::VerifyAndClearExpectations(&service_);
   Mock::VerifyAndClearExpectations(change_processor_.get());
   Mock::VerifyAndClearExpectations(dtc_mock_.get());
 
@@ -499,8 +507,6 @@ TEST_F(SyncNonUIDataTypeControllerTest,
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
-  EXPECT_CALL(service_, DisableBrokenDatatype(_, _, _)).WillOnce(
-      InvokeWithoutArgs(non_ui_dtc_.get(), &NonUIDataTypeController::Stop));
   SetStopExpectations();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Start();
@@ -515,6 +521,7 @@ TEST_F(SyncNonUIDataTypeControllerTest,
       std::string("Test")));
   WaitForDTC();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
+  EXPECT_TRUE(disable_callback_invoked_);
 }
 
 }  // namespace

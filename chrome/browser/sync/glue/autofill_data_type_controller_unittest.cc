@@ -152,9 +152,9 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
         &profile_, MockWebDataServiceWrapperSyncable::Build);
 
     autofill_dtc_ =
-        new AutofillDataTypeController(&profile_sync_factory_,
-                                       &profile_,
-                                       &service_);
+        new AutofillDataTypeController(
+            &profile_sync_factory_, &profile_,
+            DataTypeController::DisableTypeCallback());
   }
 
   // Passed to AutofillDTC::Start().

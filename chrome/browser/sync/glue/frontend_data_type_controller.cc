@@ -20,13 +20,17 @@ using content::BrowserThread;
 
 namespace browser_sync {
 
+// TODO(tim): Legacy controllers are being left behind in componentization
+// effort for now, hence passing null DisableTypeCallback and still having
+// a dependency on ProfileSyncService.  That dep can probably be removed
+// without too much work.
 FrontendDataTypeController::FrontendDataTypeController(
     scoped_refptr<base::MessageLoopProxy> ui_thread,
     const base::Closure& error_callback,
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : DataTypeController(ui_thread, error_callback),
+    : DataTypeController(ui_thread, error_callback, DisableTypeCallback()),
       profile_sync_factory_(profile_sync_factory),
       profile_(profile),
       sync_service_(sync_service),
@@ -147,7 +151,8 @@ void FrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
 }
 
 FrontendDataTypeController::FrontendDataTypeController()
-    : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
+    : DataTypeController(base::MessageLoopProxy::current(), base::Closure(),
+                         DisableTypeCallback()),
       profile_sync_factory_(NULL),
       profile_(NULL),
       sync_service_(NULL),

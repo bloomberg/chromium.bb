@@ -12,9 +12,12 @@ namespace browser_sync {
 
 DataTypeController::DataTypeController(
     scoped_refptr<base::MessageLoopProxy> ui_thread,
-    const base::Closure& error_callback)
+    const base::Closure& error_callback,
+    const DisableTypeCallback& disable_callback)
     : base::RefCountedDeleteOnMessageLoop<DataTypeController>(ui_thread),
-      error_callback_(error_callback), user_share_(NULL) {
+      error_callback_(error_callback),
+      disable_callback_(disable_callback),
+      user_share_(NULL) {
 }
 
 DataTypeController::~DataTypeController() {
@@ -46,6 +49,11 @@ void DataTypeController::OnUserShareReady(syncer::UserShare* share) {
 
 syncer::UserShare* DataTypeController::user_share() const {
   return user_share_;
+}
+
+DataTypeController::DisableTypeCallback
+DataTypeController::disable_callback() {
+  return disable_callback_;
 }
 
 }  // namespace browser_sync

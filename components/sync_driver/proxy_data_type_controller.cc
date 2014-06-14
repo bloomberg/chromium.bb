@@ -9,7 +9,7 @@ namespace browser_sync {
 ProxyDataTypeController::ProxyDataTypeController(
     scoped_refptr<base::MessageLoopProxy> ui_thread,
     syncer::ModelType type)
-    : DataTypeController(ui_thread, base::Closure()),
+    : DataTypeController(ui_thread, base::Closure(), DisableTypeCallback()),
       state_(NOT_RUNNING),
       type_(type) {
   DCHECK(syncer::ProxyTypes().Has(type_));

@@ -14,8 +14,6 @@
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/shared_change_processor.h"
 
-class ProfileSyncService;
-
 namespace syncer {
 class SyncableService;
 }
@@ -29,8 +27,8 @@ class NonUIDataTypeController : public DataTypeController {
   NonUIDataTypeController(
       scoped_refptr<base::MessageLoopProxy> ui_thread,
       const base::Closure& error_callback,
-      SyncApiComponentFactory* sync_factory,
-      ProfileSyncService* sync_service);
+      const DisableTypeCallback& disable_callback,
+      SyncApiComponentFactory* sync_factory);
 
   // DataTypeController interface.
   virtual void LoadModels(
@@ -130,7 +128,6 @@ class NonUIDataTypeController : public DataTypeController {
   void DisableImpl(const tracked_objects::Location& from_here,
                    const std::string& message);
 
-  ProfileSyncService* const sync_service_;
   SyncApiComponentFactory* const sync_factory_;
 
   // State of this datatype controller.

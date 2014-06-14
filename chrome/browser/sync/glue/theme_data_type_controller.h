@@ -16,7 +16,7 @@ class ThemeDataTypeController : public UIDataTypeController {
   ThemeDataTypeController(
       SyncApiComponentFactory* sync_factory,
       Profile* profile,
-      ProfileSyncService* sync_service);
+      const DisableTypeCallback& disable_callback);
 
  private:
   virtual ~ThemeDataTypeController();

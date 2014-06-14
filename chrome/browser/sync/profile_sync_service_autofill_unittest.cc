@@ -392,7 +392,8 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
       ProfileSyncComponentsFactory* factory,
       TestingProfile* profile,
       ProfileSyncService* service) OVERRIDE {
-    return new AutofillDataTypeController(factory, profile, service);
+    return new AutofillDataTypeController(
+        factory, profile, DataTypeController::DisableTypeCallback());
   }
 
   virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
@@ -410,7 +411,8 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
       ProfileSyncComponentsFactory* factory,
       TestingProfile* profile,
       ProfileSyncService* service) OVERRIDE {
-    return new AutofillProfileDataTypeController(factory, profile, service);
+    return new AutofillProfileDataTypeController(
+        factory, profile, DataTypeController::DisableTypeCallback());
   }
 
   virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,

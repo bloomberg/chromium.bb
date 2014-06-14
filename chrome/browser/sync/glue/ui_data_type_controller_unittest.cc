@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_generic_change_processor.h"
@@ -33,18 +32,21 @@ class SyncUIDataTypeControllerTest : public testing::Test {
  public:
   SyncUIDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        profile_sync_service_(&profile_),
         type_(syncer::PREFERENCES),
-        change_processor_(NULL) {}
+        change_processor_(NULL),
+        disable_callback_invoked_(false) {}
 
   virtual void SetUp() {
     profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
     preference_dtc_ =
-        new UIDataTypeController(base::MessageLoopProxy::current(),
-                                 base::Closure(),
-                                 type_,
-                                 profile_sync_factory_.get(),
-                                 &profile_sync_service_);
+        new UIDataTypeController(
+            base::MessageLoopProxy::current(),
+            base::Closure(),
+            base::Bind(&SyncUIDataTypeControllerTest::DisableTypeCallback,
+                       base::Unretained(this),
+                       type_),
+            type_,
+            profile_sync_factory_.get());
     SetStartExpectations();
   }
 
@@ -81,17 +83,24 @@ class SyncUIDataTypeControllerTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
+  void DisableTypeCallback(syncer::ModelType type,
+                           const tracked_objects::Location& location,
+                           const std::string& message) {
+    disable_callback_invoked_ = true;
+    preference_dtc_->Stop();
+  }
+
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   ProfileMock profile_;
   scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
-  ProfileSyncServiceMock profile_sync_service_;
   const syncer::ModelType type_;
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;
   scoped_refptr<UIDataTypeController> preference_dtc_;
   FakeGenericChangeProcessor* change_processor_;
   syncer::FakeSyncableService syncable_service_;
+  bool disable_callback_invoked_;
 };
 
 // Start the DTC. Verify that the callback is called with OK, the
@@ -179,9 +188,6 @@ TEST_F(SyncUIDataTypeControllerTest,
 // Start the DTC, but then trigger an unrecoverable error. Verify the syncer
 // gets stopped and the DTC is in NOT_RUNNING state.
 TEST_F(SyncUIDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
-  EXPECT_CALL(profile_sync_service_, DisableBrokenDatatype(_,_,_)).
-      WillOnce(InvokeWithoutArgs(preference_dtc_.get(),
-                                 &UIDataTypeController::Stop));
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
@@ -191,6 +197,7 @@ TEST_F(SyncUIDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
   preference_dtc_->OnSingleDatatypeUnrecoverableError(FROM_HERE, "Test");
   PumpLoop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
+  EXPECT_TRUE(disable_callback_invoked_);
   EXPECT_FALSE(syncable_service_.syncing());
 }
 

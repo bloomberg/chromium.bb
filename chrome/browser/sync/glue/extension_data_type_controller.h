@@ -23,7 +23,7 @@ class ExtensionDataTypeController : public UIDataTypeController {
       syncer::ModelType type,  // Either EXTENSIONS or APPS.
       SyncApiComponentFactory* sync_factory,
       Profile* profile,
-      ProfileSyncService* sync_service);
+      const DisableTypeCallback& disable_callback);
 
  private:
   virtual ~ExtensionDataTypeController();

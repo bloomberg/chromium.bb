@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/shared_change_processor_ref.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,9 +19,10 @@ using content::BrowserThread;
 namespace browser_sync {
 
 UIDataTypeController::UIDataTypeController()
-    : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
+    : DataTypeController(base::MessageLoopProxy::current(),
+                         base::Closure(),
+                         DisableTypeCallback()),
       sync_factory_(NULL),
-      sync_service_(NULL),
       state_(NOT_RUNNING),
       type_(syncer::UNSPECIFIED) {
 }
@@ -30,18 +30,16 @@ UIDataTypeController::UIDataTypeController()
 UIDataTypeController::UIDataTypeController(
     scoped_refptr<base::MessageLoopProxy> ui_thread,
     const base::Closure& error_callback,
+    const DisableTypeCallback& disable_callback,
     syncer::ModelType type,
-    SyncApiComponentFactory* sync_factory,
-    ProfileSyncService* sync_service)
-    : DataTypeController(ui_thread, error_callback),
+    SyncApiComponentFactory* sync_factory)
+    : DataTypeController(ui_thread, error_callback, disable_callback),
       sync_factory_(sync_factory),
-      sync_service_(sync_service),
       state_(NOT_RUNNING),
       type_(type),
       processor_factory_(new GenericChangeProcessorFactory()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(sync_factory);
-  DCHECK(sync_service);
   DCHECK(syncer::IsRealDataType(type_));
 }
 
@@ -331,7 +329,8 @@ void UIDataTypeController::OnSingleDatatypeUnrecoverableError(
   // TODO(tim): We double-upload some errors.  See bug 383480.
   if (!error_callback_.is_null())
     error_callback_.Run();
-  sync_service_->DisableBrokenDatatype(type(), from_here, message);
+  if (!disable_callback().is_null())
+    disable_callback().Run(from_here, message);
 }
 
 void UIDataTypeController::RecordAssociationTime(base::TimeDelta time) {

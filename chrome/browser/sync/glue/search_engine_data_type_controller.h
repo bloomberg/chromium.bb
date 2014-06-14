@@ -24,7 +24,7 @@ class SearchEngineDataTypeController : public UIDataTypeController {
   SearchEngineDataTypeController(
       SyncApiComponentFactory* profile_sync_factory,
       Profile* profile,
-      ProfileSyncService* sync_service);
+      const DisableTypeCallback& disable_callback);
 
  private:
   virtual ~SearchEngineDataTypeController();

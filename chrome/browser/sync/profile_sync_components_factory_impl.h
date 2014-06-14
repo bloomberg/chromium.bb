@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 
@@ -68,6 +69,13 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   // Register data types which are enabled on both desktop and mobile.
   void RegisterCommonDataTypes(syncer::ModelTypeSet disabled_types,
                                ProfileSyncService* pss);
+  // Used to bind a callback to give to DataTypeControllers to disable
+  // data types.
+  browser_sync::DataTypeController::DisableTypeCallback
+      MakeDisableCallbackFor(syncer::ModelType type);
+  void DisableBrokenType(syncer::ModelType type,
+                         const tracked_objects::Location& from_here,
+                         const std::string& message);
 
   Profile* profile_;
   base::CommandLine* command_line_;
@@ -76,6 +84,8 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   // GetSyncableServiceForType.
   extensions::ExtensionSystem* extension_system_;
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
+
+  base::WeakPtrFactory<ProfileSyncComponentsFactoryImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncComponentsFactoryImpl);
 };

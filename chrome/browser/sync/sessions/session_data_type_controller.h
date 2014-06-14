@@ -20,7 +20,7 @@ class SessionDataTypeController : public UIDataTypeController,
  public:
   SessionDataTypeController(SyncApiComponentFactory* factory,
                             Profile* profile,
-                            ProfileSyncService* service);
+                            const DisableTypeCallback& disable_callback);
 
   // NotificationObserver interface.
   virtual void Observe(int type,

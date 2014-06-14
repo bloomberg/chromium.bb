@@ -18,13 +18,13 @@ ExtensionDataTypeController::ExtensionDataTypeController(
     syncer::ModelType type,
     SyncApiComponentFactory* sync_factory,
     Profile* profile,
-    ProfileSyncService* sync_service)
+    const DisableTypeCallback& disable_callback)
     : UIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
+          disable_callback,
           type,
-          sync_factory,
-          sync_service),
+          sync_factory),
       profile_(profile) {
   DCHECK(type == syncer::EXTENSIONS || type == syncer::APPS);
 }

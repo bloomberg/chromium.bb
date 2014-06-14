@@ -19,13 +19,13 @@ namespace browser_sync {
 SearchEngineDataTypeController::SearchEngineDataTypeController(
     SyncApiComponentFactory* sync_factory,
     Profile* profile,
-    ProfileSyncService* sync_service)
+    const DisableTypeCallback& disable_callback)
     : UIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
+          disable_callback,
           syncer::SEARCH_ENGINES,
-          sync_factory,
-          sync_service),
+          sync_factory),
       profile_(profile) {
 }
 

@@ -11,7 +11,8 @@ using syncer::ModelType;
 namespace browser_sync {
 
 FakeDataTypeController::FakeDataTypeController(ModelType type)
-      : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
+      : DataTypeController(base::MessageLoopProxy::current(), base::Closure(),
+                           DisableTypeCallback()),
         state_(NOT_RUNNING),
         model_load_delayed_(false),
         type_(type) {}
