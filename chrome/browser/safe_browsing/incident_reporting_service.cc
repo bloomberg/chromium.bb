@@ -371,7 +371,7 @@ void IncidentReportingService::OnReportUploadResult(
   DCHECK(it != uploads_.end());
   scoped_ptr<UploadContext> upload(context);  // == *it
   *it = uploads_.back();
-  uploads_.weak_erase(--uploads_.end());
+  uploads_.weak_erase(uploads_.end() - 1);
 
   if (result == IncidentReportUploader::UPLOAD_SUCCESS)
     HandleResponse(upload->report.Pass(), response.Pass());
