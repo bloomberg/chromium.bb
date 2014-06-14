@@ -6,6 +6,13 @@ from telemetry.page.actions.all_page_actions import *
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
+
+# The PageSet searches for pages relative to the directory the page class is
+# defined in so we need to subclass here.
+class BlankPage(page_module.Page):
+  pass
+
+
 class FiveBlankPagesPageSet(page_set_module.PageSet):
 
   """ Five blank pages. """
@@ -13,5 +20,4 @@ class FiveBlankPagesPageSet(page_set_module.PageSet):
   def __init__(self):
     super(FiveBlankPagesPageSet, self).__init__()
     for _ in xrange(5):
-      self.AddPage(page_module.Page(
-        'file://blank_page/blank_page.html', self))
+      self.AddPage(BlankPage('file://blank_page/blank_page.html', self))
