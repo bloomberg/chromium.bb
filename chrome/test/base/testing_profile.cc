@@ -17,6 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -508,15 +509,21 @@ void TestingProfile::DestroyTopSites() {
 static KeyedService* BuildBookmarkModel(content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   ChromeBookmarkClient* bookmark_client =
-      new ChromeBookmarkClient(profile, false);
-  bookmark_client->model()->Load(
-      profile->GetPrefs(),
-      profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
-      profile->GetPath(),
-      profile->GetIOTaskRunner(),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI));
-  return bookmark_client;
+      ChromeBookmarkClientFactory::GetForProfile(profile);
+  BookmarkModel* bookmark_model = new BookmarkModel(bookmark_client, false);
+  bookmark_client->Init(bookmark_model);
+  bookmark_model->Load(profile->GetPrefs(),
+                       profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
+                       profile->GetPath(),
+                       profile->GetIOTaskRunner(),
+                       content::BrowserThread::GetMessageLoopProxyForThread(
+                           content::BrowserThread::UI));
+  return bookmark_model;
+}
+
+static KeyedService* BuildChromeBookmarkClient(
+    content::BrowserContext* context) {
+  return new ChromeBookmarkClient(static_cast<Profile*>(context));
 }
 
 static KeyedService* BuildChromeHistoryClient(
@@ -530,11 +537,13 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
     base::FilePath path = GetPath().Append(bookmarks::kBookmarksFileName);
     base::DeleteFile(path, false);
   }
-  // This will create a bookmark model.
   ChromeHistoryClientFactory::GetInstance()->SetTestingFactory(
       this, BuildChromeHistoryClient);
-  BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
-      this, BuildBookmarkModel);
+  ChromeBookmarkClientFactory::GetInstance()->SetTestingFactory(
+      this, BuildChromeBookmarkClient);
+  // This creates the BookmarkModel.
+  ignore_result(BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
+      this, BuildBookmarkModel));
 }
 
 static KeyedService* BuildWebDataService(content::BrowserContext* profile) {

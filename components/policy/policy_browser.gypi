@@ -12,6 +12,7 @@
     '../url/url.gyp:url_lib',
     'bookmarks_browser',
     'components_strings.gyp:components_strings',
+    'keyed_service_core',
     'pref_registry',
     'url_matcher',
   ],

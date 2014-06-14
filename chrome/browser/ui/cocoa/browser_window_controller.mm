@@ -17,6 +17,7 @@
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/fullscreen.h"
@@ -79,6 +80,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/url_constants.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_ui_delegate.h"
@@ -1701,14 +1703,15 @@ using web_modal::WebContentsModalDialogManager;
 - (void)showBookmarkBubbleForURL:(const GURL&)url
                alreadyBookmarked:(BOOL)alreadyMarked {
   if (!bookmarkBubbleController_) {
+    BookmarkModel* model =
+        BookmarkModelFactory::GetForProfile(browser_->profile());
     ChromeBookmarkClient* client =
-        BookmarkModelFactory::GetChromeBookmarkClientForProfile(
-            browser_->profile());
-    const BookmarkNode* node =
-        client->model()->GetMostRecentlyAddedUserNodeForURL(url);
+        ChromeBookmarkClientFactory::GetForProfile(browser_->profile());
+    const BookmarkNode* node = model->GetMostRecentlyAddedUserNodeForURL(url);
     bookmarkBubbleController_ =
         [[BookmarkBubbleController alloc] initWithParentWindow:[self window]
                                                         client:client
+                                                         model:model
                                                           node:node
                                              alreadyBookmarked:alreadyMarked];
     [bookmarkBubbleController_ showWindow:self];

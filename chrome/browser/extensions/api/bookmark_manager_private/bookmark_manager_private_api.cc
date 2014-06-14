@@ -352,15 +352,15 @@ void BookmarkManagerPrivateDragEventRouter::ClearBookmarkNodeData() {
 
 bool ClipboardBookmarkManagerFunction::CopyOrCut(bool cut,
     const std::vector<std::string>& id_list) {
+  BookmarkModel* model = GetBookmarkModel();
   ChromeBookmarkClient* client = GetChromeBookmarkClient();
   std::vector<const BookmarkNode*> nodes;
-  EXTENSION_FUNCTION_VALIDATE(
-      GetNodesFromVector(client->model(), id_list, &nodes));
+  EXTENSION_FUNCTION_VALIDATE(GetNodesFromVector(model, id_list, &nodes));
   if (cut && client->HasDescendantsOfManagedNode(nodes)) {
     error_ = bookmark_keys::kModifyManagedError;
     return false;
   }
-  bookmark_utils::CopyToClipboard(client->model(), nodes, cut);
+  bookmark_utils::CopyToClipboard(model, nodes, cut);
   return true;
 }
 
@@ -735,15 +735,16 @@ bool BookmarkManagerPrivateRemoveTreesFunction::RunOnReady() {
   scoped_ptr<RemoveTrees::Params> params(RemoveTrees::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  BookmarkModel* model = GetBookmarkModel();
   ChromeBookmarkClient* client = GetChromeBookmarkClient();
 #if !defined(OS_ANDROID)
-  bookmarks::ScopedGroupBookmarkActions group_deletes(client->model());
+  bookmarks::ScopedGroupBookmarkActions group_deletes(model);
 #endif
   int64 id;
   for (size_t i = 0; i < params->id_list.size(); ++i) {
     if (!GetBookmarkIdAsInt64(params->id_list[i], &id))
       return false;
-    if (!bookmark_api_helpers::RemoveNode(client, id, true, &error_))
+    if (!bookmark_api_helpers::RemoveNode(model, client, id, true, &error_))
       return false;
   }
 

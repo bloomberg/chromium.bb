@@ -24,6 +24,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/common/chrome_switches.h"
@@ -637,7 +638,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     ASSERT_TRUE(bnode);
 
     ChromeBookmarkClient* client =
-        BookmarkModelFactory::GetChromeBookmarkClientForProfile(&profile_);
+        ChromeBookmarkClientFactory::GetForProfile(&profile_);
     ASSERT_TRUE(client);
     ASSERT_FALSE(client->IsDescendantOfManagedNode(bnode));
 
@@ -2018,7 +2019,7 @@ void ProfileSyncServiceBookmarkTestWithData::GetTransactionVersions(
     const BookmarkNode* root,
     BookmarkNodeVersionMap* node_versions) {
   ChromeBookmarkClient* client =
-      BookmarkModelFactory::GetChromeBookmarkClientForProfile(&profile_);
+      ChromeBookmarkClientFactory::GetForProfile(&profile_);
   ASSERT_TRUE(client);
 
   node_versions->clear();

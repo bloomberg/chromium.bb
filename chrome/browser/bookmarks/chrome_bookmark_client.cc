@@ -42,16 +42,25 @@ void NotifyHistoryOfRemovedURLs(Profile* profile,
 
 }  // namespace
 
-ChromeBookmarkClient::ChromeBookmarkClient(Profile* profile, bool index_urls)
-    : profile_(profile),
-      model_(new BookmarkModel(this, index_urls)),
-      managed_bookmarks_tracker_(
-          model_.get(),
-          profile_->GetPrefs(),
-          base::Bind(&ChromeBookmarkClient::GetManagedBookmarksDomain,
-                     base::Unretained(this))),
-      managed_node_(NULL) {
+ChromeBookmarkClient::ChromeBookmarkClient(Profile* profile)
+    : profile_(profile), model_(NULL) {
+}
+
+ChromeBookmarkClient::~ChromeBookmarkClient() {
+}
+
+void ChromeBookmarkClient::Init(BookmarkModel* model) {
+  DCHECK(model);
+  DCHECK(!model_);
+  model_ = model;
   model_->AddObserver(this);
+
+  managed_bookmarks_tracker_.reset(new policy::ManagedBookmarksTracker(
+      model_,
+      profile_->GetPrefs(),
+      base::Bind(&ChromeBookmarkClient::GetManagedBookmarksDomain,
+                 base::Unretained(this))));
+
   // Listen for changes to favicons so that we can update the favicon of the
   // node appropriately.
   registrar_.Add(this,
@@ -59,10 +68,14 @@ ChromeBookmarkClient::ChromeBookmarkClient(Profile* profile, bool index_urls)
                  content::Source<Profile>(profile_));
 }
 
-ChromeBookmarkClient::~ChromeBookmarkClient() {
-  model_->RemoveObserver(this);
+void ChromeBookmarkClient::Shutdown() {
+  if (model_) {
+    registrar_.RemoveAll();
 
-  registrar_.RemoveAll();
+    model_->RemoveObserver(this);
+    model_ = NULL;
+  }
+  BookmarkClient::Shutdown();
 }
 
 bool ChromeBookmarkClient::IsDescendantOfManagedNode(const BookmarkNode* node) {
@@ -157,7 +170,7 @@ bookmarks::LoadExtraCallback ChromeBookmarkClient::GetLoadExtraNodesCallback() {
       StartupTaskRunnerServiceFactory::GetForProfile(profile_)
           ->GetBookmarkTaskRunner(),
       managed_node_,
-      base::Passed(managed_bookmarks_tracker_.GetInitialManagedBookmarks()));
+      base::Passed(managed_bookmarks_tracker_->GetInitialManagedBookmarks()));
 }
 
 bool ChromeBookmarkClient::CanSetPermanentNodeTitle(
@@ -193,10 +206,6 @@ void ChromeBookmarkClient::Observe(
   }
 }
 
-void ChromeBookmarkClient::Shutdown() {
-  model_->Shutdown();
-}
-
 void ChromeBookmarkClient::BookmarkModelChanged() {
 }
 
@@ -220,7 +229,7 @@ void ChromeBookmarkClient::BookmarkModelLoaded(BookmarkModel* model,
   // Start tracking the managed bookmarks. This will detect any changes that
   // may have occurred while the initial managed bookmarks were being loaded
   // on the background.
-  managed_bookmarks_tracker_.Init(managed_node_);
+  managed_bookmarks_tracker_->Init(managed_node_);
 }
 
 // static

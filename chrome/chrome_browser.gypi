@@ -311,6 +311,8 @@
         'browser/bookmarks/bookmark_stats.h',
         'browser/bookmarks/chrome_bookmark_client.cc',
         'browser/bookmarks/chrome_bookmark_client.h',
+        'browser/bookmarks/chrome_bookmark_client_factory.cc',
+        'browser/bookmarks/chrome_bookmark_client_factory.h',
         'browser/bookmarks/enhanced_bookmarks_features.cc',
         'browser/bookmarks/enhanced_bookmarks_features.h',
         'browser/browser_about_handler.cc',

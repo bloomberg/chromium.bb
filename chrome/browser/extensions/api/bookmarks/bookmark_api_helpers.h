@@ -38,7 +38,8 @@ void AddNodeFoldersOnly(ChromeBookmarkClient* client,
                             api::bookmarks::BookmarkTreeNode> >* nodes,
                         bool recurse);
 
-bool RemoveNode(ChromeBookmarkClient* client,
+bool RemoveNode(BookmarkModel* model,
+                ChromeBookmarkClient* client,
                 int64 id,
                 bool recursive,
                 std::string* error);

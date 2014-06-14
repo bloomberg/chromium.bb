@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#import "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #import "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
@@ -1260,7 +1261,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
 
   ChromeBookmarkClient* client =
-      BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile_);
+      ChromeBookmarkClientFactory::GetForProfile(profile_);
   if (!client->CanBeEditedByUser(destParent))
     return NO;
   if (!client->CanBeEditedByUser(sourceNode))
@@ -1825,7 +1826,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
 
   ChromeBookmarkClient* client =
-      BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile_);
+      ChromeBookmarkClientFactory::GetForProfile(profile_);
   if (!client->CanBeEditedByUser(destParent))
     return NO;
 

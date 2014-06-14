@@ -128,6 +128,9 @@ class BookmarksFunction : public ChromeAsyncExtensionFunction,
   // RunAsync semantic equivalent called when the bookmarks are ready.
   virtual bool RunOnReady() = 0;
 
+  // Helper to get the BookmarkModel.
+  BookmarkModel* GetBookmarkModel();
+
   // Helper to get the ChromeBookmarkClient.
   ChromeBookmarkClient* GetChromeBookmarkClient();
 

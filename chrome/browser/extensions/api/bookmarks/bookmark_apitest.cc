@@ -6,6 +6,7 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,9 +25,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Bookmarks) {
   // Add test managed bookmarks to verify that the bookmarks API can read them
   // and can't modify them.
   Profile* profile = browser()->profile();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
   ChromeBookmarkClient* client =
-      BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile);
-  BookmarkModel* model = client->model();
+      ChromeBookmarkClientFactory::GetForProfile(profile);
   test::WaitForBookmarkModelToLoad(model);
 
   base::ListValue list;

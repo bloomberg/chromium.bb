@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -108,7 +109,7 @@ BookmarkModel* BookmarkMenuDelegate::GetBookmarkModel() {
 }
 
 ChromeBookmarkClient* BookmarkMenuDelegate::GetChromeBookmarkClient() {
-  return BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile_);
+  return ChromeBookmarkClientFactory::GetForProfile(profile_);
 }
 
 void BookmarkMenuDelegate::SetActiveMenu(const BookmarkNode* node,

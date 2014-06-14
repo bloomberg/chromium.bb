@@ -23,6 +23,7 @@
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
@@ -118,8 +119,12 @@ bool BookmarksFunction::RunAsync() {
   return true;
 }
 
+BookmarkModel* BookmarksFunction::GetBookmarkModel() {
+  return BookmarkModelFactory::GetForProfile(GetProfile());
+}
+
 ChromeBookmarkClient* BookmarksFunction::GetChromeBookmarkClient() {
-  return BookmarkModelFactory::GetChromeBookmarkClientForProfile(GetProfile());
+  return ChromeBookmarkClientFactory::GetForProfile(GetProfile());
 }
 
 bool BookmarksFunction::GetBookmarkIdAsInt64(const std::string& id_string,
@@ -240,8 +245,7 @@ void BookmarksFunction::BookmarkModelLoaded(BookmarkModel* model,
 BookmarkEventRouter::BookmarkEventRouter(Profile* profile)
     : browser_context_(profile),
       model_(BookmarkModelFactory::GetForProfile(profile)),
-      client_(
-          BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile)) {
+      client_(ChromeBookmarkClientFactory::GetForProfile(profile)) {
   model_->AddObserver(this);
 }
 
@@ -586,8 +590,9 @@ bool BookmarksRemoveFunction::RunOnReady() {
   if (name() == BookmarksRemoveTreeFunction::function_name())
     recursive = true;
 
+  BookmarkModel* model = GetBookmarkModel();
   ChromeBookmarkClient* client = GetChromeBookmarkClient();
-  if (!bookmark_api_helpers::RemoveNode(client, id, recursive, &error_))
+  if (!bookmark_api_helpers::RemoveNode(model, client, id, recursive, &error_))
     return false;
 
   return true;

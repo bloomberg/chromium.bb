@@ -9,6 +9,7 @@
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -77,7 +78,7 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
   // Add at most one separator for the bookmark bar and the managed bookmarks
   // folder.
   ChromeBookmarkClient* client =
-      BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile_);
+      ChromeBookmarkClientFactory::GetForProfile(profile_);
   const BookmarkNode* barNode = model->bookmark_bar_node();
   const BookmarkNode* managedNode = client->managed_node();
   if (!barNode->empty() || !managedNode->empty())

@@ -106,11 +106,11 @@ void AddNodeFoldersOnly(ChromeBookmarkClient* client,
   return AddNodeHelper(client, node, nodes, recurse, true);
 }
 
-bool RemoveNode(ChromeBookmarkClient* client,
+bool RemoveNode(BookmarkModel* model,
+                ChromeBookmarkClient* client,
                 int64 id,
                 bool recursive,
                 std::string* error) {
-  BookmarkModel* model = client->model();
   const BookmarkNode* node = GetBookmarkNodeByID(model, id);
   if (!node) {
     *error = keys::kNoNodeError;

@@ -19,6 +19,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -57,7 +58,7 @@ class TestBookmarkClient;
 //
 // You should NOT directly create a BookmarkModel, instead go through the
 // BookmarkModelFactory.
-class BookmarkModel {
+class BookmarkModel : public KeyedService {
  public:
   struct URLAndTitle {
     GURL url;
@@ -67,10 +68,10 @@ class BookmarkModel {
   // |index_urls| says whether URLs should be stored in the BookmarkIndex
   // in addition to bookmark titles.
   BookmarkModel(BookmarkClient* client, bool index_urls);
-  ~BookmarkModel();
+  virtual ~BookmarkModel();
 
-  // Invoked prior to destruction to release any necessary resources.
-  void Shutdown();
+  // KeyedService:
+  virtual void Shutdown() OVERRIDE;
 
   // Loads the bookmarks. This is called upon creation of the
   // BookmarkModel. You need not invoke this directly.

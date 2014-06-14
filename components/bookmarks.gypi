@@ -20,9 +20,10 @@
         'bookmarks_common',
         'components_strings.gyp:components_strings',
         'favicon_base',
+        'keyed_service_core',
+        'pref_registry',
         'query_parser',
         'startup_metric_utils',
-        'pref_registry',
       ],
       'sources': [
         'bookmarks/browser/base_bookmark_model_observer.cc',

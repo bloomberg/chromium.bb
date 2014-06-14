@@ -12,6 +12,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -253,9 +254,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
     browser_ = browser;
     initialWidth_ = initialWidth;
-    bookmarkClient_ = BookmarkModelFactory::GetChromeBookmarkClientForProfile(
-        browser_->profile());
-    bookmarkModel_ = bookmarkClient_->model();
+    bookmarkModel_ = BookmarkModelFactory::GetForProfile(browser_->profile());
+    bookmarkClient_ =
+        ChromeBookmarkClientFactory::GetForProfile(browser_->profile());
     buttons_.reset([[NSMutableArray alloc] init]);
     delegate_ = delegate;
     resizeDelegate_ = resizeDelegate;

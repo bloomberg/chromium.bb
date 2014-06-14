@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -88,11 +90,13 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
       [controller_ close];
       controller_ = nil;
     }
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
     ChromeBookmarkClient* client =
-        BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile());
+        ChromeBookmarkClientFactory::GetForProfile(profile());
     controller_ = [[BookmarkBubbleController alloc]
         initWithParentWindow:browser()->window()->GetNativeWindow()
                       client:client
+                       model:model
                         node:node
            alreadyBookmarked:YES];
     EXPECT_TRUE([controller_ window]);
@@ -389,19 +393,20 @@ TEST_F(BookmarkBubbleControllerTest, PopUpSelectionChanged) {
 // the user clicking the star, then sending the "cancel" command to represent
 // them pressing escape. The bookmark should not be there.
 TEST_F(BookmarkBubbleControllerTest, EscapeRemovesNewBookmark) {
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   ChromeBookmarkClient* client =
-      BookmarkModelFactory::GetChromeBookmarkClientForProfile(profile());
+      ChromeBookmarkClientFactory::GetForProfile(profile());
   const BookmarkNode* node = CreateTestBookmark();
-  BookmarkBubbleController* controller =
-      [[BookmarkBubbleController alloc]
-          initWithParentWindow:browser()->window()->GetNativeWindow()
-                        client:client
-                          node:node
-             alreadyBookmarked:NO];  // The last param is the key difference.
+  BookmarkBubbleController* controller = [[BookmarkBubbleController alloc]
+      initWithParentWindow:browser()->window()->GetNativeWindow()
+                    client:client
+                     model:model
+                      node:node
+         alreadyBookmarked:NO];  // The last param is the key difference.
   EXPECT_TRUE([controller window]);
   // Calls release on controller.
   [controller cancel:nil];
-  EXPECT_FALSE(client->model()->IsBookmarked(GURL(kTestBookmarkURL)));
+  EXPECT_FALSE(model->IsBookmarked(GURL(kTestBookmarkURL)));
 }
 
 // Create a controller where the bookmark already existed prior to clicking

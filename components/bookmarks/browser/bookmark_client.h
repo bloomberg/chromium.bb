@@ -13,6 +13,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/bookmarks/browser/bookmark_storage.h"
 #include "components/favicon_base/favicon_callback.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class BookmarkNode;
 class BookmarkPermanentNode;
@@ -24,7 +25,7 @@ struct UserMetricsAction;
 
 // This class abstracts operations that depends on the embedder's environment,
 // e.g. Chrome.
-class BookmarkClient {
+class BookmarkClient : public KeyedService {
  public:
   // Types representing a set of BookmarkNode and a mapping from BookmarkNode
   // to the number of time the corresponding URL has been typed by the user in

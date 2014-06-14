@@ -54,6 +54,7 @@ using base::UserMetricsAction;
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                     client:(ChromeBookmarkClient*)client
+                     model:(BookmarkModel*)model
                       node:(const BookmarkNode*)node
          alreadyBookmarked:(BOOL)alreadyBookmarked {
   DCHECK(client);
@@ -62,6 +63,7 @@ using base::UserMetricsAction;
                               parentWindow:parentWindow
                                 anchoredAt:NSZeroPoint])) {
     client_ = client;
+    model_ = model;
     node_ = node;
     alreadyBookmarked_ = alreadyBookmarked;
   }
@@ -103,9 +105,9 @@ using base::UserMetricsAction;
 // until we find something visible to pulse.
 - (void)startPulsingBookmarkButton:(const BookmarkNode*)node  {
   while (node) {
-    if ((node->parent() == client_->model()->bookmark_bar_node()) ||
+    if ((node->parent() == model_->bookmark_bar_node()) ||
         (node->parent() == client_->managed_node()) ||
-        (node == client_->model()->other_node())) {
+        (node == model_->other_node())) {
       pulsingBookmarkNode_ = node;
       bookmarkObserver_->StartObservingNode(pulsingBookmarkNode_);
       NSValue *value = [NSValue valueWithPointer:node];
@@ -197,9 +199,8 @@ using base::UserMetricsAction;
   // dialog, the bookmark bubble's cancel: means "don't add this as a
   // bookmark", not "cancel editing".  We must take extra care to not
   // touch the bookmark in this selector.
-  bookmarkObserver_.reset(new BookmarkModelObserverForCocoa(
-      client_->model(),
-      ^(BOOL nodeWasDeleted) {
+  bookmarkObserver_.reset(
+      new BookmarkModelObserverForCocoa(model_, ^(BOOL nodeWasDeleted) {
           // If a watched node was deleted, the pointer to the pulsing button
           // is likely stale.
           if (nodeWasDeleted)
@@ -255,7 +256,7 @@ using base::UserMetricsAction;
 
 - (IBAction)remove:(id)sender {
   [self stopPulsingBookmarkButton];
-  bookmark_utils::RemoveAllBookmarks(client_->model(), node_->url());
+  bookmark_utils::RemoveAllBookmarks(model_, node_->url());
   content::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
   node_ = NULL;  // no longer valid
   [self ok:sender];
@@ -301,7 +302,7 @@ using base::UserMetricsAction;
   NSString* oldTitle = base::SysUTF16ToNSString(node_->GetTitle());
   NSString* newTitle = [nameTextField_ stringValue];
   if (![oldTitle isEqual:newTitle]) {
-    client_->model()->SetTitle(node_, base::SysNSStringToUTF16(newTitle));
+    model_->SetTitle(node_, base::SysNSStringToUTF16(newTitle));
     content::RecordAction(
         UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
   }
@@ -318,7 +319,7 @@ using base::UserMetricsAction;
   DCHECK(newParent);
   if (oldParent != newParent) {
     int index = newParent->child_count();
-    client_->model()->Move(node_, newParent, index);
+    model_->Move(node_, newParent, index);
     content::RecordAction(UserMetricsAction("BookmarkBubble_ChangeParent"));
   }
 }
@@ -327,7 +328,7 @@ using base::UserMetricsAction;
 - (void)fillInFolderList {
   [nameTextField_ setStringValue:base::SysUTF16ToNSString(node_->GetTitle())];
   DCHECK([folderPopUpButton_ numberOfItems] == 0);
-  [self addFolderNodes:client_->model()->root_node()
+  [self addFolderNodes:model_->root_node()
          toPopUpButton:folderPopUpButton_
            indentation:0];
   NSMenu* menu = [folderPopUpButton_ menu];
@@ -362,7 +363,7 @@ using base::UserMetricsAction;
 - (void)addFolderNodes:(const BookmarkNode*)parent
          toPopUpButton:(NSPopUpButton*)button
            indentation:(int)indentation {
-  if (!client_->model()->is_root_node(parent))  {
+  if (!model_->is_root_node(parent)) {
     NSString* title = base::SysUTF16ToNSString(parent->GetTitle());
     NSMenu* menu = [button menu];
     NSMenuItem* item = [menu addItemWithTitle:title

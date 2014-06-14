@@ -7,12 +7,11 @@
 
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/deferred_sequenced_task_runner.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_client.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/browser/managed_bookmarks_tracker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -22,16 +21,15 @@ class Profile;
 
 class ChromeBookmarkClient : public BookmarkClient,
                              public content::NotificationObserver,
-                             public KeyedService,
                              public BaseBookmarkModelObserver {
-  public:
-  // |index_urls| says whether URLs should be stored in the BookmarkIndex
-  // in addition to bookmark titles.
-  ChromeBookmarkClient(Profile* profile, bool index_urls);
+ public:
+  explicit ChromeBookmarkClient(Profile* profile);
   virtual ~ChromeBookmarkClient();
 
-  // Returns the BookmarkModel that corresponds to this ChromeBookmarkClient.
-  BookmarkModel* model() { return model_.get(); }
+  void Init(BookmarkModel* model);
+
+  // KeyedService:
+  virtual void Shutdown() OVERRIDE;
 
   // Returns the managed_node.
   const BookmarkNode* managed_node() { return managed_node_; }
@@ -69,9 +67,6 @@ class ChromeBookmarkClient : public BookmarkClient,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // KeyedService:
-  virtual void Shutdown() OVERRIDE;
-
  private:
   // BaseBookmarkModelObserver:
   virtual void BookmarkModelChanged() OVERRIDE;
@@ -101,9 +96,11 @@ class ChromeBookmarkClient : public BookmarkClient,
 
   content::NotificationRegistrar registrar_;
 
-  scoped_ptr<BookmarkModel> model_;
+  // Pointer to the BookmarkModel. Will be non-NULL from the call to Init to
+  // the call to Shutdown. Must be valid for the whole interval.
+  BookmarkModel* model_;
 
-  policy::ManagedBookmarksTracker managed_bookmarks_tracker_;
+  scoped_ptr<policy::ManagedBookmarksTracker> managed_bookmarks_tracker_;
   BookmarkPermanentNode* managed_node_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBookmarkClient);
