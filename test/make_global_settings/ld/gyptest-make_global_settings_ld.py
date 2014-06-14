@@ -57,13 +57,16 @@ def verify_ld_host(test, ld=None, rel_path=False):
   # Resolve default values
   if ld_expected is None:
     if test.format == 'make':
-      ld_expected = '$(LD)'
+      # Make generator hasn't set the default value for LD.host.
+      # You can remove the following assertion as long as it doesn't
+      # break existing projects.
+      test.must_not_contain('Makefile', 'LD.host ?= ')
+      return
     elif test.format == 'ninja':
       if sys.platform == 'win32':
-        # TODO(yukawa): Make sure if this is an expected result or not.
-        ld_expected = 'ld'
-      else:
         ld_expected = '$ld'
+      else:
+        ld_expected = '$cc_host'
   if test.format == 'make':
     test.must_contain('Makefile', 'LD.host ?= %s' % ld_expected)
   elif test.format == 'ninja':
@@ -83,17 +86,26 @@ test.run_gyp('make_global_settings_ld.gyp')
 verify_ld_target(test)
 
 
+# Check default values with GYP_CROSSCOMPILE enabled.
+with TestGyp.LocalEnv({'GYP_CROSSCOMPILE': '1'}):
+  test.run_gyp('make_global_settings_ld.gyp')
+verify_ld_target(test)
+verify_ld_host(test)
+
+
 # Test 'LD' in 'make_global_settings'.
-test.run_gyp('make_global_settings_ld.gyp', '-Dcustom_ld_target=my_ld')
+with TestGyp.LocalEnv({'GYP_CROSSCOMPILE': '1'}):
+  test.run_gyp('make_global_settings_ld.gyp', '-Dcustom_ld_target=my_ld')
 # TODO(yukawa): Support 'LD' in Ninja generator
 if test.format == 'make':
   verify_ld_target(test, ld='my_ld', rel_path=True)
 
 
 # Test 'LD'/'LD.host' in 'make_global_settings'.
-test.run_gyp('make_global_settings_ld.gyp',
-             '-Dcustom_ld_target=my_ld_target1',
-             '-Dcustom_ld_host=my_ld_host1')
+with TestGyp.LocalEnv({'GYP_CROSSCOMPILE': '1'}):
+  test.run_gyp('make_global_settings_ld.gyp',
+               '-Dcustom_ld_target=my_ld_target1',
+               '-Dcustom_ld_host=my_ld_host1')
 # TODO(yukawa): Support 'LD'/'LD.host' in Ninja generator
 if test.format == 'make':
   verify_ld_target(test, ld='my_ld_target1', rel_path=True)
@@ -107,7 +119,8 @@ if test.format == 'make':
 # the record.
 # If you want to support $LD/$LD_host, please revise the following test case as
 # well as the generator.
-with TestGyp.LocalEnv({'LD': 'my_ld_target2',
+with TestGyp.LocalEnv({'GYP_CROSSCOMPILE': '1',
+                       'LD': 'my_ld_target2',
                        'LD_host': 'my_ld_host2'}):
   test.run_gyp('make_global_settings_ld.gyp')
 if test.format == 'make':
