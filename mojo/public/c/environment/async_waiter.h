@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_C_ENVIRONMENT_ASYNC_WAITER_H_
 #define MOJO_PUBLIC_C_ENVIRONMENT_ASYNC_WAITER_H_
 
-#include "mojo/public/c/system/core.h"
+#include "mojo/public/c/system/types.h"
 
 #ifdef __cplusplus
 extern "C" {

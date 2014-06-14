@@ -13,7 +13,7 @@
 #include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/c/gles2/gles2_export.h"
 #include "mojo/public/c/gles2/gles2_types.h"
-#include "mojo/public/c/system/core.h"
+#include "mojo/public/c/system/types.h"
 
 #ifdef __cplusplus
 extern "C" {
