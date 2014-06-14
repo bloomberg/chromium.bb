@@ -329,13 +329,11 @@ static jobject AsyncWait(JNIEnv* env,
       new AsyncWaitCallbackData(env, jcaller, callback);
   MojoAsyncWaitID cancel_id;
   if (static_cast<MojoHandle>(mojo_handle) != MOJO_HANDLE_INVALID) {
-    MojoAsyncWaiter* async_waiter = mojo::GetDefaultAsyncWaiter();
-    cancel_id = async_waiter->AsyncWait(async_waiter,
-                                        mojo_handle,
-                                        flags,
-                                        deadline,
-                                        AsyncWaitCallback,
-                                        callback_data);
+    cancel_id = mojo::GetDefaultAsyncWaiter()->AsyncWait(mojo_handle,
+                                                         flags,
+                                                         deadline,
+                                                         AsyncWaitCallback,
+                                                         callback_data);
   } else {
     cancel_id = kInvalidHandleCancelID;
     base::MessageLoop::current()->PostTask(
@@ -362,8 +360,7 @@ static void CancelAsyncWait(JNIEnv* env,
   }
   scoped_ptr<AsyncWaitCallbackData> deleter(
       reinterpret_cast<AsyncWaitCallbackData*>(data_ptr));
-  MojoAsyncWaiter* async_waiter = mojo::GetDefaultAsyncWaiter();
-  async_waiter->CancelWait(async_waiter, id);
+  mojo::GetDefaultAsyncWaiter()->CancelWait(id);
 }
 
 bool RegisterCoreImpl(JNIEnv* env) {

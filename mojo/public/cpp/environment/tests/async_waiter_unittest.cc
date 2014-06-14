@@ -42,18 +42,16 @@ class TestAsyncWaitCallback {
 MojoAsyncWaitID CallAsyncWait(const Handle& handle,
                               MojoWaitFlags flags,
                               TestAsyncWaitCallback* callback) {
-  MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter();
-  return waiter->AsyncWait(waiter,
-                           handle.value(),
-                           flags,
-                           MOJO_DEADLINE_INDEFINITE,
-                           &TestAsyncWaitCallback::OnHandleReady,
-                           callback);
+  return GetDefaultAsyncWaiter()->AsyncWait(
+      handle.value(),
+      flags,
+      MOJO_DEADLINE_INDEFINITE,
+      &TestAsyncWaitCallback::OnHandleReady,
+      callback);
 }
 
 void CallCancelWait(MojoAsyncWaitID wait_id) {
-  MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter();
-  waiter->CancelWait(waiter, wait_id);
+  GetDefaultAsyncWaiter()->CancelWait(wait_id);
 }
 
 class AsyncWaiterTest : public testing::Test {

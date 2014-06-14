@@ -28,9 +28,7 @@ gin::Handle<WaitingCallback> WaitingCallback::Create(
     MojoWaitFlags flags) {
   gin::Handle<WaitingCallback> waiting_callback =
       gin::CreateHandle(isolate, new WaitingCallback(isolate, callback));
-  MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter();
-  waiting_callback->wait_id_ = waiter->AsyncWait(
-      waiter,
+  waiting_callback->wait_id_ = GetDefaultAsyncWaiter()->AsyncWait(
       handle.value(),
       flags,
       MOJO_DEADLINE_INDEFINITE,
@@ -43,8 +41,7 @@ void WaitingCallback::Cancel() {
   if (!wait_id_)
     return;
 
-  MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter();
-  waiter->CancelWait(waiter, wait_id_);
+  GetDefaultAsyncWaiter()->CancelWait(wait_id_);
   wait_id_ = 0;
 }
 

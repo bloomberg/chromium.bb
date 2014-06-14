@@ -15,7 +15,7 @@ static mojo::GLES2Interface* g_gles2_interface = NULL;
 
 extern "C" {
 
-void MojoGLES2Initialize(MojoAsyncWaiter* async_waiter) {
+void MojoGLES2Initialize(const MojoAsyncWaiter* async_waiter) {
   assert(g_gles2_support);
   return g_gles2_support->Initialize(async_waiter);
 }

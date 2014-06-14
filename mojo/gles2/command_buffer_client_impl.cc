@@ -48,7 +48,7 @@ void CommandBufferDelegate::DrawAnimationFrame() {}
 
 CommandBufferClientImpl::CommandBufferClientImpl(
     CommandBufferDelegate* delegate,
-    MojoAsyncWaiter* async_waiter,
+    const MojoAsyncWaiter* async_waiter,
     ScopedMessagePipeHandle command_buffer_handle)
     : delegate_(delegate),
       shared_state_(NULL),

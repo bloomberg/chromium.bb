@@ -41,7 +41,7 @@ class CommandBufferClientImpl : public CommandBufferClient,
  public:
   explicit CommandBufferClientImpl(
       CommandBufferDelegate* delegate,
-      MojoAsyncWaiter* async_waiter,
+      const MojoAsyncWaiter* async_waiter,
       ScopedMessagePipeHandle command_buffer_handle);
   virtual ~CommandBufferClientImpl();
 
@@ -107,7 +107,7 @@ class CommandBufferClientImpl : public CommandBufferClient,
   int32 next_transfer_buffer_id_;
 
   bool initialize_result_;
-  MojoAsyncWaiter* async_waiter_;
+  const MojoAsyncWaiter* async_waiter_;
 };
 
 }  // gles2

@@ -18,7 +18,7 @@ class Router : public MessageReceiverWithResponder {
  public:
   Router(ScopedMessagePipeHandle message_pipe,
          FilterChain filters,
-         MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter());
+         const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter());
   virtual ~Router();
 
   // Sets the receiver to handle messages read from the message pipe that do

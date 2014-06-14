@@ -8,7 +8,7 @@
 
 namespace mojo {
 
-MojoAsyncWaiter* GetDefaultAsyncWaiter() {
+const MojoAsyncWaiter* GetDefaultAsyncWaiter() {
   return internal::GetDefaultAsyncWaiterImpl();
 }
 

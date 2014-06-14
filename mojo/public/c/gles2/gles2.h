@@ -19,7 +19,7 @@
 extern "C" {
 #endif
 
-MOJO_GLES2_EXPORT void MojoGLES2Initialize(MojoAsyncWaiter* async_waiter);
+MOJO_GLES2_EXPORT void MojoGLES2Initialize(const MojoAsyncWaiter* async_waiter);
 MOJO_GLES2_EXPORT void MojoGLES2Terminate();
 MOJO_GLES2_EXPORT MojoGLES2Context MojoGLES2CreateContext(
     MojoHandle handle,

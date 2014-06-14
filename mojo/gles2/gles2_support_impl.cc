@@ -47,7 +47,7 @@ GLES2SupportImpl::~GLES2SupportImpl() {}
 // static
 void GLES2SupportImpl::Init() { GLES2Support::Init(new GLES2SupportImpl()); }
 
-void GLES2SupportImpl::Initialize(MojoAsyncWaiter* async_waiter) {
+void GLES2SupportImpl::Initialize(const MojoAsyncWaiter* async_waiter) {
   DCHECK(!async_waiter_);
   DCHECK(async_waiter);
   async_waiter_ = async_waiter;

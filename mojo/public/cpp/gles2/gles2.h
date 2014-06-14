@@ -13,7 +13,7 @@ namespace mojo {
 class GLES2Initializer {
  public:
   explicit GLES2Initializer(
-      MojoAsyncWaiter* async_waiter = GetDefaultAsyncWaiter()) {
+      const MojoAsyncWaiter* async_waiter = GetDefaultAsyncWaiter()) {
     MojoGLES2Initialize(async_waiter);
   }
   ~GLES2Initializer() { MojoGLES2Terminate(); }

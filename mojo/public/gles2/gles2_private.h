@@ -24,7 +24,7 @@ class MOJO_GLES2_EXPORT GLES2Support {
 
   static void Init(GLES2Support* gles2_support);
 
-  virtual void Initialize(MojoAsyncWaiter* async_waiter) = 0;
+  virtual void Initialize(const MojoAsyncWaiter* async_waiter) = 0;
   virtual void Terminate() = 0;
   virtual MojoGLES2Context CreateContext(
       MessagePipeHandle handle,

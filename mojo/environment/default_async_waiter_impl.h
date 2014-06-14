@@ -11,7 +11,7 @@
 namespace mojo {
 namespace internal {
 
-MOJO_ENVIRONMENT_IMPL_EXPORT MojoAsyncWaiter* GetDefaultAsyncWaiterImpl();
+MOJO_ENVIRONMENT_IMPL_EXPORT const MojoAsyncWaiter* GetDefaultAsyncWaiterImpl();
 
 }  // namespace internal
 }  // namespace mojo

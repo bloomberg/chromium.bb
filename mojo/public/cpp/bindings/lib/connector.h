@@ -26,7 +26,7 @@ class Connector : public MessageReceiver {
  public:
   // The Connector takes ownership of |message_pipe|.
   explicit Connector(ScopedMessagePipeHandle message_pipe,
-                     MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter());
+                     const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter());
   virtual ~Connector();
 
   // Sets the receiver to handle messages read from the message pipe.  The
@@ -72,7 +72,7 @@ class Connector : public MessageReceiver {
   void ReadMore();
 
   ErrorHandler* error_handler_;
-  MojoAsyncWaiter* waiter_;
+  const MojoAsyncWaiter* waiter_;
 
   ScopedMessagePipeHandle message_pipe_;
   MessageReceiver* incoming_receiver_;

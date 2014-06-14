@@ -9,8 +9,8 @@
 
 namespace mojo {
 
-// Returns a default implementation of MojoAsyncWaiter.
-MojoAsyncWaiter* GetDefaultAsyncWaiter();
+// Returns a default implementation of |MojoAsyncWaiter|.
+const MojoAsyncWaiter* GetDefaultAsyncWaiter();
 
 }  // namespace mojo
 

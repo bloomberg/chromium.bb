@@ -38,7 +38,7 @@ class InterfacePtrState {
   }
 
   void ConfigureProxy(ScopedMessagePipeHandle handle,
-                      MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
+                      const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
     assert(!proxy_);
     assert(!router_);
 

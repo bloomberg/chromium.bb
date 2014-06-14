@@ -27,7 +27,7 @@ namespace gles2 {
 class GLES2Context : public CommandBufferDelegate,
                      public MojoGLES2ContextPrivate {
  public:
-  explicit GLES2Context(MojoAsyncWaiter* async_waiter,
+  explicit GLES2Context(const MojoAsyncWaiter* async_waiter,
                         ScopedMessagePipeHandle command_buffer_handle,
                         MojoGLES2ContextLost lost_callback,
                         MojoGLES2DrawAnimationFrame animation_callback,

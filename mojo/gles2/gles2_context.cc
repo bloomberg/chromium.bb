@@ -20,7 +20,7 @@ const size_t kDefaultMinTransferBufferSize = 1 * 256 * 1024;
 const size_t kDefaultMaxTransferBufferSize = 16 * 1024 * 1024;
 }
 
-GLES2Context::GLES2Context(MojoAsyncWaiter* async_waiter,
+GLES2Context::GLES2Context(const MojoAsyncWaiter* async_waiter,
                            ScopedMessagePipeHandle command_buffer_handle,
                            MojoGLES2ContextLost lost_callback,
                            MojoGLES2DrawAnimationFrame animation_callback,

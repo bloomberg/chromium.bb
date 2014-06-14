@@ -18,7 +18,7 @@ class MOJO_GLES2_IMPL_EXPORT GLES2SupportImpl : public GLES2Support {
 
   static void Init();
 
-  virtual void Initialize(MojoAsyncWaiter* async_waiter) OVERRIDE;
+  virtual void Initialize(const MojoAsyncWaiter* async_waiter) OVERRIDE;
   virtual void Terminate() OVERRIDE;
   virtual MojoGLES2Context CreateContext(
       MessagePipeHandle handle,
@@ -37,7 +37,7 @@ class MOJO_GLES2_IMPL_EXPORT GLES2SupportImpl : public GLES2Support {
  private:
   GLES2SupportImpl();
 
-  MojoAsyncWaiter* async_waiter_;
+  const MojoAsyncWaiter* async_waiter_;
 };
 
 }  // namespace gles2

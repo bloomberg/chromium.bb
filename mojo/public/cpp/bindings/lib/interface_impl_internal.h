@@ -44,14 +44,14 @@ class InterfaceImplState : public ErrorHandler {
 
   void BindProxy(
       InterfacePtr<Interface>* ptr,
-      MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
+      const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
     MessagePipe pipe;
     ptr->Bind(pipe.handle0.Pass(), waiter);
     Bind(pipe.handle1.Pass(), waiter);
   }
 
   void Bind(ScopedMessagePipeHandle handle,
-            MojoAsyncWaiter* waiter) {
+            const MojoAsyncWaiter* waiter) {
     assert(!router_);
 
     FilterChain filters;

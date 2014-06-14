@@ -59,7 +59,7 @@ class InterfaceImpl : public internal::InterfaceImplBase<Interface> {
 template <typename Impl>
 Impl* BindToPipe(Impl* instance,
                  ScopedMessagePipeHandle handle,
-                 MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
+                 const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
   instance->internal_state()->Bind(handle.Pass(), waiter);
   return instance;
 }
@@ -77,7 +77,7 @@ Impl* BindToPipe(Impl* instance,
 template <typename Impl, typename Interface>
 Impl* BindToProxy(Impl* instance,
                   InterfacePtr<Interface>* ptr,
-                  MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
+                  const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
   instance->internal_state()->BindProxy(ptr, waiter);
   return instance;
 }
@@ -96,7 +96,7 @@ Impl* BindToProxy(Impl* instance,
 template <typename Impl, typename Interface>
 Impl* BindToRequest(Impl* instance,
                     InterfaceRequest<Interface>* request,
-                    MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
+                    const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
   return BindToPipe(instance, request->PassMessagePipe(), waiter);
 }
 

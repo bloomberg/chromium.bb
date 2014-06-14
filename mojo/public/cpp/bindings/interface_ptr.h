@@ -56,7 +56,7 @@ class InterfacePtr {
   // thread, and bind the new InterfacePtr<..> to the message pipe on that
   // thread.
   void Bind(ScopedMessagePipeHandle handle,
-            MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
+            const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
     reset();
     internal_state_.ConfigureProxy(handle.Pass(), waiter);
   }
@@ -110,7 +110,7 @@ class InterfacePtr {
 template <typename Interface>
 InterfacePtr<Interface> MakeProxy(
     ScopedMessagePipeHandle handle,
-    MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
+    const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
   InterfacePtr<Interface> ptr;
   if (handle.is_valid())
     ptr.Bind(handle.Pass(), waiter);

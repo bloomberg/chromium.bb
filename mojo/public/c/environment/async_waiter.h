@@ -7,10 +7,6 @@
 
 #include "mojo/public/c/system/types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef uintptr_t MojoAsyncWaitID;
 
 typedef void (*MojoAsyncWaitCallback)(void* closure, MojoResult result);
@@ -20,8 +16,7 @@ struct MojoAsyncWaiter {
   // of MojoWait to the given MojoAsyncWaitCallback on the current thread.
   // Returns a non-zero MojoAsyncWaitID that can be used with CancelWait to
   // stop waiting. This identifier becomes invalid once the callback runs.
-  MojoAsyncWaitID (*AsyncWait)(struct MojoAsyncWaiter* waiter,
-                               MojoHandle handle,
+  MojoAsyncWaitID (*AsyncWait)(MojoHandle handle,
                                MojoWaitFlags flags,
                                MojoDeadline deadline,
                                MojoAsyncWaitCallback callback,
@@ -29,12 +24,7 @@ struct MojoAsyncWaiter {
 
   // Cancel an existing call to AsyncWait with the given MojoAsyncWaitID. The
   // corresponding MojoAsyncWaitCallback will not be called in this case.
-  void (*CancelWait)(struct MojoAsyncWaiter* waiter,
-                     MojoAsyncWaitID wait_id);
+  void (*CancelWait)(MojoAsyncWaitID wait_id);
 };
-
-#ifdef __cplusplus
-}  // extern "C"
-#endif
 
 #endif  // MOJO_PUBLIC_C_ENVIRONMENT_ASYNC_WAITER_H_

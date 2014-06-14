@@ -15,7 +15,7 @@ namespace internal {
 // ----------------------------------------------------------------------------
 
 Connector::Connector(ScopedMessagePipeHandle message_pipe,
-                     MojoAsyncWaiter* waiter)
+                     const MojoAsyncWaiter* waiter)
     : error_handler_(NULL),
       waiter_(waiter),
       message_pipe_(message_pipe.Pass()),
@@ -31,7 +31,7 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
 
 Connector::~Connector() {
   if (async_wait_id_)
-    waiter_->CancelWait(waiter_, async_wait_id_);
+    waiter_->CancelWait(async_wait_id_);
 }
 
 void Connector::CloseMessagePipe() {
@@ -40,7 +40,7 @@ void Connector::CloseMessagePipe() {
 
 ScopedMessagePipeHandle Connector::PassMessagePipe() {
   if (async_wait_id_) {
-    waiter_->CancelWait(waiter_, async_wait_id_);
+    waiter_->CancelWait(async_wait_id_);
     async_wait_id_ = 0;
   }
   return message_pipe_.Pass();
@@ -107,8 +107,7 @@ void Connector::OnHandleReady(MojoResult result) {
 }
 
 void Connector::WaitToReadMore() {
-  async_wait_id_ = waiter_->AsyncWait(waiter_,
-                                      message_pipe_.get().value(),
+  async_wait_id_ = waiter_->AsyncWait(message_pipe_.get().value(),
                                       MOJO_WAIT_FLAG_READABLE,
                                       MOJO_DEADLINE_INDEFINITE,
                                       &Connector::CallOnHandleReady,
