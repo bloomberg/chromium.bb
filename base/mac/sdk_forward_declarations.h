@@ -14,9 +14,7 @@
 #import <AppKit/AppKit.h>
 #import <CoreWLAN/CoreWLAN.h>
 #import <ImageCaptureCore/ImageCaptureCore.h>
-#import <IOBluetooth/objc/IOBluetoothDevice.h>
-#import <IOBluetooth/objc/IOBluetoothDeviceInquiry.h>
-#import <IOBluetooth/objc/IOBluetoothHostController.h>
+#import <IOBluetooth/IOBluetooth.h>
 
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
@@ -167,6 +165,10 @@ enum CWChannelBand {
 - (void)deviceInquiryComplete:(IOBluetoothDeviceInquiry*)sender
                         error:(IOReturn)error
                       aborted:(BOOL)aborted;
+@end
+
+@interface IOBluetoothL2CAPChannel (LionSDK)
+@property(readonly) BluetoothL2CAPMTU outgoingMTU;
 @end
 
 @interface IOBluetoothDevice (LionSDK)

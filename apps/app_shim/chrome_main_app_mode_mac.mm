@@ -155,7 +155,7 @@ AppShimController::AppShimController()
 
 AppShimController::~AppShimController() {
   // Un-set the delegate since NSApplication does not retain it.
-  [NSApp setDelegate:nil];
+  [[NSApplication sharedApplication] setDelegate:nil];
 }
 
 void AppShimController::OnPingChromeReply(bool success) {

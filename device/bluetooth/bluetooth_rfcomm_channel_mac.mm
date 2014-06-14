@@ -71,7 +71,7 @@ BluetoothRfcommChannelMac::~BluetoothRfcommChannelMac() {
 scoped_ptr<BluetoothRfcommChannelMac> BluetoothRfcommChannelMac::OpenAsync(
     BluetoothSocketMac* socket,
     IOBluetoothDevice* device,
-    uint8 channel_id,
+    BluetoothRFCOMMChannelID channel_id,
     IOReturn* status) {
   DCHECK(socket);
   scoped_ptr<BluetoothRfcommChannelMac> channel(
