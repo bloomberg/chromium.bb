@@ -48,7 +48,7 @@ function resetGlobals()
         ],
         'masters': [{
             name: 'ChromiumWebkit',
-            url: 'dummyurl',
+            url_name: "chromium.webkit",
             tests: {
                 'layout-tests': {'builders': ['WebKit Linux', 'WebKit Linux (dbg)', 'WebKit Linux (deps)', 'WebKit Mac10.7', 'WebKit Win', 'WebKit Win (dbg)']},
                 'unit_tests': {'builders': ['Linux Tests']},
@@ -56,7 +56,7 @@ function resetGlobals()
             groups: ['@ToT Chromium', '@ToT Blink'],
         },{
             name :'ChromiumWin',
-            url: 'dummyurl2',
+            url_name: "chromium.win",
             tests: {
                 'ash_unittests': {'builders': ['XP Tests (1)', 'Win7 Tests (1)']},
                 'unit_tests': {'builders': ['Linux Tests']},

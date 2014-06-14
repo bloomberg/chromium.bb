@@ -34,7 +34,7 @@ function LOAD_BUILDBOT_DATA(builderData)
     var testTypesThatDoNotUpload = {};
     builders.noUploadTestTypes = builderData['no_upload_test_types']
     builderData['masters'].forEach(function(master) {
-        builders.masters[master.name] = new builders.BuilderMaster(master.name, master.url, master.tests, master.groups);
+        builders.masters[master.name] = new builders.BuilderMaster(master);
 
         master.groups.forEach(function(group) { groups[group] = true; });
 
@@ -152,12 +152,12 @@ builders.getAllGroupNames = function()
     return builders.groups;
 }
 
-builders.BuilderMaster = function(name, basePath, tests, groups)
+builders.BuilderMaster = function(master_data)
 {
-    this.name = name;
-    this.basePath = basePath;
-    this.tests = tests;
-    this.groups = groups;
+    this.name = master_data.name;
+    this.basePath = 'http://build.chromium.org/p/' + master_data.url_name;
+    this.tests = master_data.tests;
+    this.groups = master_data.groups;
 }
 
 builders.BuilderMaster.prototype = {

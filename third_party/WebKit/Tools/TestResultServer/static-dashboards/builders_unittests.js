@@ -32,7 +32,7 @@ test('loading steps', 4, function() {
     var tests = {}
     var baseUrl = 'http://dummyurl';
     var name = 'dummyname';
-    var master = new builders.BuilderMaster(name, baseUrl, tests);
+    var master = new builders.BuilderMaster({name: name, url_name: name, tests: tests);
 
     var builder = 'dummybuilder';
     var buildNumber = 12345;

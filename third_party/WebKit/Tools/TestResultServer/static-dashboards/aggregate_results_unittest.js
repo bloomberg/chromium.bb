@@ -43,12 +43,12 @@ function setupAggregateResultsData(includeRevisonNumbers)
             {
                 "groups": [ "@ToT Blink" ],
                 "name": "ChromiumWebkit",
+                "url_name": "chromium.webkit",
                 "tests": {
                     "layout-tests": {
                         "builders": [builderName]
                     }
                 },
-                "url": "http://build.chromium.org/p/chromium.win"
             }
         ]
     });

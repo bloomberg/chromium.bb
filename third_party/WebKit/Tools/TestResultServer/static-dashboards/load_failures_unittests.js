@@ -6,7 +6,7 @@ module('loadfailures');
 
 test('htmlForBuilder', 1, function() {
     var html = loadfailures._htmlForBuilder('MockBuilder', 'MockTestType', {
-        'MockBuilder': new builders.BuilderMaster('MockMaster', 'http://mockbasepath', [], []),
+        'MockBuilder': new builders.BuilderMaster({name: 'MockMaster', url_name: 'mock.master', tests: [], groups: []}),
     });
 
     equal(html, '<tr class="builder">' +
@@ -17,7 +17,7 @@ test('htmlForBuilder', 1, function() {
 });
 
 test('html', 5, function() {
-    var mockBuilderMaster = new builders.BuilderMaster('MockMaster', 'http://mockbasepath', [], []);
+    var mockBuilderMaster = new builders.BuilderMaster({name: 'MockMaster', url_name: 'mock.master', tests: [], groups: []}),
     var failureData = {
         '@ToT Chromium': {
             failingBuilders: {

@@ -10,6 +10,7 @@ LOAD_BUILDBOT_DATA({
                 "@ToT Chromium"
             ],
             "name": "ChromiumWin",
+            "url_name": "chromium.win",
             "tests": {
                 "ash_unittests": {
                     "builders": [
@@ -42,13 +43,13 @@ LOAD_BUILDBOT_DATA({
                     ]
                 },
             },
-            "url": "http://build.chromium.org/p/chromium.win"
         },
         {
             "groups": [
                 "@ToT Chromium"
             ],
             "name": "ChromiumMac",
+            "url_name": "chromium.mac",
             "tests": {
                 "base_unittests": {
                     "builders": [
@@ -73,7 +74,6 @@ LOAD_BUILDBOT_DATA({
                     ]
                 },
             },
-            "url": "http://build.chromium.org/p/chromium.mac"
         },
         {
             "groups": [
@@ -81,6 +81,7 @@ LOAD_BUILDBOT_DATA({
                 "@ToT Blink"
             ],
             "name": "ChromiumWebkit",
+            "url_name": "chromium.webkit",
             "tests": {
                 "base_unittests": {
                     "builders": [
@@ -108,7 +109,6 @@ LOAD_BUILDBOT_DATA({
                     ]
                 },
             },
-            "url": "http://build.chromium.org/p/chromium.webkit"
         },
     ]
 });
