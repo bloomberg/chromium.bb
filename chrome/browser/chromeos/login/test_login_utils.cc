@@ -18,7 +18,6 @@ TestLoginUtils::~TestLoginUtils() {}
 
 void TestLoginUtils::PrepareProfile(
     const UserContext& user_context,
-    const std::string& display_email,
     bool has_cookies,
     bool has_active_session,
     Delegate* delegate) {
@@ -34,9 +33,6 @@ void TestLoginUtils::DelegateDeleted(Delegate* delegate) {
 scoped_refptr<Authenticator> TestLoginUtils::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
   return new MockAuthenticator(consumer, expected_user_context_);
-}
-
-void TestLoginUtils::InitRlzDelayed(Profile* user_profile) {
 }
 
 }  // namespace chromeos
