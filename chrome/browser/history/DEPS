@@ -15,13 +15,13 @@ include_rules = [
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
+  # http://crbug.com/370850
   "!chrome/browser/autocomplete/autocomplete_match.h",
   "!chrome/browser/autocomplete/autocomplete_result.h",
   "!chrome/browser/autocomplete/history_provider_util.h",
   "!chrome/browser/autocomplete/history_url_provider.h",
   "!chrome/browser/autocomplete/url_prefix.h",
   "!chrome/browser/bookmarks/bookmark_model_factory.h",
-  "!chrome/browser/bookmarks/test_bookmark_client.h",
   "!chrome/browser/browser_process.h",
   "!chrome/browser/chromeos/login/existing_user_controller.h",
   "!chrome/browser/content_settings/cookie_settings.h",
@@ -56,12 +56,12 @@ specific_include_rules = {
   '.*_(api|browser|)test\.cc': [
     "+chrome/browser",
   ],
-  # TODO(erikwright): Bring this list to zero.
+  # TODO(sdefresne): Bring this list to zero. http://crbug.com/370850
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   '.*_[a-z]*test\.cc': [
-    "!chrome/browser/bookmarks/bookmark_test_helpers.h",
-    "!chrome/browser/bookmarks/bookmark_utils.h",
+    "!components/bookmarks/test/bookmark_test_helpers.h",
+    "!components/bookmarks/test/test_bookmark_client.h",
   ]
 }
