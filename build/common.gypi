@@ -3389,7 +3389,6 @@
               # linux_use_debug_fission, so it can be used here alone.
               ['linux_use_debug_fission==1 and linux_use_gold_flags==1 and (clang==1 or gcc_version>=48) and binutils_version>=223', {
                 'cflags': ['-gsplit-dwarf'],
-                'ldflags': ['-Wl,--gdb-index'],
               }],
             ],
           },
