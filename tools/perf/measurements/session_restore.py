@@ -38,7 +38,7 @@ class SessionRestore(startup.Startup):
                      histogram_util.BROWSER_HISTOGRAM,
                      'SessionRestore.AllTabsLoaded',
                      browser.foreground_tab),
-                 30)
+                 60)
     return browser.foreground_tab
 
   def CanRunForPage(self, page):
