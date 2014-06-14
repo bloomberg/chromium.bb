@@ -164,13 +164,13 @@ std::vector<base::string16> ChromePermissionMessageProvider::GetWarningMessages(
     if (permissions->HasAPIPermission(APIPermission::kSessions) &&
         id == PermissionMessage::kTabs) {
       message_strings.push_back(l10n_util::GetStringUTF16(
-          IDS_EXTENSION_PROMPT_WARNING_TABS_AND_SESSIONS));
+          IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ_AND_SESSIONS));
       continue;
     }
     if (permissions->HasAPIPermission(APIPermission::kSessions) &&
         id == PermissionMessage::kBrowsingHistory) {
       message_strings.push_back(l10n_util::GetStringUTF16(
-          IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY_AND_SESSIONS));
+          IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE_AND_SESSIONS));
       continue;
     }
 

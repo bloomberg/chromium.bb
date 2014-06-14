@@ -4302,10 +4302,10 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS" desc="Permission string for access to bookmarks.">
         Read and modify your bookmarks
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY" desc="Permission string for access to browsing history.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE" desc="Permission string for access to modify browsing history.">
         Read and modify your browsing history
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY_AND_SESSIONS" desc="Permission string for access to both browsing history and signed in sessions.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE_AND_SESSIONS" desc="Permission string for access to modify both browsing history and signed in sessions.">
         Read and modify your browsing history on all your signed-in devices
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION" desc="Permisson string for access to geolocation.">
@@ -4314,11 +4314,11 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT" desc="Permisson string for access to extension management.">
         Manage your apps, extensions, and themes
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_TABS" desc="Permission string for access to tabs.">
-        Access your browsing activity
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ" desc="Permission string for access to browsing history.">
+        Read your browsing history
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_TABS_AND_SESSIONS" desc="Permission string for access to both tabs and signed in sessions.">
-        Access your browsing history on all your signed-in devices
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ_AND_SESSIONS" desc="Permission string for access to both browsing history and signed in sessions.">
+        Read your browsing history on all your signed-in devices
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_DEBUGGER" desc="Permission string for access to debugger.">
         Access the page debugger backend
