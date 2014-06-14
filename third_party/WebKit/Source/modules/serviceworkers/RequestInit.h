@@ -16,6 +16,7 @@ struct RequestInit {
         : method("GET")
     {
         options.get("url", url);
+        // FIXME: Spec uses ByteString for method. http://crbug.com/347426
         options.get("method", method);
         options.get("headers", headers);
     }

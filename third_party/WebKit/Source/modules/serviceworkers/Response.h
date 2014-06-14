@@ -26,7 +26,11 @@ public:
     ~Response() { };
 
     unsigned short status() const { return m_status; }
+    void setStatus(unsigned short value) { m_status = value; }
+
     String statusText() const { return m_statusText; }
+    void setStatusText(const String& value) { m_statusText = value; }
+
     PassRefPtr<HeaderMap> headers() const;
 
     void populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&);

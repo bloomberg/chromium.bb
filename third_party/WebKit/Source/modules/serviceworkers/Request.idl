@@ -10,8 +10,7 @@
     Exposed=ServiceWorker
 ] interface Request {
     attribute DOMString url;
-    // FIXME: Spec uses ByteString for this. We must perform the DOMString -> ByteString conversion manually (crbug.com/347426).
-    attribute DOMString method;
+    attribute ByteString method;
     readonly attribute DOMString origin;
     readonly attribute HeaderMap headers;
 

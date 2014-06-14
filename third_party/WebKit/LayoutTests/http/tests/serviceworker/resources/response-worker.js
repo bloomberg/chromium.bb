@@ -19,4 +19,12 @@ test(function() {
     // Note: detailed behavioral tests for HeaderMap are in another test,
     // http/tests/serviceworker/headermap.html.
 
+    response.status = 123;
+    response.statusText = 'Sesame Street';
+    assert_equals(response.status, 123, 'Response.status should be writable');
+    assert_equals(response.statusText, 'Sesame Street', 'Response.statusText should be writable');
+
+    assert_throws({name:'TypeError'}, function() { response.statusText = 'invalid \u0100'; },
+                  'Response.statusText should throw on invalid ByteString');
+
 }, 'Response in ServiceWorkerGlobalScope');

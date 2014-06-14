@@ -17,6 +17,7 @@ struct ResponseInit {
         , statusText("OK")
     {
         options.get("status", status);
+        // FIXME: Spec uses ByteString for statusText. http://crbug.com/347426
         options.get("statusText", statusText);
         options.get("headers", headers);
     }

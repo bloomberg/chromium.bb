@@ -20,4 +20,11 @@ test(function() {
     // Note: detailed behavioral tests for HeaderMap are in another test,
     // http/tests/serviceworker/headermap.html.
 
+    request.url = 'http://localhost/';
+    assert_equals(request.url, 'http://localhost/', 'Request.url should be writable');
+    request.method = 'POST';
+    assert_equals(request.method, 'POST', 'Request.method should be writable');
+    assert_throws({name: 'TypeError'}, function() { request.method = 'invalid \u0100'; },
+                  'Request.method should throw on invalid ByteString');
+
 }, 'Request in ServiceWorkerGlobalScope');
