@@ -5,6 +5,7 @@
 package org.chromium.chrome.shell;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.drawable.ClipDrawable;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
@@ -168,6 +169,12 @@ public class ChromeShellToolbar extends LinearLayout {
         } else {
             imm.hideSoftInputFromWindow(mUrlTextView.getWindowToken(), 0);
         }
+    }
+
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (mMenuHandler != null) mMenuHandler.hideAppMenu();
     }
 
     private class TabObserverImpl extends EmptyTabObserver {

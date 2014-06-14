@@ -64,19 +64,7 @@ public class AppMenuTest extends ChromeShellTestBase {
         launchChromeShellWithBlankPage();
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
 
-        final View menuButton = getActivity().findViewById(R.id.menu_button);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                menuButton.performClick();
-            }
-        });
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getActivity().getAppMenuHandler().isAppMenuShowing();
-            }
-        }));
+        showAppMenuAndAssertMenuShown();
         mAppMenu = getActivity().getAppMenuHandler().getAppMenu();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -148,6 +136,7 @@ public class AppMenuTest extends ChromeShellTestBase {
     @Feature({"Browser", "Main"})
     public void testKeyboardMenuEnterOnTopItemLandscape() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        showAppMenuAndAssertMenuShown();
         moveToBoundary(true, false);
         assertEquals(0, getCurrentFocusedRow());
         hitEnterAndAssertAppMenuDismissed();
@@ -160,9 +149,45 @@ public class AppMenuTest extends ChromeShellTestBase {
     @Feature({"Browser", "Main"})
     public void testKeyboardMenuEnterOnTopItemPortrait() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        showAppMenuAndAssertMenuShown();
         moveToBoundary(true, false);
         assertEquals(0, getCurrentFocusedRow());
         hitEnterAndAssertAppMenuDismissed();
+    }
+
+    /**
+     * Test that changing orientation hides the menu.
+     */
+    @SmallTest
+    @Feature({"Browser", "Main"})
+    public void testChangingOrientationHidesMenu() throws InterruptedException {
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        showAppMenuAndAssertMenuShown();
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertTrue("AppMenu did not dismiss",
+                CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return !mAppMenuHandler.isAppMenuShowing();
+                    }
+                }));
+    }
+
+    private void showAppMenuAndAssertMenuShown() throws InterruptedException {
+        final View menuButton = getActivity().findViewById(R.id.menu_button);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                menuButton.performClick();
+            }
+        });
+        assertTrue("AppMenu did not show",
+                CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return mAppMenuHandler.isAppMenuShowing();
+                    }
+                }));
     }
 
     private void hitEnterAndAssertAppMenuDismissed() throws InterruptedException {
