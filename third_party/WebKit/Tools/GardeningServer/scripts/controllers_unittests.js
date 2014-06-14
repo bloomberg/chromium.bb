@@ -90,7 +90,7 @@ test("controllers.FailingBuilders", 3, function() {
 
     equal(view.outerHTML, '<div>' +
         '<li style="opacity: 0;">' +
-            '<div class="how"><time class="relative"></time></div>' +
+            '<div class="how"></div>' +
             '<div class="what">' +
                 '<div class="problem">dummy message:' +
                     '<ul class="effects">' +

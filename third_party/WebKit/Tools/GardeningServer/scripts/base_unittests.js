@@ -314,37 +314,6 @@ test("extends", 14, function() {
     document.body.removeChild(document.body.lastChild);
 });
 
-test("relativizeTime", 14, function() {
-    var time = new Date();
-    equals(base.relativizeTime(time), "Just now");
-    time.setMinutes(time.getMinutes() - 1);
-    equals(base.relativizeTime(time), "1 minute ago");
-    time.setMinutes(time.getMinutes() - 1);
-    equals(base.relativizeTime(time), "2 minutes ago");
-    time.setMinutes(time.getMinutes() - 1);
-    equals(base.relativizeTime(time), "3 minutes ago");
-    time.setMinutes(time.getMinutes() - 56);
-    equals(base.relativizeTime(time), "59 minutes ago");
-    time.setMinutes(time.getMinutes() - 1);
-    equals(base.relativizeTime(time), "1 hour ago");
-    time.setMinutes(time.getMinutes() - 29);
-    equals(base.relativizeTime(time), "1 hour ago");
-    time.setMinutes(time.getMinutes() - 2);
-    equals(base.relativizeTime(time), "2 hours ago");
-    time.setMinutes(time.getMinutes() - 29);
-    equals(base.relativizeTime(time), "2 hours ago");
-    time.setHours(time.getHours() - 1);
-    equals(base.relativizeTime(time), "3 hours ago");
-    time.setHours(time.getHours() - 20);
-    equals(base.relativizeTime(time), "23 hours ago");
-    time.setHours(time.getHours() - 1);
-    equals(base.relativizeTime(time), "1 day ago");
-    time.setDate(time.getDate() - 1);
-    equals(base.relativizeTime(time), "2 days ago");
-    time.setDate(time.getDate() - 998);
-    equals(base.relativizeTime(time), "1000 days ago");
-});
-
 test("getURLParameter", 1, function() {
     ok(!base.getURLParameter('non-existant'));
 });

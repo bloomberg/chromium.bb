@@ -312,19 +312,6 @@ controllers.UnexpectedFailures = base.extends(FailureStreamController, {
     }
 });
 
-controllers.Failures = base.extends(FailureStreamController, {
-    _resultsFilter: results.expectedFailuresByTest,
-
-    _keyFor: function(failureAnalysis)
-    {
-        return base.dirName(failureAnalysis.testName);
-    },
-    _createFailureView: function(failureAnalysis)
-    {
-        return new ui.notifications.FailingTests();
-    },
-});
-
 controllers.FailingBuilders = base.extends(Object, {
     init: function(view, message)
     {

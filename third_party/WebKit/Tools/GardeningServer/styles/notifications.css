@@ -53,12 +53,6 @@ ol.notifications div.how {
     width: 350px;
 }
 
-ol.notifications time {
-    display: block;
-    color: #888;
-    padding: 0 0 20px 0;
-}
-
 ol.notifications div.what {
     display: -webkit-box;
     -webkit-box-orient: vertical;

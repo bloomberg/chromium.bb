@@ -68,10 +68,6 @@ function update()
     if (g_revisionHint)
         g_revisionHint.dismiss();
 
-    var gtestIframe = document.querySelector('#chromium-gtests iframe');
-    if (gtestIframe)
-        gtestIframe.src = gtestIframe.src;
-
     // FIXME: This should be a button with a progress element.
     var numberOfTestsAnalyzed = 0;
     var updating = new ui.notifications.Info('Loading commit data ...');
@@ -98,7 +94,7 @@ function update()
 
             Object.keys(config.builders).forEach(function(builderName) {
                 if (!model.state.resultsByBuilder[builderName])
-                    g_info.add(new ui.notifications.Info('Could not find test results for ' + builderName + ' in the last ' + config.kBuildNumberLimit + ' runs.'));
+                    g_info.add(new ui.notifications.Info('Could not find test results for ' + builderName + '.'));
             });
 
             updating.dismiss();

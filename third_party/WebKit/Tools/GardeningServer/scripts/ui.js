@@ -211,33 +211,6 @@ ui.onebar = base.extends('div', {
     }
 });
 
-// FIXME: Loading a module shouldn't set off a timer.  The controller should kick this off.
-setInterval(function() {
-    Array.prototype.forEach.call(document.querySelectorAll("time.relative"), function(time) {
-        time.update && time.update();
-    });
-}, config.kRelativeTimeUpdateFrequency);
-
-ui.RelativeTime = base.extends('time', {
-    init: function()
-    {
-        this.className = 'relative';
-    },
-    date: function()
-    {
-        return this._date;
-    },
-    update: function()
-    {
-        this.textContent = this._date ? base.relativizeTime(this._date) : '';
-    },
-    setDate: function(date)
-    {
-        this._date = date;
-        this.update();
-    }
-});
-
 ui.TreeStatus = base.extends('div',  {
     addStatus: function(name)
     {
