@@ -86,7 +86,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
   ASSERT_TRUE(rwh->IsTreeOnlyAccessibilityModeForTesting());
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, SanityCheck) {
+#if defined(ADDERSS_SANITIZER)
+#define Maybe_SanityCheck DISABLED_SanityCheck
+#else
+#define Maybe_SanityCheck SanityCheck
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, Maybe_SanityCheck) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "sanity_check.html"))
       << message_;
@@ -111,7 +116,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Actions) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, Location) {
+#if defined(ADDERSS_SANITIZER)
+#define Maybe_Location DISABLED_Location
+#else
+#define Maybe_Location Location
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, Maybe_Location) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "location.html"))
       << message_;
@@ -124,7 +134,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanPermissions) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanActions) {
+#if defined(ADDERSS_SANITIZER)
+#define Maybe_TabsAutomationBooleanActions DISABLED_TabsAutomationBooleanActions
+#else
+#define Maybe_TabsAutomationBooleanActions TabsAutomationBooleanActions
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, Maybe_TabsAutomationBooleanActions) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest(
           "automation/tests/tabs_automation_boolean", "actions.html"))
