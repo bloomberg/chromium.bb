@@ -1,10 +1,10 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#------------------------------------------------
-# Functions from avcodec used in chromium code.
-#------------------------------------------------
+//------------------------------------------------
+// Functions from avcodec used in chromium code.
+//------------------------------------------------
 AVCodecContext *avcodec_alloc_context3(const AVCodec *codec);
 AVCodec *avcodec_find_decoder(enum AVCodecID id);
 int av_new_packet(AVPacket *pkt, int size);
@@ -32,15 +32,15 @@ void avcodec_free_frame(AVFrame **frame);
 AVFrame* av_frame_alloc();
 int av_packet_copy_props(AVPacket *dst, const AVPacket *src);
 
-# RDFT functions.
+// RDFT functions.
 RDFTContext *av_rdft_init(int nbits, enum RDFTransformType trans);
 void av_rdft_calc(RDFTContext *s, FFTSample *data);
 void av_rdft_end(RDFTContext *s);
 
 
-#------------------------------------------------
-# Functions from avformat used in chromium code.
-#------------------------------------------------
+//------------------------------------------------
+// Functions from avformat used in chromium code.
+//------------------------------------------------
 void avformat_close_input(AVFormatContext **s);
 int avformat_find_stream_info(AVFormatContext *ic, AVDictionary **options);
 int av_index_search_timestamp(AVStream *st, int64_t wanted_timestamp, int flags);
@@ -54,9 +54,9 @@ AVIOContext *avio_alloc_context(unsigned char *buffer, int buffer_size, int writ
 int avio_close(AVIOContext *s);
 
 
-#------------------------------------------------
-# Functions from avutil used in chromium code.
-#------------------------------------------------
+//------------------------------------------------
+// Functions from avutil used in chromium code.
+//------------------------------------------------
 int av_get_bytes_per_sample(enum AVSampleFormat sample_fmt);
 int64_t av_rescale_q(int64_t a, AVRational bq, AVRational cq);
 void *av_malloc(size_t size);
