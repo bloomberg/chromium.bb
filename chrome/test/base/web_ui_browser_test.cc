@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,7 +30,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/filename_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
 
 #if defined(ENABLE_FULL_PRINTING)
@@ -45,13 +43,6 @@ using content::WebUIMessageHandler;
 
 namespace {
 
-const base::FilePath::CharType kA11yAuditLibraryJSPath[] = FILE_PATH_LITERAL(
-    "third_party/accessibility-audit/axs_testing.js");
-const base::FilePath::CharType kMockJSPath[] =
-    FILE_PATH_LITERAL("chrome/third_party/mock4js/mock4js.js");
-const base::FilePath::CharType kWebUILibraryJS[] =
-    FILE_PATH_LITERAL("test_api.js");
-const base::FilePath::CharType kWebUITestFolder[] = FILE_PATH_LITERAL("webui");
 base::LazyInstance<std::vector<std::string> > error_messages_ =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -61,8 +52,7 @@ bool LogHandler(int severity,
                 int line,
                 size_t message_start,
                 const std::string& str) {
-  if (severity == logging::LOG_ERROR &&
-      file &&
+  if (severity == logging::LOG_ERROR && file &&
       std::string("CONSOLE") == file) {
     error_messages_.Get().push_back(str);
   }
@@ -94,10 +84,7 @@ class WebUIJsInjectionReadyObserver : public content::WebContentsObserver {
 
 }  // namespace
 
-WebUIBrowserTest::~WebUIBrowserTest() {}
-
-void WebUIBrowserTest::AddLibrary(const base::FilePath& library_path) {
-  user_libraries_.push_back(library_path);
+WebUIBrowserTest::~WebUIBrowserTest() {
 }
 
 bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name) {
@@ -226,8 +213,8 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   WebUIJsInjectionReadyObserver injection_observer(
       web_contents, this, preload_test_fixture_, preload_test_name_);
   content::TestNavigationObserver navigation_observer(web_contents);
-  chrome::NavigateParams params(browser(), GURL(browse_to),
-                                content::PAGE_TRANSITION_TYPED);
+  chrome::NavigateParams params(
+      browser(), GURL(browse_to), content::PAGE_TRANSITION_TYPED);
   params.disposition = CURRENT_TAB;
   chrome::Navigate(&params);
   navigation_observer.Wait();
@@ -258,9 +245,10 @@ class PrintContentBrowserClient : public chrome::ChromeContentBrowserClient {
   virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) OVERRIDE {
     preview_dialog_ = web_contents;
-    observer_.reset(new WebUIJsInjectionReadyObserver(
-        preview_dialog_, browser_test_, preload_test_fixture_,
-        preload_test_name_));
+    observer_.reset(new WebUIJsInjectionReadyObserver(preview_dialog_,
+                                                      browser_test_,
+                                                      preload_test_fixture_,
+                                                      preload_test_name_));
     message_loop_runner_->Quit();
     return NULL;
   }
@@ -305,7 +293,8 @@ const char WebUIBrowserTest::kDummyURL[] = "chrome://DummyURL";
 WebUIBrowserTest::WebUIBrowserTest()
     : test_handler_(new WebUITestHandler()),
       libraries_preloaded_(false),
-      override_selected_web_ui_(NULL) {}
+      override_selected_web_ui_(NULL) {
+}
 
 void WebUIBrowserTest::set_preload_test_fixture(
     const std::string& preload_test_fixture) {
@@ -330,9 +319,7 @@ class MockWebUIDataSource : public content::URLDataSource {
  private:
   virtual ~MockWebUIDataSource() {}
 
-  virtual std::string GetSource() const OVERRIDE {
-    return "dummyurl";
-  }
+  virtual std::string GetSource() const OVERRIDE { return "dummyurl"; }
 
   virtual void StartDataRequest(
       const std::string& path,
@@ -378,7 +365,11 @@ base::LazyInstance<MockWebUIProvider> mock_provider_ =
 }  // namespace
 
 void WebUIBrowserTest::SetUpOnMainThread() {
+  JavaScriptBrowserTest::SetUpOnMainThread();
+
   logging::SetLogMessageHandler(&LogHandler);
+
+  AddLibrary(base::FilePath(kA11yAuditLibraryJSPath));
 
   content::WebUIControllerFactory::UnregisterFactoryForTesting(
       ChromeWebUIControllerFactory::GetInstance());
@@ -387,32 +378,8 @@ void WebUIBrowserTest::SetUpOnMainThread() {
 
   content::WebUIControllerFactory::RegisterFactory(test_factory_.get());
 
-  test_factory_->AddFactoryOverride(
-      GURL(kDummyURL).host(), mock_provider_.Pointer());
-
-  base::FilePath test_data_directory;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory));
-  test_data_directory = test_data_directory.Append(kWebUITestFolder);
-  library_search_paths_.push_back(test_data_directory);
-
-  base::FilePath gen_test_data_directory;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA,
-                               &gen_test_data_directory));
-  library_search_paths_.push_back(gen_test_data_directory);
-
-  base::FilePath source_root_directory;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &source_root_directory));
-  library_search_paths_.push_back(source_root_directory);
-
-  // TODO(dtseng): should this be part of every BrowserTest or just WebUI test.
-  base::FilePath resources_pack_path;
-  PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
-  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      resources_pack_path, ui::SCALE_FACTOR_NONE);
-
-  AddLibrary(base::FilePath(kA11yAuditLibraryJSPath));
-  AddLibrary(base::FilePath(kMockJSPath));
-  AddLibrary(base::FilePath(kWebUILibraryJS));
+  test_factory_->AddFactoryOverride(GURL(kDummyURL).host(),
+                                    mock_provider_.Pointer());
 }
 
 void WebUIBrowserTest::CleanUpOnMainThread() {
@@ -436,74 +403,6 @@ void WebUIBrowserTest::SetWebUIInstance(content::WebUI* web_ui) {
 
 WebUIMessageHandler* WebUIBrowserTest::GetMockMessageHandler() {
   return NULL;
-}
-
-GURL WebUIBrowserTest::WebUITestDataPathToURL(
-    const base::FilePath::StringType& path) {
-  base::FilePath dir_test_data;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data));
-  base::FilePath test_path(dir_test_data.Append(kWebUITestFolder).Append(path));
-  EXPECT_TRUE(base::PathExists(test_path));
-  return net::FilePathToFileURL(test_path);
-}
-
-void WebUIBrowserTest::BuildJavascriptLibraries(
-    std::vector<base::string16>* libraries) {
-  ASSERT_TRUE(libraries != NULL);
-  std::vector<base::FilePath>::iterator user_libraries_iterator;
-  for (user_libraries_iterator = user_libraries_.begin();
-       user_libraries_iterator != user_libraries_.end();
-       ++user_libraries_iterator) {
-    std::string library_content;
-    if (user_libraries_iterator->IsAbsolute()) {
-      ASSERT_TRUE(base::ReadFileToString(*user_libraries_iterator,
-                                              &library_content))
-          << user_libraries_iterator->value();
-    } else {
-      bool ok = false;
-      std::vector<base::FilePath>::iterator library_search_path_iterator;
-      for (library_search_path_iterator = library_search_paths_.begin();
-           library_search_path_iterator != library_search_paths_.end();
-           ++library_search_path_iterator) {
-        ok = base::ReadFileToString(
-            base::MakeAbsoluteFilePath(
-                library_search_path_iterator->Append(*user_libraries_iterator)),
-            &library_content);
-        if (ok)
-          break;
-      }
-      ASSERT_TRUE(ok) << "User library not found: "
-                      << user_libraries_iterator->value();
-    }
-    library_content.append(";\n");
-
-    // This magic code puts filenames in stack traces.
-    library_content.append("//# sourceURL=");
-    library_content.append(user_libraries_iterator->BaseName().AsUTF8Unsafe());
-    library_content.append("\n");
-    libraries->push_back(base::UTF8ToUTF16(library_content));
-  }
-}
-
-base::string16 WebUIBrowserTest::BuildRunTestJSCall(
-    bool is_async,
-    const std::string& function_name,
-    const WebUIBrowserTest::ConstValueVector& test_func_args) {
-  ConstValueVector arguments;
-  base::FundamentalValue* is_async_arg = new base::FundamentalValue(is_async);
-  arguments.push_back(is_async_arg);
-  base::StringValue* function_name_arg = new base::StringValue(function_name);
-  arguments.push_back(function_name_arg);
-  base::ListValue* baked_argument_list = new base::ListValue();
-  ConstValueVector::const_iterator arguments_iterator;
-  for (arguments_iterator = test_func_args.begin();
-       arguments_iterator != test_func_args.end();
-       ++arguments_iterator) {
-    baked_argument_list->Append((*arguments_iterator)->DeepCopy());
-  }
-  arguments.push_back(baked_argument_list);
-  return content::WebUI::GetJavascriptCall(std::string("runTest"),
-                                           arguments.get());
 }
 
 bool WebUIBrowserTest::RunJavascriptUsingHandler(
@@ -531,9 +430,8 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
       called_function =
           BuildRunTestJSCall(is_async, function_name, function_arguments);
     } else {
-      called_function =
-          content::WebUI::GetJavascriptCall(function_name,
-                                            function_arguments.get());
+      called_function = content::WebUI::GetJavascriptCall(
+          function_name, function_arguments.get());
     }
     content.append(called_function);
   }
@@ -562,9 +460,10 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
 }
 
 void WebUIBrowserTest::SetupHandlers() {
-  content::WebUI* web_ui_instance = override_selected_web_ui_ ?
-      override_selected_web_ui_ :
-      browser()->tab_strip_model()->GetActiveWebContents()->GetWebUI();
+  content::WebUI* web_ui_instance =
+      override_selected_web_ui_
+          ? override_selected_web_ui_
+          : browser()->tab_strip_model()->GetActiveWebContents()->GetWebUI();
   ASSERT_TRUE(web_ui_instance != NULL);
 
   test_handler_->set_web_ui(web_ui_instance);
@@ -574,4 +473,13 @@ void WebUIBrowserTest::SetupHandlers() {
     GetMockMessageHandler()->set_web_ui(web_ui_instance);
     GetMockMessageHandler()->RegisterMessages();
   }
+}
+
+GURL WebUIBrowserTest::WebUITestDataPathToURL(
+    const base::FilePath::StringType& path) {
+  base::FilePath dir_test_data;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data));
+  base::FilePath test_path(dir_test_data.Append(kWebUITestFolder).Append(path));
+  EXPECT_TRUE(base::PathExists(test_path));
+  return net::FilePathToFileURL(test_path);
 }

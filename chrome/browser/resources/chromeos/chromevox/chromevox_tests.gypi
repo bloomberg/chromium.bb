@@ -71,15 +71,55 @@
             '<@(_outputs)',
           ],
         },
+        {
+          # A JavaScript test that runs in the ChromeVox background page's
+          # isolate.
+          'rule_name': 'js2extension',
+          'extension': 'extjs',
+          'msvs_external_rule': 1,
+          'inputs': [
+            '<(gypv8sh)',
+            '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
+            '<(mock_js)',
+            '<(test_api_js)',
+            '<(js2gtest)',
+            'testing/chromevox_unittest_base.js',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT)-gen.cc',
+            '<(PRODUCT_DIR)/test_data/chrome/browser/resources/chromeos/chromevox/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).extjs',
+          ],
+          'process_outputs_as_sources': 1,
+          'action': [
+            'python',
+            '<(gypv8sh)',
+            '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
+            '<(mock_js)',
+            '<(test_api_js)',
+            '<(js2gtest)',
+            'extension',
+            '<(RULE_INPUT_PATH)',
+            'chrome/browser/resources/chromeos/chromevox/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).extjs',
+            '<@(_outputs)',
+          ],
+        },
       ],
       'sources': [
         '<(DEPTH)/chrome/browser/ui/webui/web_ui_test_handler.cc',
         '<(DEPTH)/chrome/browser/ui/webui/web_ui_test_handler.h',
         '<(DEPTH)/chrome/test/base/browser_tests_main.cc',
+        '<(DEPTH)/chrome/test/base/extension_load_waiter_one_shot.cc',
+        '<(DEPTH)/chrome/test/base/extension_load_waiter_one_shot.h',
+        '<(DEPTH)/chrome/test/base/extension_js_browser_test.cc',
+        '<(DEPTH)/chrome/test/base/extension_js_browser_test.h',
+        '<(DEPTH)/chrome/test/base/javascript_browser_test.cc',
+        '<(DEPTH)/chrome/test/base/javascript_browser_test.h',
         '<(DEPTH)/chrome/test/base/test_chrome_web_ui_controller_factory.cc',
         '<(DEPTH)/chrome/test/base/test_chrome_web_ui_controller_factory.h',
         '<(DEPTH)/chrome/test/base/web_ui_browser_test.cc',
         '<(DEPTH)/chrome/test/base/web_ui_browser_test.h',
+        '<(DEPTH)/chrome/browser/extensions/browsertest_util.cc',
+        '<(DEPTH)/chrome/browser/extensions/browsertest_util.h',
 
         'common/aria_util_test.js',
         'common/cursor_selection_test.js',
@@ -87,6 +127,8 @@
         'common/key_sequence_test.js',
         'common/math_semantic_tree_test.js',
         'common/selection_util_test.js',
+
+        '../chromevox2/cvox2/background/background.extjs',
       ],
     },  # target chromevox_tests
     {

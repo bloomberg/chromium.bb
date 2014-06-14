@@ -1540,6 +1540,8 @@
         'test/base/web_ui_browser_test.h',
         'test/base/web_ui_browser_test_browsertest.cc',
         'test/base/in_process_browser_test_browsertest.cc',
+        'test/base/javascript_browser_test.cc',
+        'test/base/javascript_browser_test.h',
         'test/base/tracing_browsertest.cc',
         'test/base/test_chrome_web_ui_controller_factory.cc',
         'test/base/test_chrome_web_ui_controller_factory.h',

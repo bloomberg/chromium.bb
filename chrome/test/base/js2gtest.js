@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview Generator script for creating gtest-style JavaScript
- *     tests for WebUI and unit tests. Generates C++ gtest wrappers
+ *     tests for extensions, WebUI and unit tests. Generates C++ gtest wrappers
  *     which will invoke the appropriate JavaScript for each test.
  * @author scr@chromium.org (Sheridan Rawlins)
  * @see WebUI testing: http://goo.gl/ZWFXF
@@ -49,9 +49,15 @@ var outputFile = arguments[4];
 
 /**
  * Type of this test.
- * @type {string} ('unit'| 'webui')
+ * @type {string} ('extension' | 'unit' | 'webui')
  */
 var testType = arguments[5];
+if (testType != 'extension' &&
+    testType != 'unit' &&
+    testType != 'webui') {
+  print('Invalid test type: ' + testType);
+  quit(-1);
+}
 
 /**
  * C++ gtest macro to use for TEST_F depending on |testType|.
@@ -75,37 +81,69 @@ var genIncludes = [];
 
 /**
  * When true, add calls to set_preload_test_(fixture|name). This is needed when
- * |testType| === 'browser' to send an injection message before the page loads,
- * but is not required or supported for |testType| === 'unit'.
+ * |testType| === 'webui' to send an injection message before the page loads,
+ * but is not required or supported by any other test type.
  * @type {boolean}
  */
 var addSetPreloadInfo;
 
-// Generate the file to stdout.
-print('// GENERATED FILE');
-print('// ' + arguments.join(' '));
-print('// PLEASE DO NOT HAND EDIT!');
-print();
+/**
+ * Whether cc headers need to be generated.
+ * @type {boolean}
+ */
+var needGenHeader = true;
 
-// Output some C++ headers based upon the |testType|.
-//
-// Currently supports:
-// 'unit' - unit_tests harness, js2unit rule, V8UnitTest superclass.
-// 'webui' - browser_tests harness, js2webui rule, WebUIBrowserTest superclass.
-if (testType === 'unit') {
-  print('#include "chrome/test/base/v8_unit_test.h"');
-  testing.Test.prototype.typedefCppFixture = 'V8UnitTest';
-  testF = 'TEST_F';
-  addSetPreloadInfo = false;
-} else {
-  print('#include "chrome/test/base/web_ui_browser_test.h"');
-  testing.Test.prototype.typedefCppFixture = 'WebUIBrowserTest';
-  testF = 'IN_PROC_BROWSER_TEST_F';
-  addSetPreloadInfo = true;
+/**
+ * Helpful hint pointing back to the source js.
+ * @type {string}
+ */
+var argHint = '// ' + this['arguments'].join(' ');
+
+
+/**
+ * Generates the header of the cc file to stdout.
+ * @param {string?} testFixture Name of test fixture.
+ */
+function maybeGenHeader(testFixture) {
+  if (!needGenHeader)
+    return;
+  needGenHeader = false;
+  print('// GENERATED FILE');
+  print(argHint);
+  print('// PLEASE DO NOT HAND EDIT!');
+  print();
+
+  // Output some C++ headers based upon the |testType|.
+  //
+  // Currently supports:
+  // 'extension' - browser_tests harness, js2extension rule,
+  //               ExtensionJSBrowserTest superclass.
+  // 'unit' - unit_tests harness, js2unit rule, V8UnitTest superclass.
+  // 'webui' - browser_tests harness, js2webui rule, WebUIBrowserTest
+  // superclass.
+  if (testType === 'extension') {
+    print('#include "chrome/test/base/extension_js_browser_test.h"');
+    testing.Test.prototype.typedefCppFixture = 'ExtensionJSBrowserTest';
+    addSetPreloadInfo = false;
+    testF = 'IN_PROC_BROWSER_TEST_F';
+  } else if (testType === 'unit') {
+    print('#include "chrome/test/base/v8_unit_test.h"');
+    testing.Test.prototype.typedefCppFixture = 'V8UnitTest';
+    testF = 'TEST_F';
+    addSetPreloadInfo = false;
+  } else {
+    print('#include "chrome/test/base/web_ui_browser_test.h"');
+    testing.Test.prototype.typedefCppFixture = 'WebUIBrowserTest';
+    testF = 'IN_PROC_BROWSER_TEST_F';
+    addSetPreloadInfo = true;
+  }
+  print('#include "url/gurl.h"');
+  print('#include "testing/gtest/include/gtest/gtest.h"');
+  if (testFixture && this[testFixture].prototype.testGenCppIncludes)
+    this[testFixture].prototype.testGenCppIncludes();
+  print();
 }
-print('#include "url/gurl.h"');
-print('#include "testing/gtest/include/gtest/gtest.h"');
-print();
+
 
 /**
  * Convert the |includeFile| to paths appropriate for immediate
@@ -220,7 +258,24 @@ function resolveClosureModuleDeps(deps) {
  * @param {string} code The code to output.
  */
 function GEN(code) {
+  maybeGenHeader(null);
   print(code);
+}
+
+/**
+ * Outputs |commentEncodedCode|, converting comment to enclosed C++ code.
+ * @param {function} commentEncodedCode A function in the following format (note
+ * the space in '/ *' and '* /' should be removed to form a comment delimiter):
+ *    function() {/ *! my_cpp_code.DoSomething(); * /
+ *    Code between / *! and * / will be extracted and written to stdout.
+ */
+function GEN_BLOCK(commentEncodedCode) {
+  var code = commentEncodedCode.toString().
+      replace(/^[^\/]+\/\*!?/, '').
+      replace(/\*\/[^\/]+$/, '').
+      replace(/^\n|\n$/, '').
+      replace(/\s+$/, '');
+  GEN(code);
 }
 
 /**
@@ -246,6 +301,7 @@ function GEN_INCLUDE(includes) {
  * @param {Function} testBody The function body to execute for this test.
  */
 function TEST_F(testFixture, testFunction, testBody) {
+  maybeGenHeader(testFixture);
   var browsePreload = this[testFixture].prototype.browsePreload;
   var browsePrintPreload = this[testFixture].prototype.browsePrintPreload;
   var testGenPreamble = this[testFixture].prototype.testGenPreamble;

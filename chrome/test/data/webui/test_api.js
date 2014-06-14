@@ -830,7 +830,14 @@ var testing = {};
       }
       if (!result)
         result = testResult();
-      chrome.send('testResult', result);
+      if (chrome.send) {
+        // For WebUI tests.
+        chrome.send('testResult', result);
+      } else if (window.domAutomationController.send) {
+        // For extension tests.
+        valueResult = { 'result': result[0], message: result[1] };
+        window.domAutomationController.send(JSON.stringify(valueResult));
+      }
       errors.splice(0, errors.length);
     } else {
       console.warn('testIsDone already');
@@ -1101,6 +1108,12 @@ var testing = {};
     // that have enabled content-security-policy.
     var testBody = this[testFunction];    // global object -- not a method.
     var testName = testFunction;
+
+    // Depending on how we were called, |this| might not resolve to the global
+    // context.
+    if (testName == 'RUN_TEST_F' && testBody === undefined)
+      testBody = RUN_TEST_F;
+
     if (typeof testBody === "undefined") {
       testBody = eval(testFunction);
       testName = testBody.toString();

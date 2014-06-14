@@ -9,9 +9,8 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_vector.h"
-#include "base/strings/string16.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/javascript_browser_test.h"
 
 namespace base {
 class Value;
@@ -30,9 +29,7 @@ class WebUITestHandler;
 // Use:
 //   WEB_UI_UNITTEST_F(MyWebUIPageTest, myJavascriptUnittest);
 #define WEB_UI_UNITTEST_F(x, y) \
-  IN_PROC_BROWSER_TEST_F(x, y) { \
-    ASSERT_TRUE(RunJavascriptTest(#y)); \
-  }
+  IN_PROC_BROWSER_TEST_F(x, y) { ASSERT_TRUE(RunJavascriptTest(#y)); }
 
 // The runner of WebUI javascript based tests.
 // See chrome/test/data/webui/test_api.js for the javascript side test API's.
@@ -40,15 +37,9 @@ class WebUITestHandler;
 // These tests should follow the form given in:
 // chrome/test/data/webui/sample_downloads.js.
 // and the lone test within this class.
-class WebUIBrowserTest : public InProcessBrowserTest {
+class WebUIBrowserTest : public JavaScriptBrowserTest {
  public:
-  typedef ScopedVector<const base::Value> ConstValueVector;
   virtual ~WebUIBrowserTest();
-
-  // Add a custom helper JS library for your test.
-  // If a relative path is specified, it'll be read
-  // as relative to the test data dir.
-  void AddLibrary(const base::FilePath& library_path);
 
   // Runs a javascript function in the context of all libraries.
   // Note that calls to functions in test_api.js are not supported.
@@ -70,8 +61,7 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   // Runs a test that may include calls to functions in test_api.js.
   // Takes ownership of Value* arguments.
   bool RunJavascriptTest(const std::string& test_name);
-  bool RunJavascriptTest(const std::string& test_name,
-                         base::Value* arg);
+  bool RunJavascriptTest(const std::string& test_name, base::Value* arg);
   bool RunJavascriptTest(const std::string& test_name,
                          base::Value* arg1,
                          base::Value* arg2);
@@ -81,8 +71,7 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   // Runs a test that may include calls to functions in test_api.js, and waits
   // for call to testDone().  Takes ownership of Value* arguments.
   bool RunJavascriptAsyncTest(const std::string& test_name);
-  bool RunJavascriptAsyncTest(const std::string& test_name,
-                              base::Value* arg);
+  bool RunJavascriptAsyncTest(const std::string& test_name, base::Value* arg);
   bool RunJavascriptAsyncTest(const std::string& test_name,
                               base::Value* arg1,
                               base::Value* arg2);
@@ -137,16 +126,6 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   static GURL WebUITestDataPathToURL(const base::FilePath::StringType& path);
 
  private:
-  // Builds a vector of strings of all added javascript libraries.
-  void BuildJavascriptLibraries(std::vector<base::string16>* libraries);
-
-  // Builds a string with a call to the runTest JS function, passing the
-  // given |is_async|, |test_name| and its |args|.
-  base::string16 BuildRunTestJSCall(
-      bool is_async,
-      const std::string& test_name,
-      const WebUIBrowserTest::ConstValueVector& args);
-
   // Loads all libraries added with AddLibrary(), and calls |function_name| with
   // |function_arguments|. When |is_test| is true, the framework wraps
   // |function_name| with a test helper function, which waits for completion,
@@ -174,12 +153,6 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   // PreloadJavascriptLibraries().
   std::string preload_test_fixture_;
   std::string preload_test_name_;
-
-  // User added libraries.
-  std::vector<base::FilePath> user_libraries_;
-
-  // User library search paths.
-  std::vector<base::FilePath> library_search_paths_;
 
   // When this is non-NULL, this is The WebUI instance used for testing.
   // Otherwise the selected tab's web_ui is used.
