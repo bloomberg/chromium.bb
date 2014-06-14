@@ -113,6 +113,10 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
 
   void LogBlockedTunnelResponse() const;
 
+  // Calls |callback.Run(result)|. Used to run a callback posted to the
+  // message loop.
+  void RunCallback(const CompletionCallback& callback, int result) const;
+
   void OnIOComplete(int result);
 
   int DoLoop(int last_io_result);
@@ -165,7 +169,12 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
 
   const BoundNetLog net_log_;
 
+  // The default weak pointer factory.
   base::WeakPtrFactory<SpdyProxyClientSocket> weak_factory_;
+
+  // Only used for posting write callbacks. Weak pointers created by this
+  // factory are invalidated in Disconnect().
+  base::WeakPtrFactory<SpdyProxyClientSocket> write_callback_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyProxyClientSocket);
 };
