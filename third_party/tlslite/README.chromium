@@ -33,3 +33,5 @@ Local Modifications:
 - patches/dhe_rsa.patch: Implement DHE_RSA-based cipher suites.
 - patches/req_cert_types.patch: Add a reqCertTypes parameter to populate the
   certificate_types field of CertificateRequest.
+- patches/ignore_write_failure.patch: Don't invalidate sessions on write
+  failures.
