@@ -762,21 +762,18 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         if options.verbose:
             subprocess_command.append('--verbose')
 
-        process = self._tool.executive.popen(subprocess_command, stdout=self._tool.executive.PIPE, stderr=self._tool.executive.PIPE)
+        process = self._tool.executive.popen(subprocess_command, stdout=self._tool.executive.PIPE, stderr=self._tool.executive.STDOUT)
         last_output_time = time.time()
 
         # git cl sometimes completely hangs. Bail if we haven't gotten any output to stdout/stderr in a while.
         while process.poll() == None and time.time() < last_output_time + self.SECONDS_BEFORE_GIVING_UP:
-            # FIXME: This isn't awesome. It may improperly interleave stdout and stderr?
+            # FIXME: This doesn't make any sense. readline blocks, so all this code to
+            # try and bail is useless. Instead, we should do the readline calls on a
+            # subthread. Then the rest of this code would make sense.
             out = process.stdout.readline().rstrip('\n')
             if out:
                 last_output_time = time.time()
                 _log.info(out)
-
-            err = process.stdout.readline().rstrip('\n')
-            if err:
-                last_output_time = time.time()
-                _log.error(err)
 
         if process.poll() == None:
             _log.error('Command hung: %s' % subprocess_command)
@@ -885,20 +882,13 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
             self._log_to_server(out)
         return out
 
-    def _log_remaining_lines(self, handle):
-        out = self._log_line(handle)
-        while out:
-            out = self._log_line(handle)
-
     def _run_logged_command(self, command):
-        process = self._tool.executive.popen(command, stdout=self._tool.executive.PIPE, stderr=self._tool.executive.PIPE)
-        while process.poll() == None:
-            # FIXME: This should probably batch up lines if they're available and log to the server once.
-            self._log_line(process.stdout)
-            self._log_line(process.stderr)
+        process = self._tool.executive.popen(command, stdout=self._tool.executive.PIPE, stderr=self._tool.executive.STDOUT)
 
-        self._log_remaining_lines(process.stdout)
-        self._log_remaining_lines(process.stderr)
+        out = self._log_line(process.stdout)
+        while out:
+            # FIXME: This should probably batch up lines if they're available and log to the server once.
+            out = self._log_line(process.stdout)
 
     def _do_one_rebaseline(self):
         try:
