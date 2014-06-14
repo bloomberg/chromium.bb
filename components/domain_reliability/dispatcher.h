@@ -7,16 +7,17 @@
 
 #include <set>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
-#include "components/domain_reliability/util.h"
 
 namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
 
 namespace domain_reliability {
+
+class MockableTime;
 
 // Runs tasks during a specified interval. Calling |RunEligibleTasks| gives any
 // task a chance to run early (if the minimum delay has already passed); tasks

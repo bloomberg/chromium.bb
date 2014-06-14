@@ -584,8 +584,9 @@ class TestingProfileWithDomainReliabilityMonitor : public TestingProfile {
   TestingProfileWithDomainReliabilityMonitor() :
       TestingProfile(),
       upload_reporter_string_("test-reporter"),
-      monitor_(GetRequestContext()->GetURLRequestContext(),
-               upload_reporter_string_) {}
+      monitor_(upload_reporter_string_) {
+    monitor_.Init(GetRequestContext());
+  }
 
   virtual void ClearDomainReliabilityMonitor(
       DomainReliabilityClearMode mode,

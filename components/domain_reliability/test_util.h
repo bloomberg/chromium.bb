@@ -5,10 +5,9 @@
 #ifndef COMPONENTS_DOMAIN_RELIABILITY_TEST_UTIL_H_
 #define COMPONENTS_DOMAIN_RELIABILITY_TEST_UTIL_H_
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/domain_reliability/config.h"
-#include "components/domain_reliability/monitor.h"
 #include "components/domain_reliability/scheduler.h"
 #include "components/domain_reliability/uploader.h"
 #include "components/domain_reliability/util.h"

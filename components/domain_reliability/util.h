@@ -7,8 +7,9 @@
 
 #include <map>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "components/domain_reliability/domain_reliability_export.h"

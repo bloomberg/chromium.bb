@@ -14,6 +14,8 @@
 #include "base/values.h"
 #include "components/domain_reliability/beacon.h"
 #include "components/domain_reliability/dispatcher.h"
+#include "components/domain_reliability/uploader.h"
+#include "components/domain_reliability/util.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context_getter.h"
 

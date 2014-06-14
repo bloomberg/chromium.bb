@@ -11,11 +11,11 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/test/test_simple_task_runner.h"
 #include "components/domain_reliability/baked_in_configs.h"
 #include "components/domain_reliability/beacon.h"
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/test_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -48,14 +48,15 @@ class DomainReliabilityMonitorTest : public testing::Test {
   typedef DomainReliabilityMonitor::RequestInfo RequestInfo;
 
   DomainReliabilityMonitorTest()
-      : bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        url_request_context_getter_(new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current())),
+      : network_task_runner_(new base::TestSimpleTaskRunner()),
+        url_request_context_getter_(
+            new net::TestURLRequestContextGetter(network_task_runner_)),
         time_(new MockTime()),
-        monitor_(url_request_context_getter_->GetURLRequestContext(),
-                 "test-reporter",
-                 scoped_ptr<MockableTime>(time_)),
-        context_(monitor_.AddContextForTesting(MakeTestConfig())) {}
+        monitor_("test-reporter", scoped_ptr<MockableTime>(time_)),
+        context_(NULL) {
+    monitor_.Init(url_request_context_getter_);
+    context_ = monitor_.AddContextForTesting(MakeTestConfig());
+  }
 
   static RequestInfo MakeRequestInfo() {
     RequestInfo request;
@@ -93,7 +94,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
     return expected_successful == successful && expected_failed == failed;
   }
 
-  content::TestBrowserThreadBundle bundle_;
+  scoped_refptr<base::TestSimpleTaskRunner> network_task_runner_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   MockTime* time_;
   DomainReliabilityMonitor monitor_;

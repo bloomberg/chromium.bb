@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "url/gurl.h"

@@ -14,8 +14,6 @@
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/domain_reliability/scheduler.h"
-#include "components/domain_reliability/uploader.h"
-#include "components/domain_reliability/util.h"
 
 class GURL;
 
@@ -23,6 +21,7 @@ namespace domain_reliability {
 
 struct DomainReliabilityBeacon;
 class DomainReliabilityDispatcher;
+class DomainReliabilityUploader;
 class MockableTime;
 
 // The per-domain context for the Domain Reliability client; includes the

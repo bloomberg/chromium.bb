@@ -5,6 +5,7 @@
 #include "components/domain_reliability/dispatcher.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"

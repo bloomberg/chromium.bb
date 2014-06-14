@@ -556,6 +556,8 @@
         'browser/dom_distiller/tab_utils.h',
         'browser/dom_distiller/tab_utils_android.cc',
         'browser/dom_distiller/tab_utils_android.h',
+        'browser/domain_reliability/service_factory.cc',
+        'browser/domain_reliability/service_factory.h',
         'browser/download/all_download_item_notifier.cc',
         'browser/download/all_download_item_notifier.h',
         'browser/download/chrome_download_manager_delegate.cc',

@@ -9,6 +9,7 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../components/components.gyp:keyed_service_core',
         '../content/content.gyp:content_browser',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
@@ -35,6 +36,8 @@
         'domain_reliability/monitor.h',
         'domain_reliability/scheduler.cc',
         'domain_reliability/scheduler.h',
+        'domain_reliability/service.cc',
+        'domain_reliability/service.h',
         'domain_reliability/uploader.cc',
         'domain_reliability/uploader.h',
         'domain_reliability/util.cc',
