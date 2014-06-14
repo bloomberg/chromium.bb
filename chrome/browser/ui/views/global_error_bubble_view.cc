@@ -159,8 +159,8 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
 
   // These bubbles show at times where activation is sporadic (like at startup,
   // or a new window opening). Make sure the bubble doesn't disappear before the
-  // user sees it.
-  set_close_on_deactivate(false);
+  // user sees it, if the bubble needs to be acknowledged.
+  set_close_on_deactivate(error_->ShouldCloseOnDeactivate());
 }
 
 GlobalErrorBubbleView::~GlobalErrorBubbleView() {

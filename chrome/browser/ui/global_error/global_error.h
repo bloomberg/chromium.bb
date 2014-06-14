@@ -68,6 +68,7 @@ class GlobalErrorWithStandardBubble
 
   // Returns an icon to use for the bubble view.
   virtual gfx::Image GetBubbleViewIcon();
+
   // Returns the title for the bubble view.
   virtual base::string16 GetBubbleViewTitle() = 0;
   // Returns the messages for the bubble view, one per line. Multiple messages
@@ -91,6 +92,10 @@ class GlobalErrorWithStandardBubble
   // Called when the user clicks the cancel button. |browser| is the
   // Browser that the bubble view was shown on.
   virtual void BubbleViewCancelButtonPressed(Browser* browser) = 0;
+  // Returns true if the bubble should close when focus is lost. If false, the
+  // bubble will stick around until the user explicitly acknowledges it.
+  // Defaults to true.
+  virtual bool ShouldCloseOnDeactivate() const;
 
   // GlobalError overrides:
   virtual bool HasBubbleView() OVERRIDE;

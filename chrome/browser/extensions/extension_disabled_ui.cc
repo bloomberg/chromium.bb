@@ -165,6 +165,7 @@ class ExtensionDisabledGlobalError
   virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
   virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE;
   virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
+  virtual bool ShouldCloseOnDeactivate() const OVERRIDE;
 
   // ExtensionUninstallDialog::Delegate implementation.
   virtual void ExtensionUninstallAccepted() OVERRIDE;
@@ -354,6 +355,13 @@ void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
                  uninstall_dialog_->AsWeakPtr(),
                  extension_));
 #endif  // !defined(OS_ANDROID)
+}
+
+bool ExtensionDisabledGlobalError::ShouldCloseOnDeactivate() const {
+  // Since this indicates that an extension was disabled, we should definitely
+  // have the user acknowledge it, rather than having the bubble disappear when
+  // a new window pops up.
+  return false;
 }
 
 void ExtensionDisabledGlobalError::ExtensionUninstallAccepted() {

@@ -52,6 +52,10 @@ GlobalErrorBubbleViewBase* GlobalErrorWithStandardBubble::GetBubbleView() {
   return bubble_view_;
 }
 
+bool GlobalErrorWithStandardBubble::ShouldCloseOnDeactivate() const {
+  return true;
+}
+
 gfx::Image GlobalErrorWithStandardBubble::GetBubbleViewIcon() {
   // If you change this make sure to also change the menu icon and the wrench
   // icon color.
