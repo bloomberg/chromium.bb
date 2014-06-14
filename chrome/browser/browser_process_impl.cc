@@ -49,6 +49,7 @@
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
+#include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_finder.h"
@@ -217,6 +218,13 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 
 void BrowserProcessImpl::StartTearDown() {
     TRACE_EVENT0("shutdown", "BrowserProcessImpl::StartTearDown");
+  // We need to shutdown the SdchDictionaryFetcher as it regularly holds
+  // a pointer to a URLFetcher, and that URLFetcher (upon destruction) will do
+  // a PostDelayedTask onto the IO thread.  This shutdown call will both discard
+  // any pending URLFetchers, and avoid creating any more.
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&SdchDictionaryFetcher::Shutdown));
+
   // We need to destroy the MetricsServicesManager, IntranetRedirectDetector,
   // PromoResourceService, and SafeBrowsing ClientSideDetectionService (owned by
   // the SafeBrowsingService) before the io_thread_ gets destroyed, since their

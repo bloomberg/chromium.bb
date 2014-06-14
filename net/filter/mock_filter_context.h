@@ -7,13 +7,10 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "net/filter/filter.h"
 #include "url/gurl.h"
 
 namespace net {
-
-class URLRequestContext;
 
 class MockFilterContext : public FilterContext {
  public:
@@ -31,9 +28,6 @@ class MockFilterContext : public FilterContext {
   void SetResponseCode(int response_code) { response_code_ = response_code; }
   void SetSdchResponse(bool is_sdch_response) {
     is_sdch_response_ = is_sdch_response;
-  }
-  URLRequestContext* GetModifiableURLRequestContext() const {
-    return context_.get();
   }
 
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
@@ -63,9 +57,6 @@ class MockFilterContext : public FilterContext {
 
   virtual int GetResponseCode() const OVERRIDE;
 
-  // The URLRequestContext associated with the request.
-  virtual const URLRequestContext* GetURLRequestContext() const OVERRIDE;
-
   virtual void RecordPacketStats(StatisticSelector statistic) const OVERRIDE {}
 
  private:
@@ -78,7 +69,6 @@ class MockFilterContext : public FilterContext {
   bool is_download_;
   bool is_sdch_response_;
   int response_code_;
-  scoped_ptr<URLRequestContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFilterContext);
 };

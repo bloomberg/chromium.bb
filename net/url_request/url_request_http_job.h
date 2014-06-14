@@ -190,6 +190,9 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
 
   bool read_in_progress_;
 
+  // An URL for an SDCH dictionary as suggested in a Get-Dictionary HTTP header.
+  GURL sdch_dictionary_url_;
+
   scoped_ptr<HttpTransaction> transaction_;
 
   // This is used to supervise traffic and enforce exponential

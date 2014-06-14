@@ -26,7 +26,6 @@
 #include "chrome/browser/net/cookie_store_util.h"
 #include "chrome/browser/net/http_server_properties_manager.h"
 #include "chrome/browser/net/predictor.h"
-#include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/net/sqlite_server_bound_cert_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -42,7 +41,6 @@
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/common/constants.h"
 #include "net/base/cache_type.h"
-#include "net/base/sdch_manager.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
 #include "net/ssl/server_bound_cert_service.h"
@@ -523,19 +521,6 @@ void ProfileImplIOData::InitializeInternal(
 #if defined(ENABLE_EXTENSIONS)
   InitializeExtensionsRequestContext(profile_params);
 #endif
-
-  // Setup the SDCHManager for this profile.
-  sdch_manager_.reset(new net::SdchManager);
-  sdch_manager_->set_sdch_fetcher(
-      new SdchDictionaryFetcher(
-          sdch_manager_.get(),
-          // SdchDictionaryFetcher takes a reference to the Getter, and
-          // hence implicitly takes ownership.
-          new net::TrivialURLRequestContextGetter(
-              main_context,
-              content::BrowserThread::GetMessageLoopProxyForThread(
-                  content::BrowserThread::IO))));
-  main_context->set_sdch_manager(sdch_manager_.get());
 
   // Create a media request context based on the main context, but using a
   // media cache.  It shares the same job factory as the main context.

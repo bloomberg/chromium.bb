@@ -11,7 +11,6 @@
 #include "net/base/mime_util.h"
 #include "net/filter/gzip_filter.h"
 #include "net/filter/sdch_filter.h"
-#include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
 
 namespace {
@@ -374,8 +373,7 @@ Filter* Filter::PrependNewFilter(FilterType type_id,
       break;
     case FILTER_TYPE_SDCH:
     case FILTER_TYPE_SDCH_POSSIBLE:
-      if (filter_context.GetURLRequestContext()->sdch_manager() &&
-          SdchManager::sdch_enabled()) {
+      if (SdchManager::Global() && SdchManager::sdch_enabled()) {
         first_filter.reset(
             InitSdchFilter(type_id, filter_context, buffer_size));
       }

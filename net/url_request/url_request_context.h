@@ -36,7 +36,6 @@ class HttpAuthHandlerFactory;
 class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class NetworkDelegate;
-class SdchManager;
 class ServerBoundCertService;
 class ProxyService;
 class URLRequest;
@@ -185,14 +184,6 @@ class NET_EXPORT URLRequestContext
     throttler_manager_ = throttler_manager;
   }
 
-  // May be NULL.
-  SdchManager* sdch_manager() const {
-    return sdch_manager_;
-  }
-  void set_sdch_manager(SdchManager* sdch_manager) {
-    sdch_manager_ = sdch_manager;
-  }
-
   // Gets the URLRequest objects that hold a reference to this
   // URLRequestContext.
   std::set<const URLRequest*>* url_requests() const {
@@ -236,7 +227,6 @@ class NET_EXPORT URLRequestContext
   HttpTransactionFactory* http_transaction_factory_;
   const URLRequestJobFactory* job_factory_;
   URLRequestThrottlerManager* throttler_manager_;
-  SdchManager* sdch_manager_;
 
   // ---------------------------------------------------------------------------
   // Important: When adding any new members below, consider whether they need to

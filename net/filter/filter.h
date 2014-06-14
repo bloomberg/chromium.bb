@@ -43,7 +43,6 @@ class GURL;
 
 namespace net {
 
-class URLRequestContext;
 class IOBuffer;
 
 //------------------------------------------------------------------------------
@@ -98,9 +97,6 @@ class NET_EXPORT_PRIVATE FilterContext {
   // What response code was received with the associated network transaction?
   // For example: 200 is ok.   4xx are error codes. etc.
   virtual int GetResponseCode() const = 0;
-
-  // The URLRequestContext associated with the request.
-  virtual const URLRequestContext* GetURLRequestContext() const = 0;
 
   // The following method forces the context to emit a specific set of
   // statistics as selected by the argument.

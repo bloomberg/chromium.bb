@@ -14,18 +14,20 @@
 #include "net/url_request/url_request_status.h"
 
 SdchDictionaryFetcher::SdchDictionaryFetcher(
-    net::SdchManager* manager,
     net::URLRequestContextGetter* context)
-    : manager_(manager),
-      weak_factory_(this),
+    : weak_factory_(this),
       task_is_pending_(false),
       context_(context) {
   DCHECK(CalledOnValidThread());
-  DCHECK(manager);
 }
 
 SdchDictionaryFetcher::~SdchDictionaryFetcher() {
   DCHECK(CalledOnValidThread());
+}
+
+// static
+void SdchDictionaryFetcher::Shutdown() {
+  net::SdchManager::Shutdown();
 }
 
 void SdchDictionaryFetcher::Schedule(const GURL& dictionary_url) {
@@ -60,7 +62,6 @@ void SdchDictionaryFetcher::ScheduleDelayedRun() {
 }
 
 void SdchDictionaryFetcher::StartFetching() {
-  DCHECK(CalledOnValidThread());
   DCHECK(task_is_pending_);
   task_is_pending_ = false;
 
@@ -76,12 +77,11 @@ void SdchDictionaryFetcher::StartFetching() {
 
 void SdchDictionaryFetcher::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  DCHECK(CalledOnValidThread());
   if ((200 == source->GetResponseCode()) &&
       (source->GetStatus().status() == net::URLRequestStatus::SUCCESS)) {
     std::string data;
     source->GetResponseAsString(&data);
-    manager_->AddSdchDictionary(data, source->GetURL());
+    net::SdchManager::Global()->AddSdchDictionary(data, source->GetURL());
   }
   current_fetch_.reset(NULL);
   ScheduleDelayedRun();

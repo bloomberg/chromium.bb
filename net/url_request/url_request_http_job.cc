@@ -66,7 +66,6 @@ class URLRequestHttpJob::HttpFilterContext : public FilterContext {
   virtual bool IsSdchResponse() const OVERRIDE;
   virtual int64 GetByteReadCount() const OVERRIDE;
   virtual int GetResponseCode() const OVERRIDE;
-  virtual const URLRequestContext* GetURLRequestContext() const OVERRIDE;
   virtual void RecordPacketStats(StatisticSelector statistic) const OVERRIDE;
 
   // Method to allow us to reset filter context for a response that should have
@@ -133,11 +132,6 @@ int64 URLRequestHttpJob::HttpFilterContext::GetByteReadCount() const {
 
 int URLRequestHttpJob::HttpFilterContext::GetResponseCode() const {
   return job_->GetResponseCode();
-}
-
-const URLRequestContext*
-URLRequestHttpJob::HttpFilterContext::GetURLRequestContext() const {
-  return job_->request() ? job_->request()->context() : NULL;
 }
 
 void URLRequestHttpJob::HttpFilterContext::RecordPacketStats(
@@ -226,6 +220,20 @@ URLRequestHttpJob::~URLRequestHttpJob() {
   // filter_context_ is still alive.
   DestroyFilters();
 
+  if (sdch_dictionary_url_.is_valid()) {
+    // Prior to reaching the destructor, request_ has been set to a NULL
+    // pointer, so request_->url() is no longer valid in the destructor, and we
+    // use an alternate copy |request_info_.url|.
+    SdchManager* manager = SdchManager::Global();
+    // To be extra safe, since this is a "different time" from when we decided
+    // to get the dictionary, we'll validate that an SdchManager is available.
+    // At shutdown time, care is taken to be sure that we don't delete this
+    // globally useful instance "too soon," so this check is just defensive
+    // coding to assure that IF the system is shutting down, we don't have any
+    // problem if the manager was deleted ahead of time.
+    if (manager)  // Defensive programming.
+      manager->FetchDictionary(request_info_.url, sdch_dictionary_url_);
+  }
   DoneWithRequest(ABORTED);
 }
 
@@ -305,8 +313,8 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   ProcessStrictTransportSecurityHeader();
   ProcessPublicKeyPinsHeader();
 
-  SdchManager* sdch_manager(request()->context()->sdch_manager());
-  if (sdch_manager && sdch_manager->IsInSupportedDomain(request_->url())) {
+  if (SdchManager::Global() &&
+      SdchManager::Global()->IsInSupportedDomain(request_->url())) {
     const std::string name = "Get-Dictionary";
     std::string url_text;
     void* iter = NULL;
@@ -317,11 +325,11 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
     // Eventually we should wait until a dictionary is requested several times
     // before we even download it (so that we don't waste memory or bandwidth).
     if (GetResponseHeaders()->EnumerateHeader(&iter, name, &url_text)) {
+      // request_->url() won't be valid in the destructor, so we use an
+      // alternate copy.
+      DCHECK_EQ(request_->url(), request_info_.url);
       // Resolve suggested URL relative to request url.
-      GURL sdch_dictionary_url = request_->url().Resolve(url_text);
-      if (sdch_dictionary_url.is_valid()) {
-        sdch_manager->FetchDictionary(request_->url(), sdch_dictionary_url);
-      }
+      sdch_dictionary_url_ = request_info_.url.Resolve(url_text);
     }
   }
 
@@ -455,8 +463,6 @@ void URLRequestHttpJob::StartTransactionInternal() {
 }
 
 void URLRequestHttpJob::AddExtraHeaders() {
-  SdchManager* sdch_manager = request()->context()->sdch_manager();
-
   // Supply Accept-Encoding field only if it is not already provided.
   // It should be provided IF the content is known to have restrictions on
   // potential encoding, such as streaming multi-media.
@@ -466,24 +472,24 @@ void URLRequestHttpJob::AddExtraHeaders() {
   // simple_data_source.
   if (!request_info_.extra_headers.HasHeader(
       HttpRequestHeaders::kAcceptEncoding)) {
-    bool advertise_sdch = sdch_manager &&
+    bool advertise_sdch = SdchManager::Global() &&
         // We don't support SDCH responses to POST as there is a possibility
         // of having SDCH encoded responses returned (e.g. by the cache)
         // which we cannot decode, and in those situations, we will need
         // to retransmit the request without SDCH, which is illegal for a POST.
         request()->method() != "POST" &&
-        sdch_manager->IsInSupportedDomain(request_->url());
+        SdchManager::Global()->IsInSupportedDomain(request_->url());
     std::string avail_dictionaries;
     if (advertise_sdch) {
-      sdch_manager->GetAvailDictionaryList(request_->url(),
-                                           &avail_dictionaries);
+      SdchManager::Global()->GetAvailDictionaryList(request_->url(),
+                                                    &avail_dictionaries);
 
       // The AllowLatencyExperiment() is only true if we've successfully done a
       // full SDCH compression recently in this browser session for this host.
       // Note that for this path, there might be no applicable dictionaries,
       // and hence we can't participate in the experiment.
       if (!avail_dictionaries.empty() &&
-          sdch_manager->AllowLatencyExperiment(request_->url())) {
+          SdchManager::Global()->AllowLatencyExperiment(request_->url())) {
         // We are participating in the test (or control), and hence we'll
         // eventually record statistics via either SDCH_EXPERIMENT_DECODE or
         // SDCH_EXPERIMENT_HOLDBACK, and we'll need some packet timing data.

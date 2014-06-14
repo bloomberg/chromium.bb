@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "net/base/sdch_manager.h"
-#include "net/url_request/url_request_context.h"
 
 #include "sdch/open-vcdiff/src/google/vcdecoder.h"
 
@@ -24,7 +23,6 @@ SdchFilter::SdchFilter(const FilterContext& filter_context)
       dictionary_hash_(),
       dictionary_hash_is_plausible_(false),
       dictionary_(NULL),
-      url_request_context_(filter_context.GetURLRequestContext()),
       dest_buffer_excess_(),
       dest_buffer_excess_index_(0),
       source_bytes_(0),
@@ -34,7 +32,6 @@ SdchFilter::SdchFilter(const FilterContext& filter_context)
   DCHECK(success);
   success = filter_context.GetURL(&url_);
   DCHECK(success);
-  DCHECK(url_request_context_->sdch_manager());
 }
 
 SdchFilter::~SdchFilter() {
@@ -54,8 +51,7 @@ SdchFilter::~SdchFilter() {
       // Make it possible for the user to hit reload, and get non-sdch content.
       // Note this will "wear off" quickly enough, and is just meant to assure
       // in some rare case that the user is not stuck.
-      url_request_context_->sdch_manager()->BlacklistDomain(
-          url_);
+      SdchManager::BlacklistDomain(url_);
       UMA_HISTOGRAM_COUNTS("Sdch3.PartialBytesIn",
            static_cast<int>(filter_context_.GetByteReadCount()));
       UMA_HISTOGRAM_COUNTS("Sdch3.PartialVcdiffIn", source_bytes_);
@@ -92,8 +88,7 @@ SdchFilter::~SdchFilter() {
       filter_context_.RecordPacketStats(FilterContext::SDCH_DECODE);
 
       // Allow latency experiments to proceed.
-      url_request_context_->sdch_manager()->SetAllowLatencyExperiment(
-          url_, true);
+      SdchManager::Global()->SetAllowLatencyExperiment(url_, true);
       return;
     }
     case PASS_THROUGH: {
@@ -218,7 +213,7 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
         SdchManager::SdchErrorRecovery(SdchManager::PASSING_THROUGH_NON_SDCH);
         decoding_status_ = PASS_THROUGH;
         // ... but further back-off on advertising SDCH support.
-        url_request_context_->sdch_manager()->BlacklistDomain(url_);
+        SdchManager::BlacklistDomain(url_);
       }
 
       if (decoding_status_ == PASS_THROUGH) {
@@ -228,7 +223,7 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
         if (std::string::npos == mime_type_.find("text/html")) {
           // Since we can't do a meta-refresh (along with an exponential
           // backoff), we'll just make sure this NEVER happens again.
-          url_request_context_->sdch_manager()->BlacklistDomainForever(url_);
+          SdchManager::BlacklistDomainForever(url_);
           if (filter_context_.IsCachedContent())
             SdchManager::SdchErrorRecovery(
                 SdchManager::CACHED_META_REFRESH_UNSUPPORTED);
@@ -247,7 +242,7 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
         } else {
           // Since it wasn't in the cache, we definately need at least some
           // period of blacklisting to get the correct content.
-          url_request_context_->sdch_manager()->BlacklistDomain(url_);
+          SdchManager::BlacklistDomain(url_);
           SdchManager::SdchErrorRecovery(SdchManager::META_REFRESH_RECOVERY);
         }
         decoding_status_ = META_REFRESH_RECOVERY;
@@ -340,14 +335,12 @@ Filter::FilterStatus SdchFilter::InitializeDictionary() {
   dictionary_hash_is_plausible_ = true;  // Assume plausible, but check.
 
   SdchManager::Dictionary* dictionary = NULL;
-  if ('\0' == dictionary_hash_[kServerIdLength - 1]) {
-    SdchManager* manager(url_request_context_->sdch_manager());
-    manager->GetVcdiffDictionary(
-        std::string(dictionary_hash_, 0, kServerIdLength - 1),
-        url_, &dictionary);
-  } else {
+  if ('\0' == dictionary_hash_[kServerIdLength - 1])
+    SdchManager::Global()->GetVcdiffDictionary(std::string(dictionary_hash_, 0,
+                                                           kServerIdLength - 1),
+                                               url_, &dictionary);
+  else
     dictionary_hash_is_plausible_ = false;
-  }
 
   if (!dictionary) {
     DCHECK(dictionary_hash_.size() == kServerIdLength);
