@@ -1006,12 +1006,13 @@ static int NaClIsValidClockId(int clk_id) {
   return 0;
 }
 
-int32_t NaClSysClockGetCommon(struct NaClAppThread  *natp,
-                              int                   clk_id,
-                              uint32_t              ts_addr,
-                              int                   (*timefunc)(
-                                  nacl_clockid_t            clk_id,
-                                  struct nacl_abi_timespec  *tp)) {
+static int32_t NaClSysClockGetCommon(struct NaClAppThread  *natp,
+                                     int                   clk_id,
+                                     uint32_t              ts_addr,
+                                     int                   (*timefunc)(
+                                         nacl_clockid_t            clk_id,
+                                         struct nacl_abi_timespec  *tp),
+                                     int null_ok) {
   struct NaClApp            *nap = natp->nap;
   int                       retval = -NACL_ABI_EINVAL;
   struct nacl_abi_timespec  out_buf;
@@ -1021,7 +1022,8 @@ int32_t NaClSysClockGetCommon(struct NaClAppThread  *natp,
   }
   retval = (*timefunc)((nacl_clockid_t) clk_id, &out_buf);
   if (0 == retval) {
-    if (!NaClCopyOutToUser(nap, (uintptr_t) ts_addr,
+    if (ts_addr == 0 ? !null_ok :
+        !NaClCopyOutToUser(nap, (uintptr_t) ts_addr,
                            &out_buf, sizeof out_buf)) {
       retval = -NACL_ABI_EFAULT;
     }
@@ -1034,12 +1036,12 @@ int32_t NaClSysClockGetRes(struct NaClAppThread *natp,
                            int                  clk_id,
                            uint32_t             tsp) {
   return NaClSysClockGetCommon(natp, clk_id, (uintptr_t) tsp,
-                                     NaClClockGetRes);
+                               NaClClockGetRes, 1);
 }
 
 int32_t NaClSysClockGetTime(struct NaClAppThread  *natp,
                             int                   clk_id,
                             uint32_t              tsp) {
   return NaClSysClockGetCommon(natp, clk_id, (uintptr_t) tsp,
-                                     NaClClockGetTime);
+                               NaClClockGetTime, 0);
 }

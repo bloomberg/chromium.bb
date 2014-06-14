@@ -33,14 +33,29 @@ int TimeTest(int (*func)(clockid_t clk_id, struct timespec *ts),
              char const *error_string,
              char const *success_name) {
   struct timespec       ts;
+  int errs = 0;
+
+  if (func == clock_getres) {
+    /*
+     * clock_getres should work with NULL passed, where it just acts as a
+     * probe for the validity of the clockid_t.
+     */
+
+    if (clock_getres(clk_id, NULL) != 0) {
+      fprintf(stderr, "%s with NULL\n", error_string);
+      ++errs;
+    }
+  }
 
   if (0 != (*func)(clk_id, &ts)) {
     fprintf(stderr, "%s\n", error_string);
-    return 1;
+    ++errs;
+  } else {
+    printf("%30s: %lld.%09lu\n", success_name,
+           (int64_t) ts.tv_sec, (unsigned long) ts.tv_nsec);
   }
-  printf("%30s: %lld.%09lu\n", success_name,
-         (int64_t) ts.tv_sec, (unsigned long) ts.tv_nsec);
-  return 0;
+
+  return errs;
 }
 
 int main(void) {

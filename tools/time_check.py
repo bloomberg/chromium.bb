@@ -9,11 +9,6 @@ import subprocess
 import sys
 import time
 
-def TimeCommand(cmd_and_argv, output_predicate):
-  p = subprocess.Popen(cmd_and_argv, stdout=subprocess.PIPE,
-                       stderr=subprocess.STDOUT)
-  return output_predicate(p.stdout)
-
 def Main(argv):
   parser = optparse.OptionParser()
   parser.add_option('-s', '--time_slop', dest='time_slop', default=1.0,
@@ -55,7 +50,15 @@ def Main(argv):
     return (time_start - options.time_slop <= time_output and
             time_output <= time_end + options.time_slop)
 
-  if TimeCommand(args, OutputPredicate):
+  p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  ok = OutputPredicate(p.stdout)
+  p.communicate()
+  if p.returncode != 0:
+    sys.stdout.write('Command failed with status %d: %r\n' %
+                     (p.returncode, args))
+    ok = False
+
+  if ok:
     sys.stdout.write('OK\n')
     sys.exit(0)
   else:

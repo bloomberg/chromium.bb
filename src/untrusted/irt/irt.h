@@ -353,7 +353,16 @@ struct nacl_irt_random {
 
 #define NACL_IRT_CLOCK_v0_1 "nacl-irt-clock_get-0.1"
 struct nacl_irt_clock {
+  /*
+   * clock_getres finds the resolution of the given clock; its pointer
+   * argument may be NULL, in which case the call does nothing but check
+   * the validity of the clock_id argument (returning EINVAL or 0).
+   */
   int (*clock_getres)(nacl_irt_clockid_t clock_id, struct timespec *res);
+  /*
+   * clock_gettime samples the current value of the given clock;
+   * its pointer argument may not be NULL.
+   */
   int (*clock_gettime)(nacl_irt_clockid_t clock_id, struct timespec *tp);
 };
 
