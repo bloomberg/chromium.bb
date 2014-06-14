@@ -6,12 +6,12 @@
 
 #include <string>
 
+#include "base/at_exit.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "mojo/common/time_helper.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -116,7 +116,7 @@ class HandleWatcherTest : public testing::Test {
   base::SimpleTestTickClock tick_clock_;
 
  private:
-  Environment environment_;
+  base::ShadowingAtExitManager at_exit_;
   base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(HandleWatcherTest);
@@ -318,8 +318,7 @@ TEST(HandleWatcherCleanEnvironmentTest, AbortedOnMessageLoopDestruction) {
   bool was_signaled = false;
   MojoResult result = MOJO_RESULT_OK;
 
-  Environment env;
-
+  base::ShadowingAtExitManager at_exit;
   MessagePipe pipe;
   HandleWatcher watcher;
   {

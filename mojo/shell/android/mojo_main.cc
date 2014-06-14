@@ -14,7 +14,6 @@
 #include "base/message_loop/message_loop.h"
 #include "jni/MojoMain_jni.h"
 #include "mojo/public/cpp/application/application.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/shell/context.h"
@@ -32,10 +31,6 @@ LazyInstance<scoped_ptr<base::MessageLoop> > g_java_message_loop =
     LAZY_INSTANCE_INITIALIZER;
 
 LazyInstance<scoped_ptr<shell::Context> > g_context =
-    LAZY_INSTANCE_INITIALIZER;
-
-
-LazyInstance<scoped_ptr<mojo::Environment> > g_env =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -67,8 +62,6 @@ static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
   if (jurl)
     app_urls.push_back(GURL(base::android::ConvertJavaStringToUTF8(env, jurl)));
 #endif
-
-  g_env.Get().reset(new Environment);
 
   base::android::ScopedJavaGlobalRef<jobject> activity;
   activity.Reset(env, context);

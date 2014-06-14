@@ -8,7 +8,7 @@
 
 namespace mojo {
 
-Environment::Environment() : data_(NULL) {
+Environment::Environment() {
   RunLoop::SetUp();
 }
 

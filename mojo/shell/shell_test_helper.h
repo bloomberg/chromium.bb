@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/shell/context.h"
@@ -41,8 +40,6 @@ class ShellTestHelper {
 
  private:
   class TestServiceProvider;
-
-  Environment environment_;
 
   scoped_ptr<Context> context_;
 

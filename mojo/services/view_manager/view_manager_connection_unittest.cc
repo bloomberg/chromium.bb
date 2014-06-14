@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "base/at_exit.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,7 +17,6 @@
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
@@ -473,6 +473,7 @@ class ViewManagerConnectionTest : public testing::Test {
     connection2_ = NULL;
   }
 
+  base::ShadowingAtExitManager at_exit_;
   base::MessageLoop loop_;
   shell::ShellTestHelper test_helper_;
 

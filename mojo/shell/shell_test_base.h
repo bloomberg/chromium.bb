@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,8 +43,6 @@ class ShellTestBase : public testing::Test {
   Context* shell_context() { return shell_context_.get(); }
 
  private:
-  Environment environment_;
-
   // Only set if/when |InitMojo()| is called.
   scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<Context> shell_context_;

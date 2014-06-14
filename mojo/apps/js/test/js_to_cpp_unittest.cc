@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/at_exit.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
@@ -12,7 +13,6 @@
 #include "mojo/apps/js/test/js_to_cpp.mojom.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/test/test_utils.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -408,7 +408,7 @@ class JsToCppTest : public testing::Test {
   }
 
  private:
-  Environment environment;
+  base::ShadowingAtExitManager at_exit_;
   base::MessageLoop loop;
   base::RunLoop run_loop_;
 

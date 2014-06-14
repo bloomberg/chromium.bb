@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/shell/child_process.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
@@ -17,7 +16,6 @@
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
-  mojo::Environment env;
   base::CommandLine::Init(argc, argv);
   mojo::shell::InitializeLogging();
 

@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -17,7 +18,7 @@
 namespace {
 
 struct TestEnvironment {
-  mojo::Environment environment;
+  base::ShadowingAtExitManager at_exit;
   base::MessageLoopForUI message_loop;
 };
 

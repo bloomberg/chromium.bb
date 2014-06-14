@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/at_exit.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/application/application.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager.h"
@@ -231,7 +231,7 @@ class ServiceManagerTest : public testing::Test {
   }
 
  protected:
-  mojo::Environment env_;
+  base::ShadowingAtExitManager at_exit_;
   base::MessageLoop loop_;
   TestContext context_;
   scoped_ptr<TestClientImpl> test_client_;

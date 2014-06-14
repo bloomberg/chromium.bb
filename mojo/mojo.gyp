@@ -338,8 +338,6 @@
         'common/common_type_converters.h',
         'common/data_pipe_utils.cc',
         'common/data_pipe_utils.h',
-        'common/environment_data.cc',
-        'common/environment_data.h',
         'common/handle_watcher.cc',
         'common/handle_watcher.h',
         'common/message_pump_mojo.cc',
@@ -762,6 +760,9 @@
             '../base/base.gyp:test_support_base',
             'libmojo_system_java',
             'mojo_jni_headers',
+          ],
+          'defines': [
+            'UNIT_TEST'  # As exported from testing/gtest.gyp:gtest.
           ],
           'sources': [
             'android/javatests/mojo_test_case.cc',

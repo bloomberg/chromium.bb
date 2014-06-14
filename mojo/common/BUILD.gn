@@ -13,8 +13,6 @@ component("common") {
     "common_type_converters.h",
     "data_pipe_utils.cc",
     "data_pipe_utils.h",
-    "environment_data.cc",
-    "environment_data.h",
     "handle_watcher.cc",
     "handle_watcher.h",
     "message_pump_mojo.cc",
