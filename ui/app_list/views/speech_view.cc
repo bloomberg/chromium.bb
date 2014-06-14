@@ -195,12 +195,7 @@ SpeechView::~SpeechView() {
 }
 
 void SpeechView::Reset() {
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  speech_result_->SetText(l10n_util::GetStringUTF16(
-      IDS_APP_LIST_SPEECH_HINT_TEXT));
-  speech_result_->SetEnabledColor(kHintTextColor);
-  mic_button_->SetImage(views::Button::STATE_NORMAL,
-                        bundle.GetImageSkiaNamed(IDR_APP_LIST_SPEECH_MIC_ON));
+  OnSpeechRecognitionStateChanged(delegate_->GetSpeechUI()->state());
 }
 
 int SpeechView::GetIndicatorRadius(uint8 level) {
@@ -242,7 +237,8 @@ void SpeechView::ButtonPressed(views::Button* sender, const ui::Event& event) {
 }
 
 void SpeechView::OnSpeechSoundLevelChanged(uint8 level) {
-  if (!visible())
+  if (!visible() ||
+      delegate_->GetSpeechUI()->state() == SPEECH_RECOGNITION_NETWORK_ERROR)
     return;
 
   gfx::Point origin = mic_button_->bounds().CenterPoint();
@@ -271,6 +267,15 @@ void SpeechView::OnSpeechRecognitionStateChanged(
     resource_id = IDR_APP_LIST_SPEECH_MIC_ON;
   else if (new_state == SPEECH_RECOGNITION_IN_SPEECH)
     resource_id = IDR_APP_LIST_SPEECH_MIC_RECORDING;
+
+  int text_resource_id = IDS_APP_LIST_SPEECH_HINT_TEXT;
+
+  if (new_state == SPEECH_RECOGNITION_NETWORK_ERROR) {
+    text_resource_id = IDS_APP_LIST_SPEECH_NETWORK_ERROR_HINT_TEXT;
+    indicator_->SetVisible(false);
+  }
+  speech_result_->SetText(l10n_util::GetStringUTF16(text_resource_id));
+  speech_result_->SetEnabledColor(kHintTextColor);
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   mic_button_->SetImage(views::Button::STATE_NORMAL,

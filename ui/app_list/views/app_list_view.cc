@@ -491,48 +491,49 @@ void AppListView::OnSpeechRecognitionStateChanged(
   if (!speech_view_)
     return;
 
-  bool recognizing = (new_state == SPEECH_RECOGNITION_RECOGNIZING ||
-                      new_state == SPEECH_RECOGNITION_IN_SPEECH);
+  bool will_appear = (new_state == SPEECH_RECOGNITION_RECOGNIZING ||
+                      new_state == SPEECH_RECOGNITION_IN_SPEECH ||
+                      new_state == SPEECH_RECOGNITION_NETWORK_ERROR);
   // No change for this class.
-  if (speech_view_->visible() == recognizing)
+  if (speech_view_->visible() == will_appear)
     return;
 
-  if (recognizing)
+  if (will_appear)
     speech_view_->Reset();
 
   animation_observer_->set_frame(GetBubbleFrameView());
   gfx::Transform speech_transform;
   speech_transform.Translate(
       0, SkFloatToMScalar(kSpeechUIAppearingPosition));
-  if (recognizing)
+  if (will_appear)
     speech_view_->layer()->SetTransform(speech_transform);
 
   {
     ui::ScopedLayerAnimationSettings main_settings(
         app_list_main_view_->layer()->GetAnimator());
-    if (recognizing) {
+    if (will_appear) {
       animation_observer_->SetTarget(app_list_main_view_);
       main_settings.AddObserver(animation_observer_.get());
     }
-    app_list_main_view_->layer()->SetOpacity(recognizing ? 0.0f : 1.0f);
+    app_list_main_view_->layer()->SetOpacity(will_appear ? 0.0f : 1.0f);
   }
 
   {
     ui::ScopedLayerAnimationSettings speech_settings(
         speech_view_->layer()->GetAnimator());
-    if (!recognizing) {
+    if (!will_appear) {
       animation_observer_->SetTarget(speech_view_);
       speech_settings.AddObserver(animation_observer_.get());
     }
 
-    speech_view_->layer()->SetOpacity(recognizing ? 1.0f : 0.0f);
-    if (recognizing)
+    speech_view_->layer()->SetOpacity(will_appear ? 1.0f : 0.0f);
+    if (will_appear)
       speech_view_->layer()->SetTransform(gfx::Transform());
     else
       speech_view_->layer()->SetTransform(speech_transform);
   }
 
-  if (recognizing)
+  if (will_appear)
     speech_view_->SetVisible(true);
   else
     app_list_main_view_->SetVisible(true);

@@ -23,8 +23,16 @@ cr.define('speech', function() {
     HOTWORD_RECOGNIZING: 'HOTWORD_RECOGNIZING',
     RECOGNIZING: 'RECOGNIZING',
     IN_SPEECH: 'IN_SPEECH',
-    STOPPING: 'STOPPING'
+    STOPPING: 'STOPPING',
+    NETWORK_ERROR: 'NETWORK_ERROR'
   };
+
+  /**
+   * The time to show the network error message in seconds.
+   *
+   * @const {number}
+   */
+  var SPEECH_ERROR_TIMEOUT = 3;
 
   /**
    * Checks the prefix for the hotword module based on the language. This is
@@ -49,6 +57,7 @@ cr.define('speech', function() {
     this.audioManager_ = new speech.AudioManager();
     this.audioManager_.addEventListener('audio', this.onAudioLevel_.bind(this));
     this.speechRecognitionManager_ = new speech.SpeechRecognitionManager(this);
+    this.errorTimeoutId_ = null;
   }
 
   /**
@@ -141,6 +150,12 @@ cr.define('speech', function() {
    * Called when the speech recognition has ended.
    */
   SpeechManager.prototype.onSpeechRecognitionEnded = function() {
+    // Do not handle the speech recognition ends if it ends due to an error
+    // because an error message should be shown for a while.
+    // See onSpeechRecognitionError.
+    if (this.state == SpeechState.NETWORK_ERROR)
+      return;
+
     // Restarts the hotword recognition.
     if (this.state != SpeechState.STOPPING && this.pluginManager_) {
       this.pluginManager_.startRecognizer();
@@ -169,13 +184,31 @@ cr.define('speech', function() {
   };
 
   /**
+   * Called when the speech manager should recover from the error state.
+   *
+   * @private
+   */
+  SpeechManager.prototype.onSpeechRecognitionErrorTimeout_ = function() {
+    this.errorTimeoutId_ = null;
+    this.setState_(SpeechState.READY);
+    this.onSpeechRecognitionEnded();
+  };
+
+  /**
    * Called when an error happened during the speech recognition.
    *
    * @param {SpeechRecognitionError} e The error object.
    */
   SpeechManager.prototype.onSpeechRecognitionError = function(e) {
-    if (this.state != SpeechState.STOPPING)
-      this.setState_(SpeechState.READY);
+    if (e.error == 'network') {
+      this.setState_(SpeechState.NETWORK_ERROR);
+      this.errorTimeoutId_ = window.setTimeout(
+          this.onSpeechRecognitionErrorTimeout_.bind(this),
+          SPEECH_ERROR_TIMEOUT * 1000);
+    } else {
+      if (this.state != SpeechState.STOPPING)
+        this.setState_(SpeechState.READY);
+    }
   };
 
   /**
@@ -256,7 +289,11 @@ cr.define('speech', function() {
    * Toggles the current state of speech recognition.
    */
   SpeechManager.prototype.toggleSpeechRecognition = function() {
-    if (this.state == SpeechState.RECOGNIZING ||
+    if (this.state == SpeechState.NETWORK_ERROR) {
+      if (this.errorTimeoutId_)
+        window.clearTimeout(this.errorTimeoutId_);
+      this.onSpeechRecognitionErrorTimeout_();
+    } else if (this.state == SpeechState.RECOGNIZING ||
         this.state == SpeechState.IN_SPEECH) {
       this.audioManager_.stop();
       this.speechRecognitionManager_.stop();

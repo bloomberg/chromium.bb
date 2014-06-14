@@ -248,6 +248,8 @@ void StartPageHandler::HandleSpeechRecognition(const base::ListValue* args) {
     new_state = SPEECH_RECOGNITION_IN_SPEECH;
   else if (state_string == "STOPPING")
     new_state = SPEECH_RECOGNITION_STOPPING;
+  else if (state_string == "NETWORK_ERROR")
+    new_state = SPEECH_RECOGNITION_NETWORK_ERROR;
 
   StartPageService* service =
       StartPageService::Get(Profile::FromWebUI(web_ui()));
