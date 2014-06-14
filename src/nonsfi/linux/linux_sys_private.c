@@ -106,6 +106,11 @@ int mprotect(void *start, size_t length, int prot) {
       linux_syscall3(__NR_mprotect, (uintptr_t ) start, length, prot));
 }
 
+int read(int fd, void *buf, size_t count) {
+  return errno_value_call(linux_syscall3(__NR_read, fd,
+                                         (uintptr_t) buf, count));
+}
+
 int write(int fd, const void *buf, size_t count) {
   return errno_value_call(linux_syscall3(__NR_write, fd,
                                          (uintptr_t) buf, count));
@@ -129,6 +134,61 @@ int open(char const *pathname, int oflag, ...) {
 
 int close(int fd) {
   return errno_value_call(linux_syscall1(__NR_close, fd));
+}
+
+ssize_t pread(int fd, void *buf, size_t count, off_t offset) {
+  uint32_t offset_low = (uint32_t) offset;
+  uint32_t offset_high = offset >> 32;
+#if defined(__i386__)
+  return errno_value_call(
+      linux_syscall5(__NR_pread64, fd, (uintptr_t) buf, count,
+                     offset_low, offset_high));
+#elif defined(__arm__)
+  /*
+   * On ARM, a 64-bit parameter has to be in an even-odd register
+   * pair. Hence these calls ignore their fourth argument (r3) so that
+   * their fifth and sixth make such a pair (r4,r5).
+   */
+  return errno_value_call(
+      linux_syscall6(__NR_pread64, fd, (uintptr_t) buf, count,
+                     0  /* dummy */, offset_low, offset_high));
+#else
+# error Unsupported architecture
+#endif
+}
+
+ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset) {
+  uint32_t offset_low = (uint32_t) offset;
+  uint32_t offset_high = offset >> 32;
+#if defined(__i386__)
+  return errno_value_call(
+      linux_syscall5(__NR_pwrite64, fd, (uintptr_t) buf, count,
+                     offset_low, offset_high));
+#elif defined(__arm__)
+  return errno_value_call(
+      linux_syscall6(__NR_pwrite64, fd, (uintptr_t) buf, count,
+                     0  /* dummy */, offset_low, offset_high));
+#else
+# error Unsupported architecture
+#endif
+}
+
+off_t lseek(int fd, off_t offset, int whence) {
+#if defined(__i386__) || defined(__arm__)
+  uint32_t offset_low = (uint32_t) offset;
+  uint32_t offset_high = offset >> 32;
+  off_t result;
+  int rc = errno_value_call(
+      linux_syscall5(__NR__llseek, fd, offset_high, offset_low,
+                     (uintptr_t) &result, whence));
+  if (linux_is_error_result(rc)) {
+    errno = -rc;
+    return -1;
+  }
+  return result;
+#else
+# error Unsupported architecture
+#endif
 }
 
 /*

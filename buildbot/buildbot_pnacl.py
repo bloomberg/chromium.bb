@@ -91,6 +91,8 @@ def BuildScriptX86(status, context):
       # Extra non-IRT-using test to run for x86-32
       tests.extend(['run_hello_world_test',
                     'run_mmap_test',
+                    'run_printf_test',
+                    'run_pwrite_test',
                     'run_thread_test'])
       SCons(context, parallel=True, mode=irt_mode,
             args=flags_run + ['nonsfi_nacl=1'] + tests)

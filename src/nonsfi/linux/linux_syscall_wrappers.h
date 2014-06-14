@@ -79,6 +79,18 @@ static inline uint32_t linux_syscall3(int syscall_number,
   return result;
 }
 
+static inline uint32_t linux_syscall5(int syscall_number,
+                                      uint32_t arg1, uint32_t arg2,
+                                      uint32_t arg3, uint32_t arg4,
+                                      uint32_t arg5) {
+  uint32_t result;
+  __asm__ __volatile__("int $0x80\n"
+                       : "=a"(result)
+                       : "a"(syscall_number), "b"(arg1), "c"(arg2), "d"(arg3),
+                         "S"(arg4), "D"(arg5));
+  return result;
+}
+
 static inline uint32_t linux_syscall6(int syscall_number,
                                       uint32_t arg1, uint32_t arg2,
                                       uint32_t arg3, uint32_t arg4,
@@ -163,6 +175,25 @@ static inline uint32_t linux_syscall3(int syscall_number,
   __asm__ __volatile__("svc #0\n"
                        : "=r"(result)
                        : "r"(sysno), "r"(a1), "r"(a2), "r"(a3)
+                       : "memory");
+  return result;
+}
+
+static inline uint32_t linux_syscall5(int syscall_number,
+                                      uint32_t arg1, uint32_t arg2,
+                                      uint32_t arg3, uint32_t arg4,
+                                      uint32_t arg5) {
+  register uint32_t sysno __asm__("r7") = syscall_number;
+  register uint32_t a1 __asm__("r0") = arg1;
+  register uint32_t a2 __asm__("r1") = arg2;
+  register uint32_t a3 __asm__("r2") = arg3;
+  register uint32_t a4 __asm__("r3") = arg4;
+  register uint32_t a5 __asm__("r4") = arg5;
+  register uint32_t result __asm__("r0");
+  __asm__ __volatile__("svc #0\n"
+                       : "=r"(result)
+                       : "r"(sysno),
+                         "r"(a1), "r"(a2), "r"(a3), "r"(a4), "r"(a5)
                        : "memory");
   return result;
 }

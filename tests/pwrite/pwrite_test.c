@@ -514,6 +514,18 @@ int main(int ac, char **av) {
     printf("%s\n", g_test_cases[ix].test_name);
     snprintf(test_file_name, sizeof test_file_name,
              "%s/absalom%zu.txt", g_dirname, ix);
+    /*
+     * For the case of pwrite() with O_APPEND, SFI NaCl tries to match
+     * the POSIX/Mac behaviour, which differs from Linux's behaviour.
+     * SFI NaCl contains a workaround to implement the POSIX/Mac
+     * behaviour on Linux.  Non-SFI NaCl currently does not implement
+     * this workaround, so the tests for POSIX/Mac behaviour don't
+     * pass.
+     */
+    if (NONSFI_MODE && (g_test_cases[ix].wr_fd_open_flag & O_APPEND)) {
+      printf("Skipped\n");
+      continue;
+    }
     InitializeFile(test_file_name, &g_test_cases[ix], &wr_fd, &rd_fd);
     if ((*g_test_cases[ix].test_func)(wr_fd, rd_fd,
                                       g_test_cases[ix].test_specifics)) {

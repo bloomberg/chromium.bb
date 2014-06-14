@@ -5,6 +5,10 @@
 
 Import('env')
 
+env.Append(CPPDEFINES=[['NONSFI_MODE',
+                        str(int(env.Bit('pnacl_unsandboxed') or
+                                env.Bit('nonsfi_nacl')))]])
+
 nexe = env.ComponentProgram('pwrite_test',
                             'pwrite_test.c',
                             EXTRA_LIBS=['${NONIRT_LIBS}',
