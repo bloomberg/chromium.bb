@@ -17,7 +17,9 @@ class SchedulerToughSchedulingCases(test.Test):
   test = smoothness.Smoothness
   page_set = page_sets.ToughSchedulingCasesPageSet
 
-@test.Disabled('android')  # pepper plugin is not supported on android
+
+# Pepper plugin is not supported on android.
+@test.Disabled('android', 'win')  # crbug.com/384733
 class SchedulerToughPepperCases(test.Test):
   """Measures rendering statistics while interacting with pages that have
   pepper plugins"""
