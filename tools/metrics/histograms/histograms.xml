@@ -682,6 +682,35 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Ash.TouchView.TouchViewActive" units="milliseconds">
+  <owner>girard@chromium.org</owner>
+  <summary>
+    The length of time that TouchView is active, for each activation.
+  </summary>
+</histogram>
+
+<histogram name="Ash.TouchView.TouchViewActivePercentage" units="%">
+  <owner>girard@chromium.org</owner>
+  <summary>The proportion of time spent in TouchView during a session.</summary>
+</histogram>
+
+<histogram name="Ash.TouchView.TouchViewActiveTotal" units="seconds">
+  <owner>girard@chromium.org</owner>
+  <summary>The total time that TouchView is active during a session.</summary>
+</histogram>
+
+<histogram name="Ash.TouchView.TouchViewInactive" units="milliseconds">
+  <owner>girard@chromium.org</owner>
+  <summary>The length of time between TouchView activations.</summary>
+</histogram>
+
+<histogram name="Ash.TouchView.TouchViewInactiveTotal" units="seconds">
+  <owner>girard@chromium.org</owner>
+  <summary>
+    The total time that TouchView is not active during a session.
+  </summary>
+</histogram>
+
 <histogram name="Ash.WindowCycleController.CycleTime" units="milliseconds">
   <owner>flackr@chromium.org</owner>
   <owner>kuscher@google.com</owner>

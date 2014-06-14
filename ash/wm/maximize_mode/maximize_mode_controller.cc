@@ -14,6 +14,7 @@
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
@@ -138,11 +139,14 @@ MaximizeModeController::MaximizeModeController()
     : rotation_locked_(false),
       have_seen_accelerometer_data_(false),
       in_set_screen_rotation_(false),
-      user_rotation_(gfx::Display::ROTATE_0) {
+      user_rotation_(gfx::Display::ROTATE_0),
+      last_touchview_transition_time_(base::Time::Now()) {
   Shell::GetInstance()->accelerometer_controller()->AddObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 MaximizeModeController::~MaximizeModeController() {
+  Shell::GetInstance()->RemoveShellObserver(this);
   Shell::GetInstance()->accelerometer_controller()->RemoveObserver(this);
 }
 
@@ -363,6 +367,58 @@ void MaximizeModeController::LeaveMaximizeMode() {
   EnableMaximizeModeWindowManager(false);
   event_blocker_.reset();
   event_handler_.reset();
+}
+
+void MaximizeModeController::OnSuspend() {
+  RecordTouchViewStateTransition();
+}
+
+void MaximizeModeController::OnResume() {
+  last_touchview_transition_time_ = base::Time::Now();
+}
+
+// Called after maximize mode has started, windows might still animate though.
+void MaximizeModeController::OnMaximizeModeStarted() {
+  RecordTouchViewStateTransition();
+}
+
+// Called after maximize mode has ended, windows might still be returning to
+// their original position.
+void MaximizeModeController::OnMaximizeModeEnded() {
+  RecordTouchViewStateTransition();
+}
+
+void MaximizeModeController::RecordTouchViewStateTransition() {
+  if (CanEnterMaximizeMode()) {
+    base::Time current_time = base::Time::Now();
+    base::TimeDelta delta = current_time - last_touchview_transition_time_;
+    if (IsMaximizeModeWindowManagerEnabled()) {
+      UMA_HISTOGRAM_LONG_TIMES("Ash.TouchView.TouchViewInactive", delta);
+      total_non_touchview_time_ += delta;
+    } else {
+      UMA_HISTOGRAM_LONG_TIMES("Ash.TouchView.TouchViewActive", delta);
+      total_touchview_time_ += delta;
+    }
+    last_touchview_transition_time_ = current_time;
+  }
+}
+
+void MaximizeModeController::OnAppTerminating() {
+  if (CanEnterMaximizeMode()) {
+    RecordTouchViewStateTransition();
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewActiveTotal",
+        total_touchview_time_.InMinutes(),
+        1, base::TimeDelta::FromDays(7).InMinutes(), 50);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewInactiveTotal",
+        total_non_touchview_time_.InMinutes(),
+        1, base::TimeDelta::FromDays(7).InMinutes(), 50);
+    base::TimeDelta total_runtime = total_touchview_time_ +
+        total_non_touchview_time_;
+    if (total_runtime.InSeconds() > 0) {
+      UMA_HISTOGRAM_PERCENTAGE("Ash.TouchView.TouchViewActivePercentage",
+          100 * total_touchview_time_.InSeconds() / total_runtime.InSeconds());
+    }
+  }
   Shell::GetInstance()->display_controller()->RemoveObserver(this);
 }
 
