@@ -44,11 +44,6 @@ using net::GetValueForKeyInQuery;
 
 namespace {
 
-const char kSignInPromoQueryKeyAutoClose[] = "auto_close";
-const char kSignInPromoQueryKeyContinue[] = "continue";
-const char kSignInPromoQueryKeySource[] = "source";
-const char kSignInPromoQueryKeyConstrained[] = "constrained";
-
 // Gaia cannot support about:blank as a continue URL, so using a hosted blank
 // page instead.
 const char kSignInLandingUrlPrefix[] =
@@ -285,6 +280,17 @@ Source GetSourceForPromoURL(const GURL& url) {
 bool IsAutoCloseEnabledInURL(const GURL& url) {
   std::string value;
   if (GetValueForKeyInQuery(url, kSignInPromoQueryKeyAutoClose, &value)) {
+    int enabled = 0;
+    if (base::StringToInt(value, &enabled) && enabled == 1)
+      return true;
+  }
+  return false;
+}
+
+bool ShouldShowAccountManagement(const GURL& url) {
+  std::string value;
+  if (GetValueForKeyInQuery(
+          url, kSignInPromoQueryKeyShowAccountManagement, &value)) {
     int enabled = 0;
     if (base::StringToInt(value, &enabled) && enabled == 1)
       return true;
