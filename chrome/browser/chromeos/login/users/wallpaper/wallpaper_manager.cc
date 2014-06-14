@@ -526,7 +526,7 @@ void WallpaperManager::AddObservers() {
       CrosSettings::Get()->AddSettingsObserver(
           kAccountsPrefShowUserNamesOnSignIn,
           base::Bind(&WallpaperManager::InitializeRegisteredDeviceWallpaper,
-                     weak_factory_.GetWeakPtr()));
+                     base::Unretained(this)));
 }
 
 void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
@@ -896,7 +896,7 @@ void WallpaperManager::SetCustomWallpaper(const std::string& user_id,
     blocking_task_runner->PostTask(
         FROM_HERE,
         base::Bind(&WallpaperManager::SaveCustomWallpaper,
-                   weak_factory_.GetWeakPtr(),
+                   base::Unretained(this),
                    user_id_hash,
                    base::FilePath(wallpaper_info.file),
                    wallpaper_info.layout,
@@ -1181,7 +1181,7 @@ void WallpaperManager::CacheUserWallpaper(const std::string& user_id) {
       task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&WallpaperManager::GetCustomWallpaperInternal,
-                     weak_factory_.GetWeakPtr(),
+                     base::Unretained(this),
                      user_id,
                      info,
                      wallpaper_path,
@@ -1401,7 +1401,7 @@ void WallpaperManager::MoveCustomWallpapersOnWorker(
         BrowserThread::UI,
         FROM_HERE,
         base::Bind(&WallpaperManager::MoveCustomWallpapersSuccess,
-                   weak_factory_.GetWeakPtr(),
+                   base::Unretained(this),
                    user_id,
                    user_id_hash));
   }
@@ -1433,7 +1433,7 @@ void WallpaperManager::MoveLoggedInUserCustomWallpaper() {
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&WallpaperManager::MoveCustomWallpapersOnWorker,
-                 weak_factory_.GetWeakPtr(),
+                 base::Unretained(this),
                  logged_in_user->email(),
                  logged_in_user->username_hash()));
 }
@@ -1469,14 +1469,14 @@ void WallpaperManager::GetCustomWallpaperInternal(
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
                             base::Bind(&WallpaperManager::DoSetDefaultWallpaper,
-                                       weak_factory_.GetWeakPtr(),
+                                       base::Unretained(this),
                                        user_id,
                                        base::Passed(on_finish.Pass())));
   } else {
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
                             base::Bind(&WallpaperManager::StartLoad,
-                                       weak_factory_.GetWeakPtr(),
+                                       base::Unretained(this),
                                        user_id,
                                        info,
                                        update_wallpaper,
