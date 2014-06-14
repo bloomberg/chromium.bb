@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_ERROR_CONSOLE_ERROR_CONSOLE_H_
 #define CHROME_BROWSER_EXTENSIONS_ERROR_CONSOLE_ERROR_CONSOLE_H_
 
-#include <deque>
-#include <map>
-
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -17,7 +14,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/error_map.h"
 #include "extensions/browser/extension_error.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
@@ -31,6 +27,7 @@ class Profile;
 namespace extensions {
 class Extension;
 class ExtensionPrefs;
+class ExtensionRegistry;
 
 // The ErrorConsole is a central object to which all extension errors are
 // reported. This includes errors detected in extensions core, as well as
@@ -129,12 +126,16 @@ class ErrorConsole : public content::NotificationObserver,
 
   // ExtensionRegistry implementation. If the Apps Developer Tools app is
   // installed or uninstalled, we may need to turn the ErrorConsole on/off.
-  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const Extension* extension,
-                                   UnloadedExtensionInfo::Reason reason)
-      OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
                                  const Extension* extension) OVERRIDE;
+  virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
+                                    const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                      const Extension* extension) OVERRIDE;
 
   // Add manifest errors from an extension's install warnings.
   void AddManifestErrorsForExtension(const Extension* extension);
