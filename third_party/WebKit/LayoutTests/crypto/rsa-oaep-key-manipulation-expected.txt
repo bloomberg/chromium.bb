@@ -7,13 +7,13 @@ Generating a key pair...
 PASS keyPair.toString() is '[object KeyPair]'
 PASS keyPair.publicKey.type is 'public'
 PASS keyPair.publicKey.algorithm.name is 'RSA-OAEP'
-PASS keyPair.publicKey.algorithm.modulusLength is 2048
+PASS keyPair.publicKey.algorithm.modulusLength is 512
 PASS keyPair.publicKey.usages is ["encrypt", "wrapKey"]
 PASS bytesToHexString(keyPair.publicKey.algorithm.publicExponent) is '010001'
 PASS keyPair.publicKey.algorithm.hash.name is 'SHA-1'
 PASS keyPair.privateKey.type is 'private'
 PASS keyPair.privateKey.algorithm.name is 'RSA-OAEP'
-PASS keyPair.privateKey.algorithm.modulusLength is 2048
+PASS keyPair.privateKey.algorithm.modulusLength is 512
 PASS keyPair.privateKey.usages is ["decrypt", "unwrapKey"]
 PASS bytesToHexString(keyPair.privateKey.algorithm.publicExponent) is '010001'
 PASS keyPair.privateKey.algorithm.hash.name is 'SHA-1'
@@ -39,7 +39,7 @@ PASS bytesToHexString(Base64URL.parse(jwkPublicKey.e)) is '010001'
 Importing it back...
 PASS exportedPublicKey.type is 'public'
 PASS exportedPublicKey.algorithm.name is 'RSA-OAEP'
-PASS exportedPublicKey.algorithm.modulusLength is 2048
+PASS exportedPublicKey.algorithm.modulusLength is 512
 PASS bytesToHexString(exportedPublicKey.algorithm.publicExponent) is '010001'
 PASS exportedPublicKey.algorithm.hash.name is 'SHA-1'
 PASS exportedPublicKey.extractable is true

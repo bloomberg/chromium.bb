@@ -17,7 +17,7 @@ var algorithmKeyGen = {
     name: "RSA-OAEP",
     hash: {name: "sha-1"},
     // RsaKeyGenParams
-    modulusLength: 2048,
+    modulusLength: 512,
     publicExponent: new Uint8Array([0x01, 0x00, 0x01]),  // Equivalent to 65537
 };
 var extractable = true;
@@ -28,13 +28,13 @@ crypto.subtle.generateKey(algorithmKeyGen, extractable, ["encrypt", "decrypt", "
     shouldBe("keyPair.toString()", "'[object KeyPair]'");
     shouldBe("keyPair.publicKey.type", "'public'");
     shouldBe("keyPair.publicKey.algorithm.name", "'RSA-OAEP'");
-    shouldBe("keyPair.publicKey.algorithm.modulusLength", "2048");
+    shouldBe("keyPair.publicKey.algorithm.modulusLength", "512");
     shouldBe("keyPair.publicKey.usages", '["encrypt", "wrapKey"]');
     shouldBe("bytesToHexString(keyPair.publicKey.algorithm.publicExponent)", "'010001'");
     shouldBe("keyPair.publicKey.algorithm.hash.name", "'SHA-1'");
     shouldBe("keyPair.privateKey.type", "'private'");
     shouldBe("keyPair.privateKey.algorithm.name", "'RSA-OAEP'");
-    shouldBe("keyPair.privateKey.algorithm.modulusLength", "2048");
+    shouldBe("keyPair.privateKey.algorithm.modulusLength", "512");
     shouldBe("keyPair.privateKey.usages", '["decrypt", "unwrapKey"]');
     shouldBe("bytesToHexString(keyPair.privateKey.algorithm.publicExponent)", "'010001'");
     shouldBe("keyPair.privateKey.algorithm.hash.name", "'SHA-1'");
@@ -76,7 +76,7 @@ crypto.subtle.generateKey(algorithmKeyGen, extractable, ["encrypt", "decrypt", "
     exportedPublicKey = result;
     shouldBe("exportedPublicKey.type", "'public'");
     shouldBe("exportedPublicKey.algorithm.name", "'RSA-OAEP'");
-    shouldBe("exportedPublicKey.algorithm.modulusLength", "2048");
+    shouldBe("exportedPublicKey.algorithm.modulusLength", "512");
     shouldBe("bytesToHexString(exportedPublicKey.algorithm.publicExponent)", "'010001'");
     shouldBe("exportedPublicKey.algorithm.hash.name", "'SHA-1'");
     shouldBe("exportedPublicKey.extractable", "true");

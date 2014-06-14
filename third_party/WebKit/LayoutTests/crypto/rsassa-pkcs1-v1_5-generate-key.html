@@ -17,7 +17,7 @@ var algorithmKeyGen = {
     name: "RSASSA-PKCS1-v1_5",
     hash: {name: "sha-256"},
     // RsaKeyGenParams
-    modulusLength: 2048,
+    modulusLength: 512,
     publicExponent: new Uint8Array([0x01, 0x00, 0x01]),  // Equivalent to 65537
 };
 var extractable = true;
@@ -29,13 +29,13 @@ crypto.subtle.generateKey(algorithmKeyGen, extractable, ["sign", "verify"]).then
     shouldBe("keyPair.publicKey.type", "'public'");
     shouldBe("keyPair.publicKey.algorithm.name", "'RSASSA-PKCS1-v1_5'");
     shouldBe("keyPair.publicKey.algorithm.hash.name", "'SHA-256'");
-    shouldBe("keyPair.publicKey.algorithm.modulusLength", "2048");
+    shouldBe("keyPair.publicKey.algorithm.modulusLength", "512");
     shouldBe("bytesToHexString(keyPair.publicKey.algorithm.publicExponent)", "'010001'");
     shouldBe("keyPair.publicKey.usages", '["verify"]');
     shouldBe("keyPair.privateKey.type", "'private'");
     shouldBe("keyPair.privateKey.algorithm.name", "'RSASSA-PKCS1-v1_5'");
     shouldBe("keyPair.privateKey.algorithm.hash.name", "'SHA-256'");
-    shouldBe("keyPair.privateKey.algorithm.modulusLength", "2048");
+    shouldBe("keyPair.privateKey.algorithm.modulusLength", "512");
     shouldBe("bytesToHexString(keyPair.privateKey.algorithm.publicExponent)", "'010001'");
     shouldBe("keyPair.privateKey.usages", '["sign"]');
 
