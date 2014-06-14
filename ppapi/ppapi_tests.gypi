@@ -571,5 +571,21 @@
         'examples/gles2_spinning_cube/spinning_cube.h',
       ],
     },
+    {
+      'target_name': 'ppapi_example_compositor',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+        'ppapi.gyp:ppapi_gles2',
+      ],
+      'include_dirs': [
+        'lib/gl/include',
+      ],
+      'sources': [
+        'examples/compositor/compositor.cc',
+        'examples/compositor/spinning_cube.cc',
+        'examples/compositor/spinning_cube.h',
+      ],
+    },
   ],
 }

@@ -8,19 +8,40 @@
 #include "ppapi/c/ppb_compositor_layer.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
+#include "ppapi/shared_impl/compositor_layer_data.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/ppb_compositor_layer_api.h"
 
 namespace ppapi {
 namespace proxy {
 
+class CompositorResource;
+
 class PPAPI_PROXY_EXPORT CompositorLayerResource
     : public PluginResource,
       public thunk::PPB_CompositorLayer_API {
  public:
+  // Release callback for texture or image layer.
+  typedef base::Callback<void(uint32_t, bool)> ReleaseCallback;
+
   CompositorLayerResource(Connection connection,
-                     PP_Instance instance);
+                          PP_Instance instance,
+                          const CompositorResource* compositor);
+
+  const CompositorLayerData& data() const { return data_; }
+  const ReleaseCallback& release_callback() const {
+    return release_callback_;
+  }
+  void ResetReleaseCallback() { release_callback_.Reset(); }
+  void Invalidate() { compositor_ = NULL; }
 
  private:
+  enum LayerType {
+    TYPE_COLOR,
+    TYPE_TEXTURE,
+    TYPE_IMAGE,
+  };
+
   virtual ~CompositorLayerResource();
 
   // Resource overrides:
@@ -36,17 +57,38 @@ class PPAPI_PROXY_EXPORT CompositorLayerResource
       PP_Resource context,
       uint32_t texture,
       const PP_Size* size,
-      const scoped_refptr<ppapi::TrackedCallback>& callback) OVERRIDE;
+      const scoped_refptr<TrackedCallback>& callback) OVERRIDE;
   virtual int32_t SetImage(
       PP_Resource image_data,
       const PP_Size* size,
-      const scoped_refptr<ppapi::TrackedCallback>& callback) OVERRIDE;
+      const scoped_refptr<TrackedCallback>& callback) OVERRIDE;
   virtual int32_t SetClipRect(const PP_Rect* rect) OVERRIDE;
   virtual int32_t SetTransform(const float matrix[16]) OVERRIDE;
   virtual int32_t SetOpacity(float opacity) OVERRIDE;
   virtual int32_t SetBlendMode(PP_BlendMode mode) OVERRIDE;
   virtual int32_t SetSourceRect(const PP_FloatRect* rect) OVERRIDE;
   virtual int32_t SetPremultipliedAlpha(PP_Bool premult) OVERRIDE;
+
+  bool SetType(LayerType type);
+  int32_t CheckForSetTextureAndImage(
+      LayerType type,
+      const scoped_refptr<TrackedCallback>& release_callback);
+
+  // The CompositorResource which own the layer. The layer is invalidated if
+  // compositor_ is NULL.
+  const CompositorResource* compositor_;
+
+  // Release callback for uncommitted texture or image. When CommitLayers() on
+  // the compositor_ is called, the callback will be copied into a map in the
+  // compositor_, and it will be reset to NULL.
+  ReleaseCallback release_callback_;
+
+  // Size of texture or image. It is used to verify the rect arg of
+  // SetSourceRect().
+  PP_FloatSize source_size_;
+
+  // Layer data.
+  CompositorLayerData data_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorLayerResource);
 };

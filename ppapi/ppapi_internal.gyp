@@ -231,6 +231,7 @@
             'ppapi.gyp:ppapi_c',
             '../base/base.gyp:base_win64',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
+            '../gpu/gpu.gyp:command_buffer_common_win64',
             '../ipc/ipc.gyp:ipc_win64',
             '../ui/events/latency_info_nacl.gyp:latency_info_nacl_win64',
           ],

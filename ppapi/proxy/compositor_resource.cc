@@ -4,32 +4,131 @@
 
 #include "ppapi/proxy/compositor_resource.h"
 
+#include "base/logging.h"
+#include "ppapi/proxy/ppapi_messages.h"
+
 namespace ppapi {
 namespace proxy {
 
 CompositorResource::CompositorResource(Connection connection,
                                        PP_Instance instance)
-    : PluginResource(connection, instance) {
+    : PluginResource(connection, instance),
+      layer_reset_(true),
+      last_resource_id_(0) {
+  SendCreate(RENDERER, PpapiHostMsg_Compositor_Create());
 }
 
 CompositorResource::~CompositorResource() {
+  ResetLayersInternal();
 }
 
 thunk::PPB_Compositor_API* CompositorResource::AsPPB_Compositor_API() {
   return this;
 }
 
+void CompositorResource::OnReplyReceived(
+    const ResourceMessageReplyParams& params,
+    const IPC::Message& msg) {
+   PPAPI_BEGIN_MESSAGE_MAP(CompositorResource, msg)
+     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
+         PpapiPluginMsg_Compositor_ReleaseResource,
+         OnPluginMsgReleaseResource)
+     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_UNHANDLED(
+          PluginResource::OnReplyReceived(params, msg))
+   PPAPI_END_MESSAGE_MAP()
+}
+
 PP_Resource CompositorResource::AddLayer() {
-  return 0;
+  scoped_refptr<CompositorLayerResource> resource(new CompositorLayerResource(
+      connection(), pp_instance(), this));
+  layers_.push_back(resource);
+  return resource->GetReference();
 }
 
 int32_t CompositorResource::CommitLayers(
     const scoped_refptr<ppapi::TrackedCallback>& callback) {
-  return PP_ERROR_NOTSUPPORTED;
+  if (IsInProgress())
+    return PP_ERROR_INPROGRESS;
+
+  std::vector<CompositorLayerData> layers;
+  layers.reserve(layers_.size());
+
+  for (LayerList::const_iterator it = layers_.begin();
+       it != layers_.end(); ++it) {
+    if ((*it)->data().is_null())
+      return PP_ERROR_FAILED;
+    layers.push_back((*it)->data());
+  }
+
+  commit_callback_ = callback;
+  Call<PpapiPluginMsg_Compositor_CommitLayersReply>(
+      RENDERER,
+      PpapiHostMsg_Compositor_CommitLayers(layers, layer_reset_),
+      base::Bind(&CompositorResource::OnPluginMsgCommitLayersReply,
+                 base::Unretained(this)),
+      callback);
+
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t CompositorResource::ResetLayers() {
-  return PP_ERROR_NOTSUPPORTED;
+  if (IsInProgress())
+    return PP_ERROR_INPROGRESS;
+  ResetLayersInternal();
+  return PP_OK;
+}
+
+void CompositorResource::OnPluginMsgCommitLayersReply(
+    const ResourceMessageReplyParams& params) {
+  if (!TrackedCallback::IsPending(commit_callback_))
+    return;
+
+  // On success, we put layers' release_callbacks into a map,
+  // otherwise we will do nothing. So plugin may change layers and
+  // call CommitLayers() again.
+  if (params.result() == PP_OK) {
+    layer_reset_ = false;
+    for (LayerList::iterator it = layers_.begin();
+         it != layers_.end(); ++it) {
+      ReleaseCallback release_callback = (*it)->release_callback();
+      if (!release_callback.is_null()) {
+        release_callback_map_.insert(ReleaseCallbackMap::value_type(
+            (*it)->data().common.resource_id, release_callback));
+        (*it)->ResetReleaseCallback();
+      }
+    }
+  }
+
+  scoped_refptr<TrackedCallback> callback;
+  callback.swap(commit_callback_);
+  callback->Run(params.result());
+}
+
+void CompositorResource::OnPluginMsgReleaseResource(
+    const ResourceMessageReplyParams& params,
+    int32_t id,
+    uint32_t sync_point,
+    bool is_lost) {
+  ReleaseCallbackMap::iterator it = release_callback_map_.find(id);
+  DCHECK(it != release_callback_map_.end()) <<
+      "Can not found release_callback_ by id(" << id << ")!";
+  it->second.Run(sync_point, is_lost);
+  release_callback_map_.erase(it);
+}
+
+void CompositorResource::ResetLayersInternal() {
+  for (LayerList::iterator it = layers_.begin();
+       it != layers_.end(); ++it) {
+    ReleaseCallback release_callback = (*it)->release_callback();
+    if (!release_callback.is_null()) {
+      release_callback.Run(0, false);
+      (*it)->ResetReleaseCallback();
+    }
+    (*it)->Invalidate();
+  }
+
+  layers_.clear();
+  layer_reset_ = true;
 }
 
 }  // namespace proxy

@@ -10,6 +10,7 @@
 #include "ppapi/c/pp_size.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
 #include "ui/gfx/size.h"
 
 // Conversions for graphics types between our gfx library and PPAPI.
@@ -27,6 +28,10 @@ inline PP_Point PP_FromGfxPoint(const gfx::Point& p) {
 
 inline gfx::Rect PP_ToGfxRect(const PP_Rect& r) {
   return gfx::Rect(r.point.x, r.point.y, r.size.width, r.size.height);
+}
+
+inline gfx::RectF PP_ToGfxRectF(const PP_FloatRect& r) {
+  return gfx::RectF(r.point.x, r.point.y, r.size.width, r.size.height);
 }
 
 inline PP_Rect PP_FromGfxRect(const gfx::Rect& r) {
