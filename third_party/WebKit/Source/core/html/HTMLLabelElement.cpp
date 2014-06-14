@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/html/HTMLLabelElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/MouseEvent.h"

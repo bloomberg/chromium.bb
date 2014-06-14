@@ -32,9 +32,9 @@
 #include "config.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/ParsingUtilities.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

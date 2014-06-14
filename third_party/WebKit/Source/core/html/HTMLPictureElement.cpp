@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/html/HTMLPictureElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLImageElement.h"
 

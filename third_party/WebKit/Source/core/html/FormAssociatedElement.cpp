@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/html/FormAssociatedElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/IdTargetObserver.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"

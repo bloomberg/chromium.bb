@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/html/parser/TextDocumentParser.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 
 namespace WebCore {

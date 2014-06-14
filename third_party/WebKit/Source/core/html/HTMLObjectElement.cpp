@@ -24,8 +24,8 @@
 #include "config.h"
 #include "core/html/HTMLObjectElement.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ScriptEventListener.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Text.h"

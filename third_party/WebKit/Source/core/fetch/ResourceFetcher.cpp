@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/fetch/ResourceFetcher.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/fetch/CSSStyleSheetResource.h"
@@ -61,6 +60,7 @@
 #include "core/frame/Settings.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "platform/Logging.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"

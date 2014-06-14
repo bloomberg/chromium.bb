@@ -25,8 +25,8 @@
 #ifndef FrameView_h
 #define FrameView_h
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/rendering/PaintPhase.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/scroll/ScrollView.h"

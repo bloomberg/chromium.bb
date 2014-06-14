@@ -23,7 +23,7 @@
 #include "config.h"
 #include "core/html/HTMLBaseElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/html/parser/HTMLParserIdioms.h"

@@ -27,7 +27,7 @@
 #ifndef Settings_h
 #define Settings_h
 
-#include "SettingsMacros.h"
+#include "core/SettingsMacros.h"
 #include "core/editing/EditingBehaviorTypes.h"
 #include "core/frame/SettingsDelegate.h"
 #include "platform/Timer.h"

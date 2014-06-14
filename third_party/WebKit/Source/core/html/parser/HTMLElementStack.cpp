@@ -27,9 +27,9 @@
 #include "config.h"
 #include "core/html/parser/HTMLElementStack.h"
 
-#include "HTMLNames.h"
-#include "MathMLNames.h"
-#include "SVGNames.h"
+#include "core/HTMLNames.h"
+#include "core/MathMLNames.h"
+#include "core/SVGNames.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLElement.h"
 

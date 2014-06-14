@@ -25,7 +25,7 @@
 #ifndef ClassList_h
 #define ClassList_h
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/Element.h"
 #include "core/dom/SpaceSplitString.h"

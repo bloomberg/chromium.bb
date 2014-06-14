@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/html/HTMLImageLoader.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
 #include "core/fetch/ImageResource.h"

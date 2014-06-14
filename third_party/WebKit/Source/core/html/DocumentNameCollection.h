@@ -5,7 +5,7 @@
 #ifndef DocumentNameCollection_h
 #define DocumentNameCollection_h
 
-#include "HTMLNameCollection.h"
+#include "core/html/HTMLNameCollection.h"
 
 namespace WebCore {
 

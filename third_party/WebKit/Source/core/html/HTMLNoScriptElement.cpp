@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/html/HTMLNoScriptElement.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/HTMLNames.h"
 #include "core/frame/LocalFrame.h"
 
 namespace WebCore {

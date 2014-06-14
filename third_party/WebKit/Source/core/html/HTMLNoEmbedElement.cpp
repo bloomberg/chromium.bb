@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/html/HTMLNoEmbedElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
 

@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/html/HTMLFormControlsCollection.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFormElement.h"

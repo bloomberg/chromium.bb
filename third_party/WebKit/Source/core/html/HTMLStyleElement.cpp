@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/html/HTMLStyleElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/ContextFeatures.h"

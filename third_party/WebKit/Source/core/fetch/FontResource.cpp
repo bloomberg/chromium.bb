@@ -36,7 +36,7 @@
 #include "wtf/CurrentTime.h"
 
 #if ENABLE(SVG_FONTS)
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/dom/XMLDocument.h"
 #include "core/html/HTMLCollection.h"
 #include "core/svg/SVGFontElement.h"

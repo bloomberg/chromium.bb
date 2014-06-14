@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/HTMLAudioElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
 namespace WebCore {

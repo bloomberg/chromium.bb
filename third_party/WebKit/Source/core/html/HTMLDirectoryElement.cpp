@@ -23,7 +23,7 @@
 #include "config.h"
 #include "core/html/HTMLDirectoryElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 
 namespace WebCore {
 

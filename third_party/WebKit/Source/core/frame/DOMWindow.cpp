@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/frame/DOMWindow.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
@@ -96,6 +95,7 @@
 #include "core/storage/StorageNamespace.h"
 #include "core/timing/Performance.h"
 #include "platform/PlatformScreen.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/media/MediaPlayer.h"

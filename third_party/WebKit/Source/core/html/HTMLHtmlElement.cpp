@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/html/HTMLHtmlElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/frame/LocalFrame.h"

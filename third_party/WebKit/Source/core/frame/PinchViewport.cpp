@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "PinchViewport.h"
+#include "core/frame/PinchViewport.h"
 
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"

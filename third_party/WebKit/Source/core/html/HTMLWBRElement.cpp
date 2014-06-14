@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/html/HTMLWBRElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/rendering/RenderWordBreak.h"
 
 namespace WebCore {

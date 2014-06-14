@@ -23,11 +23,10 @@
 #include "config.h"
 #include "core/html/HTMLImageElement.h"
 
-#include "CSSPropertyNames.h"
-#include "HTMLNames.h"
-#include "MediaTypeNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptEventListener.h"
+#include "core/CSSPropertyNames.h"
+#include "core/HTMLNames.h"
+#include "core/MediaTypeNames.h"
 #include "core/css/MediaQueryMatcher.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/css/parser/SizesAttributeParser.h"
@@ -42,6 +41,7 @@
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/rendering/RenderImage.h"
 #include "platform/MIMETypeRegistry.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

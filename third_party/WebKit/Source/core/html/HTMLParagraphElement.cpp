@@ -23,9 +23,9 @@
 #include "config.h"
 #include "core/html/HTMLParagraphElement.h"
 
-#include "CSSPropertyNames.h"
-#include "CSSValueKeywords.h"
-#include "HTMLNames.h"
+#include "core/CSSPropertyNames.h"
+#include "core/CSSValueKeywords.h"
+#include "core/HTMLNames.h"
 
 namespace WebCore {
 

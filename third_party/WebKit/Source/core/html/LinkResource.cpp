@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/html/LinkResource.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/imports/HTMLImportsController.h"
 

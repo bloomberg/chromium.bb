@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/HTMLSpanElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 
 namespace WebCore {
 

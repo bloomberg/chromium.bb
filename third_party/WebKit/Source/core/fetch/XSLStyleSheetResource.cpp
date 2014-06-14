@@ -27,9 +27,9 @@
 #include "config.h"
 #include "core/fetch/XSLStyleSheetResource.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/StyleSheetResourceClient.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "wtf/Vector.h"
 

@@ -27,14 +27,14 @@
 #include "config.h"
 #include "core/html/HTMLContentElement.h"
 
-#include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/HTMLNames.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

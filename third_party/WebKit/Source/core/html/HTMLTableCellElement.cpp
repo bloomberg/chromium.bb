@@ -25,9 +25,9 @@
 #include "config.h"
 #include "core/html/HTMLTableCellElement.h"
 
-#include "CSSPropertyNames.h"
-#include "CSSValueKeywords.h"
-#include "HTMLNames.h"
+#include "core/CSSPropertyNames.h"
+#include "core/CSSValueKeywords.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/rendering/RenderTableCell.h"

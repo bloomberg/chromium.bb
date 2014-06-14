@@ -24,9 +24,9 @@
 #include "config.h"
 #include "core/html/HTMLFrameElementBase.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptEventListener.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"

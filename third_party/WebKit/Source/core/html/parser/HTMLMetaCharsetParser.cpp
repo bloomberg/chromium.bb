@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/parser/HTMLMetaCharsetParser.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLTokenizer.h"

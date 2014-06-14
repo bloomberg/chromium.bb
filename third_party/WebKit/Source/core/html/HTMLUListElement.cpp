@@ -23,8 +23,8 @@
 #include "config.h"
 #include "core/html/HTMLUListElement.h"
 
-#include "CSSPropertyNames.h"
-#include "HTMLNames.h"
+#include "core/CSSPropertyNames.h"
+#include "core/HTMLNames.h"
 
 namespace WebCore {
 

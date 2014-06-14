@@ -28,9 +28,8 @@
 #include "config.h"
 #include "core/html/parser/HTMLPreloadScanner.h"
 
-#include "HTMLNames.h"
-#include "InputTypeNames.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/MediaValues.h"
@@ -39,6 +38,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/html/parser/HTMLTokenizer.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "wtf/MainThread.h"
 

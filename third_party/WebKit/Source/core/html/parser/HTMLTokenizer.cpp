@@ -28,8 +28,8 @@
 #include "config.h"
 #include "core/html/parser/HTMLTokenizer.h"
 
-#include "HTMLNames.h"
-#include "HTMLTokenizerNames.h"
+#include "core/HTMLNames.h"
+#include "core/HTMLTokenizerNames.h"
 #include "core/html/parser/HTMLEntityParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLTreeBuilder.h"

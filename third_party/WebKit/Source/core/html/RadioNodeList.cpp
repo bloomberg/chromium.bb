@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/RadioNodeList.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeRareData.h"
 #include "core/html/HTMLFormElement.h"

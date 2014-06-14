@@ -23,9 +23,9 @@
 #include "config.h"
 #include "core/html/HTMLLIElement.h"
 
-#include "CSSPropertyNames.h"
-#include "CSSValueKeywords.h"
-#include "HTMLNames.h"
+#include "core/CSSPropertyNames.h"
+#include "core/CSSValueKeywords.h"
+#include "core/HTMLNames.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/rendering/RenderListItem.h"
 

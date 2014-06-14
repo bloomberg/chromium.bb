@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/html/HTMLViewSourceDocument.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
 #include "core/html/HTMLAnchorElement.h"

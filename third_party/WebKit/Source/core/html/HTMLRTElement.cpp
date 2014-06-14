@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/html/HTMLRTElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/rendering/RenderRubyText.h"
 
 namespace WebCore {

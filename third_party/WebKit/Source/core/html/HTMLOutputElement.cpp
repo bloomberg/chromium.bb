@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/html/HTMLOutputElement.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/HTMLNames.h"
 
 namespace WebCore {
 

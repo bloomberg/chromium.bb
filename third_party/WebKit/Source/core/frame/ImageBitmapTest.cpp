@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/frame/ImageBitmap.h"
 
-#include "SkPixelRef.h"
+#include "SkPixelRef.h" // FIXME: qualify this skia header file.
 #include "core/dom/Document.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"

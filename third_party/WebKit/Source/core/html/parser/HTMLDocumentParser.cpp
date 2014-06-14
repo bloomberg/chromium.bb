@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"

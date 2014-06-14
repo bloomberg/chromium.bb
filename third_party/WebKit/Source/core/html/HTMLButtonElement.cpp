@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/HTMLButtonElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/html/FormDataList.h"
