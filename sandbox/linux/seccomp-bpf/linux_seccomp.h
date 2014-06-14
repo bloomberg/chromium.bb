@@ -16,9 +16,10 @@
 #include <asm/unistd.h>
 #include <linux/filter.h>
 
+#include <sys/cdefs.h>
 // Old Bionic versions do not have sys/user.h.  The if can be removed once we no
 // longer need to support these old Bionic versions.
-#include <sys/cdefs.h>
+// All x86_64 builds use a new enough bionic to have sys/user.h.
 #if !defined(__BIONIC__) || defined(__x86_64__)
 #include <sys/user.h>
 #endif
@@ -131,7 +132,34 @@
 #define SECCOMP_ARG_LSB_IDX(nr) (offsetof(struct arch_seccomp_data, args) +   \
                                  8*(nr) + 0)
 
+
+#if defined(__BIONIC__)
+// Old Bionic versions don't have sys/user.h, so we just define regs_struct
+// directly.  This can be removed once we no longer need to support these old
+// Bionic versions.
+struct regs_struct {
+  long int ebx;
+  long int ecx;
+  long int edx;
+  long int esi;
+  long int edi;
+  long int ebp;
+  long int eax;
+  long int xds;
+  long int xes;
+  long int xfs;
+  long int xgs;
+  long int orig_eax;
+  long int eip;
+  long int xcs;
+  long int eflags;
+  long int esp;
+  long int xss;
+};
+#else
 typedef user_regs_struct regs_struct;
+#endif
+
 #define SECCOMP_PT_RESULT(_regs)  (_regs).eax
 #define SECCOMP_PT_SYSCALL(_regs) (_regs).orig_eax
 #define SECCOMP_PT_IP(_regs)      (_regs).eip
