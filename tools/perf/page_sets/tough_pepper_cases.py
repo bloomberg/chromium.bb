@@ -26,10 +26,8 @@ class Page1(ToughPepperCasesPage):
 
   def RunSmoothness(self, action_runner):
     # Wait until the page and the plugin module are loaded.
-    action_runner.RunAction(WaitAction(
-        {
-            'javascript': ('pageLoaded === true && moduleLoaded === true')
-        }))
+    action_runner.WaitForJavaScriptCondition(
+        'pageLoaded === true && moduleLoaded === true')
     action_runner.RunAction(ScrollAction(
         {
             'scroll_requires_touch': True,
