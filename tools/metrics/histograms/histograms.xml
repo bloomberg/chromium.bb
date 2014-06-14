@@ -6080,7 +6080,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ExtensionInstallVerifier.ActualStatus"
     enum="ExtensionInstallVerifierStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Logged during InstallVerifier::Init, to indicate the actual enforcement
     status used (usually determined by the ExtensionInstallVerifier field trial
@@ -6090,7 +6090,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ExtensionInstallVerifier.ExperimentStatus"
     enum="ExtensionInstallVerifierStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Logged during InstallVerifier::Init to indicate the enforcement status as
     determined by the ExtensionInstallVerifier field trial experiment.
@@ -6099,13 +6099,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ExtensionInstallVerifier.GetSignatureResult"
     enum="ExtensionInstallVerifierGetSignatureResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>The result of the verifier trying to get a new signature.</summary>
 </histogram>
 
 <histogram name="ExtensionInstallVerifier.InitResult"
     enum="ExtensionInstallVerifierInitResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     The result of initialization for the extension install verifier.
   </summary>
@@ -6113,7 +6113,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ExtensionInstallVerifier.MustRemainDisabled"
     enum="ExtensionInstallVerifierMustRemainDisabled">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     The outcome for each call to InstallVerifier::MustRemainDisabled.
   </summary>
@@ -36445,6 +36445,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="6" label="NO_SIGNATURE"/>
   <int value="7" label="NOT_VERIFIED_BUT_NOT_ENFORCING"/>
   <int value="8" label="NOT_VERIFIED"/>
+  <int value="9" label="NOT_VERIFIED_BUT_INSTALL_TIME_NEWER_THAN_SIGNATURE"/>
+  <int value="10" label="NOT_VERIFIED_BUT_UNKNOWN_ID"/>
+  <int value="11" label="COMPONENT"/>
 </enum>
 
 <enum name="ExtensionInstallVerifierStatus" type="int">
