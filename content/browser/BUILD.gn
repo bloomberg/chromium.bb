@@ -245,7 +245,10 @@ source_set("browser") {
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
   } else {
-    sources -= [ "renderer_host/web_input_event_aurax11.cc" ]
+    sources -= [
+      "power_save_blocker_x11.cc",
+      "renderer_host/web_input_event_aurax11.cc",
+    ]
   }
 
   if (use_pango) {
@@ -339,6 +342,12 @@ source_set("browser") {
     sources += rebase_path(
       content_browser_gypi_values.compositor_browser_sources,
       ".", "//content")
+    if (!use_x11) {
+      sources -= [
+        "compositor/software_output_device_x11.cc",
+        "compositor/software_output_device_x11.h",
+      ]
+    }
     deps += [ "//ui/compositor" ]
   }
 

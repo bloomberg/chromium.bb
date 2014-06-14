@@ -107,7 +107,7 @@ test("courgette_unittests") {
 
   if (is_win) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags += [ "/wd4267" ]
+    cflags = [ "/wd4267" ]
   }
 
   deps = [

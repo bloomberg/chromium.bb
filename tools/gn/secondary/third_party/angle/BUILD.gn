@@ -325,6 +325,8 @@ if (is_win) {
       "src/libGLESv2/Float16ToFloat32.cpp",
       "src/libGLESv2/Framebuffer.cpp",
       "src/libGLESv2/Framebuffer.h",
+      "src/libGLESv2/FramebufferAttachment.cpp",
+      "src/libGLESv2/FramebufferAttachment.h",
       "src/libGLESv2/HandleAllocator.cpp",
       "src/libGLESv2/HandleAllocator.h",
       "src/libGLESv2/Program.cpp",

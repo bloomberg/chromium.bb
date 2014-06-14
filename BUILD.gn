@@ -38,7 +38,6 @@ group("root") {
     "//content",
     "//crypto",
     "//extensions/common/api:extensions_api",
-    "//dbus",
     "//device/usb",
     "//gin",
     "//gpu",
@@ -104,6 +103,7 @@ group("root") {
 
   if (is_linux) {
     deps += [
+      "//dbus",
       "//third_party/fontconfig",
       "//third_party/freetype2",
     ]
@@ -131,7 +131,6 @@ group("root") {
     deps -= [
       "//cc",
       "//content",
-      "//dbus",
       "//extensions/common/api:extensions_api",
       "//pdf",  # Not compiled on Android in GYP yet, either.
       "//ppapi:ppapi_c",

@@ -47,7 +47,9 @@ if (current_toolchain == host_toolchain) {
       "source/config/$os/libyasm-stdint.h",
     ]
     defines = [ "HAVE_CONFIG_H" ]
-    cflags = [ "-std=gnu99" ]
+    if (is_posix) {
+      cflags = [ "-std=gnu99" ]
+    }
   }
 
   executable("genmacro") {
@@ -122,7 +124,9 @@ if (current_toolchain == host_toolchain) {
                  "//build/config/compiler:no_chromium_code" ]
 
     # re2c is missing CLOSEVOP from one switch.
-    cflags = [ "-Wno-switch" ]
+    if (is_posix) {
+      cflags = [ "-Wno-switch" ]
+    }
   }
 
   executable("yasm") {
@@ -218,9 +222,13 @@ if (current_toolchain == host_toolchain) {
     # directory, but the gen_x86_insn.py script does not make this easy.
     include_dirs = [ yasm_gen_include_dir ]
 
-    cflags = [ "-ansi", "-pedantic" ]
-    if (is_clang) {
-      cflags += [ "-Wno-incompatible-pointer-types" ]
+    if (is_win) {
+      cflags = [ "/wd4267" ]  # size_t to int conversion.
+    } else {
+      cflags = [ "-ansi", "-pedantic" ]
+      if (is_clang) {
+        cflags += [ "-Wno-incompatible-pointer-types" ]
+      }
     }
 
     # TODO(ajwong): This should take most of the generated output as
@@ -230,6 +238,7 @@ if (current_toolchain == host_toolchain) {
       ":compile_gperf_for_include",
       ":compile_nasm_macros",
       ":compile_nasm_version",
+      ":compile_re2c_lc3b",
       ":compile_win64_gas",
       ":compile_win64_nasm",
       ":compile_re2c",

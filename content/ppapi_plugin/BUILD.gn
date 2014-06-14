@@ -23,6 +23,7 @@ source_set("ppapi_plugin") {
     "//content:export",
     "//mojo/public/interfaces/service_provider",
     "//ppapi:ppapi_ipc",
+    "//skia",
     "//third_party/icu",
     #"//third_party/WebKit/public:blink",  TODO(GYP)
     # TODO(GYP) remove this when blink is enabled:
