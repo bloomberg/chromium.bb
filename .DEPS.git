@@ -146,7 +146,7 @@ deps = {
     'src/third_party/yasm/source/patched-yasm':
         Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@c960eb11ccda80b10ed50be39df4f0663b371d1d',
     'src/tools/deps2git':
-        Var('git_url') + '/chromium/tools/deps2git.git@492bea98de74b0933a6889c64bc6d47ce331f88f',
+        Var('git_url') + '/chromium/tools/deps2git.git@f04828eb0b5acd3e7ad983c024870f17f17b06d9',
     'src/tools/grit':
         Var('git_url') + '/external/grit-i18n.git@7acb6009d958f09470d7216d28d79ddf488af272',
     'src/tools/gyp':
