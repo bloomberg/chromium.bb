@@ -1062,8 +1062,6 @@ crbug.com/308768 inspector/network/network-status-non-http.html [ Skip ]
 
 crbug.com/381102 inspector/sources/debugger/debugger-step-into-custom-element-callbacks.html [ Skip ]
 
-crbug.com/383495 svg/filters/feTurbulence-tiled.svg [ NeedsRebaseline ]
-
 # Started being flaky in r175790.
 crbug.com/361045 inspector/layers/tracing-layer-tree.html [ Pass Failure ]
 
