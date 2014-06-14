@@ -787,6 +787,20 @@ hooks = [
     ],
   },
   {
+    "name": "apache_win32",
+    "pattern": "\\.sha1",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=win32",
+                "--directory",
+                "--recursive",
+                "--no_auth",
+                "--num_threads=16",
+                "--bucket", "chromium-apache-win32",
+                "src/third_party/apache-win32",
+    ],
+  },
+  {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     "name": "gyp",
     "pattern": ".",

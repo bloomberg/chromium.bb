@@ -220,6 +220,11 @@ v8.log
 /third_party/angle_dx11
 /third_party/aosp
 /third_party/apache-mime4j
+/third_party/apache-win32/bin/*.exe
+/third_party/apache-win32/bin/*.dll
+/third_party/apache-win32/bin/iconv/*.so
+/third_party/apache-win32/modules/*.so
+/third_party/apache-win32/modules/*.dll
 /third_party/asan
 /third_party/bidichecker
 /third_party/bison
