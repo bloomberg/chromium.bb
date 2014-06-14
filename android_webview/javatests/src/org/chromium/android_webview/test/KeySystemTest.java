@@ -5,8 +5,8 @@
 package org.chromium.android_webview.test;
 
 import android.test.suitebuilder.annotation.SmallTest;
-
 import org.chromium.android_webview.AwContents;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -50,8 +50,12 @@ public class KeySystemTest extends AwTestBase {
         assertEquals("\"maybe\"", IsKeySystemSupported("webkit-org.w3.clearkey"));
     }
 
+    /*
     @Feature({"AndroidWebView"})
     @SmallTest
+    crbug.com/384753.
+    */
+    @DisabledTest
     public void testSupportWidevineKeySystem() throws Throwable {
         assertEquals("\"maybe\"", IsKeySystemSupported("com.widevine.alpha"));
     }
