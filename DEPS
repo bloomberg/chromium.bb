@@ -281,7 +281,7 @@ deps = {
         Var("libphonenumber_revision"),
 
   "src/tools/deps2git":
-    "/trunk/tools/deps2git@270777",
+    "/trunk/tools/deps2git@276439",
 
   "src/third_party/clang_format/script":
     Var("llvm_url") + "/cfe/trunk/tools/clang-format@206068",
@@ -346,7 +346,7 @@ deps_os = {
 
     # Parses Windows PE/COFF executable format.
     "src/third_party/pefile":
-      (Var("googlecode_url") % "pefile") + "/trunk@63",
+      (Var("googlecode_url") % "pefile") + "/trunk@141",
 
     # NSS, for SSLClientSocketNSS.
     "src/third_party/nss":
