@@ -101,10 +101,6 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   }
 
   gfx::Rect opaque_rect() const { return opaque_rect_; }
-  bool has_text(RasterMode mode) const {
-    return managed_state_.tile_versions[mode].has_text_;
-  }
-
   float contents_scale() const { return contents_scale_; }
   gfx::Rect content_rect() const { return content_rect_; }
 

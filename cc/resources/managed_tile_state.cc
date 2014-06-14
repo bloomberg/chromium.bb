@@ -54,8 +54,8 @@ ManagedTileState::ManagedTileState()
       visible_and_ready_to_draw(false),
       scheduled_priority(0) {}
 
-ManagedTileState::TileVersion::TileVersion()
-    : mode_(RESOURCE_MODE), has_text_(false) {}
+ManagedTileState::TileVersion::TileVersion() : mode_(RESOURCE_MODE) {
+}
 
 ManagedTileState::TileVersion::~TileVersion() { DCHECK(!resource_); }
 

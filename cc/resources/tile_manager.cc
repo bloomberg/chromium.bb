@@ -1138,7 +1138,6 @@ void TileManager::OnRasterTaskCompleted(
 
   ++update_visible_tiles_stats_.completed_count;
 
-  tile_version.set_has_text(analysis.has_text);
   if (analysis.is_solid_color) {
     tile_version.set_solid_color(analysis.solid_color);
     resource_pool_->ReleaseResource(resource.Pass());
