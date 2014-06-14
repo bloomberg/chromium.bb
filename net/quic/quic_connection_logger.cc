@@ -565,6 +565,19 @@ void QuicConnectionLogger::OnConnectionCloseFrame(
       base::Bind(&NetLogQuicConnectionCloseFrameCallback, &frame));
 }
 
+void QuicConnectionLogger::OnWindowUpdateFrame(
+    const QuicWindowUpdateFrame& frame) {
+  net_log_.AddEvent(
+      NetLog::TYPE_QUIC_SESSION_WINDOW_UPDATE_FRAME_RECEIVED,
+      base::Bind(&NetLogQuicWindowUpdateFrameCallback, &frame));
+}
+
+void QuicConnectionLogger::OnBlockedFrame(const QuicBlockedFrame& frame) {
+  net_log_.AddEvent(
+      NetLog::TYPE_QUIC_SESSION_BLOCKED_FRAME_RECEIVED,
+      base::Bind(&NetLogQuicBlockedFrameCallback, &frame));
+}
+
 void QuicConnectionLogger::OnPublicResetPacket(
     const QuicPublicResetPacket& packet) {
   net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_PUBLIC_RESET_PACKET_RECEIVED);

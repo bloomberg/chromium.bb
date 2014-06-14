@@ -748,6 +748,9 @@ bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
 
 bool QuicConnection::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
   DCHECK(connected_);
+  if (debug_visitor_) {
+    debug_visitor_->OnWindowUpdateFrame(frame);
+  }
   DVLOG(1) << ENDPOINT << "WindowUpdate received for stream: "
            << frame.stream_id << " with byte offset: " << frame.byte_offset;
   last_window_update_frames_.push_back(frame);
@@ -756,6 +759,9 @@ bool QuicConnection::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
 
 bool QuicConnection::OnBlockedFrame(const QuicBlockedFrame& frame) {
   DCHECK(connected_);
+  if (debug_visitor_) {
+    debug_visitor_->OnBlockedFrame(frame);
+  }
   DVLOG(1) << ENDPOINT << "Blocked frame received for stream: "
            << frame.stream_id;
   last_blocked_frames_.push_back(frame);

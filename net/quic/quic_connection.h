@@ -167,6 +167,12 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
   virtual void OnConnectionCloseFrame(
       const QuicConnectionCloseFrame& frame) {}
 
+  // Called when a WindowUpdate has been parsed.
+  virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {}
+
+  // Called when a BlockedFrame has been parsed.
+  virtual void OnBlockedFrame(const QuicBlockedFrame& frame) {}
+
   // Called when a public reset packet has been received.
   virtual void OnPublicResetPacket(const QuicPublicResetPacket& packet) {}
 

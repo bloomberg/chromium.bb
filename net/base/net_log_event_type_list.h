@@ -1434,12 +1434,25 @@ EVENT_TYPE(QUIC_SESSION_ACK_FRAME_RECEIVED)
 //   }
 EVENT_TYPE(QUIC_SESSION_ACK_FRAME_SENT)
 
+// Session received a WINDOW_UPDATE frame.
+//   {
+//     "stream_id": <The id of the stream which this data is for>,
+//     "byte_offset": <Byte offset in the stream>,
+//   }
+EVENT_TYPE(QUIC_SESSION_WINDOW_UPDATE_FRAME_RECEIVED)
+
 // Session sent a WINDOW_UPDATE frame.
 //   {
 //     "stream_id": <The id of the stream which this data is for>,
 //     "byte_offset": <Byte offset in the stream>,
 //   }
 EVENT_TYPE(QUIC_SESSION_WINDOW_UPDATE_FRAME_SENT)
+
+// Session received a BLOCKED frame.
+//   {
+//     "stream_id": <The id of the stream which this data is for>,
+//   }
+EVENT_TYPE(QUIC_SESSION_BLOCKED_FRAME_RECEIVED)
 
 // Session sent a BLOCKED frame.
 //   {
