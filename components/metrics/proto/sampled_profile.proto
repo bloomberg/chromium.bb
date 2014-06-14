@@ -13,7 +13,7 @@ import "perf_data.proto";
 // Protocol buffer for collected sample-based profiling data.
 // Contains the parameters and data from a single profile collection event.
 
-// Next tag: 7
+// Next tag: 9
 message SampledProfile {
   // Indicates the event that triggered this collection.
   enum TriggerEvent {
@@ -28,6 +28,9 @@ message SampledProfile {
 
     // The profile was collected upon resume from suspend.
     RESUME_FROM_SUSPEND = 2;
+
+    // The profile was collected upon restoring a previous session.
+    RESTORE_SESSION = 3;
   }
   optional TriggerEvent trigger_event = 1;
 
@@ -47,6 +50,14 @@ message SampledProfile {
   // Number of milliseconds after a resume that profile was collected. Only set
   // when |trigger_event| is RESUME_FROM_SUSPEND.
   optional int64 ms_after_resume = 6;
+
+  // Number of tabs restored during a session restore. Only set when
+  // |trigger_event| is RESTORE_SESSION.
+  optional int32 num_tabs_restored = 7;
+
+  // Number of milliseconds after a session restore that a profile was
+  // collected. Only set when |trigger_event| is RESTORE_SESSION.
+  optional int64 ms_after_restore = 8;
 
   // The actual perf data that was collected.
   optional PerfDataProto perf_data = 4;
