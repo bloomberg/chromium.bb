@@ -24,8 +24,11 @@
 #include "core/html/HTMLMetaElement.h"
 
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/loader/FrameLoaderClient.h"
 
 namespace WebCore {
 
@@ -468,6 +471,8 @@ void HTMLMetaElement::process()
             processViewportContentAttribute("width=device-width", ViewportDescription::HandheldFriendlyMeta);
         else if (equalIgnoringCase(nameValue, "mobileoptimized"))
             processViewportContentAttribute("width=device-width, initial-scale=1", ViewportDescription::MobileOptimizedMeta);
+        else if (RuntimeEnabledFeatures::brandColorEnabled() && equalIgnoringCase(nameValue, "brand-color") && document().frame())
+            document().frame()->loader().client()->dispatchDidChangeBrandColor();
     }
 
     // Get the document to process the tag, but only if we're actually part of DOM

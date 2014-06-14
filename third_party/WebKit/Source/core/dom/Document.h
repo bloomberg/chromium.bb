@@ -857,6 +857,8 @@ public:
 
     Vector<IconURL> iconURLs(int iconTypesMask);
 
+    Color brandColor() const;
+
     // Returns the HTMLLinkElement currently in use for the Web Manifest.
     // Returns null if there is no such element.
     HTMLLinkElement* linkManifest() const;

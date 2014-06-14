@@ -28,6 +28,7 @@ PrefixedVideoFullscreen status=test
 // The changes enabled behind this flag are very likely to break lots of content.
 // ** DO NOT use this flag unless you know what you are doing. **
 BleedingEdgeFastPaths
+BrandColor status=experimental
 
 ClientHintsDpr status=experimental
 Crypto status=experimental

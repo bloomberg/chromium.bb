@@ -94,6 +94,7 @@ public:
     virtual void dispatchDidFinishDocumentLoad() OVERRIDE;
     virtual void dispatchDidFinishLoad() OVERRIDE;
     virtual void dispatchDidFirstVisuallyNonEmptyLayout() OVERRIDE;
+    virtual void dispatchDidChangeBrandColor() OVERRIDE;
     virtual WebCore::NavigationPolicy decidePolicyForNavigation(const WebCore::ResourceRequest&, WebCore::DocumentLoader*, WebCore::NavigationPolicy) OVERRIDE;
     virtual void dispatchWillRequestResource(WebCore::FetchRequest*) OVERRIDE;
     virtual void dispatchWillSendSubmitEvent(WebCore::HTMLFormElement*) OVERRIDE;

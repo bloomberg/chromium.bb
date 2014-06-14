@@ -266,6 +266,9 @@ public:
     // The frame's manifest has changed.
     virtual void didChangeManifest(WebLocalFrame*) { }
 
+    // The frame's brand color has changed.
+    virtual void didChangeBrandColor(WebLocalFrame*) { }
+
 
     // Misc ----------------------------------------------------------------
 

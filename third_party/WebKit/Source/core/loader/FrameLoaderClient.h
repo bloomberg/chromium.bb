@@ -109,6 +109,7 @@ namespace WebCore {
         virtual void dispatchDidFinishDocumentLoad() = 0;
         virtual void dispatchDidFinishLoad() = 0;
         virtual void dispatchDidFirstVisuallyNonEmptyLayout() = 0;
+        virtual void dispatchDidChangeBrandColor() = 0;
 
         virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) = 0;
 

@@ -98,6 +98,11 @@ WebString WebDocument::referrer() const
     return constUnwrap<Document>()->referrer();
 }
 
+WebColor WebDocument::brandColor() const
+{
+    return constUnwrap<Document>()->brandColor().rgb();
+}
+
 WebURL WebDocument::openSearchDescriptionURL() const
 {
     return const_cast<Document*>(constUnwrap<Document>())->openSearchDescriptionURL();
