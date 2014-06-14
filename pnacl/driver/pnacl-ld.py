@@ -146,10 +146,6 @@ EXTRA_ENV = {
   'ALLOW_NEXE_BUILD_ID': '0',
   'DISABLE_ABI_CHECK': '0',
   'LLVM_PASSES_TO_DISABLE': '',
-  # Skip dev intrinsic checks in ABI verifier.  Used for pnacl-llc.pexe and
-  # gold.pexe, which currently use llvm.nacl.target.arch.
-  # TODO(jvoung): find way to stop using llvm.nacl.target.arch.
-  'ALLOW_DEV_INTRINSICS': '0',
 }
 
 def AddToBCLinkFlags(*args):
@@ -184,7 +180,6 @@ LDPatterns = [
   # required for ABI-stable pexes but can be omitted when the PNaCl
   # toolchain is used for producing native nexes.
   ( '--pnacl-disable-pass=(.+)', "env.append('LLVM_PASSES_TO_DISABLE', $0)"),
-  ( '--pnacl-allow-dev-intrinsics', "env.set('ALLOW_DEV_INTRINSICS', '1')"),
   ( ('-target', '(.+)'), SetLibTarget),
   ( ('--target=(.+)'), SetLibTarget),
 
@@ -434,9 +429,6 @@ def main(argv):
             '-verify-pnaclabi-functions',
             # A flag for the above -verify-pnaclabi-* passes.
             '-pnaclabi-allow-debug-metadata']
-        if env.getbool('ALLOW_DEV_INTRINSICS'):
-          # A flag for the above -verify-pnaclabi-* passes.
-          postopt_passes += ['-pnaclabi-allow-dev-intrinsics']
     elif still_need_expand_byval:
       # We may still need -expand-byval to match the PPAPI shim
       # calling convention.

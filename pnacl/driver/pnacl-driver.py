@@ -270,7 +270,6 @@ CustomPatterns = [
   ( '(--pnacl-allow-nexe-build-id)', AddLDFlag),
   ( '(--pnacl-disable-abi-check)',  AddLDFlag),
   ( '(--pnacl-disable-pass=.+)',    AddLLVMPassDisableFlag),
-  ( '(--pnacl-allow-dev-intrinsics)', AddLDFlag),
 ]
 
 GCCPatterns = [
