@@ -8,6 +8,7 @@ import os
 import re
 
 import cloud_storage_test_base
+import page_sets
 import pixel_expectations
 
 from telemetry import test
@@ -146,7 +147,7 @@ class _PixelValidator(cloud_storage_test_base.ValidatorBase):
 
 class Pixel(cloud_storage_test_base.TestBase):
   test = _PixelValidator
-  page_set = 'page_sets/pixel_tests.py'
+  page_set = page_sets.PixelTestsPageSet
 
   @classmethod
   def AddTestCommandLineArgs(cls, group):

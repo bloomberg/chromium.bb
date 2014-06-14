@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import memory_expectations
+import page_sets
 
 from telemetry import test
 from telemetry.page import page_test
@@ -92,7 +93,7 @@ class _MemoryValidator(page_test.PageTest):
 class Memory(test.Test):
   """Tests GPU memory limits"""
   test = _MemoryValidator
-  page_set = 'page_sets/memory_tests.py'
+  page_set = page_sets.MemoryTestsPageSet
 
   def CreateExpectations(self, page_set):
     return memory_expectations.MemoryExpectations()

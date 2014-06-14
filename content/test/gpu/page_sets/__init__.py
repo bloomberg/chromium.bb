@@ -2,14 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import os
+import sys
 
-def GetAllPageSetFilenames():
-  results = []
-  start_dir = os.path.dirname(__file__)
-  for dirpath, _, filenames in os.walk(start_dir):
-    for f in filenames:
-      if os.path.splitext(f)[1] != '.json':
-        continue
-      filename = os.path.join(dirpath, f)
-      results.append(filename)
-  return results
+from telemetry.core import discover
+from telemetry.page import page_set
+
+
+# Import all submodules' PageSet classes.
+start_dir = os.path.dirname(os.path.abspath(__file__))
+top_level_dir = os.path.dirname(start_dir)
+base_class = page_set.PageSet
+for cls in discover.DiscoverClasses(
+    start_dir, top_level_dir, base_class).values():
+  setattr(sys.modules[__name__], cls.__name__, cls)
