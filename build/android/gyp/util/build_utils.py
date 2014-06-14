@@ -170,9 +170,9 @@ def IsDeviceReady():
 
 def CheckZipPath(name):
   if os.path.normpath(name) != name:
-    raise Exception('Non-canonical zip path: %s, %s' % name)
+    raise Exception('Non-canonical zip path: %s' % name)
   if os.path.isabs(name):
-    raise Exception('Absolute zip path: %s, %s' % name)
+    raise Exception('Absolute zip path: %s' % name)
 
 
 def ExtractAll(zip_path, path=None, no_clobber=True):
