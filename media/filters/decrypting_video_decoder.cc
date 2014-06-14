@@ -233,8 +233,9 @@ void DecryptingVideoDecoder::DeliverFrame(
   DCHECK(!decode_cb_.is_null());
   DCHECK(pending_buffer_to_decode_.get());
 
-  TRACE_EVENT_ASYNC_END0(
-      "media", "DecryptingVideoDecoder::DecodePendingBuffer", trace_id_);
+  TRACE_EVENT_ASYNC_END2(
+      "media", "DecryptingVideoDecoder::DecodePendingBuffer", trace_id_,
+      "buffer_size", buffer_size, "status", status);
 
   bool need_to_try_again_if_nokey_is_returned = key_added_while_decode_pending_;
   key_added_while_decode_pending_ = false;
