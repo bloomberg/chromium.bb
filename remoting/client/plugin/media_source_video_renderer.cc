@@ -21,7 +21,7 @@ class MediaSourceVideoRenderer::VideoWriter : public mkvmuxer::IMkvWriter {
  public:
   typedef std::vector<uint8_t> DataBuffer;
 
-  explicit VideoWriter(const webrtc::DesktopSize& frame_size);
+  VideoWriter(const webrtc::DesktopSize& frame_size, const char* codec_id);
   virtual ~VideoWriter();
 
   const webrtc::DesktopSize& size() { return frame_size_; }
@@ -40,6 +40,8 @@ class MediaSourceVideoRenderer::VideoWriter : public mkvmuxer::IMkvWriter {
 
  private:
   webrtc::DesktopSize frame_size_;
+  const char* codec_id_;
+
   scoped_ptr<DataBuffer> output_data_;
   int64_t position_;
   scoped_ptr<mkvmuxer::Segment> segment_;
@@ -47,8 +49,10 @@ class MediaSourceVideoRenderer::VideoWriter : public mkvmuxer::IMkvWriter {
 };
 
 MediaSourceVideoRenderer::VideoWriter::VideoWriter(
-    const webrtc::DesktopSize& frame_size)
+    const webrtc::DesktopSize& frame_size,
+    const char* codec_id)
     : frame_size_(frame_size),
+      codec_id_(codec_id),
       position_(0),
       timecode_(0) {
   segment_.reset(new mkvmuxer::Segment());
@@ -83,6 +87,7 @@ MediaSourceVideoRenderer::VideoWriter::VideoWriter(
   segment_->AddVideoTrack(width, height, 1);
   mkvmuxer::VideoTrack* video_track =
       reinterpret_cast<mkvmuxer::VideoTrack*>(segment_->GetTrackByNumber(1));
+  video_track->set_codec_id(codec_id_);
   video_track->set_crop_right(crop_right);
   video_track->set_crop_bottom(crop_bottom);
   video_track->set_frame_rate(base::Time::kNanosecondsPerSecond /
@@ -138,6 +143,7 @@ MediaSourceVideoRenderer::VideoWriter::OnVideoFrame(
 
 MediaSourceVideoRenderer::MediaSourceVideoRenderer(Delegate* delegate)
     : delegate_(delegate),
+      codec_id_(mkvmuxer::Tracks::kVp8CodecId),
       latest_sequence_number_(0) {
 }
 
@@ -145,7 +151,18 @@ MediaSourceVideoRenderer::~MediaSourceVideoRenderer() {}
 
 void MediaSourceVideoRenderer::Initialize(
     const protocol::SessionConfig& config) {
-  DCHECK_EQ(config.video_config().codec, protocol::ChannelConfig::CODEC_VP8);
+  switch (config.video_config().codec) {
+    case protocol::ChannelConfig::CODEC_VP8:
+      format_string_ = "video/webm; codecs=\"vp8\"";
+      codec_id_ = mkvmuxer::Tracks::kVp8CodecId;
+      break;
+    case protocol::ChannelConfig::CODEC_VP9:
+      format_string_ = "video/webm; codecs=\"vp9\"";
+      codec_id_ = mkvmuxer::Tracks::kVp9CodecId;
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 ChromotingStats* MediaSourceVideoRenderer::GetStats() {
@@ -185,8 +202,8 @@ void MediaSourceVideoRenderer::ProcessVideoPacket(
   if (!writer_ ||
       (!writer_->size().equals(frame_size) && !frame_size.is_empty())) {
     media_source_needs_reset = true;
-    writer_.reset(new VideoWriter(frame_size));
-    delegate_->OnMediaSourceReset("video/webm; codecs=\"vp8\"");
+    writer_.reset(new VideoWriter(frame_size, codec_id_));
+    delegate_->OnMediaSourceReset(format_string_);
   }
 
   webrtc::DesktopVector frame_dpi(packet->format().x_dpi(),
