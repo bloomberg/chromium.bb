@@ -1724,11 +1724,6 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   EXPECT_TRUE(view_->last_copy_request_->has_texture_mailbox());
   request = view_->last_copy_request_.Pass();
 
-  // There should be one subscriber texture in flight.
-  EXPECT_EQ(1u,
-            view_->GetDelegatedFrameHost()->
-                active_frame_subscriber_textures_.size());
-
   // Send back the mailbox included in the request. There's no release callback
   // since the mailbox came from the RWHVA originally.
   request->SendTextureResult(view_rect.size(),
@@ -1739,9 +1734,6 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   run_loop.Run();
 
   // The callback should succeed.
-  EXPECT_EQ(0u,
-            view_->GetDelegatedFrameHost()->
-                active_frame_subscriber_textures_.size());
   EXPECT_EQ(1, callback_count_);
   EXPECT_TRUE(result_);
 
@@ -1750,11 +1742,6 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
 
   EXPECT_EQ(1, callback_count_);
   request = view_->last_copy_request_.Pass();
-
-  // There should be one subscriber texture in flight again.
-  EXPECT_EQ(1u,
-            view_->GetDelegatedFrameHost()->
-                active_frame_subscriber_textures_.size());
 
   // Destroy the RenderWidgetHostViewAura and ImageTransportFactory.
   TearDownEnvironment();

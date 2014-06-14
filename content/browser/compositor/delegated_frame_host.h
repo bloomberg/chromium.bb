@@ -272,7 +272,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   // Subscriber that listens to frame presentation events.
   scoped_ptr<RenderWidgetHostViewFrameSubscriber> frame_subscriber_;
   std::vector<scoped_refptr<OwnedMailbox> > idle_frame_subscriber_textures_;
-  std::set<OwnedMailbox*> active_frame_subscriber_textures_;
 
   // YUV readback pipeline.
   scoped_ptr<content::ReadbackYUVInterface>

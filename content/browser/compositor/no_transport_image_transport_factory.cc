@@ -15,7 +15,12 @@ NoTransportImageTransportFactory::NoTransportImageTransportFactory(
     scoped_ptr<ui::ContextFactory> context_factory)
     : context_factory_(context_factory.Pass()) {}
 
-NoTransportImageTransportFactory::~NoTransportImageTransportFactory() {}
+NoTransportImageTransportFactory::~NoTransportImageTransportFactory() {
+  scoped_ptr<GLHelper> lost_gl_helper = gl_helper_.Pass();
+  FOR_EACH_OBSERVER(ImageTransportFactoryObserver,
+                    observer_list_,
+                    OnLostResources());
+}
 
 ui::ContextFactory* NoTransportImageTransportFactory::GetContextFactory() {
   return context_factory_.get();
@@ -35,12 +40,14 @@ GLHelper* NoTransportImageTransportFactory::GetGLHelper() {
   return gl_helper_.get();
 }
 
-// We don't generate lost context events, so we don't need to keep track of
-// observers
 void NoTransportImageTransportFactory::AddObserver(
-    ImageTransportFactoryObserver* observer) {}
+    ImageTransportFactoryObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
 
 void NoTransportImageTransportFactory::RemoveObserver(
-    ImageTransportFactoryObserver* observer) {}
+    ImageTransportFactoryObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
 
 }  // namespace content

@@ -163,8 +163,6 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
                    ImageTransportFactory::GetInstance()->GetGLHelper()) {
       subscriber_texture = new OwnedMailbox(helper);
     }
-    if (subscriber_texture.get())
-      active_frame_subscriber_textures_.insert(subscriber_texture.get());
   }
 
   scoped_ptr<cc::CopyOutputRequest> request =
@@ -550,13 +548,9 @@ void DelegatedFrameHost::ReturnSubscriberTexture(
     return;
   if (!dfh)
     return;
-  DCHECK_NE(
-      dfh->active_frame_subscriber_textures_.count(subscriber_texture.get()),
-      0u);
 
   subscriber_texture->UpdateSyncPoint(sync_point);
 
-  dfh->active_frame_subscriber_textures_.erase(subscriber_texture.get());
   if (dfh->frame_subscriber_ && subscriber_texture->texture_id())
     dfh->idle_frame_subscriber_textures_.push_back(subscriber_texture);
 }
@@ -783,15 +777,6 @@ DelegatedFrameHost::~DelegatedFrameHost() {
   if (resource_collection_.get())
     resource_collection_->SetClient(NULL);
 
-  // An OwnedMailbox should not refer to the GLHelper anymore once the DFH is
-  // destroyed, as it may then outlive the GLHelper.
-  for (std::set<OwnedMailbox*>::iterator it =
-           active_frame_subscriber_textures_.begin();
-       it != active_frame_subscriber_textures_.end();
-       ++it) {
-    (*it)->Destroy();
-  }
-  active_frame_subscriber_textures_.clear();
   DCHECK(!vsync_manager_);
 }
 

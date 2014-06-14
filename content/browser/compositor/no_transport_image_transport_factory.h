@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_COMPOSITOR_NO_TRANSPORT_IMAGE_TRANSPORT_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "content/browser/compositor/image_transport_factory.h"
 
 namespace cc {
@@ -35,6 +36,7 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   scoped_ptr<ui::ContextFactory> context_factory_;
   scoped_refptr<cc::ContextProvider> context_provider_;
   scoped_ptr<GLHelper> gl_helper_;
+  ObserverList<ImageTransportFactoryObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NoTransportImageTransportFactory);
 };
