@@ -228,7 +228,6 @@ Node* Position::computeNodeBeforePosition() const
 {
     if (!m_anchorNode)
         return 0;
-
     switch (anchorType()) {
     case PositionIsBeforeChildren:
         return 0;
@@ -1266,7 +1265,10 @@ void Position::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDi
                     break;
                 inlineBox = prevBox;
             }
-            caretOffset = inlineBox->caretLeftmostOffset();
+            if (m_anchorNode->selfOrAncestorHasDirAutoAttribute())
+                caretOffset = inlineBox->bidiLevel() < level ? inlineBox->caretLeftmostOffset() : inlineBox->caretRightmostOffset();
+            else
+                caretOffset = inlineBox->caretLeftmostOffset();
         } else if (nextBox->bidiLevel() > level) {
             // Left edge of a "tertiary" run. Set to the right edge of that run.
             while (InlineBox* tertiaryBox = inlineBox->nextLeafChildIgnoringLineBreak()) {

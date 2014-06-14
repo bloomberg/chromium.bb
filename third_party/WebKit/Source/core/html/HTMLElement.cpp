@@ -38,6 +38,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
+#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/markup.h"
 #include "core/events/EventListener.h"
 #include "core/events/KeyboardEvent.h"
@@ -634,9 +636,6 @@ static void setHasDirAutoFlagRecursively(Node* firstNode, bool flag, Node* lastN
     Node* node = firstNode->firstChild();
 
     while (node) {
-        if (node->selfOrAncestorHasDirAutoAttribute() == flag)
-            return;
-
         if (elementAffectsDirectionality(node)) {
             if (node == lastNode)
                 return;
@@ -750,7 +749,9 @@ void HTMLElement::calculateAndAdjustDirectionality()
 {
     Node* strongDirectionalityTextNode;
     TextDirection textDirection = directionality(&strongDirectionalityTextNode);
-    setHasDirAutoFlagRecursively(this, true, strongDirectionalityTextNode);
+    setHasDirAutoFlagRecursively(this, hasDirectionAuto(), strongDirectionalityTextNode);
+    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
+        setHasDirAutoFlagRecursively(root, hasDirectionAuto());
     if (renderer() && renderer()->style() && renderer()->style()->direction() != textDirection)
         setNeedsStyleRecalc(SubtreeStyleChange);
 }
