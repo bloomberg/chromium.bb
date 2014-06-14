@@ -184,14 +184,6 @@ LayoutRect RenderLayerRepainter::repaintRectIncludingNonCompositingDescendants()
     return repaintRect;
 }
 
-void RenderLayerRepainter::setBackingNeedsRepaint()
-{
-    // There is only one call site, and that call site ensures that the compositing state is PaintsIntoOwnBacking.
-    ASSERT(m_renderer.compositingState() == PaintsIntoOwnBacking);
-
-    m_renderer.compositedLayerMapping()->setContentsNeedDisplay();
-}
-
 void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
 {
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,

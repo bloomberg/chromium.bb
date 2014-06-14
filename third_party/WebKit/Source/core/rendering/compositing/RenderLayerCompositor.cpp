@@ -680,8 +680,12 @@ void RenderLayerCompositor::repaintCompositedLayers()
 void RenderLayerCompositor::recursiveRepaintLayer(RenderLayer* layer)
 {
     // FIXME: This method does not work correctly with transforms.
-    if (layer->compositingState() == PaintsIntoOwnBacking)
-        layer->repainter().setBackingNeedsRepaint();
+    if (layer->compositingState() == PaintsIntoOwnBacking) {
+        layer->compositedLayerMapping()->setContentsNeedDisplay();
+        // This function is called only when it is desired to repaint the entire compositing graphics layer tree.
+        // This includes squashing.
+        layer->compositedLayerMapping()->setSquashingContentsNeedDisplay();
+    }
 
     layer->stackingNode()->updateLayerListsIfNeeded();
 

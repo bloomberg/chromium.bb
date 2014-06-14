@@ -1869,6 +1869,11 @@ struct SetContentsNeedsDisplayFunctor {
     }
 };
 
+void CompositedLayerMapping::setSquashingContentsNeedDisplay()
+{
+    ApplyToGraphicsLayers(this, SetContentsNeedsDisplayFunctor(), ApplyToSquashingLayer);
+}
+
 void CompositedLayerMapping::setContentsNeedDisplay()
 {
     // FIXME: need to split out repaints for the background.
