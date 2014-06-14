@@ -34,7 +34,7 @@ function service_worker_unregister_and_register(test, url, scope, onregister) {
 }
 
 function service_worker_unregister_and_done(test, scope) {
-    navigator.serviceWorker.unregister(scope).then(
+    return navigator.serviceWorker.unregister(scope).then(
         test.done.bind(test),
         unreached_rejection(test, 'Unregister should not fail'));
 }
@@ -48,12 +48,17 @@ function unreached_rejection(test, prefix) {
 
 // FIXME: Clean up the iframe when the test completes.
 function with_iframe(url, f) {
-  var frame = document.createElement('iframe');
-  frame.src = url;
-  frame.onload = function() {
-      f(frame);
-  };
-  document.body.appendChild(frame);
+    return new Promise(function(resolve, reject) {
+        var frame = document.createElement('iframe');
+        frame.src = url;
+        frame.onload = function() {
+            if (f) {
+              f(frame);
+            }
+            resolve(frame);
+        };
+        document.body.appendChild(frame);
+    });
 }
 
 function normalizeURL(url) {

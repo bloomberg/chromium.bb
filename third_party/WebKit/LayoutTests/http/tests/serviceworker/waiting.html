@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<title>ServiceWorker: navigator.serviceWorker.waiting</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<body>
+<script>
+// "waiting" is set
+async_test(function(t) {
+    var step = t.step_func.bind(t);
+    var url = 'resources/worker-no-op.js';
+    var scope = 'resources/blank.html';
+    var frame;
+
+    navigator.serviceWorker.unregister(scope)
+    .then(step(function() { return with_iframe(scope); }),
+          unreached_rejection(t, 'Unregister should not fail'))
+    .then(step(function(f) {
+        frame = f;
+        return navigator.serviceWorker.register(url, {scope: scope});
+    }))
+    .then(step(function(serviceWorker) {
+        // FIXME: Replace this with .ready when that supports the in-waiting
+        // Service Worker.
+        return new Promise(step(function(resolve, reject) {
+            serviceWorker.onstatechange = step(function() {
+                if (serviceWorker.state == 'installed') {
+                    resolve();
+                }
+            });
+        }));
+    }), unreached_rejection(t, 'Registration should not fail'))
+    .then(step(function() {
+        var container = frame.contentWindow.navigator.serviceWorker;
+        assert_equals(container.controller, null);
+        assert_equals(container.waiting.url, normalizeURL(url));
+
+        // FIXME: Add a test for a frame created after installation.
+        // Should the existing frame ("frame") block activation?
+    }))
+    .then(step(function() {
+        frame.remove();
+        return service_worker_unregister_and_done(t, scope);
+    }));
+}, 'waiting is set');
+</script>
