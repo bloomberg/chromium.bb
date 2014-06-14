@@ -53,6 +53,7 @@ class PermissionMenuButton : public views::MenuButton,
 
   // Overridden from views::View.
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
  private:
   // Overridden from views::MenuButtonListener.
@@ -74,12 +75,7 @@ PermissionMenuButton::PermissionMenuButton(const base::string16& text,
                                            bool show_menu_marker)
     : MenuButton(NULL, text, this, show_menu_marker),
       menu_model_(model) {
-  SetEnabledColor(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelEnabledColor));
-  SetHoverColor(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelEnabledColor));
-  SetDisabledColor(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelDisabledColor));
+
 }
 
 PermissionMenuButton::~PermissionMenuButton() {
@@ -109,6 +105,15 @@ void PermissionMenuButton::SetText(const base::string16& text) {
 void PermissionMenuButton::GetAccessibleState(ui::AXViewState* state) {
   MenuButton::GetAccessibleState(state);
   state->value = text();
+}
+
+void PermissionMenuButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  SetEnabledColor(theme->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor));
+  SetHoverColor(theme->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor));
+  SetDisabledColor(theme->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelDisabledColor));
 }
 
 void PermissionMenuButton::OnMenuButtonClicked(View* source,
