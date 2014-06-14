@@ -21,8 +21,7 @@ namespace {
 // expanded if/when options are added, so I've kept the general form of the
 // tests from data_pipe_unittest.cc.
 
-const uint32_t kSizeOfCreateOptions =
-    static_cast<uint32_t>(sizeof(MojoCreateSharedBufferOptions));
+const uint32_t kSizeOfCreateOptions = sizeof(MojoCreateSharedBufferOptions);
 
 // Does a cursory sanity check of |validated_options|. Calls
 // |ValidateCreateOptions()| on already-validated options. The validated options
@@ -179,7 +178,7 @@ TEST(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
   MojoDuplicateBufferHandleOptions options[] = {
     {sizeof(MojoDuplicateBufferHandleOptions),
      MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE},
-    {sizeof(MojoDuplicateBufferHandleOptionsFlags), ~0}
+    {sizeof(MojoDuplicateBufferHandleOptionsFlags), ~0u}
   };
   for (size_t i = 0; i < arraysize(options); i++) {
     scoped_refptr<Dispatcher> dispatcher2;
@@ -214,7 +213,7 @@ TEST(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsInvalid) {
   // Unknown |flags|.
   {
     MojoDuplicateBufferHandleOptions options = {
-      static_cast<uint32_t>(sizeof(MojoDuplicateBufferHandleOptions)), ~0u
+      sizeof(MojoDuplicateBufferHandleOptions), ~0u
     };
     scoped_refptr<Dispatcher> dispatcher2;
     EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
