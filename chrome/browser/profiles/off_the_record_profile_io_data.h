@@ -22,6 +22,7 @@ class Profile;
 namespace net {
 class FtpTransactionFactory;
 class HttpTransactionFactory;
+class SdchManager;
 }  // namespace net
 
 // OffTheRecordProfile owns a OffTheRecordProfileIOData::Handle, which holds a
@@ -146,6 +147,8 @@ class OffTheRecordProfileIOData : public ProfileIOData {
 
   mutable scoped_ptr<net::URLRequestJobFactory> main_job_factory_;
   mutable scoped_ptr<net::URLRequestJobFactory> extensions_job_factory_;
+
+  mutable scoped_ptr<net::SdchManager> sdch_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileIOData);
 };

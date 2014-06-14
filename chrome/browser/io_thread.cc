@@ -1052,7 +1052,8 @@ void IOThread::InitSystemRequestContextOnIOThread() {
       ConstructSystemRequestContext(globals_, net_log_));
 
   sdch_manager_->set_sdch_fetcher(
-      new SdchDictionaryFetcher(system_url_request_context_getter_.get()));
+      new SdchDictionaryFetcher(
+          sdch_manager_, system_url_request_context_getter_.get()));
 }
 
 void IOThread::UpdateDnsClientEnabled() {
