@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser.input;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.hardware.input.InputManager;
 import android.hardware.input.InputManager.InputDeviceListener;
@@ -35,6 +37,7 @@ public class GamepadList {
     private boolean mIsGamepadAccessed;
     private InputDeviceListener mInputDeviceListener;
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private GamepadList() {
         mInputDeviceListener = new InputDeviceListener() {
             // Override InputDeviceListener methods
@@ -55,6 +58,7 @@ public class GamepadList {
         };
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void initializeDevices() {
         // Get list of all the attached input devices.
         int[] deviceIds = mInputManager.getInputDeviceIds();
@@ -79,6 +83,7 @@ public class GamepadList {
         getInstance().attachedToWindow(context);
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void attachedToWindow(Context context) {
         if (mAttachedToWindowCounter++ == 0) {
             mInputManager = (InputManager) context.getSystemService(Context.INPUT_SERVICE);
@@ -93,12 +98,14 @@ public class GamepadList {
     /**
      * Notifies the GamepadList that a {@link ContentView} is detached from it's window.
      */
+    @SuppressLint("MissingSuperCall")
     public static void onDetachedFromWindow() {
         assert ThreadUtils.runningOnUiThread();
         if (!isGamepadSupported()) return;
         getInstance().detachedFromWindow();
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void detachedFromWindow() {
         if (--mAttachedToWindowCounter == 0) {
             synchronized (mLock) {
