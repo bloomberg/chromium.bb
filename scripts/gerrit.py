@@ -133,7 +133,7 @@ def FilteredQuery(opts, query):
   """Query gerrit and filter/clean up the results"""
   ret = []
 
-  for cl in opts.gerrit.Query(query, raw=True):
+  for cl in opts.gerrit.Query(query, raw=True, bypass_cache=False):
     # Gerrit likes to return a stats record too.
     if not 'project' in cl:
       continue

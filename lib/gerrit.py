@@ -163,7 +163,7 @@ class GerritHelper(object):
     return results[0]
 
   def Query(self, change=None, sort=None, current_patch=True, options=(),
-            dryrun=False, raw=False, start=None, **kwargs):
+            dryrun=False, raw=False, start=None, bypass_cache=True, **kwargs):
     """Free-form query for gerrit changes.
 
     Args:
@@ -178,6 +178,7 @@ class GerritHelper(object):
       raw: If True, return a list of python dict's representing the query
           results.  Otherwise, return a list of cros_patch.GerritPatch.
       start: Offset in the result set to start at.
+      bypass_cache: Query each change to make sure data is up to date.
       kwargs: A dict of query parameters, as described here:
         https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
 
@@ -252,7 +253,8 @@ class GerritHelper(object):
     # To make sure the patch information is accurate, re-request each query
     # result directly, circumventing the cache.  For reference:
     #   https://code.google.com/p/chromium/issues/detail?id=302072
-    result = [self.GetChangeDetail(x['_number']) for x in result]
+    if bypass_cache:
+      result = [self.GetChangeDetail(x['_number']) for x in result]
 
     result = [cros_patch.GerritPatch.ConvertQueryResults(
         x, self.host) for x in result]
