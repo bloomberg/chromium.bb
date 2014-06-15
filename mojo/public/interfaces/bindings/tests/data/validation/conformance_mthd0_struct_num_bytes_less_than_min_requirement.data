@@ -4,8 +4,6 @@
 [u4]0                  // flags
 [anchr]message_header
 
-[dist4]method0_params  // num_bytes
+[dist4]method0_params  // num_bytes: Less than the minimal size that we expect.
 [u4]1                  // num_fields
-[f]-1                  // param0
-[u4]0                  // padding
 [anchr]method0_params

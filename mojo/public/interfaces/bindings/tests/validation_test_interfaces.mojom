@@ -4,12 +4,28 @@
 
 module mojo.test {
 
-struct BasicStruct {
-  int32 a;
+struct StructA {
+  uint64 i;
+};
+
+struct StructB {
+  StructA struct_a;
+};
+
+struct StructC {
+  uint8[] array;
 };
 
 interface ConformanceTestInterface {
-  Method0();
+  Method0(float param0);
+  Method1(StructA param0);
+  Method2(StructB param0, StructA param1);
+  Method3(bool[] param0);
+  Method4(StructC param0, uint8[] param1);
+};
+
+struct BasicStruct {
+  int32 a;
 };
 
 [Client=IntegrationTestInterface2]

@@ -5,7 +5,8 @@
 [anchr]message_header
 
 [dist4]method0_params  // num_bytes
-[u4]1                  // num_fields
+[u4]0                  // num_fields: Less than the minimal number of fields
+                       // that we expect.
 [f]-1                  // param0
 [u4]0                  // padding
 [anchr]method0_params
