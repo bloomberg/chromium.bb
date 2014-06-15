@@ -3205,6 +3205,7 @@ irt_variant_tests = [
     'tests/egyptian_cotton/nacl.scons',
     'tests/environment_variables/nacl.scons',
     'tests/exception_test/nacl.scons',
+    'tests/fdopen_test/nacl.scons',
     'tests/fib/nacl.scons',
     'tests/file/nacl.scons',
     'tests/fixedfeaturecpu/nacl.scons',
