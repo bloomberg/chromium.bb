@@ -122,7 +122,7 @@ asyncTest("rebaseline", 3, function() {
     });
 });
 
-asyncTest("rebaseline-debug-bot", 3, function() {
+asyncTest("rebaseline-debug-bot", 4, function() {
     var simulator = new NetworkSimulator();
     simulator.post = function(url, body)
     {
@@ -139,7 +139,7 @@ asyncTest("rebaseline-debug-bot", 3, function() {
             'testName': 'another/test.svg',
             'failureTypeList': ['IMAGE'],
         }], function(failureInfo) {
-            ok(false);
+            ok(true);
         }, function(failureInfo) {
             ok(true);
         }).then(function() {

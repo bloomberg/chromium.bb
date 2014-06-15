@@ -78,7 +78,7 @@ test('SuspiciousCommit', 2, function() {
         '</div>');
 });
 
-test('FailingTestsSummary', 12, function() {
+test('FailingTestsSummary', 10, function() {
     var testFailures = new ui.notifications.FailingTestsSummary();
     equal(testFailures.tagName, 'LI');
     equal(testFailures.innerHTML,
