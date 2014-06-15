@@ -7,8 +7,10 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 namespace {
@@ -66,13 +68,10 @@ void StateStore::DelayedTaskQueue::SetReady() {
 StateStore::StateStore(Profile* profile,
                        const base::FilePath& db_path,
                        bool deferred_load)
-    : db_path_(db_path), task_queue_(new DelayedTaskQueue()) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile));
+    : db_path_(db_path),
+      task_queue_(new DelayedTaskQueue()),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 
   if (deferred_load) {
     // Don't Init until the first page is loaded or the session restored.
@@ -88,13 +87,10 @@ StateStore::StateStore(Profile* profile,
 }
 
 StateStore::StateStore(Profile* profile, scoped_ptr<ValueStore> value_store)
-    : store_(value_store.Pass()), task_queue_(new DelayedTaskQueue()) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile));
+    : store_(value_store.Pass()),
+      task_queue_(new DelayedTaskQueue()),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 
   // This constructor is for testing. No need to delay Init.
   Init();
@@ -136,30 +132,28 @@ bool StateStore::IsInitialized() const { return task_queue_->ready(); }
 void StateStore::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED:
-      RemoveKeysForExtension(
-          content::Details<const InstalledExtensionInfo>(details)->extension->
-              id());
-      break;
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED:
-      RemoveKeysForExtension(
-          content::Details<const Extension>(details)->id());
-      break;
-    case chrome::NOTIFICATION_SESSION_RESTORE_DONE:
-    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:
-      registrar_.Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                        content::NotificationService::AllSources());
-      registrar_.Remove(this, chrome::NOTIFICATION_SESSION_RESTORE_DONE,
-                        content::NotificationService::AllSources());
-      base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-          base::Bind(&StateStore::Init, AsWeakPtr()),
-          base::TimeDelta::FromSeconds(kInitDelaySeconds));
-      break;
-    default:
-      NOTREACHED();
-      return;
-  }
+  DCHECK(type == chrome::NOTIFICATION_SESSION_RESTORE_DONE ||
+         type == content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME);
+  registrar_.RemoveAll();
+
+  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      base::Bind(&StateStore::Init, AsWeakPtr()),
+      base::TimeDelta::FromSeconds(kInitDelaySeconds));
+}
+
+void StateStore::OnExtensionWillBeInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    bool is_update,
+    bool from_ephemeral,
+    const std::string& old_name) {
+  RemoveKeysForExtension(extension->id());
+}
+
+void StateStore::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  RemoveKeysForExtension(extension->id());
 }
 
 void StateStore::Init() {
