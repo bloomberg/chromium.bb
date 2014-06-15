@@ -79,6 +79,7 @@
             'data_reduction_proxy/browser/data_reduction_proxy_protocol_unittest.cc',
             'data_reduction_proxy/browser/data_reduction_proxy_settings_unittest.cc',
             'data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy_unittest.cc',
+            'data_reduction_proxy/common/data_reduction_proxy_headers_unittest.cc',
             'dom_distiller/core/article_entry_unittest.cc',
             'dom_distiller/core/distilled_content_store_unittest.cc',
             'dom_distiller/core/distiller_unittest.cc',

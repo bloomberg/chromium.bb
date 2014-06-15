@@ -24,9 +24,7 @@
 #include "net/base/escape.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_log_util.h"
-#include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
-#include "net/proxy/proxy_service.h"
 
 using base::StringPiece;
 using base::Time;
@@ -1391,124 +1389,6 @@ bool HttpResponseHeaders::IsChunkEncoded() const {
   // Ignore spurious chunked responses from HTTP/1.0 servers and proxies.
   return GetHttpVersion() >= HttpVersion(1, 1) &&
       HasHeaderValue("Transfer-Encoding", "chunked");
-}
-
-bool HttpResponseHeaders::GetDataReductionProxyBypassDuration(
-    const std::string& action_prefix,
-    base::TimeDelta* duration) const {
-  void* iter = NULL;
-  std::string value;
-  std::string name = "chrome-proxy";
-
-  while (EnumerateHeader(&iter, name, &value)) {
-    if (value.size() > action_prefix.size()) {
-      if (LowerCaseEqualsASCII(value.begin(),
-                               value.begin() + action_prefix.size(),
-                               action_prefix.c_str())) {
-        int64 seconds;
-        if (!base::StringToInt64(
-                StringPiece(value.begin() + action_prefix.size(), value.end()),
-                &seconds) || seconds < 0) {
-          continue;  // In case there is a well formed instruction.
-        }
-        *duration = TimeDelta::FromSeconds(seconds);
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-bool HttpResponseHeaders::GetDataReductionProxyInfo(
-    DataReductionProxyInfo* proxy_info) const {
-  DCHECK(proxy_info);
-  proxy_info->bypass_all = false;
-  proxy_info->bypass_duration = base::TimeDelta();
-  // Support header of the form Chrome-Proxy: bypass|block=<duration>, where
-  // <duration> is the number of seconds to wait before retrying
-  // the proxy. If the duration is 0, then the default proxy retry delay
-  // (specified in |ProxyList::UpdateRetryInfoOnFallback|) will be used.
-  // 'bypass' instructs Chrome to bypass the currently connected data reduction
-  // proxy, whereas 'block' instructs Chrome to bypass all available data
-  // reduction proxies.
-
-  // 'block' takes precedence over 'bypass', so look for it first.
-  // TODO(bengr): Reduce checks for 'block' and 'bypass' to a single loop.
-  if (GetDataReductionProxyBypassDuration(
-      "block=", &proxy_info->bypass_duration)) {
-    proxy_info->bypass_all = true;
-    return true;
-  }
-
-  // Next, look for 'bypass'.
-  if (GetDataReductionProxyBypassDuration(
-      "bypass=", &proxy_info->bypass_duration)) {
-    return true;
-  }
-  return false;
-}
-
-bool HttpResponseHeaders::IsDataReductionProxyResponse() const {
-  const size_t kVersionSize = 4;
-  const char kDataReductionProxyViaValue[] = "Chrome-Compression-Proxy";
-  size_t value_len = strlen(kDataReductionProxyViaValue);
-  void* iter = NULL;
-  std::string value;
-
-  // Case-sensitive comparison of |value|. Assumes the received protocol and the
-  // space following it are always |kVersionSize| characters. E.g.,
-  // 'Via: 1.1 Chrome-Compression-Proxy'
-  while (EnumerateHeader(&iter, "via", &value)) {
-    if (value.size() >= kVersionSize + value_len &&
-        !value.compare(kVersionSize, value_len, kDataReductionProxyViaValue))
-      return true;
-  }
-
-  // TODO(bengr): Remove deprecated header value.
-  const char kDeprecatedDataReductionProxyViaValue[] =
-      "1.1 Chrome Compression Proxy";
-  iter = NULL;
-  while (EnumerateHeader(&iter, "via", &value))
-    if (value == kDeprecatedDataReductionProxyViaValue)
-      return true;
-
-  return false;
-}
-
-ProxyService::DataReductionProxyBypassEventType
-HttpResponseHeaders::GetDataReductionProxyBypassEventType(
-    DataReductionProxyInfo* data_reduction_proxy_info) const {
-  DCHECK(data_reduction_proxy_info);
-  if (GetDataReductionProxyInfo(data_reduction_proxy_info)) {
-    // A chrome-proxy response header is only present in a 502. For proper
-    // reporting, this check must come before the 5xx checks below.
-    if (data_reduction_proxy_info->bypass_duration < TimeDelta::FromMinutes(30))
-      return ProxyService::SHORT_BYPASS;
-    return ProxyService::LONG_BYPASS;
-  }
-  if (response_code() == HTTP_INTERNAL_SERVER_ERROR ||
-      response_code() == HTTP_BAD_GATEWAY ||
-      response_code() == HTTP_SERVICE_UNAVAILABLE) {
-    // Fall back if a 500, 502 or 503 is returned.
-    return ProxyService::INTERNAL_SERVER_ERROR_BYPASS;
-  }
-  if (!IsDataReductionProxyResponse() &&
-      (response_code() != HTTP_NOT_MODIFIED)) {
-    // A Via header might not be present in a 304. Since the goal of a 304
-    // response is to minimize information transfer, a sender in general
-    // should not generate representation metadata other than Cache-Control,
-    // Content-Location, Date, ETag, Expires, and Vary.
-
-    // The proxy Via header might also not be present in a 4xx response.
-    // Separate this case from other responses that are missing the header.
-    if (response_code() >= HTTP_BAD_REQUEST &&
-        response_code() < HTTP_INTERNAL_SERVER_ERROR) {
-      return ProxyService::PROXY_4XX_BYPASS;
-    }
-    return ProxyService::MISSING_VIA_HEADER;
-  }
-  // There is no bypass event.
-  return ProxyService::BYPASS_EVENT_TYPE_MAX;
 }
 
 }  // namespace net

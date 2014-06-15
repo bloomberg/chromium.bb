@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_info.h"
@@ -54,11 +55,10 @@ bool MaybeBypassProxyAndPrepareToRetry(
   if (data_reduction_proxies.first.is_empty())
     return false;
 
-  net::HttpResponseHeaders::DataReductionProxyInfo data_reduction_proxy_info;
+  DataReductionProxyInfo data_reduction_proxy_info;
   net::ProxyService::DataReductionProxyBypassEventType bypass_type =
-      original_response_headers->GetDataReductionProxyBypassEventType(
-          &data_reduction_proxy_info);
-
+      GetDataReductionProxyBypassEventType(
+          original_response_headers, &data_reduction_proxy_info);
   if (bypass_type == net::ProxyService::BYPASS_EVENT_TYPE_MAX) {
     return false;
   }

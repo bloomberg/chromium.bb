@@ -15,7 +15,6 @@
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/http/http_version.h"
-#include "net/proxy/proxy_service.h"
 
 class Pickle;
 class PickleIterator;
@@ -264,37 +263,6 @@ class NET_EXPORT HttpResponseHeaders
   // Returns true if the response is chunk-encoded.
   bool IsChunkEncoded() const;
 
-  // Contains instructions contained in the Chrome-Proxy header.
-  struct DataReductionProxyInfo {
-    DataReductionProxyInfo() : bypass_all(false) {}
-
-    // True if Chrome should bypass all available data reduction proxies. False
-    // if only the currently connected data reduction proxy should be bypassed.
-    bool bypass_all;
-
-    // Amount of time to bypass the data reduction proxy or proxies.
-    base::TimeDelta bypass_duration;
-  };
-
-  // Returns true if the Chrome-Proxy header is present and contains a bypass
-  // delay. Sets |proxy_info->bypass_duration| to the specified delay if greater
-  // than 0, and to 0 otherwise to indicate that the default proxy delay
-  // (as specified in |ProxyList::UpdateRetryInfoOnFallback|) should be used.
-  // If all available data reduction proxies should by bypassed, |bypass_all| is
-  // set to true. |proxy_info| must be non-NULL.
-  bool GetDataReductionProxyInfo(DataReductionProxyInfo* proxy_info) const;
-
-  // Returns the reason why the Chrome proxy should be bypassed or not, and
-  // populates |proxy_info| with information on how long to bypass if
-  // applicable.
-  ProxyService::DataReductionProxyBypassEventType
-  GetDataReductionProxyBypassEventType(
-      DataReductionProxyInfo* proxy_info) const;
-
-  // Returns true if response headers contain the data reduction proxy Via
-  // header value.
-  bool IsDataReductionProxyResponse() const;
-
   // Creates a Value for use with the NetLog containing the response headers.
   base::Value* NetLogCallback(NetLog::LogLevel log_level) const;
 
@@ -392,11 +360,6 @@ class NET_EXPORT HttpResponseHeaders
 
   // Adds the set of transport security state headers.
   static void AddSecurityStateHeaders(HeaderSet* header_names);
-
-  // Searches for the specified Chrome-Proxy action, and if present interprets
-  // its value as a duration in seconds.
-  bool GetDataReductionProxyBypassDuration(const std::string& action_prefix,
-                                           base::TimeDelta* duration) const;
 
   // We keep a list of ParsedHeader objects.  These tell us where to locate the
   // header-value pairs within raw_headers_.

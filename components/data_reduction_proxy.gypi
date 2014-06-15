@@ -48,6 +48,8 @@
         '..',
       ],
       'sources': [
+        'data_reduction_proxy/common/data_reduction_proxy_headers.cc',
+        'data_reduction_proxy/common/data_reduction_proxy_headers.h',
         'data_reduction_proxy/common/data_reduction_proxy_pref_names.cc',
         'data_reduction_proxy/common/data_reduction_proxy_pref_names.h',
         'data_reduction_proxy/common/data_reduction_proxy_switches.cc',

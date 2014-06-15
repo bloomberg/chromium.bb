@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_pref_names.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_response_headers.h"
@@ -355,7 +356,7 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
       LONG_BYPASS : SHORT_BYPASS;
   }
   if (request->response_info().headers &&
-      request->response_info().headers->IsDataReductionProxyResponse()) {
+      HasDataReductionProxyViaHeader(request->response_info().headers)) {
     return VIA_DATA_REDUCTION_PROXY;
   }
   return UNKNOWN_TYPE;
