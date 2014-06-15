@@ -48,7 +48,7 @@ bool IsValidMessageHeader(const MessageHeader* header) {
   if ((header->flags & kMessageExpectsResponse) &&
       (header->flags & kMessageIsResponse)) {
     ReportValidationError(
-        VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINAION);
+        VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINATION);
     return false;
   }
 

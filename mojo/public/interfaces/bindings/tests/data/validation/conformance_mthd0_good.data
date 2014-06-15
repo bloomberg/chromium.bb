@@ -3,3 +3,7 @@
 [u4]0                  // name
 [u4]0                  // flags
 [anchr]message_header
+
+[dist4]method0_params  // num_bytes
+[u4]0                  // num_fields
+[anchr]method0_params

@@ -304,6 +304,7 @@
         'public/interfaces/bindings/tests/sample_interfaces.mojom',
         'public/interfaces/bindings/tests/sample_service.mojom',
         'public/interfaces/bindings/tests/test_structs.mojom',
+        'public/interfaces/bindings/tests/validation_test_interfaces.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [

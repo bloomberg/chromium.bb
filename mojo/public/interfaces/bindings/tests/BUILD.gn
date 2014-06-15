@@ -13,5 +13,6 @@ mojom("test_interfaces") {
     "sample_interfaces.mojom",
     "sample_service.mojom",
     "test_structs.mojom",
+    "validation_test_interfaces.mojom",
   ]
 }

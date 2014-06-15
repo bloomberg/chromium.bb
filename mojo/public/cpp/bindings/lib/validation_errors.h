@@ -34,7 +34,7 @@ enum ValidationError {
   // An encoded pointer is illegal.
   VALIDATION_ERROR_ILLEGAL_POINTER,
   // |flags| in the message header is an invalid flag combination.
-  VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINAION,
+  VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINATION,
   // |flags| in the message header indicates that a request ID is required but
   // there isn't one.
   VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID,

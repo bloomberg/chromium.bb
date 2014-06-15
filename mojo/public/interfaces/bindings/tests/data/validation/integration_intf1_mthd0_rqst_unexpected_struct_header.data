@@ -1,0 +1,14 @@
+[dist4]message_header  // num_bytes
+[u4]2                  // num_fields
+[u4]0                  // name
+[u4]0                  // flags
+[anchr]message_header
+
+[dist4]method0_params  // num_bytes
+[u4]1                  // num_fields
+[dist8]param0_ptr      // param0
+[anchr]method0_params
+
+[anchr]param0_ptr
+[u4]0  // num_bytes: The struct size is too small.
+[u4]0  // num_fields

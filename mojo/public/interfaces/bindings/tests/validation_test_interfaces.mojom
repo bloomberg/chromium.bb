@@ -1,0 +1,25 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo.test {
+
+struct BasicStruct {
+  int32 a;
+};
+
+interface ConformanceTestInterface {
+  Method0();
+};
+
+[Client=IntegrationTestInterface2]
+interface IntegrationTestInterface1 {
+  Method0(BasicStruct param0);
+};
+
+[Client=IntegrationTestInterface1]
+interface IntegrationTestInterface2 {
+  Method0() => (uint8[] param0);
+};
+
+}

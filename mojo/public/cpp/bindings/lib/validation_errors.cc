@@ -31,8 +31,8 @@ const char* ValidationErrorToString(ValidationError error) {
       return "VALIDATION_ERROR_ILLEGAL_HANDLE";
     case VALIDATION_ERROR_ILLEGAL_POINTER:
       return "VALIDATION_ERROR_ILLEGAL_POINTER";
-    case VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINAION:
-      return "VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINAION";
+    case VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINATION:
+      return "VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINATION";
     case VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID:
       return "VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID";
   }
@@ -41,10 +41,12 @@ const char* ValidationErrorToString(ValidationError error) {
 }
 
 void ReportValidationError(ValidationError error) {
-  // TODO(yzshen): Consider adding better logging support.
-  fprintf(stderr, "Invalid message: %s\n", ValidationErrorToString(error));
-  if (g_validation_error_observer)
+  if (g_validation_error_observer) {
     g_validation_error_observer->set_last_error(error);
+  } else {
+    // TODO(yzshen): Consider adding better logging support.
+    fprintf(stderr, "Invalid message: %s\n", ValidationErrorToString(error));
+  }
 }
 
 ValidationErrorObserverForTesting::ValidationErrorObserverForTesting()

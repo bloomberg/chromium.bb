@@ -33,13 +33,6 @@ class Router : public MessageReceiverWithResponder {
     connector_.set_error_handler(error_handler);
   }
 
-  // Errors from incoming receivers will force the router's connector into an
-  // error state, where no more messages will be processed. This method is used
-  // during testing to prevent that from happening.
-  void set_enforce_errors_from_incoming_receiver(bool enforce) {
-    connector_.set_enforce_errors_from_incoming_receiver(enforce);
-  }
-
   // Returns true if an error was encountered while reading from the pipe or
   // waiting to read from the pipe.
   bool encountered_error() const { return connector_.encountered_error(); }
@@ -56,6 +49,13 @@ class Router : public MessageReceiverWithResponder {
   virtual bool Accept(Message* message) MOJO_OVERRIDE;
   virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
       MOJO_OVERRIDE;
+
+  // Sets this object to testing mode.
+  // In testing mode:
+  // - the object is more tolerant of unrecognized response messages;
+  // - the connector continues working after seeing errors from its incoming
+  //   receiver.
+  void EnableTestingMode();
 
  private:
   typedef std::map<uint64_t, MessageReceiver*> ResponderMap;
@@ -81,6 +81,7 @@ class Router : public MessageReceiverWithResponder {
   MessageReceiverWithResponder* incoming_receiver_;
   ResponderMap responders_;
   uint64_t next_request_id_;
+  bool testing_mode_;
 };
 
 }  // namespace internal
