@@ -166,6 +166,22 @@ void BackgroundColorHoverButton::OnPaint(gfx::Canvas* canvas) {
   LabelButton::OnPaint(canvas);
 }
 
+// SizedContainer -------------------------------------------------
+
+// A simple container view that takes an explicit preferred size.
+class SizedContainer : public views::View {
+ public:
+  explicit SizedContainer(const gfx::Size& preferred_size)
+      : preferred_size_(preferred_size) {}
+
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+    return preferred_size_;
+  }
+
+ private:
+  gfx::Size preferred_size_;
+};
+
 }  // namespace
 
 
@@ -186,9 +202,8 @@ class EditableProfilePhoto : public views::ImageView {
     SetBoundsRect(bounds);
 
     // Calculate the circular mask that will be used to display the photo.
-    gfx::Point center = bounds.CenterPoint();
-    circular_mask_.addCircle(SkIntToScalar(center.x()),
-                             SkIntToScalar(center.y()),
+    circular_mask_.addCircle(SkIntToScalar(bounds.width() / 2),
+                             SkIntToScalar(bounds.height() / 2),
                              SkIntToScalar(bounds.width() / 2));
 
     if (!is_editing_allowed)
@@ -208,7 +223,7 @@ class EditableProfilePhoto : public views::ImageView {
         *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_ICON_PROFILES_EDIT_CAMERA));
 
-    change_photo_button_->SetBoundsRect(bounds);
+    change_photo_button_->SetSize(bounds.size());
     change_photo_button_->SetVisible(false);
     AddChildView(change_photo_button_);
   }
@@ -220,7 +235,7 @@ class EditableProfilePhoto : public views::ImageView {
   }
 
   virtual void PaintChildren(gfx::Canvas* canvas,
-                     const views::CullSet& cull_set) OVERRIDE {
+                             const views::CullSet& cull_set) OVERRIDE {
     // Display any children (the "change photo" overlay) as a circle.
     canvas->ClipPath(circular_mask_, true);
     View::PaintChildren(canvas, cull_set);
@@ -1029,10 +1044,13 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
                     views::kButtonHEdgeMarginNew);
 
   // Profile icon, centered.
-  float x_offset = (column_width - kLargeImageSide) / 2;
+  int x_offset = (column_width - kLargeImageSide) / 2;
   current_profile_photo_ = new EditableProfilePhoto(
       this, avatar_item.icon, !is_guest,
       gfx::Rect(x_offset, 0, kLargeImageSide, kLargeImageSide));
+  SizedContainer* profile_icon_container =
+      new SizedContainer(gfx::Size(column_width, kLargeImageSide));
+  profile_icon_container->AddChildView(current_profile_photo_);
 
   if (switches::IsNewProfileManagementPreviewEnabled()) {
     question_mark_button_ = new views::ImageButton(this);
@@ -1048,7 +1066,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     gfx::Size preferred_size = question_mark_button_->GetPreferredSize();
     question_mark_button_->SetBounds(
         0, 0, preferred_size.width(), preferred_size.height());
-    current_profile_photo_->AddChildView(question_mark_button_);
+    profile_icon_container->AddChildView(question_mark_button_);
   }
 
   if (browser_->profile()->IsSupervised()) {
@@ -1063,11 +1081,11 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
         parent_bounds.bottom() - preferred_size.height(),
         preferred_size.width(),
         preferred_size.height());
-    current_profile_photo_->AddChildView(supervised_icon);
+    profile_icon_container->AddChildView(supervised_icon);
   }
 
   layout->StartRow(1, 0);
-  layout->AddView(current_profile_photo_);
+  layout->AddView(profile_icon_container);
 
   // Profile name, centered.
   bool editing_allowed = !is_guest && !browser_->profile()->IsSupervised();
