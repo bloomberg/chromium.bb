@@ -231,7 +231,7 @@ def UserActReview(opts, *args):
   """Mark CL <n> [n ...] with code review status <-2,-1,0,1,2>"""
   num = args[-1]
   for idx in args[:-1]:
-    opts.gerrit.SetReview(idx, labels={'Code-Review': num})
+    opts.gerrit.SetReview(idx, labels={'Code-Review': num}, dryrun=opts.dryrun)
 UserActReview.arg_min = 2
 
 
@@ -239,7 +239,7 @@ def UserActVerify(opts, *args):
   """Mark CL <n> [n ...] with verify status <-1,0,1>"""
   num = args[-1]
   for idx in args[:-1]:
-    opts.gerrit.SetReview(idx, labels={'Verified': num})
+    opts.gerrit.SetReview(idx, labels={'Verified': num}, dryrun=opts.dryrun)
 UserActVerify.arg_min = 2
 
 
@@ -247,26 +247,26 @@ def UserActReady(opts, *args):
   """Mark CL <n> [n ...] with ready status <0,1,2>"""
   num = args[-1]
   for idx in args[:-1]:
-    opts.gerrit.SetReview(idx, labels={'Commit-Queue': num})
+    opts.gerrit.SetReview(idx, labels={'Commit-Queue': num}, dryrun=opts.dryrun)
 UserActReady.arg_min = 2
 
 
 def UserActSubmit(opts, *args):
   """Submit CL <n> [n ...]"""
   for idx in args:
-    opts.gerrit.SubmitChange(idx)
+    opts.gerrit.SubmitChange(idx, dryrun=opts.dryrun)
 
 
 def UserActAbandon(opts, *args):
   """Abandon CL <n> [n ...]"""
   for idx in args:
-    opts.gerrit.AbandonChange(idx)
+    opts.gerrit.AbandonChange(idx, dryrun=opts.dryrun)
 
 
 def UserActRestore(opts, *args):
   """Restore CL <n> [n ...] that was abandoned"""
   for idx in args:
-    opts.gerrit.RestoreChange(idx)
+    opts.gerrit.RestoreChange(idx, dryrun=opts.dryrun)
 
 
 def UserActReviewers(opts, idx, *args):
@@ -289,18 +289,19 @@ def UserActReviewers(opts, idx, *args):
         'Invalid email address(es): %s' % ', '.join(invalid_list))
 
   if add_list or remove_list:
-    opts.gerrit.SetReviewers(idx, add=add_list, remove=remove_list)
+    opts.gerrit.SetReviewers(idx, add=add_list, remove=remove_list,
+                             dryrun=opts.dryrun)
 
 
 def UserActMessage(opts, idx, message):
   """Add a message to CL <n>"""
-  opts.gerrit.SetReview(idx, msg=message)
+  opts.gerrit.SetReview(idx, msg=message, dryrun=opts.dryrun)
 
 
 def UserActDeletedraft(opts, *args):
   """Delete draft patch set <n> [n ...]"""
   for idx in args:
-    opts.gerrit.DeleteDraft(idx)
+    opts.gerrit.DeleteDraft(idx, dryrun=opts.dryrun)
 
 
 def main(argv):
@@ -345,6 +346,9 @@ Actions:"""
                       help='Key to sort on (number, project)')
   parser.add_argument('--raw', default=False, action='store_true',
                       help='Return raw results (suitable for scripting)')
+  parser.add_argument('-n', '--dry-run', default=False, action='store_true',
+                      dest='dryrun',
+                      help='Show what would be done, but do not make changes')
   parser.add_argument('-v', '--verbose', default=False, action='store_true',
                       help='Be more verbose in output')
   parser.add_argument('args', nargs='+')
