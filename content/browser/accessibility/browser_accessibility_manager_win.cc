@@ -37,13 +37,14 @@ BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(initial_tree, delegate, factory),
+      parent_hwnd_(NULL),
       parent_iaccessible_(parent_iaccessible),
       tracked_scroll_object_(NULL),
       accessible_hwnd_(accessible_hwnd) {
   ui::win::CreateATLModuleIfNeeded();
   if (accessible_hwnd_) {
     accessible_hwnd_->set_browser_accessibility_manager(this);
-    parent_hwnd_ = accessible_hwnd->GetParent();
+    parent_hwnd_ = accessible_hwnd_->GetParent();
   }
 }
 
@@ -74,8 +75,10 @@ ui::AXTreeUpdate BrowserAccessibilityManagerWin::GetEmptyDocument() {
 void BrowserAccessibilityManagerWin::SetAccessibleHWND(
     LegacyRenderWidgetHostHWND* accessible_hwnd) {
   accessible_hwnd_ = accessible_hwnd;
-  accessible_hwnd_->set_browser_accessibility_manager(this);
-  parent_hwnd_ = accessible_hwnd->GetParent();
+  if (accessible_hwnd_) {
+    accessible_hwnd_->set_browser_accessibility_manager(this);
+    parent_hwnd_ = accessible_hwnd_->GetParent();
+  }
 }
 
 void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(DWORD event,
