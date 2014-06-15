@@ -40,7 +40,7 @@ AppCacheURLRequestJob::AppCacheURLRequestJob(
       storage_(storage),
       has_been_started_(false), has_been_killed_(false),
       delivery_type_(AWAITING_DELIVERY_ORDERS),
-      group_id_(0), cache_id_(kNoCacheId), is_fallback_(false),
+      group_id_(0), cache_id_(kAppCacheNoCacheId), is_fallback_(false),
       is_main_resource_(is_main_resource),
       cache_entry_not_found_(false),
       weak_factory_(this) {
@@ -256,7 +256,8 @@ void AppCacheURLRequestJob::OnExecutableResponseCallback(
 
 void AppCacheURLRequestJob::BeginErrorDelivery(const char* message) {
   if (host_)
-    host_->frontend()->OnLogMessage(host_->host_id(), LOG_ERROR, message);
+    host_->frontend()->OnLogMessage(host_->host_id(), APPCACHE_LOG_ERROR,
+                                    message);
   delivery_type_ = ERROR_DELIVERY;
   storage_ = NULL;
   BeginDelivery();

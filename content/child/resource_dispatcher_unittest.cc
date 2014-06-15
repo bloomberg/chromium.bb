@@ -172,7 +172,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     request_info.load_flags = 0;
     request_info.requestor_pid = 0;
     request_info.request_type = ResourceType::SUB_RESOURCE;
-    request_info.appcache_host_id = appcache::kNoHostId;
+    request_info.appcache_host_id = appcache::kAppCacheNoHostId;
     request_info.routing_id = 0;
     RequestExtraData extra_data;
     request_info.extra_data = &extra_data;

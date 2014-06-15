@@ -32,7 +32,7 @@ using appcache::AppCacheResponseReader;
 using appcache::AppCacheResponseWriter;
 using appcache::AppCacheURLRequestJob;
 using appcache::HttpResponseInfoIOBuffer;
-using appcache::kNoCacheId;
+using appcache::kAppCacheNoCacheId;
 using net::IOBuffer;
 using net::WrappedIOBuffer;
 
@@ -439,7 +439,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     EXPECT_FALSE(job->has_been_started());
     EXPECT_FALSE(job->has_been_killed());
     EXPECT_EQ(GURL(), job->manifest_url());
-    EXPECT_EQ(kNoCacheId, job->cache_id());
+    EXPECT_EQ(kAppCacheNoCacheId, job->cache_id());
     EXPECT_FALSE(job->entry().has_response_id());
 
     TestFinished();

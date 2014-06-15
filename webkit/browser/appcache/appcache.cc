@@ -181,7 +181,7 @@ void AppCache::InitializeWithDatabaseRecords(
   for (size_t i = 0; i < whitelists.size(); ++i) {
     const AppCacheDatabase::OnlineWhiteListRecord& record = whitelists.at(i);
     online_whitelist_namespaces_.push_back(
-        Namespace(NETWORK_NAMESPACE,
+        Namespace(APPCACHE_NETWORK_NAMESPACE,
                   record.namespace_url,
                   GURL(),
                   record.is_pattern));

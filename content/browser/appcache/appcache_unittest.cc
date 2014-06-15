@@ -16,13 +16,13 @@ using appcache::AppCacheHost;
 using appcache::AppCacheInfo;
 using appcache::AppCacheErrorDetails;
 using appcache::AppCacheEventID;
-using appcache::FALLBACK_NAMESPACE;
-using appcache::INTERCEPT_NAMESPACE;
+using appcache::APPCACHE_FALLBACK_NAMESPACE;
+using appcache::APPCACHE_INTERCEPT_NAMESPACE;
 using appcache::AppCacheLogLevel;
 using appcache::Manifest;
 using appcache::Namespace;
 using appcache::NamespaceVector;
-using appcache::NETWORK_NAMESPACE;
+using appcache::APPCACHE_NETWORK_NAMESPACE;
 using appcache::PARSE_MANIFEST_ALLOWING_INTERCEPTS;
 using appcache::PARSE_MANIFEST_PER_STANDARD;
 using appcache::AppCacheStatus;
@@ -132,12 +132,12 @@ TEST(AppCacheTest, InitializeWithManifest) {
   manifest.explicit_urls.insert("http://one.com");
   manifest.explicit_urls.insert("http://two.com");
   manifest.fallback_namespaces.push_back(
-      Namespace(FALLBACK_NAMESPACE, GURL("http://fb1.com"),
+      Namespace(APPCACHE_FALLBACK_NAMESPACE, GURL("http://fb1.com"),
                 GURL("http://fbone.com"), true));
   manifest.online_whitelist_namespaces.push_back(
-      Namespace(NETWORK_NAMESPACE, GURL("http://w1.com"), GURL(), false));
+      Namespace(APPCACHE_NETWORK_NAMESPACE, GURL("http://w1.com"), GURL(), false));
   manifest.online_whitelist_namespaces.push_back(
-      Namespace(NETWORK_NAMESPACE, GURL("http://w2.com"), GURL(), false));
+      Namespace(APPCACHE_NETWORK_NAMESPACE, GURL("http://w2.com"), GURL(), false));
   manifest.online_whitelist_all = true;
 
   cache->InitializeWithManifest(&manifest);
@@ -193,22 +193,23 @@ TEST(AppCacheTest, FindResponseForRequest) {
 
   Manifest manifest;
   manifest.online_whitelist_namespaces.push_back(
-      Namespace(NETWORK_NAMESPACE, kOnlineNamespaceUrl,
+      Namespace(APPCACHE_NETWORK_NAMESPACE, kOnlineNamespaceUrl,
                 GURL(), false));
   manifest.online_whitelist_namespaces.push_back(
-      Namespace(NETWORK_NAMESPACE, kOnlineNamespaceWithinOtherNamespaces,
+      Namespace(APPCACHE_NETWORK_NAMESPACE,
+                kOnlineNamespaceWithinOtherNamespaces,
                 GURL(), false));
   manifest.fallback_namespaces.push_back(
-      Namespace(FALLBACK_NAMESPACE, kFallbackNamespaceUrl1,
+      Namespace(APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespaceUrl1,
                 kFallbackEntryUrl1, false));
   manifest.fallback_namespaces.push_back(
-      Namespace(FALLBACK_NAMESPACE, kFallbackNamespaceUrl2,
+      Namespace(APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespaceUrl2,
                 kFallbackEntryUrl2, false));
   manifest.intercept_namespaces.push_back(
-      Namespace(INTERCEPT_NAMESPACE, kInterceptNamespace,
+      Namespace(APPCACHE_INTERCEPT_NAMESPACE, kInterceptNamespace,
                 kInterceptNamespaceEntry, false));
   manifest.intercept_namespaces.push_back(
-      Namespace(INTERCEPT_NAMESPACE, kInterceptNamespaceWithinFallback,
+      Namespace(APPCACHE_INTERCEPT_NAMESPACE, kInterceptNamespaceWithinFallback,
                 kInterceptNamespaceEntry, false));
 
   // Create a cache with some namespaces and entries.
@@ -384,7 +385,7 @@ TEST(AppCacheTest, FindInterceptPatternResponseForRequest) {
   const int64 kInterceptResponseId = 1;
   Manifest manifest;
   manifest.intercept_namespaces.push_back(
-      Namespace(INTERCEPT_NAMESPACE, kInterceptPatternNamespace,
+      Namespace(APPCACHE_INTERCEPT_NAMESPACE, kInterceptPatternNamespace,
                 kInterceptNamespaceEntry, true));
   scoped_refptr<AppCache> cache(new AppCache(service.storage(), 1234));
   cache->InitializeWithManifest(&manifest);
@@ -455,7 +456,7 @@ TEST(AppCacheTest, FindFallbackPatternResponseForRequest) {
   const int64 kFallbackResponseId = 1;
   Manifest manifest;
   manifest.fallback_namespaces.push_back(
-      Namespace(FALLBACK_NAMESPACE, kFallbackPatternNamespace,
+      Namespace(APPCACHE_FALLBACK_NAMESPACE, kFallbackPatternNamespace,
                 kFallbackNamespaceEntry, true));
   scoped_refptr<AppCache> cache(new AppCache(service.storage(), 1234));
   cache->InitializeWithManifest(&manifest);
@@ -525,7 +526,7 @@ TEST(AppCacheTest, FindNetworkNamespacePatternResponseForRequest) {
       kNetworkNamespaceBase.Resolve("*.hit*"));
   Manifest manifest;
   manifest.online_whitelist_namespaces.push_back(
-      Namespace(NETWORK_NAMESPACE, kNetworkPatternNamespace,
+      Namespace(APPCACHE_NETWORK_NAMESPACE, kNetworkPatternNamespace,
                 GURL(), true));
   manifest.online_whitelist_all = false;
   scoped_refptr<AppCache> cache(new AppCache(service.storage(), 1234));
@@ -583,7 +584,8 @@ TEST(AppCacheTest, ToFromDatabaseRecords) {
   EXPECT_TRUE(ParseManifest(kManifestUrl, kData.c_str(), kData.length(),
                             PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   cache->InitializeWithManifest(&manifest);
-  EXPECT_EQ(NETWORK_NAMESPACE, cache->online_whitelist_namespaces_[0].type);
+  EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
+            cache->online_whitelist_namespaces_[0].type);
   EXPECT_TRUE(cache->online_whitelist_namespaces_[0].is_pattern);
   EXPECT_EQ(kWhitelistUrl,
             cache->online_whitelist_namespaces_[0].namespace_url);
@@ -634,7 +636,8 @@ TEST(AppCacheTest, ToFromDatabaseRecords) {
   EXPECT_EQ(kFallbackUrl,
             cache->GetFallbackEntryUrl(GURL("http://foo.com/")));
   EXPECT_EQ(1 + 2 + 3, cache->cache_size());
-  EXPECT_EQ(NETWORK_NAMESPACE, cache->online_whitelist_namespaces_[0].type);
+  EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
+            cache->online_whitelist_namespaces_[0].type);
   EXPECT_TRUE(cache->online_whitelist_namespaces_[0].is_pattern);
   EXPECT_EQ(kWhitelistUrl,
             cache->online_whitelist_namespaces_[0].namespace_url);

@@ -29,7 +29,7 @@ using appcache::AppCacheResponseReader;
 using appcache::AppCacheResponseWriter;
 using appcache::AppCacheServiceImpl;
 using appcache::AppCacheStorage;
-using appcache::kNoCacheId;
+using appcache::kAppCacheNoCacheId;
 
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheServiceImplTest, DeleteAppCachesForOrigin);
@@ -188,7 +188,7 @@ class MockAppCacheStorage : public AppCacheStorage {
     simulate_find_sub_resource_ = true;
     simulated_found_entry_ = entry;
     simulated_found_fallback_entry_ = fallback_entry;
-    simulated_found_cache_id_ = kNoCacheId;  // N/A to sub resource loads
+    simulated_found_cache_id_ = kAppCacheNoCacheId; // N/A to sub resource loads
     simulated_found_manifest_url_ = GURL();  // N/A to sub resource loads
     simulated_found_group_id_ = 0;  // N/A to sub resource loads
     simulated_found_network_namespace_ = network_namespace;

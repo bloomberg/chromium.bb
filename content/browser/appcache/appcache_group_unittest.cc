@@ -26,7 +26,7 @@ class TestAppCacheFrontend : public appcache::AppCacheFrontend {
  public:
   TestAppCacheFrontend()
       : last_host_id_(-1), last_cache_id_(-1),
-        last_status_(appcache::OBSOLETE) {
+        last_status_(appcache::APPCACHE_STATUS_OBSOLETE) {
   }
 
   virtual void OnCacheSelected(
@@ -197,12 +197,12 @@ TEST_F(AppCacheGroupTest, CleanupUnusedGroup) {
   host1.AssociateCompleteCache(cache1);
   EXPECT_EQ(frontend.last_host_id_, host1.host_id());
   EXPECT_EQ(frontend.last_cache_id_, cache1->cache_id());
-  EXPECT_EQ(frontend.last_status_, appcache::IDLE);
+  EXPECT_EQ(frontend.last_status_, appcache::APPCACHE_STATUS_IDLE);
 
   host2.AssociateCompleteCache(cache1);
   EXPECT_EQ(frontend.last_host_id_, host2.host_id());
   EXPECT_EQ(frontend.last_cache_id_, cache1->cache_id());
-  EXPECT_EQ(frontend.last_status_, appcache::IDLE);
+  EXPECT_EQ(frontend.last_status_, appcache::APPCACHE_STATUS_IDLE);
 
   AppCache* cache2 = new AppCache(service.storage(), 222);
   cache2->set_complete(true);
@@ -214,8 +214,8 @@ TEST_F(AppCacheGroupTest, CleanupUnusedGroup) {
   host1.AssociateNoCache(GURL());
   host2.AssociateNoCache(GURL());
   EXPECT_EQ(frontend.last_host_id_, host2.host_id());
-  EXPECT_EQ(frontend.last_cache_id_, appcache::kNoCacheId);
-  EXPECT_EQ(frontend.last_status_, appcache::UNCACHED);
+  EXPECT_EQ(frontend.last_cache_id_, appcache::kAppCacheNoCacheId);
+  EXPECT_EQ(frontend.last_status_, appcache::APPCACHE_STATUS_UNCACHED);
 }
 
 TEST_F(AppCacheGroupTest, StartUpdate) {
@@ -233,7 +233,7 @@ TEST_F(AppCacheGroupTest, StartUpdate) {
   group->StartUpdateWithHost(NULL);
   EXPECT_EQ(update, group->update_job_);
 
-  // Deleting the update should restore the group to IDLE.
+  // Deleting the update should restore the group to APPCACHE_STATUS_IDLE.
   delete update;
   EXPECT_TRUE(group->update_job_ == NULL);
   EXPECT_EQ(AppCacheGroup::IDLE, group->update_status());

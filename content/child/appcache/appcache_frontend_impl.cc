@@ -37,8 +37,9 @@ void AppCacheFrontendImpl::OnStatusChanged(const std::vector<int>& host_ids,
 
 void AppCacheFrontendImpl::OnEventRaised(const std::vector<int>& host_ids,
                                          appcache::AppCacheEventID event_id) {
-  DCHECK(event_id != appcache::PROGRESS_EVENT);  // See OnProgressEventRaised.
-  DCHECK(event_id != appcache::ERROR_EVENT);  // See OnErrorEventRaised.
+  DCHECK(event_id !=
+         appcache::APPCACHE_PROGRESS_EVENT);  // See OnProgressEventRaised.
+  DCHECK(event_id != appcache::APPCACHE_ERROR_EVENT); // See OnErrorEventRaised.
   for (std::vector<int>::const_iterator i = host_ids.begin();
        i != host_ids.end(); ++i) {
     WebApplicationCacheHostImpl* host = GetHost(*i);
@@ -89,67 +90,67 @@ void AppCacheFrontendImpl::OnContentBlocked(int host_id,
 // Ensure that enum values never get out of sync with the
 // ones declared for use within the WebKit api
 COMPILE_ASSERT((int)WebApplicationCacheHost::Uncached ==
-               (int)appcache::UNCACHED, Uncached);
+               (int)appcache::APPCACHE_STATUS_UNCACHED, Uncached);
 COMPILE_ASSERT((int)WebApplicationCacheHost::Idle ==
-               (int)appcache::IDLE, Idle);
+               (int)appcache::APPCACHE_STATUS_IDLE, Idle);
 COMPILE_ASSERT((int)WebApplicationCacheHost::Checking ==
-               (int)appcache::CHECKING, Checking);
+               (int)appcache::APPCACHE_STATUS_CHECKING, Checking);
 COMPILE_ASSERT((int)WebApplicationCacheHost::Downloading ==
-               (int)appcache::DOWNLOADING, Downloading);
+               (int)appcache::APPCACHE_STATUS_DOWNLOADING, Downloading);
 COMPILE_ASSERT((int)WebApplicationCacheHost::UpdateReady ==
-               (int)appcache::UPDATE_READY, UpdateReady);
+               (int)appcache::APPCACHE_STATUS_UPDATE_READY, UpdateReady);
 COMPILE_ASSERT((int)WebApplicationCacheHost::Obsolete ==
-               (int)appcache::OBSOLETE, Obsolete);
+               (int)appcache::APPCACHE_STATUS_OBSOLETE, Obsolete);
 
 COMPILE_ASSERT((int)WebApplicationCacheHost::CheckingEvent ==
-               (int)appcache::CHECKING_EVENT, CheckingEvent);
+               (int)appcache::APPCACHE_CHECKING_EVENT, CheckingEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::ErrorEvent ==
-               (int)appcache::ERROR_EVENT, ErrorEvent);
+               (int)appcache::APPCACHE_ERROR_EVENT, ErrorEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::NoUpdateEvent ==
-               (int)appcache::NO_UPDATE_EVENT, NoUpdateEvent);
+               (int)appcache::APPCACHE_NO_UPDATE_EVENT, NoUpdateEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::DownloadingEvent ==
-               (int)appcache::DOWNLOADING_EVENT, DownloadingEvent);
+               (int)appcache::APPCACHE_DOWNLOADING_EVENT, DownloadingEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::ProgressEvent ==
-               (int)appcache::PROGRESS_EVENT, ProgressEvent);
+               (int)appcache::APPCACHE_PROGRESS_EVENT, ProgressEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::UpdateReadyEvent ==
-               (int)appcache::UPDATE_READY_EVENT, UpdateReadyEvent);
+               (int)appcache::APPCACHE_UPDATE_READY_EVENT, UpdateReadyEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::CachedEvent ==
-               (int)appcache::CACHED_EVENT, CachedEvent);
+               (int)appcache::APPCACHE_CACHED_EVENT, CachedEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::ObsoleteEvent ==
-               (int)appcache::OBSOLETE_EVENT, ObsoleteEvent);
+               (int)appcache::APPCACHE_OBSOLETE_EVENT, ObsoleteEvent);
 
 COMPILE_ASSERT((int)WebConsoleMessage::LevelDebug ==
-               (int)appcache::LOG_DEBUG, LevelDebug);
+               (int)appcache::APPCACHE_LOG_DEBUG, LevelDebug);
 COMPILE_ASSERT((int)WebConsoleMessage::LevelLog ==
-               (int)appcache::LOG_INFO, LevelLog);
+               (int)appcache::APPCACHE_LOG_INFO, LevelLog);
 COMPILE_ASSERT((int)WebConsoleMessage::LevelWarning ==
-               (int)appcache::LOG_WARNING, LevelWarning);
+               (int)appcache::APPCACHE_LOG_WARNING, LevelWarning);
 COMPILE_ASSERT((int)WebConsoleMessage::LevelError ==
-               (int)appcache::LOG_ERROR, LevelError);
+               (int)appcache::APPCACHE_LOG_ERROR, LevelError);
 
 COMPILE_ASSERT((int)WebApplicationCacheHost::ManifestError ==
-                   (int)appcache::MANIFEST_ERROR,
+                   (int)appcache::APPCACHE_MANIFEST_ERROR,
                ManifestError);
 COMPILE_ASSERT((int)WebApplicationCacheHost::SignatureError ==
-                   (int)appcache::SIGNATURE_ERROR,
+                   (int)appcache::APPCACHE_SIGNATURE_ERROR,
                SignatureError);
 COMPILE_ASSERT((int)WebApplicationCacheHost::ResourceError ==
-                   (int)appcache::RESOURCE_ERROR,
+                   (int)appcache::APPCACHE_RESOURCE_ERROR,
                ResourceError);
 COMPILE_ASSERT((int)WebApplicationCacheHost::ChangedError ==
-                   (int)appcache::CHANGED_ERROR,
+                   (int)appcache::APPCACHE_CHANGED_ERROR,
                ChangedError);
 COMPILE_ASSERT((int)WebApplicationCacheHost::AbortError ==
-                   (int)appcache::ABORT_ERROR,
+                   (int)appcache::APPCACHE_ABORT_ERROR,
                AbortError);
 COMPILE_ASSERT((int)WebApplicationCacheHost::QuotaError ==
-                   (int)appcache::QUOTA_ERROR,
+                   (int)appcache::APPCACHE_QUOTA_ERROR,
                QuotaError);
 COMPILE_ASSERT((int)WebApplicationCacheHost::PolicyError ==
-                   (int)appcache::POLICY_ERROR,
+                   (int)appcache::APPCACHE_POLICY_ERROR,
                PolicyError);
 COMPILE_ASSERT((int)WebApplicationCacheHost::UnknownError ==
-                   (int)appcache::UNKNOWN_ERROR,
+                   (int)appcache::APPCACHE_UNKNOWN_ERROR,
                UnknownError);
 
 }  // namespace content

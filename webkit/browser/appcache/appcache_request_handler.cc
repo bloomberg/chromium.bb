@@ -62,7 +62,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
   // new resource, any values in those fields are no longer valid.
   found_entry_ = AppCacheEntry();
   found_fallback_entry_ = AppCacheEntry();
-  found_cache_id_ = kNoCacheId;
+  found_cache_id_ = kAppCacheNoCacheId;
   found_manifest_url_ = GURL();
   found_network_namespace_ = false;
 
@@ -274,7 +274,7 @@ void AppCacheRequestHandler::OnMainResponseFound(
     return;
   }
 
-  if (ResourceType::IsFrame(resource_type_) && cache_id != kNoCacheId) {
+  if (ResourceType::IsFrame(resource_type_) && cache_id != kAppCacheNoCacheId) {
     // AppCacheHost loads and holds a reference to the main resource cache
     // for two reasons, firstly to preload the cache into the working set
     // in advance of subresource loads happening, secondly to prevent the

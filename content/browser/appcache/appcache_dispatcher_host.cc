@@ -162,7 +162,7 @@ void AppCacheDispatcherHost::OnGetStatus(int host_id, IPC::Message* reply_msg) {
     return;
   }
 
-  GetStatusCallback(appcache::UNCACHED, reply_msg);
+  GetStatusCallback(appcache::APPCACHE_STATUS_UNCACHED, reply_msg);
 }
 
 void AppCacheDispatcherHost::OnStartUpdate(int host_id,

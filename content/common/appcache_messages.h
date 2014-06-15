@@ -9,10 +9,12 @@
 
 #define IPC_MESSAGE_START AppCacheMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(appcache::AppCacheEventID, appcache::EVENT_ID_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(appcache::AppCacheStatus, appcache::STATUS_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(appcache::AppCacheEventID,
+                          appcache::APPCACHE_EVENT_ID_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(appcache::AppCacheStatus,
+                          appcache::APPCACHE_STATUS_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(appcache::AppCacheErrorReason,
-    appcache::ERROR_REASON_LAST)
+    appcache::APPCACHE_ERROR_REASON_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(appcache::AppCacheInfo)
   IPC_STRUCT_TRAITS_MEMBER(manifest_url)
@@ -68,7 +70,7 @@ IPC_MESSAGE_CONTROL2(AppCacheHostMsg_SetSpawningHostId,
 // 'host_id' indentifies a specific document or worker
 // 'document_url' the url of the main resource
 // 'appcache_document_was_loaded_from' the id of the appcache the main
-//     resource was loaded from or kNoCacheId
+//     resource was loaded from or kAppCacheNoCacheId
 // 'opt_manifest_url' the manifest url specified in the <html> tag if any
 IPC_MESSAGE_CONTROL4(AppCacheHostMsg_SelectCache,
                      int /* host_id */,

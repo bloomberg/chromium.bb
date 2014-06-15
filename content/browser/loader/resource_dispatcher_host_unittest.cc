@@ -139,7 +139,7 @@ static ResourceHostMsg_Request CreateResourceRequest(
   request.origin_pid = 0;
   request.resource_type = type;
   request.request_context = 0;
-  request.appcache_host_id = appcache::kNoHostId;
+  request.appcache_host_id = appcache::kAppCacheNoHostId;
   request.download_to_file = false;
   request.is_main_frame = true;
   request.parent_is_main_frame = false;

@@ -954,7 +954,7 @@ void AppCacheDatabase::ReadNamespaceRecords(
     AppCacheNamespaceType type = static_cast<AppCacheNamespaceType>(
         statement->ColumnInt(2));
     NamespaceRecordVector* records =
-        (type == FALLBACK_NAMESPACE) ? fallbacks : intercepts;
+        (type == APPCACHE_FALLBACK_NAMESPACE) ? fallbacks : intercepts;
     records->push_back(NamespaceRecord());
     ReadNamespaceRecord(statement, &records->back());
   }
@@ -1129,8 +1129,9 @@ bool AppCacheDatabase::UpgradeSchema() {
     }
 
     // Move data from the old table to the new table, setting the
-    // 'type' for all current records to the value for FALLBACK_NAMESPACE.
-    DCHECK_EQ(0, static_cast<int>(FALLBACK_NAMESPACE));
+    // 'type' for all current records to the value for
+    // APPCACHE_FALLBACK_NAMESPACE.
+    DCHECK_EQ(0, static_cast<int>(APPCACHE_FALLBACK_NAMESPACE));
     if (!db_->Execute(
             "INSERT INTO Namespaces"
             "  SELECT cache_id, origin, 0, namespace_url, fallback_entry_url"

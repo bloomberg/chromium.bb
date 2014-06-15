@@ -219,7 +219,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
       } else {
         bool is_pattern = HasPatternMatchingAnnotation(line_p, line_end);
         manifest.online_whitelist_namespaces.push_back(
-            Namespace(NETWORK_NAMESPACE, url, GURL(), is_pattern));
+            Namespace(APPCACHE_NETWORK_NAMESPACE, url, GURL(), is_pattern));
       }
     } else if (mode == INTERCEPT) {
       if (parse_mode != PARSE_MANIFEST_ALLOWING_INTERCEPTS) {
@@ -304,7 +304,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
 
       bool is_pattern = HasPatternMatchingAnnotation(line_p, line_end);
       manifest.intercept_namespaces.push_back(
-          Namespace(INTERCEPT_NAMESPACE, namespace_url,
+          Namespace(APPCACHE_INTERCEPT_NAMESPACE, namespace_url,
                     target_url, is_pattern, verb == EXECUTE));
     } else if (mode == FALLBACK) {
       const wchar_t* line_p = line.c_str();
@@ -368,7 +368,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
       // Store regardless of duplicate namespace URL. Only first match
       // will ever be used.
       manifest.fallback_namespaces.push_back(
-          Namespace(FALLBACK_NAMESPACE, namespace_url,
+          Namespace(APPCACHE_FALLBACK_NAMESPACE, namespace_url,
                     fallback_url, is_pattern));
     } else {
       NOTREACHED();

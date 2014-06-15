@@ -28,10 +28,10 @@ class AppCacheEntry {
   };
 
   AppCacheEntry()
-    : types_(0), response_id_(kNoResponseId), response_size_(0) {}
+    : types_(0), response_id_(kAppCacheNoResponseId), response_size_(0) {}
 
   explicit AppCacheEntry(int type)
-    : types_(type), response_id_(kNoResponseId), response_size_(0) {}
+    : types_(type), response_id_(kAppCacheNoResponseId), response_size_(0) {}
 
   AppCacheEntry(int type, int64 response_id)
     : types_(type), response_id_(response_id), response_size_(0) {}
@@ -51,7 +51,7 @@ class AppCacheEntry {
 
   int64 response_id() const { return response_id_; }
   void set_response_id(int64 id) { response_id_ = id; }
-  bool has_response_id() const { return response_id_ != kNoResponseId; }
+  bool has_response_id() const { return response_id_ != kAppCacheNoResponseId; }
 
   int64 response_size() const { return response_size_; }
   void set_response_size(int64 size) { response_size_ = size; }

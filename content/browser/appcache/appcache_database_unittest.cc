@@ -19,9 +19,9 @@
 
 using appcache::AppCacheDatabase;
 using appcache::AppCacheEntry;
-using appcache::FALLBACK_NAMESPACE;
-using appcache::INTERCEPT_NAMESPACE;
-using appcache::NETWORK_NAMESPACE;
+using appcache::APPCACHE_FALLBACK_NAMESPACE;
+using appcache::APPCACHE_INTERCEPT_NAMESPACE;
+using appcache::APPCACHE_NETWORK_NAMESPACE;
 
 namespace {
 
@@ -962,7 +962,7 @@ TEST(AppCacheDatabaseTest, UpgradeSchema3to5) {
         kMockOrigin.Resolve(base::StringPrintf(kTargetUrlFormat, i)));
 
     EXPECT_EQ(i, fallbacks[i].cache_id);
-    EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[i].namespace_.type);
+    EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[i].namespace_.type);
     EXPECT_EQ(kMockOrigin, fallbacks[i].origin);
     EXPECT_EQ(expected_namespace_url, fallbacks[i].namespace_.namespace_url);
     EXPECT_EQ(expected_target_url, fallbacks[i].namespace_.target_url);
@@ -1149,7 +1149,7 @@ TEST(AppCacheDatabaseTest, UpgradeSchema4to5) {
           kMockOrigin.Resolve(base::StringPrintf(kTargetUrlFormat, i)));
       statement.BindInt64(0, i);
       statement.BindString(1, kMockOrigin.spec().c_str());
-      statement.BindInt(2, FALLBACK_NAMESPACE);
+      statement.BindInt(2, APPCACHE_FALLBACK_NAMESPACE);
       statement.BindString(3, namespace_url.spec().c_str());
       statement.BindString(4, target_url.spec().c_str());
       ASSERT_TRUE(statement.Run());
@@ -1202,7 +1202,7 @@ TEST(AppCacheDatabaseTest, UpgradeSchema4to5) {
         kMockOrigin.Resolve(base::StringPrintf(kWhitelistUrlFormat, i)));
 
     EXPECT_EQ(i, fallbacks[i].cache_id);
-    EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[i].namespace_.type);
+    EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[i].namespace_.type);
     EXPECT_EQ(kMockOrigin, fallbacks[i].origin);
     EXPECT_EQ(expected_namespace_url, fallbacks[i].namespace_.namespace_url);
     EXPECT_EQ(expected_target_url, fallbacks[i].namespace_.target_url);

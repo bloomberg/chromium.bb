@@ -167,7 +167,7 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   IPC_STRUCT_MEMBER(uint32, request_context)
 
   // Indicates which frame (or worker context) the request is being loaded into,
-  // or kNoHostId.
+  // or kAppCacheNoHostId.
   IPC_STRUCT_MEMBER(int, appcache_host_id)
 
   // Indicates which frame (or worker context) the request is being loaded into,

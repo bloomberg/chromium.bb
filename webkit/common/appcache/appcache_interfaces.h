@@ -23,57 +23,57 @@ namespace appcache {
 // Defines constants, types, and abstract classes used in the main
 // process and in child processes.
 
-static const int kNoHostId = 0;
-static const int64 kNoCacheId = 0;
-static const int64 kNoResponseId = 0;
-static const int64 kUnknownCacheId = -1;
+static const int kAppCacheNoHostId = 0;
+static const int64 kAppCacheNoCacheId = 0;
+static const int64 kAppCacheNoResponseId = 0;
+static const int64 kAppCacheUnknownCacheId = -1;
 
 enum AppCacheStatus {
-  UNCACHED,
-  IDLE,
-  CHECKING,
-  DOWNLOADING,
-  UPDATE_READY,
-  OBSOLETE,
-  STATUS_LAST = OBSOLETE
+  APPCACHE_STATUS_UNCACHED,
+  APPCACHE_STATUS_IDLE,
+  APPCACHE_STATUS_CHECKING,
+  APPCACHE_STATUS_DOWNLOADING,
+  APPCACHE_STATUS_UPDATE_READY,
+  APPCACHE_STATUS_OBSOLETE,
+  APPCACHE_STATUS_LAST = APPCACHE_STATUS_OBSOLETE
 };
 
 enum AppCacheEventID {
-  CHECKING_EVENT,
-  ERROR_EVENT,
-  NO_UPDATE_EVENT,
-  DOWNLOADING_EVENT,
-  PROGRESS_EVENT,
-  UPDATE_READY_EVENT,
-  CACHED_EVENT,
-  OBSOLETE_EVENT,
-  EVENT_ID_LAST = OBSOLETE_EVENT
+  APPCACHE_CHECKING_EVENT,
+  APPCACHE_ERROR_EVENT,
+  APPCACHE_NO_UPDATE_EVENT,
+  APPCACHE_DOWNLOADING_EVENT,
+  APPCACHE_PROGRESS_EVENT,
+  APPCACHE_UPDATE_READY_EVENT,
+  APPCACHE_CACHED_EVENT,
+  APPCACHE_OBSOLETE_EVENT,
+  APPCACHE_EVENT_ID_LAST = APPCACHE_OBSOLETE_EVENT
 };
 
 // Temporarily renumber them in wierd way, to help remove LOG_TIP from WebKit
 enum AppCacheLogLevel {
-  LOG_DEBUG = 4,
-  LOG_INFO = 1,
-  LOG_WARNING = 2,
-  LOG_ERROR = 3,
+  APPCACHE_LOG_DEBUG = 4,
+  APPCACHE_LOG_INFO = 1,
+  APPCACHE_LOG_WARNING = 2,
+  APPCACHE_LOG_ERROR = 3,
 };
 
 enum AppCacheNamespaceType {
-  FALLBACK_NAMESPACE,
-  INTERCEPT_NAMESPACE,
-  NETWORK_NAMESPACE
+  APPCACHE_FALLBACK_NAMESPACE,
+  APPCACHE_INTERCEPT_NAMESPACE,
+  APPCACHE_NETWORK_NAMESPACE
 };
 
 enum AppCacheErrorReason {
-  MANIFEST_ERROR,
-  SIGNATURE_ERROR,
-  RESOURCE_ERROR,
-  CHANGED_ERROR,
-  ABORT_ERROR,
-  QUOTA_ERROR,
-  POLICY_ERROR,
-  UNKNOWN_ERROR,
-  ERROR_REASON_LAST = UNKNOWN_ERROR
+  APPCACHE_MANIFEST_ERROR,
+  APPCACHE_SIGNATURE_ERROR,
+  APPCACHE_RESOURCE_ERROR,
+  APPCACHE_CHANGED_ERROR,
+  APPCACHE_ABORT_ERROR,
+  APPCACHE_QUOTA_ERROR,
+  APPCACHE_POLICY_ERROR,
+  APPCACHE_UNKNOWN_ERROR,
+  APPCACHE_ERROR_REASON_LAST = APPCACHE_UNKNOWN_ERROR
 };
 
 struct WEBKIT_STORAGE_COMMON_EXPORT AppCacheInfo {
@@ -128,7 +128,7 @@ struct WEBKIT_STORAGE_COMMON_EXPORT AppCacheErrorDetails {
 typedef std::vector<AppCacheResourceInfo> AppCacheResourceInfoVector;
 
 struct WEBKIT_STORAGE_COMMON_EXPORT Namespace {
-  Namespace();  // Type is set to FALLBACK_NAMESPACE by default.
+  Namespace();  // Type is set to APPCACHE_FALLBACK_NAMESPACE by default.
   Namespace(AppCacheNamespaceType type, const GURL& url, const GURL& target,
             bool is_pattern);
   Namespace(AppCacheNamespaceType type, const GURL& url, const GURL& target,

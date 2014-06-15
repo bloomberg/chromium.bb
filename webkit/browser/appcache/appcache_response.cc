@@ -55,7 +55,7 @@ AppCacheResponseInfo::AppCacheResponseInfo(
       http_response_info_(http_info), response_data_size_(response_data_size),
       storage_(storage) {
   DCHECK(http_info);
-  DCHECK(response_id != kNoResponseId);
+  DCHECK(response_id != kAppCacheNoResponseId);
   storage_->working_set()->AddResponseInfo(this);
 }
 

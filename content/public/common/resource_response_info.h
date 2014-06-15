@@ -53,7 +53,7 @@ struct ResourceResponseInfo {
   // no data, contains -1.
   int64 encoded_data_length;
 
-  // The appcache this response was loaded from, or kNoCacheId.
+  // The appcache this response was loaded from, or kAppCacheNoCacheId.
   int64 appcache_id;
 
   // The manifest url of the appcache this response was loaded from.

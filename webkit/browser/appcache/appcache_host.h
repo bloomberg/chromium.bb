@@ -167,7 +167,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
   AppCache* associated_cache() const { return associated_cache_.get(); }
 
   bool is_selection_pending() const {
-    return pending_selected_cache_id_ != kNoCacheId ||
+    return pending_selected_cache_id_ != kAppCacheNoCacheId ||
            !pending_selected_manifest_url_.is_empty();
   }
 
@@ -210,7 +210,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
 
   // Returns true if this host is for a dedicated worker context.
   bool is_for_dedicated_worker() const {
-    return parent_host_id_ != kNoHostId;
+    return parent_host_id_ != kAppCacheNoHostId;
   }
 
   // Returns the parent context's host instance. This is only valid

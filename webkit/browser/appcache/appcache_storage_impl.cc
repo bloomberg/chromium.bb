@@ -859,7 +859,7 @@ class NetworkNamespaceHelper {
     WhiteListVector::const_iterator iter = records.begin();
     while (iter != records.end()) {
       namespaces->push_back(
-            Namespace(NETWORK_NAMESPACE, iter->namespace_url, GURL(),
+            Namespace(APPCACHE_NETWORK_NAMESPACE, iter->namespace_url, GURL(),
                       iter->is_pattern));
       ++iter;
     }
@@ -881,7 +881,7 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
                        const AppCacheWorkingSet::GroupMap* groups_in_use)
       : DatabaseTask(storage), url_(url),
         preferred_manifest_url_(preferred_manifest_url),
-        cache_id_(kNoCacheId), group_id_(0) {
+        cache_id_(kAppCacheNoCacheId), group_id_(0) {
     if (groups_in_use) {
       for (AppCacheWorkingSet::GroupMap::const_iterator it =
                groups_in_use->begin();
@@ -938,7 +938,7 @@ void AppCacheStorageImpl::FindMainResponseTask::Run() {
   // TODO(michaeln): come up with a 'preferred_manifest_url' in more cases
   // - when navigating a frame whose current contents are from an appcache
   // - when clicking an href in a frame that is appcached
-  int64 preferred_cache_id = kNoCacheId;
+  int64 preferred_cache_id = kAppCacheNoCacheId;
   if (!preferred_manifest_url_.is_empty()) {
     AppCacheDatabase::GroupRecord preferred_group;
     AppCacheDatabase::CacheRecord preferred_cache;
@@ -953,13 +953,13 @@ void AppCacheStorageImpl::FindMainResponseTask::Run() {
   if (FindExactMatch(preferred_cache_id) ||
       FindNamespaceMatch(preferred_cache_id)) {
     // We found something.
-    DCHECK(cache_id_ != kNoCacheId && !manifest_url_.is_empty() &&
+    DCHECK(cache_id_ != kAppCacheNoCacheId && !manifest_url_.is_empty() &&
            group_id_ != 0);
     return;
   }
 
   // We didn't find anything.
-  DCHECK(cache_id_ == kNoCacheId && manifest_url_.is_empty() &&
+  DCHECK(cache_id_ == kAppCacheNoCacheId && manifest_url_.is_empty() &&
          group_id_ == 0);
 }
 
@@ -1071,7 +1071,7 @@ FindMainResponseTask::FindFirstValidNamespace(
       group_id_ = group_record.group_id;
       cache_id_ = (*iter)->cache_id;
       namespace_entry_url_ = (*iter)->namespace_.target_url;
-      if ((*iter)->namespace_.type == FALLBACK_NAMESPACE)
+      if ((*iter)->namespace_.type == APPCACHE_FALLBACK_NAMESPACE)
         fallback_entry_ = AppCacheEntry(entry_record.flags,
                                         entry_record.response_id);
       else
@@ -1559,8 +1559,8 @@ void AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse(
     CallOnMainResponseFound(
         &delegates, url, found_entry,
         GURL(), AppCacheEntry(),
-        cache.get() ? cache->cache_id() : kNoCacheId,
-        group.get() ? group->group_id() : kNoCacheId,
+        cache.get() ? cache->cache_id() : kAppCacheNoCacheId,
+        group.get() ? group->group_id() : kAppCacheNoCacheId,
         group.get() ? group->manifest_url() : GURL());
   }
 }

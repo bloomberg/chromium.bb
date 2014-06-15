@@ -12,7 +12,7 @@ namespace content {
 ResourceResponseInfo::ResourceResponseInfo()
     : content_length(-1),
       encoded_data_length(-1),
-      appcache_id(appcache::kNoCacheId),
+      appcache_id(appcache::kAppCacheNoCacheId),
       was_fetched_via_spdy(false),
       was_npn_negotiated(false),
       was_alternate_protocol_available(false),

@@ -69,7 +69,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheStorage {
         AppCacheResponseInfo* response_info, int64 response_id) {}
 
     // If no response is found, entry.response_id() and
-    // fallback_entry.response_id() will be kNoResponseId.
+    // fallback_entry.response_id() will be kAppCacheNoResponseId.
     // If the response is the entry for an intercept or fallback
     // namespace, the url of the namespece entry is returned.
     // If a response is found, the cache id and manifest url of the

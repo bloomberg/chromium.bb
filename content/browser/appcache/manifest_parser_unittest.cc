@@ -10,9 +10,9 @@
 
 using appcache::Manifest;
 using appcache::NamespaceVector;
-using appcache::FALLBACK_NAMESPACE;
-using appcache::INTERCEPT_NAMESPACE;
-using appcache::NETWORK_NAMESPACE;
+using appcache::APPCACHE_FALLBACK_NAMESPACE;
+using appcache::APPCACHE_INTERCEPT_NAMESPACE;
+using appcache::APPCACHE_NETWORK_NAMESPACE;
 using appcache::PARSE_MANIFEST_ALLOWING_INTERCEPTS;
 using appcache::PARSE_MANIFEST_PER_STANDARD;
 
@@ -170,7 +170,7 @@ TEST(AppCacheManifestParserTest, WhitelistUrls) {
   const NamespaceVector& online = manifest.online_whitelist_namespaces;
   const size_t kExpected = 6;
   ASSERT_EQ(kExpected, online.size());
-  EXPECT_EQ(NETWORK_NAMESPACE, online[0].type);
+  EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE, online[0].type);
   EXPECT_FALSE(online[0].is_pattern);
   EXPECT_TRUE(online[0].target_url.is_empty());
   EXPECT_EQ(GURL("http://www.bar.com/relative/one"), online[0].namespace_url);
@@ -216,11 +216,11 @@ TEST(AppCacheManifestParserTest, FallbackUrls) {
   const NamespaceVector& fallbacks = manifest.fallback_namespaces;
   const size_t kExpected = 5;
   ASSERT_EQ(kExpected, fallbacks.size());
-  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[0].type);
-  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[1].type);
-  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[2].type);
-  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[3].type);
-  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[4].type);
+  EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[0].type);
+  EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[1].type);
+  EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[2].type);
+  EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[3].type);
+  EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[4].type);
   EXPECT_EQ(GURL("http://glorp.com/relative/one"),
             fallbacks[0].namespace_url);
   EXPECT_EQ(GURL("http://glorp.com/onefb"),
@@ -267,9 +267,9 @@ TEST(AppCacheManifestParserTest, FallbackUrlsWithPort) {
   const NamespaceVector& fallbacks = manifest.fallback_namespaces;
   const size_t kExpected = 3;
   ASSERT_EQ(kExpected, fallbacks.size());
-  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[0].type);
-  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[1].type);
-  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[2].type);
+  EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[0].type);
+  EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[1].type);
+  EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[2].type);
   EXPECT_EQ(GURL("http://www.portme.com:1234/one"),
             fallbacks[0].namespace_url);
   EXPECT_EQ(GURL("http://www.portme.com:1234/relative/onefb"),
@@ -311,9 +311,9 @@ TEST(AppCacheManifestParserTest, InterceptUrls) {
   const NamespaceVector& intercepts = manifest.intercept_namespaces;
   const size_t kExpected = 3;
   ASSERT_EQ(kExpected, intercepts.size());
-  EXPECT_EQ(INTERCEPT_NAMESPACE, intercepts[0].type);
-  EXPECT_EQ(INTERCEPT_NAMESPACE, intercepts[1].type);
-  EXPECT_EQ(INTERCEPT_NAMESPACE, intercepts[2].type);
+  EXPECT_EQ(APPCACHE_INTERCEPT_NAMESPACE, intercepts[0].type);
+  EXPECT_EQ(APPCACHE_INTERCEPT_NAMESPACE, intercepts[1].type);
+  EXPECT_EQ(APPCACHE_INTERCEPT_NAMESPACE, intercepts[2].type);
   EXPECT_EQ(GURL("http://www.portme.com:1234/one"),
             intercepts[0].namespace_url);
   EXPECT_EQ(GURL("http://www.portme.com:1234/relative/int1"),
@@ -387,8 +387,8 @@ TEST(AppCacheManifestParserTest, ComboUrls) {
   const NamespaceVector& fallbacks = manifest.fallback_namespaces;
   expected = 2;
   ASSERT_EQ(expected, fallbacks.size());
-  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[0].type);
-  EXPECT_EQ(FALLBACK_NAMESPACE, fallbacks[1].type);
+  EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[0].type);
+  EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[1].type);
   EXPECT_EQ(GURL("http://combo.com:42/fallback-1"),
             fallbacks[0].namespace_url);
   EXPECT_EQ(GURL("http://combo.com:42/fallback-1b"),
@@ -483,9 +483,11 @@ TEST(AppCacheManifestParserTest, PatternMatching) {
   EXPECT_EQ(3u, manifest.intercept_namespaces.size());
   EXPECT_EQ(2u, manifest.fallback_namespaces.size());
   EXPECT_EQ(2u, manifest.online_whitelist_namespaces.size());
-  EXPECT_EQ(INTERCEPT_NAMESPACE, manifest.intercept_namespaces[0].type);
-  EXPECT_EQ(FALLBACK_NAMESPACE, manifest.fallback_namespaces[0].type);
-  EXPECT_EQ(NETWORK_NAMESPACE, manifest.online_whitelist_namespaces[0].type);
+  EXPECT_EQ(APPCACHE_INTERCEPT_NAMESPACE,
+            manifest.intercept_namespaces[0].type);
+  EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, manifest.fallback_namespaces[0].type);
+  EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
+            manifest.online_whitelist_namespaces[0].type);
   EXPECT_FALSE(manifest.intercept_namespaces[0].is_pattern);
   EXPECT_TRUE(manifest.intercept_namespaces[1].is_pattern);
   EXPECT_TRUE(manifest.intercept_namespaces[2].is_pattern);

@@ -27,9 +27,9 @@
 
 using appcache::AppCacheResponseWriter;
 using appcache::AppCacheServiceImpl;
-using appcache::FALLBACK_NAMESPACE;
-using appcache::INTERCEPT_NAMESPACE;
-using appcache::kNoCacheId;
+using appcache::APPCACHE_FALLBACK_NAMESPACE;
+using appcache::APPCACHE_INTERCEPT_NAMESPACE;
+using appcache::kAppCacheNoCacheId;
 using appcache::AppCacheNamespaceType;
 
 namespace content {
@@ -40,7 +40,7 @@ MockAppCacheStorage::MockAppCacheStorage(AppCacheServiceImpl* service)
       simulate_store_group_and_newest_cache_failure_(false),
       simulate_find_main_resource_(false),
       simulate_find_sub_resource_(false),
-      simulated_found_cache_id_(kNoCacheId),
+      simulated_found_cache_id_(kAppCacheNoCacheId),
       simulated_found_group_id_(0),
       simulated_found_network_namespace_(false),
       weak_factory_(this) {
@@ -254,7 +254,7 @@ struct FoundCandidate {
   bool is_cache_in_use;
 
   FoundCandidate()
-      : cache_id(kNoCacheId), group_id(0), is_cache_in_use(false) {}
+      : cache_id(kAppCacheNoCacheId), group_id(0), is_cache_in_use(false) {}
 };
 
 void MaybeTakeNewNamespaceEntry(
@@ -289,7 +289,7 @@ void MaybeTakeNewNamespaceEntry(
   }
 
   if (take_new_entry) {
-    if (namespace_type == FALLBACK_NAMESPACE) {
+    if (namespace_type == APPCACHE_FALLBACK_NAMESPACE) {
       best_candidate->namespace_entry_url =
           cache->GetFallbackEntryUrl(namespace_url);
     } else {
@@ -383,14 +383,14 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
     } else if (found_entry.has_response_id() &&
                !found_intercept_namespace.is_empty()) {
       MaybeTakeNewNamespaceEntry(
-          INTERCEPT_NAMESPACE,
+          APPCACHE_INTERCEPT_NAMESPACE,
           found_entry, found_intercept_namespace, is_in_use,
           &found_candidate, &found_intercept_candidate_namespace,
           cache, group);
     } else {
       DCHECK(found_fallback_entry.has_response_id());
       MaybeTakeNewNamespaceEntry(
-          FALLBACK_NAMESPACE,
+          APPCACHE_FALLBACK_NAMESPACE,
           found_fallback_entry, found_fallback_namespace, is_in_use,
           &found_fallback_candidate, &found_fallback_candidate_namespace,
           cache, group);
@@ -420,7 +420,8 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
 
   // Didn't find anything.
   delegate_ref->delegate->OnMainResponseFound(
-      url, AppCacheEntry(), GURL(), AppCacheEntry(), kNoCacheId, 0, GURL());
+      url, AppCacheEntry(), GURL(), AppCacheEntry(), kAppCacheNoCacheId, 0,
+      GURL());
 }
 
 void MockAppCacheStorage::ProcessMakeGroupObsolete(

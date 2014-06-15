@@ -24,7 +24,8 @@ void AppCacheFrontendProxy::OnStatusChanged(const std::vector<int>& host_ids,
 
 void AppCacheFrontendProxy::OnEventRaised(const std::vector<int>& host_ids,
                                           appcache::AppCacheEventID event_id) {
-  DCHECK_NE(appcache::PROGRESS_EVENT, event_id);  // See OnProgressEventRaised.
+  DCHECK_NE(appcache::APPCACHE_PROGRESS_EVENT,
+      event_id);  // See OnProgressEventRaised.
   sender_->Send(new AppCacheMsg_EventRaised(host_ids, event_id));
 }
 
