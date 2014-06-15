@@ -115,7 +115,7 @@ class SmoothnessFastPathGpuRasterizationKeySilkCases(
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
 
-@test.Enabled('android')
+@test.Disabled  # crbug.com/384730
 class SmoothnessToughPinchZoomCases(test.Test):
   """Measures rendering statistics for pinch-zooming into the tough pinch zoom
   cases
