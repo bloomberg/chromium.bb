@@ -195,13 +195,18 @@ def UserActTodo(opts):
     PrintCl(opts, cl, lims)
 
 
-def UserActMine(opts):
-  """List your CLs with review statuses"""
-  _, _, owners = _MyUserInfo()
-  cls = FilteredQuery(opts, '( %s ) status:new' % (' OR '.join(owners),))
+def UserActSearch(opts, query):
+  """List CLs matching the Gerrit <search query>"""
+  cls = FilteredQuery(opts, query)
   lims = limits(cls)
   for cl in cls:
     PrintCl(opts, cl, lims)
+
+
+def UserActMine(opts):
+  """List your CLs with review statuses"""
+  _, _, owners = _MyUserInfo()
+  UserActSearch(opts, '( %s ) status:new' % (' OR '.join(owners),))
 
 
 def UserActInspect(opts, idx):
@@ -286,6 +291,11 @@ def main(argv):
 
 There is no support for doing line-by-line code review via the command line.
 This helps you manage various bits and CL status.
+
+For general Gerrit documentation, see:
+  https://gerrit-review.googlesource.com/Documentation/
+The Searching Changes page covers the search query syntax:
+  https://gerrit-review.googlesource.com/Documentation/user-search.html
 
 Example:
   $ gerrit todo             # List all the CLs that await your review.
