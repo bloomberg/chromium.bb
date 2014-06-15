@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
+#include "components/sync_driver/non_ui_data_type_controller.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -12,15 +12,15 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/sync/glue/non_ui_data_type_controller_mock.h"
-#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
-#include "content/public/test/test_browser_thread.h"
+#include "components/sync_driver/non_ui_data_type_controller_mock.h"
 #include "sync/api/fake_syncable_service.h"
+#include "sync/api/sync_change.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
@@ -28,7 +28,6 @@ namespace browser_sync {
 namespace {
 
 using base::WaitableEvent;
-using content::BrowserThread;
 using syncer::AUTOFILL_PROFILE;
 using testing::_;
 using testing::AtLeast;
@@ -94,19 +93,20 @@ class NonUIDataTypeControllerFake
     : public NonUIDataTypeController {
  public:
   NonUIDataTypeControllerFake(
-      ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile,
+      browser_sync::SyncApiComponentFactory* sync_factory,
       NonUIDataTypeControllerMock* mock,
       SharedChangeProcessor* change_processor,
-      const DisableTypeCallback& disable_callback)
+      const DisableTypeCallback& disable_callback,
+      scoped_refptr<base::MessageLoopProxy> backend_loop)
       : NonUIDataTypeController(
           base::MessageLoopProxy::current(),
           base::Closure(),
           disable_callback,
-          profile_sync_factory),
+          sync_factory),
         blocked_(false),
         mock_(mock),
-        change_processor_(change_processor) {}
+        change_processor_(change_processor),
+        backend_loop_(backend_loop) {}
 
   virtual syncer::ModelType type() const OVERRIDE {
     return AUTOFILL_PROFILE;
@@ -144,7 +144,7 @@ class NonUIDataTypeControllerFake
       pending_tasks_.push_back(PendingTask(from_here, task));
       return true;
     } else {
-      return BrowserThread::PostTask(BrowserThread::DB, from_here, task);
+      return backend_loop_->PostTask(from_here, task);
     }
   }
 
@@ -182,19 +182,17 @@ class NonUIDataTypeControllerFake
   std::vector<PendingTask> pending_tasks_;
   NonUIDataTypeControllerMock* mock_;
   scoped_refptr<SharedChangeProcessor> change_processor_;
+  scoped_refptr<base::MessageLoopProxy> backend_loop_;
 };
 
 class SyncNonUIDataTypeControllerTest : public testing::Test {
  public:
   SyncNonUIDataTypeControllerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB),
+      : backend_thread_("dbthread"),
         disable_callback_invoked_(false) {}
 
   virtual void SetUp() OVERRIDE {
-    db_thread_.Start();
-    profile_sync_factory_.reset(
-        new StrictMock<ProfileSyncComponentsFactoryMock>());
+    backend_thread_.Start();
     change_processor_ = new SharedChangeProcessorMock();
     // All of these are refcounted, so don't need to be released.
     dtc_mock_ = new StrictMock<NonUIDataTypeControllerMock>();
@@ -202,20 +200,21 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
         base::Bind(&SyncNonUIDataTypeControllerTest::DisableTypeCallback,
                    base::Unretained(this));
     non_ui_dtc_ =
-        new NonUIDataTypeControllerFake(profile_sync_factory_.get(),
-                                        &profile_,
+        new NonUIDataTypeControllerFake(NULL,
                                         dtc_mock_.get(),
                                         change_processor_,
-                                        disable_callback);
+                                        disable_callback,
+                                        backend_thread_.message_loop_proxy());
   }
 
   virtual void TearDown() OVERRIDE {
-    db_thread_.Stop();
+    backend_thread_.Stop();
   }
 
   void WaitForDTC() {
     WaitableEvent done(true, false);
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+    backend_thread_.message_loop_proxy()->PostTask(
+       FROM_HERE,
        base::Bind(&SyncNonUIDataTypeControllerTest::SignalDone,
                   &done));
     done.TimedWait(TestTimeouts::action_timeout());
@@ -279,10 +278,8 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
   }
 
   base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  TestingProfile profile_;
-  scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
+  base::Thread backend_thread_;
+
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;
   // Must be destroyed after non_ui_dtc_.
@@ -434,8 +431,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringAssociation) {
 }
 
 // Start the DTC while the backend tasks are blocked. Then stop the DTC before
-// the backend tasks get a chance to run. The DTC should have no interaction
-// with the profile sync factory or profile sync service once stopped.
+// the backend tasks get a chance to run.
 TEST_F(SyncNonUIDataTypeControllerTest, StartAfterSyncShutdown) {
   non_ui_dtc_->BlockBackendTasks();
 
@@ -451,7 +447,6 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartAfterSyncShutdown) {
   Start();
   non_ui_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
-  Mock::VerifyAndClearExpectations(&profile_sync_factory_);
   Mock::VerifyAndClearExpectations(change_processor_.get());
   Mock::VerifyAndClearExpectations(dtc_mock_.get());
 
@@ -490,7 +485,6 @@ TEST_F(SyncNonUIDataTypeControllerTest, StopStart) {
 
   non_ui_dtc_->BlockBackendTasks();
   non_ui_dtc_->Stop();
-  Mock::VerifyAndClearExpectations(&profile_sync_factory_);
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
@@ -513,7 +507,7 @@ TEST_F(SyncNonUIDataTypeControllerTest,
   WaitForDTC();
   EXPECT_EQ(DataTypeController::RUNNING, non_ui_dtc_->state());
   // This should cause non_ui_dtc_->Stop() to be called.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, base::Bind(
+  backend_thread_.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
       &NonUIDataTypeControllerFake::
           OnSingleDatatypeUnrecoverableError,
       non_ui_dtc_.get(),

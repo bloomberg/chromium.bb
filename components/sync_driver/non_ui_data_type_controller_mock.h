@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_NON_UI_DATA_TYPE_CONTROLLER_MOCK_H_
 #define CHROME_BROWSER_SYNC_GLUE_NON_UI_DATA_TYPE_CONTROLLER_MOCK_H_
 
-#include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
+#include "components/sync_driver/non_ui_data_type_controller.h"
 #include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

@@ -1,20 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/ui_data_type_controller.h"
+#include "components/sync_driver/ui_data_type_controller.h"
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/shared_change_processor_ref.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/syncable_service.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/util/data_type_histogram.h"
-
-using content::BrowserThread;
 
 namespace browser_sync {
 
@@ -37,8 +34,9 @@ UIDataTypeController::UIDataTypeController(
       sync_factory_(sync_factory),
       state_(NOT_RUNNING),
       type_(type),
-      processor_factory_(new GenericChangeProcessorFactory()) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+      processor_factory_(new GenericChangeProcessorFactory()),
+      ui_thread_(ui_thread) {
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   DCHECK(sync_factory);
   DCHECK(syncer::IsRealDataType(type_));
 }
@@ -50,12 +48,12 @@ void UIDataTypeController::SetGenericChangeProcessorFactoryForTest(
 }
 
 UIDataTypeController::~UIDataTypeController() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_thread_->BelongsToCurrentThread());
 }
 
 void UIDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   DCHECK(!model_load_callback.is_null());
   DCHECK(syncer::IsRealDataType(type_));
   if (state_ != NOT_RUNNING) {
@@ -87,7 +85,7 @@ void UIDataTypeController::LoadModels(
 }
 
 void UIDataTypeController::OnModelLoaded() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   DCHECK(!model_load_callback_.is_null());
   DCHECK_EQ(state_, MODEL_STARTING);
 
@@ -99,7 +97,7 @@ void UIDataTypeController::OnModelLoaded() {
 
 void UIDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   DCHECK(!start_callback.is_null());
   DCHECK_EQ(state_, MODEL_LOADED);
 
@@ -219,7 +217,7 @@ ChangeProcessor* UIDataTypeController::GetChangeProcessor() const {
 }
 
 void UIDataTypeController::AbortModelLoad() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   state_ = NOT_RUNNING;
 
   if (shared_change_processor_.get()) {
@@ -242,7 +240,7 @@ void UIDataTypeController::StartDone(
     StartResult start_result,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_thread_->BelongsToCurrentThread());
 
   if (!IsSuccessfulResult(start_result)) {
     StopModels();
@@ -268,7 +266,7 @@ void UIDataTypeController::StartDone(
 }
 
 void UIDataTypeController::Stop() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   DCHECK(syncer::IsRealDataType(type_));
 
   State prev_state = state_;
@@ -334,7 +332,7 @@ void UIDataTypeController::OnSingleDatatypeUnrecoverableError(
 }
 
 void UIDataTypeController::RecordAssociationTime(base::TimeDelta time) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_thread_->BelongsToCurrentThread());
 #define PER_DATA_TYPE_MACRO(type_str) \
     UMA_HISTOGRAM_TIMES("Sync." type_str "AssociationTime", time);
   SYNC_DATA_TYPE_HISTOGRAM(type());
@@ -342,7 +340,7 @@ void UIDataTypeController::RecordAssociationTime(base::TimeDelta time) {
 }
 
 void UIDataTypeController::RecordStartFailure(StartResult result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
                             ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);

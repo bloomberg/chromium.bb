@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
+#include "components/sync_driver/non_ui_data_type_controller.h"
 
 class Profile;
 class ProfileSyncComponentsFactory;

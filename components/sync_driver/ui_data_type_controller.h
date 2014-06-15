@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_UI_DATA_TYPE_CONTROLLER_H__
-#define CHROME_BROWSER_SYNC_GLUE_UI_DATA_TYPE_CONTROLLER_H__
+#ifndef COMPONENTS_SYNC_DRIVER_UI_DATA_TYPE_CONTROLLER_H_
+#define COMPONENTS_SYNC_DRIVER_UI_DATA_TYPE_CONTROLLER_H_
 
 #include <string>
 
@@ -123,6 +123,7 @@ class UIDataTypeController : public DataTypeController {
   // real work. We do not own the object.
   base::WeakPtr<syncer::SyncableService> local_service_;
 
+  scoped_refptr<base::MessageLoopProxy> ui_thread_;
  private:
    // Associate the sync model with the service's model, then start syncing.
   virtual void Associate();
@@ -134,4 +135,4 @@ class UIDataTypeController : public DataTypeController {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_UI_DATA_TYPE_CONTROLLER_H__
+#endif  // COMPONENTS_SYNC_DRIVER_UI_DATA_TYPE_CONTROLLER_H_

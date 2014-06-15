@@ -1,22 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/ui_data_type_controller.h"
+#include "components/sync_driver/ui_data_type_controller.h"
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
-#include "chrome/test/base/profile_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_generic_change_processor.h"
-#include "content/public/test/test_browser_thread.h"
+#include "sync/api/attachments/attachment_service_impl.h"
 #include "sync/api/fake_syncable_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using testing::_;
 using testing::InvokeWithoutArgs;
 using testing::Return;
@@ -28,16 +25,15 @@ namespace {
 // test the basic functionality of all UIDataTypeControllers. We'll need to have
 // intelligent default values for the methods queried in the dependent services
 // (e.g. those queried in StartModels).
-class SyncUIDataTypeControllerTest : public testing::Test {
+class SyncUIDataTypeControllerTest : public testing::Test,
+                                     public SyncApiComponentFactory {
  public:
   SyncUIDataTypeControllerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        type_(syncer::PREFERENCES),
+      : type_(syncer::PREFERENCES),
         change_processor_(NULL),
         disable_callback_invoked_(false) {}
 
   virtual void SetUp() {
-    profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
     preference_dtc_ =
         new UIDataTypeController(
             base::MessageLoopProxy::current(),
@@ -46,7 +42,7 @@ class SyncUIDataTypeControllerTest : public testing::Test {
                        base::Unretained(this),
                        type_),
             type_,
-            profile_sync_factory_.get());
+            this);
     SetStartExpectations();
   }
 
@@ -57,17 +53,25 @@ class SyncUIDataTypeControllerTest : public testing::Test {
     PumpLoop();
   }
 
+  virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+      syncer::ModelType type) OVERRIDE {
+    return syncable_service_.AsWeakPtr();
+  }
+
+  virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
+      syncer::AttachmentService::Delegate* delegate) OVERRIDE {
+    return syncer::AttachmentServiceImpl::CreateForTest();
+  }
+
  protected:
   void SetStartExpectations() {
     scoped_ptr<FakeGenericChangeProcessor> p(
-        new FakeGenericChangeProcessor(profile_sync_factory_.get()));
+        new FakeGenericChangeProcessor(this));
     change_processor_ = p.get();
     scoped_ptr<GenericChangeProcessorFactory> f(
         new FakeGenericChangeProcessorFactory(p.Pass()));
     preference_dtc_->SetGenericChangeProcessorFactoryForTest(f.Pass());
     EXPECT_CALL(model_load_callback_, Run(_, _));
-    EXPECT_CALL(*profile_sync_factory_, GetSyncableServiceForType(type_)).
-        WillOnce(Return(syncable_service_.AsWeakPtr()));
   }
 
   void Start() {
@@ -91,9 +95,6 @@ class SyncUIDataTypeControllerTest : public testing::Test {
   }
 
   base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  ProfileMock profile_;
-  scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   const syncer::ModelType type_;
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;

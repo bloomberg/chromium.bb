@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_NON_UI_DATA_TYPE_CONTROLLER_H_
-#define CHROME_BROWSER_SYNC_GLUE_NON_UI_DATA_TYPE_CONTROLLER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_H_
+#define COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_H_
 
 #include <string>
 
@@ -158,8 +158,10 @@ class NonUIDataTypeController : public DataTypeController {
   // Lifetime: it gets set in StartAssociationWithSharedChangeProcessor(...)
   // and released in StopLocalService().
   base::WeakPtr<syncer::SyncableService> local_service_;
+
+  scoped_refptr<base::MessageLoopProxy> ui_thread_;
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_NON_UI_DATA_TYPE_CONTROLLER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_H_

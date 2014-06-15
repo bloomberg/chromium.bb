@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/glue/ui_data_type_controller.h"
 #include "components/sync_driver/generic_change_processor.h"
+#include "components/sync_driver/ui_data_type_controller.h"
 
 class Profile;
 
