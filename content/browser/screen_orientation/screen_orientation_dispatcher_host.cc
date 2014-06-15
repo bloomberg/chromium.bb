@@ -6,11 +6,14 @@
 
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "content/common/screen_orientation_messages.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 
 namespace content {
 
-ScreenOrientationDispatcherHost::ScreenOrientationDispatcherHost()
-  : BrowserMessageFilter(ScreenOrientationMsgStart) {
+ScreenOrientationDispatcherHost::ScreenOrientationDispatcherHost(
+    WebContents* web_contents)
+    : WebContentsObserver(web_contents) {
   if (!provider_.get())
     provider_.reset(CreateProvider());
 }
@@ -19,10 +22,13 @@ ScreenOrientationDispatcherHost::~ScreenOrientationDispatcherHost() {
 }
 
 bool ScreenOrientationDispatcherHost::OnMessageReceived(
-    const IPC::Message& message) {
+    const IPC::Message& message,
+    RenderFrameHost* render_frame_host) {
   bool handled = true;
 
-  IPC_BEGIN_MESSAGE_MAP(ScreenOrientationDispatcherHost, message)
+  int routing_id = message.routing_id();
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(ScreenOrientationDispatcherHost, message,
+                                   &routing_id)
     IPC_MESSAGE_HANDLER(ScreenOrientationHostMsg_LockRequest, OnLockRequest)
     IPC_MESSAGE_HANDLER(ScreenOrientationHostMsg_Unlock, OnUnlockRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -42,24 +48,28 @@ void ScreenOrientationDispatcherHost::SetProviderForTests(
 }
 
 void ScreenOrientationDispatcherHost::OnLockRequest(
+    int* routing_id,
     blink::WebScreenOrientationLockType orientation,
     int request_id) {
   if (!provider_) {
     Send(new ScreenOrientationMsg_LockError(
-         request_id,
-         blink::WebLockOrientationCallback::ErrorTypeNotAvailable));
+        *routing_id,
+        request_id,
+        blink::WebLockOrientationCallback::ErrorTypeNotAvailable));
     return;
   }
 
   // TODO(mlamouri): pass real values.
   Send(new ScreenOrientationMsg_LockSuccess(
-       request_id,
-       0,
-       blink::WebScreenOrientationPortraitPrimary));
+      *routing_id,
+      request_id,
+      0,
+      blink::WebScreenOrientationPortraitPrimary));
   provider_->LockOrientation(orientation);
 }
 
-void ScreenOrientationDispatcherHost::OnUnlockRequest() {
+void ScreenOrientationDispatcherHost::OnUnlockRequest(
+    int* routing_id) {
   if (!provider_.get())
     return;
 

@@ -69,12 +69,13 @@ void ScreenOrientationDispatcher::lockOrientation(
   CancelPendingLocks();
 
   int request_id = pending_callbacks_.Add(callback);
-  Send(new ScreenOrientationHostMsg_LockRequest(orientation, request_id));
+  Send(new ScreenOrientationHostMsg_LockRequest(
+      routing_id(), orientation, request_id));
 }
 
 void ScreenOrientationDispatcher::unlockOrientation() {
   CancelPendingLocks();
-  Send(new ScreenOrientationHostMsg_Unlock);
+  Send(new ScreenOrientationHostMsg_Unlock(routing_id()));
 }
 
 }  // namespace content
