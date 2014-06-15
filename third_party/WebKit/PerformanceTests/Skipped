@@ -65,3 +65,8 @@ Bindings/named-property-enumerator.html
 
 # Times out on the bots
 Interactive/spellcheck-paste-huge-text.html
+
+# Times out on Android. crbug.com/384857
+Animation/overlay-background-color-transitions.html
+Animation/balls-transition-10-properties.html
+Animation/balls-transition-all.html
