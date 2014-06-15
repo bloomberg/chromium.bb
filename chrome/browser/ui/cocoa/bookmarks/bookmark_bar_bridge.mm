@@ -28,14 +28,10 @@ BookmarkBarBridge::BookmarkBarBridge(Profile* profile,
   profile_pref_registrar_.Init(profile->GetPrefs());
   profile_pref_registrar_.Add(
       prefs::kShowAppsShortcutInBookmarkBar,
-      base::Bind(&BookmarkBarBridge::OnExtraButtonsVisibilityChanged,
-                 base::Unretained(this)));
-  profile_pref_registrar_.Add(
-      prefs::kShowManagedBookmarksInBookmarkBar,
-      base::Bind(&BookmarkBarBridge::OnExtraButtonsVisibilityChanged,
+      base::Bind(&BookmarkBarBridge::OnAppsPageShortcutVisibilityPrefChanged,
                  base::Unretained(this)));
 
-  OnExtraButtonsVisibilityChanged();
+  [controller_ updateAppsPageShortcutButtonVisibility];
 }
 
 BookmarkBarBridge::~BookmarkBarBridge() {
@@ -114,6 +110,6 @@ void BookmarkBarBridge::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
   [controller_ loaded:model];
 }
 
-void BookmarkBarBridge::OnExtraButtonsVisibilityChanged() {
-  [controller_ updateExtraButtonsVisibility];
+void BookmarkBarBridge::OnAppsPageShortcutVisibilityPrefChanged() {
+  [controller_ updateAppsPageShortcutButtonVisibility];
 }

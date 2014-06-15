@@ -29,19 +29,13 @@
   </if>
 
   <if expr="not use_titlecase">
-    <message name="IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT" desc="Name shown in the context menu to hide/show the apps shortcut in the bookmark bar">
+    <message name="IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT" desc="Name shown in the context menu to hide/show the apps shortcut in the bookmakr bar">
       Show apps shortcut
-    </message>
-    <message name="IDS_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS" desc="Name shown in the context menu to hide/show the managed bookmarks in the bookmark bar">
-      Show managed bookmarks
     </message>
   </if>
   <if expr="use_titlecase">
-    <message name="IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT" desc="In Title Case: Name shown in the context menu to hide/show the apps shortcut in the bookmark bar">
+    <message name="IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT" desc="In Title Case: Name shown in the context menu to hide/show the apps shortcut in the bookmakr bar">
       Show Apps Shortcut
-    </message>
-    <message name="IDS_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS" desc="In Title Case: Name shown in the context menu to hide/show the managed bookmarks in the bookmark bar">
-      Show Managed Bookmarks
     </message>
   </if>
   <message name="IDS_BOOKMARK_BAR_APPS_SHORTCUT_NAME" desc="Name shown in the bookmark bar for the apps page shortcut">

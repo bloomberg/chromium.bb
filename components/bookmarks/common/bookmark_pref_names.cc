@@ -22,11 +22,6 @@ const char kManagedBookmarks[] = "bookmarks.managed_bookmarks";
 // bar.
 const char kShowAppsShortcutInBookmarkBar[] = "bookmark_bar.show_apps_shortcut";
 
-// Boolean which specifies whether the Managed Bookmarks folder is visible on
-// the bookmark bar.
-const char kShowManagedBookmarksInBookmarkBar[] =
-    "bookmark_bar.show_managed_bookmarks";
-
 // Boolean which specifies whether the bookmark bar is visible on all tabs.
 const char kShowBookmarkBar[] = "bookmark_bar.show_on_all_tabs";
 

@@ -1321,10 +1321,6 @@ void BookmarkBarView::Init() {
       prefs::kShowAppsShortcutInBookmarkBar,
       base::Bind(&BookmarkBarView::OnAppsPageShortcutVisibilityPrefChanged,
                  base::Unretained(this)));
-  profile_pref_registrar_.Add(
-      prefs::kShowManagedBookmarksInBookmarkBar,
-      base::Bind(&BookmarkBarView::UpdateButtonsVisibility,
-                 base::Unretained(this)));
   apps_page_shortcut_->SetVisible(
       chrome::ShouldShowAppsShortcutInBookmarkBar(
           browser_->profile(), browser_->host_desktop_type()));
@@ -1776,12 +1772,11 @@ void BookmarkBarView::UpdateButtonsVisibility() {
     UpdateBookmarksSeparatorVisibility();
   }
 
-  bool show_managed = !client_->managed_node()->empty() &&
-                      browser_->profile()->GetPrefs()->GetBoolean(
-                          prefs::kShowManagedBookmarksInBookmarkBar);
-  bool update_managed = show_managed != managed_bookmarks_button_->visible();
+  bool has_managed_children = !client_->managed_node()->empty();
+  bool update_managed =
+      has_managed_children != managed_bookmarks_button_->visible();
   if (update_managed)
-    managed_bookmarks_button_->SetVisible(show_managed);
+    managed_bookmarks_button_->SetVisible(has_managed_children);
 
   if (update_other || update_managed) {
     Layout();

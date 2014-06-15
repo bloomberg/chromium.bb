@@ -334,10 +334,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kShowAppsShortcutInBookmarkBar,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kShowManagedBookmarksInBookmarkBar,
-      true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 const BookmarkNode* GetParentForNewNodes(

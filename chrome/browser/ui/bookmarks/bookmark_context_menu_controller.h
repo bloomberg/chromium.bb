@@ -64,7 +64,6 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
   // ui::SimpleMenuModel::Delegate implementation:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdVisible(int command_id) const OVERRIDE;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
