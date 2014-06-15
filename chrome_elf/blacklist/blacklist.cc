@@ -39,8 +39,6 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
   L"windowsapihookdll32.dll",           // Lenovo One Key Theater.
   L"activedetect64.dll",                // Lenovo One Key Theater.
   L"windowsapihookdll64.dll",           // Lenovo One Key Theater.
-  L"virtualCamera.ax",                  // %PROGRAMFILES%\ASUS\VirtualCamera.
-                                        // See crbug.com/383715.
   // Keep this null pointer here to mark the end of the list.
   NULL,
 };
