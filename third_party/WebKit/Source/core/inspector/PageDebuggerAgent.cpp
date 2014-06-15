@@ -157,7 +157,7 @@ PassOwnPtr<ScriptSourceCode> PageDebuggerAgent::preprocess(LocalFrame* frame, co
 
 void PageDebuggerAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
 {
-    LocalFrame* mainFrame = frame->page()->mainFrame();
+    Frame* mainFrame = frame->page()->deprecatedLocalMainFrame();
     if (loader->frame() == mainFrame)
         pageDidCommitLoad();
 }

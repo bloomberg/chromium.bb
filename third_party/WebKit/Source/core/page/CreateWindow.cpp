@@ -76,12 +76,12 @@ static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame
         return 0;
 
     Page* page = oldPage->chrome().client().createWindow(&openerFrame, request, features, policy, shouldSendReferrer);
-    if (!page)
+    if (!page || !page->mainFrame()->isLocalFrame())
         return 0;
     FrameHost* host = &page->frameHost();
 
     ASSERT(page->mainFrame());
-    LocalFrame& frame = *page->mainFrame();
+    LocalFrame& frame = *page->deprecatedLocalMainFrame();
 
     if (request.frameName() != "_blank")
         frame.tree().setName(request.frameName());

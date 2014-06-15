@@ -136,12 +136,12 @@ void InspectorFrontendHost::disconnectClient()
 
 void InspectorFrontendHost::setZoomFactor(float zoom)
 {
-    m_frontendPage->mainFrame()->setPageAndTextZoomFactors(zoom, 1);
+    m_frontendPage->deprecatedLocalMainFrame()->setPageAndTextZoomFactors(zoom, 1);
 }
 
 float InspectorFrontendHost::zoomFactor()
 {
-    return m_frontendPage->mainFrame()->pageZoomFactor();
+    return m_frontendPage->deprecatedLocalMainFrame()->pageZoomFactor();
 }
 
 void InspectorFrontendHost::setInjectedScriptForOrigin(const String& origin, const String& script)
@@ -189,7 +189,7 @@ void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMe
         return;
 
     ASSERT(m_frontendPage);
-    ScriptState* frontendScriptState = ScriptState::forMainWorld(m_frontendPage->mainFrame());
+    ScriptState* frontendScriptState = ScriptState::forMainWorld(m_frontendPage->deprecatedLocalMainFrame());
     ScriptValue frontendApiObject = frontendScriptState->getFromGlobalObject("InspectorFrontendAPI");
     ASSERT(frontendApiObject.isObject());
     RefPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, frontendApiObject, items);

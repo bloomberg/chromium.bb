@@ -1777,7 +1777,9 @@ void InspectorDOMAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
     // FIXME: If "frame" is always guarenteed to be in the same Page as loader->frame()
     // then all we need to check here is loader->frame()->isMainFrame()
     // and we don't need "frame" at all.
-    LocalFrame* mainFrame = frame->page()->mainFrame();
+    if (!frame->page()->mainFrame()->isLocalFrame())
+        return;
+    LocalFrame* mainFrame = frame->page()->deprecatedLocalMainFrame();
     if (loader->frame() != mainFrame) {
         invalidateFrameOwnerElement(loader->frame());
         return;

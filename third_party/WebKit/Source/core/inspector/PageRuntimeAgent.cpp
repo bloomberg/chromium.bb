@@ -105,7 +105,7 @@ void PageRuntimeAgent::didCreateIsolatedContext(LocalFrame* frame, ScriptState* 
 InjectedScript PageRuntimeAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)
 {
     if (!executionContextId) {
-        ScriptState* scriptState = ScriptState::forMainWorld(m_inspectedPage->mainFrame());
+        ScriptState* scriptState = ScriptState::forMainWorld(m_inspectedPage->deprecatedLocalMainFrame());
         InjectedScript result = injectedScriptManager()->injectedScriptFor(scriptState);
         if (result.isEmpty())
             *errorString = "Internal error: main world execution context not found.";

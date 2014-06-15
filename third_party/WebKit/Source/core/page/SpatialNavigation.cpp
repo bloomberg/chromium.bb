@@ -690,7 +690,7 @@ void distanceDataForNode(FocusType type, const FocusCandidate& current, FocusCan
     // Distance calculation is based on http://www.w3.org/TR/WICD/#focus-handling
     candidate.distance = sqrt(euclidianDistancePow2) + navigationAxisDistance+ orthogonalAxisDistance * 2 - sqrt(overlap);
 
-    LayoutSize viewSize = candidate.visibleNode->document().page()->mainFrame()->view()->visibleContentRect().size();
+    LayoutSize viewSize = candidate.visibleNode->document().page()->deprecatedLocalMainFrame()->view()->visibleContentRect().size();
     candidate.alignment = alignmentForRects(type, currentRect, nodeRect, viewSize);
 }
 

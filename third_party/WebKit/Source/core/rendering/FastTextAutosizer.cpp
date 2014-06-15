@@ -513,7 +513,7 @@ void FastTextAutosizer::updatePageInfo()
         RenderView* renderView = m_document->renderView();
         bool horizontalWritingMode = isHorizontalWritingMode(renderView->style()->writingMode());
 
-        LocalFrame* mainFrame = m_document->page()->mainFrame();
+        LocalFrame* mainFrame = m_document->page()->deprecatedLocalMainFrame();
         IntSize frameSize = m_document->settings()->textAutosizingWindowSizeOverride();
         if (frameSize.isEmpty())
             frameSize = mainFrame->view()->unscaledVisibleContentSize(IncludeScrollbars);
@@ -1116,7 +1116,7 @@ FastTextAutosizer::TableLayoutScope::TableLayoutScope(RenderTable* table)
 }
 
 FastTextAutosizer::DeferUpdatePageInfo::DeferUpdatePageInfo(Page* page)
-    : m_mainFrame(page->mainFrame())
+    : m_mainFrame(page->deprecatedLocalMainFrame())
 {
     if (FastTextAutosizer* textAutosizer = m_mainFrame->document()->fastTextAutosizer()) {
         ASSERT(!textAutosizer->m_updatePageInfoDeferred);

@@ -1077,8 +1077,10 @@ void FrameLoader::detachChildren()
 void FrameLoader::checkLoadComplete()
 {
     ASSERT(client()->hasWebView());
-    if (Page* page = m_frame->page())
-        page->mainFrame()->loader().checkLoadCompleteForThisFrame();
+    if (Page* page = m_frame->page()) {
+        if (page->mainFrame()->isLocalFrame())
+            page->deprecatedLocalMainFrame()->loader().checkLoadCompleteForThisFrame();
+    }
 }
 
 String FrameLoader::userAgent(const KURL& url) const

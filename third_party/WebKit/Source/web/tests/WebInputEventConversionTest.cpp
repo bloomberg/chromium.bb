@@ -108,8 +108,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
 
     webViewImpl->setPageScaleFactor(2);
 
-    FrameView* view = webViewImpl->page()->mainFrame()->view();
-    RefPtrWillBeRawPtr<Document> document = webViewImpl->page()->mainFrame()->document();
+    FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
+    RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     DOMWindow* domWindow = document->domWindow();
     RenderView* documentRenderView = document->renderView();
 
@@ -283,7 +283,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     }
 
     {
-        RefPtrWillBeRawPtr<Touch> touch = Touch::create(webViewImpl->page()->mainFrame(), document.get(), 0, FloatPoint(10, 9.5), FloatPoint(3.5, 2), FloatSize(4, 4.5), 0, 0);
+        RefPtrWillBeRawPtr<Touch> touch = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), 0, FloatPoint(10, 9.5), FloatPoint(3.5, 2), FloatSize(4, 4.5), 0, 0);
         RefPtrWillBeRawPtr<TouchList> touchList = TouchList::create();
         touchList->append(touch);
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), WebCore::EventTypeNames::touchmove, domWindow, false, false, false, false, false);
@@ -317,7 +317,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform)
     webViewImpl->setPageScaleFactor(2);
     webViewImpl->setRootLayerTransform(WebSize(10, 20), 1.5);
 
-    FrameView* view = webViewImpl->page()->mainFrame()->view();
+    FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
 
     {
         WebMouseEvent webMouseEvent;
@@ -460,8 +460,8 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
     webViewImpl->layout();
 
-    FrameView* view = webViewImpl->page()->mainFrame()->view();
-    RefPtrWillBeRawPtr<Document> document = webViewImpl->page()->mainFrame()->document();
+    FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
+    RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     DOMWindow* domWindow = document->domWindow();
     RenderView* documentRenderView = document->renderView();
 
@@ -518,7 +518,7 @@ TEST(WebInputEventConversionTest, PinchViewportOffset)
     IntPoint pinchOffset(35, 60);
     webViewImpl->page()->frameHost().pinchViewport().setLocation(pinchOffset);
 
-    FrameView* view = webViewImpl->page()->mainFrame()->view();
+    FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
 
     {
         WebMouseEvent webMouseEvent;

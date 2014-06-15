@@ -127,7 +127,7 @@ static void setViewportSettings(WebSettings* settings)
 static PageScaleConstraints runViewportTest(Page* page, int initialWidth, int initialHeight)
 {
     IntSize initialViewportSize(initialWidth, initialHeight);
-    page->mainFrame()->view()->setFrameRect(IntRect(IntPoint::zero(), initialViewportSize));
+    toLocalFrame(page->mainFrame())->view()->setFrameRect(IntRect(IntPoint::zero(), initialViewportSize));
     ViewportDescription description = page->viewportDescription();
     PageScaleConstraints constraints = description.resolve(initialViewportSize, WebCore::Length(980, WebCore::Fixed));
 

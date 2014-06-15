@@ -150,7 +150,7 @@ protected:
         OwnPtrWillBeRawPtr<WebCore::RuleSet> ruleSet = WebCore::RuleSet::create();
         ruleSet->addRulesFromSheet(styleSheet.get(), WebCore::MediaQueryEvaluator("screen"));
 
-        Document* document = webViewHelper->webViewImpl()->page()->mainFrame()->document();
+        Document* document = toLocalFrame(webViewHelper->webViewImpl()->page()->mainFrame())->document();
         document->ensureStyleResolver().viewportStyleResolver()->collectViewportRules(ruleSet.get(), WebCore::ViewportStyleResolver::UserAgentOrigin);
         document->ensureStyleResolver().viewportStyleResolver()->resolve();
     }
@@ -176,7 +176,7 @@ protected:
         webViewHelper->initializeAndLoad(m_baseURL + "nodeimage.html");
         webViewHelper->webView()->resize(WebSize(640, 480));
         webViewHelper->webView()->layout();
-        RefPtr<WebCore::LocalFrame> frame = webViewHelper->webViewImpl()->page()->mainFrame();
+        RefPtr<WebCore::LocalFrame> frame = toLocalFrame(webViewHelper->webViewImpl()->page()->mainFrame());
         WebCore::Element* element = frame->document()->getElementById(testcase.c_str());
         return frame->nodeImage(*element);
     }
@@ -632,7 +632,7 @@ TEST_F(WebFrameTest, PostMessageThenDetach)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad("about:blank");
 
-    RefPtr<WebCore::LocalFrame> frame = webViewHelper.webViewImpl()->page()->mainFrame();
+    RefPtr<WebCore::LocalFrame> frame = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame());
     WebCore::NonThrowableExceptionState exceptionState;
     frame->domWindow()->postMessage(WebCore::SerializedScriptValue::create("message"), 0, "*", frame->domWindow(), exceptionState);
     webViewHelper.reset();
@@ -722,7 +722,7 @@ TEST_F(WebFrameTest, ChangeInFixedLayoutResetsTextAutosizingMultipliers)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client, enableViewportSettings);
 
-    WebCore::Document* document = webViewHelper.webViewImpl()->page()->mainFrame()->document();
+    WebCore::Document* document = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document();
     document->settings()->setTextAutosizingEnabled(true);
     EXPECT_TRUE(document->settings()->textAutosizingEnabled());
     webViewHelper.webViewImpl()->resize(WebSize(viewportWidth, viewportHeight));
@@ -752,7 +752,7 @@ TEST_F(WebFrameTest, SetFrameRectInvalidatesTextAutosizingMultipliers)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "iframe_reload.html", true, 0, &client, enableViewportSettings);
 
-    WebCore::LocalFrame* mainFrame = webViewHelper.webViewImpl()->page()->mainFrame();
+    WebCore::LocalFrame* mainFrame = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame());
     WebCore::Document* document = mainFrame->document();
     WebCore::FrameView* frameView = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
     document->settings()->setTextAutosizingEnabled(true);
@@ -798,8 +798,8 @@ TEST_F(WebFrameTest, FixedLayoutSizeStopsResizeFromChangingLayoutSize)
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
     webViewHelper.webView()->layout();
 
-    EXPECT_EQ(fixedLayoutWidth, webViewHelper.webViewImpl()->page()->mainFrame()->view()->layoutSize().width());
-    EXPECT_EQ(fixedLayoutHeight, webViewHelper.webViewImpl()->page()->mainFrame()->view()->layoutSize().height());
+    EXPECT_EQ(fixedLayoutWidth, toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->view()->layoutSize().width());
+    EXPECT_EQ(fixedLayoutHeight, toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->view()->layoutSize().height());
 }
 
 TEST_F(WebFrameTest, FixedLayoutSizePreventsResizeFromChangingPageScale)
@@ -1041,7 +1041,7 @@ TEST_F(WebFrameTest, DelayedViewportInitialScale)
 
     EXPECT_EQ(0.25f, webViewHelper.webView()->pageScaleFactor());
 
-    WebCore::Document* document = webViewHelper.webViewImpl()->page()->mainFrame()->document();
+    WebCore::Document* document = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document();
     WebCore::ViewportDescription description = document->viewportDescription();
     description.zoom = 2;
     document->setViewportDescription(description);
@@ -1444,7 +1444,7 @@ TEST_F(WebFrameTest, LayoutSize320Quirk)
 
     // The magic number to snap to device-width is 320, so test that 321 is
     // respected.
-    WebCore::Document* document = webViewHelper.webViewImpl()->page()->mainFrame()->document();
+    WebCore::Document* document = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document();
     WebCore::ViewportDescription description = document->viewportDescription();
     description.minWidth = WebCore::Length(321, WebCore::Fixed);
     description.maxWidth = WebCore::Length(321, WebCore::Fixed);
@@ -1622,7 +1622,7 @@ TEST_F(WebFrameTest, pageScaleFactorWrittenToHistoryItem)
     webViewHelper.webView()->layout();
 
     webViewHelper.webView()->setPageScaleFactor(3);
-    EXPECT_EQ(3, webViewHelper.webViewImpl()->page()->mainFrame()->loader().currentItem()->pageScaleFactor());
+    EXPECT_EQ(3, toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->loader().currentItem()->pageScaleFactor());
 }
 
 TEST_F(WebFrameTest, initialScaleWrittenToHistoryItem)
@@ -1642,7 +1642,7 @@ TEST_F(WebFrameTest, initialScaleWrittenToHistoryItem)
 
     int defaultFixedLayoutWidth = 980;
     float minimumPageScaleFactor = viewportWidth / (float) defaultFixedLayoutWidth;
-    EXPECT_EQ(minimumPageScaleFactor, webViewHelper.webViewImpl()->page()->mainFrame()->loader().currentItem()->pageScaleFactor());
+    EXPECT_EQ(minimumPageScaleFactor, toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->loader().currentItem()->pageScaleFactor());
 }
 
 TEST_F(WebFrameTest, pageScaleFactorShrinksViewport)
@@ -1697,7 +1697,7 @@ TEST_F(WebFrameTest, pageScaleFactorDoesNotApplyCssTransform)
 
     webViewHelper.webView()->setPageScaleFactor(2);
 
-    EXPECT_EQ(980, webViewHelper.webViewImpl()->page()->mainFrame()->contentRenderer()->unscaledDocumentRect().width());
+    EXPECT_EQ(980, toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->contentRenderer()->unscaledDocumentRect().width());
     EXPECT_EQ(980, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
 }
 
@@ -4789,7 +4789,7 @@ TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "fragment_middle_click.html", true, &client);
 
-    WebCore::Document* document = webViewHelper.webViewImpl()->page()->mainFrame()->document();
+    WebCore::Document* document = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document();
     WebCore::KURL destination = document->url();
     destination.setFragmentIdentifier("test");
 
@@ -4797,7 +4797,7 @@ TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick)
         document->domWindow(), 0, 0, 0, 0, 0, 0, 0, false, false, false, false, 1, nullptr, nullptr);
     WebCore::FrameLoadRequest frameRequest(document, WebCore::ResourceRequest(destination));
     frameRequest.setTriggeringEvent(event);
-    webViewHelper.webViewImpl()->page()->mainFrame()->loader().load(frameRequest);
+    toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->loader().load(frameRequest);
 }
 
 class TestNewWindowWebViewClient : public FrameTestHelpers::TestWebViewClient {
@@ -4839,7 +4839,7 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "ctrl_click.html", true, &webFrameClient, &webViewClient);
 
-    WebCore::Document* document = webViewHelper.webViewImpl()->page()->mainFrame()->document();
+    WebCore::Document* document = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document();
     WebCore::KURL destination = toKURL(m_baseURL + "hello_world.html");
 
     // ctrl+click event
@@ -4848,7 +4848,7 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow)
     WebCore::FrameLoadRequest frameRequest(document, WebCore::ResourceRequest(destination));
     frameRequest.setTriggeringEvent(event);
     WebCore::UserGestureIndicator gesture(WebCore::DefinitelyProcessingUserGesture);
-    webViewHelper.webViewImpl()->page()->mainFrame()->loader().load(frameRequest);
+    toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->loader().load(frameRequest);
     FrameTestHelpers::pumpPendingRequestsDoNotUse(webViewHelper.webView()->mainFrame());
 
     // decidePolicyForNavigation should be called both for the original request and the ctrl+click.
@@ -5055,8 +5055,8 @@ TEST_F(WebFrameTest, NavigateToSame)
     webViewHelper.initializeAndLoad(m_baseURL + "navigate_to_same.html", true, &client);
     EXPECT_FALSE(client.frameLoadTypeSameSeen());
 
-    WebCore::FrameLoadRequest frameRequest(0, WebCore::ResourceRequest(webViewHelper.webViewImpl()->page()->mainFrame()->document()->url()));
-    webViewHelper.webViewImpl()->page()->mainFrame()->loader().load(frameRequest);
+    WebCore::FrameLoadRequest frameRequest(0, WebCore::ResourceRequest(toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document()->url()));
+    toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->loader().load(frameRequest);
     FrameTestHelpers::pumpPendingRequestsDoNotUse(webViewHelper.webView()->mainFrame());
 
     EXPECT_TRUE(client.frameLoadTypeSameSeen());
@@ -5157,10 +5157,10 @@ TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType)
     TestDidNavigateCommitTypeWebFrameClient client;
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "push_state.html", true, &client);
-    RefPtr<WebCore::HistoryItem> item = webViewImpl->page()->mainFrame()->loader().currentItem();
+    RefPtr<WebCore::HistoryItem> item = toLocalFrame(webViewImpl->page()->mainFrame())->loader().currentItem();
     runPendingTasks();
 
-    webViewImpl->page()->mainFrame()->loader().loadHistoryItem(item.get(), WebCore::HistorySameDocumentLoad);
+    toLocalFrame(webViewImpl->page()->mainFrame())->loader().loadHistoryItem(item.get(), WebCore::HistorySameDocumentLoad);
     EXPECT_EQ(WebBackForwardCommit, client.lastCommitType());
 }
 

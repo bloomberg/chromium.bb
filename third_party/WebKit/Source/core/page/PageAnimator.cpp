@@ -65,7 +65,10 @@ void PageAnimator::scheduleVisualUpdate()
 
 void PageAnimator::updateLayoutAndStyleForPainting()
 {
-    RefPtr<FrameView> view = m_page->mainFrame()->view();
+    if (!m_page->mainFrame()->isLocalFrame())
+        return;
+
+    RefPtr<FrameView> view = m_page->deprecatedLocalMainFrame()->view();
 
     TemporaryChange<bool> servicing(m_updatingLayoutAndStyleForPainting, true);
 

@@ -66,7 +66,7 @@ SVGImage::~SVGImage()
     if (m_page) {
         // Store m_page in a local variable, clearing m_page, so that SVGImageChromeClient knows we're destructed.
         OwnPtrWillBeRawPtr<Page> currentPage = m_page.release();
-        currentPage->mainFrame()->loader().frameDetached(); // Break both the loader and view references to the frame
+        toLocalFrame(currentPage->mainFrame())->loader().frameDetached(); // Break both the loader and view references to the frame
         currentPage->willBeDestroyed();
     }
 
@@ -90,7 +90,7 @@ bool SVGImage::currentFrameHasSingleSecurityOrigin() const
     if (!m_page)
         return true;
 
-    LocalFrame* frame = m_page->mainFrame();
+    LocalFrame* frame = toLocalFrame(m_page->mainFrame());
 
     RELEASE_ASSERT(frame->document()->loadEventFinished());
 
@@ -123,7 +123,7 @@ static SVGSVGElement* svgRootElement(Page* page)
 {
     if (!page)
         return 0;
-    LocalFrame* frame = page->mainFrame();
+    LocalFrame* frame = toLocalFrame(page->mainFrame());
     return frame->document()->accessSVGExtensions().rootElement();
 }
 
@@ -320,7 +320,7 @@ FrameView* SVGImage::frameView() const
     if (!m_page)
         return 0;
 
-    return m_page->mainFrame()->view();
+    return toLocalFrame(m_page->mainFrame())->view();
 }
 
 void SVGImage::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
@@ -370,7 +370,7 @@ bool SVGImage::hasAnimations() const
     SVGSVGElement* rootElement = svgRootElement(m_page.get());
     if (!rootElement)
         return false;
-    return rootElement->timeContainer()->hasAnimations() || m_page->mainFrame()->document()->timeline().hasPendingUpdates();
+    return rootElement->timeContainer()->hasAnimations() || toLocalFrame(m_page->mainFrame())->document()->timeline().hasPendingUpdates();
 }
 
 bool SVGImage::dataChanged(bool allDataReceived)

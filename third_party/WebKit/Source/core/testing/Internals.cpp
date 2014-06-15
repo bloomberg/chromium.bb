@@ -191,15 +191,15 @@ void Internals::resetToConsistentState(Page* page)
     delete s_pagePopupDriver;
     s_pagePopupDriver = 0;
     page->chrome().client().resetPagePopupDriver();
-    if (!page->mainFrame()->spellChecker().isContinuousSpellCheckingEnabled())
-        page->mainFrame()->spellChecker().toggleContinuousSpellChecking();
-    if (page->mainFrame()->editor().isOverwriteModeEnabled())
-        page->mainFrame()->editor().toggleOverwriteModeEnabled();
+    if (!page->deprecatedLocalMainFrame()->spellChecker().isContinuousSpellCheckingEnabled())
+        page->deprecatedLocalMainFrame()->spellChecker().toggleContinuousSpellChecking();
+    if (page->deprecatedLocalMainFrame()->editor().isOverwriteModeEnabled())
+        page->deprecatedLocalMainFrame()->editor().toggleOverwriteModeEnabled();
 
     if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
         scrollingCoordinator->reset();
 
-    page->mainFrame()->view()->clear();
+    page->deprecatedLocalMainFrame()->view()->clear();
 }
 
 Internals::Internals(Document* document)
@@ -728,7 +728,7 @@ void Internals::setEnableMockPagePopup(bool enabled, ExceptionState& exceptionSt
         return;
     }
     if (!s_pagePopupDriver)
-        s_pagePopupDriver = MockPagePopupDriver::create(page->mainFrame()).leakPtr();
+        s_pagePopupDriver = MockPagePopupDriver::create(page->deprecatedLocalMainFrame()).leakPtr();
     page->chrome().client().setPagePopupDriver(s_pagePopupDriver);
 }
 
@@ -899,7 +899,7 @@ String Internals::viewportAsText(Document* document, float, int availableWidth, 
 
     // Update initial viewport size.
     IntSize initialViewportSize(availableWidth, availableHeight);
-    document->page()->mainFrame()->view()->setFrameRect(IntRect(IntPoint::zero(), initialViewportSize));
+    document->page()->deprecatedLocalMainFrame()->view()->setFrameRect(IntRect(IntPoint::zero(), initialViewportSize));
 
     ViewportDescription description = page->viewportDescription();
     PageScaleConstraints constraints = description.resolve(initialViewportSize, Length());

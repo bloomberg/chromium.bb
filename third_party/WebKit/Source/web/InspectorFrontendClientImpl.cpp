@@ -63,7 +63,7 @@ void InspectorFrontendClientImpl::windowObjectCleared()
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     ASSERT(m_frontendPage->mainFrame());
-    ScriptState* scriptState = ScriptState::forMainWorld(m_frontendPage->mainFrame());
+    ScriptState* scriptState = ScriptState::forMainWorld(m_frontendPage->deprecatedLocalMainFrame());
     ScriptState::Scope scope(scriptState);
 
     if (m_frontendHost)
@@ -73,7 +73,7 @@ void InspectorFrontendClientImpl::windowObjectCleared()
     v8::Handle<v8::Value> frontendHostObj = toV8(m_frontendHost.get(), global, scriptState->isolate());
 
     global->Set(v8::String::NewFromUtf8(isolate, "InspectorFrontendHost"), frontendHostObj);
-    ScriptController* scriptController = m_frontendPage->mainFrame() ? &m_frontendPage->mainFrame()->script() : 0;
+    ScriptController* scriptController = m_frontendPage->mainFrame() ? &m_frontendPage->deprecatedLocalMainFrame()->script() : 0;
     if (scriptController) {
         String installAdditionalAPI =
             "" // Wrap messages that go to embedder.

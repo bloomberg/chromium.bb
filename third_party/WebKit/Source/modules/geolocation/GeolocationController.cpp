@@ -51,14 +51,14 @@ GeolocationController::GeolocationController(LocalFrame& frame, GeolocationClien
         m_inspectorAgent = geolocationAgent.get();
         frame.page()->inspectorController().registerModuleAgent(geolocationAgent.release());
     } else {
-        m_inspectorAgent = GeolocationController::from(frame.page()->mainFrame())->m_inspectorAgent;
+        m_inspectorAgent = GeolocationController::from(frame.page()->deprecatedLocalMainFrame())->m_inspectorAgent;
     }
 
     m_inspectorAgent->AddController(this);
 
     if (!frame.isMainFrame()) {
         // internals.setGeolocationClientMock is per page.
-        GeolocationController* mainController = GeolocationController::from(frame.page()->mainFrame());
+        GeolocationController* mainController = GeolocationController::from(frame.page()->deprecatedLocalMainFrame());
         if (mainController->hasClientForTest())
             setClientForTest(mainController->client());
     }

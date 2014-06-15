@@ -109,7 +109,7 @@ PageScriptDebugServer::~PageScriptDebugServer()
 
 void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* page)
 {
-    ScriptController& scriptController = page->mainFrame()->script();
+    ScriptController& scriptController = page->deprecatedLocalMainFrame()->script();
     if (!scriptController.canExecuteScripts(NotAboutToExecuteScript))
         return;
 

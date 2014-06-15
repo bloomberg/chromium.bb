@@ -239,7 +239,7 @@ void WebPagePopupImpl::destroyPage()
         return;
 
     if (m_page->mainFrame())
-        m_page->mainFrame()->loader().frameDetached();
+        toLocalFrame(m_page->mainFrame())->loader().frameDetached();
 
     m_page->willBeDestroyed();
     m_page.clear();
@@ -317,7 +317,7 @@ void WebPagePopupImpl::resize(const WebSize& newSize)
     m_widgetClient->setWindowRect(m_windowRectInScreen);
 
     if (m_page)
-        m_page->mainFrame()->view()->resize(newSize);
+        toLocalFrame(m_page->mainFrame())->view()->resize(newSize);
     m_widgetClient->didInvalidateRect(WebRect(0, 0, newSize.width, newSize.height));
 }
 
@@ -337,9 +337,9 @@ bool WebPagePopupImpl::handleCharEvent(const WebKeyboardEvent&)
 
 bool WebPagePopupImpl::handleGestureEvent(const WebGestureEvent& event)
 {
-    if (m_closing || !m_page || !m_page->mainFrame() || !m_page->mainFrame()->view())
+    if (m_closing || !m_page || !m_page->mainFrame() || !toLocalFrame(m_page->mainFrame())->view())
         return false;
-    LocalFrame& frame = *m_page->mainFrame();
+    LocalFrame& frame = *toLocalFrame(m_page->mainFrame());
     return frame.eventHandler().handleGestureEvent(PlatformGestureEventBuilder(frame.view(), event));
 }
 
@@ -352,9 +352,9 @@ bool WebPagePopupImpl::handleInputEvent(const WebInputEvent& event)
 
 bool WebPagePopupImpl::handleKeyEvent(const PlatformKeyboardEvent& event)
 {
-    if (m_closing || !m_page->mainFrame() || !m_page->mainFrame()->view())
+    if (m_closing || !m_page->mainFrame() || !toLocalFrame(m_page->mainFrame())->view())
         return false;
-    return m_page->mainFrame()->eventHandler().keyEvent(event);
+    return toLocalFrame(m_page->mainFrame())->eventHandler().keyEvent(event);
 }
 
 void WebPagePopupImpl::setFocus(bool enable)
@@ -377,7 +377,7 @@ void WebPagePopupImpl::close()
 void WebPagePopupImpl::closePopup()
 {
     if (m_page) {
-        m_page->mainFrame()->loader().stopAllLoaders();
+        toLocalFrame(m_page->mainFrame())->loader().stopAllLoaders();
         ASSERT(m_page->mainFrame()->domWindow());
         DOMWindowPagePopup::uninstall(*m_page->mainFrame()->domWindow());
     }

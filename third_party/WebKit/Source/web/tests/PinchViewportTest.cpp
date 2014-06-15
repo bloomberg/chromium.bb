@@ -535,17 +535,17 @@ TEST_F(PinchViewportTest, TestSavedToHistoryItem)
     navigateTo(m_baseURL + "200-by-300.html");
 
     EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
-        webViewImpl()->page()->mainFrame()->loader().currentItem()->pinchViewportScrollPoint());
+        toLocalFrame(webViewImpl()->page()->mainFrame())->loader().currentItem()->pinchViewportScrollPoint());
 
     PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
     pinchViewport.setScale(2);
 
-    EXPECT_EQ(2, webViewImpl()->page()->mainFrame()->loader().currentItem()->pageScaleFactor());
+    EXPECT_EQ(2, toLocalFrame(webViewImpl()->page()->mainFrame())->loader().currentItem()->pageScaleFactor());
 
     pinchViewport.setLocation(FloatPoint(10, 20));
 
     EXPECT_FLOAT_POINT_EQ(FloatPoint(10, 20),
-        webViewImpl()->page()->mainFrame()->loader().currentItem()->pinchViewportScrollPoint());
+        toLocalFrame(webViewImpl()->page()->mainFrame())->loader().currentItem()->pinchViewportScrollPoint());
 }
 
 // Test restoring a HistoryItem properly restores the pinch viewport's state.

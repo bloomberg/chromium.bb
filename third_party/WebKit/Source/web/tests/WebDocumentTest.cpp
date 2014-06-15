@@ -32,7 +32,7 @@ TEST(WebDocumentTest, InsertStyleSheet)
     webViewHelper.initializeAndLoad("about:blank");
 
     WebDocument webDoc = webViewHelper.webView()->mainFrame()->document();
-    Document* coreDoc = webViewHelper.webViewImpl()->page()->mainFrame()->document();
+    Document* coreDoc = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document();
 
     webDoc.insertStyleSheet("body { color: green }");
 

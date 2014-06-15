@@ -102,7 +102,7 @@ TEST_F(MHTMLTest, CheckDomain)
     registerMockedURLLoad(kFileURL, WebString::fromUTF8("simple_test.mht"));
     loadURLInTopFrame(url);
     ASSERT_TRUE(page());
-    LocalFrame* frame = page()->mainFrame();
+    LocalFrame* frame = toLocalFrame(page()->mainFrame());
     ASSERT_TRUE(frame);
     Document* document = frame->document();
     ASSERT_TRUE(document);

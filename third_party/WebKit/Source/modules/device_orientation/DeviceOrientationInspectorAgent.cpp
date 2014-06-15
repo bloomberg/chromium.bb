@@ -41,8 +41,8 @@ DeviceOrientationInspectorAgent::DeviceOrientationInspectorAgent(Page& page)
 
 DeviceOrientationController& DeviceOrientationInspectorAgent::controller()
 {
-    ASSERT(m_page.mainFrame()->document());
-    return DeviceOrientationController::from(*m_page.mainFrame()->document());
+    ASSERT(toLocalFrame(m_page.mainFrame())->document());
+    return DeviceOrientationController::from(*m_page.deprecatedLocalMainFrame()->document());
 }
 
 void DeviceOrientationInspectorAgent::setDeviceOrientationOverride(ErrorString* error, double alpha, double beta, double gamma)

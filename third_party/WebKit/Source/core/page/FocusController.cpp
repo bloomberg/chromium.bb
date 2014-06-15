@@ -411,7 +411,9 @@ bool FocusController::advanceFocusInDocumentOrder(FocusType type, bool initialFo
         }
 
         // Chrome doesn't want focus, so we should wrap focus.
-        node = findFocusableNodeRecursively(type, FocusNavigationScope::focusNavigationScopeOf(m_page->mainFrame()->document()), 0);
+        if (!m_page->mainFrame()->isLocalFrame())
+            return false;
+        node = findFocusableNodeRecursively(type, FocusNavigationScope::focusNavigationScopeOf(m_page->deprecatedLocalMainFrame()->document()), 0);
         node = findFocusableNodeDecendingDownIntoFrameDocument(type, node.get());
 
         if (!node)
@@ -720,8 +722,10 @@ void FocusController::setActive(bool active)
 
     m_isActive = active;
 
-    if (FrameView* view = m_page->mainFrame()->view())
-        view->updateControlTints();
+    if (m_page->mainFrame()->isLocalFrame()) {
+        if (FrameView* view = m_page->deprecatedLocalMainFrame()->view())
+            view->updateControlTints();
+    }
 
     toLocalFrame(focusedOrMainFrame())->selection().pageActivationChanged();
 }
@@ -757,7 +761,9 @@ static void updateFocusCandidateIfNeeded(FocusType type, const FocusCandidate& c
         // If 2 nodes are intersecting, do hit test to find which node in on top.
         LayoutUnit x = intersectionRect.x() + intersectionRect.width() / 2;
         LayoutUnit y = intersectionRect.y() + intersectionRect.height() / 2;
-        HitTestResult result = candidate.visibleNode->document().page()->mainFrame()->eventHandler().hitTestResultAtPoint(IntPoint(x, y), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
+        if (!candidate.visibleNode->document().page()->mainFrame()->isLocalFrame())
+            return;
+        HitTestResult result = candidate.visibleNode->document().page()->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(IntPoint(x, y), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
         if (candidate.visibleNode->contains(result.innerNode())) {
             closest = candidate;
             return;

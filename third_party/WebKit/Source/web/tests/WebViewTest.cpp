@@ -793,10 +793,11 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
-    webViewImpl->page()->mainFrame()->loader().saveScrollState();
-    EXPECT_EQ(2.0f, webViewImpl->page()->mainFrame()->loader().currentItem()->pageScaleFactor());
-    EXPECT_EQ(116, webViewImpl->page()->mainFrame()->loader().currentItem()->scrollPoint().x());
-    EXPECT_EQ(84, webViewImpl->page()->mainFrame()->loader().currentItem()->scrollPoint().y());
+    WebCore::LocalFrame* mainFrameLocal = toLocalFrame(webViewImpl->page()->mainFrame());
+    mainFrameLocal->loader().saveScrollState();
+    EXPECT_EQ(2.0f, mainFrameLocal->loader().currentItem()->pageScaleFactor());
+    EXPECT_EQ(116, mainFrameLocal->loader().currentItem()->scrollPoint().x());
+    EXPECT_EQ(84, mainFrameLocal->loader().currentItem()->scrollPoint().y());
 
     // Confirm that resetting the page state resets the saved scroll position.
     // The HistoryController treats a page scale factor of 0.0f as special and avoids
@@ -805,9 +806,9 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
     EXPECT_EQ(1.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
-    EXPECT_EQ(0.0f, webViewImpl->page()->mainFrame()->loader().currentItem()->pageScaleFactor());
-    EXPECT_EQ(0, webViewImpl->page()->mainFrame()->loader().currentItem()->scrollPoint().x());
-    EXPECT_EQ(0, webViewImpl->page()->mainFrame()->loader().currentItem()->scrollPoint().y());
+    EXPECT_EQ(0.0f, mainFrameLocal->loader().currentItem()->pageScaleFactor());
+    EXPECT_EQ(0, mainFrameLocal->loader().currentItem()->scrollPoint().x());
+    EXPECT_EQ(0, mainFrameLocal->loader().currentItem()->scrollPoint().y());
 }
 
 class EnterFullscreenWebViewClient : public FrameTestHelpers::TestWebViewClient {
@@ -884,7 +885,7 @@ TEST_F(WebViewTest, PrintWithXHRInFlight)
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("print_with_xhr_inflight.html"));
     WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "print_with_xhr_inflight.html", true, 0, &client);
 
-    ASSERT_EQ(WebCore::FrameStateComplete, webViewImpl->page()->mainFrame()->loader().state());
+    ASSERT_EQ(WebCore::FrameStateComplete, toLocalFrame(webViewImpl->page()->mainFrame())->loader().state());
     EXPECT_TRUE(client.printCalled());
     m_webViewHelper.reset();
 }
@@ -1361,7 +1362,7 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
     WebURLRequest webURLRequest;
     webURLRequest.initialize();
     WebCore::FrameLoadRequest request(0, webURLRequest.toResourceRequest(), "_blank");
-    webViewImpl->page()->mainFrame()->loader().load(request);
+    toLocalFrame(webViewImpl->page()->mainFrame())->loader().load(request);
     ASSERT_TRUE(client.createdWebView());
     EXPECT_FALSE(client.didFocusCalled());
 
@@ -1369,7 +1370,7 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
     WebURLRequest webURLRequestWithTargetStart;
     webURLRequestWithTargetStart.initialize();
     WebCore::FrameLoadRequest requestWithTargetStart(0, webURLRequestWithTargetStart.toResourceRequest(), "_start");
-    toWebViewImpl(client.createdWebView())->page()->mainFrame()->loader().load(requestWithTargetStart);
+    toLocalFrame(toWebViewImpl(client.createdWebView())->page()->mainFrame())->loader().load(requestWithTargetStart);
     EXPECT_TRUE(client.didFocusCalled());
 
     m_webViewHelper.reset(); // Remove dependency on locally scoped client.

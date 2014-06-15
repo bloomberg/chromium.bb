@@ -213,7 +213,7 @@ DragSession DragController::dragEntered(DragData* dragData)
 void DragController::dragExited(DragData* dragData)
 {
     ASSERT(dragData);
-    LocalFrame* mainFrame = m_page->mainFrame();
+    LocalFrame* mainFrame = m_page->deprecatedLocalMainFrame();
 
     if (RefPtr<FrameView> v = mainFrame->view()) {
         ClipboardAccessPolicy policy = (!m_documentUnderMouse || m_documentUnderMouse->securityOrigin()->isLocal()) ? ClipboardReadable : ClipboardTypesReadable;
@@ -236,9 +236,9 @@ DragSession DragController::dragUpdated(DragData* dragData)
 bool DragController::performDrag(DragData* dragData)
 {
     ASSERT(dragData);
-    m_documentUnderMouse = m_page->mainFrame()->documentAtPoint(dragData->clientPosition());
+    m_documentUnderMouse = m_page->deprecatedLocalMainFrame()->documentAtPoint(dragData->clientPosition());
     if ((m_dragDestinationAction & DragDestinationActionDHTML) && m_documentIsHandlingDrag) {
-        RefPtr<LocalFrame> mainFrame = m_page->mainFrame();
+        RefPtr<LocalFrame> mainFrame = m_page->deprecatedLocalMainFrame();
         bool preventedDefault = false;
         if (mainFrame->view()) {
             // Sending an event can result in the destruction of the view and part.
@@ -264,7 +264,7 @@ bool DragController::performDrag(DragData* dragData)
         return false;
 
     if (m_page->settings().navigateOnDragDrop())
-        m_page->mainFrame()->loader().load(FrameLoadRequest(0, ResourceRequest(dragData->asURL())));
+        m_page->deprecatedLocalMainFrame()->loader().load(FrameLoadRequest(0, ResourceRequest(dragData->asURL())));
     return true;
 }
 
@@ -283,7 +283,7 @@ DragSession DragController::dragEnteredOrUpdated(DragData* dragData)
 {
     ASSERT(dragData);
     ASSERT(m_page->mainFrame());
-    mouseMovedIntoDocument(m_page->mainFrame()->documentAtPoint(dragData->clientPosition()));
+    mouseMovedIntoDocument(m_page->deprecatedLocalMainFrame()->documentAtPoint(dragData->clientPosition()));
 
     m_dragDestinationAction = m_client->actionMaskForDrag(dragData);
     if (m_dragDestinationAction == DragDestinationActionNone) {
@@ -416,7 +416,7 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
 DragOperation DragController::operationForLoad(DragData* dragData)
 {
     ASSERT(dragData);
-    Document* doc = m_page->mainFrame()->documentAtPoint(dragData->clientPosition());
+    Document* doc = m_page->deprecatedLocalMainFrame()->documentAtPoint(dragData->clientPosition());
 
     if (doc && (m_didInitiateDrag || doc->isPluginDocument() || doc->rendererIsEditable()))
         return DragOperationNone;
@@ -540,12 +540,12 @@ bool DragController::canProcessDrag(DragData* dragData)
     if (!dragData->containsCompatibleContent())
         return false;
 
-    IntPoint point = m_page->mainFrame()->view()->windowToContents(dragData->clientPosition());
+    IntPoint point = m_page->deprecatedLocalMainFrame()->view()->windowToContents(dragData->clientPosition());
     HitTestResult result = HitTestResult(point);
-    if (!m_page->mainFrame()->contentRenderer())
+    if (!m_page->deprecatedLocalMainFrame()->contentRenderer())
         return false;
 
-    result = m_page->mainFrame()->eventHandler().hitTestResultAtPoint(point);
+    result = m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(point);
 
     if (!result.innerNonSharedNode())
         return false;
@@ -589,7 +589,7 @@ bool DragController::tryDHTMLDrag(DragData* dragData, DragOperation& operation)
 {
     ASSERT(dragData);
     ASSERT(m_documentUnderMouse);
-    RefPtr<LocalFrame> mainFrame = m_page->mainFrame();
+    RefPtr<LocalFrame> mainFrame = m_page->deprecatedLocalMainFrame();
     RefPtr<FrameView> viewProtector = mainFrame->view();
     if (!viewProtector)
         return false;
@@ -927,7 +927,7 @@ void DragController::doSystemDrag(DragImage* image, const IntPoint& dragLocation
     m_didInitiateDrag = true;
     m_dragInitiator = frame->document();
     // Protect this frame and view, as a load may occur mid drag and attempt to unload this frame
-    RefPtr<LocalFrame> frameProtector = m_page->mainFrame();
+    RefPtr<LocalFrame> frameProtector = m_page->deprecatedLocalMainFrame();
     RefPtr<FrameView> viewProtector = frameProtector->view();
     m_client->startDrag(image, viewProtector->rootViewToContents(frame->view()->contentsToRootView(dragLocation)),
         viewProtector->rootViewToContents(frame->view()->contentsToRootView(eventPos)), clipboard, frameProtector.get(), forLink);

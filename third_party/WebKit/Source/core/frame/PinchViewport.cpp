@@ -313,9 +313,10 @@ void PinchViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView) 
     TRACE_EVENT0("webkit", "PinchViewport::registerLayersWithTreeView");
     ASSERT(layerTreeView);
     ASSERT(m_frameHost.page().mainFrame());
-    ASSERT(m_frameHost.page().mainFrame()->contentRenderer());
+    ASSERT(m_frameHost.page().mainFrame()->isLocalFrame());
+    ASSERT(m_frameHost.page().deprecatedLocalMainFrame()->contentRenderer());
 
-    RenderLayerCompositor* compositor = m_frameHost.page().mainFrame()->contentRenderer()->compositor();
+    RenderLayerCompositor* compositor = m_frameHost.page().deprecatedLocalMainFrame()->contentRenderer()->compositor();
     // Get the outer viewport scroll layer.
     WebLayer* scrollLayer = compositor->scrollLayer()->platformLayer();
 
@@ -418,7 +419,7 @@ void PinchViewport::paintContents(const GraphicsLayer*, GraphicsContext&, Graphi
 
 LocalFrame* PinchViewport::mainFrame() const
 {
-    return m_frameHost.page().mainFrame();
+    return m_frameHost.page().mainFrame() && m_frameHost.page().mainFrame()->isLocalFrame() ? m_frameHost.page().deprecatedLocalMainFrame() : 0;
 }
 
 FloatPoint PinchViewport::clampOffsetToBoundaries(const FloatPoint& offset)

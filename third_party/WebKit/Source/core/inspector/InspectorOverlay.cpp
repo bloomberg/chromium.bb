@@ -153,7 +153,7 @@ static bool buildNodeQuads(Node* node, Vector<FloatQuad>& quads)
         return false;
 
     FrameView* containingView = containingFrame->view();
-    FrameView* mainView = containingFrame->page()->mainFrame()->view();
+    FrameView* mainView = containingFrame->page()->deprecatedLocalMainFrame()->view();
     IntRect boundingBox = pixelSnappedIntRect(containingView->contentsToRootView(renderer->absoluteBoundingBoxRect()));
     boundingBox.move(mainView->scrollOffset());
 
@@ -271,7 +271,7 @@ void InspectorOverlay::paint(GraphicsContext& context)
     if (isEmpty())
         return;
     GraphicsContextStateSaver stateSaver(context);
-    FrameView* view = overlayPage()->mainFrame()->view();
+    FrameView* view = toLocalFrame(overlayPage()->mainFrame())->view();
     ASSERT(!view->needsLayout());
     view->paint(&context, IntRect(0, 0, view->width(), view->height()));
 }
@@ -286,7 +286,7 @@ bool InspectorOverlay::handleGestureEvent(const PlatformGestureEvent& event)
     if (isEmpty())
         return false;
 
-    return overlayPage()->mainFrame()->eventHandler().handleGestureEvent(event);
+    return toLocalFrame(overlayPage()->mainFrame())->eventHandler().handleGestureEvent(event);
 }
 
 bool InspectorOverlay::handleMouseEvent(const PlatformMouseEvent& event)
@@ -294,7 +294,7 @@ bool InspectorOverlay::handleMouseEvent(const PlatformMouseEvent& event)
     if (isEmpty())
         return false;
 
-    EventHandler& eventHandler = overlayPage()->mainFrame()->eventHandler();
+    EventHandler& eventHandler = toLocalFrame(overlayPage()->mainFrame())->eventHandler();
     bool result;
     switch (event.type()) {
     case PlatformEvent::MouseMoved:
@@ -310,7 +310,7 @@ bool InspectorOverlay::handleMouseEvent(const PlatformMouseEvent& event)
         return false;
     }
 
-    overlayPage()->mainFrame()->document()->updateLayout();
+    toLocalFrame(overlayPage()->mainFrame())->document()->updateLayout();
     return result;
 }
 
@@ -319,7 +319,7 @@ bool InspectorOverlay::handleTouchEvent(const PlatformTouchEvent& event)
     if (isEmpty())
         return false;
 
-    return overlayPage()->mainFrame()->eventHandler().handleTouchEvent(event);
+    return toLocalFrame(overlayPage()->mainFrame())->eventHandler().handleTouchEvent(event);
 }
 
 bool InspectorOverlay::handleKeyboardEvent(const PlatformKeyboardEvent& event)
@@ -327,7 +327,7 @@ bool InspectorOverlay::handleKeyboardEvent(const PlatformKeyboardEvent& event)
     if (isEmpty())
         return false;
 
-    return overlayPage()->mainFrame()->eventHandler().keyEvent(event);
+    return toLocalFrame(overlayPage()->mainFrame())->eventHandler().keyEvent(event);
 }
 
 void InspectorOverlay::drawOutline(GraphicsContext* context, const LayoutRect& rect, const Color& color)
@@ -402,13 +402,13 @@ void InspectorOverlay::update()
         return;
     }
 
-    FrameView* view = m_page->mainFrame()->view();
+    FrameView* view = m_page->deprecatedLocalMainFrame()->view();
     if (!view)
         return;
 
     // Include scrollbars to avoid masking them by the gutter.
     IntSize size = view->unscaledVisibleContentSize(IncludeScrollbars);
-    overlayPage()->mainFrame()->view()->resize(size);
+    toLocalFrame(overlayPage()->mainFrame())->view()->resize(size);
 
     // Clear canvas and paint things.
     IntRect viewRect = view->visibleContentRect();
@@ -421,8 +421,8 @@ void InspectorOverlay::update()
     drawViewSize();
 
     // Position DOM elements.
-    overlayPage()->mainFrame()->document()->setNeedsStyleRecalc(SubtreeStyleChange);
-    overlayPage()->mainFrame()->document()->updateLayout();
+    toLocalFrame(overlayPage()->mainFrame())->document()->setNeedsStyleRecalc(SubtreeStyleChange);
+    toLocalFrame(overlayPage()->mainFrame())->document()->updateLayout();
 
     // Kick paint.
     m_client->highlight();
@@ -550,7 +550,7 @@ PassRefPtr<TypeBuilder::DOM::ShapeOutsideInfo> InspectorOverlay::buildObjectForS
 
     LayoutRect shapeBounds = shapeOutsideInfo->computedShapePhysicalBoundingBox();
     FloatQuad shapeQuad = renderBox->localToAbsoluteQuad(FloatRect(shapeBounds));
-    FrameView* mainView = containingFrame->page()->mainFrame()->view();
+    FrameView* mainView = containingFrame->page()->deprecatedLocalMainFrame()->view();
     FrameView* containingView = containingFrame->view();
     contentsQuadToPage(mainView, containingView, shapeQuad);
 
@@ -738,7 +738,7 @@ void InspectorOverlay::reset(const IntSize& viewportSize, int scrollX, int scrol
     resetData->setNumber("pageScaleFactor", m_page->settings().pinchVirtualViewportEnabled() ? 1 : m_page->pageScaleFactor());
     resetData->setNumber("deviceScaleFactor", m_page->deviceScaleFactor());
     resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
-    resetData->setNumber("pageZoomFactor", m_page->mainFrame()->pageZoomFactor());
+    resetData->setNumber("pageZoomFactor", m_page->deprecatedLocalMainFrame()->pageZoomFactor());
     resetData->setNumber("scrollX", scrollX);
     resetData->setNumber("scrollY", scrollY);
     evaluateInOverlay("reset", resetData.release());
@@ -749,7 +749,7 @@ void InspectorOverlay::evaluateInOverlay(const String& method, const String& arg
     RefPtr<JSONArray> command = JSONArray::create();
     command->pushString(method);
     command->pushString(argument);
-    overlayPage()->mainFrame()->script().executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
+    toLocalFrame(overlayPage()->mainFrame())->script().executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
 }
 
 void InspectorOverlay::evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument)
@@ -757,7 +757,7 @@ void InspectorOverlay::evaluateInOverlay(const String& method, PassRefPtr<JSONVa
     RefPtr<JSONArray> command = JSONArray::create();
     command->pushString(method);
     command->pushValue(argument);
-    overlayPage()->mainFrame()->script().executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
+    toLocalFrame(overlayPage()->mainFrame())->script().executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
 }
 
 void InspectorOverlay::onTimer(Timer<InspectorOverlay>*)
@@ -776,7 +776,7 @@ void InspectorOverlay::freePage()
     if (m_overlayPage) {
         // FIXME: This logic is duplicated in SVGImage and WebViewImpl. Perhaps it can be combined
         // into Page's destructor.
-        m_overlayPage->mainFrame()->loader().frameDetached();
+        toLocalFrame(m_overlayPage->mainFrame())->loader().frameDetached();
         m_overlayPage->willBeDestroyed();
         m_overlayPage.clear();
     }

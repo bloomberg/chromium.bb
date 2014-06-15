@@ -473,13 +473,13 @@ void InspectorPageAgent::reload(ErrorString*, const bool* const optionalIgnoreCa
 {
     m_pendingScriptToEvaluateOnLoadOnce = optionalScriptToEvaluateOnLoad ? *optionalScriptToEvaluateOnLoad : "";
     m_pendingScriptPreprocessor = optionalScriptPreprocessor ? *optionalScriptPreprocessor : "";
-    m_page->mainFrame()->loader().reload(optionalIgnoreCache && *optionalIgnoreCache ? EndToEndReload : NormalReload);
+    m_page->deprecatedLocalMainFrame()->loader().reload(optionalIgnoreCache && *optionalIgnoreCache ? EndToEndReload : NormalReload);
 }
 
 void InspectorPageAgent::navigate(ErrorString*, const String& url)
 {
     UserGestureIndicator indicator(DefinitelyProcessingNewUserGesture);
-    LocalFrame* frame = m_page->mainFrame();
+    LocalFrame* frame = m_page->deprecatedLocalMainFrame();
     FrameLoadRequest request(frame->document(), ResourceRequest(frame->document()->completeURL(url)));
     frame->loader().load(request);
 }
@@ -613,7 +613,7 @@ void InspectorPageAgent::deleteCookie(ErrorString*, const String& cookieName, co
 
 void InspectorPageAgent::getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page::FrameResourceTree>& object)
 {
-    object = buildObjectForFrameTree(m_page->mainFrame());
+    object = buildObjectForFrameTree(m_page->deprecatedLocalMainFrame());
 }
 
 void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, String* content, bool* base64Encoded)
@@ -889,7 +889,7 @@ void InspectorPageAgent::frameDetachedFromParent(LocalFrame* frame)
 
 LocalFrame* InspectorPageAgent::mainFrame()
 {
-    return m_page->mainFrame();
+    return m_page->deprecatedLocalMainFrame();
 }
 
 LocalFrame* InspectorPageAgent::frameForId(const String& frameId)
@@ -1197,7 +1197,7 @@ void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
     m_page->settings().setDeviceSupportsTouch(enabled ? true : m_originalDeviceSupportsTouch);
     m_touchEmulationEnabled = enabled;
     m_client->setTouchEventEmulationEnabled(enabled);
-    m_page->mainFrame()->view()->layout();
+    m_page->deprecatedLocalMainFrame()->view()->layout();
 }
 
 void InspectorPageAgent::hasTouchInputs(ErrorString*, bool* result)
@@ -1231,7 +1231,7 @@ void InspectorPageAgent::setEmulatedMedia(ErrorString*, const String& media)
     m_state->setString(PageAgentState::pageAgentEmulatedMedia, media);
     Document* document = 0;
     if (m_page->mainFrame())
-        document = m_page->mainFrame()->document();
+        document = m_page->deprecatedLocalMainFrame()->document();
     if (document) {
         document->mediaQueryAffectingValueChanged();
         document->styleResolverChanged();

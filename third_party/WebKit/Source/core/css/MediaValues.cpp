@@ -76,7 +76,8 @@ float MediaValues::calculateDevicePixelRatio(LocalFrame* frame) const
 int MediaValues::calculateColorBitsPerComponent(LocalFrame* frame) const
 {
     ASSERT(frame && frame->page() && frame->page()->mainFrame());
-    if (screenIsMonochrome(frame->page()->mainFrame()->view()))
+    if (!frame->page()->mainFrame()->isLocalFrame()
+        || screenIsMonochrome(frame->page()->deprecatedLocalMainFrame()->view()))
         return 0;
     return screenDepthPerComponent(frame->view());
 }
@@ -84,9 +85,10 @@ int MediaValues::calculateColorBitsPerComponent(LocalFrame* frame) const
 int MediaValues::calculateMonochromeBitsPerComponent(LocalFrame* frame) const
 {
     ASSERT(frame && frame->page() && frame->page()->mainFrame());
-    if (screenIsMonochrome(frame->page()->mainFrame()->view()))
-        return screenDepthPerComponent(frame->view());
-    return 0;
+    if (!frame->page()->mainFrame()->isLocalFrame()
+        || !screenIsMonochrome(frame->page()->deprecatedLocalMainFrame()->view()))
+        return 0;
+    return screenDepthPerComponent(frame->view());
 }
 
 int MediaValues::calculateDefaultFontSize(LocalFrame* frame) const

@@ -181,7 +181,7 @@ PageSerializer::PageSerializer(Vector<SerializedResource>* resources)
 
 void PageSerializer::serialize(Page* page)
 {
-    serializeFrame(page->mainFrame());
+    serializeFrame(page->deprecatedLocalMainFrame());
 }
 
 void PageSerializer::serializeFrame(LocalFrame* frame)

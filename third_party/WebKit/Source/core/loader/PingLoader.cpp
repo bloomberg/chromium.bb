@@ -158,7 +158,7 @@ void PingLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebURLRes
     if (Page* page = this->page()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-        InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+        InspectorInstrumentation::didFailLoading(page->deprecatedLocalMainFrame(), m_identifier, ResourceError::cancelledError(m_url));
     }
     delete this;
 }
@@ -168,7 +168,7 @@ void PingLoader::didReceiveData(blink::WebURLLoader*, const char*, int, int)
     if (Page* page = this->page()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-        InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+        InspectorInstrumentation::didFailLoading(page->deprecatedLocalMainFrame(), m_identifier, ResourceError::cancelledError(m_url));
     }
     delete this;
 }
@@ -178,7 +178,7 @@ void PingLoader::didFinishLoading(blink::WebURLLoader*, double, int64_t)
     if (Page* page = this->page()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-        InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+        InspectorInstrumentation::didFailLoading(page->deprecatedLocalMainFrame(), m_identifier, ResourceError::cancelledError(m_url));
     }
     delete this;
 }
@@ -188,7 +188,7 @@ void PingLoader::didFail(blink::WebURLLoader*, const blink::WebURLError& resourc
     if (Page* page = this->page()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-        InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError(resourceError));
+        InspectorInstrumentation::didFailLoading(page->deprecatedLocalMainFrame(), m_identifier, ResourceError(resourceError));
     }
     delete this;
 }
@@ -198,7 +198,7 @@ void PingLoader::timeout(Timer<PingLoader>*)
     if (Page* page = this->page()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-        InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+        InspectorInstrumentation::didFailLoading(page->deprecatedLocalMainFrame(), m_identifier, ResourceError::cancelledError(m_url));
     }
     delete this;
 }

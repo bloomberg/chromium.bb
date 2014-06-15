@@ -81,7 +81,7 @@ public:
 
 void ConvertInspectorPoint(WebCore::Page* page, const WebCore::IntPoint& point, WebCore::IntPoint* convertedPoint, WebCore::IntPoint* globalPoint)
 {
-    *convertedPoint = page->mainFrame()->view()->convertToContainingWindow(point);
+    *convertedPoint = page->deprecatedLocalMainFrame()->view()->convertToContainingWindow(point);
     *globalPoint = page->chrome().rootViewToScreen(WebCore::IntRect(point, WebCore::IntSize(0, 0))).location();
 }
 
@@ -267,7 +267,7 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
         event.append(point);
     }
 
-    m_page->mainFrame()->eventHandler().handleTouchEvent(event);
+    m_page->deprecatedLocalMainFrame()->eventHandler().handleTouchEvent(event);
 }
 
 } // namespace WebCore

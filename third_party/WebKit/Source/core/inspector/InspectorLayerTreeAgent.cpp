@@ -169,7 +169,7 @@ void InspectorLayerTreeAgent::restore()
 void InspectorLayerTreeAgent::enable(ErrorString*)
 {
     m_instrumentingAgents->setInspectorLayerTreeAgent(this);
-    if (LocalFrame* frame = m_page->mainFrame()) {
+    if (LocalFrame* frame = m_page->deprecatedLocalMainFrame()) {
         Document* document = frame->document();
         if (document && document->lifecycle().state() >= DocumentLifecycle::CompositingClean)
             layerTreeDidChange();
@@ -253,7 +253,7 @@ int InspectorLayerTreeAgent::idForNode(Node* node)
 
 RenderLayerCompositor* InspectorLayerTreeAgent::renderLayerCompositor()
 {
-    RenderView* renderView = m_page->mainFrame()->contentRenderer();
+    RenderView* renderView = m_page->deprecatedLocalMainFrame()->contentRenderer();
     RenderLayerCompositor* compositor = renderView ? renderView->compositor() : 0;
     return compositor;
 }

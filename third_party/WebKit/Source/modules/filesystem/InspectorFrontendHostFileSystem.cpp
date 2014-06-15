@@ -16,7 +16,7 @@ namespace WebCore {
 
 DOMFileSystem* InspectorFrontendHostFileSystem::isolatedFileSystem(InspectorFrontendHost& host, const String& fileSystemName, const String& rootURL)
 {
-    ExecutionContext* context = host.frontendPage()->mainFrame()->document();
+    ExecutionContext* context = host.frontendPage()->deprecatedLocalMainFrame()->document();
     return DOMFileSystem::create(context, fileSystemName, FileSystemTypeIsolated, KURL(ParsedURLString, rootURL));
 }
 

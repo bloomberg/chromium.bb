@@ -848,8 +848,8 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
     // We always send hitTestResultAtPoint to the main frame if we have one,
     // otherwise we might hit areas that are obscured by higher frames.
     if (Page* page = m_frame->page()) {
-        LocalFrame* mainFrame = page->mainFrame();
-        if (m_frame != mainFrame) {
+        LocalFrame* mainFrame = page->mainFrame()->isLocalFrame() ? page->deprecatedLocalMainFrame() : 0;
+        if (mainFrame && m_frame != mainFrame) {
             FrameView* frameView = m_frame->view();
             FrameView* mainView = mainFrame->view();
             if (frameView && mainView) {
@@ -3252,9 +3252,9 @@ void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
         return;
 
     Page* page = m_frame->page();
-    if (!page)
+    if (!page || !page->mainFrame()->isLocalFrame())
         return;
-    bool handledEvent = page->mainFrame()->loader().client()->navigateBackForward(event->shiftKey() ? 1 : -1);
+    bool handledEvent = page->deprecatedLocalMainFrame()->loader().client()->navigateBackForward(event->shiftKey() ? 1 : -1);
     if (handledEvent)
         event->setDefaultHandled();
 }

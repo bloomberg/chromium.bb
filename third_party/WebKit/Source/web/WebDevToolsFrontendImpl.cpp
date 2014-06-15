@@ -121,7 +121,7 @@ void WebDevToolsFrontendImpl::resume()
 void WebDevToolsFrontendImpl::maybeDispatch(WebCore::Timer<WebDevToolsFrontendImpl>*)
 {
     while (!m_messages.isEmpty()) {
-        Document* document = m_webViewImpl->page()->mainFrame()->document();
+        Document* document = m_webViewImpl->page()->deprecatedLocalMainFrame()->document();
         if (document->activeDOMObjectsAreSuspended()) {
             m_inspectorFrontendResumeObserver = adoptPtr(new InspectorFrontendResumeObserver(this, document));
             return;
