@@ -29,12 +29,12 @@ class SdchDictionaryFetcher
       public net::SdchFetcher,
       public base::NonThreadSafe {
  public:
-  explicit SdchDictionaryFetcher(net::URLRequestContextGetter* context);
+  // Consumer must guarantee that the SdchManager pointer outlives
+  // this object.  The current implementation guarantees this by
+  // the SdchManager owning this object.
+  SdchDictionaryFetcher(net::SdchManager* manager,
+                        net::URLRequestContextGetter* context);
   virtual ~SdchDictionaryFetcher();
-
-  // Stop fetching dictionaries, and abandon any current URLFetcheer operations
-  // so that the IO thread can be stopped.
-  static void Shutdown();
 
   // Implementation of SdchFetcher class.
   // This method gets the requested dictionary, and then calls back into the
@@ -58,6 +58,8 @@ class SdchDictionaryFetcher
   // Implementation of net::URLFetcherDelegate. Called after transmission
   // completes (either successfully or with failure).
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+  net::SdchManager* const manager_;
 
   // A queue of URLs that are being used to download dictionaries.
   std::queue<GURL> fetch_queue_;

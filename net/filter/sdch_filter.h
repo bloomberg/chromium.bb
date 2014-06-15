@@ -95,6 +95,13 @@ class NET_EXPORT_PRIVATE SdchFilter : public Filter {
   // That char* data is part of the dictionary_ we hold a reference to.
   scoped_refptr<SdchManager::Dictionary> dictionary_;
 
+  // We keep a copy of the URLRequestContext for use in the destructor, (at
+  // which point GetURLRequestContext() will likely return null because of
+  // the disassociation of the URLRequest from the URLRequestJob).  This is
+  // safe because the URLRequestJob (and any filters) are guaranteed to be
+  // deleted before the URLRequestContext is destroyed.
+  const URLRequestContext* const url_request_context_;
+
   // The decoder may demand a larger output buffer than the target of
   // ReadFilteredData so we buffer the excess output between calls.
   std::string dest_buffer_excess_;

@@ -31,6 +31,7 @@ namespace net {
 class FtpTransactionFactory;
 class HttpServerProperties;
 class HttpTransactionFactory;
+class SDCHManager;
 }  // namespace net
 
 namespace quota {
@@ -233,6 +234,8 @@ class ProfileImplIOData : public ProfileIOData {
 
   mutable scoped_ptr<domain_reliability::DomainReliabilityMonitor>
       domain_reliability_monitor_;
+
+  mutable scoped_ptr<net::SdchManager> sdch_manager_;
 
   // Parameters needed for isolated apps.
   base::FilePath profile_path_;

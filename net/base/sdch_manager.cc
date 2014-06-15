@@ -23,9 +23,6 @@ const size_t SdchManager::kMaxDictionarySize = 1000000;
 const size_t SdchManager::kMaxDictionaryCount = 20;
 
 // static
-SdchManager* SdchManager::global_ = NULL;
-
-// static
 bool SdchManager::g_sdch_enabled_ = true;
 
 // static
@@ -53,8 +50,6 @@ SdchManager::Dictionary::~Dictionary() {
 }
 
 bool SdchManager::Dictionary::CanAdvertise(const GURL& target_url) {
-  if (!SdchManager::Global()->IsInSupportedDomain(target_url))
-    return false;
   /* The specific rules of when a dictionary should be advertised in an
      Avail-Dictionary header are modeled after the rules for cookie scoping. The
      terms "domain-match" and "pathmatch" are defined in RFC 2965 [6]. A
@@ -92,8 +87,6 @@ bool SdchManager::Dictionary::CanSet(const std::string& domain,
                                      const std::string& path,
                                      const std::set<int>& ports,
                                      const GURL& dictionary_url) {
-  if (!SdchManager::Global()->IsInSupportedDomain(dictionary_url))
-    return false;
   /*
   A dictionary is invalid and must not be stored if any of the following are
   true:
@@ -150,8 +143,6 @@ bool SdchManager::Dictionary::CanSet(const std::string& domain,
 
 // static
 bool SdchManager::Dictionary::CanUse(const GURL& referring_url) {
-  if (!SdchManager::Global()->IsInSupportedDomain(referring_url))
-    return false;
   /*
     1. The request URL's host name domain-matches the Domain attribute of the
       dictionary.
@@ -221,33 +212,16 @@ bool SdchManager::Dictionary::DomainMatch(const GURL& gurl,
 
 //------------------------------------------------------------------------------
 SdchManager::SdchManager() {
-  DCHECK(!global_);
   DCHECK(CalledOnValidThread());
-  global_ = this;
 }
 
 SdchManager::~SdchManager() {
-  DCHECK_EQ(this, global_);
   DCHECK(CalledOnValidThread());
   while (!dictionaries_.empty()) {
     DictionaryMap::iterator it = dictionaries_.begin();
     it->second->Release();
     dictionaries_.erase(it->first);
   }
-  global_ = NULL;
-}
-
-// static
-void SdchManager::Shutdown() {
-  EnableSdchSupport(false);
-  if (!global_ )
-    return;
-  global_->set_sdch_fetcher(NULL);
-}
-
-// static
-SdchManager* SdchManager::Global() {
-  return global_;
 }
 
 // static
@@ -270,62 +244,51 @@ void SdchManager::EnableSecureSchemeSupport(bool enabled) {
   g_secure_scheme_supported_ = enabled;
 }
 
-// static
 void SdchManager::BlacklistDomain(const GURL& url) {
-  if (!global_ )
-    return;
-  global_->SetAllowLatencyExperiment(url, false);
+  SetAllowLatencyExperiment(url, false);
 
   std::string domain(StringToLowerASCII(url.host()));
-  int count = global_->blacklisted_domains_[domain];
+  int count = blacklisted_domains_[domain];
   if (count > 0)
     return;  // Domain is already blacklisted.
 
-  count = 1 + 2 * global_->exponential_blacklist_count[domain];
+  count = 1 + 2 * exponential_blacklist_count[domain];
   if (count > 0)
-    global_->exponential_blacklist_count[domain] = count;
+    exponential_blacklist_count[domain] = count;
   else
     count = INT_MAX;
 
-  global_->blacklisted_domains_[domain] = count;
+  blacklisted_domains_[domain] = count;
 }
 
-// static
 void SdchManager::BlacklistDomainForever(const GURL& url) {
-  if (!global_ )
-    return;
-  global_->SetAllowLatencyExperiment(url, false);
+  SetAllowLatencyExperiment(url, false);
 
   std::string domain(StringToLowerASCII(url.host()));
-  global_->exponential_blacklist_count[domain] = INT_MAX;
-  global_->blacklisted_domains_[domain] = INT_MAX;
+  exponential_blacklist_count[domain] = INT_MAX;
+  blacklisted_domains_[domain] = INT_MAX;
 }
 
-// static
 void SdchManager::ClearBlacklistings() {
-  Global()->blacklisted_domains_.clear();
-  Global()->exponential_blacklist_count.clear();
+  blacklisted_domains_.clear();
+  exponential_blacklist_count.clear();
 }
 
-// static
 void SdchManager::ClearDomainBlacklisting(const std::string& domain) {
-  Global()->blacklisted_domains_.erase(StringToLowerASCII(domain));
+  blacklisted_domains_.erase(StringToLowerASCII(domain));
 }
 
-// static
 int SdchManager::BlackListDomainCount(const std::string& domain) {
-  if (Global()->blacklisted_domains_.end() ==
-      Global()->blacklisted_domains_.find(domain))
+  if (blacklisted_domains_.end() == blacklisted_domains_.find(domain))
     return 0;
-  return Global()->blacklisted_domains_[StringToLowerASCII(domain)];
+  return blacklisted_domains_[StringToLowerASCII(domain)];
 }
 
-// static
 int SdchManager::BlacklistDomainExponential(const std::string& domain) {
-  if (Global()->exponential_blacklist_count.end() ==
-      Global()->exponential_blacklist_count.find(domain))
+  if (exponential_blacklist_count.end() ==
+      exponential_blacklist_count.find(domain))
     return 0;
-  return Global()->exponential_blacklist_count[StringToLowerASCII(domain)];
+  return exponential_blacklist_count[StringToLowerASCII(domain)];
 }
 
 bool SdchManager::IsInSupportedDomain(const GURL& url) {
@@ -353,8 +316,7 @@ bool SdchManager::IsInSupportedDomain(const GURL& url) {
 void SdchManager::FetchDictionary(const GURL& request_url,
                                   const GURL& dictionary_url) {
   DCHECK(CalledOnValidThread());
-  if (SdchManager::Global()->CanFetchDictionary(request_url, dictionary_url) &&
-      fetcher_.get())
+  if (CanFetchDictionary(request_url, dictionary_url) && fetcher_.get())
     fetcher_->Schedule(dictionary_url);
 }
 
@@ -465,6 +427,9 @@ bool SdchManager::AddSdchDictionary(const std::string& dictionary_text,
     line_start = line_end + 1;
   }
 
+  if (!IsInSupportedDomain(dictionary_url))
+    return false;
+
   if (!Dictionary::CanSet(domain, path, ports, dictionary_url))
     return false;
 
@@ -501,6 +466,8 @@ void SdchManager::GetVcdiffDictionary(const std::string& server_hash,
     return;
   }
   Dictionary* matching_dictionary = it->second;
+  if (!IsInSupportedDomain(referring_url))
+    return;
   if (!matching_dictionary->CanUse(referring_url))
     return;
   *dictionary = matching_dictionary;
@@ -515,6 +482,8 @@ void SdchManager::GetAvailDictionaryList(const GURL& target_url,
   int count = 0;
   for (DictionaryMap::iterator it = dictionaries_.begin();
        it != dictionaries_.end(); ++it) {
+    if (!IsInSupportedDomain(target_url))
+      continue;
     if (!it->second->CanAdvertise(target_url))
       continue;
     ++count;
