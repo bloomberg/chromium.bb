@@ -45,7 +45,7 @@ _MD5_RE = re.compile('^[a-f0-9]{32}$')
 _RESOURCES = [
   ('benchmark.zip', 'benchmark', '', None),
   ('binaries.zip', 'binaries', 'exe', None),
-  ('symbols.zip', 'symbols', 'symbols',
+  ('symbols.zip', 'symbols', 'exe',
       lambda x: x.filename.endswith('.dll.pdb')),
   ('include.zip', 'include', 'include', None),
   ('lib.zip', 'library', 'lib', None)]
@@ -164,6 +164,11 @@ def _GetCurrentState(revision, output_dir):
     # Return a valid but empty state.
     return ({'revision': '0', 'contents': {}}, False)
   actual = _BuildActualState(stored, revision, output_dir)
+  # If the script has been modified consider the state invalid.
+  path = os.path.join(output_dir, _STATE)
+  if os.path.getmtime(__file__) > os.path.getmtime(path):
+    return (stored, False)
+  # Otherwise, explicitly validate the state.
   if not _StatesAreConsistent(stored, actual):
     return (stored, False)
   return (stored, True)
