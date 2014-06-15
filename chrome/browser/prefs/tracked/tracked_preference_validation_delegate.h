@@ -23,8 +23,9 @@ class TrackedPreferenceValidationDelegate {
   virtual ~TrackedPreferenceValidationDelegate() {}
 
   // Notifies observes of the result (|value_state|) of checking the atomic
-  // |value| at |pref_path|. |reset_action| indicates whether or not a reset
-  // will occur based on |value_state| and the enforcement level in place.
+  // |value| (which may be NULL) at |pref_path|. |reset_action| indicates
+  // whether or not a reset will occur based on |value_state| and the
+  // enforcement level in place.
   virtual void OnAtomicPreferenceValidation(
       const std::string& pref_path,
       const base::Value* value,
@@ -32,9 +33,9 @@ class TrackedPreferenceValidationDelegate {
       TrackedPreferenceHelper::ResetAction reset_action) = 0;
 
   // Notifies observes of the result (|value_state|) of checking the split
-  // |dict_value| at |pref_path|. |reset_action| indicates whether or not a
-  // reset of |value_keys| will occur based on |value_state| and the enforcement
-  // level in place.
+  // |dict_value| (which may be NULL) at |pref_path|. |reset_action| indicates
+  // whether or not a reset of |value_keys| will occur based on |value_state|
+  // and the enforcement level in place.
   virtual void OnSplitPreferenceValidation(
       const std::string& pref_path,
       const base::DictionaryValue* dict_value,

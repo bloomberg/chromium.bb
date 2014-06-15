@@ -53,15 +53,16 @@ void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
     const std::string& pref_path,
     const base::Value* value,
     PrefHashStoreTransaction::ValueState value_state,
-    TrackedPreferenceHelper::ResetAction reset_action) {
+    TrackedPreferenceHelper::ResetAction /* reset_action */) {
   TPIncident_ValueState proto_value_state = MapValueState(value_state);
   if (proto_value_state != TPIncident::UNKNOWN) {
     scoped_ptr<ClientIncidentReport_IncidentData> incident_data(
         new ClientIncidentReport_IncidentData());
     TPIncident* incident = incident_data->mutable_tracked_preference();
     incident->set_path(pref_path);
-    if (!value->GetAsString(incident->mutable_atomic_value()) &&
-        !base::JSONWriter::Write(value, incident->mutable_atomic_value())) {
+    if (!value ||
+        (!value->GetAsString(incident->mutable_atomic_value()) &&
+         !base::JSONWriter::Write(value, incident->mutable_atomic_value()))) {
       incident->clear_atomic_value();
     }
     incident->set_value_state(proto_value_state);
@@ -74,7 +75,7 @@ void PreferenceValidationDelegate::OnSplitPreferenceValidation(
     const base::DictionaryValue* dict_value,
     const std::vector<std::string>& invalid_keys,
     PrefHashStoreTransaction::ValueState value_state,
-    TrackedPreferenceHelper::ResetAction reset_action) {
+    TrackedPreferenceHelper::ResetAction /* reset_action */) {
   TPIncident_ValueState proto_value_state = MapValueState(value_state);
   if (proto_value_state != TPIncident::UNKNOWN) {
     scoped_ptr<ClientIncidentReport_IncidentData> incident_data(
