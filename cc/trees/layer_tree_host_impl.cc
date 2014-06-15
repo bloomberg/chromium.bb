@@ -1460,8 +1460,9 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   }
 
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug") "," TRACE_DISABLED_BY_DEFAULT(
-          "cc.debug.quads"),
+      TRACE_DISABLED_BY_DEFAULT("cc.debug") ","
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.quads") ","
+      TRACE_DISABLED_BY_DEFAULT("devtools.timeline.layers"),
       "cc::LayerTreeHostImpl",
       id_,
       TracedValue::FromValue(AsValueWithFrame(frame).release()));

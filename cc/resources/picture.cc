@@ -470,13 +470,18 @@ scoped_ptr<base::Value> Picture::AsValue() const {
 }
 
 void Picture::EmitTraceSnapshot() const {
-  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-      "cc::Picture", this, TracedPicture::AsTraceablePicture(this));
+  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug") "," TRACE_DISABLED_BY_DEFAULT(
+          "devtools.timeline.picture"),
+      "cc::Picture",
+      this,
+      TracedPicture::AsTraceablePicture(this));
 }
 
 void Picture::EmitTraceSnapshotAlias(Picture* original) const {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+      TRACE_DISABLED_BY_DEFAULT("cc.debug") "," TRACE_DISABLED_BY_DEFAULT(
+          "devtools.timeline.picture"),
       "cc::Picture",
       this,
       TracedPicture::AsTraceablePictureAlias(original));

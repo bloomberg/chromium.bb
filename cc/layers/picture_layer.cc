@@ -106,6 +106,8 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
   TRACE_EVENT1("cc", "PictureLayer::Update",
                "source_frame_number",
                layer_tree_host()->source_frame_number());
+  devtools_instrumentation::ScopedLayerTreeTask update_layer(
+      devtools_instrumentation::kUpdateLayer, id(), layer_tree_host()->id());
 
   pile_->SetTilingRect(layer_rect);
 

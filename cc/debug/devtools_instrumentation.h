@@ -11,7 +11,9 @@ namespace cc {
 namespace devtools_instrumentation {
 
 namespace internal {
-const char kCategory[] = "cc,devtools";
+const char kCategory[] = TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
+const char kCategoryFrame[] =
+    TRACE_DISABLED_BY_DEFAULT("devtools.timeline.frame");
 const char kFrameId[] = "frameId";
 const char kLayerId[] = "layerId";
 const char kLayerTreeId[] = "layerTreeId";
@@ -26,6 +28,7 @@ const char kDrawFrame[] = "DrawFrame";
 
 const char kRasterTask[] = "RasterTask";
 const char kPaintSetup[] = "PaintSetup";
+const char kUpdateLayer[] = "UpdateLayer";
 
 class ScopedLayerTask {
  public:
@@ -89,22 +92,25 @@ struct ScopedLayerObjectTracker
 };
 
 inline void DidActivateLayerTree(int layer_tree_host_id, int frame_id) {
-  TRACE_EVENT_INSTANT2(internal::kCategory,
+  TRACE_EVENT_INSTANT2(internal::kCategoryFrame,
                        internal::kActivateLayerTree,
                        TRACE_EVENT_SCOPE_THREAD,
-                       internal::kLayerTreeId, layer_tree_host_id,
-                       internal::kFrameId, frame_id);
+                       internal::kLayerTreeId,
+                       layer_tree_host_id,
+                       internal::kFrameId,
+                       frame_id);
 }
 
 inline void DidBeginFrame(int layer_tree_host_id) {
-  TRACE_EVENT_INSTANT1(internal::kCategory,
+  TRACE_EVENT_INSTANT1(internal::kCategoryFrame,
                        internal::kBeginFrame,
                        TRACE_EVENT_SCOPE_THREAD,
-                       internal::kLayerTreeId, layer_tree_host_id);
+                       internal::kLayerTreeId,
+                       layer_tree_host_id);
 }
 
 inline void DidDrawFrame(int layer_tree_host_id) {
-  TRACE_EVENT_INSTANT1(internal::kCategory,
+  TRACE_EVENT_INSTANT1(internal::kCategoryFrame,
                        internal::kDrawFrame,
                        TRACE_EVENT_SCOPE_THREAD,
                        internal::kLayerTreeId,
@@ -112,7 +118,7 @@ inline void DidDrawFrame(int layer_tree_host_id) {
 }
 
 inline void DidRequestMainThreadFrame(int layer_tree_host_id) {
-  TRACE_EVENT_INSTANT1(internal::kCategory,
+  TRACE_EVENT_INSTANT1(internal::kCategoryFrame,
                        internal::kRequestMainThreadFrame,
                        TRACE_EVENT_SCOPE_THREAD,
                        internal::kLayerTreeId,
