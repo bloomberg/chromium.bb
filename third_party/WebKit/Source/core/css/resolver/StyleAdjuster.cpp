@@ -194,7 +194,7 @@ static bool hasWillChangeThatCreatesStackingContext(const RenderStyle* style)
     return false;
 }
 
-void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentStyle, Element *e)
+void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentStyle, Element *e, const CachedUAStyle* cachedUAStyle)
 {
     ASSERT(parentStyle);
 
@@ -259,7 +259,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
 
     // Let the theme also have a crack at adjusting the style.
     if (style->hasAppearance())
-        RenderTheme::theme().adjustStyle(style, e, m_cachedUAStyle);
+        RenderTheme::theme().adjustStyle(style, e, cachedUAStyle);
 
     // If we have first-letter pseudo style, transitions, or animations, do not share this style.
     if (style->hasPseudoStyle(FIRST_LETTER) || style->transitions() || style->animations())

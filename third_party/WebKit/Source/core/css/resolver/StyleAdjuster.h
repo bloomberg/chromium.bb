@@ -36,19 +36,17 @@ class RenderStyle;
 class StyleAdjuster {
     STACK_ALLOCATED();
 public:
-    StyleAdjuster(const CachedUAStyle& cachedUAStyle, bool useQuirksModeStyles)
-        : m_cachedUAStyle(cachedUAStyle)
-        , m_useQuirksModeStyles(useQuirksModeStyles)
+    StyleAdjuster(bool useQuirksModeStyles)
+        : m_useQuirksModeStyles(useQuirksModeStyles)
     { }
 
-    void adjustRenderStyle(RenderStyle* styleToAdjust, RenderStyle* parentStyle, Element*);
+    void adjustRenderStyle(RenderStyle* styleToAdjust, RenderStyle* parentStyle, Element*, const CachedUAStyle*);
 
 private:
     void adjustStyleForDisplay(RenderStyle* styleToAdjust, RenderStyle* parentStyle);
     void adjustStyleForTagName(RenderStyle* styleToAdjust, RenderStyle* parentStyle, Element&);
     void adjustOverflow(RenderStyle* styleToAdjust);
 
-    const CachedUAStyle& m_cachedUAStyle;
     bool m_useQuirksModeStyles;
 };
 

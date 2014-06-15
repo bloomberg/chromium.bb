@@ -32,12 +32,17 @@ namespace WebCore {
 // applyMatchedProperties for later use during adjustRenderStyle.
 class CachedUAStyle {
 public:
-    CachedUAStyle()
-        : hasAppearance(false)
-        , backgroundLayers(BackgroundFillLayer)
-        , backgroundColor(StyleColor::currentColor())
-    { }
+    static PassOwnPtr<CachedUAStyle> create(const RenderStyle* style)
+    {
+        return adoptPtr(new CachedUAStyle(style));
+    }
 
+    bool hasAppearance;
+    BorderData border;
+    FillLayer backgroundLayers;
+    StyleColor backgroundColor;
+
+private:
     explicit CachedUAStyle(const RenderStyle* style)
         : hasAppearance(true)
         , backgroundLayers(BackgroundFillLayer)
@@ -48,12 +53,8 @@ public:
         backgroundLayers = *style->backgroundLayers();
         backgroundColor = style->backgroundColor();
     }
-
-    bool hasAppearance;
-    BorderData border;
-    FillLayer backgroundLayers;
-    StyleColor backgroundColor;
 };
+
 
 
 } // namespace WebCore

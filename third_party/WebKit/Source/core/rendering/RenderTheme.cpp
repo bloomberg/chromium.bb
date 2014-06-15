@@ -86,7 +86,7 @@ RenderTheme::RenderTheme()
 {
 }
 
-void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyle& uaStyle)
+void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyle* uaStyle)
 {
     // Force inline and table display styles to be inline-block (except for table- which is block)
     ControlPart part = style->appearance();
@@ -98,7 +98,7 @@ void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
     else if (style->display() == LIST_ITEM || style->display() == TABLE)
         style->setDisplay(BLOCK);
 
-    if (uaStyle.hasAppearance && isControlStyled(style, uaStyle)) {
+    if (uaStyle && uaStyle->hasAppearance && isControlStyled(style, uaStyle)) {
         if (part == MenulistPart) {
             style->setAppearance(MenulistButtonPart);
             part = MenulistButtonPart;
@@ -568,8 +568,10 @@ static bool isBackgroundOrBorderStyled(const RenderStyle& style, const CachedUAS
         || style.visitedDependentColor(CSSPropertyBackgroundColor) != uaStyle.backgroundColor;
 }
 
-bool RenderTheme::isControlStyled(const RenderStyle* style, const CachedUAStyle& uaStyle) const
+bool RenderTheme::isControlStyled(const RenderStyle* style, const CachedUAStyle* uaStyle) const
 {
+    ASSERT(uaStyle);
+
     switch (style->appearance()) {
     case PushButtonPart:
     case SquareButtonPart:
@@ -580,14 +582,14 @@ bool RenderTheme::isControlStyled(const RenderStyle* style, const CachedUAStyle&
     case ContinuousCapacityLevelIndicatorPart:
     case DiscreteCapacityLevelIndicatorPart:
     case RatingLevelIndicatorPart:
-        return isBackgroundOrBorderStyled(*style, uaStyle);
+        return isBackgroundOrBorderStyled(*style, *uaStyle);
 
     case ListboxPart:
     case MenulistPart:
     case SearchFieldPart:
     case TextAreaPart:
     case TextFieldPart:
-        return isBackgroundOrBorderStyled(*style, uaStyle) || style->boxShadow();
+        return isBackgroundOrBorderStyled(*style, *uaStyle) || style->boxShadow();
 
     case SliderHorizontalPart:
     case SliderVerticalPart:

@@ -100,9 +100,14 @@ public:
         // and constructing it is expensive so we avoid it if possible.
         if (!style()->hasAppearance())
             return;
-        m_cachedUAStyle = CachedUAStyle(style());
+
+        m_cachedUAStyle = CachedUAStyle::create(style());
     }
-    const CachedUAStyle& cachedUAStyle() const { return m_cachedUAStyle; }
+
+    const CachedUAStyle* cachedUAStyle() const
+    {
+        return m_cachedUAStyle.get();
+    }
 
     ElementStyleResources& elementStyleResources() { return m_elementStyleResources; }
     const CSSToStyleMap& styleMap() const { return m_styleMap; }
@@ -150,7 +155,7 @@ private:
 
     FontBuilder m_fontBuilder;
 
-    CachedUAStyle m_cachedUAStyle;
+    OwnPtr<CachedUAStyle> m_cachedUAStyle;
 
     ElementStyleResources m_elementStyleResources;
     // CSSToStyleMap is a pure-logic class and only contains

@@ -44,7 +44,7 @@ public:
 
     virtual void adjustRepaintRect(const RenderObject*, IntRect&) OVERRIDE;
 
-    virtual bool isControlStyled(const RenderStyle*, const CachedUAStyle&) const OVERRIDE;
+    virtual bool isControlStyled(const RenderStyle*, const CachedUAStyle*) const OVERRIDE;
 
     virtual Color platformActiveSelectionBackgroundColor() const OVERRIDE;
     virtual Color platformInactiveSelectionBackgroundColor() const OVERRIDE;

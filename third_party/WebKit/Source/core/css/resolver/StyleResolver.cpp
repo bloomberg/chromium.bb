@@ -581,8 +581,8 @@ static void addContentAttrValuesToFeatures(const Vector<AtomicString>& contentAt
 
 void StyleResolver::adjustRenderStyle(StyleResolverState& state, Element* element)
 {
-    StyleAdjuster adjuster(state.cachedUAStyle(), m_document.inQuirksMode());
-    adjuster.adjustRenderStyle(state.style(), state.parentStyle(), element);
+    StyleAdjuster adjuster(m_document.inQuirksMode());
+    adjuster.adjustRenderStyle(state.style(), state.parentStyle(), element, state.cachedUAStyle());
 }
 
 // Start loading resources referenced by this style.
