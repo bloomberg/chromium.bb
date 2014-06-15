@@ -217,43 +217,56 @@ def UserActMine(opts):
   UserActSearch(opts, '( %s ) status:new' % (' OR '.join(owners),))
 
 
-def UserActInspect(opts, idx):
-  """Inspect CL number <n>"""
-  cl = FilteredQuery(opts, idx)
-  if cl:
-    PrintCl(opts, cl[0], None)
-  else:
-    print('no results found for CL %s' % idx)
+def UserActInspect(opts, *args):
+  """Inspect CL number <n> [n ...]"""
+  for idx in args:
+    cl = FilteredQuery(opts, idx)
+    if cl:
+      PrintCl(opts, cl[0], None)
+    else:
+      print('no results found for CL %s' % idx)
 
 
-def UserActReview(opts, idx, num):
-  """Mark CL <n> with code review status [-2,-1,0,1,2]"""
-  opts.gerrit.SetReview(idx, labels={'Code-Review': num})
+def UserActReview(opts, *args):
+  """Mark CL <n> [n ...] with code review status <-2,-1,0,1,2>"""
+  num = args[-1]
+  for idx in args[:-1]:
+    opts.gerrit.SetReview(idx, labels={'Code-Review': num})
+UserActReview.arg_min = 2
 
 
-def UserActVerify(opts, idx, num):
-  """Mark CL <n> with verify status [-1,0,1]"""
-  opts.gerrit.SetReview(idx, labels={'Verified': num})
+def UserActVerify(opts, *args):
+  """Mark CL <n> [n ...] with verify status <-1,0,1>"""
+  num = args[-1]
+  for idx in args[:-1]:
+    opts.gerrit.SetReview(idx, labels={'Verified': num})
+UserActVerify.arg_min = 2
 
 
-def UserActReady(opts, idx, num):
-  """Mark CL <n> with ready status [0,1,2]"""
-  opts.gerrit.SetReview(idx, labels={'Commit-Queue': num})
+def UserActReady(opts, *args):
+  """Mark CL <n> [n ...] with ready status <0,1,2>"""
+  num = args[-1]
+  for idx in args[:-1]:
+    opts.gerrit.SetReview(idx, labels={'Commit-Queue': num})
+UserActReady.arg_min = 2
 
 
-def UserActSubmit(opts, idx):
-  """Submit CL <n>"""
-  opts.gerrit.SubmitChange(idx)
+def UserActSubmit(opts, *args):
+  """Submit CL <n> [n ...]"""
+  for idx in args:
+    opts.gerrit.SubmitChange(idx)
 
 
-def UserActAbandon(opts, idx):
-  """Abandon CL <n>"""
-  opts.gerrit.AbandonChange(idx)
+def UserActAbandon(opts, *args):
+  """Abandon CL <n> [n ...]"""
+  for idx in args:
+    opts.gerrit.AbandonChange(idx)
 
 
-def UserActRestore(opts, idx):
-  """Restore CL <n> that was abandoned"""
-  opts.gerrit.RestoreChange(idx)
+def UserActRestore(opts, *args):
+  """Restore CL <n> [n ...] that was abandoned"""
+  for idx in args:
+    opts.gerrit.RestoreChange(idx)
 
 
 def UserActReviewers(opts, idx, *args):
@@ -284,9 +297,10 @@ def UserActMessage(opts, idx, message):
   opts.gerrit.SetReview(idx, msg=message)
 
 
-def UserActDeletedraft(opts, idx):
-  """Delete draft patch set <n>"""
-  opts.gerrit.DeleteDraft(idx)
+def UserActDeletedraft(opts, *args):
+  """Delete draft patch set <n> [n ...]"""
+  for idx in args:
+    opts.gerrit.DeleteDraft(idx)
 
 
 def main(argv):
@@ -311,6 +325,8 @@ Example:
   $ gerrit inspect 28123    # Inspect CL 28123 on the public gerrit.
   $ gerrit inspect *28123   # Inspect CL 28123 on the internal gerrit.
   $ gerrit verify 28123 1   # Mark CL 28123 as verified (+1).
+Scripting:
+  $ gerrit ready `gerrit --raw mine` 1   # Mark *ALL* of your CLs ready.
 
 Actions:"""
   indent = max([len(x) - len(act_pfx) for x in actions])
@@ -362,9 +378,10 @@ Actions:"""
   if functor:
     argspec = inspect.getargspec(functor)
     if argspec.varargs:
-      if len(args) < len(argspec.args):
+      arg_min = getattr(functor, 'arg_min', len(argspec.args))
+      if len(args) < arg_min:
         parser.error('incorrect number of args: %s expects at least %s' %
-                     (cmd, len(argspec.args)))
+                     (cmd, arg_min))
     elif len(argspec.args) - 1 != len(args):
       parser.error('incorrect number of args: %s expects %s' %
                    (cmd, len(argspec.args) - 1))
