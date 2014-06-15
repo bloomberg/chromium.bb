@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS href property 
-PASS setting href to an invalid URL 
-PASS setting href to null 
-Harness: the test ran to completion.
-

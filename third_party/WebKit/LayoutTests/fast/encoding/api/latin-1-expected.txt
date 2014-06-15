@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Latin-1 decoders (windows-1252, iso-8859-1, us-ascii, etc) decode identically. 
-Harness: the test ran to completion.
-

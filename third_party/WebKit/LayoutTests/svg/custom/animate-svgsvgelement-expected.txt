@@ -1,5 +1,0 @@
- This is a testharness.js-based test.
-PASS Test width 
-PASS Test height 
-Harness: the test ran to completion.
-

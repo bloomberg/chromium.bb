@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS utf-8 - encode/decode round trip 
-PASS utf-16le - encode/decode round trip 
-PASS utf-16be - encode/decode round trip 
-PASS UTF-8 encoding (compare against unescape/encodeURIComponent) 
-PASS UTF-8 decoding (compare against decodeURIComponent/escape) 
-Harness: the test ran to completion.
-

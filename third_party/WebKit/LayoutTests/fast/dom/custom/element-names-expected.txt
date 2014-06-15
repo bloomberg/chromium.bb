@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS invalid and reserved names 
-PASS name conflicts 
-PASS strange but valid names 
-Harness: the test ran to completion.
-

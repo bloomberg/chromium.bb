@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS An empty valued header in a WebSocket handshake response doesn't fail a WebSocket 
-Harness: the test ran to completion.
-

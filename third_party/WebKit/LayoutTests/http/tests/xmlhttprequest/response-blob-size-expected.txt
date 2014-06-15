@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Test Blob.size of response blob received for XMLHttpRequest 
-Harness: the test ran to completion.
-

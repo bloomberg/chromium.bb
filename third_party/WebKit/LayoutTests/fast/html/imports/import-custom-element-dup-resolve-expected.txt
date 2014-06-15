@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Instantiate custom elements in async imports. 
-PASS Resolve custom elements in async imports later. 
-Harness: the test ran to completion.
-

@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS The "replacement" label should not be a known encoding. 
-PASS Label for "replacement" should be rejected by API: csiso2022kr 
-PASS Label for "replacement" should be rejected by API: hz-gb-2312 
-PASS Label for "replacement" should be rejected by API: iso-2022-cn 
-PASS Label for "replacement" should be rejected by API: iso-2022-cn-ext 
-PASS Label for "replacement" should be rejected by API: iso-2022-kr 
-Harness: the test ran to completion.
-

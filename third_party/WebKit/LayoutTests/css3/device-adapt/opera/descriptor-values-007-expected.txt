@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS CSS Test: @viewport device-height invalid length 
-Harness: the test ran to completion.
-

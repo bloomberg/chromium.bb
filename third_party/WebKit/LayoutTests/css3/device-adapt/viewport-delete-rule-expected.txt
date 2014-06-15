@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Check that added @viewport rule is applied. 
-PASS Check that @viewport rule is not applied after removal. 
-Harness: the test ran to completion.
-

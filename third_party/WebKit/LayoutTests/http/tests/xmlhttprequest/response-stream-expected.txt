@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Test response of XMLHttpRequest with responseType set to 'stream' for various readyState. 
-Harness: the test ran to completion.
-

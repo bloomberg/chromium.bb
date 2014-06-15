@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS Byte-order marks: utf-8 
-PASS Byte-order marks: utf-16le 
-PASS Byte-order marks: utf-16be 
-Harness: the test ran to completion.
-

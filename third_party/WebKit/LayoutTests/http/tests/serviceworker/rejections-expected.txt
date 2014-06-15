@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Rejections are DOMExceptions 
-Harness: the test ran to completion.
-

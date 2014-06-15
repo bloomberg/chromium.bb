@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Custom elements in an import are upgraded inside load event handlers of the import. 
-Harness: the test ran to completion.
-

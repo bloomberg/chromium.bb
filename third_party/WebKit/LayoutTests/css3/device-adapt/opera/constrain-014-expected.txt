@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS CSS Test: @viewport constrained - zoom greater than max-zoom 
-Harness: the test ran to completion.
-

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS With the async attribute, link element don't block the script execution of following imports. 
-Harness: the test ran to completion.
-

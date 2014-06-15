@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS Basic search 
-PASS non hierarchical 
-PASS search property invalid URL 
-Harness: the test ran to completion.
-

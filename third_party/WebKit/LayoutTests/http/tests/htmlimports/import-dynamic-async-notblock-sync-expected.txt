@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Dynamically added async import doesn't block following import. 
-Harness: the test ran to completion.
-

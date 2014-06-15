@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS registration context should not be shared with an iframe's document 
-PASS registration context should not be shared with the template document 
-PASS registration context should not be created by DOMImplementation-created documents 
-Harness: the test ran to completion.
-

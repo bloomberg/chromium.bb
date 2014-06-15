@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Deleting an object store with a new index should complete 
-Harness: the test ran to completion.
-

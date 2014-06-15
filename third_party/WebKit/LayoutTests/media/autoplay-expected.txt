@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS audio.autoplay 
-PASS video.autoplay 
-Harness: the test ran to completion.
-

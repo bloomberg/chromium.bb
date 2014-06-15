@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS an XHR response document must not have a registry 
-Harness: the test ran to completion.
-

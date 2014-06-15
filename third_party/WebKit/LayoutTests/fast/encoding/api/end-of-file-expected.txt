@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Fatal flag, non-streaming cases 
-PASS Fatal flag, streaming cases 
-Harness: the test ran to completion.
-

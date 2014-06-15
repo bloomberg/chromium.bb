@@ -1,7 +1,0 @@
- This is a testharness.js-based test.
-PASS TextTrackCueList.getCueById, no id 
-PASS TextTrackCueList.getCueById, id foo 
-PASS TextTrackCueList.getCueById, no 1 
-PASS TextTrackCueList.getCueById, id a\u0000b 
-Harness: the test ran to completion.
-

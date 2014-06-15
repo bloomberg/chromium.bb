@@ -1,4 +1,0 @@
- This is a testharness.js-based test.
-PASS Abort page inside custom element callback inside import 
-Harness: the test ran to completion.
-

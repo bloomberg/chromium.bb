@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Reset scrollable area to starting point. 
-PASS Smooth scrolling is on for non mainframe scrollbars. 
-Harness: the test ran to completion.
-

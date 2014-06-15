@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Dynamically added import blocks dynamic added imports. 
-Harness: the test ran to completion.
-

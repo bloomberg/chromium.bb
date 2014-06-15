@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS constructor type 
-PASS constructor name 
-PASS prototype "constructor" property 
-PASS constructor "prototype" property 
-Harness: the test ran to completion.
-

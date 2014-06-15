@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Each HTML Import is standard mode regardless of the mode of the master document. 
-Harness: the test ran to completion.
-

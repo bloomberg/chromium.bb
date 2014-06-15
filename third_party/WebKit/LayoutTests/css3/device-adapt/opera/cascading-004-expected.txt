@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS CSS Test: @viewport cascading - !important declaration from preceding rule wins 
-Harness: the test ran to completion.
-

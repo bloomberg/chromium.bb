@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS deleteDatabase success event type, existing DB 
-PASS deleteDatabase success event, non-existent DB 
-Harness: the test ran to completion.
-

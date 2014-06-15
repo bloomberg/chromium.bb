@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS username property 
-PASS username property on non relative URL 
-PASS username property invalid URL 
-Harness: the test ran to completion.
-

@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS Basic pathname 
-PASS non hierarchical 
-PASS pathname property invalid URL 
-Harness: the test ran to completion.
-

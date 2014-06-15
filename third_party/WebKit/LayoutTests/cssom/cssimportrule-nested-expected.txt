@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS doc.styleSheets[0].cssRules[0].cssRules.length == 0 
-Harness: the test ran to completion.
-

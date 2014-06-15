@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS Transactions created in microtasks are deactivated when control returns to the event loop 
-PASS Transactions created in microtasks remain active in subsequent microtasks 
-PASS Within request event dispatch, transactions remain active across microtasks 
-Harness: the test ran to completion.
-

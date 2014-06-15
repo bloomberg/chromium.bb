@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS transfer attribute changed callback 
-PASS add, change and remove an attribute 
-Harness: the test ran to completion.
-

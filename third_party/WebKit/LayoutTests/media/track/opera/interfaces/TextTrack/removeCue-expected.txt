@@ -1,5 +1,0 @@
- This is a testharness.js-based test.
-PASS TextTrack.removeCue(), two elementless tracks 
-PASS TextTrack.removeCue(), cue from track element 
-Harness: the test ran to completion.
-

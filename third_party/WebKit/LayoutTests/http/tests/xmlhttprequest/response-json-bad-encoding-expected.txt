@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Let XMLHttpRequest with responseType set to json handle non-UTF-8 file. 
-Harness: the test ran to completion.
-

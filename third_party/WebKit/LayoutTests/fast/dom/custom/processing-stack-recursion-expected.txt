@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS recursively scheduled callbacks 
-Harness: the test ran to completion.
-

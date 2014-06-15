@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Imports with cycle complete loading in a defined order. 
-Harness: the test ran to completion.
-

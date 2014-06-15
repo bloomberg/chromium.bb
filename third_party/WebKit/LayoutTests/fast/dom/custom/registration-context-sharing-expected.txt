@@ -1,6 +1,0 @@
-
-This is a testharness.js-based test.
-PASS registration context is shared with some DOMImplementation-created documents 
-PASS registration context is shared with imported documents 
-Harness: the test ran to completion.
-

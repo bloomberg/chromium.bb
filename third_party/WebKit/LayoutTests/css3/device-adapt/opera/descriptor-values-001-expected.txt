@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS CSS Test: @viewport accept both percentage and number values for zoom factors 
-Harness: the test ran to completion.
-

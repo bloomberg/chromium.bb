@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Imports are evaluated in dependency order regardeless of the availability order. 
-Harness: the test ran to completion.
-

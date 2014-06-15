@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS Basic hash 
-PASS non hierarchical 
-PASS hash property invalid URL 
-Harness: the test ran to completion.
-

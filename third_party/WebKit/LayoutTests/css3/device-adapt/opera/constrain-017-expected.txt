@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS CSS Test: @viewport constrained - width deduced from height and aspect ratio 
-Harness: the test ran to completion.
-

@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS Check that window.testRunner is present. Required to add a user stylesheet. 
-PASS Check that window.internals is present. Required to call viewportAsText. 
-PASS Check viewport width. 
-Harness: the test ran to completion.
-

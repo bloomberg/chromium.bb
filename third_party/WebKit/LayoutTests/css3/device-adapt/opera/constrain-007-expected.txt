@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS CSS Test: @viewport constrained - width 50% 
-Harness: the test ran to completion.
-

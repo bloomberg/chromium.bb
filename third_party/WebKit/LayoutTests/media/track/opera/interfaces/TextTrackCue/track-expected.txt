@@ -1,5 +1,0 @@
- This is a testharness.js-based test.
-PASS TextTrackCue.track, script-created cue 
-PASS TextTrackCue.track, parsed cue 
-Harness: the test ran to completion.
-

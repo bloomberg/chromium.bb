@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS CSS Test: @viewport invalid <viewport-length> - drop negative lengths 
-Harness: the test ran to completion.
-

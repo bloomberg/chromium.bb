@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS inline style - text - delimiters - zero declarations 
-PASS inline style - text - delimiters - one declaration 
-PASS inline style - text - delimiters - two declarations 
-Harness: the test ran to completion.
-

@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS origin property 
-PASS origin property is readonly 
-PASS origin property invalid URL 
-Harness: the test ran to completion.
-

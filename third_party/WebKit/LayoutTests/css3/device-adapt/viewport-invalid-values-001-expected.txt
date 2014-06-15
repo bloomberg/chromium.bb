@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS Check that both @viewport rules are created. 
-PASS Check that "min-width: initial" is dropped. 
-PASS Check that "min-width: inherit" is dropped. 
-Harness: the test ran to completion.
-

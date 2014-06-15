@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS Unexpected EOF - CSSStyleDeclaration.cssText missing ')' 
-PASS Unexpected EOF - CSSStyleDeclaration.color missing ')' 
-PASS Unexpected EOF - CSSStyleRule.selectorText missing ']' 
-PASS Unexpected EOF - CSSStyleSheet.insertRule missing '}' 
-PASS Unexpected EOF - querySelector missing ']' 
-PASS Unexpected EOF - querySelector missing ')' 
-Harness: the test ran to completion.
-

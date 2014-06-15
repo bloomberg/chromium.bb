@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Test that partial layout works for offset{width, height, left, top} methods. 
-Harness: the test ran to completion.
-

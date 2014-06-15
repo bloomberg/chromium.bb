@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS CSS Test: @viewport invalid zoom factor - drop negative factors 
-Harness: the test ran to completion.
-

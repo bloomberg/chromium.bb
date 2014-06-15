@@ -1,5 +1,0 @@
- This is a testharness.js-based test.
-PASS VTTCue.align, script-created cue 
-PASS VTTCue.align, parsed cue 
-Harness: the test ran to completion.
-

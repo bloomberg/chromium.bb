@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Test aborting XMLHttpRequest with responseType set to 'stream' in LOADING state. 
-PASS Test aborting XMLHttpRequest with responseType set to 'stream' in DONE state. 
-Harness: the test ran to completion.
-

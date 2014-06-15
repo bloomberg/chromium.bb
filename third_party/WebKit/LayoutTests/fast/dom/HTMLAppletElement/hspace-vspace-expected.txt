@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS get HTMLAppletElement.hspace 
-PASS set HTMLAppletElement.hspace 
-PASS get HTMLAppletElement.vspace 
-PASS set HTMLAppletElement.vspace 
-Harness: the test ran to completion.
-

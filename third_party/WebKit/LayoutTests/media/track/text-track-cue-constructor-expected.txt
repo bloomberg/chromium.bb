@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS TextTrackCue and VTTCue are separate interfaces 
-PASS TextTrackCue constructor should not be supported 
-Harness: the test ran to completion.
-

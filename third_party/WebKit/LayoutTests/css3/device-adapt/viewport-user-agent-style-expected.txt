@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Check that we get a viewport width of 980px from the user agent stylesheet. 
-Harness: the test ran to completion.
-
