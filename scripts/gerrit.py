@@ -93,6 +93,14 @@ def GetApprovalSummary(_opts, cls):
 
 def PrintCl(opts, cls, lims, show_approvals=True):
   """Pretty print a single result"""
+  if opts.raw:
+    # Special case internal Chrome GoB as that is what most devs use.
+    # They can always redirect the list elsewhere via the -g option.
+    if opts.gob == constants.INTERNAL_GOB_INSTANCE:
+      print(constants.INTERNAL_CHANGE_PREFIX, end='')
+    print(cls['number'])
+    return
+
   if not lims:
     lims = {'url': 0, 'project': 0}
 
@@ -319,6 +327,8 @@ Actions:"""
                            (constants.EXTERNAL_GOB_INSTANCE))
   parser.add_argument('--sort', default='number',
                       help='Key to sort on (number, project)')
+  parser.add_argument('--raw', default=False, action='store_true',
+                      help='Return raw results (suitable for scripting)')
   parser.add_argument('-v', '--verbose', default=False, action='store_true',
                       help='Be more verbose in output')
   parser.add_argument('args', nargs='+')
