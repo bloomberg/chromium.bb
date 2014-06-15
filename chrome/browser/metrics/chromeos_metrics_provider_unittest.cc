@@ -18,6 +18,7 @@
 #include "chromeos/dbus/fake_bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/login_state.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -40,6 +41,8 @@ using chromeos::FakeBluetoothGattDescriptorClient;
 using chromeos::FakeBluetoothGattServiceClient;
 using chromeos::FakeBluetoothInputClient;
 using chromeos::FakeDBusThreadManager;
+using chromeos::PowerManagerClient;
+using chromeos::STUB_DBUS_CLIENT_IMPLEMENTATION;
 
 class ChromeOSMetricsProviderTest : public testing::Test {
  public:
@@ -68,6 +71,12 @@ class ChromeOSMetricsProviderTest : public testing::Test {
     fake_dbus_thread_manager->SetBluetoothAgentManagerClient(
         scoped_ptr<BluetoothAgentManagerClient>(
             new FakeBluetoothAgentManagerClient));
+
+    // Set up a PowerManagerClient instance for PerfProvider.
+    fake_dbus_thread_manager->SetPowerManagerClient(
+        scoped_ptr<PowerManagerClient>(
+            PowerManagerClient::Create(STUB_DBUS_CLIENT_IMPLEMENTATION)));
+
     DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager.release());
 
     // Grab pointers to members of the thread manager for easier testing.

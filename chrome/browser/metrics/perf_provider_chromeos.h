@@ -12,6 +12,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/login_state.h"
 #include "components/metrics/proto/sampled_profile.pb.h"
 
@@ -22,10 +23,11 @@ class WindowedIncognitoObserver;
 // Provides access to ChromeOS perf data. perf aka "perf events" is a
 // performance profiling infrastructure built into the linux kernel. For more
 // information, see: https://perf.wiki.kernel.org/index.php/Main_Page.
-class PerfProvider : public base::NonThreadSafe {
+class PerfProvider : public base::NonThreadSafe,
+                     public chromeos::PowerManagerClient::Observer {
  public:
   PerfProvider();
-  ~PerfProvider();
+  virtual ~PerfProvider();
 
   // Stores collected perf data protobufs in |sampled_profiles|. Clears all the
   // stored profile data. Returns true if it wrote to |sampled_profiles|.
@@ -48,7 +50,12 @@ class PerfProvider : public base::NonThreadSafe {
     PerfProvider* perf_provider_;
   };
 
-  // Turns on perf collection. Starts the timer that's used to schedule
+  // Called when a suspend finishes. This is either a successful suspend
+  // followed by a resume, or a suspend that was canceled. Inherited from
+  // PowerManagerClient::Observer.
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
+
+  // Turns on perf collection. Resets the timer that's used to schedule
   // collections.
   void OnUserLoggedIn();
 
@@ -63,7 +70,7 @@ class PerfProvider : public base::NonThreadSafe {
 
   // Collects perf data for a given |trigger_event|. Calls perf via the ChromeOS
   // debug daemon's dbus interface.
-  void CollectIfNecessary(SampledProfile::TriggerEvent trigger_event);
+  void CollectIfNecessary(scoped_ptr<SampledProfile> sampled_profile);
 
   // Collects perf data on a repeating basis by calling CollectIfNecessary() and
   // reschedules it to be collected again.
@@ -75,7 +82,7 @@ class PerfProvider : public base::NonThreadSafe {
   // |trigger_event| is the cause of the perf data collection.
   void ParseProtoIfValid(
       scoped_ptr<WindowedIncognitoObserver> incognito_observer,
-      SampledProfile::TriggerEvent trigger_event,
+      scoped_ptr<SampledProfile> sampled_profile,
       const std::vector<uint8>& data);
 
   // Vector of SampledProfile protobufs containing perf profiles.
