@@ -480,6 +480,18 @@ class CONTENT_EXPORT ContentBrowserClient {
       base::Callback<void(bool)> result_callback,
       base::Closure* cancel_callback);
 
+  // Requests a permission to use system exclusive messages in MIDI events.
+  // |result_callback| will be invoked when the request is resolved. If
+  // |cancel_callback| is non-null, it's set to a callback which can be used to
+  // cancel the permission request.
+  virtual void RequestMidiSysExPermission(
+      WebContents* web_contents,
+      int bridge_id,
+      const GURL& requesting_frame,
+      bool user_gesture,
+      base::Callback<void(bool)> result_callback,
+      base::Closure* cancel_callback);
+
   // Returns true if the given page is allowed to open a window of the given
   // type. If true is returned, |no_javascript_access| will indicate whether
   // the window that is created should be scriptable/in the same process.

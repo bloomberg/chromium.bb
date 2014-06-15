@@ -46,6 +46,8 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/midi_permission_context.h"
+#include "chrome/browser/media/midi_permission_context_factory.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -2154,6 +2156,21 @@ void ChromeContentBrowserClient::RequestGeolocationPermission(
           RequestGeolocationPermission(web_contents, bridge_id,
                                        requesting_frame, user_gesture,
                                        result_callback, cancel_callback);
+}
+
+void ChromeContentBrowserClient::RequestMidiSysExPermission(
+    content::WebContents* web_contents,
+    int bridge_id,
+    const GURL& requesting_frame,
+    bool user_gesture,
+    base::Callback<void(bool)> result_callback,
+    base::Closure* cancel_callback) {
+  MidiPermissionContext* context =
+      MidiPermissionContextFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  context->RequestMidiSysExPermission(web_contents, bridge_id, requesting_frame,
+                                      user_gesture, result_callback,
+                                      cancel_callback);
 }
 
 bool ChromeContentBrowserClient::CanCreateWindow(

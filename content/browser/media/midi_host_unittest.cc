@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/midi_host.h"
+#include "content/browser/media/midi_host.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

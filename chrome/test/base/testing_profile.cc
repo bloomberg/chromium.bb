@@ -767,24 +767,6 @@ TestingProfile::GetMediaRequestContextForStoragePartition(
   return NULL;
 }
 
-void TestingProfile::RequestMidiSysExPermission(
-      int render_process_id,
-      int render_view_id,
-      int bridge_id,
-      const GURL& requesting_frame,
-      bool user_gesture,
-      const MidiSysExPermissionCallback& callback) {
-  // Always reject requests for testing.
-  callback.Run(false);
-}
-
-void TestingProfile::CancelMidiSysExPermissionRequest(
-    int render_process_id,
-    int render_view_id,
-    int bridge_id,
-    const GURL& requesting_frame) {
-}
-
 void TestingProfile::RequestProtectedMediaIdentifierPermission(
     int render_process_id,
     int render_view_id,

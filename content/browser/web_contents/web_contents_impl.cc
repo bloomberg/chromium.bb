@@ -36,6 +36,7 @@
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/media/midi_dispatcher_host.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/power_save_blocker_impl.h"
@@ -1094,6 +1095,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
                  NotificationService::AllBrowserContextsAndSources());
 
   geolocation_dispatcher_host_.reset(new GeolocationDispatcherHost(this));
+  midi_dispatcher_host_.reset(new MidiDispatcherHost(this));
 
 #if defined(OS_ANDROID)
   date_time_chooser_.reset(new DateTimeChooserAndroid());

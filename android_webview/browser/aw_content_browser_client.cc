@@ -405,6 +405,18 @@ void AwContentBrowserClient::RequestGeolocationPermission(
   }
 }
 
+void AwContentBrowserClient::RequestMidiSysExPermission(
+    content::WebContents* web_contents,
+    int bridge_id,
+    const GURL& requesting_frame,
+    bool user_gesture,
+    base::Callback<void(bool)> result_callback,
+    base::Closure* cancel_callback) {
+  // TODO(toyoshim): Android WebView is not supported yet.
+  // See http://crbug.com/339767.
+  result_callback.Run(false);
+}
+
 bool AwContentBrowserClient::CanCreateWindow(
     const GURL& opener_url,
     const GURL& opener_top_level_frame_url,

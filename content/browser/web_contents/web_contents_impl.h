@@ -50,6 +50,7 @@ class DownloadItem;
 class GeolocationDispatcherHost;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
+class MidiDispatcherHost;
 class PowerSaveBlocker;
 class RenderViewHost;
 class RenderViewHostDelegateView;
@@ -1130,6 +1131,8 @@ class CONTENT_EXPORT WebContentsImpl
   bool last_dialog_suppressed_;
 
   scoped_ptr<GeolocationDispatcherHost> geolocation_dispatcher_host_;
+
+  scoped_ptr<MidiDispatcherHost> midi_dispatcher_host_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/chrome_midi_permission_context.h"
+#include "chrome/browser/media/midi_permission_context.h"
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -15,6 +15,8 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -24,12 +26,12 @@
 class MidiPermissionRequest : public PermissionBubbleRequest {
  public:
   MidiPermissionRequest(
-      ChromeMidiPermissionContext* context,
+      MidiPermissionContext* context,
       const PermissionRequestID& id,
       const GURL& requesting_frame,
       bool user_gesture,
       const std::string& display_languages,
-      const content::BrowserContext::MidiSysExPermissionCallback& callback);
+      const base::Callback<void(bool)>& callback);
   virtual ~MidiPermissionRequest();
 
   // PermissionBubbleDelegate:
@@ -44,24 +46,24 @@ class MidiPermissionRequest : public PermissionBubbleRequest {
   virtual void RequestFinished() OVERRIDE;
 
  private:
-  ChromeMidiPermissionContext* context_;
+  MidiPermissionContext* context_;
   const PermissionRequestID id_;
   GURL requesting_frame_;
   bool user_gesture_;
   std::string display_languages_;
-  const content::BrowserContext::MidiSysExPermissionCallback& callback_;
+  const base::Callback<void(bool)>& callback_;
   bool is_finished_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiPermissionRequest);
 };
 
 MidiPermissionRequest::MidiPermissionRequest(
-    ChromeMidiPermissionContext* context,
+    MidiPermissionContext* context,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     bool user_gesture,
     const std::string& display_languages,
-    const content::BrowserContext::MidiSysExPermissionCallback& callback)
+    const base::Callback<void(bool)>& callback)
     : context_(context),
       id_(id),
       requesting_frame_(requesting_frame),
@@ -113,43 +115,46 @@ void MidiPermissionRequest::RequestFinished() {
   context_->RequestFinished(this);
 }
 
-ChromeMidiPermissionContext::ChromeMidiPermissionContext(Profile* profile)
+MidiPermissionContext::MidiPermissionContext(Profile* profile)
     : profile_(profile),
-      shutting_down_(false) {
+      shutting_down_(false),
+      weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
-ChromeMidiPermissionContext::~ChromeMidiPermissionContext() {
+MidiPermissionContext::~MidiPermissionContext() {
   DCHECK(!permission_queue_controller_);
   DCHECK(pending_requests_.empty());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
-void ChromeMidiPermissionContext::Shutdown() {
+void MidiPermissionContext::Shutdown() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   permission_queue_controller_.reset();
   shutting_down_ = true;
 }
 
-void ChromeMidiPermissionContext::RequestMidiSysExPermission(
-    int render_process_id,
-    int render_view_id,
+void MidiPermissionContext::RequestMidiSysExPermission(
+    content::WebContents* web_contents,
     int bridge_id,
     const GURL& requesting_frame,
     bool user_gesture,
-    const content::BrowserContext::MidiSysExPermissionCallback& callback) {
+    const base::Callback<void(bool)>& result_callback,
+    base::Closure* cancel_callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!shutting_down_);
 
   // TODO(toyoshim): Support Extension's manifest declared permission.
   // See http://crbug.com/266338.
 
-  content::WebContents* web_contents =
-    tab_util::GetWebContentsByID(render_process_id, render_view_id);
-
-  // The page doesn't exist any more.
-  if (!web_contents)
-    return;
+  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
+  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+  if (cancel_callback) {
+    *cancel_callback = base::Bind(
+        &MidiPermissionContext::CancelMidiSysExPermissionRequest,
+        weak_factory_.GetWeakPtr(), render_process_id, render_view_id,
+        bridge_id);
+  }
 
   const PermissionRequestID id(
       render_process_id, render_view_id, bridge_id, GURL());
@@ -163,31 +168,30 @@ void ChromeMidiPermissionContext::RequestMidiSysExPermission(
     LOG(WARNING) << "Attempt to use MIDI sysex from an invalid URL: "
                  << requesting_frame << "," << embedder
                  << " (Web MIDI is not supported in popups)";
-    PermissionDecided(id, requesting_frame, embedder, callback, false);
+    PermissionDecided(id, requesting_frame, embedder, result_callback, false);
     return;
   }
 
   DecidePermission(web_contents, id, requesting_frame, embedder, user_gesture,
-                   callback);
+                   result_callback);
 }
 
-void ChromeMidiPermissionContext::CancelMidiSysExPermissionRequest(
+void MidiPermissionContext::CancelMidiSysExPermissionRequest(
     int render_process_id,
     int render_view_id,
-    int bridge_id,
-    const GURL& requesting_frame) {
+    int bridge_id) {
   CancelPendingInfobarRequest(
       PermissionRequestID(
           render_process_id, render_view_id, bridge_id, GURL()));
 }
 
-void ChromeMidiPermissionContext::DecidePermission(
+void MidiPermissionContext::DecidePermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
     bool user_gesture,
-    const content::BrowserContext::MidiSysExPermissionCallback& callback) {
+    const base::Callback<void(bool)>& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   ContentSetting content_setting =
@@ -226,25 +230,25 @@ void ChromeMidiPermissionContext::DecidePermission(
       // we're using only bubbles. crbug.com/337458
       GetQueueController()->CreateInfoBarRequest(
           id, requesting_frame, embedder, std::string(), base::Bind(
-              &ChromeMidiPermissionContext::NotifyPermissionSet,
+              &MidiPermissionContext::NotifyPermissionSet,
               base::Unretained(this), id, requesting_frame, callback));
   }
 }
 
-void ChromeMidiPermissionContext::PermissionDecided(
+void MidiPermissionContext::PermissionDecided(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
-    const content::BrowserContext::MidiSysExPermissionCallback& callback,
+    const base::Callback<void(bool)>& callback,
     bool allowed) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   NotifyPermissionSet(id, requesting_frame, callback, allowed);
 }
 
-void ChromeMidiPermissionContext::NotifyPermissionSet(
+void MidiPermissionContext::NotifyPermissionSet(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
-    const content::BrowserContext::MidiSysExPermissionCallback& callback,
+    const base::Callback<void(bool)>& callback,
     bool allowed) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -261,7 +265,7 @@ void ChromeMidiPermissionContext::NotifyPermissionSet(
   callback.Run(allowed);
 }
 
-PermissionQueueController* ChromeMidiPermissionContext::GetQueueController() {
+PermissionQueueController* MidiPermissionContext::GetQueueController() {
   if (!permission_queue_controller_) {
     permission_queue_controller_.reset(
         new PermissionQueueController(profile_,
@@ -270,7 +274,7 @@ PermissionQueueController* ChromeMidiPermissionContext::GetQueueController() {
   return permission_queue_controller_.get();
 }
 
-void ChromeMidiPermissionContext::RequestFinished(
+void MidiPermissionContext::RequestFinished(
     MidiPermissionRequest* request) {
   base::ScopedPtrHashMap<std::string, MidiPermissionRequest>::iterator it;
   for (it = pending_requests_.begin(); it != pending_requests_.end(); it++) {
@@ -283,7 +287,7 @@ void ChromeMidiPermissionContext::RequestFinished(
   NOTREACHED() << "Missing request";
 }
 
-void ChromeMidiPermissionContext::CancelPendingInfobarRequest(
+void MidiPermissionContext::CancelPendingInfobarRequest(
     const PermissionRequestID& id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (shutting_down_)

@@ -42,8 +42,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/media/chrome_midi_permission_context.h"
-#include "chrome/browser/media/chrome_midi_permission_context_factory.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/net/predictor.h"
@@ -983,34 +981,6 @@ ProfileImpl::GetMediaRequestContextForStoragePartition(
     bool in_memory) {
   return io_data_
       .GetIsolatedMediaRequestContextGetter(partition_path, in_memory).get();
-}
-
-void ProfileImpl::RequestMidiSysExPermission(
-      int render_process_id,
-      int render_view_id,
-      int bridge_id,
-      const GURL& requesting_frame,
-      bool user_gesture,
-      const MidiSysExPermissionCallback& callback) {
-  ChromeMidiPermissionContext* context =
-      ChromeMidiPermissionContextFactory::GetForProfile(this);
-  context->RequestMidiSysExPermission(render_process_id,
-                                      render_view_id,
-                                      bridge_id,
-                                      requesting_frame,
-                                      user_gesture,
-                                      callback);
-}
-
-void ProfileImpl::CancelMidiSysExPermissionRequest(
-    int render_process_id,
-    int render_view_id,
-    int bridge_id,
-    const GURL& requesting_frame) {
-  ChromeMidiPermissionContext* context =
-      ChromeMidiPermissionContextFactory::GetForProfile(this);
-  context->CancelMidiSysExPermissionRequest(
-      render_process_id, render_view_id, bridge_id, requesting_frame);
 }
 
 void ProfileImpl::RequestProtectedMediaIdentifierPermission(
