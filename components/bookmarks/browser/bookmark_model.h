@@ -136,10 +136,6 @@ class BookmarkModel : public KeyedService {
   // notification for individual node removals.
   void RemoveAllUserBookmarks();
 
-  // DEPRECATED: use RemoveAllUserBookmarks instead. This method will be
-  // removed. http://crbug.com/49598
-  void RemoveAll();
-
   // Moves |node| to |new_parent| and inserts it at the given |index|.
   void Move(const BookmarkNode* node,
             const BookmarkNode* new_parent,

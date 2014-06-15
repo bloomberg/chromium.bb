@@ -233,10 +233,6 @@ void BookmarkModel::RemoveAllUserBookmarks() {
                     BookmarkAllUserNodesRemoved(this, removed_urls));
 }
 
-void BookmarkModel::RemoveAll() {
-  RemoveAllUserBookmarks();
-}
-
 void BookmarkModel::Move(const BookmarkNode* node,
                          const BookmarkNode* new_parent,
                          int index) {

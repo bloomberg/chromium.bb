@@ -67,15 +67,6 @@ public class ChromeBrowserProviderClient {
         return id != null ? id.longValue() : INVALID_BOOKMARK_ID;
     }
 
-    /*
-     * Use getEditableBookmarkFolderHierarchy instead.
-     * TODO(joaodasilva): remove this call. http://crbug.com/49598
-     */
-    @Deprecated
-    public static BookmarkNode getBookmarkFolderHierarchy(Context context) {
-        return getEditableBookmarkFolderHierarchy(context);
-    }
-
     /**
      * Retrieves the bookmark folder hierarchy of editable nodes, returning its root node.
      *
@@ -87,15 +78,6 @@ public class ChromeBrowserProviderClient {
         return chromeBrowserProviderCall(BookmarkNode.class,
                 ChromeBrowserProvider.CLIENT_API_GET_EDITABLE_BOOKMARK_FOLDER_HIERARCHY, context,
                 argsToBundle());
-    }
-
-    /*
-     * Use removeAllUserBookmarks instead.
-     * TODO(joaodasilva): remove this call. http://crbug.com/49598
-     */
-    @Deprecated
-    public static void removeAllBookmarks(Context context) {
-        removeAllUserBookmarks(context);
     }
 
     /**

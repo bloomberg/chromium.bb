@@ -40,7 +40,6 @@
         'bookmarks/browser/bookmark_match.h',
         'bookmarks/browser/bookmark_model.cc',
         'bookmarks/browser/bookmark_model.h',
-        'bookmarks/browser/bookmark_model_observer.cc',
         'bookmarks/browser/bookmark_model_observer.h',
         'bookmarks/browser/bookmark_node.cc',
         'bookmarks/browser/bookmark_node.h',
