@@ -9,7 +9,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
@@ -18,13 +17,9 @@ namespace remoting {
 
 namespace {
 
-// PulseAudio's module-pipe-sink must be configured to use the following
-// parameters for the sink we read from.
-const int kSamplesPerSecond = 48000;
-const int kChannels = 2;
-const int kBytesPerSample = 2;
-const int kSampleBytesPerSecond =
-    kSamplesPerSecond * kChannels * kBytesPerSample;
+const int kSampleBytesPerSecond = AudioPipeReader::kSamplingRate *
+                                  AudioPipeReader::kChannels *
+                                  AudioPipeReader::kBytesPerSample;
 
 // Read data from the pipe every 40ms.
 const int kCapturingPeriodMs = 40;
@@ -47,45 +42,26 @@ const int kPipeBufferSizeBytes = kPipeBufferSizeMs * kSampleBytesPerSecond /
 // static
 scoped_refptr<AudioPipeReader> AudioPipeReader::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::FilePath& pipe_name) {
+    const base::FilePath& pipe_path) {
   // Create a reference to the new AudioPipeReader before posting the
   // StartOnAudioThread task, otherwise it may be deleted on the audio
   // thread before we return.
   scoped_refptr<AudioPipeReader> pipe_reader =
-      new AudioPipeReader(task_runner);
-  task_runner->PostTask(FROM_HERE, base::Bind(
-      &AudioPipeReader::StartOnAudioThread, pipe_reader, pipe_name));
+      new AudioPipeReader(task_runner, pipe_path);
+  task_runner->PostTask(
+      FROM_HERE, base::Bind(&AudioPipeReader::StartOnAudioThread, pipe_reader));
   return pipe_reader;
 }
 
-void AudioPipeReader::StartOnAudioThread(const base::FilePath& pipe_name) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  pipe_fd_ = HANDLE_EINTR(open(
-      pipe_name.value().c_str(), O_RDONLY | O_NONBLOCK));
-  if (pipe_fd_ < 0) {
-    LOG(ERROR) << "Failed to open " << pipe_name.value();
-    return;
-  }
-
-  // Set buffer size for the pipe.
-  int result = HANDLE_EINTR(
-      fcntl(pipe_fd_, F_SETPIPE_SZ, kPipeBufferSizeBytes));
-  if (result < 0) {
-    PLOG(ERROR) << "fcntl";
-  }
-
-  WaitForPipeReadable();
-}
-
 AudioPipeReader::AudioPipeReader(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const base::FilePath& pipe_path)
     : task_runner_(task_runner),
+      pipe_path_(pipe_path),
       observers_(new ObserverListThreadSafe<StreamObserver>()) {
 }
 
-AudioPipeReader::~AudioPipeReader() {
-}
+AudioPipeReader::~AudioPipeReader() {}
 
 void AudioPipeReader::AddObserver(StreamObserver* observer) {
   observers_->AddObserver(observer);
@@ -95,12 +71,80 @@ void AudioPipeReader::RemoveObserver(StreamObserver* observer) {
 }
 
 void AudioPipeReader::OnFileCanReadWithoutBlocking(int fd) {
-  DCHECK_EQ(fd, pipe_fd_);
+  DCHECK_EQ(fd, pipe_.GetPlatformFile());
   StartTimer();
 }
 
 void AudioPipeReader::OnFileCanWriteWithoutBlocking(int fd) {
   NOTREACHED();
+}
+
+void AudioPipeReader::StartOnAudioThread() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (!file_watcher_.Watch(pipe_path_.DirName(), true,
+                           base::Bind(&AudioPipeReader::OnDirectoryChanged,
+                                      base::Unretained(this)))) {
+    LOG(ERROR) << "Failed to watch pulseaudio directory "
+               << pipe_path_.DirName().value();
+  }
+
+  TryOpenPipe();
+}
+
+void AudioPipeReader::OnDirectoryChanged(const base::FilePath& path,
+                                         bool error) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (error) {
+    LOG(ERROR) << "File watcher returned an error.";
+    return;
+  }
+
+  TryOpenPipe();
+}
+
+void AudioPipeReader::TryOpenPipe() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  base::File new_pipe;
+  new_pipe.Initialize(
+      pipe_path_,
+      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_ASYNC);
+
+  // If both |pipe_| and |new_pipe| are valid then compare inodes for the two
+  // file descriptors. Don't need to do anything if inode hasn't changed.
+  if (new_pipe.IsValid() && pipe_.IsValid()) {
+    struct stat old_stat;
+    struct stat new_stat;
+    if (fstat(pipe_.GetPlatformFile(), &old_stat) == 0 &&
+        fstat(new_pipe.GetPlatformFile(), &new_stat) == 0 &&
+        old_stat.st_ino == new_stat.st_ino) {
+      return;
+    }
+  }
+
+  file_descriptor_watcher_.StopWatchingFileDescriptor();
+  timer_.Stop();
+
+  pipe_ = new_pipe.Pass();
+
+  if (pipe_.IsValid()) {
+    // Set O_NONBLOCK flag.
+    if (HANDLE_EINTR(fcntl(pipe_.GetPlatformFile(), F_SETFL, O_NONBLOCK)) < 0) {
+      PLOG(ERROR) << "fcntl";
+      pipe_.Close();
+      return;
+    }
+
+    // Set buffer size for the pipe.
+    if (HANDLE_EINTR(fcntl(
+            pipe_.GetPlatformFile(), F_SETPIPE_SZ, kPipeBufferSizeBytes)) < 0) {
+      PLOG(ERROR) << "fcntl";
+    }
+
+    WaitForPipeReadable();
+  }
 }
 
 void AudioPipeReader::StartTimer() {
@@ -113,11 +157,10 @@ void AudioPipeReader::StartTimer() {
 
 void AudioPipeReader::DoCapture() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_GT(pipe_fd_, 0);
+  DCHECK(pipe_.IsValid());
 
   // Calculate how much we need read from the pipe. Pulseaudio doesn't control
-  // how much data it writes to the pipe, so we need to pace the stream, so
-  // that we read the exact number of the samples per second we need.
+  // how much data it writes to the pipe, so we need to pace the stream.
   base::TimeDelta stream_position = base::TimeTicks::Now() - started_time_;
   int64 stream_position_bytes = stream_position.InMilliseconds() *
       kSampleBytesPerSecond / base::Time::kMillisecondsPerSecond;
@@ -129,8 +172,8 @@ void AudioPipeReader::DoCapture() {
   data.resize(pos + bytes_to_read);
 
   while (pos < data.size()) {
-    int read_result = HANDLE_EINTR(
-       read(pipe_fd_, string_as_array(&data) + pos, data.size() - pos));
+    int read_result =
+        pipe_.ReadAtCurrentPos(string_as_array(&data) + pos, data.size() - pos);
     if (read_result > 0) {
       pos += read_result;
     } else {
@@ -171,11 +214,8 @@ void AudioPipeReader::DoCapture() {
 void AudioPipeReader::WaitForPipeReadable() {
   timer_.Stop();
   base::MessageLoopForIO::current()->WatchFileDescriptor(
-      pipe_fd_,
-      false,
-      base::MessageLoopForIO::WATCH_READ,
-      &file_descriptor_watcher_,
-      this);
+      pipe_.GetPlatformFile(), false, base::MessageLoopForIO::WATCH_READ,
+      &file_descriptor_watcher_, this);
 }
 
 // static

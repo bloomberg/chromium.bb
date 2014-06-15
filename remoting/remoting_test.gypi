@@ -85,6 +85,7 @@
         'host/ipc_desktop_environment_unittest.cc',
         'host/it2me/it2me_native_messaging_host_unittest.cc',
         'host/json_host_config_unittest.cc',
+        'host/linux/audio_pipe_reader_unittest.cc',
         'host/linux/unicode_to_keysym_unittest.cc',
         'host/linux/x_server_clipboard_unittest.cc',
         'host/local_input_monitor_unittest.cc',

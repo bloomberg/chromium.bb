@@ -13,10 +13,6 @@ namespace remoting {
 
 namespace {
 
-// PulseAudio's module-pipe-sink must be configured to use the following
-// parameters for the sink we read from.
-const AudioPacket_SamplingRate kSamplingRate = AudioPacket::SAMPLING_RATE_48000;
-
 base::LazyInstance<scoped_refptr<AudioPipeReader> >::Leaky
     g_pulseaudio_pipe_sink_reader = LAZY_INSTANCE_INITIALIZER;
 
@@ -45,7 +41,8 @@ AudioCapturerLinux::~AudioCapturerLinux() {
 
 bool AudioCapturerLinux::Start(const PacketCapturedCallback& callback) {
   callback_ = callback;
-  silence_detector_.Reset(kSamplingRate, AudioPacket::CHANNELS_STEREO);
+  silence_detector_.Reset(AudioPipeReader::kSamplingRate,
+                          AudioPipeReader::kChannels);
   pipe_reader_->AddObserver(this);
   return true;
 }
@@ -72,9 +69,9 @@ void AudioCapturerLinux::OnDataRead(
   scoped_ptr<AudioPacket> packet(new AudioPacket());
   packet->add_data(data->data());
   packet->set_encoding(AudioPacket::ENCODING_RAW);
-  packet->set_sampling_rate(kSamplingRate);
-  packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
-  packet->set_channels(AudioPacket::CHANNELS_STEREO);
+  packet->set_sampling_rate(AudioPipeReader::kSamplingRate);
+  packet->set_bytes_per_sample(AudioPipeReader::kBytesPerSample);
+  packet->set_channels(AudioPipeReader::kChannels);
   callback_.Run(packet.Pass());
 }
 

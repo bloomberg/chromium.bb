@@ -303,8 +303,6 @@ class Desktop:
     try:
       if not os.path.exists(pulse_path):
         os.mkdir(pulse_path)
-      if not os.path.exists(pipe_name):
-        os.mkfifo(pipe_name)
     except IOError, e:
       logging.error("Failed to create pulseaudio pipe: " + str(e))
       return False

@@ -5,16 +5,16 @@
 #ifndef REMOTING_HOST_LINUX_AUDIO_PIPE_READER_H_
 #define REMOTING_HOST_LINUX_AUDIO_PIPE_READER_H_
 
+#include "base/files/file.h"
+#include "base/files/file_path.h"
+#include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-
-namespace base {
-class FilePath;
-}
+#include "remoting/proto/audio.pb.h"
 
 namespace remoting {
 
@@ -24,9 +24,17 @@ struct AudioPipeReaderTraits;
 // pulseaudio) writes the sound that's being played back and then sends data to
 // all registered observers.
 class AudioPipeReader
-  : public base::RefCountedThreadSafe<AudioPipeReader, AudioPipeReaderTraits>,
+    : public base::RefCountedThreadSafe<AudioPipeReader, AudioPipeReaderTraits>,
       public base::MessageLoopForIO::Watcher {
  public:
+  // PulseAudio's module-pipe-sink must be configured to use the following
+  // parameters for the sink we read from.
+  static const AudioPacket_SamplingRate kSamplingRate =
+      AudioPacket::SAMPLING_RATE_48000;
+  static const AudioPacket_BytesPerSample kBytesPerSample =
+      AudioPacket::BYTES_PER_SAMPLE_2;
+  static const AudioPacket_Channels kChannels = AudioPacket::CHANNELS_STEREO;
+
   class StreamObserver {
    public:
     virtual void OnDataRead(scoped_refptr<base::RefCountedString> data) = 0;
@@ -35,7 +43,7 @@ class AudioPipeReader
   // |task_runner| specifies the IO thread to use to read data from the pipe.
   static scoped_refptr<AudioPipeReader> Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const base::FilePath& pipe_name);
+      const base::FilePath& pipe_path);
 
   // Register or unregister an observer. Each observer receives data on the
   // thread on which it was registered and guaranteed not to be called after
@@ -52,17 +60,25 @@ class AudioPipeReader
   friend class base::RefCountedThreadSafe<AudioPipeReader>;
   friend struct AudioPipeReaderTraits;
 
-  AudioPipeReader(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  AudioPipeReader(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                  const base::FilePath& pipe_path);
   virtual ~AudioPipeReader();
 
-  void StartOnAudioThread(const base::FilePath& pipe_name);
+  void StartOnAudioThread();
+  void OnDirectoryChanged(const base::FilePath& path, bool error);
+  void TryOpenPipe();
   void StartTimer();
   void DoCapture();
   void WaitForPipeReadable();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::FilePath pipe_path_;
 
-  int pipe_fd_;
+  // Watcher for the directory that contains audio pipe we are reading from, to
+  // monitor when pulseaudio creates or deletes it.
+  base::FilePathWatcher file_watcher_;
+
+  base::File pipe_;
   base::RepeatingTimer<AudioPipeReader> timer_;
   scoped_refptr<ObserverListThreadSafe<StreamObserver> > observers_;
 
