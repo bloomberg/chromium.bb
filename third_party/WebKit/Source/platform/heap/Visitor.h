@@ -621,7 +621,8 @@ class DefaultTraceTrait<T, true> {
 public:
     static void mark(Visitor* visitor, const T* self)
     {
-        self->adjustAndMark(visitor);
+        if (self)
+            self->adjustAndMark(visitor);
     }
 
 #ifndef NDEBUG
