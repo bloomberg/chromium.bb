@@ -9,8 +9,6 @@
 #include "public/platform/WebArrayBuffer.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
-#include "wtf/Vector.h"
-#include "wtf/text/CString.h"
 
 namespace WebCore {
 

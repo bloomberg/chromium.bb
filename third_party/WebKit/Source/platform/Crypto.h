@@ -16,7 +16,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/StringHasher.h"
 #include "wtf/Vector.h"
-#include "wtf/text/CString.h"
 
 namespace WebCore {
 
