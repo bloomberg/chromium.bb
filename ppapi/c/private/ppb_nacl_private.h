@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Jun  6 10:38:50 2014. */
+/* From private/ppb_nacl_private.idl modified Fri Jun 13 15:14:51 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -445,6 +445,10 @@ struct PPB_NaCl_Private_1_0 {
   void (*ReportSelLdrStatus)(PP_Instance instance,
                              int32_t load_status,
                              int32_t max_status);
+  /* Logs time taken by an operation to UMA histograms.
+   * This function is safe to call on any thread.
+   */
+  void (*LogTranslateTime)(const char* histogram_name, int64_t time_us);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

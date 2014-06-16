@@ -1499,6 +1499,15 @@ void ReportSelLdrStatus(PP_Instance instance,
   HistogramEnumerate(name, load_status, max_status);
 }
 
+void LogTranslateTime(const char* histogram_name,
+                      int64_t time_in_us) {
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&HistogramTimeTranslation,
+                 std::string(histogram_name),
+                 time_in_us / 1000));
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -1538,7 +1547,8 @@ const PPB_NaCl_Private nacl_interface = {
   &PostMessageToJavaScript,
   &DownloadNexe,
   &DownloadFile,
-  &ReportSelLdrStatus
+  &ReportSelLdrStatus,
+  &LogTranslateTime
 };
 
 }  // namespace

@@ -79,11 +79,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // have been compiled.
   pp::CompletionCallback GetCompileProgressCallback(int64_t bytes_compiled);
 
-  // Return a callback that should be notified when an interesting UMA timing
-  // is ready to be reported.
-  pp::CompletionCallback GetUMATimeCallback(const nacl::string& event_name,
-                                            int64_t microsecs);
-
   // Get the last known load progress.
   void GetCurrentProgress(int64_t* bytes_loaded, int64_t* bytes_total);
 
@@ -137,10 +132,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
 
   // Invoked when the read descriptor for nexe_file_ is created.
   void NexeReadDidOpen(int32_t pp_error);
-
-  // Invoked when a UMA timing measurement from the translate thread is ready.
-  void DoUMATimeMeasure(
-      int32_t pp_error, const nacl::string& event_name, int64_t microsecs);
 
   // Bring control back to the plugin by invoking the
   // |translate_notify_callback_|.  This does not set the ErrorInfo report,

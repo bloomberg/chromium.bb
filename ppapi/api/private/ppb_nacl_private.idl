@@ -435,4 +435,10 @@ interface PPB_NaCl_Private {
   void ReportSelLdrStatus([in] PP_Instance instance,
                           [in] int32_t load_status,
                           [in] int32_t max_status);
+
+  /* Logs time taken by an operation to UMA histograms.
+   * This function is safe to call on any thread.
+   */
+  void LogTranslateTime([in] str_t histogram_name,
+                        [in] int64_t time_us);
 };

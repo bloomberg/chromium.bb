@@ -26,12 +26,6 @@ namespace plugin {
 
 namespace {
 
-// Assume translation time metrics *can be* large.
-// Up to 12 minutes.
-const int64_t kTimeLargeMin = 10;          // in ms
-const int64_t kTimeLargeMax = 720000;      // in ms
-const uint32_t kTimeLargeBuckets = 100;
-
 const int32_t kSizeKBMin = 1;
 const int32_t kSizeKBMax = 512*1024;       // very large .pexe / .nexe.
 const uint32_t kSizeKBBuckets = 100;
@@ -39,15 +33,6 @@ const uint32_t kSizeKBBuckets = 100;
 const int32_t kRatioMin = 10;
 const int32_t kRatioMax = 10*100;          // max of 10x difference.
 const uint32_t kRatioBuckets = 100;
-
-void HistogramTime(pp::UMAPrivate& uma,
-                   const nacl::string& name, int64_t ms) {
-  if (ms < 0) return;
-  uma.HistogramCustomTimes(name,
-                           ms,
-                           kTimeLargeMin, kTimeLargeMax,
-                           kTimeLargeBuckets);
-}
 
 void HistogramSizeKB(pp::UMAPrivate& uma,
                      const nacl::string& name, int32_t kb) {
@@ -528,21 +513,6 @@ pp::CompletionCallback PnaclCoordinator::GetCompileProgressCallback(
     int64_t bytes_compiled) {
   return callback_factory_.NewCallback(&PnaclCoordinator::BitcodeGotCompiled,
                                        bytes_compiled);
-}
-
-void PnaclCoordinator::DoUMATimeMeasure(int32_t pp_error,
-                                        const nacl::string& event_name,
-                                        int64_t microsecs) {
-  DCHECK(pp_error == PP_OK);
-  HistogramTime(
-      plugin_->uma_interface(), event_name, microsecs / NACL_MICROS_PER_MILLI);
-}
-
-pp::CompletionCallback PnaclCoordinator::GetUMATimeCallback(
-    const nacl::string& event_name, int64_t microsecs) {
-  return callback_factory_.NewCallback(&PnaclCoordinator::DoUMATimeMeasure,
-                                       event_name,
-                                       microsecs);
 }
 
 void PnaclCoordinator::GetCurrentProgress(int64_t* bytes_loaded,

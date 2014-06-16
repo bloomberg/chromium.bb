@@ -174,11 +174,9 @@ void PnaclTranslateThread::DoTranslate() {
                     error_info.message());
     return;
   }
-  core->CallOnMainThread(0,
-                         coordinator_->GetUMATimeCallback(
-                             "NaCl.Perf.PNaClLoadTime.LoadCompiler",
-                             NaClGetTimeOfDayMicroseconds() - llc_start_time),
-                         PP_OK);
+  GetNaClInterface()->LogTranslateTime(
+      "NaCl.Perf.PNaClLoadTime.LoadCompiler",
+      NaClGetTimeOfDayMicroseconds() - llc_start_time);
 
   {
     nacl::MutexLocker ml(&subprocess_mu_);
@@ -301,11 +299,8 @@ void PnaclTranslateThread::DoTranslate() {
     return;
   }
   compile_time_ = NaClGetTimeOfDayMicroseconds() - compile_start_time;
-  core->CallOnMainThread(0,
-                         coordinator_->GetUMATimeCallback(
-                             "NaCl.Perf.PNaClLoadTime.CompileTime",
-                             compile_time_),
-                         PP_OK);
+  GetNaClInterface()->LogTranslateTime("NaCl.Perf.PNaClLoadTime.CompileTime",
+                                       compile_time_);
 
   // Shut down the llc subprocess.
   NaClXMutexLock(&subprocess_mu_);
@@ -338,7 +333,6 @@ bool PnaclTranslateThread::RunLdSubprocess() {
     ld_in_files.push_back(invalid_desc_wrapper_);
 
   nacl::DescWrapper* ld_out_file = nexe_file_->write_wrapper();
-  pp::Core* core = pp::Module::Get()->core();
   int64_t ld_start_time = NaClGetTimeOfDayMicroseconds();
   PP_FileHandle ld_file_handle = resources_->TakeLdFileHandle();
   // On success, ownership of ld_file_handle is transferred.
@@ -354,12 +348,9 @@ bool PnaclTranslateThread::RunLdSubprocess() {
                     error_info.message());
     return false;
   }
-  core->CallOnMainThread(0,
-                         coordinator_->GetUMATimeCallback(
-                             "NaCl.Perf.PNaClLoadTime.LoadLinker",
-                             NaClGetTimeOfDayMicroseconds() - ld_start_time),
-                         PP_OK);
-
+  GetNaClInterface()->LogTranslateTime(
+      "NaCl.Perf.PNaClLoadTime.LoadLinker",
+      NaClGetTimeOfDayMicroseconds() - ld_start_time);
   {
     nacl::MutexLocker ml(&subprocess_mu_);
     // If we received a call to AbortSubprocesses() before we had a chance to
@@ -402,11 +393,9 @@ bool PnaclTranslateThread::RunLdSubprocess() {
                     "link failed.");
     return false;
   }
-  core->CallOnMainThread(0,
-                         coordinator_->GetUMATimeCallback(
-                             "NaCl.Perf.PNaClLoadTime.LinkTime",
-                             NaClGetTimeOfDayMicroseconds() - link_start_time),
-                         PP_OK);
+  GetNaClInterface()->LogTranslateTime(
+      "NaCl.Perf.PNaClLoadTime.LinkTime",
+      NaClGetTimeOfDayMicroseconds() - link_start_time);
   PLUGIN_PRINTF(("PnaclCoordinator: link (translator=%p) succeeded\n",
                  this));
   // Shut down the ld subprocess.
