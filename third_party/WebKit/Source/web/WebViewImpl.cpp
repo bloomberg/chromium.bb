@@ -442,7 +442,7 @@ WebViewImpl::~WebViewImpl()
 
 WebLocalFrameImpl* WebViewImpl::mainFrameImpl()
 {
-    return m_page && m_page->mainFrame()->isLocalFrame() ? WebLocalFrameImpl::fromFrame(m_page->deprecatedLocalMainFrame()) : 0;
+    return m_page && m_page->mainFrame() && m_page->mainFrame()->isLocalFrame() ? WebLocalFrameImpl::fromFrame(m_page->deprecatedLocalMainFrame()) : 0;
 }
 
 bool WebViewImpl::tabKeyCyclesThroughElements() const
