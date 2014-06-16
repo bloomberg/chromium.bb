@@ -17,7 +17,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
