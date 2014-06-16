@@ -45,21 +45,23 @@ bool EditSearchEngineController::IsURLValid(
   data.SetURL(url);
   TemplateURL t_url(profile_, data);
   const TemplateURLRef& template_ref = t_url.url_ref();
-  if (!template_ref.IsValid())
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  if (!template_ref.IsValid(service->search_terms_data()))
     return false;
 
   // If this is going to be the default search engine, it must support
   // replacement.
-  if (!template_ref.SupportsReplacement() &&
+  if (!template_ref.SupportsReplacement(service->search_terms_data()) &&
       template_url_ &&
-      template_url_ == TemplateURLServiceFactory::GetForProfile(profile_)->
-          GetDefaultSearchProvider())
+      template_url_ == service->GetDefaultSearchProvider())
     return false;
 
   // Replace any search term with a placeholder string and make sure the
   // resulting URL is valid.
   return GURL(template_ref.ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("x")))).is_valid();
+      TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("x")),
+      service->search_terms_data())).is_valid();
 }
 
 bool EditSearchEngineController::IsKeywordValid(
@@ -137,7 +139,8 @@ std::string EditSearchEngineController::GetFixedUpURL(
   data.SetURL(url);
   TemplateURL t_url(profile_, data);
   std::string expanded_url(t_url.url_ref().ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("x"))));
+      TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("x")),
+      TemplateURLServiceFactory::GetForProfile(profile_)->search_terms_data()));
   url::Parsed parts;
   std::string scheme(url_fixer::SegmentURL(expanded_url, &parts));
   if (!parts.scheme.is_valid())

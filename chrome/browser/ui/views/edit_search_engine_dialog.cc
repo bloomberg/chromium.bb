@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "grit/generated_resources.h"
@@ -127,7 +128,8 @@ void EditSearchEngineDialog::Init() {
     title_tf_ = CreateTextfield(controller_->template_url()->short_name());
     keyword_tf_ = CreateTextfield(controller_->template_url()->keyword());
     url_tf_ = CreateTextfield(
-        controller_->template_url()->url_ref().DisplayURL());
+        controller_->template_url()->url_ref().DisplayURL(
+            UIThreadSearchTermsData(controller_->profile())));
     // We don't allow users to edit prepopulate URLs. This is done as
     // occasionally we need to update the URL of prepopulated TemplateURLs.
     url_tf_->SetReadOnly(controller_->template_url()->prepopulate_id() != 0);

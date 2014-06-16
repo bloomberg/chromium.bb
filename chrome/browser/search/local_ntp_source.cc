@@ -70,7 +70,8 @@ bool DefaultSearchProviderIsGoogle(Profile* profile) {
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
   return default_provider &&
-      (TemplateURLPrepopulateData::GetEngineType(*default_provider) ==
+      (TemplateURLPrepopulateData::GetEngineType(
+          *default_provider, template_url_service->search_terms_data()) ==
        SEARCH_ENGINE_GOOGLE);
 }
 
@@ -164,7 +165,7 @@ void LocalNtpSource::StartDataRequest(
     }
   }
   callback.Run(NULL);
-};
+}
 
 std::string LocalNtpSource::GetMimeType(
     const std::string& path) const {

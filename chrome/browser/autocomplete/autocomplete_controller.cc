@@ -28,6 +28,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -420,8 +421,8 @@ void AutocompleteController::UpdateMatchDestinationURL(
       (zero_suggest_provider_ &&
        zero_suggest_provider_->field_trial_triggered_in_session()),
       input_.current_page_classification());
-  match->destination_url =
-      GURL(template_url->url_ref().ReplaceSearchTerms(search_terms_args));
+  match->destination_url = GURL(template_url->url_ref().ReplaceSearchTerms(
+      search_terms_args, UIThreadSearchTermsData(profile_)));
 }
 
 void AutocompleteController::UpdateResult(
@@ -608,7 +609,7 @@ void AutocompleteController::UpdateAssistedQueryStats(
                            selected_index.c_str(),
                            autocompletions.c_str());
     match->destination_url = GURL(template_url->url_ref().ReplaceSearchTerms(
-        *match->search_terms_args));
+        *match->search_terms_args, UIThreadSearchTermsData(profile_)));
   }
 }
 

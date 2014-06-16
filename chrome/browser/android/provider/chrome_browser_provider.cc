@@ -908,7 +908,8 @@ class SearchTermTask : public HistoryProviderTask {
       const TemplateURLRef* search_url = &search_engine->url_ref();
       TemplateURLRef::SearchTermsArgs search_terms_args(row->search_term());
       search_terms_args.append_extra_query_params = true;
-      std::string url = search_url->ReplaceSearchTerms(search_terms_args);
+      std::string url = search_url->ReplaceSearchTerms(
+          search_terms_args, template_service->search_terms_data());
       if (!url.empty()) {
         row->set_url(GURL(url));
         row->set_template_url_id(search_engine->id());

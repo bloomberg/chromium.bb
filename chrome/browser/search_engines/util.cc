@@ -42,16 +42,17 @@ base::string16 GetDefaultSearchEngineName(Profile* profile) {
 GURL GetDefaultSearchURLForSearchTerms(Profile* profile,
                                        const base::string16& terms) {
   DCHECK(profile);
-  const TemplateURL* default_provider =
-      TemplateURLServiceFactory::GetForProfile(profile)->
-      GetDefaultSearchProvider();
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  const TemplateURL* default_provider = service->GetDefaultSearchProvider();
   if (!default_provider)
     return GURL();
   const TemplateURLRef& search_url = default_provider->url_ref();
-  DCHECK(search_url.SupportsReplacement());
+  DCHECK(search_url.SupportsReplacement(service->search_terms_data()));
   TemplateURLRef::SearchTermsArgs search_terms_args(terms);
   search_terms_args.append_extra_query_params = true;
-  return GURL(search_url.ReplaceSearchTerms(search_terms_args));
+  return GURL(search_url.ReplaceSearchTerms(search_terms_args,
+                                            service->search_terms_data()));
 }
 
 void RemoveDuplicatePrepopulateIDs(
@@ -59,6 +60,7 @@ void RemoveDuplicatePrepopulateIDs(
     const ScopedVector<TemplateURLData>& prepopulated_urls,
     TemplateURL* default_search_provider,
     TemplateURLService::TemplateURLVector* template_urls,
+    const SearchTermsData& search_terms_data,
     std::set<std::string>* removed_keyword_guids) {
   DCHECK(service == NULL || BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(template_urls);
@@ -107,7 +109,8 @@ void RemoveDuplicatePrepopulateIDs(
       if (default_search_provider &&
           (default_search_provider->prepopulate_id() ==
               i->second->prepopulate_id()) &&
-          default_search_provider->HasSameKeywordAs(i->second->data())) {
+          default_search_provider->HasSameKeywordAs(i->second->data(),
+                                                    search_terms_data)) {
         best = i;
         break;
       }
@@ -117,7 +120,8 @@ void RemoveDuplicatePrepopulateIDs(
       if (matched_keyword)
         continue;
       if ((prepopulated_url != prepopulated_url_map.end()) &&
-          i->second->HasSameKeywordAs(*prepopulated_url->second)) {
+          i->second->HasSameKeywordAs(*prepopulated_url->second,
+                                      search_terms_data)) {
         best = i;
         matched_keyword = true;
       } else if (i->second->id() < best->second->id()) {
@@ -321,6 +325,7 @@ void GetSearchProvidersUsingKeywordResult(
     Profile* profile,
     TemplateURLService::TemplateURLVector* template_urls,
     TemplateURL* default_search_provider,
+    const SearchTermsData& search_terms_data,
     int* new_resource_keyword_version,
     std::set<std::string>* removed_keyword_guids) {
   DCHECK(service == NULL || BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -351,6 +356,7 @@ void GetSearchProvidersUsingKeywordResult(
   *new_resource_keyword_version = keyword_result.builtin_keyword_version;
   GetSearchProvidersUsingLoadedEngines(service, profile, template_urls,
                                        default_search_provider,
+                                       search_terms_data,
                                        new_resource_keyword_version,
                                        removed_keyword_guids);
 }
@@ -360,6 +366,7 @@ void GetSearchProvidersUsingLoadedEngines(
     Profile* profile,
     TemplateURLService::TemplateURLVector* template_urls,
     TemplateURL* default_search_provider,
+    const SearchTermsData& search_terms_data,
     int* resource_keyword_version,
     std::set<std::string>* removed_keyword_guids) {
   DCHECK(service == NULL || BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -372,7 +379,7 @@ void GetSearchProvidersUsingLoadedEngines(
                                                          &default_search_index);
   RemoveDuplicatePrepopulateIDs(service, prepopulated_urls,
                                 default_search_provider, template_urls,
-                                removed_keyword_guids);
+                                search_terms_data, removed_keyword_guids);
 
   const int prepopulate_resource_keyword_version =
       TemplateURLPrepopulateData::GetDataVersion(prefs);

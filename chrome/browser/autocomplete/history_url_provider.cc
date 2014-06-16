@@ -1038,7 +1038,7 @@ void HistoryURLProvider::CullPoorMatches(
        i != matches->end(); ) {
     if (RowQualifiesAsSignificant(i->url_info, threshold) &&
         !(params.default_search_provider &&
-            params.default_search_provider->IsSearchURLUsingTermsData(
+            params.default_search_provider->IsSearchURL(
                 i->url_info.url(), *params.search_terms_data.get()))) {
       ++i;
     } else {

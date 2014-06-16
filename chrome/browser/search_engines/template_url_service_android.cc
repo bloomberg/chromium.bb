@@ -97,7 +97,8 @@ jboolean TemplateUrlServiceAndroid::IsSearchByImageAvailable(JNIEnv* env,
       template_url_service_->GetDefaultSearchProvider();
   return default_search_provider &&
       !default_search_provider->image_url().empty() &&
-      default_search_provider->image_url_ref().IsValid();
+      default_search_provider->image_url_ref().IsValid(
+          template_url_service_->search_terms_data());
 }
 
 jboolean TemplateUrlServiceAndroid::IsDefaultSearchEngineGoogle(JNIEnv* env,
@@ -105,7 +106,8 @@ jboolean TemplateUrlServiceAndroid::IsDefaultSearchEngineGoogle(JNIEnv* env,
   TemplateURL* default_search_provider =
       template_url_service_->GetDefaultSearchProvider();
   return default_search_provider &&
-      default_search_provider->url_ref().HasGoogleBaseURLs();
+      default_search_provider->url_ref().HasGoogleBaseURLs(
+          template_url_service_->search_terms_data());
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -149,9 +151,12 @@ TemplateUrlServiceAndroid::GetUrlForSearchQuery(JNIEnv* env,
 
   std::string url;
   if (default_provider &&
-      default_provider->url_ref().SupportsReplacement() && !query.empty()) {
+      default_provider->url_ref().SupportsReplacement(
+          template_url_service_->search_terms_data()) &&
+      !query.empty()) {
     url = default_provider->url_ref().ReplaceSearchTerms(
-        TemplateURLRef::SearchTermsArgs(query));
+        TemplateURLRef::SearchTermsArgs(query),
+        template_url_service_->search_terms_data());
   }
 
   return ConvertUTF8ToJavaString(env, url);
@@ -186,8 +191,9 @@ TemplateUrlServiceAndroid::ReplaceSearchTermsInUrl(JNIEnv* env,
   GURL current_url(ConvertJavaStringToUTF16(env, jcurrent_url));
   GURL destination_url(current_url);
   if (default_provider && !query.empty()) {
-    bool refined_query = default_provider->ReplaceSearchTermsInURL(current_url,
-        TemplateURLRef::SearchTermsArgs(query), &destination_url);
+    bool refined_query = default_provider->ReplaceSearchTermsInURL(
+        current_url, TemplateURLRef::SearchTermsArgs(query),
+        template_url_service_->search_terms_data(), &destination_url);
     if (refined_query)
       return ConvertUTF8ToJavaString(env, destination_url.spec());
   }

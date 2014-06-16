@@ -172,7 +172,8 @@ void ProfileResetter::ResetDefaultSearchEngine() {
     const TemplateURL* default_search_provider =
         template_url_service_->GetDefaultSearchProvider();
     if (default_search_provider &&
-        default_search_provider->HasGoogleBaseURLs()) {
+        default_search_provider->HasGoogleBaseURLs(
+            template_url_service_->search_terms_data())) {
       GoogleURLTracker* tracker =
           GoogleURLTrackerFactory::GetForProfile(profile_);
       if (tracker)

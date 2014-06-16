@@ -194,11 +194,7 @@ class TemplateURLRef {
   std::string GetPostParamsString() const;
 
   // Returns true if this URL supports search term replacement.
-  bool SupportsReplacement() const;
-
-  // Like SupportsReplacement but usable on threads other than the UI thread.
-  bool SupportsReplacementUsingTermsData(
-      const SearchTermsData& search_terms_data) const;
+  bool SupportsReplacement(const SearchTermsData& search_terms_data) const;
 
   // Returns a string that is the result of replacing the search terms in
   // the url with the specified arguments.  We use our owner's input encoding.
@@ -208,35 +204,26 @@ class TemplateURLRef {
   // If this TemplateURLRef uses POST, and |post_content| is not NULL, the
   // |post_params_| will be replaced, encoded in "multipart/form-data" format
   // and stored into |post_content|.
-  std::string ReplaceSearchTerms(
-      const SearchTermsArgs& search_terms_args,
-      PostContent* post_content) const;
+  std::string ReplaceSearchTerms(const SearchTermsArgs& search_terms_args,
+                                 const SearchTermsData& search_terms_data,
+                                 PostContent* post_content) const;
+
   // TODO(jnd): remove the following ReplaceSearchTerms definition which does
   // not have |post_content| parameter once all reference callers pass
   // |post_content| parameter.
   std::string ReplaceSearchTerms(
-      const SearchTermsArgs& search_terms_args) const {
-    return ReplaceSearchTerms(search_terms_args, NULL);
-  }
-
-  // Just like ReplaceSearchTerms except that it takes SearchTermsData to supply
-  // the data for some search terms. Most of the time ReplaceSearchTerms should
-  // be called.
-  std::string ReplaceSearchTermsUsingTermsData(
       const SearchTermsArgs& search_terms_args,
-      const SearchTermsData& search_terms_data,
-      PostContent* post_content) const;
+      const SearchTermsData& search_terms_data) const {
+    return ReplaceSearchTerms(search_terms_args, search_terms_data, NULL);
+  }
 
   // Returns true if the TemplateURLRef is valid. An invalid TemplateURLRef is
   // one that contains unknown terms, or invalid characters.
-  bool IsValid() const;
-
-  // Like IsValid but usable on threads other than the UI thread.
-  bool IsValidUsingTermsData(const SearchTermsData& search_terms_data) const;
+  bool IsValid(const SearchTermsData& search_terms_data) const;
 
   // Returns a string representation of this TemplateURLRef suitable for
   // display. The display format is the same as the format used by Firefox.
-  base::string16 DisplayURL() const;
+  base::string16 DisplayURL(const SearchTermsData& search_terms_data) const;
 
   // Converts a string as returned by DisplayURL back into a string as
   // understood by TemplateURLRef.
@@ -244,19 +231,20 @@ class TemplateURLRef {
 
   // If this TemplateURLRef is valid and contains one search term, this returns
   // the host/path of the URL, otherwise this returns an empty string.
-  const std::string& GetHost() const;
-  const std::string& GetPath() const;
+  const std::string& GetHost(const SearchTermsData& search_terms_data) const;
+  const std::string& GetPath(const SearchTermsData& search_terms_data) const;
 
   // If this TemplateURLRef is valid and contains one search term, this returns
   // the key of the search term, otherwise this returns an empty string.
-  const std::string& GetSearchTermKey() const;
+  const std::string& GetSearchTermKey(
+      const SearchTermsData& search_terms_data) const;
 
   // Converts the specified term in our owner's encoding to a base::string16.
   base::string16 SearchTermToString16(const std::string& term) const;
 
   // Returns true if this TemplateURLRef has a replacement term of
   // {google:baseURL} or {google:baseSuggestURL}.
-  bool HasGoogleBaseURLs() const;
+  bool HasGoogleBaseURLs(const SearchTermsData& search_terms_data) const;
 
   // Use the pattern referred to by this TemplateURLRef to match the provided
   // |url| and extract |search_terms| from it. Returns true if the pattern
@@ -274,11 +262,7 @@ class TemplateURLRef {
       url::Component* search_terms_position) const;
 
   // Whether the URL uses POST (as opposed to GET).
-  bool UsesPOSTMethodUsingTermsData(
-      const SearchTermsData* search_terms_data) const;
-  bool UsesPOSTMethod() const {
-    return UsesPOSTMethodUsingTermsData(NULL);
-  }
+  bool UsesPOSTMethod(const SearchTermsData& search_terms_data) const;
 
  private:
   friend class TemplateURL;
@@ -379,11 +363,7 @@ class TemplateURLRef {
   // If the url has not yet been parsed, ParseURL is invoked.
   // NOTE: While this is const, it modifies parsed_, valid_, parsed_url_ and
   // search_offset_.
-  void ParseIfNecessary() const;
-
-  // Like ParseIfNecessary but usable on threads other than the UI thread.
-  void ParseIfNecessaryUsingTermsData(
-      const SearchTermsData& search_terms_data) const;
+  void ParseIfNecessary(const SearchTermsData& search_terms_data) const;
 
   // Extracts the query key and host from the url.
   void ParseHostAndSearchTermKey(
@@ -406,7 +386,7 @@ class TemplateURLRef {
 
   // Replaces all replacements in |parsed_url_| with their actual values and
   // returns the result.  This is the main functionality of
-  // ReplaceSearchTermsUsingTermsData().
+  // ReplaceSearchTerms().
   std::string HandleReplacements(
       const SearchTermsArgs& search_terms_args,
       const SearchTermsData& search_terms_data,
@@ -509,7 +489,8 @@ class TemplateURL {
   // Returns true if |t_url| and |data| are equal in all meaningful respects.
   // Static to allow either or both params to be NULL.
   static bool MatchesData(const TemplateURL* t_url,
-                          const TemplateURLData* data);
+                          const TemplateURLData* data,
+                          const SearchTermsData& search_terms_data);
 
   Profile* profile() { return profile_; }
   const TemplateURLData& data() const { return data_; }
@@ -551,7 +532,7 @@ class TemplateURL {
   bool show_in_default_list() const { return data_.show_in_default_list; }
   // Returns true if show_in_default_list() is true and this TemplateURL has a
   // TemplateURLRef that supports replacement.
-  bool ShowInDefaultList() const;
+  bool ShowInDefaultList(const SearchTermsData& search_terms_data) const;
 
   bool safe_for_autoreplace() const { return data_.safe_for_autoreplace; }
 
@@ -589,24 +570,22 @@ class TemplateURL {
   }
 
   // Returns true if |url| supports replacement.
-  bool SupportsReplacement() const;
-
-  // Like SupportsReplacement but usable on threads other than the UI thread.
-  bool SupportsReplacementUsingTermsData(
-      const SearchTermsData& search_terms_data) const;
+  bool SupportsReplacement(const SearchTermsData& search_terms_data) const;
 
   // Returns true if any URLRefs use Googe base URLs.
-  bool HasGoogleBaseURLs() const;
+  bool HasGoogleBaseURLs(const SearchTermsData& search_terms_data) const;
 
   // Returns true if this TemplateURL uses Google base URLs and has a keyword
   // of "google.TLD".  We use this to decide whether we can automatically
   // update the keyword to reflect the current Google base URL TLD.
-  bool IsGoogleSearchURLWithReplaceableKeyword() const;
+  bool IsGoogleSearchURLWithReplaceableKeyword(
+      const SearchTermsData& search_terms_data) const;
 
   // Returns true if the keywords match or if
   // IsGoogleSearchURLWithReplaceableKeyword() is true for both |this| and
   // |other|.
-  bool HasSameKeywordAs(const TemplateURLData& other) const;
+  bool HasSameKeywordAs(const TemplateURLData& other,
+                        const SearchTermsData& search_terms_data) const;
 
   Type GetType() const;
 
@@ -635,24 +614,14 @@ class TemplateURL {
   // "http://foo/?q={searchTerms}", and the URL to be decoded is
   // "http://foo/?q=a#q=b", the alternate URL will match first and the decoded
   // search term will be "b".
-  bool ExtractSearchTermsFromURL(const GURL& url, base::string16* search_terms);
-
-  // Like ExtractSearchTermsFromURL but usable on threads other than the UI
-  // thread.
-  bool ExtractSearchTermsFromURLUsingTermsData(
-      const GURL& url,
-      base::string16* search_terms,
-      const SearchTermsData& search_terms_data);
+  bool ExtractSearchTermsFromURL(const GURL& url,
+                                 const SearchTermsData& search_terms_data,
+                                 base::string16* search_terms);
 
   // Returns true if non-empty search terms could be extracted from |url| using
   // ExtractSearchTermsFromURL(). In other words, this returns whether |url|
   // could be the result of performing a search with |this|.
-  bool IsSearchURL(const GURL& url);
-
-  // Like IsSearchURL but usable on threads other than the UI thread.
-  bool IsSearchURLUsingTermsData(
-      const GURL& url,
-      const SearchTermsData& search_terms_data);
+  bool IsSearchURL(const GURL& url, const SearchTermsData& search_terms_data);
 
   // Returns true if the specified |url| contains the search terms replacement
   // key in either the query or the ref. This method does not verify anything
@@ -670,6 +639,7 @@ class TemplateURL {
   bool ReplaceSearchTermsInURL(
       const GURL& url,
       const TemplateURLRef::SearchTermsArgs& search_terms_args,
+      const SearchTermsData& search_terms_data,
       GURL* result);
 
   // Encodes the search terms from |search_terms_args| so that we know the
@@ -698,7 +668,8 @@ class TemplateURL {
   // a placeholder.  The resulting keyword is generated using
   // TemplateURLService::GenerateSearchURL() and
   // TemplateURLService::GenerateKeyword().
-  void ResetKeywordIfNecessary(bool force);
+  void ResetKeywordIfNecessary(const SearchTermsData& search_terms_data,
+                               bool force);
 
   // Uses the alternate URLs and the search URL to match the provided |url|
   // and extract |search_terms| from it as well as the |search_terms_component|

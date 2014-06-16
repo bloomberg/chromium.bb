@@ -127,7 +127,8 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
     return;
 
   TemplateURL* template_url = template_url_service->GetDefaultSearchProvider();
-  if (!template_url || !template_url->url_ref().HasGoogleBaseURLs())
+  if (!template_url || !template_url->url_ref().HasGoogleBaseURLs(
+          template_url_service->search_terms_data()))
     return;
 
   if (!logo_tracker_) {

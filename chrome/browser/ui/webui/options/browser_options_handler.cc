@@ -1096,7 +1096,8 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
   TemplateURLService::TemplateURLVector model_urls(
       template_url_service_->GetTemplateURLs());
   for (size_t i = 0; i < model_urls.size(); ++i) {
-    if (!model_urls[i]->ShowInDefaultList())
+    if (!model_urls[i]->ShowInDefaultList(
+            template_url_service_->search_terms_data()))
       continue;
 
     base::DictionaryValue* entry = new base::DictionaryValue();

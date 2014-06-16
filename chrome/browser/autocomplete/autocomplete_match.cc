@@ -15,6 +15,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "content/public/common/url_constants.h"
 #include "grit/theme_resources.h"
 
@@ -355,13 +356,17 @@ void AutocompleteMatch::ComputeStrippedDestinationURL(Profile* profile) {
   // by some obscure query param from each other or from the search/keyword
   // provider matches.
   TemplateURL* template_url = GetTemplateURL(profile, true);
-  if (template_url != NULL && template_url->SupportsReplacement()) {
+  UIThreadSearchTermsData search_terms_data(profile);
+  if (template_url != NULL &&
+      template_url->SupportsReplacement(search_terms_data)) {
     base::string16 search_terms;
     if (template_url->ExtractSearchTermsFromURL(stripped_destination_url,
+                                                search_terms_data,
                                                 &search_terms)) {
       stripped_destination_url =
           GURL(template_url->url_ref().ReplaceSearchTerms(
-              TemplateURLRef::SearchTermsArgs(search_terms)));
+              TemplateURLRef::SearchTermsArgs(search_terms),
+              search_terms_data));
     }
   }
 
@@ -407,7 +412,9 @@ base::string16 AutocompleteMatch::GetSubstitutingExplicitlyInvokedKeyword(
   if (transition != content::PAGE_TRANSITION_KEYWORD)
     return base::string16();
   const TemplateURL* t_url = GetTemplateURL(profile, false);
-  return (t_url && t_url->SupportsReplacement()) ? keyword : base::string16();
+  return (t_url &&
+          t_url->SupportsReplacement(UIThreadSearchTermsData(profile))) ?
+      keyword : base::string16();
 }
 
 TemplateURL* AutocompleteMatch::GetTemplateURL(

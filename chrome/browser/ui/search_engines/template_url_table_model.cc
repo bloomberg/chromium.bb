@@ -86,7 +86,8 @@ class ModelEntry {
     GURL favicon_url = template_url()->favicon_url();
     if (!favicon_url.is_valid()) {
       // The favicon url isn't always set. Guess at one here.
-      if (template_url_->url_ref().IsValid()) {
+      if (template_url_->url_ref().IsValid(
+              model_->template_url_service()->search_terms_data())) {
         GURL url(template_url_->url());
         if (url.is_valid())
           favicon_url = TemplateURL::GenerateFaviconURL(url);
@@ -289,7 +290,8 @@ void TemplateURLTableModel::ModifyTemplateURL(int index,
   TemplateURL* template_url = GetTemplateURL(index);
   // The default search provider should support replacement.
   DCHECK(template_url_service_->GetDefaultSearchProvider() != template_url ||
-         template_url->SupportsReplacement());
+         template_url->SupportsReplacement(
+             template_url_service_->search_terms_data()));
   template_url_service_->RemoveObserver(this);
   template_url_service_->ResetTemplateURL(template_url, title, keyword, url);
   template_url_service_->AddObserver(this);

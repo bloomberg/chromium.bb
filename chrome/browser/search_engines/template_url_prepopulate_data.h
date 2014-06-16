@@ -17,6 +17,7 @@
 class GURL;
 class PrefService;
 class Profile;
+class SearchTermsData;
 class TemplateURL;
 struct TemplateURLData;
 
@@ -27,12 +28,6 @@ class PrefRegistrySyncable;
 namespace TemplateURLPrepopulateData {
 
 extern const int kMaxPrepopulatedEngineID;
-
-// Sizes at which search provider logos are available.
-enum LogoSize {
-  LOGO_100_PERCENT,
-  LOGO_200_PERCENT,
-};
 
 #if defined(OS_ANDROID)
 // This must be called early only once. |country_code| is the country code at
@@ -69,17 +64,12 @@ scoped_ptr<TemplateURLData> GetPrepopulatedDefaultSearch(PrefService* prefs);
 // google_util::IsGoogleHostname() to return true.
 //
 // NOTE: Must be called on the UI thread.
-SearchEngineType GetEngineType(const TemplateURL& template_url);
+SearchEngineType GetEngineType(const TemplateURL& template_url,
+                               const SearchTermsData& search_terms_data);
 
 // Like the above, but takes a GURL which is expected to represent a search URL.
 // This may be called on any thread.
 SearchEngineType GetEngineType(const GURL& url);
-
-// Returns the logo at the specified |size| for |template_url|.  If no logo is
-// known, this will return an empty GURL.
-//
-// NOTE: Must be called on the UI thread.
-GURL GetLogoURL(const TemplateURL& template_url, LogoSize size);
 
 }  // namespace TemplateURLPrepopulateData
 

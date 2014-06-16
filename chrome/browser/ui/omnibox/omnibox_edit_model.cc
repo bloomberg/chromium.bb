@@ -41,6 +41,7 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/omnibox/omnibox_current_page_delegate_impl.h"
@@ -688,7 +689,8 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
   }
 
   const TemplateURL* template_url = match.GetTemplateURL(profile_, false);
-  if (template_url && template_url->url_ref().HasGoogleBaseURLs()) {
+  if (template_url && template_url->url_ref().HasGoogleBaseURLs(
+          UIThreadSearchTermsData(profile_))) {
     GoogleURLTracker* tracker =
         GoogleURLTrackerFactory::GetForProfile(profile_);
     if (tracker)
@@ -808,8 +810,10 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       // in template_url.h.
     }
 
-    UMA_HISTOGRAM_ENUMERATION("Omnibox.SearchEngineType",
-        TemplateURLPrepopulateData::GetEngineType(*template_url),
+    UMA_HISTOGRAM_ENUMERATION(
+        "Omnibox.SearchEngineType",
+        TemplateURLPrepopulateData::GetEngineType(
+            *template_url, UIThreadSearchTermsData(profile_)),
         SEARCH_ENGINE_MAX);
   }
 

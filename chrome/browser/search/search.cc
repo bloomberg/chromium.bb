@@ -19,6 +19,7 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -161,6 +162,7 @@ TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
 }
 
 GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
+                          const SearchTermsData& search_terms_data,
                           int start_margin,
                           bool append_extra_query_params,
                           bool force_instant_results) {
@@ -169,13 +171,15 @@ GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
   search_terms_args.omnibox_start_margin = start_margin;
   search_terms_args.append_extra_query_params = append_extra_query_params;
   search_terms_args.force_instant_results = force_instant_results;
-  return GURL(ref.ReplaceSearchTerms(search_terms_args));
+  return GURL(ref.ReplaceSearchTerms(search_terms_args, search_terms_data));
 }
 
-bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {
+bool MatchesAnySearchURL(const GURL& url,
+                         TemplateURL* template_url,
+                         const SearchTermsData& search_terms_data) {
   GURL search_url =
-      TemplateURLRefToGURL(template_url->url_ref(), kDisableStartMargin, false,
-                           false);
+      TemplateURLRefToGURL(template_url->url_ref(), search_terms_data,
+                           kDisableStartMargin, false, false);
   if (search_url.is_valid() &&
       search::MatchesOriginAndPath(url, search_url))
     return true;
@@ -183,7 +187,8 @@ bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {
   // "URLCount() - 1" because we already tested url_ref above.
   for (size_t i = 0; i < template_url->URLCount() - 1; ++i) {
     TemplateURLRef ref(template_url, i);
-    search_url = TemplateURLRefToGURL(ref, kDisableStartMargin, false, false);
+    search_url = TemplateURLRefToGURL(ref, search_terms_data,
+                                      kDisableStartMargin, false, false);
     if (search_url.is_valid() &&
         search::MatchesOriginAndPath(url, search_url))
       return true;
@@ -239,15 +244,17 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
     return false;
 
   const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
-  const GURL instant_url =
-      TemplateURLRefToGURL(instant_url_ref, kDisableStartMargin, false, false);
+  UIThreadSearchTermsData search_terms_data(profile);
+  const GURL instant_url = TemplateURLRefToGURL(
+      instant_url_ref, search_terms_data, kDisableStartMargin, false, false);
   if (!instant_url.is_valid())
     return false;
 
   if (search::MatchesOriginAndPath(url, instant_url))
     return true;
 
-  return IsQueryExtractionEnabled() && MatchesAnySearchURL(url, template_url);
+  return IsQueryExtractionEnabled() &&
+      MatchesAnySearchURL(url, template_url, search_terms_data);
 }
 
 base::string16 GetSearchTermsImpl(const content::WebContents* contents,
@@ -321,7 +328,8 @@ struct NewTabURLDetails {
       return NewTabURLDetails(local_url, NEW_TAB_URL_BAD);
 
     GURL search_provider_url = TemplateURLRefToGURL(
-        template_url->new_tab_url_ref(), kDisableStartMargin, false, false);
+        template_url->new_tab_url_ref(), UIThreadSearchTermsData(profile),
+        kDisableStartMargin, false, false);
     NewTabURLState state = IsValidNewTabURL(profile, search_provider_url);
     switch (state) {
       case NEW_TAB_URL_VALID:
@@ -418,7 +426,8 @@ base::string16 ExtractSearchTermsFromURL(Profile* profile, const GURL& url) {
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
   base::string16 search_terms;
   if (template_url)
-    template_url->ExtractSearchTermsFromURL(url, &search_terms);
+    template_url->ExtractSearchTermsFromURL(
+        url, UIThreadSearchTermsData(profile), &search_terms);
   return search_terms;
 }
 
@@ -520,9 +529,9 @@ GURL GetInstantURL(Profile* profile, int start_margin,
   if (!template_url)
     return GURL();
 
-  GURL instant_url =
-      TemplateURLRefToGURL(template_url->instant_url_ref(), start_margin, true,
-                           force_instant_results);
+  GURL instant_url = TemplateURLRefToGURL(
+      template_url->instant_url_ref(), UIThreadSearchTermsData(profile),
+      start_margin, true, force_instant_results);
   if (!instant_url.is_valid() ||
       !template_url->HasSearchTermsReplacementKey(instant_url))
     return GURL();
@@ -552,8 +561,8 @@ std::vector<GURL> GetSearchURLs(Profile* profile) {
     return result;
   for (size_t i = 0; i < template_url->URLCount(); ++i) {
     TemplateURLRef ref(template_url, i);
-    result.push_back(TemplateURLRefToGURL(ref, kDisableStartMargin, false,
-                                          false));
+    result.push_back(TemplateURLRefToGURL(ref, UIThreadSearchTermsData(profile),
+                                          kDisableStartMargin, false, false));
   }
   return result;
 }

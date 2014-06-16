@@ -362,10 +362,12 @@ void SearchProviderTest::QueryForInputAndSetWYTMatch(
   if (!wyt_match)
     return;
   ASSERT_GE(provider_->matches().size(), 1u);
-  EXPECT_TRUE(FindMatchWithDestination(GURL(
-      default_t_url_->url_ref().ReplaceSearchTerms(
+  EXPECT_TRUE(FindMatchWithDestination(
+      GURL(default_t_url_->url_ref().ReplaceSearchTerms(
           TemplateURLRef::SearchTermsArgs(base::CollapseWhitespace(
-              text, false)))),
+              text, false)),
+          TemplateURLServiceFactory::GetForProfile(
+              &profile_)->search_terms_data())),
       wyt_match));
 }
 
@@ -376,7 +378,9 @@ GURL SearchProviderTest::AddSearchToHistory(TemplateURL* t_url,
       HistoryServiceFactory::GetForProfile(&profile_,
                                            Profile::EXPLICIT_ACCESS);
   GURL search(t_url->url_ref().ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(term)));
+      TemplateURLRef::SearchTermsArgs(term),
+      TemplateURLServiceFactory::GetForProfile(
+          &profile_)->search_terms_data()));
   static base::Time last_added_time;
   last_added_time = std::max(base::Time::Now(),
       last_added_time + base::TimeDelta::FromMicroseconds(1));
@@ -481,7 +485,9 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
 
   // And the URL matches what we expected.
   GURL expected_url(default_t_url_->suggestions_url_ref().ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(term)));
+      TemplateURLRef::SearchTermsArgs(term),
+      TemplateURLServiceFactory::GetForProfile(
+          &profile_)->search_terms_data()));
   ASSERT_TRUE(fetcher->GetOriginalURL() == expected_url);
 
   // Tell the SearchProvider the suggest query is done.
@@ -502,7 +508,10 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
   AutocompleteMatch wyt_match;
   EXPECT_TRUE(FindMatchWithDestination(
       GURL(default_t_url_->url_ref().ReplaceSearchTerms(
-          TemplateURLRef::SearchTermsArgs(term))), &wyt_match));
+          TemplateURLRef::SearchTermsArgs(term),
+          TemplateURLServiceFactory::GetForProfile(
+              &profile_)->search_terms_data())),
+      &wyt_match));
   EXPECT_TRUE(wyt_match.description.empty());
 
   // The match for term1 should be more relevant than the what you typed match.
@@ -548,7 +557,9 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
 
   // And the URL matches what we expected.
   GURL expected_url(keyword_t_url_->suggestions_url_ref().ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(term)));
+      TemplateURLRef::SearchTermsArgs(term),
+      TemplateURLServiceFactory::GetForProfile(
+          &profile_)->search_terms_data()));
   ASSERT_TRUE(keyword_fetcher->GetOriginalURL() == expected_url);
 
   // Tell the SearchProvider the keyword suggest query is done.
@@ -747,7 +758,9 @@ TEST_F(SearchProviderTest, AutocompleteMultipleVisitsImmediately) {
 TEST_F(SearchProviderTest, AutocompleteAfterSpace) {
   AddSearchToHistory(default_t_url_, ASCIIToUTF16("two  searches "), 2);
   GURL suggested_url(default_t_url_->url_ref().ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("two searches"))));
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("two searches")),
+      TemplateURLServiceFactory::GetForProfile(
+          &profile_)->search_terms_data()));
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
   AutocompleteMatch wyt_match;
@@ -3134,7 +3147,7 @@ TEST_F(SearchProviderTest, SuggestQueryUsesToken) {
   TemplateURLRef::SearchTermsArgs search_terms_args(term);
   search_terms_args.session_token = provider_->current_token_;
   GURL expected_url(default_t_url_->suggestions_url_ref().ReplaceSearchTerms(
-      search_terms_args));
+      search_terms_args, turl_model->search_terms_data()));
   EXPECT_EQ(fetcher->GetOriginalURL().spec(), expected_url.spec());
 
   // Complete running the fetcher to clean up.

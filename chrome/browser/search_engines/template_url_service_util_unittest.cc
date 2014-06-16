@@ -8,6 +8,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/util.h"
+#include "components/search_engines/search_terms_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -87,7 +88,7 @@ TEST(TemplateURLServiceUtilTest, RemoveDuplicatePrepopulateIDs) {
       CreatePrepopulateTemplateURL(3, "loser6", 15).release());
 
   RemoveDuplicatePrepopulateIDs(NULL, prepopulated_turls, default_turl,
-      &local_turls, NULL);
+                                &local_turls, SearchTermsData(), NULL);
 
   // Verify that the expected local TURLs survived the process.
   EXPECT_EQ(local_turls.size(),

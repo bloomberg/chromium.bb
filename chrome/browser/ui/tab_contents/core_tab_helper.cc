@@ -236,7 +236,7 @@ void CoreTabHelper::OnRequestThumbnailForContextNodeACK(
   search_args.image_original_size = original_size;
   TemplateURLRef::PostContent post_content;
   GURL result(default_provider->image_url_ref().ReplaceSearchTerms(
-      search_args, &post_content));
+      search_args, template_url_service->search_terms_data(), &post_content));
   if (!result.is_valid())
     return;
 

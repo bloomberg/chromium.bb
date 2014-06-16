@@ -23,10 +23,10 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/search_engines/search_terms_data.h"
 #include "extensions/common/constants.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
@@ -306,12 +306,9 @@ std::string TemplateURLRef::GetPostParamsString() const {
   }
 }
 
-bool TemplateURLRef::UsesPOSTMethodUsingTermsData(
-    const SearchTermsData* search_terms_data) const {
-  if (search_terms_data)
-    ParseIfNecessaryUsingTermsData(*search_terms_data);
-  else
-    ParseIfNecessary();
+bool TemplateURLRef::UsesPOSTMethod(
+    const SearchTermsData& search_terms_data) const {
+  ParseIfNecessary(search_terms_data);
   return !post_params_.empty();
 }
 
@@ -345,30 +342,17 @@ bool TemplateURLRef::EncodeFormData(const PostParams& post_params,
   return true;
 }
 
-bool TemplateURLRef::SupportsReplacement() const {
-  UIThreadSearchTermsData search_terms_data(owner_->profile());
-  return SupportsReplacementUsingTermsData(search_terms_data);
-}
-
-bool TemplateURLRef::SupportsReplacementUsingTermsData(
+bool TemplateURLRef::SupportsReplacement(
     const SearchTermsData& search_terms_data) const {
-  ParseIfNecessaryUsingTermsData(search_terms_data);
+  ParseIfNecessary(search_terms_data);
   return valid_ && supports_replacements_;
 }
 
 std::string TemplateURLRef::ReplaceSearchTerms(
     const SearchTermsArgs& search_terms_args,
-    PostContent* post_content) const {
-  UIThreadSearchTermsData search_terms_data(owner_->profile());
-  return ReplaceSearchTermsUsingTermsData(search_terms_args, search_terms_data,
-                                          post_content);
-}
-
-std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
-    const SearchTermsArgs& search_terms_args,
     const SearchTermsData& search_terms_data,
     PostContent* post_content) const {
-  ParseIfNecessaryUsingTermsData(search_terms_data);
+  ParseIfNecessary(search_terms_data);
   if (!valid_)
     return std::string();
 
@@ -401,19 +385,14 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
   return gurl.ReplaceComponents(replacements).possibly_invalid_spec();
 }
 
-bool TemplateURLRef::IsValid() const {
-  UIThreadSearchTermsData search_terms_data(owner_->profile());
-  return IsValidUsingTermsData(search_terms_data);
-}
-
-bool TemplateURLRef::IsValidUsingTermsData(
-    const SearchTermsData& search_terms_data) const {
-  ParseIfNecessaryUsingTermsData(search_terms_data);
+bool TemplateURLRef::IsValid(const SearchTermsData& search_terms_data) const {
+  ParseIfNecessary(search_terms_data);
   return valid_;
 }
 
-base::string16 TemplateURLRef::DisplayURL() const {
-  ParseIfNecessary();
+base::string16 TemplateURLRef::DisplayURL(
+    const SearchTermsData& search_terms_data) const {
+  ParseIfNecessary(search_terms_data);
   base::string16 result(base::UTF8ToUTF16(GetURL()));
   if (valid_ && !replacements_.empty()) {
     ReplaceSubstringsAfterOffset(&result, 0,
@@ -440,18 +419,21 @@ std::string TemplateURLRef::DisplayURLToURLRef(
   return base::UTF16ToUTF8(result);
 }
 
-const std::string& TemplateURLRef::GetHost() const {
-  ParseIfNecessary();
+const std::string& TemplateURLRef::GetHost(
+    const SearchTermsData& search_terms_data) const {
+  ParseIfNecessary(search_terms_data);
   return host_;
 }
 
-const std::string& TemplateURLRef::GetPath() const {
-  ParseIfNecessary();
+const std::string& TemplateURLRef::GetPath(
+    const SearchTermsData& search_terms_data) const {
+  ParseIfNecessary(search_terms_data);
   return path_;
 }
 
-const std::string& TemplateURLRef::GetSearchTermKey() const {
-  ParseIfNecessary();
+const std::string& TemplateURLRef::GetSearchTermKey(
+    const SearchTermsData& search_terms_data) const {
+  ParseIfNecessary(search_terms_data);
   return search_term_key_;
 }
 
@@ -483,8 +465,9 @@ base::string16 TemplateURLRef::SearchTermToString16(
   return result;
 }
 
-bool TemplateURLRef::HasGoogleBaseURLs() const {
-  ParseIfNecessary();
+bool TemplateURLRef::HasGoogleBaseURLs(
+    const SearchTermsData& search_terms_data) const {
+  ParseIfNecessary(search_terms_data);
   for (size_t i = 0; i < replacements_.size(); ++i) {
     if ((replacements_[i].type == GOOGLE_BASE_URL) ||
         (replacements_[i].type == GOOGLE_BASE_SUGGEST_URL))
@@ -502,7 +485,7 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
   DCHECK(search_terms);
   search_terms->clear();
 
-  ParseIfNecessaryUsingTermsData(search_terms_data);
+  ParseIfNecessary(search_terms_data);
 
   // We need a search term in the template URL to extract something.
   if (search_term_key_.empty())
@@ -514,8 +497,8 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
   // Fill-in the replacements. We don't care about search terms in the pattern,
   // so we use the empty string.
   // Currently we assume the search term only shows in URL, not in post params.
-  GURL pattern(ReplaceSearchTermsUsingTermsData(
-      SearchTermsArgs(base::string16()), search_terms_data, NULL));
+  GURL pattern(ReplaceSearchTerms(SearchTermsArgs(base::string16()),
+                                  search_terms_data, NULL));
   // Host, path and port must match.
   if (url.port() != pattern.port() ||
       url.host() != host_ ||
@@ -756,12 +739,7 @@ std::string TemplateURLRef::ParseURL(const std::string& url,
   return parsed_url;
 }
 
-void TemplateURLRef::ParseIfNecessary() const {
-  UIThreadSearchTermsData search_terms_data(owner_->profile());
-  ParseIfNecessaryUsingTermsData(search_terms_data);
-}
-
-void TemplateURLRef::ParseIfNecessaryUsingTermsData(
+void TemplateURLRef::ParseIfNecessary(
     const SearchTermsData& search_terms_data) const {
   if (!parsed_) {
     InvalidateCachedValues();
@@ -883,7 +861,7 @@ std::string TemplateURLRef::HandleReplacements(
           // See TemplateURLRef::SearchTermsArgs for more details.
           SearchTermsArgs search_terms_args_without_aqs(search_terms_args);
           search_terms_args_without_aqs.assisted_query_stats.clear();
-          GURL base_url(ReplaceSearchTermsUsingTermsData(
+          GURL base_url(ReplaceSearchTerms(
               search_terms_args_without_aqs, search_terms_data, NULL));
           if (base_url.SchemeIs(url::kHttpsScheme)) {
             HandleReplacement(
@@ -1190,12 +1168,13 @@ GURL TemplateURL::GenerateFaviconURL(const GURL& url) {
 
 // static
 bool TemplateURL::MatchesData(const TemplateURL* t_url,
-                              const TemplateURLData* data) {
+                              const TemplateURLData* data,
+                              const SearchTermsData& search_terms_data) {
   if (!t_url || !data)
     return !t_url && !data;
 
   return (t_url->short_name() == data->short_name) &&
-      t_url->HasSameKeywordAs(*data) &&
+      t_url->HasSameKeywordAs(*data, search_terms_data) &&
       (t_url->url() == data->url()) &&
       (t_url->suggestions_url() == data->suggestions_url) &&
       (t_url->instant_url() == data->instant_url) &&
@@ -1221,38 +1200,41 @@ base::string16 TemplateURL::AdjustedShortNameForLocaleDirection() const {
   return bidi_safe_short_name;
 }
 
-bool TemplateURL::ShowInDefaultList() const {
-  return data_.show_in_default_list && url_ref_.SupportsReplacement();
-}
-
-bool TemplateURL::SupportsReplacement() const {
-  UIThreadSearchTermsData search_terms_data(profile_);
-  return SupportsReplacementUsingTermsData(search_terms_data);
-}
-
-bool TemplateURL::SupportsReplacementUsingTermsData(
+bool TemplateURL::ShowInDefaultList(
     const SearchTermsData& search_terms_data) const {
-  return url_ref_.SupportsReplacementUsingTermsData(search_terms_data);
+  return data_.show_in_default_list &&
+      url_ref_.SupportsReplacement(search_terms_data);
 }
 
-bool TemplateURL::HasGoogleBaseURLs() const {
-  return url_ref_.HasGoogleBaseURLs() ||
-      suggestions_url_ref_.HasGoogleBaseURLs() ||
-      instant_url_ref_.HasGoogleBaseURLs() ||
-      image_url_ref_.HasGoogleBaseURLs() ||
-      new_tab_url_ref_.HasGoogleBaseURLs();
+bool TemplateURL::SupportsReplacement(
+    const SearchTermsData& search_terms_data) const {
+  return url_ref_.SupportsReplacement(search_terms_data);
 }
 
-bool TemplateURL::IsGoogleSearchURLWithReplaceableKeyword() const {
-  return (GetType() == NORMAL) && url_ref_.HasGoogleBaseURLs() &&
+bool TemplateURL::HasGoogleBaseURLs(
+    const SearchTermsData& search_terms_data) const {
+  return url_ref_.HasGoogleBaseURLs(search_terms_data) ||
+      suggestions_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
+      instant_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
+      image_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
+      new_tab_url_ref_.HasGoogleBaseURLs(search_terms_data);
+}
+
+bool TemplateURL::IsGoogleSearchURLWithReplaceableKeyword(
+    const SearchTermsData& search_terms_data) const {
+  return (GetType() == NORMAL) &&
+      url_ref_.HasGoogleBaseURLs(search_terms_data) &&
       google_util::IsGoogleHostname(base::UTF16ToUTF8(data_.keyword()),
                                     google_util::DISALLOW_SUBDOMAIN);
 }
 
-bool TemplateURL::HasSameKeywordAs(const TemplateURLData& other) const {
+bool TemplateURL::HasSameKeywordAs(
+    const TemplateURLData& other,
+    const SearchTermsData& search_terms_data) const {
   return (data_.keyword() == other.keyword()) ||
-      (IsGoogleSearchURLWithReplaceableKeyword() &&
-       TemplateURL(NULL, other).IsGoogleSearchURLWithReplaceableKeyword());
+      (IsGoogleSearchURLWithReplaceableKeyword(search_terms_data) &&
+       TemplateURL(NULL, other).IsGoogleSearchURLWithReplaceableKeyword(
+           search_terms_data));
 }
 
 TemplateURL::Type TemplateURL::GetType() const {
@@ -1282,31 +1264,17 @@ const std::string& TemplateURL::GetURL(size_t index) const {
 
 bool TemplateURL::ExtractSearchTermsFromURL(
     const GURL& url,
+    const SearchTermsData& search_terms_data,
     base::string16* search_terms) {
-  UIThreadSearchTermsData search_terms_data(profile_);
-  return ExtractSearchTermsFromURLUsingTermsData(url, search_terms,
-                                                 search_terms_data);
-}
-
-bool TemplateURL::ExtractSearchTermsFromURLUsingTermsData(
-    const GURL& url,
-    base::string16* search_terms,
-    const SearchTermsData& search_terms_data) {
   return FindSearchTermsInURL(url, search_terms_data, search_terms, NULL, NULL);
 }
 
-
-bool TemplateURL::IsSearchURL(const GURL& url) {
-  UIThreadSearchTermsData search_terms_data(profile_);
-  return IsSearchURLUsingTermsData(url, search_terms_data);
-}
-
-bool TemplateURL::IsSearchURLUsingTermsData(
+bool TemplateURL::IsSearchURL(
     const GURL& url,
     const SearchTermsData& search_terms_data) {
   base::string16 search_terms;
-  return ExtractSearchTermsFromURLUsingTermsData(
-      url, &search_terms, search_terms_data) && !search_terms.empty();
+  return ExtractSearchTermsFromURL(url, search_terms_data, &search_terms) &&
+      !search_terms.empty();
 }
 
 bool TemplateURL::HasSearchTermsReplacementKey(const GURL& url) const {
@@ -1330,8 +1298,8 @@ bool TemplateURL::HasSearchTermsReplacementKey(const GURL& url) const {
 bool TemplateURL::ReplaceSearchTermsInURL(
     const GURL& url,
     const TemplateURLRef::SearchTermsArgs& search_terms_args,
+    const SearchTermsData& search_terms_data,
     GURL* result) {
-  UIThreadSearchTermsData search_terms_data(profile_);
   // TODO(beaudoin): Use AQS from |search_terms_args| too.
   url::Parsed::ComponentType search_term_component;
   url::Component search_terms_position;
@@ -1412,8 +1380,10 @@ void TemplateURL::SetPrepopulateId(int id) {
   instant_url_ref_.prepopulated_ = prepopulated;
 }
 
-void TemplateURL::ResetKeywordIfNecessary(bool force) {
-  if (IsGoogleSearchURLWithReplaceableKeyword() || force) {
+void TemplateURL::ResetKeywordIfNecessary(
+    const SearchTermsData& search_terms_data,
+    bool force) {
+  if (IsGoogleSearchURLWithReplaceableKeyword(search_terms_data) || force) {
     DCHECK(GetType() != OMNIBOX_API_EXTENSION);
     GURL url(TemplateURLService::GenerateSearchURL(this));
     if (url.is_valid())

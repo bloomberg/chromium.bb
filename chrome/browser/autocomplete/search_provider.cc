@@ -207,7 +207,8 @@ void SearchProvider::Start(const AutocompleteInput& input,
     keyword_provider = NULL;
 
   const TemplateURL* default_provider = model->GetDefaultSearchProvider();
-  if (default_provider && !default_provider->SupportsReplacement())
+  if (default_provider &&
+      !default_provider->SupportsReplacement(model->search_terms_data()))
     default_provider = NULL;
 
   if (keyword_provider == default_provider)
@@ -343,7 +344,9 @@ void SearchProvider::LogFetchComplete(bool success, bool is_keyword) {
   // non-keyword mode.
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   if (!is_keyword && default_url &&
-      (TemplateURLPrepopulateData::GetEngineType(*default_url) ==
+      (TemplateURLPrepopulateData::GetEngineType(
+          *default_url,
+          providers_.template_url_service()->search_terms_data()) ==
        SEARCH_ENGINE_GOOGLE)) {
     const base::TimeDelta elapsed_time =
         base::TimeTicks::Now() - time_suggest_request_sent_;
@@ -648,7 +651,8 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
           switches::kEnableAnswersInSuggest))
     search_term_args.session_token = GetSessionToken();
   GURL suggest_url(template_url->suggestions_url_ref().ReplaceSearchTerms(
-      search_term_args));
+      search_term_args,
+      providers_.template_url_service()->search_terms_data()));
   if (!suggest_url.is_valid())
     return NULL;
   // Send the current page URL if user setting and URL requirements are met and
@@ -659,7 +663,8 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
     search_term_args.current_page_url = current_page_url_.spec();
     // Create the suggest URL again with the current page URL.
     suggest_url = GURL(template_url->suggestions_url_ref().ReplaceSearchTerms(
-        search_term_args));
+        search_term_args,
+        providers_.template_url_service()->search_terms_data()));
   }
 
   suggest_results_pending_++;

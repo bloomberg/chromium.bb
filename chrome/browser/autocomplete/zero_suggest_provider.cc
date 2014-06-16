@@ -113,7 +113,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   base::string16 prefix;
   TemplateURLRef::SearchTermsArgs search_term_args(prefix);
   GURL suggest_url(default_provider->suggestions_url_ref().ReplaceSearchTerms(
-      search_term_args));
+      search_term_args, template_url_service_->search_terms_data()));
   if (!suggest_url.is_valid())
     return;
 
@@ -124,7 +124,9 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
     // Update suggest_url to include the current_page_url.
     search_term_args.current_page_url = current_query_;
     suggest_url = GURL(default_provider->suggestions_url_ref().
-                       ReplaceSearchTerms(search_term_args));
+                       ReplaceSearchTerms(
+                           search_term_args,
+                           template_url_service_->search_terms_data()));
   } else if (!CanShowZeroSuggestWithoutSendingURL(suggest_url,
                                                   input.current_url())) {
     return;
@@ -344,7 +346,8 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   const TemplateURL* default_provider =
       template_url_service_->GetDefaultSearchProvider();
   // Fail if we can't set the clickthrough URL for query suggestions.
-  if (default_provider == NULL || !default_provider->SupportsReplacement())
+  if (default_provider == NULL || !default_provider->SupportsReplacement(
+          template_url_service_->search_terms_data()))
     return;
 
   MatchMap map;

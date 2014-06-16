@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -90,7 +91,8 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
     [keywordField_ setStringValue:
         base::SysUTF16ToNSString(templateURL_->keyword())];
     [urlField_ setStringValue:
-        base::SysUTF16ToNSString(templateURL_->url_ref().DisplayURL())];
+        base::SysUTF16ToNSString(templateURL_->url_ref().DisplayURL(
+            UIThreadSearchTermsData(profile_)))];
     [urlField_ setEnabled:(templateURL_->prepopulate_id() == 0)];
   }
   // When creating a new keyword, this will mark the fields as "invalid" and

@@ -307,10 +307,9 @@ TemplateURL* TemplateURLParsingContext::GetTemplateURL(
   scoped_ptr<SearchTermsData> search_terms_data(profile ?
       new UIThreadSearchTermsData(profile) : new SearchTermsData());
   if (template_url->url().empty() ||
-      !template_url->url_ref().IsValidUsingTermsData(*search_terms_data) ||
+      !template_url->url_ref().IsValid(*search_terms_data) ||
       (!template_url->suggestions_url().empty() &&
-       !template_url->suggestions_url_ref().
-           IsValidUsingTermsData(*search_terms_data))) {
+       !template_url->suggestions_url_ref().IsValid(*search_terms_data))) {
     return NULL;
   }
 

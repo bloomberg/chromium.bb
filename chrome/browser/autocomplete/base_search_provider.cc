@@ -25,6 +25,7 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -140,13 +141,14 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
     const base::string16& suggestion,
     AutocompleteMatchType::Type type,
     bool from_keyword_provider,
-    const TemplateURL* template_url) {
+    const TemplateURL* template_url,
+    const SearchTermsData& search_terms_data) {
   return CreateSearchSuggestion(
       NULL, AutocompleteInput(), BaseSearchProvider::SuggestResult(
           suggestion, type, suggestion, base::string16(), base::string16(),
           base::string16(), base::string16(), std::string(), std::string(),
           from_keyword_provider, 0, false, false, base::string16()),
-      template_url, 0, 0, false, false);
+      template_url, search_terms_data, 0, 0, false, false);
 }
 
 void BaseSearchProvider::Stop(bool clear_cached_results) {
@@ -482,6 +484,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
     const AutocompleteInput& input,
     const SuggestResult& suggestion,
     const TemplateURL* template_url,
+    const SearchTermsData& search_terms_data,
     int accepted_suggestion,
     int omnibox_start_margin,
     bool append_extra_query_params,
@@ -532,7 +535,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.fill_into_edit.append(suggestion.suggestion());
 
   const TemplateURLRef& search_url = template_url->url_ref();
-  DCHECK(search_url.SupportsReplacement());
+  DCHECK(search_url.SupportsReplacement(search_terms_data));
   match.search_terms_args.reset(
       new TemplateURLRef::SearchTermsArgs(suggestion.suggestion()));
   match.search_terms_args->original_query = input.text();
@@ -547,7 +550,8 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   // so the AutocompleteController can properly de-dupe; the controller will
   // eventually overwrite it before it reaches the user.
   match.destination_url =
-      GURL(search_url.ReplaceSearchTerms(*match.search_terms_args.get()));
+      GURL(search_url.ReplaceSearchTerms(*match.search_terms_args.get(),
+                                         search_terms_data));
 
   // Search results don't look like URLs.
   match.transition = suggestion.from_keyword_provider() ?
@@ -611,9 +615,11 @@ bool BaseSearchProvider::ZeroSuggestEnabled(
 
   // Only make the request if we know that the provider supports zero suggest
   // (currently only the prepopulated Google provider).
-  if (template_url == NULL || !template_url->SupportsReplacement() ||
-      TemplateURLPrepopulateData::GetEngineType(*template_url) !=
-      SEARCH_ENGINE_GOOGLE)
+  UIThreadSearchTermsData search_terms_data(profile);
+  if (template_url == NULL ||
+      !template_url->SupportsReplacement(search_terms_data) ||
+      TemplateURLPrepopulateData::GetEngineType(
+          *template_url, search_terms_data) != SEARCH_ENGINE_GOOGLE)
     return false;
 
   return true;
@@ -719,7 +725,8 @@ void BaseSearchProvider::AddMatchToMap(const SuggestResult& result,
 
   AutocompleteMatch match = CreateSearchSuggestion(
       this, GetInput(result.from_keyword_provider()), result,
-      GetTemplateURL(result.from_keyword_provider()), accepted_suggestion,
+      GetTemplateURL(result.from_keyword_provider()),
+      UIThreadSearchTermsData(profile_), accepted_suggestion,
       omnibox_start_margin, ShouldAppendExtraParams(result),
       in_app_list_);
   if (!match.destination_url.is_valid())

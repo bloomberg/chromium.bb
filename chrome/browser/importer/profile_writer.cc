@@ -252,14 +252,16 @@ static std::string HostPathKeyForURL(const GURL& url) {
 // 'http://...{Language}...'. As {Language} is not a valid OSDD parameter value
 // the TemplateURL is invalid.
 static std::string BuildHostPathKey(const TemplateURL* t_url,
+                                    const SearchTermsData& search_terms_data,
                                     bool try_url_if_invalid) {
-  if (try_url_if_invalid && !t_url->url_ref().IsValid())
+  if (try_url_if_invalid && !t_url->url_ref().IsValid(search_terms_data))
     return HostPathKeyForURL(GURL(t_url->url()));
 
-  if (t_url->url_ref().SupportsReplacement()) {
+  if (t_url->url_ref().SupportsReplacement(search_terms_data)) {
     return HostPathKeyForURL(GURL(
         t_url->url_ref().ReplaceSearchTerms(
-            TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("x")))));
+            TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("x")),
+            search_terms_data)));
   }
   return std::string();
 }
@@ -271,7 +273,8 @@ static void BuildHostPathMap(TemplateURLService* model,
   TemplateURLService::TemplateURLVector template_urls =
       model->GetTemplateURLs();
   for (size_t i = 0; i < template_urls.size(); ++i) {
-    const std::string host_path = BuildHostPathKey(template_urls[i], false);
+    const std::string host_path = BuildHostPathKey(
+        template_urls[i], model->search_terms_data(), false);
     if (!host_path.empty()) {
       const TemplateURL* existing_turl = (*host_path_map)[host_path];
       if (!existing_turl ||
@@ -309,11 +312,12 @@ void ProfileWriter::AddKeywords(ScopedVector<TemplateURL> template_urls,
     // sure the search engines we provide aren't replaced by those from the
     // imported browser.
     if (unique_on_host_and_path &&
-        (host_path_map.find(BuildHostPathKey(*i, true)) != host_path_map.end()))
+        (host_path_map.find(BuildHostPathKey(
+            *i, model->search_terms_data(), true)) != host_path_map.end()))
       continue;
 
     // Only add valid TemplateURLs to the model.
-    if ((*i)->url_ref().IsValid()) {
+    if ((*i)->url_ref().IsValid(model->search_terms_data())) {
       model->AddAndSetProfile(*i, profile_);  // Takes ownership.
       *i = NULL;  // Prevent the vector from deleting *i later.
     }

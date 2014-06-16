@@ -209,7 +209,9 @@ class InstantExtendedTest : public InProcessBrowserTest,
     HistoryService* history = HistoryServiceFactory::GetForProfile(
         browser()->profile(), Profile::EXPLICIT_ACCESS);
     GURL search(template_url->url_ref().ReplaceSearchTerms(
-        TemplateURLRef::SearchTermsArgs(term)));
+        TemplateURLRef::SearchTermsArgs(term),
+        TemplateURLServiceFactory::GetForProfile(
+            browser()->profile())->search_terms_data()));
     history->AddPageWithDetails(
         search, base::string16(), visit_count, visit_count,
         base::Time::Now(), false, history::SOURCE_BROWSED);

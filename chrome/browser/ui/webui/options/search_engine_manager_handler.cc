@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
 #include "chrome/common/url_constants.h"
@@ -177,7 +178,8 @@ base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
     index, IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN));
   dict->SetString("keyword", table_model->GetText(
     index, IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN));
-  dict->SetString("url", template_url->url_ref().DisplayURL());
+  dict->SetString("url", template_url->url_ref().DisplayURL(
+      UIThreadSearchTermsData(Profile::FromWebUI(web_ui()))));
   dict->SetBoolean("urlLocked", template_url->prepopulate_id() > 0);
   GURL icon_url = template_url->favicon_url();
   if (icon_url.is_valid())

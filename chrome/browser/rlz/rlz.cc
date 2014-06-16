@@ -237,7 +237,8 @@ bool RLZTracker::InitRlzFromProfileDelayed(Profile* profile,
     const TemplateURL* url_template =
         template_url_service->GetDefaultSearchProvider();
     is_google_default_search =
-        url_template && url_template->url_ref().HasGoogleBaseURLs();
+        url_template && url_template->url_ref().HasGoogleBaseURLs(
+            template_url_service->search_terms_data());
   }
 
   PrefService* pref_service = profile->GetPrefs();

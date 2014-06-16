@@ -363,7 +363,16 @@ class TemplateURLService : public WebDataServiceConsumer,
                                 const TemplateURL* turl,
                                 syncer::SyncChange::SyncChangeType type);
 
+  // DEPRECATED: Profile will be removed from this class. crbug.com/371535
   Profile* profile() const { return profile_; }
+
+  // Returns a SearchTermsData which can be used to call TemplateURL methods.
+  // Note: Prefer using this method to instantiating UIThreadSearchTermsData on
+  // your own, especially when your code hasn't depended on Profile, to avoid
+  // adding a new dependency on Profile.
+  const SearchTermsData& search_terms_data() const {
+    return *search_terms_data_;
+  }
 
   // Returns a SyncData with a sync representation of the search engine data
   // from |turl|.
@@ -712,6 +721,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   // When Load is invoked, if we haven't yet loaded, the WebDataService is
   // obtained from the Profile. This allows us to lazily access the database.
   Profile* profile_;
+
+  scoped_ptr<SearchTermsData> search_terms_data_;
 
   // Whether the keywords have been loaded.
   bool loaded_;

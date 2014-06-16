@@ -148,7 +148,8 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
 
   DCHECK(model);
   const TemplateURL* template_url = model->GetTemplateURLForKeyword(keyword);
-  if (template_url && template_url->SupportsReplacement()) {
+  if (template_url &&
+      template_url->SupportsReplacement(model->search_terms_data())) {
     // Adjust cursor position iff it was set before, otherwise leave it as is.
     size_t cursor_position = base::string16::npos;
     // The adjustment assumes that the keyword was stripped from the beginning
@@ -192,7 +193,8 @@ base::string16 KeywordProvider::GetKeywordForText(
   // Don't provide a keyword if it doesn't support replacement.
   const TemplateURL* const template_url =
       url_service->GetTemplateURLForKeyword(keyword);
-  if (!template_url || !template_url->SupportsReplacement())
+  if (!template_url ||
+      !template_url->SupportsReplacement(url_service->search_terms_data()))
     return base::string16();
 
   // Don't provide a keyword for inactive/disabled extension keywords.
@@ -275,7 +277,9 @@ void KeywordProvider::Start(const AutocompleteInput& input,
     }
 
     // Prune any substituting keywords if there is no substitution.
-    if (template_url->SupportsReplacement() && remaining_input.empty() &&
+    if (template_url->SupportsReplacement(
+            GetTemplateURLService()->search_terms_data()) &&
+        remaining_input.empty() &&
         !input.allow_exact_keyword_match()) {
       i = matches.erase(i);
       continue;
@@ -383,7 +387,8 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
     int relevance) {
   DCHECK(template_url);
   const bool supports_replacement =
-      template_url->url_ref().SupportsReplacement();
+      template_url->url_ref().SupportsReplacement(
+          GetTemplateURLService()->search_terms_data());
 
   // Create an edit entry of "[keyword] [remaining input]".  This is helpful
   // even when [remaining input] is empty, as the user can select the popup
@@ -429,14 +434,15 @@ void KeywordProvider::FillInURLAndContents(
     AutocompleteMatch* match) const {
   DCHECK(!element->short_name().empty());
   const TemplateURLRef& element_ref = element->url_ref();
-  DCHECK(element_ref.IsValid());
+  DCHECK(element_ref.IsValid(GetTemplateURLService()->search_terms_data()));
   int message_id = (element->GetType() == TemplateURL::OMNIBOX_API_EXTENSION) ?
       IDS_EXTENSION_KEYWORD_COMMAND : IDS_KEYWORD_SEARCH;
   if (remaining_input.empty()) {
     // Allow extension keyword providers to accept empty string input. This is
     // useful to allow extensions to do something in the case where no input is
     // entered.
-    if (element_ref.SupportsReplacement() &&
+    if (element_ref.SupportsReplacement(
+            GetTemplateURLService()->search_terms_data()) &&
         (element->GetType() != TemplateURL::OMNIBOX_API_EXTENSION)) {
       // No query input; return a generic, no-destination placeholder.
       match->contents.assign(
@@ -458,12 +464,13 @@ void KeywordProvider::FillInURLAndContents(
     // keyword template URL.  The escaping here handles whitespace in user
     // input, but we rely on later canonicalization functions to do more
     // fixup to make the URL valid if necessary.
-    DCHECK(element_ref.SupportsReplacement());
+    DCHECK(element_ref.SupportsReplacement(
+        GetTemplateURLService()->search_terms_data()));
     TemplateURLRef::SearchTermsArgs search_terms_args(remaining_input);
     search_terms_args.append_extra_query_params =
         element == GetTemplateURLService()->GetDefaultSearchProvider();
-    match->destination_url =
-        GURL(element_ref.ReplaceSearchTerms(search_terms_args));
+    match->destination_url = GURL(element_ref.ReplaceSearchTerms(
+        search_terms_args, GetTemplateURLService()->search_terms_data()));
     std::vector<size_t> content_param_offsets;
     match->contents.assign(l10n_util::GetStringFUTF16(message_id,
                                                       element->short_name(),

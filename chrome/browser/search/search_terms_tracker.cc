@@ -84,20 +84,22 @@ bool SearchTermsTracker::FindMostRecentSearch(
   if (!profile)
     return false;
 
-  TemplateURL* template_url =
-      TemplateURLServiceFactory::GetForProfile(profile)->
-          GetDefaultSearchProvider();
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  TemplateURL* template_url = service->GetDefaultSearchProvider();
 
   for (int i = controller->GetCurrentEntryIndex(); i >= 0; --i) {
     content::NavigationEntry* entry = controller->GetEntryAtIndex(i);
     if (entry->GetPageType() == content::PAGE_TYPE_NORMAL) {
-      if (template_url->IsSearchURL(entry->GetURL())) {
+      if (template_url->IsSearchURL(entry->GetURL(),
+                                    service->search_terms_data())) {
         // This entry is a search results page. Extract the terms only if this
         // isn't the last (i.e. most recent/current) entry as we don't want to
         // record the search terms when we're on an SRP.
         if (i != controller->GetCurrentEntryIndex()) {
           tab_data->srp_navigation_index = i;
           template_url->ExtractSearchTermsFromURL(entry->GetURL(),
+                                                  service->search_terms_data(),
                                                   &tab_data->search_terms);
           return true;
         }

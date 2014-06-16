@@ -65,7 +65,7 @@ class EditSearchEngineController {
 
   // Accessors.
   const TemplateURL* template_url() const { return template_url_; }
-  const Profile* profile() const { return profile_; }
+  Profile* profile() const { return profile_; }
 
  private:
   // Fixes up and returns the URL the user has input. The returned URL is

@@ -214,7 +214,8 @@ void HistoryQuickProvider::DoAutocomplete() {
     // These are low-quality, difficult-to-understand matches for users, and the
     // SearchProvider should surface past queries in a better way anyway.
     if (!template_url ||
-        !template_url->IsSearchURL(history_match.url_info.url())) {
+        !template_url->IsSearchURL(history_match.url_info.url(),
+                                   template_url_service->search_terms_data())) {
       // Set max_match_score to the score we'll assign this result:
       max_match_score = std::min(max_match_score, history_match.raw_score());
       matches_.push_back(QuickMatchToACMatch(history_match, max_match_score));

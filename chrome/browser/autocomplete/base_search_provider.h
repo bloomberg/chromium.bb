@@ -62,7 +62,8 @@ class BaseSearchProvider : public AutocompleteProvider,
       const base::string16& suggestion,
       AutocompleteMatchType::Type type,
       bool from_keyword_provider,
-      const TemplateURL* template_url);
+      const TemplateURL* template_url,
+      const SearchTermsData& search_terms_data);
 
   // AutocompleteProvider:
   virtual void Stop(bool clear_cached_results) OVERRIDE;
@@ -352,6 +353,7 @@ class BaseSearchProvider : public AutocompleteProvider,
       const AutocompleteInput& input,
       const SuggestResult& suggestion,
       const TemplateURL* template_url,
+      const SearchTermsData& search_terms_data,
       int accepted_suggestion,
       int omnibox_start_margin,
       bool append_extra_query_params,

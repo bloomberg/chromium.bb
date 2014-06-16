@@ -913,7 +913,8 @@ TEST_F(SearchURLTest, QueryExtractionEnabled) {
   EnableQueryExtractionForTesting();
   EXPECT_TRUE(IsQueryExtractionEnabled());
   TemplateURLRef::SearchTermsArgs search_terms_args(base::ASCIIToUTF16("foo"));
-  GURL result(template_url_->url_ref().ReplaceSearchTerms(search_terms_args));
+  GURL result(template_url_->url_ref().ReplaceSearchTerms(
+      search_terms_args, UIThreadSearchTermsData(profile())));
   ASSERT_TRUE(result.is_valid());
   // Query extraction is enabled. Make sure
   // {google:instantExtendedEnabledParameter} is set in the search URL.
@@ -924,7 +925,8 @@ TEST_F(SearchURLTest, QueryExtractionDisabled) {
   UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
   EXPECT_FALSE(IsQueryExtractionEnabled());
   TemplateURLRef::SearchTermsArgs search_terms_args(base::ASCIIToUTF16("foo"));
-  GURL result(template_url_->url_ref().ReplaceSearchTerms(search_terms_args));
+  GURL result(template_url_->url_ref().ReplaceSearchTerms(
+      search_terms_args, UIThreadSearchTermsData(profile())));
   ASSERT_TRUE(result.is_valid());
   // Query extraction is disabled. Make sure
   // {google:instantExtendedEnabledParameter} is not set in the search URL.

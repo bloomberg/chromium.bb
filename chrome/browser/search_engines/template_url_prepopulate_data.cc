@@ -512,14 +512,6 @@ const PrepopulatedEngine* kAllEngines[] = {
   &zoznam,
 };
 
-const struct LogoURLs {
-  const char* const logo_100_percent_url;
-  const char* const logo_200_percent_url;
-} google_logos = {
-  "https://www.google.com/images/chrome_search/google_logo.png",
-  "https://www.google.com/images/chrome_search/google_logo_2x.png",
-};
-
 // Please refer to ISO 3166-1 for information about the two-character country
 // codes; http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 is useful. In the
 // following (C++) code, we pack the two letters of the country code into an int
@@ -1286,7 +1278,8 @@ scoped_ptr<TemplateURLData> GetPrepopulatedDefaultSearch(PrefService* prefs) {
   return default_search_provider.Pass();
 }
 
-SearchEngineType GetEngineType(const TemplateURL& url) {
+SearchEngineType GetEngineType(const TemplateURL& url,
+                               const SearchTermsData& search_terms_data) {
   // Restricted to UI thread because ReplaceSearchTerms() is so restricted.
   using content::BrowserThread;
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
@@ -1296,7 +1289,7 @@ SearchEngineType GetEngineType(const TemplateURL& url) {
   // can't be directly inspected (e.g. due to containing {google:baseURL}) can
   // be converted to GURLs we can look at.
   GURL gurl(url.url_ref().ReplaceSearchTerms(TemplateURLRef::SearchTermsArgs(
-      base::ASCIIToUTF16("x"))));
+      base::ASCIIToUTF16("x")), search_terms_data));
   return gurl.is_valid() ? GetEngineType(gurl) : SEARCH_ENGINE_OTHER;
 }
 
@@ -1327,13 +1320,6 @@ SearchEngineType GetEngineType(const GURL& url) {
   }
 
   return SEARCH_ENGINE_OTHER;
-}
-
-GURL GetLogoURL(const TemplateURL& template_url, LogoSize size) {
-  if (GetEngineType(template_url) != SEARCH_ENGINE_GOOGLE)
-    return GURL();
-  return GURL((size == LOGO_200_PERCENT) ?
-      google_logos.logo_200_percent_url : google_logos.logo_100_percent_url);
 }
 
 }  // namespace TemplateURLPrepopulateData

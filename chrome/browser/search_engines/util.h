@@ -95,6 +95,7 @@ void GetSearchProvidersUsingKeywordResult(
     Profile* profile,
     TemplateURLService::TemplateURLVector* template_urls,
     TemplateURL* default_search_provider,
+    const SearchTermsData& search_terms_data,
     int* new_resource_keyword_version,
     std::set<std::string>* removed_keyword_guids);
 
@@ -110,6 +111,7 @@ void GetSearchProvidersUsingLoadedEngines(
     Profile* profile,
     TemplateURLService::TemplateURLVector* template_urls,
     TemplateURL* default_search_provider,
+    const SearchTermsData& search_terms_data,
     int* resource_keyword_version,
     std::set<std::string>* removed_keyword_guids);
 
@@ -128,6 +130,7 @@ void RemoveDuplicatePrepopulateIDs(
     const ScopedVector<TemplateURLData>& prepopulated_urls,
     TemplateURL* default_search_provider,
     TemplateURLService::TemplateURLVector* template_urls,
+    const SearchTermsData& search_terms_data,
     std::set<std::string>* removed_keyword_guids);
 
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_UTIL_H_
