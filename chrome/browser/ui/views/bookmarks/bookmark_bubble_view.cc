@@ -39,11 +39,22 @@ using views::GridLayout;
 
 namespace {
 
-// Minimum width of the the bubble.
-const int kMinBubbleWidth = 350;
-
 // Width of the border of a button.
 const int kControlBorderWidth = 2;
+
+// This combobox prevents any lengthy content from stretching the bubble view.
+class UnsizedCombobox : public views::Combobox {
+ public:
+  explicit UnsizedCombobox(ui::ComboboxModel* model) : views::Combobox(model) {}
+  virtual ~UnsizedCombobox() {}
+
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+    return gfx::Size(0, views::Combobox::GetPreferredSize().height());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UnsizedCombobox);
+};
 
 }  // namespace
 
@@ -152,7 +163,7 @@ void BookmarkBubbleView::Init() {
   views::Label* combobox_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_FOLDER_TEXT));
 
-  parent_combobox_ = new views::Combobox(&parent_model_);
+  parent_combobox_ = new UnsizedCombobox(&parent_model_);
   parent_combobox_->set_listener(this);
   parent_combobox_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_BUBBLE_FOLDER_TEXT));
@@ -282,12 +293,6 @@ base::string16 BookmarkBubbleView::GetTitle() {
   else
     NOTREACHED();
   return base::string16();
-}
-
-gfx::Size BookmarkBubbleView::GetMinimumSize() const {
-  gfx::Size size(views::BubbleDelegateView::GetPreferredSize());
-  size.SetToMax(gfx::Size(kMinBubbleWidth, 0));
-  return size;
 }
 
 void BookmarkBubbleView::GetAccessibleState(ui::AXViewState* state) {
