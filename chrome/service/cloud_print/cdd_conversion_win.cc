@@ -4,6 +4,7 @@
 
 #include "chrome/service/cloud_print/cdd_conversion_win.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "printing/backend/win_helper.h"
 
@@ -111,11 +112,13 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
     static const size_t kFromUm = 100;  // Windows uses 0.1mm.
     int width = media.value().width_um / kFromUm;
     int height = media.value().height_um / kFromUm;
-    if (width > 0) {
+    unsigned id = 0;
+    if (base::StringToUint(media.value().vendor_id, &id) && id) {
+      dev_mode->dmFields |= DM_PAPERSIZE;
+      dev_mode->dmPaperSize = static_cast<short>(id);
+    } else if (width > 0 && height > 0) {
       dev_mode->dmFields |= DM_PAPERWIDTH;
       dev_mode->dmPaperWidth = width;
-    }
-    if (height > 0) {
       dev_mode->dmFields |= DM_PAPERLENGTH;
       dev_mode->dmPaperLength = height;
     }

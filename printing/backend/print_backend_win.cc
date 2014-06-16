@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
@@ -95,37 +96,34 @@ void LoadPaper(const wchar_t* printer,
       tmp_name = tmp_name.c_str();
       paper.display_name = base::WideToUTF8(tmp_name);
     }
+    if (!ids.empty())
+      paper.vendor_id = base::UintToString(ids[i]);
     caps->papers.push_back(paper);
   }
 
   if (devmode) {
-    short default_id = 0;
-    gfx::Size default_size;
+    // Copy paper with the same ID as default paper.
+    if (devmode->dmFields & DM_PAPERSIZE) {
+      for (size_t i = 0; i < ids.size(); ++i) {
+        if (ids[i] == devmode->dmPaperSize) {
+          DCHECK_EQ(ids.size(), caps->papers.size());
+          caps->default_paper = caps->papers[i];
+          break;
+        }
+      }
+    }
 
-    if (devmode->dmFields & DM_PAPERSIZE)
-      default_id = devmode->dmPaperSize;
+    gfx::Size default_size;
     if (devmode->dmFields & DM_PAPERWIDTH)
       default_size.set_width(devmode->dmPaperWidth * kToUm);
     if (devmode->dmFields & DM_PAPERLENGTH)
       default_size.set_height(devmode->dmPaperLength * kToUm);
 
-    if (default_size.IsEmpty()) {
-      for (size_t i = 0; i < ids.size(); ++i) {
-        if (ids[i] == default_id) {
-          PrinterSemanticCapsAndDefaults::Paper paper;
-          paper.size_um.SetSize(sizes[i].x * kToUm, sizes[i].y * kToUm);
-          if (!names.empty()) {
-            const wchar_t* name_start = names[i].chars;
-            base::string16 tmp_name(name_start, kMaxPaperName);
-            // Trim trailing zeros.
-            tmp_name = tmp_name.c_str();
-            paper.display_name = base::WideToUTF8(tmp_name);
-          }
-          caps->default_paper = paper;
-          break;
-        }
-      }
-    } else {
+    if (!default_size.IsEmpty()) {
+      // Reset default paper if |dmPaperWidth| or |dmPaperLength| does not
+      // match default paper set by.
+      if (default_size != caps->default_paper.size_um)
+        caps->default_paper = PrinterSemanticCapsAndDefaults::Paper();
       caps->default_paper.size_um = default_size;
     }
   }

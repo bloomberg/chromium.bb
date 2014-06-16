@@ -10,6 +10,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "printing/backend/print_backend.h"
@@ -343,6 +344,22 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     dev_mode->dmFields |= DM_ORIENTATION;
     dev_mode->dmOrientation = settings_.landscape() ? DMORIENT_LANDSCAPE :
                                                       DMORIENT_PORTRAIT;
+
+    const PrintSettings::RequestedMedia& requested_media =
+        settings_.requested_media();
+    static const int kFromUm = 100;  // Windows uses 0.1mm.
+    int width = requested_media.size_microns.width() / kFromUm;
+    int height = requested_media.size_microns.height() / kFromUm;
+    unsigned id = 0;
+    if (base::StringToUint(requested_media.vendor_id, &id) && id) {
+      dev_mode->dmFields |= DM_PAPERSIZE;
+      dev_mode->dmPaperSize = static_cast<short>(id);
+    } else if (width > 0 && height > 0) {
+      dev_mode->dmFields |= DM_PAPERWIDTH;
+      dev_mode->dmPaperWidth = width;
+      dev_mode->dmFields |= DM_PAPERLENGTH;
+      dev_mode->dmPaperLength = height;
+    }
   }
 
   // Update data using DocumentProperties.
