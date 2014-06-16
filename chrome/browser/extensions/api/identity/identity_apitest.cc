@@ -301,6 +301,8 @@ class MockGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
     return scope_ui_shown_;
   }
 
+  const ExtensionTokenKey* extension_token_key() { return token_key_.get(); }
+
   virtual void StartLoginAccessTokenRequest() OVERRIDE {
     if (login_access_token_result_) {
       OnGetTokenSuccess(login_token_request_.get(), "access_token",
@@ -1515,6 +1517,77 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, MultiSecondaryUser) {
 }
 
 // TODO(courage): negative cases for secondary accounts
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesDefault) {
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+  EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
+  TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
+      TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS, func.get());
+  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
+  scoped_ptr<base::Value> value(
+      utils::RunFunctionAndReturnSingleResult(func.get(), "[{}]", browser()));
+  std::string access_token;
+  EXPECT_TRUE(value->GetAsString(&access_token));
+  EXPECT_EQ(std::string(kAccessToken), access_token);
+
+  const ExtensionTokenKey* token_key = func->extension_token_key();
+  EXPECT_EQ(2ul, token_key->scopes.size());
+  EXPECT_TRUE(ContainsKey(token_key->scopes, "scope1"));
+  EXPECT_TRUE(ContainsKey(token_key->scopes, "scope2"));
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmpty) {
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+
+  std::string error(utils::RunFunctionAndReturnError(
+      func.get(), "[{\"scopes\": []}]", browser()));
+
+  EXPECT_EQ(errors::kInvalidScopes, error);
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmail) {
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+  EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
+  TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
+      TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS, func.get());
+  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
+  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+      func.get(), "[{\"scopes\": [\"email\"]}]", browser()));
+  std::string access_token;
+  EXPECT_TRUE(value->GetAsString(&access_token));
+  EXPECT_EQ(std::string(kAccessToken), access_token);
+
+  const ExtensionTokenKey* token_key = func->extension_token_key();
+  EXPECT_EQ(1ul, token_key->scopes.size());
+  EXPECT_TRUE(ContainsKey(token_key->scopes, "email"));
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmailFooBar) {
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+  EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
+  TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
+      TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS, func.get());
+  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
+  scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+      func.get(), "[{\"scopes\": [\"email\", \"foo\", \"bar\"]}]", browser()));
+  std::string access_token;
+  EXPECT_TRUE(value->GetAsString(&access_token));
+  EXPECT_EQ(std::string(kAccessToken), access_token);
+
+  const ExtensionTokenKey* token_key = func->extension_token_key();
+  EXPECT_EQ(3ul, token_key->scopes.size());
+  EXPECT_TRUE(ContainsKey(token_key->scopes, "email"));
+  EXPECT_TRUE(ContainsKey(token_key->scopes, "foo"));
+  EXPECT_TRUE(ContainsKey(token_key->scopes, "bar"));
+}
 
 class RemoveCachedAuthTokenFunctionTest : public ExtensionBrowserTest {
  protected:

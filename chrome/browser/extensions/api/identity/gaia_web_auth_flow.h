@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IDENTITY_GAIA_WEB_AUTH_FLOW_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_GAIA_WEB_AUTH_FLOW_H_
 
+#include "chrome/browser/extensions/api/identity/extension_token_key.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
@@ -60,9 +61,8 @@ class GaiaWebAuthFlow : public UbertokenConsumer, public WebAuthFlow::Delegate {
 
   GaiaWebAuthFlow(Delegate* delegate,
                   Profile* profile,
-                  const std::string& account_id,
-                  const std::string& extension_id,
-                  const OAuth2Info& oauth2_info,
+                  const ExtensionTokenKey* token_key,
+                  const std::string& oauth2_client_id,
                   const std::string& locale);
   virtual ~GaiaWebAuthFlow();
 

@@ -20,11 +20,12 @@ namespace extensions {
 
 GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
                                  Profile* profile,
-                                 const std::string& account_id,
-                                 const std::string& extension_id,
-                                 const OAuth2Info& oauth2_info,
+                                 const ExtensionTokenKey* token_key,
+                                 const std::string& oauth2_client_id,
                                  const std::string& locale)
-    : delegate_(delegate), profile_(profile), account_id_(account_id) {
+    : delegate_(delegate),
+      profile_(profile),
+      account_id_(token_key->account_id) {
   const char kOAuth2RedirectPathFormat[] = "/%s#";
   const char kOAuth2AuthorizeFormat[] =
       "?response_type=token&approval_prompt=force&authuser=0&"
@@ -34,23 +35,25 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
       "redirect_uri=%s:/%s&"
       "hl=%s";
 
+  std::vector<std::string> scopes(token_key->scopes.begin(),
+                                  token_key->scopes.end());
   std::vector<std::string> client_id_parts;
-  base::SplitString(oauth2_info.client_id, '.', &client_id_parts);
+  base::SplitString(oauth2_client_id, '.', &client_id_parts);
   std::reverse(client_id_parts.begin(), client_id_parts.end());
   redirect_scheme_ = JoinString(client_id_parts, '.');
 
-  redirect_path_prefix_ =
-      base::StringPrintf(kOAuth2RedirectPathFormat, extension_id.c_str());
+  redirect_path_prefix_ = base::StringPrintf(kOAuth2RedirectPathFormat,
+                                             token_key->extension_id.c_str());
 
-  auth_url_ = GaiaUrls::GetInstance()->oauth2_auth_url().Resolve(
-      base::StringPrintf(kOAuth2AuthorizeFormat,
-                         oauth2_info.client_id.c_str(),
-                         net::EscapeUrlEncodedData(
-                             JoinString(oauth2_info.scopes, ' '), true).c_str(),
-                         extension_id.c_str(),
-                         redirect_scheme_.c_str(),
-                         extension_id.c_str(),
-                         locale.c_str()));
+  auth_url_ =
+      GaiaUrls::GetInstance()->oauth2_auth_url().Resolve(base::StringPrintf(
+          kOAuth2AuthorizeFormat,
+          oauth2_client_id.c_str(),
+          net::EscapeUrlEncodedData(JoinString(scopes, ' '), true).c_str(),
+          token_key->extension_id.c_str(),
+          redirect_scheme_.c_str(),
+          token_key->extension_id.c_str(),
+          locale.c_str()));
 }
 
 GaiaWebAuthFlow::~GaiaWebAuthFlow() {

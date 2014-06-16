@@ -26,6 +26,12 @@ namespace identity {
     // <code>account</code> is only supported when the
     // "enable-new-profile-management" flag is set.
     AccountInfo? account;
+
+    // A list of OAuth2 scopes to request.
+    //
+    // When the <code>scopes</code> field is present, it overrides the
+    // list of scopes specified in manifest.json.
+    DOMString[]? scopes;
   };
 
   dictionary InvalidTokenDetails {

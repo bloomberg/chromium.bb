@@ -315,31 +315,38 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
     return false;
   }
 
-  if (oauth2_info.scopes.size() == 0) {
-    error_ = identity_constants::kInvalidScopes;
-    return false;
-  }
-
   std::set<std::string> scopes(oauth2_info.scopes.begin(),
                                oauth2_info.scopes.end());
 
   std::string account_key = GetPrimaryAccountId(GetProfile());
 
-  if (params->details.get() && params->details->account.get()) {
-    std::string detail_key =
-        extensions::IdentityAPI::GetFactoryInstance()
-            ->Get(GetProfile())
-            ->FindAccountKeyByGaiaId(params->details->account->id);
+  if (params->details.get()) {
+    if (params->details->account.get()) {
+      std::string detail_key =
+          extensions::IdentityAPI::GetFactoryInstance()
+              ->Get(GetProfile())
+              ->FindAccountKeyByGaiaId(params->details->account->id);
 
-    if (detail_key != account_key) {
-      if (detail_key.empty() || !switches::IsExtensionsMultiAccount()) {
-        // TODO(courage): should this be a different error?
-        error_ = identity_constants::kUserNotSignedIn;
-        return false;
+      if (detail_key != account_key) {
+        if (detail_key.empty() || !switches::IsExtensionsMultiAccount()) {
+          // TODO(courage): should this be a different error?
+          error_ = identity_constants::kUserNotSignedIn;
+          return false;
+        }
+
+        account_key = detail_key;
       }
-
-      account_key = detail_key;
     }
+
+    if (params->details->scopes.get()) {
+      scopes = std::set<std::string>(params->details->scopes->begin(),
+                                     params->details->scopes->end());
+    }
+  }
+
+  if (scopes.size() == 0) {
+    error_ = identity_constants::kInvalidScopes;
+    return false;
   }
 
   token_key_.reset(
@@ -442,10 +449,6 @@ void IdentityGetAuthTokenFunction::StartMintTokenFlow(
 
 void IdentityGetAuthTokenFunction::CompleteMintTokenFlow() {
   IdentityMintRequestQueue::MintType type = mint_token_flow_type_;
-
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
-  std::set<std::string> scopes(oauth2_info.scopes.begin(),
-                               oauth2_info.scopes.end());
 
   extensions::IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
@@ -704,31 +707,26 @@ void IdentityGetAuthTokenFunction::ShowLoginPopup() {
 
 void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
     const IssueAdviceInfo& issue_advice) {
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
   const std::string locale = g_browser_process->local_state()->GetString(
       prefs::kApplicationLocale);
 
-  gaia_web_auth_flow_.reset(new GaiaWebAuthFlow(this,
-                                                GetProfile(),
-                                                token_key_->account_id,
-                                                GetExtension()->id(),
-                                                oauth2_info,
-                                                locale));
+  gaia_web_auth_flow_.reset(new GaiaWebAuthFlow(
+      this, GetProfile(), token_key_.get(), oauth2_client_id_, locale));
   gaia_web_auth_flow_->Start();
 }
 
 OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow(
     const std::string& login_access_token) {
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
-
   OAuth2MintTokenFlow* mint_token_flow = new OAuth2MintTokenFlow(
       GetProfile()->GetRequestContext(),
       this,
-      OAuth2MintTokenFlow::Parameters(login_access_token,
-                                      GetExtension()->id(),
-                                      oauth2_client_id_,
-                                      oauth2_info.scopes,
-                                      gaia_mint_token_mode_));
+      OAuth2MintTokenFlow::Parameters(
+          login_access_token,
+          GetExtension()->id(),
+          oauth2_client_id_,
+          std::vector<std::string>(token_key_->scopes.begin(),
+                                   token_key_->scopes.end()),
+          gaia_mint_token_mode_));
   return mint_token_flow;
 }
 

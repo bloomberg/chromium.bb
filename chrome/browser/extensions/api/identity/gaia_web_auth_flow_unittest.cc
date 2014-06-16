@@ -28,15 +28,10 @@ class FakeWebAuthFlow : public WebAuthFlow {
 class TestGaiaWebAuthFlow : public GaiaWebAuthFlow {
  public:
   TestGaiaWebAuthFlow(GaiaWebAuthFlow::Delegate* delegate,
-                      const std::string& extension_id,
-                      const OAuth2Info& oauth2_info,
+                      const ExtensionTokenKey* token_key,
+                      const std::string oauth2_client_id,
                       GoogleServiceAuthError::State ubertoken_error_state)
-      : GaiaWebAuthFlow(delegate,
-                        NULL,
-                        "account_id",
-                        "extension_id",
-                        oauth2_info,
-                        "en-us"),
+      : GaiaWebAuthFlow(delegate, NULL, token_key, oauth2_client_id, "en-us"),
         ubertoken_error_(ubertoken_error_state) {}
 
   virtual void Start() OVERRIDE {
@@ -78,10 +73,10 @@ class IdentityGaiaWebAuthFlowTest : public testing::Test {
   }
 
   scoped_ptr<TestGaiaWebAuthFlow> CreateTestFlow() {
-    OAuth2Info oauth2_info;
-    oauth2_info.client_id = "fake.client.id";
+    ExtensionTokenKey token_key(
+        "extension_id", "account_id", std::set<std::string>());
     return scoped_ptr<TestGaiaWebAuthFlow>(new TestGaiaWebAuthFlow(
-        &delegate_, "extension_id", oauth2_info, ubertoken_error_state_));
+        &delegate_, &token_key, "fake.client.id", ubertoken_error_state_));
   }
 
   std::string GetFinalTitle(const std::string& fragment) {
