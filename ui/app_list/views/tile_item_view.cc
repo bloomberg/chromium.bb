@@ -94,6 +94,10 @@ TileItemView::TileItemView()
   title_->SetFontList(rb.GetFontList(kItemTextFontStyle));
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
+  // When |item_| is NULL, the tile is invisible. Calling SetAppListItem with a
+  // non-NULL item makes the tile visible.
+  SetVisible(false);
+
   AddChildView(icon_);
   AddChildView(title_);
 }
@@ -102,6 +106,12 @@ TileItemView::~TileItemView() {
 }
 
 void TileItemView::SetAppListItem(AppListItem* item) {
+  // TODO(calamity): This will not update if the contents of |item_| have
+  // changed since it was last assigned. Add an observer to refresh when the
+  // item changes.
+  if (item == item_)
+    return;
+
   item_ = item;
   if (!item) {
     SetVisible(false);
