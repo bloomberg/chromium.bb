@@ -188,7 +188,7 @@ AtomicWord g_context;
 
 bool FinancialPing::SetURLRequestContext(
     net::URLRequestContextGetter* context) {
-  base::subtle::NoBarrier_Store(
+  base::subtle::Release_Store(
       &g_context, reinterpret_cast<AtomicWord>(context));
   return true;
 }
@@ -218,7 +218,7 @@ bool send_financial_ping_interrupted_for_test = false;
 void ShutdownCheck(base::WeakPtr<base::RunLoop> weak) {
   if (!weak.get())
     return;
-  if (!base::subtle::NoBarrier_Load(&g_context)) {
+  if (!base::subtle::Acquire_Load(&g_context)) {
     send_financial_ping_interrupted_for_test = true;
     weak->QuitClosure().Run();
     return;
@@ -295,7 +295,7 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
   // the method is running.
   net::URLRequestContextGetter* context =
       reinterpret_cast<net::URLRequestContextGetter*>(
-          base::subtle::NoBarrier_Load(&g_context));
+          base::subtle::Acquire_Load(&g_context));
 
   // Browser shutdown will cause the context to be reset to NULL.
   if (!context)
