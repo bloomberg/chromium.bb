@@ -186,11 +186,9 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
     remote_file_tracker_ = active_ancestor_tracker.Pass();
     target_path_ = active_ancestor_path;
     token->RecordLog("Detected non-folder file in its path.");
-    DeleteRemoteFile(base::Bind(
-        &LocalToRemoteSyncer::DidDeleteForCreateFolder,
-        weak_ptr_factory_.GetWeakPtr(),
-        base::Bind(&LocalToRemoteSyncer::SyncCompleted,
-                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&token))));
+    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::DidDeleteForCreateFolder,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                base::Passed(&token)));
     return;
   }
 
@@ -357,9 +355,7 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     // the remote file and create a remote folder.
     DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::DidDeleteForCreateFolder,
                                 weak_ptr_factory_.GetWeakPtr(),
-                                base::Bind(&LocalToRemoteSyncer::SyncCompleted,
-                                           weak_ptr_factory_.GetWeakPtr(),
-                                           base::Passed(&token))));
+                                base::Passed(&token)));
     return;
   }
 
@@ -578,20 +574,26 @@ void LocalToRemoteSyncer::DidDeleteForUploadNewFile(
 }
 
 void LocalToRemoteSyncer::DidDeleteForCreateFolder(
-    const SyncStatusCallback& callback,
+    scoped_ptr<SyncTaskToken> token,
     SyncStatusCode status) {
   if (status == SYNC_STATUS_HAS_CONFLICT) {
-    UpdateRemoteMetadata(remote_file_tracker_->file_id(),
-                         base::Bind(&ReturnRetryOnSuccess, callback));
+    UpdateRemoteMetadata(
+        remote_file_tracker_->file_id(),
+        base::Bind(&ReturnRetryOnSuccess,
+                   base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              base::Passed(&token))));
     return;
   }
 
   if (status != SYNC_STATUS_OK) {
-    callback.Run(status);
+    SyncCompleted(token.Pass(), status);
     return;
   }
 
-  CreateRemoteFolder(callback);
+  CreateRemoteFolder(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                base::Passed(&token)));
 }
 
 void LocalToRemoteSyncer::UploadNewFile(const SyncStatusCallback& callback) {

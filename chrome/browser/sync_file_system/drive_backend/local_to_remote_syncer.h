@@ -86,7 +86,7 @@ class LocalToRemoteSyncer : public SyncTask {
 
   void DidDeleteForUploadNewFile(const SyncStatusCallback& callback,
                                  SyncStatusCode status);
-  void DidDeleteForCreateFolder(const SyncStatusCallback& callback,
+  void DidDeleteForCreateFolder(scoped_ptr<SyncTaskToken> token,
                                 SyncStatusCode status);
 
   void UploadNewFile(const SyncStatusCallback& callback);
