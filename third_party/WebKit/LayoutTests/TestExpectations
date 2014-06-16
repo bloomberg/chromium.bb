@@ -261,8 +261,8 @@ crbug.com/378919 [ Linux ] fast/forms/calendar-picker/calendar-picker-appearance
 crbug.com/378919 [ Linux ] fast/forms/calendar-picker/calendar-picker-appearance-required-ar.html [ NeedsManualRebaseline ]
 crbug.com/378919 [ Linux Android ] fast/forms/date/date-appearance-l10n.html [ NeedsManualRebaseline ]
 crbug.com/378919 [ Linux Android ] fast/forms/datetimelocal/datetimelocal-appearance-basic.html [ NeedsManualRebaseline ]
-crbug.com/378919 [ Linux ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsManualRebaseline ]
-crbug.com/378919 [ Linux ] fast/forms/month/month-appearance-l10n.html [ NeedsManualRebaseline ]
+crbug.com/378919 fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsManualRebaseline ]
+crbug.com/378919 fast/forms/month/month-appearance-l10n.html [ NeedsManualRebaseline ]
 crbug.com/378919 [ Linux ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ NeedsManualRebaseline ]
 crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-rtl.html [ NeedsManualRebaseline ]
 crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ NeedsManualRebaseline ]
@@ -1124,3 +1124,10 @@ crbug.com/384396 [ Win ] battery-status/page-visibility.html [ Pass Failure Time
 
 # Made substantially flakier in r176213
 crbug.com/354447 inspector-protocol/stylesheet-tracking-restart.html [ Pass Failure Timeout ]
+
+Bug(eae) fast/text/justify-ideograph-complex.html [ NeedsRebaseline ]
+Bug(eae) fast/text/justify-ideograph-simple.html [ NeedsRebaseline ]
+Bug(eae) media/track/track-cue-rendering-vertical.html [ NeedsRebaseline ]
+Bug(eae) virtual/antialiasedtext/fast/text/justify-ideograph-complex.html [ NeedsRebaseline ]
+Bug(eae) virtual/antialiasedtext/fast/text/justify-ideograph-simple.html [ NeedsRebaseline ]
+
