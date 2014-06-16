@@ -31,7 +31,7 @@
 [
     RuntimeEnabled=EncodingAPI,
     Exposed=Window&Worker,
-    Constructor(optional DOMString label = null, optional Dictionary options),
+    Constructor([Default=NullString] optional DOMString label, optional Dictionary options),
     RaisesException=Constructor,
     GarbageCollected,
     MeasureAs=TextDecoderConstructor

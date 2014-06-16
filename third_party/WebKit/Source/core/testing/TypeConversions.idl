@@ -48,5 +48,5 @@
 
     attribute ByteString testByteString;
     void setTestByteString(ByteString byteString);
-    [ImplementedAs=setTestByteString] void setTestByteStringDefaultNull(optional ByteString byteString = null);
+    [ImplementedAs=setTestByteString] void setTestByteStringDefaultNull([Default=NullString] optional ByteString byteString);
 };

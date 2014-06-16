@@ -33,7 +33,7 @@
         [Default=Undefined] optional boolean defaultUndefinedOptionalBooleanArg,
         [Default=Undefined] optional long defaultUndefinedOptionalLongArg,
         [Default=Undefined] optional DOMString defaultUndefinedOptionalStringArg,
-        optional DOMString defaultNullStringOptionalstringArg = null,
+        [Default=NullString] optional DOMString defaultNullStringOptionalstringArg,
         optional DOMString optionalStringArg),
     RaisesException=Constructor,
 ] interface TestInterfaceNamedConstructor {

@@ -394,59 +394,6 @@ class IdlConstant(TypedObject):
 
 
 ################################################################################
-# Literals
-################################################################################
-
-class IdlLiteral(object):
-    def __init__(self, idl_type, value):
-        self.idl_type = idl_type
-        self.value = value
-        self.is_null = False
-
-    def __str__(self):
-        if self.idl_type == 'DOMString':
-            return 'String("%s")' % self.value
-        if self.idl_type == 'integer':
-            return '%d' % self.value
-        if self.idl_type == 'float':
-            return '%g' % self.value
-        if self.idl_type == 'boolean':
-            return 'true' if self.value else 'false'
-        raise ValueError('Unsupported literal type: %s' % self.idl_type)
-
-
-class IdlLiteralNull(IdlLiteral):
-    def __init__(self):
-        self.idl_type = 'NULL'
-        self.value = None
-        self.is_null = True
-
-    def __str__(self):
-        return 'nullptr'
-
-
-def default_node_to_idl_literal(node):
-    # FIXME: This code is unnecessarily complicated due to the rather
-    # inconsistent way the upstream IDL parser outputs default values.
-    # http://crbug.com/374178
-    idl_type = node.GetProperty('TYPE')
-    if idl_type == 'DOMString':
-        value = node.GetProperty('NAME')
-        if '"' in value or '\\' in value:
-            raise ValueError('Unsupported string value: %r' % value)
-        return IdlLiteral(idl_type, value)
-    if idl_type == 'integer':
-        return IdlLiteral(idl_type, int(node.GetProperty('NAME')))
-    if idl_type == 'float':
-        return IdlLiteral(idl_type, float(node.GetProperty('VALUE')))
-    if idl_type == 'boolean':
-        return IdlLiteral(idl_type, node.GetProperty('VALUE'))
-    if idl_type == 'NULL':
-        return IdlLiteralNull()
-    raise ValueError('Unrecognized default value type: %s' % idl_type)
-
-
-################################################################################
 # Operations
 ################################################################################
 
@@ -528,7 +475,6 @@ class IdlArgument(TypedObject):
         self.is_optional = node.GetProperty('OPTIONAL')  # syntax: (optional T)
         self.is_variadic = False  # syntax: (T...)
         self.name = node.GetName()
-        self.default_value = None
 
         children = node.GetChildren()
         for child in children:
@@ -542,8 +488,6 @@ class IdlArgument(TypedObject):
                 if child_name != '...':
                     raise ValueError('Unrecognized Argument node; expected "...", got "%s"' % child_name)
                 self.is_variadic = child.GetProperty('ELLIPSIS') or False
-            elif child_class == 'Default':
-                self.default_value = default_node_to_idl_literal(child)
             else:
                 raise ValueError('Unrecognized node class: %s' % child_class)
 

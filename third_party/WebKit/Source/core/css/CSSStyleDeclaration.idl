@@ -30,7 +30,7 @@
     [TreatReturnedNullStringAs=Null] DOMString          getPropertyPriority([Default=Undefined] optional DOMString propertyName);
      [RaisesException] void setProperty([Default=Undefined] optional DOMString propertyName,
                                     [TreatNullAs=NullString,Default=Undefined] optional DOMString value,
-                                    [TreatNullAs=NullString] optional DOMString priority = null);
+                                    [TreatNullAs=NullString,Default=NullString] optional DOMString priority);
 
     readonly attribute unsigned long    length;
     getter DOMString          item([Default=Undefined] optional unsigned long index);

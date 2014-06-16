@@ -44,7 +44,7 @@
         TestInterfaceEmpty testInterfaceEmptyArg,
         long longArg,
         [Default=Undefined] optional DOMString defaultUndefinedOptionalStringArg,
-        optional DOMString defaultNullStringOptionalStringArg = null,
+        [Default=NullString] optional DOMString defaultNullStringOptionalStringArg,
         [Default=Undefined] optional Dictionary defaultUndefinedOptionalDictionaryArg,
         optional DOMString optionalStringArg),
 ] interface TestInterfaceConstructor2 {

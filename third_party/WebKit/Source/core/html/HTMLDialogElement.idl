@@ -28,7 +28,7 @@
 ] interface HTMLDialogElement : HTMLElement {
     [Reflect] attribute boolean open;
     attribute DOMString returnValue;
-    [RaisesException] void close(optional DOMString returnValue = null);
+    [RaisesException] void close([Default=NullString] optional DOMString returnValue);
     void show();
     [RaisesException] void showModal();
 };

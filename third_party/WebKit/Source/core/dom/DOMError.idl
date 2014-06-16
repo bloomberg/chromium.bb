@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 [
-    Constructor(DOMString name, optional DOMString message = null),
+    Constructor(DOMString name, [Default=NullString] optional DOMString message),
     WillBeGarbageCollected
 ] interface DOMError {
     readonly attribute DOMString name;

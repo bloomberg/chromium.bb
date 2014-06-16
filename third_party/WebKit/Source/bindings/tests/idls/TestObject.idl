@@ -379,16 +379,6 @@ interface TestObject {
     // Optional arguments: exceptional case
     void voidMethodOptionalDictionaryArg(optional Dictionary optionalDictionaryArg);
 
-    // Optional arguments with defaults
-    void voidMethodDefaultStringArg(optional DOMString defaultStringArg = "foo");
-    void voidMethodDefaultNullStringArg(optional DOMString defaultStringArg = null);
-    void voidMethodDefaultLongArg(optional long defaultLongArg = 10);
-    void voidMethodDefaultDoubleArg(optional double defaultDoubleArg = 0.5);
-    void voidMethodDefaultTrueBooleanArg(optional boolean defaultBooleanArg = true);
-    void voidMethodDefaultFalseBooleanArg(optional boolean defaultBooleanArg = false);
-    void voidMethodDefaultNullableStringArg(optional DOMString? defaultStringArg = null);
-    void voidMethodDefaultNullableTestInterfaceArg(optional TestInterface? defaultTestInterfaceArg = null);
-
     // Variadic operations
     void voidMethodVariadicStringArg(DOMString... variadicStringArgs);
     void voidMethodStringArgVariadicStringArg(DOMString stringArg, DOMString... variadicStringArgs);
@@ -411,7 +401,7 @@ interface TestObject {
     void overloadedMethodF(optional DOMString stringArg);
     void overloadedMethodF(double doubleArg);
     void overloadedMethodG(long longArg);
-    void overloadedMethodG(optional TestInterfaceEmpty? testInterfaceEmptyOrNullArg = null);
+    void overloadedMethodG([Default=Null] TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
     void overloadedMethodH(TestInterface testInterfaceArg);
     void overloadedMethodH(TestInterfaceEmpty testInterfaceEmptyArg);
     void overloadedMethodI(DOMString stringArg);
@@ -432,6 +422,7 @@ interface TestObject {
     void voidMethodDefaultUndefinedTestInterfaceEmptyArg([Default=Undefined] optional TestInterfaceEmpty defaultUndefinedTestInterfaceEmptyArg);
     void voidMethodDefaultUndefinedLongArg([Default=Undefined] optional long defaultUndefinedLongArg);
     void voidMethodDefaultUndefinedStringArg([Default=Undefined] optional DOMString defaultUndefinedStringArg);
+    void voidMethodDefaultNullStringStringArg([Default=NullString] optional DOMString defaultNullStringStringArg);
     // [EnforceRange]
     void voidMethodEnforceRangeLongArg([EnforceRange] long enforceRangeLongArg);
     // [TreatNullAs], [TreatUndefinedAs]
