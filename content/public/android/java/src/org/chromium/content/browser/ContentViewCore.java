@@ -303,9 +303,9 @@ public class ContentViewCore
     // because the OSK was just brought up.
     private final Rect mFocusPreOSKViewportRect = new Rect();
 
-    // On single tap this will store the x, y coordinates of the touch.
-    private int mSingleTapX;
-    private int mSingleTapY;
+    // On tap this will store the x, y coordinates of the touch.
+    private int mLastTapX;
+    private int mLastTapY;
 
     // Whether a touch scroll sequence is active, used to hide text selection
     // handles. Note that a scroll sequence will *always* bound a pinch
@@ -1830,33 +1830,46 @@ public class ContentViewCore
 
         if (!mPopupZoomer.isShowing()) mPopupZoomer.setLastTouch(xPix, yPix);
 
+        mLastTapX = (int) xPix;
+        mLastTapY = (int) yPix;
+
         if (type == GestureEventType.LONG_PRESS
                 || type == GestureEventType.LONG_TAP) {
             getInsertionHandleController().allowAutomaticShowing();
             getSelectionHandleController().allowAutomaticShowing();
         } else {
-            setClickXAndY((int) xPix, (int) yPix);
             if (mSelectionEditable) getInsertionHandleController().allowAutomaticShowing();
         }
     }
 
-    private void setClickXAndY(int x, int y) {
-        mSingleTapX = x;
-        mSingleTapY = y;
+    /**
+     * @return The x coordinate for the last point that a tap or press gesture was initiated from.
+     */
+    public int getLastTapX()  {
+        return mLastTapX;
     }
 
     /**
-     * @return The x coordinate for the last point that a singleTap gesture was initiated from.
+     * @return The y coordinate for the last point that a tap or press gesture was initiated from.
      */
-    public int getSingleTapX()  {
-        return mSingleTapX;
+    public int getLastTapY()  {
+        return mLastTapY;
     }
 
     /**
-     * @return The y coordinate for the last point that a singleTap gesture was initiated from.
+     * TODO(dtrainor): Remove this once it is no longer used.
+     * See {@link #getLastTapX}.
      */
-    public int getSingleTapY()  {
-        return mSingleTapY;
+    public int getSingleTapX() {
+        return mLastTapX;
+    }
+
+    /**
+     * TODO(dtrainor): Remove this once it is no longer used.
+     * See {@link #getLastTapY}.
+     */
+    public int getSingleTapY() {
+        return mLastTapY;
     }
 
     public void setZoomControlsDelegate(ZoomControlsDelegate zoomControlsDelegate) {
