@@ -31,18 +31,42 @@
 #include "config.h"
 #include "core/html/track/TrackBase.h"
 
+#include "core/html/HTMLMediaElement.h"
+
 namespace WebCore {
 
-TrackBase::TrackBase(Type type, const AtomicString& label, const AtomicString& language, const AtomicString& id)
-    : m_type(type)
+static blink::WebMediaPlayer::TrackId nextTrackId()
+{
+    static blink::WebMediaPlayer::TrackId next = 0;
+    return ++next;
+}
+
+TrackBase::TrackBase(Type type, const AtomicString& label, const AtomicString& language, const String& id)
+    : m_trackId(nextTrackId())
+    , m_type(type)
     , m_label(label)
     , m_language(language)
     , m_id(id)
+    , m_mediaElement(nullptr)
 {
 }
 
 TrackBase::~TrackBase()
 {
+#if !ENABLE(OILPAN)
+    ASSERT(!m_mediaElement);
+#endif
+}
+
+
+Node* TrackBase::owner() const
+{
+    return m_mediaElement;
+}
+
+void TrackBase::trace(Visitor* visitor)
+{
+    visitor->trace(m_mediaElement);
 }
 
 void TrackBase::setKind(const AtomicString& kind)
@@ -54,4 +78,3 @@ void TrackBase::setKind(const AtomicString& kind)
 }
 
 } // namespace WebCore
-

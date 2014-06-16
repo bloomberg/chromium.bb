@@ -24,6 +24,8 @@ AudioListener
 AudioNode
 AudioParam
 AudioProcessingEvent
+AudioTrack
+AudioTrackList
 AutocompleteErrorEvent
 BarProp
 BatteryManager
@@ -452,6 +454,8 @@ VTTRegion
 VTTRegionList
 ValidityState
 VideoPlaybackQuality
+VideoTrack
+VideoTrackList
 WaveShaperNode
 WeakMap
 WeakSet

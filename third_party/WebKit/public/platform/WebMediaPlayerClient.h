@@ -53,6 +53,26 @@ public:
         MediaKeyErrorCodeDomain,
     };
 
+    enum VideoTrackKind {
+        VideoTrackKindNone,
+        VideoTrackKindAlternative,
+        VideoTrackKindCaptions,
+        VideoTrackKindMain,
+        VideoTrackKindSign,
+        VideoTrackKindSubtitles,
+        VideoTrackKindCommentary
+    };
+
+    enum AudioTrackKind {
+        AudioTrackKindNone,
+        AudioTrackKindAlternative,
+        AudioTrackKindDescriptions,
+        AudioTrackKindMain,
+        AudioTrackKindMainDescriptions,
+        AudioTrackKindTranslation,
+        AudioTrackKindCommentary
+    };
+
     virtual void networkStateChanged() = 0;
     virtual void readyStateChanged() = 0;
     virtual void timeChanged() = 0;
@@ -68,6 +88,10 @@ public:
     virtual void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL) = 0;
     virtual void keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength) = 0;
     virtual void setWebLayer(WebLayer*) = 0;
+    virtual WebMediaPlayer::TrackId addAudioTrack(const WebString& id, AudioTrackKind, const WebString& label, const WebString& language, bool enabled) = 0;
+    virtual void removeAudioTrack(WebMediaPlayer::TrackId) = 0;
+    virtual WebMediaPlayer::TrackId addVideoTrack(const WebString& id, VideoTrackKind, const WebString& label, const WebString& language, bool selected) = 0;
+    virtual void removeVideoTrack(WebMediaPlayer::TrackId) = 0;
     virtual void addTextTrack(WebInbandTextTrack*) = 0;
     virtual void removeTextTrack(WebInbandTextTrack*) = 0;
     virtual void mediaSourceOpened(WebMediaSource*) = 0;

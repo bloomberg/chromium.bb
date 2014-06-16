@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+    <head>
+        <title>AudioTrack &amp; VideoTrack garbage collection</title>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+        <script src="../media-file.js"></script>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+            async_test(function(t)
+            {
+                var e = document.createElement('video');
+                e.src = findMediaFile('video', '../content/test');
+
+                e.addEventListener('loadedmetadata', t.step_func(function()
+                {
+                    e.audioTracks.foo = 'foo';
+                    e.audioTracks[0].bar = 'bar';
+                    e.videoTracks.baz = 'baz';
+                    e.videoTracks[0].qux = 'qux';
+
+                    gc();
+
+                    assert_equals(e.audioTracks.foo, 'foo');
+                    assert_equals(e.audioTracks[0].bar, 'bar');
+                    assert_equals(e.videoTracks.baz, 'baz');
+                    assert_equals(e.videoTracks[0].qux, 'qux');
+
+                    t.done();
+                }));
+            });
+        </script>
+    </body>
+</html>

@@ -146,6 +146,26 @@ void WebMediaPlayerClientImpl::setWebLayer(blink::WebLayer* layer)
     m_client->mediaPlayerSetWebLayer(layer);
 }
 
+WebMediaPlayer::TrackId WebMediaPlayerClientImpl::addAudioTrack(const WebString& id, AudioTrackKind kind, const WebString& label, const WebString& language, bool enabled)
+{
+    return mediaElement().addAudioTrack(id, kind, label, language, enabled);
+}
+
+void WebMediaPlayerClientImpl::removeAudioTrack(WebMediaPlayer::TrackId id)
+{
+    mediaElement().removeAudioTrack(id);
+}
+
+WebMediaPlayer::TrackId WebMediaPlayerClientImpl::addVideoTrack(const WebString& id, VideoTrackKind kind, const WebString& label, const WebString& language, bool selected)
+{
+    return mediaElement().addVideoTrack(id, kind, label, language, selected);
+}
+
+void WebMediaPlayerClientImpl::removeVideoTrack(WebMediaPlayer::TrackId id)
+{
+    mediaElement().removeVideoTrack(id);
+}
+
 void WebMediaPlayerClientImpl::addTextTrack(WebInbandTextTrack* textTrack)
 {
     m_client->mediaPlayerDidAddTextTrack(textTrack);

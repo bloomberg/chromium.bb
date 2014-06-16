@@ -95,6 +95,8 @@ public:
         LoadTypeMediaStream,
     };
 
+    typedef unsigned TrackId;
+
     virtual ~WebMediaPlayer() { }
 
     virtual void load(LoadType, const WebURL&, CORSMode) = 0;
@@ -162,6 +164,10 @@ public:
     virtual void exitFullscreen() { }
     // Returns true if the player can enter fullscreen.
     virtual bool canEnterFullscreen() const { return false; }
+
+    virtual void enabledAudioTracksChanged(const WebVector<TrackId>& enabledTrackIds) { }
+    // |selectedTrackId| is null if no track is selected.
+    virtual void selectedVideoTrackChanged(TrackId* selectedTrackId) { }
 };
 
 } // namespace blink

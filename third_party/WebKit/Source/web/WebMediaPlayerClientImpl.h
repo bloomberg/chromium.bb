@@ -85,6 +85,10 @@ public:
     virtual void keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
 
     virtual void setWebLayer(WebLayer*) OVERRIDE;
+    virtual WebMediaPlayer::TrackId addAudioTrack(const WebString& id, AudioTrackKind, const WebString& label, const WebString& language, bool enabled) OVERRIDE;
+    virtual void removeAudioTrack(WebMediaPlayer::TrackId) OVERRIDE;
+    virtual WebMediaPlayer::TrackId addVideoTrack(const WebString& id, VideoTrackKind, const WebString& label, const WebString& language, bool selected) OVERRIDE;
+    virtual void removeVideoTrack(WebMediaPlayer::TrackId) OVERRIDE;
     virtual void addTextTrack(WebInbandTextTrack*) OVERRIDE;
     virtual void removeTextTrack(WebInbandTextTrack*) OVERRIDE;
     virtual void mediaSourceOpened(WebMediaSource*) OVERRIDE;

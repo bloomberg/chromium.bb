@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+    <head>
+        <title>AudioTrackList &amp; VideoTrackList after load()</title>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+        <script src="../media-file.js"></script>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+            async_test(function(t)
+            {
+                var e = document.createElement("video");
+                e.src = findMediaFile("video", "../content/test");
+
+                e.addEventListener("loadedmetadata", t.step_func(function()
+                {
+
+                    assert_equals(e.audioTracks.length, 1, "audioTracks.length");
+                    assert_equals(e.videoTracks.length, 1, "videoTracks.length");
+                    assert_equals(e.videoTracks.selectedIndex, 0, "videoTracks.selectedIndex");
+
+                    e.load();
+
+                    assert_equals(e.audioTracks.length, 0, "audioTracks.length");
+                    assert_equals(e.videoTracks.length, 0, "videoTracks.length");
+                    assert_equals(e.videoTracks.selectedIndex, -1, "videoTracks.selectedIndex");
+
+                    t.done();
+                }));
+            });
+        </script>
+    </body>
+</html>

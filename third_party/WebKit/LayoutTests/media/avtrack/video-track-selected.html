@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+    <head>
+        <title>VideoTrack.selected change</title>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+        <script src="../media-file.js"></script>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+            async_test(function(t)
+            {
+                var e = document.createElement("video");
+                e.src = findMediaFile("video", "../content/test");
+
+                e.onloadedmetadata = t.step_func(function()
+                {
+                    assert_equals(e.videoTracks.length, 1, "videoTracks.length");
+                    assert_equals(e.videoTracks.selectedIndex, 0, "videoTracks.selectedIndex (initial)");
+                    assert_true(e.videoTracks[0].selected, "videoTrack.selected (initial)");
+                    e.videoTracks[0].selected = false;
+                    assert_equals(e.videoTracks.selectedIndex, -1, "videoTracks.selectedIndex (first setter)");
+                    assert_false(e.videoTracks[0].selected, "videoTrack.selected (first setter)");
+
+                    e.videoTracks.onchange = t.unreached_func("setting selected to false fired change event");
+                    setTimeout(t.step_func(function()
+                    {
+                        e.videoTracks[0].selected = true;
+                        assert_equals(e.videoTracks.selectedIndex, 0, "videoTracks.selectedIndex (second setter)");
+                        assert_true(e.videoTracks[0].selected, "videoTrack.selected (second setter)");
+
+                        e.videoTracks.onchange = t.step_func(function()
+                        {
+                            assert_equals(e.videoTracks.selectedIndex, 0, "videoTracks.selectedIndex (change event)");
+                            assert_true(e.videoTracks[0].selected, "videoTrack.selected (change event)");
+                            t.done();
+                        });
+                    }), 0);
+                });
+            }, "VideoTrackList track change");
+        </script>
+    </body>
+</html>

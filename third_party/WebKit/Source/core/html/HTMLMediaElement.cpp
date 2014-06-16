@@ -50,9 +50,13 @@
 #include "core/html/MediaFragmentURIParser.h"
 #include "core/html/TimeRanges.h"
 #include "core/html/shadow/MediaControls.h"
+#include "core/html/track/AudioTrack.h"
+#include "core/html/track/AudioTrackList.h"
 #include "core/html/track/InbandTextTrack.h"
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/TextTrackList.h"
+#include "core/html/track/VideoTrack.h"
+#include "core/html/track/VideoTrackList.h"
 #include "core/loader/FrameLoader.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
@@ -84,6 +88,7 @@
 using blink::WebInbandTextTrack;
 using blink::WebMediaPlayer;
 using blink::WebMimeRegistry;
+using blink::WebMediaPlayerClient;
 
 namespace WebCore {
 
@@ -162,6 +167,52 @@ private:
     HTMLMediaElement* m_mediaElement;
 };
 
+static const AtomicString& AudioKindToString(WebMediaPlayerClient::AudioTrackKind kind)
+{
+    switch (kind) {
+    case WebMediaPlayerClient::AudioTrackKindNone:
+        return emptyAtom;
+    case WebMediaPlayerClient::AudioTrackKindAlternative:
+        return AudioTrack::alternativeKeyword();
+    case WebMediaPlayerClient::AudioTrackKindDescriptions:
+        return AudioTrack::descriptionsKeyword();
+    case WebMediaPlayerClient::AudioTrackKindMain:
+        return AudioTrack::mainKeyword();
+    case WebMediaPlayerClient::AudioTrackKindMainDescriptions:
+        return AudioTrack::mainDescriptionsKeyword();
+    case WebMediaPlayerClient::AudioTrackKindTranslation:
+        return AudioTrack::translationKeyword();
+    case WebMediaPlayerClient::AudioTrackKindCommentary:
+        return AudioTrack::commentaryKeyword();
+    }
+
+    ASSERT_NOT_REACHED();
+    return emptyAtom;
+}
+
+static const AtomicString& VideoKindToString(WebMediaPlayerClient::VideoTrackKind kind)
+{
+    switch (kind) {
+    case WebMediaPlayerClient::VideoTrackKindNone:
+        return emptyAtom;
+    case WebMediaPlayerClient::VideoTrackKindAlternative:
+        return VideoTrack::alternativeKeyword();
+    case WebMediaPlayerClient::VideoTrackKindCaptions:
+        return VideoTrack::captionsKeyword();
+    case WebMediaPlayerClient::VideoTrackKindMain:
+        return VideoTrack::mainKeyword();
+    case WebMediaPlayerClient::VideoTrackKindSign:
+        return VideoTrack::signKeyword();
+    case WebMediaPlayerClient::VideoTrackKindSubtitles:
+        return VideoTrack::subtitlesKeyword();
+    case WebMediaPlayerClient::VideoTrackKindCommentary:
+        return VideoTrack::commentaryKeyword();
+    }
+
+    ASSERT_NOT_REACHED();
+    return emptyAtom;
+}
+
 static bool canLoadURL(const KURL& url, const ContentType& contentType, const String& keySystem)
 {
     DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
@@ -233,6 +284,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_loadTimer(this, &HTMLMediaElement::loadTimerFired)
     , m_progressEventTimer(this, &HTMLMediaElement::progressEventTimerFired)
     , m_playbackProgressTimer(this, &HTMLMediaElement::playbackProgressTimerFired)
+    , m_audioTracksTimer(this, &HTMLMediaElement::audioTracksTimerFired)
     , m_playedTimeRanges()
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_playbackRate(1.0f)
@@ -280,6 +332,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_isFinalizing(false)
 #endif
     , m_lastTextTrackUpdateTime(-1)
+    , m_audioTracks(AudioTrackList::create(*this))
+    , m_videoTracks(VideoTrackList::create(*this))
     , m_textTracks(nullptr)
     , m_ignoreTrackDisplayUpdate(0)
 #if ENABLE(WEB_AUDIO)
@@ -325,6 +379,8 @@ HTMLMediaElement::~HTMLMediaElement()
 
     if (m_textTracks)
         m_textTracks->clearOwner();
+    m_audioTracks->shutdown();
+    m_videoTracks->shutdown();
 
     if (m_mediaController) {
         m_mediaController->removeMediaElement(this);
@@ -1713,7 +1769,12 @@ void HTMLMediaElement::setReadyState(ReadyState state)
     }
 
     if (m_readyState >= HAVE_METADATA && oldState < HAVE_METADATA) {
+        createPlaceholderTracksIfNecessary();
+
         prepareMediaFragmentURI();
+
+        selectInitialTracksIfNecessary();
+
         scheduleEvent(EventTypeNames::durationchange);
         if (isHTMLVideoElement(*this))
             scheduleEvent(EventTypeNames::resize);
@@ -2325,6 +2386,110 @@ void HTMLMediaElement::togglePlayState()
     }
 }
 
+AudioTrackList& HTMLMediaElement::audioTracks()
+{
+    ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+    return *m_audioTracks;
+}
+
+void HTMLMediaElement::audioTrackChanged()
+{
+    WTF_LOG(Media, "HTMLMediaElement::audioTrackChanged()");
+    ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+
+    audioTracks().scheduleChangeEvent();
+
+    // FIXME: Add call on m_mediaSource to notify it of track changes once the SourceBuffer.audioTracks attribute is added.
+
+    if (!m_audioTracksTimer.isActive())
+        m_audioTracksTimer.startOneShot(0, FROM_HERE);
+}
+
+void HTMLMediaElement::audioTracksTimerFired(Timer<HTMLMediaElement>*)
+{
+    Vector<WebMediaPlayer::TrackId> enabledTrackIds;
+    for (unsigned i = 0; i < audioTracks().length(); ++i) {
+        AudioTrack* track = audioTracks().anonymousIndexedGetter(i);
+        if (track->enabled())
+            enabledTrackIds.append(track->trackId());
+    }
+
+    webMediaPlayer()->enabledAudioTracksChanged(enabledTrackIds);
+}
+
+WebMediaPlayer::TrackId HTMLMediaElement::addAudioTrack(const String& id, blink::WebMediaPlayerClient::AudioTrackKind kind, const AtomicString& label, const AtomicString& language, bool enabled)
+{
+    AtomicString kindString = AudioKindToString(kind);
+    WTF_LOG(Media, "HTMLMediaElement::addAudioTrack('%s', '%s', '%s', '%s', %d)",
+        id.ascii().data(), kindString.ascii().data(), label.ascii().data(), language.ascii().data(), enabled);
+
+    if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
+        return 0;
+
+    RefPtrWillBeRawPtr<AudioTrack> audioTrack = AudioTrack::create(id, kindString, label, language, enabled);
+    audioTracks().add(audioTrack);
+
+    return audioTrack->trackId();
+}
+
+void HTMLMediaElement::removeAudioTrack(WebMediaPlayer::TrackId trackId)
+{
+    WTF_LOG(Media, "HTMLMediaElement::removeAudioTrack()");
+
+    if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
+        return;
+
+    audioTracks().remove(trackId);
+}
+
+VideoTrackList& HTMLMediaElement::videoTracks()
+{
+    ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+    return *m_videoTracks;
+}
+
+void HTMLMediaElement::selectedVideoTrackChanged(WebMediaPlayer::TrackId* selectedTrackId)
+{
+    WTF_LOG(Media, "HTMLMediaElement::selectedVideoTrackChanged()");
+    ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+
+    if (selectedTrackId)
+        videoTracks().trackSelected(*selectedTrackId);
+
+    // FIXME: Add call on m_mediaSource to notify it of track changes once the SourceBuffer.videoTracks attribute is added.
+
+    webMediaPlayer()->selectedVideoTrackChanged(selectedTrackId);
+}
+
+WebMediaPlayer::TrackId HTMLMediaElement::addVideoTrack(const String& id, blink::WebMediaPlayerClient::VideoTrackKind kind, const AtomicString& label, const AtomicString& language, bool selected)
+{
+    AtomicString kindString = VideoKindToString(kind);
+    WTF_LOG(Media, "HTMLMediaElement::addVideoTrack('%s', '%s', '%s', '%s', %d)",
+        id.ascii().data(), kindString.ascii().data(), label.ascii().data(), language.ascii().data(), selected);
+
+    if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
+        return 0;
+
+    // If another track was selected (potentially by the user), leave it selected.
+    if (selected && videoTracks().selectedIndex() != -1)
+        selected = false;
+
+    RefPtrWillBeRawPtr<VideoTrack> videoTrack = VideoTrack::create(id, kindString, label, language, selected);
+    videoTracks().add(videoTrack);
+
+    return videoTrack->trackId();
+}
+
+void HTMLMediaElement::removeVideoTrack(WebMediaPlayer::TrackId trackId)
+{
+    WTF_LOG(Media, "HTMLMediaElement::removeVideoTrack()");
+
+    if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
+        return;
+
+    videoTracks().remove(trackId);
+}
+
 void HTMLMediaElement::mediaPlayerDidAddTextTrack(WebInbandTextTrack* webTrack)
 {
     // 4.8.10.12.2 Sourcing in-band text tracks
@@ -2394,11 +2559,19 @@ void HTMLMediaElement::removeTextTrack(TextTrack* track)
 
 void HTMLMediaElement::forgetResourceSpecificTracks()
 {
+    // Implements the "forget the media element's media-resource-specific tracks" algorithm.
+    // The order is explicitly specified as text, then audio, and finally video. Also
+    // 'removetrack' events should not be fired.
     if (m_textTracks) {
         TrackDisplayUpdateScope scope(this);
         m_textTracks->removeAllInbandTracks();
         closeCaptionTracksChanged();
     }
+
+    m_audioTracks->removeAll();
+    m_videoTracks->removeAll();
+
+    m_audioTracksTimer.stop();
 }
 
 PassRefPtrWillBeRawPtr<TextTrack> HTMLMediaElement::addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState& exceptionState)
@@ -3664,6 +3837,8 @@ void HTMLMediaElement::prepareMediaFragmentURI()
     } else
         m_fragmentEndTime = MediaPlayer::invalidTime();
 
+    // FIXME: Add support for selecting tracks by ID with the Media Fragments track dimension.
+
     if (m_fragmentStartTime != MediaPlayer::invalidTime() && m_readyState < HAVE_FUTURE_DATA)
         prepareToPlay();
 }
@@ -3729,6 +3904,8 @@ void HTMLMediaElement::trace(Visitor* visitor)
     visitor->trace(m_error);
     visitor->trace(m_currentSourceNode);
     visitor->trace(m_nextChildNodeToConsider);
+    visitor->trace(m_audioTracks);
+    visitor->trace(m_videoTracks);
     visitor->trace(m_textTracks);
     visitor->trace(m_textTracksWhenResourceSelectionBegan);
     visitor->trace(m_mediaController);
@@ -3737,6 +3914,34 @@ void HTMLMediaElement::trace(Visitor* visitor)
 #endif
     WillBeHeapSupplementable<HTMLMediaElement>::trace(visitor);
     HTMLElement::trace(visitor);
+}
+
+void HTMLMediaElement::createPlaceholderTracksIfNecessary()
+{
+    if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
+        return;
+
+    // Create a placeholder audio track if the player says it has audio but it didn't explicitly announce the tracks.
+    if (hasAudio() && !audioTracks().length())
+        addAudioTrack("audio", WebMediaPlayerClient::AudioTrackKindMain, "Audio Track", "", true);
+
+    // Create a placeholder video track if the player says it has video but it didn't explicitly announce the tracks.
+    if (webMediaPlayer() && webMediaPlayer()->hasVideo() && !videoTracks().length())
+        addVideoTrack("video", WebMediaPlayerClient::VideoTrackKindMain, "Video Track", "", true);
+}
+
+void HTMLMediaElement::selectInitialTracksIfNecessary()
+{
+    if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
+        return;
+
+    // Enable the first audio track if an audio track hasn't been enabled yet.
+    if (audioTracks().length() > 0 && !audioTracks().hasEnabledTrack())
+        audioTracks().anonymousIndexedGetter(0)->setEnabled(true);
+
+    // Select the first video track if a video track hasn't been selected yet.
+    if (videoTracks().length() > 0 && videoTracks().selectedIndex() == -1)
+        videoTracks().anonymousIndexedGetter(0)->setSelected(true);
 }
 
 #if ENABLE(WEB_AUDIO)

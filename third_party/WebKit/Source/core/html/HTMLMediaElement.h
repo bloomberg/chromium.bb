@@ -34,6 +34,7 @@
 #include "core/html/track/vtt/VTTCue.h"
 #include "platform/PODIntervalTree.h"
 #include "platform/graphics/media/MediaPlayer.h"
+#include "public/platform/WebMediaPlayerClient.h"
 #include "public/platform/WebMimeRegistry.h"
 
 namespace blink {
@@ -48,6 +49,7 @@ namespace WebCore {
 class AudioSourceProvider;
 class AudioSourceProviderClient;
 #endif
+class AudioTrackList;
 class ContentType;
 class Event;
 class ExceptionState;
@@ -61,6 +63,7 @@ class HTMLMediaSource;
 class TextTrackList;
 class TimeRanges;
 class URLRegistry;
+class VideoTrackList;
 
 typedef PODIntervalTree<double, TextTrackCue*> CueIntervalTree;
 typedef CueIntervalTree::IntervalType CueInterval;
@@ -167,6 +170,12 @@ public:
     bool togglePlayStateWillPlay() const;
     void togglePlayState();
 
+    AudioTrackList& audioTracks();
+    void audioTrackChanged();
+
+    VideoTrackList& videoTracks();
+    void selectedVideoTrackChanged(blink::WebMediaPlayer::TrackId*);
+
     PassRefPtrWillBeRawPtr<TextTrack> addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState&);
     PassRefPtrWillBeRawPtr<TextTrack> addTextTrack(const AtomicString& kind, const AtomicString& label, ExceptionState& exceptionState) { return addTextTrack(kind, label, emptyAtom, exceptionState); }
     PassRefPtrWillBeRawPtr<TextTrack> addTextTrack(const AtomicString& kind, ExceptionState& exceptionState) { return addTextTrack(kind, emptyAtom, emptyAtom, exceptionState); }
@@ -184,6 +193,11 @@ public:
 
     void didAddTrackElement(HTMLTrackElement*);
     void didRemoveTrackElement(HTMLTrackElement*);
+
+    blink::WebMediaPlayer::TrackId addAudioTrack(const String& id, blink::WebMediaPlayerClient::AudioTrackKind, const AtomicString& label, const AtomicString& language, bool enabled);
+    void removeAudioTrack(blink::WebMediaPlayer::TrackId);
+    blink::WebMediaPlayer::TrackId addVideoTrack(const String& id, blink::WebMediaPlayerClient::VideoTrackKind, const AtomicString& label, const AtomicString& language, bool selected);
+    void removeVideoTrack(blink::WebMediaPlayer::TrackId);
 
     virtual void mediaPlayerDidAddTextTrack(blink::WebInbandTextTrack*) OVERRIDE FINAL;
     virtual void mediaPlayerDidRemoveTextTrack(blink::WebInbandTextTrack*) OVERRIDE FINAL;
@@ -433,9 +447,22 @@ private:
 
     blink::WebMediaPlayer::CORSMode corsMode() const;
 
+    // Creates placeholder AudioTrack and/or VideoTrack objects when WebMemediaPlayer objects
+    // advertise they have audio and/or video, but don't explicitly signal them via
+    // addAudioTrack() and addVideoTrack().
+    // FIXME: Remove this once all WebMediaPlayer implementations properly report their track info.
+    void createPlaceholderTracksIfNecessary();
+
+    // Sets the selected/enabled tracks if they aren't set before we initially
+    // transition to HAVE_METADATA.
+    void selectInitialTracksIfNecessary();
+
+    void audioTracksTimerFired(Timer<HTMLMediaElement>*);
+
     Timer<HTMLMediaElement> m_loadTimer;
     Timer<HTMLMediaElement> m_progressEventTimer;
     Timer<HTMLMediaElement> m_playbackProgressTimer;
+    Timer<HTMLMediaElement> m_audioTracksTimer;
     RefPtr<TimeRanges> m_playedTimeRanges;
     OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
 
@@ -536,6 +563,8 @@ private:
 #endif
     double m_lastTextTrackUpdateTime;
 
+    RefPtrWillBeMember<AudioTrackList> m_audioTracks;
+    RefPtrWillBeMember<VideoTrackList> m_videoTracks;
     RefPtrWillBeMember<TextTrackList> m_textTracks;
     WillBeHeapVector<RefPtrWillBeMember<TextTrack> > m_textTracksWhenResourceSelectionBegan;
 

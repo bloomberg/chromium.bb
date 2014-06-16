@@ -31,7 +31,9 @@
 #include "config.h"
 #include "bindings/core/v8/V8TrackEvent.h"
 
+#include "bindings/core/v8/V8AudioTrack.h"
 #include "bindings/core/v8/V8TextTrack.h"
+#include "bindings/core/v8/V8VideoTrack.h"
 #include "core/html/track/TrackBase.h"
 #include "core/html/track/TrackEvent.h"
 
@@ -53,10 +55,12 @@ void V8TrackEvent::trackAttributeGetterCustom(const v8::PropertyCallbackInfo<v8:
         return;
 
     case TrackBase::AudioTrack:
+        v8SetReturnValueFast(info, static_cast<AudioTrack*>(track), trackEvent);
+        return;
+
     case TrackBase::VideoTrack:
-        // This should not happen until VideoTrack and AudioTrack are implemented.
-        ASSERT_NOT_REACHED();
-        break;
+        v8SetReturnValueFast(info, static_cast<VideoTrack*>(track), trackEvent);
+        return;
     }
 
     v8SetReturnValueNull(info);

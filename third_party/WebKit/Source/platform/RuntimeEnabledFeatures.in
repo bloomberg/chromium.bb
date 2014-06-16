@@ -16,6 +16,7 @@
 // #if ENABLE(FEATURE) guards.  These are deprecated and should all be removed.
 
 ApplicationCache status=stable
+AudioVideoTracks depends_on=Media, status=experimental
 AuthorShadowDOMForAnyElement
 BatteryStatus status=experimental
 Beacon status=experimental
