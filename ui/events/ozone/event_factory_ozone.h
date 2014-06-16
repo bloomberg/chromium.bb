@@ -22,7 +22,7 @@ class Event;
 
 // Creates and dispatches |ui.Event|'s. Ozone assumes that events arrive on file
 // descriptors with one  |EventConverterOzone| instance for each descriptor.
-// Ozone presumes that the set of file desctiprtors can vary at runtime so this
+// Ozone presumes that the set of file descriptors can vary at runtime so this
 // class supports dynamically adding and removing |EventConverterOzone|
 // instances as necessary.
 class EVENTS_OZONE_EXPORT EventFactoryOzone {
@@ -30,7 +30,7 @@ class EVENTS_OZONE_EXPORT EventFactoryOzone {
   EventFactoryOzone();
   virtual ~EventFactoryOzone();
 
-  // Request to warp the cursor to a location within an AccelerateWidget.
+  // Warp the cursor to a location within an AccelerateWidget.
   // If the cursor actually moves, the implementation must dispatch a mouse
   // move event with the new location.
   virtual void WarpCursorTo(gfx::AcceleratedWidget widget,
