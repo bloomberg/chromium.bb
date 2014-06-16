@@ -107,9 +107,6 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(*demuxer_, GetStream(_))
         .WillRepeatedly(Return(null_pointer));
 
-    EXPECT_CALL(*demuxer_, GetStartTime())
-        .WillRepeatedly(Return(base::TimeDelta()));
-
     EXPECT_CALL(*demuxer_, GetTimelineOffset())
         .WillRepeatedly(Return(base::Time()));
 
@@ -174,7 +171,7 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
 
     // Startup sequence.
-    EXPECT_CALL(*video_renderer_, Preroll(demuxer_->GetStartTime(), _))
+    EXPECT_CALL(*video_renderer_, Preroll(base::TimeDelta(), _))
         .WillOnce(RunCallback<1>(PIPELINE_OK));
     EXPECT_CALL(*video_renderer_, Play(_))
         .WillOnce(RunClosure<0>());
@@ -737,43 +734,6 @@ TEST_F(PipelineTest, NoMessageDuringTearDownFromError) {
                                         base::Unretained(&callbacks_)));
   EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ));
   message_loop_.RunUntilIdle();
-}
-
-TEST_F(PipelineTest, StartTimeIsZero) {
-  CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(video_stream());
-
-  const base::TimeDelta kDuration = base::TimeDelta::FromSeconds(100);
-  InitializeDemuxer(&streams, kDuration);
-  InitializeVideoRenderer(video_stream());
-
-  InitializePipeline(PIPELINE_OK);
-  EXPECT_FALSE(metadata_.has_audio);
-  EXPECT_TRUE(metadata_.has_video);
-
-  EXPECT_EQ(base::TimeDelta(), pipeline_->GetMediaTime());
-}
-
-TEST_F(PipelineTest, StartTimeIsNonZero) {
-  const base::TimeDelta kStartTime = base::TimeDelta::FromSeconds(4);
-  const base::TimeDelta kDuration = base::TimeDelta::FromSeconds(100);
-
-  EXPECT_CALL(*demuxer_, GetStartTime())
-      .WillRepeatedly(Return(kStartTime));
-
-  CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(video_stream());
-
-  InitializeDemuxer(&streams, kDuration);
-  InitializeVideoRenderer(video_stream());
-
-  InitializePipeline(PIPELINE_OK);
-  EXPECT_FALSE(metadata_.has_audio);
-  EXPECT_TRUE(metadata_.has_video);
-
-  EXPECT_EQ(kStartTime, pipeline_->GetMediaTime());
 }
 
 static void RunTimeCB(const AudioRenderer::TimeCB& time_cb,

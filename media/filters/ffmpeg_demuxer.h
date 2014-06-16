@@ -55,9 +55,14 @@ typedef scoped_ptr<AVPacket, ScopedPtrAVFreePacket> ScopedAVPacket;
 
 class FFmpegDemuxerStream : public DemuxerStream {
  public:
-  // Keeps a copy of |demuxer| and initializes itself using information
-  // inside |stream|.  Both parameters must outlive |this|.
-  FFmpegDemuxerStream(FFmpegDemuxer* demuxer, AVStream* stream);
+  // Keeps a copy of |demuxer| and initializes itself using information inside
+  // |stream|.  Both parameters must outlive |this|.
+  // |discard_negative_timestamps| tells the DemuxerStream that all packets with
+  // negative timestamps should be marked for post-decode discard.  All decoded
+  // data before time zero will be discarded.
+  FFmpegDemuxerStream(FFmpegDemuxer* demuxer,
+                      AVStream* stream,
+                      bool discard_negative_timestamps);
   virtual ~FFmpegDemuxerStream();
 
   // Enqueues the given AVPacket. It is invalid to queue a |packet| after
@@ -74,8 +79,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
   // Empties the queues and ignores any additional calls to Read().
   void Stop();
 
-  // Returns the duration of this stream.
-  base::TimeDelta duration();
+  base::TimeDelta duration() const { return duration_; }
 
   // DemuxerStream implementation.
   virtual Type type() OVERRIDE;
@@ -136,6 +140,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
   bool bitstream_converter_enabled_;
 
   std::string encryption_key_id_;
+  const bool discard_negative_timestamps_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegDemuxerStream);
 };
@@ -155,7 +160,6 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   virtual void Stop(const base::Closure& callback) OVERRIDE;
   virtual void Seek(base::TimeDelta time, const PipelineStatusCB& cb) OVERRIDE;
   virtual DemuxerStream* GetStream(DemuxerStream::Type type) OVERRIDE;
-  virtual base::TimeDelta GetStartTime() const OVERRIDE;
   virtual base::Time GetTimelineOffset() const OVERRIDE;
   virtual Liveness GetLiveness() const OVERRIDE;
 
@@ -167,6 +171,10 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // about capacity and what buffered data is available.
   void NotifyCapacityAvailable();
   void NotifyBufferingChanged();
+
+  // The lowest demuxed timestamp.  DemuxerStream's must use this to adjust
+  // packet timestamps such that external clients see a zero-based timeline.
+  base::TimeDelta start_time() const { return start_time_; }
 
  private:
   // To allow tests access to privates.
@@ -245,9 +253,9 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // Derived bitrate after initialization has completed.
   int bitrate_;
 
-  // The first timestamp of the opened media file. This is used to set the
-  // starting clock value to match the timestamps in the media file. Default
-  // is 0.
+  // The first timestamp of the audio or video stream, whichever is lower.  This
+  // is used to adjust timestamps so that external consumers always see a zero
+  // based timeline.
   base::TimeDelta start_time_;
 
   // The Time associated with timestamp 0. Set to a null
@@ -269,6 +277,10 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   scoped_ptr<FFmpegGlue> glue_;
 
   const NeedKeyCB need_key_cb_;
+
+  // The index of the stream in |streams_| to use for seeking.  Chosen by the
+  // stream with the lowest starting timestamp.
+  int stream_index_for_seeking_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FFmpegDemuxer> weak_factory_;
