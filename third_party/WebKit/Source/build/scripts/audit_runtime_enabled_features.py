@@ -47,7 +47,11 @@ def branch_from_version(version_string):
     # Format: 31.0.1650.63, the second digit was only ever used for M4
     # no clue what it's actually intended for.
     version_regexp = r"(?P<major>\d+)\.\d+\.(?P<branch>\d+)\.(?P<minor>\d+)"
-    return int(re.match(version_regexp, version_string).group('branch'))
+    match = re.match(version_regexp, version_string)
+    # if match == None, we'll blow up, so at least provide some debugging information:
+    if not match:
+        print version_string
+    return int(match.group('branch'))
 
 
 def print_feature_diff(added_features, removed_features):
@@ -62,7 +66,11 @@ def historical_versions(os_string, channel):
     url = url_pattern % (os_string, channel)
     releases_csv = requests.get(url).text.strip("\n")
     # Format: os,channel,version_string,date_string
-    return [line.split(',')[2] for line in releases_csv.split("\n")]
+    lines = releases_csv.split('\n')
+    # As of June 2014, omahaproxy is now including headers:
+    assert(lines[0] == 'os,channel,version,timestamp')
+    # FIXME: We could replace this with more generic CSV parsing now that we have headers.
+    return [line.split(',')[2] for line in lines[1:]]
 
 
 def feature_file_url_for_branch(branch):
