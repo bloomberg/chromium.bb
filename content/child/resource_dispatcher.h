@@ -65,7 +65,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // request was found and removed.
   bool RemovePendingRequest(int request_id);
 
-  // Cancels a request in the |pending_requests_| list.
+  // Cancels a request in the |pending_requests_| list.  The request will be
+  // removed from the dispatcher as well.
   void CancelPendingRequest(int request_id);
 
   // Toggles the is_deferred attribute for the specified request.
