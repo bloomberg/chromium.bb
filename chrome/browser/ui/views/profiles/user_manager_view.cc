@@ -21,10 +21,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_ASH)
-#include "ash/wm/window_util.h"
-#endif
-
 #if defined(OS_WIN)
 #include "chrome/browser/shell_integration.h"
 #include "ui/base/win/shell.h"

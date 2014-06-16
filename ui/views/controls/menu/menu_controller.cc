@@ -1139,7 +1139,7 @@ void MenuController::UpdateInitialLocation(const gfx::Rect& bounds,
   // avoid repeated system queries for the info.
   pending_state_.monitor_bounds = GetScreen()->GetDisplayNearestPoint(
       bounds.origin()).work_area();
-#if defined(USE_ASH)
+
   if (!pending_state_.monitor_bounds.Contains(bounds)) {
     // Use the monitor area if the work area doesn't contain the bounds. This
     // handles showing a menu from the launcher.
@@ -1148,7 +1148,6 @@ void MenuController::UpdateInitialLocation(const gfx::Rect& bounds,
     if (monitor_area.Contains(bounds))
       pending_state_.monitor_bounds = monitor_area;
   }
-#endif
 }
 
 void MenuController::Accept(MenuItemView* item, int event_flags) {

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
@@ -34,10 +35,6 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
-
-#if defined(USE_ASH)
-#include "ash/wm/window_state.h"
-#endif
 
 // The alpha and color of the bubble's shadow.
 static const SkColor kShadowColor = SkColorSetARGB(30, 0, 0, 0);
@@ -614,10 +611,8 @@ void StatusBubbleViews::Init() {
     popup_->SetVisibilityChangedAnimationsEnabled(false);
     popup_->SetOpacity(0x00);
     popup_->SetContentsView(view_);
-#if defined(USE_ASH)
     ash::wm::GetWindowState(popup_->GetNativeWindow())->
         set_ignored_by_shelf(true);
-#endif
     RepositionPopup();
   }
 }
@@ -626,12 +621,6 @@ void StatusBubbleViews::Reposition() {
   // In restored mode, the client area has a client edge between it and the
   // frame.
   int overlap = kShadowThickness;
-  // The extra pixels defined by kClientEdgeThickness is only drawn in frame
-  // content border on windows for non-aura build.
-#if !defined(USE_ASH)
-  overlap +=
-      IsFrameMaximized() ? 0 : views::NonClientFrameView::kClientEdgeThickness;
-#endif
   int height = GetPreferredSize().height();
   int base_view_height = base_view()->bounds().height();
   gfx::Point origin(-overlap, base_view_height - height + overlap);

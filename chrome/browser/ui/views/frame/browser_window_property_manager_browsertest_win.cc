@@ -176,11 +176,9 @@ class BrowserTestWithProfileShortcutManager : public InProcessBrowserTest {
 // Check that the window properties on Windows are properly set.
 IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
                        WindowProperties) {
-#if defined(USE_ASH)
   // Disable this test in Metro+Ash where Windows window properties aren't used.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
-#endif
 
   // This test checks HWND properties that are only available on Win7+.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)

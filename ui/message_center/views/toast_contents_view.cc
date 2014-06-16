@@ -24,7 +24,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-#if defined(OS_WIN) && defined(USE_ASH)
+#if defined(OS_WIN)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #endif
 
@@ -339,7 +339,7 @@ void ToastContentsView::CreateWidget(gfx::NativeView parent) {
   views::Widget* widget = new views::Widget();
   widget->set_focus_on_creation(false);
 
-#if defined(OS_WIN) && defined(USE_ASH)
+#if defined(OS_WIN)
   // We want to ensure that this toast always goes to the native desktop,
   // not the Ash desktop (since there is already another toast contents view
   // there.

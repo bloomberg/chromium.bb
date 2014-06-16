@@ -5,13 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_MODE_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_MODE_CONTROLLER_H_
 
+#include "ash/wm/immersive_revealed_lock.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/host_desktop.h"
-
-#if defined(USE_ASH)
-#include "ash/wm/immersive_revealed_lock.h"
-#endif
 
 class BrowserView;
 
@@ -20,16 +17,7 @@ class Rect;
 class Size;
 }
 
-#if defined(USE_ASH)
 typedef ash::ImmersiveRevealedLock ImmersiveRevealedLock;
-#else
-// Do nothing version of ash::ImmersiveRevealedLock.
-class ImmersiveRevealedLock {
- public:
-  ImmersiveRevealedLock() {}
-  ~ImmersiveRevealedLock() {}
-};
-#endif
 
 // Controller for an "immersive mode" similar to MacOS presentation mode where
 // the top-of-window views are hidden until the mouse hits the top of the

@@ -34,7 +34,7 @@ void DetachableToolbarView::PaintBackgroundAttachedMode(
   canvas->TileImageInt(*theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
                        background_origin.x(), background_origin.y(), bounds.x(),
                        bounds.y(), bounds.width(), bounds.height());
-#if defined(USE_ASH)
+
   if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH) {
     // Ash provides additional lightening at the edges of the toolbar.
     gfx::ImageSkia* toolbar_left =
@@ -48,7 +48,6 @@ void DetachableToolbarView::PaintBackgroundAttachedMode(
                          bounds.right() - toolbar_right->width(), bounds.y(),
                          toolbar_right->width(), bounds.height());
   }
-#endif
 }
 
 // static

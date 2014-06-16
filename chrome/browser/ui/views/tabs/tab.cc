@@ -25,6 +25,7 @@
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/aura/env.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -47,10 +48,6 @@
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
-
-#if defined(USE_ASH)
-#include "ui/aura/env.h"
-#endif
 
 namespace {
 
@@ -248,16 +245,9 @@ class Tab::TabCloseButton : public views::ImageButton {
     gfx::Rect contents_bounds = GetContentsBounds();
     contents_bounds.set_x(GetMirroredXForRect(contents_bounds));
 
-    // TODO(tdanderson): Remove this ifdef if rect-based targeting
-    // is turned on by default.
-#if defined(USE_ASH)
     // Include the padding in hit-test for touch events.
     if (aura::Env::GetInstance()->is_touch_down())
       contents_bounds = GetLocalBounds();
-#elif defined(OS_WIN)
-    // TODO(sky): Use local-bounds if a touch-point is active.
-    // http://crbug.com/145258
-#endif
 
     return contents_bounds.Intersects(rect) ? this : parent();
   }

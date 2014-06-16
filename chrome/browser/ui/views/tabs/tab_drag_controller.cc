@@ -7,6 +7,9 @@
 #include <math.h>
 #include <set>
 
+#include "ash/accelerators/accelerator_commands.h"
+#include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -35,25 +38,19 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "ui/aura/env.h"
+#include "ui/aura/env.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_modality_controller.h"
-
-#if defined(USE_ASH)
-#include "ash/accelerators/accelerator_commands.h"
-#include "ash/wm/coordinate_conversion.h"
-#include "ash/wm/window_state.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/events/gestures/gesture_recognizer.h"
-#endif
 
 #if defined(OS_WIN)
 #include "ui/aura/window.h"
@@ -86,21 +83,15 @@ const int kHorizontalMoveThreshold = 16;  // Pixels.
 const int kStackedDistance = 36;
 
 void SetWindowPositionManaged(gfx::NativeWindow window, bool value) {
-#if defined(USE_ASH)
   ash::wm::GetWindowState(window)->set_window_position_managed(value);
-#endif
 }
 
 // Returns true if |tab_strip| browser window is docked.
 bool IsDockedOrSnapped(const TabStrip* tab_strip) {
-#if defined(USE_ASH)
   DCHECK(tab_strip);
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(tab_strip->GetWidget()->GetNativeWindow());
   return window_state->IsDocked() || window_state->IsSnapped();
-#else
-  return false;
-#endif
 }
 
 // Returns true if |bounds| contains the y-coordinate |y|. The y-coordinate
@@ -1660,14 +1651,12 @@ void TabDragController::CompleteDrag() {
 
 void TabDragController::MaximizeAttachedWindow() {
   GetAttachedBrowserWidget()->Maximize();
-#if defined(USE_ASH)
   if (was_source_fullscreen_ &&
       host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH) {
     // In fullscreen mode it is only possible to get here if the source
     // was in "immersive fullscreen" mode, so toggle it back on.
     ash::accelerators::ToggleFullscreen();
   }
-#endif
 }
 
 void TabDragController::ResetDelegates() {
@@ -1712,7 +1701,6 @@ void TabDragController::BringWindowUnderPointToFront(
     if (!widget_window)
       return;
 
-#if defined(USE_ASH)
     if (host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH) {
       // TODO(varkha): The code below ensures that the phantom drag widget
       // is shown on top of browser windows. The code should be moved to ash/
@@ -1744,9 +1732,6 @@ void TabDragController::BringWindowUnderPointToFront(
     } else {
       widget_window->StackAtTop();
     }
-#else
-    widget_window->StackAtTop();
-#endif
 
     // The previous call made the window appear on top of the dragged window,
     // move the dragged window to the front.
@@ -1883,7 +1868,6 @@ Browser* TabDragController::CreateBrowserForDrag(
 }
 
 gfx::Point TabDragController::GetCursorScreenPoint() {
-#if defined(USE_ASH)
   if (host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH &&
       event_source_ == EVENT_SOURCE_TOUCH &&
       aura::Env::GetInstance()->is_touch_down()) {
@@ -1900,7 +1884,7 @@ gfx::Point TabDragController::GetCursorScreenPoint() {
     ash::wm::ConvertPointToScreen(widget_window->GetRootWindow(), &touch_point);
     return touch_point;
   }
-#endif
+
   return screen_->GetCursorScreenPoint();
 }
 

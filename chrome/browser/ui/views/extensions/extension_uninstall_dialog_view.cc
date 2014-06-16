@@ -24,10 +24,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(USE_ASH)
-#include "ash/shell.h"
-#endif
-
 namespace {
 
 const int kRightColumnWidth = 210;
