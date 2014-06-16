@@ -28,7 +28,8 @@
     "unhooked-other",
     "no-bucket",
     "mmap-gpu-transferbuffer",
-    "mmap-gpu-ringbuffer",
+    "mmap-gpu-command-ringbuffer",
+    "mmap-gpu-transfer-ringbuffer",
     "mmap-catch-all",
     "tc-disk_cache-backing",
     "tc-disk_cache-other",
@@ -201,12 +202,17 @@
     },
     {
       "name": "mmap-gpu-transferbuffer",
-      "stacktrace": ".*gpu::TransferBufferManager::RegisterTransferBuffer.*",
+      "stacktrace": ".*content::GpuCommandBufferStub::OnRegisterTransferBuffer.*",
       "allocator": "mmap"
     },
     {
-      "name": "mmap-gpu-ringbuffer",
+      "name": "mmap-gpu-command-ringbuffer",
       "stacktrace": ".*gpu::CommandBufferHelper::AllocateRingBuffer.*",
+      "allocator": "mmap"
+    },
+    {
+      "name": "mmap-gpu-transfer-ringbuffer",
+      "stacktrace": ".*gpu::TransferBuffer::AllocateRingBuffer.*",
       "allocator": "mmap"
     },
     {
