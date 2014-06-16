@@ -65,7 +65,7 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, ExitStatusNeg2, {
 #else
 #define Maybe_PPAPICore PPAPICore
 #endif
-NACL_BROWSER_TEST_F(NaClBrowserTest, Maybe_PPAPICore) {
+NACL_BROWSER_TEST_F(NaClBrowserTest, Maybe_PPAPICore, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_ppb_core.html"));
 })
 
