@@ -873,26 +873,21 @@ TEST_F(WidgetTest, ExitFullscreenRestoreState) {
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, GetWidgetShowState(toplevel));
 
   toplevel->SetFullscreen(true);
-  while (GetWidgetShowState(toplevel) != ui::SHOW_STATE_FULLSCREEN)
-    RunPendingMessages();
+  EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN, GetWidgetShowState(toplevel));
   toplevel->SetFullscreen(false);
-  while (GetWidgetShowState(toplevel) == ui::SHOW_STATE_FULLSCREEN)
-    RunPendingMessages();
+  EXPECT_NE(ui::SHOW_STATE_FULLSCREEN, GetWidgetShowState(toplevel));
 
   // And it should still be in normal state after getting out of full screen.
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, GetWidgetShowState(toplevel));
 
   // Now, make it maximized.
   toplevel->Maximize();
-  while (GetWidgetShowState(toplevel) != ui::SHOW_STATE_MAXIMIZED)
-    RunPendingMessages();
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, GetWidgetShowState(toplevel));
 
   toplevel->SetFullscreen(true);
-  while (GetWidgetShowState(toplevel) != ui::SHOW_STATE_FULLSCREEN)
-    RunPendingMessages();
+  EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN, GetWidgetShowState(toplevel));
   toplevel->SetFullscreen(false);
-  while (GetWidgetShowState(toplevel) == ui::SHOW_STATE_FULLSCREEN)
-    RunPendingMessages();
+  EXPECT_NE(ui::SHOW_STATE_FULLSCREEN, GetWidgetShowState(toplevel));
 
   // And it stays maximized after getting out of full screen.
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, GetWidgetShowState(toplevel));
