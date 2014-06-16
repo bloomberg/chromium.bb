@@ -224,7 +224,9 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     {
         static bool compare(const T* a, const T* b, size_t size)
         {
-            return std::equal(a, a + size, b);
+            if (LIKELY(a && b))
+                return std::equal(a, a + size, b);
+            return !a && !b;
         }
     };
 

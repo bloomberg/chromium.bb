@@ -28,6 +28,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 #include "wtf/Vector.h"
 #include <gtest/gtest.h>
 
@@ -283,4 +284,22 @@ TEST(VectorTest, SwapWithInlineCapacity)
     vectorB.swap(vectorA);
 }
 
+class Comparable {
+};
+bool operator==(const Comparable& a, const Comparable& b) { return true; }
+
+template<typename T> void compare()
+{
+    EXPECT_TRUE(Vector<T>() == Vector<T>());
+    EXPECT_FALSE(Vector<T>(1) == Vector<T>(0));
+    EXPECT_FALSE(Vector<T>() == Vector<T>(1));
+    EXPECT_TRUE(Vector<T>(1) == Vector<T>(1));
+}
+
+TEST(VectorTest, Compare)
+{
+    compare<int>();
+    compare<Comparable>();
+    compare<WTF::String>();
+}
 } // namespace
