@@ -45,13 +45,11 @@ UndoStack::UndoStack()
 {
 }
 
-UndoStack::~UndoStack()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(UndoStack)
 
-PassOwnPtr<UndoStack> UndoStack::create()
+PassOwnPtrWillBeRawPtr<UndoStack> UndoStack::create()
 {
-    return adoptPtr(new UndoStack());
+    return adoptPtrWillBeNoop(new UndoStack());
 }
 
 void UndoStack::registerUndoStep(PassRefPtrWillBeRawPtr<UndoStep> step)
@@ -75,7 +73,7 @@ void UndoStack::didUnloadFrame(const LocalFrame& frame)
     filterOutUndoSteps(m_redoStack, frame);
 }
 
-void UndoStack::filterOutUndoSteps(WillBePersistentUndoStepStack& stack, const LocalFrame& frame)
+void UndoStack::filterOutUndoSteps(UndoStepStack& stack, const LocalFrame& frame)
 {
     UndoStepStack newStack;
     while (!stack.isEmpty()) {
@@ -120,6 +118,12 @@ void UndoStack::redo()
         step->reapply();
         // reapply will call us back to push this command onto the undo stack.
     }
+}
+
+void UndoStack::trace(Visitor* visitor)
+{
+    visitor->trace(m_undoStack);
+    visitor->trace(m_redoStack);
 }
 
 } // namesace WebCore

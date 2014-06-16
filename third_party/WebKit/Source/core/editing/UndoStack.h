@@ -40,11 +40,10 @@ namespace WebCore {
 class LocalFrame;
 class UndoStep;
 
-class UndoStack {
+class UndoStack FINAL : public NoBaseWillBeGarbageCollected<UndoStack> {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(UndoStack)
 public:
-    static PassOwnPtr<UndoStack> create();
-
-    ~UndoStack();
+    static PassOwnPtrWillBeRawPtr<UndoStack> create();
 
     void registerUndoStep(PassRefPtrWillBeRawPtr<UndoStep>);
     void registerRedoStep(PassRefPtrWillBeRawPtr<UndoStep>);
@@ -54,17 +53,18 @@ public:
     void undo();
     void redo();
 
+    void trace(Visitor*);
+
 private:
     UndoStack();
 
     typedef WillBeHeapDeque<RefPtrWillBeMember<UndoStep> > UndoStepStack;
-    typedef WillBePersistentHeapDeque<RefPtrWillBeMember<UndoStep> > WillBePersistentUndoStepStack;
 
-    void filterOutUndoSteps(WillBePersistentUndoStepStack&, const LocalFrame&);
+    void filterOutUndoSteps(UndoStepStack&, const LocalFrame&);
 
     bool m_inRedo;
-    WillBePersistentUndoStepStack m_undoStack;
-    WillBePersistentUndoStepStack m_redoStack;
+    UndoStepStack m_undoStack;
+    UndoStepStack m_redoStack;
 };
 
 } // namespace WebCore

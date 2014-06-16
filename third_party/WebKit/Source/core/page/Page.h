@@ -257,7 +257,7 @@ private:
     const OwnPtr<InspectorController> m_inspectorController;
     const OwnPtrWillBeMember<PointerLockController> m_pointerLockController;
     OwnPtr<ScrollingCoordinator> m_scrollingCoordinator;
-    const OwnPtr<UndoStack> m_undoStack;
+    const OwnPtrWillBeMember<UndoStack> m_undoStack;
 
     RefPtr<Frame> m_mainFrame;
 
