@@ -305,6 +305,7 @@ WebRTCDTMFSenderHandler* MockWebRTCPeerConnectionHandler::createDTMFSender(
 
 void MockWebRTCPeerConnectionHandler::stop() {
   stopped_ = true;
+  task_list_.revokeAll();
 }
 
 }  // namespace content
