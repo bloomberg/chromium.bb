@@ -12,13 +12,18 @@ function handleReject(event) {
     }));
 }
 
+function handleFetch(event) {
+    event.respondWith(fetch('other.html'));
+}
+
 self.addEventListener('fetch', function(event) {
     var url = event.request.url;
     var handlers = [
         { pattern: 'helloworld', fn: handleHelloWorld },
         { pattern: '?ignore', fn: function() {} },
         { pattern: '?null', fn: handleNullBody },
-        { pattern: '?reject', fn: handleReject }
+        { pattern: '?reject', fn: handleReject },
+        { pattern: '?fetch', fn: handleFetch }
     ];
 
     var handler = null;

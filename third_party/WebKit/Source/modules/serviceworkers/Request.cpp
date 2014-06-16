@@ -9,6 +9,7 @@
 #include "core/dom/DOMURLUtilsReadOnly.h"
 #include "modules/serviceworkers/RequestInit.h"
 #include "platform/NotImplemented.h"
+#include "platform/network/ResourceRequest.h"
 #include "public/platform/WebServiceWorkerRequest.h"
 
 namespace WebCore {
@@ -41,6 +42,14 @@ void Request::setMethod(const String& value)
 String Request::origin() const
 {
     return DOMURLUtilsReadOnly::origin(m_url);
+}
+
+PassOwnPtr<ResourceRequest> Request::createResourceRequest() const
+{
+    OwnPtr<ResourceRequest> request = adoptPtr(new ResourceRequest(m_url));
+    request->setHTTPMethod("GET");
+    // FIXME: Fill more info.
+    return request.release();
 }
 
 Request::Request(const RequestInit& requestInit)

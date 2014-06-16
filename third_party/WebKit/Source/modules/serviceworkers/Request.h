@@ -18,6 +18,7 @@ namespace blink { class WebServiceWorkerRequest; }
 namespace WebCore {
 
 struct RequestInit;
+class ResourceRequest;
 
 class Request FINAL : public ScriptWrappable, public RefCounted<Request> {
 public:
@@ -33,6 +34,8 @@ public:
     String method() const { return m_method; }
     String origin() const;
     PassRefPtr<HeaderMap> headers() const { return m_headers; }
+
+    PassOwnPtr<ResourceRequest> createResourceRequest() const;
 
 private:
     explicit Request(const RequestInit&);

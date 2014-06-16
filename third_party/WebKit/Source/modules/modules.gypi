@@ -653,6 +653,8 @@
       'serviceworkers/Client.h',
       'serviceworkers/FetchEvent.cpp',
       'serviceworkers/FetchEvent.h',
+      'serviceworkers/FetchManager.cpp',
+      'serviceworkers/FetchManager.h',
       'serviceworkers/HeaderMap.cpp',
       'serviceworkers/HeaderMap.h',
       'serviceworkers/HeaderMapForEachCallback.h',

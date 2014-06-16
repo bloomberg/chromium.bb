@@ -36,6 +36,10 @@
 
 namespace WebCore {
 
+class FetchManager;
+class Request;
+class ScriptPromise;
+class ScriptState;
 class ServiceWorkerThread;
 class ServiceWorkerClients;
 class WorkerThreadStartupData;
@@ -46,10 +50,13 @@ public:
 
     virtual ~ServiceWorkerGlobalScope();
     virtual bool isServiceWorkerGlobalScope() const OVERRIDE { return true; }
+    virtual void stopFetch() OVERRIDE;
 
     // ServiceWorkerGlobalScope.idl
     PassRefPtr<ServiceWorkerClients> clients();
     String scope(ExecutionContext*);
+    ScriptPromise fetch(ScriptState*, Request*);
+    ScriptPromise fetch(ScriptState*, const String&);
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
@@ -66,6 +73,7 @@ private:
     ServiceWorkerGlobalScope(const KURL&, const String& userAgent, ServiceWorkerThread*, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerClients>);
 
     RefPtr<ServiceWorkerClients> m_clients;
+    OwnPtr<FetchManager> m_fetchManager;
 };
 
 } // namespace WebCore

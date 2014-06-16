@@ -85,5 +85,25 @@ var worker = 'resources/fetch-event-test-worker.js';
         }));
     }
 }());
+
+(function() {
+    var t = async_test('Service Worker fetches other file in fetch event');
+    var scope = 'resources/simple.html?fetch';
+    service_worker_unregister_and_register(t, worker, scope, onRegister);
+
+    function onRegister(sw) {
+        sw.addEventListener('statechange', t.step_func(onStateChange));
+    }
+
+    function onStateChange(event) {
+        if (event.target.state != 'active')
+            return;
+        with_iframe(scope, t.step_func(function(frame) {
+            assert_equals(frame.contentDocument.body.textContent, 'Here\'s an other html file.\n',
+                          'Response should come from fetched other file');
+            service_worker_unregister_and_done(t, scope);
+        }));
+    }
+}());
 </script>
 </body>

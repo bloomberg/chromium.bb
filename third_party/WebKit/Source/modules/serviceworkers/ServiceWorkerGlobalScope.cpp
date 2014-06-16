@@ -33,12 +33,18 @@
 #include "CachePolyfill.h"
 #include "CacheStoragePolyfill.h"
 #include "FetchPolyfill.h"
+#include "bindings/v8/ScriptPromise.h"
+#include "bindings/v8/ScriptState.h"
+#include "bindings/v8/V8ThrowException.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/EventTargetModules.h"
+#include "modules/serviceworkers/FetchManager.h"
+#include "modules/serviceworkers/Request.h"
 #include "modules/serviceworkers/ServiceWorkerClients.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerThread.h"
+#include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURL.h"
 #include "wtf/CurrentTime.h"
@@ -60,6 +66,7 @@ PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::creat
 
 ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(const KURL& url, const String& userAgent, ServiceWorkerThread* thread, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : WorkerGlobalScope(url, userAgent, thread, timeOrigin, workerClients)
+    , m_fetchManager(adoptPtr(new FetchManager(this)))
 {
     ScriptWrappable::init(this);
 }
@@ -68,9 +75,30 @@ ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope()
 {
 }
 
+void ServiceWorkerGlobalScope::stopFetch()
+{
+    m_fetchManager.clear();
+}
+
 String ServiceWorkerGlobalScope::scope(ExecutionContext* context)
 {
     return ServiceWorkerGlobalScopeClient::from(context)->scope().string();
+}
+
+ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request* request)
+{
+    OwnPtr<ResourceRequest> resourceRequest(request->createResourceRequest());
+    return m_fetchManager->fetch(scriptState, resourceRequest.release());
+}
+
+ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const String& urlstring)
+{
+    KURL url = completeURL(urlstring);
+    if (!url.isValid())
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("Invalid URL", scriptState->isolate()));
+    OwnPtr<ResourceRequest> resourceRequest = adoptPtr(new ResourceRequest(url));
+    resourceRequest->setHTTPMethod("GET");
+    return m_fetchManager->fetch(scriptState, resourceRequest.release());
 }
 
 PassRefPtr<ServiceWorkerClients> ServiceWorkerGlobalScope::clients()

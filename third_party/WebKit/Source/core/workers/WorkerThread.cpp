@@ -204,7 +204,7 @@ public:
     virtual void performTask(ExecutionContext *context)
     {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
-
+        workerGlobalScope->stopFetch();
         workerGlobalScope->stopActiveDOMObjects();
 
         // Event listeners would keep DOMWrapperWorld objects alive for too long. Also, they have references to JS objects,

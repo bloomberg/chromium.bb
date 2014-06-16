@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<title>Service Worker: fetch()</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script>
+var test = async_test('Verify fetch() in a Service Worker');
+test.step(function() {
+    var scope = 'resources/blank.html';
+    service_worker_unregister_and_register(
+        test, 'resources/fetch-worker.js', scope, onRegister);
+
+    function onRegister(worker) {
+        var messageChannel = new MessageChannel();
+        messageChannel.port1.onmessage = test.step_func(onMessage);
+        worker.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
+    }
+
+    var result = [];
+    var expected = [
+        'Resolved: other.html',
+        'Rejected: http:// : Invalid URL',
+        'Rejected: http://www.example.com/foo : Failed to fetch',
+    ];
+
+    function onMessage(e) {
+        var message = e.data;
+        if (message == 'quit') {
+            assert_array_equals(result, expected, 'Worker should post back expected values.');
+            service_worker_unregister_and_done(test, scope);
+        } else {
+            result.push(message);
+        }
+    }
+});
+</script>

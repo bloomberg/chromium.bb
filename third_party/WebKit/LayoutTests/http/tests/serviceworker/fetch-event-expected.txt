@@ -3,5 +3,6 @@ FAIL Service Worker responds to fetch event with blob body assert_unreached: Unr
 FAIL Service Worker does not respond to fetch event assert_unreached: Unregister should not fail: NotSupportedError Reached unreachable code
 FAIL Service Worker responds to fetch event with null response body assert_unreached: Unregister should not fail: NotSupportedError Reached unreachable code
 FAIL Service Worker rejects fetch event assert_unreached: Unregister should not fail: NotSupportedError Reached unreachable code
+FAIL Service Worker fetches other file in fetch event assert_unreached: Unregister should not fail: NotSupportedError Reached unreachable code
 Harness: the test ran to completion.
 

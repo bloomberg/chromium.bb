@@ -129,6 +129,8 @@ namespace WebCore {
 
         bool isClosing() { return m_closing; }
 
+        virtual void stopFetch() { }
+
         bool idleNotification();
 
         double timeOrigin() const { return m_timeOrigin; }

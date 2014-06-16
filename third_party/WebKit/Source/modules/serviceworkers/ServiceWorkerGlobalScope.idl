@@ -36,6 +36,9 @@
   readonly attribute ServiceWorkerClients clients;
   [CallWith=ExecutionContext, Unforgeable] readonly attribute DOMString scope;
 
+  [CallWith=ScriptState] Promise fetch(DOMString request);
+  [CallWith=ScriptState] Promise fetch(Request request);
+
   attribute EventHandler onactivate;
   attribute EventHandler onfetch;
   attribute EventHandler oninstall;
