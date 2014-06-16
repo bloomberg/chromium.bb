@@ -22,6 +22,9 @@ from download_from_google_storage import Gsutil
 import gclient_utils
 import subcommand
 
+# Analogous to gc.autopacklimit git config.
+GC_AUTOPACKLIMIT = 50
+
 try:
   # pylint: disable=E0602
   WinErr = WindowsError
@@ -226,8 +229,20 @@ class Mirror(object):
   def config(self, cwd=None):
     if cwd is None:
       cwd = self.mirror_path
+
+    # Don't run git-gc in a daemon.  Bad things can happen if it gets killed.
+    self.RunGit(['config', 'gc.autodetach', '0'], cwd=cwd)
+
+    # Don't combine pack files into one big pack file.  It's really slow for
+    # repositories, and there's no way to track progress and make sure it's
+    # not stuck.
+    self.RunGit(['config', 'gc.autopacklimit', '0'], cwd=cwd)
+
+    # Allocate more RAM for cache-ing delta chains, for better performance
+    # of "Resolving deltas".
     self.RunGit(['config', 'core.deltaBaseCacheLimit',
                  gclient_utils.DefaultDeltaBaseCacheLimit()], cwd=cwd)
+
     self.RunGit(['config', 'remote.origin.url', self.url], cwd=cwd)
     self.RunGit(['config', '--replace-all', 'remote.origin.fetch',
                  '+refs/heads/*:refs/heads/*'], cwd=cwd)
@@ -319,13 +334,32 @@ class Mirror(object):
     with Lockfile(self.mirror_path):
       # Setup from scratch if the repo is new or is in a bad state.
       tempdir = None
-      if not os.path.exists(os.path.join(self.mirror_path, 'config')):
-        gclient_utils.rmtree(self.mirror_path)
+      config_file = os.path.join(self.mirror_path, 'config')
+      pack_dir = os.path.join(self.mirror_path, 'objects', 'pack')
+      pack_files = []
+      if os.path.isdir(pack_dir):
+        pack_files = [f for f in os.listdir(pack_dir) if f.endswith('.pack')]
+
+      should_bootstrap = (not os.path.exists(config_file) or
+                          len(pack_files) > GC_AUTOPACKLIMIT)
+      if should_bootstrap:
         tempdir = tempfile.mkdtemp(
             suffix=self.basedir, dir=self.GetCachePath())
         bootstrapped = not depth and bootstrap and self.bootstrap_repo(tempdir)
-        if not bootstrapped:
+        if bootstrapped:
+          # Bootstrap succeeded; delete previous cache, if any.
+          gclient_utils.rmtree(self.mirror_path)
+        elif not os.path.exists(config_file):
+          # Bootstrap failed, no previous cache; start with a bare git dir.
           self.RunGit(['init', '--bare'], cwd=tempdir)
+        else:
+          # Bootstrap failed, previous cache exists; warn and continue.
+          logging.warn(
+              'Git cache has a lot of pack files (%d).  Tried to re-bootstrap '
+              'but failed.  Continuing with non-optimized repository.'
+              % len(pack_files))
+          gclient_utils.rmtree(tempdir)
+          tempdir = None
       else:
         if depth and os.path.exists(os.path.join(self.mirror_path, 'shallow')):
           logging.warn(
