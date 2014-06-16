@@ -37,8 +37,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
 
-namespace blink { class WebCryptoAlgorithm; }
-
 namespace WebCore {
 
 class Dictionary;
@@ -60,10 +58,6 @@ struct AlgorithmError {
 //
 // [1] http://www.w3.org/TR/WebCryptoAPI/#algorithm-normalizing-rules
 bool normalizeAlgorithm(const Dictionary&, blink::WebCryptoOperation, blink::WebCryptoAlgorithm&, AlgorithmError*) WARN_UNUSED_RETURN;
-
-// Returns a null-terminated C-string literal. Caller can assume the pointer
-// will be valid for the program's entire runtime.
-const char* algorithmIdToName(blink::WebCryptoAlgorithmId);
 
 } // namespace WebCore
 

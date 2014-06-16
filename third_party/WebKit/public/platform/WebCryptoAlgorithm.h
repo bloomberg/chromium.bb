@@ -85,6 +85,20 @@ enum WebCryptoAlgorithmParamsType {
     WebCryptoAlgorithmParamsTypeAesCtrParams,
 };
 
+struct WebCryptoAlgorithmInfo {
+    typedef char ParamsTypeOrUndefined;
+    static const ParamsTypeOrUndefined Undefined = -1;
+
+    // The canonical (case-sensitive) name for the algorithm as a
+    // null-terminated C-string literal.
+    const char* name;
+
+    // A map from the operation to the expected parameter type of the algorithm.
+    // If an operation is not applicable for the algorithm, set to Undefined.
+    const ParamsTypeOrUndefined operationToParamsType[WebCryptoOperationLast + 1];
+};
+
+
 class WebCryptoAesCbcParams;
 class WebCryptoAesKeyGenParams;
 class WebCryptoHmacImportParams;
@@ -114,6 +128,11 @@ public:
 
     BLINK_PLATFORM_EXPORT static WebCryptoAlgorithm createNull();
     BLINK_PLATFORM_EXPORT static WebCryptoAlgorithm adoptParamsAndCreate(WebCryptoAlgorithmId, WebCryptoAlgorithmParams*);
+
+    // Returns a WebCryptoAlgorithmInfo for the algorithm with the given ID. If
+    // the ID is invalid, return 0. The caller can assume the pointer will be
+    // valid for the program's entire runtime.
+    BLINK_PLATFORM_EXPORT static const WebCryptoAlgorithmInfo* lookupAlgorithmInfo(WebCryptoAlgorithmId);
 
     ~WebCryptoAlgorithm() { reset(); }
 

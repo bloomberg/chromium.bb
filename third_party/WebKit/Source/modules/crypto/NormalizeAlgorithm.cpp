@@ -75,194 +75,6 @@ const AlgorithmNameMapping algorithmNameMappings[] = {
     {"RSASSA-PKCS1-V1_5", 17, blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
 };
 
-typedef char ParamsTypeOrUndefined;
-const ParamsTypeOrUndefined Undefined = -1;
-
-struct AlgorithmInfo {
-    // The canonical (case-sensitive) name for the algorithm.
-    const char* name;
-
-    // A map from the operation to the expected parameter type of the algorithm.
-    // If an operation is not applicable for the algorithm, set to Undefined.
-    const ParamsTypeOrUndefined operationToParamsType[blink::WebCryptoOperationLast + 1];
-};
-
-// A mapping from the algorithm ID to information about the algorithm.
-const AlgorithmInfo algorithmIdToInfo[] = {
-    { // Index 0
-        "AES-CBC", {
-            blink::WebCryptoAlgorithmParamsTypeAesCbcParams, // Encrypt
-            blink::WebCryptoAlgorithmParamsTypeAesCbcParams, // Decrypt
-            Undefined, // Sign
-            Undefined, // Verify
-            Undefined, // Digest
-            blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams, // GenerateKey
-            blink::WebCryptoAlgorithmParamsTypeNone, // ImportKey
-            Undefined, // DeriveKey
-            Undefined, // DeriveBits
-            blink::WebCryptoAlgorithmParamsTypeAesCbcParams, // WrapKey
-            blink::WebCryptoAlgorithmParamsTypeAesCbcParams // UnwrapKey
-        }
-    }, { // Index 1
-        "HMAC", {
-            Undefined, // Encrypt
-            Undefined, // Decrypt
-            blink::WebCryptoAlgorithmParamsTypeNone, // Sign
-            blink::WebCryptoAlgorithmParamsTypeNone, // Verify
-            Undefined, // Digest
-            blink::WebCryptoAlgorithmParamsTypeHmacKeyGenParams, // GenerateKey
-            blink::WebCryptoAlgorithmParamsTypeHmacImportParams, // ImportKey
-            Undefined, // DeriveKey
-            Undefined, // DeriveBits
-            Undefined, // WrapKey
-            Undefined // UnwrapKey
-        }
-    }, { // Index 2
-        "RSASSA-PKCS1-v1_5", {
-            Undefined, // Encrypt
-            Undefined, // Decrypt
-            blink::WebCryptoAlgorithmParamsTypeNone, // Sign
-            blink::WebCryptoAlgorithmParamsTypeNone, // Verify
-            Undefined, // Digest
-            blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams, // GenerateKey
-            blink::WebCryptoAlgorithmParamsTypeRsaHashedImportParams, // ImportKey
-            Undefined, // DeriveKey
-            Undefined, // DeriveBits
-            Undefined, // WrapKey
-            Undefined // UnwrapKey
-        }
-    }, { // Index 3
-        "SHA-1", {
-            Undefined, // Encrypt
-            Undefined, // Decrypt
-            Undefined, // Sign
-            Undefined, // Verify
-            blink::WebCryptoAlgorithmParamsTypeNone, // Digest
-            Undefined, // GenerateKey
-            Undefined, // ImportKey
-            Undefined, // DeriveKey
-            Undefined, // DeriveBits
-            Undefined, // WrapKey
-            Undefined // UnwrapKey
-        }
-    }, { // Index 4
-        "SHA-256", {
-            Undefined, // Encrypt
-            Undefined, // Decrypt
-            Undefined, // Sign
-            Undefined, // Verify
-            blink::WebCryptoAlgorithmParamsTypeNone, // Digest
-            Undefined, // GenerateKey
-            Undefined, // ImportKey
-            Undefined, // DeriveKey
-            Undefined, // DeriveBits
-            Undefined, // WrapKey
-            Undefined // UnwrapKey
-        }
-    }, { // Index 5
-        "SHA-384", {
-            Undefined, // Encrypt
-            Undefined, // Decrypt
-            Undefined, // Sign
-            Undefined, // Verify
-            blink::WebCryptoAlgorithmParamsTypeNone, // Digest
-            Undefined, // GenerateKey
-            Undefined, // ImportKey
-            Undefined, // DeriveKey
-            Undefined, // DeriveBits
-            Undefined, // WrapKey
-            Undefined // UnwrapKey
-        }
-    }, { // Index 6
-        "SHA-512", {
-            Undefined, // Encrypt
-            Undefined, // Decrypt
-            Undefined, // Sign
-            Undefined, // Verify
-            blink::WebCryptoAlgorithmParamsTypeNone, // Digest
-            Undefined, // GenerateKey
-            Undefined, // ImportKey
-            Undefined, // DeriveKey
-            Undefined, // DeriveBits
-            Undefined, // WrapKey
-            Undefined // UnwrapKey
-        }
-    }, { // Index 7
-        "AES-GCM", {
-            blink::WebCryptoAlgorithmParamsTypeAesGcmParams, // Encrypt
-            blink::WebCryptoAlgorithmParamsTypeAesGcmParams, // Decrypt
-            Undefined, // Sign
-            Undefined, // Verify
-            Undefined, // Digest
-            blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams, // GenerateKey
-            blink::WebCryptoAlgorithmParamsTypeNone, // ImportKey
-            Undefined, // DeriveKey
-            Undefined, // DeriveBits
-            blink::WebCryptoAlgorithmParamsTypeAesGcmParams, // WrapKey
-            blink::WebCryptoAlgorithmParamsTypeAesGcmParams // UnwrapKey
-        }
-    }, { // Index 8
-        "RSA-OAEP", {
-            blink::WebCryptoAlgorithmParamsTypeRsaOaepParams, // Encrypt
-            blink::WebCryptoAlgorithmParamsTypeRsaOaepParams, // Decrypt
-            Undefined, // Sign
-            Undefined, // Verify
-            Undefined, // Digest
-            blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams, // GenerateKey
-            blink::WebCryptoAlgorithmParamsTypeRsaHashedImportParams, // ImportKey
-            Undefined, // DeriveKey
-            Undefined, // DeriveBits
-            blink::WebCryptoAlgorithmParamsTypeRsaOaepParams, // WrapKey
-            blink::WebCryptoAlgorithmParamsTypeRsaOaepParams // UnwrapKey
-        }
-    }, { // Index 9
-        "AES-CTR", {
-            blink::WebCryptoAlgorithmParamsTypeAesCtrParams, // Encrypt
-            blink::WebCryptoAlgorithmParamsTypeAesCtrParams, // Decrypt
-            Undefined, // Sign
-            Undefined, // Verify
-            Undefined, // Digest
-            blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams, // GenerateKey
-            blink::WebCryptoAlgorithmParamsTypeNone, // ImportKey
-            Undefined, // DeriveKey
-            Undefined, // DeriveBits
-            blink::WebCryptoAlgorithmParamsTypeAesCtrParams, // WrapKey
-            blink::WebCryptoAlgorithmParamsTypeAesCtrParams // UnwrapKey
-        }
-    }, { // Index 10
-        "AES-KW", {
-            Undefined, // Encrypt
-            Undefined, // Decrypt
-            Undefined, // Sign
-            Undefined, // Verify
-            Undefined, // Digest
-            blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams, // GenerateKey
-            blink::WebCryptoAlgorithmParamsTypeNone, // ImportKey
-            Undefined, // DeriveKey
-            Undefined, // DeriveBits
-            blink::WebCryptoAlgorithmParamsTypeNone, // WrapKey
-            blink::WebCryptoAlgorithmParamsTypeNone // UnwrapKey
-        }
-    },
-};
-
-// Initializing the algorithmIdToInfo table above depends on knowing the enum
-// values for algorithm IDs. If those ever change, the table will need to be
-// updated.
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdAesCbc == 0, AesCbc_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdHmac == 1, Hmac_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 == 2, RsaSsaPkcs1v1_5_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdSha1 == 3, Sha1_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdSha256 == 4, Sha256_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdSha384 == 5, Sha384_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdSha512 == 6, Sha512_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdAesGcm == 7, AesGcm_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdRsaOaep == 8, RsaOaep_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdAesCtr == 9, AesCtr_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdAesKw == 10, AesKw_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdLast == 10, Last_idDoesntMatch);
-COMPILE_ASSERT(10 == blink::WebCryptoOperationLast, UpdateParamsMapping);
-
 #if ASSERT_ENABLED
 
 // Essentially std::is_sorted() (however that function is new to C++11).
@@ -370,13 +182,6 @@ bool lookupAlgorithmIdByName(const String& algorithmName, blink::WebCryptoAlgori
 
     id = it->algorithmId;
     return true;
-}
-
-const AlgorithmInfo* lookupAlgorithmInfo(blink::WebCryptoAlgorithmId id)
-{
-    if (id < 0 || id >= WTF_ARRAY_LENGTH(algorithmIdToInfo))
-        return 0;
-    return &algorithmIdToInfo[id];
 }
 
 void setSyntaxError(const String& message, AlgorithmError* error)
@@ -896,10 +701,10 @@ bool parseAlgorithm(const Dictionary& raw, blink::WebCryptoOperation op, blink::
     // Remove the "Algorithm:" prefix for all subsequent errors.
     context.removeLast();
 
-    const AlgorithmInfo* algorithmInfo = lookupAlgorithmInfo(algorithmId);
+    const blink::WebCryptoAlgorithmInfo* algorithmInfo = blink::WebCryptoAlgorithm::lookupAlgorithmInfo(algorithmId);
 
-    if (algorithmInfo->operationToParamsType[op] == Undefined) {
-        context.add(algorithmIdToName(algorithmId));
+    if (algorithmInfo->operationToParamsType[op] == blink::WebCryptoAlgorithmInfo::Undefined) {
+        context.add(algorithmInfo->name);
         setNotSupportedError(context.toString("Unsupported operation", operationToString(op)), error);
         return false;
     }
@@ -919,11 +724,6 @@ bool parseAlgorithm(const Dictionary& raw, blink::WebCryptoOperation op, blink::
 bool normalizeAlgorithm(const Dictionary& raw, blink::WebCryptoOperation op, blink::WebCryptoAlgorithm& algorithm, AlgorithmError* error)
 {
     return parseAlgorithm(raw, op, algorithm, ErrorContext(), error);
-}
-
-const char* algorithmIdToName(blink::WebCryptoAlgorithmId id)
-{
-    return lookupAlgorithmInfo(id)->name;
 }
 
 } // namespace WebCore

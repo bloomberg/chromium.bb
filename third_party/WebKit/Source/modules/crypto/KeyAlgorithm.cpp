@@ -36,6 +36,7 @@
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "modules/crypto/RsaHashedKeyAlgorithm.h"
 #include "modules/crypto/RsaKeyAlgorithm.h"
+#include "public/platform/WebCryptoAlgorithm.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -75,7 +76,8 @@ KeyAlgorithm::KeyAlgorithm(const blink::WebCryptoKeyAlgorithm& algorithm)
 
 String KeyAlgorithm::name()
 {
-    return algorithmIdToName(m_algorithm.id());
+    const blink::WebCryptoAlgorithmInfo* info = blink::WebCryptoAlgorithm::lookupAlgorithmInfo(m_algorithm.id());
+    return info->name;
 }
 
 bool KeyAlgorithm::isAesKeyAlgorithm() const
