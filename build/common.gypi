@@ -2042,7 +2042,7 @@
         ],
       }],
 
-      ['asan==1', {
+      ['asan==1 or msan==1 or lsan==1 or tsan==1', {
         'clang%': 1,
         'use_allocator%': 'none',
       }],
@@ -2054,15 +2054,18 @@
         # runtime is fully adopted. See http://crbug.com/242503.
         'mac_strip_release': 0,
       }],
-      ['lsan==1', {
-        'clang%': 1,
-      }],
       ['tsan==1', {
-        'clang%': 1,
         'use_custom_libcxx%': 1,
       }],
       ['msan==1', {
-        'clang%': 1,
+        # Use a just-built, MSan-instrumented libc++ instead of the system-wide
+        # libstdc++. This is required to avoid false positive reports whenever
+        # the C++ standard library is used.
+        'use_custom_libcxx%': 1,
+        # Running the V8-generated code on an ARM simulator is a powerful hack
+        # that allows the tool to see the memory accesses from JITted code.
+        # Without this flag, JS code causes false positive reports from MSan.
+        'v8_target_arch': 'arm64',
       }],
 
       ['OS=="linux" and clang_type_profiler==1', {
