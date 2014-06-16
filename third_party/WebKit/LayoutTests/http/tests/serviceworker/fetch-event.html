@@ -68,7 +68,7 @@ var worker = 'resources/fetch-event-test-worker.js';
 
 (function() {
     var t = async_test('Service Worker rejects fetch event');
-    var scope = 'resources/simple.html?ignore';
+    var scope = 'resources/simple.html?reject';
     service_worker_unregister_and_register(t, worker, scope, onRegister);
 
     function onRegister(sw) {

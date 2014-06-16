@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<script src="/js-test-resources/js-test.js"></script>
+<body>
+<script>
+window.jsTestIsAsync = true;
+description('Test that a registered Service Worker with an event handler is not garbage collected prematurely');
+swObservation = null;
+scope = 'gc';
+
+if (!window.internals) {
+    testFailed('This test requires internals.observeGC');
+    finishJSTest();
+} else {
+    setup();
+}
+
+function setup() {
+    var worker = 'resources/empty-worker.js';
+    unregisterAndRegister(worker, scope).then(onRegister);
+}
+
+function unregisterAndRegister(url, scope) {
+    return navigator.serviceWorker.unregister(scope).then(function() {
+        return navigator.serviceWorker.register(url, { scope: scope });
+    }).catch(function(error) {
+        testFailed('Could not register worker: ' + error);
+        finishJSTest();
+    });
+}
+
+function assertServiceWorkerIsNotCollected() {
+    gc();
+    shouldBeFalse('swObservation.wasCollected')
+}
+
+function onRegister(sw) {
+    swObservation = internals.observeGC(sw);
+    sw.addEventListener('statechange', onStateChange);
+    setTimeout(assertServiceWorkerIsNotCollected, 0);
+}
+
+function onStateChange(event) {
+    assertServiceWorkerIsNotCollected();
+
+    if (event.target.state != 'active')
+        return;
+    navigator.serviceWorker.unregister(scope).then(onUnregister);
+}
+
+function onUnregister()
+{
+    // FIXME: Assert that the ServiceWorker *is* collected when the 'redundant' state is implemented.
+    assertServiceWorkerIsNotCollected();
+
+    finishJSTest();
+}
+</script>
+</body>

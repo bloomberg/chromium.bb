@@ -1,0 +1,10 @@
+Test that a registered Service Worker with an event handler is not garbage collected prematurely
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+FAIL Could not register worker: NotSupportedError: Service Worker support is disabled.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

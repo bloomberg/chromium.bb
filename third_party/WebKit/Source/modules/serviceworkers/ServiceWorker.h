@@ -77,13 +77,25 @@ public:
 private:
     class ThenFunction;
 
+    enum ProxyState {
+        Initial,
+        RegisterPromisePending,
+        Ready,
+        ContextStopped
+    };
+
     static PassRefPtr<ServiceWorker> create(ExecutionContext*, PassOwnPtr<blink::WebServiceWorker>);
     ServiceWorker(ExecutionContext*, PassOwnPtr<blink::WebServiceWorker>);
+    void setProxyState(ProxyState);
     void onPromiseResolved();
     void waitOnPromise(ScriptPromise);
 
+    // ActiveDOMObject overrides.
+    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual void stop() OVERRIDE;
+
     OwnPtr<blink::WebServiceWorker> m_outerWorker;
-    bool m_isPromisePending;
+    ProxyState m_proxyState;
 };
 
 } // namespace WebCore
