@@ -43,16 +43,16 @@ namespace blink {
 
 ValidationMessageClientImpl::ValidationMessageClientImpl(WebViewImpl& webView)
     : m_webView(webView)
-    , m_currentAnchor(0)
+    , m_currentAnchor(nullptr)
     , m_lastPageScaleFactor(1)
     , m_finishTime(0)
     , m_timer(this, &ValidationMessageClientImpl::checkAnchorStatus)
 {
 }
 
-PassOwnPtr<ValidationMessageClientImpl> ValidationMessageClientImpl::create(WebViewImpl& webView)
+PassOwnPtrWillBeRawPtr<ValidationMessageClientImpl> ValidationMessageClientImpl::create(WebViewImpl& webView)
 {
-    return adoptPtr(new ValidationMessageClientImpl(webView));
+    return adoptPtrWillBeNoop(new ValidationMessageClientImpl(webView));
 }
 
 ValidationMessageClientImpl::~ValidationMessageClientImpl()
@@ -98,7 +98,7 @@ void ValidationMessageClientImpl::hideValidationMessage(const Element& anchor)
     if (!m_currentAnchor || !isValidationMessageVisible(anchor))
         return;
     m_timer.stop();
-    m_currentAnchor = 0;
+    m_currentAnchor = nullptr;
     m_message = String();
     m_finishTime = 0;
     m_webView.client()->hideValidationMessage();
@@ -144,6 +144,12 @@ void ValidationMessageClientImpl::willBeDestroyed()
 {
     if (m_currentAnchor)
         hideValidationMessage(*m_currentAnchor);
+}
+
+void ValidationMessageClientImpl::trace(Visitor* visitor)
+{
+    visitor->trace(m_currentAnchor);
+    ValidationMessageClient::trace(visitor);
 }
 
 }

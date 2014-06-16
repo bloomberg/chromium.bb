@@ -29,6 +29,7 @@
 #include "core/page/ValidationMessageClient.h"
 #include "platform/Timer.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -39,10 +40,13 @@ namespace blink {
 
 class WebViewImpl;
 
-class ValidationMessageClientImpl FINAL : public WebCore::ValidationMessageClient {
+class ValidationMessageClientImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<ValidationMessageClientImpl>, public WebCore::ValidationMessageClient {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
 public:
-    static PassOwnPtr<ValidationMessageClientImpl> create(WebViewImpl&);
+    static PassOwnPtrWillBeRawPtr<ValidationMessageClientImpl> create(WebViewImpl&);
     virtual ~ValidationMessageClientImpl();
+
+    virtual void trace(WebCore::Visitor*) OVERRIDE;
 
 private:
     ValidationMessageClientImpl(WebViewImpl&);
@@ -56,7 +60,7 @@ private:
     virtual void willBeDestroyed() OVERRIDE;
 
     WebViewImpl& m_webView;
-    const WebCore::Element* m_currentAnchor;
+    RawPtrWillBeMember<const WebCore::Element> m_currentAnchor;
     String m_message;
     WebCore::IntRect m_lastAnchorRectInScreen;
     float m_lastPageScaleFactor;

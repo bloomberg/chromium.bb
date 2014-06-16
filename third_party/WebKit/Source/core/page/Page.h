@@ -156,7 +156,7 @@ public:
     InspectorController& inspectorController() const { return *m_inspectorController; }
     PointerLockController& pointerLockController() const { return *m_pointerLockController; }
     ValidationMessageClient& validationMessageClient() const { return *m_validationMessageClient; }
-    void setValidationMessageClient(PassOwnPtr<ValidationMessageClient>);
+    void setValidationMessageClient(PassOwnPtrWillBeRawPtr<ValidationMessageClient>);
 
     ScrollingCoordinator* scrollingCoordinator();
 
@@ -267,7 +267,7 @@ private:
     EditorClient* const m_editorClient;
     SpellCheckerClient* const m_spellCheckerClient;
     StorageClient* m_storageClient;
-    OwnPtr<ValidationMessageClient> m_validationMessageClient;
+    OwnPtrWillBeMember<ValidationMessageClient> m_validationMessageClient;
 
     UseCounter m_useCounter;
 
