@@ -48,6 +48,7 @@
 namespace WebCore {
 
 class Document;
+class Event;
 class EventListener;
 class EventTarget;
 class FormData;
@@ -148,7 +149,9 @@ public:
     void didCancelAnimationFrame(Document*, int callbackId);
     bool willFireAnimationFrame(Document*, int callbackId);
     void didFireAnimationFrame();
-    void willHandleEvent(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture);
+    void didEnqueueEvent(EventTarget*, Event*);
+    void didDispatchEvent(EventTarget*, Event*);
+    void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
     void didHandleEvent();
     void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, FormData* body, const HTTPHeaderMap& headers, bool includeCrendentials);
     void didEnqueueMutationRecord(ExecutionContext*, MutationObserver*);

@@ -43,6 +43,7 @@ namespace WebCore {
 
 class Document;
 class Element;
+class Event;
 class EventListener;
 class EventTarget;
 class InspectorDOMAgent;
@@ -89,7 +90,7 @@ public:
     void didRequestAnimationFrame(Document*, int callbackId);
     void didCancelAnimationFrame(Document*, int callbackId);
     void willFireAnimationFrame(Document*, int callbackId);
-    void willHandleEvent(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture);
+    void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
     void didFireWebGLError(const String& errorName);
     void didFireWebGLWarning();
     void didFireWebGLErrorOrWarning(const String& message);

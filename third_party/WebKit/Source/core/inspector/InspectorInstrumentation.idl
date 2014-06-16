@@ -160,8 +160,14 @@ interface InspectorInstrumentation {
     [Timeline, Inline=FastReturn]
     void didDispatchEvent(const InspectorInstrumentationCookie&);
 
+    [Debugger, Inline=FastReturn]
+    void didEnqueueEvent([Keep] EventTarget*, Event*);
+
+    [Debugger, Inline=FastReturn]
+    void didDispatchEvent([Keep] EventTarget*, Event*);
+
     [Debugger, DOMDebugger, Inline=FastReturn]
-    InspectorInstrumentationCookie willHandleEvent([Keep] EventTarget*, const AtomicString& eventType, EventListener* listener, bool useCapture);
+    InspectorInstrumentationCookie willHandleEvent([Keep] EventTarget*, Event*, EventListener* listener, bool useCapture);
 
     [Debugger, Inline=FastReturn]
     void didHandleEvent(const InspectorInstrumentationCookie&);

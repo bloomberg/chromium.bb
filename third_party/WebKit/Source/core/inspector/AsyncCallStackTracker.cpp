@@ -76,6 +76,7 @@ public:
     HashSet<int> m_intervalTimerIds;
     HashMap<int, RefPtr<AsyncCallChain> > m_timerCallChains;
     HashMap<int, RefPtr<AsyncCallChain> > m_animationFrameCallChains;
+    HashMap<Event*, RefPtr<AsyncCallChain> > m_eventCallChains;
     HashMap<EventTarget*, RefPtr<AsyncCallChain> > m_xhrCallChains;
     HashMap<MutationObserver*, RefPtr<AsyncCallChain> > m_mutationObserverCallChains;
 };
@@ -197,14 +198,36 @@ void AsyncCallStackTracker::willFireAnimationFrame(ExecutionContext* context, in
         setCurrentAsyncCallChain(nullptr);
 }
 
-void AsyncCallStackTracker::willHandleEvent(EventTarget* eventTarget, const AtomicString& eventType, EventListener* listener, bool useCapture)
+void AsyncCallStackTracker::didEnqueueEvent(EventTarget* eventTarget, Event* event, const ScriptValue& callFrames)
 {
     ASSERT(eventTarget->executionContext());
     ASSERT(isEnabled());
-    if (XMLHttpRequest* xhr = toXmlHttpRequest(eventTarget))
-        willHandleXHREvent(xhr, eventTarget, eventType);
-    else
-        setCurrentAsyncCallChain(nullptr);
+    if (!validateCallFrames(callFrames))
+        return;
+    ExecutionContextData* data = createContextDataIfNeeded(eventTarget->executionContext());
+    data->m_eventCallChains.set(event, createAsyncCallChain(event->type(), callFrames));
+}
+
+void AsyncCallStackTracker::didDispatchEvent(EventTarget* eventTarget, Event* event)
+{
+    ASSERT(eventTarget->executionContext());
+    ASSERT(isEnabled());
+    if (ExecutionContextData* data = m_executionContextDataMap.get(eventTarget->executionContext()))
+        data->m_eventCallChains.remove(event);
+}
+
+void AsyncCallStackTracker::willHandleEvent(EventTarget* eventTarget, Event* event, EventListener* listener, bool useCapture)
+{
+    ASSERT(eventTarget->executionContext());
+    ASSERT(isEnabled());
+    if (XMLHttpRequest* xhr = toXmlHttpRequest(eventTarget)) {
+        willHandleXHREvent(xhr, eventTarget, event);
+    } else {
+        if (ExecutionContextData* data = m_executionContextDataMap.get(eventTarget->executionContext()))
+            setCurrentAsyncCallChain(data->m_eventCallChains.get(event));
+        else
+            setCurrentAsyncCallChain(nullptr);
+    }
 }
 
 void AsyncCallStackTracker::willLoadXHR(XMLHttpRequest* xhr, const ScriptValue& callFrames)
@@ -217,13 +240,13 @@ void AsyncCallStackTracker::willLoadXHR(XMLHttpRequest* xhr, const ScriptValue& 
     data->m_xhrCallChains.set(xhr, createAsyncCallChain(xhrSendName, callFrames));
 }
 
-void AsyncCallStackTracker::willHandleXHREvent(XMLHttpRequest* xhr, EventTarget* eventTarget, const AtomicString& eventType)
+void AsyncCallStackTracker::willHandleXHREvent(XMLHttpRequest* xhr, EventTarget* eventTarget, Event* event)
 {
     ASSERT(xhr->executionContext());
     ASSERT(isEnabled());
     if (ExecutionContextData* data = m_executionContextDataMap.get(xhr->executionContext())) {
         bool isXHRDownload = (xhr == eventTarget);
-        if (isXHRDownload && eventType == EventTypeNames::loadend)
+        if (isXHRDownload && event->type() == EventTypeNames::loadend)
             setCurrentAsyncCallChain(data->m_xhrCallChains.take(xhr));
         else
             setCurrentAsyncCallChain(data->m_xhrCallChains.get(xhr));

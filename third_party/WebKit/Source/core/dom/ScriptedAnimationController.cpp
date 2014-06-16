@@ -123,6 +123,8 @@ void ScriptedAnimationController::dispatchEvents()
             window->dispatchEvent(events[i], nullptr);
         else
             eventTarget->dispatchEvent(events[i]);
+
+        InspectorInstrumentation::didDispatchEvent(eventTarget, events[i].get());
     }
 }
 
@@ -176,6 +178,7 @@ void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTime
 
 void ScriptedAnimationController::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
+    InspectorInstrumentation::didEnqueueEvent(event->target(), event.get());
     m_eventQueue.append(event);
     scheduleAnimationIfNeeded();
 }

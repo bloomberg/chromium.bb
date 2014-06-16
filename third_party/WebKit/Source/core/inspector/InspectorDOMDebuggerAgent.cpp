@@ -473,9 +473,9 @@ void InspectorDOMDebuggerAgent::willFireAnimationFrame(Document*, int)
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(animationFrameFiredEventName, 0), false);
 }
 
-void InspectorDOMDebuggerAgent::willHandleEvent(EventTarget* target, const AtomicString& eventType, EventListener*, bool)
+void InspectorDOMDebuggerAgent::willHandleEvent(EventTarget* target, Event* event, EventListener*, bool)
 {
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(eventType, &target->interfaceName()), false);
+    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(event->type(), &target->interfaceName()), false);
 }
 
 void InspectorDOMDebuggerAgent::willExecuteCustomElementCallback(Element*)
