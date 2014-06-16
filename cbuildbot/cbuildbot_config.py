@@ -1838,6 +1838,14 @@ internal_brillo_paladin.add_config('gizmo-paladin',
   trybot_list=True,
 )
 
+internal_brillo_paladin.add_config('panther_embedded-minimal-paladin',
+  boards=['panther_embedded'],
+  paladin_builder_name='panther_embedded-minimal paladin',
+  profile='minimal',
+  important=False,
+  trybot_list=True,
+)
+
 internal_beaglebone_paladin = internal_paladin.derive(beaglebone)
 
 internal_beaglebone_paladin.add_config('beaglebone-paladin',
@@ -2091,6 +2099,12 @@ _brillo_release.add_config('gizmo-release',
 
    # This build doesn't generate signed images, so don't try to release them.
    paygen=False,
+)
+
+_brillo_release.add_config('panther_embedded-minimal-release',
+  boards=['panther_embedded'],
+  profile='minimal',
+  paygen=False,
 )
 
 _arm_brillo_release = _brillo_release.derive(non_testable_builder)
