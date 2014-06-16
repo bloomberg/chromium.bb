@@ -24939,6 +24939,63 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SBIRS.EnvCollectionTime" units="milliseconds">
+  <owner>grt@google.com</owner>
+  <summary>
+    The elapsed time to collect environmental data for a safe browsing incident
+    report.
+  </summary>
+</histogram>
+
+<histogram name="SBIRS.Incident" enum="IncidentType">
+  <owner>grt@google.com</owner>
+  <summary>
+    The type of incident given to the safe browsing incident reporting service.
+  </summary>
+</histogram>
+
+<histogram name="SBIRS.IncidentCount">
+  <owner>grt@google.com</owner>
+  <summary>
+    The number of incidents collated into a single safe browsing incident report
+    before pruning.
+  </summary>
+</histogram>
+
+<histogram name="SBIRS.InterIncidentTime" units="milliseconds">
+  <owner>grt@google.com</owner>
+  <summary>
+    The elapsed time between two successive incidents collated into the same
+    incident report by the safe browsing incident reporting service.
+  </summary>
+</histogram>
+
+<histogram name="SBIRS.PruneRatio" units="percentage">
+  <owner>grt@google.com</owner>
+  <summary>
+    The percentage of incidents pruned from a safe browsing incident report on
+    account of having been previously reported.
+  </summary>
+</histogram>
+
+<histogram name="SBIRS.ReportPayloadSize" units="bytes">
+  <owner>grt@google.com</owner>
+  <summary>The size, in bytes, of a safe browsing incident report.</summary>
+</histogram>
+
+<histogram name="SBIRS.ReportUploadTime" units="milliseconds">
+  <owner>grt@google.com</owner>
+  <summary>The elapsed time to upload a safe browsing incident report.</summary>
+</histogram>
+
+<histogram name="SBIRS.UploadResult" enum="UploadResult">
+  <owner>grt@google.com</owner>
+  <summary>
+    The result of a report upload by the safe browsing incident reporting
+    service.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchOptCard"
     enum="ContextualSearchOptCardAction">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -38232,6 +38289,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </int>
 </enum>
 
+<enum name="IncidentType" type="int">
+  <int value="1" label="TrackedPreference"/>
+</enum>
+
 <enum name="IndexedDatabaseMethods" type="int">
   <int value="0" label="CreateObjectStore()"/>
   <int value="1" label="DeleteObjectStore()"/>
@@ -45110,6 +45171,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="AUTOMATIC_UPDATES"/>
   <int value="2" label="MANUAL_UPDATES_ONLY"/>
   <int value="3" label="AUTO_UPDATES_ONLY"/>
+</enum>
+
+<enum name="UploadResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Suppressed">CSD Whitelist killswitch present</int>
+  <int value="2" label="InvalidRequest"/>
+  <int value="3" label="Cancelled"/>
+  <int value="4" label="RequestFailed"/>
+  <int value="5" label="InvalidResponse"/>
 </enum>
 
 <enum name="UrlResolutionResult" type="int">
