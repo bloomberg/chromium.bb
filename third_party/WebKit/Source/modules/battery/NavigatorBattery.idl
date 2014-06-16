@@ -5,6 +5,6 @@
 [
     RuntimeEnabled=BatteryStatus,
 ] partial interface Navigator {
-    readonly attribute BatteryManager battery;
+    [CallWith=ScriptState] Promise getBattery();
 };
 

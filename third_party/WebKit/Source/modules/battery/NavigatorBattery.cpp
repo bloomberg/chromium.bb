@@ -18,16 +18,17 @@ NavigatorBattery::~NavigatorBattery()
 {
 }
 
-BatteryManager* NavigatorBattery::battery(Navigator& navigator)
+ScriptPromise NavigatorBattery::getBattery(ScriptState* scriptState, Navigator& navigator)
 {
-    return NavigatorBattery::from(navigator).batteryManager(navigator);
+    return NavigatorBattery::from(navigator).getBattery(scriptState);
 }
 
-BatteryManager* NavigatorBattery::batteryManager(Navigator& navigator)
+ScriptPromise NavigatorBattery::getBattery(ScriptState* scriptState)
 {
-    if (!m_batteryManager && navigator.frame())
-        m_batteryManager = BatteryManager::create(navigator.frame()->document());
-    return m_batteryManager.get();
+    if (!m_batteryManager)
+        m_batteryManager = BatteryManager::create(scriptState->executionContext());
+
+    return m_batteryManager->startRequest(scriptState);
 }
 
 const char* NavigatorBattery::supplementName()

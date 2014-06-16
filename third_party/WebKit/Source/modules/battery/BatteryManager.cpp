@@ -27,9 +27,28 @@ BatteryManager::BatteryManager(ExecutionContext* context)
     : ActiveDOMObject(context)
     , DeviceEventControllerBase(toDocument(context)->page())
     , m_batteryStatus(BatteryStatus::create())
+    , m_state(NotStarted)
 {
-    m_hasEventListener = true;
-    startUpdating();
+}
+
+ScriptPromise BatteryManager::startRequest(ScriptState* scriptState)
+{
+    if (m_state == Pending)
+        return m_resolver->promise();
+
+    m_resolver = ScriptPromiseResolverWithContext::create(scriptState);
+    ScriptPromise promise = m_resolver->promise();
+
+    if (m_state == Resolved) {
+        // FIXME: Consider returning the same promise in this case. See crbug.com/385025.
+        m_resolver->resolve(this);
+    } else if (m_state == NotStarted) {
+        m_state = Pending;
+        m_hasEventListener = true;
+        startUpdating();
+    }
+
+    return promise;
 }
 
 bool BatteryManager::charging()
@@ -55,12 +74,20 @@ double BatteryManager::level()
 void BatteryManager::didUpdateData()
 {
     ASSERT(RuntimeEnabledFeatures::batteryStatusEnabled());
+    ASSERT(m_state != NotStarted);
 
     RefPtr<BatteryStatus> oldStatus = m_batteryStatus;
     m_batteryStatus = BatteryDispatcher::instance().latestData();
 
     // BatteryDispatcher also holds a reference to m_batteryStatus.
     ASSERT(m_batteryStatus->refCount() > 1);
+
+    if (m_state == Pending) {
+        ASSERT(m_resolver);
+        m_state = Resolved;
+        m_resolver->resolve(this);
+        return;
+    }
 
     Document* document = toDocument(executionContext());
     if (document->activeDOMObjectsAreSuspended() || document->activeDOMObjectsAreStopped())

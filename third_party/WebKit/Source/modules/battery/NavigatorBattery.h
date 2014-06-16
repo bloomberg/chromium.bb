@@ -5,6 +5,7 @@
 #ifndef NavigatorBattery_h
 #define NavigatorBattery_h
 
+#include "bindings/v8/ScriptPromise.h"
 #include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
@@ -21,8 +22,8 @@ public:
 
     static NavigatorBattery& from(Navigator&);
 
-    static BatteryManager* battery(Navigator&);
-    BatteryManager* batteryManager(Navigator&);
+    static ScriptPromise getBattery(ScriptState*, Navigator&);
+    ScriptPromise getBattery(ScriptState*);
 
     void trace(Visitor*);
 

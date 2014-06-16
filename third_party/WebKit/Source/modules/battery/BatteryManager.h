@@ -5,6 +5,8 @@
 #ifndef BatteryManager_h
 #define BatteryManager_h
 
+#include "bindings/v8/ScriptPromise.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
 #include "core/frame/DeviceEventControllerBase.h"
@@ -14,7 +16,6 @@
 namespace WebCore {
 
 class BatteryStatus;
-class Navigator;
 
 class BatteryManager FINAL : public RefCountedWillBeRefCountedGarbageCollected<BatteryManager>, public ActiveDOMObject, public DeviceEventControllerBase, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(BatteryManager);
@@ -22,6 +23,9 @@ class BatteryManager FINAL : public RefCountedWillBeRefCountedGarbageCollected<B
 public:
     virtual ~BatteryManager();
     static PassRefPtrWillBeRawPtr<BatteryManager> create(ExecutionContext*);
+
+    // Returns a promise object that will be resolved with this BatteryManager.
+    ScriptPromise startRequest(ScriptState*);
 
     // EventTarget implementation.
     virtual const WTF::AtomicString& interfaceName() const OVERRIDE { return EventTargetNames::BatteryManager; }
@@ -50,9 +54,17 @@ public:
     virtual void stop() OVERRIDE;
 
 private:
+    enum State {
+        NotStarted,
+        Pending,
+        Resolved,
+    };
+
     explicit BatteryManager(ExecutionContext*);
 
+    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
     RefPtr<BatteryStatus> m_batteryStatus;
+    State m_state;
 };
 
 }

@@ -42,14 +42,6 @@ PASS window.cached_navigator.productSub is window.navigator.productSub
 PASS window.cached_navigator.userAgent is ''
 PASS window.cached_navigator.vendor is window.navigator.vendor
 PASS window.cached_navigator.vendorSub is ''
-FAIL window.cached_navigator_battery.charging should be false. Was true.
-PASS window.cached_navigator_battery.chargingTime is 0
-FAIL window.cached_navigator_battery.dischargingTime should be 0. Was Infinity.
-FAIL window.cached_navigator_battery.level should be 0. Was 1.
-PASS window.cached_navigator_battery.onchargingchange is null
-PASS window.cached_navigator_battery.onchargingtimechange is null
-PASS window.cached_navigator_battery.ondischargingtimechange is null
-PASS window.cached_navigator_battery.onlevelchange is null
 PASS window.cached_navigator_connection.ontypechange is null
 PASS window.cached_navigator_connection.type is window.navigator.connection.type
 PASS window.cached_navigator_serviceWorker.controller is null

@@ -41,14 +41,6 @@ PASS oldChildWindow.name is newChildWindow.name
 PASS oldChildWindow.navigator.appCodeName is newChildWindow.navigator.appCodeName
 PASS oldChildWindow.navigator.appName is newChildWindow.navigator.appName
 PASS oldChildWindow.navigator.appVersion is newChildWindow.navigator.appVersion
-PASS oldChildWindow.navigator.battery.charging is newChildWindow.navigator.battery.charging
-PASS oldChildWindow.navigator.battery.chargingTime is newChildWindow.navigator.battery.chargingTime
-PASS oldChildWindow.navigator.battery.dischargingTime is newChildWindow.navigator.battery.dischargingTime
-PASS oldChildWindow.navigator.battery.level is newChildWindow.navigator.battery.level
-PASS oldChildWindow.navigator.battery.onchargingchange is newChildWindow.navigator.battery.onchargingchange
-PASS oldChildWindow.navigator.battery.onchargingtimechange is newChildWindow.navigator.battery.onchargingtimechange
-PASS oldChildWindow.navigator.battery.ondischargingtimechange is newChildWindow.navigator.battery.ondischargingtimechange
-PASS oldChildWindow.navigator.battery.onlevelchange is newChildWindow.navigator.battery.onlevelchange
 PASS oldChildWindow.navigator.connection.ontypechange is newChildWindow.navigator.connection.ontypechange
 PASS oldChildWindow.navigator.connection.type is newChildWindow.navigator.connection.type
 PASS oldChildWindow.navigator.cookieEnabled is newChildWindow.navigator.cookieEnabled

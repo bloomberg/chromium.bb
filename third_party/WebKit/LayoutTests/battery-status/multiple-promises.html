@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/js-test.js"></script>
+<script>
+description("Test multiple promise resolution.");
+
+if (!window.testRunner)
+    debug('This test cannot be run without the TestRunner');
+
+testRunner.setCanOpenWindows();
+testRunner.waitUntilDone();
+jsTestIsAsync = true;
+
+var mockBatteryInfo;
+function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
+    mockBatteryInfo = { charging: charging,
+                        chargingTime: chargingTime,
+                        dischargingTime: dischargingTime,
+                        level: level };
+    testRunner.didChangeBatteryStatus(charging, chargingTime, dischargingTime, level);
+}
+
+// compare obtained battery values with the mock values
+function checkBatteryInfo(batteryManager) {
+    batteryInfo = batteryManager;
+    shouldBeDefined("batteryInfo");
+    shouldBeDefined("mockBatteryInfo");
+    shouldBe('batteryInfo.charging', 'mockBatteryInfo.charging');
+    shouldBe('batteryInfo.chargingTime', 'mockBatteryInfo.chargingTime');
+    shouldBe('batteryInfo.dischargingTime', 'mockBatteryInfo.dischargingTime');
+    shouldBe('batteryInfo.level', 'mockBatteryInfo.level');
+}
+
+var promise1Count = 0;
+var promise2Count = 0;
+
+function batteryStatusFailure() {
+    testFailed('failed to successfully resolve the promise');
+    setTimeout(cleanupAndFinish, 0);
+}
+
+function finishIfReady() {
+  if (promise1Count == 1 && promise2Count == 1) {
+    setTimeout(cleanupAndFinish, 0);
+  }
+}
+
+function cleanupAndFinish() {
+  // stops updating battery and clears current battery status.
+  window.testRunner.setPageVisibility("hidden");
+  finishJSTest();
+}
+
+promise1 = navigator.getBattery().then(
+    function(battery) {
+        debug('first resolution');
+        checkBatteryInfo(battery);
+        promise1Count++;
+        finishIfReady();
+    }, batteryStatusFailure);
+
+promise2 = navigator.getBattery().then(
+    function(battery) {
+        debug('second resolution');
+        checkBatteryInfo(battery);
+        promise2Count++;
+        finishIfReady();
+    }, batteryStatusFailure);
+
+shouldBeFalse('promise1 === promise2');
+setAndFireMockBatteryInfo(false, 10, 20, 0.5);
+</script>
+</body>
+</html>

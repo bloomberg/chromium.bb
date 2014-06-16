@@ -40,14 +40,6 @@ PASS childWindow.name is ''
 PASS childWindow.navigator.appCodeName is window.navigator.appCodeName
 PASS childWindow.navigator.appName is window.navigator.appName
 PASS childWindow.navigator.appVersion is ''
-FAIL childWindow.navigator.battery.charging should be false. Was true.
-PASS childWindow.navigator.battery.chargingTime is 0
-FAIL childWindow.navigator.battery.dischargingTime should be 0. Was Infinity.
-FAIL childWindow.navigator.battery.level should be 0. Was 1.
-PASS childWindow.navigator.battery.onchargingchange is null
-PASS childWindow.navigator.battery.onchargingtimechange is null
-PASS childWindow.navigator.battery.ondischargingtimechange is null
-PASS childWindow.navigator.battery.onlevelchange is null
 PASS childWindow.navigator.connection.ontypechange is null
 PASS childWindow.navigator.connection.type is window.navigator.connection.type
 PASS childWindow.navigator.cookieEnabled is false

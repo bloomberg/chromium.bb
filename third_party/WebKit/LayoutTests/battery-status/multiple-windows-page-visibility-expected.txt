@@ -1,0 +1,32 @@
+Test multiple windows with page visibility.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+first window: page is visible
+resolution in window
+PASS batteryInfo is defined.
+PASS mockBatteryInfo is defined.
+PASS batteryInfo.charging is mockBatteryInfo.charging
+PASS batteryInfo.chargingTime is mockBatteryInfo.chargingTime
+PASS batteryInfo.dischargingTime is mockBatteryInfo.dischargingTime
+PASS batteryInfo.level is mockBatteryInfo.level
+first window: page is hidden
+resolution in secondWindow
+PASS batteryInfo is defined.
+PASS mockBatteryInfo is defined.
+PASS batteryInfo.charging is mockBatteryInfo.charging
+PASS batteryInfo.chargingTime is mockBatteryInfo.chargingTime
+PASS batteryInfo.dischargingTime is mockBatteryInfo.dischargingTime
+PASS batteryInfo.level is mockBatteryInfo.level
+first window: page is visible
+PASS batteryInfo is defined.
+PASS mockBatteryInfo is defined.
+PASS batteryInfo.charging is mockBatteryInfo.charging
+PASS batteryInfo.chargingTime is mockBatteryInfo.chargingTime
+PASS batteryInfo.dischargingTime is mockBatteryInfo.dischargingTime
+PASS batteryInfo.level is mockBatteryInfo.level
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

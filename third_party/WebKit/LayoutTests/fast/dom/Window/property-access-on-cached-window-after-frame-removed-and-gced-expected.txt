@@ -41,14 +41,6 @@ PASS childWindow.name is ''
 PASS childWindow.navigator.appCodeName is window.navigator.appCodeName
 PASS childWindow.navigator.appName is window.navigator.appName
 PASS childWindow.navigator.appVersion is ''
-FAIL childWindow.navigator.battery.charging should be false. Threw exception TypeError: Cannot read property 'charging' of null
-FAIL childWindow.navigator.battery.chargingTime should be 0. Threw exception TypeError: Cannot read property 'chargingTime' of null
-FAIL childWindow.navigator.battery.dischargingTime should be 0. Threw exception TypeError: Cannot read property 'dischargingTime' of null
-FAIL childWindow.navigator.battery.level should be 0. Threw exception TypeError: Cannot read property 'level' of null
-FAIL childWindow.navigator.battery.onchargingchange should be null. Threw exception TypeError: Cannot read property 'onchargingchange' of null
-FAIL childWindow.navigator.battery.onchargingtimechange should be null. Threw exception TypeError: Cannot read property 'onchargingtimechange' of null
-FAIL childWindow.navigator.battery.ondischargingtimechange should be null. Threw exception TypeError: Cannot read property 'ondischargingtimechange' of null
-FAIL childWindow.navigator.battery.onlevelchange should be null. Threw exception TypeError: Cannot read property 'onlevelchange' of null
 FAIL childWindow.navigator.connection.ontypechange should be null. Threw exception TypeError: Cannot read property 'ontypechange' of null
 FAIL childWindow.navigator.connection.type should be other. Threw exception TypeError: Cannot read property 'type' of null
 PASS childWindow.navigator.cookieEnabled is false

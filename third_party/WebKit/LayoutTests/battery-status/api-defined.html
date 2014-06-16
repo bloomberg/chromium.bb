@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/js-test.js"></script>
+<script>
+description("Test basic API definitions.");
+
+if (!window.testRunner)
+    debug('This test cannot be run without the TestRunner');
+
+jsTestIsAsync = true;
+
+var mockBatteryInfo;
+function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
+    mockBatteryInfo = { charging: charging,
+                        chargingTime: chargingTime,
+                        dischargingTime: dischargingTime,
+                        level: level };
+    testRunner.didChangeBatteryStatus(charging, chargingTime, dischargingTime, level);
+}
+
+function batteryStatusSuccess(batteryManager) {
+    debug('batteryStatusSuccess invoked');
+    battery = batteryManager;
+
+    shouldBeDefined("battery");
+    shouldBeNonNull("battery");
+    shouldBeDefined("battery.charging");
+    shouldBeDefined("battery.chargingTime");
+    shouldBeDefined("battery.dischargingTime");
+    shouldBeDefined("battery.level");
+
+    shouldBe('battery.charging', 'mockBatteryInfo.charging');
+    shouldBe('battery.chargingTime', 'mockBatteryInfo.chargingTime');
+    shouldBe('battery.dischargingTime', 'mockBatteryInfo.dischargingTime');
+    shouldBe('battery.level', 'mockBatteryInfo.level');
+
+    shouldBeTrue("typeof battery.onchargingchange == 'object'");
+    shouldBeTrue("typeof battery.onchargingtimechange == 'object'");
+    shouldBeTrue("typeof battery.ondischargingtimechange == 'object'");
+    shouldBeTrue("typeof battery.onlevelchange == 'object'");
+
+    shouldBeTrue("battery.hasOwnProperty('onchargingchange')");
+    shouldBeTrue("battery.hasOwnProperty('onchargingtimechange')");
+    shouldBeTrue("battery.hasOwnProperty('ondischargingtimechange')");
+    shouldBeTrue("battery.hasOwnProperty('onlevelchange')");
+
+    shouldBeTrue("'onchargingchange' in battery");
+    shouldBeTrue("'onchargingtimechange' in battery");
+    shouldBeTrue("'ondischargingtimechange' in battery");
+    shouldBeTrue("'onlevelchange' in battery");
+
+    setTimeout(cleanupAndFinish, 0);
+}
+
+function cleanupAndFinish() {
+    // stops updating battery and clears current battery status.
+    window.testRunner.setPageVisibility("hidden");
+    finishJSTest();
+}
+
+function batteryStatusFailure() {
+    testFailed('failed to successfully resolve the promise');
+    setTimeout(cleanupAndFinish, 0);
+}
+
+promise = navigator.getBattery();
+shouldBeDefined("promise");
+shouldBeDefined("promise.then");
+promise.then(batteryStatusSuccess, batteryStatusFailure);
+setAndFireMockBatteryInfo(false, 10, 20, 0.5); 
+</script>
+</body>
+</html>
