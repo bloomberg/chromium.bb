@@ -60,7 +60,12 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, ExitStatusNeg2, {
       "pm_exit_status_test.html?trigger=exitneg2&expected_exit=254"));
 })
 
-NACL_BROWSER_TEST_F(NaClBrowserTest, PPAPICore, {
+#if defined(ADDRESS_SANITIZER)
+#define Maybe_PPAPICore DISABLED_PPAPICore
+#else
+#define Maybe_PPAPICore PPAPICore
+#endif
+NACL_BROWSER_TEST_F(NaClBrowserTest, Maybe_PPAPICore) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_ppb_core.html"));
 })
 
