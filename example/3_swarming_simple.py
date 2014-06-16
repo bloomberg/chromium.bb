@@ -23,7 +23,6 @@ import common
 
 def main():
   options = common.parse_args(use_isolate_server=True, use_swarming=True)
-  task_name = common.unique_task_name()
   tempdir = tempfile.mkdtemp(prefix='hello_world')
   try:
     # All the files are put in a temporary directory. This is optional and
@@ -56,8 +55,7 @@ def main():
       '--swarming', options.swarming,
       '--isolate-server', options.isolate_server,
       '--dimension', 'os', options.swarming_os,
-      '--task-name', task_name,
-      '--shards', str(options.shards),
+      '--task-name', options.task_name,
       isolated,
     ]
     if options.priority is not None:

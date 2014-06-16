@@ -51,7 +51,6 @@ def main():
     # At this point, the temporary directory is not needed anymore.
     tempdir = None
 
-    task_name = common.unique_task_name()
     common.note('Running on %s' % options.swarming)
     cmd = [
       'swarming.py',
@@ -59,8 +58,7 @@ def main():
       '--swarming', options.swarming,
       '--isolate-server', options.isolate_server,
       '--dimension', 'os', options.swarming_os,
-      '--task-name', task_name,
-      '--shards', str(options.shards),
+      '--task-name', options.task_name,
       hashval,
     ]
     if options.priority is not None:
@@ -73,8 +71,7 @@ def main():
           'swarming.py',
           'collect',
           '--swarming', options.swarming,
-          '--shards', str(options.shards),
-          task_name,
+          options.task_name,
         ], options.verbose)
     return 0
   except subprocess.CalledProcessError as e:

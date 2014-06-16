@@ -66,7 +66,6 @@ def main():
     # Now trigger as usual. You could look at run_exmaple_swarming_involved for
     # the involved way but use the short way here.
 
-    task_name = common.unique_task_name()
     common.note('Running %s on %s' % (isolated_sha1, options.swarming))
     cmd = [
       'swarming.py',
@@ -74,8 +73,7 @@ def main():
       '--swarming', options.swarming,
       '--isolate-server', options.isolate_server,
       '--dimension', 'os', options.swarming_os,
-      '--task-name', task_name,
-      '--shards', str(options.shards),
+      '--task-name', options.task_name,
       isolated_sha1,
     ]
     if options.priority is not None:
