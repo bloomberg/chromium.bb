@@ -553,10 +553,16 @@ bool FileBrowserPrivateStartCopyFunction::RunAsync() {
       file_manager::util::GetFileSystemContextForRenderViewHost(
           GetProfile(), render_view_host());
 
+  // |parent| may have a trailing slash if it is a root directory.
+  std::string destination_url_string = params->parent;
+  if (destination_url_string[destination_url_string.size() - 1] != '/')
+    destination_url_string += '/';
+  destination_url_string += net::EscapePath(params->new_name);
+
   fileapi::FileSystemURL source_url(
       file_system_context->CrackURL(GURL(params->source_url)));
-  fileapi::FileSystemURL destination_url(file_system_context->CrackURL(
-      GURL(params->parent + "/" + net::EscapePath(params->new_name))));
+  fileapi::FileSystemURL destination_url(
+      file_system_context->CrackURL(GURL(destination_url_string)));
 
   if (!source_url.is_valid() || !destination_url.is_valid()) {
     // Error code in format of DOMError.name.
