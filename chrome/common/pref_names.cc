@@ -293,10 +293,16 @@ const char kWebKitPluginsEnabled[] = "webkit.webprefs.plugins_enabled";
 const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 
 // Boolean that tell us whether malicious download feedback is enabled.
+const char kSafeBrowsingExtendedReportingEnabled[] =
+    "safebrowsing.extended_reporting_enabled";
+
+// Boolean that tell us whether malicious download feedback is enabled.
+// TODO(felt): Deprecate. crbug.com/383866
 const char kSafeBrowsingDownloadFeedbackEnabled[] =
     "safebrowsing.download_feedback_enabled";
 
 // Boolean that is true when SafeBrowsing Malware Report is enabled.
+// TODO(felt): Deprecate. crbug.com/383866
 const char kSafeBrowsingReportingEnabled[] =
     "safebrowsing.reporting_enabled";
 

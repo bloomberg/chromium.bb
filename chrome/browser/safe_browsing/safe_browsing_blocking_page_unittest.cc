@@ -239,7 +239,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
   // Enable malware details.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
@@ -273,7 +274,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
@@ -305,7 +307,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Navigate somewhere.
   Navigate(kGoogleURL, 1);
@@ -340,7 +343,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Navigate somewhere.
   Navigate(kGoodURL, 1);
@@ -373,7 +377,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Navigate somewhere.
   Navigate(kGoogleURL, 1);
@@ -414,7 +419,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Navigate somewhere.
   Navigate(kGoogleURL, 1);
@@ -470,7 +476,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Navigate somewhere else.
   Navigate(kGoodURL, 1);
@@ -521,7 +528,8 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Navigate somewhere.
   Navigate(kGoodURL, 1);
@@ -569,7 +577,8 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
@@ -604,7 +613,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
   // Disable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, false);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, false);
 
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
@@ -632,12 +642,13 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
   ui_manager_->GetDetails()->clear();
 }
 
-// Test setting the malware report preferance
-TEST_F(SafeBrowsingBlockingPageTest, MalwareReports) {
+// Test that toggling the checkbox has the anticipated effects.
+TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsToggling) {
   // Disable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, false);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, false);
 
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
@@ -651,17 +662,84 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReports) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
-      prefs::kSafeBrowsingReportingEnabled));
+      prefs::kSafeBrowsingExtendedReportingEnabled));
 
   // Simulate the user check the report agreement checkbox.
   sb_interstitial->SetReportingPreference(true);
 
   EXPECT_TRUE(profile->GetPrefs()->GetBoolean(
-      prefs::kSafeBrowsingReportingEnabled));
+      prefs::kSafeBrowsingExtendedReportingEnabled));
 
   // Simulate the user uncheck the report agreement checkbox.
   sb_interstitial->SetReportingPreference(false);
 
   EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled));
+}
+
+// Test that the transition from old to new preference works.
+TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsTransitionEnabled) {
+  // The old pref is enabled.
+  Profile* profile = Profile::FromBrowserContext(
+      web_contents()->GetBrowserContext());
+  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
+
+  // Start a load.
+  controller().LoadURL(GURL(kBadURL), content::Referrer(),
+                       content::PAGE_TRANSITION_TYPED, std::string());
+
+  // Simulate the load causing a safe browsing interstitial to be shown.
+  ShowInterstitial(false, kBadURL);
+  SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
+  ASSERT_TRUE(sb_interstitial);
+
+  base::RunLoop().RunUntilIdle();
+
+  // At this point, nothing should have changed yet.
+  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled));
+
+  ProceedThroughInterstitial(sb_interstitial);
+
+  // Since the user has proceeded without changing the checkbox, the new pref
+  // has been updated.
+  EXPECT_TRUE(profile->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled));
+}
+
+// Test that the transition from old to new preference still respects the
+// user's checkbox preferences.
+TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsTransitionDisabled) {
+  // The old pref is enabled.
+  Profile* profile = Profile::FromBrowserContext(
+      web_contents()->GetBrowserContext());
+  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
+
+  // Start a load.
+  controller().LoadURL(GURL(kBadURL), content::Referrer(),
+                       content::PAGE_TRANSITION_TYPED, std::string());
+
+  // Simulate the load causing a safe browsing interstitial to be shown.
+  ShowInterstitial(false, kBadURL);
+  SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
+  ASSERT_TRUE(sb_interstitial);
+
+  base::RunLoop().RunUntilIdle();
+
+  // At this point, nothing should have changed yet.
+  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled));
+
+  // Simulate the user uncheck the report agreement checkbox.
+  sb_interstitial->SetReportingPreference(false);
+
+  ProceedThroughInterstitial(sb_interstitial);
+
+  // The new pref is turned off.
+  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled));
+  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
       prefs::kSafeBrowsingReportingEnabled));
+  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingDownloadFeedbackEnabled));
 }

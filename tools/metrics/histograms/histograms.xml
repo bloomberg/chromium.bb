@@ -23924,6 +23924,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Records results of SafeBrowsing download url check.</summary>
 </histogram>
 
+<histogram name="SB2.ExtendedReportingIsEnabled" enum="BooleanEnabled">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    Whether the user has Safe Browsing extended reporting enabled at the time a
+    Safe Browsing warning was dismissed.  This tracks the fraction of all SB
+    interstitials that had reporting enabled.
+  </summary>
+</histogram>
+
 <histogram name="SB2.FailedUpdate">
   <obsolete>
     Deprecated, replaced by SB2.DatabaseFailure BROWSE_DB_UPDATE_FINISH.
@@ -24326,6 +24335,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.ReportingIsEnabled" enum="BooleanEnabled">
+  <obsolete>
+    Deprecated 06/2014.  Replaced by SB2.ExtendedReportingIsEnabled.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Whether the user has Safe Browsing extended reporting enabled at the time a
@@ -24334,7 +24346,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SB2.SetExtendedReportingEnabled" enum="BooleanEnabled">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    Tracks changes to the Safe Browsing extended reporting opt-in which is shown
+    in the Safe Browsing interstitial.
+  </summary>
+</histogram>
+
 <histogram name="SB2.SetReportingEnabled" enum="BooleanEnabled">
+  <obsolete>
+    Deprecated 06/2014.  Replaced by SB2.SetExtendedReportingEnabled.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Tracks changes to the Safe Browsing extended reporting opt-in which is shown

@@ -90,6 +90,7 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
                            ProceedThenDontProceed);
 
   void SetReportingPreference(bool report);
+  void UpdateReportingPref();  // Used for the transition from old to new pref.
 
   // Don't instanciate this class directly, use ShowBlockingPage instead.
   SafeBrowsingBlockingPage(SafeBrowsingUIManager* ui_manager,
@@ -105,8 +106,10 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
     return interstitial_page_;
   }
 
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest, MalwareReports);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageV2Test, MalwareReports);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
+      MalwareReportsTransitionDisabled);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
+      MalwareReportsToggling);
 
   enum BlockingPageEvent {
     SHOW,
@@ -199,6 +202,9 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   // Whether the user has expanded the "see more" section of the page already
   // during this interstitial page.
   bool has_expanded_see_more_section_;
+
+  // Whether the user has left the reporting checkbox checked.
+  bool reporting_checkbox_checked_;
 
   // Which type of interstitial this is.
   enum {

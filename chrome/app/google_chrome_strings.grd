@@ -1138,6 +1138,14 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       <message name="IDS_UPGRADE_BUBBLE_REENABLE_TEXT" desc="Text for the upgrade bubble view full description.">
         Chrome could not update itself to the latest version, so you are missing out on awesome new features and security fixes. You need to update Chrome.
       </message>
+
+      <!-- Dialog that asks whether user wants to participate in Safe Browsing Extended Reporting -->
+      <message name="IDS_FEEDBACK_SERVICE_DIALOG_TITLE" desc="Title of the dialog asking whether the user wants to upload suspected malicious files for analysis">
+        Help make Chrome better
+      </message>
+      <message name="IDS_FEEDBACK_SERVICE_DIALOG_EXPLANATION" desc="Explanation of the dialog asking whether the user wants to upload suspected malicious files for analysis">
+        You can help make Chrome safer and easier to use by automatically reporting details of possible security incidents to Google.
+      </message>
     </messages>
   </release>
 </grit>

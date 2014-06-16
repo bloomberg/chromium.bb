@@ -2107,13 +2107,7 @@ Even if you have downloaded files from this website before, the website might ha
         No
       </message>
 
-      <!-- Dialog that asks whether user wants to participate in download feedback service -->
-      <message name="IDS_FEEDBACK_SERVICE_DIALOG_TITLE" desc="Title of the dialog asking whether the user wants to upload suspected malicious files for analysis">
-        Help make Chrome better
-      </message>
-      <message name="IDS_FEEDBACK_SERVICE_DIALOG_EXPLANATION" desc="Explanation of the dialog asking whether the user wants to upload suspected malicious files for analysis">
-        You can help make Chrome safer and easier to use by sending suspicious downloaded files to Google.
-      </message>
+      <!-- Dialog that asks whether user wants to participate in Safe Browsing Extended Reporting -->
       <message name="IDS_FEEDBACK_SERVICE_DIALOG_OK_BUTTON_LABEL" desc="Button that elects to upload suspected malicious files for analysis">
         Yes, I want to help
       </message>
@@ -10055,8 +10049,8 @@ Chrome ran out of memory.
         <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Enable phishing and malware protection' checkbox">
           Enable phishing and malware protection
         </message>
-        <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEDOWNLOADFEEDBACK" desc="Checkbox label: should Chrome upload suspicious downloads to Safe Browsing">
-          Send suspicious downloaded files to Google
+        <message name="IDS_OPTIONS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING" desc="Checkbox label: should Chrome upload information about suspicious downloads and websites to Safe Browsing">
+          Automatically report details of possible security incidents to Google
         </message>
 
         <if expr="chromeos">
@@ -11429,7 +11423,7 @@ Chrome ran out of memory.
         http://www.google.com/chrome/intl/[GRITLANGCODE]/privacy.html
       </message>
       <message name="IDS_SAFE_BROWSING_MALWARE_V2_REPORTING_AGREE" desc="SafeBrowsing Malware v2 Details label next to checkbox">
-        Improve malware detection by sending additional data to Google when I encounter warnings like this. <ph name="PRIVACY_PAGE_LINK">$1</ph>
+        Automatically report details of possible security incidents to Google. <ph name="PRIVACY_PAGE_LINK">$1</ph>
       </message>
       <message name="IDS_SAFE_BROWSING_PHISHING_TITLE" desc="SafeBrowsing Phishing HTML title">
         Phishing Detected!

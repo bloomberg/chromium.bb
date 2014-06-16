@@ -776,7 +776,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
   LOG(INFO) << "5";
 
   ASSERT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
-      prefs::kSafeBrowsingReportingEnabled));
+      prefs::kSafeBrowsingExtendedReportingEnabled));
   LOG(INFO) << "6";
 
   EXPECT_EQ(url,
@@ -835,7 +835,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ReportingDisabled) {
 #endif
 
   browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kSafeBrowsingReportingEnabled, true);
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   net::SpawnedTestServer https_server(
       net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
