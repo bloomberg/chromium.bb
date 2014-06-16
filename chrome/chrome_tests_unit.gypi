@@ -928,6 +928,7 @@
         'browser/extensions/api/storage/policy_value_store_unittest.cc',
         'browser/extensions/api/storage/settings_sync_unittest.cc',
         'browser/extensions/api/streams_private/streams_private_manifest_unittest.cc',
+        'browser/extensions/api/synced_notifications_private/synced_notifications_shim_unittest.cc',
         'browser/extensions/api/system_display/display_info_provider_chromeos_unittest.cc',
         'browser/extensions/api/web_navigation/frame_navigation_state_unittest.cc',
         'browser/extensions/api/web_request/form_data_parser_unittest.cc',

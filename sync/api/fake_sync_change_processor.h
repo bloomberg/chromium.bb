@@ -24,15 +24,31 @@ class FakeSyncChangeProcessor : public SyncChangeProcessor {
 
   // SyncChangeProcessor implementation.
   //
-  // Returns an empty list.
+  // Returns data().
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
       const OVERRIDE;
+
+  // SyncChangeProcessor implementation.
+  //
+  // Updates context().
+  virtual syncer::SyncError UpdateDataTypeContext(
+      ModelType type,
+      ContextRefreshStatus refresh_status,
+      const std::string& context) OVERRIDE;
 
   virtual const syncer::SyncChangeList& changes() const;
   virtual syncer::SyncChangeList& changes();
 
+  virtual const syncer::SyncDataList& data() const;
+  virtual syncer::SyncDataList& data();
+
+  virtual const std::string& context() const;
+  virtual std::string& context();
+
  private:
-  syncer::SyncChangeList change_list_;
+  syncer::SyncChangeList changes_;
+  syncer::SyncDataList data_;
+  std::string context_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncChangeProcessor);
 };

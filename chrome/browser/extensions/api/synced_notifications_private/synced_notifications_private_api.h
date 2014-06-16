@@ -12,7 +12,7 @@ namespace extensions {
 namespace api {
 
 class SyncedNotificationsPrivateGetInitialDataFunction
-    : public SyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   SyncedNotificationsPrivateGetInitialDataFunction();
   DECLARE_EXTENSION_FUNCTION("syncedNotificationsPrivate.getInitialData",
@@ -20,14 +20,14 @@ class SyncedNotificationsPrivateGetInitialDataFunction
 
  protected:
   virtual ~SyncedNotificationsPrivateGetInitialDataFunction();
-  virtual bool RunSync() OVERRIDE;
+  virtual ResponseAction Run() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncedNotificationsPrivateGetInitialDataFunction);
 };
 
 class SyncedNotificationsPrivateUpdateNotificationFunction
-    : public SyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   SyncedNotificationsPrivateUpdateNotificationFunction();
   DECLARE_EXTENSION_FUNCTION("syncedNotificationsPrivate.updateNotification",
@@ -35,7 +35,7 @@ class SyncedNotificationsPrivateUpdateNotificationFunction
 
  protected:
   virtual ~SyncedNotificationsPrivateUpdateNotificationFunction();
-  virtual bool RunSync() OVERRIDE;
+  virtual ResponseAction Run() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
@@ -43,7 +43,7 @@ class SyncedNotificationsPrivateUpdateNotificationFunction
 };
 
 class SyncedNotificationsPrivateSetRenderContextFunction
-    : public SyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   SyncedNotificationsPrivateSetRenderContextFunction();
   DECLARE_EXTENSION_FUNCTION("syncedNotificationsPrivate.setRenderContext",
@@ -51,7 +51,7 @@ class SyncedNotificationsPrivateSetRenderContextFunction
 
  protected:
   virtual ~SyncedNotificationsPrivateSetRenderContextFunction();
-  virtual bool RunSync() OVERRIDE;
+  virtual ResponseAction Run() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncedNotificationsPrivateSetRenderContextFunction);

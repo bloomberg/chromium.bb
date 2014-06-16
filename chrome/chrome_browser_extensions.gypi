@@ -544,6 +544,8 @@
         'browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h',
         'browser/extensions/api/synced_notifications_private/synced_notifications_private_api.cc',
         'browser/extensions/api/synced_notifications_private/synced_notifications_private_api.h',
+        'browser/extensions/api/synced_notifications_private/synced_notifications_shim.cc',
+        'browser/extensions/api/synced_notifications_private/synced_notifications_shim.h',
         'browser/extensions/api/system_cpu/cpu_info_provider.cc',
         'browser/extensions/api/system_cpu/cpu_info_provider.h',
         'browser/extensions/api/system_cpu/cpu_info_provider_android.cc',

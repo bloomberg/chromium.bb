@@ -64,10 +64,16 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
 
  private:
   // Register data types which are enabled on desktop platforms only.
+  // |disabled_types| and |enabled_types| correspond only to those types
+  // being explicitly enabled/disabled by the command line.
   void RegisterDesktopDataTypes(syncer::ModelTypeSet disabled_types,
+                                syncer::ModelTypeSet enabled_types,
                                 ProfileSyncService* pss);
   // Register data types which are enabled on both desktop and mobile.
+  // |disabled_types| and |enabled_types| correspond only to those types
+  // being explicitly enabled/disabled by the command line.
   void RegisterCommonDataTypes(syncer::ModelTypeSet disabled_types,
+                               syncer::ModelTypeSet enabled_types,
                                ProfileSyncService* pss);
   // Used to bind a callback to give to DataTypeControllers to disable
   // data types.

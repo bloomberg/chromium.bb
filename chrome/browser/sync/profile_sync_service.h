@@ -56,6 +56,10 @@ class ProfileOAuth2TokenService;
 class ProfileSyncComponentsFactory;
 class SyncErrorController;
 
+namespace extensions {
+struct Event;
+}
+
 namespace browser_sync {
 class BackendMigrator;
 class ChangeProcessor;
@@ -1093,6 +1097,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   GoogleServiceAuthError last_get_token_error_;
   base::Time next_token_request_time_;
 
+  // Locally owned SyncableService implementations.
   scoped_ptr<SessionsSyncManager> sessions_sync_manager_;
 
   scoped_ptr<syncer::NetworkResources> network_resources_;

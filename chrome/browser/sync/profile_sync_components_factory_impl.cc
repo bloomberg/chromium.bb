@@ -9,6 +9,8 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
@@ -67,6 +69,7 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
+#include "chrome/browser/extensions/api/synced_notifications_private/synced_notifications_shim.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #endif
 
@@ -83,13 +86,6 @@
 #include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
-#endif
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
-#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
-#include "chrome/browser/notifications/sync_notifier/synced_notification_app_info_service.h"
-#include "chrome/browser/notifications/sync_notifier/synced_notification_app_info_service_factory.h"
 #endif
 
 #if defined(ENABLE_SPELLCHECK)
@@ -126,12 +122,21 @@ using content::BrowserThread;
 namespace {
 
 syncer::ModelTypeSet GetDisabledTypesFromCommandLine(
-    CommandLine* command_line) {
+    const CommandLine& command_line) {
   syncer::ModelTypeSet disabled_types;
   std::string disabled_types_str =
-      command_line->GetSwitchValueASCII(switches::kDisableSyncTypes);
+      command_line.GetSwitchValueASCII(switches::kDisableSyncTypes);
   disabled_types = syncer::ModelTypeSetFromString(disabled_types_str);
   return disabled_types;
+}
+
+syncer::ModelTypeSet GetEnabledTypesFromCommandLine(
+    const CommandLine& command_line) {
+  syncer::ModelTypeSet enabled_types;
+  if (command_line.HasSwitch(switches::kEnableSyncSyncedNotifications)) {
+    enabled_types.Put(syncer::SYNCED_NOTIFICATIONS);
+  }
+  return enabled_types;
 }
 
 }  // namespace
@@ -153,11 +158,12 @@ ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {
 void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
     ProfileSyncService* pss) {
   syncer::ModelTypeSet disabled_types =
-      GetDisabledTypesFromCommandLine(command_line_);
-  // TODO(zea): pass an enabled_types set for types that are off by default.
-  RegisterCommonDataTypes(disabled_types, pss);
+      GetDisabledTypesFromCommandLine(*command_line_);
+  syncer::ModelTypeSet enabled_types =
+      GetEnabledTypesFromCommandLine(*command_line_);
+  RegisterCommonDataTypes(disabled_types, enabled_types, pss);
 #if !defined(OS_ANDROID)
-  RegisterDesktopDataTypes(disabled_types, pss);
+  RegisterDesktopDataTypes(disabled_types, enabled_types, pss);
 #endif
 }
 
@@ -179,6 +185,7 @@ ProfileSyncComponentsFactoryImpl::MakeDisableCallbackFor(
 
 void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     syncer::ModelTypeSet disabled_types,
+    syncer::ModelTypeSet enabled_types,
     ProfileSyncService* pss) {
   // Autofill sync is enabled by default.  Register unless explicitly
   // disabled.
@@ -301,6 +308,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
 
 void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
     syncer::ModelTypeSet disabled_types,
+    syncer::ModelTypeSet enabled_types,
     ProfileSyncService* pss) {
   // App sync is enabled by default.  Register unless explicitly
   // disabled.
@@ -389,8 +397,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
   }
 #endif
 
-  // Synced Notifications are enabled by default.
-  if (!disabled_types.Has(syncer::SYNCED_NOTIFICATIONS)) {
+  // Synced Notifications are disabled by default.
+#if defined(ENABLE_EXTENSIONS) && defined(ENABLE_NOTIFICATIONS)
+  if (enabled_types.Has(syncer::SYNCED_NOTIFICATIONS)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(
               BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
@@ -399,21 +408,14 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
               syncer::SYNCED_NOTIFICATIONS,
               this));
 
-    // Synced Notification App Infos are enabled by default on Dev and Canary
-    // only.
-    // TODO(petewil): Enable on stable when the feature is ready.
-    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-    if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
-        channel == chrome::VersionInfo::CHANNEL_DEV ||
-        channel == chrome::VersionInfo::CHANNEL_CANARY) {
-      pss->RegisterDataTypeController(new UIDataTypeController(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          base::Bind(&ChromeReportUnrecoverableError),
-          MakeDisableCallbackFor(syncer::SYNCED_NOTIFICATION_APP_INFO),
-          syncer::SYNCED_NOTIFICATION_APP_INFO,
-          this));
-    }
+    pss->RegisterDataTypeController(new UIDataTypeController(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        base::Bind(&ChromeReportUnrecoverableError),
+        MakeDisableCallbackFor(syncer::SYNCED_NOTIFICATIONS),
+        syncer::SYNCED_NOTIFICATION_APP_INFO,
+        this));
   }
+#endif
 
 #if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
   // Dictionary sync is enabled by default.
@@ -508,21 +510,13 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
               profile_, Profile::EXPLICIT_ACCESS);
       return history ? history->AsWeakPtr() : base::WeakPtr<HistoryService>();
     }
-#if !defined(OS_ANDROID)
-    case syncer::SYNCED_NOTIFICATIONS: {
-      notifier::ChromeNotifierService* notifier_service =
-          notifier::ChromeNotifierServiceFactory::GetForProfile(
-              profile_, Profile::EXPLICIT_ACCESS);
-      return notifier_service ? notifier_service->AsWeakPtr()
-          : base::WeakPtr<syncer::SyncableService>();
-    }
-
+#if defined(ENABLE_EXTENSIONS)
+    case syncer::SYNCED_NOTIFICATIONS:
     case syncer::SYNCED_NOTIFICATION_APP_INFO: {
-      notifier::SyncedNotificationAppInfoService* app_info =
-          notifier::SyncedNotificationAppInfoServiceFactory::GetForProfile(
-              profile_, Profile::EXPLICIT_ACCESS);
-      return app_info ? app_info->AsWeakPtr()
-                      : base::WeakPtr<syncer::SyncableService>();
+      return notifier::ChromeNotifierServiceFactory::GetForProfile(
+                 profile_, Profile::IMPLICIT_ACCESS)
+          ->GetSyncedNotificationsShim()
+          ->AsWeakPtr();
     }
 #endif
 #if defined(ENABLE_SPELLCHECK)

@@ -18,6 +18,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/synced_notifications_private/synced_notifications_shim.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
@@ -33,6 +34,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/browser/event_router.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "sync/api/sync_change.h"
@@ -59,7 +61,11 @@ ChromeNotifierService::ChromeNotifierService(Profile* profile,
                                              NotificationUIManager* manager)
     : profile_(profile),
       notification_manager_(manager),
-      synced_notification_first_run_(false) {
+      synced_notification_first_run_(false),
+      weak_ptr_factory_(this) {
+  synced_notifications_shim_.reset(new SyncedNotificationsShim(
+      base::Bind(&ChromeNotifierService::FireSyncJSEvent,
+                 weak_ptr_factory_.GetWeakPtr())));
 
   InitializePrefs();
 
@@ -71,7 +77,6 @@ ChromeNotifierService::ChromeNotifierService(Profile* profile,
   DCHECK(synced_notification_app_info_service_ != NULL);
 
   synced_notification_app_info_service_->set_chrome_notifier_service(this);
-
 }
 
 ChromeNotifierService::~ChromeNotifierService() {
@@ -81,6 +86,10 @@ ChromeNotifierService::~ChromeNotifierService() {
 
 // Methods from KeyedService.
 void ChromeNotifierService::Shutdown() {}
+
+SyncedNotificationsShim* ChromeNotifierService::GetSyncedNotificationsShim() {
+  return synced_notifications_shim_.get();
+}
 
 // syncer::SyncableService implementation.
 
@@ -453,6 +462,14 @@ void ChromeNotifierService::MarkNotificationAsRead(
 
   // Send up the changes that were made locally.
   sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
+}
+
+void ChromeNotifierService::FireSyncJSEvent(
+    scoped_ptr<extensions::Event> event) {
+  event->restrict_to_browser_context = profile_;
+  // TODO(synced notifications): consider broadcasting to a specific extension
+  // id.
+  extensions::EventRouter::Get(profile_)->BroadcastEvent(event.Pass());
 }
 
 // Add a new notification to our data structure.  This takes ownership
