@@ -35,5 +35,5 @@
 
     [CallWith=ExecutionContext, RaisesException] MediaKeySession createSession(DOMString type, Uint8Array initData);
 
-    static boolean isTypeSupported(DOMString keySystem, [Default=NullString] optional DOMString contentType);
+    static boolean isTypeSupported(DOMString keySystem, optional DOMString contentType = null);
 };

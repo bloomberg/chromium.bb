@@ -31,7 +31,7 @@
 
 [
     ActiveDOMObject,
-    Constructor(DOMString scriptURL, [Default=NullString] optional DOMString name),
+    Constructor(DOMString scriptURL, optional DOMString name = null),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     RuntimeEnabled=SharedWorker,

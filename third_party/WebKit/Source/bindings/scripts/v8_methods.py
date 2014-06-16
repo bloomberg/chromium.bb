@@ -181,8 +181,11 @@ def generate_argument(interface, method, argument, index):
                                            used_as_argument=True,
                                            used_as_variadic_argument=argument.is_variadic),
         'cpp_value': this_cpp_value,
+        # FIXME: check that the default value's type is compatible with the argument's
+        'default_value': str(argument.default_value) if argument.default_value else None,
         'enum_validation_expression': idl_type.enum_validation_expression,
-        'has_default': 'Default' in extended_attributes,
+        # FIXME: remove once [Default] removed and just use argument.default_value
+        'has_default': 'Default' in extended_attributes or argument.default_value,
         'has_event_listener_argument': any(
             argument_so_far for argument_so_far in method.arguments[:index]
             if argument_so_far.idl_type.name == 'EventListener'),
@@ -298,9 +301,10 @@ def v8_value_to_local_cpp_value(argument, index):
     name = argument.name
     if argument.is_variadic:
         return v8_value_to_local_cpp_variadic_value(argument, index)
-    # [Default=NullString]
+    # FIXME: This special way of handling string arguments with null defaults
+    # can go away once we fully support default values.
     if (argument.is_optional and idl_type.name in ('String', 'ByteString') and
-        extended_attributes.get('Default') == 'NullString'):
+        argument.default_value and argument.default_value.is_null):
         v8_value = 'argumentOrNull(info, %s)' % index
     else:
         v8_value = 'info[%s]' % index

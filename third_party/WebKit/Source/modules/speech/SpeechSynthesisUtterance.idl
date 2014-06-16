@@ -25,7 +25,7 @@
 
 [
     GarbageCollected,
-    Constructor([Default=NullString] optional DOMString text),
+    Constructor(optional DOMString text = null),
     ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=SpeechSynthesis,
 ] interface SpeechSynthesisUtterance : EventTarget {
