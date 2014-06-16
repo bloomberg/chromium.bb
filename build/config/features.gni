@@ -70,3 +70,5 @@ disable_ftp_support = is_ios
 enable_speech_input = true
 
 use_dbus = is_linux
+
+enable_extensions = (!is_android && !is_ios)

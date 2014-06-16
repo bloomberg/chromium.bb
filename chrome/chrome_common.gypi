@@ -587,6 +587,7 @@
       ],
     },
     {
+      # GN version: //chrome/commoon/net:net
       'target_name': 'common_net',
       'type': 'static_library',
       'sources': [
@@ -669,6 +670,8 @@
       # Protobuf compiler / generator for the safebrowsing client
       # model proto and the client-side detection (csd) request
       # protocol buffer.
+
+      # GN version: //chrome/common/safe_browsing:proto
       'target_name': 'safe_browsing_proto',
       'type': 'static_library',
       'sources': [
@@ -684,6 +687,8 @@
     },
     {
       # Protobuf compiler / generator for UMA (User Metrics Analysis).
+
+      # GN version: //chrome/common/metrics/proto:proto
       'target_name': 'metrics_proto',
       'type': 'static_library',
       'sources': [

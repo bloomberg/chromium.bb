@@ -21,7 +21,7 @@ group("root") {
 
     "//apps/common/api:apps_api",
     "//cc",
-    #"//chrome",
+    "//chrome:resources",
     "//components/favicon_base",
     "//components/language_usage_metrics",
     "//components/metrics",

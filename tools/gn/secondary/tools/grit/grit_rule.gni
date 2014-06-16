@@ -5,13 +5,27 @@
 # Instantiate grit. This will produce a script target to run grit, and a
 # static library that compiles the .cc files.
 #
-# Example:
+# Parameters
+#
+#   source
+#       Path to .grd file.
+#
+#   grit_flags (optional)
+#       List of strings containing extra command-line flags to pass to Grit.
+#
+#   deps  (optional)
+#   visibility  (optional)
+#       Normal meaning.
+#
+# Example
+#
 #   grit("my_resources") {
 #     source = "myfile.grd"  # source is required.
 #     grit_flags = [ "-E", "foo=bar" ]  # Optional extra flags.
 #     # You can also put deps here if the grit source depends on generated
 #     # files.
 #   }
+import ("//build/config/features.gni")
 import ("//build/config/ui.gni")
 
 grit_defines = []
@@ -33,6 +47,15 @@ if (is_android) {
     "-E", "ANDROID_JAVA_TAGGED_ONLY=true",
   ]
 }
+
+if (enable_extensions) {
+  grit_defines += [ "-D", "enable_extensions" ]
+}
+if (enable_plugins) {
+  grit_defines += [ "-D", "enable_plugins" ]
+}
+
+# TODO(GYP) the rest of the grit_defines from the gyp build.
 
 grit_resource_id_file = "//tools/gritsettings/resource_ids"
 grit_info_script = "//tools/grit/grit_info.py"
@@ -102,6 +125,10 @@ template("grit") {
     ] + grit_defines + grit_flags
 
     visibility = target_visibility
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
   }
 
   # This is the thing that people actually link with, it must be named the

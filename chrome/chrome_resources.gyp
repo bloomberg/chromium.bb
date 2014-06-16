@@ -130,6 +130,7 @@
       ],
     },
     {
+      # GN version: //chrome/browser:chrome_internal_resources_gen
       'target_name': 'chrome_internal_resources_gen',
       'type': 'none',
       'conditions': [
@@ -166,6 +167,8 @@
       # to run grit would list its own .grd files, but unfortunately some
       # of the static libraries currently have circular dependencies among
       # generated headers.
+
+      # GN version: //chrome:resources
       'target_name': 'chrome_resources',
       'type': 'none',
       'dependencies': [
@@ -175,6 +178,7 @@
       ],
       'actions': [
         {
+          # GN version: //chrome/browser:resources
           'action_name': 'generate_browser_resources',
           'variables': {
             'grit_grd_file': 'browser/browser_resources.grd',
@@ -187,6 +191,7 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          # GN version: //chrome/common:resources
           'action_name': 'generate_common_resources',
           'variables': {
             'grit_grd_file': 'common/common_resources.grd',
@@ -194,6 +199,7 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          # GN version: //chrome/renderer:resources
           'action_name': 'generate_renderer_resources',
           'variables': {
             'grit_grd_file': 'renderer/resources/renderer_resources.grd',
@@ -205,6 +211,7 @@
         ['enable_extensions==1', {
           'actions': [
             {
+              # GN version: //chrome/common:extensions_api_resources
               'action_name': 'generate_extensions_api_resources',
               'variables': {
                 'grit_grd_file': 'common/extensions_api_resources.grd',
@@ -502,6 +509,7 @@
       'includes': [ '../build/grit_target.gypi' ],
     },
     {
+      # GN version: //chrome/browser:about_credits
       'target_name': 'about_credits',
       'type': 'none',
       'actions': [

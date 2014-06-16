@@ -4,6 +4,7 @@
 {
   'targets': [
     {
+      # GN version: //chrome/browser/ui/webui/omnibox:mojo_bindings
       'target_name': 'web_ui_mojo_bindings',
       # The type of this target must be none. This is so that resources can
       # depend upon this target for generating the js bindings files. Any

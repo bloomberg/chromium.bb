@@ -1,0 +1,71 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/crypto.gni")
+
+# GYP version: chrome/chrome_common.gypi:common_net
+static_library("net") {
+  sources = [
+    "net_error_info.cc",
+    "net_error_info.h",
+    "net_resource_provider.cc",
+    "net_resource_provider.h",
+    "predictor_common.h",
+    "url_util.cc",
+    "url_util.h",
+    "x509_certificate_model.cc",
+    "x509_certificate_model.h",
+    "x509_certificate_model_nss.cc",
+    "x509_certificate_model_openssl.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome:resources",
+    "//chrome:strings",
+    "//crypto",
+    "//net",
+    "//net:net_resources",
+    "//third_party/icu",
+  ]
+
+  if (is_ios) {
+    sources -= [
+      "net_resource_provider.cc",
+      "x509_certificate_model.cc",
+    ]
+  } else {
+    deps += [ "//gpu:ipc" ]
+  }
+
+  if (is_win || is_mac || is_ios) {
+    sources -= [
+      "x509_certificate_model_nss.cc",
+      "x509_certificate_model_openssl.cc",
+    ]
+  }
+
+  if (is_android) {
+    sources -= [
+      "x509_certificate_model.cc",
+      "x509_certificate_model_openssl.cc",
+    ]
+    deps += [ "//third_party/openssl" ]
+  }
+
+  if (use_openssl) {
+    # networking_private_crypto.cc uses NSS functions.
+    sources -= [
+      "x509_certificate_model_nss.cc",
+    ]
+  } else {
+    sources -= [
+      "x509_certificate_model_openssl.cc",
+    ]
+  }
+
+  if (is_win) {
+    cflags = [ "/wd4267" ]
+  }
+}

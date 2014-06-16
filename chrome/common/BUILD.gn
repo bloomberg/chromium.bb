@@ -1,0 +1,22 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//tools/grit/grit_rule.gni")
+
+# GYP version: chrome/chrome_resources.gyp:chrome_resources
+#              (generate_common_resources action)
+grit("resources") {
+  source = "common_resources.grd"
+}
+
+# GYP version: chrome/chrome_resources.gyp:chrome_resources
+#              (generate_extensions_api_resources action)
+grit("extensions_api_resources") {
+  source = "extensions_api_resources.grd"
+}
+
+# TODO(GYP) add this target.
+#static_library("common") {
+#  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+#}
