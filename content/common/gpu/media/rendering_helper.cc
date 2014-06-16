@@ -4,6 +4,10 @@
 
 #include "content/common/gpu/media/rendering_helper.h"
 
+#include <algorithm>
+#include <numeric>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop/message_loop.h"
@@ -79,16 +83,15 @@ RenderingHelper::RenderingHelper() {
 }
 
 RenderingHelper::~RenderingHelper() {
-  CHECK_EQ(frame_dimensions_.size(), 0U)
-      << "Must call UnInitialize before dtor.";
+  CHECK_EQ(clients_.size(), 0U) << "Must call UnInitialize before dtor.";
   Clear();
 }
 
 void RenderingHelper::Initialize(const RenderingHelperParams& params,
                                  base::WaitableEvent* done) {
-  // Use frame_dimensions_.size() != 0 as a proxy for the class having already
-  // been Initialize()'d, and UnInitialize() before continuing.
-  if (frame_dimensions_.size()) {
+  // Use cients_.size() != 0 as a proxy for the class having already been
+  // Initialize()'d, and UnInitialize() before continuing.
+  if (clients_.size()) {
     base::WaitableEvent done(false, false);
     UnInitialize(&done);
     done.Wait();
@@ -102,14 +105,8 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   scoped_refptr<gfx::GLContextStubWithExtensions> stub_context(
       new gfx::GLContextStubWithExtensions());
 
-  CHECK_GT(params.window_dimensions.size(), 0U);
-  CHECK_EQ(params.frame_dimensions.size(), params.window_dimensions.size());
-  frame_dimensions_ = params.frame_dimensions;
   render_as_thumbnails_ = params.render_as_thumbnails;
   message_loop_ = base::MessageLoop::current();
-  CHECK_GT(params.num_windows, 0);
-
-  gfx::Size window_size;
 
 #if GL_VARIANT_GLX
   x_display_ = gfx::GetXDisplay();
@@ -139,13 +136,13 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
       reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
   Screen* screen = DefaultScreenOfDisplay(x_display_);
-  window_size = gfx::Size(XWidthOfScreen(screen), XHeightOfScreen(screen));
+  screen_size_ = gfx::Size(XWidthOfScreen(screen), XHeightOfScreen(screen));
 #else // EGL
   EGLNativeDisplayType native_display;
 
 #if defined(OS_WIN)
   native_display = EGL_DEFAULT_DISPLAY;
-  window_size =
+  screen_size_ =
       gfx::Size(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 #else
   x_display_ = gfx::GetXDisplay();
@@ -153,7 +150,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   native_display = x_display_;
 
   Screen* screen = DefaultScreenOfDisplay(x_display_);
-  window_size = gfx::Size(XWidthOfScreen(screen), XHeightOfScreen(screen));
+  screen_size_ = gfx::Size(XWidthOfScreen(screen), XHeightOfScreen(screen));
 #endif
   gl_display_ = eglGetDisplay(native_display);
   CHECK(gl_display_);
@@ -184,18 +181,8 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
       reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 #endif
   clients_ = params.clients;
-  // Per-window/surface X11 & EGL initialization.
-  for (int i = 0; i < params.num_windows; ++i) {
-    // Arrange X windows whimsically, with some padding.
-    int j = i % params.window_dimensions.size();
-    int width = params.window_dimensions[j].width();
-    int height = params.window_dimensions[j].height();
-    CHECK_GT(width, 0);
-    CHECK_GT(height, 0);
-    int top_left_x = (width + 20) * (i % 4);
-    int top_left_y = (height + 12) * (i % 3);
-    render_areas_.push_back(gfx::Rect(top_left_x, top_left_y, width, height));
-  }
+  CHECK_GT(clients_.size(), 0U);
+  LayoutRenderingAreas();
 
 #if defined(OS_WIN)
   window_ = CreateWindowEx(0,
@@ -204,8 +191,8 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
                            WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                            0,
                            0,
-                           window_size.width(),
-                           window_size.height(),
+                           screen_size_.width(),
+                           screen_size_.height(),
                            NULL,
                            NULL,
                            NULL,
@@ -227,8 +214,8 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
                             DefaultRootWindow(x_display_),
                             0,
                             0,
-                            window_size.width(),
-                            window_size.height(),
+                            screen_size_.width(),
+                            screen_size_.height(),
                             0 /* border width */,
                             depth,
                             CopyFromParent /* class */,
@@ -262,7 +249,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   gfx::InitializeDynamicGLBindings(kGLImplementation, stub_context.get());
 
   if (render_as_thumbnails_) {
-    CHECK_EQ(frame_dimensions_.size(), 1U);
+    CHECK_EQ(clients_.size(), 1U);
 
     GLint max_texture_size;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
@@ -407,26 +394,28 @@ void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
   done->Signal();
 }
 
-void RenderingHelper::CreateTexture(int window_id,
-                                    uint32 texture_target,
+void RenderingHelper::CreateTexture(uint32 texture_target,
                                     uint32* texture_id,
+                                    const gfx::Size& size,
                                     base::WaitableEvent* done) {
   if (base::MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&RenderingHelper::CreateTexture, base::Unretained(this),
-                   window_id, texture_target, texture_id, done));
+    message_loop_->PostTask(FROM_HERE,
+                            base::Bind(&RenderingHelper::CreateTexture,
+                                       base::Unretained(this),
+                                       texture_target,
+                                       texture_id,
+                                       size,
+                                       done));
     return;
   }
   glGenTextures(1, texture_id);
   glBindTexture(texture_target, *texture_id);
-  int dimensions_id = window_id % frame_dimensions_.size();
   if (texture_target == GL_TEXTURE_2D) {
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA,
-                 frame_dimensions_[dimensions_id].width(),
-                 frame_dimensions_[dimensions_id].height(),
+                 size.width(),
+                 size.height(),
                  0,
                  GL_RGBA,
                  GL_UNSIGNED_BYTE,
@@ -438,8 +427,6 @@ void RenderingHelper::CreateTexture(int window_id,
   glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
-  CHECK(texture_id_to_surface_index_.insert(
-      std::make_pair(*texture_id, window_id)).second);
   done->Signal();
 }
 
@@ -504,8 +491,7 @@ void* RenderingHelper::GetGLDisplay() {
 }
 
 void RenderingHelper::Clear() {
-  frame_dimensions_.clear();
-  texture_id_to_surface_index_.clear();
+  clients_.clear();
   message_loop_ = NULL;
   gl_context_ = NULL;
 #if GL_VARIANT_EGL
@@ -593,5 +579,59 @@ void RenderingHelper::RenderContent() {
   eglSwapBuffers(gl_display_, gl_surface_);
   CHECK_EQ(static_cast<int>(eglGetError()), EGL_SUCCESS);
 #endif
+}
+
+// Helper function for the LayoutRenderingAreas(). The |lengths| are the
+// heights(widths) of the rows(columns). It scales the elements in
+// |lengths| proportionally so that the sum of them equal to |total_length|.
+// It also outputs the coordinates of the rows(columns) to |offsets|.
+static void ScaleAndCalculateOffsets(std::vector<int>* lengths,
+                                     std::vector<int>* offsets,
+                                     int total_length) {
+  int sum = std::accumulate(lengths->begin(), lengths->end(), 0);
+  for (size_t i = 0; i < lengths->size(); ++i) {
+    lengths->at(i) = lengths->at(i) * total_length / sum;
+    offsets->at(i) = (i == 0) ? 0 : offsets->at(i - 1) + lengths->at(i - 1);
+  }
+}
+
+void RenderingHelper::LayoutRenderingAreas() {
+  // Find the number of colums and rows.
+  // The smallest n * n or n * (n + 1) > number of clients.
+  size_t cols = sqrt(clients_.size() - 1) + 1;
+  size_t rows = (clients_.size() + cols - 1) / cols;
+
+  // Find the widths and heights of the grid.
+  std::vector<int> widths(cols);
+  std::vector<int> heights(rows);
+  std::vector<int> offset_x(cols);
+  std::vector<int> offset_y(rows);
+
+  for (size_t i = 0; i < clients_.size(); ++i) {
+    const gfx::Size& window_size = clients_[i]->GetWindowSize();
+    widths[i % cols] = std::max(widths[i % cols], window_size.width());
+    heights[i / cols] = std::max(heights[i / cols], window_size.height());
+  }
+
+  ScaleAndCalculateOffsets(&widths, &offset_x, screen_size_.width());
+  ScaleAndCalculateOffsets(&heights, &offset_y, screen_size_.height());
+
+  // Put each render_area_ in the center of each cell.
+  render_areas_.clear();
+  for (size_t i = 0; i < clients_.size(); ++i) {
+    const gfx::Size& window_size = clients_[i]->GetWindowSize();
+    float scale =
+        std::min(static_cast<float>(widths[i % cols]) / window_size.width(),
+                 static_cast<float>(heights[i / cols]) / window_size.height());
+
+    // Don't scale up the texture.
+    scale = std::min(1.0f, scale);
+
+    size_t w = scale * window_size.width();
+    size_t h = scale * window_size.height();
+    size_t x = offset_x[i % cols] + (widths[i % cols] - w) / 2;
+    size_t y = offset_y[i / cols] + (heights[i / cols] - h) / 2;
+    render_areas_.push_back(gfx::Rect(x, y, w, h));
+  }
 }
 }  // namespace content

@@ -142,7 +142,6 @@ struct TestVideoFile {
   std::string data_str;
 };
 
-const gfx::Size kThumbnailsDisplaySize(1366, 768);
 const gfx::Size kThumbnailsPageSize(1600, 1200);
 const gfx::Size kThumbnailSize(160, 120);
 const int kMD5StringLength = 32;
@@ -214,7 +213,6 @@ class GLRenderingVDAClient
   // |decode_calls_per_second| is the number of VDA::Decode calls per second.
   // If |decode_calls_per_second| > 0, |num_in_flight_decodes| must be 1.
   GLRenderingVDAClient(RenderingHelper* rendering_helper,
-                       int rendering_window_id,
                        ClientStateNotification<ClientState>* note,
                        const std::string& encoded_data,
                        int num_in_flight_decodes,
@@ -246,6 +244,7 @@ class GLRenderingVDAClient
 
   // RenderingHelper::Client implementation.
   virtual void RenderContent(RenderingHelper*) OVERRIDE;
+  virtual const gfx::Size& GetWindowSize() OVERRIDE;
 
   void OutputFrameDeliveryTimes(base::File* output);
 
@@ -287,7 +286,7 @@ class GLRenderingVDAClient
   void DecodeNextFragment();
 
   RenderingHelper* rendering_helper_;
-  int rendering_window_id_;
+  gfx::Size frame_size_;
   std::string encoded_data_;
   const int num_in_flight_decodes_;
   int outstanding_decodes_;
@@ -328,7 +327,6 @@ class GLRenderingVDAClient
 
 GLRenderingVDAClient::GLRenderingVDAClient(
     RenderingHelper* rendering_helper,
-    int rendering_window_id,
     ClientStateNotification<ClientState>* note,
     const std::string& encoded_data,
     int num_in_flight_decodes,
@@ -343,7 +341,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
     int decode_calls_per_second,
     bool render_as_thumbnails)
     : rendering_helper_(rendering_helper),
-      rendering_window_id_(rendering_window_id),
+      frame_size_(frame_width, frame_height),
       encoded_data_(encoded_data),
       num_in_flight_decodes_(num_in_flight_decodes),
       outstanding_decodes_(0),
@@ -440,7 +438,7 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
     uint32 texture_id;
     base::WaitableEvent done(false, false);
     rendering_helper_->CreateTexture(
-        rendering_window_id_, texture_target_, &texture_id, &done);
+        texture_target_, &texture_id, dimensions, &done);
     done.Wait();
     CHECK(outstanding_texture_ids_.insert(texture_id).second);
     media::PictureBuffer* buffer =
@@ -491,6 +489,10 @@ void GLRenderingVDAClient::RenderContent(RenderingHelper*) {
     pending_picture_buffer_ids_.pop_front();
     ReturnPicture(buffer_id);
   }
+}
+
+const gfx::Size& GLRenderingVDAClient::GetWindowSize() {
+  return render_as_thumbnails_ ? kThumbnailsPageSize : frame_size_;
 }
 
 void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
@@ -1102,24 +1104,12 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
 
   RenderingHelperParams helper_params;
   helper_params.rendering_fps = g_rendering_fps;
-  helper_params.num_windows = num_concurrent_decoders;
   helper_params.render_as_thumbnails = render_as_thumbnails;
   if (render_as_thumbnails) {
     // Only one decoder is supported with thumbnail rendering
     CHECK_EQ(num_concurrent_decoders, 1U);
-    gfx::Size frame_size(test_video_files_[0]->width,
-                         test_video_files_[0]->height);
-    helper_params.frame_dimensions.push_back(frame_size);
-    helper_params.window_dimensions.push_back(kThumbnailsDisplaySize);
     helper_params.thumbnails_page_size = kThumbnailsPageSize;
     helper_params.thumbnail_size = kThumbnailSize;
-  } else {
-    for (size_t index = 0; index < test_video_files_.size(); ++index) {
-      gfx::Size frame_size(test_video_files_[index]->width,
-                           test_video_files_[index]->height);
-      helper_params.frame_dimensions.push_back(frame_size);
-      helper_params.window_dimensions.push_back(frame_size);
-    }
   }
 
   // First kick off all the decoders.
@@ -1138,7 +1128,6 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
 
     GLRenderingVDAClient* client =
         new GLRenderingVDAClient(&rendering_helper_,
-                                 index,
                                  note,
                                  video_file->data_str,
                                  num_in_flight_decodes,
@@ -1382,18 +1371,12 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
 
   // Disable rendering by setting the rendering_fps = 0.
   helper_params.rendering_fps = 0;
-  helper_params.num_windows = 1;
   helper_params.render_as_thumbnails = false;
-  gfx::Size frame_size(test_video_files_[0]->width,
-                       test_video_files_[0]->height);
-  helper_params.frame_dimensions.push_back(frame_size);
-  helper_params.window_dimensions.push_back(frame_size);
 
   ClientStateNotification<ClientState>* note =
       new ClientStateNotification<ClientState>();
   GLRenderingVDAClient* client =
       new GLRenderingVDAClient(&rendering_helper_,
-                               0,
                                note,
                                test_video_files_[0]->data_str,
                                1,

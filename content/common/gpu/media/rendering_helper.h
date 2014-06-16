@@ -43,6 +43,9 @@ class RenderingHelper {
     // Callback to tell client to render the content.
     virtual void RenderContent(RenderingHelper* helper) = 0;
 
+    // Callback to get the desired window size of the client.
+    virtual const gfx::Size& GetWindowSize() = 0;
+
    protected:
     virtual ~Client() {}
   };
@@ -57,11 +60,11 @@ class RenderingHelper {
   // Undo the effects of Initialize() and signal |*done|.
   void UnInitialize(base::WaitableEvent* done);
 
-  // Return a newly-created GLES2 texture id rendering to a specific window, and
+  // Return a newly-created GLES2 texture id of the specified size, and
   // signal |*done|.
-  void CreateTexture(int window_id,
-                     uint32 texture_target,
+  void CreateTexture(uint32 texture_target,
                      uint32* texture_id,
+                     const gfx::Size& size,
                      base::WaitableEvent* done);
 
   // Render thumbnail in the |texture_id| to the FBO buffer using target
@@ -92,13 +95,13 @@ class RenderingHelper {
 
   void RenderContent();
 
+  void LayoutRenderingAreas();
+
   // Timer to trigger the RenderContent() repeatly.
   base::RepeatingTimer<RenderingHelper> render_timer_;
   base::MessageLoop* message_loop_;
-  std::vector<gfx::Size> frame_dimensions_;
 
   NativeContextType gl_context_;
-  std::map<uint32, int> texture_id_to_surface_index_;
 
 #if defined(GL_VARIANT_EGL)
   EGLDisplay gl_display_;
@@ -113,6 +116,8 @@ class RenderingHelper {
   Display* x_display_;
   Window x_window_;
 #endif
+
+  gfx::Size screen_size_;
 
   // The rendering area of each window on the screen.
   std::vector<gfx::Rect> render_areas_;
@@ -134,16 +139,13 @@ class RenderingHelper {
 struct RenderingHelperParams {
   RenderingHelperParams();
   ~RenderingHelperParams();
+
+  // The rendering FPS.
   int rendering_fps;
 
+  // The clients who provide the content for rendering.
   std::vector<base::WeakPtr<RenderingHelper::Client> > clients;
-  int num_windows;
 
-  // Dimensions of window(s) created for displaying frames. In the
-  // case of thumbnail rendering, these won't match the frame dimensions.
-  std::vector<gfx::Size> window_dimensions;
-  // Dimensions of video frame texture(s).
-  std::vector<gfx::Size> frame_dimensions;
   // Whether the frames are rendered as scaled thumbnails within a
   // larger FBO that is in turn rendered to the window.
   bool render_as_thumbnails;
