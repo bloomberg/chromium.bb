@@ -107,9 +107,6 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
-#if defined(FULL_SAFE_BROWSING)
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#endif
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -858,13 +855,6 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
   // Force this to true in case we fallback and use it.
   // TODO(sky): remove this in a couple of releases (m28ish).
   prefs_->SetBoolean(prefs::kSessionExitedCleanly, true);
-
-#if defined(OS_ANDROID) && defined(FULL_SAFE_BROWSING)
-  // Force safe browsing to false in the case we need to roll back for users
-  // enrolled in Finch trial before.
-  if (!SafeBrowsingService::IsEnabledByFieldTrial())
-    prefs_->SetBoolean(prefs::kSafeBrowsingEnabled, false);
-#endif
 
   g_browser_process->profile_manager()->InitProfileUserPrefs(this);
 
