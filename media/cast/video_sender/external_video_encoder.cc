@@ -406,6 +406,14 @@ bool ExternalVideoEncoder::EncodeVideoFrame(
 
 // Inform the encoder about the new target bit rate.
 void ExternalVideoEncoder::SetBitRate(int new_bit_rate) {
+  if (!encoder_active_) {
+    // If we receive SetBitRate() before VEA creation callback is invoked,
+    // cache the new bit rate in the encoder config and use the new settings
+    // to initialize VEA.
+    video_config_.start_bitrate = new_bit_rate;
+    return;
+  }
+
   encoder_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LocalVideoEncodeAcceleratorClient::SetBitRate,

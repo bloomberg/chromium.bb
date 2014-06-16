@@ -63,7 +63,7 @@ class ExternalVideoEncoder : public VideoEncoder {
  private:
   friend class LocalVideoEncodeAcceleratorClient;
 
-  const VideoSenderConfig video_config_;
+  VideoSenderConfig video_config_;
   scoped_refptr<CastEnvironment> cast_environment_;
 
   bool encoder_active_;
