@@ -460,6 +460,7 @@ public:
         EditingApplePasteAsQuotation = 460,
         EditingAppleStyleSpanClass = 461,
         EditingAppleTabSpanClass = 462,
+        HTMLImportsAsyncAttribute = 463,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         // Also, run update_use_counter_feature_enum.py in chromium/src/tools/metrics/histograms/
