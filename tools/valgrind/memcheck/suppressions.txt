@@ -4184,7 +4184,7 @@
    Memcheck:Uninitialized
    fun:bcmp
    fun:_ZNK3gpu5gles221ShaderTranslatorCache26ShaderTranslatorInitParamsltERKS2_
-   fun:_ZNKSt4lessIN3gpu5gles221ShaderTranslatorCache26ShaderTranslatorInitParamsEEclERKS3_S6_
+   fun:_ZNKSt4lessIN3gpu5gles221ShaderTranslatorCache26ShaderTranslatorInitParams*
    ...
    fun:*ShaderTranslatorInitParams*
    ...
