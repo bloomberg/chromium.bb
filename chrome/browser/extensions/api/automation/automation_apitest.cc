@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
   ASSERT_TRUE(rwh->IsTreeOnlyAccessibilityModeForTesting());
 }
 
-#if defined(ADDERSS_SANITIZER)
+#if defined(ADDRESS_SANITIZER)
 #define Maybe_SanityCheck DISABLED_SanityCheck
 #else
 #define Maybe_SanityCheck SanityCheck
@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Actions) {
       << message_;
 }
 
-#if defined(ADDERSS_SANITIZER)
+#if defined(ADDRESS_SANITIZER)
 #define Maybe_Location DISABLED_Location
 #else
 #define Maybe_Location Location
@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanPermissions) {
       << message_;
 }
 
-#if defined(ADDERSS_SANITIZER)
+#if defined(ADDRESS_SANITIZER)
 #define Maybe_TabsAutomationBooleanActions DISABLED_TabsAutomationBooleanActions
 #else
 #define Maybe_TabsAutomationBooleanActions TabsAutomationBooleanActions
