@@ -321,6 +321,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnShowDesktopNotification)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Cancel,
                         OnCancelDesktopNotification)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_TextSurroundingSelectionResponse,
+                        OnTextSurroundingSelectionResponse)
   IPC_END_MESSAGE_MAP()
 
   return handled;
@@ -696,6 +698,14 @@ void RenderFrameHostImpl::OnCancelDesktopNotification(int notification_id) {
   }
   cancel_notification_callbacks_[notification_id].Run();
   cancel_notification_callbacks_.erase(notification_id);
+}
+
+void RenderFrameHostImpl::OnTextSurroundingSelectionResponse(
+    const base::string16& content,
+    size_t start_offset,
+    size_t end_offset) {
+  render_view_host_->OnTextSurroundingSelectionResponse(
+      content, start_offset, end_offset);
 }
 
 void RenderFrameHostImpl::OnDidAccessInitialDocument() {

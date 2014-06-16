@@ -433,6 +433,12 @@ void RenderWidgetHostViewAndroid::UnlockCompositingSurface() {
   }
 }
 
+void RenderWidgetHostViewAndroid::OnTextSurroundingSelectionResponse(
+    const base::string16& content,
+    size_t start_offset,
+    size_t end_offset) {
+}
+
 void RenderWidgetHostViewAndroid::ReleaseLocksOnSurface() {
   if (!frame_evictor_->HasFrame()) {
     DCHECK_EQ(locks_on_frame_count_, 0u);

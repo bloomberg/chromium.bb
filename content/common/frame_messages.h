@@ -358,6 +358,11 @@ IPC_MESSAGE_ROUTED1(FrameMsg_DidEndColorChooser, unsigned)
 // RenderFrame object it is associated with.
 IPC_MESSAGE_ROUTED0(FrameMsg_DeleteProxy)
 
+// Request the text surrounding the selection with a |max_length|. The response
+// will be sent via FrameHostMsg_TextSurroundingSelectionResponse.
+IPC_MESSAGE_ROUTED1(FrameMsg_TextSurroundingSelectionRequest,
+                    size_t /* max_length */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -607,3 +612,10 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_MediaPlayingNotification,
 
 IPC_MESSAGE_ROUTED1(FrameHostMsg_MediaPausedNotification,
                     int64 /* player_cookie, distinguishes instances */)
+
+// Response for FrameMsg_TextSurroundingSelectionRequest, |startOffset| and
+// |endOffset| are the offsets of the selection in the returned |content|.
+IPC_MESSAGE_ROUTED3(FrameHostMsg_TextSurroundingSelectionResponse,
+                    base::string16,  /* content */
+                    size_t, /* startOffset */
+                    size_t /* endOffset */)

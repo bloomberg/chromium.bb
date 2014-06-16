@@ -227,6 +227,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
       int notification_id,
       const ShowDesktopNotificationHostMsgParams& params);
   void OnCancelDesktopNotification(int notification_id);
+  void OnTextSurroundingSelectionResponse(const base::string16& content,
+                                          size_t start_offset,
+                                          size_t end_offset);
   void OnDidAccessInitialDocument();
   void OnDidDisownOpener();
   void OnUpdateTitle(int32 page_id,

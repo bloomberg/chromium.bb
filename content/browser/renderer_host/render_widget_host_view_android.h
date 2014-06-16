@@ -160,6 +160,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       OVERRIDE;
   virtual void LockCompositingSurface() OVERRIDE;
   virtual void UnlockCompositingSurface() OVERRIDE;
+  virtual void OnTextSurroundingSelectionResponse(const base::string16& content,
+                                                  size_t start_offset,
+                                                  size_t end_offset) OVERRIDE;
 
   // cc::DelegatedFrameResourceCollectionClient implementation.
   virtual void UnusedResourcesAreAvailable() OVERRIDE;

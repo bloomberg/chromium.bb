@@ -440,6 +440,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Whether the RVH is waiting for the unload ack from the renderer.
   bool IsWaitingForUnloadACK() const;
 
+  void OnTextSurroundingSelectionResponse(const base::string16& content,
+                                          size_t start_offset,
+                                          size_t end_offset);
+
   // Update the FrameTree to use this RenderViewHost's main frame
   // RenderFrameHost. Called when the RenderViewHost is committed.
   //

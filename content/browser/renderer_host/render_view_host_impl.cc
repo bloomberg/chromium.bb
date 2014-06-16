@@ -1436,6 +1436,15 @@ bool RenderViewHostImpl::IsWaitingForUnloadACK() const {
          rvh_state_ == STATE_PENDING_SWAP_OUT;
 }
 
+void RenderViewHostImpl::OnTextSurroundingSelectionResponse(
+    const base::string16& content,
+    size_t start_offset,
+    size_t end_offset) {
+  if (!view_)
+    return;
+  view_->OnTextSurroundingSelectionResponse(content, start_offset, end_offset);
+}
+
 void RenderViewHostImpl::ExitFullscreen() {
   RejectMouseLockOrUnlockIfNecessary();
   // Notify delegate_ and renderer of fullscreen state change.

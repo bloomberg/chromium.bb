@@ -315,6 +315,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   virtual gfx::GLSurfaceHandle GetCompositingSurface() = 0;
 
+  virtual void OnTextSurroundingSelectionResponse(const base::string16& content,
+                                                  size_t start_offset,
+                                                  size_t end_offset) {};
+
 #if defined(OS_ANDROID)
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
                                        const SkBitmap& zoomed_bitmap) = 0;

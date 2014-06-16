@@ -106,6 +106,7 @@
 #include "third_party/WebKit/public/web/WebSearchableFormData.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
+#include "third_party/WebKit/public/web/WebSurroundingText.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/child/weburlresponse_extradata_impl.h"
@@ -710,10 +711,12 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSetCompositionFromExistingText)
     IPC_MESSAGE_HANDLER(FrameMsg_ExtendSelectionAndDelete,
                         OnExtendSelectionAndDelete)
+    IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
+    IPC_MESSAGE_HANDLER(FrameMsg_TextSurroundingSelectionRequest,
+                        OnTextSurroundingSelectionRequest)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(InputMsg_CopyToFindPboard, OnCopyToFindPboard)
 #endif
-    IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
   IPC_END_MESSAGE_MAP()
 
   return handled;
@@ -1193,9 +1196,28 @@ void RenderFrameImpl::OnExtendSelectionAndDelete(int before, int after) {
   frame_->extendSelectionAndDelete(before, after);
 }
 
-
 void RenderFrameImpl::OnReload(bool ignore_cache) {
   frame_->reload(ignore_cache);
+}
+
+void RenderFrameImpl::OnTextSurroundingSelectionRequest(size_t max_length) {
+  blink::WebSurroundingText surroundingText;
+  surroundingText.initialize(frame_->selectionRange(), max_length);
+
+  if (surroundingText.isNull()) {
+    // |surroundingText| might not be correctly initialized, for example if
+    // |frame_->selectionRange().isNull()|, in other words, if there was no
+    // selection.
+    Send(new FrameHostMsg_TextSurroundingSelectionResponse(
+        routing_id_, base::string16(), 0, 0));
+    return;
+  }
+
+  Send(new FrameHostMsg_TextSurroundingSelectionResponse(
+      routing_id_,
+      surroundingText.textContent(),
+      surroundingText.startOffsetInTextContent(),
+      surroundingText.endOffsetInTextContent()));
 }
 
 bool RenderFrameImpl::ShouldUpdateSelectionTextFromContextMenuParams(
