@@ -1,0 +1,53 @@
+Test for crbug.com/172051: all shorthand property.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS cssRules.length is 16
+FAIL cssRules[0].cssText should be div { all: initial; }. Was div { }.
+PASS cssRules[1].cssText is not "div { all: initial; color: red; }"
+PASS contains(cssRules[1].cssText, "color: red;") is true
+FAIL contains(cssRules[1].cssText, "background: initial;") should be true. Was false.
+PASS contains(cssRules[1].cssText, "direction: ") is false
+PASS contains(cssRules[1].cssText, "unicode-bidi: ") is false
+FAIL cssRules[2].cssText should be div { all: initial; }. Was div { color: red; }.
+FAIL cssRules[3].cssText should be div { all: initial !important; }. Was div { color: red; }.
+PASS cssRules[4].cssText is not "div { all: initial; color: red !important; }"
+PASS contains(cssRules[4].cssText, "color: red !important;") is true
+FAIL contains(cssRules[4].cssText, "background: initial;") should be true. Was false.
+PASS contains(cssRules[4].cssText, "direction: ") is false
+PASS contains(cssRules[4].cssText, "unicode-bidi: ") is false
+FAIL cssRules[5].cssText should be div { all: inherit; }. Was div { }.
+PASS cssRules[6].cssText is not "div { all: inherit; color: red; }"
+PASS contains(cssRules[6].cssText, "color: red;") is true
+PASS contains(cssRules[6].cssText, "direction: ") is false
+PASS contains(cssRules[6].cssText, "unicode-bidi: ") is false
+FAIL cssRules[7].cssText should be div { all: inherit; }. Was div { color: red; }.
+FAIL cssRules[8].cssText should be div { all: inherit !important; }. Was div { color: red; }.
+PASS cssRules[9].cssText is not "div { all: inherit; color: red !important; }"
+PASS contains(cssRules[9].cssText, "color: red !important") is true
+FAIL contains(cssRules[9].cssText, "background: inherit;") should be true. Was false.
+PASS contains(cssRules[9].cssText, "direction: ") is false
+PASS contains(cssRules[9].cssText, "unicode-bidi: ") is false
+PASS cssRules[10].cssText is "div { }"
+FAIL cssRules[11].cssText should be div { all: initial; direction: rtl; }. Was div { direction: rtl; }.
+FAIL cssRules[12].cssText should be div { direction: ltr; unicode-bidi: bidi-override; all: initial !important; }. Was div { direction: ltr; unicode-bidi: bidi-override; }.
+PASS contains(cssRules[13].cssText, "all: initial;") is false
+PASS contains(cssRules[13].cssText, "direction: ltr;") is true
+PASS contains(cssRules[13].cssText, "color: red;") is true
+PASS contains(cssRules[14].cssText, "all: initial;") is false
+PASS contains(cssRules[14].cssText, "font: initial;") is false
+FAIL contains(cssRules[14].cssText, "font-family: initial;") should be true. Was false.
+PASS contains(cssRules[15].cssText, "all: initial;") is false
+PASS contains(cssRules[14].cssText, "font: initial;") is false
+PASS contains(cssRules[14].cssText, "marker: initial;") is false
+PASS contains(cssRules[15].cssText, "width: inherit;") is true
+FAIL contains(cssRules[15].cssText, "min-width: initial;") should be true. Was false.
+FAIL contains(cssRules[15].cssText, "max-width: initial;") should be true. Was false.
+FAIL contains(cssRules[15].cssText, "marker-start: initial;") should be true. Was false.
+FAIL contains(cssRules[15].cssText, "marker-mid: initial;") should be true. Was false.
+FAIL contains(cssRules[15].cssText, "marker-end: initial;") should be true. Was false.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

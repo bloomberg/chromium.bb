@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<style>
+#target1 { color: red; background-color: currentColor; }
+#target1 { color: green; }
+
+#parent { color: green; }
+#target2 { color: red; background-color: currentColor; }
+
+#target3 { color: green !important; }
+
+#target4 { color: red !important; }
+#target4 { background-color: red; }
+
+#target5 { background-color: red; }
+#target5 { color: green !important; }
+
+#target6 { color: red !important; }
+
+#target7 { direction: rtl; }
+
+#target8 { direction: rtl !important; }
+
+#parent9 { color: green; }
+</style>
+<div id='target1'>green color, green background-color</div>
+
+<div id='parent'>
+  <div id='target2'>red color, red background-color</div>
+</div>
+
+<div id='target3'>green color</div>
+
+<div id='target4'>red color, red background-color</div>
+
+<div id='target5'>green color, red background-color</div>
+
+<div id='target6'>red color</div>
+
+<div id='target7'>direction is rtl</div>
+
+<div id='target8'>direction is rtl</div>
+
+<div id='parent9'>
+  <div id='target9'>green color</div>
+</div>
