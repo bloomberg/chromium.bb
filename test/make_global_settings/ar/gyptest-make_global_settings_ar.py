@@ -56,14 +56,7 @@ def verify_ar_host(test, ar=None, rel_path=False):
     ar_expected = ar
   # Resolve default values
   if ar_expected is None:
-    if test.format == 'make':
-      ar_expected = '$(AR)'
-    elif test.format == 'ninja':
-      if sys.platform == 'win32':
-        # TODO(yukawa): Make sure if this is an expected result or not.
-        ar_expected = 'ar'
-      else:
-        ar_expected = '$ar'
+    ar_expected = 'ar'
   if test.format == 'make':
     test.must_contain('Makefile', 'AR.host ?= %s' % ar_expected)
   elif test.format == 'ninja':
@@ -83,15 +76,24 @@ test.run_gyp('make_global_settings_ar.gyp')
 verify_ar_target(test)
 
 
+# Check default values with GYP_CROSSCOMPILE enabled.
+with TestGyp.LocalEnv({'GYP_CROSSCOMPILE': '1'}):
+  test.run_gyp('make_global_settings_ar.gyp')
+verify_ar_target(test)
+verify_ar_host(test)
+
+
 # Test 'AR' in 'make_global_settings'.
-test.run_gyp('make_global_settings_ar.gyp', '-Dcustom_ar_target=my_ar')
+with TestGyp.LocalEnv({'GYP_CROSSCOMPILE': '1'}):
+  test.run_gyp('make_global_settings_ar.gyp', '-Dcustom_ar_target=my_ar')
 verify_ar_target(test, ar='my_ar', rel_path=True)
 
 
 # Test 'AR'/'AR.host' in 'make_global_settings'.
-test.run_gyp('make_global_settings_ar.gyp',
-             '-Dcustom_ar_target=my_ar_target1',
-             '-Dcustom_ar_host=my_ar_host1')
+with TestGyp.LocalEnv({'GYP_CROSSCOMPILE': '1'}):
+  test.run_gyp('make_global_settings_ar.gyp',
+               '-Dcustom_ar_target=my_ar_target1',
+               '-Dcustom_ar_host=my_ar_host1')
 verify_ar_target(test, ar='my_ar_target1', rel_path=True)
 # TODO(yukawa): Support 'AR.host' in Ninja generator
 if test.format == 'make':
