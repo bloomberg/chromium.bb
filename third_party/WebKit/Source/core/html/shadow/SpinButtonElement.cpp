@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/html/shadow/SpinButtonElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/WheelEvent.h"
 #include "core/frame/LocalFrame.h"

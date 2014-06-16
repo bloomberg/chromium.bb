@@ -32,9 +32,9 @@
 #include "config.h"
 #include "core/html/forms/NumberInputType.h"
 
-#include "HTMLNames.h"
-#include "InputTypeNames.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"

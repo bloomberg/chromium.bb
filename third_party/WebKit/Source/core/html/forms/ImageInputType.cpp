@@ -23,8 +23,8 @@
 #include "config.h"
 #include "core/html/forms/ImageInputType.h"
 
-#include "HTMLNames.h"
-#include "InputTypeNames.h"
+#include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/events/MouseEvent.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/FormDataList.h"

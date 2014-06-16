@@ -32,8 +32,7 @@
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/forms/BaseMultipleFieldsDateAndTimeInputType.h"
 
-#include "CSSValueKeywords.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/CSSValueKeywords.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/ScopedEventQueue.h"
@@ -47,6 +46,7 @@
 #include "core/page/Page.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/DateComponents.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/DateTimeFormat.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/DateMath.h"

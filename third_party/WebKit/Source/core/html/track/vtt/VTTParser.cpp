@@ -31,12 +31,12 @@
 #include "config.h"
 #include "core/html/track/vtt/VTTParser.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Text.h"
 #include "core/html/track/vtt/VTTElement.h"
 #include "core/html/track/vtt/VTTScanner.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/SegmentedString.h"
 #include "wtf/text/WTFString.h"
 

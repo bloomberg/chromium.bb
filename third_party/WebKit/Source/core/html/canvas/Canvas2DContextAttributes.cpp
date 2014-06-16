@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "Canvas2DContextAttributes.h"
+#include "core/html/canvas/Canvas2DContextAttributes.h"
 
 #include "wtf/text/WTFString.h"
 

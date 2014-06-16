@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/html/forms/URLInputType.h"
 
-#include "InputTypeNames.h"
+#include "core/InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"

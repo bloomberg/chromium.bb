@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/html/shadow/DetailsMarkerControl.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/html/HTMLSummaryElement.h"
 #include "core/rendering/RenderDetailsMarker.h"
 

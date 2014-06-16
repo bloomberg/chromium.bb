@@ -33,10 +33,10 @@
 #include "config.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 
-#include "CSSPropertyNames.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/CSSPropertyNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/parser/BisonCSSParser.h"

@@ -32,7 +32,6 @@
 #include "config.h"
 #include "core/html/track/TextTrack.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
@@ -42,6 +41,7 @@
 #include "core/html/track/TextTrackList.h"
 #include "core/html/track/vtt/VTTRegion.h"
 #include "core/html/track/vtt/VTTRegionList.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

@@ -30,7 +30,6 @@
 #include "config.h"
 #include "core/html/shadow/MediaControlElements.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/FullscreenElementStack.h"
@@ -47,6 +46,7 @@
 #include "core/rendering/RenderSlider.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderVideo.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

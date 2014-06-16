@@ -24,8 +24,8 @@
 #include "config.h"
 #include "core/html/forms/BaseTextInputType.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ScriptRegexp.h"
+#include "core/HTMLNames.h"
 #include "core/html/HTMLInputElement.h"
 
 namespace WebCore {

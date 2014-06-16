@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/html/forms/MonthInputType.h"
 
-#include "HTMLNames.h"
-#include "InputTypeNames.h"
+#include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "platform/DateComponents.h"

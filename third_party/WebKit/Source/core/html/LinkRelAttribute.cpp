@@ -32,7 +32,7 @@
 #include "config.h"
 #include "core/html/LinkRelAttribute.h"
 
-#include "RuntimeEnabledFeatures.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

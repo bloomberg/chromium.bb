@@ -29,9 +29,9 @@
 #include "config.h"
 #include "core/html/ImageData.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

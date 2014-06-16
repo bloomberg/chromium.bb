@@ -32,7 +32,7 @@
 #include "config.h"
 #include "core/html/forms/BaseButtonInputType.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"

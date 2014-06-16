@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/track/vtt/VTTElement.h"
 
-#include "HTMLElementFactory.h"
+#include "core/HTMLElementFactory.h"
 
 namespace WebCore {
 

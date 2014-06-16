@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -76,6 +75,7 @@
 #include "core/rendering/RenderBox.h"
 #include "platform/CheckedInt.h"
 #include "platform/NotImplemented.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"

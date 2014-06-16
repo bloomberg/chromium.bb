@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "BufferedLineReader.h"
+#include "core/html/track/vtt/BufferedLineReader.h"
 
 #include "wtf/unicode/CharacterNames.h"
 

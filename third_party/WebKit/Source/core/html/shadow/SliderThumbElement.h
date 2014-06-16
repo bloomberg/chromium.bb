@@ -32,7 +32,7 @@
 #ifndef SliderThumbElement_h
 #define SliderThumbElement_h
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "wtf/Forward.h"

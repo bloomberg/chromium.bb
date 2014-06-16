@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/events/MouseEvent.h"

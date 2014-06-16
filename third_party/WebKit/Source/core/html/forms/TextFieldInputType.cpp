@@ -32,8 +32,8 @@
 #include "config.h"
 #include "core/html/forms/TextFieldInputType.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/HTMLNames.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"

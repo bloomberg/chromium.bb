@@ -32,7 +32,7 @@
 #include "config.h"
 #include "core/html/forms/SubmitInputType.h"
 
-#include "InputTypeNames.h"
+#include "core/InputTypeNames.h"
 #include "core/events/Event.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLFormElement.h"

@@ -32,7 +32,7 @@
 #include "config.h"
 #include "core/html/forms/BaseCheckableInputType.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLInputElement.h"

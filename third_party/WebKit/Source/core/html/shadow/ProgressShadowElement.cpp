@@ -32,7 +32,7 @@
 
 #include "core/html/shadow/ProgressShadowElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/html/HTMLProgressElement.h"
 #include "core/rendering/RenderProgress.h"
 

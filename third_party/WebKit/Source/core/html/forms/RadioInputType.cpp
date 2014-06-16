@@ -22,8 +22,8 @@
 #include "config.h"
 #include "core/html/forms/RadioInputType.h"
 
-#include "HTMLNames.h"
-#include "InputTypeNames.h"
+#include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"

@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/html/forms/DateTimeLocalInputType.h"
 
-#include "HTMLNames.h"
-#include "InputTypeNames.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "platform/DateComponents.h"

@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/html/canvas/CanvasStyle.h"
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/StylePropertySet.h"
 #include "core/html/HTMLCanvasElement.h"
