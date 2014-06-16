@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_switches.h"
@@ -502,8 +503,8 @@ bool ParallelAuthenticator::VerifyOwner() {
     return true;
   }
 
-  OwnerSettingsServiceFactory::GetInstance()->SetUsername(
-      current_state_->user_context.GetUserID());
+  const std::string& user_id = current_state_->user_context.GetUserID();
+  OwnerSettingsServiceFactory::GetInstance()->SetUsername(user_id);
 
   // This should trigger certificate loading, which is needed in order to
   // correctly determine if the current user is the owner.
@@ -511,7 +512,8 @@ bool ParallelAuthenticator::VerifyOwner() {
     LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_SAFE_MODE,
                                         LoginState::LOGGED_IN_USER_NONE);
   }
-  DeviceSettingsService::Get()->IsCurrentUserOwnerAsync(
+
+  OwnerSettingsService::IsPrivateKeyExistAsync(
       base::Bind(&ParallelAuthenticator::OnOwnershipChecked, this));
   return false;
 }

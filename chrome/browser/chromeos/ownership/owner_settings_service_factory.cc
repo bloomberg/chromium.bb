@@ -46,10 +46,10 @@ void OwnerSettingsServiceFactory::SetUsername(const std::string& username) {
     return;
   OwnerSettingsService* service = GetForProfile(profile);
 
-  // It's safe to call ReloadOwnerKey() here, as profile is fully created
+  // It's safe to call ReloadPrivateKey() here, as profile is fully created
   // at this time.
   if (service)
-    service->ReloadOwnerKey();
+    service->ReloadPrivateKey();
 }
 
 std::string OwnerSettingsServiceFactory::GetUsername() const {

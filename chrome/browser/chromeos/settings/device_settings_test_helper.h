@@ -12,8 +12,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
@@ -21,6 +24,8 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+class TestingProfile;
 
 namespace chromeos {
 
@@ -172,6 +177,8 @@ class DeviceSettingsTestBase : public testing::Test {
   // |device_settings_service_| and flushes the resulting load operation.
   void ReloadDeviceSettings();
 
+  void InitOwner(const std::string& user_id, bool tpm_is_ready);
+
   base::MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
@@ -179,6 +186,9 @@ class DeviceSettingsTestBase : public testing::Test {
   policy::DevicePolicyBuilder device_policy_;
 
   DeviceSettingsTestHelper device_settings_test_helper_;
+  FakeUserManager* user_manager_;
+  ScopedUserManagerEnabler user_manager_enabler_;
+  scoped_ptr<TestingProfile> profile_;
   scoped_refptr<MockOwnerKeyUtil> owner_key_util_;
   // Local DeviceSettingsService instance for tests. Avoid using in combination
   // with the global instance (DeviceSettingsService::Get()).

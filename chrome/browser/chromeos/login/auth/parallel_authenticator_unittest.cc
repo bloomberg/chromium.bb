@@ -18,8 +18,11 @@
 #include "chrome/browser/chromeos/login/auth/mock_url_fetchers.h"
 #include "chrome/browser/chromeos/login/auth/test_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
-#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
@@ -48,9 +51,13 @@ class ParallelAuthenticatorTest : public testing::Test {
  public:
   ParallelAuthenticatorTest()
       : user_context_("me@nowhere.org"),
-        user_manager_enabler_(new MockUserManager),
+        user_manager_(new FakeUserManager()),
+        user_manager_enabler_(user_manager_),
         mock_caller_(NULL) {
     user_context_.SetKey(Key("fakepass"));
+    const User* user = user_manager_->AddUser(user_context_.GetUserID());
+    profile_.set_profile_name(user_context_.GetUserID());
+    user_manager_->SetProfileForUser(user, &profile_);
     transformed_key_ = *user_context_.GetKey();
     transformed_key_.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
                                SystemSaltGetter::ConvertRawSaltToHexString(
@@ -182,6 +189,8 @@ class ParallelAuthenticatorTest : public testing::Test {
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
   ScopedTestCrosSettings test_cros_settings_;
 
+  TestingProfile profile_;
+  FakeUserManager* user_manager_;
   ScopedUserManagerEnabler user_manager_enabler_;
 
   cryptohome::MockAsyncMethodCaller* mock_caller_;
@@ -294,7 +303,10 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   EXPECT_TRUE(LoginState::Get()->IsInSafeMode());
 
   // Simulate TPM token ready event.
-  DeviceSettingsService::Get()->OnTPMTokenReady();
+  OwnerSettingsService* service =
+      OwnerSettingsServiceFactory::GetForProfile(&profile_);
+  ASSERT_TRUE(service);
+  service->OnTPMTokenReady();
 
   // Flush all the pending operations. The operations should induce an owner
   // verification.

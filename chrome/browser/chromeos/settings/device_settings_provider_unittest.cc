@@ -12,12 +12,17 @@
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/user.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -139,9 +144,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
 
 TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  crypto::ScopedPK11Slot slot;
-  device_settings_service_.InitOwner(device_policy_.policy_data().username(),
-                                     slot.Pass());
+  InitOwner(device_policy_.policy_data().username(), true);
   FlushDeviceSettings();
 
   base::FundamentalValue value(true);
@@ -169,9 +172,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
 
 TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  crypto::ScopedPK11Slot slot;
-  device_settings_service_.InitOwner(device_policy_.policy_data().username(),
-                                     slot.Pass());
+  InitOwner(device_policy_.policy_data().username(), true);
   FlushDeviceSettings();
 
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());

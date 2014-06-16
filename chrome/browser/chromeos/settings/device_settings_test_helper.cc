@@ -7,9 +7,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
@@ -202,6 +205,8 @@ ScopedDeviceSettingsTestHelper::~ScopedDeviceSettingsTestHelper() {
 DeviceSettingsTestBase::DeviceSettingsTestBase()
     : ui_thread_(content::BrowserThread::UI, &loop_),
       file_thread_(content::BrowserThread::FILE, &loop_),
+      user_manager_(new FakeUserManager()),
+      user_manager_enabler_(user_manager_),
       owner_key_util_(new MockOwnerKeyUtil()),
       fake_dbus_thread_manager_(new FakeDBusThreadManager()) {
   fake_dbus_thread_manager_->SetFakeClients();
@@ -225,9 +230,15 @@ void DeviceSettingsTestBase::SetUp() {
   device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
   device_settings_service_.SetSessionManager(&device_settings_test_helper_,
                                              owner_key_util_);
+  OwnerSettingsService::SetOwnerKeyUtilForTesting(owner_key_util_.get());
+  OwnerSettingsService::SetDeviceSettingsServiceForTesting(
+      &device_settings_service_);
+  profile_.reset(new TestingProfile());
 }
 
 void DeviceSettingsTestBase::TearDown() {
+  OwnerSettingsService::SetOwnerKeyUtilForTesting(NULL);
+  OwnerSettingsService::SetDeviceSettingsServiceForTesting(NULL);
   FlushDeviceSettings();
   device_settings_service_.UnsetSessionManager();
   NetworkHandler::Shutdown();
@@ -241,6 +252,22 @@ void DeviceSettingsTestBase::FlushDeviceSettings() {
 void DeviceSettingsTestBase::ReloadDeviceSettings() {
   device_settings_service_.OwnerKeySet(true);
   FlushDeviceSettings();
+}
+
+void DeviceSettingsTestBase::InitOwner(const std::string& user_id,
+                                       bool tpm_is_ready) {
+  const User* user = user_manager_->FindUser(user_id);
+  if (!user) {
+    user = user_manager_->AddUser(user_id);
+    profile_->set_profile_name(user_id);
+    user_manager_->SetProfileForUser(user, profile_.get());
+  }
+  OwnerSettingsService* service =
+      OwnerSettingsServiceFactory::GetForProfile(profile_.get());
+  CHECK(service);
+  if (tpm_is_ready)
+    service->OnTPMTokenReady();
+  OwnerSettingsServiceFactory::GetInstance()->SetUsername(user_id);
 }
 
 }  // namespace chromeos

@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/chromeos/settings/owner_key_util.h"
 #include "policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
@@ -38,18 +39,18 @@ void DeviceCloudPolicyStoreChromeOS::Store(
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
 
-  scoped_refptr<chromeos::OwnerKey> owner_key(
-      device_settings_service_->GetOwnerKey());
+  scoped_refptr<chromeos::PublicKey> public_key(
+      device_settings_service_->GetPublicKey());
   if (!install_attributes_->IsEnterpriseDevice() ||
-      !device_settings_service_->policy_data() || !owner_key.get() ||
-      !owner_key->public_key()) {
+      !device_settings_service_->policy_data() || !public_key.get() ||
+      !public_key->is_loaded()) {
     status_ = STATUS_BAD_STATE;
     NotifyStoreError();
     return;
   }
 
   scoped_ptr<DeviceCloudPolicyValidator> validator(CreateValidator(policy));
-  validator->ValidateSignature(owner_key->public_key_as_string(),
+  validator->ValidateSignature(public_key->as_string(),
                                GetPolicyVerificationKey(),
                                install_attributes_->GetDomain(),
                                true);

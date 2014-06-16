@@ -11,9 +11,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
@@ -41,7 +44,13 @@ class SessionManagerOperationTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     policy_.payload().mutable_pinned_apps()->add_app_id("fake-app");
     policy_.Build();
+
+    profile_.reset(new TestingProfile());
+    OwnerSettingsService::SetOwnerKeyUtilForTesting(owner_key_util_);
+    service_ = OwnerSettingsServiceFactory::GetForProfile(profile_.get());
   }
+
+  void TearDown() { OwnerSettingsService::SetOwnerKeyUtilForTesting(NULL); }
 
   MOCK_METHOD2(OnOperationCompleted,
                void(SessionManagerOperation*, DeviceSettingsService::Status));
@@ -56,21 +65,11 @@ class SessionManagerOperationTest : public testing::Test {
   }
 
   void CheckPublicKeyLoaded(SessionManagerOperation* op) {
-    ASSERT_TRUE(op->owner_key().get());
-    ASSERT_TRUE(op->owner_key()->public_key());
+    ASSERT_TRUE(op->public_key().get());
+    ASSERT_TRUE(op->public_key()->is_loaded());
     std::vector<uint8> public_key;
     ASSERT_TRUE(policy_.GetSigningKey()->ExportPublicKey(&public_key));
-    EXPECT_EQ(public_key, *op->owner_key()->public_key());
-  }
-
-  void CheckPrivateKeyLoaded(SessionManagerOperation* op) {
-    ASSERT_TRUE(op->owner_key().get());
-    ASSERT_TRUE(op->owner_key()->private_key());
-    std::vector<uint8> expected_key;
-    ASSERT_TRUE(policy_.GetSigningKey()->ExportPrivateKey(&expected_key));
-    std::vector<uint8> actual_key;
-    ASSERT_TRUE(op->owner_key()->private_key()->ExportPrivateKey(&actual_key));
-    EXPECT_EQ(expected_key, actual_key);
+    EXPECT_EQ(public_key, op->public_key()->data());
   }
 
  protected:
@@ -81,6 +80,9 @@ class SessionManagerOperationTest : public testing::Test {
   policy::DevicePolicyBuilder policy_;
   DeviceSettingsTestHelper device_settings_test_helper_;
   scoped_refptr<MockOwnerKeyUtil> owner_key_util_;
+
+  scoped_ptr<TestingProfile> profile_;
+  OwnerSettingsService* service_;
 
   bool validated_;
 
@@ -102,9 +104,8 @@ TEST_F(SessionManagerOperationTest, LoadNoPolicyNoKey) {
 
   EXPECT_FALSE(op.policy_data().get());
   EXPECT_FALSE(op.device_settings().get());
-  ASSERT_TRUE(op.owner_key().get());
-  EXPECT_FALSE(op.owner_key()->public_key());
-  EXPECT_FALSE(op.owner_key()->private_key());
+  ASSERT_TRUE(op.public_key().get());
+  EXPECT_FALSE(op.public_key()->is_loaded());
 }
 
 TEST_F(SessionManagerOperationTest, LoadOwnerKey) {
@@ -145,23 +146,6 @@ TEST_F(SessionManagerOperationTest, LoadPolicy) {
             op.device_settings()->SerializeAsString());
 }
 
-TEST_F(SessionManagerOperationTest, LoadPrivateOwnerKey) {
-  owner_key_util_->SetPrivateKey(policy_.GetSigningKey());
-  LoadSettingsOperation op(
-      base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
-                 base::Unretained(this)));
-
-  EXPECT_CALL(*this,
-              OnOperationCompleted(
-                  &op, DeviceSettingsService::STORE_NO_POLICY));
-  op.Start(&device_settings_test_helper_, owner_key_util_, NULL);
-  device_settings_test_helper_.Flush();
-  Mock::VerifyAndClearExpectations(this);
-
-  CheckPublicKeyLoaded(&op);
-  CheckPrivateKeyLoaded(&op);
-}
-
 TEST_F(SessionManagerOperationTest, RestartLoad) {
   owner_key_util_->SetPrivateKey(policy_.GetSigningKey());
   device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
@@ -173,8 +157,8 @@ TEST_F(SessionManagerOperationTest, RestartLoad) {
   op.Start(&device_settings_test_helper_, owner_key_util_, NULL);
   device_settings_test_helper_.FlushLoops();
   device_settings_test_helper_.FlushRetrieve();
-  EXPECT_TRUE(op.owner_key().get());
-  EXPECT_TRUE(op.owner_key()->public_key());
+  EXPECT_TRUE(op.public_key().get());
+  EXPECT_TRUE(op.public_key()->is_loaded());
   Mock::VerifyAndClearExpectations(this);
 
   // Now install a different key and policy and restart the operation.
@@ -193,7 +177,6 @@ TEST_F(SessionManagerOperationTest, RestartLoad) {
 
   // Check that the new keys have been loaded.
   CheckPublicKeyLoaded(&op);
-  CheckPrivateKeyLoaded(&op);
 
   // Verify the new policy.
   ASSERT_TRUE(op.policy_data().get());
@@ -230,11 +213,14 @@ TEST_F(SessionManagerOperationTest, StoreSettings) {
 
 TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
   owner_key_util_->SetPrivateKey(policy_.GetSigningKey());
+  service_->OnTPMTokenReady();
+
   scoped_ptr<em::PolicyData> policy(new em::PolicyData(policy_.policy_data()));
   SignAndStoreSettingsOperation op(
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)),
       policy.Pass());
+  op.set_delegate(service_->as_weak_ptr());
 
   EXPECT_CALL(*this,
               OnOperationCompleted(

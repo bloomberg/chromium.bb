@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/settings/owner_key_util.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -138,9 +139,9 @@ void DeviceLocalAccountPolicyStore::Validate(
             ownership_status);
   const em::PolicyData* device_policy_data =
       device_settings_service_->policy_data();
-  scoped_refptr<chromeos::OwnerKey> key =
-      device_settings_service_->GetOwnerKey();
-  if (!key.get() || !key->public_key() || !device_policy_data) {
+  scoped_refptr<chromeos::PublicKey> key =
+      device_settings_service_->GetPublicKey();
+  if (!key || !key->is_loaded() || !device_policy_data) {
     status_ = CloudPolicyStore::STATUS_BAD_STATE;
     NotifyStoreLoaded();
     return;
@@ -168,7 +169,7 @@ void DeviceLocalAccountPolicyStore::Validate(
   validator->ValidatePayload();
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  validator->ValidateSignature(key->public_key_as_string(),
+  validator->ValidateSignature(key->as_string(),
                                GetPolicyVerificationKey(),
                                connector->GetEnterpriseDomain(),
                                false);

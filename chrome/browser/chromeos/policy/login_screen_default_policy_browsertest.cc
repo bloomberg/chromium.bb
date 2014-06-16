@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -220,10 +219,6 @@ LoginScreenDefaultPolicyInSessionBrowsertest::
 
 void LoginScreenDefaultPolicyInSessionBrowsertest::SetUpOnMainThread() {
   LoginScreenDefaultPolicyBrowsertestBase::SetUpOnMainThread();
-
-  // Tell the DeviceSettingsService that there is no local owner.
-  crypto::ScopedPK11Slot slot;
-  chromeos::DeviceSettingsService::Get()->InitOwner(std::string(), slot.Pass());
 }
 
 void LoginScreenDefaultPolicyInSessionBrowsertest::VerifyPrefFollowsDefault(

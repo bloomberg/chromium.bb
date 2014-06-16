@@ -66,6 +66,8 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
   // Make sure that we get the real Profile instead of the login Profile.
   user->set_profile_is_created();
   Profile* profile = UserManager::Get()->GetProfileByUser(user);
+  profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                 user_context.GetUserID());
 
   if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
     User* active_user = UserManager::Get()->GetActiveUser();

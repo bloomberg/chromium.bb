@@ -31,7 +31,6 @@ SessionManagerOperation::SessionManagerOperation(const Callback& callback)
       weak_factory_(this),
       callback_(callback),
       force_key_load_(false),
-      slot_(NULL),
       is_loading_(false) {}
 
 SessionManagerOperation::~SessionManagerOperation() {}
@@ -39,16 +38,16 @@ SessionManagerOperation::~SessionManagerOperation() {}
 void SessionManagerOperation::Start(
     SessionManagerClient* session_manager_client,
     scoped_refptr<OwnerKeyUtil> owner_key_util,
-    scoped_refptr<OwnerKey> owner_key) {
+    scoped_refptr<PublicKey> public_key) {
   session_manager_client_ = session_manager_client;
   owner_key_util_ = owner_key_util;
-  owner_key_ = owner_key;
+  public_key_ = public_key;
   Run();
 }
 
 void SessionManagerOperation::RestartLoad(bool key_changed) {
   if (key_changed)
-    owner_key_ = NULL;
+    public_key_ = NULL;
 
   if (!is_loading_)
     return;
@@ -64,8 +63,8 @@ void SessionManagerOperation::StartLoading() {
   if (is_loading_)
     return;
   is_loading_ = true;
-  EnsureOwnerKey(base::Bind(&SessionManagerOperation::RetrieveDeviceSettings,
-                            weak_factory_.GetWeakPtr()));
+  EnsurePublicKey(base::Bind(&SessionManagerOperation::RetrieveDeviceSettings,
+                             weak_factory_.GetWeakPtr()));
 }
 
 void SessionManagerOperation::ReportResult(
@@ -73,8 +72,8 @@ void SessionManagerOperation::ReportResult(
   callback_.Run(this, status);
 }
 
-void SessionManagerOperation::EnsureOwnerKey(const base::Closure& callback) {
-  if (force_key_load_ || !owner_key_.get() || !owner_key_->public_key()) {
+void SessionManagerOperation::EnsurePublicKey(const base::Closure& callback) {
+  if (force_key_load_ || !public_key_ || !public_key_->is_loaded()) {
     scoped_refptr<base::TaskRunner> task_runner =
         content::BrowserThread::GetBlockingPool()
             ->GetTaskRunnerWithShutdownBehavior(
@@ -82,11 +81,10 @@ void SessionManagerOperation::EnsureOwnerKey(const base::Closure& callback) {
     base::PostTaskAndReplyWithResult(
         task_runner.get(),
         FROM_HERE,
-        base::Bind(&SessionManagerOperation::LoadOwnerKey,
+        base::Bind(&SessionManagerOperation::LoadPublicKey,
                    owner_key_util_,
-                   owner_key_,
-                   slot_),
-        base::Bind(&SessionManagerOperation::StoreOwnerKey,
+                   public_key_),
+        base::Bind(&SessionManagerOperation::StorePublicKey,
                    weak_factory_.GetWeakPtr(),
                    callback));
   } else {
@@ -95,42 +93,29 @@ void SessionManagerOperation::EnsureOwnerKey(const base::Closure& callback) {
 }
 
 // static
-scoped_refptr<OwnerKey> SessionManagerOperation::LoadOwnerKey(
+scoped_refptr<PublicKey> SessionManagerOperation::LoadPublicKey(
     scoped_refptr<OwnerKeyUtil> util,
-    scoped_refptr<OwnerKey> current_key,
-    PK11SlotInfo* slot) {
-  scoped_ptr<std::vector<uint8> > public_key;
-  scoped_ptr<crypto::RSAPrivateKey> private_key;
+    scoped_refptr<PublicKey> current_key) {
+  scoped_refptr<PublicKey> public_key(new PublicKey());
 
-  // Keep any already-existing keys.
-  if (current_key.get()) {
-    if (current_key->public_key())
-      public_key.reset(new std::vector<uint8>(*current_key->public_key()));
-    if (current_key->private_key())
-      private_key.reset(current_key->private_key()->Copy());
+  // Keep already-existing public key.
+  if (current_key && current_key->is_loaded()) {
+    public_key->data() = current_key->data();
   }
-
-  if (!public_key.get() && util->IsPublicKeyPresent()) {
-    public_key.reset(new std::vector<uint8>());
-    if (!util->ImportPublicKey(public_key.get()))
+  if (!public_key->is_loaded() && util->IsPublicKeyPresent()) {
+    if (!util->ImportPublicKey(&public_key->data()))
       LOG(ERROR) << "Failed to load public owner key.";
   }
 
-  if (public_key.get() && !private_key.get()) {
-    private_key.reset(util->FindPrivateKeyInSlot(*public_key, slot));
-    if (!private_key.get())
-      VLOG(1) << "Failed to load private owner key.";
-  }
-
-  return new OwnerKey(public_key.Pass(), private_key.Pass());
+  return public_key;
 }
 
-void SessionManagerOperation::StoreOwnerKey(const base::Closure& callback,
-                                            scoped_refptr<OwnerKey> new_key) {
+void SessionManagerOperation::StorePublicKey(const base::Closure& callback,
+                                             scoped_refptr<PublicKey> new_key) {
   force_key_load_ = false;
-  owner_key_ = new_key;
+  public_key_ = new_key;
 
-  if (!owner_key_.get() || !owner_key_->public_key()) {
+  if (!public_key_ || !public_key_->is_loaded()) {
     ReportResult(DeviceSettingsService::STORE_KEY_UNAVAILABLE);
     return;
   }
@@ -191,7 +176,7 @@ void SessionManagerOperation::ValidateDeviceSettings(
   validator->ValidatePayload();
   // We don't check the DMServer verification key below, because the signing
   // key is validated when it is installed.
-  validator->ValidateSignature(owner_key_->public_key_as_string(),
+  validator->ValidateSignature(public_key_->as_string(),
                                std::string(),  // No key validation check.
                                std::string(),
                                false);
@@ -265,55 +250,29 @@ SignAndStoreSettingsOperation::SignAndStoreSettingsOperation(
 SignAndStoreSettingsOperation::~SignAndStoreSettingsOperation() {}
 
 void SignAndStoreSettingsOperation::Run() {
-  EnsureOwnerKey(base::Bind(&SignAndStoreSettingsOperation::StartSigning,
-                            weak_factory_.GetWeakPtr()));
+  if (!delegate_) {
+    ReportResult(DeviceSettingsService::STORE_KEY_UNAVAILABLE);
+    return;
+  }
+  delegate_->IsOwnerAsync(
+      base::Bind(&SignAndStoreSettingsOperation::StartSigning,
+                 weak_factory_.GetWeakPtr()));
 }
 
-void SignAndStoreSettingsOperation::StartSigning() {
-  if (!owner_key().get() ||
-      !owner_key()->private_key() ||
-      new_policy_->username().empty()) {
+void SignAndStoreSettingsOperation::StartSigning(bool is_owner) {
+  if (!delegate_ || !is_owner) {
     ReportResult(DeviceSettingsService::STORE_KEY_UNAVAILABLE);
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&SignAndStoreSettingsOperation::AssembleAndSignPolicy,
-                 base::Passed(&new_policy_), owner_key()),
+  bool rv = delegate_->AssembleAndSignPolicyAsync(
+      new_policy_.Pass(),
       base::Bind(&SignAndStoreSettingsOperation::StoreDeviceSettingsBlob,
                  weak_factory_.GetWeakPtr()));
-}
-
-// static
-std::string SignAndStoreSettingsOperation::AssembleAndSignPolicy(
-    scoped_ptr<em::PolicyData> policy,
-    scoped_refptr<OwnerKey> owner_key) {
-  // Assemble the policy.
-  em::PolicyFetchResponse policy_response;
-  if (!policy->SerializeToString(policy_response.mutable_policy_data())) {
-    LOG(ERROR) << "Failed to encode policy payload.";
-    return std::string();
+  if (!rv) {
+    ReportResult(DeviceSettingsService::STORE_KEY_UNAVAILABLE);
+    return;
   }
-
-  // Generate the signature.
-  scoped_ptr<crypto::SignatureCreator> signature_creator(
-      crypto::SignatureCreator::Create(owner_key->private_key()));
-  signature_creator->Update(
-      reinterpret_cast<const uint8*>(policy_response.policy_data().c_str()),
-      policy_response.policy_data().size());
-  std::vector<uint8> signature_bytes;
-  std::string policy_blob;
-  if (!signature_creator->Final(&signature_bytes)) {
-    LOG(ERROR) << "Failed to create policy signature.";
-    return std::string();
-  }
-
-  policy_response.mutable_policy_data_signature()->assign(
-      reinterpret_cast<const char*>(vector_as_array(&signature_bytes)),
-      signature_bytes.size());
-  return policy_response.SerializeAsString();
 }
 
 void SignAndStoreSettingsOperation::StoreDeviceSettingsBlob(

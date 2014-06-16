@@ -36,13 +36,6 @@ int kMaxLoadRetries = (1000 * 60 * 10) / kLoadRetryDelayMs;
 
 namespace chromeos {
 
-OwnerKey::OwnerKey(scoped_ptr<std::vector<uint8> > public_key,
-                   scoped_ptr<crypto::RSAPrivateKey> private_key)
-    : public_key_(public_key.Pass()),
-      private_key_(private_key.Pass()) {}
-
-OwnerKey::~OwnerKey() {}
-
 DeviceSettingsService::Observer::~Observer() {}
 
 static DeviceSettingsService* g_device_settings_service = NULL;
@@ -74,20 +67,12 @@ DeviceSettingsService* DeviceSettingsService::Get() {
 DeviceSettingsService::DeviceSettingsService()
     : session_manager_client_(NULL),
       store_status_(STORE_SUCCESS),
-      waiting_for_tpm_token_(true),
-      owner_key_loaded_with_tpm_token_(false),
       load_retries_left_(kMaxLoadRetries),
       weak_factory_(this) {
-  if (TPMTokenLoader::IsInitialized()) {
-    waiting_for_tpm_token_ = !TPMTokenLoader::Get()->IsTPMTokenReady();
-    TPMTokenLoader::Get()->AddObserver(this);
-  }
 }
 
 DeviceSettingsService::~DeviceSettingsService() {
   DCHECK(pending_operations_.empty());
-  if (TPMTokenLoader::IsInitialized())
-    TPMTokenLoader::Get()->RemoveObserver(this);
 }
 
 void DeviceSettingsService::SetSessionManager(
@@ -117,8 +102,8 @@ void DeviceSettingsService::UnsetSessionManager() {
   owner_key_util_ = NULL;
 }
 
-scoped_refptr<OwnerKey> DeviceSettingsService::GetOwnerKey() {
-  return owner_key_;
+scoped_refptr<PublicKey> DeviceSettingsService::GetPublicKey() {
+  return public_key_;
 }
 
 void DeviceSettingsService::Load() {
@@ -134,12 +119,7 @@ void DeviceSettingsService::SignAndStore(
     return;
   }
 
-  Enqueue(
-      new SignAndStoreSettingsOperation(
-          base::Bind(&DeviceSettingsService::HandleCompletedOperation,
-                     weak_factory_.GetWeakPtr(),
-                     callback),
-          new_policy.Pass()));
+  EnqueueSignAndStore(new_policy.Pass(), callback);
 }
 
 void DeviceSettingsService::SetManagementSettings(
@@ -164,12 +144,7 @@ void DeviceSettingsService::SetManagementSettings(
   policy->set_request_token(request_token);
   policy->set_device_id(device_id);
 
-  Enqueue(
-      new SignAndStoreSettingsOperation(
-          base::Bind(&DeviceSettingsService::HandleCompletedOperation,
-                     weak_factory_.GetWeakPtr(),
-                     callback),
-          policy.Pass()));
+  EnqueueSignAndStore(policy.Pass(), callback);
 }
 
 void DeviceSettingsService::Store(scoped_ptr<em::PolicyFetchResponse> policy,
@@ -184,21 +159,17 @@ void DeviceSettingsService::Store(scoped_ptr<em::PolicyFetchResponse> policy,
 
 DeviceSettingsService::OwnershipStatus
     DeviceSettingsService::GetOwnershipStatus() {
-  if (owner_key_.get())
-    return owner_key_->public_key() ? OWNERSHIP_TAKEN : OWNERSHIP_NONE;
-
+  if (public_key_)
+    return public_key_->is_loaded() ? OWNERSHIP_TAKEN : OWNERSHIP_NONE;
   return OWNERSHIP_UNKNOWN;
 }
 
 void DeviceSettingsService::GetOwnershipStatusAsync(
     const OwnershipStatusCallback& callback) {
-  if (owner_key_.get()) {
+  if (public_key_) {
     // If there is a key, report status immediately.
     base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(
-            callback,
-            owner_key_->public_key() ? OWNERSHIP_TAKEN : OWNERSHIP_NONE));
+        FROM_HERE, base::Bind(callback, GetOwnershipStatus()));
   } else {
     // If the key hasn't been loaded yet, enqueue the callback to be fired when
     // the next SessionManagerOperation completes. If no operation is pending,
@@ -210,38 +181,17 @@ void DeviceSettingsService::GetOwnershipStatusAsync(
 }
 
 bool DeviceSettingsService::HasPrivateOwnerKey() {
-  return owner_key_.get() && owner_key_->private_key();
+  return delegate_ && delegate_->IsOwner();
 }
 
-void DeviceSettingsService::IsCurrentUserOwnerAsync(
-    const IsCurrentUserOwnerCallback& callback) {
-  if (owner_key_loaded_with_tpm_token_) {
-    // If the current owner key was loaded while the certificates were loaded,
-    // or the certificate loader is not initialized, in which case the private
-    // key cannot be set, report status immediately.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, HasPrivateOwnerKey()));
-  } else {
-    // If the key hasn't been loaded with the known certificates, enqueue the
-    // callback to be fired when the next SessionManagerOperation completes in
-    // an environment where the certificates are loaded. There is no need to
-    // start a new operation, as the reload operation will be started when the
-    // certificates are loaded.
-    pending_is_current_user_owner_callbacks_.push_back(callback);
-  }
-}
-
-void DeviceSettingsService::InitOwner(const std::string& username,
-                                      crypto::ScopedPK11Slot slot) {
+void DeviceSettingsService::InitOwner(
+    const std::string& username,
+    const base::WeakPtr<PrivateKeyDelegate>& delegate) {
   if (!username_.empty())
     return;
-
   username_ = username;
-  slot_ = slot.Pass();
+  delegate_ = delegate;
 
-  // The private key may have become available, so force a key reload.
-  owner_key_ = NULL;
   EnsureReload(true);
 }
 
@@ -263,7 +213,7 @@ void DeviceSettingsService::OwnerKeySet(bool success) {
     return;
   }
 
-  owner_key_ = NULL;
+  public_key_ = NULL;
   EnsureReload(true);
 }
 
@@ -274,14 +224,6 @@ void DeviceSettingsService::PropertyChangeComplete(bool success) {
   }
 
   EnsureReload(false);
-}
-
-void DeviceSettingsService::OnTPMTokenReady() {
-  waiting_for_tpm_token_ = false;
-
-  // TPMTokenLoader initializes the TPM and NSS database which is necessary to
-  // determine ownership. Force a reload once we know these are initialized.
-  EnsureReload(true);
 }
 
 void DeviceSettingsService::Enqueue(SessionManagerOperation* operation) {
@@ -298,14 +240,26 @@ void DeviceSettingsService::EnqueueLoad(bool force_key_load) {
                      base::Closure()));
   operation->set_force_key_load(force_key_load);
   operation->set_username(username_);
-  operation->set_slot(slot_.get());
+  operation->set_delegate(delegate_);
+  Enqueue(operation);
+}
+
+void DeviceSettingsService::EnqueueSignAndStore(
+    scoped_ptr<em::PolicyData> policy,
+    const base::Closure& callback) {
+  SignAndStoreSettingsOperation* operation = new SignAndStoreSettingsOperation(
+      base::Bind(&DeviceSettingsService::HandleCompletedOperation,
+                 weak_factory_.GetWeakPtr(),
+                 callback),
+      policy.Pass());
+  operation->set_delegate(delegate_);
   Enqueue(operation);
 }
 
 void DeviceSettingsService::EnsureReload(bool force_key_load) {
   if (!pending_operations_.empty()) {
     pending_operations_.front()->set_username(username_);
-    pending_operations_.front()->set_slot(slot_.get());
+    pending_operations_.front()->set_delegate(delegate_);
     pending_operations_.front()->RestartLoad(force_key_load);
   } else {
     EnqueueLoad(force_key_load);
@@ -316,8 +270,8 @@ void DeviceSettingsService::StartNextOperation() {
   if (!pending_operations_.empty() &&
       session_manager_client_ &&
       owner_key_util_.get()) {
-    pending_operations_.front()->Start(session_manager_client_,
-                                       owner_key_util_, owner_key_);
+    pending_operations_.front()->Start(
+        session_manager_client_, owner_key_util_, public_key_);
   }
 }
 
@@ -329,19 +283,16 @@ void DeviceSettingsService::HandleCompletedOperation(
   store_status_ = status;
 
   OwnershipStatus ownership_status = OWNERSHIP_UNKNOWN;
-  bool is_owner = false;
-  scoped_refptr<OwnerKey> new_key(operation->owner_key());
+  scoped_refptr<PublicKey> new_key(operation->public_key());
   if (new_key.get()) {
-    ownership_status =
-        new_key->public_key() ? OWNERSHIP_TAKEN : OWNERSHIP_NONE;
-    is_owner = (new_key->private_key() != NULL);
+    ownership_status = new_key->is_loaded() ? OWNERSHIP_TAKEN : OWNERSHIP_NONE;
   } else {
     NOTREACHED() << "Failed to determine key status.";
   }
 
   bool new_owner_key = false;
-  if (owner_key_.get() != new_key.get()) {
-    owner_key_ = new_key;
+  if (public_key_.get() != new_key.get()) {
+    public_key_ = new_key;
     new_owner_key = true;
   }
 
@@ -385,17 +336,6 @@ void DeviceSettingsService::HandleCompletedOperation(
   for (std::vector<OwnershipStatusCallback>::iterator iter(callbacks.begin());
        iter != callbacks.end(); ++iter) {
     iter->Run(ownership_status);
-  }
-
-  if (!waiting_for_tpm_token_) {
-    owner_key_loaded_with_tpm_token_ = true;
-    std::vector<IsCurrentUserOwnerCallback> is_owner_callbacks;
-    is_owner_callbacks.swap(pending_is_current_user_owner_callbacks_);
-    for (std::vector<IsCurrentUserOwnerCallback>::iterator iter(
-             is_owner_callbacks.begin());
-         iter != is_owner_callbacks.end(); ++iter) {
-      iter->Run(is_owner);
-    }
   }
 
   // The completion callback happens after the notification so clients can
