@@ -14,7 +14,9 @@ UIATextProvider::UIATextProvider()
     : editable_(false) {}
 
 // static
-bool UIATextProvider::CreateTextProvider(bool editable, IUnknown** provider) {
+bool UIATextProvider::CreateTextProvider(const string16& value,
+                                         bool editable,
+                                         IUnknown** provider) {
   // Make sure ATL is initialized in this module.
   ui::win::CreateATLModuleIfNeeded();
 
@@ -23,6 +25,7 @@ bool UIATextProvider::CreateTextProvider(bool editable, IUnknown** provider) {
   if (SUCCEEDED(hr)) {
     DCHECK(text_provider);
     text_provider->set_editable(editable);
+    text_provider->set_value(value);
     text_provider->AddRef();
     *provider = static_cast<ITextProvider*>(text_provider);
     return true;
@@ -32,6 +35,11 @@ bool UIATextProvider::CreateTextProvider(bool editable, IUnknown** provider) {
 
 STDMETHODIMP UIATextProvider::get_IsReadOnly(BOOL* read_only) {
   *read_only = !editable_;
+  return S_OK;
+}
+
+STDMETHODIMP UIATextProvider::get_Value(BSTR* value) {
+  *value = SysAllocString(value_.c_str());
   return S_OK;
 }
 

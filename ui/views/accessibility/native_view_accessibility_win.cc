@@ -1166,7 +1166,8 @@ STDMETHODIMP NativeViewAccessibilityWin::GetPatternProvider(
 
     if (role == ROLE_SYSTEM_TEXT) {
       DVLOG(1) << "Returning UIA text provider";
-      base::win::UIATextProvider::CreateTextProvider(true, provider);
+      base::win::UIATextProvider::CreateTextProvider(
+          state.value, true, provider);
       return S_OK;
     }
   }

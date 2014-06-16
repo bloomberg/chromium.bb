@@ -2825,7 +2825,8 @@ STDMETHODIMP BrowserAccessibilityWin::GetPatternProvider(PATTERNID id,
   if (id == UIA_ValuePatternId || id == UIA_TextPatternId) {
     if (IsEditableText()) {
       DVLOG(1) << "Returning UIA text provider";
-      base::win::UIATextProvider::CreateTextProvider(true, provider);
+      base::win::UIATextProvider::CreateTextProvider(
+          GetValueText(), true, provider);
       return S_OK;
     }
   }

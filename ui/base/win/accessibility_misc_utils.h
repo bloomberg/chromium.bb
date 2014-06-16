@@ -9,6 +9,7 @@
 #include <UIAutomationCore.h>
 
 #include "base/compiler_specific.h"
+#include "base/strings/string16.h"
 #include "ui/base/ui_base_export.h"
 
 namespace base {
@@ -30,11 +31,15 @@ class UI_BASE_EXPORT UIATextProvider
 
   // Creates an instance of the UIATextProvider class.
   // Returns true on success
-  static bool CreateTextProvider(bool editable, IUnknown** provider);
+  static bool CreateTextProvider(const string16& value,
+                                 bool editable,
+                                 IUnknown** provider);
 
   void set_editable(bool editable) {
     editable_ = editable;
   }
+
+  void set_value(const string16& value) { value_ = value; }
 
   //
   // IValueProvider methods.
@@ -48,9 +53,7 @@ class UI_BASE_EXPORT UIATextProvider
     return E_NOTIMPL;
   }
 
-  STDMETHOD(get_Value)(BSTR* value) {
-    return E_NOTIMPL;
-  }
+  STDMETHOD(get_Value)(BSTR* value);
 
   //
   // ITextProvider methods.
@@ -83,6 +86,7 @@ class UI_BASE_EXPORT UIATextProvider
 
  private:
   bool editable_;
+  string16 value_;
 };
 
 }  // win
