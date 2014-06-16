@@ -567,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest,
   EXPECT_CALL(*classifier_, CancelPendingClassification());
 }
 
-#if defined(ADDERSS_SANITIZER)
+#if defined(ADDRESS_SANITIZER)
 #define Maybe_DuplicatePageCapture DISABLED_DuplicatePageCapture
 #else
 #define Maybe_DuplicatePageCapture DuplicatePageCapture
