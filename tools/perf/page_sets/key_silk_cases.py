@@ -87,7 +87,7 @@ class Page4(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page4, self).__init__(
-      url='http://jsfiddle.net/3yDKh/4/embedded/result',
+      url='http://jsfiddle.net/3yDKh/15/show/',
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
@@ -102,7 +102,7 @@ class Page5(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page5, self).__init__(
-      url='http://jsfiddle.net/jx5De/13/embedded/result',
+      url='http://jsfiddle.net/jx5De/14/show/',
       page_set=page_set)
 
     self.gpu_raster = True
@@ -120,7 +120,7 @@ class Page6(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page6, self).__init__(
-      url='http://jsfiddle.net/3yDKh/6/embedded/result',
+      url='http://jsfiddle.net/3yDKh/16/show/',
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
@@ -137,7 +137,7 @@ class Page7(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page7, self).__init__(
-      url='http://jsfiddle.net/R8DX9/1/embedded/result/',
+      url='http://jsfiddle.net/R8DX9/4/show/',
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
@@ -154,7 +154,7 @@ class Page8(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page8, self).__init__(
-      url='http://jsfiddle.net/rF9Gh/3/embedded/result/',
+      url='http://jsfiddle.net/rF9Gh/7/show/',
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
@@ -170,7 +170,7 @@ class Page9(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page9, self).__init__(
-      url='http://jsfiddle.net/TLXLu/2/embedded/result/',
+      url='http://jsfiddle.net/TLXLu/3/show/',
       page_set=page_set)
 
     self.gpu_raster = True
@@ -188,7 +188,7 @@ class Page10(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page10, self).__init__(
-      url='http://jsfiddle.net/cKB9D/6/embedded/result/',
+      url='http://jsfiddle.net/cKB9D/7/show/',
       page_set=page_set)
 
     self.gpu_raster = True
@@ -206,7 +206,7 @@ class Page11(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page11, self).__init__(
-      url='http://jsfiddle.net/vBQHH/10/embedded/result/',
+      url='http://jsfiddle.net/vBQHH/11/show/',
       page_set=page_set)
 
     self.gpu_raster = True
@@ -221,7 +221,7 @@ class Page12(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page12, self).__init__(
-      url='http://jsfiddle.net/ugkd4/9/embedded/result/',
+      url='http://jsfiddle.net/ugkd4/10/show/',
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
@@ -234,7 +234,7 @@ class Page13(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page13, self).__init__(
-      url='http://jsfiddle.net/xLuvC/embedded/result/',
+      url='http://jsfiddle.net/xLuvC/1/show/',
       page_set=page_set)
 
     self.gpu_raster = True
@@ -249,7 +249,7 @@ class Page14(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page14, self).__init__(
-      url='http://jsfiddle.net/bNp2h/1/embedded/result/',
+      url='http://jsfiddle.net/bNp2h/2/show/',
       page_set=page_set)
 
     self.gpu_raster = True
@@ -499,7 +499,7 @@ class Page23(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page23, self).__init__(
-      url='http://jsbin.com/UVIgUTa/6/quiet',
+      url='http://jsbin.com/UVIgUTa/38/quiet',
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
