@@ -12,6 +12,7 @@
 namespace WebCore {
 // Type checking.
 {% for tag in tags|sort if not tag.multipleTagNames and not tag.noTypeHelpers %}
+{% filter enable_conditional(tag.Conditional) %}
 class {{tag.interface}};
 void is{{tag.interface}}(const {{tag.interface}}&); // Catch unnecessary runtime check of type known at compile time.
 void is{{tag.interface}}(const {{tag.interface}}*); // Catch unnecessary runtime check of type known at compile time.
@@ -51,13 +52,15 @@ template <> inline bool isElementOfType<const {{tag.interface}}>(const Element& 
 {% if namespace == "HTML" %}
 template <> inline bool isElementOfType<const {{tag.interface}}>(const HTMLElement& element) { return is{{tag.interface}}(element); }
 {% endif %}
-
+{% endfilter %}
 {% endfor %}
 // Using macros because the types are forward-declared and we don't want to use reinterpret_cast in the
 // casting functions above. reinterpret_cast would be unsafe due to multiple inheritence.
 
 {% for tag in tags|sort if not tag.multipleTagNames and not tag.noTypeHelpers %}
+{% filter enable_conditional(tag.Conditional) %}
 #define to{{tag.interface}}(x) WebCore::toElement<WebCore::{{tag.interface}}>(x)
+{% endfilter %}
 {% endfor %}
 } // WebCore
 

@@ -40,6 +40,7 @@ from make_qualified_names import MakeQualifiedNamesWriter
 class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
     defaults = dict(MakeQualifiedNamesWriter.default_parameters, **{
         'JSInterfaceName': None,
+        'Conditional': None,
         'constructorNeedsCreatedByParser': None,
         'constructorNeedsFormElement': None,
         'contextConditional': None,

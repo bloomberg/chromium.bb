@@ -22,9 +22,7 @@ def _symbol(tag):
 
 class MakeElementTypeHelpersWriter(in_generator.Writer):
     defaults = {
-        'interfaceName': None,
-        'noConstructor': None,
-        'noTypeHelpers': None,
+        'Conditional': None,
         'ImplementedAs': None,
         'JSInterfaceName': None,
         'constructorNeedsCreatedByParser': None,
@@ -32,17 +30,20 @@ class MakeElementTypeHelpersWriter(in_generator.Writer):
         'contextConditional': None,
         'interfaceName': None,
         'noConstructor': None,
+        'noConstructor': None,
+        'noTypeHelpers': None,
         'runtimeEnabled': None,
     }
     default_parameters = {
         'attrsNullNamespace': None,
+        'fallbackInterfaceName': '',
         'namespace': '',
         'namespacePrefix': '',
         'namespaceURI': '',
-        'fallbackInterfaceName': '',
         'fallbackJSInterfaceName': '',
     }
     filters = {
+        'enable_conditional': name_utilities.enable_conditional_if_endif,
         'hash': hasher.hash,
         'symbol': _symbol,
     }

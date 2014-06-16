@@ -46,17 +46,18 @@ def _symbol(entry):
 class MakeNamesWriter(in_generator.Writer):
     defaults = {
         'Conditional': None,  # FIXME: Add support for Conditional.
-        'RuntimeEnabled': None,  # What should we do for runtime-enabled features?
         'ImplementedAs': None,
+        'RuntimeEnabled': None,  # What should we do for runtime-enabled features?
         'Symbol': None,
     }
     default_parameters = {
+        'export': '',
         'namespace': '',
         'suffix': '',
-        'export': '',
     }
     filters = {
         'cpp_name': name_utilities.cpp_name,
+        'enable_conditional': name_utilities.enable_conditional_if_endif,
         'hash': hasher.hash,
         'script_name': name_utilities.script_name,
         'symbol': _symbol,
