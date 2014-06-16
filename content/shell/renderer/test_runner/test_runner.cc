@@ -20,6 +20,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatus.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -27,6 +28,7 @@
 #include "third_party/WebKit/public/platform/WebDeviceOrientationData.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -42,6 +44,7 @@
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebSurroundingText.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 #if defined(__linux__) || defined(ANDROID)
@@ -81,7 +84,8 @@ class InvokeCallbackTask : public WebMethodTask<TestRunner> {
  public:
   InvokeCallbackTask(TestRunner* object, v8::Handle<v8::Function> callback)
       : WebMethodTask<TestRunner>(object),
-        callback_(blink::mainThreadIsolate(), callback) {}
+        callback_(blink::mainThreadIsolate(), callback),
+        argc_(0) {}
 
   virtual void runIfValid() OVERRIDE {
     v8::Isolate* isolate = blink::mainThreadIsolate();
@@ -94,15 +98,32 @@ class InvokeCallbackTask : public WebMethodTask<TestRunner> {
 
     v8::Context::Scope context_scope(context);
 
+    scoped_ptr<v8::Handle<v8::Value>[]> local_argv;
+    if (argc_) {
+        local_argv.reset(new v8::Handle<v8::Value>[argc_]);
+        for (int i = 0; i < argc_; ++i)
+          local_argv[i] = v8::Local<v8::Value>::New(isolate, argv_[i]);
+    }
+
     frame->callFunctionEvenIfScriptDisabled(
         v8::Local<v8::Function>::New(isolate, callback_),
         context->Global(),
-        0,
-        NULL);
+        argc_,
+        local_argv.get());
+  }
+
+  void SetArguments(int argc, v8::Handle<v8::Value> argv[]) {
+    v8::Isolate* isolate = blink::mainThreadIsolate();
+    argc_ = argc;
+    argv_.reset(new v8::UniquePersistent<v8::Value>[argc]);
+    for (int i = 0; i < argc; ++i)
+      argv_[i] = v8::UniquePersistent<v8::Value>(isolate, argv[i]);
   }
 
  private:
   v8::UniquePersistent<v8::Function> callback_;
+  int argc_;
+  scoped_ptr<v8::UniquePersistent<v8::Value>[]> argv_;
 };
 
 class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
@@ -256,6 +277,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void RemoveWebPageOverlay();
   void DisplayAsync();
   void DisplayAsyncThen(v8::Handle<v8::Function> callback);
+  void CapturePixelsAsyncThen(v8::Handle<v8::Function> callback);
   void SetCustomTextOutput(std::string output);
   void SetViewSourceForFrame(const std::string& name, bool enabled);
   void setMockPushClientSuccess(const std::string& end_point,
@@ -500,6 +522,7 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::RemoveWebPageOverlay)
       .SetMethod("displayAsync", &TestRunnerBindings::DisplayAsync)
       .SetMethod("displayAsyncThen", &TestRunnerBindings::DisplayAsyncThen)
+      .SetMethod("capturePixelsAsyncThen", &TestRunnerBindings::CapturePixelsAsyncThen)
       .SetMethod("setCustomTextOutput",
                  &TestRunnerBindings::SetCustomTextOutput)
       .SetMethod("setViewSourceForFrame",
@@ -1298,6 +1321,12 @@ void TestRunnerBindings::DisplayAsync() {
 void TestRunnerBindings::DisplayAsyncThen(v8::Handle<v8::Function> callback) {
   if (runner_)
     runner_->DisplayAsyncThen(callback);
+}
+
+void TestRunnerBindings::CapturePixelsAsyncThen(
+    v8::Handle<v8::Function> callback) {
+  if (runner_)
+    runner_->CapturePixelsAsyncThen(callback);
 }
 
 void TestRunnerBindings::SetCustomTextOutput(std::string output) {
@@ -2715,6 +2744,46 @@ void TestRunner::DisplayAsyncThen(v8::Handle<v8::Function> callback) {
   proxy_->DisplayAsyncThen(base::Bind(&TestRunner::InvokeCallback,
                                       base::Unretained(this),
                                       base::Passed(&task)));
+}
+
+void TestRunner::CapturePixelsAsyncThen(v8::Handle<v8::Function> callback) {
+  scoped_ptr<InvokeCallbackTask> task(
+      new InvokeCallbackTask(this, callback));
+  proxy_->CapturePixelsAsync(base::Bind(&TestRunner::CapturePixelsCallback,
+                                        base::Unretained(this),
+                                        base::Passed(&task)));
+}
+
+void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
+                                       const SkBitmap& snapshot) {
+  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+
+  v8::Handle<v8::Context> context =
+      web_view_->mainFrame()->mainWorldScriptContext();
+  if (context.IsEmpty())
+    return;
+
+  v8::Context::Scope context_scope(context);
+  v8::Handle<v8::Value> argv[3];
+  SkAutoLockPixels snapshot_lock(snapshot);
+
+  int width = snapshot.info().fWidth;
+  DCHECK_NE(0, width);
+  argv[0] = v8::Number::New(isolate, width);
+
+  int height = snapshot.info().fHeight;
+  DCHECK_NE(0, height);
+  argv[1] = v8::Number::New(isolate, height);
+
+  blink::WebArrayBuffer buffer =
+      blink::WebArrayBuffer::create(snapshot.getSize(), 1);
+  memcpy(buffer.data(), snapshot.getPixels(), buffer.byteLength());
+  argv[2] = blink::WebArrayBufferConverter::toV8Value(
+      &buffer, context->Global(), isolate);
+
+  task->SetArguments(3, argv);
+  InvokeCallback(task.Pass());
 }
 
 void TestRunner::SetMockPushClientSuccess(
