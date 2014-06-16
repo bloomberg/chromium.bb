@@ -40,7 +40,6 @@ OverviewButtonTray::OverviewButtonTray(StatusAreaWidget* status_area_widget)
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_OVERVIEW_MODE).ToImageSkia());
   SetIconBorderForShelfAlignment();
   tray_container()->AddChildView(icon_);
-  UpdateIconVisibility();
 
   Shell::GetInstance()->AddShellObserver(this);
 }

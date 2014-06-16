@@ -64,7 +64,6 @@ VirtualKeyboardTray::VirtualKeyboardTray(StatusAreaWidget* status_area_widget)
 
   tray_container()->AddChildView(button_);
   SetContentsBackground();
-  SetVisible(false);
   // The Shell may not exist in some unit tests.
   if (Shell::HasInstance()) {
     Shell::GetInstance()->system_tray_notifier()->

@@ -305,7 +305,6 @@ WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
   tray_container()->AddChildView(button_);
   SetContentsBackground();
   tray_container()->SetBorder(views::Border::NullBorder());
-  SetVisible(false);
   message_center_tray_.reset(new message_center::MessageCenterTray(
       this,
       message_center::MessageCenter::Get()));

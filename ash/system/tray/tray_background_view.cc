@@ -323,6 +323,8 @@ TrayBackgroundView::TrayBackgroundView(StatusAreaWidget* status_area_widget)
 
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(false);
+  // Start the tray items not visible, because visibility changes are animated.
+  views::View::SetVisible(false);
 }
 
 TrayBackgroundView::~TrayBackgroundView() {
