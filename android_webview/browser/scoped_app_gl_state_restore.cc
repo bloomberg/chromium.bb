@@ -103,6 +103,7 @@ class ScopedAppGLStateRestoreImpl {
   GLint cull_face_mode_;
   GLboolean color_mask_[4];
   GLfloat color_clear_[4];
+  GLfloat blend_color_[4];
   GLfloat depth_clear_;
   GLint current_program_;
   GLint depth_func_;
@@ -115,6 +116,8 @@ class ScopedAppGLStateRestoreImpl {
   GLfloat polygon_offset_units_;
   GLfloat sample_coverage_value_;
   GLboolean sample_coverage_invert_;
+  GLint blend_equation_rgb_;
+  GLint blend_equation_alpha_;
 
   GLboolean enable_dither_;
   GLboolean enable_polygon_offset_fill_;
@@ -133,9 +136,21 @@ class ScopedAppGLStateRestoreImpl {
   GLint scissor_box_[4];
 
   GLboolean stencil_test_;
-  GLint stencil_func_;
-  GLint stencil_mask_;
-  GLint stencil_ref_;
+  GLint stencil_front_func_;
+  GLint stencil_front_ref_;
+  GLint stencil_front_mask_;
+  GLint stencil_back_func_;
+  GLint stencil_back_ref_;
+  GLint stencil_back_mask_;
+  GLint stencil_clear_;
+  GLint stencil_front_writemask_;
+  GLint stencil_back_writemask_;
+  GLint stencil_front_fail_op_;
+  GLint stencil_front_z_fail_op_;
+  GLint stencil_front_z_pass_op_;
+  GLint stencil_back_fail_op_;
+  GLint stencil_back_z_fail_op_;
+  GLint stencil_back_z_pass_op_;
 
   GLint framebuffer_binding_ext_;
 
@@ -203,6 +218,7 @@ ScopedAppGLStateRestoreImpl::ScopedAppGLStateRestoreImpl(
   glGetIntegerv(GL_CURRENT_PROGRAM, &current_program_);
   glGetFloatv(GL_COLOR_CLEAR_VALUE, color_clear_);
   glGetFloatv(GL_DEPTH_CLEAR_VALUE, &depth_clear_);
+  glGetFloatv(GL_BLEND_COLOR, blend_color_);
   glGetIntegerv(GL_DEPTH_FUNC, &depth_func_);
   glGetBooleanv(GL_DEPTH_WRITEMASK, &depth_mask_);
   glGetFloatv(GL_DEPTH_RANGE, depth_rage_);
@@ -213,6 +229,8 @@ ScopedAppGLStateRestoreImpl::ScopedAppGLStateRestoreImpl(
   glGetFloatv(GL_POLYGON_OFFSET_UNITS, &polygon_offset_units_);
   glGetFloatv(GL_SAMPLE_COVERAGE_VALUE, &sample_coverage_value_);
   glGetBooleanv(GL_SAMPLE_COVERAGE_INVERT, &sample_coverage_invert_);
+  glGetIntegerv(GL_BLEND_EQUATION_RGB, &blend_equation_rgb_);
+  glGetIntegerv(GL_BLEND_EQUATION_ALPHA, &blend_equation_alpha_);
 
   glGetBooleanv(GL_DITHER, &enable_dither_);
   glGetBooleanv(GL_POLYGON_OFFSET_FILL, &enable_polygon_offset_fill_);
@@ -220,9 +238,21 @@ ScopedAppGLStateRestoreImpl::ScopedAppGLStateRestoreImpl(
   glGetBooleanv(GL_SAMPLE_COVERAGE, &enable_sample_coverage_);
 
   glGetBooleanv(GL_STENCIL_TEST, &stencil_test_);
-  glGetIntegerv(GL_STENCIL_FUNC, &stencil_func_);
-  glGetIntegerv(GL_STENCIL_VALUE_MASK, &stencil_mask_);
-  glGetIntegerv(GL_STENCIL_REF, &stencil_ref_);
+  glGetIntegerv(GL_STENCIL_FUNC, &stencil_front_func_);
+  glGetIntegerv(GL_STENCIL_VALUE_MASK, &stencil_front_mask_);
+  glGetIntegerv(GL_STENCIL_REF, &stencil_front_ref_);
+  glGetIntegerv(GL_STENCIL_BACK_FUNC, &stencil_back_func_);
+  glGetIntegerv(GL_STENCIL_BACK_VALUE_MASK, &stencil_back_mask_);
+  glGetIntegerv(GL_STENCIL_BACK_REF, &stencil_back_ref_);
+  glGetIntegerv(GL_STENCIL_CLEAR_VALUE, &stencil_clear_);
+  glGetIntegerv(GL_STENCIL_WRITEMASK, &stencil_front_writemask_);
+  glGetIntegerv(GL_STENCIL_BACK_WRITEMASK, &stencil_back_writemask_);
+  glGetIntegerv(GL_STENCIL_FAIL, &stencil_front_fail_op_);
+  glGetIntegerv(GL_STENCIL_PASS_DEPTH_FAIL, &stencil_front_z_fail_op_);
+  glGetIntegerv(GL_STENCIL_PASS_DEPTH_PASS, &stencil_front_z_pass_op_);
+  glGetIntegerv(GL_STENCIL_BACK_FAIL, &stencil_back_fail_op_);
+  glGetIntegerv(GL_STENCIL_BACK_PASS_DEPTH_FAIL, &stencil_back_z_fail_op_);
+  glGetIntegerv(GL_STENCIL_BACK_PASS_DEPTH_PASS, &stencil_back_z_pass_op_);
 
   glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &framebuffer_binding_ext_);
 
@@ -326,6 +356,8 @@ ScopedAppGLStateRestoreImpl::~ScopedAppGLStateRestoreImpl() {
 
   glClearColor(
       color_clear_[0], color_clear_[1], color_clear_[2], color_clear_[3]);
+  glBlendColor(
+      blend_color_[0], blend_color_[1], blend_color_[2], blend_color_[3]);
   glClearDepth(depth_clear_);
   glDepthFunc(depth_func_);
   glDepthMask(depth_mask_);
@@ -336,6 +368,7 @@ ScopedAppGLStateRestoreImpl::~ScopedAppGLStateRestoreImpl() {
   glLineWidth(line_width_);
   glPolygonOffset(polygon_offset_factor_, polygon_offset_units_);
   glSampleCoverage(sample_coverage_value_, sample_coverage_invert_);
+  glBlendEquationSeparate(blend_equation_rgb_, blend_equation_alpha_);
 
   GLEnableDisable(GL_DITHER, enable_dither_);
   GLEnableDisable(GL_POLYGON_OFFSET_FILL, enable_polygon_offset_fill_);
@@ -362,7 +395,21 @@ ScopedAppGLStateRestoreImpl::~ScopedAppGLStateRestoreImpl() {
   }
 
   GLEnableDisable(GL_STENCIL_TEST, stencil_test_);
-  glStencilFunc(stencil_func_, stencil_mask_, stencil_ref_);
+  glStencilFuncSeparate(
+      GL_FRONT, stencil_front_func_, stencil_front_mask_, stencil_front_ref_);
+  glStencilFuncSeparate(
+      GL_BACK, stencil_back_func_, stencil_back_mask_, stencil_back_ref_);
+  glClearStencil(stencil_clear_);
+  glStencilMaskSeparate(GL_FRONT, stencil_front_writemask_);
+  glStencilMaskSeparate(GL_BACK, stencil_back_writemask_);
+  glStencilOpSeparate(GL_FRONT,
+                      stencil_front_fail_op_,
+                      stencil_front_z_fail_op_,
+                      stencil_front_z_pass_op_);
+  glStencilOpSeparate(GL_BACK,
+                      stencil_back_fail_op_,
+                      stencil_back_z_fail_op_,
+                      stencil_back_z_pass_op_);
 
   // Do not leak GLError out of chromium.
   ClearGLErrors(true, "Chromium GLError");
