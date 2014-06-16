@@ -20,7 +20,7 @@ extern "C" {
 #endif
 
 MOJO_GLES2_EXPORT void MojoGLES2Initialize(const MojoAsyncWaiter* async_waiter);
-MOJO_GLES2_EXPORT void MojoGLES2Terminate();
+MOJO_GLES2_EXPORT void MojoGLES2Terminate(void);
 MOJO_GLES2_EXPORT MojoGLES2Context MojoGLES2CreateContext(
     MojoHandle handle,
     MojoGLES2ContextLost lost_callback,
@@ -28,7 +28,7 @@ MOJO_GLES2_EXPORT MojoGLES2Context MojoGLES2CreateContext(
     void* closure);
 MOJO_GLES2_EXPORT void MojoGLES2DestroyContext(MojoGLES2Context context);
 MOJO_GLES2_EXPORT void MojoGLES2MakeCurrent(MojoGLES2Context context);
-MOJO_GLES2_EXPORT void MojoGLES2SwapBuffers();
+MOJO_GLES2_EXPORT void MojoGLES2SwapBuffers(void);
 // TODO(piman): this doesn't belong here.
 MOJO_GLES2_EXPORT void MojoGLES2RequestAnimationFrames(
     MojoGLES2Context context);

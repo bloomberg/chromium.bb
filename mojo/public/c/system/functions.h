@@ -28,7 +28,7 @@ extern "C" {
 // Platform-dependent monotonically increasing tick count representing "right
 // now." The resolution of this clock is ~1-15ms.  Resolution varies depending
 // on hardware/operating system configuration.
-MOJO_SYSTEM_EXPORT MojoTimeTicks MojoGetTimeTicksNow();
+MOJO_SYSTEM_EXPORT MojoTimeTicks MojoGetTimeTicksNow(void);
 
 // Closes the given |handle|.
 //
