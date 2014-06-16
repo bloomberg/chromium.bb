@@ -340,10 +340,9 @@ class BookmarkBarControllerTestBase : public CocoaProfileTest {
 
 class BookmarkBarControllerTest : public BookmarkBarControllerTestBase {
  public:
-  base::scoped_nsobject<NSButtonCell> cell_;
   base::scoped_nsobject<BookmarkBarControllerNoOpen> bar_;
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     BookmarkBarControllerTestBase::SetUp();
     ASSERT_TRUE(browser());
     AddCommandLineSwitches();
@@ -1453,6 +1452,11 @@ TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
   // Now that we've closed the bookmark bar (with animation) the folder menu
   // should have been closed thus releasing the folderController.
   EXPECT_FALSE([bar_ folderController]);
+
+  // Stop the pending animation to tear down cleanly.
+  [bar_ updateState:BookmarkBar::DETACHED
+         changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
+  EXPECT_FALSE([bar_ isAnimationRunning]);
 }
 
 TEST_F(BookmarkBarControllerTest, MoveRemoveAddButtons) {

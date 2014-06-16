@@ -511,10 +511,11 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   [self showBookmarkBarWithAnimation:NO];
 }
 
-- (void)updateAppsPageShortcutButtonVisibility {
-  if (!appsPageShortcutButton_.get())
+- (void)updateExtraButtonsVisibility {
+  if (!appsPageShortcutButton_.get() || !managedBookmarksButton_.get())
     return;
   [self setAppsPageShortcutButtonVisibility];
+  [self setManagedBookmarksButtonVisibility];
   [self resetAllButtonPositionsWithAnimation:NO];
   [self reconfigureBookmarkBar];
 }
@@ -1170,7 +1171,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (!managedBookmarksButton_.get())
     return NO;
 
-  BOOL visible = ![managedBookmarksButton_ bookmarkNode]->empty();
+  PrefService* prefs = browser_->profile()->GetPrefs();
+  BOOL visible = ![managedBookmarksButton_ bookmarkNode]->empty() &&
+                 prefs->GetBoolean(prefs::kShowManagedBookmarksInBookmarkBar);
   BOOL currentVisibility = ![managedBookmarksButton_ isHidden];
   if (currentVisibility != visible) {
     [managedBookmarksButton_ setHidden:!visible];
