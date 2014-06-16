@@ -1759,6 +1759,10 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     if key == 'CXX.host':
       cxx_host = os.path.join(build_to_root, value)
       cxx_host_global_setting = value
+    if key == 'LD':
+      ld = os.path.join(build_to_root, value)
+    if key == 'LD.host':
+      ld_host = os.path.join(build_to_root, value)
     if key.endswith('_wrapper'):
       wrappers[key[:-len('_wrapper')]] = os.path.join(build_to_root, value)
 

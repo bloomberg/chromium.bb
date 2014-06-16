@@ -96,9 +96,7 @@ verify_ld_host(test)
 # Test 'LD' in 'make_global_settings'.
 with TestGyp.LocalEnv({'GYP_CROSSCOMPILE': '1'}):
   test.run_gyp('make_global_settings_ld.gyp', '-Dcustom_ld_target=my_ld')
-# TODO(yukawa): Support 'LD' in Ninja generator
-if test.format == 'make':
-  verify_ld_target(test, ld='my_ld', rel_path=True)
+verify_ld_target(test, ld='my_ld', rel_path=True)
 
 
 # Test 'LD'/'LD.host' in 'make_global_settings'.
@@ -106,10 +104,8 @@ with TestGyp.LocalEnv({'GYP_CROSSCOMPILE': '1'}):
   test.run_gyp('make_global_settings_ld.gyp',
                '-Dcustom_ld_target=my_ld_target1',
                '-Dcustom_ld_host=my_ld_host1')
-# TODO(yukawa): Support 'LD'/'LD.host' in Ninja generator
-if test.format == 'make':
-  verify_ld_target(test, ld='my_ld_target1', rel_path=True)
-  verify_ld_host(test, ld='my_ld_host1', rel_path=True)
+verify_ld_target(test, ld='my_ld_target1', rel_path=True)
+verify_ld_host(test, ld='my_ld_host1', rel_path=True)
 
 
 # Unlike other environment variables such as $AR/$AR_host, $CC/$CC_host,
