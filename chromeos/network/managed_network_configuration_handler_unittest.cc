@@ -485,6 +485,32 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
   message_loop_.RunUntilIdle();
 }
 
+TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedVPN) {
+  InitializeStandardProfiles();
+  SetUpEntry("policy/shill_managed_vpn.json", kUser1ProfilePath, "entry_path");
+
+  scoped_ptr<base::DictionaryValue> expected_shill_properties =
+      test_utils::ReadTestDictionary(
+          "policy/shill_policy_on_managed_vpn.json");
+
+  EXPECT_CALL(*mock_profile_client_,
+              GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
+
+  EXPECT_CALL(
+      *mock_profile_client_,
+      GetEntry(dbus::ObjectPath(kUser1ProfilePath), "entry_path", _, _));
+
+  EXPECT_CALL(*mock_manager_client_,
+              ConfigureServiceForProfile(
+                  dbus::ObjectPath(kUser1ProfilePath),
+                  IsEqualTo(expected_shill_properties.get()),
+                  _, _));
+
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_vpn.onc");
+  message_loop_.RunUntilIdle();
+  VerifyAndClearExpectations();
+}
+
 TEST_F(ManagedNetworkConfigurationHandlerTest,
        SetPolicyUpdateManagedEquivalentSecurity) {
   InitializeStandardProfiles();

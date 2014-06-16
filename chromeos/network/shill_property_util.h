@@ -57,19 +57,27 @@ scoped_ptr<NetworkUIData> GetUIDataFromProperties(
 void SetUIData(const NetworkUIData& ui_data,
                base::DictionaryValue* shill_dictionary);
 
-// Copy configuration properties required by Shill to identify a network.
+// Copy configuration properties required by Shill to identify a network in the
+// format that Shill expects on writes.
 // Only WiFi, VPN, Ethernet and EthernetEAP are supported. Wimax and Cellular
-// are not supported. Returns true only if all required properties could be
-// copied.
+// are not supported.
+// If |properties_read_from_shill| is true, it is assumed that
+// |service_properties| has the format that Shill exposes on reads, as opposed
+// to property dictionaries which are sent to Shill. Returns true only if all
+// required properties could be copied.
 bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
+                               const bool properties_read_from_shill,
                                base::DictionaryValue* dest);
 
-// Compares the identifying configuration properties of |properties_a| and
-// |properties_b|, returns true if they are identical. See also
-// CopyIdentifyingProperties. Only WiFi, VPN, Ethernet and EthernetEAP are
-// supported. Wimax and Cellular are not supported.
-bool DoIdentifyingPropertiesMatch(const base::DictionaryValue& properties_a,
-                                  const base::DictionaryValue& properties_b);
+// Compares the identifying configuration properties of |new_properties| and
+// |old_properties|, returns true if they are identical. |new_properties| must
+// have the form that Shill expects on writes. |old_properties| must have the
+// form that Shill exposes on reads. See also CopyIdentifyingProperties. Only
+// WiFi, VPN, Ethernet and EthernetEAP are supported. Wimax and Cellular are not
+// supported.
+bool DoIdentifyingPropertiesMatch(
+    const base::DictionaryValue& new_properties,
+    const base::DictionaryValue& old_properties);
 
 // Returns true if |key| corresponds to a passphrase property.
 bool IsPassphraseKey(const std::string& key);

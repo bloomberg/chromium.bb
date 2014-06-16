@@ -238,6 +238,7 @@ void SetUIData(const NetworkUIData& ui_data,
 }
 
 bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
+                               const bool properties_read_from_shill,
                                base::DictionaryValue* dest) {
   bool success = true;
 
@@ -265,25 +266,33 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
   } else if (type == shill::kTypeVPN) {
     success &= CopyStringFromDictionary(
         service_properties, shill::kNameProperty, dest);
+
     // VPN Provider values are read from the "Provider" dictionary, but written
     // with the keys "Provider.Type" and "Provider.Host".
-    const base::DictionaryValue* provider_properties = NULL;
-    if (!service_properties.GetDictionaryWithoutPathExpansion(
-            shill::kProviderProperty, &provider_properties)) {
-      NET_LOG_ERROR("Missing VPN provider dict",
-                    GetNetworkIdFromProperties(service_properties));
-      return false;
-    }
+    // TODO(pneubeck): Simplify this once http://crbug.com/381135 is fixed.
     std::string vpn_provider_type;
-    provider_properties->GetStringWithoutPathExpansion(shill::kTypeProperty,
-                                                       &vpn_provider_type);
+    std::string vpn_provider_host;
+    if (properties_read_from_shill) {
+      const base::DictionaryValue* provider_properties = NULL;
+      if (!service_properties.GetDictionaryWithoutPathExpansion(
+              shill::kProviderProperty, &provider_properties)) {
+        NET_LOG_ERROR("Missing VPN provider dict",
+                      GetNetworkIdFromProperties(service_properties));
+      }
+      provider_properties->GetStringWithoutPathExpansion(shill::kTypeProperty,
+                                                         &vpn_provider_type);
+      provider_properties->GetStringWithoutPathExpansion(shill::kHostProperty,
+                                                         &vpn_provider_host);
+    } else {
+      service_properties.GetStringWithoutPathExpansion(
+          shill::kProviderTypeProperty, &vpn_provider_type);
+      service_properties.GetStringWithoutPathExpansion(
+          shill::kProviderHostProperty, &vpn_provider_host);
+    }
     success &= !vpn_provider_type.empty();
     dest->SetStringWithoutPathExpansion(shill::kProviderTypeProperty,
                                         vpn_provider_type);
 
-    std::string vpn_provider_host;
-    provider_properties->GetStringWithoutPathExpansion(shill::kHostProperty,
-                                                       &vpn_provider_host);
     success &= !vpn_provider_host.empty();
     dest->SetStringWithoutPathExpansion(shill::kProviderHostProperty,
                                         vpn_provider_host);
@@ -301,16 +310,23 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
   return success;
 }
 
-bool DoIdentifyingPropertiesMatch(const base::DictionaryValue& properties_a,
-                                  const base::DictionaryValue& properties_b) {
-  base::DictionaryValue identifying_a;
-  if (!CopyIdentifyingProperties(properties_a, &identifying_a))
+bool DoIdentifyingPropertiesMatch(const base::DictionaryValue& new_properties,
+                                  const base::DictionaryValue& old_properties) {
+  base::DictionaryValue new_identifying;
+  if (!CopyIdentifyingProperties(
+          new_properties,
+          false /* properties were not read from Shill */,
+          &new_identifying)) {
     return false;
-  base::DictionaryValue identifying_b;
-  if (!CopyIdentifyingProperties(properties_b, &identifying_b))
+  }
+  base::DictionaryValue old_identifying;
+  if (!CopyIdentifyingProperties(old_properties,
+                                 true /* properties were read from Shill */,
+                                 &old_identifying)) {
     return false;
+  }
 
-  return identifying_a.Equals(&identifying_b);
+  return new_identifying.Equals(&old_identifying);
 }
 
 bool IsPassphraseKey(const std::string& key) {

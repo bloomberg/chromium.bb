@@ -488,8 +488,10 @@ void ManagedNetworkConfigurationHandlerImpl::
   shill_properties.SetStringWithoutPathExpansion(shill::kProfileProperty,
                                                  profile);
 
-  if (!shill_property_util::CopyIdentifyingProperties(existing_properties,
-                                                      &shill_properties)) {
+  if (!shill_property_util::CopyIdentifyingProperties(
+          existing_properties,
+          true /* properties were read from Shill */,
+          &shill_properties)) {
     NET_LOG_ERROR("Missing identifying properties",
                   shill_property_util::GetNetworkIdFromProperties(
                       existing_properties));
