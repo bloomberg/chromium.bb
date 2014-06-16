@@ -285,7 +285,7 @@ InspectorTest.FakeFileReader = function(input, delegate, callback)
 
 InspectorTest.dumpFrame = function(frame)
 {
-    var fieldsToDump = ["cpuTime", "duration", "startTime", "endTime", "id", "mainThreadFrameId", "isBackground", "timeByCategory", "other", "scripting", "painting", "rendering", "committedFrom"];
+    var fieldsToDump = ["cpuTime", "duration", "startTime", "endTime", "id", "mainThreadFrameId", "timeByCategory", "other", "scripting", "painting", "rendering", "committedFrom"];
     function formatFields(object)
     {
         var result = {};

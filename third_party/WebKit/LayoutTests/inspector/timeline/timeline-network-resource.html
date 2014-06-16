@@ -46,7 +46,7 @@ function test()
             else if (record.type() === WebInspector.TimelineModel.RecordType.ResourceFinish)
                 printFinish(record._record);
 
-            if (record.parent && record.parent.type() === WebInspector.TimelineModel.RecordType.Root && !record.isBackground) {
+            if (record.parent && record.parent.type() === WebInspector.TimelineModel.RecordType.Root) {
                 if (lastRecordStartTime)
                     InspectorTest.assertGreaterOrEqual(record.startTime(), lastRecordStartTime, "Top level records order violation");
                 lastRecordStartTime = record.startTime();
