@@ -45,7 +45,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/browser/screen_orientation/screen_orientation_dispatcher_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_view_guest.h"
 #include "content/browser/webui/generic_handler.h"
@@ -1097,9 +1096,6 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 
   geolocation_dispatcher_host_.reset(new GeolocationDispatcherHost(this));
   midi_dispatcher_host_.reset(new MidiDispatcherHost(this));
-
-  screen_orientation_dispatcher_host_.reset(
-      new ScreenOrientationDispatcherHost(this));
 
 #if defined(OS_ANDROID)
   date_time_chooser_.reset(new DateTimeChooserAndroid());

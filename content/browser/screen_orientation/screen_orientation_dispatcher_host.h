@@ -5,38 +5,36 @@
 #ifndef CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_HOST_H_
 
-#include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 
 namespace content {
 
-class RenderFrameHost;
 class ScreenOrientationProvider;
-class WebContents;
 
-// ScreenOrientationDispatcherHost is receives lock and unlock requests from the
-// RenderFrames and dispatch them to the ScreenOrientationProvider. It also
-// make sure that the right RenderFrame get replied for each lock request.
+// ScreenOrientationDispatcherHost is a browser filter for Screen Orientation
+// messages and also helps dispatching messages about orientation changes to the
+// renderers.
 class CONTENT_EXPORT ScreenOrientationDispatcherHost
-    : public WebContentsObserver {
+    : public BrowserMessageFilter {
  public:
-  explicit ScreenOrientationDispatcherHost(WebContents* web_contents);
-  virtual ~ScreenOrientationDispatcherHost();
+  ScreenOrientationDispatcherHost();
 
-  // WebContentsObserver
-  virtual bool OnMessageReceived(const IPC::Message&,
-                                 RenderFrameHost* render_frame_host) OVERRIDE;
+  // BrowserMessageFilter
+  virtual bool OnMessageReceived(const IPC::Message&) OVERRIDE;
 
   void OnOrientationChange(blink::WebScreenOrientationType orientation);
 
   void SetProviderForTests(ScreenOrientationProvider* provider);
 
+ protected:
+  virtual ~ScreenOrientationDispatcherHost();
+
  private:
-  void OnLockRequest(int* routing_id,
-                     blink::WebScreenOrientationLockType orientation,
+  void OnLockRequest(blink::WebScreenOrientationLockType orientation,
                      int request_id);
-  void OnUnlockRequest(int* routing_id);
+  void OnUnlockRequest();
 
   static ScreenOrientationProvider* CreateProvider();
 

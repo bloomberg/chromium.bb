@@ -96,6 +96,7 @@
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/browser/renderer_host/websocket_dispatcher_host.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
+#include "content/browser/screen_orientation/screen_orientation_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
@@ -459,6 +460,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       delayed_cleanup_needed_(false),
       within_process_died_observer_(false),
       power_monitor_broadcaster_(this),
+      screen_orientation_dispatcher_host_(NULL),
       worker_ref_count_(0),
       weak_factory_(this) {
   widget_helper_ = new RenderWidgetHelper();
@@ -882,6 +884,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
     AddFilter(new MemoryBenchmarkMessageFilter());
 #endif
   AddFilter(new VibrationMessageFilter());
+  screen_orientation_dispatcher_host_ = new ScreenOrientationDispatcherHost();
+  AddFilter(screen_orientation_dispatcher_host_);
   AddFilter(new PushMessagingMessageFilter(GetID()));
   AddFilter(new BatteryStatusMessageFilter());
 }
@@ -1500,6 +1504,7 @@ void RenderProcessHostImpl::Cleanup() {
     channel_.reset();
     gpu_message_filter_ = NULL;
     message_port_message_filter_ = NULL;
+    screen_orientation_dispatcher_host_ = NULL;
     RemoveUserData(kSessionStorageHolderKey);
 
     // Remove ourself from the list of renderer processes so that we can't be
@@ -1913,6 +1918,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
   channel_.reset();
   gpu_message_filter_ = NULL;
   message_port_message_filter_ = NULL;
+  screen_orientation_dispatcher_host_ = NULL;
   RemoveUserData(kSessionStorageHolderKey);
 
   IDMap<IPC::Listener>::iterator iter(&listeners_);
@@ -1976,6 +1982,11 @@ void RenderProcessHostImpl::WebRtcLogMessage(const std::string& message) {
     webrtc_log_message_callback_.Run(message);
 }
 #endif
+
+scoped_refptr<ScreenOrientationDispatcherHost>
+RenderProcessHostImpl::screen_orientation_dispatcher_host() const {
+  return make_scoped_refptr(screen_orientation_dispatcher_host_);
+}
 
 void RenderProcessHostImpl::ReleaseOnCloseACK(
     RenderProcessHost* host,

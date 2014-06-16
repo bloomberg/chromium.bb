@@ -57,7 +57,6 @@ class RenderViewHostDelegateView;
 class RenderViewHostImpl;
 class RenderWidgetHostImpl;
 class SavePackage;
-class ScreenOrientationDispatcherHost;
 class SiteInstance;
 class TestWebContents;
 class WebContentsDelegate;
@@ -1134,9 +1133,6 @@ class CONTENT_EXPORT WebContentsImpl
   scoped_ptr<GeolocationDispatcherHost> geolocation_dispatcher_host_;
 
   scoped_ptr<MidiDispatcherHost> midi_dispatcher_host_;
-
-  scoped_ptr<ScreenOrientationDispatcherHost>
-      screen_orientation_dispatcher_host_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };

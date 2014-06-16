@@ -1542,6 +1542,38 @@ void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
     rwhv->UpdateScreenInfo(GetViewAndroid());
+
+  // TODO(mlamouri): temporary plumbing for Screen Orientation, this will change
+  // in the future. The OnResize IPC message sent from UpdateScreenInfo() will
+  // propagate the information.
+  blink::WebScreenOrientationType orientation =
+      blink::WebScreenOrientationPortraitPrimary;
+
+  switch (device_orientation_) {
+    case 0:
+      orientation = blink::WebScreenOrientationPortraitPrimary;
+      break;
+    case 90:
+      orientation = blink::WebScreenOrientationLandscapePrimary;
+      break;
+    case -90:
+      orientation = blink::WebScreenOrientationLandscapeSecondary;
+      break;
+    case 180:
+      orientation = blink::WebScreenOrientationPortraitSecondary;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  ScreenOrientationDispatcherHost* sodh =
+      static_cast<RenderProcessHostImpl*>(web_contents_->
+          GetRenderProcessHost())->screen_orientation_dispatcher_host();
+
+  // sodh can be null if the RenderProcessHost is in the process of being
+  // destroyed or not yet initialized.
+  if (sodh)
+    sodh->OnOrientationChange(orientation);
 }
 
 void ContentViewCoreImpl::ExtractSmartClipData(JNIEnv* env,

@@ -105,11 +105,6 @@ class ScreenOrientationDispatcherTest : public testing::Test {
     dispatcher_->OnMessageReceived(message);
   }
 
-  int routing_id() const {
-    // We return a fake routing_id() in the context of this test.
-    return 0;
-  }
-
   IPC::TestSink sink_;
   scoped_ptr<ScreenOrientationDispatcher> dispatcher_;
 };
@@ -161,8 +156,7 @@ TEST_F(ScreenOrientationDispatcherTest, LockRequest_Error) {
                     new MockLockOrientationCallback(&callback_results));
 
     int request_id = GetFirstLockRequestIdFromSink();
-    OnMessageReceived(
-        ScreenOrientationMsg_LockError(routing_id(), request_id, *it));
+    OnMessageReceived(ScreenOrientationMsg_LockError(request_id, *it));
 
     EXPECT_FALSE(callback_results.succeeded_);
     EXPECT_TRUE(callback_results.failed_);
@@ -193,8 +187,7 @@ TEST_F(ScreenOrientationDispatcherTest, LockRequest_Success) {
                     new MockLockOrientationCallback(&callback_results));
 
     int request_id = GetFirstLockRequestIdFromSink();
-    OnMessageReceived(ScreenOrientationMsg_LockSuccess(routing_id(),
-                                                       request_id,
+    OnMessageReceived(ScreenOrientationMsg_LockSuccess(request_id,
                                                        orientations[i].angle,
                                                        orientations[i].type));
 
@@ -216,7 +209,6 @@ TEST_F(ScreenOrientationDispatcherTest, SuccessForUnknownRequest) {
 
   int request_id = GetFirstLockRequestIdFromSink();
   OnMessageReceived(ScreenOrientationMsg_LockSuccess(
-      routing_id(),
       request_id + 1,
       90,
       blink::WebScreenOrientationLandscapePrimary));
@@ -234,7 +226,6 @@ TEST_F(ScreenOrientationDispatcherTest, ErrorForUnknownRequest) {
 
   int request_id = GetFirstLockRequestIdFromSink();
   OnMessageReceived(ScreenOrientationMsg_LockError(
-      routing_id(),
       request_id + 1,
       blink::WebLockOrientationCallback::ErrorTypeCanceled));
 
@@ -262,7 +253,6 @@ TEST_F(ScreenOrientationDispatcherTest, RaceScenario) {
   // callback_results1 must be rejected, tested in CancelPending_DoubleLock.
 
   OnMessageReceived(ScreenOrientationMsg_LockSuccess(
-      routing_id(),
       request_id1,
       0,
       blink::WebScreenOrientationPortraitPrimary));

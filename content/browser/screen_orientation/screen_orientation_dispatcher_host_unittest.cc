@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/screen_orientation/screen_orientation_dispatcher_host.h"
-
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/screen_orientation/screen_orientation_dispatcher_host.h"
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "content/common/screen_orientation_messages.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,7 +53,7 @@ class ScreenOrientationDispatcherHostWithSink FINAL :
     public ScreenOrientationDispatcherHost {
  public:
   explicit ScreenOrientationDispatcherHostWithSink(IPC::TestSink* sink)
-      : ScreenOrientationDispatcherHost(NULL), sink_(sink) {}
+      : ScreenOrientationDispatcherHost() , sink_(sink) {}
 
   virtual bool Send(IPC::Message* message) OVERRIDE {
     return sink_->Send(message);
@@ -65,24 +68,19 @@ class ScreenOrientationDispatcherHostWithSink FINAL :
 class ScreenOrientationDispatcherHostTest : public testing::Test {
  protected:
   virtual ScreenOrientationDispatcherHost* CreateDispatcher() {
-    return new ScreenOrientationDispatcherHost(NULL);
+    return new ScreenOrientationDispatcherHost();
   }
 
   virtual void SetUp() OVERRIDE {
     provider_ = new MockScreenOrientationProvider();
 
-    dispatcher_.reset(CreateDispatcher());
+    dispatcher_ = CreateDispatcher();
     dispatcher_->SetProviderForTests(provider_);
-  }
-
-  int routing_id() const {
-    // We return a fake routing_id() in the context of this test.
-    return 0;
   }
 
   // The dispatcher_ owns the provider_ but we still want to access it.
   MockScreenOrientationProvider* provider_;
-  scoped_ptr<ScreenOrientationDispatcherHost> dispatcher_;
+  scoped_refptr<ScreenOrientationDispatcherHost> dispatcher_;
 };
 
 class ScreenOrientationDispatcherHostWithSinkTest :
@@ -125,8 +123,7 @@ TEST_F(ScreenOrientationDispatcherHostWithSinkTest, ProviderLock) {
     blink::WebScreenOrientationLockType orientation = orientationsToTest[i];
 
     message_was_handled = dispatcher_->OnMessageReceived(
-        ScreenOrientationHostMsg_LockRequest(routing_id(), orientation, 0),
-        NULL);
+        ScreenOrientationHostMsg_LockRequest(orientation, 0));
 
     EXPECT_TRUE(message_was_handled);
     EXPECT_EQ(orientation, provider_->orientation());
@@ -137,7 +134,7 @@ TEST_F(ScreenOrientationDispatcherHostWithSinkTest, ProviderLock) {
 // ScreenOrientationProvider.
 TEST_F(ScreenOrientationDispatcherHostTest, ProviderUnlock) {
     bool message_was_handled = dispatcher_->OnMessageReceived(
-        ScreenOrientationHostMsg_Unlock(routing_id()), NULL);
+        ScreenOrientationHostMsg_Unlock());
 
     EXPECT_TRUE(message_was_handled);
     EXPECT_TRUE(provider_->unlock_called());
@@ -150,9 +147,7 @@ TEST_F(ScreenOrientationDispatcherHostWithSinkTest, NoProvider_LockError) {
 
   const int request_id = 3;
   dispatcher_->OnMessageReceived(ScreenOrientationHostMsg_LockRequest(
-      routing_id(),
-      blink::WebScreenOrientationLockPortraitPrimary,
-      request_id), NULL);
+      blink::WebScreenOrientationLockPortraitPrimary, request_id));
 
   EXPECT_EQ(1u, sink().message_count());
 
@@ -173,9 +168,7 @@ TEST_F(ScreenOrientationDispatcherHostWithSinkTest, NoProvider_LockError) {
 TEST_F(ScreenOrientationDispatcherHostWithSinkTest, WithProvider_LockSuccess) {
   const int request_id = 42;
   dispatcher_->OnMessageReceived(ScreenOrientationHostMsg_LockRequest(
-      routing_id(),
-      blink::WebScreenOrientationLockPortraitPrimary,
-      request_id), NULL);
+      blink::WebScreenOrientationLockPortraitPrimary, request_id));
 
   EXPECT_EQ(1u, sink().message_count());
 
