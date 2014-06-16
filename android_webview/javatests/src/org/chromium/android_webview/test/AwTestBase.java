@@ -317,8 +317,9 @@ public class AwTestBase
                 supportsLegacyQuirks);
         testContainerView.initialize(new AwContents(
                 mBrowserContext, testContainerView, testContainerView.getContext(),
-                testContainerView.getInternalAccessDelegate(), awContentsClient, awSettings,
-                testDependencyFactory));
+                testContainerView.getInternalAccessDelegate(),
+                testContainerView.getNativeGLDelegate(), awContentsClient,
+                awSettings, testDependencyFactory));
         return testContainerView;
     }
 
