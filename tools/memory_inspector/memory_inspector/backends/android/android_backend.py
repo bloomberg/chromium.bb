@@ -260,8 +260,7 @@ class AndroidDevice(backends.Device):
       return self._sys_stats
 
     dump_out = '\n'.join(
-        self.underlying_device.old_interface.RunShellCommand(
-            _PSEXT_PATH_ON_DEVICE))
+        self.underlying_device.RunShellCommand(_PSEXT_PATH_ON_DEVICE))
     stats = json.loads(dump_out)
     assert(all([x in stats for x in ['cpu', 'processes', 'time', 'mem']])), (
         'ps_ext returned a malformed JSON dictionary.')
@@ -288,13 +287,12 @@ class AndroidDevice(backends.Device):
     prebuilts_fetcher.GetIfChanged(local_path)
     with open(local_path, 'rb') as f:
       local_hash = hashlib.md5(f.read()).hexdigest()
-    device_md5_out = self.underlying_device.old_interface.RunShellCommand(
+    device_md5_out = self.underlying_device.RunShellCommand(
         'md5 "%s"' % path_on_device)
     if local_hash in device_md5_out:
       return
     self.underlying_device.old_interface.Adb().Push(local_path, path_on_device)
-    self.underlying_device.old_interface.RunShellCommand(
-        'chmod 755 "%s"' % path_on_device)
+    self.underlying_device.RunShellCommand('chmod 755 "%s"' % path_on_device)
 
   @property
   def name(self):
@@ -317,7 +315,7 @@ class AndroidProcess(backends.Process):
   def DumpMemoryMaps(self):
     """Grabs and parses memory maps through memdump."""
     cmd = '%s %d' % (_MEMDUMP_PATH_ON_DEVICE, self.pid)
-    dump_out = self.device.underlying_device.old_interface.RunShellCommand(cmd)
+    dump_out = self.device.underlying_device.RunShellCommand(cmd)
     return memdump_parser.Parse(dump_out)
 
   def DumpNativeHeap(self):
@@ -325,14 +323,13 @@ class AndroidProcess(backends.Process):
     # TODO(primiano): grab also mmap bt (depends on pending framework change).
     dump_file_path = _DUMPHEAP_OUT_FILE_PATH % self.pid
     cmd = 'am dumpheap -n %d %s' % (self.pid, dump_file_path)
-    self.device.underlying_device.old_interface.RunShellCommand(cmd)
+    self.device.underlying_device.RunShellCommand(cmd)
     # TODO(primiano): Some pre-KK versions of Android might need a sleep here
     # as, IIRC, 'am dumpheap' did not wait for the dump to be completed before
     # returning. Double check this and either add a sleep or remove this TODO.
     dump_out = self.device.underlying_device.old_interface.GetFileContents(
         dump_file_path)
-    self.device.underlying_device.old_interface.RunShellCommand(
-        'rm %s' % dump_file_path)
+    self.device.underlying_device.RunShellCommand('rm %s' % dump_file_path)
     return dumpheap_native_parser.Parse(dump_out)
 
   def GetStats(self):

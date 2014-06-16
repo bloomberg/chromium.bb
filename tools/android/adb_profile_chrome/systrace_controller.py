@@ -37,7 +37,7 @@ class SystraceController(controllers.BaseController):
 
   @staticmethod
   def GetCategories(device):
-    return device.old_interface.RunShellCommand('atrace --list_categories')
+    return device.RunShellCommand('atrace --list_categories')
 
   def StartTracing(self, _):
     self._thread = threading.Thread(target=self._CollectData)

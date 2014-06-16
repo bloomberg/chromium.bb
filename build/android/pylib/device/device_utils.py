@@ -99,6 +99,17 @@ class DeviceUtils(object):
     Returns:
       True if adbd has root privileges, False otherwise.
     """
+    return self._HasRootImpl()
+
+  def _HasRootImpl(self):
+    """ Implementation of HasRoot.
+
+    This is split from HasRoot to allow other DeviceUtils methods to call
+    HasRoot without spawning a new timeout thread.
+
+    Returns:
+      Same as for |HasRoot|.
+    """
     return self.old_interface.IsRootEnabled()
 
   @decorators.WithTimeoutAndRetriesFromInstance()
@@ -171,7 +182,7 @@ class DeviceUtils(object):
     self.old_interface.WaitForSdCardReady(timeout)
     if wifi:
       while not 'Wi-Fi is enabled' in (
-          self.old_interface.RunShellCommand('dumpsys wifi')):
+          self._RunShellCommandImpl('dumpsys wifi')):
         time.sleep(0.1)
 
   @decorators.WithTimeoutAndRetriesDefaults(
@@ -231,6 +242,61 @@ class DeviceUtils(object):
       except AssertionError as e:
         raise device_errors.CommandFailedError(
             ['adb', 'install', apk_path], str(e))
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def RunShellCommand(self, cmd, check_return=False, root=False, timeout=None,
+                      retries=None):
+    """Run an ADB shell command.
+
+    TODO(jbudorick) Switch the default value of check_return to True after
+    AndroidCommands is gone.
+
+    Args:
+      cmd: A list containing the command to run on the device and any arguments.
+      check_return: A boolean indicating whether or not the return code should
+                    be checked.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    Raises:
+      CommandFailedError if check_return is True and the return code is nozero.
+    Returns:
+      The output of the command.
+    """
+    return self._RunShellCommandImpl(cmd, check_return=check_return, root=root,
+                                     timeout=timeout)
+
+  def _RunShellCommandImpl(self, cmd, check_return=False, root=False,
+                           timeout=None):
+    """Implementation of RunShellCommand.
+
+    This is split from RunShellCommand to allow other DeviceUtils methods to
+    call RunShellCommand without spawning a new timeout thread.
+
+    TODO(jbudorick) Remove the timeout parameter once this is no longer
+    implemented via AndroidCommands.
+
+    Args:
+      cmd: Same as for |RunShellCommand|.
+      check_return: Same as for |RunShellCommand|.
+      timeout: Same as for |IsOnline|.
+    Raises:
+      Same as for |RunShellCommand|.
+    Returns:
+      Same as for |RunShellCommand|.
+    """
+    if isinstance(cmd, list):
+      cmd = ' '.join(cmd)
+    if root and not self.HasRoot():
+      cmd = 'su -c %s' % cmd
+    if check_return:
+      code, output = self.old_interface.GetShellCommandStatusAndOutput(
+          cmd, timeout_time=timeout)
+      if int(code) != 0:
+        raise device_errors.CommandFailedError(
+            cmd, 'Nonzero exit code (%d)' % code)
+    else:
+      output = self.old_interface.RunShellCommand(cmd, timeout_time=timeout)
+    return output
 
   def __str__(self):
     """Returns the device serial."""

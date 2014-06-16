@@ -29,8 +29,7 @@ def _ListTombstones(device):
   Yields:
     Tuples of (tombstone filename, date time of file on device).
   """
-  lines = device.old_interface.RunShellCommand(
-      'TZ=UTC su -c ls -a -l /data/tombstones')
+  lines = device.RunShellCommand('TZ=UTC su -c ls -a -l /data/tombstones')
   for line in lines:
     if 'tombstone' in line and not 'No such file or directory' in line:
       details = line.split()
@@ -48,7 +47,7 @@ def _GetDeviceDateTime(device):
   Returns:
     A datetime instance.
   """
-  device_now_string = device.old_interface.RunShellCommand('TZ=UTC date')
+  device_now_string = device.RunShellCommand('TZ=UTC date')
   return datetime.datetime.strptime(
       device_now_string[0], '%a %b %d %H:%M:%S %Z %Y')
 
@@ -74,8 +73,8 @@ def _EraseTombstone(device, tombstone_file):
     device: An instance of DeviceUtils.
     tombstone_file: the tombstone to delete.
   """
-  return device.old_interface.RunShellCommandWithSU(
-      'rm /data/tombstones/' + tombstone_file)
+  return device.RunShellCommand(
+      'rm /data/tombstones/' + tombstone_file, root=True)
 
 
 def _ResolveSymbols(tombstone_data, include_stack):

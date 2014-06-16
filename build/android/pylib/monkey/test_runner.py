@@ -40,8 +40,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
            '--kill-process-after-error',
            self._options.extra_args,
            '%d' % self._options.event_count]
-    return self.device.old_interface.RunShellCommand(
-        ' '.join(cmd), timeout_time=timeout_ms)
+    return self.device.RunShellCommand(' '.join(cmd), timeout=timeout_ms)
 
   def RunTest(self, test_name):
     """Run a Monkey test on the device.

@@ -16,7 +16,7 @@ class CacheControl(object):
 
   def DropRamCaches(self):
     """Drops the filesystem ram caches for performance testing."""
-    self._device.old_interface.RunShellCommandWithSU('sync')
+    self._device.RunShellCommand('sync', root=True)
     self._device.old_interface.SetProtectedFileContents(
         CacheControl._DROP_CACHES, '3')
 

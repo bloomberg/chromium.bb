@@ -65,8 +65,7 @@ class _PerfProfiler(object):
 
   def SignalAndWait(self):
     perf_pids = self._device.old_interface.ExtractPid('perf')
-    self._device.old_interface.RunShellCommand(
-        'kill -SIGINT ' + ' '.join(perf_pids))
+    self._device.RunShellCommand('kill -SIGINT ' + ' '.join(perf_pids))
     self._perf_process.wait()
     self._perf_control.ForceAllCpusOnline(False)
 
@@ -117,7 +116,7 @@ class PerfProfilerController(controllers.BaseController):
   @classmethod
   def GetCategories(cls, device):
     perf_binary = cls._PrepareDevice(device)
-    return device.old_interface.RunShellCommand('%s list' % perf_binary)
+    return device.RunShellCommand('%s list' % perf_binary)
 
   def StartTracing(self, _):
     self._perf_instance = _PerfProfiler(self._device,

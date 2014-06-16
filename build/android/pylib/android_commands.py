@@ -656,12 +656,10 @@ class AndroidCommands(object):
     preferred_apis = {
         'getprop': 'system_properties[<PROPERTY>]',
         'setprop': 'system_properties[<PROPERTY>]',
-        'su': 'RunShellCommandWithSU()',
         }
 
     # A dict of commands to methods that may call them.
     whitelisted_callers = {
-        'su': 'RunShellCommandWithSU',
         'getprop': 'ProvisionDevices',
         }
 

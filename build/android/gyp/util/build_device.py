@@ -31,7 +31,7 @@ class BuildDevice(object):
     self.device = device_utils.DeviceUtils(self.id)
 
   def RunShellCommand(self, *args, **kwargs):
-    return self.device.old_interface.RunShellCommand(*args, **kwargs)
+    return self.device.RunShellCommand(*args, **kwargs)
 
   def PushIfNeeded(self, *args, **kwargs):
     return self.device.old_interface.PushIfNeeded(*args, **kwargs)
@@ -61,7 +61,7 @@ def GetConfigurationForDevice(device_id):
   is_online = device.IsOnline()
   if is_online:
     cmd = 'ls -l /data/app; getprop ro.build.description'
-    cmd_output = device.old_interface.RunShellCommand(cmd)
+    cmd_output = device.RunShellCommand(cmd)
     has_root = not 'Permission denied' in cmd_output[0]
     if not has_root:
       # Disable warning log messages from EnableRoot()
@@ -73,7 +73,7 @@ def GetConfigurationForDevice(device_id):
         has_root = False
       finally:
         logging.getLogger().disabled = False
-      cmd_output = device.old_interface.RunShellCommand(cmd)
+      cmd_output = device.RunShellCommand(cmd)
 
     configuration = {
         'id': device_id,

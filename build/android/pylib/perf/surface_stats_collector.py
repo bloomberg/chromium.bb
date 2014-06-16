@@ -215,7 +215,7 @@ class SurfaceStatsCollector(object):
     """
     # The command returns nothing if it is supported, otherwise returns many
     # lines of result just like 'dumpsys SurfaceFlinger'.
-    results = self._device.old_interface.RunShellCommand(
+    results = self._device.RunShellCommand(
         'dumpsys SurfaceFlinger --latency-clear SurfaceView')
     return not len(results)
 
@@ -258,9 +258,8 @@ class SurfaceStatsCollector(object):
     # We use the special "SurfaceView" window name because the statistics for
     # the activity's main window are not updated when the main web content is
     # composited into a SurfaceView.
-    results = self._device.old_interface.RunShellCommand(
-        'dumpsys SurfaceFlinger --latency SurfaceView',
-        log_result=logging.getLogger().isEnabledFor(logging.DEBUG))
+    results = self._device.RunShellCommand(
+        'dumpsys SurfaceFlinger --latency SurfaceView')
     if not len(results):
       return (None, None)
 
@@ -296,8 +295,7 @@ class SurfaceStatsCollector(object):
     Returns:
       Dict of {page_flip_count (or 0 if there was an error), timestamp}.
     """
-    results = self._device.old_interface.RunShellCommand(
-        'service call SurfaceFlinger 1013')
+    results = self._device.RunShellCommand('service call SurfaceFlinger 1013')
     assert len(results) == 1
     match = re.search('^Result: Parcel\((\w+)', results[0])
     cur_surface = 0

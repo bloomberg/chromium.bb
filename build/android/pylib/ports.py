@@ -114,8 +114,7 @@ def IsDevicePortUsed(device, device_port, state=''):
     True if the port on device is already used, otherwise returns False.
   """
   base_url = '127.0.0.1:%d' % device_port
-  netstat_results = device.old_interface.RunShellCommand(
-      'netstat', log_result=False)
+  netstat_results = device.RunShellCommand('netstat')
   for single_connect in netstat_results:
     # Column 3 is the local address which we want to check with.
     connect_results = single_connect.split()

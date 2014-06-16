@@ -55,7 +55,7 @@ class TestPackageApk(TestPackage):
     return '/data/data/' + self._package_info.package + '/files/test.fifo'
 
   def _ClearFifo(self, device):
-    device.old_interface.RunShellCommand('rm -f ' + self._GetFifo())
+    device.RunShellCommand('rm -f ' + self._GetFifo())
 
   def _WatchFifo(self, device, timeout, logfile=None):
     for i in range(10):
@@ -86,9 +86,9 @@ class TestPackageApk(TestPackage):
     # files over time.
     if self.suite_name == 'content_browsertests':
       try:
-        device.old_interface.RunShellCommand(
+        device.RunShellCommand(
             'rm -r %s/content_shell' % device.GetExternalStoragePath(),
-            timeout_time=60 * 2)
+            timeout=60 * 2)
       except device_errors.CommandFailedError:
         # TODO(jbudorick) Handle this exception appropriately once the
         #                 conversions are done.

@@ -84,8 +84,9 @@ def _ConfigureLocalProperties(device):
       constants.DEVICE_LOCAL_PROPERTIES_PATH,
       '\n'.join(local_props))
   # Android will not respect the local props file if it is world writable.
-  device.old_interface.RunShellCommandWithSU(
-      'chmod 644 %s' % constants.DEVICE_LOCAL_PROPERTIES_PATH)
+  device.RunShellCommand(
+      'chmod 644 %s' % constants.DEVICE_LOCAL_PROPERTIES_PATH,
+      root=True)
 
   # LOCAL_PROPERTIES_PATH = '/data/local.prop'
 
@@ -105,23 +106,23 @@ def WipeDeviceData(device):
   device_authorized = device.old_interface.FileExistsOnDevice(
       constants.ADB_KEYS_FILE)
   if device_authorized:
-    adb_keys = device.old_interface.RunShellCommandWithSU(
-      'cat %s' % constants.ADB_KEYS_FILE)
-  device.old_interface.RunShellCommandWithSU('wipe data')
+    adb_keys = device.RunShellCommand('cat %s' % constants.ADB_KEYS_FILE,
+                                      root=True)
+  device.RunShellCommand('wipe data', root=True)
   if device_authorized:
     path_list = constants.ADB_KEYS_FILE.split('/')
     dir_path = '/'.join(path_list[:len(path_list)-1])
-    device.old_interface.RunShellCommandWithSU('mkdir -p %s' % dir_path)
-    device.old_interface.RunShellCommand('echo %s > %s' %
-                                         (adb_keys[0], constants.ADB_KEYS_FILE))
+    device.RunShellCommand('mkdir -p %s' % dir_path, root=True)
+    device.RunShellCommand('echo %s > %s' %
+                           (adb_keys[0], constants.ADB_KEYS_FILE))
     for adb_key in adb_keys[1:]:
-      device.old_interface.RunShellCommand(
+      device.RunShellCommand(
         'echo %s >> %s' % (adb_key, constants.ADB_KEYS_FILE))
 
 
 def ProvisionDevices(options):
   # TODO(jbudorick): Parallelize provisioning of all attached devices after
-  # swithcing from AndroidCommands.
+  # switching from AndroidCommands.
   if options.device is not None:
     devices = [options.device]
   else:
@@ -134,7 +135,7 @@ def ProvisionDevices(options):
       device.old_interface.EnableAdbRoot()
       WipeDeviceData(device)
     try:
-      device_utils.DeviceUtils.parallel(devices).old_interface.Reboot(True)
+      device_utils.DeviceUtils.parallel(devices).Reboot(True)
     except errors.DeviceUnresponsiveError:
       pass
     for device_serial in devices:
@@ -173,7 +174,7 @@ def ProvisionDevices(options):
                      battery_info.get('level', 0))
         time.sleep(60)
         battery_info = device.old_interface.GetBatteryInfo()
-    device.old_interface.RunShellCommandWithSU('date -u %f' % time.time())
+    device.RunShellCommand('date -u %f' % time.time(), root=True)
   try:
     device_utils.DeviceUtils.parallel(devices).Reboot(True)
   except errors.DeviceUnresponsiveError:

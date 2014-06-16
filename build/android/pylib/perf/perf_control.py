@@ -73,12 +73,11 @@ class PerfControl(object):
     """
     def ForceCpuOnline(online_path):
       script = 'chmod 644 {0}; echo 1 > {0}; chmod 444 {0}'.format(online_path)
-      self._device.old_interface.RunShellCommandWithSU(script)
+      self._device.RunShellCommand(script, root=True)
       return self._device.old_interface.GetFileContents(online_path)[0] == '1'
 
     def ResetCpu(online_path):
-      self._device.old_interface.RunShellCommandWithSU(
-          'chmod 644 %s' % online_path)
+      self._device.RunShellCommand('chmod 644 %s' % online_path, root=True)
 
     def WaitFor(condition):
       for _ in range(100):
@@ -87,7 +86,7 @@ class PerfControl(object):
         time.sleep(0.1)
       raise RuntimeError('Timed out')
 
-    cpu_online_files = self._device.old_interface.RunShellCommand(
+    cpu_online_files = self._device.RunShellCommand(
         'ls -d /sys/devices/system/cpu/cpu[0-9]*/online')
     for online_path in cpu_online_files:
       if force_online:

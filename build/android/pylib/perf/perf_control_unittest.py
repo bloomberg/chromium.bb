@@ -25,20 +25,20 @@ class TestPerfControl(unittest.TestCase):
 
   def testForceAllCpusOnline(self):
     perf = perf_control.PerfControl(self._device)
-    cpu_online_files = self._device.old_interface.RunShellCommand(
+    cpu_online_files = self._device.RunShellCommand(
         'ls -d /sys/devices/system/cpu/cpu[0-9]*/online')
     try:
       perf.ForceAllCpusOnline(True)
       for path in cpu_online_files:
         self.assertEquals('1',
                           self._device.old_interface.GetFileContents(path)[0])
-        mode = self._device.old_interface.RunShellCommand('ls -l %s' % path)[0]
+        mode = self._device.RunShellCommand('ls -l %s' % path)[0]
         self.assertEquals('-r--r--r--', mode[:10])
     finally:
       perf.ForceAllCpusOnline(False)
 
     for path in cpu_online_files:
-      mode = self._device.old_interface.RunShellCommand('ls -l %s' % path)[0]
+      mode = self._device.RunShellCommand('ls -l %s' % path)[0]
       self.assertEquals('-rw-r--r--', mode[:10])
 
 

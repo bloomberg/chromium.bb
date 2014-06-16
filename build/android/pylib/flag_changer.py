@@ -114,11 +114,7 @@ class FlagChanger(object):
       assert len(file_contents) == 1 and file_contents[0] == cmd_line, (
           'Failed to set the command line file at %s' % self._cmdline_file)
     else:
-      if use_root:
-        self._device.old_interface.RunShellCommandWithSU(
-            'rm ' + self._cmdline_file)
-      else:
-        self._device.old_interface.RunShellCommand('rm ' + self._cmdline_file)
+      self._device.RunShellCommand('rm ' + self._cmdline_file, root=use_root)
       assert (
           not self._device.old_interface.FileExistsOnDevice(
               self._cmdline_file)), (

@@ -112,7 +112,7 @@ def _WriteCommandLineFile(device, command_line, command_line_file):
   """Create a command-line file on the device. This does not use FlagChanger
      because its implementation assumes the device has 'su', and thus does
      not work at all with production devices."""
-  device.old_interface.RunShellCommand(
+  device.RunShellCommand(
       'echo "%s" > %s' % (command_line, command_line_file))
 
 

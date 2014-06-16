@@ -154,8 +154,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
       if self.device.old_interface.SetJavaAssertsEnabled(True):
         # TODO(jbudorick) How to best do shell restart after the
         #                 android_commands refactor?
-        self.device.old_interface.RunShellCommand('stop')
-        self.device.old_interface.RunShellCommand('start')
+        self.device.RunShellCommand('stop')
+        self.device.RunShellCommand('start')
 
     # We give different default value to launch HTTP server based on shard index
     # because it may have race condition when multiple processes are trying to
@@ -237,7 +237,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     if self.coverage_dir:
       self.device.old_interface.Adb().Pull(
           self.coverage_device_file, self.coverage_host_file)
-      self.device.old_interface.RunShellCommand(
+      self.device.RunShellCommand(
           'rm -f %s' % self.coverage_device_file)
 
   def TearDownPerfMonitoring(self, test):

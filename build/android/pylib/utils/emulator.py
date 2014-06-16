@@ -394,6 +394,7 @@ class Emulator(object):
     """
     seconds_waited = 0
     number_of_waits = 2  # Make sure we can wfd twice
+    # TODO(jbudorick) Un-handroll this in the implementation switch.
     adb_cmd = "adb -s %s %s" % (self.device_serial, 'wait-for-device')
     while seconds_waited < self._LAUNCH_TIMEOUT:
       try:

@@ -106,7 +106,7 @@ class TestPackageExecutable(TestPackage):
 
   #override
   def GetAllTests(self, device):
-    all_tests = device.old_interface.RunShellCommand(
+    all_tests = device.RunShellCommand(
         '%s %s/%s --gtest_list_tests' %
         (self.tool.GetTestWrapper(),
          constants.TEST_EXECUTABLE_DIR,

@@ -30,8 +30,8 @@ def main(argv):
       if device.old_interface.SetJavaAssertsEnabled(options.set_asserts):
         # TODO(jbudorick) How to best do shell restarts after the
         #                 android_commands refactor?
-        device.old_interface.RunShellCommand('stop')
-        device.old_interface.RunShellCommand('start')
+        device.RunShellCommand('stop')
+        device.RunShellCommand('start')
 
 
 if __name__ == '__main__':
