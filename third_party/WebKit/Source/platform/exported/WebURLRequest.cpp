@@ -321,6 +321,12 @@ WebURLRequest::Priority WebURLRequest::priority() const
         m_private->m_resourceRequest->priority());
 }
 
+void WebURLRequest::setPriority(WebURLRequest::Priority priority)
+{
+    m_private->m_resourceRequest->setPriority(
+        static_cast<ResourceLoadPriority>(priority));
+}
+
 const ResourceRequest& WebURLRequest::toResourceRequest() const
 {
     ASSERT(m_private);

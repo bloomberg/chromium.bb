@@ -192,6 +192,7 @@ public:
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
     BLINK_PLATFORM_EXPORT Priority priority() const;
+    BLINK_PLATFORM_EXPORT void setPriority(Priority);
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebCore::ResourceRequest& toMutableResourceRequest();
