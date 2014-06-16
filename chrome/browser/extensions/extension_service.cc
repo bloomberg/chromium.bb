@@ -649,6 +649,11 @@ void ExtensionService::ReloadExtension(
     DisableExtension(extension_id, Extension::DISABLE_RELOAD);
     reloading_extensions_.insert(extension_id);
   } else {
+    std::map<std::string, base::FilePath>::const_iterator iter =
+        unloaded_extension_paths_.find(extension_id);
+    if (iter == unloaded_extension_paths_.end()) {
+      return;
+    }
     path = unloaded_extension_paths_[extension_id];
   }
 
