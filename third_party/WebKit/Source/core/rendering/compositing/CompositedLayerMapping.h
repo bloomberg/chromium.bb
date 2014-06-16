@@ -111,6 +111,7 @@ public:
     bool hasScrollingLayer() const { return m_scrollingLayer; }
     GraphicsLayer* scrollingLayer() const { return m_scrollingLayer.get(); }
     GraphicsLayer* scrollingContentsLayer() const { return m_scrollingContentsLayer.get(); }
+    GraphicsLayer* scrollingBlockSelectionLayer() const { return m_scrollingBlockSelectionLayer.get(); }
 
     bool hasMaskLayer() const { return m_maskLayer; }
     GraphicsLayer* maskLayer() const { return m_maskLayer.get(); }
@@ -208,6 +209,8 @@ public:
 
     // If there is a squashed layer painting into this CLM that is an ancestor of the given RenderObject, return it. Otherwise return 0.
     const GraphicsLayerPaintInfo* containingSquashedLayer(const RenderObject*);
+
+    void updateScrollingBlockSelection();
 
 private:
     static const GraphicsLayerPaintInfo* containingSquashedLayer(const RenderObject*,  const Vector<GraphicsLayerPaintInfo>& layers);
@@ -310,6 +313,7 @@ private:
     //     + m_graphicsLayer
     //        + m_childContainmentLayer [OPTIONAL] <-OR-> m_scrollingLayer [OPTIONAL] <-OR-> m_childTransformLayer
     //                                                     + m_scrollingContentsLayer [Present iff m_scrollingLayer is present]
+    //                                                        + m_scrollingBlockSelectionLayer [Present iff m_scrollingLayer is present]
     //
     // We need an ancestor clipping layer if our clipping ancestor is not our ancestor in the
     // clipping tree. Here's what that might look like.
@@ -337,6 +341,7 @@ private:
     OwnPtr<GraphicsLayer> m_childTransformLayer; // Only used if we have perspective and no m_childContainmentLayer.
     OwnPtr<GraphicsLayer> m_scrollingLayer; // Only used if the layer is using composited scrolling.
     OwnPtr<GraphicsLayer> m_scrollingContentsLayer; // Only used if the layer is using composited scrolling.
+    OwnPtr<GraphicsLayer> m_scrollingBlockSelectionLayer; // Only used if the layer is using composited scrolling, but has no scrolling contents apart from block selection gaps.
 
     // This layer is also added to the hierarchy by the RLB, but in a different way than
     // the layers above. It's added to m_graphicsLayer as its mask layer (naturally) if
@@ -400,6 +405,7 @@ private:
     bool m_backgroundLayerPaintsFixedRootBackground : 1;
     bool m_needToUpdateGraphicsLayer : 1;
     bool m_needToUpdateGraphicsLayerOfAllDecendants : 1;
+    bool m_scrollingContentsAreEmpty : 1;
 };
 
 } // namespace WebCore

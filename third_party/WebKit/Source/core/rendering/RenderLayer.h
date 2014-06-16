@@ -177,9 +177,11 @@ public:
 
     const LayoutSize& offsetForInFlowPosition() const { return m_offsetForInFlowPosition; }
 
+    void blockSelectionGapsBoundsChanged();
     void addBlockSelectionGapsBounds(const LayoutRect&);
     void clearBlockSelectionGapsBounds();
     void repaintBlockSelectionGaps();
+    IntRect blockSelectionGapsBounds() const;
     bool hasBlockSelectionGapBounds() const;
 
     RenderLayerStackingNode* stackingNode() { return m_stackingNode.get(); }

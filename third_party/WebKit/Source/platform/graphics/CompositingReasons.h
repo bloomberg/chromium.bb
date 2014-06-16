@@ -70,6 +70,7 @@ const uint64_t CompositingReasonLayerForForeground                     = UINT64_
 const uint64_t CompositingReasonLayerForBackground                     = UINT64_C(1) << 44;
 const uint64_t CompositingReasonLayerForMask                           = UINT64_C(1) << 45;
 const uint64_t CompositingReasonLayerForClippingMask                   = UINT64_C(1) << 46;
+const uint64_t CompositingReasonLayerForScrollingBlockSelection        = UINT64_C(1) << 47;
 
 // Various combinations of compositing reasons are defined here also, for more intutive and faster bitwise logic.
 const uint64_t CompositingReasonComboAllDirectReasons =
@@ -278,7 +279,10 @@ static const CompositingReasonStringMap compositingReasonStringMap[] = {
         "Secondary layer, to contain the mask contents" },
     { CompositingReasonLayerForClippingMask,
         "layerForClippingMask",
-        "Secondary layer, for clipping mask" }
+        "Secondary layer, for clipping mask" },
+    { CompositingReasonLayerForScrollingBlockSelection,
+        "layerForScrollingBlockSelection",
+        "Secondary layer, to house block selection gaps for composited scrolling with no scrolling contents" },
 };
 
 } // namespace WebCore

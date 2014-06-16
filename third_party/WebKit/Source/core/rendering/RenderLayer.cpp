@@ -3151,9 +3151,16 @@ RenderLayer* RenderLayer::hitTestChildLayerColumns(RenderLayer* childLayer, Rend
     return 0;
 }
 
+void RenderLayer::blockSelectionGapsBoundsChanged()
+{
+    setNeedsCompositingInputsUpdate();
+    compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
+}
+
 void RenderLayer::addBlockSelectionGapsBounds(const LayoutRect& bounds)
 {
     m_blockSelectionGapsBounds.unite(enclosingIntRect(bounds));
+    blockSelectionGapsBoundsChanged();
 }
 
 void RenderLayer::clearBlockSelectionGapsBounds()
@@ -3161,6 +3168,7 @@ void RenderLayer::clearBlockSelectionGapsBounds()
     m_blockSelectionGapsBounds = IntRect();
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
         child->clearBlockSelectionGapsBounds();
+    blockSelectionGapsBoundsChanged();
 }
 
 void RenderLayer::repaintBlockSelectionGaps()
@@ -3184,9 +3192,27 @@ void RenderLayer::repaintBlockSelectionGaps()
         renderer()->invalidatePaintRectangle(rect);
 }
 
+IntRect RenderLayer::blockSelectionGapsBounds() const
+{
+    if (!renderer()->isRenderBlock())
+        return IntRect();
+
+    RenderBlock* renderBlock = toRenderBlock(renderer());
+    LayoutRect gapRects = renderBlock->selectionGapRectsForRepaint(renderBlock);
+
+    return pixelSnappedIntRect(gapRects);
+}
+
 bool RenderLayer::hasBlockSelectionGapBounds() const
 {
-    return !m_blockSelectionGapsBounds.isEmpty();
+    // FIXME: it would be more accurate to return !blockSelectionGapsBounds().isEmpty(), but this is impossible
+    // at the moment because it causes invalid queries to layout-dependent code (crbug.com/372802).
+    // ASSERT(renderer()->document().lifecycle().state() >= DocumentLifecycle::LayoutClean);
+
+    if (!renderer()->isRenderBlock())
+        return false;
+
+    return toRenderBlock(renderer())->shouldPaintSelectionGaps();
 }
 
 bool RenderLayer::intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const RenderLayer* rootLayer, const LayoutPoint* offsetFromRoot) const

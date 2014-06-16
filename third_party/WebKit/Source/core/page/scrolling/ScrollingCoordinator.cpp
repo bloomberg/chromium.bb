@@ -650,7 +650,7 @@ void ScrollingCoordinator::updateScrollParentForGraphicsLayer(GraphicsLayer* chi
 {
     WebLayer* scrollParentWebLayer = 0;
     if (parent && parent->hasCompositedLayerMapping())
-        scrollParentWebLayer = toWebLayer(parent->compositedLayerMapping()->parentForSublayers());
+        scrollParentWebLayer = toWebLayer(parent->compositedLayerMapping()->scrollingContentsLayer());
 
     child->setScrollParent(scrollParentWebLayer);
 }
