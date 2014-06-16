@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_descriptor.h"
@@ -63,6 +64,7 @@ ExtensionFunction::ResponseAction GetInputMethodsFunction::Run() {
   base::ListValue* output = new base::ListValue();
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
+  chromeos::input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
   scoped_ptr<chromeos::input_method::InputMethodDescriptors> input_methods =
       manager->GetActiveInputMethods();
   for (size_t i = 0; i < input_methods->size(); ++i) {
@@ -70,8 +72,8 @@ ExtensionFunction::ResponseAction GetInputMethodsFunction::Run() {
         (*input_methods)[i];
     base::DictionaryValue* val = new base::DictionaryValue();
     val->SetString("id", input_method.id());
-    val->SetString("name", input_method.name());
-    val->SetString("indicator", input_method.indicator());
+    val->SetString("name", util->GetInputMethodLongName(input_method));
+    val->SetString("indicator", util->GetInputMethodShortName(input_method));
     output->Append(val);
   }
   return RespondNow(OneArgument(output));
