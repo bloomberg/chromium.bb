@@ -44,21 +44,21 @@ PassOwnPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* pol
 void CSPDirectiveList::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL) const
 {
     String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
-    m_policy->client()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
+    m_policy->executionContext()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header);
 }
 
 void CSPDirectiveList::reportViolationWithLocation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const String& contextURL, const WTF::OrdinalNumber& contextLine) const
 {
     String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
-    m_policy->client()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message, contextURL, contextLine.oneBasedInt());
+    m_policy->executionContext()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message, contextURL, contextLine.oneBasedInt());
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header);
 }
 
 void CSPDirectiveList::reportViolationWithState(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, ScriptState* scriptState) const
 {
     String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
-    m_policy->client()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message, scriptState);
+    m_policy->executionContext()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message, scriptState);
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header);
 }
 
@@ -677,4 +677,3 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
 
 
 } // namespace WebCore
-

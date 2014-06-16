@@ -85,6 +85,12 @@ public:
     void postTask(const Closure&);
     double timerAlignmentInterval() const;
 
+    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) = 0;
+
+    virtual SecurityContext& securityContext() = 0;
+    KURL contextURL() const { return virtualURL(); }
+    KURL contextCompleteURL(const String& url) const { return virtualCompleteURL(url); }
+
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
     void reportException(PassRefPtrWillBeRawPtr<ErrorEvent>, PassRefPtrWillBeRawPtr<ScriptCallStack>, AccessControlStatus);
 
@@ -131,6 +137,9 @@ public:
 
 protected:
     void setClient(ExecutionContextClient* client) { m_client = client; }
+
+    virtual const KURL& virtualURL() const = 0;
+    virtual KURL virtualCompleteURL(const String&) const = 0;
 
     ContextLifecycleNotifier& lifecycleNotifier();
 

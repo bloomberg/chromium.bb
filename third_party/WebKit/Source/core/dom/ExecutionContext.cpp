@@ -254,7 +254,7 @@ const KURL& ExecutionContext::url() const
         return emptyURL;
     }
 
-    return m_client->virtualURL();
+    return virtualURL();
 }
 
 KURL ExecutionContext::completeURL(const String& url) const
@@ -265,7 +265,7 @@ KURL ExecutionContext::completeURL(const String& url) const
         return emptyURL;
     }
 
-    return m_client->virtualCompleteURL(url);
+    return virtualCompleteURL(url);
 }
 
 void ExecutionContext::disableEval(const String& errorMessage)

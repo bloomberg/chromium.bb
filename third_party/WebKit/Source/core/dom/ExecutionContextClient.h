@@ -56,10 +56,7 @@ public:
     virtual String userAgent(const KURL&) const = 0;
     virtual void disableEval(const String& errorMessage) = 0;
     virtual SecurityContext& securityContext() = 0;
-    virtual const KURL& virtualURL() const = 0;
-    virtual KURL virtualCompleteURL(const String&) const = 0;
     virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState*) = 0;
-    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) = 0;
     virtual EventTarget* errorEventTarget() = 0;
     virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) = 0;
     virtual double timerAlignmentInterval() const = 0;
@@ -70,8 +67,6 @@ public:
 
     void addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber) { addMessage(source, level, message, sourceURL, lineNumber, 0); }
     void addConsoleMessage(MessageSource source, MessageLevel level, const String& message, ScriptState* state = 0) { addMessage(source, level, message, String(), 0, state); }
-    KURL contextURL() const { return virtualURL(); }
-    KURL contextCompleteURL(const String& url) const { return virtualCompleteURL(url); }
 
 protected:
     virtual ~ExecutionContextClient() { }

@@ -28,6 +28,7 @@
 
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
+#include "core/dom/SecurityContext.h"
 #include "core/events/EventQueue.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBKeyRange.h"
@@ -53,7 +54,7 @@ public:
     virtual void close() OVERRIDE { }
 };
 
-class NullExecutionContext FINAL : public RefCountedWillBeGarbageCollectedFinalized<NullExecutionContext>, public ExecutionContext {
+class NullExecutionContext FINAL : public RefCountedWillBeGarbageCollectedFinalized<NullExecutionContext>, public SecurityContext, public ExecutionContext {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
 public:
     NullExecutionContext();
@@ -70,12 +71,22 @@ public:
     using RefCounted<NullExecutionContext>::ref;
     using RefCounted<NullExecutionContext>::deref;
 
+    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE { }
+
+    virtual SecurityContext& securityContext() { return *this; }
+
     virtual void refExecutionContext() OVERRIDE { ref(); }
     virtual void derefExecutionContext() OVERRIDE { deref(); }
 #endif
 
+protected:
+    virtual const KURL& virtualURL() const OVERRIDE { return m_dummyURL; }
+    virtual KURL virtualCompleteURL(const String&) const OVERRIDE { return m_dummyURL; }
+
 private:
     OwnPtrWillBeMember<EventQueue> m_queue;
+
+    KURL m_dummyURL;
 };
 
 NullExecutionContext::NullExecutionContext()
