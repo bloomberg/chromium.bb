@@ -7,11 +7,15 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/render_frame_host.h"
@@ -27,19 +31,16 @@ namespace {
 const char kTestExtensionId[] = "gceegfkgibmgpfopknlcgleimclbknie";
 const char kTestExtensionPath[] = "media_galleries_private/gallerywatch";
 
-#if !defined(OS_CHROMEOS)
 // JS commands.
 const char kGetAllWatchedGalleryIdsCmd[] = "getAllWatchedGalleryIds()";
 const char kGetMediaFileSystemsCmd[] = "getMediaFileSystems()";
 const char kSetupWatchOnValidGalleriesCmd[] = "setupWatchOnValidGalleries()";
-#if defined(OS_WIN) || defined(OS_LINUX)
 const char kAddGalleryChangedListenerCmd[] = "addGalleryChangedListener()";
 const char kRemoveAllGalleryWatchCmd[] = "removeAllGalleryWatch()";
 const char kRemoveGalleryChangedListenerCmd[] =
     "removeGalleryChangedListener()";
 const char kRemoveGalleryWatchCmd[] = "removeGalleryWatch()";
 const char kSetupWatchOnInvalidGalleryCmd[] = "setupWatchOnInvalidGallery()";
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 // And JS reply messages.
 const char kAddGalleryWatchOK[] = "add_gallery_watch_ok";
@@ -47,24 +48,18 @@ const char kGetAllGalleryWatchOK[] = "get_all_gallery_watch_ok";
 const char kGetMediaFileSystemsCallbackOK[] =
     "get_media_file_systems_callback_ok";
 const char kGetMediaFileSystemsOK[] = "get_media_file_systems_ok";
-#if defined(OS_WIN) || defined(OS_LINUX)
 const char kAddGalleryChangedListenerOK[] = "add_gallery_changed_listener_ok";
 const char kRemoveAllGalleryWatchOK[] = "remove_all_gallery_watch_ok";
 const char kRemoveGalleryChangedListenerOK[] =
     "remove_gallery_changed_listener_ok";
 const char kRemoveGalleryWatchOK[] = "remove_gallery_watch_ok";
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 // Test reply messages.
-const char kGetAllGalleryWatchResultA[] = "gallery_watchers_does_not_exists";
+const char kNoGalleryWatchesInstalled[] = "gallery_watchers_does_not_exists";
 const char kAddGalleryWatchRequestFailed[] = "add_watch_request_failed";
-#if defined(OS_WIN) || defined(OS_LINUX)
 const char kAddGalleryWatchRequestSucceeded[] = "add_watch_request_succeeded";
 const char kGalleryChangedEventReceived[] = "gallery_changed_event_received";
-const char kGetAllGalleryWatchResultB[] =
-    "watchers_for_galleries_{1, 2, 3}_found";
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
-#endif  // !defined(OS_CHROMEOS)
+const char kGalleryWatchesCheck[] = "gallery_watcher_checks";
 
 }  // namespace
 
@@ -75,7 +70,10 @@ const char kGetAllGalleryWatchResultB[] =
 
 class MediaGalleriesPrivateGalleryWatchApiTest : public ExtensionApiTest {
  public:
-  MediaGalleriesPrivateGalleryWatchApiTest() {}
+  MediaGalleriesPrivateGalleryWatchApiTest()
+      : extension_(NULL),
+        background_host_(NULL) {
+  }
   virtual ~MediaGalleriesPrivateGalleryWatchApiTest() {}
 
  protected:
@@ -86,345 +84,244 @@ class MediaGalleriesPrivateGalleryWatchApiTest : public ExtensionApiTest {
         extensions::switches::kWhitelistedExtensionID,
         kTestExtensionId);
   }
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionApiTest::SetUpOnMainThread();
+    ensure_media_directories_exists_.reset(new EnsureMediaDirectoriesExists);
+    extension_ = LoadExtension(test_data_dir_.AppendASCII(kTestExtensionPath));
+    GetBackgroundHostForTestExtension();
+    CreateTestGallery();
+    FetchMediaGalleriesList();
+  }
+  virtual void TearDownOnMainThread() OVERRIDE {
+    extension_ = NULL;
+    background_host_ = NULL;
+    ensure_media_directories_exists_.reset();
+    ExtensionApiTest::TearDownOnMainThread();
+  }
 
-  void ExecuteCmdAndCheckReply(content::RenderViewHost* host,
-                              const std::string& js_command,
-                              const std::string& ok_message) {
+  void ExecuteCmdAndCheckReply(const std::string& js_command,
+                               const std::string& ok_message) {
     ExtensionTestMessageListener listener(ok_message, false);
-    host->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16(js_command));
+    background_host_->GetMainFrame()->ExecuteJavaScript(
+        base::ASCIIToUTF16(js_command));
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
 
-  bool AddNewFileInGallery(int gallery_directory_key) {
-    if ((gallery_directory_key != chrome::DIR_USER_MUSIC) &&
-        (gallery_directory_key != chrome::DIR_USER_PICTURES) &&
-        (gallery_directory_key != chrome::DIR_USER_VIDEOS))
-      return false;
-
-    base::FilePath gallery_dir;
-    if (!PathService::Get(gallery_directory_key, &gallery_dir))
-      return false;
+  bool AddNewFileInTestGallery() {
     base::FilePath gallery_file =
-        gallery_dir.Append(FILE_PATH_LITERAL("test1.txt"));
+        test_gallery_.path().Append(FILE_PATH_LITERAL("test1.txt"));
     std::string content("new content");
     int write_size = base::WriteFile(gallery_file, content.c_str(),
                                      content.length());
     return (write_size == static_cast<int>(content.length()));
   }
 
-  // Loads the test extension and returns the RenderViewHost of the extension.
-  // Returns NULL if the extension load operation failed.
-  content::RenderViewHost* GetBackgroundHostForTestExtension() {
-    const extensions::Extension* extension =
-        LoadExtension(test_data_dir_.AppendASCII(kTestExtensionPath));
-    if (!extension)
-      return NULL;
-    return extensions::ExtensionSystem::Get(browser()->profile())->
-        process_manager()->GetBackgroundHostForExtension(extension->id())->
-           render_view_host();
+ private:
+  void GetBackgroundHostForTestExtension() {
+    ASSERT_TRUE(extension_);
+    extensions::ExtensionSystem* extension_system =
+        extensions::ExtensionSystem::Get(browser()->profile());
+    background_host_ =
+        extension_system->process_manager()->GetBackgroundHostForExtension(
+            extension_->id())->render_view_host();
+    ASSERT_TRUE(background_host_);
   }
 
- private:
+  void CreateTestGallery() {
+    MediaGalleriesPreferences* preferences =
+        g_browser_process->media_file_system_registry()->GetPreferences(
+            browser()->profile());
+    base::RunLoop runloop;
+    preferences->EnsureInitialized(runloop.QuitClosure());
+    runloop.Run();
+
+    ASSERT_TRUE(test_gallery_.CreateUniqueTempDir());
+    MediaGalleryPrefInfo gallery_info;
+    ASSERT_FALSE(preferences->LookUpGalleryByPath(test_gallery_.path(),
+                                                  &gallery_info));
+    MediaGalleryPrefId id = preferences->AddGallery(
+        gallery_info.device_id,
+        gallery_info.path,
+        MediaGalleryPrefInfo::kAutoDetected,
+        gallery_info.volume_label,
+        gallery_info.vendor_name,
+        gallery_info.model_name,
+        gallery_info.total_size_in_bytes,
+        gallery_info.last_attach_time,
+        0, 0, 0);
+
+    preferences->SetGalleryPermissionForExtension(*extension_, id, true);
+  }
+
+  void FetchMediaGalleriesList() {
+    ExtensionTestMessageListener get_media_systems_finished(
+        kGetMediaFileSystemsCallbackOK, false  /* no reply */);
+    ExecuteCmdAndCheckReply(kGetMediaFileSystemsCmd, kGetMediaFileSystemsOK);
+    EXPECT_TRUE(get_media_systems_finished.WaitUntilSatisfied());
+  }
+
+  scoped_ptr<EnsureMediaDirectoriesExists> ensure_media_directories_exists_;
+
+  base::ScopedTempDir test_gallery_;
+
+  const extensions::Extension* extension_;
+
+  content::RenderViewHost* background_host_;
+
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPrivateGalleryWatchApiTest);
 };
 
-
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        BasicGalleryWatch) {
-  EnsureMediaDirectoriesExists media_directories;
-  content::RenderViewHost* host = GetBackgroundHostForTestExtension();
-  ASSERT_TRUE(host);
-
-  // Get media file systems.
-  ExtensionTestMessageListener get_media_systems_finished(
-      kGetMediaFileSystemsCallbackOK, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kGetMediaFileSystemsCmd,
-                          kGetMediaFileSystemsOK);
-  EXPECT_TRUE(get_media_systems_finished.WaitUntilSatisfied());
-
   // Set up gallery watch.
   ExtensionTestMessageListener add_gallery_watch_finished(
       kAddGalleryWatchRequestSucceeded, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kSetupWatchOnValidGalleriesCmd,
-                          kAddGalleryWatchOK);
+  ExecuteCmdAndCheckReply(kSetupWatchOnValidGalleriesCmd, kAddGalleryWatchOK);
   EXPECT_TRUE(add_gallery_watch_finished.WaitUntilSatisfied());
 
   // Add gallery watch listener.
-  ExecuteCmdAndCheckReply(host, kAddGalleryChangedListenerCmd,
+  ExecuteCmdAndCheckReply(kAddGalleryChangedListenerCmd,
                           kAddGalleryChangedListenerOK);
 
   // Modify gallery contents.
-  ExtensionTestMessageListener music_gallery_change_event_received(
+  ExtensionTestMessageListener gallery_change_event_received(
       kGalleryChangedEventReceived, false  /* no reply */);
-  ASSERT_TRUE(AddNewFileInGallery(chrome::DIR_USER_MUSIC));
-  EXPECT_TRUE(music_gallery_change_event_received.WaitUntilSatisfied());
-
-  ExtensionTestMessageListener pictures_gallery_change_event_received(
-      kGalleryChangedEventReceived, false  /* no reply */);
-  ASSERT_TRUE(AddNewFileInGallery(chrome::DIR_USER_PICTURES));
-  EXPECT_TRUE(pictures_gallery_change_event_received.WaitUntilSatisfied());
-
-  ExtensionTestMessageListener videos_gallery_change_event_received(
-      kGalleryChangedEventReceived, false  /* no reply */);
-  ASSERT_TRUE(AddNewFileInGallery(chrome::DIR_USER_VIDEOS));
-  EXPECT_TRUE(videos_gallery_change_event_received.WaitUntilSatisfied());
+  ASSERT_TRUE(AddNewFileInTestGallery());
+  EXPECT_TRUE(gallery_change_event_received.WaitUntilSatisfied());
 
   // Remove gallery watch listener.
-  ExecuteCmdAndCheckReply(host, kRemoveGalleryChangedListenerCmd,
+  ExecuteCmdAndCheckReply(kRemoveGalleryChangedListenerCmd,
                           kRemoveGalleryChangedListenerOK);
 
   // Remove gallery watch request.
-  ExecuteCmdAndCheckReply(host, kRemoveGalleryWatchCmd, kRemoveGalleryWatchOK);
+  ExecuteCmdAndCheckReply(kRemoveGalleryWatchCmd, kRemoveGalleryWatchOK);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        RemoveListenerAndModifyGallery) {
-  EnsureMediaDirectoriesExists media_directories;
-  content::RenderViewHost* host = GetBackgroundHostForTestExtension();
-  ASSERT_TRUE(host);
-
-  // Get media file systems.
-  ExtensionTestMessageListener get_media_systems_finished(
-      kGetMediaFileSystemsCallbackOK, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kGetMediaFileSystemsCmd,
-                          kGetMediaFileSystemsOK);
-  EXPECT_TRUE(get_media_systems_finished.WaitUntilSatisfied());
-
   // Set up gallery watch.
   ExtensionTestMessageListener add_gallery_watch_finished(
       kAddGalleryWatchRequestSucceeded, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kSetupWatchOnValidGalleriesCmd,
-                         kAddGalleryWatchOK);
+  ExecuteCmdAndCheckReply(kSetupWatchOnValidGalleriesCmd, kAddGalleryWatchOK);
   EXPECT_TRUE(add_gallery_watch_finished.WaitUntilSatisfied());
 
   // Add a gallery watch listener.
-  ExecuteCmdAndCheckReply(host, kAddGalleryChangedListenerCmd,
+  ExecuteCmdAndCheckReply(kAddGalleryChangedListenerCmd,
                           kAddGalleryChangedListenerOK);
   // Modify gallery contents.
-  ExtensionTestMessageListener music_gallery_change_event_received(
+  ExtensionTestMessageListener gallery_change_event_received(
       kGalleryChangedEventReceived, false  /* no reply */);
-  ASSERT_TRUE(AddNewFileInGallery(chrome::DIR_USER_MUSIC));
-  EXPECT_TRUE(music_gallery_change_event_received.WaitUntilSatisfied());
+  ASSERT_TRUE(AddNewFileInTestGallery());
+  EXPECT_TRUE(gallery_change_event_received.WaitUntilSatisfied());
 
   // Remove gallery watch listener.
-  ExecuteCmdAndCheckReply(host, kRemoveGalleryChangedListenerCmd,
+  ExecuteCmdAndCheckReply(kRemoveGalleryChangedListenerCmd,
                           kRemoveGalleryChangedListenerOK);
 
   // No listener, modify gallery contents.
-  ASSERT_TRUE(AddNewFileInGallery(chrome::DIR_USER_MUSIC));
+  ASSERT_TRUE(AddNewFileInTestGallery());
 
   // Remove gallery watch.
-  ExecuteCmdAndCheckReply(host, kRemoveGalleryWatchCmd, kRemoveGalleryWatchOK);
+  ExecuteCmdAndCheckReply(kRemoveGalleryWatchCmd, kRemoveGalleryWatchOK);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        SetupGalleryWatchWithoutListeners) {
-  EnsureMediaDirectoriesExists media_directories;
-  content::RenderViewHost* host = GetBackgroundHostForTestExtension();
-  ASSERT_TRUE(host);
-
-  // Get media file systems.
-  ExtensionTestMessageListener get_media_systems_finished(
-      kGetMediaFileSystemsCallbackOK, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kGetMediaFileSystemsCmd,
-                          kGetMediaFileSystemsOK);
-  EXPECT_TRUE(get_media_systems_finished.WaitUntilSatisfied());
-
   // Set up gallery watch.
-  ExecuteCmdAndCheckReply(host, kSetupWatchOnValidGalleriesCmd,
-                          kAddGalleryWatchOK);
+  ExecuteCmdAndCheckReply(kSetupWatchOnValidGalleriesCmd, kAddGalleryWatchOK);
 
   // No listeners, modify gallery contents.
-  ExtensionTestMessageListener music_gallery_change_event_received(
+  ExtensionTestMessageListener gallery_change_event_received(
       kGalleryChangedEventReceived, false  /* no reply */);
-  ASSERT_TRUE(AddNewFileInGallery(chrome::DIR_USER_MUSIC));
+  ASSERT_TRUE(AddNewFileInTestGallery());
 
   // Remove gallery watch.
-  ExecuteCmdAndCheckReply(host, kRemoveGalleryWatchCmd, kRemoveGalleryWatchOK);
+  ExecuteCmdAndCheckReply(kRemoveGalleryWatchCmd, kRemoveGalleryWatchOK);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        SetupGalleryChangedListenerWithoutWatchers) {
-  EnsureMediaDirectoriesExists media_directories;
-  content::RenderViewHost* host = GetBackgroundHostForTestExtension();
-  ASSERT_TRUE(host);
-
-  // Get media file systems.
-  ExtensionTestMessageListener get_media_systems_finished(
-      kGetMediaFileSystemsCallbackOK, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kGetMediaFileSystemsCmd,
-                          kGetMediaFileSystemsOK);
-  EXPECT_TRUE(get_media_systems_finished.WaitUntilSatisfied());
-
   // Add gallery watch listener.
-  ExecuteCmdAndCheckReply(host, kAddGalleryChangedListenerCmd,
+  ExecuteCmdAndCheckReply(kAddGalleryChangedListenerCmd,
                           kAddGalleryChangedListenerOK);
 
   // Modify gallery contents. Listener should not get called because add watch
   // request was not called.
-  ExtensionTestMessageListener music_gallery_change_event_received(
+  ExtensionTestMessageListener gallery_change_event_received(
       kGalleryChangedEventReceived, false  /* no reply */);
-  ASSERT_TRUE(AddNewFileInGallery(chrome::DIR_USER_MUSIC));
+  ASSERT_TRUE(AddNewFileInTestGallery());
 
   // Remove gallery watch listener.
-  ExecuteCmdAndCheckReply(host, kRemoveGalleryChangedListenerCmd,
+  ExecuteCmdAndCheckReply(kRemoveGalleryChangedListenerCmd,
                           kRemoveGalleryChangedListenerOK);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        SetupWatchOnInvalidGallery) {
-  content::RenderViewHost* host = GetBackgroundHostForTestExtension();
-  ASSERT_TRUE(host);
-
   // Set up a invalid gallery watch.
   ExtensionTestMessageListener invalid_gallery_watch_request_finished(
       kAddGalleryWatchRequestFailed, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kSetupWatchOnInvalidGalleryCmd,
-                          kAddGalleryWatchOK);
+  ExecuteCmdAndCheckReply(kSetupWatchOnInvalidGalleryCmd, kAddGalleryWatchOK);
   EXPECT_TRUE(invalid_gallery_watch_request_finished.WaitUntilSatisfied());
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        GetAllGalleryWatch) {
-  EnsureMediaDirectoriesExists media_directories;
-  content::RenderViewHost* host = GetBackgroundHostForTestExtension();
-  ASSERT_TRUE(host);
-
-  // Get media file systems.
-  ExtensionTestMessageListener get_media_systems_finished(
-      kGetMediaFileSystemsCallbackOK, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kGetMediaFileSystemsCmd,
-                          kGetMediaFileSystemsOK);
-  EXPECT_TRUE(get_media_systems_finished.WaitUntilSatisfied());
-
   // Gallery watchers are not yet added.
   // chrome.mediaGalleriesPrivate.getAllGalleryWatch should return an empty
   // list.
   ExtensionTestMessageListener initial_get_all_check_finished(
-      kGetAllGalleryWatchResultA, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kGetAllWatchedGalleryIdsCmd,
-                          kGetAllGalleryWatchOK);
+      kNoGalleryWatchesInstalled, false  /* no reply */);
+  ExecuteCmdAndCheckReply(kGetAllWatchedGalleryIdsCmd, kGetAllGalleryWatchOK);
   EXPECT_TRUE(initial_get_all_check_finished.WaitUntilSatisfied());
 
   // Set up gallery watchers.
   ExtensionTestMessageListener add_gallery_watch_finished(
       kAddGalleryWatchRequestSucceeded, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kSetupWatchOnValidGalleriesCmd,
-                          kAddGalleryWatchOK);
+  ExecuteCmdAndCheckReply(kSetupWatchOnValidGalleriesCmd, kAddGalleryWatchOK);
   EXPECT_TRUE(add_gallery_watch_finished.WaitUntilSatisfied());
 
   // chrome.mediaGalleriesPrivate.getAllGalleryWatch should return the
   // gallery identifiers.
   ExtensionTestMessageListener get_all_watched_galleries_finished(
-      kGetAllGalleryWatchResultB, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kGetAllWatchedGalleryIdsCmd,
-                          kGetAllGalleryWatchOK);
+      kGalleryWatchesCheck, false  /* no reply */);
+  ExecuteCmdAndCheckReply(kGetAllWatchedGalleryIdsCmd, kGetAllGalleryWatchOK);
   EXPECT_TRUE(get_all_watched_galleries_finished.WaitUntilSatisfied());
 
   // Remove gallery watch request.
-  ExecuteCmdAndCheckReply(host, kRemoveGalleryWatchCmd, kRemoveGalleryWatchOK);
+  ExecuteCmdAndCheckReply(kRemoveGalleryWatchCmd, kRemoveGalleryWatchOK);
 
   // Gallery watchers removed.
   // chrome.mediaGalleriesPrivate.getAllGalleryWatch() should return an empty
   // list.
   ExtensionTestMessageListener final_get_all_check_finished(
-      kGetAllGalleryWatchResultA, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kGetAllWatchedGalleryIdsCmd,
-                          kGetAllGalleryWatchOK);
+      kNoGalleryWatchesInstalled, false  /* no reply */);
+  ExecuteCmdAndCheckReply(kGetAllWatchedGalleryIdsCmd, kGetAllGalleryWatchOK);
   EXPECT_TRUE(final_get_all_check_finished.WaitUntilSatisfied());
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        RemoveAllGalleryWatch) {
-  EnsureMediaDirectoriesExists media_directories;
-  content::RenderViewHost* host = GetBackgroundHostForTestExtension();
-  ASSERT_TRUE(host);
-
-  // Get media file systems.
-  ExtensionTestMessageListener get_media_systems_finished(
-      kGetMediaFileSystemsCallbackOK, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kGetMediaFileSystemsCmd,
-                          kGetMediaFileSystemsOK);
-  EXPECT_TRUE(get_media_systems_finished.WaitUntilSatisfied());
-
   // Set up gallery watchers.
   ExtensionTestMessageListener add_gallery_watch_finished(
       kAddGalleryWatchRequestSucceeded, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kSetupWatchOnValidGalleriesCmd,
-                          kAddGalleryWatchOK);
+  ExecuteCmdAndCheckReply(kSetupWatchOnValidGalleriesCmd, kAddGalleryWatchOK);
   EXPECT_TRUE(add_gallery_watch_finished.WaitUntilSatisfied());
 
   // chrome.mediaGalleriesPrivate.getAllGalleryWatch should return the watched
   // gallery identifiers.
   ExtensionTestMessageListener get_all_watched_galleries_finished(
-      kGetAllGalleryWatchResultB, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kGetAllWatchedGalleryIdsCmd,
-                          kGetAllGalleryWatchOK);
+      kGalleryWatchesCheck, false  /* no reply */);
+  ExecuteCmdAndCheckReply(kGetAllWatchedGalleryIdsCmd, kGetAllGalleryWatchOK);
   EXPECT_TRUE(get_all_watched_galleries_finished.WaitUntilSatisfied());
 
   // Remove all gallery watchers.
-  ExecuteCmdAndCheckReply(host, kRemoveAllGalleryWatchCmd,
-                          kRemoveAllGalleryWatchOK);
+  ExecuteCmdAndCheckReply(kRemoveAllGalleryWatchCmd, kRemoveAllGalleryWatchOK);
 
   // Gallery watchers removed. chrome.mediaGalleriesPrivate.getAllGalleryWatch
   // should return an empty list.
   ExtensionTestMessageListener final_get_all_check_finished(
-      kGetAllGalleryWatchResultA, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kGetAllWatchedGalleryIdsCmd,
-                          kGetAllGalleryWatchOK);
+      kNoGalleryWatchesInstalled, false  /* no reply */);
+  ExecuteCmdAndCheckReply(kGetAllWatchedGalleryIdsCmd, kGetAllGalleryWatchOK);
   EXPECT_TRUE(final_get_all_check_finished.WaitUntilSatisfied());
 }
-#endif  // defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-
-#if defined(OS_MACOSX)
-// Gallery watch request is not enabled on Mac: crbug.com/144491.
-IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
-                       SetupGalleryWatch) {
-  EnsureMediaDirectoriesExists media_directories;
-  content::RenderViewHost* host = GetBackgroundHostForTestExtension();
-  ASSERT_TRUE(host);
-
-  // Get media file systems.
-  ExtensionTestMessageListener get_media_systems_finished(
-      kGetMediaFileSystemsCallbackOK, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kGetMediaFileSystemsCmd,
-                          kGetMediaFileSystemsOK);
-  EXPECT_TRUE(get_media_systems_finished.WaitUntilSatisfied());
-
-  // Set up a invalid gallery watch.
-  ExtensionTestMessageListener gallery_watch_request_finished(
-      kAddGalleryWatchRequestFailed, false  /* no reply */);
-  // Set up gallery watch.
-  ExecuteCmdAndCheckReply(host, kSetupWatchOnValidGalleriesCmd,
-                          kAddGalleryWatchOK);
-  EXPECT_TRUE(gallery_watch_request_finished.WaitUntilSatisfied());
-}
-
-IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
-                       GetAllGalleryWatch) {
-  EnsureMediaDirectoriesExists media_directories;
-  content::RenderViewHost* host = GetBackgroundHostForTestExtension();
-  ASSERT_TRUE(host);
-
-  // Get media file systems.
-  ExtensionTestMessageListener get_media_systems_finished(
-      kGetMediaFileSystemsCallbackOK, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kGetMediaFileSystemsCmd,
-                          kGetMediaFileSystemsOK);
-  EXPECT_TRUE(get_media_systems_finished.WaitUntilSatisfied());
-
-  // Set up gallery watch.
-  ExecuteCmdAndCheckReply(host, kSetupWatchOnValidGalleriesCmd,
-                          kAddGalleryWatchOK);
-
-  // Gallery watchers does not exists.
-  // chrome.mediaGalleriesPrivate.getAllGalleryWatch should return an empty
-  // list.
-  ExtensionTestMessageListener get_all_gallery_watch_finished(
-      kGetAllGalleryWatchResultA, false  /* no reply */);
-  ExecuteCmdAndCheckReply(host, kGetAllWatchedGalleryIdsCmd,
-                          kGetAllGalleryWatchOK);
-  EXPECT_TRUE(get_all_gallery_watch_finished.WaitUntilSatisfied());
-}
-#endif  // defined(OS_MACOSX)
