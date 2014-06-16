@@ -1427,7 +1427,10 @@
                 '-finstrument-functions',
               ],
               'dependencies': [
-                '<(android_ndk_root)/crazy_linker.gyp:crazy_linker',
+                # The NDK contains the crazy_linker here:
+                #   '<(android_ndk_root)/crazy_linker.gyp:crazy_linker'
+                # However, we use our own fork.  See bug 384700.
+                '../third_party/android_crazy_linker/crazy_linker.gyp:crazy_linker',
               ],
             }],
           ],
