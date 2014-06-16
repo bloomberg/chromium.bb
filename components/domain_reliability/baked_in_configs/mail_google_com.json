@@ -12,13 +12,13 @@
       "resource_name": "gmail-home",
       "url_patterns": ["http*://mail.google.com/"],
       "success_sample_rate": 0.05,
-      "failure_sample_rate": 0.50
+      "failure_sample_rate": 1.00
     },
     {
       "resource_name": "gmail-other",
       "url_patterns": ["http*://mail.google.com/*"],
       "success_sample_rate": 0.05,
-      "failure_sample_rate": 0.50
+      "failure_sample_rate": 1.00
     }
   ]
 }

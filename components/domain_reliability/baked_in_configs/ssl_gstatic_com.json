@@ -18,19 +18,19 @@
       "resource_name": "analytics",
       "url_patterns": ["http*://ssl.gstatic.com/analytics/*"],
       "success_sample_rate": 0.10,
-      "failure_sample_rate": 0.50
+      "failure_sample_rate": 1.00
     },
     {
       "resource_name": "images",
       "url_patterns": ["http*://ssl.gstatic.com/images/*"],
       "success_sample_rate": 0.05,
-      "failure_sample_rate": 0.25
+      "failure_sample_rate": 1.00
     },
     {
       "resource_name": "other",
       "url_patterns": ["http*://ssl.gstatic.com/*"],
       "success_sample_rate": 0.05,
-      "failure_sample_rate": 0.50
+      "failure_sample_rate": 1.00
     }
   ]
 }

@@ -12,7 +12,7 @@
       "resource_name": "ddm",
       "url_patterns": ["http*://ddm.google.com/*"],
       "success_sample_rate": 0.05,
-      "failure_sample_rate": 0.50
+      "failure_sample_rate": 1.00
     }
   ]
 }
