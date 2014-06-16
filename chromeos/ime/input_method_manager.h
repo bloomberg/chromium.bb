@@ -154,6 +154,11 @@ class CHROMEOS_EXPORT InputMethodManager {
   // Sets current input method to login default (first owners, then hardware).
   virtual void SetInputMethodLoginDefault() = 0;
 
+  // Sets current input method to login default with the given locale and
+  // layout info from VPD.
+  virtual void SetInputMethodLoginDefaultFromVPD(
+      const std::string& locale, const std::string& layout) = 0;
+
   // Gets the descriptor of the input method which is currently selected.
   virtual InputMethodDescriptor GetCurrentInputMethod() const = 0;
 

@@ -115,6 +115,10 @@ void MockInputMethodManager::SetEnabledExtensionImes(
 void MockInputMethodManager::SetInputMethodLoginDefault() {
 }
 
+void MockInputMethodManager::SetInputMethodLoginDefaultFromVPD(
+    const std::string& locale, const std::string& layout) {
+}
+
 bool MockInputMethodManager::SwitchToNextInputMethod() {
   return true;
 }

@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/fake_ime_keyboard.h"
@@ -577,6 +579,48 @@ void InputMethodManagerImpl::SetEnabledExtensionImes(
     // switch to the first one in |active_input_method_ids_|.
     ChangeInputMethod(current_input_method_.id());
   }
+}
+
+void InputMethodManagerImpl::SetInputMethodLoginDefaultFromVPD(
+    const std::string& locale, const std::string& oem_layout) {
+  std::string layout;
+  if (!oem_layout.empty()) {
+    // If the OEM layout information is provided, use it.
+    layout = oem_layout;
+  } else {
+    // Otherwise, determine the hardware keyboard from the locale.
+    std::vector<std::string> input_method_ids;
+    if (util_.GetInputMethodIdsFromLanguageCode(
+        locale,
+        chromeos::input_method::kKeyboardLayoutsOnly,
+        &input_method_ids)) {
+      // The output list |input_method_ids| is sorted by popularity, hence
+      // input_method_ids[0] now contains the most popular keyboard layout
+      // for the given locale.
+      DCHECK_GE(input_method_ids.size(), 1U);
+      layout = input_method_ids[0];
+    }
+  }
+
+  if (layout.empty())
+    return;
+
+  std::vector<std::string> layouts;
+  base::SplitString(layout, ',', &layouts);
+  MigrateInputMethods(&layouts);
+
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetString(prefs::kHardwareKeyboardLayout, JoinString(layouts, ","));
+
+  // This asks the file thread to save the prefs (i.e. doesn't block).
+  // The latest values of Local State reside in memory so we can safely
+  // get the value of kHardwareKeyboardLayout even if the data is not
+  // yet saved to disk.
+  prefs->CommitPendingWrite();
+
+  util_.UpdateHardwareLayoutCache();
+
+  EnableLoginLayouts(locale, layouts);
 }
 
 void InputMethodManagerImpl::SetInputMethodLoginDefault() {

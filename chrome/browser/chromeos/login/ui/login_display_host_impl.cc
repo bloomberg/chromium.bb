@@ -130,50 +130,6 @@ const char kWebUIInitPostpone[] = "postpone";
 // network requests are made while the system is idle waiting for user input.
 const int64 kPolicyServiceInitializationDelayMilliseconds = 100;
 
-// Determines the hardware keyboard from the given locale code
-// and the OEM layout information, and saves it to "Locale State".
-// The information will be used in InputMethodUtil::GetHardwareInputMethodId().
-void DetermineAndSaveHardwareKeyboard(const std::string& locale,
-                                      const std::string& oem_layout) {
-  chromeos::input_method::InputMethodManager* manager =
-      chromeos::input_method::InputMethodManager::Get();
-  std::string layout;
-  if (!oem_layout.empty()) {
-    // If the OEM layout information is provided, use it.
-    layout = oem_layout;
-  } else {
-    // Otherwise, determine the hardware keyboard from the locale.
-    std::vector<std::string> input_method_ids;
-    if (manager->GetInputMethodUtil()->GetInputMethodIdsFromLanguageCode(
-            locale,
-            chromeos::input_method::kKeyboardLayoutsOnly,
-            &input_method_ids)) {
-      // The output list |input_method_ids| is sorted by popularity, hence
-      // input_method_ids[0] now contains the most popular keyboard layout
-      // for the given locale.
-      layout = input_method_ids[0];
-    }
-  }
-
-  if (!layout.empty()) {
-    std::vector<std::string> layouts;
-    base::SplitString(layout, ',', &layouts);
-    manager->MigrateInputMethods(&layouts);
-
-    PrefService* prefs = g_browser_process->local_state();
-    prefs->SetString(prefs::kHardwareKeyboardLayout, JoinString(layouts, ","));
-
-    // This asks the file thread to save the prefs (i.e. doesn't block).
-    // The latest values of Local State reside in memory so we can safely
-    // get the value of kHardwareKeyboardLayout even if the data is not
-    // yet saved to disk.
-    prefs->CommitPendingWrite();
-
-    manager->GetInputMethodUtil()->UpdateHardwareLayoutCache();
-    manager->SetInputMethodLoginDefault();
-  }
-}
-
 // A class to observe an implicit animation and invokes the callback after the
 // animation is completed.
 class AnimationObserver : public ui::ImplicitAnimationObserver {
@@ -1272,17 +1228,17 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   // chromeos::LanguageSwitchMenu::SwitchLanguage here before
   // EmitLoginPromptReady.
   PrefService* prefs = g_browser_process->local_state();
-  const std::string current_locale =
+  const std::string& current_locale =
       prefs->GetString(prefs::kApplicationLocale);
   VLOG(1) << "Current locale: " << current_locale;
-  std::string locale = startup_manifest->initial_locale_default();
+  const std::string& locale = startup_manifest->initial_locale_default();
 
-  std::string layout = startup_manifest->keyboard_layout();
+  const std::string& layout = startup_manifest->keyboard_layout();
   VLOG(1) << "Initial locale: " << locale << "keyboard layout " << layout;
 
   // Determine keyboard layout from OEM customization (if provided) or
   // initial locale and save it in preferences.
-  DetermineAndSaveHardwareKeyboard(locale, layout);
+  manager->SetInputMethodLoginDefaultFromVPD(locale, layout);
 
   if (!current_locale.empty() || locale.empty()) {
     ShowLoginWizardFinish(first_screen_name, startup_manifest, display_host);

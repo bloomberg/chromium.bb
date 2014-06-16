@@ -77,6 +77,8 @@ class InputMethodManagerImpl : public InputMethodManager,
       InputMethodDescriptors* result) OVERRIDE;
   virtual void SetEnabledExtensionImes(std::vector<std::string>* ids) OVERRIDE;
   virtual void SetInputMethodLoginDefault() OVERRIDE;
+  virtual void SetInputMethodLoginDefaultFromVPD(
+      const std::string& locale, const std::string& layout) OVERRIDE;
   virtual bool SwitchToNextInputMethod() OVERRIDE;
   virtual bool SwitchToPreviousInputMethod(
       const ui::Accelerator& accelerator) OVERRIDE;
