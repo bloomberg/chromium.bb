@@ -36,18 +36,10 @@ function test()
     serializedBreakpoints.push(createBreakpoint("a.js", 20, "", false));
     serializedBreakpoints.push(createBreakpoint("b.js", 3, "", true));
 
-    var mockTarget = {
-
-        id: function()
-        {
-            return 1;
-        }
-    };
     var targetManager = new WebInspector.TargetManager();
+    var mockTarget = InspectorTest.createMockTarget(targetManager, 1);
     targetManager._targets.push(mockTarget);
-
     InspectorTest.setupLiveLocationSniffers();
-    InspectorTest.initializeDefaultMappingOnTarget(mockTarget);
 
     var addUISourceCode = InspectorTest.addUISourceCode.bind(null, mockTarget);
     var createBreakpointManager = InspectorTest.createBreakpointManager.bind(null, targetManager);

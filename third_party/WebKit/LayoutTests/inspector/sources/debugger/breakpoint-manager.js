@@ -2,6 +2,8 @@ var initialize_BreakpointManagerTest = function() {
 
 InspectorTest.uiSourceCodes = {};
 
+InspectorTest.dumpTargetIds = false;
+
 InspectorTest.initializeDefaultMappingOnTarget = function (target) {
     var defaultMapping = {
         rawLocationToUILocation: function(rawLocation)
@@ -23,6 +25,23 @@ InspectorTest.initializeDefaultMappingOnTarget = function (target) {
     };
 
     target.defaultMapping = defaultMapping;
+}
+
+InspectorTest.createMockTarget = function(targetManager, id)
+{
+    var target = {
+        id: function()
+        {
+            return id;
+        }
+    };
+    InspectorTest.initializeDefaultMappingOnTarget(target);
+    return target;
+}
+
+InspectorTest.dumpTarget = function(targetAware)
+{
+    return InspectorTest.dumpTargetIds ?  "target " + targetAware.target().id() + " " : "";
 }
 
 InspectorTest.DebuggerModelMock = function (target, sourceMapping)
@@ -79,7 +98,7 @@ InspectorTest.DebuggerModelMock.prototype = {
 
     setBreakpointByURL: function(url, lineNumber, columnNumber, condition, callback)
     {
-        InspectorTest.addResult("    debuggerModel.setBreakpoint(" + [url, lineNumber, condition].join(":") + ")");
+        InspectorTest.addResult("    " + InspectorTest.dumpTarget(this) + "debuggerModel.setBreakpoint(" + [url, lineNumber, condition].join(":") + ")");
 
         var breakpointId = url + ":" + lineNumber;
         if (this._breakpoints[breakpointId]) {
@@ -100,7 +119,7 @@ InspectorTest.DebuggerModelMock.prototype = {
 
     setBreakpointByScriptLocation: function(location, condition, callback)
     {
-        InspectorTest.addResult("    debuggerModel.setBreakpoint(" + [location.scriptId, location.lineNumber, condition].join(":") + ")");
+        InspectorTest.addResult("    " + InspectorTest.dumpTarget(this) + "debuggerModel.setBreakpoint(" + [location.scriptId, location.lineNumber, condition].join(":") + ")");
 
         var breakpointId = location.scriptId + ":" + location.lineNumber;
         if (this._breakpoints[breakpointId]) {
@@ -124,7 +143,7 @@ InspectorTest.DebuggerModelMock.prototype = {
 
     removeBreakpoint: function(breakpointId, callback)
     {
-        InspectorTest.addResult("    debuggerModel.removeBreakpoint(" + breakpointId + ")");
+        InspectorTest.addResult("    " + InspectorTest.dumpTarget(this) + "debuggerModel.removeBreakpoint(" + breakpointId + ")");
         delete this._breakpoints[breakpointId];
         if (callback)
             callback();
@@ -182,11 +201,11 @@ InspectorTest.setupLiveLocationSniffers = function()
 {
     InspectorTest.addSniffer(WebInspector.Script.prototype, "createLiveLocation", function(rawLocation)
     {
-        InspectorTest.addResult("    Location created: " + rawLocation.scriptId + ":" + rawLocation.lineNumber);
+        InspectorTest.addResult("    Location created: " + InspectorTest.dumpTarget(rawLocation) + rawLocation.scriptId + ":" + rawLocation.lineNumber);
     }, true);
     InspectorTest.addSniffer(WebInspector.Script.Location.prototype, "dispose", function()
     {
-        InspectorTest.addResult("    Location disposed: " + this._rawLocation.scriptId + ":" + this._rawLocation.lineNumber);
+        InspectorTest.addResult("    Location disposed: " + InspectorTest.dumpTarget(this._rawLocation) + this._rawLocation.scriptId + ":" + this._rawLocation.lineNumber);
     }, true);
 }
 
