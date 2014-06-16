@@ -22,6 +22,8 @@
 #include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/ime/text_input_focus_manager.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/events/event.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/gfx/geometry/rect.h"
@@ -222,12 +224,19 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
         mock_ime_candidate_window_handler_.get());
 
     ime_.reset(new TestableInputMethodChromeOS(this));
-    ime_->SetFocusedTextInputClient(this);
+    if (switches::IsTextInputFocusManagerEnabled())
+      TextInputFocusManager::GetInstance()->FocusTextInputClient(this);
+    else
+      ime_->SetFocusedTextInputClient(this);
   }
 
   virtual void TearDown() OVERRIDE {
-    if (ime_.get())
-      ime_->SetFocusedTextInputClient(NULL);
+    if (ime_.get()) {
+      if (switches::IsTextInputFocusManagerEnabled())
+        TextInputFocusManager::GetInstance()->BlurTextInputClient(this);
+      else
+        ime_->SetFocusedTextInputClient(NULL);
+    }
     ime_.reset();
     chromeos::IMEBridge::Get()->SetCurrentEngineHandler(NULL);
     chromeos::IMEBridge::Get()->SetCandidateWindowHandler(NULL);
@@ -408,21 +417,30 @@ TEST_F(InputMethodChromeOSTest, CanComposeInline) {
 TEST_F(InputMethodChromeOSTest, GetTextInputClient) {
   ime_->Init(true);
   EXPECT_EQ(this, ime_->GetTextInputClient());
-  ime_->SetFocusedTextInputClient(NULL);
+  if (switches::IsTextInputFocusManagerEnabled())
+    TextInputFocusManager::GetInstance()->BlurTextInputClient(this);
+  else
+    ime_->SetFocusedTextInputClient(NULL);
   EXPECT_EQ(NULL, ime_->GetTextInputClient());
 }
 
 TEST_F(InputMethodChromeOSTest, GetInputTextType_WithoutFocusedClient) {
   ime_->Init(true);
   EXPECT_EQ(TEXT_INPUT_TYPE_NONE, ime_->GetTextInputType());
-  ime_->SetFocusedTextInputClient(NULL);
+  if (switches::IsTextInputFocusManagerEnabled())
+    TextInputFocusManager::GetInstance()->BlurTextInputClient(this);
+  else
+    ime_->SetFocusedTextInputClient(NULL);
   input_type_ = TEXT_INPUT_TYPE_PASSWORD;
   ime_->OnTextInputTypeChanged(this);
   // The OnTextInputTypeChanged() call above should be ignored since |this| is
   // not the current focused client.
   EXPECT_EQ(TEXT_INPUT_TYPE_NONE, ime_->GetTextInputType());
 
-  ime_->SetFocusedTextInputClient(this);
+  if (switches::IsTextInputFocusManagerEnabled())
+    TextInputFocusManager::GetInstance()->FocusTextInputClient(this);
+  else
+    ime_->SetFocusedTextInputClient(this);
   ime_->OnTextInputTypeChanged(this);
   EXPECT_EQ(TEXT_INPUT_TYPE_PASSWORD, ime_->GetTextInputType());
 }
@@ -430,19 +448,30 @@ TEST_F(InputMethodChromeOSTest, GetInputTextType_WithoutFocusedClient) {
 TEST_F(InputMethodChromeOSTest, GetInputTextType_WithoutFocusedWindow) {
   ime_->Init(true);
   EXPECT_EQ(TEXT_INPUT_TYPE_NONE, ime_->GetTextInputType());
-  ime_->OnBlur();
+  if (switches::IsTextInputFocusManagerEnabled())
+    TextInputFocusManager::GetInstance()->BlurTextInputClient(this);
+  else
+    ime_->OnBlur();
   input_type_ = TEXT_INPUT_TYPE_PASSWORD;
   ime_->OnTextInputTypeChanged(this);
   // The OnTextInputTypeChanged() call above should be ignored since the top-
   // level window which the ime_ is attached to is not currently focused.
   EXPECT_EQ(TEXT_INPUT_TYPE_NONE, ime_->GetTextInputType());
 
-  ime_->OnFocus();
+  if (switches::IsTextInputFocusManagerEnabled())
+    TextInputFocusManager::GetInstance()->FocusTextInputClient(this);
+  else
+    ime_->OnFocus();
   ime_->OnTextInputTypeChanged(this);
   EXPECT_EQ(TEXT_INPUT_TYPE_PASSWORD, ime_->GetTextInputType());
 }
 
 TEST_F(InputMethodChromeOSTest, GetInputTextType_WithoutFocusedWindow2) {
+  // We no longer support the case that |ime_->Init(false)| because no one
+  // actually uses it.
+  if (switches::IsTextInputFocusManagerEnabled())
+    return;
+
   ime_->Init(false);  // the top-level is initially unfocused.
   EXPECT_EQ(TEXT_INPUT_TYPE_NONE, ime_->GetTextInputType());
   input_type_ = TEXT_INPUT_TYPE_PASSWORD;
@@ -553,6 +582,11 @@ TEST_F(InputMethodChromeOSTest, Focus_Scenario) {
             mock_ime_engine_handler_->last_text_input_context().type);
   EXPECT_EQ(TEXT_INPUT_MODE_KANA,
             mock_ime_engine_handler_->last_text_input_context().mode);
+
+  // When IsTextInputFocusManagerEnabled, InputMethod::SetFocusedTextInputClient
+  // is not supported and it's no-op.
+  if (switches::IsTextInputFocusManagerEnabled())
+    return;
   // Confirm that FocusOut is called when set focus to NULL client.
   ime_->SetFocusedTextInputClient(NULL);
   EXPECT_EQ(3, mock_ime_engine_handler_->focus_in_call_count());

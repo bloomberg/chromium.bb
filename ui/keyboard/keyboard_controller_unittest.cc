@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/keyboard/keyboard_controller.h"
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,13 +20,14 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/ime/text_input_focus_manager.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
-#include "ui/gfx/rect.h"
-#include "ui/keyboard/keyboard_controller.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -173,6 +176,8 @@ class KeyboardControllerTest : public testing::Test {
     aura_test_helper_->SetUp(context_factory);
     new wm::DefaultActivationClient(aura_test_helper_->root_window());
     ui::SetUpInputMethodFactoryForTesting();
+    if (::switches::IsTextInputFocusManagerEnabled())
+      ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(NULL);
     focus_controller_.reset(new TestFocusController(root_window()));
     proxy_ = new TestKeyboardControllerProxy();
     controller_.reset(new KeyboardController(proxy_));
@@ -181,6 +186,8 @@ class KeyboardControllerTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     controller_.reset();
     focus_controller_.reset();
+    if (::switches::IsTextInputFocusManagerEnabled())
+      ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(NULL);
     aura_test_helper_->TearDown();
     ui::TerminateContextFactoryForTests();
   }
@@ -198,7 +205,12 @@ class KeyboardControllerTest : public testing::Test {
  protected:
   void SetFocus(ui::TextInputClient* client) {
     ui::InputMethod* input_method = proxy()->GetInputMethod();
-    input_method->SetFocusedTextInputClient(client);
+    if (::switches::IsTextInputFocusManagerEnabled()) {
+      ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(client);
+      input_method->OnTextInputTypeChanged(client);
+    } else {
+      input_method->SetFocusedTextInputClient(client);
+    }
     if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
       input_method->ShowImeIfNeeded();
       if (proxy_->GetKeyboardWindow()->bounds().height() == 0) {
@@ -326,7 +338,6 @@ TEST_F(KeyboardControllerTest, EventHitTestingInContainer) {
   ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE,
                         ui::EF_NONE);
   EXPECT_EQ(keyboard_window, targeter->FindTargetForEvent(root, &mouse1));
-
 
   location.set_y(keyboard_window->bounds().y() - 5);
   ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE,

@@ -27,6 +27,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_input_focus_manager.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
@@ -1019,7 +1021,12 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
   FakeTextInputClient text_input_client(window.get());
   ui::InputMethod* input_method =
       root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
-  input_method->SetFocusedTextInputClient(&text_input_client);
+  if (switches::IsTextInputFocusManagerEnabled()) {
+    ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(
+        &text_input_client);
+  } else {
+    input_method->SetFocusedTextInputClient(&text_input_client);
+  }
 
   int available_height =
       Shell::GetScreen()->GetPrimaryDisplay().bounds().height() -
@@ -1039,7 +1046,12 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
   EXPECT_EQ(gfx::Rect(50, 0, 100, available_height).ToString(),
             window->bounds().ToString());
   HideKeyboard();
-  input_method->SetFocusedTextInputClient(NULL);
+  if (switches::IsTextInputFocusManagerEnabled()) {
+    ui::TextInputFocusManager::GetInstance()->BlurTextInputClient(
+        &text_input_client);
+  } else {
+    input_method->SetFocusedTextInputClient(NULL);
+  }
 }
 
 }  // namespace ash

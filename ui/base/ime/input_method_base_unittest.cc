@@ -12,6 +12,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method_observer.h"
+#include "ui/base/ime/text_input_focus_manager.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/events/event.h"
 
 namespace ui {
@@ -52,9 +54,15 @@ class ClientChangeVerifier {
 
   // Verifies the result satisfies the expectation or not.
   void Verify() {
-    EXPECT_EQ(call_expected_, on_will_change_focused_client_called_);
-    EXPECT_EQ(call_expected_, on_did_change_focused_client_called_);
-    EXPECT_EQ(call_expected_, on_text_input_state_changed_);
+    if (switches::IsTextInputFocusManagerEnabled()) {
+      EXPECT_FALSE(on_will_change_focused_client_called_);
+      EXPECT_FALSE(on_did_change_focused_client_called_);
+      EXPECT_FALSE(on_text_input_state_changed_);
+    } else {
+      EXPECT_EQ(call_expected_, on_will_change_focused_client_called_);
+      EXPECT_EQ(call_expected_, on_did_change_focused_client_called_);
+      EXPECT_EQ(call_expected_, on_text_input_state_changed_);
+    }
   }
 
   void OnWillChangeFocusedClient(TextInputClient* focused_before,
@@ -245,6 +253,16 @@ class MockTextInputClient : public DummyTextInputClient {
 typedef ScopedObserver<InputMethod, InputMethodObserver>
     InputMethodScopedObserver;
 
+void SetFocusedTextInputClient(InputMethod* input_method,
+                               TextInputClient* text_input_client) {
+  if (switches::IsTextInputFocusManagerEnabled()) {
+    TextInputFocusManager::GetInstance()->FocusTextInputClient(
+        text_input_client);
+  } else {
+    input_method->SetFocusedTextInputClient(text_input_client);
+  }
+}
+
 TEST_F(InputMethodBaseTest, SetFocusedTextInputClient) {
   DummyTextInputClient text_input_client_1st;
   DummyTextInputClient text_input_client_2nd;
@@ -263,7 +281,7 @@ TEST_F(InputMethodBaseTest, SetFocusedTextInputClient) {
 
     ASSERT_EQ(NULL, input_method.GetTextInputClient());
     verifier.ExpectClientChange(NULL, &text_input_client_1st);
-    input_method.SetFocusedTextInputClient(&text_input_client_1st);
+    SetFocusedTextInputClient(&input_method, &text_input_client_1st);
     EXPECT_EQ(&text_input_client_1st, input_method.GetTextInputClient());
     verifier.Verify();
   }
@@ -271,7 +289,7 @@ TEST_F(InputMethodBaseTest, SetFocusedTextInputClient) {
   {
     SCOPED_TRACE("Redundant focus events must be ignored");
     verifier.ExpectClientDoesNotChange();
-    input_method.SetFocusedTextInputClient(&text_input_client_1st);
+    SetFocusedTextInputClient(&input_method, &text_input_client_1st);
     verifier.Verify();
   }
 
@@ -281,7 +299,7 @@ TEST_F(InputMethodBaseTest, SetFocusedTextInputClient) {
     ASSERT_EQ(&text_input_client_1st, input_method.GetTextInputClient());
     verifier.ExpectClientChange(&text_input_client_1st,
                                 &text_input_client_2nd);
-    input_method.SetFocusedTextInputClient(&text_input_client_2nd);
+    SetFocusedTextInputClient(&input_method, &text_input_client_2nd);
     EXPECT_EQ(&text_input_client_2nd, input_method.GetTextInputClient());
     verifier.Verify();
   }
@@ -291,7 +309,7 @@ TEST_F(InputMethodBaseTest, SetFocusedTextInputClient) {
 
     ASSERT_EQ(&text_input_client_2nd, input_method.GetTextInputClient());
     verifier.ExpectClientChange(&text_input_client_2nd, NULL);
-    input_method.SetFocusedTextInputClient(NULL);
+    SetFocusedTextInputClient(&input_method, NULL);
     EXPECT_EQ(NULL, input_method.GetTextInputClient());
     verifier.Verify();
   }
@@ -299,12 +317,16 @@ TEST_F(InputMethodBaseTest, SetFocusedTextInputClient) {
   {
     SCOPED_TRACE("Redundant focus events must be ignored");
     verifier.ExpectClientDoesNotChange();
-    input_method.SetFocusedTextInputClient(NULL);
+    SetFocusedTextInputClient(&input_method, NULL);
     verifier.Verify();
   }
 }
 
 TEST_F(InputMethodBaseTest, DetachTextInputClient) {
+  // DetachTextInputClient is not supported when IsTextInputFocusManagerEnabled.
+  if (switches::IsTextInputFocusManagerEnabled())
+    return;
+
   DummyTextInputClient text_input_client;
   DummyTextInputClient text_input_client_the_other;
 
@@ -356,7 +378,7 @@ TEST_F(InputMethodBaseTest, CandidateWindowEvents) {
     input_method_base.OnFocus();
 
     verifier.ExpectClientChange(NULL, &text_input_client);
-    input_method_base.SetFocusedTextInputClient(&text_input_client);
+    SetFocusedTextInputClient(&input_method_base, &text_input_client);
 
     EXPECT_EQ(0, text_input_client.shown_event_count());
     EXPECT_EQ(0, text_input_client.updated_event_count());

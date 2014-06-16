@@ -12,6 +12,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_input_focus_manager.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/default_activation_client.h"
@@ -115,15 +117,23 @@ TEST_F(InputMethodEventFilterTest, TestEventDispatching) {
                    ui::EF_IME_FABRICATED_KEY,
                    false);
   // Calls DispatchKeyEventPostIME() without a focused text input client.
-  input_method_event_filter_->input_method()->SetFocusedTextInputClient(NULL);
+  if (switches::IsTextInputFocusManagerEnabled())
+    ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(NULL);
+  else
+    input_method_event_filter_->input_method()->SetFocusedTextInputClient(NULL);
   input_method_event_filter_->input_method()->DispatchKeyEvent(evt);
   // Verifies 0 key event happened because InputMethodEventFilter::
   // DispatchKeyEventPostIME() returns false.
   EXPECT_EQ(0, test_filter_.num_key_events());
 
   // Calls DispatchKeyEventPostIME() with a focused text input client.
-  input_method_event_filter_->input_method()->SetFocusedTextInputClient(
-      test_input_client_.get());
+  if (switches::IsTextInputFocusManagerEnabled()) {
+    ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(
+        test_input_client_.get());
+  } else {
+    input_method_event_filter_->input_method()->SetFocusedTextInputClient(
+        test_input_client_.get());
+  }
   input_method_event_filter_->input_method()->DispatchKeyEvent(evt);
   // Verifies 1 key event happened because InputMethodEventFilter::
   // DispatchKeyEventPostIME() returns true.

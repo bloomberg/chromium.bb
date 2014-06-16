@@ -160,18 +160,18 @@ void InputMethodBase::OnCandidateWindowHidden() {
 }
 
 void InputMethodBase::CandidateWindowShownCallback() {
-  if (text_input_client_)
-    text_input_client_->OnCandidateWindowShown();
+  if (TextInputClient* text_input_client = GetTextInputClient())
+    text_input_client->OnCandidateWindowShown();
 }
 
 void InputMethodBase::CandidateWindowUpdatedCallback() {
-  if (text_input_client_)
-    text_input_client_->OnCandidateWindowUpdated();
+  if (TextInputClient* text_input_client = GetTextInputClient())
+    text_input_client->OnCandidateWindowUpdated();
 }
 
 void InputMethodBase::CandidateWindowHiddenCallback() {
-  if (text_input_client_)
-    text_input_client_->OnCandidateWindowHidden();
+  if (TextInputClient* text_input_client = GetTextInputClient())
+    text_input_client->OnCandidateWindowHidden();
 }
 
 }  // namespace ui
