@@ -74,7 +74,8 @@ private:
 
     void clearError();
 
-    HashSet<GeolocationController*> m_controllers;
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<GeolocationController> > GeolocationControllers;
+    WillBePersistentHeapHashSet<RawPtrWillBeMember<GeolocationController> > m_controllers;
     Persistent<GeolocationPosition> m_lastPosition;
     bool m_hasError;
     String m_errorMessage;
@@ -89,8 +90,8 @@ private:
     };
 
     PermissionState m_permissionState;
-    typedef PersistentHeapHashSet<Member<Geolocation> > GeolocationSet;
-    GeolocationSet m_pendingPermissions;
+    typedef HeapHashSet<Member<Geolocation> > GeolocationSet;
+    PersistentHeapHashSet<Member<Geolocation> > m_pendingPermissions;
 };
 
 }

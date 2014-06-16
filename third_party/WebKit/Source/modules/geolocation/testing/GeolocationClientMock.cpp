@@ -167,13 +167,13 @@ void GeolocationClientMock::controllerTimerFired(Timer<GeolocationClientMock>* t
     ASSERT_UNUSED(timer, timer == &m_controllerTimer);
 
     // Make a copy of the set of controllers since it might be modified while iterating.
-    HashSet<GeolocationController*> controllers = m_controllers;
+    GeolocationControllers controllers = m_controllers;
     if (m_lastPosition.get()) {
         ASSERT(!m_hasError);
-        for (HashSet<GeolocationController*>::iterator it = controllers.begin(); it != controllers.end(); ++it)
+        for (GeolocationControllers::iterator it = controllers.begin(); it != controllers.end(); ++it)
             (*it)->positionChanged(m_lastPosition.get());
     } else if (m_hasError) {
-        for (HashSet<GeolocationController*>::iterator it = controllers.begin(); it != controllers.end(); ++it)
+        for (GeolocationControllers::iterator it = controllers.begin(); it != controllers.end(); ++it)
             (*it)->errorOccurred(GeolocationError::create(GeolocationError::PositionUnavailable, m_errorMessage));
     }
 }

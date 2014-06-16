@@ -62,7 +62,7 @@ void GeolocationInspectorAgent::setGeolocationOverride(ErrorString* error, const
     else
         m_geolocationPosition.clear();
 
-    for (WTF::HashSet<GeolocationController*>::iterator it = m_controllers.begin(); it != m_controllers.end(); ++it)
+    for (GeolocationControllers::iterator it = m_controllers.begin(); it != m_controllers.end(); ++it)
         (*it)->positionChanged(0); // Kick location update.
 }
 
@@ -73,9 +73,9 @@ void GeolocationInspectorAgent::clearGeolocationOverride(ErrorString*)
     m_geolocationOverridden = false;
     m_geolocationPosition.clear();
 
-    if (m_platformGeolocationPosition.get()) {
-        for (WTF::HashSet<GeolocationController*>::iterator it = m_controllers.begin(); it != m_controllers.end(); ++it)
-            (*it)->positionChanged(m_platformGeolocationPosition.get());
+    if (GeolocationPosition* platformPosition = m_platformGeolocationPosition.get()) {
+        for (GeolocationControllers::iterator it = m_controllers.begin(); it != m_controllers.end(); ++it)
+            (*it)->positionChanged(platformPosition);
     }
 }
 
