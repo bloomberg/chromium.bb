@@ -291,6 +291,9 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
     // Bypass the proxy because the proxy, not the origin, sent a 4xx response.
     PROXY_4XX_BYPASS,
 
+    // Bypass the proxy because we got a 407 from the proxy without a challenge.
+    MALFORMED_407_BYPASS,
+
     // This must always be last.
     BYPASS_EVENT_TYPE_MAX
   };

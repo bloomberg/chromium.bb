@@ -337,6 +337,14 @@ TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
     { "HTTP/1.1 414 Request-URI Too Long\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
       net::ProxyService::BYPASS_EVENT_TYPE_MAX,
+    },
+    { "HTTP/1.1 407 Proxy Authentication Required\n",
+      net::ProxyService::MALFORMED_407_BYPASS,
+    },
+    { "HTTP/1.1 407 Proxy Authentication Required\n"
+      "Proxy-Authenticate: Basic\n"
+      "Via: 1.1 Chrome-Compression-Proxy\n",
+      net::ProxyService::BYPASS_EVENT_TYPE_MAX,
     }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {

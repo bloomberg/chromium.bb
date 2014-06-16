@@ -121,6 +121,12 @@ GetDataReductionProxyBypassEventType(
     // Fall back if a 500, 502 or 503 is returned.
     return ProxyService::INTERNAL_SERVER_ERROR_BYPASS;
   }
+  // TODO(kundaji): Bypass if Proxy-Authenticate header value cannot be
+  // interpreted by data reduction proxy.
+  if (headers->response_code() == net::HTTP_PROXY_AUTHENTICATION_REQUIRED &&
+      !headers->HasHeader("Proxy-Authenticate")) {
+    return ProxyService::MALFORMED_407_BYPASS;
+  }
   if (!HasDataReductionProxyViaHeader(headers) &&
       (headers->response_code() != net::HTTP_NOT_MODIFIED)) {
     // A Via header might not be present in a 304. Since the goal of a 304
