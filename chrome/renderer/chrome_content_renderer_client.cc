@@ -158,8 +158,6 @@ using blink::WebVector;
 
 namespace {
 
-const char kWebViewTagName[] = "WEBVIEW";
-
 ChromeContentRendererClient* g_current_client;
 
 static void AppendParams(const std::vector<base::string16>& additional_names,
@@ -1371,27 +1369,6 @@ blink::WebSpeechSynthesizer*
 ChromeContentRendererClient::OverrideSpeechSynthesizer(
     blink::WebSpeechSynthesizerClient* client) {
   return new TtsDispatcher(client);
-}
-
-bool ChromeContentRendererClient::AllowBrowserPlugin(
-    blink::WebPluginContainer* container) {
-  // If this |BrowserPlugin| <object> in the |container| is not inside a
-  // <webview> shadowHost, we disable instantiating this plugin. This
-  // is to discourage and prevent developers from accidentally attaching
-  // <object> directly in apps.
-  //
-  // Note that this check below does *not* ensure any security, it is still
-  // possible to bypass this check.
-  // TODO(lazyboy): http://crbug.com/178663, Ensure we properly disallow
-  // instantiating BrowserPlugin outside of the <webview> shim.
-  if (container->element().isNull())
-    return false;
-
-  if (container->element().shadowHost().isNull())
-    return false;
-
-  WebString tag_name = container->element().shadowHost().tagName();
-  return tag_name.equals(WebString::fromUTF8(kWebViewTagName));
 }
 
 bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(

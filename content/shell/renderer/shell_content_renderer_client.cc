@@ -191,9 +191,4 @@ void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
       ShellRenderProcessObserver::GetInstance()->test_delegate());
 }
 
-bool ShellContentRendererClient::AllowBrowserPlugin(
-    blink::WebPluginContainer* container) {
-  return true;
-}
-
 }  // namespace content

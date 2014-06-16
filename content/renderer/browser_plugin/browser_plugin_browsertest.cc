@@ -46,19 +46,6 @@ std::string GetHTMLForBrowserPluginObject() {
 
 }  // namespace
 
-class TestContentRendererClient : public ContentRendererClient {
- public:
-  TestContentRendererClient() : ContentRendererClient() {
-  }
-  virtual ~TestContentRendererClient() {
-  }
-  virtual bool AllowBrowserPlugin(
-      blink::WebPluginContainer* container) OVERRIDE {
-    // Allow BrowserPlugin for tests.
-    return true;
-  }
-};
-
 // Test factory for creating test instances of BrowserPluginManager.
 class TestBrowserPluginManagerFactory : public BrowserPluginManagerFactory {
  public:
@@ -102,10 +89,6 @@ void BrowserPluginTest::TearDown() {
   __lsan_do_leak_check();
 #endif
   RenderViewTest::TearDown();
-}
-
-ContentRendererClient* BrowserPluginTest::CreateContentRendererClient() {
-  return new TestContentRendererClient;
 }
 
 std::string BrowserPluginTest::ExecuteScriptAndReturnString(

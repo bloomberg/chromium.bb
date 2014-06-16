@@ -833,25 +833,6 @@ function testRemoveSrcAttribute() {
   document.body.appendChild(webview);
 }
 
-// This test verifies that it is not possible to instantiate a browser plugin
-// directly within an app.
-function testBrowserPluginNotAllowed() {
-  var container = document.getElementById('object-container');
-  if (!container) {
-    embedder.test.fail('Container for object not found.');
-    return;
-  }
-  container.innerHTML = '<object type="application/browser-plugin"' +
-      ' id="object-plugin"' +
-      ' src="data:text/html,<body>You should not see this</body>">' +
-      '</object>';
-  var objectElement = document.getElementById('object-plugin');
-  // Check that bindings are not registered.
-  embedder.test.assertTrue(
-      objectElement['-internal-attach'] === undefined);
-  embedder.test.succeed();
-}
-
 function testPluginLoadPermission() {
   var pluginIdentifier = 'unknown platform';
   if (navigator.platform.match(/linux/i))
@@ -1727,7 +1708,6 @@ embedder.test.testList = {
   'testNavOnSrcAttributeChange': testNavOnSrcAttributeChange,
   'testReassignSrcAttribute': testReassignSrcAttribute,
   'testRemoveSrcAttribute': testRemoveSrcAttribute,
-  'testBrowserPluginNotAllowed': testBrowserPluginNotAllowed,
   'testPluginLoadPermission': testPluginLoadPermission,
   'testNewWindow': testNewWindow,
   'testNewWindowTwoListeners': testNewWindowTwoListeners,

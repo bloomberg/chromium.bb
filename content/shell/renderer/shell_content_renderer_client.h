@@ -46,8 +46,6 @@ class ShellContentRendererClient : public ContentRendererClient {
       double sample_rate) OVERRIDE;
   virtual blink::WebClipboard* OverrideWebClipboard() OVERRIDE;
   virtual blink::WebThemeEngine* OverrideThemeEngine() OVERRIDE;
-  virtual bool AllowBrowserPlugin(
-      blink::WebPluginContainer* container) OVERRIDE;
 
  private:
   void WebTestProxyCreated(RenderView* render_view, WebTestProxyBase* proxy);

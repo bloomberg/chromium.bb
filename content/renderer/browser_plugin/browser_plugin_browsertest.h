@@ -29,7 +29,6 @@ class BrowserPluginTest : public RenderViewTest {
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
-  virtual ContentRendererClient* CreateContentRendererClient() OVERRIDE;
 
   MockBrowserPluginManager* browser_plugin_manager() const {
     return static_cast<MockBrowserPluginManager*>(

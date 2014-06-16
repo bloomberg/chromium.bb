@@ -115,8 +115,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual bool ShouldOverridePageVisibilityState(
       const content::RenderFrame* render_frame,
       blink::WebPageVisibilityState* override_state) OVERRIDE;
-  virtual bool AllowBrowserPlugin(
-      blink::WebPluginContainer* container) OVERRIDE;
   virtual const void* CreatePPAPIInterface(
       const std::string& interface_name) OVERRIDE;
   virtual bool IsExternalPepperPlugin(const std::string& module_name) OVERRIDE;

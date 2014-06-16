@@ -524,10 +524,6 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
   if (!container)
     return false;
 
-  if (!GetContentClient()->renderer()->AllowBrowserPlugin(container) &&
-      !auto_navigate_)
-    return false;
-
   // Tell |container| to allow this plugin to use script objects.
   npp_.reset(new NPP_t);
   container->allowScriptObjects();

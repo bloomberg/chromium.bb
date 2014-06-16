@@ -235,9 +235,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // startup steps).
   virtual bool IsExternalPepperPlugin(const std::string& module_name);
 
-  // Returns whether BrowserPlugin should be allowed within the |container|.
-  virtual bool AllowBrowserPlugin(blink::WebPluginContainer* container);
-
   // Returns true if the page at |url| can use Pepper MediaStream APIs.
   virtual bool AllowPepperMediaStreamAPI(const GURL& url);
 
