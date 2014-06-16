@@ -54,7 +54,7 @@ EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
       base::Bind(
           &EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey,
           this),
-      GetProfile());
+      browser_context());
   return RespondLater();
 }
 
@@ -87,7 +87,7 @@ EnterprisePlatformKeysInternalSignFunction::Run() {
       params->public_key,
       params->data,
       base::Bind(&EnterprisePlatformKeysInternalSignFunction::OnSigned, this),
-      GetProfile());
+      browser_context());
   return RespondLater();
 }
 
@@ -118,7 +118,7 @@ EnterprisePlatformKeysGetCertificatesFunction::Run() {
       base::Bind(
           &EnterprisePlatformKeysGetCertificatesFunction::OnGotCertificates,
           this),
-      GetProfile());
+      browser_context());
   return RespondLater();
 }
 
@@ -170,7 +170,7 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
       base::Bind(&EnterprisePlatformKeysImportCertificateFunction::
                      OnImportedCertificate,
                  this),
-      GetProfile());
+      browser_context());
   return RespondLater();
 }
 
@@ -207,7 +207,7 @@ EnterprisePlatformKeysRemoveCertificateFunction::Run() {
       base::Bind(&EnterprisePlatformKeysRemoveCertificateFunction::
                      OnRemovedCertificate,
                  this),
-      GetProfile());
+      browser_context());
   return RespondLater();
 }
 

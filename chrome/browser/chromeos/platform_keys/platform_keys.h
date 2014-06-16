@@ -13,7 +13,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace net {
 class X509Certificate;
@@ -33,12 +35,12 @@ typedef base::Callback<void(const std::string& public_key_spki_der,
     GenerateKeyCallback;
 
 // Generates a RSA key with |modulus_length|. |token_id| is currently ignored,
-// instead the user token associated with |profile| is always used. |callback|
-// will be invoked with the resulting public key or an error.
+// instead the user token associated with |browser_context| is always used.
+// |callback| will be invoked with the resulting public key or an error.
 void GenerateRSAKey(const std::string& token_id,
                     unsigned int modulus_length,
                     const GenerateKeyCallback& callback,
-                    Profile* profile);
+                    content::BrowserContext* browser_context);
 
 // If signing was successful, |signature| will be contain the signature and
 // |error_message| will be empty. If it failed, |signature| will be empty and
@@ -48,15 +50,15 @@ typedef base::Callback<void(const std::string& signature,
 
 // Signs |data| with the private key matching |public_key|, if that key is
 // stored in the given token. |token_id| is currently ignored, instead the user
-// token associated with |profile| is always used. |public_key| must be the DER
-// encoding of a SubjectPublicKeyInfo. |callback| will be invoked with the
-// signature or an error message.
+// token associated with |browser_context| is always used. |public_key| must be
+// the DER encoding of a SubjectPublicKeyInfo. |callback| will be invoked with
+// the signature or an error message.
 // Currently supports RSA keys only.
 void Sign(const std::string& token_id,
           const std::string& public_key,
           const std::string& data,
           const SignCallback& callback,
-          Profile* profile);
+          content::BrowserContext* browser_context);
 
 // If the list of certificates could be successfully retrieved, |certs| will
 // contain the list of available certificates (maybe empty) and |error_message|
@@ -68,11 +70,11 @@ typedef base::Callback<void(scoped_ptr<net::CertificateList> certs,
 
 // Returns the list of all certificates with stored private key available from
 // the given token. |token_id| is currently ignored, instead the user token
-// associated with |profile| is always used. |callback| will be invoked with
-// the list of available certificates or an error message.
+// associated with |browser_context| is always used. |callback| will be invoked
+// with the list of available certificates or an error message.
 void GetCertificates(const std::string& token_id,
                      const GetCertificatesCallback& callback,
-                     Profile* profile);
+                     content::BrowserContext* browser_context);
 
 // If an error occurred during import, |error_message| will be set to an error
 // message.
@@ -82,12 +84,12 @@ typedef base::Callback<void(const std::string& error_message)>
 // Imports |certificate| to the given token if the certified key is already
 // stored in this token. Any intermediate of |certificate| will be ignored.
 // |token_id| is currently ignored, instead the user token associated with
-// |profile| is always used. |callback| will be invoked when the import is
-// finished, possibly with an error message.
+// |browser_context| is always used. |callback| will be invoked when the import
+// is finished, possibly with an error message.
 void ImportCertificate(const std::string& token_id,
                        scoped_refptr<net::X509Certificate> certificate,
                        const ImportCertificateCallback& callback,
-                       Profile* profile);
+                       content::BrowserContext* browser_context);
 
 // If an error occurred during removal, |error_message| will be set to an error
 // message.
@@ -96,12 +98,12 @@ typedef base::Callback<void(const std::string& error_message)>
 
 // Removes |certificate| from the given token if present. Any intermediate of
 // |certificate| will be ignored. |token_id| is currently ignored, instead the
-// user token associated with |profile| is always used. |callback| will be
-// invoked when the removal is finished, possibly with an error message.
+// user token associated with |browser_context| is always used. |callback| will
+// be invoked when the removal is finished, possibly with an error message.
 void RemoveCertificate(const std::string& token_id,
                        scoped_refptr<net::X509Certificate> certificate,
                        const RemoveCertificateCallback& callback,
-                       Profile* profile);
+                       content::BrowserContext* browser_context);
 
 }  // namespace platform_keys
 

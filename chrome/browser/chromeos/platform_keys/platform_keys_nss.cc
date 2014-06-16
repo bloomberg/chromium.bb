@@ -18,7 +18,7 @@
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
 #include "chrome/browser/net/nss_context.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/crypto_module.h"
@@ -27,6 +27,7 @@
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/x509_certificate.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 
 namespace {
@@ -112,13 +113,13 @@ void GetCertDatabaseOnIOThread(content::ResourceContext* context,
 // |callback| on the IO thread.
 void GetCertDatabase(const std::string& token_id,
                      const GetCertDBCallback& callback,
-                     Profile* profile,
+                     BrowserContext* browser_context,
                      NSSOperationState* state) {
   // TODO(pneubeck): Decide which DB to retrieve depending on |token_id|.
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(&GetCertDatabaseOnIOThread,
-                                     profile->GetResourceContext(),
+                                     browser_context->GetResourceContext(),
                                      callback,
                                      state));
 }
@@ -471,7 +472,7 @@ void RemoveCertificateWithDB(scoped_ptr<RemoveCertificateState> state,
 void GenerateRSAKey(const std::string& token_id,
                     unsigned int modulus_length,
                     const GenerateKeyCallback& callback,
-                    Profile* profile) {
+                    BrowserContext* browser_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<GenerateRSAKeyState> state(
       new GenerateRSAKeyState(modulus_length, callback));
@@ -485,7 +486,7 @@ void GenerateRSAKey(const std::string& token_id,
   NSSOperationState* state_ptr = state.get();
   GetCertDatabase(token_id,
                   base::Bind(&GenerateRSAKeyWithDB, base::Passed(&state)),
-                  profile,
+                  browser_context,
                   state_ptr);
 }
 
@@ -493,7 +494,7 @@ void Sign(const std::string& token_id,
           const std::string& public_key,
           const std::string& data,
           const SignCallback& callback,
-          Profile* profile) {
+          BrowserContext* browser_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<SignState> state(new SignState(public_key, data, callback));
   // Get the pointer to |state| before base::Passed releases |state|.
@@ -504,27 +505,27 @@ void Sign(const std::string& token_id,
   // we use a key of the correct token.
   GetCertDatabase(token_id,
                   base::Bind(&RSASignWithDB, base::Passed(&state)),
-                  profile,
+                  browser_context,
                   state_ptr);
 }
 
 void GetCertificates(const std::string& token_id,
                      const GetCertificatesCallback& callback,
-                     Profile* profile) {
+                     BrowserContext* browser_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<GetCertificatesState> state(new GetCertificatesState(callback));
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
   GetCertDatabase(token_id,
                   base::Bind(&GetCertificatesWithDB, base::Passed(&state)),
-                  profile,
+                  browser_context,
                   state_ptr);
 }
 
 void ImportCertificate(const std::string& token_id,
                        scoped_refptr<net::X509Certificate> certificate,
                        const ImportCertificateCallback& callback,
-                       Profile* profile) {
+                       BrowserContext* browser_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<ImportCertificateState> state(
       new ImportCertificateState(certificate, callback));
@@ -536,14 +537,14 @@ void ImportCertificate(const std::string& token_id,
   // we use a key of the correct token.
   GetCertDatabase(token_id,
                   base::Bind(&ImportCertificateWithDB, base::Passed(&state)),
-                  profile,
+                  browser_context,
                   state_ptr);
 }
 
 void RemoveCertificate(const std::string& token_id,
                        scoped_refptr<net::X509Certificate> certificate,
                        const RemoveCertificateCallback& callback,
-                       Profile* profile) {
+                       BrowserContext* browser_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<RemoveCertificateState> state(
       new RemoveCertificateState(certificate, callback));
@@ -554,7 +555,7 @@ void RemoveCertificate(const std::string& token_id,
   // we would get more informative error messages.
   GetCertDatabase(token_id,
                   base::Bind(&RemoveCertificateWithDB, base::Passed(&state)),
-                  profile,
+                  browser_context,
                   state_ptr);
 }
 
