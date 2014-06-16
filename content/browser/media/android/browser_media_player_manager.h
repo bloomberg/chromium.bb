@@ -23,6 +23,8 @@ namespace media {
 class DemuxerAndroid;
 }
 
+struct MediaPlayerHostMsg_Initialize_Params;
+
 namespace content {
 class BrowserDemuxerAndroid;
 class ContentViewCoreImpl;
@@ -96,11 +98,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnEnterFullscreen(int player_id);
   virtual void OnExitFullscreen(int player_id);
   virtual void OnInitialize(
-      MediaPlayerHostMsg_Initialize_Type type,
-      int player_id,
-      const GURL& url,
-      const GURL& first_party_for_cookies,
-      int demuxer_client_id);
+      const MediaPlayerHostMsg_Initialize_Params& media_player_params);
   virtual void OnStart(int player_id);
   virtual void OnSeek(int player_id, const base::TimeDelta& time);
   virtual void OnPause(int player_id, bool is_media_related_action);
@@ -141,11 +139,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
  private:
   // Constructs a MediaPlayerAndroid object.
   media::MediaPlayerAndroid* CreateMediaPlayer(
-      MediaPlayerHostMsg_Initialize_Type type,
-      int player_id,
-      const GURL& url,
-      const GURL& first_party_for_cookies,
-      int demuxer_client_id,
+      const MediaPlayerHostMsg_Initialize_Params& media_player_params,
       bool hide_url_log,
       media::MediaPlayerManager* manager,
       BrowserDemuxerAndroid* demuxer);

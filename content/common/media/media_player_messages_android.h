@@ -62,6 +62,17 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(MediaPlayerHostMsg_Initialize_Type)
 
+// Parameters to describe a media player
+IPC_STRUCT_BEGIN(MediaPlayerHostMsg_Initialize_Params)
+  IPC_STRUCT_MEMBER(MediaPlayerHostMsg_Initialize_Type, type)
+  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, metafile_data_handle)
+  IPC_STRUCT_MEMBER(int, player_id)
+  IPC_STRUCT_MEMBER(int, demuxer_client_id)
+  IPC_STRUCT_MEMBER(GURL, url)
+  IPC_STRUCT_MEMBER(GURL, first_party_for_cookies)
+  IPC_STRUCT_MEMBER(GURL, frame_url)
+IPC_STRUCT_END()
+
 // Chrome for Android seek message sequence is:
 // 1. Renderer->Browser MediaPlayerHostMsg_Seek
 //    This is the beginning of actual seek flow in response to web app requests
@@ -198,21 +209,10 @@ IPC_MESSAGE_ROUTED0(MediaPlayerMsg_PauseVideo)
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_DestroyMediaPlayer,
                     int /* player_id */)
 
-// Initialize a media player object with the given type and player_id. The other
-// parameters are used depending on the type of player.
-//
-// url: the URL to load when initializing a URL player.
-//
-// first_party_for_cookies: the cookie store to use when loading a URL.
-//
-// demuxer_client_id: the demuxer associated with this player when initializing
-// a media source player.
-IPC_MESSAGE_ROUTED5(MediaPlayerHostMsg_Initialize,
-                    MediaPlayerHostMsg_Initialize_Type /* type */,
-                    int /* player_id */,
-                    GURL /* url */,
-                    GURL /* first_party_for_cookies */,
-                    int /* demuxer_client_id */)
+// Initialize a media player object.
+IPC_MESSAGE_ROUTED1(
+    MediaPlayerHostMsg_Initialize,
+    MediaPlayerHostMsg_Initialize_Params);
 
 // Pause the player.
 IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_Pause,

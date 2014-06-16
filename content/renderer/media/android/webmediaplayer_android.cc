@@ -239,7 +239,8 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
   url_ = url;
   GURL first_party_url = frame_->document().firstPartyForCookies();
   player_manager_->Initialize(
-      player_type_, player_id_, url, first_party_url, demuxer_client_id);
+      player_type_, player_id_, url, first_party_url, demuxer_client_id,
+      frame_->document().url());
 
   if (player_manager_->ShouldEnterFullscreen(frame_))
     player_manager_->EnterFullscreen(player_id_, frame_);
