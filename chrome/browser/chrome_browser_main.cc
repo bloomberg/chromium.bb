@@ -398,11 +398,15 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
   RegisterWidevineCdmComponent(cus);
 #endif
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   // CRLSetFetcher attempts to load a CRL set from either the local disk or
   // network.
   if (!command_line.HasSwitch(switches::kDisableCRLSets))
     g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
+#elif defined(OS_ANDROID)
+  // The CRLSet component was enabled for some releases. This code attempts to
+  // delete it from the local disk of those how may have downloaded it.
+  g_browser_process->crl_set_fetcher()->DeleteFromDisk();
 #endif
 
 #if defined(CLD2_DYNAMIC_MODE) && defined(CLD2_IS_COMPONENT)

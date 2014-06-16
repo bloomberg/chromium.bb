@@ -27,6 +27,9 @@ class CRLSetFetcher : public component_updater::ComponentInstaller,
 
   void StartInitialLoad(component_updater::ComponentUpdateService* cus);
 
+  // DeleteFromDisk asynchronously delete the CRLSet file.
+  void DeleteFromDisk();
+
   // ComponentInstaller interface
   virtual void OnUpdateError(int error) OVERRIDE;
   virtual bool Install(const base::DictionaryValue& manifest,
@@ -59,6 +62,10 @@ class CRLSetFetcher : public component_updater::ComponentInstaller,
 
   // RegisterComponent registers this object as a component updater.
   void RegisterComponent(uint32 sequence_of_loaded_crl);
+
+  // DoDeleteFromDisk runs on the FILE thread and removes the CRLSet file from
+  // the disk.
+  void DoDeleteFromDisk();
 
   component_updater::ComponentUpdateService* cus_;
 

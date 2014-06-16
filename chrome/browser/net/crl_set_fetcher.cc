@@ -47,6 +47,16 @@ void CRLSetFetcher::StartInitialLoad(ComponentUpdateService* cus) {
   }
 }
 
+void CRLSetFetcher::DeleteFromDisk() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&CRLSetFetcher::DoDeleteFromDisk, this))) {
+    NOTREACHED();
+  }
+}
+
 void CRLSetFetcher::DoInitialLoadFromDisk() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -144,6 +154,16 @@ void CRLSetFetcher::RegisterComponent(uint32 sequence_of_loaded_crl) {
       ComponentUpdateService::kOk) {
     NOTREACHED() << "RegisterComponent returned error";
   }
+}
+
+void CRLSetFetcher::DoDeleteFromDisk() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  base::FilePath crl_set_file_path;
+  if (!GetCRLSetFilePath(&crl_set_file_path))
+    return;
+
+  DeleteFile(crl_set_file_path, false /* not recursive */);
 }
 
 void CRLSetFetcher::OnUpdateError(int error) {
