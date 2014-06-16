@@ -404,6 +404,9 @@ public:
     virtual const AtomicString& shadowPseudoId() const;
     void setShadowPseudoId(const AtomicString&);
 
+    LayoutSize minimumSizeForResizing() const;
+    void setMinimumSizeForResizing(const LayoutSize&);
+
     virtual void didBecomeFullscreenElement() { }
     virtual void willStopBeingFullscreenElement() { }
 

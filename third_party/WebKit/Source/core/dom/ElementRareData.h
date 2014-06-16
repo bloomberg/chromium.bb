@@ -97,6 +97,9 @@ public:
     DatasetDOMStringMap* dataset() const { return m_dataset.get(); }
     void setDataset(PassOwnPtrWillBeRawPtr<DatasetDOMStringMap> dataset) { m_dataset = dataset; }
 
+    LayoutSize minimumSizeForResizing() const { return m_minimumSizeForResizing; }
+    void setMinimumSizeForResizing(LayoutSize size) { m_minimumSizeForResizing = size; }
+
     IntSize savedLayerScrollOffset() const { return m_savedLayerScrollOffset; }
     void setSavedLayerScrollOffset(IntSize size) { m_savedLayerScrollOffset = size; }
 
@@ -125,6 +128,7 @@ public:
 private:
     short m_tabindex;
 
+    LayoutSize m_minimumSizeForResizing;
     IntSize m_savedLayerScrollOffset;
 
     OwnPtrWillBeMember<DatasetDOMStringMap> m_dataset;
@@ -145,9 +149,15 @@ private:
     explicit ElementRareData(RenderObject*);
 };
 
+inline IntSize defaultMinimumSizeForResizing()
+{
+    return IntSize(LayoutUnit::max(), LayoutUnit::max());
+}
+
 inline ElementRareData::ElementRareData(RenderObject* renderer)
     : NodeRareData(renderer)
     , m_tabindex(0)
+    , m_minimumSizeForResizing(defaultMinimumSizeForResizing())
 {
     m_isElementRareData = true;
 }

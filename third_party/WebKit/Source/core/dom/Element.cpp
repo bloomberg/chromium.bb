@@ -2442,6 +2442,18 @@ bool Element::isInDescendantTreeOf(const Element* shadowHost) const
     return false;
 }
 
+LayoutSize Element::minimumSizeForResizing() const
+{
+    return hasRareData() ? elementRareData()->minimumSizeForResizing() : defaultMinimumSizeForResizing();
+}
+
+void Element::setMinimumSizeForResizing(const LayoutSize& size)
+{
+    if (!hasRareData() && size == defaultMinimumSizeForResizing())
+        return;
+    ensureElementRareData().setMinimumSizeForResizing(size);
+}
+
 RenderStyle* Element::computedStyle(PseudoId pseudoElementSpecifier)
 {
     if (PseudoElement* element = pseudoElement(pseudoElementSpecifier))
