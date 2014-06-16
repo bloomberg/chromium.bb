@@ -169,6 +169,7 @@
         'dragdrop/os_exchange_data_provider_aura.h',
         'dragdrop/os_exchange_data_provider_aurax11.cc',
         'dragdrop/os_exchange_data_provider_aurax11.h',
+        'dragdrop/os_exchange_data_provider_mac.h',
         'dragdrop/os_exchange_data_provider_mac.mm',
         'dragdrop/os_exchange_data_provider_win.cc',
         'dragdrop/os_exchange_data_provider_win.h',

@@ -88,6 +88,7 @@ TEST_F(OSExchangeDataTest, TestPickledData) {
   EXPECT_EQ(2, value);
 }
 
+#if defined(USE_AURA)
 TEST_F(OSExchangeDataTest, TestHTML) {
   OSExchangeData data;
   GURL url("http://www.google.com/");
@@ -102,5 +103,6 @@ TEST_F(OSExchangeDataTest, TestHTML) {
   EXPECT_TRUE(copy.GetHtml(&read_html, &url));
   EXPECT_EQ(html, read_html);
 }
+#endif
 
 }  // namespace ui
