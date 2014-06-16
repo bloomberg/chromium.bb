@@ -1253,6 +1253,14 @@ const Experiment kExperiments[] = {
                               switches::kDisableOfflineAutoReload)
   },
   {
+    "enable-offline-auto-reload-visible-only",
+    IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_VISIBLE_ONLY_NAME,
+    IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_VISIBLE_ONLY_DESCRIPTION,
+    kOsAll,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOfflineAutoReloadVisibleOnly,
+                              switches::kDisableOfflineAutoReloadVisibleOnly)
+  },
+  {
     "enable-offline-load-stale-cache",
     IDS_FLAGS_ENABLE_OFFLINE_LOAD_STALE_NAME,
     IDS_FLAGS_ENABLE_OFFLINE_LOAD_STALE_DESCRIPTION,

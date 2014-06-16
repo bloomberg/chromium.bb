@@ -296,6 +296,10 @@ const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
 // Disable auto-reload of error pages if offline.
 const char kDisableOfflineAutoReload[]       = "disable-offline-auto-reload";
 
+// Disable only auto-reloading error pages when the tab is visible.
+const char kDisableOfflineAutoReloadVisibleOnly[] =
+    "disable-offline-auto-reload-visible-only";
+
 // Disable the origin chip.
 const char kDisableOriginChip[]             = "disable-origin-chip";
 
@@ -512,6 +516,10 @@ const char kEnableNpnHttpOnly[]             = "enable-npn-http";
 
 // Enable auto-reload of error pages if offline.
 const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";
+
+// Only auto-reload error pages when the tab is visible.
+const char kEnableOfflineAutoReloadVisibleOnly[] =
+    "enable-offline-auto-reload-visible-only";
 
 // Enable/Disable offering a "Load stale copy" option to the user if offline.
 const char kEnableOfflineLoadStaleCache[]   = "enable-offline-load-stale-cache";

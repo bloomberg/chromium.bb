@@ -89,10 +89,11 @@ NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   bool auto_reload_enabled =
       command_line->HasSwitch(switches::kEnableOfflineAutoReload);
+  bool auto_reload_visible_only =
+      command_line->HasSwitch(switches::kEnableOfflineAutoReloadVisibleOnly);
   core_.reset(new NetErrorHelperCore(this,
                                      auto_reload_enabled,
-                                     // TODO(ellyjones): plumb policy down
-                                     false,
+                                     auto_reload_visible_only,
                                      !render_frame->IsHidden()));
 }
 

@@ -13633,6 +13633,12 @@ Do you accept?
     <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_DESCRIPTION" desc="Description of the flag to make pages which failed to load while offline auto-reload">
       Pages that fail to load while the browser is offline will be auto-reloaded when the browser is online again.
     </message>
+    <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_VISIBLE_ONLY_NAME" desc="Name of the flag to only enable auto-reload on visible tabs">
+      Only Auto-Reload Visible Tabs
+    </message>
+    <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_VISIBLE_ONLY_DESCRIPTION" desc="Description of the flag to only auto-reload visible tabs">
+      Pages that fail to load while the browser is offline will only be auto-reloaded if their tab is visible.
+    </message>
     <message name="IDS_FLAGS_ENABLE_OFFLINE_LOAD_STALE_NAME" desc="Name of the flag to enable offering users the option of loading a stale copy of a page when an error occurs.">
       Enable Offline Load Stale Button
     </message>

@@ -1498,6 +1498,43 @@ std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(
   return CharacterEncoding::GetCanonicalEncodingNameByAliasName(alias_name);
 }
 
+namespace {
+
+bool IsAutoReloadEnabled() {
+  std::string group = base::FieldTrialList::FindFullName(
+      "AutoReloadExperiment");
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  if (browser_command_line.HasSwitch(switches::kEnableOfflineAutoReload))
+    return true;
+  if (browser_command_line.HasSwitch(switches::kDisableOfflineAutoReload))
+    return false;
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  chrome::VersionInfo::Channel kForceChannel =
+      chrome::VersionInfo::CHANNEL_CANARY;
+  return (channel <= kForceChannel || group == "Enabled");
+#else
+  return group == "Enabled";
+#endif
+}
+
+bool IsAutoReloadVisibleOnlyEnabled() {
+  std::string group = base::FieldTrialList::FindFullName(
+      "AutoReloadVisibleOnlyExperiment");
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  if (browser_command_line.HasSwitch(
+      switches::kEnableOfflineAutoReloadVisibleOnly)) {
+    return true;
+  }
+  if (browser_command_line.HasSwitch(
+      switches::kDisableOfflineAutoReloadVisibleOnly)) {
+    return false;
+  }
+  return group == "Enabled";
+}
+
+}  // namespace
+
 void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     CommandLine* command_line, int child_process_id) {
 #if defined(OS_POSIX)
@@ -1597,29 +1634,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
     }
 
-    {
-      // Enable auto-reload if this session is in the field trial or the user
-      // explicitly enabled it.
-      bool hard_enabled =
-          browser_command_line.HasSwitch(switches::kEnableOfflineAutoReload);
-      bool hard_disabled =
-          browser_command_line.HasSwitch(switches::kDisableOfflineAutoReload);
-      if (hard_enabled) {
-        command_line->AppendSwitch(switches::kEnableOfflineAutoReload);
-      } else if (!hard_disabled) {
-        std::string group =
-            base::FieldTrialList::FindFullName("AutoReloadExperiment");
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-        chrome::VersionInfo::Channel channel =
-          chrome::VersionInfo::GetChannel();
-        chrome::VersionInfo::Channel kForceChannel =
-            chrome::VersionInfo::CHANNEL_CANARY;
-        if (channel <= kForceChannel || group == "Enabled")
-#else
-        if (group == "Enabled")
-#endif
-          command_line->AppendSwitch(switches::kEnableOfflineAutoReload);
-      }
+    if (IsAutoReloadEnabled())
+      command_line->AppendSwitch(switches::kEnableOfflineAutoReload);
+    if (IsAutoReloadVisibleOnlyEnabled()) {
+      command_line->AppendSwitch(
+          switches::kEnableOfflineAutoReloadVisibleOnly);
     }
 
     {
