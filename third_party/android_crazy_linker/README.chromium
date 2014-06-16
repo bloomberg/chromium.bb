@@ -28,3 +28,5 @@ index 5fa16df..bc03739 100644
 - Rolled to:
   android/platform/ndk/681f1b744aec1b0888f4c7a68165720db9670300
   (Re-add license header to crazy_linker_elf_view.cpp)
+
+- Fix for crbug/373695 (NDK crazy linker: Bug in library file name handling)

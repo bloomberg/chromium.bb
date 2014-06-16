@@ -64,14 +64,14 @@ LibraryList::~LibraryList() {
   }
 }
 
-LibraryView* LibraryList::FindLibraryByName(const char* base_name) {
+LibraryView* LibraryList::FindLibraryByName(const char* lib_name) {
   // Sanity check.
-  if (!base_name || strchr(base_name, '/'))
+  if (!lib_name)
     return NULL;
 
   for (size_t n = 0; n < known_libraries_.GetCount(); ++n) {
     LibraryView* wrap = known_libraries_[n];
-    if (!strcmp(base_name, wrap->GetName()))
+    if (!strcmp(lib_name, wrap->GetName()))
       return wrap;
   }
   return NULL;
