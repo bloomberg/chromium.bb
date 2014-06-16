@@ -266,6 +266,15 @@ bool ResourceConverterImpl::FromV8Value(v8::Handle<v8::Object> val,
   return true;
 }
 
+void ResourceConverterImpl::Reset() {
+  browser_host_create_messages_.clear();
+  browser_vars_.clear();
+}
+
+bool ResourceConverterImpl::NeedsFlush() {
+  return !browser_host_create_messages_.empty();
+}
+
 void ResourceConverterImpl::Flush(const base::Callback<void(bool)>& callback) {
   host_->CreateBrowserResourceHosts(
       instance_,

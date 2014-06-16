@@ -294,12 +294,18 @@ void MessageChannel::EnqueuePluginMessage(const NPVariant* variant) {
     // won't result in a deep copy.
     v8::Handle<v8::Value> v8_value = WebBindings::toV8Value(variant);
     V8VarConverter v8_var_converter(instance_->pp_instance());
-    v8_var_converter.FromV8Value(
-        v8_value,
-        v8::Isolate::GetCurrent()->GetCurrentContext(),
-        base::Bind(&MessageChannel::FromV8ValueComplete,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   &plugin_message_queue_.back()));
+    V8VarConverter::VarResult conversion_result =
+        v8_var_converter.FromV8Value(
+            v8_value,
+            v8::Isolate::GetCurrent()->GetCurrentContext(),
+            base::Bind(&MessageChannel::FromV8ValueComplete,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       &plugin_message_queue_.back()));
+    if (conversion_result.completed_synchronously) {
+      plugin_message_queue_.back().ConversionCompleted(
+          conversion_result.var,
+          conversion_result.success);
+    }
   } else {
     plugin_message_queue_.back().ConversionCompleted(
         ScopedPPVar(ScopedPPVar::PassRef(),

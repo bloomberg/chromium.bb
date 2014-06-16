@@ -396,18 +396,19 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
   return true;
 }
 
-void V8VarConverter::FromV8Value(
+V8VarConverter::VarResult V8VarConverter::FromV8Value(
     v8::Handle<v8::Value> val,
     v8::Handle<v8::Context> context,
     const base::Callback<void(const ScopedPPVar&, bool)>& callback) {
-  ScopedPPVar result_var;
-  if (FromV8ValueInternal(val, context, &result_var)) {
-    resource_converter_->Flush(base::Bind(callback, result_var));
-  } else {
-    message_loop_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(callback, result_var, false));
-  }
+  VarResult result;
+  result.success = FromV8ValueInternal(val, context, &result.var);
+  if (!result.success)
+    resource_converter_->Reset();
+  result.completed_synchronously = !resource_converter_->NeedsFlush();
+  if (!result.completed_synchronously)
+    resource_converter_->Flush(base::Bind(callback, result.var));
+
+  return result;
 }
 
 bool V8VarConverter::FromV8ValueInternal(

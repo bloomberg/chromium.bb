@@ -11,12 +11,9 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/scoped_pp_var.h"
 #include "v8/include/v8.h"
 #include "content/common/content_export.h"
-
-namespace ppapi {
-class ScopedPPVar;
-}
 
 namespace content {
 
@@ -35,14 +32,33 @@ class CONTENT_EXPORT V8VarConverter {
                  v8::Handle<v8::Context> context,
                  v8::Handle<v8::Value>* result);
 
+  struct VarResult {
+   public:
+    VarResult() : completed_synchronously(false), success(false) {}
+
+    // True if the conversion completed synchronously and the callback will not
+    // be called.
+    bool completed_synchronously;
+
+    // True if the conversion was successful. Only valid if
+    // |completed_synchronously| is true.
+    bool success;
+
+    // The result if the conversion was successful. Only valid if
+    // |completed_synchronously| and |success| are true.
+    ppapi::ScopedPPVar var;
+  };
+
   // Converts the given v8::Value to a PP_Var. Every PP_Var in the reference
   // graph in the result will have a refcount equal to the number of references
   // to it in the graph. The root of the result will have one additional
   // reference. The callback is run when conversion is complete with the
-  // resulting var and a bool indicating success or failure. Conversion is
+  // resulting var and a bool indicating success or failure. Conversion may be
   // asynchronous because converting some resources may result in communication
-  // across IPC. |context| is guaranteed to only be used synchronously.
-  void FromV8Value(
+  // across IPC. |context| is guaranteed to only be used synchronously. If
+  // the conversion can occur synchronously, |callback| will not be run,
+  // otherwise it will be run.
+  VarResult FromV8Value(
       v8::Handle<v8::Value> val,
       v8::Handle<v8::Context> context,
       const base::Callback<void(const ppapi::ScopedPPVar&, bool)>& callback);

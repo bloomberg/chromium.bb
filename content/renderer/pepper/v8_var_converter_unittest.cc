@@ -43,11 +43,18 @@ namespace content {
 
 namespace {
 
+void FromV8ValueComplete(const ScopedPPVar& scoped_var,
+                         bool success) {
+  NOTREACHED();
+}
+
 class MockResourceConverter : public content::ResourceConverter {
  public:
   virtual ~MockResourceConverter() {}
+  virtual void Reset() OVERRIDE {}
+  virtual bool NeedsFlush() OVERRIDE { return false; }
   virtual void Flush(const base::Callback<void(bool)>& callback) OVERRIDE {
-    callback.Run(true);
+    NOTREACHED();
   }
   virtual bool FromV8Value(v8::Handle<v8::Object> val,
                            v8::Handle<v8::Context> context,
@@ -156,7 +163,7 @@ bool Equals(const PP_Var& var, v8::Handle<v8::Value> val) {
 class V8VarConverterTest : public testing::Test {
  public:
   V8VarConverterTest()
-      : isolate_(v8::Isolate::GetCurrent()), conversion_success_(false) {
+      : isolate_(v8::Isolate::GetCurrent()) {
     PP_Instance dummy = 1234;
     converter_.reset(new V8VarConverter(
         dummy,
@@ -181,27 +188,15 @@ class V8VarConverterTest : public testing::Test {
   bool FromV8ValueSync(v8::Handle<v8::Value> val,
                        v8::Handle<v8::Context> context,
                        PP_Var* result) {
-    base::RunLoop loop;
-    converter_->FromV8Value(val,
-                            context,
-                            base::Bind(&V8VarConverterTest::FromV8ValueComplete,
-                                       base::Unretained(this),
-                                       loop.QuitClosure()));
-    loop.Run();
-    if (conversion_success_)
-      *result = conversion_result_;
-    return conversion_success_;
-  }
+    V8VarConverter::VarResult conversion_result =
+        converter_->FromV8Value(val,
+                                context,
+                                base::Bind(&FromV8ValueComplete));
+    DCHECK(conversion_result.completed_synchronously);
+    if (conversion_result.success)
+      *result = conversion_result.var.Release();
 
-  void FromV8ValueComplete(base::Closure quit_closure,
-                           const ScopedPPVar& scoped_var,
-                           bool success) {
-    conversion_success_ = success;
-    if (success) {
-      ScopedPPVar var = scoped_var;
-      conversion_result_ = var.Release();
-    }
-    quit_closure.Run();
+    return conversion_result.success;
   }
 
   bool RoundTrip(const PP_Var& var, PP_Var* result) {
@@ -239,8 +234,6 @@ class V8VarConverterTest : public testing::Test {
  private:
   TestGlobals globals_;
 
-  PP_Var conversion_result_;
-  bool conversion_success_;
   base::MessageLoop message_loop_;
 };
 
