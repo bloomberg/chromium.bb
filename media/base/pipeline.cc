@@ -386,7 +386,7 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
         base::AutoLock l(lock_);
         // We do not want to start the clock running. We only want to set the
         // base media time so our timestamp calculations will be correct.
-        clock_->SetTime(base::TimeDelta(), base::TimeDelta());
+        clock_->SetTime(demuxer_->GetStartTime(), demuxer_->GetStartTime());
       }
       if (!audio_renderer_ && !video_renderer_) {
         done_cb.Run(PIPELINE_ERROR_COULD_NOT_RENDER);
@@ -445,7 +445,7 @@ void Pipeline::DoInitialPreroll(const PipelineStatusCB& done_cb) {
   DCHECK(!pending_callbacks_.get());
   SerialRunner::Queue bound_fns;
 
-  const base::TimeDelta seek_timestamp = base::TimeDelta();
+  base::TimeDelta seek_timestamp = demuxer_->GetStartTime();
 
   // Preroll renderers.
   if (audio_renderer_) {
@@ -743,6 +743,7 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
   DCHECK(seek_cb_.is_null());
 
   SetState(kSeeking);
+  base::TimeDelta seek_timestamp = std::max(time, demuxer_->GetStartTime());
   seek_cb_ = seek_cb;
   audio_ended_ = false;
   video_ended_ = false;
@@ -752,9 +753,9 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
   {
     base::AutoLock auto_lock(lock_);
     PauseClockAndStopRendering_Locked();
-    clock_->SetTime(time, time);
+    clock_->SetTime(seek_timestamp, seek_timestamp);
   }
-  DoSeek(time, base::Bind(
+  DoSeek(seek_timestamp, base::Bind(
       &Pipeline::OnStateTransition, base::Unretained(this)));
 }
 

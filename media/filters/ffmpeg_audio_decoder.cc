@@ -249,6 +249,16 @@ void FFmpegAudioDecoder::DecodeBuffer(
     return;
   }
 
+  if (!buffer->end_of_stream() && !discard_helper_->initialized() &&
+      codec_context_->codec_id == AV_CODEC_ID_VORBIS &&
+      buffer->timestamp() < base::TimeDelta()) {
+    // Dropping frames for negative timestamps as outlined in section A.2
+    // in the Vorbis spec. http://xiph.org/vorbis/doc/Vorbis_I_spec.html
+    const int discard_frames =
+        discard_helper_->TimeDeltaToFrames(-buffer->timestamp());
+    discard_helper_->Reset(discard_frames);
+  }
+
   if (!FFmpegDecode(buffer)) {
     state_ = kError;
     decode_cb.Run(kDecodeError);
