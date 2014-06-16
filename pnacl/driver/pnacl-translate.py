@@ -42,7 +42,7 @@ EXTRA_ENV = {
   'ALLOW_LLVM_BITCODE_INPUT': '0',
 
   # Flags for nativeld
-  'LD_FLAGS': '-static',
+  'LD_FLAGS': '',
 
   'USE_STDLIB'     : '1',
   'USE_DEFAULTLIBS': '1',
@@ -178,8 +178,7 @@ TranslatorPatterns = [
   # This flag is needed for building libgcc_s.so.
   ( '-nodefaultlibs',  "env.set('USE_DEFAULTLIBS', '0')"),
 
-  ( '--noirt',         "env.set('USE_IRT', '0')\n"
-                       "env.append('LD_FLAGS', '--noirt')"),
+  ( '--noirt',         "env.set('USE_IRT', '0')"),
   ( '--noirtshim',     "env.set('USE_IRT_SHIM', '0')"),
 
   # Allowing zero-cost C++ exception handling causes a specific set of
@@ -260,11 +259,37 @@ def SetUpArch():
     env.append('LLC_FLAGS_ARCH', '-mtls-use-call')
 
 
+def SetUpLinkOptions():
+  if env.getbool('NONSFI_NACL'):
+    # "_begin" allows a PIE to find its load address in order to apply
+    # dynamic relocations.
+    env.append('LD_FLAGS', '-defsym=_begin=0')
+    if env.getbool('USE_IRT'):
+      env.append('LD_FLAGS', '-pie')
+    else:
+      # Note that we really want to use "-pie" for this case, but it
+      # currently adds a PT_INTERP header to the executable that we don't
+      # want because it stops the executable from being loadable by Linux.
+      # TODO(mseaborn): Add a linker option to omit PT_INTERP.
+      env.append('LD_FLAGS', '-static')
+      # Set _DYNAMIC to a dummy value.  TODO(mseaborn): Remove this when we
+      # use "-pie" instead of "-static" for this case.
+      env.append('LD_FLAGS', '-defsym=_DYNAMIC=1')
+  else:
+    env.append('LD_FLAGS', '-static')
+    # Give non-IRT builds 12MB of text before starting rodata instead of
+    # the larger default gap. The gap cannot be too small (e.g., 0) because
+    # sel_ldr requires space for adding a halt sled.
+    if not env.getbool('USE_IRT'):
+      env.append('LD_FLAGS', '--rosegment-gap=0xc00000')
+
+
 def main(argv):
   env.update(EXTRA_ENV)
   driver_tools.ParseArgs(argv, TranslatorPatterns)
   driver_tools.GetArch(required = True)
   SetUpArch()
+  SetUpLinkOptions()
 
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')

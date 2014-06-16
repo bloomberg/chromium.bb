@@ -32,9 +32,6 @@ EXTRA_ENV = {
   'SPLIT_MODULE' : '0',
   'USE_STDLIB': '1',
 
-  # Determine if we should build nexes compatible with the IRT.
-  'USE_IRT' : '1',
-
   # Upstream gold has the segment gap built in, but the gap can be modified
   # when not using the IRT. The gap does need to be at least one bundle so the
   # halt sled can be added for the TCB in case the segment ends up being a
@@ -52,28 +49,9 @@ EXTRA_ENV = {
                   # Ignored for other archs.
                   '--no-fix-cortex-a8 ' +
                   '--eh-frame-hdr ' +
-                  # Using "-pie" adds a PT_INTERP header to the executable
-                  # that we don't want.
-                  # TODO(mseaborn): Add a linker option to omit PT_INTERP.
-                  # We want non-IRT-using non-SFI executables to be
-                  # loadable by Linux, which the PT_INTERP header prevents,
-                  # so we use "-static" for this case for now.
-                  '${NONSFI_NACL && USE_IRT ? -pie : -static} ' +
-                  # Set _DYNAMIC to a dummy value.  TODO(mseaborn): Remove
-                  # this when we use "-pie" instead of "-static" for this
-                  # case.
-                  '${NONSFI_NACL && !USE_IRT ? -defsym=_DYNAMIC=1} ' +
-                  # "_begin" allows a PIE to find its load address in
-                  # order to apply dynamic relocations.
-                  '${NONSFI_NACL ? -defsym=_begin=0} ' +
                   # Give an error if any TEXTRELs occur.
                   '-z text ' +
-                  '--build-id ' +
-                  # Give non-IRT builds 12MB of text before starting rodata
-                  # instead of the larger default gap. The gap cannot be
-                  # too small (e.g., 0) because sel_ldr requires space for
-                  # adding a halt sled.
-                  '${!USE_IRT ? --rosegment-gap=0xc00000}',
+                  '--build-id ',
 
   'SEARCH_DIRS'        : '${SEARCH_DIRS_USER} ${SEARCH_DIRS_BUILTIN}',
   'SEARCH_DIRS_USER'   : '',
@@ -98,9 +76,6 @@ LDPatterns = [
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
 
-  ( '--noirt',                      "env.set('USE_IRT', '0')"),
-
-  ( '-static',         "env.set('STATIC', '1')"),
   ( '-nostdlib',       "env.set('USE_STDLIB', '0')"),
 
   ( '-L(.+)',
@@ -111,10 +86,14 @@ LDPatterns = [
   # Note: we do not yet support all the combinations of flags which affect
   # layout of the various sections and segments because the corner cases in gold
   # may not all be worked out yet. They can be added (and tested!) as needed.
+  ( '(-static)',                  PassThrough),
+  ( '(-pie)',                     PassThrough),
+
   ( ('(-Ttext=.*)'),              PassThrough),
   ( ('(-Trodata=.*)'),            PassThrough),
   ( ('(-Ttext-segment=.*)'),      PassThrough),
   ( ('(-Trodata-segment=.*)'),    PassThrough),
+  ( ('(--rosegment-gap=.*)'),     PassThrough),
   ( ('(--section-start)', '(.+)'),PassThrough),
   ( ('(--section-start=.*)'),     PassThrough),
   ( ('(-e)','(.*)'),              PassThrough),
@@ -123,6 +102,7 @@ LDPatterns = [
   ( '(-t)',                       PassThrough),
   ( ('-y','(.*)'),                PassThrough),
   ( ('(-defsym)','(.*)'),         PassThrough),
+  ( '(-defsym=.*)',               PassThrough),
   ( '-export-dynamic',            PassThrough),
 
   ( '(--print-gc-sections)',      PassThrough),
@@ -179,7 +159,7 @@ def main(argv):
   # and expands linker scripts into command-line arguments.
   inputs = ldtools.ExpandInputs(inputs,
                                 env.get('SEARCH_DIRS'),
-                                env.getbool('STATIC'),
+                                True,
                                 ldtools.LibraryTypes.NATIVE)
 
   env.push()
