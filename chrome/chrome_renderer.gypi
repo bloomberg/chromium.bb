@@ -69,6 +69,8 @@
         'renderer/extensions/chrome_v8_context.h',
         'renderer/extensions/chrome_v8_extension_handler.cc',
         'renderer/extensions/chrome_v8_extension_handler.h',
+        'renderer/extensions/enterprise_platform_keys_natives.cc',
+        'renderer/extensions/enterprise_platform_keys_natives.h',
         'renderer/extensions/extension_frame_helper.cc',
         'renderer/extensions/extension_frame_helper.h',
         'renderer/extensions/extension_localization_peer.cc',

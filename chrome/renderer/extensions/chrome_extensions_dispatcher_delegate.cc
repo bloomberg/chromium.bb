@@ -16,6 +16,7 @@
 #include "chrome/renderer/extensions/app_window_custom_bindings.h"
 #include "chrome/renderer/extensions/automation_internal_custom_bindings.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
+#include "chrome/renderer/extensions/enterprise_platform_keys_natives.h"
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
 #include "chrome/renderer/extensions/media_galleries_custom_bindings.h"
@@ -101,6 +102,10 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       "sync_file_system",
       scoped_ptr<NativeHandler>(
           new extensions::SyncFileSystemCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "enterprise_platform_keys_natives",
+      scoped_ptr<NativeHandler>(
+          new extensions::EnterprisePlatformKeysNatives(context)));
   module_system->RegisterNativeHandler(
       "file_browser_handler",
       scoped_ptr<NativeHandler>(

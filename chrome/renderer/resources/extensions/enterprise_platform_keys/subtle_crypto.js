@@ -10,6 +10,9 @@ var keyModule = require('enterprise.platformKeys.Key');
 var getSpki = keyModule.getSpki;
 var KeyUsage = keyModule.KeyUsage;
 
+var normalizeAlgorithm =
+    requireNative('enterprise_platform_keys_natives').NormalizeAlgorithm;
+
 // This error is thrown by the internal and public API's token functions and
 // must be rethrown by this custom binding. Keep this in sync with the C++ part
 // of this API.
@@ -30,7 +33,7 @@ function CreateDataError() {
 }
 
 function CreateSyntaxError() {
-  return new Error('A required parameter was missing our out-of-range');
+  return new Error('A required parameter was missing or out-of-range');
 }
 
 function CreateOperationError() {
@@ -72,29 +75,30 @@ SubtleCryptoImpl.prototype.generateKey =
         keyUsages.length) {
       throw CreateDataError();
     }
-    if (!algorithm.name) {
+    var normalizedAlgorithmParameters =
+        normalizeAlgorithm(algorithm, 'GenerateKey');
+    if (!normalizedAlgorithmParameters) {
       // TODO(pneubeck): It's not clear from the WebCrypto spec which error to
       // throw here.
       throw CreateSyntaxError();
     }
 
-    if (algorithm.name.toUpperCase() !== 'RSASSA-PKCS1-V1_5') {
+    if (normalizedAlgorithmParameters.name !== 'RSASSA-PKCS1-v1_5') {
       // Note: This deviates from WebCrypto.SubtleCrypto.
       throw CreateNotSupportedError();
     }
-    if (!algorithm.modulusLength || !algorithm.publicExponent)
-      throw CreateSyntaxError();
 
-    internalAPI.generateKey(
-        subtleCrypto.tokenId, algorithm.modulusLength, function(spki) {
-          if (catchInvalidTokenError(reject))
-            return;
-          if (chrome.runtime.lastError) {
-            reject(CreateOperationError());
-            return;
-          }
-          resolve(new KeyPair(spki, algorithm, keyUsages));
-        });
+    internalAPI.generateKey(subtleCrypto.tokenId,
+                            normalizedAlgorithmParameters.modulusLength,
+                            function(spki) {
+      if (catchInvalidTokenError(reject))
+        return;
+      if (chrome.runtime.lastError) {
+        reject(CreateOperationError());
+        return;
+      }
+      resolve(new KeyPair(spki, algorithm, keyUsages));
+    });
   });
 };
 
@@ -103,6 +107,14 @@ SubtleCryptoImpl.prototype.sign = function(algorithm, key, dataView) {
   return new Promise(function(resolve, reject) {
     if (key.type != 'private' || key.usages.indexOf(KeyUsage.sign) == -1)
       throw CreateInvalidAccessError();
+
+    var normalizedAlgorithmParameters =
+        normalizeAlgorithm(algorithm, 'Sign');
+    if (!normalizedAlgorithmParameters) {
+      // TODO(pneubeck): It's not clear from the WebCrypto spec which error to
+      // throw here.
+      throw CreateSyntaxError();
+    }
 
     // Create an ArrayBuffer that equals the dataView. Note that dataView.buffer
     // might contain more data than dataView.

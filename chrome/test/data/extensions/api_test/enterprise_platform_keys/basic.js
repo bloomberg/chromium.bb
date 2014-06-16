@@ -301,8 +301,9 @@ function runTests(userToken) {
           })
           .then(callbackPass(function(publicKeySpki) {
                   cachedSpki = publicKeySpki;
+                  var signParams = {name: 'RSASSA-PKCS1-v1_5'};
                   return userToken.subtleCrypto.sign(
-                      {}, cachedKeyPair.privateKey, data);
+                      signParams, cachedKeyPair.privateKey, data);
                 }),
                 function(error) {
             assertTrue(false, "Export failed: " + error);
@@ -356,6 +357,47 @@ function runTests(userToken) {
             null, userToken.id, cert1b.buffer),
         assertCertsStored.bind(null, userToken, [])
       ]);
+    },
+
+    // Call generate key with invalid algorithm parameter, missing
+    // modulusLength.
+    function algorithmParameterMissingModulusLength() {
+      var algorithm = {
+        name: "RSASSA-PKCS1-v1_5",
+        publicExponent:
+            new Uint8Array([0x01, 0x00, 0x01]),  // Equivalent to 65537
+        hash: {
+          name: "SHA-1",
+        }
+      };
+      userToken.subtleCrypto.generateKey(algorithm, false, ['sign']).then(
+          function(keyPair) {
+            assertTrue(false, 'generateKey was expected to fail');
+          },
+          callbackPass(function(error) {
+      assertTrue(error instanceof Error);
+      assertEq('A required parameter was missing or out-of-range',
+               error.message);
+      }));
+    },
+
+    // Call generate key with invalid algorithm parameter, missing hash.
+    function algorithmParameterMissingHash() {
+      var algorithm = {
+        name: 'RSASSA-PKCS1-v1_5',
+        modulusLength: 512,
+        publicExponent:
+            new Uint8Array([0x01, 0x00, 0x01]),  // Equivalent to 65537
+      };
+      userToken.subtleCrypto.generateKey(algorithm, false, ['sign']).then(
+          function(keyPair) {
+            assertTrue(false, 'generateKey was expected to fail');
+          },
+          callbackPass(function(error) {
+      assertTrue(error instanceof Error);
+      assertEq('A required parameter was missing or out-of-range',
+               error.message);
+      }));
     },
 
     // Imports a certificate for which now private key was imported/generated
