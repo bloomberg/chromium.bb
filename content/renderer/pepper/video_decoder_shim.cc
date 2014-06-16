@@ -386,7 +386,7 @@ void VideoDecoderShim::AssignPictureBuffers(
     // Map the plugin texture id to the local texture id.
     uint32_t plugin_texture_id = buffers[i].texture_id();
     texture_id_map_[plugin_texture_id] = local_texture_ids[i];
-    available_textures_.push_back(plugin_texture_id);
+    available_textures_.insert(plugin_texture_id);
   }
   pending_texture_mailboxes_.clear();
   SendPictures();
@@ -398,7 +398,7 @@ void VideoDecoderShim::ReusePictureBuffer(int32 picture_buffer_id) {
   if (textures_to_dismiss_.find(texture_id) != textures_to_dismiss_.end()) {
     DismissTexture(texture_id);
   } else if (texture_id_map_.find(texture_id) != texture_id_map_.end()) {
-    available_textures_.push_back(texture_id);
+    available_textures_.insert(texture_id);
     SendPictures();
   } else {
     NOTREACHED();
@@ -442,18 +442,19 @@ void VideoDecoderShim::OnDecodeComplete(int32_t result, uint32_t decode_id) {
   DCHECK(RenderThreadImpl::current());
   DCHECK(host_);
 
+  if (result == PP_ERROR_RESOURCE_FAILED) {
+    host_->NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+    return;
+  }
+
   num_pending_decodes_--;
   completed_decodes_.push(decode_id);
 
-  if (result == PP_OK) {
-    // If frames are being queued because we're out of textures, don't notify
-    // the host that decode has completed. This exerts "back pressure" to keep
-    // the host from sending buffers that will cause pending_frames_ to grow.
-    if (pending_frames_.empty())
-      NotifyCompletedDecodes();
-  } else if (result == PP_ERROR_RESOURCE_FAILED) {
-    host_->NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
-  }
+  // If frames are being queued because we're out of textures, don't notify
+  // the host that decode has completed. This exerts "back pressure" to keep
+  // the host from sending buffers that will cause pending_frames_ to grow.
+  if (pending_frames_.empty())
+    NotifyCompletedDecodes();
 }
 
 void VideoDecoderShim::OnOutputComplete(scoped_ptr<PendingFrame> frame) {
@@ -470,8 +471,7 @@ void VideoDecoderShim::OnOutputComplete(scoped_ptr<PendingFrame> frame) {
            ++it) {
         textures_to_dismiss_.insert(it->second);
       }
-      for (std::vector<uint32_t>::const_iterator it =
-               available_textures_.begin();
+      for (TextureIdSet::const_iterator it = available_textures_.begin();
            it != available_textures_.end();
            ++it) {
         DismissTexture(*it);
@@ -501,8 +501,9 @@ void VideoDecoderShim::SendPictures() {
   while (!pending_frames_.empty() && !available_textures_.empty()) {
     const linked_ptr<PendingFrame>& frame = pending_frames_.front();
 
-    uint32_t texture_id = available_textures_.back();
-    available_textures_.pop_back();
+    TextureIdSet::iterator it = available_textures_.begin();
+    uint32_t texture_id = *it;
+    available_textures_.erase(it);
 
     uint32_t local_texture_id = texture_id_map_[texture_id];
     gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
@@ -543,6 +544,16 @@ void VideoDecoderShim::OnResetComplete() {
   while (!pending_frames_.empty())
     pending_frames_.pop();
   NotifyCompletedDecodes();
+
+  // Dismiss any old textures now.
+  while (!textures_to_dismiss_.empty())
+    DismissTexture(*textures_to_dismiss_.begin());
+  // Make all textures available.
+  for (TextureIdMap::const_iterator it = texture_id_map_.begin();
+       it != texture_id_map_.end();
+       ++it) {
+    available_textures_.insert(it->first);
+  }
 
   state_ = DECODING;
   host_->NotifyResetDone();

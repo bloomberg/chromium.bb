@@ -53,6 +53,15 @@ struct Shader {
 class Decoder;
 class MyInstance;
 
+struct PendingPicture {
+  PendingPicture(Decoder* decoder, const PP_VideoPicture& picture)
+      : decoder(decoder), picture(picture) {}
+  ~PendingPicture() {}
+
+  Decoder* decoder;
+  PP_VideoPicture picture;
+};
+
 class MyInstance : public pp::Instance, public pp::Graphics3DClient {
  public:
   MyInstance(PP_Instance instance, pp::Module* module);
@@ -106,14 +115,15 @@ class MyInstance : public pp::Instance, public pp::Graphics3DClient {
   void CreateRectangleARBProgramOnce();
   Shader CreateProgram(const char* vertex_shader, const char* fragment_shader);
   void CreateShader(GLuint program, GLenum type, const char* source, int size);
-  void PaintFinished(int32_t result, Decoder* decoder, PP_VideoPicture picture);
+  void PaintNextPicture();
+  void PaintFinished(int32_t result);
 
   pp::Size plugin_size_;
   bool is_painting_;
   // When decode outpaces render, we queue up decoded pictures for later
-  // painting.  Elements are <decoder,picture>.
-  typedef std::queue<std::pair<Decoder*, PP_VideoPicture> > PictureQueue;
-  PictureQueue pictures_pending_paint_;
+  // painting.
+  typedef std::queue<PendingPicture> PendingPictureQueue;
+  PendingPictureQueue pending_pictures_;
 
   int num_frames_rendered_;
   PP_TimeTicks first_frame_delivered_ticks_;
@@ -143,7 +153,8 @@ class Decoder {
   ~Decoder();
 
   int id() const { return id_; }
-  bool decoding() const { return !flushing_ && !resetting_; }
+  bool flushing() const { return flushing_; }
+  bool resetting() const { return resetting_; }
 
   void Reset();
   void RecyclePicture(const PP_VideoPicture& picture);
@@ -238,7 +249,6 @@ Decoder::~Decoder() {
 void Decoder::InitializeDone(int32_t result) {
   assert(decoder_);
   assert(result == PP_OK);
-  assert(decoding());
   Start();
 }
 
@@ -258,6 +268,7 @@ void Decoder::Start() {
 
 void Decoder::Reset() {
   assert(decoder_);
+  assert(!resetting_);
   resetting_ = true;
   decoder_->Reset(callback_factory_.NewCallback(&Decoder::ResetDone));
 }
@@ -298,7 +309,7 @@ void Decoder::DecodeDone(int32_t result) {
   if (result == PP_ERROR_ABORTED)
     return;
   assert(result == PP_OK);
-  if (decoding())
+  if (!flushing_ && !resetting_)
     DecodeNextFrame();
 }
 
@@ -316,12 +327,14 @@ void Decoder::PictureReady(int32_t result, PP_VideoPicture picture) {
 void Decoder::FlushDone(int32_t result) {
   assert(decoder_);
   assert(result == PP_OK || result == PP_ERROR_ABORTED);
+  assert(flushing_);
   flushing_ = false;
 }
 
 void Decoder::ResetDone(int32_t result) {
   assert(decoder_);
   assert(result == PP_OK);
+  assert(resetting_);
   resetting_ = false;
 
   Start();
@@ -385,10 +398,15 @@ bool MyInstance::HandleInputEvent(const pp::InputEvent& event) {
       pp::MouseInputEvent mouse_event(event);
       // Reset all decoders on mouse down.
       if (mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
+        // Reset decoders.
         for (size_t i = 0; i < video_decoders_.size(); i++) {
-          if (video_decoders_[i]->decoding())
+          if (!video_decoders_[i]->resetting())
             video_decoders_[i]->Reset();
         }
+
+        // Clear pending pictures.
+        while (!pending_pictures_.empty())
+          pending_pictures_.pop();
       }
       return true;
     }
@@ -409,13 +427,20 @@ void MyInstance::PaintPicture(Decoder* decoder,
                               const PP_VideoPicture& picture) {
   if (first_frame_delivered_ticks_ == -1)
     assert((first_frame_delivered_ticks_ = core_if_->GetTimeTicks()) != -1);
-  if (is_painting_) {
-    pictures_pending_paint_.push(std::make_pair(decoder, picture));
-    return;
-  }
 
+  pending_pictures_.push(PendingPicture(decoder, picture));
+  if (!is_painting_)
+    PaintNextPicture();
+}
+
+void MyInstance::PaintNextPicture() {
   assert(!is_painting_);
   is_painting_ = true;
+
+  const PendingPicture& next = pending_pictures_.front();
+  Decoder* decoder = next.decoder;
+  const PP_VideoPicture& picture = next.picture;
+
   int x = 0;
   int y = 0;
   int half_width = plugin_size_.width() / 2;
@@ -450,14 +475,11 @@ void MyInstance::PaintPicture(Decoder* decoder,
   gles2_if_->UseProgram(graphics_3d, 0);
 
   last_swap_request_ticks_ = core_if_->GetTimeTicks();
-  assert(PP_OK_COMPLETIONPENDING ==
-         context_->SwapBuffers(callback_factory_.NewCallback(
-             &MyInstance::PaintFinished, decoder, picture)));
+  context_->SwapBuffers(
+      callback_factory_.NewCallback(&MyInstance::PaintFinished));
 }
 
-void MyInstance::PaintFinished(int32_t result,
-                               Decoder* decoder,
-                               PP_VideoPicture picture) {
+void MyInstance::PaintFinished(int32_t result) {
   assert(result == PP_OK);
   swap_ticks_ += core_if_->GetTimeTicks() - last_swap_request_ticks_;
   is_painting_ = false;
@@ -470,14 +492,20 @@ void MyInstance::PaintFinished(int32_t result,
                        << ", fps: " << fps
                        << ", with average ms/swap of: " << ms_per_swap;
   }
+
+  // If the decoders were reset, this will be empty.
+  if (pending_pictures_.empty())
+    return;
+
+  const PendingPicture& next = pending_pictures_.front();
+  Decoder* decoder = next.decoder;
+  const PP_VideoPicture& picture = next.picture;
   decoder->RecyclePicture(picture);
+  pending_pictures_.pop();
+
   // Keep painting as long as we have pictures.
-  if (!pictures_pending_paint_.empty()) {
-    std::pair<Decoder*, PP_VideoPicture> pending =
-        pictures_pending_paint_.front();
-    pictures_pending_paint_.pop();
-    PaintPicture(pending.first, pending.second);
-  }
+  if (!pending_pictures_.empty())
+    PaintNextPicture();
 }
 
 void MyInstance::InitGL() {

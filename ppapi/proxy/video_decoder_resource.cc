@@ -471,6 +471,10 @@ void VideoDecoderResource::OnPluginMsgResetComplete(
     const ResourceMessageReplyParams& params) {
   // All shm buffers should have been made available by now.
   DCHECK_EQ(shm_buffers_.size(), available_shm_buffers_.size());
+  // Received pictures are no longer valid.
+  while (!received_pictures_.empty())
+    received_pictures_.pop();
+
   scoped_refptr<TrackedCallback> callback;
   callback.swap(reset_callback_);
   callback->Run(params.result());

@@ -98,9 +98,9 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
   typedef base::hash_map<uint32_t, uint32_t> TextureIdMap;
   TextureIdMap texture_id_map_;
   // Available textures (these are plugin ids.)
-  std::vector<uint32_t> available_textures_;
-  // Track textures that are no longer needed (these are plugin ids.)
   typedef base::hash_set<uint32_t> TextureIdSet;
+  TextureIdSet available_textures_;
+  // Track textures that are no longer needed (these are plugin ids.)
   TextureIdSet textures_to_dismiss_;
   // Mailboxes for pending texture requests, to write to plugin's textures.
   std::vector<gpu::Mailbox> pending_texture_mailboxes_;

@@ -337,12 +337,14 @@ void PepperVideoDecoderHost::NotifyEndOfBitstreamBuffer(
 }
 
 void PepperVideoDecoderHost::NotifyFlushDone() {
+  DCHECK(pending_decodes_.empty());
   host()->SendReply(flush_reply_context_,
                     PpapiPluginMsg_VideoDecoder_FlushReply());
   flush_reply_context_ = ppapi::host::ReplyMessageContext();
 }
 
 void PepperVideoDecoderHost::NotifyResetDone() {
+  DCHECK(pending_decodes_.empty());
   host()->SendReply(reset_reply_context_,
                     PpapiPluginMsg_VideoDecoder_ResetReply());
   reset_reply_context_ = ppapi::host::ReplyMessageContext();
