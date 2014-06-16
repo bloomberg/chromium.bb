@@ -1224,7 +1224,16 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // Creates the button for "Managed Bookmarks", but does not position it.
 - (void)createManagedBookmarksButton {
   if (managedBookmarksButton_.get()) {
+    // The node's title might have changed if the user signed in or out.
+    // Make sure it's up to date now.
+    const BookmarkNode* node = bookmarkClient_->managed_node();
+    NSString* title = base::SysUTF16ToNSString(node->GetTitle());
+    NSCell* cell = [managedBookmarksButton_ cell];
+    [cell setTitle:title];
+
+    // Its visibility may have changed too.
     [self setManagedBookmarksButtonVisibility];
+
     return;
   }
 

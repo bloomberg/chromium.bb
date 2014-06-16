@@ -1518,6 +1518,14 @@ void BookmarkBarView::BookmarkNodeRemovedImpl(BookmarkModel* model,
 
 void BookmarkBarView::BookmarkNodeChangedImpl(BookmarkModel* model,
                                               const BookmarkNode* node) {
+  if (node == client_->managed_node()) {
+    // The managed node may have its title updated.
+    managed_bookmarks_button_->SetAccessibleName(
+        client_->managed_node()->GetTitle());
+    managed_bookmarks_button_->SetText(client_->managed_node()->GetTitle());
+    return;
+  }
+
   if (node->parent() != model->bookmark_bar_node()) {
     // We only care about nodes on the bookmark bar.
     return;

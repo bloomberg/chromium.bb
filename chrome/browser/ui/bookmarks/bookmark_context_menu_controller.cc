@@ -113,7 +113,7 @@ void BookmarkContextMenuController::BuildMenu() {
                     IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT);
   }
   AddCheckboxItem(IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS,
-                  IDS_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS);
+                  IDS_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS_DEFAULT_NAME);
   AddCheckboxItem(IDC_BOOKMARK_BAR_ALWAYS_SHOW, IDS_SHOW_BOOKMARK_BAR);
 }
 
@@ -302,7 +302,8 @@ void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
 bool BookmarkContextMenuController::IsItemForCommandIdDynamic(int command_id)
     const {
   return command_id == IDC_BOOKMARK_BAR_UNDO ||
-         command_id == IDC_BOOKMARK_BAR_REDO;
+         command_id == IDC_BOOKMARK_BAR_REDO ||
+         command_id == IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS;
 }
 
 base::string16 BookmarkContextMenuController::GetLabelForCommandId(
@@ -314,6 +315,12 @@ base::string16 BookmarkContextMenuController::GetLabelForCommandId(
   if (command_id == IDC_BOOKMARK_BAR_REDO) {
     return BookmarkUndoServiceFactory::GetForProfile(profile_)->
         undo_manager()->GetRedoLabel();
+  }
+  if (command_id == IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS) {
+    ChromeBookmarkClient* client =
+        ChromeBookmarkClientFactory::GetForProfile(profile_);
+    return l10n_util::GetStringFUTF16(IDS_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS,
+                                      client->managed_node()->GetTitle());
   }
 
   NOTREACHED();
