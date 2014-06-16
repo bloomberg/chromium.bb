@@ -119,6 +119,45 @@ function test()
                     InspectorTest.assertEquals("5", lineNumber);
                 next();
             }
+        },
+
+        function testNoCrashWhenLiveEditOnBreakpoint(next)
+        {
+            InspectorTest.showScriptSource("edit-me.js", didShowScriptSource);
+
+            var testSourceFrame;
+
+            function didShowScriptSource(sourceFrame)
+            {
+                testSourceFrame = sourceFrame;
+                InspectorTest.addSniffer(sourceFrame, "_addBreakpointDecoration", uiBreakpointAdded);
+                InspectorTest.setBreakpoint(sourceFrame, 3, "", true);
+            }
+
+            function uiBreakpointAdded() {
+                InspectorTest.addSniffer(testSourceFrame, "_addBreakpointDecoration", breakpointAdded);
+            }
+
+            function breakpointAdded()
+            {
+                InspectorTest.waitUntilPaused(pausedInF);
+                InspectorTest.evaluateInPage("setTimeout(f, 0)");
+            }
+
+            function pausedInF(callFrames)
+            {
+                replaceInSource(panel.visibleView, "function f()", "function f()\n", didEditScriptSource);
+            }
+
+            function didEditScriptSource()
+            {
+                InspectorTest.resumeExecution(resumed);
+            }
+
+            function resumed()
+            {
+                next();
+            }
         }
     ]);
 
@@ -127,7 +166,6 @@ function test()
         InspectorTest.addSniffer(WebInspector.debuggerModel, "_didEditScriptSource", callback);
         InspectorTest.replaceInSource(sourceFrame, string, replacement);
         InspectorTest.commitSource(sourceFrame);
-        
     }
 };
 
