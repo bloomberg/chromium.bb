@@ -400,6 +400,7 @@ Tab::Tab(TabController* controller)
   title_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   title_->SetElideBehavior(gfx::FADE_TAIL);
   title_->SetAutoColorReadabilityEnabled(false);
+  title_->SetText(CoreTabHelper::GetDefaultTitle());
   AddChildView(title_);
 
   // Add the Close Button.
