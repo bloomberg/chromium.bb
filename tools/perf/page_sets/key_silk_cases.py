@@ -283,18 +283,13 @@ class Page16(KeySilkCasesPage):
     action_runner.Wait(2)
 
   def SwipeToDismiss(self, action_runner):
-    action_runner.RunAction(SwipeAction(
-      {
-        'left_start_percentage': 0.8,
-        'distance': 200,
-        'direction': 'left',
-        'top_start_percentage': 0.2,
-        'element_function': '''
-          function(callback) {
-            callback(document.getElementsByClassName('message')[2]);
-          }''',
-        'speed': 5000
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'SwipeAction', is_smooth=True)
+    action_runner.SwipeElement(
+        left_start_ratio=0.8, top_start_ratio=0.2,
+        direction='left', distance=200, speed=5000,
+        element_function='document.getElementsByClassName("message")[2]')
+    interaction.End()
     interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
     action_runner.WaitForJavaScriptCondition(
         'document.getElementsByClassName("message").length < 18')
@@ -399,20 +394,15 @@ class Page19(KeySilkCasesPage):
     self.SlideDrawer(action_runner)
 
   def SlideDrawer(self, action_runner):
-    action_runner.RunAction(SwipeAction(
-      {
-        'left_start_percentage': 0.8,
-        'distance': 200,
-        'direction': 'left',
-        'top_start_percentage': 0.2,
-        'element_function': '''
-          function(callback) {
-            callback(document.getElementById('nav-drawer').children[0]);
-          }''',
-        'wait_after' : {
-          'javascript': '!document.getElementById("nav-drawer").active'
-        }
-      }))
+    interaction = action_runner.BeginInteraction(
+        'Action_SwipeAction', is_smooth=True)
+    action_runner.SwipeElement(
+        left_start_ratio=0.8, top_start_ratio=0.2,
+        direction='left', distance=200,
+        element_function='document.getElementById("nav-drawer").children[0]')
+    action_runner.WaitForJavaScriptCondition(
+        '!document.getElementById("nav-drawer").active')
+    interaction.End()
 
 
 class Page20(KeySilkCasesPage):
@@ -566,15 +556,12 @@ class Page25(KeySilkCasesPage):
     action_runner.Wait(1)
 
   def RunSmoothness(self, action_runner):
-    action_runner.RunAction(SwipeAction(
-      {
-        'distance': 100,
-        'direction': "left",
-        'element_function': '''
-          function(callback) {
-            callback(document.getElementById(':f'));
-          }'''
-      }))
+    interaction = action_runner.BeginGestureInteraction(
+        'SwipeAction', is_smooth=True)
+    action_runner.SwipeElement(
+        direction='left', distance=100,
+        element_function='document.getElementById(":f")')
+    interaction.End()
     interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
     action_runner.Wait(1)
     interaction.End()

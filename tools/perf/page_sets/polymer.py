@@ -51,32 +51,23 @@ class PolymerCalculatorPage(PolymerPage):
     interaction.End()
 
   def SlidePanel(self, action_runner):
-    action_runner.RunAction(SwipeAction(
-      {
-        'left_start_percentage': 0.1,
-        'distance': 300,
-        'direction': 'left',
-        'wait_after': {
-          'javascript': '''
-            var outer = document.querySelector("body /deep/ #outerPanels");
-            outer.opened || outer.wideMode;
-          '''
-        },
-        'top_start_percentage': 0.2,
-        'element_function': '''
-          function(callback) {
-            callback(
-              document.querySelector(
-                'body /deep/ #outerPanels'
-              ).querySelector(
-                '#advanced'
-              ).shadowRoot.querySelector(
-                '.handle-bar'
-              )
-            );
-          }''',
-        'speed': 5000
-      }))
+    interaction = action_runner.BeginInteraction(
+        'Action_SwipeAction', is_smooth=True)
+    action_runner.SwipeElement(
+        left_start_ratio=0.1, top_start_ratio=0.2,
+        direction='left', distance=300, speed=5000,
+        element_function='''
+            document.querySelector(
+              'body /deep/ #outerPanels'
+            ).querySelector(
+              '#advanced'
+            ).shadowRoot.querySelector(
+              '.handle-bar'
+            )''')
+    action_runner.WaitForJavaScriptCondition('''
+        var outer = document.querySelector("body /deep/ #outerPanels");
+        outer.opened || outer.wideMode;''')
+    interaction.End()
 
 
 class PolymerShadowPage(PolymerPage):
