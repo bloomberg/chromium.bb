@@ -4,17 +4,29 @@
 
 #include "chrome/browser/sync_file_system/task_logger.h"
 
+#include "base/lazy_instance.h"
 #include "base/stl_util.h"
+#include "base/synchronization/lock.h"
 
 namespace sync_file_system {
 
 namespace {
+
 const size_t kMaxLogSize = 500;
+
+int g_next_log_id = 1;
+base::LazyInstance<base::Lock>::Leaky g_log_id_lock = LAZY_INSTANCE_INITIALIZER;
+
+int GenerateLogID() {
+  base::AutoLock lock(g_log_id_lock.Get());
+  return g_next_log_id++;
+}
+
 }  // namespace
 
 typedef TaskLogger::TaskLog TaskLog;
 
-TaskLogger::TaskLog::TaskLog() {}
+TaskLogger::TaskLog::TaskLog() : log_id(GenerateLogID()) {}
 TaskLogger::TaskLog::~TaskLog() {}
 
 TaskLogger::TaskLogger() {}
