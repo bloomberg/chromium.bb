@@ -7,14 +7,9 @@
 version.py -- Chromium version string substitution utility.
 """
 
-import getopt
+import argparse
 import os
 import sys
-
-
-class Usage(Exception):
-  def __init__(self, msg):
-    self.msg = msg
 
 
 def fetch_values_from_file(values_dict, file_name):
@@ -79,7 +74,7 @@ def subst_template(contents, values):
 
 def subst_file(file_name, values):
   """
-  Returns the contents of the specified file_name with substited
+  Returns the contents of the specified file_name with substituted
   values from the specified dictionary.
 
   This is like subst_template, except it operates on a file.
@@ -104,76 +99,51 @@ def write_if_changed(file_name, contents):
   open(file_name, 'w').write(contents)
 
 
-def main(argv=None):
-  if argv is None:
-    argv = sys.argv
-
-  short_options = 'e:f:i:o:t:h'
-  long_options = ['eval=', 'file=', 'help']
-
-  helpstr = """\
-Usage:  version.py [-h] [-f FILE] ([[-i] FILE] | -t TEMPLATE) [[-o] FILE]
-
-  -f FILE, --file=FILE              Read variables from FILE.
-  -i FILE, --input=FILE             Read strings to substitute from FILE.
-  -o FILE, --output=FILE            Write substituted strings to FILE.
-  -t TEMPLATE, --template=TEMPLATE  Use TEMPLATE as the strings to substitute.
-  -e VAR=VAL, --eval=VAR=VAL        Evaluate VAL after reading variables. Can
-                                    be used to synthesize variables. e.g.
-                                    -e 'PATCH_HI=int(PATCH)/256'.
-  -h, --help                        Print this help and exit.
-"""
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-f', '--file', action='append', default=[],
+                      help='Read variables from FILE.')
+  parser.add_argument('-i', '--input', default=None,
+                      help='Read strings to substitute from FILE.')
+  parser.add_argument('-o', '--output', default=None,
+                      help='Write substituted strings to FILE.')
+  parser.add_argument('-t', '--template', default=None,
+                      help='Use TEMPLATE as the strings to substitute.')
+  parser.add_argument('-e', '--eval', action='append', default=[],
+                      help='Evaluate VAL after reading variables. Can be used '
+                           'to synthesize variables. e.g. -e \'PATCH_HI=int('
+                           'PATCH)/256.')
+  parser.add_argument('args', nargs=argparse.REMAINDER,
+                      help='For compatibility: INPUT and OUTPUT can be '
+                           'passed as positional arguments.')
+  options = parser.parse_args()
 
   evals = {}
-  variable_files = []
-  in_file = None
-  out_file = None
-  template = None
-
-  try:
+  for expression in options.eval:
     try:
-      opts, args = getopt.getopt(argv[1:], short_options, long_options)
-    except getopt.error, err:
-      raise Usage(err.msg)
-    for o, a in opts:
-      if o in ('-e', '--eval'):
-        try:
-          evals.update(dict([a.split('=',1)]))
-        except ValueError:
-          raise Usage("-e requires VAR=VAL")
-      elif o in ('-f', '--file'):
-        variable_files.append(a)
-      elif o in ('-i', '--input'):
-        in_file = a
-      elif o in ('-o', '--output'):
-        out_file = a
-      elif o in ('-t', '--template'):
-        template = a
-      elif o in ('-h', '--help'):
-        print helpstr
-        return 0
-    while len(args) and (in_file is None or out_file is None or
-                         template is None):
-      if in_file is None:
-        in_file = args.pop(0)
-      elif out_file is None:
-        out_file = args.pop(0)
-    if args:
-      msg = 'Unexpected arguments: %r' % args
-      raise Usage(msg)
-  except Usage, err:
-    sys.stderr.write(err.msg)
-    sys.stderr.write('; Use -h to get help.\n')
-    return 2
+      evals.update(dict([expression.split('=', 1)]))
+    except ValueError:
+      parser.error('-e requires VAR=VAL')
 
-  values = fetch_values(variable_files)
+  # Compatibility with old versions that considered the first two positional
+  # arguments shorthands for --input and --output.
+  while len(options.args) and (options.input is None or \
+                               options.output is None):
+    if options.input is None:
+      options.input = options.args.pop(0)
+    elif options.output is None:
+      options.output = options.args.pop(0)
+  if options.args:
+    parser.error('Unexpected arguments: %r' % options.args)
+
+  values = fetch_values(options.file)
   for key, val in evals.iteritems():
     values[key] = str(eval(val, globals(), values))
 
-  if template is not None:
-    contents = subst_template(template, values)
-  elif in_file:
-    contents = subst_file(in_file, values)
+  if options.template is not None:
+    contents = subst_template(options.template, values)
+  elif options.input:
+    contents = subst_file(options.input, values)
   else:
     # Generate a default set of version information.
     contents = """MAJOR=%(MAJOR)s
@@ -184,9 +154,8 @@ LASTCHANGE=%(LASTCHANGE)s
 OFFICIAL_BUILD=%(OFFICIAL_BUILD)s
 """ % values
 
-
-  if out_file:
-    write_if_changed(out_file, contents)
+  if options.output is not None:
+    write_if_changed(options.output, contents)
   else:
     print contents
 
