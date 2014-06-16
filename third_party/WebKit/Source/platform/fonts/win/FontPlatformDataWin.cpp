@@ -62,21 +62,23 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
     if (ts <= kMaxSizeForEmbeddedBitmap)
         flags |= SkPaint::kEmbeddedBitmapText_Flag;
 
-    if (m_useSubpixelPositioning)
-        flags |= SkPaint::kSubpixelText_Flag;
+    if (ts >= m_minSizeForAntiAlias) {
+        if (m_useSubpixelPositioning)
+            flags |= SkPaint::kSubpixelText_Flag;
 
-    // Only set painting flags when we're actually painting.
-    if (context && !context->couldUseLCDRenderedText()) {
-        textFlags &= ~SkPaint::kLCDRenderText_Flag;
-        // If we *just* clear our request for LCD, then GDI seems to
-        // sometimes give us AA text, and sometimes give us BW text. Since the
-        // original intent was LCD, we want to force AA (rather than BW), so we
-        // add a special bit to tell Skia to do its best to avoid the BW: by
-        // drawing LCD offscreen and downsampling that to AA.
-        textFlags |= SkPaint::kGenA8FromLCD_Flag;
+        // Only set painting flags when we're actually painting.
+        if (context && !context->couldUseLCDRenderedText()) {
+            textFlags &= ~SkPaint::kLCDRenderText_Flag;
+            // If we *just* clear our request for LCD, then GDI seems to
+            // sometimes give us AA text, and sometimes give us BW text. Since the
+            // original intent was LCD, we want to force AA (rather than BW), so we
+            // add a special bit to tell Skia to do its best to avoid the BW: by
+            // drawing LCD offscreen and downsampling that to AA.
+            textFlags |= SkPaint::kGenA8FromLCD_Flag;
+        }
+        SkASSERT(!(textFlags & ~textFlagsMask));
+        flags |= textFlags;
     }
-    SkASSERT(!(textFlags & ~textFlagsMask));
-    flags |= textFlags;
 
     paint->setFlags(flags);
 }

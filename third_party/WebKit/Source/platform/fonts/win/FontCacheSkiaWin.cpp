@@ -225,6 +225,23 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         fontDescription.orientation(),
         s_useSubpixelPositioning);
 
+    struct FamilyMinSize {
+        const wchar_t* family;
+        unsigned minSize;
+    };
+    const static FamilyMinSize minAntiAliasSizeForFont[] = {
+        { L"simsun", 16 },
+        { L"dotum", 12 }
+    };
+    size_t numFonts = WTF_ARRAY_LENGTH(minAntiAliasSizeForFont);
+    for (size_t i = 0; i < numFonts; i++) {
+        FamilyMinSize entry = minAntiAliasSizeForFont[i];
+        if (typefacesMatchesFamily(tf.get(), entry.family)) {
+            result->setMinSizeForAntiAlias(entry.minSize);
+            break;
+        }
+    }
+
     return result;
 }
 
