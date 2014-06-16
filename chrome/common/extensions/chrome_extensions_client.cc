@@ -5,7 +5,6 @@
 #include "chrome/common/extensions/chrome_extensions_client.h"
 
 #include "apps/common/api/generated_schemas.h"
-#include "base/command_line.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
@@ -30,7 +29,6 @@
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_info.h"
-#include "extensions/common/switches.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/common_resources.h"
