@@ -226,6 +226,7 @@
   "Chromium Linux MSan": {
     "gtest_tests": [
       "base_unittests",
+      "browser_tests",
       "cacheinvalidation_unittests",
       "cc_unittests",
       "content_browsertests",
