@@ -7,21 +7,18 @@ import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/config.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
-# TODO(GYP) Remove when heap targets work
-enable_blink_platform_heap_targets = false
+# TODO(GYP) Remove when test targets link (depends on ffmpeg)
+enable_blink_platform_test_targets = false
 
 
-if (enable_blink_platform_heap_targets) {
 import("//third_party/yasm/yasm_assemble.gni")
-}
 
 platform_gypi = exec_script(
     "//build/gypi_to_gn.py",
     [ rebase_path("blink_platform.gypi") ],
     "scope",
     [ "blink_platform.gypi" ])
-
-if (enable_blink_platform_heap_targets) {
+if (enable_blink_platform_test_targets) {
 heap_gypi = exec_script(
     "//build/gypi_to_gn.py",
     [ rebase_path("heap/blink_heap.gypi") ],
@@ -199,6 +196,7 @@ component("platform") {
   ]
 
   deps = [
+    ":heap_asm_stubs",
     ":make_platform_generated",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//skia",
@@ -215,10 +213,6 @@ component("platform") {
     "//url",
     "//v8",
   ]
-
-  if (enable_blink_platform_heap_targets) {
-    deps += [ ":heap_asm_stubs" ]
-  }
 
   forward_dependent_configs_from = [
     "//gpu/command_buffer/client:gles2_c_lib",
@@ -348,8 +342,6 @@ component("platform") {
 }
 
 
-if (enable_blink_platform_heap_targets) {
-
 yasm_assemble("heap_asm_stubs") {
   if (cpu_arch == "x86" || cpu_arch == "x64") {
     sources = [ "heap/asm/SaveRegisters_x86.asm" ]
@@ -380,8 +372,6 @@ yasm_assemble("heap_asm_stubs") {
   }
 }
 
-}
-
 source_set("heap_run_all_tests") {
   sources = [
     "heap/RunAllTests.cpp"
@@ -401,7 +391,7 @@ source_set("heap_run_all_tests") {
   ]
 }
 
-if (enable_blink_platform_heap_targets) {
+if (enable_blink_platform_test_targets) {
 
 test("heap_unittests") {
   output_name = "blink_heap_unittests"
@@ -445,8 +435,7 @@ source_set("platform_run_all_tests") {
   ]
 }
 
-# TODO(GYP) enable this target when it links (blocked on WebP symbols).
-if (false) {
+if (enable_blink_platform_test_targets) {
 
 test("platform_unittests") {
   output_name = "blink_platform_unittests"
@@ -459,7 +448,7 @@ test("platform_unittests") {
 
   deps = [
     ":blink_common",
-    ":heap_run_all_tests",
+    ":platform_run_all_tests",
     ":platform",
     "//base",
     "//base/allocator",
@@ -476,11 +465,11 @@ test("platform_unittests") {
   ]
 
   include_dirs = [
-    "$root_gen_dir/blink/platform",
+    "$root_gen_dir/blink",
   ]
 }
 
-}  # TODO(GYP)
+}
 
 
 if (cpu_arch == "arm") {
