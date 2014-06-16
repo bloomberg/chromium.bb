@@ -41,6 +41,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {
 

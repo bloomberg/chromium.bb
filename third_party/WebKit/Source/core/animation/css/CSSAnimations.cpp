@@ -40,6 +40,7 @@
 #include "core/animation/css/CSSPropertyEquality.h"
 #include "core/animation/interpolation/LegacyStyleInterpolation.h"
 #include "core/css/CSSKeyframeRule.h"
+#include "core/css/resolver/CSSToStyleMap.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
 #include "core/dom/PseudoElement.h"
