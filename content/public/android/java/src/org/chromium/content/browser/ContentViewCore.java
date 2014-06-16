@@ -2315,8 +2315,6 @@ public class ContentViewCore
         TraceEvent.begin();
         mSelectionEditable = (textInputType != ImeAdapter.getTextInputTypeNone());
 
-        if (mActionMode != null) mActionMode.invalidate();
-
         mImeAdapter.updateKeyboardVisibility(
                 nativeImeAdapterAndroid, textInputType, showImeIfNeeded);
 
@@ -2324,6 +2322,8 @@ public class ContentViewCore
             mInputConnection.updateState(text, selectionStart, selectionEnd, compositionStart,
                     compositionEnd, isNonImeChange);
         }
+
+        if (mActionMode != null) mActionMode.invalidate();
         TraceEvent.end();
     }
 
