@@ -65,13 +65,12 @@ public:
         ExecutionContext::trace(visitor);
     }
 
+    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE { }
+    virtual SecurityContext& securityContext() { return *this; }
+
 #if !ENABLE(OILPAN)
     using RefCounted<NullExecutionContext>::ref;
     using RefCounted<NullExecutionContext>::deref;
-
-    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE { }
-
-    virtual SecurityContext& securityContext() { return *this; }
 
     virtual void refExecutionContext() OVERRIDE { ref(); }
     virtual void derefExecutionContext() OVERRIDE { deref(); }
