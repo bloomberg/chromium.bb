@@ -38,21 +38,25 @@ void Append(std::vector<uint8_t>* data_vector, T data) {
 
 bool TestInputParser(const std::string& input,
                      bool expected_result,
-                     const std::vector<uint8_t>& expected_parsed_input) {
-  std::vector<uint8_t> parsed_input;
+                     const std::vector<uint8_t>& expected_data,
+                     size_t expected_num_handles) {
+  std::vector<uint8_t> data;
+  size_t num_handles;
   std::string error_message;
 
-  bool result = ParseValidationTestInput(input, &parsed_input, &error_message);
+  bool result = ParseValidationTestInput(input, &data, &num_handles,
+                                         &error_message);
   if (expected_result) {
     if (result && error_message.empty() &&
-        expected_parsed_input == parsed_input) {
+        expected_data == data && expected_num_handles == num_handles) {
       return true;
     }
 
     // Compare with an empty string instead of checking |error_message.empty()|,
     // so that the message will be printed out if the two are not equal.
     EXPECT_EQ(std::string(), error_message);
-    EXPECT_EQ(expected_parsed_input, parsed_input);
+    EXPECT_EQ(expected_data, data);
+    EXPECT_EQ(expected_num_handles, num_handles);
     return false;
   }
 
@@ -93,13 +97,15 @@ bool ReadFile(const std::string& path, std::string* result) {
   return size == size_read;
 }
 
-bool ReadAndParseDataFile(const std::string& path, std::vector<uint8_t>* data) {
+bool ReadAndParseDataFile(const std::string& path,
+                          std::vector<uint8_t>* data,
+                          size_t* num_handles) {
   std::string input;
   if (!ReadFile(path, &input))
     return false;
 
   std::string error_message;
-  if (!ParseValidationTestInput(input, data, &error_message)) {
+  if (!ParseValidationTestInput(input, data, num_handles, &error_message)) {
     ADD_FAILURE() << error_message;
     return false;
   }
@@ -135,7 +141,8 @@ bool ReadTestCase(const std::string& test,
                   Message* message,
                   std::string* expected) {
   std::vector<uint8_t> data;
-  if (!ReadAndParseDataFile(GetPath(test, ".data"), &data) ||
+  size_t num_handles;
+  if (!ReadAndParseDataFile(GetPath(test, ".data"), &data, &num_handles) ||
       !ReadResultFile(GetPath(test, ".expected"), expected)) {
     return false;
   }
@@ -143,9 +150,7 @@ bool ReadTestCase(const std::string& test,
   message->AllocUninitializedData(static_cast<uint32_t>(data.size()));
   if (!data.empty())
     memcpy(message->mutable_data(), &data[0], data.size());
-
-  // TODO(yzshen): add support to specify the number of handles associated with
-  // the message.
+  message->mutable_handles()->resize(num_handles);
 
   return true;
 }
@@ -280,14 +285,14 @@ TEST(ValidationTest, InputParser) {
     std::string input;
     std::vector<uint8_t> expected;
 
-    EXPECT_TRUE(TestInputParser(input, true, expected));
+    EXPECT_TRUE(TestInputParser(input, true, expected, 0));
   }
   {
     // Test input that only consists of comments and whitespaces.
     std::string input = "    \t  // hello world \n\r \t// the answer is 42   ";
     std::vector<uint8_t> expected;
 
-    EXPECT_TRUE(TestInputParser(input, true, expected));
+    EXPECT_TRUE(TestInputParser(input, true, expected, 0));
   }
   {
     std::string input = "[u1]0x10// hello world !! \n\r  \t [u2]65535 \n"
@@ -300,7 +305,7 @@ TEST(ValidationTest, InputParser) {
     Append(&expected, static_cast<uint8_t>(0));
     Append(&expected, static_cast<uint8_t>(0xff));
 
-    EXPECT_TRUE(TestInputParser(input, true, expected));
+    EXPECT_TRUE(TestInputParser(input, true, expected, 0));
   }
   {
     std::string input = "[s8]-0x800 [s1]-128\t[s2]+0 [s4]-40";
@@ -310,7 +315,7 @@ TEST(ValidationTest, InputParser) {
     Append(&expected, static_cast<int16_t>(0));
     Append(&expected, static_cast<int32_t>(-40));
 
-    EXPECT_TRUE(TestInputParser(input, true, expected));
+    EXPECT_TRUE(TestInputParser(input, true, expected, 0));
   }
   {
     std::string input = "[b]00001011 [b]10000000  // hello world\r [b]00000000";
@@ -319,7 +324,7 @@ TEST(ValidationTest, InputParser) {
     Append(&expected, static_cast<uint8_t>(128));
     Append(&expected, static_cast<uint8_t>(0));
 
-    EXPECT_TRUE(TestInputParser(input, true, expected));
+    EXPECT_TRUE(TestInputParser(input, true, expected, 0));
   }
   {
     std::string input = "[f]+.3e9 [d]-10.03";
@@ -327,7 +332,7 @@ TEST(ValidationTest, InputParser) {
     Append(&expected, +.3e9f);
     Append(&expected, -10.03);
 
-    EXPECT_TRUE(TestInputParser(input, true, expected));
+    EXPECT_TRUE(TestInputParser(input, true, expected, 0));
   }
   {
     std::string input = "[dist4]foo 0 [dist8]bar 0 [anchr]foo [anchr]bar";
@@ -337,7 +342,14 @@ TEST(ValidationTest, InputParser) {
     Append(&expected, static_cast<uint64_t>(9));
     Append(&expected, static_cast<uint8_t>(0));
 
-    EXPECT_TRUE(TestInputParser(input, true, expected));
+    EXPECT_TRUE(TestInputParser(input, true, expected, 0));
+  }
+  {
+    std::string input = "// This message has handles! \n[handles]50 [u8]2";
+    std::vector<uint8_t> expected;
+    Append(&expected, static_cast<uint64_t>(2));
+
+    EXPECT_TRUE(TestInputParser(input, true, expected, 50));
   }
 
   // Test some failure cases.
@@ -345,18 +357,20 @@ TEST(ValidationTest, InputParser) {
     const char* error_inputs[] = {
       "/ hello world",
       "[u1]x",
+      "[u2]-1000",
       "[u1]0x100",
       "[s2]-0x8001",
       "[b]1",
       "[b]1111111k",
       "[dist4]unmatched",
       "[anchr]hello [dist8]hello",
+      "0 [handles]50",
       NULL
     };
 
     for (size_t i = 0; error_inputs[i]; ++i) {
       std::vector<uint8_t> expected;
-      if (!TestInputParser(error_inputs[i], false, expected))
+      if (!TestInputParser(error_inputs[i], false, expected, 0))
         ADD_FAILURE() << "Unexpected test result for: " << error_inputs[i];
     }
   }
@@ -368,7 +382,6 @@ TEST(ValidationTest, Conformance) {
   validators.Append<mojo::internal::MessageHeaderValidator>();
   validators.Append<ConformanceTestInterface::RequestValidator_>();
 
-  // TODO(yzshen): add more conformance tests.
   RunValidationTests("conformance_", validators.GetHead());
 }
 

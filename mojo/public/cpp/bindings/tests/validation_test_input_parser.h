@@ -60,6 +60,12 @@ namespace test {
 // data.
 // Value Format: The value is an ID of the same format as that of dist4/8.
 //
+// Type: handles
+// Description: The number of handles that are associated with the message. This
+// special item is not part of the message data. If specified, it should be the
+// first item.
+// Value Format: The same format as u1/2/4/8.
+//
 // EXAMPLE:
 //
 // Suppose you have the following Mojo types defined:
@@ -99,12 +105,13 @@ namespace test {
 //   [anchr]bar
 
 // Parses validation test input.
-// On success, |parsed_input| stores the parsing result and |error_message| is
-// cleared; on failure, |error_message| is set to a message describing the error
-// and |parsed_input| is cleared.
+// On success, |data| and |num_handles| store the parsing result,
+// |error_message| is cleared; on failure, |error_message| is set to a message
+// describing the error, |data| is cleared and |num_handles| set to 0.
 // Note: For now, this method only works on little-endian platforms.
 bool ParseValidationTestInput(const std::string& input,
-                              std::vector<uint8_t>* parsed_input,
+                              std::vector<uint8_t>* data,
+                              size_t* num_handles,
                               std::string* error_message);
 
 }  // namespace test

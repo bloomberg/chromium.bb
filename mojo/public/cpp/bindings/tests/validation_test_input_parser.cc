@@ -21,7 +21,8 @@ namespace {
 class ValidationTestInputParser {
  public:
   ValidationTestInputParser(const std::string& input,
-                            std::vector<uint8_t>* parsed_input,
+                            std::vector<uint8_t>* data,
+                            size_t* num_handles,
                             std::string* error_message);
   ~ValidationTestInputParser();
 
@@ -44,7 +45,7 @@ class ValidationTestInputParser {
 
   // A dist4/8 item that hasn't been matched with an anchr item.
   struct PendingDistanceItem {
-    // Where this data item is located in |parsed_input_|.
+    // Where this data item is located in |data_|.
     size_t pos;
     // Either 4 or 8 (bytes).
     size_t data_size;
@@ -64,14 +65,18 @@ class ValidationTestInputParser {
                            const std::string& value_string);
   bool ParseDistance(const DataType& type, const std::string& value_string);
   bool ParseAnchor(const DataType& type, const std::string& value_string);
+  bool ParseHandles(const DataType& type, const std::string& value_string);
 
   bool StartsWith(const Range& range, const char* prefix, size_t prefix_length);
 
+  bool ConvertToUnsignedInteger(const std::string& value_string,
+                                unsigned long long int* value);
+
   template <typename T>
   void AppendData(T data) {
-    size_t pos = parsed_input_->size();
-    parsed_input_->resize(pos + sizeof(T));
-    memcpy(&(*parsed_input_)[pos], &data, sizeof(T));
+    size_t pos = data_->size();
+    data_->resize(pos + sizeof(T));
+    memcpy(&(*data_)[pos], &data, sizeof(T));
   }
 
   template <typename TargetType, typename InputType>
@@ -91,8 +96,8 @@ class ValidationTestInputParser {
       return false;
     }
     TargetType target_value = static_cast<TargetType>(value);
-    assert(pos + sizeof(TargetType) <= parsed_input_->size());
-    memcpy(&(*parsed_input_)[pos], &target_value, sizeof(TargetType));
+    assert(pos + sizeof(TargetType) <= data_->size());
+    memcpy(&(*data_)[pos], &target_value, sizeof(TargetType));
     return true;
   }
 
@@ -102,7 +107,8 @@ class ValidationTestInputParser {
   const std::string& input_;
   size_t input_cursor_;
 
-  std::vector<uint8_t>* parsed_input_;
+  std::vector<uint8_t>* data_;
+  size_t* num_handles_;
   std::string* error_message_;
 
   std::map<std::string, PendingDistanceItem> pending_distance_items_;
@@ -126,7 +132,8 @@ const ValidationTestInputParser::DataType
   DATA_TYPE("[d]", 8, &ValidationTestInputParser::ParseDouble),
   DATA_TYPE("[dist4]", 4, &ValidationTestInputParser::ParseDistance),
   DATA_TYPE("[dist8]", 8, &ValidationTestInputParser::ParseDistance),
-  DATA_TYPE("[anchr]", 0, &ValidationTestInputParser::ParseAnchor)
+  DATA_TYPE("[anchr]", 0, &ValidationTestInputParser::ParseAnchor),
+  DATA_TYPE("[handles]", 0, &ValidationTestInputParser::ParseHandles)
 };
 
 const size_t ValidationTestInputParser::kDataTypeCount =
@@ -135,15 +142,19 @@ const size_t ValidationTestInputParser::kDataTypeCount =
 
 ValidationTestInputParser::ValidationTestInputParser(
     const std::string& input,
-    std::vector<uint8_t>* parsed_input,
+    std::vector<uint8_t>* data,
+    size_t* num_handles,
     std::string* error_message)
     : input_(input),
       input_cursor_(0),
-      parsed_input_(parsed_input),
+      data_(data),
+      num_handles_(num_handles),
       error_message_(error_message) {
-  assert(parsed_input_);
+  assert(data_);
+  assert(num_handles_);
   assert(error_message_);
-  parsed_input_->clear();
+  data_->clear();
+  *num_handles_ = 0;
   error_message_->clear();
 }
 
@@ -165,10 +176,12 @@ bool ValidationTestInputParser::Run() {
     *error_message_ = "Error occurred when matching [dist4/8] and [anchr].";
     result = false;
   }
-  if (!result)
-    parsed_input_->clear();
-  else
+  if (!result) {
+    data_->clear();
+    *num_handles_ = 0;
+  } else {
     assert(error_message_->empty());
+  }
 
   return result;
 }
@@ -219,12 +232,7 @@ bool ValidationTestInputParser::ParseItem(const Range& range) {
 bool ValidationTestInputParser::ParseUnsignedInteger(
     const DataType& type, const std::string& value_string) {
   unsigned long long int value;
-  const char* format = NULL;
-  if (value_string.find_first_of("xX") != std::string::npos)
-    format = "%llx";
-  else
-    format = "%llu";
-  if (sscanf(value_string.c_str(), format, &value) != 1)
+  if (!ConvertToUnsignedInteger(value_string, &value))
     return false;
 
   switch (type.data_size) {
@@ -312,8 +320,8 @@ bool ValidationTestInputParser::ParseDistance(const DataType& type,
       pending_distance_items_.end())
     return false;
 
-  PendingDistanceItem item = {parsed_input_->size(), type.data_size};
-  parsed_input_->resize(parsed_input_->size() + type.data_size);
+  PendingDistanceItem item = {data_->size(), type.data_size};
+  data_->resize(data_->size() + type.data_size);
   pending_distance_items_[value_string] = item;
 
   return true;
@@ -329,7 +337,7 @@ bool ValidationTestInputParser::ParseAnchor(const DataType& type,
   PendingDistanceItem dist_item = iter->second;
   pending_distance_items_.erase(iter);
 
-  size_t distance = parsed_input_->size() - dist_item.pos;
+  size_t distance = data_->size() - dist_item.pos;
   switch (dist_item.data_size) {
     case 4:
       return ConvertAndFillData<uint32_t>(dist_item.pos, distance);
@@ -341,6 +349,23 @@ bool ValidationTestInputParser::ParseAnchor(const DataType& type,
   }
 }
 
+bool ValidationTestInputParser::ParseHandles(const DataType& type,
+                                             const std::string& value_string) {
+  // It should be the first item.
+  if (!data_->empty())
+    return false;
+
+  unsigned long long int value;
+  if (!ConvertToUnsignedInteger(value_string, &value))
+    return false;
+
+  if (value > std::numeric_limits<size_t>::max())
+    return false;
+
+  *num_handles_ = static_cast<size_t>(value);
+  return true;
+}
+
 bool ValidationTestInputParser::StartsWith(const Range& range,
                                            const char* prefix,
                                            size_t prefix_length) {
@@ -350,12 +375,24 @@ bool ValidationTestInputParser::StartsWith(const Range& range,
   return memcmp(range.first, prefix, prefix_length) == 0;
 }
 
+bool ValidationTestInputParser::ConvertToUnsignedInteger(
+    const std::string& value_string,
+    unsigned long long int* value) {
+  const char* format = NULL;
+  if (value_string.find_first_of("xX") != std::string::npos)
+    format = "%llx";
+  else
+    format = "%llu";
+  return sscanf(value_string.c_str(), format, value) == 1;
+}
+
 }  // namespace
 
 bool ParseValidationTestInput(const std::string& input,
-                              std::vector<uint8_t>* parsed_input,
+                              std::vector<uint8_t>* data,
+                              size_t* num_handles,
                               std::string* error_message) {
-  ValidationTestInputParser parser(input, parsed_input, error_message);
+  ValidationTestInputParser parser(input, data, num_handles, error_message);
   return parser.Run();
 }
 
