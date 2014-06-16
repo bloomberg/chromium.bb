@@ -92,8 +92,7 @@ void SyncWorker::RegisterOrigin(
   scoped_ptr<RegisterAppTask> task(
       new RegisterAppTask(context_.get(), origin.host()));
   if (task->CanFinishImmediately()) {
-    context_->GetUITaskRunner()->PostTask(
-        FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    callback.Run(SYNC_STATUS_OK);
     return;
   }
 
@@ -399,8 +398,7 @@ void SyncWorker::DoDisableApp(const std::string& app_id,
   if (GetMetadataDatabase()) {
     GetMetadataDatabase()->DisableApp(app_id, callback);
   } else {
-    context_->GetUITaskRunner()->PostTask(
-        FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    callback.Run(SYNC_STATUS_OK);
   }
 }
 
@@ -411,8 +409,7 @@ void SyncWorker::DoEnableApp(const std::string& app_id,
   if (GetMetadataDatabase()) {
     GetMetadataDatabase()->EnableApp(app_id, callback);
   } else {
-    context_->GetUITaskRunner()->PostTask(
-        FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    callback.Run(SYNC_STATUS_OK);
   }
 }
 

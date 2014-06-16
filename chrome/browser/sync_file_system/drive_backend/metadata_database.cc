@@ -803,16 +803,12 @@ void MetadataDatabase::DisableApp(const std::string& app_id,
   scoped_ptr<FileTracker> tracker =
       CloneFileTracker(index_->GetFileTracker(tracker_id));
   if (!tracker) {
-    worker_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+    callback.Run(SYNC_DATABASE_ERROR_NOT_FOUND);
     return;
   }
 
   if (tracker->tracker_kind() == TRACKER_KIND_DISABLED_APP_ROOT) {
-    worker_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(callback, SYNC_STATUS_OK));
+    callback.Run(SYNC_STATUS_OK);
     return;
   }
 
@@ -836,16 +832,12 @@ void MetadataDatabase::EnableApp(const std::string& app_id,
   scoped_ptr<FileTracker> tracker =
       CloneFileTracker(index_->GetFileTracker(tracker_id));
   if (!tracker) {
-    worker_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+    callback.Run(SYNC_DATABASE_ERROR_NOT_FOUND);
     return;
   }
 
   if (tracker->tracker_kind() == TRACKER_KIND_APP_ROOT) {
-    worker_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(callback, SYNC_STATUS_OK));
+    callback.Run(SYNC_STATUS_OK);
     return;
   }
 
