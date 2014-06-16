@@ -1540,11 +1540,6 @@ void WebViewImpl::close()
     if (m_page) {
         // Initiate shutdown for the entire frameset.  This will cause a lot of
         // notifications to be sent.
-        // FIXME: This is redundant with willBeDestroyed()... is this really
-        // needed?
-        if (m_page->mainFrame()->isLocalFrame())
-            m_page->deprecatedLocalMainFrame()->loader().frameDetached();
-
         m_page->willBeDestroyed();
         m_page.clear();
     }

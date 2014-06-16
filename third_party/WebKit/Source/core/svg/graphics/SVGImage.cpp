@@ -66,7 +66,7 @@ SVGImage::~SVGImage()
     if (m_page) {
         // Store m_page in a local variable, clearing m_page, so that SVGImageChromeClient knows we're destructed.
         OwnPtrWillBeRawPtr<Page> currentPage = m_page.release();
-        toLocalFrame(currentPage->mainFrame())->loader().frameDetached(); // Break both the loader and view references to the frame
+        // Break both the loader and view references to the frame
         currentPage->willBeDestroyed();
     }
 

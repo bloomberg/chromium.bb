@@ -601,6 +601,9 @@ void Page::trace(Visitor* visitor)
 
 void Page::willBeDestroyed()
 {
+    if (m_mainFrame && m_mainFrame->isLocalFrame())
+        deprecatedLocalMainFrame()->loader().frameDetached();
+
     // Disable all agents prior to resetting the frame view.
     m_inspectorController->willBeDestroyed();
 
@@ -614,11 +617,6 @@ void Page::willBeDestroyed()
     allPages().remove(this);
     if (ordinaryPages().contains(this))
         ordinaryPages().remove(this);
-
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (frame->isLocalFrame())
-            toLocalFrame(frame)->loader().frameDetached();
-    }
 
     if (m_scrollingCoordinator)
         m_scrollingCoordinator->willBeDestroyed();

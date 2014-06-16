@@ -238,9 +238,6 @@ void WebPagePopupImpl::destroyPage()
     if (!m_page)
         return;
 
-    if (m_page->mainFrame())
-        toLocalFrame(m_page->mainFrame())->loader().frameDetached();
-
     m_page->willBeDestroyed();
     m_page.clear();
 }
