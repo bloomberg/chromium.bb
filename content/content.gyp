@@ -371,7 +371,6 @@
           'sources': [
             'public/android/java/src/org/chromium/content/common/IChildProcessCallback.aidl',
             'public/android/java/src/org/chromium/content/common/IChildProcessService.aidl',
-            'public/android/java/src/org/chromium/content/common/SurfaceWrapper.aidl',
           ],
           'includes': [ '../build/java_aidl.gypi' ],
         },
