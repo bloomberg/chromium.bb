@@ -8,6 +8,7 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "ui/chromeos/ui_chromeos_export.h"
+#include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
 #include "ui/events/gesture_detection/gesture_detector.h"
 #include "ui/gfx/geometry/point.h"
@@ -86,7 +87,8 @@ class UI_CHROMEOS_EXPORT TouchExplorationController :
  private:
   // Overridden from ui::EventRewriter
   virtual ui::EventRewriteStatus RewriteEvent(
-      const ui::Event& event, scoped_ptr<ui::Event>* rewritten_event) OVERRIDE;
+      const ui::Event& event,
+      scoped_ptr<ui::Event>* rewritten_event) OVERRIDE;
   virtual ui::EventRewriteStatus NextDispatchEvent(
       const ui::Event& last_event, scoped_ptr<ui::Event>* new_event) OVERRIDE;
 
@@ -159,6 +161,15 @@ class UI_CHROMEOS_EXPORT TouchExplorationController :
     PASSTHROUGH_MINUS_ONE,
   };
 
+  void VlogState(const char* function_name);
+
+  void VlogEvent(const ui::TouchEvent& event, const char* function_name);
+
+  // Gets enum name from integer value.
+  const char* EnumStateToString(State state);
+
+  std::string EnumEventTypeToString(ui::EventType type);
+
   aura::Window* root_window_;
 
   // A set of touch ids for fingers currently touching the screen.
@@ -193,6 +204,12 @@ class UI_CHROMEOS_EXPORT TouchExplorationController :
   // A default gesture detector config, so we can share the same
   // timeout and pixel slop constants.
   ui::GestureDetector::Config gesture_detector_config_;
+
+  // The previous state entered.
+  State prev_state_;
+
+  // A copy of the previous event passed.
+  scoped_ptr<ui::TouchEvent> prev_event_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationController);
 };
