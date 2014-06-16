@@ -575,6 +575,19 @@ void AccountReconcilor::OnGetTokenFailure(
   HandleFailedAccountIdCheck(account_id);
 }
 
+void AccountReconcilor::OnNewProfileManagementFlagChanged(
+    bool new_flag_status) {
+  if (new_flag_status) {
+    // The reconciler may have been newly created just before this call, or may
+    // have already existed and in mid-reconcile. To err on the safe side, force
+    // a restart.
+    Shutdown();
+    Initialize(true);
+  } else {
+    Shutdown();
+  }
+}
+
 void AccountReconcilor::FinishReconcile() {
   // Make sure that the process of validating the gaia cookie and the oauth2
   // tokens individually is done before proceeding with reconciliation.

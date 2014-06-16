@@ -33,7 +33,7 @@ SigninGlobalError::SigninGlobalError(
       error_controller_(error_controller),
       is_added_to_global_error_service_(false) {
   error_controller_->AddObserver(this);
-  is_added_to_global_error_service_ = !switches::IsNewProfileManagement();
+  is_added_to_global_error_service_ = !switches::IsNewAvatarMenu();
   if (is_added_to_global_error_service_)
     GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(this);
 }
@@ -98,7 +98,7 @@ void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
     return;
   }
 
-  if (switches::IsNewProfileManagement()) {
+  if (switches::IsNewAvatarMenu()) {
     browser->window()->ShowAvatarBubbleFromAvatarButton(
         BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
         signin::GAIA_SERVICE_TYPE_NONE);

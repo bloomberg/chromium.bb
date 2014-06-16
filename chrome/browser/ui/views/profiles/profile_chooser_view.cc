@@ -655,7 +655,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == tutorial_enable_new_profile_management_button_) {
     ProfileMetrics::LogProfileUpgradeEnrollment(
         ProfileMetrics::PROFILE_ENROLLMENT_ACCEPT_NEW_PROFILE_MGMT);
-    profiles::EnableNewProfileManagementPreview();
+    profiles::EnableNewProfileManagementPreview(browser_->profile());
   } else if (sender == remove_account_button_) {
     RemoveAccount();
   } else if (sender == account_removal_cancel_button_) {
@@ -679,7 +679,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == end_preview_and_relaunch_button_) {
     ProfileMetrics::LogProfileUpgradeEnrollment(
         ProfileMetrics::PROFILE_ENROLLMENT_DISABLE_NEW_PROFILE_MGMT);
-    profiles::DisableNewProfileManagementPreview();
+    profiles::DisableNewProfileManagementPreview(browser_->profile());
   } else if (sender == end_preview_cancel_button_) {
     tutorial_mode_ = profiles::TUTORIAL_MODE_SEND_FEEDBACK;
     ShowView(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());

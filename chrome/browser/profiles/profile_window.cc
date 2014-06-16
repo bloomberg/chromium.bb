@@ -16,11 +16,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -159,6 +161,15 @@ void OnUserManagerGuestProfileCreated(
   }
 
   callback.Run(guest_profile, page);
+}
+
+// Updates Chrome services that require notification when
+// the new_profile_management's status changes.
+void UpdateServicesWithNewProfileManagementFlag(Profile* profile,
+                                                bool new_flag_status) {
+  AccountReconcilor* account_reconcilor =
+      AccountReconcilorFactory::GetForProfile(profile);
+  account_reconcilor->OnNewProfileManagementFlagChanged(new_flag_status);
 }
 
 }  // namespace
@@ -305,7 +316,7 @@ void ShowUserManagerMaybeWithTutorial(Profile* profile) {
   }
 }
 
-void EnableNewProfileManagementPreview() {
+void EnableNewProfileManagementPreview(Profile* profile) {
   about_flags::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
   about_flags::SetExperimentEnabled(
@@ -316,9 +327,10 @@ void EnableNewProfileManagementPreview() {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kNewProfileManagement);
   chrome::ShowUserManagerWithTutorial(profiles::USER_MANAGER_TUTORIAL_OVERVIEW);
+  UpdateServicesWithNewProfileManagementFlag(profile, true);
 }
 
-void DisableNewProfileManagementPreview() {
+void DisableNewProfileManagementPreview(Profile* profile) {
   about_flags::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
   about_flags::SetExperimentEnabled(
@@ -326,6 +338,7 @@ void DisableNewProfileManagementPreview() {
       kNewProfileManagementExperimentInternalName,
       false);
   chrome::AttemptRestart();
+  UpdateServicesWithNewProfileManagementFlag(profile, false);
 }
 
 }  // namespace profiles

@@ -83,10 +83,10 @@ void CreateGuestProfileForUserManager(
 void ShowUserManagerMaybeWithTutorial(Profile* profile);
 
 // Enables new profile management preview and shows the user manager tutorial.
-void EnableNewProfileManagementPreview();
+void EnableNewProfileManagementPreview(Profile* profile);
 
 // Disables new profile management preview and attempts to relaunch Chrome.
-void DisableNewProfileManagementPreview();
+void DisableNewProfileManagementPreview(Profile* profile);
 
 }  // namespace profiles
 

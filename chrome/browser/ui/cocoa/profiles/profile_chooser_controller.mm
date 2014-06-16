@@ -851,7 +851,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (IBAction)enableNewProfileManagementPreview:(id)sender {
   ProfileMetrics::LogProfileUpgradeEnrollment(
       ProfileMetrics::PROFILE_ENROLLMENT_ACCEPT_NEW_PROFILE_MGMT);
-  profiles::EnableNewProfileManagementPreview();
+  profiles::EnableNewProfileManagementPreview(browser_->profile());
 }
 
 - (IBAction)dismissTutorial:(id)sender {
@@ -882,7 +882,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)endPreviewAndRelaunch:(id)sender {
-  profiles::DisableNewProfileManagementPreview();
+  profiles::DisableNewProfileManagementPreview(browser_->profile());
 }
 
 - (void)cleanUpEmbeddedViewContents {

@@ -46,6 +46,11 @@ class AccountReconcilor : public KeyedService,
 
   void Initialize(bool start_reconcile_if_tokens_available);
 
+  // Signal that the status of the new_profile_management flag has changed.
+  // Pass the new status as an explicit parameter since disabling the flag
+  // doesn't remove it from the CommandLine::ForCurrentProcess().
+  void OnNewProfileManagementFlagChanged(bool new_flag_status);
+
   // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
