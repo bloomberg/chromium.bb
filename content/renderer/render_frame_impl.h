@@ -40,7 +40,6 @@ class WebGeolocationClient;
 class WebInputEvent;
 class WebMouseEvent;
 class WebContentDecryptionModule;
-class WebMIDIClient;
 class WebMediaPlayer;
 class WebNotificationPresenter;
 class WebSecurityOrigin;
@@ -60,6 +59,7 @@ namespace content {
 class ChildFrameCompositingHelper;
 class GeolocationDispatcher;
 class MediaStreamRendererFactory;
+class MidiDispatcher;
 class NotificationProvider;
 class PepperPluginInstanceImpl;
 class RendererCdmManager;
@@ -612,6 +612,9 @@ class CONTENT_EXPORT RenderFrameImpl
   NotificationProvider* notification_provider_;
 
   blink::WebUserMediaClient* web_user_media_client_;
+
+  // MidiClient attached to this frame; lazily initialized.
+  MidiDispatcher* midi_dispatcher_;
 
 #if defined(OS_ANDROID)
   // Manages all media players in this render frame for communicating with the

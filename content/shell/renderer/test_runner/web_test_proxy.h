@@ -341,9 +341,6 @@ class WebTestProxy : public Base, public WebTestProxyBase {
   virtual void printPage(blink::WebLocalFrame* frame) {
     WebTestProxyBase::PrintPage(frame);
   }
-  virtual blink::WebMIDIClient* webMIDIClient() {
-    return WebTestProxyBase::GetWebMIDIClient();
-  }
   virtual blink::WebSpeechRecognizer* speechRecognizer() {
     return WebTestProxyBase::GetSpeechRecognizer();
   }

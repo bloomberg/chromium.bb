@@ -22,26 +22,29 @@ class MidiDispatcherHost : public WebContentsObserver {
   virtual ~MidiDispatcherHost();
 
   // WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 RenderFrameHost* render_frame_host) OVERRIDE;
 
  private:
-  void OnRequestSysExPermission(int bridge_id,
+  void OnRequestSysExPermission(RenderFrameHost* render_frame_host,
+                                int bridge_id,
                                 const GURL& origin,
                                 bool user_gesture);
-  void OnCancelSysExPermissionRequest(int bridge_id,
+  void OnCancelSysExPermissionRequest(RenderFrameHost* render_frame_host,
+                                      int bridge_id,
                                       const GURL& requesting_frame);
   void WasSysExPermissionGranted(int render_process_id,
-                                 int render_view_id,
+                                 int render_frame_id,
                                  int bridge_id,
                                  bool is_allowed);
 
   struct PendingPermission {
     PendingPermission(int render_process_id,
-                      int render_view_id,
+                      int render_frame_id,
                       int bridge_id);
     ~PendingPermission();
     int render_process_id;
-    int render_view_id;
+    int render_frame_id;
     int bridge_id;
     base::Closure cancel;
   };

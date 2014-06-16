@@ -64,6 +64,7 @@
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/media_stream_renderer_factory.h"
+#include "content/renderer/media/midi_dispatcher.h"
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/media/webmediaplayer_impl.h"
@@ -396,6 +397,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       handling_select_range_(false),
       notification_provider_(NULL),
       web_user_media_client_(NULL),
+      midi_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
 #endif
@@ -2768,7 +2770,9 @@ blink::WebUserMediaClient* RenderFrameImpl::userMediaClient() {
 }
 
 blink::WebMIDIClient* RenderFrameImpl::webMIDIClient() {
-  return render_view_->webMIDIClient();
+  if (!midi_dispatcher_)
+    midi_dispatcher_ = new MidiDispatcher(this);
+  return midi_dispatcher_;
 }
 
 bool RenderFrameImpl::willCheckAndDispatchMessageEvent(

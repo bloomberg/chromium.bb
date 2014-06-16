@@ -133,7 +133,6 @@ class FaviconHelper;
 class HistoryController;
 class HistoryEntry;
 class ImageResourceFetcher;
-class MidiDispatcher;
 class MediaStreamDispatcher;
 class MouseLockDispatcher;
 class NavigationState;
@@ -457,7 +456,6 @@ class CONTENT_EXPORT RenderViewImpl
                                        const blink::WebURL& url,
                                        const blink::WebString& title);
   virtual blink::WebPageVisibilityState visibilityState() const;
-  virtual blink::WebMIDIClient* webMIDIClient();
   virtual blink::WebPushClient* webPushClient();
   virtual void draggableRegionsChanged();
 
@@ -1056,9 +1054,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // BrowserPluginManager attached to this view; lazily initialized.
   scoped_refptr<BrowserPluginManager> browser_plugin_manager_;
-
-  // MidiClient attached to this view; lazily initialized.
-  MidiDispatcher* midi_dispatcher_;
 
   DevToolsAgent* devtools_agent_;
 

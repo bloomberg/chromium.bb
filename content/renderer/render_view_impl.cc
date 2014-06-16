@@ -88,7 +88,6 @@
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
-#include "content/renderer/media/midi_dispatcher.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/memory_benchmarking_extension.h"
@@ -656,7 +655,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       speech_recognition_dispatcher_(NULL),
       media_stream_dispatcher_(NULL),
       browser_plugin_manager_(NULL),
-      midi_dispatcher_(NULL),
       devtools_agent_(NULL),
       accessibility_mode_(AccessibilityModeOff),
       renderer_accessibility_(NULL),
@@ -3682,12 +3680,6 @@ blink::WebPageVisibilityState RenderViewImpl::visibilityState() const {
                                             &override_state))
     return override_state;
   return current_state;
-}
-
-blink::WebMIDIClient* RenderViewImpl::webMIDIClient() {
-  if (!midi_dispatcher_)
-    midi_dispatcher_ = new MidiDispatcher(this);
-  return midi_dispatcher_;
 }
 
 blink::WebPushClient* RenderViewImpl::webPushClient() {

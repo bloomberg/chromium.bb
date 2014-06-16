@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_MIDI_DISPATCHER_H_
 
 #include "base/id_map.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebMIDIClient.h"
 
 namespace blink {
@@ -15,21 +15,19 @@ class WebMIDIPermissionRequest;
 
 namespace content {
 
-class RenderViewImpl;
-
 // MidiDispatcher implements WebMIDIClient to handle permissions for using
 // system exclusive messages.
-// It works as RenderViewObserver to handle IPC messages between
-// MidiDispatcherHost owned by RenderViewHost since permissions are managed in
+// It works as RenderFrameObserver to handle IPC messages between
+// MidiDispatcherHost owned by WebContents since permissions are managed in
 // the browser process.
-class MidiDispatcher : public RenderViewObserver,
+class MidiDispatcher : public RenderFrameObserver,
                        public blink::WebMIDIClient {
  public:
-  explicit MidiDispatcher(RenderViewImpl* render_view);
+  explicit MidiDispatcher(RenderFrame* render_frame);
   virtual ~MidiDispatcher();
 
  private:
-  // RenderView::Observer implementation.
+  // RenderFrameObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // blink::WebMIDIClient implementation.
