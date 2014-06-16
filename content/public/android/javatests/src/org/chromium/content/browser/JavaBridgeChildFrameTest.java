@@ -41,13 +41,83 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testInjectedObjectPresentInChildFrame() throws Throwable {
-        // In the case that the test fails (i.e. the child frame doesn't get the injected object,
-        // the call to testController.setStringValue in the child frame's onload handler will
-        // not be made.
         loadDataSync(getContentViewCore(),
-                "<html><head></head><body>" +
-                "<iframe id=\"childFrame\" onload=\"testController.setStringValue('PASS');\" />" +
-                "</body></html>", "text/html", false);
+                "<html><body><iframe></iframe></body></html>", "text/html", false);
+        // We are not executing this code as a part of page loading routine to avoid races
+        // with internal Blink events that notify Java Bridge about window object updates.
+        assertEquals("\"object\"", executeJavaScriptAndGetResult(
+                        getContentViewCore(), "typeof window.frames[0].testController"));
+        executeJavaScriptAndGetResult(
+                getContentViewCore(), "window.frames[0].testController.setStringValue('PASS')");
         assertEquals("PASS", mTestController.waitForStringValue());
+    }
+
+    // Verify that loading an iframe doesn't ruin JS wrapper of the main page.
+    // This is a regression test for the problem described in b/15572824.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testMainPageWrapperIsNotBrokenByChildFrame() throws Throwable {
+        loadDataSync(getContentViewCore(),
+                "<html><body><iframe></iframe></body></html>", "text/html", false);
+        // In case there is anything wrong with the JS wrapper, an attempt
+        // to look up its properties will result in an exception being thrown.
+        String script =
+                "(function(){ try {" +
+                "  return typeof testController.setStringValue;" +
+                "} catch (e) {" +
+                "  return e.toString();" +
+                "} })()";
+        assertEquals("\"function\"",
+                executeJavaScriptAndGetResult(getContentViewCore(), script));
+        // Make sure calling a method also works.
+        executeJavaScriptAndGetResult(getContentViewCore(),
+                "testController.setStringValue('PASS');");
+        assertEquals("PASS", mTestController.waitForStringValue());
+    }
+
+    // Verify that parent page and child frame each has own JS wrapper object.
+    // Failing to do so exposes parent's context to the child.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testWrapperIsNotSharedWithChildFrame() throws Throwable {
+        // Test by setting a custom property on the parent page's injected
+        // object and then checking that child frame doesn't see the property.
+        loadDataSync(getContentViewCore(),
+                "<html><head>" +
+                "<script>" +
+                "  window.wProperty = 42;" +
+                "  testController.tcProperty = 42;" +
+                "  function queryProperties(w) {" +
+                "    return w.wProperty + ' / ' + w.testController.tcProperty;" +
+                "  }" +
+                "</script>" +
+                "</head><body><iframe></iframe></body></html>", "text/html", false);
+        assertEquals("\"42 / 42\"",
+                executeJavaScriptAndGetResult(getContentViewCore(), "queryProperties(window)"));
+        assertEquals("\"undefined / undefined\"",
+                executeJavaScriptAndGetResult(getContentViewCore(),
+                        "queryProperties(window.frames[0])"));
+    }
+
+    private String executeJavaScriptAndGetResult(final ContentViewCore contentViewCore,
+            final String script) throws Throwable {
+        final String[] result = new String[1];
+        class ResultCallback extends JavaBridgeTestBase.Controller
+                implements ContentViewCore.JavaScriptCallback {
+            @Override
+            public void handleJavaScriptResult(String jsonResult) {
+                result[0] = jsonResult;
+                notifyResultIsReady();
+            }
+        }
+        final ResultCallback resultCallback = new ResultCallback();
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                contentViewCore.evaluateJavaScript(script, resultCallback);
+            }
+        });
+        resultCallback.waitForResult();
+        return result[0];
     }
 }
