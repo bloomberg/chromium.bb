@@ -31,7 +31,7 @@
 #ifndef ScriptProfile_h
 #define ScriptProfile_h
 
-#include "InspectorTypeBuilder.h"
+#include "core/InspectorTypeBuilder.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"

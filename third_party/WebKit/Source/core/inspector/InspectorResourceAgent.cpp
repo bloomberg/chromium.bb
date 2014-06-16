@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/inspector/InspectorResourceAgent.h"
 
-#include "FetchInitiatorTypeNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
+#include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/fetch/FetchInitiatorInfo.h"

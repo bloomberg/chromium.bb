@@ -29,7 +29,7 @@
 #ifndef InspectorOverlay_h
 #define InspectorOverlay_h
 
-#include "InspectorTypeBuilder.h"
+#include "core/InspectorTypeBuilder.h"
 #include "platform/Timer.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"

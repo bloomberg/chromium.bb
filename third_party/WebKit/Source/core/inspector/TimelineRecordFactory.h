@@ -31,7 +31,7 @@
 #ifndef TimelineRecordFactory_h
 #define TimelineRecordFactory_h
 
-#include "InspectorTypeBuilder.h"
+#include "core/InspectorTypeBuilder.h"
 #include "platform/JSONValues.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"

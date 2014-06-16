@@ -28,7 +28,7 @@
 
 #include "config.h"
 
-#include "InspectorOverlayHost.h"
+#include "core/inspector/InspectorOverlayHost.h"
 
 namespace WebCore {
 

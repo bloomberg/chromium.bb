@@ -32,8 +32,8 @@
 
 #include "core/inspector/WorkerInspectorController.h"
 
-#include "InspectorBackendDispatcher.h"
-#include "InspectorFrontend.h"
+#include "core/InspectorBackendDispatcher.h"
+#include "core/InspectorFrontend.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorConsoleAgent.h"

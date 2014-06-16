@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "NavigationPolicy.h"
+#include "core/loader/NavigationPolicy.h"
 
 #include "wtf/Assertions.h"
 

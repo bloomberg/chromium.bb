@@ -25,9 +25,9 @@
 #ifndef InspectorConsoleAgent_h
 #define InspectorConsoleAgent_h
 
-#include "InspectorFrontend.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptString.h"
+#include "core/InspectorFrontend.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/frame/ConsoleTypes.h"

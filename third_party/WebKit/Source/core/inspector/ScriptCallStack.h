@@ -31,7 +31,7 @@
 #ifndef ScriptCallStack_h
 #define ScriptCallStack_h
 
-#include "InspectorTypeBuilder.h"
+#include "core/InspectorTypeBuilder.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"

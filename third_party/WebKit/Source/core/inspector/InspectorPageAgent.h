@@ -32,7 +32,7 @@
 #define InspectorPageAgent_h
 
 
-#include "InspectorFrontend.h"
+#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "wtf/HashMap.h"

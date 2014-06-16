@@ -32,9 +32,9 @@
 #define InspectorTimelineAgent_h
 
 
-#include "InspectorFrontend.h"
-#include "InspectorTypeBuilder.h"
 #include "bindings/v8/ScriptGCEvent.h"
+#include "core/InspectorFrontend.h"
+#include "core/InspectorTypeBuilder.h"
 #include "core/events/EventPath.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/ScriptGCEventListener.h"

@@ -31,9 +31,9 @@
 #ifndef InjectedScriptBase_h
 #define InjectedScriptBase_h
 
-#include "InspectorTypeBuilder.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
+#include "core/InspectorTypeBuilder.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

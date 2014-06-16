@@ -32,7 +32,7 @@
 #include "config.h"
 #include "core/loader/PingLoader.h"
 
-#include "FetchInitiatorTypeNames.h"
+#include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/fetch/FetchContext.h"
 #include "core/frame/LocalFrame.h"

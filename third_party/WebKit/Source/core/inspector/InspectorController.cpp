@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/inspector/InspectorController.h"
 
-#include "InspectorBackendDispatcher.h"
-#include "InspectorFrontend.h"
 #include "bindings/v8/DOMWrapperWorld.h"
+#include "core/InspectorBackendDispatcher.h"
+#include "core/InspectorFrontend.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"

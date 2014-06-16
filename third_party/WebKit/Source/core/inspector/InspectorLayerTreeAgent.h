@@ -31,8 +31,8 @@
 #define InspectorLayerTreeAgent_h
 
 
-#include "InspectorFrontend.h"
-#include "InspectorTypeBuilder.h"
+#include "core/InspectorFrontend.h"
+#include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/rendering/RenderLayer.h"
 #include "platform/Timer.h"

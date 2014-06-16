@@ -7,7 +7,7 @@
 #ifndef InspectorTracingAgent_h
 #define InspectorTracingAgent_h
 
-#include "InspectorFrontend.h"
+#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"

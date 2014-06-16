@@ -25,10 +25,10 @@
 #include "config.h"
 #include "core/inspector/InspectorStyleSheet.h"
 
-#include "CSSPropertyNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptRegexp.h"
+#include "core/CSSPropertyNames.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSMediaRule.h"
 #include "core/css/parser/BisonCSSParser.h"

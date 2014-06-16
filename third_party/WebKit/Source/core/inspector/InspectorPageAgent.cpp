@@ -31,11 +31,11 @@
 #include "config.h"
 #include "core/inspector/InspectorPageAgent.h"
 
-#include "HTMLNames.h"
-#include "UserAgentStyleSheets.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptRegexp.h"
+#include "core/HTMLNames.h"
+#include "core/UserAgentStyleSheets.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/DOMImplementation.h"

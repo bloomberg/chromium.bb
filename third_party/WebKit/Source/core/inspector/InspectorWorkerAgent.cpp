@@ -32,7 +32,7 @@
 
 #include "core/inspector/InspectorWorkerAgent.h"
 
-#include "InspectorFrontend.h"
+#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/JSONParser.h"

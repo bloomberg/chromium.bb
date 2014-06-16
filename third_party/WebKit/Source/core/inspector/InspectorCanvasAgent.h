@@ -32,9 +32,9 @@
 #define InspectorCanvasAgent_h
 
 
-#include "InspectorFrontend.h"
-#include "InspectorTypeBuilder.h"
 #include "bindings/v8/ScriptState.h"
+#include "core/InspectorFrontend.h"
+#include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"

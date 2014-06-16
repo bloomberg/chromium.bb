@@ -29,7 +29,7 @@
 #ifndef ContentSearchUtils_h
 #define ContentSearchUtils_h
 
-#include "InspectorTypeBuilder.h"
+#include "core/InspectorTypeBuilder.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/TextPosition.h"

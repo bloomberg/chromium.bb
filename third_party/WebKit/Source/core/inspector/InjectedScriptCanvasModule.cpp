@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/inspector/InjectedScriptCanvasModule.h"
 
-#include "InjectedScriptCanvasModuleSource.h"
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "bindings/v8/ScriptValue.h"
+#include "core/InjectedScriptCanvasModuleSource.h"
 
 using WebCore::TypeBuilder::Array;
 using WebCore::TypeBuilder::Canvas::ResourceId;

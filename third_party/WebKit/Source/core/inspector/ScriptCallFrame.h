@@ -31,7 +31,7 @@
 #ifndef ScriptCallFrame_h
 #define ScriptCallFrame_h
 
-#include "InspectorTypeBuilder.h"
+#include "core/InspectorTypeBuilder.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
