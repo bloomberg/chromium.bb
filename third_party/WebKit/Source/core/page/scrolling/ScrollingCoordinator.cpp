@@ -27,7 +27,6 @@
 
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Node.h"
@@ -42,6 +41,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/exported/WebScrollbarImpl.h"
 #include "platform/exported/WebScrollbarThemeGeometryNative.h"

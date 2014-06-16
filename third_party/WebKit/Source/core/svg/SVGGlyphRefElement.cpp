@@ -22,7 +22,7 @@
 #if ENABLE(SVG_FONTS)
 #include "core/svg/SVGGlyphRefElement.h"
 
-#include "XLinkNames.h"
+#include "core/XLinkNames.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "wtf/text/AtomicString.h"
 

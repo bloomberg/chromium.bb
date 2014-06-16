@@ -21,7 +21,7 @@
 #ifndef SVGFEFuncGElement_h
 #define SVGFEFuncGElement_h
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/svg/SVGComponentTransferFunctionElement.h"
 
 namespace WebCore {

@@ -21,7 +21,7 @@
 #ifndef SVGRadialGradientElement_h
 #define SVGRadialGradientElement_h
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGradientElement.h"
 

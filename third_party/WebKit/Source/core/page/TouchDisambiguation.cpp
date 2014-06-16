@@ -32,9 +32,7 @@
 
 #include "core/page/TouchDisambiguation.h"
 
-#include <algorithm>
-#include <cmath>
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
@@ -44,6 +42,8 @@
 #include "core/page/EventHandler.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBlock.h"
+#include <algorithm>
+#include <cmath>
 
 namespace WebCore {
 

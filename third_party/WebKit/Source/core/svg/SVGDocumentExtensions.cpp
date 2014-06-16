@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/svg/SVGDocumentExtensions.h"
 
-#include "XLinkNames.h"
+#include "core/XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/SVGResourcesCache.h"

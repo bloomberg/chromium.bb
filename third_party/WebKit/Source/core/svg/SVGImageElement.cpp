@@ -23,8 +23,8 @@
 
 #include "core/svg/SVGImageElement.h"
 
-#include "CSSPropertyNames.h"
-#include "XLinkNames.h"
+#include "core/CSSPropertyNames.h"
+#include "core/XLinkNames.h"
 #include "core/rendering/RenderImageResource.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "core/rendering/svg/RenderSVGResource.h"

@@ -21,7 +21,7 @@
 #ifndef SVGFEImageElement_h
 #define SVGFEImageElement_h
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/svg/SVGAnimatedBoolean.h"

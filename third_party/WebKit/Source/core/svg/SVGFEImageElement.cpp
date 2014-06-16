@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGFEImageElement.h"
 
-#include "XLinkNames.h"
+#include "core/XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"

@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGSymbolElement.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
 
 namespace WebCore {

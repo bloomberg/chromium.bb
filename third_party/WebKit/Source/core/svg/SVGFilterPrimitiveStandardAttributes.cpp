@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 #include "core/svg/SVGLength.h"

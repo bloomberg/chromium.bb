@@ -26,7 +26,7 @@
 #ifndef SVGSMILElement_h
 #define SVGSMILElement_h
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/animation/SMILTime.h"
 #include "platform/heap/Heap.h"

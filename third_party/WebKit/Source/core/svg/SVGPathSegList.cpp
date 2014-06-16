@@ -24,7 +24,7 @@
 
 #include "core/svg/SVGPathSegList.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGPathBlender.h"
 #include "core/svg/SVGPathByteStreamBuilder.h"

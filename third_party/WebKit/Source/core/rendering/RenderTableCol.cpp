@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderTableCol.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/html/HTMLTableColElement.h"
 #include "core/rendering/RenderTable.h"
 #include "core/rendering/RenderTableCell.h"

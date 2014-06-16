@@ -23,7 +23,7 @@
 #define SVGHKernElement_h
 
 #if ENABLE(SVG_FONTS)
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/svg/SVGFontElement.h"
 
 namespace WebCore {

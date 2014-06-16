@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderIFrame.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLIFrameElement.h"

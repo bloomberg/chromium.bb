@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/svg/SVGDiscardElement.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 
 namespace WebCore {
 

@@ -22,8 +22,8 @@
 #if ENABLE(SVG_FONTS)
 #include "core/svg/SVGFontData.h"
 
-#include "SVGNames.h"
-#include "XMLNames.h"
+#include "core/SVGNames.h"
+#include "core/XMLNames.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "core/svg/SVGAltGlyphElement.h"

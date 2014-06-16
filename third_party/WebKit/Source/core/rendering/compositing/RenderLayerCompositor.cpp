@@ -27,7 +27,6 @@
 
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/animation/DocumentAnimations.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/ScriptForbiddenScope.h"
@@ -51,6 +50,7 @@
 #include "core/rendering/compositing/GraphicsLayerTreeBuilder.h"
 #include "core/rendering/compositing/GraphicsLayerUpdater.h"
 #include "platform/OverscrollTheme.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "public/platform/Platform.h"

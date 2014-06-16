@@ -25,7 +25,7 @@
 
 #include "core/svg/SVGTransformList.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/svg/SVGAnimateTransformElement.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGParserUtilities.h"

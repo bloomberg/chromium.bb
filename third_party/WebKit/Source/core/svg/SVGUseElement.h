@@ -21,7 +21,7 @@
 #ifndef SVGUseElement_h
 #define SVGUseElement_h
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/fetch/DocumentResource.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"

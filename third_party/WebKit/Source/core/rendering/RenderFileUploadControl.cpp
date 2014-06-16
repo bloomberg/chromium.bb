@@ -21,8 +21,7 @@
 #include "config.h"
 #include "core/rendering/RenderFileUploadControl.h"
 
-#include <math.h>
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/fileapi/FileList.h"
@@ -34,6 +33,7 @@
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextRun.h"
+#include <math.h>
 
 using namespace std;
 

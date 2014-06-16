@@ -24,8 +24,8 @@
 #include "config.h"
 #include "core/rendering/RenderFieldset.h"
 
-#include "CSSPropertyNames.h"
-#include "HTMLNames.h"
+#include "core/CSSPropertyNames.h"
+#include "core/HTMLNames.h"
 #include "core/html/HTMLLegendElement.h"
 #include "core/rendering/PaintInfo.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"

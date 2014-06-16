@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGFETileElement.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 

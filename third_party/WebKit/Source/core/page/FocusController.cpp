@@ -27,8 +27,7 @@
 #include "config.h"
 #include "core/page/FocusController.h"
 
-#include <limits>
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -58,6 +57,7 @@
 #include "core/page/SpatialNavigation.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
+#include <limits>
 
 namespace WebCore {
 

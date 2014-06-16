@@ -27,8 +27,8 @@
 #include "config.h"
 #include "core/page/DragController.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/HTMLNames.h"
 #include "core/clipboard/Clipboard.h"
 #include "core/clipboard/ClipboardAccessPolicy.h"
 #include "core/clipboard/DataObject.h"

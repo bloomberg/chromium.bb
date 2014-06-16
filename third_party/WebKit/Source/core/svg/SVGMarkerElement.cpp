@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGMarkerElement.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/svg/SVGAngleTearOff.h"
 

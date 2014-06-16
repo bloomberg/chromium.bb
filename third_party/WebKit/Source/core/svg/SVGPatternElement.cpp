@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGPatternElement.h"
 
-#include "XLinkNames.h"
+#include "core/XLinkNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
 #include "core/svg/PatternAttributes.h"

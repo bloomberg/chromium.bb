@@ -24,8 +24,8 @@
 #include "config.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 
-#include "CSSValueKeywords.h"
-#include "HTMLNames.h"
+#include "core/CSSValueKeywords.h"
+#include "core/HTMLNames.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"

@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGFETurbulenceElement.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/svg/SVGParserUtilities.h"
 
 namespace WebCore {

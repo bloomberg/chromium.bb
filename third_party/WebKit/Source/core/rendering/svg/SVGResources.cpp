@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/rendering/svg/SVGResources.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"

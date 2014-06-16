@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/rendering/RenderThemeChromiumSkia.h"
 
-#include "UserAgentStyleSheets.h"
+#include "core/UserAgentStyleSheets.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderMediaControls.h"

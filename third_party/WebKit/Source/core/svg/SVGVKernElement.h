@@ -21,7 +21,7 @@
 #define SVGVKernElement_h
 
 #if ENABLE(SVG_FONTS)
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFontElement.h"
 

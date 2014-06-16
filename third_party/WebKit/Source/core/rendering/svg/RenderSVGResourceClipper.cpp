@@ -24,8 +24,7 @@
 
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 
-#include "RuntimeEnabledFeatures.h"
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/rendering/HitTestResult.h"
@@ -34,6 +33,7 @@
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGUseElement.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/DisplayList.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/TemporaryChange.h"

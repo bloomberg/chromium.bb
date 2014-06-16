@@ -22,7 +22,7 @@
 #ifndef SVGElement_h
 #define SVGElement_h
 
-#include "SVGElementTypeHelpers.h"
+#include "core/SVGElementTypeHelpers.h"
 #include "core/dom/Element.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGParsingError.h"

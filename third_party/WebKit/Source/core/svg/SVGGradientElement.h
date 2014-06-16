@@ -21,7 +21,7 @@
 #ifndef SVGGradientElement_h
 #define SVGGradientElement_h
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedTransformList.h"

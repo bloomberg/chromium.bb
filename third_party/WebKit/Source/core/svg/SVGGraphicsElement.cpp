@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGGraphicsElement.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGPathData.h"

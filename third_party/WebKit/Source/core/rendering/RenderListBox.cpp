@@ -30,8 +30,7 @@
 #include "config.h"
 #include "core/rendering/RenderListBox.h"
 
-#include <math.h>
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -57,6 +56,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/text/BidiTextRun.h"
+#include <math.h>
 
 using namespace std;
 

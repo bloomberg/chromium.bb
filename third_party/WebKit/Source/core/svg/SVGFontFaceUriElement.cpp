@@ -23,7 +23,7 @@
 #if ENABLE(SVG_FONTS)
 #include "core/svg/SVGFontFaceUriElement.h"
 
-#include "XLinkNames.h"
+#include "core/XLinkNames.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/dom/Document.h"
 #include "core/fetch/FetchRequest.h"

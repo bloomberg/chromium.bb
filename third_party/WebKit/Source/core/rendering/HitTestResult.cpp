@@ -22,8 +22,8 @@
 #include "config.h"
 #include "core/rendering/HitTestResult.h"
 
-#include "HTMLNames.h"
-#include "XLinkNames.h"
+#include "core/HTMLNames.h"
+#include "core/XLinkNames.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"

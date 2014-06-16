@@ -27,8 +27,7 @@
 
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 
-#include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/HTMLNames.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -49,6 +48,7 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/KeyframeList.h"
 #include "platform/LengthFunctions.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "wtf/CurrentTime.h"

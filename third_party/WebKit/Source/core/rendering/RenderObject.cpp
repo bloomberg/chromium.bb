@@ -27,8 +27,7 @@
 #include "config.h"
 #include "core/rendering/RenderObject.h"
 
-#include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/ActiveAnimations.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -79,6 +78,7 @@
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "platform/JSONValues.h"
 #include "platform/Partitions.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
 #include "platform/geometry/TransformState.h"

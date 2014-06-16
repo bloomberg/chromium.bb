@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/rendering/InlineFlowBox.h"
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"

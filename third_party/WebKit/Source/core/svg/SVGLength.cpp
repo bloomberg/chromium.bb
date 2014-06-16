@@ -23,8 +23,8 @@
 
 #include "core/svg/SVGLength.h"
 
-#include "SVGNames.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/SVGNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGAnimationElement.h"

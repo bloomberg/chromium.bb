@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGTextPathElement.h"
 
-#include "XLinkNames.h"
+#include "core/XLinkNames.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGTextPath.h"
 

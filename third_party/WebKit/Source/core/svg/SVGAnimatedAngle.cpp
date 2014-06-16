@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/svg/SVGAnimatedAngle.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/svg/SVGAngleTearOff.h"
 #include "core/svg/SVGMarkerElement.h"
 

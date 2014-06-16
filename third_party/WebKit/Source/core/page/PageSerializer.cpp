@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/page/PageSerializer.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/css/CSSFontFaceRule.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSImageValue.h"

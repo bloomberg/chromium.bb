@@ -24,7 +24,6 @@
 #include "core/rendering/style/RenderStyle.h"
 
 #include <algorithm>
-#include "RuntimeEnabledFeatures.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/TextAutosizer.h"
@@ -35,6 +34,7 @@
 #include "core/rendering/style/StyleImage.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "platform/LengthFunctions.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/geometry/FloatRoundedRect.h"

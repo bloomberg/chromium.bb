@@ -26,7 +26,7 @@
 #ifndef RenderThemeChromiumFontProvider_h
 #define RenderThemeChromiumFontProvider_h
 
-#include "CSSValueKeywords.h"
+#include "core/CSSValueKeywords.h"
 
 namespace WTF {
 class String;

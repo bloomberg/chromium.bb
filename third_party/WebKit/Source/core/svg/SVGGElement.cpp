@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGGElement.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"

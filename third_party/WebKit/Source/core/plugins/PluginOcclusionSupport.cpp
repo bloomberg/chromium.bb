@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/plugins/PluginOcclusionSupport.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"

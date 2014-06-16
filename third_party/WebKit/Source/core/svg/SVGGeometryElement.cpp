@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/svg/SVGGeometryElement.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/svg/RenderSVGShape.h"

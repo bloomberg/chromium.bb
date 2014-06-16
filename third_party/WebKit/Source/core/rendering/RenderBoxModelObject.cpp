@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderBoxModelObject.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/scrolling/ScrollingConstraints.h"

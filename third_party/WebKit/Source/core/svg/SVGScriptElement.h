@@ -21,7 +21,7 @@
 #ifndef SVGScriptElement_h
 #define SVGScriptElement_h
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/dom/ScriptLoaderClient.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedString.h"

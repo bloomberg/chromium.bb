@@ -25,8 +25,8 @@
 #include "config.h"
 #include "core/rendering/RenderThemeChromiumDefault.h"
 
-#include "CSSValueKeywords.h"
-#include "UserAgentStyleSheets.h"
+#include "core/CSSValueKeywords.h"
+#include "core/UserAgentStyleSheets.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderProgress.h"

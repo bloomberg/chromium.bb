@@ -23,7 +23,7 @@
 #define SVGAltGlyphElement_h
 
 #if ENABLE(SVG_FONTS)
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/svg/SVGTextPositioningElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "wtf/Vector.h"

@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGTSpanElement.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/rendering/svg/RenderSVGTSpan.h"
 
 namespace WebCore {

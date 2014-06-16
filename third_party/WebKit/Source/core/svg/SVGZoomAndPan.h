@@ -22,7 +22,7 @@
 #ifndef SVGZoomAndPan_h
 #define SVGZoomAndPan_h
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/dom/QualifiedName.h"
 #include "wtf/HashSet.h"
 

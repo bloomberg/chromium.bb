@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 
-#include "CSSValueKeywords.h"
+#include "core/CSSValueKeywords.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"

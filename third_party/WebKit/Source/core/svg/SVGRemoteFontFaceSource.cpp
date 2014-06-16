@@ -6,7 +6,7 @@
 #if ENABLE(SVG_FONTS)
 #include "core/svg/SVGRemoteFontFaceSource.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/css/FontLoader.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/svg/SVGFontData.h"

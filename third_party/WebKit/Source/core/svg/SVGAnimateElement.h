@@ -23,7 +23,7 @@
 #ifndef SVGAnimateElement_h
 #define SVGAnimateElement_h
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedTypeAnimator.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "wtf/OwnPtr.h"

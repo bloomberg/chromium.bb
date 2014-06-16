@@ -19,8 +19,9 @@
  */
 
 #include "config.h"
-#include "SVGNames.h"
 #include "core/svg/SVGMetadataElement.h"
+
+#include "core/SVGNames.h"
 
 namespace WebCore {
 

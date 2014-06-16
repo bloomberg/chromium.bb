@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/rendering/RenderBlock.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"

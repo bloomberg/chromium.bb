@@ -25,11 +25,11 @@
 
 #include "core/svg/SVGElement.h"
 
-#include "HTMLNames.h"
-#include "SVGNames.h"
-#include "XLinkNames.h"
-#include "XMLNames.h"
 #include "bindings/v8/ScriptEventListener.h"
+#include "core/HTMLNames.h"
+#include "core/SVGNames.h"
+#include "core/XLinkNames.h"
+#include "core/XMLNames.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/dom/Document.h"

@@ -22,8 +22,8 @@
 
 #include "core/svg/SVGCursorElement.h"
 
-#include "SVGNames.h"
-#include "XLinkNames.h"
+#include "core/SVGNames.h"
+#include "core/XLinkNames.h"
 #include "core/dom/Document.h"
 
 namespace WebCore {

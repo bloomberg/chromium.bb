@@ -26,7 +26,7 @@
 #ifndef TextAutosizer_h
 #define TextAutosizer_h
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "platform/text/WritingMode.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"

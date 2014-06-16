@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/rendering/RenderTableRow.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/fetch/ImageResource.h"
 #include "core/rendering/GraphicsContextAnnotator.h"

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/svg/SVGFEDistantLightElement.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "platform/graphics/filters/DistantLightSource.h"
 
 namespace WebCore {

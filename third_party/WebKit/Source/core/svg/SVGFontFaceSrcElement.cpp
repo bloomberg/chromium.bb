@@ -22,7 +22,7 @@
 #if ENABLE(SVG_FONTS)
 #include "core/svg/SVGFontFaceSrcElement.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/dom/ElementTraversal.h"

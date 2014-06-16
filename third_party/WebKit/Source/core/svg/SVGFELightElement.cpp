@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGFELightElement.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGFEDiffuseLightingElement.h"

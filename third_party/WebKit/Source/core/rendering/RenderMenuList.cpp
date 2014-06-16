@@ -25,8 +25,7 @@
 #include "config.h"
 #include "core/rendering/RenderMenuList.h"
 
-#include <math.h>
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/accessibility/AXMenuList.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/CSSFontSelector.h"
@@ -46,6 +45,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/text/PlatformLocale.h"
+#include <math.h>
 
 using namespace std;
 

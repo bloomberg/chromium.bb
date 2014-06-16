@@ -25,7 +25,7 @@
 #ifndef RenderStyle_h
 #define RenderStyle_h
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/animation/css/CSSTransitionData.h"
 #include "core/css/CSSLineBoxContainValue.h"

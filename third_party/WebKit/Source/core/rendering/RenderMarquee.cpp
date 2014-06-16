@@ -46,7 +46,7 @@
 
 #include "core/rendering/RenderMarquee.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/html/HTMLMarqueeElement.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/UseCounter.h"

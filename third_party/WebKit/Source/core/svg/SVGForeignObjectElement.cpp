@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/svg/SVGForeignObjectElement.h"
 
-#include "XLinkNames.h"
+#include "core/XLinkNames.h"
 #include "core/frame/UseCounter.h"
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"

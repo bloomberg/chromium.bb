@@ -21,7 +21,7 @@
 #define SVGFontFaceUriElement_h
 
 #if ENABLE(SVG_FONTS)
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/svg/SVGElement.h"

@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/rendering/RenderListItem.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/rendering/FastTextAutosizer.h"

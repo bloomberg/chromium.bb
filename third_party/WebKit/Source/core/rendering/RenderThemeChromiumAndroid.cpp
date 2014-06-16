@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/rendering/RenderThemeChromiumAndroid.h"
 
-#include "CSSValueKeywords.h"
-#include "InputTypeNames.h"
-#include "UserAgentStyleSheets.h"
+#include "core/CSSValueKeywords.h"
+#include "core/InputTypeNames.h"
+#include "core/UserAgentStyleSheets.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderMediaControls.h"
 #include "core/rendering/RenderObject.h"

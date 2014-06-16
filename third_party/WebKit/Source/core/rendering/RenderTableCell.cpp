@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/rendering/RenderTableCell.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/rendering/PaintInfo.h"

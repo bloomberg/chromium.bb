@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderTable.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLTableElement.h"

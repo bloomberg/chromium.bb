@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/svg/SVGURIReference.h"
 
-#include "XLinkNames.h"
+#include "core/XLinkNames.h"
 #include "core/svg/SVGElement.h"
 #include "platform/weborigin/KURL.h"
 

@@ -26,9 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderBox.h"
 
-#include <math.h>
-#include <algorithm>
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/editing/htmlediting.h"
 #include "core/frame/FrameHost.h"
@@ -60,6 +58,8 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include <algorithm>
+#include <math.h>
 
 using namespace std;
 

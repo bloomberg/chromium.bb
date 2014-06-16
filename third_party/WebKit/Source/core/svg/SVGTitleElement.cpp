@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/svg/SVGTitleElement.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/dom/Document.h"
 
 namespace WebCore {

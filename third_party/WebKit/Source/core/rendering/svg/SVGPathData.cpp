@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/rendering/svg/SVGPathData.h"
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/svg/SVGCircleElement.h"
 #include "core/svg/SVGEllipseElement.h"
 #include "core/svg/SVGLineElement.h"

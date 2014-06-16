@@ -21,7 +21,6 @@
 #include "config.h"
 #include "core/rendering/RenderView.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/LocalFrame.h"
@@ -40,6 +39,7 @@
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/svg/SVGDocumentExtensions.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"

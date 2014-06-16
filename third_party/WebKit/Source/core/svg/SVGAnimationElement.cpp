@@ -26,8 +26,8 @@
 
 #include "core/svg/SVGAnimationElement.h"
 
-#include "CSSPropertyNames.h"
-#include "SVGNames.h"
+#include "core/CSSPropertyNames.h"
+#include "core/SVGNames.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/frame/UseCounter.h"

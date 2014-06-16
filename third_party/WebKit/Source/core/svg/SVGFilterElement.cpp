@@ -25,7 +25,7 @@
 
 #include "core/svg/SVGFilterElement.h"
 
-#include "XLinkNames.h"
+#include "core/XLinkNames.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/svg/SVGParserUtilities.h"
 

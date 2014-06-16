@@ -26,8 +26,8 @@
 
 #include "core/svg/SVGUseElement.h"
 
-#include "XLinkNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/events/Event.h"
