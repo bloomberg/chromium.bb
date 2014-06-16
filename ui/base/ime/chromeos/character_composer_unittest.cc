@@ -9,6 +9,7 @@
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
 #include "ui/base/glib/glib_integers.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 using base::ASCIIToUTF16;
 
@@ -426,53 +427,53 @@ TEST_F(CharacterComposerTest, HexadecimalCompositionPreeditWithModifierPressed)
   const int control_shift =  EF_CONTROL_DOWN | EF_SHIFT_DOWN;
   // HIRAGANA LETTER A (U+3042)
   ExpectKeyFilteredWithKeycode(&character_composer,
-                               GDK_KEY_U, 30, control_shift);
+                               GDK_KEY_U, ui::VKEY_U, control_shift);
   EXPECT_EQ(ASCIIToUTF16("u"), character_composer.preedit_string());
   ExpectKeyFilteredWithKeycode(&character_composer,
-                               GDK_KEY_numbersign, 12, control_shift);
+                               GDK_KEY_numbersign, ui::VKEY_3, control_shift);
   EXPECT_EQ(ASCIIToUTF16("u3"), character_composer.preedit_string());
   ExpectKeyFilteredWithKeycode(&character_composer,
-                               GDK_KEY_parenright, 19, control_shift);
+                               GDK_KEY_parenright, ui::VKEY_0, control_shift);
   EXPECT_EQ(ASCIIToUTF16("u30"), character_composer.preedit_string());
   ExpectKeyFilteredWithKeycode(&character_composer,
-                               GDK_KEY_dollar, 13, control_shift);
+                               GDK_KEY_dollar, ui::VKEY_4, control_shift);
   EXPECT_EQ(ASCIIToUTF16("u304"), character_composer.preedit_string());
   ExpectKeyFilteredWithKeycode(&character_composer,
-                               GDK_KEY_A, 38, control_shift);
+                               GDK_KEY_A, ui::VKEY_A, control_shift);
   EXPECT_EQ(ASCIIToUTF16("u304a"), character_composer.preedit_string());
   ExpectKeyFilteredWithKeycode(&character_composer,
-                               GDK_KEY_BackSpace, 22, control_shift);
+                               GDK_KEY_BackSpace, ui::VKEY_BACK, control_shift);
   EXPECT_EQ(ASCIIToUTF16("u304"), character_composer.preedit_string());
   ExpectKeyFilteredWithKeycode(&character_composer,
-                               GDK_KEY_at, 11, control_shift);
+                               GDK_KEY_at, ui::VKEY_2, control_shift);
   EXPECT_EQ(ASCIIToUTF16("u3042"), character_composer.preedit_string());
   ExpectCharacterComposedWithKeyCode(&character_composer,
-                                     GDK_KEY_Return, 36,
+                                     GDK_KEY_Return, ui::VKEY_RETURN,
                                      control_shift,
                                      base::string16(1, 0x3042));
   EXPECT_EQ(ASCIIToUTF16(""), character_composer.preedit_string());
 
   // Sequence with an ignored character (control + shift + 'x') and Escape.
   ExpectKeyFilteredWithKeycode(&character_composer,
-                               GDK_KEY_U, 30, control_shift);
+                               GDK_KEY_U, ui::VKEY_U, control_shift);
   EXPECT_EQ(ASCIIToUTF16("u"), character_composer.preedit_string());
   ExpectKeyFilteredWithKeycode(&character_composer,
-                               GDK_KEY_numbersign, 12, control_shift);
+                               GDK_KEY_numbersign, ui::VKEY_3, control_shift);
   EXPECT_EQ(ASCIIToUTF16("u3"), character_composer.preedit_string());
   ExpectKeyFilteredWithKeycode(&character_composer,
-                               GDK_KEY_parenright, 19, control_shift);
+                               GDK_KEY_parenright, ui::VKEY_0, control_shift);
   EXPECT_EQ(ASCIIToUTF16("u30"), character_composer.preedit_string());
   ExpectKeyFilteredWithKeycode(&character_composer,
-                               GDK_KEY_X, 53, control_shift);
+                               GDK_KEY_X, ui::VKEY_X, control_shift);
   EXPECT_EQ(ASCIIToUTF16("u30"), character_composer.preedit_string());
   ExpectKeyFilteredWithKeycode(&character_composer,
-                               GDK_KEY_dollar, 13, control_shift);
+                               GDK_KEY_dollar, ui::VKEY_4, control_shift);
   EXPECT_EQ(ASCIIToUTF16("u304"), character_composer.preedit_string());
   ExpectKeyFilteredWithKeycode(&character_composer,
-                               GDK_KEY_at, 11, control_shift);
+                               GDK_KEY_at, ui::VKEY_2, control_shift);
   EXPECT_EQ(ASCIIToUTF16("u3042"), character_composer.preedit_string());
   ExpectKeyFilteredWithKeycode(&character_composer,
-                               GDK_KEY_Escape, 9, control_shift);
+                               GDK_KEY_Escape, ui::VKEY_ESCAPE, control_shift);
   EXPECT_EQ(ASCIIToUTF16(""), character_composer.preedit_string());
 }
 

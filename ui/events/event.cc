@@ -518,6 +518,7 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event, bool is_char)
       key_code_(KeyboardCodeFromNative(native_event)),
       code_(CodeFromNative(native_event)),
       is_char_(is_char),
+      platform_keycode_(PlatformKeycodeFromNative(native_event)),
       character_(0) {
   if (IsRepeated(*this))
     set_flags(flags() | ui::EF_IS_REPEAT);
@@ -534,6 +535,7 @@ KeyEvent::KeyEvent(EventType type,
     : Event(type, EventTimeForNow(), flags),
       key_code_(key_code),
       is_char_(is_char),
+      platform_keycode_(0),
       character_(GetCharacterFromKeyCode(key_code, flags)) {
 }
 
@@ -546,6 +548,7 @@ KeyEvent::KeyEvent(EventType type,
       key_code_(key_code),
       code_(code),
       is_char_(is_char),
+      platform_keycode_(0),
       character_(GetCharacterFromKeyCode(key_code, flags)) {
 }
 

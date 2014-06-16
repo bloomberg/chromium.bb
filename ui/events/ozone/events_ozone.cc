@@ -58,6 +58,12 @@ const char* CodeFromNative(const base::NativeEvent& native_event) {
   return event->code().c_str();
 }
 
+uint32 PlatformKeycodeFromNative(const base::NativeEvent& native_event) {
+  const ui::KeyEvent* event = static_cast<const ui::KeyEvent*>(native_event);
+  DCHECK(event->IsKeyEvent());
+  return event->platform_keycode();
+}
+
 gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
   const ui::MouseWheelEvent* event =
       static_cast<const ui::MouseWheelEvent*>(native_event);

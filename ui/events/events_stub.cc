@@ -149,4 +149,9 @@ const char* CodeFromNative(const base::NativeEvent& native_event) {
   return "";
 }
 
+uint32 PlatformKeycodeFromNative(const base::NativeEvent& native_event) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 }  // namespace ui

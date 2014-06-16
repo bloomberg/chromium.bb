@@ -8,12 +8,12 @@
 #include <string>
 #include "base/basictypes.h"
 #include "ui/base/ui_base_export.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
 
-// Translates the key value from an X11 key value to key value string
-// visible from javascript.
-UI_BASE_EXPORT std::string FromXKeycodeToKeyValue(int keyval);
+// Translates the DOM4 key code string to ui::KeyboardCode.
+UI_BASE_EXPORT KeyboardCode DomKeycodeToKeyboardCode(const std::string& code);
 
 }  // namespace ui
 

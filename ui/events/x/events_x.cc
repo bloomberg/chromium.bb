@@ -530,6 +530,12 @@ const char* CodeFromNative(const base::NativeEvent& native_event) {
   return CodeFromXEvent(native_event);
 }
 
+uint32 PlatformKeycodeFromNative(const base::NativeEvent& native_event) {
+  KeySym keysym;
+  XLookupString(&native_event->xkey, NULL, 0, &keysym, NULL);
+  return keysym;
+}
+
 int GetChangedMouseButtonFlagsFromNative(
     const base::NativeEvent& native_event) {
   switch (native_event->type) {

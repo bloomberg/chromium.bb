@@ -19,11 +19,6 @@
 #include "chromeos/ime/composition_text.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
-#include "ui/events/event_utils.h"
-#include "ui/events/keycodes/keyboard_code_conversion.h"
-#include "ui/events/keycodes/keyboard_code_conversion_x.h"
-#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/rect.h"
 
 namespace {
@@ -377,23 +372,9 @@ void InputMethodChromeOS::ProcessUnfilteredKeyPressEvent(
   // If a key event was not filtered by |context_| and |character_composer_|,
   // then it means the key event didn't generate any result text. So we need
   // to send corresponding character to the focused text input client.
-  const uint32 event_flags = event.flags();
-  uint16 ch = 0;
-  if (event.HasNativeEvent()) {
-    const base::NativeEvent& native_event = event.native_event();
-
-    if (!(event_flags & ui::EF_CONTROL_DOWN))
-      ch = ui::GetCharacterFromXEvent(native_event);
-    if (!ch) {
-      ch = ui::GetCharacterFromKeyCode(
-          ui::KeyboardCodeFromNative(native_event), event_flags);
-    }
-  } else {
-    ch = ui::GetCharacterFromKeyCode(event.key_code(), event_flags);
-  }
-
+  uint16 ch = event.GetCharacter();
   if (ch)
-    client->InsertChar(ch, event_flags);
+    client->InsertChar(ch, event.flags());
 }
 
 void InputMethodChromeOS::ProcessInputMethodResult(const ui::KeyEvent& event,

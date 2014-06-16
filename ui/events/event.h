@@ -541,6 +541,8 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // BMP characters.
   uint16 GetCharacter() const;
 
+  // Gets the platform key code. For XKB, this is the xksym value.
+  uint32 platform_keycode() const { return platform_keycode_; }
   KeyboardCode key_code() const { return key_code_; }
   bool is_char() const { return is_char_; }
 
@@ -584,6 +586,16 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // share the same type: ET_KEY_PRESSED.
   bool is_char_;
 
+  // The platform related keycode value. For XKB, it's keysym value.
+  // For now, this is used for CharacterComposer in ChromeOS.
+  uint32 platform_keycode_;
+
+  // String of 'key' defined in DOM KeyboardEvent (e.g. 'a', 'â')
+  // http://www.w3.org/TR/uievents/#keyboard-key-codes.
+  //
+  // This value represents the text that the key event will insert to input
+  // field. For key with modifier key, it may have specifial text.
+  // e.g. CTRL+A has '\x01'.
   uint16 character_;
 
   static bool IsRepeated(const KeyEvent& event);

@@ -255,6 +255,10 @@ const char* CodeFromNative(const base::NativeEvent& native_event) {
   return CodeForWindowsScanCode(scan_code);
 }
 
+uint32 PlatformKeycodeFromNative(const base::NativeEvent& native_event) {
+  return static_cast<uint32>(native_event.wParam);
+}
+
 int GetChangedMouseButtonFlagsFromNative(
     const base::NativeEvent& native_event) {
   switch (GetNativeMouseKey(native_event)) {

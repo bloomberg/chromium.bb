@@ -336,7 +336,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     SCOPED_TRACE("KeyDown, Ctrl:No, alt:No, Shift:No, Caps:Yes");
     KeyEventDoneCallback callback(false);
     const std::string expected_value =
-        "onKeyEvent::keydown:a:KeyA:false:false:false:true";
+        "onKeyEvent::keydown:A:KeyA:false:false:false:true";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
@@ -374,7 +374,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     SCOPED_TRACE("KeyDown, Ctrl:No, alt:No, Shift:Yes, Caps:Yes");
     KeyEventDoneCallback callback(false);
     const std::string expected_value =
-        "onKeyEvent::keydown:A:KeyA:false:false:true:true";
+        "onKeyEvent::keydown:a:KeyA:false:false:true:true";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED,

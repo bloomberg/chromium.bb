@@ -4,9 +4,6 @@
 
 #include "ui/base/ime/chromeos/character_composer.h"
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
 #include <algorithm>
 #include <iterator>
 
@@ -15,10 +12,10 @@
 // Note for Gtk removal: gdkkeysyms.h only contains a set of
 // '#define GDK_KeyName 0xNNNN' macros and does not #include any Gtk headers.
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
+
 #include "ui/base/glib/glib_integers.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
-#include "ui/gfx/x/x11_types.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 // Note for Gtk removal: gtkimcontextsimpleseqs.h does not #include any Gtk
 // headers and only contains one big guint16 array |gtk_compose_seqs_compact|
@@ -371,19 +368,6 @@ bool UTF32CharacterToUTF16(uint32 character, base::string16* output) {
   return true;
 }
 
-// Converts a X keycode to a X keysym with no modifiers.
-KeySym XKeyCodeToXKeySym(unsigned int keycode) {
-  XDisplay* display = gfx::GetXDisplay();
-  if (!display)
-    return NoSymbol;
-
-  XKeyEvent x_key_event = {0};
-  x_key_event.type = KeyPress;
-  x_key_event.display = display;
-  x_key_event.keycode = keycode;
-  return ::XLookupKeysym(&x_key_event, 0);
-}
-
 // Returns an hexadecimal digit integer (0 to 15) corresponding to |keyval|.
 // -1 is returned when |keyval| cannot be a hexadecimal digit.
 int KeyvalToHexDigit(unsigned int keyval) {
@@ -394,6 +378,16 @@ int KeyvalToHexDigit(unsigned int keyval) {
   if (GDK_KEY_A <= keyval && keyval <= GDK_KEY_F)
     return keyval - GDK_KEY_A + 10;
   return -1;  // |keyval| cannot be a hexadecimal digit.
+}
+
+// Returns an hexadecimal digit integer (0 to 15) corresponding to |keycode|.
+// -1 is returned when |keycode| cannot be a hexadecimal digit.
+int KeycodeToHexDigit(unsigned int keycode) {
+  if (ui::VKEY_0 <= keycode && keycode <= ui::VKEY_9)
+    return keycode - ui::VKEY_0;
+  if (ui::VKEY_A <= keycode && keycode <= ui::VKEY_F)
+    return keycode - ui::VKEY_A + 10;
+  return -1;  // |keycode| cannot be a hexadecimal digit.
 }
 
 }  // namespace
@@ -412,16 +406,12 @@ void CharacterComposer::Reset() {
 }
 
 bool CharacterComposer::FilterKeyPress(const ui::KeyEvent& event) {
-  if (!event.HasNativeEvent() ||
+  uint32 keyval = event.platform_keycode();
+  if (!keyval ||
       (event.type() != ET_KEY_PRESSED && event.type() != ET_KEY_RELEASED))
     return false;
 
-  XEvent* xevent = event.native_event();
-  DCHECK(xevent);
-  KeySym keysym = NoSymbol;
-  ::XLookupString(&xevent->xkey, NULL, 0, &keysym, NULL);
-
-  return FilterKeyPressInternal(keysym, xevent->xkey.keycode, event.flags());
+  return FilterKeyPressInternal(keyval, event.key_code(), event.flags());
 }
 
 
@@ -507,7 +497,7 @@ bool CharacterComposer::FilterKeyPressHexMode(unsigned int keyval,
     // have intended to type '3'.  So, if a hexadecimal character was not found,
     // suppose a user is holding shift key (and possibly control key, too) and
     // try a character with modifier keys removed.
-    hex_digit = KeyvalToHexDigit(XKeyCodeToXKeySym(keycode));
+    hex_digit = KeycodeToHexDigit(keycode);
   }
 
   if (keyval == GDK_KEY_Escape) {

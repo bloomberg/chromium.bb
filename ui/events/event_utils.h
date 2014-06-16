@@ -82,6 +82,10 @@ EVENTS_EXPORT KeyboardCode KeyboardCodeFromNative(
 EVENTS_EXPORT const char* CodeFromNative(
     const base::NativeEvent& native_event);
 
+// Returns the platform related key code. For X11, it is xksym value.
+EVENTS_EXPORT uint32 PlatformKeycodeFromNative(
+    const base::NativeEvent& native_event);
+
 // Returns the flags of the button that changed during a press/release.
 EVENTS_EXPORT int GetChangedMouseButtonFlagsFromNative(
     const base::NativeEvent& native_event);
