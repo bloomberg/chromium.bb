@@ -74,8 +74,6 @@ scoped_refptr<cc::ContextProvider> CreateContext(
 HardwareRenderer::HardwareRenderer(SharedRendererState* state)
     : shared_renderer_state_(state),
       last_egl_context_(eglGetCurrentContext()),
-      view_width_(-1),
-      view_height_(-1),
       viewport_clip_valid_for_dcheck_(false),
       root_layer_(cc::Layer::Create()),
       output_surface_(NULL) {
@@ -161,10 +159,11 @@ bool HardwareRenderer::DrawGL(bool stencil_enabled,
     // suppresses the transform.
     input->frame.delegated_frame_data->device_scale_factor = 1.0f;
 
-    bool size_changed =
-        input->width != view_width_ || input->height != view_height_;
-    view_width_ = input->width;
-    view_height_ = input->height;
+    gfx::Size frame_size =
+        input->frame.delegated_frame_data->render_pass_list.back()
+            ->output_rect.size();
+    bool size_changed = frame_size != frame_size_;
+    frame_size_ = frame_size;
     scroll_offset_ = input->scroll_offset;
 
     if (!frame_provider_ || size_changed) {
@@ -176,7 +175,7 @@ bool HardwareRenderer::DrawGL(bool stencil_enabled,
           resource_collection_.get(), input->frame.delegated_frame_data.Pass());
 
       delegated_layer_ = cc::DelegatedRendererLayer::Create(frame_provider_);
-      delegated_layer_->SetBounds(gfx::Size(view_width_, view_height_));
+      delegated_layer_->SetBounds(gfx::Size(input->width, input->height));
       delegated_layer_->SetIsDrawable(true);
 
       root_layer_->AddChild(delegated_layer_);

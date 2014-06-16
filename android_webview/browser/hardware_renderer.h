@@ -71,8 +71,7 @@ class HardwareRenderer : public HardwareRendererInterface,
   EGLContext last_egl_context_;
 
   // Information about last delegated frame.
-  int view_width_;
-  int view_height_;
+  gfx::Size frame_size_;
   gfx::Vector2d scroll_offset_;
 
   // Information from draw.
