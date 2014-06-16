@@ -66,11 +66,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // Not yet supported in single-process mode.
   cl->AppendSwitch(switches::kDisableSharedWorkers);
 
+  cl->AppendSwitch(switches::kEnableUbercomp);
   if (!switches::UbercompEnabled()) {
     cl->AppendSwitch(switches::kDisableDelegatedRenderer);
-  } else {
-    cl->AppendSwitch(switches::kDisableAccelerated2dCanvas);
-    cl->AppendSwitch(switches::kDisableExperimentalWebGL);
   }
 
   // File system API not supported (requires some new API; internal bug 6930981)
