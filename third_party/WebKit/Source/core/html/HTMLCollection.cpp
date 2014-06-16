@@ -507,14 +507,14 @@ void HTMLCollection::namedItems(const AtomicString& name, WillBeHeapVector<RefPt
     updateIdNameCache();
 
     const NamedItemCache& cache = namedItemCache();
-    WillBeHeapVector<RawPtrWillBeMember<Element> >* idResults = cache.getElementsById(name);
-    WillBeHeapVector<RawPtrWillBeMember<Element> >* nameResults = cache.getElementsByName(name);
-
-    for (unsigned i = 0; idResults && i < idResults->size(); ++i)
-        result.append(idResults->at(i));
-
-    for (unsigned i = 0; nameResults && i < nameResults->size(); ++i)
-        result.append(nameResults->at(i));
+    if (WillBeHeapVector<RawPtrWillBeMember<Element> >* idResults = cache.getElementsById(name)) {
+        for (unsigned i = 0; i < idResults->size(); ++i)
+            result.append(idResults->at(i));
+    }
+    if (WillBeHeapVector<RawPtrWillBeMember<Element> >* nameResults = cache.getElementsByName(name)) {
+        for (unsigned i = 0; i < nameResults->size(); ++i)
+            result.append(nameResults->at(i));
+    }
 }
 
 HTMLCollection::NamedItemCache::NamedItemCache()
