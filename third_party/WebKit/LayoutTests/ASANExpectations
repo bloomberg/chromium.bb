@@ -81,3 +81,8 @@ crbug.com/339778 [ Linux ] fast/dom/timer-throttling-hidden-page.html [ Failure 
 crbug.com/353746 [ Linux ] virtual/android/fullscreen/video-specified-size.html [ ImageOnlyFailure Pass ]
 crbug.com/248938 [ Linux ] virtual/threaded/animations/opacity-transform-animation.html [ Timeout Pass ]
 crbug.com/248938 [ Linux ] virtual/threaded/animations/missing-values-first-keyframe.html [ Pass Timeout ]
+
+crbug.com/385015 [ Linux ] editing/execCommand/window-open-insert-list-crash.html [ Failure ]
+crbug.com/385015 [ Linux ] fast/frames/iframe-onload-remove-self-no-crash.html [ Failure ]
+crbug.com/385015 [ Linux ] fast/loader/create-frame-in-DOMContentLoaded.html [ Failure ]
+crbug.com/385015 [ Linux ] fast/loader/frame-creation-removal.html [ Failure ]
