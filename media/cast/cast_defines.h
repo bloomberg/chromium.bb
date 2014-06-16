@@ -68,7 +68,14 @@ enum PacketType {
   kTooOldPacket,
 };
 
+// kRtcpCastAllPacketsLost is used in PacketIDSet and
+// on the wire to mean that ALL packets for a particular
+// frame are lost.
 const uint16 kRtcpCastAllPacketsLost = 0xffff;
+
+// kRtcpCastLastPacket is used in PacketIDSet to ask for
+// the last packet of a frame to be retransmitted.
+const uint16 kRtcpCastLastPacket = 0xfffe;
 
 const size_t kMinLengthOfRtcp = 8;
 
@@ -76,6 +83,7 @@ const size_t kMinLengthOfRtcp = 8;
 const size_t kMinLengthOfRtp = 12 + 6;
 
 // Each uint16 represents one packet id within a cast frame.
+// Can also contain kRtcpCastAllPacketsLost and kRtcpCastLastPacket.
 typedef std::set<uint16> PacketIdSet;
 // Each uint8 represents one cast frame.
 typedef std::map<uint8, PacketIdSet> MissingFramesAndPacketsMap;

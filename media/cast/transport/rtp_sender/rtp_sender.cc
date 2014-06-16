@@ -88,6 +88,11 @@ void RtpSender::ResendPackets(
     // If empty, we need to re-send all packets for this frame.
     const PacketIdSet& missing_packet_set = it->second;
 
+    bool resend_all = missing_packet_set.find(kRtcpCastAllPacketsLost) !=
+        missing_packet_set.end();
+    bool resend_last = missing_packet_set.find(kRtcpCastLastPacket) !=
+        missing_packet_set.end();
+
     const SendPacketVector* stored_packets = storage_->GetFrame8(frame_id);
     if (!stored_packets)
       continue;
@@ -97,13 +102,22 @@ void RtpSender::ResendPackets(
       const PacketKey& packet_key = it->first;
       const uint16 packet_id = packet_key.second.second;
 
-      // If the resend request doesn't include this packet then cancel
-      // re-transmission already in queue.
-      if (cancel_rtx_if_not_in_list &&
-          !missing_packet_set.empty() &&
-          missing_packet_set.find(packet_id) == missing_packet_set.end()) {
-        transport_->CancelSendingPacket(it->first);
-      } else {
+      // Should we resend the packet?
+      bool resend = resend_all;
+
+      // Should we resend it because it's in the missing_packet_set?
+      if (!resend &&
+          missing_packet_set.find(packet_id) != missing_packet_set.end()) {
+        resend = true;
+      }
+
+      // If we were asked to resend the last packet, check if it's the
+      // last packet.
+      if (!resend && resend_last && (it + 1) == stored_packets->end()) {
+        resend = true;
+      }
+
+      if (resend) {
         // Resend packet to the network.
         VLOG(3) << "Resend " << static_cast<int>(frame_id) << ":"
                 << packet_id;
@@ -111,6 +125,8 @@ void RtpSender::ResendPackets(
         PacketRef packet_copy = FastCopyPacket(it->second);
         UpdateSequenceNumber(&packet_copy->data);
         packets_to_resend.push_back(std::make_pair(packet_key, packet_copy));
+      } else if (cancel_rtx_if_not_in_list) {
+        transport_->CancelSendingPacket(it->first);
       }
     }
     transport_->ResendPackets(packets_to_resend);

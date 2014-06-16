@@ -523,14 +523,14 @@ void RtcpReceiver::HandlePayloadSpecificCastNackItem(
     frame_it = ret.first;
     DCHECK(frame_it != missing_frames_and_packets->end()) << "Invalid state";
   }
-  if (rtcp_field->cast_nack_item.packet_id == kRtcpCastAllPacketsLost) {
+  uint16 packet_id = rtcp_field->cast_nack_item.packet_id;
+  frame_it->second.insert(packet_id);
+
+  if (packet_id == kRtcpCastAllPacketsLost) {
     // Special case all packets in a frame is missing.
     return;
   }
-  uint16 packet_id = rtcp_field->cast_nack_item.packet_id;
   uint8 bitmask = rtcp_field->cast_nack_item.bitmask;
-
-  frame_it->second.insert(packet_id);
 
   if (bitmask) {
     for (int i = 1; i <= 8; ++i) {

@@ -18,6 +18,9 @@ double I420PSNR(const scoped_refptr<media::VideoFrame>& frame1,
 // Memory is allocated within the function.
 void PopulateVideoFrame(VideoFrame* frame, int start_value);
 
+// Populate a video frame with noise.
+void PopulateVideoFrameWithNoise(VideoFrame* frame);
+
 // Populate a video frame from a file.
 // Returns true if frame was populated, false if not (EOF).
 bool PopulateVideoFrameFromFile(VideoFrame* frame, FILE* video_file);

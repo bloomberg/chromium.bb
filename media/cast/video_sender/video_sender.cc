@@ -340,8 +340,17 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
                              latest_acked_frame_id_) < 0;
   VLOG(2) << "Received ACK" << (is_acked_out_of_order ? " out-of-order" : "")
           << " for frame " << cast_feedback.ack_frame_id_;
-  if (!is_acked_out_of_order)
+  if (!is_acked_out_of_order) {
+    // Cancel resends of acked frames.
+    MissingFramesAndPacketsMap missing_frames_and_packets;
+    PacketIdSet missing;
+    while (latest_acked_frame_id_ != cast_feedback.ack_frame_id_) {
+      latest_acked_frame_id_++;
+      missing_frames_and_packets[latest_acked_frame_id_] = missing;
+    }
+    transport_sender_->ResendPackets(false, missing_frames_and_packets, true);
     latest_acked_frame_id_ = cast_feedback.ack_frame_id_;
+  }
 }
 
 bool VideoSender::AreTooManyFramesInFlight() const {
@@ -361,14 +370,14 @@ bool VideoSender::AreTooManyFramesInFlight() const {
 void VideoSender::ResendForKickstart() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(!last_send_time_.is_null());
-  VLOG(1) << "Resending first packet of frame " << last_sent_frame_id_
+  VLOG(1) << "Resending last packet of frame " << last_sent_frame_id_
           << " to kick-start.";
   // Send the first packet of the last encoded frame to kick start
   // retransmission. This gives enough information to the receiver what
   // packets and frames are missing.
   MissingFramesAndPacketsMap missing_frames_and_packets;
   PacketIdSet missing;
-  missing.insert(0);
+  missing.insert(kRtcpCastLastPacket);
   missing_frames_and_packets.insert(
       std::make_pair(last_sent_frame_id_, missing));
   last_send_time_ = cast_environment_->Clock()->NowTicks();

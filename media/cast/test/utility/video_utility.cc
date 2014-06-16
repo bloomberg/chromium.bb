@@ -7,6 +7,7 @@
 #include <math.h>
 #include <cstdio>
 
+#include "base/rand_util.h"
 #include "third_party/libyuv/include/libyuv/compare.h"
 #include "ui/gfx/size.h"
 
@@ -46,25 +47,43 @@ void PopulateVideoFrame(VideoFrame* frame, int start_value) {
   uint8* v_plane = frame->data(VideoFrame::kVPlane);
 
   // Set Y.
-  for (int j = 0; j < height; ++j)
+  for (int j = 0; j < height; ++j) {
     for (int i = 0; i < stride_y; ++i) {
       *y_plane = static_cast<uint8>(start_value + i + j);
       ++y_plane;
     }
+  }
 
   // Set U.
-  for (int j = 0; j < half_height; ++j)
+  for (int j = 0; j < half_height; ++j) {
     for (int i = 0; i < stride_u; ++i) {
       *u_plane = static_cast<uint8>(start_value + i + j);
       ++u_plane;
     }
+  }
 
   // Set V.
-  for (int j = 0; j < half_height; ++j)
+  for (int j = 0; j < half_height; ++j) {
     for (int i = 0; i < stride_v; ++i) {
       *v_plane = static_cast<uint8>(start_value + i + j);
       ++v_plane;
     }
+  }
+}
+
+void PopulateVideoFrameWithNoise(VideoFrame* frame) {
+  int height = frame->coded_size().height();
+  int stride_y = frame->stride(VideoFrame::kYPlane);
+  int stride_u = frame->stride(VideoFrame::kUPlane);
+  int stride_v = frame->stride(VideoFrame::kVPlane);
+  int half_height = (height + 1) / 2;
+  uint8* y_plane = frame->data(VideoFrame::kYPlane);
+  uint8* u_plane = frame->data(VideoFrame::kUPlane);
+  uint8* v_plane = frame->data(VideoFrame::kVPlane);
+
+  base::RandBytes(y_plane, height * stride_y);
+  base::RandBytes(u_plane, half_height * stride_u);
+  base::RandBytes(v_plane, half_height * stride_v);
 }
 
 bool PopulateVideoFrameFromFile(VideoFrame* frame, FILE* video_file) {

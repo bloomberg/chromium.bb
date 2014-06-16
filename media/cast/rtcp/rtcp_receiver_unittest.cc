@@ -40,7 +40,8 @@ class SenderFeedbackCastVerification : public RtcpSenderFeedback {
 
     EXPECT_TRUE(frame_it != cast_feedback.missing_frames_and_packets_.end());
     EXPECT_EQ(kLostFrameId, frame_it->first);
-    EXPECT_TRUE(frame_it->second.empty());
+    EXPECT_EQ(frame_it->second.size(), 1UL);
+    EXPECT_EQ(*frame_it->second.begin(), kRtcpCastAllPacketsLost);
     ++frame_it;
     EXPECT_TRUE(frame_it != cast_feedback.missing_frames_and_packets_.end());
     EXPECT_EQ(kFrameIdWithLostPackets, frame_it->first);
