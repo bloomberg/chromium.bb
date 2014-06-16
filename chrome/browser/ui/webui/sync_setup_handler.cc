@@ -835,23 +835,24 @@ void SyncSetupHandler::CloseSyncSetup() {
       if (configuring_sync_) {
         ProfileSyncService::SyncEvent(
             ProfileSyncService::CANCEL_DURING_CONFIGURE);
-      }
 
-      // If the user clicked "Cancel" while setting up sync, disable sync
-      // because we don't want the sync backend to remain in the initialized
-      // state. Note: In order to disable sync across restarts on Chrome OS, we
-      // must call StopSyncingPermanently(), which suppresses sync startup in
-      // addition to disabling it.
-      if (sync_service) {
-        DVLOG(1) << "Sync setup aborted by user action";
-        sync_service->StopSyncingPermanently();
-#if !defined(OS_CHROMEOS)
-        // Sign out the user on desktop Chrome if they click cancel during
-        // initial setup.
-        // TODO(rsimha): Revisit this for M30. See http://crbug.com/252049.
-        if (sync_service->FirstSetupInProgress())
-          SigninManagerFactory::GetForProfile(GetProfile())->SignOut();
-#endif
+        // If the user clicked "Cancel" while setting up sync, disable sync
+        // because we don't want the sync backend to remain in the
+        // first-setup-incomplete state.
+        // Note: In order to disable sync across restarts on Chrome OS,
+        // we must call StopSyncingPermanently(), which suppresses sync startup
+        // in addition to disabling it.
+        if (sync_service) {
+          DVLOG(1) << "Sync setup aborted by user action";
+          sync_service->StopSyncingPermanently();
+  #if !defined(OS_CHROMEOS)
+          // Sign out the user on desktop Chrome if they click cancel during
+          // initial setup.
+          // TODO(rsimha): Revisit this for M30. See http://crbug.com/252049.
+          if (sync_service->FirstSetupInProgress())
+            SigninManagerFactory::GetForProfile(GetProfile())->SignOut();
+  #endif
+        }
       }
     }
 
