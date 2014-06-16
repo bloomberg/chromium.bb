@@ -18,7 +18,6 @@ namespace ash {
 class CapsLockDefaultView;
 
 class TrayCapsLock : public TrayImageItem,
-                     public ui::EventHandler,
                      public chromeos::input_method::ImeKeyboard::Observer {
  public:
   explicit TrayCapsLock(SystemTray* system_tray);
@@ -27,9 +26,6 @@ class TrayCapsLock : public TrayImageItem,
  private:
   // Overriden from chromeos::input_method::ImeKeyboard::Observer:
   virtual void OnCapsLockChanged(bool enabled) OVERRIDE;
-
-  // ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* key) OVERRIDE;
 
   // Overridden from TrayImageItem.
   virtual bool GetInitialVisibility() OVERRIDE;

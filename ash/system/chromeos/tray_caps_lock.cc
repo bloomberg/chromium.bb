@@ -111,11 +111,13 @@ class CapsLockDefaultView : public ActionableView {
   virtual bool PerformAction(const ui::Event& event) OVERRIDE {
     chromeos::input_method::ImeKeyboard* keyboard =
         chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        keyboard->CapsLockIsEnabled() ?
-        ash::UMA_STATUS_AREA_CAPS_LOCK_DISABLED_BY_CLICK :
-        ash::UMA_STATUS_AREA_CAPS_LOCK_ENABLED_BY_CLICK);
-    keyboard->SetCapsLockEnabled(!keyboard->CapsLockIsEnabled());
+    if (keyboard) {
+      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+          keyboard->CapsLockIsEnabled() ?
+          ash::UMA_STATUS_AREA_CAPS_LOCK_DISABLED_BY_CLICK :
+          ash::UMA_STATUS_AREA_CAPS_LOCK_ENABLED_BY_CLICK);
+      keyboard->SetCapsLockEnabled(!keyboard->CapsLockIsEnabled());
+    }
     return true;
   }
 
@@ -131,27 +133,17 @@ TrayCapsLock::TrayCapsLock(SystemTray* system_tray)
       detailed_(NULL),
       caps_lock_enabled_(CapsLockIsEnabled()),
       message_shown_(false) {
-  // Since keyboard handling differs between ChromeOS and Linux we need to
-  // use different observers depending on the two platforms.
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    chromeos::input_method::ImeKeyboard* keyboard =
-        chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
-    keyboard->AddObserver(this);
-  } else {
-    Shell::GetInstance()->PrependPreTargetHandler(this);
-  }
+  chromeos::input_method::InputMethodManager* ime =
+      chromeos::input_method::InputMethodManager::Get();
+  if (ime && ime->GetImeKeyboard())
+    ime->GetImeKeyboard()->AddObserver(this);
 }
 
 TrayCapsLock::~TrayCapsLock() {
-  // Since keyboard handling differs between ChromeOS and Linux we need to
-  // use different observers depending on the two platforms.
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    chromeos::input_method::ImeKeyboard* keyboard =
-        chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
-    keyboard->RemoveObserver(this);
-  } else {
-    Shell::GetInstance()->RemovePreTargetHandler(this);
-  }
+  chromeos::input_method::InputMethodManager* ime =
+      chromeos::input_method::InputMethodManager::Get();
+  if (ime && ime->GetImeKeyboard())
+    ime->GetImeKeyboard()->RemoveObserver(this);
 }
 
 void TrayCapsLock::OnCapsLockChanged(bool enabled) {
@@ -174,11 +166,6 @@ void TrayCapsLock::OnCapsLockChanged(bool enabled) {
       detailed_->GetWidget()->Close();
     }
   }
-}
-
-void TrayCapsLock::OnKeyEvent(ui::KeyEvent* key) {
-  if (key->type() == ui::ET_KEY_PRESSED && key->key_code() == ui::VKEY_CAPITAL)
-    OnCapsLockChanged(!caps_lock_enabled_);
 }
 
 bool TrayCapsLock::GetInitialVisibility() {

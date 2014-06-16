@@ -21,22 +21,35 @@ namespace input_method {
 
 namespace {
 
-class ImeKeyboardTest : public testing::Test {
+class ImeKeyboardTest : public testing::Test,
+                        public ImeKeyboard::Observer {
  public:
   ImeKeyboardTest() {
   }
 
   virtual void SetUp() {
     xkey_.reset(ImeKeyboard::Create());
+    xkey_->AddObserver(this);
+    caps_changed_ = false;
   }
 
   virtual void TearDown() {
+    xkey_->RemoveObserver(this);
     xkey_.reset();
   }
 
-  scoped_ptr<ImeKeyboard> xkey_;
+  virtual void OnCapsLockChanged(bool enabled) OVERRIDE {
+    caps_changed_ = true;
+  }
 
+  void VerifyCapsLockChanged(bool changed) {
+    EXPECT_EQ(changed, caps_changed_);
+    caps_changed_ = false;
+  }
+
+  scoped_ptr<ImeKeyboard> xkey_;
   base::MessageLoopForUI message_loop_;
+  bool caps_changed_;
 };
 
 // Returns true if X display is available.
@@ -83,12 +96,23 @@ TEST_F(ImeKeyboardTest, TestSetCapsLockEnabled) {
   const bool initial_lock_state = xkey_->CapsLockIsEnabled();
   xkey_->SetCapsLockEnabled(true);
   EXPECT_TRUE(xkey_->CapsLockIsEnabled());
+
   xkey_->SetCapsLockEnabled(false);
   EXPECT_FALSE(xkey_->CapsLockIsEnabled());
+  VerifyCapsLockChanged(true);
+
   xkey_->SetCapsLockEnabled(true);
   EXPECT_TRUE(xkey_->CapsLockIsEnabled());
+  VerifyCapsLockChanged(true);
+
   xkey_->SetCapsLockEnabled(false);
   EXPECT_FALSE(xkey_->CapsLockIsEnabled());
+  VerifyCapsLockChanged(true);
+
+  xkey_->SetCapsLockEnabled(false);
+  EXPECT_FALSE(xkey_->CapsLockIsEnabled());
+  VerifyCapsLockChanged(false);
+
   xkey_->SetCapsLockEnabled(initial_lock_state);
 }
 

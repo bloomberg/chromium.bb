@@ -210,7 +210,6 @@ class SigninScreenHandler
     : public BaseScreenHandler,
       public LoginDisplayWebUIHandler,
       public content::NotificationObserver,
-      public ui::EventHandler,
       public ScreenlockBridge::LockHandler,
       public NetworkStateInformer::NetworkStateInformerObserver,
       public input_method::ImeKeyboard::Observer {
@@ -300,9 +299,6 @@ class SigninScreenHandler
   virtual void LoadUsers(const base::ListValue& users_list,
                          bool animated,
                          bool show_guest) OVERRIDE;
-
-  // ui::EventHandler implementation:
-  virtual void OnKeyEvent(ui::KeyEvent* key) OVERRIDE;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,

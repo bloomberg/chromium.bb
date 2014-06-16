@@ -273,25 +273,17 @@ SigninScreenHandler::SigninScreenHandler(
                  chrome::NOTIFICATION_AUTH_CANCELLED,
                  content::NotificationService::AllSources());
 
-  // Since keyboard handling differs between ChromeOS and Linux we need to
-  // use different observers depending on the two platforms.
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    chromeos::input_method::ImeKeyboard* keyboard =
-        chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
+  chromeos::input_method::ImeKeyboard* keyboard =
+      chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
+  if (keyboard)
     keyboard->AddObserver(this);
-  } else {
-    ash::Shell::GetInstance()->PrependPreTargetHandler(this);
-  }
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    chromeos::input_method::ImeKeyboard* keyboard =
-        chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
+  chromeos::input_method::ImeKeyboard* keyboard =
+      chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
+  if (keyboard)
     keyboard->RemoveObserver(this);
-  } else {
-    ash::Shell::GetInstance()->RemovePreTargetHandler(this);
-  }
   weak_factory_.InvalidateWeakPtrs();
   if (delegate_)
     delegate_->SetWebUIHandler(NULL);
@@ -837,11 +829,6 @@ void SigninScreenHandler::ShowSigninScreenForCreds(
     const std::string& password) {
   DCHECK(gaia_screen_handler_);
   gaia_screen_handler_->ShowSigninScreenForCreds(username, password);
-}
-
-void SigninScreenHandler::OnKeyEvent(ui::KeyEvent* key) {
-  if (key->type() == ui::ET_KEY_PRESSED && key->key_code() == ui::VKEY_CAPITAL)
-    OnCapsLockChanged(!caps_lock_enabled_);
 }
 
 void SigninScreenHandler::Observe(int type,

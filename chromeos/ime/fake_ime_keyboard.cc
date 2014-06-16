@@ -13,10 +13,15 @@ FakeImeKeyboard::FakeImeKeyboard()
       auto_repeat_is_enabled_(false) {
 }
 
+FakeImeKeyboard::~FakeImeKeyboard() {
+}
+
 void FakeImeKeyboard::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
 }
 
 void FakeImeKeyboard::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool FakeImeKeyboard::SetCurrentKeyboardLayoutByName(
@@ -37,7 +42,12 @@ void FakeImeKeyboard::DisableNumLock() {
 }
 
 void FakeImeKeyboard::SetCapsLockEnabled(bool enable_caps_lock) {
+  bool old_state = caps_lock_is_enabled_;
   caps_lock_is_enabled_ = enable_caps_lock;
+  if (old_state != enable_caps_lock) {
+    FOR_EACH_OBSERVER(ImeKeyboard::Observer, observers_,
+                      OnCapsLockChanged(enable_caps_lock));
+  }
 }
 
 bool FakeImeKeyboard::CapsLockIsEnabled() {

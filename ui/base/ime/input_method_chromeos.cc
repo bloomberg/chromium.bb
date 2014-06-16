@@ -15,8 +15,11 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "chromeos/ime/composition_text.h"
+#include "chromeos/ime/ime_keyboard.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/gfx/rect.h"
@@ -97,6 +100,23 @@ void InputMethodChromeOS::ProcessKeyEventDone(uint32 id,
 bool InputMethodChromeOS::DispatchKeyEvent(const ui::KeyEvent& event) {
   DCHECK(event.type() == ET_KEY_PRESSED || event.type() == ET_KEY_RELEASED);
   DCHECK(system_toplevel_window_focused());
+
+  // For linux_chromeos, the ime keyboard cannot track the caps lock state by
+  // itself, so need to call SetCapsLockEnabled() method to reflect the caps
+  // lock state by the key event.
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
+    chromeos::input_method::InputMethodManager* manager =
+        chromeos::input_method::InputMethodManager::Get();
+    if (manager) {
+      chromeos::input_method::ImeKeyboard* keyboard = manager->GetImeKeyboard();
+      if (keyboard && event.type() == ui::ET_KEY_PRESSED) {
+        bool caps = (event.key_code() == ui::VKEY_CAPITAL)
+            ? !keyboard->CapsLockIsEnabled()
+            : (event.flags() & EF_CAPS_LOCK_DOWN);
+        keyboard->SetCapsLockEnabled(caps);
+      }
+    }
+  }
 
   // If |context_| is not usable, then we can only dispatch the key event as is.
   // We only dispatch the key event to input method when the |context_| is an

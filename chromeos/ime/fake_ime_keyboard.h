@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
@@ -18,7 +19,7 @@ namespace input_method {
 class CHROMEOS_EXPORT FakeImeKeyboard : public ImeKeyboard {
  public:
   FakeImeKeyboard();
-  virtual ~FakeImeKeyboard() {}
+  virtual ~FakeImeKeyboard();
 
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
@@ -42,6 +43,8 @@ class CHROMEOS_EXPORT FakeImeKeyboard : public ImeKeyboard {
   // TODO(yusukes): Add more variables for counting the numbers of the API calls
 
  private:
+  ObserverList<Observer> observers_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeImeKeyboard);
 };
 
