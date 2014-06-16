@@ -53,7 +53,6 @@ const char kChromeExtensionPolicyType[] = "google/chrome/extension";
 
 const char kChromePolicyHeader[] = "Chrome-Policy-Posture";
 
-#if !defined(OS_CHROMEOS)
 const uint8 kPolicyVerificationKey[] = {
   0x30, 0x82, 0x01, 0x22, 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7,
   0x0D, 0x01, 0x01, 0x01, 0x05, 0x00, 0x03, 0x82, 0x01, 0x0F, 0x00, 0x30, 0x82,
@@ -79,18 +78,10 @@ const uint8 kPolicyVerificationKey[] = {
   0xC7, 0xC0, 0x61, 0xFC, 0xEC, 0x66, 0x9D, 0x31, 0xD4, 0xD6, 0xB6, 0x36, 0xE3,
   0x7F, 0x81, 0x87, 0x02, 0x03, 0x01, 0x00, 0x01
 };
-#endif
 
 const char kPolicyVerificationKeyHash[] = "1:356l7w";
 
 std::string GetPolicyVerificationKey() {
-#if defined(OS_CHROMEOS)
-  // TODO(atwilson): Enable this for ChromeOS. We don't verify the extra
-  // verification signatures on ChromeOS to simplify testing, and because
-  // ChromeOS doesn't need the extra verification because it already stores
-  // the policy blob securely.
-  return std::string();
-#else
   // Disable key verification by default until production servers generate
   // the proper signatures.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -100,7 +91,6 @@ std::string GetPolicyVerificationKey() {
     return std::string(reinterpret_cast<const char*>(kPolicyVerificationKey),
                        sizeof(kPolicyVerificationKey));
   }
-#endif
 }
 
 const char* GetChromeUserPolicyType() {

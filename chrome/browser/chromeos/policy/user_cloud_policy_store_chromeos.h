@@ -120,6 +120,9 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
                               chromeos::DBusMethodCallStatus call_status,
                               const std::string& sanitized_username);
 
+  scoped_ptr<UserCloudPolicyValidator> CreateValidatorForLoad(
+      scoped_ptr<enterprise_management::PolicyFetchResponse> policy);
+
   chromeos::CryptohomeClient* cryptohome_client_;
   chromeos::SessionManagerClient* session_manager_client_;
   const std::string username_;

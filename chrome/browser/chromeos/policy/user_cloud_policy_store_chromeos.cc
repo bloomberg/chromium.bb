@@ -256,15 +256,8 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
   LoadPolicyKey(policy_key_path_, &policy_key_);
   policy_key_loaded_ = true;
 
-  scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
-      policy.Pass(), CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
-  validator->ValidateUsername(username_, true);
-  const bool allow_rotation = false;
-  validator->ValidateSignature(
-      policy_key_,
-      GetPolicyVerificationKey(),
-      ExtractDomain(username_),
-      allow_rotation);
+  scoped_ptr<UserCloudPolicyValidator> validator =
+      CreateValidatorForLoad(policy.Pass());
   validator->RunValidation();
   OnRetrievedPolicyValidated(validator.get());
 }
@@ -374,14 +367,8 @@ void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
 void UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy(
     scoped_ptr<em::PolicyFetchResponse> policy) {
   // Create and configure a validator for the loaded policy.
-  scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
-      policy.Pass(), CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
-  validator->ValidateUsername(username_, true);
-  const bool allow_rotation = false;
-  validator->ValidateSignature(policy_key_,
-                               GetPolicyVerificationKey(),
-                               ExtractDomain(username_),
-                               allow_rotation);
+  scoped_ptr<UserCloudPolicyValidator> validator =
+      CreateValidatorForLoad(policy.Pass());
   // Start validation. The Validator will delete itself once validation is
   // complete.
   validator.release()->StartValidation(
@@ -565,4 +552,20 @@ void UserCloudPolicyStoreChromeOS::OnGetSanitizedUsername(
   ReloadPolicyKey(callback);
 }
 
+scoped_ptr<UserCloudPolicyValidator>
+UserCloudPolicyStoreChromeOS::CreateValidatorForLoad(
+    scoped_ptr<em::PolicyFetchResponse> policy) {
+  scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
+      policy.Pass(), CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
+  validator->ValidateUsername(username_, true);
+  const bool allow_rotation = false;
+  const std::string empty_key = std::string();
+  // The policy loaded from session manager need not be validated using the
+  // verification key since it is secure, and since there may be legacy policy
+  // data that was stored without a verification key. Hence passing an empty
+  // value for the verification key.
+  validator->ValidateSignature(
+      policy_key_, empty_key, ExtractDomain(username_), allow_rotation);
+  return validator.Pass();
+}
 }  // namespace policy

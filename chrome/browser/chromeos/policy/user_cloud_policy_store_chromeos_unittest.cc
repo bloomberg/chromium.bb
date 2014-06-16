@@ -245,6 +245,38 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStore) {
       PerformStorePolicy(&new_public_key, NULL, kDefaultHomepage));
 }
 
+TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStoreValidationFail) {
+  // Start without any public key to trigger the initial key checks.
+  ASSERT_TRUE(base::DeleteFile(user_policy_key_file(), false));
+  // Make the policy blob contain a new public key.
+  policy_.SetDefaultSigningKey();
+  policy_.Build();
+  *policy_.policy().mutable_new_public_key_verification_signature() = "garbage";
+
+  EXPECT_CALL(session_manager_client_,
+              StorePolicyForUser(
+                  PolicyBuilder::kFakeUsername, policy_.GetBlob(), _)).Times(0);
+  store_->Store(policy_.policy());
+  RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&session_manager_client_);
+}
+
+TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStoreMissingSignatureFailure) {
+  // Start without any public key to trigger the initial key checks.
+  ASSERT_TRUE(base::DeleteFile(user_policy_key_file(), false));
+  // Make the policy blob contain a new public key.
+  policy_.SetDefaultSigningKey();
+  policy_.Build();
+  policy_.policy().clear_new_public_key_verification_signature();
+
+  EXPECT_CALL(session_manager_client_,
+              StorePolicyForUser(
+                  PolicyBuilder::kFakeUsername, policy_.GetBlob(), _)).Times(0);
+  store_->Store(policy_.policy());
+  RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&session_manager_client_);
+}
+
 TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithExistingKey) {
   ASSERT_NO_FATAL_FAILURE(
       PerformStorePolicy(NULL, NULL, kDefaultHomepage));
@@ -258,6 +290,35 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithRotation) {
   ASSERT_TRUE(policy_.GetNewSigningKey()->ExportPublicKey(&new_public_key));
   ASSERT_NO_FATAL_FAILURE(
       PerformStorePolicy(&new_public_key, NULL, kDefaultHomepage));
+}
+
+TEST_F(UserCloudPolicyStoreChromeOSTest,
+       StoreWithRotationMissingSignatureError) {
+  // Make the policy blob contain a new public key.
+  policy_.SetDefaultNewSigningKey();
+  policy_.Build();
+  policy_.policy().clear_new_public_key_verification_signature();
+
+  EXPECT_CALL(session_manager_client_,
+              StorePolicyForUser(
+                  PolicyBuilder::kFakeUsername, policy_.GetBlob(), _)).Times(0);
+  store_->Store(policy_.policy());
+  RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&session_manager_client_);
+}
+
+TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithRotationValidationError) {
+  // Make the policy blob contain a new public key.
+  policy_.SetDefaultNewSigningKey();
+  policy_.Build();
+  *policy_.policy().mutable_new_public_key_verification_signature() = "garbage";
+
+  EXPECT_CALL(session_manager_client_,
+              StorePolicyForUser(
+                  PolicyBuilder::kFakeUsername, policy_.GetBlob(), _)).Times(0);
+  store_->Store(policy_.policy());
+  RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&session_manager_client_);
 }
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, StoreFail) {

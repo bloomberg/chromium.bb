@@ -182,6 +182,33 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, StoreKeyRotation) {
   ExpectSuccess();
 }
 
+TEST_F(DeviceCloudPolicyStoreChromeOSTest,
+       StoreKeyRotationVerificationFailure) {
+  PrepareExistingPolicy();
+  device_policy_.SetDefaultNewSigningKey();
+  device_policy_.Build();
+  *device_policy_.policy().mutable_new_public_key_verification_signature() =
+      "garbage";
+  store_->Store(device_policy_.policy());
+  FlushDeviceSettings();
+  EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR, store_->status());
+  EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE,
+            store_->validation_status());
+}
+
+TEST_F(DeviceCloudPolicyStoreChromeOSTest,
+       StoreKeyRotationMissingSignatureFailure) {
+  PrepareExistingPolicy();
+  device_policy_.SetDefaultNewSigningKey();
+  device_policy_.Build();
+  device_policy_.policy().clear_new_public_key_verification_signature();
+  store_->Store(device_policy_.policy());
+  FlushDeviceSettings();
+  EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR, store_->status());
+  EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE,
+            store_->validation_status());
+}
+
 TEST_F(DeviceCloudPolicyStoreChromeOSTest, InstallInitialPolicySuccess) {
   PrepareNewSigningKey();
   store_->InstallInitialPolicy(device_policy_.policy());
@@ -196,6 +223,29 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, InstallInitialPolicyNoSignature) {
   FlushDeviceSettings();
   ExpectFailure(CloudPolicyStore::STATUS_VALIDATION_ERROR);
   EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_INITIAL_SIGNATURE,
+            store_->validation_status());
+}
+
+TEST_F(DeviceCloudPolicyStoreChromeOSTest,
+       InstallInitialPolicyVerificationFailure) {
+  PrepareNewSigningKey();
+  *device_policy_.policy().mutable_new_public_key_verification_signature() =
+      "garbage";
+  store_->InstallInitialPolicy(device_policy_.policy());
+  FlushDeviceSettings();
+  ExpectFailure(CloudPolicyStore::STATUS_VALIDATION_ERROR);
+  EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE,
+            store_->validation_status());
+}
+
+TEST_F(DeviceCloudPolicyStoreChromeOSTest,
+       InstallInitialPolicyMissingSignatureFailure) {
+  PrepareNewSigningKey();
+  device_policy_.policy().clear_new_public_key_verification_signature();
+  store_->InstallInitialPolicy(device_policy_.policy());
+  FlushDeviceSettings();
+  ExpectFailure(CloudPolicyStore::STATUS_VALIDATION_ERROR);
+  EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE,
             store_->validation_status());
 }
 
