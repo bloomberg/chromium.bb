@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-Node* NamedNodesCollection::item(unsigned index) const
+Element* NamedNodesCollection::item(unsigned index) const
 {
     if (index < m_nodes.size())
         return m_nodes[index].get();

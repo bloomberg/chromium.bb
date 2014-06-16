@@ -42,7 +42,7 @@ public:
         : LiveNodeListBase(ownerNode, rootType, invalidationType, collectionType) { }
 
     virtual unsigned length() const OVERRIDE FINAL { return m_collectionIndexCache.nodeCount(*this); }
-    virtual Node* item(unsigned offset) const OVERRIDE FINAL { return m_collectionIndexCache.nodeAt(*this, offset); }
+    virtual Element* item(unsigned offset) const OVERRIDE FINAL { return m_collectionIndexCache.nodeAt(*this, offset); }
     virtual bool elementMatches(const Element&) const = 0;
 
     virtual void invalidateCache(Document* oldDocument = 0) const OVERRIDE FINAL;

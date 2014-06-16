@@ -31,7 +31,7 @@
 #ifndef NamedNodesCollection_h
 #define NamedNodesCollection_h
 
-#include "core/dom/Node.h"
+#include "core/dom/Element.h"
 #include "core/dom/NodeList.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -47,7 +47,7 @@ public:
     }
 
     virtual unsigned length() const OVERRIDE { return m_nodes.size(); }
-    virtual Node* item(unsigned) const OVERRIDE;
+    virtual Element* item(unsigned) const OVERRIDE;
 
     virtual void trace(Visitor*) OVERRIDE;
 
