@@ -784,6 +784,7 @@
     { "name": "reviews.anime.my", "include_subdomains": true, "mode": "force-https" },
     { "name": "miku.hatsune.my", "include_subdomains": true, "mode": "force-https" },
     { "name": "webcollect.org.uk", "include_subdomains": true, "mode": "force-https" },
+    { "name": "www.capitainetrain.com", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
