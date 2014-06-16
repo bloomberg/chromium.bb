@@ -33,14 +33,14 @@ var getAllGalleryWatchCallback = function (results) {
   if (results.length == 0) {
     chrome.test.sendMessage('gallery_watchers_does_not_exists');
   } else {
-    for (var i = 0; i < results.lendth; ++i) {
-      var info = chrome.mediaGalleries.getMediaFileSystemMetadata(galleries[i]);
-      if (results[i] !== info.galleryId) {
-        chrome.test.sendMessage('gallery_watcher_mismatch');
-        return;
-      }
+    var gallery_ids_str = "";
+    for (var i = 0; i < results.length; ++i) {
+      if (gallery_ids_str != "")
+        gallery_ids_str += ", ";
+      gallery_ids_str += results[i];
     }
-    chrome.test.sendMessage('gallery_watcher_checks');
+    chrome.test.sendMessage(
+       'watchers_for_galleries_{' + gallery_ids_str + '}_found');
   }
 };
 
