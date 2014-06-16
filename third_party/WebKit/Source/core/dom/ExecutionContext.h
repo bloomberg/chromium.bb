@@ -66,8 +66,6 @@ class ExecutionContext
     , public LifecycleContext<ExecutionContext>
     , public Supplementable<ExecutionContext> {
 public:
-    ExecutionContext();
-    virtual ~ExecutionContext();
     virtual void trace(Visitor*);
 
     // Delegating to ExecutionContextClient
@@ -136,6 +134,9 @@ public:
     virtual EventQueue* eventQueue() const = 0;
 
 protected:
+    ExecutionContext();
+    virtual ~ExecutionContext();
+
     void setClient(ExecutionContextClient* client) { m_client = client; }
 
     virtual const KURL& virtualURL() const = 0;
