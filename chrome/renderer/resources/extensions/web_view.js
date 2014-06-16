@@ -307,6 +307,20 @@ WebViewInternal.prototype.setupFocusPropagation = function() {
 /**
  * @private
  */
+WebViewInternal.prototype.back = function() {
+  return this.go(-1);
+};
+
+/**
+ * @private
+ */
+WebViewInternal.prototype.forward = function() {
+  return this.go(1);
+};
+
+/**
+ * @private
+ */
 WebViewInternal.prototype.canGoBack = function() {
   return this.entryCount > 1 && this.currentEntryIndex > 0;
 };
@@ -1346,68 +1360,35 @@ function registerWebViewElement() {
     this.customElementDetached = false;
   };
 
-  proto.back = function() {
-    this.go(-1);
-  };
+  var methods = [
+    'back',
+    'forward',
+    'canGoBack',
+    'canGoForward',
+    'clearData',
+    'getProcessId',
+    'go',
+    'reload',
+    'stop',
+    'terminate',
+    'executeScript',
+    'insertCSS',
+    'getUserAgent',
+    'isUserAgentOverridden',
+    'setUserAgentOverride'
+  ];
 
-  proto.forward = function() {
-    this.go(1);
-  };
+  // Forward proto.foo* method calls to WebViewInternal.foo*.
+  for (var i = 0; methods[i]; ++i) {
+    var createHandler = function(m) {
+      return function(var_args) {
+        var internal = privates(this).internal;
+        return $Function.apply(internal[m], internal, arguments);
+      };
+    };
+    proto[methods[i]] = createHandler(methods[i]);
+  }
 
-  proto.canGoBack = function() {
-    return privates(this).internal.canGoBack();
-  };
-
-  proto.canGoForward = function() {
-    return privates(this).internal.canGoForward();
-  };
-
-  proto.clearData = function() {
-    var internal = privates(this).internal;
-    $Function.apply(internal.clearData, internal, arguments);
-  };
-
-  proto.getProcessId = function() {
-    return privates(this).internal.getProcessId();
-  };
-
-  proto.go = function(relativeIndex) {
-    privates(this).internal.go(relativeIndex);
-  };
-
-  proto.reload = function() {
-    privates(this).internal.reload();
-  };
-
-  proto.stop = function() {
-    privates(this).internal.stop();
-  };
-
-  proto.terminate = function() {
-    privates(this).internal.terminate();
-  };
-
-  proto.executeScript = function(var_args) {
-    var internal = privates(this).internal;
-    $Function.apply(internal.executeScript, internal, arguments);
-  };
-
-  proto.insertCSS = function(var_args) {
-    var internal = privates(this).internal;
-    $Function.apply(internal.insertCSS, internal, arguments);
-  };
-
-  proto.getUserAgent = function() {
-    return privates(this).internal.getUserAgent();
-  };
-
-  proto.isUserAgentOverridden = function() {
-    return privates(this).internal.isUserAgentOverridden();
-  };
-
-  proto.setUserAgentOverride = function(userAgentOverride) {
-    privates(this).internal.setUserAgentOverride(userAgentOverride);
-  };
   WebViewInternal.maybeRegisterExperimentalAPIs(proto);
 
   window.WebView =
