@@ -733,9 +733,9 @@ private:
     // 2 bits remaining.
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
-    void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); }
-    void setFlag(NodeFlags mask) const { m_nodeFlags |= mask; }
-    void clearFlag(NodeFlags mask) const { m_nodeFlags &= ~mask; }
+    void setFlag(bool f, NodeFlags mask) { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); }
+    void setFlag(NodeFlags mask) { m_nodeFlags |= mask; }
+    void clearFlag(NodeFlags mask) { m_nodeFlags &= ~mask; }
 
 protected:
     enum ConstructionType {
@@ -824,7 +824,7 @@ private:
     WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration> >* mutationObserverRegistry();
     WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> >* transientMutationObserverRegistry();
 
-    mutable uint32_t m_nodeFlags;
+    uint32_t m_nodeFlags;
     RawPtrWillBeMember<ContainerNode> m_parentOrShadowHostNode;
     RawPtrWillBeMember<TreeScope> m_treeScope;
     RawPtrWillBeMember<Node> m_previous;
