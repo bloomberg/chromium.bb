@@ -58,7 +58,7 @@ const wchar_t kDaemonIpcSecurityDescriptor[] =
     L")";
 
 // The command line parameters that should be copied from the service's command
-// line to the host process.
+// line to the desktop process.
 const char* kCopiedSwitchNames[] = { switches::kV, switches::kVModule };
 
 // The default screen dimensions for an RDP session.

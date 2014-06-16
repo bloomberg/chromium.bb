@@ -57,7 +57,9 @@ class WtsTerminalMonitor;
 
 // The command line parameters that should be copied from the service's command
 // line to the host process.
-const char* kCopiedSwitchNames[] = { switches::kV, switches::kVModule };
+const char kEnableVp9SwitchName[] = "enable-vp9";
+const char* kCopiedSwitchNames[] =
+    { switches::kV, switches::kVModule, kEnableVp9SwitchName };
 
 class DaemonProcessWin : public DaemonProcess {
  public:
