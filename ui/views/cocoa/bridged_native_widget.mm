@@ -5,7 +5,14 @@
 #import "ui/views/cocoa/bridged_native_widget.h"
 
 #include "base/logging.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/input_method_factory.h"
+#include "ui/base/ui_base_switches_util.h"
 #import "ui/views/cocoa/bridged_content_view.h"
+#include "ui/views/ime/input_method_bridge.h"
+#include "ui/views/ime/null_input_method.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -38,6 +45,34 @@ void BridgedNativeWidget::SetRootView(views::View* view) {
     CHECK(bridged_view_);
   }
   [window_ setContentView:bridged_view_];
+}
+
+InputMethod* BridgedNativeWidget::CreateInputMethod() {
+  if (switches::IsTextInputFocusManagerEnabled())
+    return new NullInputMethod();
+
+  return new InputMethodBridge(this, GetHostInputMethod(), true);
+}
+
+ui::InputMethod* BridgedNativeWidget::GetHostInputMethod() {
+  if (!input_method_) {
+    // Delegate is NULL because Mac IME does not need DispatchKeyEventPostIME
+    // callbacks.
+    input_method_ = ui::CreateInputMethod(NULL, nil);
+  }
+  return input_method_.get();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidget, internal::InputMethodDelegate:
+
+void BridgedNativeWidget::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
+  // Mac key events don't go through this, but some unit tests that use
+  // MockInputMethod do.
+  Widget* widget = [bridged_view_ hostedView]->GetWidget();
+  widget->OnKeyEvent(const_cast<ui::KeyEvent*>(&key));
+  if (!key.handled() && widget->GetFocusManager())
+    widget->GetFocusManager()->OnKeyEvent(key);
 }
 
 }  // namespace views

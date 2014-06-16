@@ -10,6 +10,7 @@
 #import "testing/gtest_mac.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 #import "ui/views/cocoa/bridged_content_view.h"
+#include "ui/views/ime/input_method.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -102,6 +103,15 @@ TEST_F(BridgedNativeWidgetTest, ViewSizeTracksWindow) {
                   display:NO];
   EXPECT_EQ(kTestNewWidth, view_->width());
   EXPECT_EQ(kTestNewHeight, view_->height());
+}
+
+TEST_F(BridgedNativeWidgetTest, CreateInputMethod) {
+  scoped_ptr<views::InputMethod> input_method(bridge_->CreateInputMethod());
+  EXPECT_TRUE(input_method);
+}
+
+TEST_F(BridgedNativeWidgetTest, GetHostInputMethod) {
+  EXPECT_TRUE(bridge_->GetHostInputMethod());
 }
 
 }  // namespace views
