@@ -214,7 +214,7 @@ void DOMSelection::collapse(Node* node, int offset, ExceptionState& exceptionSta
     range->setEnd(node, offset, exceptionState);
     if (exceptionState.hadException())
         return;
-    m_frame->selection().setSelectedRange(range.get(), DOWNSTREAM, m_frame->selection().isDirectional());
+    m_frame->selection().setSelectedRange(range.get(), DOWNSTREAM, m_frame->selection().isDirectional() ? FrameSelection::Directional : FrameSelection::NonDirectional);
 }
 
 void DOMSelection::collapse(Node* node, ExceptionState& exceptionState)

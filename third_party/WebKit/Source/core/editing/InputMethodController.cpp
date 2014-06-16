@@ -310,7 +310,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
             unsigned start = std::min(baseOffset + selectionStart, extentOffset);
             unsigned end = std::min(std::max(start, baseOffset + selectionEnd), extentOffset);
             RefPtrWillBeRawPtr<Range> selectedRange = Range::create(baseNode->document(), baseNode, start, baseNode, end);
-            m_frame.selection().setSelectedRange(selectedRange.get(), DOWNSTREAM, false, NotUserTriggered);
+            m_frame.selection().setSelectedRange(selectedRange.get(), DOWNSTREAM, FrameSelection::NonDirectional, NotUserTriggered);
         }
     }
 }
@@ -383,7 +383,7 @@ bool InputMethodController::setSelectionOffsets(const PlainTextRange& selectionO
     if (!range)
         return false;
 
-    return m_frame.selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, false, FrameSelection::CloseTyping);
+    return m_frame.selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
 }
 
 bool InputMethodController::setEditableSelectionOffsets(const PlainTextRange& selectionOffsets)
