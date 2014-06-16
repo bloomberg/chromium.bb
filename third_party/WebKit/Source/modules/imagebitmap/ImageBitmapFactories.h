@@ -81,11 +81,11 @@ protected:
     static const char* supplementName();
 
 private:
-    class ImageBitmapLoader FINAL : public RefCountedWillBeGarbageCollectedFinalized<ImageBitmapLoader>, public FileReaderLoaderClient {
+    class ImageBitmapLoader FINAL : public GarbageCollectedFinalized<ImageBitmapLoader>, public FileReaderLoaderClient {
     public:
-        static PassRefPtrWillBeRawPtr<ImageBitmapLoader> create(ImageBitmapFactories& factory, const IntRect& cropRect, ScriptState* scriptState)
+        static ImageBitmapLoader* create(ImageBitmapFactories& factory, const IntRect& cropRect, ScriptState* scriptState)
         {
-            return adoptRefWillBeNoop(new ImageBitmapLoader(factory, cropRect, scriptState));
+            return new ImageBitmapLoader(factory, cropRect, scriptState);
         }
 
         void loadBlobAsync(ExecutionContext*, Blob*);
@@ -117,10 +117,10 @@ private:
     template<class GlobalObject>
     static ImageBitmapFactories& fromInternal(GlobalObject&);
 
-    void addLoader(PassRefPtrWillBeRawPtr<ImageBitmapLoader>);
+    void addLoader(ImageBitmapLoader*);
     void didFinishLoading(ImageBitmapLoader*);
 
-    WillBeHeapHashSet<RefPtrWillBeMember<ImageBitmapLoader> > m_pendingLoaders;
+    PersistentHeapHashSetWillBeHeapHashSet<Member<ImageBitmapLoader> > m_pendingLoaders;
 };
 
 } // namespace WebCore

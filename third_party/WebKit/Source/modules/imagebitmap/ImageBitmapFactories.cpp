@@ -185,7 +185,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
 
 ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, Blob* blob, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), IntRect(), scriptState);
+    ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), IntRect(), scriptState);
     ScriptPromise promise = loader->promise();
     from(eventTarget).addLoader(loader);
     loader->loadBlobAsync(eventTarget.executionContext(), blob);
@@ -198,7 +198,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
     }
-    RefPtrWillBeRawPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), IntRect(sx, sy, sw, sh), scriptState);
+    ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), IntRect(sx, sy, sw, sh), scriptState);
     ScriptPromise promise = loader->promise();
     from(eventTarget).addLoader(loader);
     loader->loadBlobAsync(eventTarget.executionContext(), blob);
@@ -260,7 +260,7 @@ ImageBitmapFactories& ImageBitmapFactories::fromInternal(GlobalObject& object)
     return *supplement;
 }
 
-void ImageBitmapFactories::addLoader(PassRefPtrWillBeRawPtr<ImageBitmapLoader> loader)
+void ImageBitmapFactories::addLoader(ImageBitmapLoader* loader)
 {
     m_pendingLoaders.add(loader);
 }
