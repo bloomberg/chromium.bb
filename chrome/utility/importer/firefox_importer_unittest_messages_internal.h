@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/importer/profile_import_process_messages.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START FirefoxImporterUnittestMsgStart
@@ -23,6 +24,12 @@ IPC_MESSAGE_CONTROL1(Msg_Decrypt,
 // Child->Server: Decrypted String.
 IPC_MESSAGE_CONTROL1(Msg_Decryptor_Response,
                      base::string16 /* unencrypted_str */)
+// Server->Child: Parse firefox signons db from a given path
+IPC_MESSAGE_CONTROL1(Msg_ParseSignons,
+                     base::FilePath /* path to firefox signons db */)
+// Child->Server: Vector of parsed password forms
+IPC_MESSAGE_CONTROL1(Msg_ParseSignons_Response,
+                     std::vector<autofill::PasswordForm> /* parsed signons */)
 
 // Server->Child: Die.
 IPC_MESSAGE_CONTROL0(Msg_Decryptor_Quit)

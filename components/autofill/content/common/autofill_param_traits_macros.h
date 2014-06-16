@@ -23,7 +23,11 @@ IPC_STRUCT_TRAITS_BEGIN(autofill::FormData)
   IPC_STRUCT_TRAITS_MEMBER(fields)
 IPC_STRUCT_TRAITS_END()
 
+IPC_ENUM_TRAITS_MAX_VALUE(autofill::PasswordForm::Scheme,
+                          autofill::PasswordForm::SCHEME_LAST)
+
 IPC_STRUCT_TRAITS_BEGIN(autofill::PasswordForm)
+  IPC_STRUCT_TRAITS_MEMBER(scheme)
   IPC_STRUCT_TRAITS_MEMBER(signon_realm)
   IPC_STRUCT_TRAITS_MEMBER(origin)
   IPC_STRUCT_TRAITS_MEMBER(action)

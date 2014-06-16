@@ -284,8 +284,13 @@ bool NSSDecryptor::ReadAndParseSignons(const base::FilePath& sqlite_file,
     autofill::PasswordForm form;
     form.origin = url.ReplaceComponents(rep);
     form.signon_realm = form.origin.GetOrigin().spec();
-    if (!realm.empty())
+    if (!realm.empty()) {
       form.signon_realm += realm;
+      // Non-empty realm indicates that it's not html form authentication entry.
+      // Extracted data doesn't allow us to distinguish basic_auth entry from
+      // digest_auth entry, so let's assume basic_auth.
+      form.scheme = autofill::PasswordForm::SCHEME_BASIC;
+    }
     form.ssl_valid = form.origin.SchemeIsSecure();
     // The user name, password and action.
     form.username_element = s2.ColumnString16(3);

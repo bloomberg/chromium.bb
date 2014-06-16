@@ -83,9 +83,17 @@ class FFDecryptorServerChannelListener : public IPC::Listener {
     base::MessageLoop::current()->Quit();
   }
 
-  void OnDecryptedTextResonse(const base::string16& decrypted_text) {
+  void OnDecryptedTextResponse(const base::string16& decrypted_text) {
     DCHECK(!got_result);
     result_string = decrypted_text;
+    got_result = true;
+    base::MessageLoop::current()->Quit();
+  }
+
+  void OnParseSignonsResponse(
+      const std::vector<autofill::PasswordForm>& parsed_vector) {
+    DCHECK(!got_result);
+    result_vector = parsed_vector;
     got_result = true;
     base::MessageLoop::current()->Quit();
   }
@@ -99,7 +107,8 @@ class FFDecryptorServerChannelListener : public IPC::Listener {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(FFDecryptorServerChannelListener, msg)
       IPC_MESSAGE_HANDLER(Msg_Decryptor_InitReturnCode, OnInitDecryptorResponse)
-      IPC_MESSAGE_HANDLER(Msg_Decryptor_Response, OnDecryptedTextResonse)
+      IPC_MESSAGE_HANDLER(Msg_Decryptor_Response, OnDecryptedTextResponse)
+      IPC_MESSAGE_HANDLER(Msg_ParseSignons_Response, OnParseSignonsResponse)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
@@ -113,6 +122,7 @@ class FFDecryptorServerChannelListener : public IPC::Listener {
 
   // Results of IPC calls.
   base::string16 result_string;
+  std::vector<autofill::PasswordForm> result_vector;
   bool result_bool;
   // True if IPC call succeeded and data in above variables is valid.
   bool got_result;
@@ -210,6 +220,17 @@ base::string16 FFUnitTestDecryptorProxy::Decrypt(const std::string& crypt) {
   return base::string16();
 }
 
+std::vector<autofill::PasswordForm> FFUnitTestDecryptorProxy::ParseSignons(
+    const base::FilePath& signons_path) {
+  channel_->Send(new Msg_ParseSignons(signons_path));
+  bool ok = WaitForClientResponse();
+  if (ok && listener_->got_result) {
+    listener_->got_result = false;
+    return listener_->result_vector;
+  }
+  return std::vector<autofill::PasswordForm>();
+}
+
 //---------------------------- Child Process -----------------------
 
 // Class to listen on the client side of the ipc channel, it calls through
@@ -233,6 +254,12 @@ class FFDecryptorClientChannelListener : public IPC::Listener {
     sender_->Send(new Msg_Decryptor_Response(unencrypted_str));
   }
 
+  void OnParseSignons(base::FilePath signons_path) {
+    std::vector<autofill::PasswordForm> forms;
+    decryptor_.ReadAndParseSignons(signons_path, &forms);
+    sender_->Send(new Msg_ParseSignons_Response(forms));
+  }
+
   void OnQuitRequest() {
     base::MessageLoop::current()->Quit();
   }
@@ -242,6 +269,7 @@ class FFDecryptorClientChannelListener : public IPC::Listener {
     IPC_BEGIN_MESSAGE_MAP(FFDecryptorClientChannelListener, msg)
       IPC_MESSAGE_HANDLER(Msg_Decryptor_Init, OnDecryptor_Init)
       IPC_MESSAGE_HANDLER(Msg_Decrypt, OnDecrypt)
+      IPC_MESSAGE_HANDLER(Msg_ParseSignons, OnParseSignons)
       IPC_MESSAGE_HANDLER(Msg_Decryptor_Quit, OnQuitRequest)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()

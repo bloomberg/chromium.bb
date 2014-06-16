@@ -45,7 +45,8 @@ struct PasswordForm {
     SCHEME_HTML,
     SCHEME_BASIC,
     SCHEME_DIGEST,
-    SCHEME_OTHER
+    SCHEME_OTHER,
+    SCHEME_LAST = SCHEME_OTHER
   } scheme;
 
   // The "Realm" for the sign-on (scheme, host, port for SCHEME_HTML, and
