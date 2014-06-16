@@ -72,6 +72,13 @@ int32 GetUIntSize(uint64 value) {
   return 8;
 }
 
+int32 GetIntSize(int64 value) {
+  // Doubling the requested value ensures positive values with their high bit
+  // set are written with 0-padding to avoid flipping the signedness.
+  const uint64 v = (value < 0) ? value ^ -1LL : value;
+  return GetUIntSize(2 * v);
+}
+
 uint64 EbmlMasterElementSize(uint64 type, uint64 value) {
   // Size of EBML ID
   int32 ebml_size = GetUIntSize(type);
@@ -83,7 +90,16 @@ uint64 EbmlMasterElementSize(uint64 type, uint64 value) {
 }
 
 uint64 EbmlElementSize(uint64 type, int64 value) {
-  return EbmlElementSize(type, static_cast<uint64>(value));
+  // Size of EBML ID
+  int32 ebml_size = GetUIntSize(type);
+
+  // Datasize
+  ebml_size += GetIntSize(value);
+
+  // Size of Datasize
+  ebml_size++;
+
+  return ebml_size;
 }
 
 uint64 EbmlElementSize(uint64 type, uint64 value) {
@@ -592,7 +608,7 @@ uint64 WriteBlockWithDiscardPadding(IMkvWriter* writer, const uint8* data,
                                     uint64 length, int64 discard_padding,
                                     uint64 track_number, int64 timecode,
                                     uint64 is_key) {
-  if (!data || length < 1 || discard_padding <= 0)
+  if (!data || length < 1)
     return 0;
 
   const uint64 block_payload_size = 4 + length;
@@ -630,7 +646,7 @@ uint64 WriteBlockWithDiscardPadding(IMkvWriter* writer, const uint8* data,
   if (WriteID(writer, kMkvDiscardPadding))
     return 0;
 
-  const uint64 size = GetUIntSize(discard_padding);
+  const uint64 size = GetIntSize(discard_padding);
   if (WriteUInt(writer, size))
     return false;
 

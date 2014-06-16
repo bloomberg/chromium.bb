@@ -1636,7 +1636,7 @@ bool Cluster::DoWriteBlockWithDiscardPadding(
     const uint8* frame, uint64 length, int64 discard_padding,
     uint64 track_number, uint64 abs_timecode, uint64 generic_arg,
     WriteBlockDiscardPadding write_block) {
-  if (frame == NULL || length == 0 || discard_padding <= 0)
+  if (frame == NULL || length == 0)
     return false;
 
   if (!IsValidTrackNumber(track_number))
@@ -2430,7 +2430,7 @@ bool Segment::AddFrameWithDiscardPadding(const uint8* frame, uint64 length,
                                          int64 discard_padding,
                                          uint64 track_number, uint64 timestamp,
                                          bool is_key) {
-  if (frame == NULL || discard_padding <= 0)
+  if (frame == NULL)
     return false;
 
   if (!CheckHeaderInfo())
@@ -2547,7 +2547,7 @@ bool Segment::AddGenericFrame(const Frame* frame) {
         frame->frame(), frame->length(), frame->additional(),
         frame->additional_length(), frame->add_id(), frame->track_number(),
         frame->timestamp(), frame->is_key());
-  } else if (frame->discard_padding() > 0) {
+  } else if (frame->discard_padding() != 0) {
     return AddFrameWithDiscardPadding(
         frame->frame(), frame->length(), frame->discard_padding(),
         frame->track_number(), frame->timestamp(), frame->is_key());
@@ -3025,7 +3025,7 @@ int Segment::WriteFramesAll() {
     const uint64 frame_timestamp = frame->timestamp();  // ns
     const uint64 frame_timecode = frame_timestamp / timecode_scale;
 
-    if (frame->discard_padding() > 0) {
+    if (frame->discard_padding() != 0) {
       if (!cluster->AddFrameWithDiscardPadding(
               frame->frame(), frame->length(), frame->discard_padding(),
               frame->track_number(), frame_timecode, frame->is_key())) {
@@ -3085,7 +3085,7 @@ bool Segment::WriteFramesLessThan(uint64 timestamp) {
       const uint64 frame_timecode = frame_timestamp / timecode_scale;
       const int64 discard_padding = frame_prev->discard_padding();
 
-      if (discard_padding > 0) {
+      if (discard_padding != 0) {
         if (!cluster->AddFrameWithDiscardPadding(
                 frame_prev->frame(), frame_prev->length(), discard_padding,
                 frame_prev->track_number(), frame_timecode,
