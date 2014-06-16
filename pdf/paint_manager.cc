@@ -41,15 +41,21 @@ PaintManager::~PaintManager() {
 // static
 pp::Size PaintManager::GetNewContextSize(const pp::Size& current_context_size,
                                          const pp::Size& plugin_size) {
-  // The number of additional space in pixels to allocate to the right/bottom
-  // of the context.
-  const int kBufferSize = 100;
+  // The amount of additional space in pixels to allocate to the right/bottom of
+  // the context.
+  const int kBufferSize = 50;
 
   // Default to returning the same size.
   pp::Size result = current_context_size;
 
-  pp::Size min_size(std::max(current_context_size.width() - kBufferSize, 0),
-                    std::max(current_context_size.height() - kBufferSize, 0));
+  // The minimum size of the plugin before resizing the context to ensure we
+  // aren't wasting too much memory. We deduct twice the kBufferSize from the
+  // current context size which gives a threshhold that is kBufferSize below
+  // the plugin size when the context size was last computed.
+  pp::Size min_size(
+      std::max(current_context_size.width() - 2 * kBufferSize, 0),
+      std::max(current_context_size.height() - 2 * kBufferSize, 0));
+
   // If the plugin size is bigger than the current context size, we need to
   // resize the context. If the plugin size is smaller than the current
   // context size by a given threshhold then resize the context so that we
