@@ -55,8 +55,12 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   void Set(const std::string& key, scoped_ptr<base::Value> value) {
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     // We don't need the old value, so skip generating changes.
-    storage_->Set(ValueStore::IGNORE_QUOTA | ValueStore::NO_GENERATE_CHANGES,
-                  key, *value.get());
+    ValueStore::WriteResult result = storage_->Set(
+        ValueStore::IGNORE_QUOTA | ValueStore::NO_GENERATE_CHANGES,
+        key,
+        *value.get());
+    LOG_IF(ERROR, result->HasError()) << "Error while writing " << key << " to "
+                                      << db_path_.value();
   }
 
   void Remove(const std::string& key) {

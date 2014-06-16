@@ -22,6 +22,7 @@ using content::BrowserThread;
 namespace {
 
 const char kInvalidJson[] = "Invalid JSON";
+const char kCannotSerialize[] = "Cannot serialize value to JSON";
 
 // Scoped leveldb snapshot which releases the snapshot on destruction.
 class ScopedSnapshot {
@@ -390,7 +391,8 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::AddToBatch(
 
   if (write_new_value) {
     std::string value_as_json;
-    base::JSONWriter::Write(&value, &value_as_json);
+    if (!base::JSONWriter::Write(&value, &value_as_json))
+      return Error::Create(OTHER_ERROR, kCannotSerialize, util::NewKey(key));
     batch->Put(key, value_as_json);
   }
 
