@@ -5861,7 +5861,8 @@
    Memcheck:Param
    sendmsg(msg.msg_iov[0])
    fun:sys_sendmsg
-   fun:_ZN8breakpad12_GLOBAL__N_122NonBrowserCrashHandlerEPKvmPv
+   fun:_ZN8breakpad12_GLOBAL__N_122NonBrowserCrashHandler11RequestDumpEPKvm
+   fun:_ZN15google_breakpad16ExceptionHandler12GenerateDumpEPNS0_12CrashContextE
    fun:_ZN15google_breakpad16ExceptionHandler12HandleSignalEiP7siginfoPv
    fun:_ZN15google_breakpad16ExceptionHandler13SignalHandlerEiP7siginfoPv
 }
@@ -6107,8 +6108,8 @@
    Memcheck:Param
    write(buf)
    obj:/lib/x86_64-linux-gnu/libpthread-2.15.so
-   fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
-   fun:_ZN3IPC7Channel11ChannelImpl29OnFileCanWriteWithoutBlockingEi
+   fun:_ZN3IPC12ChannelPosix23ProcessOutgoingMessagesEv
+   fun:_ZN3IPC12ChannelPosix29OnFileCanWriteWithoutBlockingEi
    fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher29OnFileCanWriteWithoutBlockingEiPS0_
    ...
    fun:event_process_active
@@ -6119,6 +6120,15 @@
    Memcheck:Uninitialized
    fun:_ZN4base17MD5DigestToBase16ERKNS_9MD5DigestE
    fun:_ZN7content16WebKitTestRunner17CaptureDumpPixelsERK8SkBitmap
+}
+{
+   bug_364724c
+   Memcheck:Param
+   write(buf)
+   obj:/lib/x86_64-linux-gnu/libpthread-2.15.so
+   fun:_ZN3IPC12ChannelPosix23ProcessOutgoingMessagesEv
+   fun:_ZN3IPC12ChannelPosix4SendEPNS_7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context13OnSendMessageE10scoped_ptrINS_7MessageEN4base14DefaultDeleterIS3_EEE
 }
 {
    bug_364821
