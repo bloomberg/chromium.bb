@@ -57,6 +57,7 @@
 }
 - (void)l2capChannelQueueSpaceAvailable:(IOBluetoothL2CAPChannel*)l2capChannel {
 }
+
 @end
 
 namespace device {

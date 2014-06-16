@@ -20,6 +20,7 @@
 #include "device/bluetooth/bluetooth_uuid.h"
 
 @class BluetoothRfcommConnectionListener;
+@class BluetoothL2capConnectionListener;
 
 namespace net {
 class IOBuffer;
@@ -92,7 +93,8 @@ class BluetoothSocketMac : public BluetoothSocket {
       const base::Closure& success_callback,
       const ErrorCompletionCallback& error_callback);
 
-  // Called by BluetoothRfcommConnectionListener.
+  // Called by BluetoothRfcommConnectionListener and
+  // BluetoothL2capConnectionListener.
   void OnChannelOpened(scoped_ptr<BluetoothChannelMac> channel);
 
   // Called by |channel_|.
@@ -158,10 +160,12 @@ class BluetoothSocketMac : public BluetoothSocket {
   // UUID of the profile being connected to, or that the socket is listening on.
   device::BluetoothUUID uuid_;
 
-  // A simple helper that registers for OS notifications and forwards them to
+  // Simple helpers that register for OS notifications and forward them to
   // |this| profile.
   base::scoped_nsobject<BluetoothRfcommConnectionListener>
       rfcomm_connection_listener_;
+  base::scoped_nsobject<BluetoothL2capConnectionListener>
+      l2cap_connection_listener_;
 
   // A handle to the service record registered in the system SDP server.
   // Used to eventually unregister the service.
