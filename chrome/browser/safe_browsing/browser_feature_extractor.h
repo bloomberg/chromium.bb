@@ -21,6 +21,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
@@ -144,10 +145,11 @@ class BrowserFeatureExtractor {
 
   // HistoryService callback which is called when we're done querying URL visits
   // in the history.
-  void QueryUrlHistoryDone(CancelableRequestProvider::Handle handle,
+  void QueryUrlHistoryDone(scoped_ptr<ClientPhishingRequest> request,
+                           const DoneCallback& callback,
                            bool success,
-                           const history::URLRow* row,
-                           history::VisitVector* visits);
+                           const history::URLRow& row,
+                           const history::VisitVector& visits);
 
   // HistoryService callback which is called when we're done querying HTTP host
   // visits in the history.
@@ -198,6 +200,7 @@ class BrowserFeatureExtractor {
   content::WebContents* tab_;
   ClientSideDetectionHost* host_;
   CancelableRequestConsumer request_consumer_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
   base::WeakPtrFactory<BrowserFeatureExtractor> weak_factory_;
 
   // Set of pending extractions (i.e. extractions for which ExtractFeatures was

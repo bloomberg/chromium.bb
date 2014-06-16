@@ -301,22 +301,20 @@ bool HistoryGetVisitsFunction::RunAsyncImpl() {
       GetProfile(), Profile::EXPLICIT_ACCESS);
   hs->QueryURL(url,
                true,  // Retrieve full history of a URL.
-               &cancelable_consumer_,
                base::Bind(&HistoryGetVisitsFunction::QueryComplete,
-                          base::Unretained(this)));
-
+                          base::Unretained(this)),
+               &task_tracker_);
   return true;
 }
 
 void HistoryGetVisitsFunction::QueryComplete(
-    HistoryService::Handle request_service,
     bool success,
-    const history::URLRow* url_row,
-    history::VisitVector* visits) {
+    const history::URLRow& url_row,
+    const history::VisitVector& visits) {
   VisitItemList visit_item_vec;
-  if (visits && !visits->empty()) {
-    for (history::VisitVector::iterator iterator = visits->begin();
-         iterator != visits->end();
+  if (success && !visits.empty()) {
+    for (history::VisitVector::const_iterator iterator = visits.begin();
+         iterator != visits.end();
          ++iterator) {
       visit_item_vec.push_back(make_linked_ptr(
           GetVisitItem(*iterator).release()));

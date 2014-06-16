@@ -21,10 +21,6 @@ namespace history {
 
 // Querying -------------------------------------------------------------------
 
-typedef CancelableRequest1<HistoryService::QueryURLCallback,
-                           Tuple2<URLRow, VisitVector> >
-    QueryURLRequest;
-
 typedef CancelableRequest1<HistoryService::QueryHistoryCallback,
                            QueryResults>
     QueryHistoryRequest;

@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -319,10 +320,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   void OnHistoryServiceDidQueryURL(Origin origin,
                                    uint8 experiment_id,
-                                   CancelableRequestProvider::Handle handle,
                                    bool success,
-                                   const history::URLRow* url_row,
-                                   history::VisitVector* visits);
+                                   const history::URLRow& url_row,
+                                   const history::VisitVector& visits);
 
   Profile* profile() const { return profile_; }
 
@@ -742,7 +742,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   content::NotificationRegistrar notification_registrar_;
 
-  CancelableRequestConsumer query_url_consumer_;
+  base::CancelableTaskTracker query_url_tracker_;
 
   // The number of bytes transferred over the network for the profile this
   // PrerenderManager is attached to.
