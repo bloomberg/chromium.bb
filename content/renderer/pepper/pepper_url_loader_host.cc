@@ -359,10 +359,18 @@ void PepperURLLoaderHost::SendOrderedUpdateToPlugin(IPC::Message* message) {
 }
 
 void PepperURLLoaderHost::Close() {
-  if (loader_.get())
+  if (loader_.get()) {
     loader_->cancel();
-  else if (main_document_loader_)
-    GetFrame()->stopLoading();
+  } else if (main_document_loader_) {
+    // TODO(raymes): Calling WebLocalFrame::stopLoading here is incorrect as it
+    // cancels all URL loaders associated with the frame. If a client has opened
+    // other URLLoaders and then closes the main one, the others should still
+    // remain connected. Work out how to only cancel the main request:
+    // crbug.com/384197.
+    blink::WebLocalFrame* frame = GetFrame();
+    if (frame)
+      frame->stopLoading();
+  }
 }
 
 blink::WebLocalFrame* PepperURLLoaderHost::GetFrame() {

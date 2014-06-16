@@ -3209,6 +3209,9 @@ void PepperPluginInstanceImpl::DidDataFromWebURLResponse(
     const blink::WebURLResponse& response,
     int pending_host_id,
     const ppapi::URLResponseInfoData& data) {
+  if (is_deleted_)
+    return;
+
   RendererPpapiHostImpl* host_impl = module_->renderer_ppapi_host();
 
   if (host_impl->in_process_router()) {
