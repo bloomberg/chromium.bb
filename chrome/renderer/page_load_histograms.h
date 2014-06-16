@@ -42,15 +42,8 @@ class PageLoadHistograms : public content::RenderViewObserver {
   // so first_paint and first_paint_after_load can be 0.
   void Dump(blink::WebFrame* frame);
 
-  void ResetCrossFramePropertyAccess();
-
   void LogPageLoadTime(const content::DocumentState* load_times,
                        const blink::WebDataSource* ds) const;
-
-  // Site isolation metric counts.
-  // These are per-page-load counts, reset to 0 after they are dumped.
-  int cross_origin_access_count_;
-  int same_origin_access_count_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadHistograms);
 };

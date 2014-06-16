@@ -468,9 +468,7 @@ enum AbandonType {
 }  // namespace
 
 PageLoadHistograms::PageLoadHistograms(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view),
-      cross_origin_access_count_(0),
-      same_origin_access_count_(0) {
+    : content::RenderViewObserver(render_view) {
 }
 
 void PageLoadHistograms::Dump(WebFrame* frame) {
@@ -808,12 +806,6 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     }
   }
 
-  // Site isolation metrics.
-  UMA_HISTOGRAM_COUNTS("SiteIsolation.PageLoadsWithCrossSiteFrameAccess",
-                       cross_origin_access_count_);
-  UMA_HISTOGRAM_COUNTS("SiteIsolation.PageLoadsWithSameSiteFrameAccess",
-                       same_origin_access_count_);
-
   // Log the PLT to the info log.
   LogPageLoadTime(document_state, frame->dataSource());
 
@@ -829,11 +821,6 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       content::kHistogramSynchronizerReservedSequenceNumber);
 }
 
-void PageLoadHistograms::ResetCrossFramePropertyAccess() {
-  cross_origin_access_count_ = 0;
-  same_origin_access_count_ = 0;
-}
-
 void PageLoadHistograms::FrameWillClose(WebFrame* frame) {
   Dump(frame);
 }
@@ -843,7 +830,6 @@ void PageLoadHistograms::ClosePage() {
   // called when a page is destroyed. page_load_histograms_.Dump() is safe
   // to call multiple times for the same frame, but it will simplify things.
   Dump(render_view()->GetWebView()->mainFrame());
-  ResetCrossFramePropertyAccess();
 }
 
 void PageLoadHistograms::LogPageLoadTime(const DocumentState* document_state,
