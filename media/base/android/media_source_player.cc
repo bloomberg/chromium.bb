@@ -28,13 +28,11 @@ MediaSourcePlayer::MediaSourcePlayer(
     MediaPlayerManager* manager,
     const RequestMediaResourcesCB& request_media_resources_cb,
     const ReleaseMediaResourcesCB& release_media_resources_cb,
-    scoped_ptr<DemuxerAndroid> demuxer,
-    const GURL& frame_url)
+    scoped_ptr<DemuxerAndroid> demuxer)
     : MediaPlayerAndroid(player_id,
                          manager,
                          request_media_resources_cb,
-                         release_media_resources_cb,
-                         frame_url),
+                         release_media_resources_cb),
       demuxer_(demuxer.Pass()),
       pending_event_(NO_EVENT_PENDING),
       playing_(false),

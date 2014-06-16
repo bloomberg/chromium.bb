@@ -81,14 +81,11 @@ class MEDIA_EXPORT MediaPlayerAndroid {
 
   int player_id() { return player_id_; }
 
-  GURL frame_url() { return frame_url_; }
-
  protected:
   MediaPlayerAndroid(int player_id,
                      MediaPlayerManager* manager,
                      const RequestMediaResourcesCB& request_media_resources_cb,
-                     const ReleaseMediaResourcesCB& release_media_resources_cb,
-                     const GURL& frame_url);
+                     const ReleaseMediaResourcesCB& release_media_resources_cb);
 
   MediaPlayerManager* manager() { return manager_; }
 
@@ -102,9 +99,6 @@ class MEDIA_EXPORT MediaPlayerAndroid {
 
   // Resource manager for all the media players.
   MediaPlayerManager* manager_;
-
-  // Url for the frame that contains this player.
-  GURL frame_url_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPlayerAndroid);
 };

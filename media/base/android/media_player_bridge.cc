@@ -33,13 +33,11 @@ MediaPlayerBridge::MediaPlayerBridge(
     bool hide_url_log,
     MediaPlayerManager* manager,
     const RequestMediaResourcesCB& request_media_resources_cb,
-    const ReleaseMediaResourcesCB& release_media_resources_cb,
-    const GURL& frame_url)
+    const ReleaseMediaResourcesCB& release_media_resources_cb)
     : MediaPlayerAndroid(player_id,
                          manager,
                          request_media_resources_cb,
-                         release_media_resources_cb,
-                         frame_url),
+                         release_media_resources_cb),
       prepared_(false),
       pending_play_(false),
       url_(url),

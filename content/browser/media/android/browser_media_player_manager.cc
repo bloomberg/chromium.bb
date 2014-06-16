@@ -59,25 +59,28 @@ ContentViewCoreImpl* BrowserMediaPlayerManager::GetContentViewCore() const {
 }
 
 MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
-    const MediaPlayerHostMsg_Initialize_Params& media_player_params,
+    MediaPlayerHostMsg_Initialize_Type type,
+    int player_id,
+    const GURL& url,
+    const GURL& first_party_for_cookies,
+    int demuxer_client_id,
     bool hide_url_log,
     MediaPlayerManager* manager,
     BrowserDemuxerAndroid* demuxer) {
-  switch (media_player_params.type) {
+  switch (type) {
     case MEDIA_PLAYER_TYPE_URL: {
       const std::string user_agent = GetContentClient()->GetUserAgent();
       MediaPlayerBridge* media_player_bridge = new MediaPlayerBridge(
-          media_player_params.player_id,
-          media_player_params.url,
-          media_player_params.first_party_for_cookies,
+          player_id,
+          url,
+          first_party_for_cookies,
           user_agent,
           hide_url_log,
           manager,
           base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesRequested,
                      weak_ptr_factory_.GetWeakPtr()),
           base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesReleased,
-                     weak_ptr_factory_.GetWeakPtr()),
-          media_player_params.frame_url);
+                     weak_ptr_factory_.GetWeakPtr()));
       BrowserMediaPlayerManager* browser_media_player_manager =
           static_cast<BrowserMediaPlayerManager*>(manager);
       ContentViewCoreImpl* content_view_core_impl =
@@ -89,9 +92,8 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
         // TODO(qinmin): extract the metadata once the user decided to load
         // the page.
         browser_media_player_manager->OnMediaMetadataChanged(
-            media_player_params.player_id, base::TimeDelta(), 0, 0, false);
-      } else if (!content_view_core_impl->ShouldBlockMediaRequest(
-            media_player_params.url)) {
+            player_id, base::TimeDelta(), 0, 0, false);
+      } else if (!content_view_core_impl->ShouldBlockMediaRequest(url)) {
         media_player_bridge->Initialize();
       }
       return media_player_bridge;
@@ -99,14 +101,13 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
 
     case MEDIA_PLAYER_TYPE_MEDIA_SOURCE: {
       return new MediaSourcePlayer(
-          media_player_params.player_id,
+          player_id,
           manager,
           base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesRequested,
                      weak_ptr_factory_.GetWeakPtr()),
           base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesReleased,
                      weak_ptr_factory_.GetWeakPtr()),
-          demuxer->CreateDemuxer(media_player_params.demuxer_client_id),
-          media_player_params.frame_url);
+          demuxer->CreateDemuxer(demuxer_client_id));
     }
   }
 
@@ -419,22 +420,23 @@ void BrowserMediaPlayerManager::OnExitFullscreen(int player_id) {
 }
 
 void BrowserMediaPlayerManager::OnInitialize(
-    const MediaPlayerHostMsg_Initialize_Params& media_player_params) {
-  DCHECK(media_player_params.type != MEDIA_PLAYER_TYPE_MEDIA_SOURCE ||
-      media_player_params.demuxer_client_id > 0)
+    MediaPlayerHostMsg_Initialize_Type type,
+    int player_id,
+    const GURL& url,
+    const GURL& first_party_for_cookies,
+    int demuxer_client_id) {
+  DCHECK(type != MEDIA_PLAYER_TYPE_MEDIA_SOURCE || demuxer_client_id > 0)
       << "Media source players must have positive demuxer client IDs: "
-      << media_player_params.demuxer_client_id;
+      << demuxer_client_id;
 
-  RemovePlayer(media_player_params.player_id);
+  RemovePlayer(player_id);
 
   RenderProcessHostImpl* host = static_cast<RenderProcessHostImpl*>(
       web_contents()->GetRenderProcessHost());
   MediaPlayerAndroid* player = CreateMediaPlayer(
-      media_player_params,
-
+      type, player_id, url, first_party_for_cookies, demuxer_client_id,
       host->GetBrowserContext()->IsOffTheRecord(), this,
       host->browser_demuxer_android());
-
   if (!player)
     return;
 

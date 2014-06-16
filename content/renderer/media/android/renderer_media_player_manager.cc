@@ -66,18 +66,10 @@ void RendererMediaPlayerManager::Initialize(
     int player_id,
     const GURL& url,
     const GURL& first_party_for_cookies,
-    int demuxer_client_id,
-    const GURL& frame_url) {
-
-  MediaPlayerHostMsg_Initialize_Params media_player_params;
-  media_player_params.type = type;
-  media_player_params.player_id = player_id;
-  media_player_params.demuxer_client_id = demuxer_client_id;
-  media_player_params.url = url;
-  media_player_params.first_party_for_cookies = first_party_for_cookies;
-  media_player_params.frame_url = frame_url;
-
-  Send(new MediaPlayerHostMsg_Initialize(routing_id(), media_player_params));
+    int demuxer_client_id) {
+  Send(new MediaPlayerHostMsg_Initialize(
+      routing_id(), type, player_id, url, first_party_for_cookies,
+      demuxer_client_id));
 }
 
 void RendererMediaPlayerManager::Start(int player_id) {
