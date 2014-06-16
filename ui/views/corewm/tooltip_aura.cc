@@ -4,7 +4,6 @@
 
 #include "ui/views/corewm/tooltip_aura.h"
 
-#include "base/command_line.h"
 #include "base/strings/string_split.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
