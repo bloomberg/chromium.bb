@@ -58,9 +58,6 @@ public:
     // Returns: the font family instance. The instance has an empty font name if the request could not be satisfied.
     BLINK_EXPORT static void fallbackFontForChar(const WebUChar32 character, const char* preferredLocale, WebFallbackFont*);
 
-    // TODO(dro): Remove this legacy version, kept until renames on the Chromium side are done. crbug.com/382411
-    BLINK_EXPORT static void familyForChar(const WebUChar32 character, const char* preferredLocale, WebFontFamily*);
-
     // Fill out the given WebFontRenderStyle with the user's preferences for
     // rendering the given font at the given size (in pixels).
     //   family: i.e. "Times New Roman"
