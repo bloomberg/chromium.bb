@@ -3,6 +3,8 @@
  // found in the LICENSE file.
 
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle_factory.h"
+
+#include "content/public/browser/resource_context.h"
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
 #endif
@@ -16,14 +18,19 @@ SafeBrowsingResourceThrottleFactory*
 // static
 ResourceThrottle* SafeBrowsingResourceThrottleFactory::Create(
     net::URLRequest* request,
+    content::ResourceContext* resource_context,
     bool is_subresource,
     SafeBrowsingService* service) {
 
 #if defined(FULL_SAFE_BROWSING)
+  if (factory_)
+    return factory_->CreateResourceThrottle(
+        request, resource_context, is_subresource, service);
   return new SafeBrowsingResourceThrottle(request, is_subresource, service);
 #elif defined(MOBILE_SAFE_BROWSING)
   if (factory_)
-    return factory_->CreateResourceThrottle(request, is_subresource, service);
+    return factory_->CreateResourceThrottle(
+        request, resource_context, is_subresource, service);
   return NULL;
 #else
 #error Need to define {FULL|MOBILE} SAFE_BROWSING mode.

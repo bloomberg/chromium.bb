@@ -477,10 +477,15 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 #if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
   // Insert safe browsing at the front of the list, so it gets to decide on
   // policies first.
-  if (io_data->safe_browsing_enabled()->GetValue()) {
+  if (io_data->safe_browsing_enabled()->GetValue()
+#if defined(OS_ANDROID)
+      || io_data->data_reduction_proxy_enabled()->GetValue()
+#endif
+  ) {
     bool is_subresource_request = resource_type != ResourceType::MAIN_FRAME;
     content::ResourceThrottle* throttle =
         SafeBrowsingResourceThrottleFactory::Create(request,
+                                                    resource_context,
                                                     is_subresource_request,
                                                     safe_browsing_.get());
     if (throttle)

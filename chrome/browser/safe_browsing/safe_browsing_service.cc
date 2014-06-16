@@ -176,7 +176,7 @@ SafeBrowsingService* SafeBrowsingService::CreateSafeBrowsingService() {
   return factory_->CreateSafeBrowsingService();
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && defined(FULL_SAFE_BROWSING)
 // static
 bool SafeBrowsingService::IsEnabledByFieldTrial() {
   const std::string experiment_name =

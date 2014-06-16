@@ -1118,6 +1118,7 @@ void ProfileIOData::ShutdownOnUIThread() {
   enable_metrics_.Destroy();
 #endif
   safe_browsing_enabled_.Destroy();
+  data_reduction_proxy_enabled_.Destroy();
   printing_enabled_.Destroy();
   sync_disabled_.Destroy();
   signin_allowed_.Destroy();
