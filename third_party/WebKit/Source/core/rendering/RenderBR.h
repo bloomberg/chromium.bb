@@ -55,9 +55,6 @@ public:
 
 protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
-
-private:
-    mutable int m_lineHeight;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBR, isBR());

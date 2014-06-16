@@ -970,8 +970,6 @@ void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier
 
         renderer->setStyleInternal(style.release());
         renderer->setNeedsLayoutAndFullPaintInvalidation();
-        if (renderer->isRenderBlock())
-            toRenderBlock(renderer)->invalidateLineHeight();
         break;
 
     case LayoutNeeded:

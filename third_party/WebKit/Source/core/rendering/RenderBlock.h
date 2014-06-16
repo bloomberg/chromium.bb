@@ -505,8 +505,6 @@ protected:
 public:
     virtual LayoutUnit offsetFromLogicalTopOfFirstPage() const OVERRIDE FINAL;
 
-    void invalidateLineHeight() { m_lineHeight = -1; }
-
 public:
 
     // Allocated only when some of these fields have non-default values
@@ -534,7 +532,7 @@ protected:
     RenderObjectChildList m_children;
     RenderLineBoxList m_lineBoxes;   // All of the root line boxes created for this block flow.  For example, <div>Hello<br>world.</div> will have two total lines for the <div>.
 
-    mutable signed m_lineHeight : 26;
+    // WARNING: Don't add any bits here until we are comfortable that removing m_lineHeight has not regressed performance. See http://crrev.com/260073005 for more information.
     unsigned m_hasMarginBeforeQuirk : 1; // Note these quirk values can't be put in RenderBlockRareData since they are set too frequently.
     unsigned m_hasMarginAfterQuirk : 1;
     unsigned m_beingDestroyed : 1;

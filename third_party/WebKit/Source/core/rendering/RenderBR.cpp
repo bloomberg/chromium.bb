@@ -35,7 +35,6 @@ static PassRefPtr<StringImpl> newlineString()
 
 RenderBR::RenderBR(Node* node)
     : RenderText(node, newlineString())
-    , m_lineHeight(-1)
 {
 }
 
@@ -45,22 +44,13 @@ RenderBR::~RenderBR()
 
 int RenderBR::lineHeight(bool firstLine) const
 {
-    if (firstLine && document().styleEngine()->usesFirstLineRules()) {
-        RenderStyle* s = style(firstLine);
-        if (s != style())
-            return s->computedLineHeight();
-    }
-
-    if (m_lineHeight == -1)
-        m_lineHeight = style()->computedLineHeight();
-
-    return m_lineHeight;
+    RenderStyle* s = style(firstLine && document().styleEngine()->usesFirstLineRules());
+    return s->computedLineHeight();
 }
 
 void RenderBR::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderText::styleDidChange(diff, oldStyle);
-    m_lineHeight = -1;
 }
 
 int RenderBR::caretMinOffset() const

@@ -155,7 +155,6 @@ private:
 
 RenderBlock::RenderBlock(ContainerNode* node)
     : RenderBox(node)
-    , m_lineHeight(-1)
     , m_hasMarginBeforeQuirk(false)
     , m_hasMarginAfterQuirk(false)
     , m_beingDestroyed(false)
@@ -351,7 +350,6 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
         textAutosizer->record(this);
 
     propagateStyleToAnonymousChildren(true);
-    invalidateLineHeight();
 
     // It's possible for our border/padding to change, but for the overall logical width of the block to
     // end up being the same. We keep track of this change so in layoutBlock, we can know to set relayoutChildren=true.
@@ -3784,16 +3782,8 @@ LayoutUnit RenderBlock::lineHeight(bool firstLine, LineDirectionMode direction, 
     if (isReplaced() && linePositionMode == PositionOnContainingLine)
         return RenderBox::lineHeight(firstLine, direction, linePositionMode);
 
-    if (firstLine && document().styleEngine()->usesFirstLineRules()) {
-        RenderStyle* s = style(firstLine);
-        if (s != style())
-            return s->computedLineHeight();
-    }
-
-    if (m_lineHeight == -1)
-        m_lineHeight = style()->computedLineHeight();
-
-    return m_lineHeight;
+    RenderStyle* s = style(firstLine && document().styleEngine()->usesFirstLineRules());
+    return s->computedLineHeight();
 }
 
 int RenderBlock::beforeMarginInLineDirection(LineDirectionMode direction) const
