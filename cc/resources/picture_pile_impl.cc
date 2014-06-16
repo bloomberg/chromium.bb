@@ -381,14 +381,14 @@ void PicturePileImpl::AnalyzeInRect(
   RasterForAnalysis(&canvas, layer_rect, 1.0f, stats_instrumentation);
 
   analysis->is_solid_color = canvas.GetColorIfSolid(&analysis->solid_color);
-  analysis->has_text = canvas.HasText();
 }
 
 // Since there are situations when we can skip analysis, the variables have to
 // be set to their safest values. That is, we have to assume that the tile is
 // not solid color. As well, we have to assume that the tile has text so we
 // don't early out incorrectly.
-PicturePileImpl::Analysis::Analysis() : is_solid_color(false), has_text(true) {}
+PicturePileImpl::Analysis::Analysis() : is_solid_color(false) {
+}
 
 PicturePileImpl::Analysis::~Analysis() {
 }

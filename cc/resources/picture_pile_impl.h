@@ -68,7 +68,6 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
     ~Analysis();
 
     bool is_solid_color;
-    bool has_text;
     SkColor solid_color;
   };
 
