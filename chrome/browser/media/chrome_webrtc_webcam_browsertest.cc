@@ -39,8 +39,6 @@ static const char* kTestConfigFlags[] = {
 class WebRtcWebcamBrowserTest : public WebRtcTestBase,
     public testing::WithParamInterface<const char*> {
  public:
-  WebRtcWebcamBrowserTest() : get_user_media_call_count_(0) {}
-
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     EXPECT_FALSE(command_line->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
@@ -57,17 +55,7 @@ class WebRtcWebcamBrowserTest : public WebRtcTestBase,
 
   std::string GetUserMediaAndGetStreamSize(content::WebContents* tab,
                                            const std::string& constraints) {
-    // We will get a permission prompt for the first getUserMedia call.
-    // Subsequent calls won't trigger a prompt.
-    if (get_user_media_call_count_ == 0) {
-      GetUserMediaWithSpecificConstraintsAndAccept(tab, constraints);
-    } else {
-      GetUserMedia(tab, constraints);
-      EXPECT_TRUE(test::PollingWaitUntil(
-          "obtainGetUserMediaResult()", "ok-got-stream", tab));
-    }
-
-    ++get_user_media_call_count_;
+    GetUserMediaWithSpecificConstraintsAndAccept(tab, constraints);
 
     StartDetectingVideo(tab, "local-view");
     WaitForVideoToPlay(tab);
@@ -83,8 +71,6 @@ class WebRtcWebcamBrowserTest : public WebRtcTestBase,
     return false;
 #endif
   }
-
-  int get_user_media_call_count_;
 };
 
 IN_PROC_BROWSER_TEST_P(WebRtcWebcamBrowserTest,
