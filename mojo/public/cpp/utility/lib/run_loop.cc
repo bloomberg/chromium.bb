@@ -153,11 +153,6 @@ bool RunLoop::NotifyDeadlineExceeded() {
 
   // Make a copy in case someone tries to add/remove new handlers as part of
   // notifying.
-  //
-  // TODO(darin): This does not protect against removal of handlers! After a
-  // call to OnHandleError, |cloned_handlers| could contain an invalid pointer
-  // to a RunLoopHandler! See http://crbug.com/384578.
-  //
   const HandleToHandlerData cloned_handlers(handler_data_);
   const MojoTimeTicks now(GetTimeTicksNow());
   for (HandleToHandlerData::const_iterator i = cloned_handlers.begin();
