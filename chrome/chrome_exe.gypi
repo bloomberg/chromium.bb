@@ -433,11 +433,16 @@
                 '../pdf/pdf.gyp:pdf_linux_symbols',
               ],
             }], # OS=="linux" and chromeos==0 and linux_dump_symbols==1
+            # Android doesn't use pdfium.
+            ['OS!="android"', {
+              'dependencies': [
+                # On Mac, this is done in chrome_dll.gypi.
+                '../pdf/pdf.gyp:pdf',
+              ],
+            }], # OS=="android"
           ],
           'dependencies': [
             '../components/components.gyp:startup_metric_utils',
-            # On Mac, this is done in chrome_dll.gypi.
-            '../pdf/pdf.gyp:pdf',
             'chrome_resources.gyp:packed_extra_resources',
             'chrome_resources.gyp:packed_resources',
             # Copy Flash Player files to PRODUCT_DIR if applicable. Let the .gyp
