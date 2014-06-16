@@ -80,7 +80,6 @@ class AccessibilityObserver;
 // |GetRootWindowController(aura::WindowEventDispatcher*)| function.
 class ASH_EXPORT RootWindowController : public ShellObserver {
  public:
-
   // Creates and Initialize the RootWindowController for primary display.
   static void CreateForPrimaryDisplay(AshWindowTreeHost* host);
 
@@ -95,7 +94,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // |window|. This returns the RootWindowController for the |window|'s
   // root window when multiple shelf mode is enabled, or the primary
   // RootWindowController otherwise.
-  static RootWindowController* ForShelf(aura::Window* window);
+  static RootWindowController* ForShelf(const aura::Window* window);
 
   // Returns a RootWindowController of the window's root window.
   static RootWindowController* ForWindow(const aura::Window* window);
@@ -326,6 +325,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 ASH_EXPORT RootWindowController* GetRootWindowController(
     const aura::Window* root_window);
 
-}  // ash
+}  // namespace ash
 
-#endif  //  ASH_ROOT_WINDOW_CONTROLLER_H_
+#endif  // ASH_ROOT_WINDOW_CONTROLLER_H_

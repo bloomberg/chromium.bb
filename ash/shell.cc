@@ -501,7 +501,7 @@ void Shell::SetShelfAlignment(ShelfAlignment alignment,
   }
 }
 
-ShelfAlignment Shell::GetShelfAlignment(aura::Window* root_window) {
+ShelfAlignment Shell::GetShelfAlignment(const aura::Window* root_window) {
   return GetRootWindowController(root_window)
       ->GetShelfLayoutManager()
       ->GetAlignment();

@@ -330,7 +330,8 @@ void RootWindowController::CreateForVirtualKeyboardDisplay(
 }
 
 // static
-RootWindowController* RootWindowController::ForShelf(aura::Window* window) {
+RootWindowController* RootWindowController::ForShelf(
+    const aura::Window* window) {
   return GetRootWindowController(window->GetRootWindow());
 }
 

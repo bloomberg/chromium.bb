@@ -117,9 +117,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     EXPECT_FALSE(window1_bounds.Intersects(window2_bounds));
   }
 
-  // TODO(dcheng): This should be const, but GetScreenBoundsOfItemIconForWindow
-  // takes a non-const Window. We can probably fix that.
-  void IsPanelAboveLauncherIcon(aura::Window* panel) {
+  void IsPanelAboveLauncherIcon(const aura::Window* panel) {
     // Waits until all shelf view animations are done.
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
 
@@ -234,7 +232,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     shell->SetShelfAlignment(alignment, root_window);
   }
 
-  ShelfAlignment GetAlignment(aura::Window* root_window) {
+  ShelfAlignment GetAlignment(const aura::Window* root_window) {
     ash::Shell* shell = ash::Shell::GetInstance();
     return shell->GetShelfAlignment(root_window);
   }

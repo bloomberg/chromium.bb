@@ -30,7 +30,7 @@ ASH_EXPORT void SetShelfIDForWindow(ShelfID id, aura::Window* window);
 // or 0 if there isn't one.
 // Note: Window of a tabbed browser will return the |ShelfID| of the
 // currently active tab.
-ASH_EXPORT ShelfID GetShelfIDForWindow(aura::Window* window);
+ASH_EXPORT ShelfID GetShelfIDForWindow(const aura::Window* window);
 
 // Sets ShelfItemDetails for |window|.
 ASH_EXPORT void SetShelfItemDetailsForWindow(aura::Window* window,

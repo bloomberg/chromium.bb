@@ -451,7 +451,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Sets/gets shelf's alignment on |root_window|.
   void SetShelfAlignment(ShelfAlignment alignment,
                          aura::Window* root_window);
-  ShelfAlignment GetShelfAlignment(aura::Window* root_window);
+  ShelfAlignment GetShelfAlignment(const aura::Window* root_window);
 
   // Dims or undims the screen.
   void SetDimming(bool should_dim);

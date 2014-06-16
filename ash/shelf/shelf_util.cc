@@ -27,7 +27,7 @@ void SetShelfIDForWindow(ShelfID id, aura::Window* window) {
   window->SetProperty(kShelfID, id);
 }
 
-ShelfID GetShelfIDForWindow(aura::Window* window) {
+ShelfID GetShelfIDForWindow(const aura::Window* window) {
   DCHECK(window);
   return window->GetProperty(kShelfID);
 }

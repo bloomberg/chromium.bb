@@ -63,7 +63,7 @@ class ASH_EXPORT Shelf {
 
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
-  gfx::Rect GetScreenBoundsOfItemIconForWindow(aura::Window* window);
+  gfx::Rect GetScreenBoundsOfItemIconForWindow(const aura::Window* window);
 
   // Updates the icon position given the current window bounds. This is used
   // when dragging panels to reposition them with respect to the other panels.

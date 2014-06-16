@@ -80,7 +80,8 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
   // ShelfLayoutManager will resize the shelf.
 }
 
-gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
+gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(
+    const aura::Window* window) {
   ShelfID id = GetShelfIDForWindow(window);
   gfx::Rect bounds(shelf_view_->GetIdealBoundsOfItemIcon(id));
   gfx::Point screen_origin;
