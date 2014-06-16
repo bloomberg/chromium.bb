@@ -28,7 +28,7 @@ newPromise.then(function(result) {
     testFailed("rejected");
 }).then(finishJSTest, finishJSTest);
 
-resolve(10);
+resolve(new Promise(function(resolve) { resolve(10); }));
 
 </script>
 </body>

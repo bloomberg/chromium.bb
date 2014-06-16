@@ -79,11 +79,10 @@ ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOw
     // In fact it is not the exact bahavior of Promise.prototype.then
     // but that is not a problem in this case.
     v8::Local<v8::Promise> resultPromise = promise.As<v8::Promise>();
-    // FIXME: Use Then once it is introduced.
     if (!v8OnFulfilled.IsEmpty()) {
-        resultPromise = resultPromise->Chain(v8OnFulfilled);
+        resultPromise = resultPromise->Then(v8OnFulfilled);
         if (resultPromise.IsEmpty()) {
-            // v8::Promise::Chain may return an empty value, for example when
+            // v8::Promise::Then may return an empty value, for example when
             // the stack is exhausted.
             return ScriptPromise();
         }
