@@ -166,7 +166,8 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
       overrides_handler_(new RendererOverridesHandler(this)),
       tracing_handler_(
           new DevToolsTracingHandler(DevToolsTracingHandler::Renderer)),
-      power_handler_(new DevToolsPowerHandler()) {
+      power_handler_(new DevToolsPowerHandler()),
+      reattaching_(false) {
   SetRenderViewHost(rvh);
   DevToolsProtocol::Notifier notifier(base::Bind(
       &RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend,
@@ -230,12 +231,17 @@ void RenderViewDevToolsAgentHost::OnClientAttached() {
   if (!render_view_host_)
     return;
 
-  ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
-      render_view_host_->GetProcess()->GetID());
+  InnerOnClientAttached();
 
   // TODO(kaznacheev): Move this call back to DevToolsManagerImpl when
   // extensions::ProcessManager no longer relies on this notification.
-  DevToolsManagerImpl::GetInstance()->NotifyObservers(this, true);
+  if (!reattaching_)
+    DevToolsManagerImpl::GetInstance()->NotifyObservers(this, true);
+}
+
+void RenderViewDevToolsAgentHost::InnerOnClientAttached() {
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
+      render_view_host_->GetProcess()->GetID());
 
 #if defined(OS_ANDROID)
   power_save_blocker_.reset(
@@ -262,6 +268,15 @@ void RenderViewDevToolsAgentHost::ClientDetachedFromRenderer() {
   if (!render_view_host_)
     return;
 
+  InnerClientDetachedFromRenderer();
+
+  // TODO(kaznacheev): Move this call back to DevToolsManagerImpl when
+  // extensions::ProcessManager no longer relies on this notification.
+  if (!reattaching_)
+    DevToolsManagerImpl::GetInstance()->NotifyObservers(this, false);
+}
+
+void RenderViewDevToolsAgentHost::InnerClientDetachedFromRenderer() {
   bool process_has_agents = false;
   RenderProcessHost* render_process_host = render_view_host_->GetProcess();
   for (Instances::iterator it = g_instances.Get().begin();
@@ -278,10 +293,6 @@ void RenderViewDevToolsAgentHost::ClientDetachedFromRenderer() {
     ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
         render_process_host->GetID());
   }
-
-  // TODO(kaznacheev): Move this call back to DevToolsManagerImpl when
-  // extensions::ProcessManager no longer relies on this notification.
-  DevToolsManagerImpl::GetInstance()->NotifyObservers(this, false);
 }
 
 RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {
@@ -301,8 +312,7 @@ void RenderViewDevToolsAgentHost::AboutToNavigateRenderView(
           render_view_host_)->render_view_termination_status() ==
               base::TERMINATION_STATUS_STILL_RUNNING)
     return;
-  DisconnectRenderViewHost();
-  ConnectRenderViewHost(dest_rvh);
+  ReattachToRenderViewHost(dest_rvh);
 }
 
 void RenderViewDevToolsAgentHost::RenderViewHostChanged(
@@ -311,9 +321,17 @@ void RenderViewDevToolsAgentHost::RenderViewHostChanged(
   if (new_host != render_view_host_) {
     // AboutToNavigateRenderView was not called for renderer-initiated
     // navigation.
-    DisconnectRenderViewHost();
-    ConnectRenderViewHost(new_host);
+    ReattachToRenderViewHost(new_host);
   }
+}
+
+void
+RenderViewDevToolsAgentHost::ReattachToRenderViewHost(RenderViewHost* rvh) {
+  DCHECK(!reattaching_);
+  reattaching_ = true;
+  DisconnectRenderViewHost();
+  ConnectRenderViewHost(rvh);
+  reattaching_ = false;
 }
 
 void RenderViewDevToolsAgentHost::RenderViewDeleted(RenderViewHost* rvh) {

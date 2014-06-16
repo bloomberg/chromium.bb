@@ -78,6 +78,8 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
+  void ReattachToRenderViewHost(RenderViewHost* rvh);
+
   bool DispatchIPCMessage(const IPC::Message& message);
 
   void SetRenderViewHost(RenderViewHost* rvh);
@@ -91,6 +93,9 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
   void ClientDetachedFromRenderer();
 
+  void InnerOnClientAttached();
+  void InnerClientDetachedFromRenderer();
+
   RenderViewHost* render_view_host_;
   scoped_ptr<RendererOverridesHandler> overrides_handler_;
   scoped_ptr<DevToolsTracingHandler> tracing_handler_;
@@ -100,6 +105,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 #endif
   std::string state_;
   NotificationRegistrar registrar_;
+  bool reattaching_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewDevToolsAgentHost);
 };
