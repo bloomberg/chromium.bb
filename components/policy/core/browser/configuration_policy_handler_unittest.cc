@@ -25,13 +25,12 @@ StringToIntEnumListPolicyHandler::MappingEntry kTestTypeMap[] = {
 const char kTestPolicy[] = "unit_test.test_policy";
 const char kTestPref[] = "unit_test.test_pref";
 
-class SimpleSchemaValidatingPolicyHandler
-    : public SchemaValidatingPolicyHandler {
+class TestSchemaValidatingPolicyHandler : public SchemaValidatingPolicyHandler {
  public:
-  SimpleSchemaValidatingPolicyHandler(const Schema& schema,
-                                      SchemaOnErrorStrategy strategy)
+  TestSchemaValidatingPolicyHandler(const Schema& schema,
+                                    SchemaOnErrorStrategy strategy)
       : SchemaValidatingPolicyHandler("PolicyForTesting", schema, strategy) {}
-  virtual ~SimpleSchemaValidatingPolicyHandler() {}
+  virtual ~TestSchemaValidatingPolicyHandler() {}
 
   virtual void ApplyPolicySettings(const policy::PolicyMap&,
                                    PrefValueMap*) OVERRIDE {
@@ -543,7 +542,7 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
   policy_map.LoadFrom(
       policy_map_dict, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER);
 
-  SimpleSchemaValidatingPolicyHandler handler(schema, SCHEMA_ALLOW_INVALID);
+  TestSchemaValidatingPolicyHandler handler(schema, SCHEMA_ALLOW_INVALID);
   scoped_ptr<base::Value> output_value;
   ASSERT_TRUE(handler.CheckAndGetValueForTest(policy_map, &output_value));
   ASSERT_TRUE(output_value);
@@ -556,6 +555,142 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
   EXPECT_TRUE(dict->GetInteger("OneToThree", &int_value));
   EXPECT_EQ(2, int_value);
   EXPECT_FALSE(dict->HasKey("Colors"));
+}
+
+TEST(SimpleSchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
+  const char policy_name[] = "PolicyForTesting";
+  static const char kSchemaJson[] =
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"PolicyForTesting\": {"
+      "      \"type\": \"object\","
+      "      \"properties\": {"
+      "        \"OneToThree\": {"
+      "          \"type\": \"integer\","
+      "          \"minimum\": 1,"
+      "          \"maximum\": 3"
+      "        },"
+      "        \"Colors\": {"
+      "          \"type\": \"string\","
+      "          \"enum\": [ \"Red\", \"Green\", \"Blue\" ]"
+      "        }"
+      "      }"
+      "    }"
+      "  }"
+      "}";
+  std::string error;
+  Schema schema = Schema::Parse(kSchemaJson, &error);
+  ASSERT_TRUE(schema.valid()) << error;
+
+  static const char kPolicyMapJson[] =
+      "{"
+      "  \"PolicyForTesting\": {"
+      "    \"OneToThree\": 2,"
+      "    \"Colors\": \"Green\""
+      "  }"
+      "}";
+  scoped_ptr<base::Value> policy_map_value(base::JSONReader::ReadAndReturnError(
+      kPolicyMapJson, base::JSON_PARSE_RFC, NULL, &error));
+  ASSERT_TRUE(policy_map_value) << error;
+
+  const base::DictionaryValue* policy_map_dict = NULL;
+  ASSERT_TRUE(policy_map_value->GetAsDictionary(&policy_map_dict));
+
+  PolicyMap policy_map_recommended;
+  policy_map_recommended.LoadFrom(
+      policy_map_dict, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER);
+
+  PolicyMap policy_map_mandatory;
+  policy_map_mandatory.LoadFrom(
+      policy_map_dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+
+  SimpleSchemaValidatingPolicyHandler handler_all(
+      policy_name,
+      kTestPref,
+      schema,
+      SCHEMA_STRICT,
+      SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
+      SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED);
+
+  SimpleSchemaValidatingPolicyHandler handler_recommended(
+      policy_name,
+      kTestPref,
+      schema,
+      SCHEMA_STRICT,
+      SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
+      SimpleSchemaValidatingPolicyHandler::MANDATORY_PROHIBITED);
+
+  SimpleSchemaValidatingPolicyHandler handler_mandatory(
+      policy_name,
+      kTestPref,
+      schema,
+      SCHEMA_STRICT,
+      SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
+      SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED);
+
+  SimpleSchemaValidatingPolicyHandler handler_none(
+      policy_name,
+      kTestPref,
+      schema,
+      SCHEMA_STRICT,
+      SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
+      SimpleSchemaValidatingPolicyHandler::MANDATORY_PROHIBITED);
+
+  const base::Value* value_expected_in_pref;
+  policy_map_dict->Get(policy_name, &value_expected_in_pref);
+
+  PolicyErrorMap errors;
+  PrefValueMap prefs;
+  base::Value* value_set_in_pref;
+
+  EXPECT_TRUE(handler_all.CheckPolicySettings(policy_map_mandatory, &errors));
+  EXPECT_TRUE(errors.empty());
+  prefs.Clear();
+  handler_all.ApplyPolicySettings(policy_map_mandatory, &prefs);
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value_set_in_pref));
+  EXPECT_TRUE(value_expected_in_pref->Equals(value_set_in_pref));
+
+  EXPECT_FALSE(
+      handler_recommended.CheckPolicySettings(policy_map_mandatory, &errors));
+  EXPECT_FALSE(errors.empty());
+  errors.Clear();
+
+  EXPECT_TRUE(
+      handler_mandatory.CheckPolicySettings(policy_map_mandatory, &errors));
+  EXPECT_TRUE(errors.empty());
+  prefs.Clear();
+  handler_mandatory.ApplyPolicySettings(policy_map_mandatory, &prefs);
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value_set_in_pref));
+  EXPECT_TRUE(value_expected_in_pref->Equals(value_set_in_pref));
+
+  EXPECT_FALSE(handler_none.CheckPolicySettings(policy_map_mandatory, &errors));
+  EXPECT_FALSE(errors.empty());
+  errors.Clear();
+
+  EXPECT_TRUE(handler_all.CheckPolicySettings(policy_map_recommended, &errors));
+  EXPECT_TRUE(errors.empty());
+  prefs.Clear();
+  handler_all.ApplyPolicySettings(policy_map_mandatory, &prefs);
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value_set_in_pref));
+  EXPECT_TRUE(value_expected_in_pref->Equals(value_set_in_pref));
+
+  EXPECT_FALSE(
+      handler_mandatory.CheckPolicySettings(policy_map_recommended, &errors));
+  EXPECT_FALSE(errors.empty());
+  errors.Clear();
+
+  EXPECT_TRUE(
+      handler_recommended.CheckPolicySettings(policy_map_recommended, &errors));
+  EXPECT_TRUE(errors.empty());
+  prefs.Clear();
+  handler_recommended.ApplyPolicySettings(policy_map_mandatory, &prefs);
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value_set_in_pref));
+  EXPECT_TRUE(value_expected_in_pref->Equals(value_set_in_pref));
+
+  EXPECT_FALSE(
+      handler_none.CheckPolicySettings(policy_map_recommended, &errors));
+  EXPECT_FALSE(errors.empty());
 }
 
 }  // namespace policy

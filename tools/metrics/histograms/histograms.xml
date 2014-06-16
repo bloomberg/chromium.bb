@@ -35405,6 +35405,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="265" label="Enables the old web-based signin"/>
   <int value="266" label="Block developer mode"/>
   <int value="267" label="Show the apps shortcut in the bookmark bar"/>
+  <int value="268" label="Register protocol handlers"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

@@ -273,6 +273,41 @@ class POLICY_EXPORT SchemaValidatingPolicyHandler
   DISALLOW_COPY_AND_ASSIGN(SchemaValidatingPolicyHandler);
 };
 
+// Maps policy to pref like SimplePolicyHandler while ensuring that the value
+// set matches the schema. |schema| is the schema used for policies, and
+// |strategy| is the strategy used for schema validation errors. The
+// |recommended_permission| and |mandatory_permission| flags indicate the levels
+// at which the policy can be set. A value set at an unsupported level will be
+// ignored.
+class POLICY_EXPORT SimpleSchemaValidatingPolicyHandler
+    : public SchemaValidatingPolicyHandler {
+ public:
+  enum MandatoryPermission { MANDATORY_ALLOWED, MANDATORY_PROHIBITED };
+  enum RecommendedPermission { RECOMMENDED_ALLOWED, RECOMMENDED_PROHIBITED };
+
+  SimpleSchemaValidatingPolicyHandler(
+      const char* policy_name,
+      const char* pref_path,
+      Schema schema,
+      SchemaOnErrorStrategy strategy,
+      RecommendedPermission recommended_permission,
+      MandatoryPermission mandatory_permission);
+  virtual ~SimpleSchemaValidatingPolicyHandler();
+
+  // ConfigurationPolicyHandler:
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
+                                   PolicyErrorMap* errors) OVERRIDE;
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
+
+ private:
+  const char* pref_path_;
+  const bool allow_recommended_;
+  const bool allow_mandatory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleSchemaValidatingPolicyHandler);
+};
+
 // A policy handler to deprecate multiple legacy policies with a new one.
 // This handler will completely ignore any of legacy policy values if the new
 // one is set.

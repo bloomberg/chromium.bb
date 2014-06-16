@@ -584,6 +584,15 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new DownloadDirPolicyHandler));
+
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new SimpleSchemaValidatingPolicyHandler(
+          key::kRegisteredProtocolHandlers,
+          prefs::kPolicyRegisteredProtocolHandlers,
+          chrome_schema,
+          SCHEMA_STRICT,
+          SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
+          SimpleSchemaValidatingPolicyHandler::MANDATORY_PROHIBITED)));
 #endif
 
 #if defined(OS_CHROMEOS)

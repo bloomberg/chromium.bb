@@ -202,6 +202,9 @@
       Policy scope is not supported.
     </message>
   </if>
+  <message name="IDS_POLICY_LEVEL_ERROR" desc="Text displayed in the status column when a policy is set at an unsupported level.">
+    Policy level is not supported.
+  </message>
   <message name="IDS_POLICY_OK" desc="Text displayed in the status column when a valid value is set for a policy.">
     OK
   </message>

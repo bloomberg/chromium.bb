@@ -1575,6 +1575,17 @@
     ]
   },
 
+  "RegisteredProtocolHandlers": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
+    "test_policy": { "RegisteredProtocolHandlers": {"protocol": "test", "url": "http://example.com/%s", "default": "true"} },
+    "pref_mappings": [
+      { "pref": "custom_handlers.policy.registered_protocol_handlers",
+        "check_for_mandatory": false
+      }
+    ]
+  },
+
   "HideWebStoreIcon": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "HideWebStoreIcon": true },

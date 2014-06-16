@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 267
+#   For your editing convenience: highest ID currently used: 268
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2666,6 +2666,42 @@
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to open popups.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPopupsSetting' policy if it is set, or the user's personal configuration otherwise.''',
+        },
+        {
+          'name': 'RegisteredProtocolHandlers',
+          'type': 'dict',
+          'schema': {
+            'type': 'array',
+            'items': {
+              'type': 'object',
+              'properties': {
+                'default': {
+                  'description': 'A boolean flag indicating if the protocol handler should be set as the default.',
+                  'type': 'boolean'
+                },
+                'protocol': {
+                  'description': 'The protocol for the protocol handler.',
+                  'type': 'string'
+                },
+                'url': {
+                  'description': 'The URL of the protocol handler.',
+                  'type': 'string'
+                }
+              },
+              'required': ['protocol', 'url']
+            }
+          },
+          'supported_on': ['chrome.*:37-', 'chrome_os:37-'],
+          'features': {
+            'dynamic_refresh': False,
+            'per_profile': True,
+          },
+          'example_value': [{'protocol': 'mailto', 'url': 'https://mail.google.com/mail/?extsrc=mailto&url=%s', 'default': 'true'}],
+          'id': 268,
+          'caption': '''Register protocol handlers''',
+          'desc': '''Allows you to register a list of protocol handlers. This can only be a recommended policy. The property |protocol| should be set to the scheme such as 'mailto' and the property |url| should be set to the URL pattern of the application that handles the scheme. The pattern can include a '%s', which if present will be replaced by the handled URL.
+
+          The protocol handlers registered by policy are merged with the ones registered by the user and both are available for use. The user can override the protocol handlers installed by policy by installing a new default handler, but cannot remove a protocol handler registered by policy.''',
         },
         {
           'name': 'PopupsBlockedForUrls',

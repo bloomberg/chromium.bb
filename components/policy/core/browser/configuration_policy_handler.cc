@@ -368,6 +368,54 @@ bool SchemaValidatingPolicyHandler::CheckAndGetValue(
   return result;
 }
 
+// SimpleSchemaValidatingPolicyHandler implementation --------------------------
+
+SimpleSchemaValidatingPolicyHandler::SimpleSchemaValidatingPolicyHandler(
+    const char* policy_name,
+    const char* pref_path,
+    Schema schema,
+    SchemaOnErrorStrategy strategy,
+    RecommendedPermission recommended_permission,
+    MandatoryPermission mandatory_permission)
+    : SchemaValidatingPolicyHandler(policy_name,
+                                    schema.GetKnownProperty(policy_name),
+                                    strategy),
+      pref_path_(pref_path),
+      allow_recommended_(recommended_permission == RECOMMENDED_ALLOWED),
+      allow_mandatory_(mandatory_permission == MANDATORY_ALLOWED) {
+}
+
+SimpleSchemaValidatingPolicyHandler::~SimpleSchemaValidatingPolicyHandler() {
+}
+
+bool SimpleSchemaValidatingPolicyHandler::CheckPolicySettings(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors) {
+  const PolicyMap::Entry* policy_entry = policies.Get(policy_name());
+  if (!policy_entry)
+    return true;
+  if ((policy_entry->level == policy::POLICY_LEVEL_MANDATORY &&
+       !allow_mandatory_) ||
+      (policy_entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
+       !allow_recommended_)) {
+    if (errors)
+      errors->AddError(policy_name(), IDS_POLICY_LEVEL_ERROR);
+    return false;
+  }
+
+  return SchemaValidatingPolicyHandler::CheckPolicySettings(policies, errors);
+}
+
+void SimpleSchemaValidatingPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
+  if (!pref_path_)
+    return;
+  const base::Value* value = policies.GetValue(policy_name());
+  if (value)
+    prefs->SetValue(pref_path_, value->DeepCopy());
+}
+
 // LegacyPoliciesDeprecatingPolicyHandler implementation -----------------------
 
 // TODO(binjin): Add a new common base class for SchemaValidatingPolicyHandler
