@@ -39,11 +39,11 @@ var privateKeyJSON = {
 };
 
 Promise.resolve(null).then(function(result) {
-    return crypto.subtle.importKey("jwk", asciiToUint8Array(JSON.stringify(publicKeyJSON)), {name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-256'}}, extractable, ["verify"]);
+    return crypto.subtle.importKey("jwk", publicKeyJSON, {name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-256'}}, extractable, ["verify"]);
 }).then(function(result) {
     key = result;
     shouldEvaluateAs("key.algorithm.modulusLength", 1024);
-    return crypto.subtle.importKey("jwk", asciiToUint8Array(JSON.stringify(privateKeyJSON)), {name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-512'}}, extractable, ["sign"]);
+    return crypto.subtle.importKey("jwk", privateKeyJSON, {name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-512'}}, extractable, ["sign"]);
 }).then(function(result) {
     key = result;
     shouldEvaluateAs("key.algorithm.modulusLength", 1024);

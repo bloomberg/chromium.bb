@@ -25,13 +25,12 @@ var publicKeyJSON = {
     use: "sig"
 };
 
-var jwkKeyAsArrayBuffer = asciiToUint8Array(JSON.stringify(publicKeyJSON));
 var wrappingKeyOctets = hexStringToUint8Array("2a00e0e776e94e4dc89bf947cebdebe1");
 
 debug("Importing a key to wrap...");
 
 var importAlgorithm = {name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-256'} };
-crypto.subtle.importKey("jwk", jwkKeyAsArrayBuffer, importAlgorithm, nonExtractable, ["verify"]).then(function(result) {
+crypto.subtle.importKey("jwk", publicKeyJSON, importAlgorithm, nonExtractable, ["verify"]).then(function(result) {
     key = result;
     shouldBe("key.algorithm.name", "'RSASSA-PKCS1-v1_5'");
     debug("Importing a key encryption key...");

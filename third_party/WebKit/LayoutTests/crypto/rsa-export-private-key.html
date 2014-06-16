@@ -30,10 +30,9 @@ var privateKeyJSON = {
     "alg":"RS256",
     "kid":"2011-04-29"
 }
-var jwkKeyAsArrayBuffer = asciiToUint8Array(JSON.stringify(privateKeyJSON));
 
 debug("\nImporting a JWK key...");
-crypto.subtle.importKey("jwk", jwkKeyAsArrayBuffer, {name: "RSASSA-PKCS1-v1_5", hash: {name: "sha-256"}}, extractable, ['sign']).then(function(result) {
+crypto.subtle.importKey("jwk", privateKeyJSON, {name: "RSASSA-PKCS1-v1_5", hash: {name: "sha-256"}}, extractable, ['sign']).then(function(result) {
     key = result;
 
     debug("\nExporting the key as JWK...");

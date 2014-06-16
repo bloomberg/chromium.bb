@@ -71,7 +71,7 @@ crypto.subtle.generateKey(algorithmKeyGen, extractable, ["encrypt", "decrypt", "
     shouldBe("bytesToHexString(Base64URL.parse(jwkPublicKey.e))", "'010001'");
 
     debug("\nImporting it back...");
-    return crypto.subtle.importKey("jwk", jwkPublicKeyArray, { name: "RSA-OAEP", hash: {name: "sha-1"} }, extractable, ["encrypt", "wrapKey"]);
+    return crypto.subtle.importKey("jwk", jwkPublicKey, { name: "RSA-OAEP", hash: {name: "sha-1"} }, extractable, ["encrypt", "wrapKey"]);
 }).then(function(result) {
     exportedPublicKey = result;
     shouldBe("exportedPublicKey.type", "'public'");

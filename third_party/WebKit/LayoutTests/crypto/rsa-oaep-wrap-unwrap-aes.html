@@ -39,9 +39,9 @@ var nonExtractable = false;
 var importAlgorithm = {name: "rsa-oaep", hash: {name:"sha-1"}};
 
 debug("Importing RSA keys...");
-crypto.subtle.importKey("jwk", asciiToUint8Array(JSON.stringify(publicKeyJSON)), importAlgorithm, extractable, ["wrapKey"]).then(function(result) {
+crypto.subtle.importKey("jwk", publicKeyJSON, importAlgorithm, extractable, ["wrapKey"]).then(function(result) {
     publicKey = result;
-    return crypto.subtle.importKey("jwk", asciiToUint8Array(JSON.stringify(privateKeyJSON)), importAlgorithm, extractable, ["unwrapKey"]);
+    return crypto.subtle.importKey("jwk", privateKeyJSON, importAlgorithm, extractable, ["unwrapKey"]);
 }).then(function(result) {
     privateKey = result;
 

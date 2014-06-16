@@ -59,6 +59,7 @@ typedef (ArrayBuffer or ArrayBufferView) CryptoOperationData;
 
     [CallWith=ScriptState] Promise importKey(KeyFormat format, ArrayBuffer keyData, Dictionary algorithm, boolean extractable, KeyUsage[] keyUsages);
     [CallWith=ScriptState] Promise importKey(KeyFormat format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, KeyUsage[] keyUsages);
+    [CallWith=ScriptState] Promise importKey(KeyFormat format, Dictionary keyData, Dictionary algorithm, boolean extractable, KeyUsage[] keyUsages);
 
     [CallWith=ScriptState] Promise exportKey(KeyFormat format, Key key);
 

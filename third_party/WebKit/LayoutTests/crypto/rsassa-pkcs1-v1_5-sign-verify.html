@@ -38,10 +38,10 @@ var privateKeyJSON = {
 var data = asciiToUint8Array("Hello, world!");
 
 debug("Importing a public key...");
-crypto.subtle.importKey("jwk", asciiToUint8Array(JSON.stringify(publicKeyJSON)), { name: "RSASSA-PKCS1-v1_5", hash: {name: "SHA-256"} }, extractable, ["verify"]).then(function(result) {
+crypto.subtle.importKey("jwk", publicKeyJSON, { name: "RSASSA-PKCS1-v1_5", hash: {name: "SHA-256"} }, extractable, ["verify"]).then(function(result) {
     publicKey = result;
     debug("\nImporting a private key...");
-    return crypto.subtle.importKey("jwk", asciiToUint8Array(JSON.stringify(privateKeyJSON)), { name: "RSASSA-PKCS1-v1_5", hash: {name: "SHA-256"} }, extractable, ["sign"]);
+    return crypto.subtle.importKey("jwk", privateKeyJSON, { name: "RSASSA-PKCS1-v1_5", hash: {name: "SHA-256"} }, extractable, ["sign"]);
 }).then(function(result) {
     privateKey = result;
     debug("\nSigning some text...");

@@ -24,10 +24,8 @@ var hmacKey = {
     "k": "ahjkn-_387fgnsibf23qsvahjkn-_387fgnsibf23qs"
 };
 
-var hmacKeyAsArrayBuffer = asciiToUint8Array(JSON.stringify(hmacKey));
-
 debug("Importing a key...\n");
-crypto.subtle.importKey("jwk", hmacKeyAsArrayBuffer, {name: "HMAC", hash: {name: "SHA-256"}}, nonExtractable, ["sign", "verify"]).then(function(result) {
+crypto.subtle.importKey("jwk", hmacKey, {name: "HMAC", hash: {name: "SHA-256"}}, nonExtractable, ["sign", "verify"]).then(function(result) {
     key = result;
 
     shouldBe("key.type", "'secret'");

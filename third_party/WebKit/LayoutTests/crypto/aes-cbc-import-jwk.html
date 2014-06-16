@@ -27,10 +27,8 @@ var jwkKey = {
     "k": "YD3rEBXKcb4rc67whX13gR81LAc7YQjXLZgQowkU3_Q"
 };
 
-var jwkKeyAsArrayBuffer = asciiToUint8Array(JSON.stringify(jwkKey));
-
 debug("Importing a key...\n");
-crypto.subtle.importKey("jwk", jwkKeyAsArrayBuffer, {name: 'AES-CBC'}, false, ["encrypt"]).then(function(result) {
+crypto.subtle.importKey("jwk", jwkKey, {name: 'AES-CBC'}, false, ["encrypt"]).then(function(result) {
     key = result;
 
     shouldBe("key.type", "'secret'");

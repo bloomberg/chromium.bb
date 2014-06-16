@@ -19,49 +19,43 @@ var nonExtractable = false;
 var hmac256 = {name: "HMAC", hash: {name: "sha-256"}};
 
 Promise.resolve(null).then(function(result) {
-    return crypto.subtle.importKey("jwk", asciiToUint8Array(''), {name: "aes-cbc"}, extractable, []);
+    return crypto.subtle.importKey("jwk", null, {name: "aes-cbc"}, extractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{'), {name: "aes-cbc"}, extractable, []);
+    return crypto.subtle.importKey("jwk", undefined, {name: "aes-cbc"}, extractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('null'), {name: "aes-cbc"}, extractable, []);
-}).then(failAndFinishJSTest, function(result) {
-    logError(result);
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('undefined'), {name: "aes-cbc"}, extractable, []);
-}).then(failAndFinishJSTest, function(result) {
-    logError(result);
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{}'), {name: "aes-cbc"}, extractable, []);
+    return crypto.subtle.importKey("jwk", {}, {name: "aes-cbc"}, extractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
     // Unknown/invalid JWK values.
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "foobar", "alg": "HS256", "use": "sig", "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }'), hmac256, extractable, []);
+    return crypto.subtle.importKey("jwk", { "kty": "foobar", "alg": "HS256", "use": "sig", "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }, hmac256, extractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": "foobar", "use": "sig", "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }'), {name: "aes-cbc"}, extractable, []);
+    return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": "foobar", "use": "sig", "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }, {name: "aes-cbc"}, extractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
     // Algorithm mismatch.
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": "HS256", "use": "sig", "ext": false, "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }'), {name: "AES-cbc"}, nonExtractable, []);
+    return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": "HS256", "use": "sig", "ext": false, "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }, {name: "AES-cbc"}, nonExtractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": "HS256", "use": "sig", "ext": false, "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }'), { name: "hmac", hash: {name: "sha-1"} }, nonExtractable, []);
+    return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": "HS256", "use": "sig", "ext": false, "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }, { name: "hmac", hash: {name: "sha-1"} }, nonExtractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
     // No key data.
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": "HS256" }'), hmac256, extractable, []);
+    return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": "HS256" }, hmac256, extractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": "A128CBC" }'), {name: "aes-cbc"}, extractable, []);
+    return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": "A128CBC" }, {name: "aes-cbc"}, extractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
     // FIXME: http://crbug.com/378037
     // Key data length is incorrect, not allowed in JWK.
     // return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": "HS256", "use": "sig", "ext": false, "k": "1234" }'), hmac256, nonExtractable, []);
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": "A128CBC", "use": "sig", "ext": false, "k": "1234" }'), {name: "aes-cbc"}, nonExtractable, []);
+    return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": "A128CBC", "use": "sig", "ext": false, "k": "1234" }, {name: "aes-cbc"}, nonExtractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": "A128CBC", "use": "sig", "ext": false, "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }'), {name: "aes-cbc"}, nonExtractable, []);
+    return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": "A128CBC", "use": "sig", "ext": false, "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }, {name: "aes-cbc"}, nonExtractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
     // Key data is not valid base64url.
@@ -69,21 +63,23 @@ Promise.resolve(null).then(function(result) {
     // return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": "HS256", "use": "sig", "ext": false, "k": "ahjkn23387f+nsibf23qsvahjkn37387fgnsibf23qs" }'), hmac256, nonExtractable, []);
 
     // Incorrect data types.
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": 1, "alg": "HS256", "use": "sig", "ext": false, "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }'), hmac256, nonExtractable, []);
+    return crypto.subtle.importKey("jwk", { "kty": 1, "alg": "HS256", "use": "sig", "ext": false, "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }, hmac256, nonExtractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": 1, "use": "sig", "ext": false, "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }'), {name: "aes-cbc"}, nonExtractable, []);
+    return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": 1, "use": "sig", "ext": false, "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }, {name: "aes-cbc"}, nonExtractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": "HS256", "use": 1, "ext": false, "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }'), hmac256, nonExtractable, []);
+    return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": "HS256", "use": 1, "ext": false, "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }, hmac256, nonExtractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": "HS256", "use": "sig", "ext": "false", "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }'), hmac256, nonExtractable, []);
-}).then(failAndFinishJSTest, function(result) {
-    logError(result);
-    return crypto.subtle.importKey("jwk", asciiToUint8Array('{ "kty": "oct", "alg": "HS256", "use": "sig", "ext": false, "k": 1 }'), hmac256, nonExtractable, []);
-}).then(failAndFinishJSTest, function(result) {
-    logError(result);
+    // ext is recognized as a boolean even though it is a string.
+    return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": "HS256", "use": "sig", "ext": "false", "k": "ahjkn23387fgnsibf23qsvahjkn37387fgnsibf23qs" }, hmac256, nonExtractable, []);
+}).then(function(result) {
+    debug("Boolean JWK property passed as a string and worked");
+    // k is recognized as a string even though it is a number.
+    return crypto.subtle.importKey("jwk", { "kty": "oct", "alg": "HS256", "use": "sig", "ext": false, "k": 1258 }, hmac256, nonExtractable, []);
+}).then(function(result) {
+    debug("String JWK property passed as a number and worked");
 }).then(finishJSTest, failAndFinishJSTest);
 </script>
 

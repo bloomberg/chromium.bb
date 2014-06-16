@@ -39,7 +39,7 @@ function testWithAESCBC(expectedUsages, jwkUsages, importUsages)
         aesKeyAsJSON.use = jwkUsages.use;
     }
 
-    return crypto.subtle.importKey("jwk", asciiToUint8Array(JSON.stringify(aesKeyAsJSON)), {name: "AES-CBC"}, extractable, importUsages).then(function(result) {
+    return crypto.subtle.importKey("jwk", aesKeyAsJSON, {name: "AES-CBC"}, extractable, importUsages).then(function(result) {
         key = result;
         debug(JSON.stringify(jwkUsages) + ":");
         shouldBe("key.usages", JSON.stringify(expectedUsages));
@@ -60,7 +60,7 @@ function testWithHMAC(expectedUsages, jwkUsages, importUsages)
         hmacKeyAsJSON.use = jwkUsages.use;
     }
 
-    return crypto.subtle.importKey("jwk", asciiToUint8Array(JSON.stringify(hmacKeyAsJSON)), {name: 'hmac', hash: {name: 'sha-256'}}, extractable, importUsages).then(function(result) {
+    return crypto.subtle.importKey("jwk", hmacKeyAsJSON, {name: 'hmac', hash: {name: 'sha-256'}}, extractable, importUsages).then(function(result) {
         key = result;
         debug(JSON.stringify(jwkUsages) + ":");
         shouldBe("key.usages", JSON.stringify(expectedUsages));

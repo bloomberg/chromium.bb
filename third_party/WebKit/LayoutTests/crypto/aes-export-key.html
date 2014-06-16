@@ -21,8 +21,6 @@ var jwkKey = {
     k: "jnOw99oOZFLIEPMrgJB55WL46tJSLGt7jnOw99oOZFI"
 };
 
-var jwkKeyAsArrayBuffer = asciiToUint8Array(JSON.stringify(jwkKey));
-
 Promise.resolve(null).then(function(result) {
     return crypto.subtle.exportKey("raw");
 }).then(failAndFinishJSTest, function(result) {
@@ -41,7 +39,7 @@ Promise.resolve(null).then(function(result) {
     logError(result);
     debug("\nImporting a JWK key...");
 
-    return crypto.subtle.importKey("jwk", jwkKeyAsArrayBuffer, {name: "AES-CBC"}, extractable, ['encrypt', 'decrypt', 'wrapKey', 'unwrapKey']);
+    return crypto.subtle.importKey("jwk", jwkKey, {name: "AES-CBC"}, extractable, ['encrypt', 'decrypt', 'wrapKey', 'unwrapKey']);
 }).then(function(result) {
     key = result;
 
@@ -79,7 +77,7 @@ Promise.resolve(null).then(function(result) {
     shouldBe("exportedJWK.key_ops", "['encrypt', 'decrypt', 'wrapKey', 'unwrapKey']");
 
     debug("\nImporting a key that's not extractable...");
-    return crypto.subtle.importKey("jwk", jwkKeyAsArrayBuffer, {name: "AES-CBC"}, nonExtractable, ['encrypt', 'decrypt', 'wrapKey', 'unwrapKey'])
+    return crypto.subtle.importKey("jwk", jwkKey, {name: "AES-CBC"}, nonExtractable, ['encrypt', 'decrypt', 'wrapKey', 'unwrapKey'])
 }).then(function(result) {
     key = result;
 

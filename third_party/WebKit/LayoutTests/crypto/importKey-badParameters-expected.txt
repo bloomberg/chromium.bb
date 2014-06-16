@@ -3,7 +3,7 @@ Tests calling cypto.subtle.importKey with bad parameters
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-error is: TypeError: Failed to execute 'importKey' on 'SubtleCrypto': No function was found that matched the signature provided.
+error is: DataError: Key data must be a buffer for non-JWK formats
 error is: TypeError: Failed to execute 'importKey' on 'SubtleCrypto': No function was found that matched the signature provided.
 error is: SyntaxError: Algorithm: Not an object
 error is: SyntaxError: Invalid keyFormat argument

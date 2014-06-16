@@ -59,6 +59,7 @@ public:
 
     ScriptPromise generateKey(ScriptState*, const Dictionary&, bool extractable, const Vector<String>& keyUsages);
     ScriptPromise importKey(ScriptState*, const String&, const ArrayPiece&, const Dictionary&, bool extractable, const Vector<String>& keyUsages);
+    ScriptPromise importKey(ScriptState*, const String&, const Dictionary&, const Dictionary&, bool extractable, const Vector<String>& keyUsages);
     ScriptPromise exportKey(ScriptState*, const String&, Key*);
 
     ScriptPromise wrapKey(ScriptState*, const String&, Key*, Key*, const Dictionary&);
