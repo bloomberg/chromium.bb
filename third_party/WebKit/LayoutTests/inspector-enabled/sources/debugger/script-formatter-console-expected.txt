@@ -7,8 +7,8 @@ script-formatter-console.html:11
 Pre-format row message list:
 ["10"]
 ["10"]
-script-formatter-console.html:formatted:16
+script-formatter-console.html:formatted:18
 Post-format row message list:
-["15"]
-["15"]
+["17"]
+["17"]
 
