@@ -494,7 +494,7 @@ float toFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 
 String toByteString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    // Handle [Default=NullString]
+    // Handle null default value.
     if (value.IsEmpty())
         return String();
 

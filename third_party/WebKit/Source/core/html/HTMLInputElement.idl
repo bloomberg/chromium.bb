@@ -85,7 +85,7 @@ interface HTMLInputElement : HTMLElement {
     [RaisesException] void setRangeText(DOMString replacement,
                         unsigned long start,
                         unsigned long end,
-                        [Default=NullString] optional DOMString selectionMode);
+                        optional DOMString selectionMode = null);
 
     [RaisesException, ImplementedAs=setSelectionRangeForBinding]
     void setSelectionRange([Default=Undefined] optional long start,
