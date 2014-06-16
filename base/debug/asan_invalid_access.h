@@ -8,6 +8,7 @@
 #ifndef BASE_DEBUG_ASAN_INVALID_ACCESS_H_
 #define BASE_DEBUG_ASAN_INVALID_ACCESS_H_
 
+#include "base/base_export.h"
 #include "base/compiler_specific.h"
 
 namespace base {
@@ -16,13 +17,13 @@ namespace debug {
 #if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
 
 // Generates an heap buffer overflow.
-NOINLINE void AsanHeapOverflow();
+BASE_EXPORT NOINLINE void AsanHeapOverflow();
 
 // Generates an heap buffer underflow.
-NOINLINE void AsanHeapUnderflow();
+BASE_EXPORT NOINLINE void AsanHeapUnderflow();
 
 // Generates an use after free.
-NOINLINE void AsanHeapUseAfterFree();
+BASE_EXPORT NOINLINE void AsanHeapUseAfterFree();
 
 #endif  // ADDRESS_SANITIZER || SYZYASAN
 
@@ -32,11 +33,11 @@ NOINLINE void AsanHeapUseAfterFree();
 
 // Corrupts a memory block and makes sure that the corruption gets detected when
 // we try to free this block.
-NOINLINE void AsanCorruptHeapBlock();
+BASE_EXPORT NOINLINE void AsanCorruptHeapBlock();
 
 // Corrupts the heap and makes sure that the corruption gets detected when a
 // crash occur.
-NOINLINE void AsanCorruptHeap();
+BASE_EXPORT NOINLINE void AsanCorruptHeap();
 
 #endif  // SYZYASAN
 
