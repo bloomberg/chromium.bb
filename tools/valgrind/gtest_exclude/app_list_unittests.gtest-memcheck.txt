@@ -1,0 +1,2 @@
+# Occasionally times out. http://crbug.com/385167
+AppsGridViewTest.*

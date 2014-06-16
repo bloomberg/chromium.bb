@@ -6404,3 +6404,14 @@
    fun:_ZN8chromeos21DeviceSettingsService11EnqueueLoadEb
    fun:_ZN8chromeos21DeviceSettingsService4LoadEv
 }
+{
+   bug_385176
+   Memcheck:Uninitialized
+   fun:_ZN20ChromeBookmarkClient22IsPermanentNodeVisibleEPK21BookmarkPermanentNode
+   fun:_ZN13BookmarkModel19CreatePermanentNodeEN12BookmarkNode4TypeE
+   fun:_ZN13BookmarkModel17CreateLoadDetailsERKSs
+   fun:_ZN13BookmarkModel4LoadEP11PrefServiceRKSsRKN4base8FilePathERK13scoped_refptrINS4_19SequencedTaskRunnerEESC_
+   fun:_ZL18BuildBookmarkModelPN7content14BrowserContextE
+   fun:_ZN33BrowserContextKeyedServiceFactory27GetServiceForBrowserContextEPN7content14BrowserContextEb
+   fun:_ZN33BrowserContextKeyedServiceFactory23SetTestingFactoryAndUseEPN7content14BrowserContextEPFP12KeyedServiceS2_E
+}
