@@ -296,6 +296,9 @@ bool SdchManager::IsInSupportedDomain(const GURL& url) {
   if (!g_sdch_enabled_ )
     return false;
 
+  if (!secure_scheme_supported() && url.SchemeIsSecure())
+    return false;
+
   if (blacklisted_domains_.empty())
     return true;
 

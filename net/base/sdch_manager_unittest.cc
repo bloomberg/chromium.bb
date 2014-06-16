@@ -29,6 +29,12 @@ class SdchManagerTest : public testing::Test {
 
   SdchManager* sdch_manager() { return sdch_manager_.get(); }
 
+  // Reset globals back to default state.
+  virtual void TearDown() {
+    SdchManager::EnableSdchSupport(true);
+    SdchManager::EnableSecureSchemeSupport(false);
+  }
+
  private:
   scoped_ptr<SdchManager> sdch_manager_;
 };
@@ -49,9 +55,9 @@ static std::string NewSdchDictionary(const std::string& domain) {
 TEST_F(SdchManagerTest, DomainSupported) {
   GURL google_url("http://www.google.com");
 
-  net::SdchManager::EnableSdchSupport(false);
+  SdchManager::EnableSdchSupport(false);
   EXPECT_FALSE(sdch_manager()->IsInSupportedDomain(google_url));
-  net::SdchManager::EnableSdchSupport(true);
+  SdchManager::EnableSdchSupport(true);
   EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(google_url));
 }
 
@@ -172,14 +178,16 @@ TEST_F(SdchManagerTest, CanUseHTTPSDictionaryOverHTTPSIfEnabled) {
   std::string dictionary_domain("x.y.z.google.com");
   std::string dictionary_text(NewSdchDictionary(dictionary_domain));
 
-  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(dictionary_text,
-              GURL("https://" + dictionary_domain)));
+  EXPECT_FALSE(sdch_manager()->AddSdchDictionary(
+      dictionary_text, GURL("https://" + dictionary_domain)));
+  SdchManager::EnableSecureSchemeSupport(true);
+  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(
+      dictionary_text, GURL("https://" + dictionary_domain)));
 
   GURL target_url("https://" + dictionary_domain + "/test");
   std::string dictionary_list;
   // HTTPS target URL should advertise dictionary if secure scheme support is
   // enabled.
-  sdch_manager()->EnableSecureSchemeSupport(true);
   sdch_manager()->GetAvailDictionaryList(target_url, &dictionary_list);
   EXPECT_FALSE(dictionary_list.empty());
 
@@ -203,7 +211,7 @@ TEST_F(SdchManagerTest, CanNotUseHTTPDictionaryOverHTTPS) {
   std::string dictionary_list;
   // HTTPS target URL should not advertise dictionary acquired over HTTP even if
   // secure scheme support is enabled.
-  sdch_manager()->EnableSecureSchemeSupport(true);
+  SdchManager::EnableSecureSchemeSupport(true);
   sdch_manager()->GetAvailDictionaryList(target_url, &dictionary_list);
   EXPECT_TRUE(dictionary_list.empty());
 
@@ -419,6 +427,18 @@ TEST_F(SdchManagerTest, CanUseMultipleManagers) {
       GURL("http://" + dictionary_domain_1 + "/random_url"),
       &dictionary);
   EXPECT_FALSE(dictionary);
+}
+
+TEST_F(SdchManagerTest, HttpsCorrectlySupported) {
+  GURL url("http://www.google.com");
+  GURL secure_url("https://www.google.com");
+
+  EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(url));
+  EXPECT_FALSE(sdch_manager()->IsInSupportedDomain(secure_url));
+
+  SdchManager::EnableSecureSchemeSupport(true);
+  EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(url));
+  EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(secure_url));
 }
 
 }  // namespace net
