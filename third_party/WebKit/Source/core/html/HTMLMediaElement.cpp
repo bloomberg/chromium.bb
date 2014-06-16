@@ -247,6 +247,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_lastTimeUpdateEventWallTime(0)
     , m_lastTimeUpdateEventMovieTime(std::numeric_limits<double>::max())
     , m_loadState(WaitingForSource)
+    , m_deferredLoadState(NotDeferred)
+    , m_deferredLoadTimer(this, &HTMLMediaElement::deferredLoadTimerFired)
     , m_webLayer(0)
     , m_preload(MediaPlayer::Auto)
     , m_displayMode(Unknown)
@@ -271,7 +273,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_closedCaptionsVisible(false)
     , m_completelyLoaded(false)
     , m_havePreparedToPlay(false)
-    , m_delayingLoadForPreloadNone(false)
     , m_tracksAreReady(true)
     , m_haveVisibleTextTrack(false)
     , m_processingPreferenceChange(false)
@@ -641,6 +642,7 @@ void HTMLMediaElement::prepareForLoad()
     // Perform the cleanup required for the resource load algorithm to run.
     stopPeriodicTimers();
     m_loadTimer.stop();
+    cancelDeferredLoad();
     // FIXME: Figure out appropriate place to reset LoadTextTrackResource if necessary and set m_pendingActionFlags to 0 here.
     m_pendingActionFlags &= ~LoadMediaResource;
     m_sentEndEvent = false;
@@ -896,7 +898,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
 
         if (!m_havePreparedToPlay && !autoplay() && m_preload == MediaPlayer::None) {
             WTF_LOG(Media, "HTMLMediaElement::loadResource : Delaying load because preload == 'none'");
-            m_delayingLoadForPreloadNone = true;
+            deferLoad();
         } else {
             startPlayerLoad();
         }
@@ -940,17 +942,77 @@ void HTMLMediaElement::setPlayerPreload()
 {
     m_player->setPreload(m_preload);
 
-    if (m_delayingLoadForPreloadNone && m_preload != MediaPlayer::None)
-        startDelayedLoad();
+    if (loadIsDeferred() && m_preload != MediaPlayer::None)
+        startDeferredLoad();
 }
 
-void HTMLMediaElement::startDelayedLoad()
+bool HTMLMediaElement::loadIsDeferred() const
 {
-    ASSERT(m_delayingLoadForPreloadNone);
+    return m_deferredLoadState != NotDeferred;
+}
 
-    m_delayingLoadForPreloadNone = false;
+void HTMLMediaElement::deferLoad()
+{
+    // This implements the "optional" step 3 from the resource fetch algorithm.
+    ASSERT(!m_deferredLoadTimer.isActive());
+    ASSERT(m_deferredLoadState == NotDeferred);
+    // 1. Set the networkState to NETWORK_IDLE.
+    // 2. Queue a task to fire a simple event named suspend at the element.
+    changeNetworkStateFromLoadingToIdle();
+    // 3. Queue a task to set the element's delaying-the-load-event
+    // flag to false. This stops delaying the load event.
+    m_deferredLoadTimer.startOneShot(0, FROM_HERE);
+    // 4. Wait for the task to be run.
+    m_deferredLoadState = WaitingForStopDelayingLoadEventTask;
+    // Continued in executeDeferredLoad().
+}
+
+void HTMLMediaElement::cancelDeferredLoad()
+{
+    m_deferredLoadTimer.stop();
+    m_deferredLoadState = NotDeferred;
+}
+
+void HTMLMediaElement::executeDeferredLoad()
+{
+    ASSERT(m_deferredLoadState >= WaitingForTrigger);
+
+    // resource fetch algorithm step 3 - continued from deferLoad().
+
+    // 5. Wait for an implementation-defined event (e.g. the user requesting that the media element begin playback).
+    // This is assumed to be whatever 'event' ended up calling this method.
+    cancelDeferredLoad();
+    // 6. Set the element's delaying-the-load-event flag back to true (this
+    // delays the load event again, in case it hasn't been fired yet).
+    setShouldDelayLoadEvent(true);
+    // 7. Set the networkState to NETWORK_LOADING.
+    m_networkState = NETWORK_LOADING;
+
+    startProgressEventTimer();
 
     startPlayerLoad();
+}
+
+void HTMLMediaElement::startDeferredLoad()
+{
+    if (m_deferredLoadState == WaitingForTrigger) {
+        executeDeferredLoad();
+        return;
+    }
+    ASSERT(m_deferredLoadState == WaitingForStopDelayingLoadEventTask);
+    m_deferredLoadState = ExecuteOnStopDelayingLoadEventTask;
+}
+
+void HTMLMediaElement::deferredLoadTimerFired(Timer<HTMLMediaElement>*)
+{
+    setShouldDelayLoadEvent(false);
+
+    if (m_deferredLoadState == ExecuteOnStopDelayingLoadEventTask) {
+        executeDeferredLoad();
+        return;
+    }
+    ASSERT(m_deferredLoadState == WaitingForStopDelayingLoadEventTask);
+    m_deferredLoadState = WaitingForTrigger;
 }
 
 WebMediaPlayer::LoadType HTMLMediaElement::loadType() const
@@ -1582,11 +1644,13 @@ void HTMLMediaElement::setNetworkState(MediaPlayer::NetworkState state)
 
 void HTMLMediaElement::changeNetworkStateFromLoadingToIdle()
 {
+    ASSERT(m_player);
     m_progressEventTimer.stop();
 
     // Schedule one last progress event so we guarantee that at least one is fired
     // for files that load very quickly.
-    scheduleEvent(EventTypeNames::progress);
+    if (m_player->didLoadingProgress())
+        scheduleEvent(EventTypeNames::progress);
     scheduleEvent(EventTypeNames::suspend);
     m_networkState = NETWORK_IDLE;
 }
@@ -1750,8 +1814,8 @@ void HTMLMediaElement::prepareToPlay()
         return;
     m_havePreparedToPlay = true;
 
-    if (m_delayingLoadForPreloadNone)
-        startDelayedLoad();
+    if (loadIsDeferred())
+        startDeferredLoad();
 }
 
 void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
@@ -3139,7 +3203,7 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
 
     closeMediaSource();
 
-    m_delayingLoadForPreloadNone = false;
+    cancelDeferredLoad();
 
 #if ENABLE(WEB_AUDIO)
     if (m_audioSourceNode)

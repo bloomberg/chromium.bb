@@ -364,7 +364,6 @@ private:
     void loadResource(const KURL&, ContentType&, const String& keySystem);
     void startPlayerLoad();
     void setPlayerPreload();
-    void startDelayedLoad();
     blink::WebMediaPlayer::LoadType loadType() const;
     void scheduleNextSourceChild();
     void loadNextSourceChild();
@@ -381,6 +380,14 @@ private:
     KURL selectNextSourceChild(ContentType*, String* keySystem, InvalidURLAction);
 
     void mediaLoadingFailed(MediaPlayer::NetworkState);
+
+    // deferred loading (preload=none)
+    bool loadIsDeferred() const;
+    void deferLoad();
+    void cancelDeferredLoad();
+    void startDeferredLoad();
+    void executeDeferredLoad();
+    void deferredLoadTimerFired(Timer<HTMLMediaElement>*);
 
     void updateActiveTextTrackCues(double);
     HTMLTrackElement* showingTrackWithSameKind(HTMLTrackElement*) const;
@@ -460,6 +467,22 @@ private:
     LoadState m_loadState;
     RefPtrWillBeMember<HTMLSourceElement> m_currentSourceNode;
     RefPtrWillBeMember<Node> m_nextChildNodeToConsider;
+
+    // "Deferred loading" state (for preload=none).
+    enum DeferredLoadState {
+        // The load is not deferred.
+        NotDeferred,
+        // The load is deferred, and waiting for the task to set the
+        // delaying-the-load-event flag (to false).
+        WaitingForStopDelayingLoadEventTask,
+        // The load is the deferred, and waiting for a triggering event.
+        WaitingForTrigger,
+        // The load is deferred, and waiting for the task to set the
+        // delaying-the-load-event flag, after which the load will be executed.
+        ExecuteOnStopDelayingLoadEventTask
+    };
+    DeferredLoadState m_deferredLoadState;
+    Timer<HTMLMediaElement> m_deferredLoadTimer;
 
     OwnPtr<MediaPlayer> m_player;
     blink::WebLayer* m_webLayer;

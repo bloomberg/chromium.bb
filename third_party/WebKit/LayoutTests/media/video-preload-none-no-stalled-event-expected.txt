@@ -1,0 +1,6 @@
+Test to see if a media element with preload=none dispatches a 'stalled' event.
+
+
+EVENT(suspend)
+END OF TEST
+
