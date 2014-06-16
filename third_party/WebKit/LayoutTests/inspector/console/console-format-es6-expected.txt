@@ -20,8 +20,8 @@ Symbol(a) console-format-es6.html:11
 [Symbol(a)]0: Symbol(a)length: 1__proto__: Array[0] console-format-es6.html:12
 globals[2]
 Symbol(a)
-Object {a: Symbol(), Symbol(): 1, Symbol(a): 2}Symbol(): 1Symbol(a): 2a: Symbol()__proto__: Object console-format-es6.html:11
+Object {a: Symbol(), Symbol(): 1, Symbol(a): 2}a: Symbol()Symbol(): 1Symbol(a): 2__proto__: Object console-format-es6.html:11
 [Object]0: Objectlength: 1__proto__: Array[0] console-format-es6.html:12
 globals[3]
-Object {a: Symbol(), Symbol(): 1, Symbol(a): 2}Symbol(): 1Symbol(a): 2a: Symbol()__proto__: Object
+Object {a: Symbol(), Symbol(): 1, Symbol(a): 2}a: Symbol()Symbol(): 1Symbol(a): 2__proto__: Object
 

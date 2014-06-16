@@ -3,11 +3,11 @@ CONSOLE MESSAGE: line 18:
 Tests that console logging dumps proper messages.
 
 Object
+    a: 1
     Symbol(): 2
     Symbol(Symbol.iterator): Symbol(foo)
     Symbol(a): 3
     Symbol(a): Symbol(Symbol.iterator)
-    a: 1
     __proto__: Object console-dir-es6.html:15
 Symbol() console-dir-es6.html:18
 
