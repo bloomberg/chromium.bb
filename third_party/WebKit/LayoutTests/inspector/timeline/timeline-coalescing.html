@@ -7,11 +7,11 @@
 function initialize_TimelineCoalescing()
 {
 
-InspectorTest.dumpStats = function(record)
+InspectorTest.dumpStats = function(presentationRecord)
 {
-    if (record.type() === "Root")
+    if (!presentationRecord.presentationParent())
         return "";
-    var aggregatedStats = record.aggregatedStats();
+    var aggregatedStats = presentationRecord.presentationAggregatedStats();
     var timeByCategory = "";
     
     for (category in aggregatedStats) {
@@ -19,8 +19,8 @@ InspectorTest.dumpStats = function(record)
             timeByCategory += ", ";
         timeByCategory += category + ": " + aggregatedStats[category].toFixed(5);
     }
-    var duration = (record.endTime() - record.startTime()).toFixed(5);
-    var durationTillLastChild = (record.endTime() - record.startTime()).toFixed(5);
+    var duration = (presentationRecord.endTime() - presentationRecord.startTime()).toFixed(5);
+    var durationTillLastChild = (presentationRecord.endTime() - presentationRecord.startTime()).toFixed(5);
     return "duration: " + duration + ":" + durationTillLastChild + (timeByCategory ? " (" + timeByCategory + ")" : "");
 }
 

@@ -207,7 +207,7 @@ InspectorTest.dumpTimelineRecord = function(record, detailsCallback, level, filt
 // Dump just the record name, indenting output on separate lines for subrecords
 InspectorTest.dumpPresentationRecord = function(presentationRecord, detailsCallback, level, filterTypes)
 {
-    var record = presentationRecord.record();
+    var record = !presentationRecord.presentationParent() ? null : presentationRecord.record();
     if (typeof level !== "number")
         level = 0;
     var prefix = "";
@@ -218,13 +218,14 @@ InspectorTest.dumpPresentationRecord = function(presentationRecord, detailsCallb
         prefix = prefix + "> ";
     if (presentationRecord.coalesced()) {
         suffix = " x " + presentationRecord.presentationChildren().length;
-    } else if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp
-        || record.type() === WebInspector.TimelineModel.RecordType.ConsoleTime) {
+    } else if (record && (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp
+        || record.type() === WebInspector.TimelineModel.RecordType.ConsoleTime)) {
         suffix = " : " + record.data().message;
     }
     if (detailsCallback)
-        suffix += " " + detailsCallback(record);
-    InspectorTest.addResult(prefix + InspectorTest._timelineAgentTypeToString(record.type()) + suffix);
+        suffix += " " + detailsCallback(presentationRecord);
+    var typeString = record ? InspectorTest._timelineAgentTypeToString(record.type()) : "Root";
+    InspectorTest.addResult(prefix + typeString + suffix);
 
     var numChildren = presentationRecord.presentationChildren() ? presentationRecord.presentationChildren().length : 0;
     for (var i = 0; i < numChildren; ++i) {
