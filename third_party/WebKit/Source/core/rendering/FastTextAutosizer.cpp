@@ -158,9 +158,6 @@ static bool isPotentialClusterRoot(const RenderObject* renderer)
         return false;
     if (renderer->isListItem())
         return (renderer->isFloating() || renderer->isOutOfFlowPositioned());
-    // Avoid creating containers for text within form input.
-    if (isNonTextAreaFormControl(renderer->parent()))
-        return false;
 
     return true;
 }
