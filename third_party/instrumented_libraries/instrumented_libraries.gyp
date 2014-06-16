@@ -95,6 +95,8 @@
         '<(_sanitizer_type)-libappindicator1',
         '<(_sanitizer_type)-libdbusmenu',
         '<(_sanitizer_type)-atk1.0',
+        '<(_sanitizer_type)-libunity9',
+        '<(_sanitizer_type)-dee',
       ],
       'conditions': [
         ['asan==1', {
@@ -537,6 +539,20 @@
     },
     {
       'library_name': 'atk1.0',
+      'extra_configure_flags': [
+          # See above.
+          '--disable-introspection',
+      ],
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libunity9',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'dee',
       'extra_configure_flags': [
           # See above.
           '--disable-introspection',
