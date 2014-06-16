@@ -953,11 +953,31 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "executeDefaultTaskOnDownloads"),
         TestParameter(IN_GUEST_MODE, "executeDefaultTaskOnDownloads")));
 
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_ExecuteDefaultTaskOnDrive DISABLED_ExecuteDefaultTaskOnDrive
+#else
+#define MAYBE_ExecuteDefaultTaskOnDrive ExecuteDefaultTaskOnDrive
+#endif
 INSTANTIATE_TEST_CASE_P(
     ExecuteDefaultTaskOnDrive,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "executeDefaultTaskOnDrive")));
+
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_DefaultActionDialog DISABLED_DefaultActionDialog
+#else
+#define MAYBE_DefaultActionDialog DefaultActionDialog
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_DefaultActionDialog,
+    FileManagerBrowserTest,
+    ::testing::Values(
+        TestParameter(NOT_IN_GUEST_MODE, "defaultActionDialogOnDownloads"),
+        TestParameter(IN_GUEST_MODE, "defaultActionDialogOnDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "defaultActionDialogOnDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 #if !defined(NDEBUG)

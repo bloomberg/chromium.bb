@@ -14,7 +14,6 @@
       "file_manager/copy_between_windows.js",
       "file_manager/create_new_folder.js",
       "file_manager/drive_specific.js",
-      "file_manager/execute_default_task.js",
       "file_manager/file_display.js",
       "file_manager/folder_shortcuts.js",
       "file_manager/grid_view.js",
@@ -29,6 +28,7 @@
       "file_manager/share_dialog.js",
       "file_manager/suggest_app_dialog.js",
       "file_manager/tab_index.js",
+      "file_manager/tasks.js",
       "file_manager/thumbnails.js",
       "file_manager/transfer.js",
       "file_manager/traverse.js"

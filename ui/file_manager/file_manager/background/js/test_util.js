@@ -352,12 +352,22 @@ test.util.sync.sendEvent = function(
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
- * @param {string} event Type of event.
+ * @param {string} eventType Type of event.
+ * @param {Object=} opt_additionalProperties Object contaning additional
+ *     properties.
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
-test.util.sync.fakeEvent = function(contentWindow, targetQuery, event) {
-  return test.util.sync.sendEvent(
-      contentWindow, targetQuery, new Event(event));
+test.util.sync.fakeEvent = function(contentWindow,
+                                    targetQuery,
+                                    eventType,
+                                    opt_additionalProperties) {
+  var event = new Event(eventType, opt_additionalProperties || {});
+  if (opt_additionalProperties) {
+    for (var name in opt_additionalProperties) {
+      event[name] = opt_additionalProperties[name];
+    }
+  }
+  return test.util.sync.sendEvent(contentWindow, targetQuery, event);
 };
 
 /**
@@ -591,9 +601,16 @@ test.util.sync.overrideTasks = function(contentWindow, taskList) {
     test.util.executedTasks_.push(taskId);
   };
 
+  var setDefaultTask = function(taskId) {
+    for (var i = 0; i < taskList.length; i++) {
+      taskList[i].isDefault = taskList[i].taskId === taskId;
+    }
+  };
+
   test.util.executedTasks_ = [];
   contentWindow.chrome.fileBrowserPrivate.getFileTasks = getFileTasks;
   contentWindow.chrome.fileBrowserPrivate.executeTask = executeTask;
+  contentWindow.chrome.fileBrowserPrivate.setDefaultTask = setDefaultTask;
   return true;
 };
 
