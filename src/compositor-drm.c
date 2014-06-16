@@ -1090,6 +1090,43 @@ drm_output_prepare_cursor_view(struct drm_output *output,
 	return &output->cursor_plane;
 }
 
+/**
+ * Update the image for the current cursor surface
+ *
+ * @param b DRM backend structure
+ * @param bo GBM buffer object to write into
+ * @param ev View to use for cursor image
+ */
+static void
+cursor_bo_update(struct drm_backend *b, struct gbm_bo *bo,
+		 struct weston_view *ev)
+{
+	struct weston_buffer *buffer = ev->surface->buffer_ref.buffer;
+	uint32_t buf[b->cursor_width * b->cursor_height];
+	int32_t stride;
+	uint8_t *s;
+	int i;
+
+	assert(buffer && buffer->shm_buffer);
+	assert(buffer->shm_buffer == wl_shm_buffer_get(buffer->resource));
+	assert(ev->surface->width <= b->cursor_width);
+	assert(ev->surface->height <= b->cursor_height);
+
+	memset(buf, 0, sizeof buf);
+	stride = wl_shm_buffer_get_stride(buffer->shm_buffer);
+	s = wl_shm_buffer_get_data(buffer->shm_buffer);
+
+	wl_shm_buffer_begin_access(buffer->shm_buffer);
+	for (i = 0; i < ev->surface->height; i++)
+		memcpy(buf + i * b->cursor_width,
+		       s + i * stride,
+		       ev->surface->width * 4);
+	wl_shm_buffer_end_access(buffer->shm_buffer);
+
+	if (gbm_bo_write(bo, buf, sizeof buf) < 0)
+		weston_log("failed update cursor: %m\n");
+}
+
 static void
 drm_output_set_cursor(struct drm_output *output)
 {
@@ -1097,11 +1134,9 @@ drm_output_set_cursor(struct drm_output *output)
 	struct weston_buffer *buffer;
 	struct drm_backend *b =
 		(struct drm_backend *) output->base.compositor->backend;
-	EGLint handle, stride;
+	EGLint handle;
 	struct gbm_bo *bo;
-	uint32_t buf[b->cursor_width * b->cursor_height];
-	unsigned char *s;
-	int i, x, y;
+	int x, y;
 
 	output->cursor_view = NULL;
 	if (ev == NULL) {
@@ -1117,18 +1152,8 @@ drm_output_set_cursor(struct drm_output *output)
 		pixman_region32_init(&output->cursor_plane.damage);
 		output->current_cursor ^= 1;
 		bo = output->cursor_bo[output->current_cursor];
-		memset(buf, 0, sizeof buf);
-		stride = wl_shm_buffer_get_stride(buffer->shm_buffer);
-		s = wl_shm_buffer_get_data(buffer->shm_buffer);
-		wl_shm_buffer_begin_access(buffer->shm_buffer);
-		for (i = 0; i < ev->surface->height; i++)
-			memcpy(buf + i * b->cursor_width, s + i * stride,
-			       ev->surface->width * 4);
-		wl_shm_buffer_end_access(buffer->shm_buffer);
 
-		if (gbm_bo_write(bo, buf, sizeof buf) < 0)
-			weston_log("failed update cursor: %m\n");
-
+		cursor_bo_update(b, bo, ev);
 		handle = gbm_bo_get_handle(bo).s32;
 		if (drmModeSetCursor(b->drm.fd, output->crtc_id, handle,
 				b->cursor_width, b->cursor_height)) {
