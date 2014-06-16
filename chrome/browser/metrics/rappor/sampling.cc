@@ -7,8 +7,19 @@
 #include "chrome/browser/browser_process.h"
 #include "components/rappor/rappor_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "url/gurl.h"
 
 namespace rappor {
+
+std::string GetDomainAndRegistrySampleFromGURL(const GURL& gurl) {
+  if (gurl.SchemeIsHTTPOrHTTPS()) {
+    return net::registry_controlled_domains::GetDomainAndRegistry(
+        gurl, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  }
+  if (gurl.SchemeIsFile())
+    return gurl.scheme() + "://";
+  return gurl.scheme() + "://" + gurl.host();
+}
 
 void SampleDomainAndRegistryFromGURL(const std::string& metric,
                                      const GURL& gurl) {
@@ -17,8 +28,7 @@ void SampleDomainAndRegistryFromGURL(const std::string& metric,
   g_browser_process->rappor_service()->RecordSample(
       metric,
       rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          gurl, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+      GetDomainAndRegistrySampleFromGURL(gurl));
 }
 
 void SampleDomainAndRegistryFromHost(const std::string& metric,

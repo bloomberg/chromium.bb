@@ -11,6 +11,11 @@ class GURL;
 
 namespace rappor {
 
+// Extract the domain and registry for a sample from a GURL.
+// For file:// urls this will just return "file://" and for other special
+// schemes like chrome-extension will return the scheme and host.
+std::string GetDomainAndRegistrySampleFromGURL(const GURL& gurl);
+
 // Records the domain and registry of a url to a Rappor metric.
 // If the Rappor service is NULL, such as during tests, this call does nothing.
 void SampleDomainAndRegistryFromGURL(const std::string& metric,
