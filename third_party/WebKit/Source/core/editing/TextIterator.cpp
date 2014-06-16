@@ -55,7 +55,6 @@
 #include <unicode/utf16.h>
 
 using namespace WTF::Unicode;
-using namespace std;
 
 namespace WebCore {
 
@@ -618,7 +617,7 @@ bool TextIterator::handleTextNode()
             return false;
         int strLength = str.length();
         int end = (m_node == m_endContainer) ? m_endOffset : INT_MAX;
-        int runEnd = min(strLength, end);
+        int runEnd = std::min(strLength, end);
 
         if (runStart >= runEnd)
             return true;
@@ -671,7 +670,7 @@ void TextIterator::handleTextBox()
     unsigned end = (m_node == m_endContainer) ? static_cast<unsigned>(m_endOffset) : INT_MAX;
     while (m_textBox) {
         unsigned textBoxStart = m_textBox->start();
-        unsigned runStart = max(textBoxStart, start);
+        unsigned runStart = std::max(textBoxStart, start);
 
         // Check for collapsed space at the start of this run.
         InlineTextBox* firstTextBox = renderer->containsReversedText() ? (m_sortedTextBoxes.isEmpty() ? 0 : m_sortedTextBoxes[0]) : renderer->firstTextBox();
@@ -689,7 +688,7 @@ void TextIterator::handleTextBox()
             return;
         }
         unsigned textBoxEnd = textBoxStart + m_textBox->len();
-        unsigned runEnd = min(textBoxEnd, end);
+        unsigned runEnd = std::min(textBoxEnd, end);
 
         // Determine what the next text box will be, but don't advance yet
         InlineTextBox* nextTextBox = 0;
@@ -1792,7 +1791,7 @@ inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
     foldQuoteMarksAndSoftHyphens(m_target.data(), m_target.size());
 
     size_t targetLength = m_target.size();
-    m_buffer.reserveInitialCapacity(max(targetLength * 8, minimumSearchBufferSize));
+    m_buffer.reserveInitialCapacity(std::max(targetLength * 8, minimumSearchBufferSize));
     m_overlap = m_buffer.capacity() / 4;
 
     if ((m_options & AtWordStarts) && targetLength) {
@@ -1850,12 +1849,12 @@ inline void SearchBuffer::append(const CharType* characters, size_t length)
         m_atBreak = false;
     } else if (m_buffer.size() == m_buffer.capacity()) {
         memcpy(m_buffer.data(), m_buffer.data() + m_buffer.size() - m_overlap, m_overlap * sizeof(UChar));
-        m_prefixLength -= min(m_prefixLength, m_buffer.size() - m_overlap);
+        m_prefixLength -= std::min(m_prefixLength, m_buffer.size() - m_overlap);
         m_buffer.shrink(m_overlap);
     }
 
     size_t oldLength = m_buffer.size();
-    size_t usableLength = min(m_buffer.capacity() - oldLength, length);
+    size_t usableLength = std::min(m_buffer.capacity() - oldLength, length);
     ASSERT(usableLength);
     m_buffer.resize(oldLength + usableLength);
     UChar* destination = m_buffer.data() + oldLength;
@@ -1885,7 +1884,7 @@ inline void SearchBuffer::prependContext(const UChar* characters, size_t length)
         wordBoundaryContextStart = startOfLastWordBoundaryContext(characters, wordBoundaryContextStart);
     }
 
-    size_t usableLength = min(m_buffer.capacity() - m_prefixLength, length - wordBoundaryContextStart);
+    size_t usableLength = std::min(m_buffer.capacity() - m_prefixLength, length - wordBoundaryContextStart);
     m_buffer.prepend(characters + length - usableLength, usableLength);
     m_prefixLength += usableLength;
 
@@ -2012,10 +2011,10 @@ nextMatch:
             int wordBoundaryContextStart = matchStart;
             U16_BACK_1(m_buffer.data(), 0, wordBoundaryContextStart);
             wordBoundaryContextStart = startOfLastWordBoundaryContext(m_buffer.data(), wordBoundaryContextStart);
-            overlap = min(size - 1, max(overlap, size - wordBoundaryContextStart));
+            overlap = std::min(size - 1, std::max(overlap, size - wordBoundaryContextStart));
         }
         memcpy(m_buffer.data(), m_buffer.data() + size - overlap, overlap * sizeof(UChar));
-        m_prefixLength -= min(m_prefixLength, size - overlap);
+        m_prefixLength -= std::min(m_prefixLength, size - overlap);
         m_buffer.shrink(overlap);
         return 0;
     }
@@ -2032,7 +2031,7 @@ nextMatch:
 
     size_t newSize = size - (matchStart + 1);
     memmove(m_buffer.data(), m_buffer.data() + matchStart + 1, newSize * sizeof(UChar));
-    m_prefixLength -= min<size_t>(m_prefixLength, matchStart + 1);
+    m_prefixLength -= std::min<size_t>(m_prefixLength, matchStart + 1);
     m_buffer.shrink(newSize);
 
     start = size - matchStart;

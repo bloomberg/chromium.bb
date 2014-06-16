@@ -58,8 +58,6 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace HTMLNames;

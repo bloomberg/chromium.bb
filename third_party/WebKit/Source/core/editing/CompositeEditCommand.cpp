@@ -69,8 +69,6 @@
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderText.h"
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -762,7 +760,7 @@ void CompositeEditCommand::deleteInsignificantText(PassRefPtrWillBeRawPtr<Text> 
         bool indicesIntersect = start <= gapEnd && end >= gapStart;
         int gapLen = gapEnd - gapStart;
         if (indicesIntersect && gapLen > 0) {
-            gapStart = max(gapStart, start);
+            gapStart = std::max(gapStart, start);
             if (str.isNull())
                 str = textNode->data().substring(start, end - start);
             // remove text in the gap

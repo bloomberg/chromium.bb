@@ -33,8 +33,6 @@
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SVGSMILElement.h"
 
-using namespace std;
-
 namespace WebCore {
 
 static const double initialFrameDelay = 0.025;
@@ -423,7 +421,7 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 
             SMILTime nextFireTime = animation->nextProgressTime();
             if (nextFireTime.isFinite())
-                earliestFireTime = min(nextFireTime, earliestFireTime);
+                earliestFireTime = std::min(nextFireTime, earliestFireTime);
         }
 
         if (resultElement)
