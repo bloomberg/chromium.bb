@@ -66,6 +66,7 @@ void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
     request.setTargetType(ResourceRequest::TargetIsPing);
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
     frame->loader().fetchContext().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
+    frame->loader().fetchContext().setFirstPartyForCookies(request);
 
     FetchInitiatorInfo initiatorInfo;
     initiatorInfo.name = FetchInitiatorTypeNames::ping;
@@ -82,6 +83,7 @@ void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const
     request.setHTTPBody(FormData::create("PING"));
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
     frame->loader().fetchContext().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
+    frame->loader().fetchContext().setFirstPartyForCookies(request);
 
     RefPtr<SecurityOrigin> pingOrigin = SecurityOrigin::create(pingURL);
     // addAdditionalRequestHeaders() will have added a referrer for same origin requests,
@@ -109,6 +111,7 @@ void PingLoader::sendViolationReport(LocalFrame* frame, const KURL& reportURL, P
     request.setHTTPContentType(type == ContentSecurityPolicyViolationReport ? "application/csp-report" : "application/json");
     request.setHTTPBody(report);
     frame->loader().fetchContext().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
+    frame->loader().fetchContext().setFirstPartyForCookies(request);
 
     FetchInitiatorInfo initiatorInfo;
     initiatorInfo.name = FetchInitiatorTypeNames::violationreport;

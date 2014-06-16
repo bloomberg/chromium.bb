@@ -78,11 +78,6 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document* document, Resource
         FrameLoader::addHTTPOriginIfNeeded(request, AtomicString(outgoingOrigin));
     }
 
-    if (isMainResource && m_frame->isMainFrame())
-        request.setFirstPartyForCookies(request.url());
-    else if (m_frame->tree().top()->isLocalFrame())
-        request.setFirstPartyForCookies(toLocalFrame(m_frame->tree().top())->document()->firstPartyForCookies());
-
     // The remaining modifications are only necessary for HTTP and HTTPS.
     if (!request.url().isEmpty() && !request.url().protocolIsInHTTPFamily())
         return;
@@ -91,6 +86,12 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document* document, Resource
 
     // Default to sending an empty Origin header if one hasn't been set yet.
     FrameLoader::addHTTPOriginIfNeeded(request, nullAtom);
+}
+
+void FrameFetchContext::setFirstPartyForCookies(ResourceRequest& request)
+{
+    if (m_frame->tree().top()->isLocalFrame())
+        request.setFirstPartyForCookies(toLocalFrame(m_frame->tree().top())->document()->firstPartyForCookies());
 }
 
 CachePolicy FrameFetchContext::cachePolicy(Document* document) const

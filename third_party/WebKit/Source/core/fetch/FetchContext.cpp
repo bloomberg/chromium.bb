@@ -52,6 +52,10 @@ void FetchContext::addAdditionalRequestHeaders(Document*, ResourceRequest&, Fetc
 {
 }
 
+void FetchContext::setFirstPartyForCookies(ResourceRequest&)
+{
+}
+
 CachePolicy FetchContext::cachePolicy(Document*) const
 {
     return CachePolicyVerify;

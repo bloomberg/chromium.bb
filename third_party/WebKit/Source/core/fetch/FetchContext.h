@@ -64,6 +64,7 @@ public:
 
     virtual void reportLocalLoadFailed(const KURL&);
     virtual void addAdditionalRequestHeaders(Document*, ResourceRequest&, FetchResourceType);
+    virtual void setFirstPartyForCookies(ResourceRequest&);
     virtual CachePolicy cachePolicy(Document*) const;
 
     virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue);

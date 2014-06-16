@@ -27,6 +27,7 @@ void BeaconLoader::prepareRequest(LocalFrame* frame, ResourceRequest& request)
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
     request.setAllowStoredCredentials(true);
     frame->loader().fetchContext().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
+    frame->loader().fetchContext().setFirstPartyForCookies(request);
 }
 
 void BeaconLoader::issueRequest(LocalFrame* frame, ResourceRequest& request)

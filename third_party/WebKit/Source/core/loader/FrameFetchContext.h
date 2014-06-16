@@ -52,6 +52,7 @@ public:
 
     virtual void reportLocalLoadFailed(const KURL&) OVERRIDE;
     virtual void addAdditionalRequestHeaders(Document*, ResourceRequest&, FetchResourceType) OVERRIDE;
+    virtual void setFirstPartyForCookies(ResourceRequest&) OVERRIDE;
     virtual CachePolicy cachePolicy(Document*) const OVERRIDE;
     virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue);
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo()) OVERRIDE;
