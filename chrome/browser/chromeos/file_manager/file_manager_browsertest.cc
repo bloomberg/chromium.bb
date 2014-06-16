@@ -848,9 +848,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "renameFileDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "renameFileDrive")));
 
-// Disabled due to frequent timeouts; http://crbug.com/370980.
-INSTANTIATE_TEST_CASE_P(
-    DISABLED_DriveSpecific,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_DriveSpecific DISABLED_DriveSpecific
+#else
+#define MAYBE_DriveSpecific DriveSpecific
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_DriveSpecific,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "openSidebarRecent"),
                       TestParameter(NOT_IN_GUEST_MODE, "openSidebarOffline"),
@@ -1021,11 +1026,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "thumbnailsDownloads"),
                       TestParameter(IN_GUEST_MODE, "thumbnailsDownloads")));
 
-// Test/4 has been failing every 3rd or 4th pass on the waterfall for
-// "Linux ChromiumOS Tests (dbg)".
-// http://crbug.com/380339
-INSTANTIATE_TEST_CASE_P(
-    DISABLED_CopyBetweenWindows,
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
+#else
+#define MAYBE_CopyBetweenWindows CopyBetweenWindows
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_CopyBetweenWindows,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsLocalToDrive"),
