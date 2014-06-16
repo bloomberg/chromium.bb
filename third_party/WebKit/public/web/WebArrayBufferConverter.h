@@ -44,10 +44,6 @@ namespace blink {
 
 class WebArrayBufferConverter {
 public:
-    // FIXME: remove these two APIs which doesn't take either context or
-    // isolate as their parameters after the embedder side is fixed.
-    BLINK_EXPORT static v8::Handle<v8::Value> toV8Value(WebArrayBuffer*);
-    BLINK_EXPORT static WebArrayBuffer* createFromV8Value(v8::Handle<v8::Value>);
     BLINK_EXPORT static v8::Handle<v8::Value> toV8Value(WebArrayBuffer*, v8::Handle<v8::Object>, v8::Isolate*);
     BLINK_EXPORT static WebArrayBuffer* createFromV8Value(v8::Handle<v8::Value>, v8::Isolate*);
 };
