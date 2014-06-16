@@ -1123,7 +1123,6 @@ public:
     void setDirection(TextDirection v) { inherited_flags._direction = v; }
     void setLineHeight(const Length& specifiedLineHeight);
     bool setZoom(float);
-    void setZoomWithoutReturnValue(float f) { setZoom(f); }
     bool setEffectiveZoom(float);
 
     void setImageRendering(EImageRendering v) { SET_VAR(rareInheritedData, m_imageRendering, v); }
