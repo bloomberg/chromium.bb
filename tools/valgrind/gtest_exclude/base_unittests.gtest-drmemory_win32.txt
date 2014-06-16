@@ -3,7 +3,7 @@ RSA*
 GmockTest.*
 EtwTrace*
 StatsTableTest.*
-ProcessUtilTest.EnableLFH
+ProcessMemoryTest.EnableLFH
 ScopedNativeLibrary.Basic
 # TODO(zhaoqin) investigate the failures and enable it later, 106043
 ConditionVariableTest.LargeFastTaskTest
