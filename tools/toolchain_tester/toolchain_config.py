@@ -92,9 +92,8 @@ NACL_GCC_X32 = NACL_X86_NEWLIB + '/bin/i686-nacl-gcc'
 NACL_GCC_X64 = NACL_X86_NEWLIB + '/bin/x86_64-nacl-gcc'
 
 GLOBAL_CFLAGS = ' '.join(['-DSTACK_SIZE=0x40000',
-                          '-D__SIZEOF_INT__=4',
-                          '-D__SIZEOF_LONG__=4',
                           '"-D__INT_LEAST8_TYPE__=signed char"',
+                          '"-D__UINT_LEAST8_TYPE__=unsigned char"',
                           '"-D__UINT_LEAST32_TYPE__=unsigned int"',
                           '-D_XOPEN_SOURCE=600',
                           '-DNO_TRAMPOLINES',
