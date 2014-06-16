@@ -29,16 +29,3 @@ include_rules = [
   # Do not add to the list of temporarily-allowed dependencies above,
   # and please do not introduce more #includes of these files.
 ]
-
-specific_include_rules = {
-  # TODO(caitkp): Look into removing history/ dependencies.
-  'favicon_util\.(h|cc)': [
-    "-chrome",
-    "-chrome/browser",
-    "+chrome/browser/favicon/favicon_util.h",
-    "+chrome/common/favicon/favicon_types.h",
-    "+chrome/common/icon_messages.h",
-    "!chrome/browser/history/history_types.h",
-    "!chrome/browser/history/select_favicon_frames.h",
-  ]
-}

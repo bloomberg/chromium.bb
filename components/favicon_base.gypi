@@ -17,6 +17,8 @@
         'favicon_base/favicon_callback.h',
         'favicon_base/favicon_types.cc',
         'favicon_base/favicon_types.h',
+        'favicon_base/favicon_util.cc',
+        'favicon_base/favicon_util.h',
         'favicon_base/select_favicon_frames.cc',
         'favicon_base/select_favicon_frames.h',
       ],

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/favicon/favicon_util.h"
+#include "components/favicon_base/favicon_util.h"
 
 #include "components/favicon_base/favicon_types.h"
 #include "components/favicon_base/select_favicon_frames.h"
@@ -19,6 +19,7 @@
 #include "base/mac/mac_util.h"
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
+namespace favicon_base {
 namespace {
 
 // Creates image reps of DIP size |favicon_size| for the subset of
@@ -52,8 +53,8 @@ std::vector<gfx::ImagePNGRep> SelectFaviconFramesFromPNGsWithoutResizing(
   // supported by the platform. (ui::GetSupportedScaleFactor() cannot be used.)
   std::map<int, ui::ScaleFactor> desired_pixel_sizes;
   for (size_t i = 0; i < scale_factors.size(); ++i) {
-    int pixel_size = floor(favicon_size *
-        ui::GetScaleForScaleFactor(scale_factors[i]));
+    int pixel_size =
+        floor(favicon_size * ui::GetScaleForScaleFactor(scale_factors[i]));
     desired_pixel_sizes[pixel_size] = scale_factors[i];
   }
 
@@ -65,14 +66,13 @@ std::vector<gfx::ImagePNGRep> SelectFaviconFramesFromPNGsWithoutResizing(
     if (pixel_size.width() != pixel_size.height())
       continue;
 
-    std::map<int, ui::ScaleFactor>::iterator it = desired_pixel_sizes.find(
-        pixel_size.width());
+    std::map<int, ui::ScaleFactor>::iterator it =
+        desired_pixel_sizes.find(pixel_size.width());
     if (it == desired_pixel_sizes.end())
       continue;
 
-    png_reps.push_back(
-        gfx::ImagePNGRep(png_data[i].bitmap_data,
-                         ui::GetScaleForScaleFactor(it->second)));
+    png_reps.push_back(gfx::ImagePNGRep(
+        png_data[i].bitmap_data, ui::GetScaleForScaleFactor(it->second)));
   }
 
   return png_reps;
@@ -136,8 +136,7 @@ SkBitmap ResizeBitmapByDownsamplingIfPossible(
 
 }  // namespace
 
-// static
-std::vector<ui::ScaleFactor> FaviconUtil::GetFaviconScaleFactors() {
+std::vector<ui::ScaleFactor> GetFaviconScaleFactors() {
   const float kScale1x = 1.0f;
   std::vector<ui::ScaleFactor> favicon_scale_factors =
       ui::GetSupportedScaleFactors();
@@ -164,15 +163,13 @@ std::vector<ui::ScaleFactor> FaviconUtil::GetFaviconScaleFactors() {
   return favicon_scale_factors;
 }
 
-// static
-void FaviconUtil::SetFaviconColorSpace(gfx::Image* image) {
+void SetFaviconColorSpace(gfx::Image* image) {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   image->SetSourceColorSpace(base::mac::GetSystemColorSpace());
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 }
 
-// static
-gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
+gfx::Image SelectFaviconFramesFromPNGs(
     const std::vector<favicon_base::FaviconRawBitmapResult>& png_data,
     const std::vector<ui::ScaleFactor>& scale_factors,
     int favicon_size) {
@@ -189,8 +186,8 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
   //   significant performance hit if a user has many bookmarks.
   // TODO(pkotwicz): Move the decoding off the UI thread.
   std::vector<gfx::ImagePNGRep> png_reps =
-      SelectFaviconFramesFromPNGsWithoutResizing(png_data, scale_factors,
-          favicon_size);
+      SelectFaviconFramesFromPNGsWithoutResizing(
+          png_data, scale_factors, favicon_size);
 
   // SelectFaviconFramesFromPNGsWithoutResizing() should have selected the
   // largest favicon if |favicon_size| == 0.
@@ -199,10 +196,10 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
 
   std::vector<ui::ScaleFactor> scale_factors_to_generate = scale_factors;
   for (size_t i = 0; i < png_reps.size(); ++i) {
-    for (int j = static_cast<int>(scale_factors_to_generate.size()) - 1;
-         j >= 0; --j) {
-      if (png_reps[i].scale == ui::GetScaleForScaleFactor(
-              scale_factors_to_generate[j])) {
+    for (int j = static_cast<int>(scale_factors_to_generate.size()) - 1; j >= 0;
+         --j) {
+      if (png_reps[i].scale ==
+          ui::GetScaleForScaleFactor(scale_factors_to_generate[j])) {
         scale_factors_to_generate.erase(scale_factors_to_generate.begin() + j);
       }
     }
@@ -231,8 +228,8 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
   for (size_t i = 0; i < scale_factors_to_generate.size(); ++i) {
     float scale = ui::GetScaleForScaleFactor(scale_factors_to_generate[i]);
     int desired_size_in_pixel = ceil(favicon_size * scale);
-    SkBitmap bitmap = ResizeBitmapByDownsamplingIfPossible(
-        bitmaps, desired_size_in_pixel);
+    SkBitmap bitmap =
+        ResizeBitmapByDownsamplingIfPossible(bitmaps, desired_size_in_pixel);
     resized_image_skia.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
   }
 
@@ -244,11 +241,15 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
   for (size_t i = 0; i < resized_image_skia_reps.size(); ++i) {
     scoped_refptr<base::RefCountedBytes> png_bytes(new base::RefCountedBytes());
     if (gfx::PNGCodec::EncodeBGRASkBitmap(
-        resized_image_skia_reps[i].sk_bitmap(), false, &png_bytes->data())) {
-      png_reps.push_back(gfx::ImagePNGRep(png_bytes,
-          resized_image_skia_reps[i].scale()));
+            resized_image_skia_reps[i].sk_bitmap(),
+            false,
+            &png_bytes->data())) {
+      png_reps.push_back(
+          gfx::ImagePNGRep(png_bytes, resized_image_skia_reps[i].scale()));
     }
   }
 
   return gfx::Image(png_reps);
 }
+
+}  // namespace favicon_base

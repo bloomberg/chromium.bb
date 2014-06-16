@@ -16,7 +16,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
@@ -31,6 +30,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/favicon_base/favicon_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/tree_node_iterator.h"
@@ -769,7 +769,7 @@ gfx::Image CreateFavicon(SkColor color) {
   const int dip_width = 16;
   const int dip_height = 16;
   std::vector<ui::ScaleFactor> favicon_scale_factors =
-      FaviconUtil::GetFaviconScaleFactors();
+      favicon_base::GetFaviconScaleFactors();
   gfx::ImageSkia favicon;
   for (size_t i = 0; i < favicon_scale_factors.size(); ++i) {
     float scale = ui::GetScaleForScaleFactor(favicon_scale_factors[i]);

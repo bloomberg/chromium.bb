@@ -19,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/metro.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"

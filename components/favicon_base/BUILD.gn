@@ -7,6 +7,8 @@ source_set("favicon_base") {
     "favicon_callback.h",
     "favicon_types.cc",
     "favicon_types.h",
+    "favicon_util.cc",
+    "favicon_util.h",
     "select_favicon_frames.cc",
     "select_favicon_frames.h",
   ]

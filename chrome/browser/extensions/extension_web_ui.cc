@@ -18,11 +18,11 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
+#include "components/favicon_base/favicon_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -425,7 +425,7 @@ void ExtensionWebUI::GetFaviconForURL(
   // 1x) immediately instead of in an as needed fashion to be consistent with
   // how favicons are requested for chrome:// and page URLs.
   const std::vector<ui::ScaleFactor>& scale_factors =
-      FaviconUtil::GetFaviconScaleFactors();
+      favicon_base::GetFaviconScaleFactors();
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
   for (size_t i = 0; i < scale_factors.size(); ++i) {
     float scale = ui::GetScaleForScaleFactor(scale_factors[i]);

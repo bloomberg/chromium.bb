@@ -656,8 +656,6 @@
         'browser/favicon/favicon_service_factory.h',
         'browser/favicon/favicon_tab_helper.cc',
         'browser/favicon/favicon_tab_helper.h',
-        'browser/favicon/favicon_util.cc',
-        'browser/favicon/favicon_util.h',
         'browser/file_select_helper.cc',
         'browser/file_select_helper.h',
         'browser/first_run/first_run.cc',
