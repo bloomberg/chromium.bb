@@ -2574,6 +2574,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             renamedItemElement.removeAttribute('renaming');
             this.table_.endBatchUpdates();
             this.grid_.endBatchUpdates();
+            // Focus may go out of the list. Back it to the list.
+            this.currentList_.focus();
           }.bind(this),
           function(error) {
             // Write back to the old name.
