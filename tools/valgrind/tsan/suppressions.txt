@@ -1065,3 +1065,25 @@
   ...
   fun:base::debug::TraceLog::GetCategoryGroupEnabledInternal
 }
+{
+  bug_385022
+  ThreadSanitizer:Race
+  fun:std::_Rb_tree_rebalance_for_erase
+  fun:std::_Rb_tree::_M_erase_aux
+  fun:std::_Rb_tree::erase
+  fun:std::map::erase
+  fun:browser_sync::SyncBackendRegistrar::RemoveWorker
+  fun:browser_sync::SyncBackendRegistrar::OnWorkerLoopDestroyed
+  fun:syncer::ModelSafeWorker::WillDestroyCurrentMessageLoop
+  fun:base::MessageLoop::~MessageLoop
+  fun:base::MessageLoopForUI::~MessageLoopForUI
+  fun:base::MessageLoopForUI::~MessageLoopForUI
+  fun:base::DefaultDeleter::operator()
+  fun:base::internal::scoped_ptr_impl::~scoped_ptr_impl
+  fun:scoped_ptr::~scoped_ptr
+  fun:content::TestBrowserThreadBundle::~TestBrowserThreadBundle
+  fun:BrowserWithTestWindowTest::~BrowserWithTestWindowTest
+  fun:TestWithBrowserView::~TestWithBrowserView
+  fun:autofill::AutofillDialogViewsTest::~AutofillDialogViewsTest
+  fun:autofill::AutofillDialogViewsTest_SignInFocus_Test::~AutofillDialogViewsTest_SignInFocus_Test
+}
