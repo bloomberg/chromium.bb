@@ -51,6 +51,7 @@ class WebMIDIClientMock;
 class WebNode;
 class WebNotificationPresenter;
 class WebPlugin;
+class WebPushClient;
 class WebRange;
 class WebSerializedScriptValue;
 class WebSpeechRecognizer;
@@ -74,6 +75,7 @@ typedef unsigned WebColor;
 
 namespace content {
 
+class MockWebPushClient;
 class MockWebSpeechRecognizer;
 class MockWebUserMediaClient;
 class RenderFrame;
@@ -136,6 +138,8 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   virtual void didCompositeAndReadback(const SkBitmap& bitmap);
 
   void SetAcceptLanguages(const std::string& accept_languages);
+
+  MockWebPushClient* GetPushClientMock();
 
  protected:
   WebTestProxyBase();
@@ -233,6 +237,7 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   void ResetInputMethod();
 
   blink::WebString acceptLanguages();
+  blink::WebPushClient* GetWebPushClient();
 
  private:
   template <class, typename, typename>
@@ -263,6 +268,7 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
 
   scoped_ptr<blink::WebMIDIClientMock> midi_client_;
   scoped_ptr<MockWebSpeechRecognizer> speech_recognizer_;
+  scoped_ptr<MockWebPushClient> push_client_;
 
   std::string accept_languages_;
 
@@ -378,6 +384,9 @@ class WebTestProxy : public Base, public WebTestProxyBase {
   }
   virtual blink::WebString acceptLanguages() {
     return WebTestProxyBase::acceptLanguages();
+  }
+  virtual blink::WebPushClient* webPushClient() {
+    return WebTestProxyBase::GetWebPushClient();
   }
 
  private:

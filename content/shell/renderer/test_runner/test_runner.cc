@@ -12,6 +12,7 @@
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebPermissions.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/mock_web_push_client.h"
 #include "content/shell/renderer/test_runner/notification_presenter.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "gin/arguments.h"
@@ -257,6 +258,9 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DisplayAsyncThen(v8::Handle<v8::Function> callback);
   void SetCustomTextOutput(std::string output);
   void SetViewSourceForFrame(const std::string& name, bool enabled);
+  void setMockPushClientSuccess(const std::string& end_point,
+                                const std::string& registration_id);
+  void setMockPushClientError(const std::string& message);
 
   bool GlobalFlag();
   void SetGlobalFlag(bool value);
@@ -500,6 +504,10 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetCustomTextOutput)
       .SetMethod("setViewSourceForFrame",
                  &TestRunnerBindings::SetViewSourceForFrame)
+      .SetMethod("setMockPushClientSuccess",
+                 &TestRunnerBindings::setMockPushClientSuccess)
+      .SetMethod("setMockPushClientError",
+                 &TestRunnerBindings::setMockPushClientError)
 
       // Properties.
       .SetProperty("globalFlag",
@@ -1304,6 +1312,19 @@ void TestRunnerBindings::SetViewSourceForFrame(const std::string& name,
     if (target_frame)
       target_frame->enableViewSourceMode(enabled);
   }
+}
+
+void TestRunnerBindings::setMockPushClientSuccess(
+  const std::string& end_point, const std::string& registration_id) {
+  if (!runner_)
+    return;
+  runner_->SetMockPushClientSuccess(end_point, registration_id);
+}
+
+void TestRunnerBindings::setMockPushClientError(const std::string& message) {
+  if (!runner_)
+    return;
+  runner_->SetMockPushClientError(message);
 }
 
 bool TestRunnerBindings::GlobalFlag() {
@@ -2694,6 +2715,15 @@ void TestRunner::DisplayAsyncThen(v8::Handle<v8::Function> callback) {
   proxy_->DisplayAsyncThen(base::Bind(&TestRunner::InvokeCallback,
                                       base::Unretained(this),
                                       base::Passed(&task)));
+}
+
+void TestRunner::SetMockPushClientSuccess(
+  const std::string& end_point, const std::string& registration_id) {
+  proxy_->GetPushClientMock()->SetMockSuccessValues(end_point, registration_id);
+}
+
+void TestRunner::SetMockPushClientError(const std::string& message) {
+  proxy_->GetPushClientMock()->SetMockErrorValues(message);
 }
 
 void TestRunner::LocationChangeDone() {

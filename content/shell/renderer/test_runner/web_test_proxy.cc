@@ -19,6 +19,7 @@
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
 #include "content/shell/renderer/test_runner/accessibility_controller.h"
 #include "content/shell/renderer/test_runner/event_sender.h"
+#include "content/shell/renderer/test_runner/mock_web_push_client.h"
 #include "content/shell/renderer/test_runner/mock_web_user_media_client.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
 #include "content/shell/renderer/test_runner/web_test_runner.h"
@@ -1212,6 +1213,16 @@ void WebTestProxyBase::ResetInputMethod() {
 
 blink::WebString WebTestProxyBase::acceptLanguages() {
   return blink::WebString::fromUTF8(accept_languages_);
+}
+
+MockWebPushClient* WebTestProxyBase::GetPushClientMock() {
+  if (!push_client_.get())
+    push_client_.reset(new MockWebPushClient);
+  return push_client_.get();
+}
+
+blink::WebPushClient* WebTestProxyBase::GetWebPushClient() {
+  return GetPushClientMock();
 }
 
 }  // namespace content

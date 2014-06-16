@@ -531,6 +531,10 @@ class TestRunner : public WebTestRunner,
   void DisplayAsync();
   void DisplayAsyncThen(v8::Handle<v8::Function> callback);
 
+  void SetMockPushClientSuccess(const std::string& end_point,
+                                const std::string& registration_id);
+  void SetMockPushClientError(const std::string& message);
+
   ///////////////////////////////////////////////////////////////////////////
   // Internal helpers
   void CheckResponseMimeType();
