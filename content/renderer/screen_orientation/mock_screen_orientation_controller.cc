@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationListener.h"
 
 namespace content {
 
@@ -16,19 +15,13 @@ MockScreenOrientationController::MockScreenOrientationController()
     : RenderViewObserver(NULL),
       current_lock_(blink::WebScreenOrientationLockDefault),
       device_orientation_(blink::WebScreenOrientationPortraitPrimary),
-      current_orientation_(blink::WebScreenOrientationPortraitPrimary),
-      listener_(NULL) {
+      current_orientation_(blink::WebScreenOrientationPortraitPrimary) {
   // Since MockScreenOrientationController is held by LazyInstance reference,
   // add this ref for it.
   AddRef();
 }
 
 MockScreenOrientationController::~MockScreenOrientationController() {
-}
-
-void MockScreenOrientationController::SetListener(
-    blink::WebScreenOrientationListener* listener) {
-  listener_ = listener;
 }
 
 void MockScreenOrientationController::ResetData() {
@@ -38,34 +31,6 @@ void MockScreenOrientationController::ResetData() {
   current_lock_ = blink::WebScreenOrientationLockDefault;
   device_orientation_ = blink::WebScreenOrientationPortraitPrimary;
   current_orientation_ = blink::WebScreenOrientationPortraitPrimary;
-}
-
-void MockScreenOrientationController::UpdateLock(
-    blink::WebScreenOrientationLockType lock) {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&MockScreenOrientationController::UpdateLockSync, this, lock));
-}
-void MockScreenOrientationController::UpdateLockSync(
-    blink::WebScreenOrientationLockType lock) {
-  DCHECK(lock != blink::WebScreenOrientationLockDefault);
-  current_lock_ = lock;
-  if (!IsOrientationAllowedByCurrentLock(current_orientation_))
-    UpdateScreenOrientation(SuitableOrientationForCurrentLock());
-}
-
-void MockScreenOrientationController::ResetLock() {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&MockScreenOrientationController::ResetLockSync, this));
-}
-
-void MockScreenOrientationController::ResetLockSync() {
-  bool will_screen_orientation_need_updating =
-      !IsOrientationAllowedByCurrentLock(device_orientation_);
-  current_lock_ = blink::WebScreenOrientationLockDefault;
-  if (will_screen_orientation_need_updating)
-    UpdateScreenOrientation(device_orientation_);
 }
 
 void MockScreenOrientationController::UpdateDeviceOrientation(
@@ -97,9 +62,6 @@ void MockScreenOrientationController::UpdateScreenOrientation(
   current_orientation_ = orientation;
   if (render_view_impl())
     render_view_impl()->SetScreenOrientationForTesting(orientation);
-
-  if (listener_)
-    listener_->didChangeScreenOrientation(current_orientation_);
 }
 
 bool MockScreenOrientationController::IsOrientationAllowedByCurrentLock(
@@ -126,21 +88,6 @@ bool MockScreenOrientationController::IsOrientationAllowedByCurrentLock(
              current_lock_ == blink::WebScreenOrientationLockLandscape;
     default:
       return false;
-  }
-}
-
-blink::WebScreenOrientationType
-MockScreenOrientationController::SuitableOrientationForCurrentLock() {
-  switch (current_lock_) {
-    case blink::WebScreenOrientationLockPortraitSecondary:
-      return blink::WebScreenOrientationPortraitSecondary;
-    case blink::WebScreenOrientationLockLandscapePrimary:
-    case blink::WebScreenOrientationLockLandscape:
-      return blink::WebScreenOrientationLandscapePrimary;
-    case blink::WebScreenOrientationLockLandscapeSecondary:
-      return blink::WebScreenOrientationLandscapePrimary;
-    default:
-      return blink::WebScreenOrientationPortraitPrimary;
   }
 }
 
