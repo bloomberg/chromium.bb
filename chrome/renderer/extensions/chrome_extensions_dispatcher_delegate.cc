@@ -22,7 +22,6 @@
 #include "chrome/renderer/extensions/notifications_native_handler.h"
 #include "chrome/renderer/extensions/page_actions_custom_bindings.h"
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
-#include "chrome/renderer/extensions/pepper_request_natives.h"
 #include "chrome/renderer/extensions/sync_file_system_custom_bindings.h"
 #include "chrome/renderer/extensions/tab_finder.h"
 #include "chrome/renderer/extensions/tabs_custom_bindings.h"
@@ -127,9 +126,6 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       scoped_ptr<NativeHandler>(
           new extensions::PageCaptureCustomBindings(context)));
   module_system->RegisterNativeHandler(
-      "pepper_request_natives",
-      scoped_ptr<NativeHandler>(new extensions::PepperRequestNatives(context)));
-  module_system->RegisterNativeHandler(
       "tabs",
       scoped_ptr<NativeHandler>(new extensions::TabsCustomBindings(context)));
   module_system->RegisterNativeHandler(
@@ -149,9 +145,6 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
 
 void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
     extensions::ResourceBundleSourceMap* source_map) {
-  // Libraries.
-  source_map->RegisterSource("pepper_request", IDR_PEPPER_REQUEST_JS);
-
   // Custom bindings.
   source_map->RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("app.window", IDR_APP_WINDOW_CUSTOM_BINDINGS_JS);

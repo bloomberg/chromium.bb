@@ -70,7 +70,6 @@
         <include name="IDR_PAGE_ACTIONS_CUSTOM_BINDINGS_JS" file="extensions\page_actions_custom_bindings.js" type="BINDATA" />
         <include name="IDR_PAGE_ACTION_CUSTOM_BINDINGS_JS" file="extensions\page_action_custom_bindings.js" type="BINDATA" />
         <include name="IDR_PAGE_CAPTURE_CUSTOM_BINDINGS_JS" file="extensions\page_capture_custom_bindings.js" type="BINDATA" />
-        <include name="IDR_PEPPER_REQUEST_JS" file="extensions\pepper_request.js" type="BINDATA" />
         <include name="IDR_SYNC_FILE_SYSTEM_CUSTOM_BINDINGS_JS" file="extensions\sync_file_system_custom_bindings.js" type="BINDATA" />
         <include name="IDR_SYSTEM_INDICATOR_CUSTOM_BINDINGS_JS" file="extensions\system_indicator_custom_bindings.js" type="BINDATA" />
         <include name="IDR_TAB_CAPTURE_CUSTOM_BINDINGS_JS" file="extensions\tab_capture_custom_bindings.js" type="BINDATA" />

@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/renderer/extensions/pepper_request_proxy.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/request_sender.h"
@@ -37,14 +36,7 @@ class ChromeV8Context : public ScriptContext {
                   const Extension* extension,
                   Feature::Context context_type);
 
-  PepperRequestProxy* pepper_request_proxy() {
-    return &pepper_request_proxy_;
-  }
-
  private:
-  // The proxy for this context for making API calls from Pepper via Javascript.
-  PepperRequestProxy pepper_request_proxy_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeV8Context);
 };
 

@@ -5,7 +5,6 @@
 #include "chrome/renderer/pepper/chrome_renderer_pepper_host_factory.h"
 
 #include "base/logging.h"
-#include "chrome/renderer/pepper/pepper_extensions_common_host.h"
 #include "chrome/renderer/pepper/pepper_flash_drm_renderer_host.h"
 #include "chrome/renderer/pepper/pepper_flash_font_file_host.h"
 #include "chrome/renderer/pepper/pepper_flash_fullscreen_host.h"
@@ -38,17 +37,6 @@ scoped_ptr<ResourceHost> ChromeRendererPepperHostFactory::CreateResourceHost(
   // Make sure the plugin is giving us a valid instance for this resource.
   if (!host_->IsValidInstance(instance))
     return scoped_ptr<ResourceHost>();
-
-  // Dev interfaces.
-  if (host_->GetPpapiHost()->permissions().HasPermission(
-          ppapi::PERMISSION_DEV)) {
-    switch (message.type()) {
-      case PpapiHostMsg_ExtensionsCommon_Create::ID: {
-        return scoped_ptr<ResourceHost>(PepperExtensionsCommonHost::Create(
-            host_, instance, params.pp_resource()));
-      }
-    }
-  }
 
   if (host_->GetPpapiHost()->permissions().HasPermission(
           ppapi::PERMISSION_FLASH)) {

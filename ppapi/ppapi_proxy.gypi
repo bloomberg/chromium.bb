@@ -41,8 +41,6 @@
           'proxy/enter_proxy.h',
           'proxy/error_conversion.cc',
           'proxy/error_conversion.h',
-          'proxy/extensions_common_resource.cc',
-          'proxy/extensions_common_resource.h',
           'proxy/file_chooser_resource.cc',
           'proxy/file_chooser_resource.h',
           'proxy/file_io_resource.cc',

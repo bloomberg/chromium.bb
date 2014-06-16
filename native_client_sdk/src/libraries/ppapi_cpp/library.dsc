@@ -63,7 +63,6 @@
         'websocket.cc',
 
         # ppapi/cpp/dev
-        'alarms_dev.cc',
         'cursor_control_dev.cc',
         'file_chooser_dev.cc',
         'font_dev.cc',
@@ -71,7 +70,6 @@
         'printing_dev.cc',
         'scriptable_object_deprecated.cc',
         'selection_dev.cc',
-        'string_wrapper_dev.cc',
         'truetype_font_dev.cc',
         'view_dev.cc',
         'zoom_dev.cc',
@@ -152,20 +150,13 @@
     },
     {
       'FILES': [
-        'alarms_dev.h',
-        'array_dev.h',
         'cursor_control_dev.h',
         'file_chooser_dev.h',
         'font_dev.h',
-        'may_own_ptr_dev.h',
         'memory_dev.h',
-        'optional_dev.h',
         'printing_dev.h',
         'scriptable_object_deprecated.h',
         'selection_dev.h',
-        'string_wrapper_dev.h',
-        'struct_wrapper_output_traits_dev.h',
-        'to_c_type_converter_dev.h',
         'truetype_font_dev.h',
         'video_capture_client_dev.h',
         'video_decoder_client_dev.h',

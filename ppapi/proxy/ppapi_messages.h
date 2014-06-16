@@ -13,7 +13,6 @@
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/sync_socket.h"
-#include "base/values.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
@@ -1306,25 +1305,6 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Broker_Create)
 // The response is contained in the error value of the
 // ResourceMessageReplyParams in the reply message.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Broker_IsAllowed)
-
-// Extensions common -----------------------------------------------------------
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_ExtensionsCommon_Create)
-
-// Starts an extension API request which doesn't expect a response.
-// |request_name| is an API function name. |args| is a list of input arguments.
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_ExtensionsCommon_Post,
-                     std::string /* request_name */,
-                     base::ListValue /* args */)
-
-// Starts an extension API request which expects a response sent back using a
-// PpapiPluginMsg_ExtensionsCommon_CallReply message.
-// |request_name| is an API function name. |args| is a list of input arguments.
-// |output| is a list of output results.
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_ExtensionsCommon_Call,
-                     std::string /* request_name */,
-                     base::ListValue /* args */)
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_ExtensionsCommon_CallReply,
-                     base::ListValue /* output */)
 
 // UMA
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_UMA_Create)

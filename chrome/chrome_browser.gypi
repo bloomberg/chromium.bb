@@ -1857,8 +1857,6 @@
         'browser/renderer_host/pepper/monitor_finder_mac.mm',
         'browser/renderer_host/pepper/pepper_broker_message_filter.cc',
         'browser/renderer_host/pepper/pepper_broker_message_filter.h',
-        'browser/renderer_host/pepper/pepper_extensions_common_message_filter.cc',
-        'browser/renderer_host/pepper/pepper_extensions_common_message_filter.h',
         'browser/renderer_host/pepper/pepper_flash_browser_host.cc',
         'browser/renderer_host/pepper/pepper_flash_browser_host.h',
         'browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.cc',

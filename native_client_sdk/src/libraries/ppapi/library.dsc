@@ -96,7 +96,6 @@
     {
       'FILES': [
         'deprecated_bool.h',
-        'ppb_alarms_dev.h',
         'ppb_cursor_control_dev.h',
         'ppb_file_chooser_dev.h',
         'ppb_font_dev.h',
@@ -109,7 +108,6 @@
         'ppb_view_dev.h',
         'ppb_zoom_dev.h',
         'pp_cursor_type_dev.h',
-        'pp_optional_structs_dev.h',
         'ppp_class_deprecated.h',
         'ppp_network_state_dev.h',
         'ppp_printing_dev.h',

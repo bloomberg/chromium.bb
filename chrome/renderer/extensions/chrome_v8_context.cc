@@ -21,8 +21,7 @@ ChromeV8Context::ChromeV8Context(const v8::Handle<v8::Context>& v8_context,
                                  blink::WebFrame* web_frame,
                                  const Extension* extension,
                                  Feature::Context context_type)
-    : ScriptContext(v8_context, web_frame, extension, context_type),
-      pepper_request_proxy_(this) {
+    : ScriptContext(v8_context, web_frame, extension, context_type) {
 }
 
 }  // namespace extensions

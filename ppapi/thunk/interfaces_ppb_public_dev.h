@@ -10,7 +10,6 @@
 // Map the old dev console interface to the stable one (which is the same) to
 // keep Flash, etc. working.
 PROXIED_IFACE("PPB_Console(Dev);0.1", PPB_Console_1_0)
-PROXIED_IFACE(PPB_ALARMS_DEV_INTERFACE_0_1, PPB_Alarms_Dev_0_1)
 PROXIED_IFACE(PPB_CURSOR_CONTROL_DEV_INTERFACE_0_4, PPB_CursorControl_Dev_0_4)
 PROXIED_IFACE(PPB_FILECHOOSER_DEV_INTERFACE_0_5, PPB_FileChooser_Dev_0_5)
 PROXIED_IFACE(PPB_FILECHOOSER_DEV_INTERFACE_0_6, PPB_FileChooser_Dev_0_6)
