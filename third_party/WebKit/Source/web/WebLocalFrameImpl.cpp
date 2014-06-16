@@ -1670,35 +1670,36 @@ void WebLocalFrameImpl::initializeAsMainFrame(WebCore::Page* page)
 PassRefPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& request, HTMLFrameOwnerElement* ownerElement)
 {
     ASSERT(m_client);
-    // Protect a reference to the new child frame, in case it gets detached.
-    RefPtr<WebLocalFrameImpl> child = toWebLocalFrameImpl(m_client->createChildFrame(this, request.frameName()));
-    if (!child)
+    WebLocalFrameImpl* webframeChild = toWebLocalFrameImpl(m_client->createChildFrame(this, request.frameName()));
+    if (!webframeChild)
         return nullptr;
 
     // FIXME: Using subResourceAttributeName as fallback is not a perfect
     // solution. subResourceAttributeName returns just one attribute name. The
     // element might not have the attribute, and there might be other attributes
     // which can identify the element.
-    child->initializeAsChildFrame(frame()->host(), ownerElement, request.frameName(), ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
+    RefPtr<LocalFrame> child = webframeChild->initializeAsChildFrame(frame()->host(), ownerElement, request.frameName(), ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
     // Initializing the WebCore frame may cause the new child to be detached, since it may dispatch a load event in the parent.
-    if (!child->frame())
+    if (!child->tree().parent())
         return nullptr;
 
     // If we're moving in the back/forward list, we might want to replace the content
     // of this child frame with whatever was there at that point.
     RefPtr<HistoryItem> childItem;
     if (isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished())
-        childItem = PassRefPtr<HistoryItem>(child->client()->historyItemForNewChildFrame(child.get()));
+        childItem = PassRefPtr<HistoryItem>(webframeChild->client()->historyItemForNewChildFrame(webframeChild));
 
     if (childItem)
-        child->frame()->loader().loadHistoryItem(childItem.get());
+        child->loader().loadHistoryItem(childItem.get());
     else
-        child->frame()->loader().load(FrameLoadRequest(0, request.resourceRequest(), "_self"));
+        child->loader().load(FrameLoadRequest(0, request.resourceRequest(), "_self"));
 
     // Note a synchronous navigation (about:blank) would have already processed
-    // onload, so it is possible for the child frame to have already been destroyed by
-    // script in the page.
-    return child->frame();
+    // onload, so it is possible for the child frame to have already been
+    // detached by script in the page.
+    if (!child->tree().parent())
+        return nullptr;
+    return child;
 }
 
 void WebLocalFrameImpl::didChangeContentsSize(const IntSize& size)
@@ -1944,12 +1945,14 @@ void WebLocalFrameImpl::invalidateAll() const
     invalidateScrollbar();
 }
 
-void WebLocalFrameImpl::initializeAsChildFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
+PassRefPtr<LocalFrame> WebLocalFrameImpl::initializeAsChildFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
 {
-    setWebCoreFrame(LocalFrame::create(&m_frameLoaderClientImpl, host, owner));
-    frame()->tree().setName(name, fallbackName);
-    // May dispatch JS events; frame() may be null after this.
-    frame()->init();
+    RefPtr<LocalFrame> frame = LocalFrame::create(&m_frameLoaderClientImpl, host, owner);
+    setWebCoreFrame(frame);
+    frame->tree().setName(name, fallbackName);
+    // May dispatch JS events; frame may be detached after this.
+    frame->init();
+    return frame;
 }
 
 } // namespace blink
