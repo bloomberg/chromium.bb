@@ -1933,8 +1933,9 @@ public class ContentViewCore
 
                 @Override
                 public void showHandles(int startDir, int endDir) {
+                    final boolean wasShowing = isShowing();
                     super.showHandles(startDir, endDir);
-                    showSelectActionBar();
+                    if (!wasShowing || mActionMode == null) showSelectActionBar();
                 }
 
             };

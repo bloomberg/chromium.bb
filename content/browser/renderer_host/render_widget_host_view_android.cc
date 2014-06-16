@@ -862,10 +862,6 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     return;
   }
 
-  // Always let ContentViewCore know about the new frame first, so it can decide
-  // to schedule a Draw immediately when it sees the texture layer invalidation.
-  OnFrameMetadataUpdated(frame->metadata);
-
   if (layer_ && layer_->layer_tree_host()) {
     for (size_t i = 0; i < frame->metadata.latency_info.size(); i++) {
       scoped_ptr<cc::SwapPromise> swap_promise(
@@ -883,6 +879,8 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
 
   SwapDelegatedFrame(output_surface_id, frame->delegated_frame_data.Pass());
   frame_evictor_->SwappedFrame(!host_->is_hidden());
+
+  OnFrameMetadataUpdated(frame->metadata);
 }
 
 void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(

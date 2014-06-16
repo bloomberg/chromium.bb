@@ -89,6 +89,7 @@ public class HandleView extends View {
         mContainer = new PopupWindow(context, null, android.R.attr.textSelectHandleWindowStyle);
         mContainer.setSplitTouchEnabled(true);
         mContainer.setClippingEnabled(false);
+        mContainer.setAnimationStyle(0);
 
         setOrientation(pos);
 
@@ -164,6 +165,9 @@ public class HandleView extends View {
     }
 
     private void onPositionChanged() {
+        // Deferring View invalidation while the handles are hidden prevents
+        // scheduling conflicts with the compositor.
+        if (getVisibility() != VISIBLE) return;
         mContainer.update(getContainerPositionX(), getContainerPositionY(),
                 getRight() - getLeft(), getBottom() - getTop());
     }
@@ -391,6 +395,8 @@ public class HandleView extends View {
         mAlpha = 0.f;
         mFadeStartTime = AnimationUtils.currentAnimationTimeMillis();
         setVisibility(VISIBLE);
+        // Position updates may have been deferred while the handle was hidden.
+        onPositionChanged();
     }
 
     void showPastePopupWindow() {
