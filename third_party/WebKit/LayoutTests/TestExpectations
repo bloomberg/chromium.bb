@@ -1003,7 +1003,7 @@ crbug.com/371276 [ Linux ] virtual/deferred/inspector/timeline/timeline-window-f
 crbug.com/371276 [ Linux ] virtual/implsidepainting/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
 crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-redirect-to-blocked.html [ Failure ]
-
+crbug.com/384956 virtual/implsidepainting/inspector/timeline/timeline-script-tag-1.html [ Failure Pass ]
 crbug.com/381373 [ Win ]  virtual/implsidepainting/inspector/timeline/tracing/decode-resize.html [ Pass Failure ]
 
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ ImageOnlyFailure ]
