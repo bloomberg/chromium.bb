@@ -43,6 +43,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/frame/UseCounter.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
 #include "platform/heap/Handle.h"
@@ -65,7 +66,10 @@ bool isLegacyAppleStyleSpan(const Node *node)
         return false;
 
     const HTMLElement* elem = toHTMLElement(node);
-    return elem->hasLocalName(spanAttr) && elem->getAttribute(classAttr) == styleSpanClassString();
+    if (!elem->hasLocalName(spanAttr) || elem->getAttribute(classAttr) != styleSpanClassString())
+        return false;
+    UseCounter::count(elem->document(), UseCounter::EditingAppleStyleSpanClass);
+    return true;
 }
 
 static bool hasNoAttributeOrOnlyStyleAttribute(const Element* element, ShouldStyleAttributeBeEmpty shouldStyleAttributeBeEmpty)

@@ -44,6 +44,7 @@
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLLIElement.h"
@@ -824,7 +825,10 @@ PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(Document& document, const 
 
 bool isTabSpanNode(const Node* node)
 {
-    return isHTMLSpanElement(node) && toElement(node)->getAttribute(classAttr) == AppleTabSpanClass;
+    if (!isHTMLSpanElement(node) || toElement(node)->getAttribute(classAttr) != AppleTabSpanClass)
+        return false;
+    UseCounter::count(node->document(), UseCounter::EditingAppleTabSpanClass);
+    return true;
 }
 
 bool isTabSpanTextNode(const Node* node)

@@ -48,6 +48,7 @@
 #include "core/editing/markup.h"
 #include "core/events/BeforeTextInsertedEvent.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/rendering/RenderObject.h"
@@ -97,13 +98,19 @@ private:
 static bool isInterchangeNewlineNode(const Node *node)
 {
     DEFINE_STATIC_LOCAL(String, interchangeNewlineClassString, (AppleInterchangeNewline));
-    return isHTMLBRElement(node) && toElement(node)->getAttribute(classAttr) == interchangeNewlineClassString;
+    if (!isHTMLBRElement(node) || toElement(node)->getAttribute(classAttr) != interchangeNewlineClassString)
+        return false;
+    UseCounter::count(node->document(), UseCounter::EditingAppleInterchangeNewline);
+    return true;
 }
 
 static bool isInterchangeConvertedSpaceSpan(const Node *node)
 {
     DEFINE_STATIC_LOCAL(String, convertedSpaceSpanClassString, (AppleConvertedSpace));
-    return node->isHTMLElement() && toHTMLElement(node)->getAttribute(classAttr) == convertedSpaceSpanClassString;
+    if (!node->isHTMLElement() || toHTMLElement(node)->getAttribute(classAttr) != convertedSpaceSpanClassString)
+        return false;
+    UseCounter::count(node->document(), UseCounter::EditingAppleConvertedSpace);
+    return true;
 }
 
 static Position positionAvoidingPrecedingNodes(Position pos)
@@ -418,7 +425,10 @@ bool ReplaceSelectionCommand::shouldMergeEnd(bool selectionEndWasEndOfParagraph)
 
 static bool isMailPasteAsQuotationNode(const Node* node)
 {
-    return node && node->hasTagName(blockquoteTag) && toElement(node)->getAttribute(classAttr) == ApplePasteAsQuotation;
+    if (!node || !node->hasTagName(blockquoteTag) || toElement(node)->getAttribute(classAttr) != ApplePasteAsQuotation)
+        return false;
+    UseCounter::count(node->document(), UseCounter::EditingApplePasteAsQuotation);
+    return true;
 }
 
 static bool isHeaderElement(const Node* a)
@@ -866,10 +876,18 @@ static bool isInlineNodeWithStyle(const Node* node)
     // one of our internal classes.
     const HTMLElement* element = toHTMLElement(node);
     const AtomicString& classAttributeValue = element->getAttribute(classAttr);
-    if (classAttributeValue == AppleTabSpanClass
-        || classAttributeValue == AppleConvertedSpace
-        || classAttributeValue == ApplePasteAsQuotation)
+    if (classAttributeValue == AppleTabSpanClass) {
+        UseCounter::count(node->document(), UseCounter::EditingAppleTabSpanClass);
         return true;
+    }
+    if (classAttributeValue == AppleConvertedSpace) {
+        UseCounter::count(node->document(), UseCounter::EditingAppleConvertedSpace);
+        return true;
+    }
+    if (classAttributeValue == ApplePasteAsQuotation) {
+        UseCounter::count(node->document(), UseCounter::EditingApplePasteAsQuotation);
+        return true;
+    }
 
     return EditingStyle::elementIsStyledSpanOrHTMLEquivalent(element);
 }
