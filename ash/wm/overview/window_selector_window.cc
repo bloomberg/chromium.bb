@@ -19,35 +19,6 @@
 
 namespace ash {
 
-namespace {
-
-views::Widget* CreateCloseWindowButton(aura::Window* root_window,
-                                       views::ButtonListener* listener) {
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_POPUP;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent =
-      Shell::GetContainer(root_window, ash::kShellWindowId_OverlayContainer);
-  widget->set_focus_on_creation(false);
-  widget->Init(params);
-  views::ImageButton* button = new views::ImageButton(listener);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  button->SetImage(views::CustomButton::STATE_NORMAL,
-      rb.GetImageSkiaNamed(IDR_AURA_WINDOW_OVERVIEW_CLOSE));
-  button->SetImage(views::CustomButton::STATE_HOVERED,
-      rb.GetImageSkiaNamed(IDR_AURA_WINDOW_OVERVIEW_CLOSE_H));
-  button->SetImage(views::CustomButton::STATE_PRESSED,
-      rb.GetImageSkiaNamed(IDR_AURA_WINDOW_OVERVIEW_CLOSE_P));
-  widget->SetContentsView(button);
-  widget->SetSize(rb.GetImageSkiaNamed(IDR_AURA_WINDOW_OVERVIEW_CLOSE)->size());
-  widget->Show();
-  return widget;
-}
-
-}  // namespace
-
 WindowSelectorWindow::WindowSelectorWindow(aura::Window* window)
     : transform_window_(window) {
 }
@@ -78,10 +49,7 @@ aura::Window* WindowSelectorWindow::SelectionWindow() {
 void WindowSelectorWindow::RemoveWindow(const aura::Window* window) {
   DCHECK_EQ(transform_window_.window(), window);
   transform_window_.OnWindowDestroyed();
-  // Remove the close button now so that the exited mouse event which is
-  // delivered to the destroyed button as it is destroyed does not happen while
-  // this item is being removed from the list of windows in overview.
-  close_button_.reset();
+  WindowSelectorItem::RemoveWindow(window);
 }
 
 bool WindowSelectorWindow::empty() const {
@@ -101,72 +69,6 @@ void WindowSelectorWindow::SetItemBounds(aura::Window* root_window,
   transform_window_.SetTransform(root_window,
       ScopedTransformOverviewWindow::GetTransformForRect(src_rect, bounds()),
       animate);
-  // TODO move close button management to WindowSelectorItem, so that we can
-  // also handle panels.
-  // See http://crbug.com/352143
-  UpdateCloseButtonBounds(root_window, animate);
-}
-
-void WindowSelectorWindow::ButtonPressed(views::Button* sender,
-                         const ui::Event& event) {
-  views::Widget::GetTopLevelWidgetForNativeView(
-      transform_window_.window())->Close();
-}
-
-void WindowSelectorWindow::UpdateCloseButtonBounds(aura::Window* root_window,
-                                                   bool animate) {
-  gfx::Rect align_bounds(
-      ScreenUtil::ConvertRectFromScreen(root_window, bounds()));
-  gfx::Transform close_button_transform;
-  close_button_transform.Translate(align_bounds.right(), align_bounds.y());
-
-  // If the root window has changed, force the close button to be recreated
-  // and faded in on the new root window.
-  if (close_button_ &&
-      close_button_->GetNativeWindow()->GetRootWindow() != root_window) {
-    close_button_.reset();
-  }
-
-  if (!close_button_) {
-    close_button_.reset(CreateCloseWindowButton(root_window, this));
-    gfx::Rect close_button_rect(close_button_->GetNativeWindow()->bounds());
-    // Align the center of the button with position (0, 0) so that the
-    // translate transform does not need to take the button dimensions into
-    // account.
-    close_button_rect.set_x(-close_button_rect.width() / 2);
-    close_button_rect.set_y(-close_button_rect.height() / 2);
-    close_button_->GetNativeWindow()->SetBounds(close_button_rect);
-    close_button_->GetNativeWindow()->SetTransform(close_button_transform);
-    // The close button is initialized when entering overview, fade the button
-    // in after the window should be in place.
-    ui::Layer* layer = close_button_->GetNativeWindow()->layer();
-    layer->SetOpacity(0);
-    layer->GetAnimator()->StopAnimating();
-    layer->GetAnimator()->SchedulePauseForProperties(
-        base::TimeDelta::FromMilliseconds(
-            ScopedTransformOverviewWindow::kTransitionMilliseconds),
-        ui::LayerAnimationElement::OPACITY);
-    {
-      ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-      settings.SetPreemptionStrategy(
-          ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-      settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-            WindowSelectorItem::kFadeInMilliseconds));
-      layer->SetOpacity(1);
-    }
-  } else {
-    if (animate) {
-      ui::ScopedLayerAnimationSettings settings(
-          close_button_->GetNativeWindow()->layer()->GetAnimator());
-      settings.SetPreemptionStrategy(
-          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-          ScopedTransformOverviewWindow::kTransitionMilliseconds));
-      close_button_->GetNativeWindow()->SetTransform(close_button_transform);
-    } else {
-      close_button_->GetNativeWindow()->SetTransform(close_button_transform);
-    }
-  }
 }
 
 }  // namespace ash

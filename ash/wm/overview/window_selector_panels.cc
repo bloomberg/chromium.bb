@@ -144,6 +144,7 @@ void WindowSelectorPanels::RemoveWindow(const aura::Window* window) {
       break;
     }
   }
+  WindowSelectorItem::RemoveWindow(window);
 }
 
 bool WindowSelectorPanels::empty() const {

@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/strings/string16.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/controls/button/button.h"
 
 namespace aura {
 class Window;
@@ -24,7 +24,7 @@ class TransparentActivateWindowButton;
 // This class represents an item in overview mode. An item can have one or more
 // windows, of which only one can be activated by keyboard (i.e. alt+tab) but
 // any can be selected with a pointer (touch or mouse).
-class WindowSelectorItem {
+class WindowSelectorItem : public views::ButtonListener {
  public:
   WindowSelectorItem();
   virtual ~WindowSelectorItem();
@@ -52,7 +52,7 @@ class WindowSelectorItem {
 
   // Removes |window| from this item. Check empty() after calling this to see
   // if the entire item is now empty.
-  virtual void RemoveWindow(const aura::Window* window) = 0;
+  virtual void RemoveWindow(const aura::Window* window);
 
   // Returns true if this item has no more selectable windows (i.e. after
   // calling RemoveWindow for the last contained window).
@@ -76,8 +76,12 @@ class WindowSelectorItem {
   // label is read.
   void SendFocusAlert() const;
 
-  const gfx::Rect& bounds() { return bounds_; }
-  const gfx::Rect& target_bounds() { return target_bounds_; }
+  const gfx::Rect& bounds() const { return bounds_; }
+  const gfx::Rect& target_bounds() const { return target_bounds_; }
+
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
 
  protected:
   // Sets the bounds of this selector's items to |target_bounds| in
@@ -92,6 +96,10 @@ class WindowSelectorItem {
 
  private:
   friend class WindowSelectorTest;
+
+  // Creates |close_button_| if it does not exist and updates the bounds based
+  // on GetCloseButtonTargetBounds()
+  void UpdateCloseButtonBounds(aura::Window* root_window, bool animate);
 
   // Creates a label to display under the window selector item.
   void UpdateWindowLabels(const gfx::Rect& target_bounds,
@@ -115,6 +123,9 @@ class WindowSelectorItem {
 
   // Label under the window displaying its active tab name.
   scoped_ptr<views::Widget> window_label_;
+
+  // An easy to access close button for the window in this item.
+  scoped_ptr<views::Widget> close_button_;
 
   // Transparent window on top of the real windows in the overview that
   // activates them on click or tap.

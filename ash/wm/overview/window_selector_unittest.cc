@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "ash/accessibility_delegate.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/root_window_controller.h"
@@ -42,6 +44,7 @@
 #include "ui/gfx/transform.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/native_widget_aura.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_delegate.h"
 
@@ -100,6 +103,18 @@ class WindowSelectorTest : public test::AshTestBase {
     test::TestShelfDelegate::instance()->AddShelfItem(window);
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;
+  }
+
+  views::Widget* CreatePanelWindowWidget(const gfx::Rect& bounds) {
+    views::Widget* widget = new views::Widget;
+    views::Widget::InitParams params;
+    params.bounds = bounds;
+    params.type = views::Widget::InitParams::TYPE_PANEL;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    widget->Init(params);
+    widget->Show();
+    ParentWindowInPrimaryRootWindow(widget->GetNativeWindow());
+    return widget;
   }
 
   bool WindowsOverlapping(aura::Window* window1, aura::Window* window2) {
@@ -185,6 +200,10 @@ class WindowSelectorTest : public test::AshTestBase {
         window_selector_controller()->window_selector_.get();
     return ws->grid_list_[ws->selected_grid_index_]->
         SelectedWindow()->SelectionWindow();
+  }
+
+  views::Widget* GetCloseButton(ash::WindowSelectorItem* window) {
+    return window->close_button_.get();
   }
 
   views::Widget* GetLabelWidget(ash::WindowSelectorItem* window) {
@@ -914,6 +933,53 @@ TEST_F(WindowSelectorTest, WindowOverviewHidesCalloutWidgets) {
       panel_manager->GetCalloutWidgetForPanel(panel1.get())->IsVisible());
   EXPECT_TRUE(
       panel_manager->GetCalloutWidgetForPanel(panel2.get())->IsVisible());
+}
+
+// Tests that when panels are grouped that the close button only closes the
+// currently active panel. After the removal window selection should still be
+// active, and the label should have changed. Removing the last panel should
+// cause selection to end.
+TEST_F(WindowSelectorTest, CloseButtonOnPanels) {
+  scoped_ptr<views::Widget> widget1(CreatePanelWindowWidget(
+      gfx::Rect(0, 0, 300, 100)));
+  scoped_ptr<views::Widget> widget2(CreatePanelWindowWidget(
+      gfx::Rect(100, 0, 100, 100)));
+  aura::Window* window1 = widget1->GetNativeWindow();
+  aura::Window* window2 = widget2->GetNativeWindow();
+  base::string16 panel1_title = base::UTF8ToUTF16("Panel 1");
+  base::string16 panel2_title = base::UTF8ToUTF16("Panel 2");
+  window1->set_title(panel1_title);
+  window2->set_title(panel2_title);
+  wm::ActivateWindow(window1);
+  ToggleOverview();
+
+  gfx::RectF bounds1 = GetTransformedBoundsInRootWindow(window1);
+  gfx::Point point1(bounds1.top_right().x() - 1, bounds1.top_right().y() - 1);
+  aura::test::EventGenerator event_generator1(window1->GetRootWindow(), point1);
+
+  EXPECT_FALSE(widget1->IsClosed());
+  event_generator1.ClickLeftButton();
+  EXPECT_TRUE(widget1->IsClosed());
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsSelecting());
+  WindowSelectorItem* window_item = GetWindowItemsForRoot(0).front();
+  EXPECT_FALSE(window_item->empty());
+  EXPECT_TRUE(window_item->Contains(window2));
+  EXPECT_TRUE(GetCloseButton(window_item)->IsVisible());
+
+  views::Widget* widget = GetLabelWidget(window_item);
+  views::Label* label = static_cast<views::Label*>(widget->GetContentsView());
+  EXPECT_EQ(label->text(), panel2_title);
+
+  gfx::RectF bounds2 = GetTransformedBoundsInRootWindow(window2);
+  gfx::Point point2(bounds2.top_right().x() - 1, bounds2.top_right().y() - 1);
+  aura::test::EventGenerator event_generator2(window2->GetRootWindow(), point2);
+
+  EXPECT_FALSE(widget2->IsClosed());
+  event_generator2.ClickLeftButton();
+  EXPECT_TRUE(widget2->IsClosed());
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsSelecting());
 }
 
 }  // namespace ash
