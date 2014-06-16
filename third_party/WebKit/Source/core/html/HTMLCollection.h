@@ -125,8 +125,6 @@ protected:
     }
 
 private:
-    Element* traverseNextElement(Element& previous) const;
-
     void invalidateIdNameCacheMaps(Document* oldDocument = 0) const
     {
         if (!hasValidIdNameCache())

@@ -365,15 +365,6 @@ Element* HTMLCollection::traverseToLastElement() const
     return lastMatchingElement(*this);
 }
 
-inline Element* HTMLCollection::traverseNextElement(Element& previous) const
-{
-    if (overridesItemAfter())
-        return virtualItemAfter(&previous);
-    if (shouldOnlyIncludeDirectChildren())
-        return nextMatchingChildElement(*this, previous);
-    return nextMatchingElement(*this, previous);
-}
-
 Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset) const
 {
     ASSERT(currentOffset < offset);
@@ -455,7 +446,9 @@ void HTMLCollection::supportedPropertyNames(Vector<String>& names)
     //      nor is in result, append element's name attribute value to result.
     // 3. Return result.
     HashSet<AtomicString> existingNames;
-    for (Element* element = traverseToFirstElement(); element; element = traverseNextElement(*element)) {
+    unsigned length = this->length();
+    for (unsigned i = 0; i < length; ++i) {
+        Element* element = item(i);
         const AtomicString& idAttribute = element->getIdAttribute();
         if (!idAttribute.isEmpty()) {
             HashSet<AtomicString>::AddResult addResult = existingNames.add(idAttribute);
@@ -484,7 +477,9 @@ void HTMLCollection::updateIdNameCache() const
         return;
 
     OwnPtrWillBeRawPtr<NamedItemCache> cache = NamedItemCache::create();
-    for (Element* element = traverseToFirstElement(); element; element = traverseNextElement(*element)) {
+    unsigned length = this->length();
+    for (unsigned i = 0; i < length; ++i) {
+        Element* element = item(i);
         const AtomicString& idAttrVal = element->getIdAttribute();
         if (!idAttrVal.isEmpty())
             cache->addElementWithId(idAttrVal, element);
