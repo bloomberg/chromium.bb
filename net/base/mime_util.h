@@ -94,12 +94,34 @@ NET_EXPORT void ParseCodecString(const std::string& codecs,
 // certain subset of codecs.
 NET_EXPORT bool IsStrictMediaMimeType(const std::string& mime_type);
 
-// Check to see if a particular MIME type is in our list which only supports a
-// certain subset of codecs. Returns true if and only if all codecs are
-// supported for that specific MIME type, false otherwise. If this returns
-// false you will still need to check if the media MIME tpyes and codecs are
-// supported.
-NET_EXPORT bool IsSupportedStrictMediaMimeType(
+// Indicates that the MIME type and (possible codec string) are supported by the
+// underlying platform.
+enum SupportsType {
+  // The underlying platform is known not to support the given MIME type and
+  // codec combination.
+  IsNotSupported,
+
+  // The underlying platform is known to support the given MIME type and codec
+  // combination.
+  IsSupported,
+
+  // The underlying platform is unsure whether the given MIME type and codec
+  // combination can be rendered or not before actually trying to play it.
+  MayBeSupported
+};
+
+// Checks the |mime_type| and |codecs| against the MIME types known to support
+// only a particular subset of codecs.
+// * Returns IsSupported if the |mime_type| is supported and all the codecs
+//   within the |codecs| are supported for the |mime_type|.
+// * Returns MayBeSupported if the |mime_type| is supported and is known to
+//   support only a subset of codecs, but |codecs| was empty. Also returned if
+//   all the codecs in |codecs| are supported, but additional codec parameters
+//   were supplied (such as profile) for which the support cannot be decided.
+// * Returns IsNotSupported if either the |mime_type| is not supported or the
+//   |mime_type| is supported but at least one of the codecs within |codecs| is
+//   not supported for the |mime_type|.
+NET_EXPORT SupportsType IsSupportedStrictMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs);
 

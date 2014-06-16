@@ -113,15 +113,13 @@ TEST(MimeUtilTest, StrictMediaMimeType) {
   EXPECT_TRUE(IsStrictMediaMimeType("audio/mp3"));
   EXPECT_TRUE(IsStrictMediaMimeType("audio/x-mp3"));
 
-  // TODO(amogh.bihani): These will be fixed http://crbug.com/53193
-  EXPECT_FALSE(IsStrictMediaMimeType("video/mp4"));
-  EXPECT_FALSE(IsStrictMediaMimeType("video/x-m4v"));
-  EXPECT_FALSE(IsStrictMediaMimeType("audio/mp4"));
-  EXPECT_FALSE(IsStrictMediaMimeType("audio/x-m4a"));
+  EXPECT_TRUE(IsStrictMediaMimeType("video/mp4"));
+  EXPECT_TRUE(IsStrictMediaMimeType("video/x-m4v"));
+  EXPECT_TRUE(IsStrictMediaMimeType("audio/mp4"));
+  EXPECT_TRUE(IsStrictMediaMimeType("audio/x-m4a"));
 
-  EXPECT_FALSE(IsStrictMediaMimeType("application/x-mpegurl"));
-  EXPECT_FALSE(IsStrictMediaMimeType("application/vnd.apple.mpegurl"));
-  // ---------------------------------------------------------------------------
+  EXPECT_TRUE(IsStrictMediaMimeType("application/x-mpegurl"));
+  EXPECT_TRUE(IsStrictMediaMimeType("application/vnd.apple.mpegurl"));
 
   EXPECT_FALSE(IsStrictMediaMimeType("video/unknown"));
   EXPECT_FALSE(IsStrictMediaMimeType("audio/unknown"));

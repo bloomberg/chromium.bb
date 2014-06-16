@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "content/public/common/screen_orientation_values.h"
+#include "net/base/mime_util.h"
+#include "third_party/WebKit/public/platform/WebMimeRegistry.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 
 namespace content {
@@ -14,6 +16,7 @@ namespace content {
 #define COMPILE_ASSERT_MATCHING_ENUM(expected, actual) \
   COMPILE_ASSERT(int(expected) == int(actual), mismatching_enums)
 
+// ScreenOrientationValues
 COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockDefault,
     DEFAULT);
 COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockPortraitPrimary,
@@ -30,5 +33,13 @@ COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockLandscape,
     LANDSCAPE);
 COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockPortrait,
     PORTRAIT);
+
+// SupportsType
+COMPILE_ASSERT_MATCHING_ENUM(blink::WebMimeRegistry::IsNotSupported,
+    net::IsNotSupported);
+COMPILE_ASSERT_MATCHING_ENUM(blink::WebMimeRegistry::IsSupported,
+    net::IsSupported);
+COMPILE_ASSERT_MATCHING_ENUM(blink::WebMimeRegistry::MayBeSupported,
+    net::MayBeSupported);
 
 } // namespace content
