@@ -4,14 +4,11 @@
 
 #include "content/renderer/accessibility/renderer_accessibility.h"
 
-#include "base/command_line.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using blink::WebAXObject;
 using blink::WebDocument;
 using blink::WebFrame;
 using blink::WebView;

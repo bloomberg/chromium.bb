@@ -23,7 +23,6 @@ using blink::WebDocument;
 using blink::WebNode;
 using blink::WebPoint;
 using blink::WebRect;
-using blink::WebSize;
 using blink::WebView;
 
 namespace content {
