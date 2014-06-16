@@ -71,3 +71,44 @@ function launchWithTestEntries(
     });
   });
 }
+
+/**
+ * Waits until the expected image is shown.
+ *
+ * @param {document} document Document.
+ * @param {number} width Expected width of the image.
+ * @param {number} height Expected height of the image.
+ * @param {string} name Expected name of the image.
+ * @return {Promise} Promsie to be fulfilled when the check is passed.
+ */
+function waitForSlideImage(document, width, height, name) {
+  var expected = {width: width, height: height, name: name};
+  return repeatUntil(function() {
+    var fullResCanvas = document.querySelector(
+        '.gallery[mode="slide"] .content canvas.fullres');
+    var nameBox = document.querySelector('.namebox');
+    var actual = {
+      width: fullResCanvas && fullResCanvas.width,
+      height: fullResCanvas && fullResCanvas.height,
+      name: nameBox && nameBox.value
+    };
+    if (!chrome.test.checkDeepEq(expected, actual)) {
+      return pending('Slide mode state, expected is %j, actual is %j.',
+                     expected, actual);
+    }
+    return actual;
+  });
+}
+
+/**
+ * Shorthand for clicking an element.
+ * @param {AppWindow} appWindow application window.
+ * @param {string} query Query for the element.
+ * @param {Promise} Promise to be fulfilled with the clicked element.
+ */
+function waitAndClickElement(appWindow, query) {
+  return waitForElement(appWindow, query).then(function(element) {
+    element.click();
+    return element;
+  });
+}

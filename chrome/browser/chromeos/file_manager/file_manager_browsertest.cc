@@ -1360,5 +1360,24 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DeleteImageOnDrive) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RotateImageOnDownloads) {
+  AddScript("gallery/photo_editor.js");
+  set_test_case_name("rotateImageOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
+                       RotateImageOnDownloads) {
+  AddScript("gallery/photo_editor.js");
+  set_test_case_name("rotateImageOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RotateImageOnDrive) {
+  AddScript("gallery/photo_editor.js");
+  set_test_case_name("rotateImageOnDrive");
+  StartTest();
+}
+
 }  // namespace
 }  // namespace file_manager
