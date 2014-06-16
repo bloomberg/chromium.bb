@@ -98,7 +98,7 @@ bool NativeDisplayDelegateDri::Configure(const DisplaySnapshot& output,
   VLOG(1) << "DRM configuring: crtc=" << dri_output.crtc()
           << " connector=" << dri_output.connector()
           << " origin=" << origin.ToString()
-          << " size=" << mode->size().ToString();
+          << " size=" << (mode ? mode->size().ToString() : "0x0");
 
   if (mode) {
     if (!screen_manager_->ConfigureDisplayController(
