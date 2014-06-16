@@ -45,6 +45,9 @@
 namespace views {
 namespace {
 
+// A version of the OBJID_CLIENT constant that works in 64-bit mode too.
+static const LPARAM kObjIdClient = static_cast<ULONG>(OBJID_CLIENT);
+
 // MoveLoopMouseWatcher is used to determine if the user canceled or completed a
 // move. win32 doesn't appear to offer a way to determine the result of a move,
 // so we install hooks to determine if we got a mouse up and assume the move
@@ -1417,7 +1420,7 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
   LRESULT reference_result = static_cast<LRESULT>(0L);
 
   // Accessibility readers will send an OBJID_CLIENT message
-  if (OBJID_CLIENT == l_param) {
+  if (kObjIdClient == l_param) {
     // Retrieve MSAA dispatch object for the root view.
     base::win::ScopedComPtr<IAccessible> root(
         delegate_->GetNativeViewAccessible());

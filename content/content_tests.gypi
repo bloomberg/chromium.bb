@@ -1199,10 +1199,6 @@
               },
               # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
               'msvs_disabled_warnings': [ 4267, ],
-            }, {  # OS!="win"
-              'sources!': [
-                'browser/accessibility/accessibility_win_browsertest.cc',
-              ],
             }],
             ['OS=="win" and win_use_allocator_shim==1', {
               'dependencies': [
@@ -1235,11 +1231,6 @@
               ],
               'sources': [
                 'renderer/external_popup_menu_browsertest.cc',
-              ],
-            }],
-            ['use_aura==1', {
-              'sources!': [
-                'browser/accessibility/accessibility_win_browsertest.cc',
               ],
             }],
             ['use_aura==1 and OS!="win"', {

@@ -24,6 +24,9 @@ namespace content {
 // accessibility support.
 const int kIdScreenReaderHoneyPot = 1;
 
+// A version of the OBJID_CLIENT constant that works in 64-bit mode too.
+static const LPARAM kObjIdClient = static_cast<ULONG>(OBJID_CLIENT);
+
 LegacyRenderWidgetHostHWND::~LegacyRenderWidgetHostHWND() {
   ::DestroyWindow(hwnd());
 }
@@ -140,7 +143,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
     return static_cast<LRESULT>(0L);
   }
 
-  if (OBJID_CLIENT != l_param || !manager_)
+  if (kObjIdClient != l_param || !manager_)
     return static_cast<LRESULT>(0L);
 
   base::win::ScopedComPtr<IAccessible> root(
