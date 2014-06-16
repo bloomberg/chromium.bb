@@ -17,6 +17,8 @@
           'shared_impl/array_writer.h',
           'shared_impl/callback_tracker.cc',
           'shared_impl/callback_tracker.h',
+          'shared_impl/compositor_layer_data.cc',
+          'shared_impl/compositor_layer_data.h',
           'shared_impl/dictionary_var.cc',
           'shared_impl/dictionary_var.h',
           'shared_impl/file_io_state_manager.cc',

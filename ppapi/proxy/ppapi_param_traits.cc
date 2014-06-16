@@ -633,4 +633,31 @@ void ParamTraits<ppapi::SocketOptionData>::Log(const param_type& p,
                                                std::string* l) {
 }
 
+// ppapi::CompositorLayerData --------------------------------------------------
+
+// static
+void ParamTraits<ppapi::CompositorLayerData::Transform>::Write(
+    Message* m,
+    const param_type& p) {
+  for (size_t i = 0; i < arraysize(p.matrix); i++)
+    ParamTraits<float>::Write(m, p.matrix[i]);
+}
+
+// static
+bool ParamTraits<ppapi::CompositorLayerData::Transform>::Read(
+    const Message* m,
+    PickleIterator* iter,
+    param_type* r) {
+  for (size_t i = 0; i < arraysize(r->matrix);i++) {
+    if (!ParamTraits<float>::Read(m, iter, &r->matrix[i]))
+      return false;
+  }
+  return true;
+}
+
+void ParamTraits<ppapi::CompositorLayerData::Transform>::Log(
+    const param_type& p,
+    std::string* l) {
+}
+
 }  // namespace IPC

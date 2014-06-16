@@ -39,6 +39,7 @@
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_compositor_api.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "ppapi/thunk/ppb_graphics_3d_api.h"
 #include "ppapi/thunk/thunk.h"
@@ -50,6 +51,7 @@
 
 using ppapi::thunk::EnterInstanceNoLock;
 using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_Compositor_API;
 using ppapi::thunk::PPB_Graphics2D_API;
 using ppapi::thunk::PPB_Graphics3D_API;
 using ppapi::thunk::PPB_Instance_API;
@@ -232,9 +234,10 @@ PP_Bool PPB_Instance_Proxy::BindGraphics(PP_Instance instance,
 
   // We need to pass different resource to Graphics 2D and 3D right now.  Once
   // 3D is migrated to the new design, we should be able to unify this.
+  EnterResourceNoLock<PPB_Compositor_API> enter_compositor(device, false);
   EnterResourceNoLock<PPB_Graphics2D_API> enter_2d(device, false);
   EnterResourceNoLock<PPB_Graphics3D_API> enter_3d(device, false);
-  if (enter_2d.succeeded()) {
+  if (enter_compositor.succeeded() || enter_2d.succeeded()) {
     dispatcher()->Send(new PpapiHostMsg_PPBInstance_BindGraphics(
         API_ID_PPB_INSTANCE, instance, pp_resource));
     return PP_TRUE;
