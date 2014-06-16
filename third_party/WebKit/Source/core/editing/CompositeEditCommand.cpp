@@ -897,10 +897,7 @@ PassRefPtrWillBeRawPtr<Element> CompositeEditCommand::insertNewDefaultParagraphE
 // it, and return that block.  Otherwise return 0.
 PassRefPtrWillBeRawPtr<Element> CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessary(const Position& pos)
 {
-    if (pos.isNull())
-        return nullptr;
-
-    document().updateLayoutIgnorePendingStylesheets();
+    ASSERT(isEditablePosition(pos, ContentIsEditable, DoNotUpdateStyle));
 
     // It's strange that this function is responsible for verifying that pos has not been invalidated
     // by an earlier call to this function.  The caller, applyBlockStyle, should do this.
