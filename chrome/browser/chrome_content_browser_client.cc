@@ -179,6 +179,8 @@
 #include "chrome/browser/android/new_tab_page_url_handler.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
+#include "chrome/browser/media/protected_media_identifier_permission_context.h"
+#include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
 #include "chrome/common/descriptors_android.h"
 #include "components/breakpad/browser/crash_dump_manager_android.h"
 #elif defined(OS_POSIX)
@@ -2171,6 +2173,25 @@ void ChromeContentBrowserClient::RequestMidiSysExPermission(
   context->RequestMidiSysExPermission(web_contents, bridge_id, requesting_frame,
                                       user_gesture, result_callback,
                                       cancel_callback);
+}
+
+void ChromeContentBrowserClient::RequestProtectedMediaIdentifierPermission(
+    content::WebContents* web_contents,
+    const GURL& origin,
+    base::Callback<void(bool)> result_callback,
+    base::Closure* cancel_callback) {
+#if defined(OS_ANDROID)
+  ProtectedMediaIdentifierPermissionContext* context =
+      ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  context->RequestProtectedMediaIdentifierPermission(web_contents,
+                                                     origin,
+                                                     result_callback,
+                                                     cancel_callback);
+#else
+  NOTIMPLEMENTED();
+  result_callback.Run(false);
+#endif  // defined(OS_ANDROID)
 }
 
 bool ChromeContentBrowserClient::CanCreateWindow(

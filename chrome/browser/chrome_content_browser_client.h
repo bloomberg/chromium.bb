@@ -223,6 +223,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool user_gesture,
       base::Callback<void(bool)> result_callback,
       base::Closure* cancel_callback) OVERRIDE;
+  virtual void RequestProtectedMediaIdentifierPermission(
+      content::WebContents* web_contents,
+      const GURL& origin,
+      base::Callback<void(bool)> result_callback,
+      base::Closure* cancel_callback) OVERRIDE;
   virtual bool CanCreateWindow(const GURL& opener_url,
                                const GURL& opener_top_level_frame_url,
                                const GURL& source_origin,

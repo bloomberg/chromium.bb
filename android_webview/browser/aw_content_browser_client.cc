@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
+#include "android_webview/browser/aw_browser_permission_request_delegate.h"
 #include "android_webview/browser/aw_contents_client_bridge_base.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
@@ -135,6 +136,17 @@ class AwAccessTokenStore : public content::AccessTokenStore {
 
   DISALLOW_COPY_AND_ASSIGN(AwAccessTokenStore);
 };
+
+void CancelProtectedMediaIdentifierPermissionRequests(
+    int render_process_id,
+    int render_view_id,
+    const GURL& origin) {
+  AwBrowserPermissionRequestDelegate* delegate =
+      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
+                                                 render_view_id);
+  if (delegate)
+    delegate->CancelProtectedMediaIdentifierPermissionRequests(origin);
+}
 
 }
 
@@ -415,6 +427,30 @@ void AwContentBrowserClient::RequestMidiSysExPermission(
   // TODO(toyoshim): Android WebView is not supported yet.
   // See http://crbug.com/339767.
   result_callback.Run(false);
+}
+
+void AwContentBrowserClient::RequestProtectedMediaIdentifierPermission(
+    content::WebContents* web_contents,
+    const GURL& origin,
+    base::Callback<void(bool)> result_callback,
+    base::Closure* cancel_callback) {
+  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
+  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+  AwBrowserPermissionRequestDelegate* delegate =
+      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
+                                                 render_view_id);
+  if (delegate == NULL) {
+    DVLOG(0) << "Dropping ProtectedMediaIdentifierPermission request";
+    result_callback.Run(false);
+    return;
+  }
+
+  if (cancel_callback) {
+    *cancel_callback = base::Bind(
+        CancelProtectedMediaIdentifierPermissionRequests,
+        render_process_id, render_view_id, origin);
+  }
+  delegate->RequestProtectedMediaIdentifierPermission(origin, result_callback);
 }
 
 bool AwContentBrowserClient::CanCreateWindow(

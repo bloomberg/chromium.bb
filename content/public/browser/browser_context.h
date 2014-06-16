@@ -131,22 +131,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
           const base::FilePath& partition_path,
           bool in_memory) = 0;
 
-  typedef base::Callback<void(bool)> ProtectedMediaIdentifierPermissionCallback;
-
-  // Request permission to access protected media identifier. The callback will
-  // tell whether it's permitted.
-  virtual void RequestProtectedMediaIdentifierPermission(
-      int render_process_id,
-      int render_view_id,
-      const GURL& origin,
-      const ProtectedMediaIdentifierPermissionCallback& callback) = 0;
-
-  // Cancels pending protected media identifier permission requests.
-  virtual void CancelProtectedMediaIdentifierPermissionRequests(
-      int render_process_id,
-      int render_view_id,
-      const GURL& origin) = 0;
-
   // Returns the resource context.
   virtual ResourceContext* GetResourceContext() = 0;
 

@@ -20,6 +20,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
@@ -42,16 +43,23 @@ ProtectedMediaIdentifierPermissionContext::
 
 void ProtectedMediaIdentifierPermissionContext::
     RequestProtectedMediaIdentifierPermission(
-        int render_process_id,
-        int render_view_id,
+        content::WebContents* web_contents,
         const GURL& origin,
-        const base::Callback<void(bool)>& callback) {
+        base::Callback<void(bool)> result_callback,
+        base::Closure* cancel_callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (shutting_down_)
     return;
 
-  content::WebContents* web_contents =
-      tab_util::GetWebContentsByID(render_process_id, render_view_id);
+  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
+  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+  if (cancel_callback) {
+    *cancel_callback = base::Bind(
+        &ProtectedMediaIdentifierPermissionContext::
+            CancelProtectedMediaIdentifierPermissionRequests,
+        this, render_process_id, render_view_id, origin);
+  }
+
   const PermissionRequestID id(
       render_process_id, render_view_id, 0, origin);
 
@@ -62,7 +70,7 @@ void ProtectedMediaIdentifierPermissionContext::
         << "Attempt to use protected media identifier in tabless renderer: "
         << id.ToString()
         << " (can't prompt user without a visible tab)";
-    NotifyPermissionSet(id, origin, callback, false);
+    NotifyPermissionSet(id, origin, result_callback, false);
     return;
   }
 
@@ -72,12 +80,12 @@ void ProtectedMediaIdentifierPermissionContext::
         << "Attempt to use protected media identifier from an invalid URL: "
         << origin << "," << embedder
         << " (proteced media identifier is not supported in popups)";
-    NotifyPermissionSet(id, origin, callback, false);
+    NotifyPermissionSet(id, origin, result_callback, false);
     return;
   }
 
   content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
-  DecidePermission(id, origin, embedder, rvh, callback);
+  DecidePermission(id, origin, embedder, rvh, result_callback);
 }
 
 void ProtectedMediaIdentifierPermissionContext::

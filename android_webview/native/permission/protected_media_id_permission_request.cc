@@ -11,8 +11,7 @@ namespace android_webview {
 
 ProtectedMediaIdPermissionRequest::ProtectedMediaIdPermissionRequest(
     const GURL& origin,
-    const content::BrowserContext::ProtectedMediaIdentifierPermissionCallback&
-        callback)
+    const base::Callback<void(bool)>& callback)
     : origin_(origin),
       callback_(callback) {
 }

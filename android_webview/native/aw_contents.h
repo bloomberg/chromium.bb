@@ -159,8 +159,7 @@ class AwContents : public FindHelper::Listener,
   // AwBrowserPermissionRequestDelegate implementation.
   virtual void RequestProtectedMediaIdentifierPermission(
       const GURL& origin,
-      const content::BrowserContext::
-          ProtectedMediaIdentifierPermissionCallback& callback) OVERRIDE;
+      const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual void CancelProtectedMediaIdentifierPermissionRequests(
       const GURL& origin) OVERRIDE;
 

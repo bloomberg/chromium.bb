@@ -767,21 +767,6 @@ TestingProfile::GetMediaRequestContextForStoragePartition(
   return NULL;
 }
 
-void TestingProfile::RequestProtectedMediaIdentifierPermission(
-    int render_process_id,
-    int render_view_id,
-    const GURL& origin,
-    const ProtectedMediaIdentifierPermissionCallback& callback) {
-  // Always reject requests for testing.
-  callback.Run(false);
-}
-
-void TestingProfile::CancelProtectedMediaIdentifierPermissionRequests(
-    int render_process_id,
-    int render_view_id,
-    const GURL& origin) {
-}
-
 net::URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
   if (!extensions_request_context_.get())
     extensions_request_context_ = new TestExtensionURLRequestContextGetter();

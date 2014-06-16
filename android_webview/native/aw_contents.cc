@@ -602,8 +602,7 @@ void AwContents::PreauthorizePermission(
 
 void AwContents::RequestProtectedMediaIdentifierPermission(
     const GURL& origin,
-    const content::BrowserContext::
-        ProtectedMediaIdentifierPermissionCallback& callback) {
+    const base::Callback<void(bool)>& callback) {
   permission_request_handler_->SendRequest(
       scoped_ptr<AwPermissionRequestDelegate>(
           new ProtectedMediaIdPermissionRequest(origin, callback)));

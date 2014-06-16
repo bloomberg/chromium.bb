@@ -5,9 +5,8 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_PERMISSION_PROTECTED_MEDIA_ID_PERMISSION_REQUEST_H
 #define ANDROID_WEBVIEW_NATIVE_PERMISSION_PROTECTED_MEDIA_ID_PERMISSION_REQUEST_H
 
-#include "android_webview/native/permission/aw_permission_request_delegate.h"
 #include "base/callback.h"
-#include "content/public/browser/browser_context.h"
+#include "android_webview/native/permission/aw_permission_request_delegate.h"
 
 namespace android_webview {
 
@@ -16,8 +15,7 @@ namespace android_webview {
 class ProtectedMediaIdPermissionRequest : public AwPermissionRequestDelegate {
  public:
   ProtectedMediaIdPermissionRequest(const GURL& origin,
-      const content::BrowserContext::
-          ProtectedMediaIdentifierPermissionCallback& callback);
+      const base::Callback<void(bool)>& callback);
   virtual ~ProtectedMediaIdPermissionRequest();
 
   // AwPermissionRequestDelegate implementation.
@@ -27,8 +25,7 @@ class ProtectedMediaIdPermissionRequest : public AwPermissionRequestDelegate {
 
  private:
   const GURL origin_;
-  const content::BrowserContext::ProtectedMediaIdentifierPermissionCallback
-      callback_;
+  const base::Callback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtectedMediaIdPermissionRequest);
 };

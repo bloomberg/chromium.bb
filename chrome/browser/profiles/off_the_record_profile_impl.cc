@@ -316,38 +316,6 @@ OffTheRecordProfileImpl::GetMediaRequestContextForStoragePartition(
       .get();
 }
 
-void OffTheRecordProfileImpl::RequestProtectedMediaIdentifierPermission(
-    int render_process_id,
-    int render_view_id,
-    const GURL& origin,
-    const ProtectedMediaIdentifierPermissionCallback& callback) {
-#if defined(OS_ANDROID)
-  ProtectedMediaIdentifierPermissionContext* context =
-      ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(this);
-  context->RequestProtectedMediaIdentifierPermission(render_process_id,
-                                                     render_view_id,
-                                                     origin,
-                                                     callback);
-#else
-  NOTIMPLEMENTED();
-  callback.Run(false);
-#endif  // defined(OS_ANDROID)
-}
-
-void OffTheRecordProfileImpl::CancelProtectedMediaIdentifierPermissionRequests(
-    int render_process_id,
-    int render_view_id,
-    const GURL& origin) {
-#if defined(OS_ANDROID)
-  ProtectedMediaIdentifierPermissionContext* context =
-      ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(this);
-  context->CancelProtectedMediaIdentifierPermissionRequests(
-      render_process_id, render_view_id, origin);
-#else
-  NOTIMPLEMENTED();
-#endif  // defined(OS_ANDROID)
-}
-
 net::URLRequestContextGetter*
     OffTheRecordProfileImpl::GetRequestContextForExtensions() {
   return io_data_->GetExtensionsRequestContextGetter().get();

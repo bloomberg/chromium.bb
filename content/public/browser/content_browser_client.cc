@@ -231,6 +231,14 @@ void ContentBrowserClient::RequestMidiSysExPermission(
   result_callback.Run(true);
 }
 
+void ContentBrowserClient::RequestProtectedMediaIdentifierPermission(
+    WebContents* web_contents,
+    const GURL& origin,
+    base::Callback<void(bool)> result_callback,
+    base::Closure* cancel_callback) {
+  result_callback.Run(true);
+}
+
 bool ContentBrowserClient::CanCreateWindow(
     const GURL& opener_url,
     const GURL& opener_top_level_frame_url,

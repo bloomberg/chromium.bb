@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/permission_queue_controller.h"
 
@@ -16,6 +17,7 @@ class Profile;
 
 namespace content {
 class RenderViewHost;
+class WebContents;
 }
 
 // Manages protected media identifier permissions flow, and delegates UI
@@ -27,14 +29,10 @@ class ProtectedMediaIdentifierPermissionContext
   explicit ProtectedMediaIdentifierPermissionContext(Profile* profile);
 
   void RequestProtectedMediaIdentifierPermission(
-      int render_process_id,
-      int render_view_id,
+      content::WebContents* web_contents,
       const GURL& origin,
-      const base::Callback<void(bool)>& callback);
-  void CancelProtectedMediaIdentifierPermissionRequests(
-      int render_process_id,
-      int render_view_id,
-      const GURL& origin);
+      base::Callback<void(bool)> result_callback,
+      base::Closure* cancel_callback);
 
   // Called on the UI thread when the profile is about to be destroyed.
   void ShutdownOnUIThread();
@@ -49,6 +47,11 @@ class ProtectedMediaIdentifierPermissionContext
   // Return an instance of the infobar queue controller, creating it
   // if necessary.
   PermissionQueueController* QueueController();
+
+  void CancelProtectedMediaIdentifierPermissionRequests(
+      int render_process_id,
+      int render_view_id,
+      const GURL& origin);
 
   // Notifies whether or not the corresponding bridge is allowed to use
   // protected media identifier via

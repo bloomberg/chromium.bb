@@ -983,38 +983,6 @@ ProfileImpl::GetMediaRequestContextForStoragePartition(
       .GetIsolatedMediaRequestContextGetter(partition_path, in_memory).get();
 }
 
-void ProfileImpl::RequestProtectedMediaIdentifierPermission(
-    int render_process_id,
-    int render_view_id,
-    const GURL& origin,
-    const ProtectedMediaIdentifierPermissionCallback& callback) {
-#if defined(OS_ANDROID)
-  ProtectedMediaIdentifierPermissionContext* context =
-      ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(this);
-  context->RequestProtectedMediaIdentifierPermission(render_process_id,
-                                                     render_view_id,
-                                                     origin,
-                                                     callback);
-#else
-  NOTIMPLEMENTED();
-  callback.Run(false);
-#endif  // defined(OS_ANDROID)
-}
-
-void ProfileImpl::CancelProtectedMediaIdentifierPermissionRequests(
-    int render_process_id,
-    int render_view_id,
-    const GURL& origin) {
-#if defined(OS_ANDROID)
-  ProtectedMediaIdentifierPermissionContext* context =
-      ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(this);
-  context->CancelProtectedMediaIdentifierPermissionRequests(
-      render_process_id, render_view_id, origin);
-#else
-  NOTIMPLEMENTED();
-#endif  // defined(OS_ANDROID)
-}
-
 content::ResourceContext* ProfileImpl::GetResourceContext() {
   return io_data_.GetResourceContext();
 }

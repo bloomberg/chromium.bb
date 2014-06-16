@@ -98,21 +98,6 @@ TestBrowserContext::GetMediaRequestContextForStoragePartition(
   return NULL;
 }
 
-void TestBrowserContext::RequestProtectedMediaIdentifierPermission(
-    int render_process_id,
-    int render_view_id,
-    const GURL& origin,
-    const ProtectedMediaIdentifierPermissionCallback& callback) {
-  // Always reject requests for testing.
-  callback.Run(false);
-}
-
-void TestBrowserContext::CancelProtectedMediaIdentifierPermissionRequests(
-    int render_process_id,
-    int render_view_id,
-    const GURL& origin) {
-}
-
 ResourceContext* TestBrowserContext::GetResourceContext() {
   if (!resource_context_)
     resource_context_.reset(new MockResourceContext(

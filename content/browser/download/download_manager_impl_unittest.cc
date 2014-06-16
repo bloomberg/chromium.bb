@@ -412,16 +412,6 @@ class MockBrowserContext : public BrowserContext {
   MOCK_METHOD2(GetMediaRequestContextForStoragePartition,
                net::URLRequestContextGetter*(
                    const base::FilePath& partition_path, bool in_memory));
-  MOCK_METHOD4(RequestProtectedMediaIdentifierPermission,
-               void(int render_process_id,
-                    int render_view_id,
-                    const GURL& origin,
-                    const ProtectedMediaIdentifierPermissionCallback&
-                        callback));
-  MOCK_METHOD3(CancelProtectedMediaIdentifierPermissionRequests,
-               void(int render_process_id,
-                    int render_view_id,
-                    const GURL& origin));
   MOCK_METHOD0(GetResourceContext, ResourceContext*());
   MOCK_METHOD0(GetDownloadManagerDelegate, DownloadManagerDelegate*());
   MOCK_METHOD0(GetGuestManager, BrowserPluginGuestManager* ());

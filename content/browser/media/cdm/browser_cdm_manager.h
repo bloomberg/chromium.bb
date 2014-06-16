@@ -114,6 +114,9 @@ class CONTENT_EXPORT BrowserCdmManager {
   // Map from CDM ID to CDM's security origin.
   std::map<int, GURL> cdm_security_origin_map_;
 
+  // Map from CDM ID to a callback to cancel the permission request.
+  std::map<int, base::Closure> cdm_cancel_permision_map_;
+
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<BrowserCdmManager> weak_ptr_factory_;
 

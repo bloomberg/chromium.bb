@@ -492,6 +492,15 @@ class CONTENT_EXPORT ContentBrowserClient {
       base::Callback<void(bool)> result_callback,
       base::Closure* cancel_callback);
 
+  // Request permission to access protected media identifier. |result_callback
+  // will tell whether it's permitted. If |cancel_callback| is non-null, it's
+  // set to a callback which can be used to cancel the permission request.
+  virtual void RequestProtectedMediaIdentifierPermission(
+      WebContents* web_contents,
+      const GURL& origin,
+      base::Callback<void(bool)> result_callback,
+      base::Closure* cancel_callback);
+
   // Returns true if the given page is allowed to open a window of the given
   // type. If true is returned, |no_javascript_access| will indicate whether
   // the window that is created should be scriptable/in the same process.
