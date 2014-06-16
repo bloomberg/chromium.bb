@@ -294,28 +294,31 @@ public:
     Persistent(T* raw) : m_raw(raw)
     {
         ASSERT_IS_VALID_PERSISTENT_POINTER(m_raw);
+        recordBacktrace();
     }
 
     explicit Persistent(T& raw) : m_raw(&raw)
     {
         ASSERT_IS_VALID_PERSISTENT_POINTER(m_raw);
+        recordBacktrace();
     }
 
-    Persistent(const Persistent& other) : m_raw(other) { }
+    Persistent(const Persistent& other) : m_raw(other) { recordBacktrace(); }
 
     template<typename U>
-    Persistent(const Persistent<U, RootsAccessor>& other) : m_raw(other) { }
+    Persistent(const Persistent<U, RootsAccessor>& other) : m_raw(other) { recordBacktrace(); }
 
     template<typename U>
-    Persistent(const Member<U>& other) : m_raw(other) { }
+    Persistent(const Member<U>& other) : m_raw(other) { recordBacktrace(); }
 
     template<typename U>
-    Persistent(const RawPtr<U>& other) : m_raw(other.get()) { }
+    Persistent(const RawPtr<U>& other) : m_raw(other.get()) { recordBacktrace(); }
 
     template<typename U>
     Persistent& operator=(U* other)
     {
         m_raw = other;
+        recordBacktrace();
         return *this;
     }
 
@@ -342,7 +345,7 @@ public:
     {
         COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
 #if ENABLE(GC_TRACING)
-        visitor->setHostInfo(this, "Persistent");
+        visitor->setHostInfo(this, m_tracingName.isEmpty() ? "Persistent" : m_tracingName);
 #endif
         visitor->mark(m_raw);
     }
@@ -366,6 +369,7 @@ public:
     Persistent& operator=(const Persistent& other)
     {
         m_raw = other;
+        recordBacktrace();
         return *this;
     }
 
@@ -373,6 +377,7 @@ public:
     Persistent& operator=(const Persistent<U, RootsAccessor>& other)
     {
         m_raw = other;
+        recordBacktrace();
         return *this;
     }
 
@@ -380,6 +385,7 @@ public:
     Persistent& operator=(const Member<U>& other)
     {
         m_raw = other;
+        recordBacktrace();
         return *this;
     }
 
@@ -387,12 +393,24 @@ public:
     Persistent& operator=(const RawPtr<U>& other)
     {
         m_raw = other;
+        recordBacktrace();
         return *this;
     }
 
     T* get() const { return m_raw; }
 
 private:
+#if ENABLE(GC_TRACING)
+    void recordBacktrace()
+    {
+        if (m_raw)
+            m_tracingName = Heap::createBacktraceString();
+    }
+
+    String m_tracingName;
+#else
+    inline void recordBacktrace() const { }
+#endif
     T* m_raw;
 
     friend class CrossThreadPersistent<T>;
@@ -425,7 +443,13 @@ public:
     template<typename OtherCollection>
     PersistentHeapCollectionBase(const OtherCollection& other) : Collection(other) { }
 
-    void trace(Visitor* visitor) { visitor->trace(*static_cast<Collection*>(this)); }
+    void trace(Visitor* visitor)
+    {
+#if ENABLE(GC_TRACING)
+        visitor->setHostInfo(this, "PersistentHeapCollectionBase");
+#endif
+        visitor->trace(*static_cast<Collection*>(this));
+    }
 };
 
 template<

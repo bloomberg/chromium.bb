@@ -120,6 +120,23 @@ WTF_EXPORT void WTFInstallReportBacktraceOnCrashHook();
 
 #ifdef __cplusplus
 }
+
+namespace WTF {
+
+class WTF_EXPORT FrameToNameScope {
+public:
+    explicit FrameToNameScope(void*);
+    ~FrameToNameScope();
+    const char* nullableName() { return m_name; }
+
+private:
+    const char* m_name;
+    char* m_cxaDemangled;
+};
+
+} // namespace WTF
+
+using WTF::FrameToNameScope;
 #endif
 
 /* IMMEDIATE_CRASH() - Like CRASH() below but crashes in the fastest, simplest possible way with no attempt at logging. */

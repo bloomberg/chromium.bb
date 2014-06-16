@@ -1472,10 +1472,12 @@ public:
 
     static void dumpPathToObjectFromObjectGraph(const ObjectGraph& graph, uintptr_t target)
     {
-        fprintf(stderr, "Path to %lx of %s\n", target, classOf(reinterpret_cast<const void*>(target)).ascii().data());
         ObjectGraph::const_iterator it = graph.find(target);
+        if (it == graph.end())
+            return;
+        fprintf(stderr, "Path to %lx of %s\n", target, classOf(reinterpret_cast<const void*>(target)).ascii().data());
         while (it != graph.end()) {
-            fprintf(stderr, "<- %lx of %s\n", it->value.first, it->value.second.ascii().data());
+            fprintf(stderr, "<- %lx of %s\n", it->value.first, it->value.second.utf8().data());
             it = graph.find(it->value.first);
         }
         fprintf(stderr, "\n");
@@ -1606,6 +1608,41 @@ const GCInfo* Heap::findGCInfo(Address address)
 void Heap::dumpPathToObjectOnNextGC(void* p)
 {
     static_cast<MarkingVisitor*>(s_markingVisitor)->dumpPathToObjectOnNextGC(p);
+}
+
+String Heap::createBacktraceString()
+{
+    int framesToShow = 3;
+    int stackFrameSize = 16;
+    ASSERT(stackFrameSize >= framesToShow);
+    typedef void* FramePointer;
+    FramePointer* stackFrame = static_cast<FramePointer*>(alloca(sizeof(FramePointer) * stackFrameSize));
+    WTFGetBacktrace(stackFrame, &stackFrameSize);
+
+    StringBuilder builder;
+    builder.append("Persistent");
+    bool didAppendFirstName = false;
+    // Skip frames before/including "WebCore::Persistent".
+    bool didSeePersistent = false;
+    for (int i = 0; i < stackFrameSize && framesToShow > 0; ++i) {
+        FrameToNameScope frameToName(stackFrame[i]);
+        if (!frameToName.nullableName())
+            continue;
+        if (strstr(frameToName.nullableName(), "WebCore::Persistent")) {
+            didSeePersistent = true;
+            continue;
+        }
+        if (!didSeePersistent)
+            continue;
+        if (!didAppendFirstName) {
+            didAppendFirstName = true;
+            builder.append(" ... Backtrace:");
+        }
+        builder.append("\n\t");
+        builder.append(frameToName.nullableName());
+        --framesToShow;
+    }
+    return builder.toString().replace("WebCore::", "");
 }
 #endif
 

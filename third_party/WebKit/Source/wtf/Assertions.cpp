@@ -262,24 +262,38 @@ void WTFReportBacktrace(int framesToShow)
     WTFPrintBacktrace(samples + framesToSkip, frames - framesToSkip);
 }
 
+FrameToNameScope::FrameToNameScope(void* addr)
+    : m_name(0)
+    , m_cxaDemangled(0)
+{
+#if OS(MACOSX) || (OS(LINUX) && !defined(__UCLIBC__))
+    Dl_info info;
+    if (!dladdr(addr, &info) || !info.dli_sname)
+        return;
+    const char* mangledName = info.dli_sname;
+    if ((m_cxaDemangled = abi::__cxa_demangle(mangledName, 0, 0, 0)))
+        m_name = m_cxaDemangled;
+    else
+        m_name = mangledName;
+#else
+    (void)addr;
+#endif
+}
+
+FrameToNameScope::~FrameToNameScope()
+{
+    free(m_cxaDemangled);
+}
+
 void WTFPrintBacktrace(void** stack, int size)
 {
     for (int i = 0; i < size; ++i) {
-        const char* mangledName = 0;
-        char* cxaDemangled = 0;
-#if OS(MACOSX) || (OS(LINUX) && !defined(__UCLIBC__))
-        Dl_info info;
-        if (dladdr(stack[i], &info) && info.dli_sname)
-            mangledName = info.dli_sname;
-        if (mangledName)
-            cxaDemangled = abi::__cxa_demangle(mangledName, 0, 0, 0);
-#endif
+        FrameToNameScope frameToName(stack[i]);
         const int frameNumber = i + 1;
-        if (mangledName || cxaDemangled)
-            printf_stderr_common("%-3d %p %s\n", frameNumber, stack[i], cxaDemangled ? cxaDemangled : mangledName);
+        if (frameToName.nullableName())
+            printf_stderr_common("%-3d %p %s\n", frameNumber, stack[i], frameToName.nullableName());
         else
             printf_stderr_common("%-3d %p\n", frameNumber, stack[i]);
-        free(cxaDemangled);
     }
 }
 

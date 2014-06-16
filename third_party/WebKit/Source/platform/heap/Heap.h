@@ -939,6 +939,8 @@ public:
     // This is slow and should only be used for debug purposes.
     // It involves finding the heap page and scanning the heap page for an object header.
     static const GCInfo* findGCInfo(Address);
+
+    static String createBacktraceString();
 #endif
 
     // Collect heap stats for all threads attached to the Blink
