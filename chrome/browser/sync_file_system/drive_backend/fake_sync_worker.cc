@@ -6,7 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
-#include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 
 namespace sync_file_system {
@@ -23,9 +23,11 @@ FakeSyncWorker::~FakeSyncWorker() {
   observers_.Clear();
 }
 
-void FakeSyncWorker::Initialize() {
+void FakeSyncWorker::Initialize(
+    scoped_ptr<SyncEngineContext> sync_engine_context) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
+  sync_engine_context_ = sync_engine_context.Pass();
   status_map_.clear();
   // TODO(peria): Set |status_map_| as a fake metadata database.
 }

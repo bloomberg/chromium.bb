@@ -39,6 +39,7 @@ namespace drive_backend {
 
 class MetadataDatabase;
 class RemoteChangeProcessorOnWorker;
+class SyncEngineContext;
 class SyncTaskManager;
 
 class SyncWorkerInterface {
@@ -61,7 +62,8 @@ class SyncWorkerInterface {
   virtual ~SyncWorkerInterface() {}
 
   // Initializes SyncWorkerInterface after constructions of some member classes.
-  virtual void Initialize() = 0;
+  virtual void Initialize(
+      scoped_ptr<SyncEngineContext> sync_engine_context) = 0;
 
   // See RemoteFileSyncService for the details.
   virtual void RegisterOrigin(const GURL& origin,

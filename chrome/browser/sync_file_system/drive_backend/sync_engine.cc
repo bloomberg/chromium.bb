@@ -275,19 +275,23 @@ void SyncEngine::Initialize() {
   scoped_ptr<drive::DriveUploaderInterface> drive_uploader(
       new drive::DriveUploader(drive_service.get(), drive_task_runner_));
 
-  InitializeInternal(drive_service.Pass(), drive_uploader.Pass());
+  InitializeInternal(drive_service.Pass(), drive_uploader.Pass(),
+                     scoped_ptr<SyncWorkerInterface>());
 }
 
 void SyncEngine::InitializeForTesting(
     scoped_ptr<drive::DriveServiceInterface> drive_service,
-    scoped_ptr<drive::DriveUploaderInterface> drive_uploader) {
+    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+    scoped_ptr<SyncWorkerInterface> sync_worker) {
   Reset();
-  InitializeInternal(drive_service.Pass(), drive_uploader.Pass());
+  InitializeInternal(drive_service.Pass(), drive_uploader.Pass(),
+                     sync_worker.Pass());
 }
 
 void SyncEngine::InitializeInternal(
     scoped_ptr<drive::DriveServiceInterface> drive_service,
-    scoped_ptr<drive::DriveUploaderInterface> drive_uploader) {
+    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+    scoped_ptr<SyncWorkerInterface> sync_worker) {
   drive_service_ = drive_service.Pass();
   drive_service_wrapper_.reset(new DriveServiceWrapper(drive_service_.get()));
 
@@ -325,20 +329,23 @@ void SyncEngine::InitializeInternal(
   if (extension_service_)
     extension_service_weak_ptr = extension_service_->AsWeakPtr();
 
-  sync_worker_.reset(new SyncWorker(
-      sync_file_system_dir_,
-      extension_service_weak_ptr,
-      sync_engine_context.Pass(),
-      env_override_));
-  sync_worker_->AddObserver(worker_observer_.get());
+  if (!sync_worker) {
+    sync_worker.reset(new SyncWorker(
+        sync_file_system_dir_,
+        extension_service_weak_ptr,
+        env_override_));
+  }
 
-  if (remote_change_processor_)
-    SetRemoteChangeProcessor(remote_change_processor_);
+  sync_worker_ = sync_worker.Pass();
+  sync_worker_->AddObserver(worker_observer_.get());
 
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorkerInterface::Initialize,
-                 base::Unretained(sync_worker_.get())));
+                 base::Unretained(sync_worker_.get()),
+                 base::Passed(&sync_engine_context)));
+  if (remote_change_processor_)
+    SetRemoteChangeProcessor(remote_change_processor_);
 
   drive_service_->AddObserver(this);
 

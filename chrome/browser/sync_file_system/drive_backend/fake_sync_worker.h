@@ -42,6 +42,7 @@ namespace drive_backend {
 
 class MetadataDatabase;
 class RemoteChangeProcessorOnWorker;
+class SyncEngineContext;
 class SyncTaskManager;
 
 class FakeSyncWorker : public SyncWorkerInterface {
@@ -50,7 +51,8 @@ class FakeSyncWorker : public SyncWorkerInterface {
   virtual ~FakeSyncWorker();
 
   // SyncWorkerInterface overrides.
-  virtual void Initialize() OVERRIDE;
+  virtual void Initialize(
+      scoped_ptr<SyncEngineContext> sync_engine_context) OVERRIDE;
   virtual void RegisterOrigin(const GURL& origin,
                               const SyncStatusCallback& callback) OVERRIDE;
   virtual void EnableOrigin(const GURL& origin,
@@ -111,6 +113,8 @@ class FakeSyncWorker : public SyncWorkerInterface {
   StatusMap status_map_;
   bool has_refresh_token_;
   bool network_available_;
+
+  scoped_ptr<SyncEngineContext> sync_engine_context_;
 
   ObserverList<Observer> observers_;
   base::SequenceChecker sequence_checker_;

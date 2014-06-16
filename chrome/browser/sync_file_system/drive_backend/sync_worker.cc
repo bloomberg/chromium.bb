@@ -41,7 +41,6 @@ void EmptyStatusCallback(SyncStatusCode status) {}
 SyncWorker::SyncWorker(
     const base::FilePath& base_dir,
     const base::WeakPtr<ExtensionServiceInterface>& extension_service,
-    scoped_ptr<SyncEngineContext> sync_engine_context,
     leveldb::Env* env_override)
     : base_dir_(base_dir),
       env_override_(env_override),
@@ -54,7 +53,6 @@ SyncWorker::SyncWorker(
           CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN),
       network_available_(false),
       extension_service_(extension_service),
-      context_(sync_engine_context.Pass()),
       has_refresh_token_(false),
       weak_ptr_factory_(this) {
   sequence_checker_.DetachFromSequence();
@@ -65,9 +63,11 @@ SyncWorker::~SyncWorker() {
   observers_.Clear();
 }
 
-void SyncWorker::Initialize() {
+void SyncWorker::Initialize(scoped_ptr<SyncEngineContext> context) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(!task_manager_);
+
+  context_ = context.Pass();
 
   task_manager_.reset(new SyncTaskManager(
       weak_ptr_factory_.GetWeakPtr(), 0 /* maximum_background_task */));

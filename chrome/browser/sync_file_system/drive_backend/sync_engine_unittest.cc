@@ -128,7 +128,8 @@ class SyncEngineTest
 
     sync_engine_->InitializeForTesting(
         fake_drive_service.Pass(),
-        scoped_ptr<drive::DriveUploaderInterface>());
+        scoped_ptr<drive::DriveUploaderInterface>(),
+        scoped_ptr<SyncWorkerInterface>());
     sync_engine_->SetSyncEnabled(true);
     base::RunLoop().RunUntilIdle();
   }

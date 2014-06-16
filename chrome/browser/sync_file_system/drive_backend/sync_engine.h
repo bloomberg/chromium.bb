@@ -79,10 +79,12 @@ class SyncEngine : public RemoteFileSyncService,
 
   void InitializeForTesting(
       scoped_ptr<drive::DriveServiceInterface> drive_service,
-      scoped_ptr<drive::DriveUploaderInterface> drive_uploader);
+      scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+      scoped_ptr<SyncWorkerInterface> sync_worker);
   void InitializeInternal(
       scoped_ptr<drive::DriveServiceInterface> drive_service,
-      scoped_ptr<drive::DriveUploaderInterface> drive_uploader);
+      scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+      scoped_ptr<SyncWorkerInterface> sync_worker);
 
   // RemoteFileSyncService overrides.
   virtual void AddServiceObserver(SyncServiceObserver* observer) OVERRIDE;

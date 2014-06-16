@@ -57,12 +57,11 @@ class SyncWorker : public SyncWorkerInterface,
  public:
   SyncWorker(const base::FilePath& base_dir,
              const base::WeakPtr<ExtensionServiceInterface>& extension_service,
-             scoped_ptr<SyncEngineContext> sync_engine_context,
              leveldb::Env* env_override);
 
   virtual ~SyncWorker();
 
-  virtual void Initialize() OVERRIDE;
+  virtual void Initialize(scoped_ptr<SyncEngineContext> context) OVERRIDE;
 
   // SyncTaskManager::Client overrides
   virtual void MaybeScheduleNextTask() OVERRIDE;

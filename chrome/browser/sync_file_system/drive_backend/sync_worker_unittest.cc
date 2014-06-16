@@ -123,9 +123,8 @@ class SyncWorkerTest : public testing::Test,
     sync_worker_.reset(new SyncWorker(
         profile_dir_.path(),
         extension_service_->AsWeakPtr(),
-        sync_engine_context.Pass(),
         in_memory_env_.get()));
-    sync_worker_->Initialize();
+    sync_worker_->Initialize(sync_engine_context.Pass());
 
     sync_worker_->SetSyncEnabled(true);
     base::RunLoop().RunUntilIdle();

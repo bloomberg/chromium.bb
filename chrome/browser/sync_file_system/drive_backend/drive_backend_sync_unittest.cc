@@ -126,7 +126,8 @@ class DriveBackendSyncTest : public testing::Test,
     remote_sync_service_->AddServiceObserver(this);
     remote_sync_service_->InitializeForTesting(
         drive_service.PassAs<drive::DriveServiceInterface>(),
-        uploader.Pass());
+        uploader.Pass(),
+        scoped_ptr<SyncWorkerInterface>());
     remote_sync_service_->SetSyncEnabled(true);
 
     local_sync_service_->SetLocalChangeProcessor(remote_sync_service_.get());
