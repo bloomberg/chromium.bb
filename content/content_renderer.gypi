@@ -475,8 +475,6 @@
       'renderer/pepper/pepper_broker.h',
       'renderer/pepper/pepper_browser_connection.cc',
       'renderer/pepper/pepper_browser_connection.h',
-      'renderer/pepper/pepper_compositor_host.cc',
-      'renderer/pepper/pepper_compositor_host.h',
       'renderer/pepper/pepper_device_enumeration_host_helper.cc',
       'renderer/pepper/pepper_device_enumeration_host_helper.h',
       'renderer/pepper/pepper_file_chooser_host.cc',

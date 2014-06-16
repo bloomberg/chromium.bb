@@ -56,7 +56,6 @@ class PPAPI_HOST_EXPORT ResourceHost : public ResourceMessageHandler {
 
   // Simple RTTI. A subclass that is a host for one of these APIs will override
   // the appropriate function and return true.
-  virtual bool IsCompositorHost();
   virtual bool IsFileRefHost();
   virtual bool IsFileSystemHost();
   virtual bool IsGraphics2DHost();
