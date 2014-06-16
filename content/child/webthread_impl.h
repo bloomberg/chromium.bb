@@ -14,7 +14,7 @@
 
 namespace content {
 
-class WebThreadBase : public blink::WebThread {
+class CONTENT_EXPORT WebThreadBase : public blink::WebThread {
  public:
   virtual ~WebThreadBase();
 
@@ -33,10 +33,10 @@ class WebThreadBase : public blink::WebThread {
   TaskObserverMap task_observer_map_;
 };
 
-class WebThreadImpl : public WebThreadBase {
+class CONTENT_EXPORT WebThreadImpl : public WebThreadBase {
  public:
-  CONTENT_EXPORT explicit WebThreadImpl(const char* name);
-  CONTENT_EXPORT virtual ~WebThreadImpl();
+  explicit WebThreadImpl(const char* name);
+  virtual ~WebThreadImpl();
 
   virtual void postTask(Task* task);
   virtual void postDelayedTask(Task* task, long long delay_ms);
@@ -46,8 +46,9 @@ class WebThreadImpl : public WebThreadBase {
 
   base::MessageLoop* message_loop() const { return thread_->message_loop(); }
 
- private:
   virtual bool isCurrentThread() const OVERRIDE;
+
+ private:
   scoped_ptr<base::Thread> thread_;
 };
 
@@ -57,11 +58,11 @@ class WebThreadImplForMessageLoop : public WebThreadBase {
       base::MessageLoopProxy* message_loop);
   CONTENT_EXPORT virtual ~WebThreadImplForMessageLoop();
 
-  virtual void postTask(Task* task);
-  virtual void postDelayedTask(Task* task, long long delay_ms);
+  virtual void postTask(Task* task) OVERRIDE;
+  virtual void postDelayedTask(Task* task, long long delay_ms) OVERRIDE;
 
-  virtual void enterRunLoop();
-  virtual void exitRunLoop();
+  virtual void enterRunLoop() OVERRIDE;
+  virtual void exitRunLoop() OVERRIDE;
 
  private:
   virtual bool isCurrentThread() const OVERRIDE;
