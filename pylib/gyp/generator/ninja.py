@@ -1733,6 +1733,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     ld_host = '$cc_host'
     ldxx_host = '$cxx_host'
 
+  ar_host = 'ar'
   cc_host = None
   cxx_host = None
   cc_host_global_setting = None
@@ -1747,6 +1748,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   for key, value in make_global_settings:
     if key == 'AR':
       ar = os.path.join(build_to_root, value)
+    if key == 'AR.host':
+      ar_host = os.path.join(build_to_root, value)
     if key == 'CC':
       cc = os.path.join(build_to_root, value)
       if cc.endswith('clang-cl'):
@@ -1810,7 +1813,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     if not cxx_host:
       cxx_host = cxx
 
-    master_ninja.variable('ar_host', GetEnvironFallback(['AR_host'], 'ar'))
+    master_ninja.variable('ar_host', GetEnvironFallback(['AR_host'], ar_host))
     cc_host = GetEnvironFallback(['CC_host'], cc_host)
     cxx_host = GetEnvironFallback(['CXX_host'], cxx_host)
 

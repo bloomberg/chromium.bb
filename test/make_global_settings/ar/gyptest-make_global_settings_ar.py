@@ -95,9 +95,7 @@ with TestGyp.LocalEnv({'GYP_CROSSCOMPILE': '1'}):
                '-Dcustom_ar_target=my_ar_target1',
                '-Dcustom_ar_host=my_ar_host1')
 verify_ar_target(test, ar='my_ar_target1', rel_path=True)
-# TODO(yukawa): Support 'AR.host' in Ninja generator
-if test.format == 'make':
-  verify_ar_host(test, ar='my_ar_host1', rel_path=True)
+verify_ar_host(test, ar='my_ar_host1', rel_path=True)
 
 
 # Test $AR and $AR_host environment variables.
