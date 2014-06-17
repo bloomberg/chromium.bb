@@ -167,6 +167,7 @@
 	.set	_Workspace, 0
 
 	@ Define the function and make it external.
+	.arm
 	.global	\name
 	.func	\name
 	.section	.text.\name,"ax",%progbits
