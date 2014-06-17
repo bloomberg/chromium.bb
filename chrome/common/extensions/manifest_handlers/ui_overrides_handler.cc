@@ -181,10 +181,9 @@ bool UIOverridesHandler::Parse(Extension* extension, base::string16* error) {
         manifest_keys::kUIOverride);
     return false;
   }
-  UIOverrides* assigned_ui_overrides = info.get();
+  info->manifest_permission.reset(new ManifestPermissionImpl(
+      info->bookmarks_ui.get() != NULL));
   extension->SetManifestData(manifest_keys::kUIOverride, info.release());
-  assigned_ui_overrides->manifest_permission.reset(new ManifestPermissionImpl(
-      UIOverrides::RemovesBookmarkButton(extension)));
   return true;
 }
 
