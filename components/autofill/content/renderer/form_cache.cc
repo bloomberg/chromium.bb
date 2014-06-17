@@ -201,6 +201,10 @@ bool FormCache::ClearFormWithElement(const WebFormControlElement& element) {
     if (!control_element.isEnabled())
       continue;
 
+    // Don't clear field that was not autofilled
+    if (!control_element.isAutofilled())
+      continue;
+
     control_element.setAutofilled(false);
 
     WebInputElement* input_element = toWebInputElement(&control_element);
