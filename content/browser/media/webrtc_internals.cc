@@ -4,7 +4,6 @@
 
 #include "content/browser/media/webrtc_internals.h"
 
-#include "base/command_line.h"
 #include "base/path_service.h"
 #include "content/browser/media/webrtc_internals_ui_observer.h"
 #include "content/browser/web_contents/web_contents_view.h"
@@ -14,7 +13,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 
 using base::ProcessId;
 using std::string;
