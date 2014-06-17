@@ -134,7 +134,8 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanPermissions) {
       << message_;
 }
 
-#if defined(ADDRESS_SANITIZER)
+// See crbug.com/384673
+#if defined(ADDRESS_SANITIZER) || if defined(OS_CHROMEOS)
 #define Maybe_TabsAutomationBooleanActions DISABLED_TabsAutomationBooleanActions
 #else
 #define Maybe_TabsAutomationBooleanActions TabsAutomationBooleanActions
