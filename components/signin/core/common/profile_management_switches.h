@@ -9,6 +9,10 @@
 #ifndef CHROME_COMMON_PROFILE_MANAGEMENT_SWITCHES_H_
 #define CHROME_COMMON_PROFILE_MANAGEMENT_SWITCHES_H_
 
+namespace base {
+class CommandLine;
+}
+
 namespace switches {
 
 // Checks whether account consistency is enabled.
@@ -36,6 +40,10 @@ bool IsNewProfileManagement();
 
 // Whether the new profile management preview has been enabled.
 bool IsNewProfileManagementPreviewEnabled();
+
+// Called in tests to force enabling different modes.
+void EnableNewProfileManagementForTesting(base::CommandLine* command_line);
+void EnableAccountConsistencyForTesting(base::CommandLine* command_line);
 
 }  // namespace switches
 

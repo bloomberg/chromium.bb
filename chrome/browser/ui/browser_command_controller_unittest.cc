@@ -211,9 +211,8 @@ TEST_F(BrowserCommandControllerTest, NewAvatarMenuEnabledWhenOnlyOneProfile) {
     return;
 
   // The command line is reset at the end of every test by the test suite.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kNewProfileManagement);
-  EXPECT_TRUE(switches::IsNewProfileManagement());
+  switches::EnableNewProfileManagementForTesting(
+      CommandLine::ForCurrentProcess());
 
   TestingProfileManager testing_profile_manager(
       TestingBrowserProcess::GetGlobal());
@@ -239,9 +238,8 @@ TEST_F(BrowserCommandControllerTest, NewAvatarMenuEnabledInGuestMode) {
     return;
 
   // The command line is reset at the end of every test by the test suite.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kNewProfileManagement);
-  EXPECT_TRUE(switches::IsNewProfileManagement());
+  switches::EnableNewProfileManagementForTesting(
+      CommandLine::ForCurrentProcess());
 
   TestingProfileManager testing_profile_manager(
       TestingBrowserProcess::GetGlobal());
@@ -294,9 +292,8 @@ TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
 
   // The new style avatar menu should also be disabled.
   // The command line is reset at the end of every test by the test suite.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kNewProfileManagement);
-  EXPECT_TRUE(switches::IsNewProfileManagement());
+  switches::EnableNewProfileManagementForTesting(
+      CommandLine::ForCurrentProcess());
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
 }
 

@@ -16,14 +16,15 @@
 #include "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/profiles/profile_chooser_controller.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/signin/core/common/profile_management_switches.h"
 
 const char kDefaultProfileName[] = "default";
 
 class AvatarButtonControllerTest : public CocoaProfileTest {
  public:
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kNewProfileManagement);
+    switches::EnableNewProfileManagementForTesting(
+        CommandLine::ForCurrentProcess());
     DCHECK(profiles::IsMultipleProfilesEnabled());
 
     CocoaProfileTest::SetUp();

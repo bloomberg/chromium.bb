@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/signin/core/common/profile_management_switches.h"
 
 // static
 ProfileList* ProfileList::Create(ProfileInfoInterface* profile_cache) {
@@ -51,8 +52,7 @@ void ProfileListChromeOS::RebuildMenu() {
         ProfileHelper::GetProfilePathByUserIdHash((*it)->username_hash()));
 
     gfx::Image icon = gfx::Image((*it)->GetImage());
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kNewProfileManagement) && !icon.IsEmpty()) {
+    if (!switches::IsNewProfileManagement() && !icon.IsEmpty()) {
       // old avatar menu uses resized-small images
       icon = profiles::GetAvatarIconForMenu(icon, true);
     }

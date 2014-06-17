@@ -32,6 +32,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -206,7 +207,7 @@ class AppControllerNewProfileManagementBrowserTest
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kNewProfileManagement);
+    switches::EnableNewProfileManagementForTesting(command_line);
   }
 
   const BrowserList* active_browser_list_;

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "build/build_config.h"
 #include "components/signin/core/common/signin_switches.h"
 
 namespace {
@@ -23,42 +24,66 @@ enum State {
 
 State GetProcessState() {
   // Get the full name of the field trial so that the underlying mechanism
-  // is properly initialize.
+  // is properly initialized.
   std::string trial_type =
       base::FieldTrialList::FindFullName(kNewProfileManagementFieldTrialName);
 
   // Find the state of both command line args.
   bool is_new_profile_management =
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNewProfileManagement);
+          switches::kEnableNewProfileManagement);
   bool is_consistent_identity =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableAccountConsistency);
+  bool not_new_profile_management =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableNewProfileManagement);
+  bool not_consistent_identity =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAccountConsistency);
+  int count_args = (is_new_profile_management ? 1 : 0) +
+      (is_consistent_identity ? 1 : 0) +
+      (not_new_profile_management ? 1 : 0) +
+      (not_consistent_identity ? 1 : 0);
+  bool invalid_commandline = count_args > 1;
 
-  State state = STATE_NONE;
-
-  // If both command line args are set, disable the field trial completely
-  // since the assigned group is undefined.  Otherwise use the state of the
-  // command line flag specified.  If neither command line arg is specified,
-  // see if the group was set from the server.
-  if (is_new_profile_management && is_consistent_identity) {
+  // At most only one of the command line args should be specified, otherwise
+  // the finch group assignment is undefined.  If this is the case, disable
+  // the field trial so that data is not collected in the wrong group.
+  if (invalid_commandline) {
     base::FieldTrial* field_trial =
         base::FieldTrialList::Find(kNewProfileManagementFieldTrialName);
     if (field_trial)
       field_trial->Disable();
 
+    trial_type.clear();
+  }
+
+  // Enable command line args take precedent over disable command line args.
+  // Consistent identity args take precedent over new profile management args.
+  if (is_consistent_identity) {
     return STATE_ACCOUNT_CONSISTENCY;
   } else if (is_new_profile_management) {
     return STATE_NEW_PROFILE_MANAGEMENT;
-  } else if (is_consistent_identity) {
-    return STATE_ACCOUNT_CONSISTENCY;
+  } else if (not_new_profile_management) {
+    return STATE_NONE;
+  } else if (not_consistent_identity) {
+    return STATE_NEW_PROFILE_MANAGEMENT;
   }
 
-  if (state == STATE_NONE && !trial_type.empty()) {
+#if defined(OS_ANDROID)
+  State state = STATE_ACCOUNT_CONSISTENCY;
+#else
+  State state = STATE_NONE;
+#endif
+
+  if (!trial_type.empty()) {
     if (trial_type == "Enabled") {
       state = STATE_NEW_PROFILE_MANAGEMENT;
     } else if (trial_type == "AccountConsistency") {
       state = STATE_ACCOUNT_CONSISTENCY;
+    } else {
+      state = STATE_NONE;
     }
   }
 
@@ -118,6 +143,16 @@ bool IsNewProfileManagementPreviewEnabled() {
   bool is_new_avatar_menu =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewAvatarMenu);
   return is_new_avatar_menu && IsNewProfileManagement();
+}
+
+void EnableNewProfileManagementForTesting(base::CommandLine* command_line) {
+  command_line->AppendSwitch(switches::kEnableNewProfileManagement);
+  DCHECK(!command_line->HasSwitch(switches::kDisableNewProfileManagement));
+}
+
+void EnableAccountConsistencyForTesting(base::CommandLine* command_line) {
+  command_line->AppendSwitch(switches::kEnableAccountConsistency);
+  DCHECK(!command_line->HasSwitch(switches::kDisableAccountConsistency));
 }
 
 }  // namespace switches

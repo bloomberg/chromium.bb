@@ -10,8 +10,17 @@ namespace switches {
 // expiration of credentials during testing.
 const char kClearTokenService[] = "clear-token-service";
 
+// Disables consistent identity features.
+const char kDisableAccountConsistency[] = "disable-account-consistency";
+
+// Disables new profile management system, including new profile chooser UI.
+const char kDisableNewProfileManagement[] = "disable-new-profile-management";
+
 // Enables consistent identity features.
 const char kEnableAccountConsistency[] = "enable-account-consistency";
+
+// Enables new profile management system, including new profile chooser UI.
+const char kEnableNewProfileManagement[] = "new-profile-management";
 
 // Enables the pure web-based flow for sign in on first run/NTP/wrench menu/
 // settings page.
@@ -32,9 +41,5 @@ const char kGoogleProfileInfo[] = "google-profile-info";
 // avatar menu with the same functionality as the old one, plus a tutorial card
 // at the top prompting the user to try out the new profile management UI.
 const char kNewAvatarMenu[] = "new-avatar-menu";
-
-// Use new profile management system, including profile sign-out and new
-// choosers.
-const char kNewProfileManagement[] = "new-profile-management";
 
 }  // namespace switches

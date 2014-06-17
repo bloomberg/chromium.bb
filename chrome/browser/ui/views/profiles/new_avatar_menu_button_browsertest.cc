@@ -20,6 +20,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/test/test_utils.h"
 #include "grit/generated_resources.h"
 #include "ui/views/controls/button/label_button.h"
@@ -47,12 +48,11 @@ NewAvatarMenuButtonTest::~NewAvatarMenuButtonTest() {
 
 void NewAvatarMenuButtonTest::SetUp() {
   InProcessBrowserTest::SetUp();
-  DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNewProfileManagement));
+  DCHECK(switches::IsNewProfileManagement());
 }
 
 void NewAvatarMenuButtonTest::SetUpCommandLine(CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kNewProfileManagement);
+  switches::EnableNewProfileManagementForTesting(command_line);
 }
 
 void NewAvatarMenuButtonTest::CreateTestingProfile() {

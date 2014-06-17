@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/common/signin_switches.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/api/test/test_api.h"
 
@@ -33,7 +33,7 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
 
 #if !defined(OS_CHROMEOS)
     // New profile management needs to be on for non-ChromeOS lock.
-    command_line->AppendSwitch(switches::kNewProfileManagement);
+    switches::EnableNewProfileManagementForTesting(command_line);
 #endif
   }
 
