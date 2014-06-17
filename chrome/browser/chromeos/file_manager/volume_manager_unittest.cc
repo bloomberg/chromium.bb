@@ -165,7 +165,7 @@ class VolumeManagerTest : public testing::Test {
                                 power_manager_client,
                                 disk_manager,
                                 file_system_provider_service_.get())) {
-      file_system_provider_service_->SetFileSystemFactoryForTests(base::Bind(
+      file_system_provider_service_->SetFileSystemFactoryForTesting(base::Bind(
           &chromeos::file_system_provider::FakeProvidedFileSystem::Create));
     }
 

@@ -124,7 +124,7 @@ class FileSystemProviderServiceTest : public testing::Test {
         new extensions::ExtensionRegistry(profile_.get()));
     file_system_provider_service_.reset(
         new Service(profile_.get(), extension_registry_.get()));
-    file_system_provider_service_->SetFileSystemFactoryForTests(
+    file_system_provider_service_->SetFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
     extension_ = createFakeExtension(kExtensionId);
   }
@@ -373,7 +373,7 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnShutdown) {
   {
     scoped_ptr<Service> service(
         new Service(profile_.get(), extension_registry_.get()));
-    service->SetFileSystemFactoryForTests(
+    service->SetFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
 
     LoggingObserver observer;

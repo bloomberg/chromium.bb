@@ -107,7 +107,7 @@ class RequestManager {
 
   // Sets a custom timeout for tests. The new timeout value will be applied to
   // new requests
-  void SetTimeoutForTests(const base::TimeDelta& timeout);
+  void SetTimeoutForTesting(const base::TimeDelta& timeout);
 
   // Gets number of active requests for logging purposes.
   // TODO(mtomasz): Introduce a logger class to gather more information

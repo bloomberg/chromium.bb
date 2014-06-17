@@ -125,7 +125,7 @@ bool RequestManager::RejectRequest(int request_id, base::File::Error error) {
   return true;
 }
 
-void RequestManager::SetTimeoutForTests(const base::TimeDelta& timeout) {
+void RequestManager::SetTimeoutForTesting(const base::TimeDelta& timeout) {
   timeout_ = timeout;
 }
 

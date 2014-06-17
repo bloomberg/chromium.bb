@@ -76,7 +76,7 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
     user_manager_->AddUser(profile_->GetProfileName());
     ServiceFactory::GetInstance()->SetTestingFactory(profile_, &CreateService);
     file_system_provider_service_ = Service::Get(profile_);
-    file_system_provider_service_->SetFileSystemFactoryForTests(
+    file_system_provider_service_->SetFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
   }
 

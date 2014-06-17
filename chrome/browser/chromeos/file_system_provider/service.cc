@@ -90,7 +90,7 @@ void Service::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void Service::SetFileSystemFactoryForTests(
+void Service::SetFileSystemFactoryForTesting(
     const FileSystemFactoryCallback& factory_callback) {
   DCHECK(!factory_callback.is_null());
   file_system_factory_ = factory_callback;
