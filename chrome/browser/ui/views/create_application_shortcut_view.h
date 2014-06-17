@@ -143,6 +143,8 @@ class CreateChromeApplicationShortcutView
   virtual bool Cancel() OVERRIDE;
 
  private:
+  void OnShortcutInfoLoaded(const web_app::ShortcutInfo& shortcut_info);
+
   base::Callback<void(bool)> close_callback_;
 
   base::WeakPtrFactory<CreateChromeApplicationShortcutView> weak_ptr_factory_;

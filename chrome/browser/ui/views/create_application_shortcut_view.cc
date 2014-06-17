@@ -531,6 +531,14 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
   create_in_chrome_apps_subdir_ = true;
 
   InitControls(DIALOG_LAYOUT_APP_SHORTCUT);
+
+  // Get shortcut information and icon; they are needed for creating the
+  // shortcut.
+  web_app::UpdateShortcutInfoAndIconForApp(
+      app,
+      profile,
+      base::Bind(&CreateChromeApplicationShortcutView::OnShortcutInfoLoaded,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
@@ -545,4 +553,10 @@ bool CreateChromeApplicationShortcutView::Cancel() {
   if (!close_callback_.is_null())
     close_callback_.Run(false);
   return CreateApplicationShortcutView::Cancel();
+}
+
+// Called when the app's ShortcutInfo (with icon) is loaded.
+void CreateChromeApplicationShortcutView::OnShortcutInfoLoaded(
+    const web_app::ShortcutInfo& shortcut_info) {
+  shortcut_info_ = shortcut_info;
 }
