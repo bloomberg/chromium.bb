@@ -15,15 +15,15 @@ for (var i = 0; i < ahemString.length; i++) {
     uint8View[i] = ahemString.charCodeAt(i);
 }
 
-var face1 = new FontFace('FontFromArrayBuffer', buffer, {});
+var face1 = new FontFace('FontFromArrayBuffer', buffer);
 shouldBeEqualToString('face1.status', 'loaded');
 document.fonts.add(face1);
 
-var face2 = new FontFace('FontFromArrayBufferView', uint8View, {});
+var face2 = new FontFace('FontFromArrayBufferView', uint8View);
 shouldBeEqualToString('face2.status', 'loaded');
 document.fonts.add(face2);
 
-var face3 = new FontFace('FontFromEmptyArrayBuffer', new ArrayBuffer(0), {});
+var face3 = new FontFace('FontFromEmptyArrayBuffer', new ArrayBuffer(0));
 shouldBeEqualToString('face3.status', 'error');
 face3.load().catch(function(v) {
     rejectionValue = v;

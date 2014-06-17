@@ -32,7 +32,7 @@ function runTests() {
     shouldBeEqualToString('ahemFace.featureSettings', "'dlig' 1");
 
     debug('');
-    defaultFace = new FontFace('defaultFace', 'local(foo)', {});
+    defaultFace = new FontFace('defaultFace', 'local(foo)');
     shouldBeEqualToString('defaultFace.family', 'defaultFace');
     shouldBeEqualToString('defaultFace.style', 'normal');
     shouldBeEqualToString('defaultFace.weight', 'normal');
@@ -57,7 +57,7 @@ function runTests() {
     shouldBeEqualToString('constructedFace.featureSettings', "'liga' 0");
 
     debug('');
-    modifiedFace = new FontFace('unmodified', 'local(baz)', {});
+    modifiedFace = new FontFace('unmodified', 'local(baz)');
     modifiedFace.family = 'modified';
     modifiedFace.style = 'italic';
     modifiedFace.weight = 900;
@@ -72,8 +72,8 @@ function runTests() {
     shouldBeEqualToString('modifiedFace.featureSettings', "'dlig' 1, 'liga' 0");
 
     debug('');
-    shouldThrow("new FontFace('test', 'invalid_src', {})");
-    face = new FontFace('test', 'local(foo)', {});
+    shouldThrow("new FontFace('test', 'invalid_src')");
+    face = new FontFace('test', 'local(foo)');
     shouldThrow("face.style = ''");
     shouldThrow("face.weight = 'a'");
     shouldThrow("face.unicodeRange = 'U+'");
