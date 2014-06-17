@@ -208,7 +208,7 @@ int main(int argc, char *argv[]) {
   // Select the locale from the environment by passing an empty string instead
   // of the default "C" locale. This is particularly needed for the keycode
   // conversion code to work.
-  std::setlocale(LC_ALL, "");
+  setlocale(LC_ALL, "");
 #endif
 
   // Parse command line flags.
