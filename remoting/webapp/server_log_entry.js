@@ -421,35 +421,10 @@ remoting.ServerLogEntry.extractHostDataFrom = function(s) {
  * Adds a field specifying the browser version to this log entry.
  */
 remoting.ServerLogEntry.prototype.addChromeVersionField = function() {
-  var version = remoting.ServerLogEntry.getChromeVersion();
+  var version = remoting.getChromeVersion();
   if (version != null) {
     this.set(remoting.ServerLogEntry.KEY_BROWSER_VERSION_, version);
   }
-};
-
-/**
- * Extracts the Chrome version from the userAgent string.
- *
- * @private
- * @return {string | null}
- */
-remoting.ServerLogEntry.getChromeVersion = function() {
-  return remoting.ServerLogEntry.extractChromeVersionFrom(navigator.userAgent);
-};
-
-/**
- * Extracts the Chrome version from the given userAgent string.
- *
- * @private
- * @param {string} s
- * @return {string | null}
- */
-remoting.ServerLogEntry.extractChromeVersionFrom = function(s) {
-  var match = new RegExp('Chrome/([0-9.]*)').exec(s);
-  if (match && (match.length >= 2)) {
-    return match[1];
-  }
-  return null;
 };
 
 /**

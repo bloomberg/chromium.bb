@@ -52,8 +52,5 @@ remoting.Settings.prototype.XMPP_SERVER_USE_TLS =
 remoting.Settings.prototype.THIRD_PARTY_AUTH_REDIRECT_URI =
     'THIRD_PARTY_AUTH_REDIRECT_URL';
 
-// Whether to use MediaSource API for video rendering.
-remoting.Settings.prototype.USE_MEDIA_SOURCE_RENDERING = false;
-
 // 'native', 'nacl' or 'pnacl'.
 remoting.Settings.prototype.CLIENT_PLUGIN_TYPE = 'CLIENT_PLUGIN_TYPE';

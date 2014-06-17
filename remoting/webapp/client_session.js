@@ -505,8 +505,11 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
     this.applyRemapKeys_(true);
   }
 
-  // Enable MediaSource-based rendering if available.
-  if (remoting.settings.USE_MEDIA_SOURCE_RENDERING &&
+
+  // Enable MediaSource-based rendering on Chrome 37 and above.
+  var chromeVersionMajor =
+      parseInt((remoting.getChromeVersion() || '0').split('.')[0], 10);
+  if (chromeVersionMajor >= 37 &&
       this.plugin_.hasFeature(
           remoting.ClientPlugin.Feature.MEDIA_SOURCE_RENDERING)) {
     this.video_ = /** @type {HTMLMediaElement} */(

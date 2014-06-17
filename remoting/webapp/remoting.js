@@ -326,6 +326,18 @@ remoting.getExtensionInfo = function() {
 };
 
 /**
+ * Returns Chrome version.
+ * @return {string?}
+ */
+remoting.getChromeVersion = function() {
+  var match = new RegExp('Chrome/([0-9.]*)').exec(navigator.userAgent);
+  if (match && (match.length >= 2)) {
+    return match[1];
+  }
+  return null;
+};
+
+/**
  * If an IT2Me client or host is active then prompt the user before closing.
  * If a Me2Me client is active then don't bother, since closing the window is
  * the more intuitive way to end a Me2Me session, and re-connecting is easy.
