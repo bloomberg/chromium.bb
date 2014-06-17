@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 
 #import <objc/runtime.h>
+#include <OpenGL/gl.h>
 #include <QuartzCore/QuartzCore.h>
 
 #include "base/basictypes.h"
