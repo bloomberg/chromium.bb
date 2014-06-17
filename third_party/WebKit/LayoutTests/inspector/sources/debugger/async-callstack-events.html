@@ -1,0 +1,69 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    for (var name in window) {
+        if (/^doTest[A-Z]/.test(name) && typeof window[name] === "function")
+            window[name]();
+    }
+}
+
+function setSelection(start, end)
+{
+    var node = document.getElementById("content").firstChild;
+    var range = document.createRange();
+    range.setStart(node, start);
+    range.setEnd(node, end);
+    var selection = window.getSelection();
+    selection.removeAllRanges();
+    if (start !== end)
+        selection.addRange(range);
+}
+
+function doTestSelectionChange()
+{
+    setSelection(0, 0);
+    document.addEventListener("selectionchange", onSelectionChange, false);
+    setSelection(0, 4);
+    setSelection(0, 8);
+    setSelection(0, 0);
+}
+
+function onSelectionChange()
+{
+    document.removeEventListener("selectionchange", onSelectionChange, false);
+    debugger;
+}
+
+function doTestHashChange()
+{
+    window.addEventListener("hashchange", onHashChange, false);
+    location.hash = location.hash + "x";
+}
+
+function onHashChange()
+{
+    window.removeEventListener("hashchange", onHashChange, false);
+    debugger;
+}
+
+var test = function()
+{
+    var totalDebuggerStatements = 2;
+    var maxAsyncCallStackDepth = 4;
+    InspectorTest.runAsyncCallStacksTest(totalDebuggerStatements, maxAsyncCallStackDepth);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p id="content">
+Tests asynchronous call stacks for various DOM events.
+</p>
+</body>
+</html>

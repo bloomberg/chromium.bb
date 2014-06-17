@@ -208,7 +208,7 @@ void AsyncCallStackTracker::didEnqueueEvent(EventTarget* eventTarget, Event* eve
     data->m_eventCallChains.set(event, createAsyncCallChain(event->type(), callFrames));
 }
 
-void AsyncCallStackTracker::didDispatchEvent(EventTarget* eventTarget, Event* event)
+void AsyncCallStackTracker::didRemoveEvent(EventTarget* eventTarget, Event* event)
 {
     ASSERT(eventTarget->executionContext());
     ASSERT(isEnabled());

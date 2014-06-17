@@ -164,7 +164,7 @@ interface InspectorInstrumentation {
     void didEnqueueEvent([Keep] EventTarget*, Event*);
 
     [Debugger, Inline=FastReturn]
-    void didDispatchEvent([Keep] EventTarget*, Event*);
+    void didRemoveEvent([Keep] EventTarget*, Event*);
 
     [Debugger, DOMDebugger, Inline=FastReturn]
     InspectorInstrumentationCookie willHandleEvent([Keep] EventTarget*, Event*, EventListener* listener, bool useCapture);

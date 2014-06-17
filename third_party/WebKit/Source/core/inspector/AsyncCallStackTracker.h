@@ -89,7 +89,7 @@ public:
     void willFireAnimationFrame(ExecutionContext*, int callbackId);
 
     void didEnqueueEvent(EventTarget*, Event*, const ScriptValue& callFrames);
-    void didDispatchEvent(EventTarget*, Event*);
+    void didRemoveEvent(EventTarget*, Event*);
     void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
     void willLoadXHR(XMLHttpRequest*, const ScriptValue& callFrames);
 

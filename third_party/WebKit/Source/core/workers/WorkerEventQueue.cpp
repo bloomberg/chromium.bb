@@ -30,6 +30,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/events/Event.h"
+#include "core/inspector/InspectorInstrumentation.h"
 
 namespace WebCore {
 
@@ -104,6 +105,7 @@ private:
 
 void WorkerEventQueue::removeEvent(Event* event)
 {
+    InspectorInstrumentation::didRemoveEvent(event->target(), event);
     m_eventTaskMap.remove(event);
 }
 
@@ -112,6 +114,7 @@ bool WorkerEventQueue::enqueueEvent(PassRefPtrWillBeRawPtr<Event> prpEvent)
     if (m_isClosed)
         return false;
     RefPtrWillBeRawPtr<Event> event = prpEvent;
+    InspectorInstrumentation::didEnqueueEvent(event->target(), event.get());
     OwnPtr<EventDispatcherTask> task = EventDispatcherTask::create(event, this);
     m_eventTaskMap.add(event.release(), task.get());
     m_executionContext->postTask(task.release());
@@ -132,7 +135,9 @@ void WorkerEventQueue::close()
 {
     m_isClosed = true;
     for (EventTaskMap::iterator it = m_eventTaskMap.begin(); it != m_eventTaskMap.end(); ++it) {
+        Event* event = it->key.get();
         EventDispatcherTask* task = it->value;
+        InspectorInstrumentation::didRemoveEvent(event->target(), event);
         task->cancel();
     }
     m_eventTaskMap.clear();

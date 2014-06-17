@@ -720,10 +720,10 @@ void InspectorDebuggerAgent::didEnqueueEvent(EventTarget* eventTarget, Event* ev
         m_asyncCallStackTracker.didEnqueueEvent(eventTarget, event, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
-void InspectorDebuggerAgent::didDispatchEvent(EventTarget* eventTarget, Event* event)
+void InspectorDebuggerAgent::didRemoveEvent(EventTarget* eventTarget, Event* event)
 {
     if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didDispatchEvent(eventTarget, event);
+        m_asyncCallStackTracker.didRemoveEvent(eventTarget, event);
 }
 
 void InspectorDebuggerAgent::willHandleEvent(EventTarget* eventTarget, Event* event, EventListener* listener, bool useCapture)

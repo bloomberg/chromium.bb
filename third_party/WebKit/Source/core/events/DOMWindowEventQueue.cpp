@@ -31,6 +31,7 @@
 #include "core/events/Event.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/SuspendableTimer.h"
+#include "core/inspector/InspectorInstrumentation.h"
 
 namespace WebCore {
 
@@ -77,6 +78,8 @@ bool DOMWindowEventQueue::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
         return false;
 
     ASSERT(event->target());
+    InspectorInstrumentation::didEnqueueEvent(event->target(), event.get());
+
     bool wasAdded = m_queuedEvents.add(event).isNewEntry;
     ASSERT_UNUSED(wasAdded, wasAdded); // It should not have already been in the list.
 
@@ -90,8 +93,10 @@ bool DOMWindowEventQueue::cancelEvent(Event* event)
 {
     WillBeHeapListHashSet<RefPtrWillBeMember<Event>, 16>::iterator it = m_queuedEvents.find(event);
     bool found = it != m_queuedEvents.end();
-    if (found)
+    if (found) {
+        InspectorInstrumentation::didRemoveEvent(event->target(), event);
         m_queuedEvents.remove(it);
+    }
     if (m_queuedEvents.isEmpty())
         m_pendingEventTimer->stop();
     return found;
@@ -101,6 +106,11 @@ void DOMWindowEventQueue::close()
 {
     m_isClosed = true;
     m_pendingEventTimer->stop();
+    if (InspectorInstrumentation::hasFrontends()) {
+        WillBeHeapListHashSet<RefPtrWillBeMember<Event>, 16>::iterator it = m_queuedEvents.begin();
+        for (; it != m_queuedEvents.end(); ++it)
+            InspectorInstrumentation::didRemoveEvent((*it)->target(), it->get());
+    }
     m_queuedEvents.clear();
 }
 
@@ -123,6 +133,7 @@ void DOMWindowEventQueue::pendingEventTimerFired()
         if (!event)
             break;
         dispatchEvent(event.get());
+        InspectorInstrumentation::didRemoveEvent(event->target(), event.get());
     }
 }
 

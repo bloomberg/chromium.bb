@@ -150,7 +150,7 @@ public:
     bool willFireAnimationFrame(Document*, int callbackId);
     void didFireAnimationFrame();
     void didEnqueueEvent(EventTarget*, Event*);
-    void didDispatchEvent(EventTarget*, Event*);
+    void didRemoveEvent(EventTarget*, Event*);
     void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
     void didHandleEvent();
     void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, FormData* body, const HTTPHeaderMap& headers, bool includeCrendentials);

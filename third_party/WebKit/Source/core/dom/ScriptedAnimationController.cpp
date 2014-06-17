@@ -133,7 +133,7 @@ void ScriptedAnimationController::dispatchEvents()
         else
             eventTarget->dispatchEvent(events[i]);
 
-        InspectorInstrumentation::didDispatchEvent(eventTarget, events[i].get());
+        InspectorInstrumentation::didRemoveEvent(eventTarget, events[i].get());
     }
 }
 
