@@ -539,7 +539,7 @@ void ExternalProviderImpl::CreateExternalProviders(
                 new ExternalPrefLoader(chrome::DIR_DEFAULT_APPS,
                                        ExternalPrefLoader::NONE),
                 Manifest::INTERNAL,
-                Manifest::EXTERNAL_PREF_DOWNLOAD,
+                Manifest::INTERNAL,
                 Extension::FROM_WEBSTORE |
                     Extension::WAS_INSTALLED_BY_DEFAULT)));
 #endif
