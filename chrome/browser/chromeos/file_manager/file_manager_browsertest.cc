@@ -1407,5 +1407,24 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RotateImageOnDrive) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, CropImageOnDownloads) {
+  AddScript("gallery/photo_editor.js");
+  set_test_case_name("cropImageOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
+                       CropImageOnDownloads) {
+  AddScript("gallery/photo_editor.js");
+  set_test_case_name("cropImageOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, CropImageOnDrive) {
+  AddScript("gallery/photo_editor.js");
+  set_test_case_name("cropImageOnDrive");
+  StartTest();
+}
+
 }  // namespace
 }  // namespace file_manager

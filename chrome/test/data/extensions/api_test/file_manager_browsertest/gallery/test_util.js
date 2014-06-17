@@ -47,6 +47,23 @@ function waitForElement(appWindow, query) {
 }
 
 /**
+ * Waits until an element disappears.
+ *
+ * @param {AppWindow} appWindow Application window.
+ * @param {string} query Query for the element.
+ * @return {Promise} Promise to be fulfilled with the element.
+ */
+function waitForElementLost(appWindow, query) {
+  return repeatUntil(function() {
+    var element = appWindow.contentWindow.document.querySelector(query);
+    if (element)
+      return pending('The element %s does not disappear.', query);
+    else
+      return true;
+  });
+}
+
+/**
  * Launches the Gallery app with the test entries.
  *
  * @param {string} testVolumeName Test volume name passed to the addEntries
@@ -102,7 +119,7 @@ function waitForSlideImage(document, width, height, name) {
 
 /**
  * Shorthand for clicking an element.
- * @param {AppWindow} appWindow application window.
+ * @param {AppWindow} appWindow Application window.
  * @param {string} query Query for the element.
  * @param {Promise} Promise to be fulfilled with the clicked element.
  */
@@ -111,4 +128,19 @@ function waitAndClickElement(appWindow, query) {
     element.click();
     return element;
   });
+}
+
+/**
+ * Sends a fake key down event.
+ *
+ * @param {AppWindow} appWindow Application window.
+ * @param {string} query Query for the element to be dispatched an event to.
+ * @param {string} keyIdentifier Key identifier.
+ * @return {boolean} True on success.
+ */
+function sendKeyDown(appWindow, query, keyIdentifier) {
+  return appWindow.contentWindow.document.querySelector(query).dispatchEvent(
+      new KeyboardEvent(
+          'keydown',
+          {bubbles: true, keyIdentifier: keyIdentifier}));
 }

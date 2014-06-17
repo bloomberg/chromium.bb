@@ -76,6 +76,48 @@ function rotateImage(testVolumeName, volumeType) {
 }
 
 /**
+ * Tests to crop an image.
+ *
+ * @param {string} testVolumeName Test volume name passed to the addEntries
+ *     function. Either 'drive' or 'local'.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function cropImage(testVolumeName, volumeType) {
+  var launchedPromise = setupPhotoEditor(testVolumeName, volumeType);
+  return launchedPromise.then(function(args) {
+    var appWindow = args.appWindow;
+    return waitAndClickElement(appWindow, '.gallery:not([locked]) button.crop').
+        then(function() {
+          var promptPromise =
+              waitForElement(appWindow, '.prompt-wrapper .prompt').
+              then(function(element) {
+                chrome.test.assertEq(
+                    'Press Enter when done', element.innerText.trim());
+              });
+          var cropOverlay = waitForElement(appWindow, '.crop-overlay');
+          return Promise.all([promptPromise, cropOverlay]);
+        }).
+        then(function() {
+          chrome.test.assertTrue(sendKeyDown(appWindow, 'body', 'Enter'));
+        }).
+        then(function() {
+          return Promise.all([
+            waitForElementLost(appWindow, '.prompt-wrapper .prompt'),
+            waitForElementLost(appWindow, '.crop-overlay')
+          ]);
+        }).
+        then(function() {
+          return waitForSlideImage(
+              appWindow.contentWindow.document,
+              534,
+              400,
+              'My Desktop Background');
+        });
+  });
+}
+
+/**
  * The rotateImage test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.
  */
@@ -89,4 +131,20 @@ function rotateImageOnDownloads() {
  */
 function rotateImageOnDrive() {
   return rotateImage('drive', VolumeManagerCommon.VolumeType.DRIVE);
+}
+
+/**
+ * The cropImage test for Downloads.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function cropImageOnDownloads() {
+  return cropImage('local', VolumeManagerCommon.VolumeType.DOWNLOADS);
+}
+
+/**
+ * The cropImage test for Google Drive.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function cropImageOnDrive() {
+  return cropImage('drive', VolumeManagerCommon.VolumeType.DRIVE);
 }
