@@ -19,6 +19,8 @@ public class AwContentsStatics {
 
     private static ClientCertLookupTable sClientCertLookupTable;
 
+    private static String sUnreachableWebDataUrl;
+
     /**
      * Return the client certificate lookup table.
      */
@@ -61,10 +63,18 @@ public class AwContentsStatics {
         nativeSetDataReductionProxyEnabled(enabled);
     }
 
+    public static String getUnreachableWebDataUrl() {
+        if (sUnreachableWebDataUrl == null) {
+            sUnreachableWebDataUrl = nativeGetUnreachableWebDataUrl();
+        }
+        return sUnreachableWebDataUrl;
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
     private static native void nativeClearClientCertPreferences(Runnable callback);
     private static native void nativeSetDataReductionProxyKey(String key);
     private static native void nativeSetDataReductionProxyEnabled(boolean enabled);
+    private static native String nativeGetUnreachableWebDataUrl();
 }

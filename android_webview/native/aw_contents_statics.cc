@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/url_constants.h"
 #include "jni/AwContentsStatics_jni.h"
 #include "net/cert/cert_database.h"
 
@@ -61,6 +62,12 @@ void SetDataReductionProxyKey(JNIEnv* env, jclass, jstring key) {
 // static
 void SetDataReductionProxyEnabled(JNIEnv* env, jclass, jboolean enabled) {
   AwBrowserContext::SetDataReductionProxyEnabled(enabled);
+}
+
+// static
+jstring GetUnreachableWebDataUrl(JNIEnv* env, jclass) {
+  return base::android::ConvertUTF8ToJavaString(
+             env, content::kUnreachableWebDataURL).Release();
 }
 
 bool RegisterAwContentsStatics(JNIEnv* env) {

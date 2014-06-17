@@ -61,7 +61,10 @@ public abstract class AwContentsClient {
 
         @Override
         public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
-            if (isMainFrame) {
+            String unreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();
+            boolean isErrorUrl =
+                    unreachableWebDataUrl != null && unreachableWebDataUrl.equals(validatedUrl);
+            if (isMainFrame && !isErrorUrl) {
                 AwContentsClient.this.onPageFinished(validatedUrl);
             }
         }

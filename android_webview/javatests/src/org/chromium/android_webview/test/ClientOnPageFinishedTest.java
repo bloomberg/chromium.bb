@@ -51,26 +51,41 @@ public class ClientOnPageFinishedTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testOnPageFinishedCalledAfterError() throws Throwable {
-        setTestAwContentsClient(new TestAwContentsClient() {
+        class LocalTestClient extends TestAwContentsClient {
             private boolean isOnReceivedErrorCalled = false;
             private boolean isOnPageFinishedCalled = false;
+            private boolean allowAboutBlank = false;
 
             @Override
             public void onReceivedError(int errorCode, String description, String failingUrl) {
+                assertEquals("onReceivedError called twice for " + failingUrl,
+                        false, isOnReceivedErrorCalled);
                 isOnReceivedErrorCalled = true;
-                // Make sure onReceivedError is called before onPageFinished
-                assertEquals(false, isOnPageFinishedCalled);
+                assertEquals("onPageFinished called before onReceivedError for " + failingUrl,
+                        false, isOnPageFinishedCalled);
                 super.onReceivedError(errorCode, description, failingUrl);
             }
 
             @Override
             public void onPageFinished(String url) {
+                if (allowAboutBlank && "about:blank".equals(url)) {
+                    super.onPageFinished(url);
+                    return;
+                }
+                assertEquals("onPageFinished called twice for " + url,
+                        false, isOnPageFinishedCalled);
                 isOnPageFinishedCalled = true;
-                // Make sure onReceivedError is called before onPageFinished
-                assertEquals(true, isOnReceivedErrorCalled);
+                assertEquals("onReceivedError not called before onPageFinished for " + url,
+                        true, isOnReceivedErrorCalled);
                 super.onPageFinished(url);
             }
-        });
+
+            void setAllowAboutBlank() {
+                allowAboutBlank = true;
+            }
+        };
+        LocalTestClient testContentsClient = new LocalTestClient();
+        setTestAwContentsClient(testContentsClient);
 
         TestCallbackHelperContainer.OnReceivedErrorHelper onReceivedErrorHelper =
                 mContentsClient.getOnReceivedErrorHelper();
@@ -78,12 +93,16 @@ public class ClientOnPageFinishedTest extends AwTestBase {
                 mContentsClient.getOnPageFinishedHelper();
 
         String invalidUrl = "http://localhost:7/non_existent";
-        int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
-        int onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
         loadUrlSync(mAwContents, onPageFinishedHelper, invalidUrl);
 
         assertEquals(invalidUrl, onReceivedErrorHelper.getFailingUrl());
         assertEquals(invalidUrl, onPageFinishedHelper.getUrl());
+
+        // Rather than wait a fixed time to see that another onPageFinished callback isn't issued
+        // we load a valid page. Since callbacks arrive sequentially, this will ensure that
+        // any extra calls of onPageFinished / onReceivedError will arrive to our client.
+        testContentsClient.setAllowAboutBlank();
+        loadUrlSync(mAwContents, onPageFinishedHelper, "about:blank");
     }
 
     @MediumTest

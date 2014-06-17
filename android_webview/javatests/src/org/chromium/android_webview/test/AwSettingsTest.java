@@ -832,10 +832,15 @@ public class AwSettingsTest extends AwTestBase {
         @Override
         protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
             AwSettingsTest.this.resetResourceRequestCountInContentProvider(mTarget);
-            loadUrlSync(AwSettingsTest.this.createContentUrl(mTarget));
             if (value == ENABLED) {
+                loadUrlSync(AwSettingsTest.this.createContentUrl(mTarget));
+                String title = getTitleOnUiThread();
+                assertTrue(title != null);
+                assertTrue("[" + mTarget + "] Actual title: \"" + title + "\"",
+                        title.contains(mTarget));
                 AwSettingsTest.this.ensureResourceRequestCountInContentProvider(mTarget, 1);
             } else {
+                loadUrlSyncAndExpectError(AwSettingsTest.this.createContentUrl(mTarget));
                 AwSettingsTest.this.ensureResourceRequestCountInContentProvider(mTarget, 0);
             }
         }
@@ -1726,12 +1731,8 @@ public class AwSettingsTest extends AwTestBase {
                 views.getClient1()));
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    crbug.com/370950
-    */
-    @DisabledTest
     public void testFileUrlAccessWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -1739,12 +1740,8 @@ public class AwSettingsTest extends AwTestBase {
             new AwSettingsFileUrlAccessTestHelper(views.getContainer1(), views.getClient1(), 1));
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    crbug.com/370950
-    */
-    @DisabledTest
     public void testContentUrlAccessWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -2185,12 +2182,8 @@ public class AwSettingsTest extends AwTestBase {
         }
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    See crbug.com/374305
-    */
-    @DisabledTest
     public void testCacheModeWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         TestWebServer webServer = null;
