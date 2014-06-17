@@ -8,7 +8,7 @@
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/managed_mode/managed_user_sync_service_observer.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 
@@ -21,7 +21,7 @@ namespace options {
 
 // Handler for the 'import existing managed user' dialog.
 class ManagedUserImportHandler : public OptionsPageUIHandler,
-                                 public ManagedUserSyncServiceObserver,
+                                 public SupervisedUserSyncServiceObserver,
                                  public SigninErrorController::Observer {
  public:
   typedef base::CallbackList<void(const std::string&, const std::string&)>
@@ -38,11 +38,11 @@ class ManagedUserImportHandler : public OptionsPageUIHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // ManagedUserSyncServiceObserver implementation.
-  virtual void OnManagedUserAcknowledged(const std::string& managed_user_id)
-      OVERRIDE {}
-  virtual void OnManagedUsersSyncingStopped() OVERRIDE {}
-  virtual void OnManagedUsersChanged() OVERRIDE;
+  // SupervisedUserSyncServiceObserver implementation.
+  virtual void OnSupervisedUserAcknowledged(
+      const std::string& supervised_user_id) OVERRIDE {}
+  virtual void OnSupervisedUsersSyncingStopped() OVERRIDE {}
+  virtual void OnSupervisedUsersChanged() OVERRIDE;
 
   // SigninErrorController::Observer implementation.
   virtual void OnErrorChanged() OVERRIDE;

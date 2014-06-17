@@ -54,7 +54,7 @@
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/supervised_user_pref_store.h"
+#include "chrome/browser/supervised_user/supervised_user_pref_store.h"
 #endif
 
 #if defined(OS_WIN)
@@ -347,7 +347,7 @@ scoped_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
 void PrepareFactory(
     PrefServiceSyncableFactory* factory,
     policy::PolicyService* policy_service,
-    ManagedUserSettingsService* managed_user_settings,
+    SupervisedUserSettingsService* supervised_user_settings,
     scoped_refptr<PersistentPrefStore> user_pref_store,
     const scoped_refptr<PrefStore>& extension_prefs,
     bool async) {
@@ -366,9 +366,10 @@ void PrepareFactory(
 #endif  // ENABLE_CONFIGURATION_POLICY
 
 #if defined(ENABLE_MANAGED_USERS)
-  if (managed_user_settings) {
+  if (supervised_user_settings) {
     factory->set_supervised_user_prefs(
-        make_scoped_refptr(new SupervisedUserPrefStore(managed_user_settings)));
+        make_scoped_refptr(
+            new SupervisedUserPrefStore(supervised_user_settings)));
   }
 #endif
 
@@ -407,7 +408,7 @@ scoped_ptr<PrefService> CreateLocalState(
   PrepareFactory(
       &factory,
       policy_service,
-      NULL,  // managed_user_settings
+      NULL,  // supervised_user_settings
       new JsonPrefStore(
           pref_filename, pref_io_task_runner, scoped_ptr<PrefFilter>()),
       NULL,  // extension_prefs
@@ -420,7 +421,7 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
     base::SequencedTaskRunner* pref_io_task_runner,
     TrackedPreferenceValidationDelegate* validation_delegate,
     policy::PolicyService* policy_service,
-    ManagedUserSettingsService* managed_user_settings,
+    SupervisedUserSettingsService* supervised_user_settings,
     const scoped_refptr<PrefStore>& extension_prefs,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async) {
@@ -429,7 +430,7 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
   PrepareFactory(
       &factory,
       policy_service,
-      managed_user_settings,
+      supervised_user_settings,
       scoped_refptr<PersistentPrefStore>(
           CreateProfilePrefStoreManager(profile_path)->CreateProfilePrefStore(
               pref_io_task_runner, validation_delegate)),

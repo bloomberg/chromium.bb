@@ -18,13 +18,13 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
-#include "chrome/browser/managed_mode/managed_user_constants.h"
-#include "chrome/browser/managed_mode/managed_user_registration_utility.h"
-#include "chrome/browser/managed_mode/managed_user_registration_utility_stub.h"
-#include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
-#include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
-#include "chrome/browser/managed_mode/managed_user_sync_service.h"
-#include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
+#include "chrome/browser/supervised_user/supervised_user_registration_utility_stub.h"
+#include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
+#include "chrome/browser/supervised_user/supervised_user_shared_settings_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "content/public/browser/notification_service.h"
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTransactionCleanupTest,
   EXPECT_EQ(registration_utility_stub_->display_name(),
             base::UTF8ToUTF16(kTestSupervisedUserDisplayName));
 
-  std::string user_id = registration_utility_stub_->managed_user_id();
+  std::string user_id = registration_utility_stub_->supervised_user_id();
 
   // Make sure user is already in list.
   ASSERT_EQ(3UL, UserManager::Get()->GetUsers().size());

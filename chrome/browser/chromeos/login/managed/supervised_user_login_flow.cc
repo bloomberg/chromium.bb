@@ -132,8 +132,8 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
   base::Base64Decode(base64_signature, &signature);
   scoped_ptr<base::DictionaryValue> data_copy(password_data->DeepCopy());
   cryptohome::KeyDefinition key(password,
-                                kCryptohomeManagedUserKeyLabel,
-                                kCryptohomeManagedUserKeyPrivileges);
+                                kCryptohomeSupervisedUserKeyLabel,
+                                kCryptohomeSupervisedUserKeyPrivileges);
 
   authenticator_ = new ExtendedAuthenticator(this);
   SupervisedUserAuthentication::Schema current_schema =
@@ -144,7 +144,7 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
   if (SupervisedUserAuthentication::SCHEMA_PLAIN == current_schema) {
     // We need to add new key, and block old one. As we don't actually have
     // signature key, use Migrate privilege instead of AuthorizedUpdate.
-    key.privileges = kCryptohomeManagedUserIncompleteKeyPrivileges;
+    key.privileges = kCryptohomeSupervisedUserIncompleteKeyPrivileges;
 
     VLOG(1) << "Adding new schema key";
     DCHECK(context_.GetKey()->GetLabel().empty());
@@ -160,10 +160,10 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
 
     if (auth->HasIncompleteKey(user_id())) {
       // We need to use Migrate instead of Authorized Update privilege.
-      key.privileges = kCryptohomeManagedUserIncompleteKeyPrivileges;
+      key.privileges = kCryptohomeSupervisedUserIncompleteKeyPrivileges;
     }
     // Just update the key.
-    DCHECK_EQ(context_.GetKey()->GetLabel(), kCryptohomeManagedUserKeyLabel);
+    DCHECK_EQ(context_.GetKey()->GetLabel(), kCryptohomeSupervisedUserKeyLabel);
     authenticator_->UpdateKeyAuthorized(
         context_,
         key,
@@ -185,7 +185,7 @@ void SupervisedUserLoginFlow::OnNewKeyAdded(
   auth->MarkKeyIncomplete(user_id(), true /* incomplete */);
   authenticator_->RemoveKey(
       context_,
-      kLegacyCryptohomeManagedUserKeyLabel,
+      kLegacyCryptohomeSupervisedUserKeyLabel,
       base::Bind(&SupervisedUserLoginFlow::OnOldKeyRemoved,
                  weak_factory_.GetWeakPtr()));
 }

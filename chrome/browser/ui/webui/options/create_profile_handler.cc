@@ -12,14 +12,14 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/managed_mode/managed_user_registration_utility.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
-#include "chrome/browser/managed_mode/managed_user_sync_service.h"
-#include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/options/options_handlers_helper.h"
@@ -97,7 +97,7 @@ void CreateProfileHandler::CreateProfile(const base::ListValue* args) {
     if (supervised_user_id.empty()) {
       profile_creation_type_ = SUPERVISED_PROFILE_CREATION;
       supervised_user_id =
-          ManagedUserRegistrationUtility::GenerateNewManagedUserId();
+          SupervisedUserRegistrationUtility::GenerateNewSupervisedUserId();
 
       // If sync is not yet fully initialized, the creation may take extra time,
       // so show a message. Import doesn't wait for an acknowledgement, so it
@@ -193,14 +193,14 @@ void CreateProfileHandler::RegisterSupervisedUser(
   DCHECK_EQ(profile_path_being_created_.value(),
             new_profile->GetPath().value());
 
-  ManagedUserService* managed_user_service =
-      ManagedUserServiceFactory::GetForProfile(new_profile);
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(new_profile);
 
   // Register the supervised user using the profile of the custodian.
-  managed_user_registration_utility_ =
-      ManagedUserRegistrationUtility::Create(Profile::FromWebUI(web_ui()));
-  managed_user_service->RegisterAndInitSync(
-      managed_user_registration_utility_.get(),
+  supervised_user_registration_utility_ =
+      SupervisedUserRegistrationUtility::Create(Profile::FromWebUI(web_ui()));
+  supervised_user_service->RegisterAndInitSync(
+      supervised_user_registration_utility_.get(),
       Profile::FromWebUI(web_ui()),
       supervised_user_id,
       base::Bind(&CreateProfileHandler::OnSupervisedUserRegistered,
@@ -321,8 +321,8 @@ void CreateProfileHandler::CancelProfileRegistration(bool user_initiated) {
     RecordProfileCreationMetrics(Profile::CREATE_STATUS_CANCELED);
   }
 
-  DCHECK(managed_user_registration_utility_.get());
-  managed_user_registration_utility_.reset();
+  DCHECK(supervised_user_registration_utility_.get());
+  supervised_user_registration_utility_.reset();
 
   DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
   profile_creation_type_ = NO_CREATION_IN_PROGRESS;
@@ -414,7 +414,8 @@ bool CreateProfileHandler::IsValidExistingSupervisedUserId(
 
   Profile* profile = Profile::FromWebUI(web_ui());
   const base::DictionaryValue* dict =
-      ManagedUserSyncServiceFactory::GetForProfile(profile)->GetManagedUsers();
+      SupervisedUserSyncServiceFactory::GetForProfile(profile)->
+          GetSupervisedUsers();
   if (!dict->HasKey(existing_supervised_user_id))
     return false;
 

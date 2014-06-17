@@ -116,7 +116,7 @@ UserContext SupervisedUserAuthentication::TransformKey(
     DCHECK(!salt.empty());
     Key* const key = result.GetKey();
     key->Transform(Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234, salt);
-    key->SetLabel(kCryptohomeManagedUserKeyLabel);
+    key->SetLabel(kCryptohomeSupervisedUserKeyLabel);
     result.SetIsUsingOAuth(false);
     return result;
   }

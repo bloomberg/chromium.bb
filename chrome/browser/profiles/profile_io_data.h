@@ -33,10 +33,10 @@ class ChromeNetworkDelegate;
 class CookieSettings;
 class DevToolsNetworkController;
 class HostContentSettingsMap;
-class ManagedModeURLFilter;
 class MediaDeviceIDSalt;
 class ProtocolHandlerRegistry;
 class SigninNamesOnIOThread;
+class SupervisedUserURLFilter;
 
 namespace extensions {
 class InfoMap;
@@ -221,8 +221,8 @@ class ProfileIOData {
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-  const ManagedModeURLFilter* managed_mode_url_filter() const {
-    return managed_mode_url_filter_.get();
+  const SupervisedUserURLFilter* supervised_user_url_filter() const {
+    return supervised_user_url_filter_.get();
   }
 #endif
 
@@ -302,7 +302,7 @@ class ProfileIOData {
     scoped_ptr<net::ProxyConfigService> proxy_config_service;
 
 #if defined(ENABLE_MANAGED_USERS)
-    scoped_refptr<const ManagedModeURLFilter> managed_mode_url_filter;
+    scoped_refptr<const SupervisedUserURLFilter> supervised_user_url_filter;
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -579,7 +579,8 @@ class ProfileIOData {
       chrome_http_user_agent_settings_;
 
 #if defined(ENABLE_MANAGED_USERS)
-  mutable scoped_refptr<const ManagedModeURLFilter> managed_mode_url_filter_;
+  mutable scoped_refptr<const SupervisedUserURLFilter>
+      supervised_user_url_filter_;
 #endif
 
   mutable scoped_ptr<DevToolsNetworkController> network_controller_;

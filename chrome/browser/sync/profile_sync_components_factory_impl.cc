@@ -80,12 +80,12 @@
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_settings_service.h"
-#include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
-#include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
-#include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
-#include "chrome/browser/managed_mode/managed_user_sync_service.h"
-#include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_settings_service.h"
+#include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
+#include "chrome/browser/supervised_user/supervised_user_shared_settings_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
 #endif
 
 #if defined(ENABLE_SPELLCHECK)
@@ -534,13 +534,13 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
     }
 #if defined(ENABLE_MANAGED_USERS)
     case syncer::SUPERVISED_USER_SETTINGS:
-      return ManagedUserSettingsServiceFactory::GetForProfile(profile_)->
+      return SupervisedUserSettingsServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
     case syncer::SUPERVISED_USERS:
-      return ManagedUserSyncServiceFactory::GetForProfile(profile_)->
+      return SupervisedUserSyncServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
     case syncer::SUPERVISED_USER_SHARED_SETTINGS:
-      return ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(
+      return SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
           profile_)->AsWeakPtr();
 #endif
     case syncer::ARTICLES: {

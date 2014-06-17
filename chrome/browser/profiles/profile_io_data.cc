@@ -89,9 +89,9 @@
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -343,10 +343,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       .reset(ProxyServiceFactory::CreateProxyConfigService(
            profile->GetProxyConfigTracker()));
 #if defined(ENABLE_MANAGED_USERS)
-  ManagedUserService* managed_user_service =
-      ManagedUserServiceFactory::GetForProfile(profile);
-  params->managed_mode_url_filter =
-      managed_user_service->GetURLFilterForIOThread();
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile);
+  params->supervised_user_url_filter =
+      supervised_user_service->GetURLFilterForIOThread();
 #endif
 #if defined(OS_CHROMEOS)
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
@@ -989,7 +989,7 @@ void ProfileIOData::Init(
   resource_context_->request_context_ = main_request_context_.get();
 
 #if defined(ENABLE_MANAGED_USERS)
-  managed_mode_url_filter_ = profile_params_->managed_mode_url_filter;
+  supervised_user_url_filter_ = profile_params_->supervised_user_url_filter;
 #endif
 
 #if defined(OS_CHROMEOS)

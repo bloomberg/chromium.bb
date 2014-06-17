@@ -23,7 +23,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-class ManagedUserSettingsService;
 class PrefHashStore;
 class PrefRegistry;
 class PrefRegistrySimple;
@@ -31,6 +30,7 @@ class PrefService;
 class PrefServiceSyncable;
 class PrefStore;
 class Profile;
+class SupervisedUserSettingsService;
 class TrackedPreferenceValidationDelegate;
 
 namespace chrome_prefs {
@@ -72,7 +72,7 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
     base::SequencedTaskRunner* pref_io_task_runner,
     TrackedPreferenceValidationDelegate* validation_delegate,
     policy::PolicyService* policy_service,
-    ManagedUserSettingsService* managed_user_settings,
+    SupervisedUserSettingsService* supervised_user_settings,
     const scoped_refptr<PrefStore>& extension_prefs,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async);

@@ -33,8 +33,8 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
 
 using content::BrowserThread;
@@ -189,8 +189,8 @@ base::string16 AvatarMenu::GetSupervisedUserInformation() const {
   // |browser_| can be NULL in unit_tests.
   if (browser_ && browser_->profile()->IsSupervised()) {
 #if defined(ENABLE_MANAGED_USERS)
-    ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
-        browser_->profile());
+    SupervisedUserService* service =
+        SupervisedUserServiceFactory::GetForProfile(browser_->profile());
     base::string16 custodian =
         base::UTF8ToUTF16(service->GetCustodianEmailAddress());
     return l10n_util::GetStringFUTF16(IDS_MANAGED_USER_INFO, custodian);

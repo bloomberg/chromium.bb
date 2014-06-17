@@ -18,7 +18,7 @@
 #include "url/gurl.h"
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_constants.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #endif
 
 #if defined(OS_CHROMEOS)

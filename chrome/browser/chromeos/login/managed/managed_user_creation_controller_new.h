@@ -15,7 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/auth/extended_authenticator.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_creation_controller.h"
-#include "chrome/browser/managed_mode/managed_user_registration_utility.h"
+#include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
 
 class Profile;
 
@@ -142,7 +142,7 @@ class ManagedUserCreationControllerNew
     base::DictionaryValue password_data;
 
     Profile* manager_profile;
-    scoped_ptr<ManagedUserRegistrationUtility> registration_utility;
+    scoped_ptr<SupervisedUserRegistrationUtility> registration_utility;
   };
 
   // ManagedUserAuthenticator::StatusConsumer overrides.
@@ -158,7 +158,7 @@ class ManagedUserCreationControllerNew
 
   // Guard timer callback.
   void CreationTimedOut();
-  // ManagedUserRegistrationUtility callback.
+  // SupervisedUserRegistrationUtility callback.
   void RegistrationCallback(const GoogleServiceAuthError& error,
                             const std::string& token);
 

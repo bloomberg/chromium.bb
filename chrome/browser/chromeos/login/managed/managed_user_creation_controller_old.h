@@ -15,7 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_authenticator.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_creation_controller.h"
-#include "chrome/browser/managed_mode/managed_user_registration_utility.h"
+#include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
 
 class Profile;
 
@@ -97,7 +97,7 @@ class ManagedUserCreationControllerOld
     CreationType creation_type;
     base::DictionaryValue password_data;
     Profile* manager_profile;
-    scoped_ptr<ManagedUserRegistrationUtility> registration_utility;
+    scoped_ptr<SupervisedUserRegistrationUtility> registration_utility;
   };
 
   void StartCreation();

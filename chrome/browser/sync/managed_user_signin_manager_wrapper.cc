@@ -9,7 +9,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_constants.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #endif
 
 ManagedUserSigninManagerWrapper::ManagedUserSigninManagerWrapper(
@@ -28,7 +28,7 @@ std::string ManagedUserSigninManagerWrapper::GetEffectiveUsername() const {
   const std::string& auth_username = original_->GetAuthenticatedUsername();
 #if defined(ENABLE_MANAGED_USERS)
   if (auth_username.empty() && profile_->IsSupervised())
-    return managed_users::kManagedUserPseudoEmail;
+    return supervised_users::kSupervisedUserPseudoEmail;
 #endif
   return auth_username;
 }
@@ -37,7 +37,7 @@ std::string ManagedUserSigninManagerWrapper::GetAccountIdToUse() const {
   const std::string& auth_account = original_->GetAuthenticatedAccountId();
 #if defined(ENABLE_MANAGED_USERS)
   if (auth_account.empty() && profile_->IsSupervised())
-    return managed_users::kManagedUserPseudoEmail;
+    return supervised_users::kSupervisedUserPseudoEmail;
 #endif
   return auth_account;
 }

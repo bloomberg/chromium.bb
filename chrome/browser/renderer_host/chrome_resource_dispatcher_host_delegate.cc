@@ -65,7 +65,7 @@
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_mode_resource_throttle.h"
+#include "chrome/browser/supervised_user/supervised_user_resource_throttle.h"
 #endif
 
 #if defined(USE_SYSTEM_PROTOBUF)
@@ -495,9 +495,9 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 
 #if defined(ENABLE_MANAGED_USERS)
   bool is_subresource_request = resource_type != ResourceType::MAIN_FRAME;
-  throttles->push_back(new ManagedModeResourceThrottle(
+  throttles->push_back(new SupervisedUserResourceThrottle(
         request, !is_subresource_request,
-        io_data->managed_mode_url_filter()));
+        io_data->supervised_user_url_filter()));
 #endif
 
   content::ResourceThrottle* throttle =

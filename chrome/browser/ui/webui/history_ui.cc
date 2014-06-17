@@ -58,10 +58,10 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
-#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -311,7 +311,7 @@ void BrowsingHistoryHandler::HistoryEntry::SetUrlAndTitle(
 
 scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
     BookmarkModel* bookmark_model,
-    ManagedUserService* managed_user_service,
+    SupervisedUserService* supervised_user_service,
     const ProfileSyncService* sync_service) const {
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   SetUrlAndTitle(result.get());
@@ -365,9 +365,9 @@ scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
   result->SetString("deviceType", device_type);
 
 #if defined(ENABLE_MANAGED_USERS)
-  if (managed_user_service) {
-    const ManagedModeURLFilter* url_filter =
-        managed_user_service->GetURLFilterForUIThread();
+  if (supervised_user_service) {
+    const SupervisedUserURLFilter* url_filter =
+        supervised_user_service->GetURLFilterForUIThread();
     int filtering_behavior =
         url_filter->GetFilteringBehaviorForURL(url.GetWithEmptyPath());
     result->SetInteger("hostFilteringBehavior", filtering_behavior);
@@ -709,10 +709,11 @@ void BrowsingHistoryHandler::MergeDuplicateResults(
 void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
   Profile* profile = Profile::FromWebUI(web_ui());
   BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile);
-  ManagedUserService* managed_user_service = NULL;
+  SupervisedUserService* supervised_user_service = NULL;
 #if defined(ENABLE_MANAGED_USERS)
   if (profile->IsSupervised())
-    managed_user_service = ManagedUserServiceFactory::GetForProfile(profile);
+    supervised_user_service =
+        SupervisedUserServiceFactory::GetForProfile(profile);
 #endif
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
@@ -741,7 +742,7 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
   for (std::vector<BrowsingHistoryHandler::HistoryEntry>::iterator it =
            query_results_.begin(); it != query_results_.end(); ++it) {
     scoped_ptr<base::Value> value(
-        it->ToValue(bookmark_model, managed_user_service, sync_service));
+        it->ToValue(bookmark_model, supervised_user_service, sync_service));
     results_value.Append(value.release());
   }
 

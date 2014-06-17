@@ -62,8 +62,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
 
 #if !defined(OS_IOS)
@@ -985,7 +985,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // Initialization needs to happen after extension system initialization (for
   // extension::ManagementPolicy) and InitProfileUserPrefs (for setting the
   // initializing the supervised flag if necessary).
-  ManagedUserServiceFactory::GetForProfile(profile)->Init();
+  SupervisedUserServiceFactory::GetForProfile(profile)->Init();
 #endif
   // Start the deferred task runners once the profile is loaded.
   StartupTaskRunnerServiceFactory::GetForProfile(profile)->

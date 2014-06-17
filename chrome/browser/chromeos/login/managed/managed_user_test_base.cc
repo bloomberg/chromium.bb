@@ -23,14 +23,14 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
-#include "chrome/browser/managed_mode/managed_user_constants.h"
-#include "chrome/browser/managed_mode/managed_user_registration_utility.h"
-#include "chrome/browser/managed_mode/managed_user_registration_utility_stub.h"
-#include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
-#include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
-#include "chrome/browser/managed_mode/managed_user_sync_service.h"
-#include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/browser/profiles/profile_impl.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
+#include "chrome/browser/supervised_user/supervised_user_registration_utility_stub.h"
+#include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
+#include "chrome/browser/supervised_user/supervised_user_shared_settings_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "content/public/browser/notification_service.h"
@@ -54,7 +54,7 @@ const char kCurrentPage[] = "$('managed-user-creation').currentPage_";
 
 ManagedUsersSyncTestAdapter::ManagedUsersSyncTestAdapter(Profile* profile)
     : processor_(), next_sync_data_id_(0) {
-  service_ = ManagedUserSyncServiceFactory::GetForProfile(profile);
+  service_ = SupervisedUserSyncServiceFactory::GetForProfile(profile);
   processor_ = new syncer::FakeSyncChangeProcessor();
   service_->MergeDataAndStartSyncing(
       syncer::SUPERVISED_USERS,
@@ -103,7 +103,7 @@ ManagedUsersSharedSettingsSyncTestAdapter::
     ManagedUsersSharedSettingsSyncTestAdapter(Profile* profile)
     : processor_(), next_sync_data_id_(0) {
   service_ =
-      ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(profile);
+      SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(profile);
   processor_ = new syncer::FakeSyncChangeProcessor();
   service_->MergeDataAndStartSyncing(
       syncer::SUPERVISED_USER_SHARED_SETTINGS,
@@ -155,7 +155,7 @@ void ManagedUsersSharedSettingsSyncTestAdapter::AddChange(
     bool acknowledged,
     bool update) {
   syncer::SyncData data =
-      ManagedUserSharedSettingsService::CreateSyncDataForSetting(
+      SupervisedUserSharedSettingsService::CreateSyncDataForSetting(
           mu_id, key, value, acknowledged);
   AddChange(data.GetSpecifics().managed_user_shared_setting(), update);
 }
@@ -182,8 +182,8 @@ void ManagedUserTestBase::SetUpInProcessBrowserTestFixture() {
   mock_homedir_methods_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
   cryptohome::HomedirMethods::InitializeForTesting(mock_homedir_methods_);
 
-  registration_utility_stub_ = new ManagedUserRegistrationUtilityStub();
-  scoped_utility_.reset(new ScopedTestingManagedUserRegistrationUtility(
+  registration_utility_stub_ = new SupervisedUserRegistrationUtilityStub();
+  scoped_utility_.reset(new ScopedTestingSupervisedUserRegistrationUtility(
       registration_utility_stub_));
 
   // Setup network portal detector to return online state for both

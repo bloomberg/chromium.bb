@@ -96,8 +96,8 @@
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_settings_service.h"
-#include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_settings_service.h"
+#include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif
 
 using base::Time;
@@ -375,8 +375,8 @@ void TestingProfile::Init() {
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-  ManagedUserSettingsService* settings_service =
-      ManagedUserSettingsServiceFactory::GetForProfile(this);
+  SupervisedUserSettingsService* settings_service =
+      SupervisedUserSettingsServiceFactory::GetForProfile(this);
   TestingPrefStore* store = new TestingPrefStore();
   settings_service->Init(store);
   store->SetInitializationCompleted();

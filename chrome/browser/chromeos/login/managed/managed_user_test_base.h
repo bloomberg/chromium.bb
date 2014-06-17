@@ -9,8 +9,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
-#include "chrome/browser/managed_mode/managed_user_registration_utility_stub.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/supervised_user/supervised_user_registration_utility_stub.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "sync/api/fake_sync_change_processor.h"
@@ -40,7 +40,7 @@ class ManagedUsersSyncTestAdapter {
   void AddChange(const ::sync_pb::ManagedUserSpecifics& proto, bool update);
 
   syncer::FakeSyncChangeProcessor* processor_;
-  ManagedUserSyncService* service_;
+  SupervisedUserSyncService* service_;
   int next_sync_data_id_;
 };
 
@@ -62,7 +62,7 @@ class ManagedUsersSharedSettingsSyncTestAdapter {
                  bool update);
 
   syncer::FakeSyncChangeProcessor* processor_;
-  ManagedUserSharedSettingsService* service_;
+  SupervisedUserSharedSettingsService* service_;
   int next_sync_data_id_;
 };
 
@@ -102,8 +102,8 @@ class ManagedUserTestBase : public chromeos::LoginManagerTest {
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_;
   cryptohome::MockHomedirMethods* mock_homedir_methods_;
   NetworkPortalDetectorTestImpl* network_portal_detector_;
-  ManagedUserRegistrationUtilityStub* registration_utility_stub_;
-  scoped_ptr<ScopedTestingManagedUserRegistrationUtility> scoped_utility_;
+  SupervisedUserRegistrationUtilityStub* registration_utility_stub_;
+  scoped_ptr<ScopedTestingSupervisedUserRegistrationUtility> scoped_utility_;
   scoped_ptr<ManagedUsersSharedSettingsSyncTestAdapter>
       shared_settings_adapter_;
   scoped_ptr<ManagedUsersSyncTestAdapter> managed_users_adapter_;

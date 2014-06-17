@@ -19,8 +19,8 @@
 #include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/users/user_manager_impl.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -31,19 +31,19 @@ namespace {
 
 // Names for pref keys in Local State.
 // A map from locally managed user local user id to sync user id.
-const char kManagedUserSyncId[] =
+const char kSupervisedUserSyncId[] =
     "ManagedUserSyncId";
 
 // A map from locally managed user id to manager user id.
-const char kManagedUserManagers[] =
+const char kSupervisedUserManagers[] =
     "ManagedUserManagers";
 
 // A map from locally managed user id to manager display name.
-const char kManagedUserManagerNames[] =
+const char kSupervisedUserManagerNames[] =
     "ManagedUserManagerNames";
 
 // A map from locally managed user id to manager display e-mail.
-const char kManagedUserManagerDisplayEmails[] =
+const char kSupervisedUserManagerDisplayEmails[] =
     "ManagedUserManagerDisplayEmails";
 
 // A vector pref of the locally managed accounts defined on this device, that
@@ -86,7 +86,7 @@ const char kSupervisedUserIncompleteKey[] = "SupervisedUserHasIncompleteKey";
 std::string LoadSyncToken(base::FilePath profile_dir) {
   std::string token;
   base::FilePath token_file =
-      profile_dir.Append(chromeos::kManagedUserTokenFilename);
+      profile_dir.Append(chromeos::kSupervisedUserTokenFilename);
   VLOG(1) << "Loading" << token_file.value();
   if (!base::ReadFileToString(token_file, &token))
     return std::string();
@@ -118,10 +118,10 @@ void SupervisedUserManager::RegisterPrefs(PrefRegistrySimple* registry) {
       kLocallyManagedUserCreationTransactionDisplayName, "");
   registry->RegisterStringPref(
       kLocallyManagedUserCreationTransactionUserId, "");
-  registry->RegisterDictionaryPref(kManagedUserSyncId);
-  registry->RegisterDictionaryPref(kManagedUserManagers);
-  registry->RegisterDictionaryPref(kManagedUserManagerNames);
-  registry->RegisterDictionaryPref(kManagedUserManagerDisplayEmails);
+  registry->RegisterDictionaryPref(kSupervisedUserSyncId);
+  registry->RegisterDictionaryPref(kSupervisedUserManagers);
+  registry->RegisterDictionaryPref(kSupervisedUserManagerNames);
+  registry->RegisterDictionaryPref(kSupervisedUserManagerDisplayEmails);
 
   registry->RegisterDictionaryPref(kSupervisedUserPasswordSchema);
   registry->RegisterDictionaryPref(kSupervisedUserPasswordSalt);
@@ -197,12 +197,13 @@ const User* SupervisedUserManagerImpl::CreateUserRecord(
 
   ListPrefUpdate prefs_new_users_update(local_state,
                                         kLocallyManagedUsersFirstRun);
-  DictionaryPrefUpdate sync_id_update(local_state, kManagedUserSyncId);
-  DictionaryPrefUpdate manager_update(local_state, kManagedUserManagers);
+  DictionaryPrefUpdate sync_id_update(local_state, kSupervisedUserSyncId);
+  DictionaryPrefUpdate manager_update(local_state, kSupervisedUserManagers);
   DictionaryPrefUpdate manager_name_update(local_state,
-                                           kManagedUserManagerNames);
-  DictionaryPrefUpdate manager_email_update(local_state,
-                                            kManagedUserManagerDisplayEmails);
+                                           kSupervisedUserManagerNames);
+  DictionaryPrefUpdate manager_email_update(
+      local_state,
+      kSupervisedUserManagerDisplayEmails);
 
   prefs_new_users_update->Insert(0, new base::StringValue(local_user_id));
 
@@ -224,7 +225,7 @@ const User* SupervisedUserManagerImpl::CreateUserRecord(
 std::string SupervisedUserManagerImpl::GetUserSyncId(const std::string& user_id)
     const {
   std::string result;
-  GetUserStringValue(user_id, kManagedUserSyncId, &result);
+  GetUserStringValue(user_id, kSupervisedUserSyncId, &result);
   return result;
 }
 
@@ -232,7 +233,7 @@ base::string16 SupervisedUserManagerImpl::GetManagerDisplayName(
     const std::string& user_id) const {
   PrefService* local_state = g_browser_process->local_state();
   const base::DictionaryValue* manager_names =
-      local_state->GetDictionary(kManagedUserManagerNames);
+      local_state->GetDictionary(kSupervisedUserManagerNames);
   base::string16 result;
   if (manager_names->GetStringWithoutPathExpansion(user_id, &result) &&
       !result.empty())
@@ -243,14 +244,16 @@ base::string16 SupervisedUserManagerImpl::GetManagerDisplayName(
 std::string SupervisedUserManagerImpl::GetManagerUserId(
       const std::string& user_id) const {
   std::string result;
-  GetUserStringValue(user_id, kManagedUserManagers, &result);
+  GetUserStringValue(user_id, kSupervisedUserManagers, &result);
   return result;
 }
 
 std::string SupervisedUserManagerImpl::GetManagerDisplayEmail(
       const std::string& user_id) const {
   std::string result;
-  if (GetUserStringValue(user_id, kManagedUserManagerDisplayEmails, &result) &&
+  if (GetUserStringValue(user_id,
+                         kSupervisedUserManagerDisplayEmails,
+                         &result) &&
       !result.empty())
     return result;
   return GetManagerUserId(user_id);
@@ -447,10 +450,10 @@ void SupervisedUserManagerImpl::RemoveNonCryptohomeData(
   ListPrefUpdate prefs_new_users_update(prefs, kLocallyManagedUsersFirstRun);
   prefs_new_users_update->Remove(base::StringValue(user_id), NULL);
 
-  CleanPref(user_id, kManagedUserSyncId);
-  CleanPref(user_id, kManagedUserManagers);
-  CleanPref(user_id, kManagedUserManagerNames);
-  CleanPref(user_id, kManagedUserManagerDisplayEmails);
+  CleanPref(user_id, kSupervisedUserSyncId);
+  CleanPref(user_id, kSupervisedUserManagers);
+  CleanPref(user_id, kSupervisedUserManagerNames);
+  CleanPref(user_id, kSupervisedUserManagerDisplayEmails);
   CleanPref(user_id, kSupervisedUserPasswordSalt);
   CleanPref(user_id, kSupervisedUserPasswordSchema);
   CleanPref(user_id, kSupervisedUserPasswordRevision);
@@ -476,10 +479,10 @@ void SupervisedUserManagerImpl::UpdateManagerName(const std::string& manager_id,
   PrefService* local_state = g_browser_process->local_state();
 
   const base::DictionaryValue* manager_ids =
-      local_state->GetDictionary(kManagedUserManagers);
+      local_state->GetDictionary(kSupervisedUserManagers);
 
   DictionaryPrefUpdate manager_name_update(local_state,
-                                           kManagedUserManagerNames);
+                                           kSupervisedUserManagerNames);
   for (base::DictionaryValue::Iterator it(*manager_ids); !it.IsAtEnd();
       it.Advance()) {
     std::string user_id;
@@ -514,7 +517,7 @@ void SupervisedUserManagerImpl::ConfigureSyncWithToken(
     Profile* profile,
     const std::string& token) {
   if (!token.empty())
-    ManagedUserServiceFactory::GetForProfile(profile)->InitSync(token);
+    SupervisedUserServiceFactory::GetForProfile(profile)->InitSync(token);
 }
 
 }  // namespace chromeos

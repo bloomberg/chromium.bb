@@ -37,9 +37,9 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #endif
 
 namespace chrome {
@@ -289,12 +289,12 @@ base::string16 GetSearchTermsImpl(const content::WebContents* contents,
 
 bool IsURLAllowedForSupervisedUser(const GURL& url, Profile* profile) {
 #if defined(ENABLE_MANAGED_USERS)
-  ManagedUserService* managed_user_service =
-      ManagedUserServiceFactory::GetForProfile(profile);
-  ManagedModeURLFilter* url_filter =
-      managed_user_service->GetURLFilterForUIThread();
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile);
+  SupervisedUserURLFilter* url_filter =
+      supervised_user_service->GetURLFilterForUIThread();
   if (url_filter->GetFilteringBehaviorForURL(url) ==
-          ManagedModeURLFilter::BLOCK) {
+          SupervisedUserURLFilter::BLOCK) {
     return false;
   }
 #endif

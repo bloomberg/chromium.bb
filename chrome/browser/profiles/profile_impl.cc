@@ -137,8 +137,8 @@
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_settings_service.h"
-#include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_settings_service.h"
+#include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif
 
 using base::Time;
@@ -458,11 +458,11 @@ ProfileImpl::ProfileImpl(
   BrowserContextDependencyManager::GetInstance()->
       RegisterProfilePrefsForServices(this, pref_registry_.get());
 
-  ManagedUserSettingsService* managed_user_settings = NULL;
+  SupervisedUserSettingsService* supervised_user_settings = NULL;
 #if defined(ENABLE_MANAGED_USERS)
-  managed_user_settings =
-      ManagedUserSettingsServiceFactory::GetForProfile(this);
-  managed_user_settings->Init(
+  supervised_user_settings =
+      SupervisedUserSettingsServiceFactory::GetForProfile(this);
+  supervised_user_settings->Init(
       path_, sequenced_task_runner, create_mode == CREATE_MODE_SYNCHRONOUS);
 #endif
 
@@ -483,7 +483,7 @@ ProfileImpl::ProfileImpl(
         sequenced_task_runner,
         pref_validation_delegate_.get(),
         profile_policy_connector_->policy_service(),
-        managed_user_settings,
+        supervised_user_settings,
         new ExtensionPrefStore(
             ExtensionPrefValueMapFactory::GetForBrowserContext(this), false),
         pref_registry_,

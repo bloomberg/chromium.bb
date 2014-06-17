@@ -13,8 +13,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/managed_mode/managed_user_theme.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/supervised_user/supervised_user_theme.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -586,7 +586,7 @@ bool ThemeService::IsSupervisedUser() const {
 }
 
 void ThemeService::SetSupervisedUserTheme() {
-  SetCustomDefaultTheme(new ManagedUserTheme);
+  SetCustomDefaultTheme(new SupervisedUserTheme);
 }
 
 void ThemeService::OnInfobarDisplayed() {

@@ -39,7 +39,7 @@
 #include "ui/gfx/image/image_util.h"
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
 #endif
 
 namespace {

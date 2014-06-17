@@ -10,17 +10,17 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/managed_mode/managed_user_constants.h"
-#include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
-#include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
-#include "chrome/browser/managed_mode/managed_user_sync_service.h"
-#include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
+#include "chrome/browser/supervised_user/supervised_user_shared_settings_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -54,8 +54,8 @@ ManagedUserImportHandler::ManagedUserImportHandler()
 ManagedUserImportHandler::~ManagedUserImportHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile->IsSupervised()) {
-    ManagedUserSyncService* service =
-        ManagedUserSyncServiceFactory::GetForProfile(profile);
+    SupervisedUserSyncService* service =
+        SupervisedUserSyncServiceFactory::GetForProfile(profile);
     if (service)
       service->RemoveObserver(this);
     subscription_.reset();
@@ -87,20 +87,20 @@ void ManagedUserImportHandler::GetLocalizedValues(
 void ManagedUserImportHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile->IsSupervised()) {
-    ManagedUserSyncService* sync_service =
-        ManagedUserSyncServiceFactory::GetForProfile(profile);
+    SupervisedUserSyncService* sync_service =
+        SupervisedUserSyncServiceFactory::GetForProfile(profile);
     if (sync_service) {
       sync_service->AddObserver(this);
       observer_.Add(ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
                         signin_error_controller());
-      ManagedUserSharedSettingsService* settings_service =
-          ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(
+      SupervisedUserSharedSettingsService* settings_service =
+          SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
               profile);
       subscription_ = settings_service->Subscribe(
           base::Bind(&ManagedUserImportHandler::OnSharedSettingChanged,
                      weak_ptr_factory_.GetWeakPtr()));
     } else {
-      DCHECK(!ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(
+      DCHECK(!SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
                  profile));
       DCHECK(!ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
     }
@@ -113,7 +113,7 @@ void ManagedUserImportHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void ManagedUserImportHandler::OnManagedUsersChanged() {
+void ManagedUserImportHandler::OnSupervisedUsersChanged() {
   FetchManagedUsers();
 }
 
@@ -130,11 +130,11 @@ void ManagedUserImportHandler::RequestManagedUserImportUpdate(
   if (!IsAccountConnected() || HasAuthError()) {
     ClearManagedUsersAndShowError();
   } else {
-    ManagedUserSyncService* managed_user_sync_service =
-        ManagedUserSyncServiceFactory::GetForProfile(
+    SupervisedUserSyncService* supervised_user_sync_service =
+        SupervisedUserSyncServiceFactory::GetForProfile(
             Profile::FromWebUI(web_ui()));
-    if (managed_user_sync_service) {
-      managed_user_sync_service->GetManagedUsersAsync(
+    if (supervised_user_sync_service) {
+      supervised_user_sync_service->GetSupervisedUsersAsync(
           base::Bind(&ManagedUserImportHandler::SendExistingManagedUsers,
                      weak_ptr_factory_.GetWeakPtr()));
     }
@@ -148,61 +148,62 @@ void ManagedUserImportHandler::SendExistingManagedUsers(
       g_browser_process->profile_manager()->GetProfileInfoCache();
 
   // Collect the ids of local supervised user profiles.
-  std::set<std::string> managed_user_ids;
+  std::set<std::string> supervised_user_ids;
   for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
     if (cache.ProfileIsSupervisedAtIndex(i))
-      managed_user_ids.insert(cache.GetSupervisedUserIdOfProfileAtIndex(i));
+      supervised_user_ids.insert(cache.GetSupervisedUserIdOfProfileAtIndex(i));
   }
 
-  base::ListValue managed_users;
+  base::ListValue supervised_users;
   Profile* profile = Profile::FromWebUI(web_ui());
-  ManagedUserSharedSettingsService* service =
-      ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(profile);
+  SupervisedUserSharedSettingsService* service =
+      SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(profile);
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     const base::DictionaryValue* value = NULL;
     bool success = it.value().GetAsDictionary(&value);
     DCHECK(success);
     std::string name;
-    value->GetString(ManagedUserSyncService::kName, &name);
+    value->GetString(SupervisedUserSyncService::kName, &name);
 
-    base::DictionaryValue* managed_user = new base::DictionaryValue;
-    managed_user->SetString("id", it.key());
-    managed_user->SetString("name", name);
+    base::DictionaryValue* supervised_user = new base::DictionaryValue;
+    supervised_user->SetString("id", it.key());
+    supervised_user->SetString("name", name);
 
-    int avatar_index = ManagedUserSyncService::kNoAvatar;
+    int avatar_index = SupervisedUserSyncService::kNoAvatar;
     const base::Value* avatar_index_value =
-        service->GetValue(it.key(), managed_users::kChromeAvatarIndex);
+        service->GetValue(it.key(), supervised_users::kChromeAvatarIndex);
     if (avatar_index_value) {
       success = avatar_index_value->GetAsInteger(&avatar_index);
     } else {
       // Check if there is a legacy avatar index stored.
       std::string avatar_str;
-      value->GetString(ManagedUserSyncService::kChromeAvatar, &avatar_str);
+      value->GetString(SupervisedUserSyncService::kChromeAvatar, &avatar_str);
       success =
-          ManagedUserSyncService::GetAvatarIndex(avatar_str, &avatar_index);
+          SupervisedUserSyncService::GetAvatarIndex(avatar_str, &avatar_index);
     }
     DCHECK(success);
-    managed_user->SetBoolean("needAvatar",
-                             avatar_index == ManagedUserSyncService::kNoAvatar);
+    supervised_user->SetBoolean(
+        "needAvatar",
+        avatar_index == SupervisedUserSyncService::kNoAvatar);
 
     std::string supervised_user_icon =
         std::string(chrome::kChromeUIThemeURL) +
         "IDR_SUPERVISED_USER_PLACEHOLDER";
     std::string avatar_url =
-        avatar_index == ManagedUserSyncService::kNoAvatar ?
+        avatar_index == SupervisedUserSyncService::kNoAvatar ?
             supervised_user_icon :
             profiles::GetDefaultAvatarIconUrl(avatar_index);
-    managed_user->SetString("iconURL", avatar_url);
+    supervised_user->SetString("iconURL", avatar_url);
     bool on_current_device =
-        managed_user_ids.find(it.key()) != managed_user_ids.end();
-    managed_user->SetBoolean("onCurrentDevice", on_current_device);
+        supervised_user_ids.find(it.key()) != supervised_user_ids.end();
+    supervised_user->SetBoolean("onCurrentDevice", on_current_device);
 
-    managed_users.Append(managed_user);
+    supervised_users.Append(supervised_user);
   }
 
   web_ui()->CallJavascriptFunction(
       "options.ManagedUserListData.receiveExistingManagedUsers",
-      managed_users);
+      supervised_users);
 }
 
 void ManagedUserImportHandler::ClearManagedUsersAndShowError() {
@@ -235,9 +236,9 @@ bool ManagedUserImportHandler::HasAuthError() const {
 }
 
 void ManagedUserImportHandler::OnSharedSettingChanged(
-    const std::string& managed_user_id,
+    const std::string& supervised_user_id,
     const std::string& key) {
-  if (key == managed_users::kChromeAvatarIndex)
+  if (key == supervised_users::kChromeAvatarIndex)
     FetchManagedUsers();
 }
 

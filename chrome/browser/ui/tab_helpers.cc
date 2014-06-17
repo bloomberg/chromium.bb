@@ -64,7 +64,7 @@
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
+#include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
 #endif
 
 #if defined(ENABLE_PRINTING)
@@ -176,7 +176,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-  ManagedModeNavigationObserver::CreateForWebContents(web_contents);
+  SupervisedUserNavigationObserver::CreateForWebContents(web_contents);
 #endif
 
 #if defined(ENABLE_PRINTING) && !defined(OS_ANDROID)

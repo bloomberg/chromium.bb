@@ -14,7 +14,7 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_authenticator.h"
-#include "chrome/browser/managed_mode/managed_user_registration_utility.h"
+#include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
 
 class Profile;
 

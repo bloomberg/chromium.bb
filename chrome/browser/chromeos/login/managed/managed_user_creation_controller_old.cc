@@ -43,7 +43,7 @@ bool StoreManagedUserFiles(const std::string& token,
     // If running on desktop, cryptohome stub does not create home directory.
     base::CreateDirectory(base_path);
   }
-  base::FilePath token_file = base_path.Append(kManagedUserTokenFilename);
+  base::FilePath token_file = base_path.Append(kSupervisedUserTokenFilename);
   int bytes = base::WriteFile(token_file, token.c_str(), token.length());
   return bytes >= 0;
 }
@@ -143,7 +143,7 @@ void ManagedUserCreationControllerOld::StartCreation() {
 
   if (creation_context_->creation_type == NEW_USER) {
     creation_context_->sync_user_id =
-        ManagedUserRegistrationUtility::GenerateNewManagedUserId();
+        SupervisedUserRegistrationUtility::GenerateNewSupervisedUserId();
   }
 
   manager->CreateUserRecord(creation_context_->manager_id,
@@ -217,14 +217,14 @@ void ManagedUserCreationControllerOld::OnMountSuccess(
 
 void ManagedUserCreationControllerOld::OnAddKeySuccess() {
   creation_context_->registration_utility =
-      ManagedUserRegistrationUtility::Create(
+      SupervisedUserRegistrationUtility::Create(
           creation_context_->manager_profile);
 
   VLOG(1) << "Creating user on server";
   // TODO(antrim) : add password data to sync once API is ready.
   // http://crbug.com/316168
-  ManagedUserRegistrationInfo info(creation_context_->display_name,
-                                   creation_context_->avatar_index);
+  SupervisedUserRegistrationInfo info(creation_context_->display_name,
+                                      creation_context_->avatar_index);
   info.master_key = creation_context_->master_key;
   timeout_timer_.Stop();
   creation_context_->registration_utility->Register(

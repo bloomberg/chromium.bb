@@ -18,13 +18,13 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
-#include "chrome/browser/managed_mode/managed_user_constants.h"
-#include "chrome/browser/managed_mode/managed_user_registration_utility.h"
-#include "chrome/browser/managed_mode/managed_user_registration_utility_stub.h"
-#include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
-#include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
-#include "chrome/browser/managed_mode/managed_user_sync_service.h"
-#include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
+#include "chrome/browser/supervised_user/supervised_user_registration_utility_stub.h"
+#include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
+#include "chrome/browser/supervised_user/supervised_user_shared_settings_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "content/public/browser/notification_service.h"
@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                                          "new-encrypted-password");
 
   shared_settings_adapter_->AddChange(
-      sync_id, managed_users::kChromeOSPasswordData, password, true, false);
+      sync_id, supervised_users::kChromeOSPasswordData, password, true, false);
   content::RunAllPendingInMessageLoop();
 }
 
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
   password.SetStringWithoutPathExpansion(kEncryptedPassword,
                                          "new-encrypted-password");
   shared_settings_adapter_->AddChange(
-      sync_id, managed_users::kChromeOSPasswordData, password, true, false);
+      sync_id, supervised_users::kChromeOSPasswordData, password, true, false);
   content::RunAllPendingInMessageLoop();
 
   testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                                          "new-encrypted-password");
 
   shared_settings_adapter_->AddChange(
-      sync_id, managed_users::kChromeOSPasswordData, password, true, false);
+      sync_id, supervised_users::kChromeOSPasswordData, password, true, false);
   content::RunAllPendingInMessageLoop();
 }
 
@@ -242,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
   password.SetStringWithoutPathExpansion(kEncryptedPassword,
                                          "new-encrypted-password");
   shared_settings_adapter_->AddChange(
-      sync_id, managed_users::kChromeOSPasswordData, password, true, false);
+      sync_id, supervised_users::kChromeOSPasswordData, password, true, false);
   content::RunAllPendingInMessageLoop();
 
   testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);

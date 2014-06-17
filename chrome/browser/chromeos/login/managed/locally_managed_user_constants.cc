@@ -8,16 +8,16 @@
 
 namespace chromeos {
 
-const char kManagedUserTokenFilename[] = "token";
+const char kSupervisedUserTokenFilename[] = "token";
 
-const char kCryptohomeManagedUserKeyLabel[] = "managed";
+const char kCryptohomeSupervisedUserKeyLabel[] = "managed";
 const char kCryptohomeMasterKeyLabel[] = "master";
-const char kLegacyCryptohomeManagedUserKeyLabel[] = "default-0";
+const char kLegacyCryptohomeSupervisedUserKeyLabel[] = "default-0";
 const char kLegacyCryptohomeMasterKeyLabel[] = "default-1";
 
-const int kCryptohomeManagedUserKeyPrivileges =
+const int kCryptohomeSupervisedUserKeyPrivileges =
     cryptohome::PRIV_AUTHORIZED_UPDATE | cryptohome::PRIV_MOUNT;
-const int kCryptohomeManagedUserIncompleteKeyPrivileges =
+const int kCryptohomeSupervisedUserIncompleteKeyPrivileges =
     cryptohome::PRIV_MIGRATE | cryptohome::PRIV_MOUNT;
 
 }  // namespace chromeos

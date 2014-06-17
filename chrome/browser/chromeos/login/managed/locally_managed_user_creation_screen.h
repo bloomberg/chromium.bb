@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/image_decoder.h"
-#include "chrome/browser/managed_mode/managed_user_sync_service.h"
+#include "chrome/browser/supervised_user/supervised_user_sync_service.h"
 #include "chrome/browser/ui/webui/chromeos/login/locally_managed_user_creation_screen_handler.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -29,7 +29,7 @@ class LocallyManagedUserCreationScreen
     : public WizardScreen,
       public LocallyManagedUserCreationScreenHandler::Delegate,
       public ManagedUserCreationController::StatusConsumer,
-      public ManagedUserSyncServiceObserver,
+      public SupervisedUserSyncServiceObserver,
       public ImageDecoder::Delegate,
       public NetworkPortalDetector::Observer,
       public CameraPresenceNotifier::Observer {
@@ -65,11 +65,11 @@ class LocallyManagedUserCreationScreen
   // CameraPresenceNotifier::Observer implementation:
   virtual void OnCameraPresenceCheckDone(bool is_camera_present) OVERRIDE;
 
-  // ManagedUserSyncServiceObserver implementation
-  virtual void OnManagedUserAcknowledged(
-      const std::string& managed_user_id) OVERRIDE {}
-  virtual void OnManagedUsersSyncingStopped() OVERRIDE {}
-  virtual void OnManagedUsersChanged() OVERRIDE;
+  // SupervisedUserSyncServiceObserver implementation
+  virtual void OnSupervisedUserAcknowledged(
+      const std::string& supervised_user_id) OVERRIDE {}
+  virtual void OnSupervisedUsersSyncingStopped() OVERRIDE {}
+  virtual void OnSupervisedUsersChanged() OVERRIDE;
 
   // WizardScreen implementation:
   virtual void PrepareToShow() OVERRIDE;
@@ -134,7 +134,7 @@ class LocallyManagedUserCreationScreen
   bool on_error_screen_;
   std::string last_page_;
 
-  ManagedUserSyncService* sync_service_;
+  SupervisedUserSyncService* sync_service_;
 
   gfx::ImageSkia user_photo_;
   scoped_refptr<ImageDecoder> image_decoder_;

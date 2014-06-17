@@ -45,7 +45,7 @@ bool StoreManagedUserFiles(const std::string& token,
     // If running on desktop, cryptohome stub does not create home directory.
     base::CreateDirectory(base_path);
   }
-  base::FilePath token_file = base_path.Append(kManagedUserTokenFilename);
+  base::FilePath token_file = base_path.Append(kSupervisedUserTokenFilename);
   int bytes = base::WriteFile(token_file, token.c_str(), token.length());
   return bytes >= 0;
 }
@@ -152,7 +152,7 @@ void ManagedUserCreationControllerNew::StartCreationImpl() {
   creation_context_->local_user_id = manager->GenerateUserId();
   if (creation_context_->creation_type == NEW_USER) {
     creation_context_->sync_user_id =
-        ManagedUserRegistrationUtility::GenerateNewManagedUserId();
+        SupervisedUserRegistrationUtility::GenerateNewSupervisedUserId();
   }
 
   manager->SetCreationTransactionUserId(creation_context_->local_user_id);
@@ -263,9 +263,10 @@ void ManagedUserCreationControllerNew::OnMountSuccess(
 
   // Plain text password, hashed and salted with individual salt.
   // It can be used for mounting homedir, and can be replaced only when signed.
-  cryptohome::KeyDefinition password_key(creation_context_->salted_password,
-                                         kCryptohomeManagedUserKeyLabel,
-                                         kCryptohomeManagedUserKeyPrivileges);
+  cryptohome::KeyDefinition password_key(
+      creation_context_->salted_password,
+      kCryptohomeSupervisedUserKeyLabel,
+      kCryptohomeSupervisedUserKeyPrivileges);
   base::Base64Decode(creation_context_->encryption_key,
                      &password_key.encryption_key);
   base::Base64Decode(creation_context_->signature_key,
@@ -304,11 +305,11 @@ void ManagedUserCreationControllerNew::OnAddKeySuccess() {
     consumer_->OnLongCreationWarning();
 
   creation_context_->registration_utility =
-      ManagedUserRegistrationUtility::Create(
+      SupervisedUserRegistrationUtility::Create(
           creation_context_->manager_profile);
 
-  ManagedUserRegistrationInfo info(creation_context_->display_name,
-                                   creation_context_->avatar_index);
+  SupervisedUserRegistrationInfo info(creation_context_->display_name,
+                                      creation_context_->avatar_index);
   info.master_key = creation_context_->master_key;
   info.password_signature_key = creation_context_->signature_key;
   info.password_encryption_key = creation_context_->encryption_key;

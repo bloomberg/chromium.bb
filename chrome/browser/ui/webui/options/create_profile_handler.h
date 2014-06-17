@@ -19,7 +19,7 @@ class DictionaryValue;
 class ListValue;
 }
 
-class ManagedUserRegistrationUtility;
+class SupervisedUserRegistrationUtility;
 
 namespace options {
 
@@ -150,7 +150,8 @@ class CreateProfileHandler: public OptionsPageUIHandler {
   // Used to track how long profile creation takes.
   base::TimeTicks profile_creation_start_time_;
 
-  scoped_ptr<ManagedUserRegistrationUtility> managed_user_registration_utility_;
+  scoped_ptr<SupervisedUserRegistrationUtility>
+      supervised_user_registration_utility_;
 
   // Indicates the type of the in progress profile creation operation.
   // The value is only relevant while we are creating/importing a profile.
