@@ -1,0 +1,18 @@
+EVENT(loadedmetadata)
+Seeking to duration
+EVENT(seeking)
+EVENT(seeked)
+EVENT(ended)
+EXPECTED (video.currentTime == video.duration == 'true') OK
+Seeking to the middle of the video
+EVENT(seeking)
+EVENT(seeked)
+Setting loop to true and seeking to duration.
+EVENT(seeking)
+EVENT(seeked)
+Seek to duration completed. Waiting for a seek to the beginning.
+EVENT(seeking)
+EVENT(seeked)
+EXPECTED (video.currentTime == '0') OK
+END OF TEST
+

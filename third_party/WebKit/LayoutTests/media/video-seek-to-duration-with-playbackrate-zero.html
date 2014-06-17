@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Test behavior when seeking to the duration and the playback rate equals 0.</title>
+        <script src="media-file.js"></script>
+        <script src="video-test.js"></script>
+
+        <script>
+          function onLoad()
+          {
+              findMediaElement();
+              video.src = findMediaFile("video", "content/test");
+              video.load();
+              waitForEvent("seeking");
+
+              waitForEventOnce("loadedmetadata", function()
+              {
+                  consoleWrite("Seeking to duration");
+                  video.currentTime = video.duration;
+                  video.playbackRate = 0;
+                  waitForEventOnce("seeked");
+                  waitForEventOnce("ended", firstEnded);
+              });
+
+              function firstEnded()
+              {
+                  testExpected("video.currentTime == video.duration", true);
+                  consoleWrite("Seeking to the middle of the video");
+                  video.currentTime = video.duration / 2;
+                  waitForEventOnce("seeked", seekToMiddleDone);
+              }
+
+              function seekToMiddleDone()
+              {
+                  consoleWrite("Setting loop to true and seeking to duration.");
+                  video.loop = true;
+                  video.currentTime = video.duration;
+                  waitForEventOnce("seeked", seekToDurationComplete);
+              }
+
+              function seekToDurationComplete()
+              {
+                  consoleWrite("Seek to duration completed. Waiting for a seek to the beginning.");
+                  waitForEventOnce("seeked", seekToBeginningComplete);
+              }
+
+              function seekToBeginningComplete()
+              {
+                  testExpected("video.currentTime", 0);
+                  endTest();
+              }
+          }
+        </script>
+    </head>
+    <body onload="onLoad()">
+        <video id="v" preload="metadata"></video>
+    </body>
+</html>

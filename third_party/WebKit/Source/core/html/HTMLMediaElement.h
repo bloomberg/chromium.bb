@@ -447,6 +447,10 @@ private:
 
     blink::WebMediaPlayer::CORSMode corsMode() const;
 
+    // Returns the "direction of playback" value as specified in the HTML5 spec.
+    enum DirectionOfPlayback { Backward, Forward };
+    DirectionOfPlayback directionOfPlayback() const;
+
     // Creates placeholder AudioTrack and/or VideoTrack objects when WebMemediaPlayer objects
     // advertise they have audio and/or video, but don't explicitly signal them via
     // addAudioTrack() and addVideoTrack().

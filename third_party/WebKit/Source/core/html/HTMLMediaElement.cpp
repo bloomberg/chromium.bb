@@ -2119,6 +2119,11 @@ void HTMLMediaElement::setPlaybackRate(double rate)
         m_player->setRate(rate);
 }
 
+HTMLMediaElement::DirectionOfPlayback HTMLMediaElement::directionOfPlayback() const
+{
+    return m_playbackRate >= 0 ? Forward : Backward;
+}
+
 void HTMLMediaElement::updatePlaybackRate()
 {
     double effectiveRate = m_mediaController ? m_mediaController->playbackRate() : m_playbackRate;
@@ -2131,7 +2136,7 @@ bool HTMLMediaElement::ended() const
     // 4.8.10.8 Playing the media resource
     // The ended attribute must return true if the media element has ended
     // playback and the direction of playback is forwards, and false otherwise.
-    return endedPlayback() && m_playbackRate > 0;
+    return endedPlayback() && directionOfPlayback() == Forward;
 }
 
 bool HTMLMediaElement::autoplay() const
@@ -2322,7 +2327,7 @@ void HTMLMediaElement::playbackProgressTimerFired(Timer<HTMLMediaElement>*)
 {
     ASSERT(m_player);
 
-    if (m_fragmentEndTime != MediaPlayer::invalidTime() && currentTime() >= m_fragmentEndTime && m_playbackRate > 0) {
+    if (m_fragmentEndTime != MediaPlayer::invalidTime() && currentTime() >= m_fragmentEndTime && directionOfPlayback() == Forward) {
         m_fragmentEndTime = MediaPlayer::invalidTime();
         if (!m_mediaController && !m_paused) {
             UseCounter::count(document(), UseCounter::HTMLMediaElementPauseAtFragmentEnd);
@@ -3019,7 +3024,7 @@ void HTMLMediaElement::mediaPlayerTimeChanged()
 
     // When the current playback position reaches the end of the media resource when the direction of
     // playback is forwards, then the user agent must follow these steps:
-    if (!std::isnan(dur) && dur && now >= dur && m_playbackRate > 0) {
+    if (!std::isnan(dur) && dur && now >= dur && directionOfPlayback() == Forward) {
         // If the media element has a loop attribute specified and does not have a current media controller,
         if (loop() && !m_mediaController) {
             m_sentEndEvent = false;
@@ -3199,15 +3204,13 @@ bool HTMLMediaElement::endedPlayback() const
     // of playback is forwards, Either the media element does not have a loop attribute specified,
     // or the media element has a current media controller.
     double now = currentTime();
-    if (m_playbackRate > 0)
+    if (directionOfPlayback() == Forward)
         return dur > 0 && now >= dur && (!loop() || m_mediaController);
 
     // or the current playback position is the earliest possible position and the direction
     // of playback is backwards
-    if (m_playbackRate < 0)
-        return now <= 0;
-
-    return false;
+    ASSERT(directionOfPlayback() == Backward);
+    return now <= 0;
 }
 
 bool HTMLMediaElement::stoppedDueToErrors() const
