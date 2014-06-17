@@ -832,6 +832,7 @@ void WiFiServiceImpl::OnWlanNotification(
       break;
     }
     case wlan_notification_acm_scan_complete:
+    case wlan_notification_acm_interface_removal:
       message_loop_proxy_->PostTask(
           FROM_HERE,
           base::Bind(&WiFiServiceImpl::OnNetworkScanCompleteOnMainThread,
@@ -845,9 +846,9 @@ void WiFiServiceImpl::OnNetworkScanCompleteOnMainThread() {
   // Get current list of visible networks and notify that network list has
   // changed.
   DWORD error = GetVisibleNetworkList(&networks);
-  DCHECK(error == ERROR_SUCCESS);
-  if (error == ERROR_SUCCESS)
-    NotifyNetworkListChanged(networks);
+  if (error != ERROR_SUCCESS)
+    networks.clear();
+  NotifyNetworkListChanged(networks);
 }
 
 void WiFiServiceImpl::WaitForNetworkConnect(const std::string& network_guid,

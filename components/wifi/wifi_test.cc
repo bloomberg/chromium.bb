@@ -89,6 +89,7 @@ WiFiTest::Result WiFiTest::Main(int argc, const char* argv[]) {
                 " [--create]"
                 " [--connect]"
                 " [--disconnect]"
+                " [--scan]"
                 " [--network_guid=<network_guid>]"
                 " [--frequency=0|2400|5000]"
                 " [--security=none|WEP-PSK|WPA-PSK|WPA2-PSK]"
@@ -218,6 +219,16 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
       VLOG(0) << key_data << error;
       return true;
     }
+  }
+
+  if (parsed_command_line.HasSwitch("scan")) {
+    wifi_service_->SetEventObservers(
+        loop.message_loop_proxy(),
+        base::Bind(&WiFiTest::OnNetworksChanged, base::Unretained(this)),
+        base::Bind(&WiFiTest::OnNetworkListChanged, base::Unretained(this)));
+    wifi_service_->RequestNetworkScan();
+    base::MessageLoop::current()->Run();
+    return true;
   }
 
   return false;
