@@ -51,12 +51,14 @@ protected:
     V8GarbageCollected(v8::Isolate* isolate)
         : m_isolate(isolate)
         , m_handle(isolate, v8::External::New(isolate, static_cast<T*>(this)))
+        , m_releasedToV8GarbageCollector(false)
     {
     }
 
     v8::Handle<v8::External> releaseToV8GarbageCollector()
     {
         ASSERT(!m_handle.isWeak()); // Call this exactly once.
+        m_releasedToV8GarbageCollector = true;
         v8::Handle<v8::External> result = m_handle.newLocal(m_isolate);
         m_handle.setWeak(static_cast<T*>(this), &weakCallback);
         return result;
@@ -64,7 +66,7 @@ protected:
 
     ~V8GarbageCollected()
     {
-        ASSERT(m_handle.isEmpty());
+        ASSERT(!m_releasedToV8GarbageCollector || m_handle.isEmpty());
     }
 
     v8::Isolate* isolate() { return m_isolate; }
@@ -79,6 +81,7 @@ private:
 
     v8::Isolate* m_isolate;
     ScopedPersistent<v8::External> m_handle;
+    bool m_releasedToV8GarbageCollector;
 };
 
 } // namespace WebCore

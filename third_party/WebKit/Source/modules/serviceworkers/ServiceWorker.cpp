@@ -195,6 +195,12 @@ void ServiceWorker::onPromiseResolved()
 
 void ServiceWorker::waitOnPromise(ScriptPromise promise)
 {
+    if (promise.isEmpty()) {
+        // The document was detached during registration. The state doesn't really
+        // matter since this ServiceWorker will immediately die.
+        setProxyState(ContextStopped);
+        return;
+    }
     setProxyState(RegisterPromisePending);
     promise.then(ThenFunction::create(this));
 }
