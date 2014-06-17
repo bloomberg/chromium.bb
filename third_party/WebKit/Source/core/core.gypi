@@ -3346,6 +3346,8 @@
             'testing/MallocStatistics.h',
             'testing/MockPagePopupDriver.cpp',
             'testing/MockPagePopupDriver.h',
+            'testing/NullExecutionContext.cpp',
+            'testing/NullExecutionContext.h',
             'testing/TypeConversions.h',
             'testing/v8/WebCoreTestSupport.cpp',
             'testing/v8/WebCoreTestSupport.h',

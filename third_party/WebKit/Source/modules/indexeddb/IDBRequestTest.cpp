@@ -26,17 +26,23 @@
 #include "config.h"
 #include "modules/indexeddb/IDBRequest.h"
 
+#include "bindings/v8/ScriptState.h"
+#include "bindings/v8/V8Binding.h"
 #include "core/dom/DOMError.h"
-#include "core/dom/Document.h"
-#include "core/dom/SecurityContext.h"
-#include "core/events/EventQueue.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/testing/NullExecutionContext.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
+#include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebIDBDatabase.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/dtoa/utils.h"
 #include <gtest/gtest.h>
 #include <v8.h>
 
@@ -44,54 +50,6 @@ using blink::WebBlobInfo;
 using namespace WebCore;
 
 namespace {
-
-class NullEventQueue FINAL : public EventQueue {
-public:
-    NullEventQueue() { }
-    virtual ~NullEventQueue() { }
-    virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE { return true; }
-    virtual bool cancelEvent(Event*) OVERRIDE { return true; }
-    virtual void close() OVERRIDE { }
-};
-
-class NullExecutionContext FINAL : public RefCountedWillBeGarbageCollectedFinalized<NullExecutionContext>, public SecurityContext, public ExecutionContext {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
-public:
-    NullExecutionContext();
-
-    virtual EventQueue* eventQueue() const OVERRIDE { return m_queue.get(); }
-
-    void trace(Visitor* visitor)
-    {
-        visitor->trace(m_queue);
-        ExecutionContext::trace(visitor);
-    }
-
-    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE { }
-    virtual SecurityContext& securityContext() { return *this; }
-
-#if !ENABLE(OILPAN)
-    using RefCounted<NullExecutionContext>::ref;
-    using RefCounted<NullExecutionContext>::deref;
-
-    virtual void refExecutionContext() OVERRIDE { ref(); }
-    virtual void derefExecutionContext() OVERRIDE { deref(); }
-#endif
-
-protected:
-    virtual const KURL& virtualURL() const OVERRIDE { return m_dummyURL; }
-    virtual KURL virtualCompleteURL(const String&) const OVERRIDE { return m_dummyURL; }
-
-private:
-    OwnPtrWillBeMember<EventQueue> m_queue;
-
-    KURL m_dummyURL;
-};
-
-NullExecutionContext::NullExecutionContext()
-    : m_queue(adoptPtrWillBeNoop(new NullEventQueue()))
-{
-}
 
 class IDBRequestTest : public testing::Test {
 public:

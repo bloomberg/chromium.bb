@@ -28,70 +28,18 @@
 #include "config.h"
 #include "core/dom/MainThreadTaskRunner.h"
 
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "core/dom/SecurityContext.h"
-#include "core/events/EventQueue.h"
+#include "core/testing/NullExecutionContext.h"
 #include "core/testing/UnitTestHelpers.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include <gtest/gtest.h>
 
 using namespace WebCore;
 
 namespace {
-
-class NullEventQueue : public EventQueue {
-public:
-    NullEventQueue() { }
-    virtual ~NullEventQueue() { }
-    virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE { return true; }
-    virtual bool cancelEvent(Event*) OVERRIDE { return true; }
-    virtual void close() OVERRIDE { }
-};
-
-class NullExecutionContext : public RefCountedWillBeGarbageCollectedFinalized<NullExecutionContext>, public SecurityContext, public ExecutionContext {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
-public:
-    NullExecutionContext();
-
-    virtual EventQueue* eventQueue() const OVERRIDE { return m_queue.get(); }
-    virtual bool tasksNeedSuspension() { return m_tasksNeedSuspension; }
-
-    void setTasksNeedSuspention(bool flag) { m_tasksNeedSuspension = flag; }
-
-    void trace(Visitor* visitor)
-    {
-        visitor->trace(m_queue);
-        ExecutionContext::trace(visitor);
-    }
-
-    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE { }
-    virtual SecurityContext& securityContext() { return *this; }
-
-#if !ENABLE(OILPAN)
-    using RefCounted<NullExecutionContext>::ref;
-    using RefCounted<NullExecutionContext>::deref;
-
-    virtual void refExecutionContext() OVERRIDE { ref(); }
-    virtual void derefExecutionContext() OVERRIDE { deref(); }
-#endif
-
-protected:
-    virtual const KURL& virtualURL() const OVERRIDE { return m_dummyURL; }
-    virtual KURL virtualCompleteURL(const String&) const OVERRIDE { return m_dummyURL; }
-
-private:
-    bool m_tasksNeedSuspension;
-    OwnPtrWillBeMember<EventQueue> m_queue;
-
-    KURL m_dummyURL;
-};
-
-NullExecutionContext::NullExecutionContext()
-    : m_tasksNeedSuspension(false)
-    , m_queue(adoptPtrWillBeNoop(new NullEventQueue()))
-{
-}
 
 class MarkingBooleanTask FINAL : public ExecutionContextTask {
 public:
@@ -132,13 +80,13 @@ TEST(MainThreadTaskRunnerTest, SuspendTask)
     OwnPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context.get());
     bool isMarked = false;
 
-    context->setTasksNeedSuspention(true);
+    context->setTasksNeedSuspension(true);
     runner->postTask(MarkingBooleanTask::create(&isMarked));
     runner->suspend();
     WebCore::testing::runPendingTasks();
     EXPECT_FALSE(isMarked);
 
-    context->setTasksNeedSuspention(false);
+    context->setTasksNeedSuspension(false);
     runner->resume();
     WebCore::testing::runPendingTasks();
     EXPECT_TRUE(isMarked);
@@ -150,7 +98,7 @@ TEST(MainThreadTaskRunnerTest, RemoveRunner)
     OwnPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context.get());
     bool isMarked = false;
 
-    context->setTasksNeedSuspention(true);
+    context->setTasksNeedSuspension(true);
     runner->postTask(MarkingBooleanTask::create(&isMarked));
     runner.clear();
     WebCore::testing::runPendingTasks();
