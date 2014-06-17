@@ -111,10 +111,10 @@ CompositingStateTransitionType CompositingLayerAssigner::computeCompositedLayerU
     return update;
 }
 
-bool CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner(const RenderLayer* layer, const CompositingLayerAssigner::SquashingState& squashingState)
+CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const RenderLayer* layer, const CompositingLayerAssigner::SquashingState& squashingState)
 {
     if (!squashingState.haveAssignedBackingsToEntireSquashingLayerSubtree)
-        return false;
+        return CompositingReasonSquashingWouldBreakPaintOrder;
 
     // FIXME: this special case for video exists only to deal with corner cases
     // where a RenderVideo does not report that it needs to be directly composited.
@@ -125,10 +125,10 @@ bool CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner(const RenderLa
     // compositing/video/video-controls-layer-creation.html
     // virtual/softwarecompositing/video/video-controls-layer-creation.html
     if (layer->renderer()->isVideo())
-        return false;
+        return CompositingReasonSquashingVideoIsDisallowed;
 
     if (squashingWouldExceedSparsityTolerance(layer, squashingState))
-        return false;
+        return CompositingReasonSquashingSparsityExceeded;
 
     // FIXME: this is not efficient, since it walks up the tree . We should store these values on the CompositingInputsCache.
     ASSERT(squashingState.hasMostRecentMapping);
@@ -136,29 +136,30 @@ bool CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner(const RenderLa
 
     if (layer->renderer()->clippingContainer() != squashingLayer.renderer()->clippingContainer()) {
         if (!squashingLayer.compositedLayerMapping()->containingSquashedLayer(layer->renderer()->clippingContainer()))
-            return false;
+            return CompositingReasonSquashingClippingContainerMismatch;
     }
 
-    // Composited descendants need to be clipped by a child contianment graphics layer, which would not be available if the layer is
+    // Composited descendants need to be clipped by a child containment graphics layer, which would not be available if the layer is
+    // squashed (and therefore has no CLM nor a child containment graphics layer).
     if (m_compositor->clipsCompositingDescendants(layer))
-        return false;
+        return CompositingReasonSquashedLayerClipsCompositingDescendants;
 
     if (layer->scrollsWithRespectTo(&squashingLayer))
-        return false;
+        return CompositingReasonScrollsWithRespectToSquashingLayer;
 
     const RenderLayer::CompositingInputs& compositingInputs = layer->compositingInputs();
     const RenderLayer::CompositingInputs& squashingLayerCompositingInputs = squashingLayer.compositingInputs();
 
     if (compositingInputs.opacityAncestor != squashingLayerCompositingInputs.opacityAncestor)
-        return false;
+        return CompositingReasonSquashingOpacityAncestorMismatch;
 
     if (compositingInputs.transformAncestor != squashingLayerCompositingInputs.transformAncestor)
-        return false;
+        return CompositingReasonSquashingTransformAncestorMismatch;
 
     if (compositingInputs.filterAncestor != squashingLayerCompositingInputs.filterAncestor)
-        return false;
+        return CompositingReasonSquashingFilterAncestorMismatch;
 
-    return true;
+    return CompositingReasonNone;
 }
 
 bool CompositingLayerAssigner::updateSquashingAssignment(RenderLayer* layer, SquashingState& squashingState, const CompositingStateTransitionType compositedLayerUpdate,
@@ -222,8 +223,11 @@ void CompositingLayerAssigner::assignLayersToBackingsForReflectionLayer(RenderLa
 
 void CompositingLayerAssigner::assignLayersToBackingsInternal(RenderLayer* layer, SquashingState& squashingState, bool& layersChanged, Vector<RenderLayer*>& layersNeedingRepaint)
 {
-    if (m_layerSquashingEnabled && requiresSquashing(layer->compositingReasons()) && !canSquashIntoCurrentSquashingOwner(layer, squashingState))
-        layer->setCompositingReasons(layer->compositingReasons() | CompositingReasonNoSquashingTargetFound);
+    if (m_layerSquashingEnabled && requiresSquashing(layer->compositingReasons())) {
+        CompositingReasons reasonsPreventingSquashing = getReasonsPreventingSquashing(layer, squashingState);
+        if (reasonsPreventingSquashing)
+            layer->setCompositingReasons(layer->compositingReasons() | reasonsPreventingSquashing);
+    }
 
     CompositingStateTransitionType compositedLayerUpdate = computeCompositedLayerUpdate(layer);
 

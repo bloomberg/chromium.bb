@@ -79,7 +79,7 @@ private:
 
     void assignLayersToBackingsInternal(RenderLayer*, SquashingState&, bool& layersChanged, Vector<RenderLayer*>& layersNeedingRepaint);
     void assignLayersToBackingsForReflectionLayer(RenderLayer* reflectionLayer, bool& layersChanged, Vector<RenderLayer*>& layersNeedingRepaint);
-    bool canSquashIntoCurrentSquashingOwner(const RenderLayer*, const SquashingState&);
+    CompositingReasons getReasonsPreventingSquashing(const RenderLayer*, const SquashingState&);
     bool squashingWouldExceedSparsityTolerance(const RenderLayer* candidate, const SquashingState&);
     bool updateSquashingAssignment(RenderLayer*, SquashingState&, CompositingStateTransitionType, Vector<RenderLayer*>& layersNeedingRepaint);
     bool needsOwnBacking(const RenderLayer*) const;
