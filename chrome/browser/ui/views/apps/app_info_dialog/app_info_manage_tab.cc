@@ -4,11 +4,9 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_manage_tab.h"
 
-AppInfoManageTab::AppInfoManageTab(gfx::NativeWindow parent_window,
-                                   Profile* profile,
-                                   const extensions::Extension* app,
-                                   const base::Closure& close_callback)
-    : AppInfoTab(parent_window, profile, app, close_callback) {
+AppInfoManageTab::AppInfoManageTab(Profile* profile,
+                                   const extensions::Extension* app)
+    : AppInfoTab(profile, app) {
   // TODO(sashab): Populate this tab.
 }
 

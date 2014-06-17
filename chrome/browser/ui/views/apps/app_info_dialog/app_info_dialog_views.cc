@@ -4,72 +4,56 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_views.h"
 
-#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_manage_tab.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/views/app_list/app_list_dialog_contents_view.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_tab.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_tab.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
+#include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
-#include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/layout_manager.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/layout_constants.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_delegate.h"
 
-void ShowAppInfoDialog(gfx::NativeWindow parent_window,
-                       const gfx::Rect& dialog_widget_bounds,
+void ShowAppInfoDialog(AppListControllerDelegate* app_list_controller_delegate,
                        Profile* profile,
-                       const extensions::Extension* app,
-                       const base::Closure& close_callback) {
-  views::Widget* dialog = CreateBrowserModalDialogViews(
-      new AppInfoDialog(parent_window, profile, app, close_callback),
-      parent_window);
-  dialog->SetBounds(dialog_widget_bounds);
-  dialog->Show();
+                       const extensions::Extension* app) {
+  gfx::NativeWindow app_list_window =
+      app_list_controller_delegate->GetAppListWindow();
+  DCHECK(app_list_window);
+  gfx::Rect app_list_bounds = app_list_controller_delegate->GetAppListBounds();
+
+  views::View* app_info_view = new AppInfoDialog(profile, app);
+  views::Widget* dialog_widget = AppListDialogContentsView::CreateDialogWidget(
+      app_list_window,
+      app_list_bounds,
+      new AppListDialogContentsView(app_list_controller_delegate,
+                                    app_info_view));
+  dialog_widget->Show();
 }
 
-AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
-                             Profile* profile,
-                             const extensions::Extension* app,
-                             const base::Closure& close_callback)
-    : parent_window_(parent_window),
-      profile_(profile),
-      app_(app),
-      close_callback_(close_callback) {
-  SetLayoutManager(new views::FillLayout());
+AppInfoDialog::AppInfoDialog(Profile* profile,
+                             const extensions::Extension* app) {
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
+                                        views::kButtonHEdgeMarginNew,
+                                        views::kButtonVEdgeMarginNew,
+                                        0));
 
   views::TabbedPane* tabbed_pane = new views::TabbedPane();
   AddChildView(tabbed_pane);
 
   tabbed_pane->AddTab(
       l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SUMMARY_TAB_TITLE),
-      new AppInfoSummaryTab(parent_window_, profile_, app_, close_callback_));
+      new AppInfoSummaryTab(profile, app));
   tabbed_pane->AddTab(
       l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_PERMISSIONS_TAB_TITLE),
-      new AppInfoPermissionsTab(
-          parent_window_, profile_, app_, close_callback_));
+      new AppInfoPermissionsTab(profile, app));
   // TODO(sashab): Add the manage tab back once there is content for it.
 }
 
 AppInfoDialog::~AppInfoDialog() {}
-
-bool AppInfoDialog::Cancel() {
-  if (!close_callback_.is_null())
-    close_callback_.Run();
-  return true;
-}
-
-gfx::Size AppInfoDialog::GetPreferredSize() const {
-  // These numbers represent the size of the view, not the total size of the
-  // dialog. The actual dialog will be slightly taller (have a larger height)
-  // than what is specified here.
-  static const int kDialogWidth = 360;
-  static const int kDialogHeight = 360;
-  return gfx::Size(kDialogWidth, kDialogHeight);
-}
-
-int AppInfoDialog::GetDialogButtons() const { return ui::DIALOG_BUTTON_NONE; }
-
-ui::ModalType AppInfoDialog::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
-}

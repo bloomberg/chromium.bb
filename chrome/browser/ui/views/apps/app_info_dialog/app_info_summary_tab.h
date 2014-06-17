@@ -8,11 +8,8 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_tab.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "ui/base/models/combobox_model.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
-#include "ui/views/controls/link_listener.h"
 
 class Profile;
 
@@ -42,10 +39,7 @@ class AppInfoSummaryTab
       public views::ButtonListener,
       public extensions::ExtensionUninstallDialog::Delegate {
  public:
-  AppInfoSummaryTab(gfx::NativeWindow parent_window,
-                    Profile* profile,
-                    const extensions::Extension* app,
-                    const base::Closure& close_callback);
+  AppInfoSummaryTab(Profile* profile, const extensions::Extension* app);
 
   virtual ~AppInfoSummaryTab();
 

@@ -101,27 +101,11 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
       extension_id);
   DCHECK(extension);
 
-  gfx::NativeWindow parent_window = GetAppListWindow();
-  if (!parent_window)
-    return;
-
-  // For the centered app list, inset the dialog further so it appears as a
-  // vertical column in the center of the app list.
-  const int kAppListDialogHorizontalBorderInsets =
-      app_list::switches::IsCenteredAppListEnabled() ? 110 : 10;
-  const int kAppListDialogVerticalBorderInsets = 10;
-
-  gfx::Rect dialog_bounds = GetAppListBounds();
-  dialog_bounds.Inset(kAppListDialogHorizontalBorderInsets,
-                      kAppListDialogVerticalBorderInsets);
-
   OnShowChildDialog();
-  ShowAppInfoDialog(parent_window,
-                    dialog_bounds,
-                    profile,
-                    extension,
-                    base::Bind(&AppListControllerDelegate::OnCloseChildDialog,
-                               base::Unretained(this)));
+
+  // Since the AppListControllerDelegate is a leaky singleton, passing its
+  // raw pointer around is OK.
+  ShowAppInfoDialog(this, profile, extension);
 }
 
 void AppListControllerDelegate::UninstallApp(Profile* profile,

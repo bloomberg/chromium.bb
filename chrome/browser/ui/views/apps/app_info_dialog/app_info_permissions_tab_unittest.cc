@@ -33,7 +33,7 @@ using testing::Eq;
 
 class AppInfoPermissionsTabTest : public testing::Test {
  protected:
-  AppInfoPermissionsTabTest() : window_(NULL) {};
+  AppInfoPermissionsTabTest() {}
 
   scoped_ptr<base::DictionaryValue> ValidAppManifest() {
     return extensions::DictionaryBuilder()
@@ -49,7 +49,6 @@ class AppInfoPermissionsTabTest : public testing::Test {
         .Build();
   }
 
-  gfx::NativeWindow window_;
   TestingProfile profile_;
 
   // We need the UI thread in order to construct UI elements in the view.
@@ -63,7 +62,7 @@ TEST_F(AppInfoPermissionsTabTest, NoPermissionsObtainedCorrectly) {
           .SetManifest(ValidAppManifest())
           .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsTab tab(window_, &profile_, app, base::Closure());
+  AppInfoPermissionsTab tab(&profile_, app);
 
   EXPECT_TRUE(tab.GetRequiredPermissions()->IsEmpty());
   EXPECT_TRUE(tab.GetRequiredPermissionMessages().empty());
@@ -93,7 +92,7 @@ TEST_F(AppInfoPermissionsTabTest, RequiredPermissionsObtainedCorrectly) {
                                              // a message
           .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsTab tab(window_, &profile_, app, base::Closure());
+  AppInfoPermissionsTab tab(&profile_, app);
 
   const extensions::PermissionSet* required_permissions =
       tab.GetRequiredPermissions();
@@ -131,7 +130,7 @@ TEST_F(AppInfoPermissionsTabTest, OptionalPermissionsObtainedCorrectly) {
                                             // a message
           .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsTab tab(window_, &profile_, app, base::Closure());
+  AppInfoPermissionsTab tab(&profile_, app);
 
   const extensions::PermissionSet* optional_permissions =
       tab.GetOptionalPermissions();
@@ -164,7 +163,7 @@ TEST_F(AppInfoPermissionsTabTest, RetainedFilePermissionsObtainedCorrectly) {
                       extensions::ListBuilder().Append("retainEntries")))))
           .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsTab tab(window_, &profile_, app, base::Closure());
+  AppInfoPermissionsTab tab(&profile_, app);
 
   apps::SavedFilesService* files_service =
       apps::SavedFilesService::Get(&profile_);

@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/logging.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 
-void ShowAppInfoDialog(gfx::NativeWindow parent_window,
-                       const gfx::Rect& dialog_widget_bounds,
+void ShowAppInfoDialog(AppListControllerDelegate* app_list_controller_delegate,
                        Profile* profile,
-                       const extensions::Extension* app,
-                       const base::Closure& close_callback) {
+                       const extensions::Extension* app) {
   NOTIMPLEMENTED();
 }

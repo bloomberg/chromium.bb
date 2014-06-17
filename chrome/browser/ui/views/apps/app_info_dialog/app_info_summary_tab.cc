@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -29,6 +28,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
@@ -38,6 +38,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -461,11 +462,9 @@ base::string16 LaunchOptionsComboboxModel::GetItemAt(int index) {
   return launch_type_messages_[index];
 }
 
-AppInfoSummaryTab::AppInfoSummaryTab(gfx::NativeWindow parent_window,
-                                     Profile* profile,
-                                     const extensions::Extension* app,
-                                     const base::Closure& close_callback)
-    : AppInfoTab(parent_window, profile, app, close_callback),
+AppInfoSummaryTab::AppInfoSummaryTab(Profile* profile,
+                                     const extensions::Extension* app)
+    : AppInfoTab(profile, app),
       app_summary_panel_(NULL),
       app_description_label_(NULL),
       create_shortcuts_button_(NULL),
@@ -631,8 +630,10 @@ bool AppInfoSummaryTab::CanUninstallApp() const {
 
 void AppInfoSummaryTab::CreateShortcuts() {
   DCHECK(CanCreateShortcuts());
-  chrome::ShowCreateChromeAppShortcutsDialog(
-      parent_window_, profile_, app_, base::Callback<void(bool)>());
+  chrome::ShowCreateChromeAppShortcutsDialog(GetWidget()->GetNativeWindow(),
+                                             profile_,
+                                             app_,
+                                             base::Callback<void(bool)>());
 }
 
 bool AppInfoSummaryTab::CanCreateShortcuts() const {

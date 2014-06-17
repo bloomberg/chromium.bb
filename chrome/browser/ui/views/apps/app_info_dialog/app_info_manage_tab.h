@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_APPS_APP_INFO_DIALOG_APP_INFO_MANAGE_TAB_H_
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_tab.h"
-#include "ui/gfx/native_widget_types.h"
 
 class Profile;
 
@@ -18,11 +17,7 @@ class Extension;
 // over the app's state and usage.
 class AppInfoManageTab : public AppInfoTab {
  public:
-  AppInfoManageTab(gfx::NativeWindow parent_window,
-                   Profile* profile,
-                   const extensions::Extension* app,
-                   const base::Closure& close_callback);
-
+  AppInfoManageTab(Profile* profile, const extensions::Extension* app);
   virtual ~AppInfoManageTab();
 
  private:

@@ -1459,6 +1459,8 @@
         'browser/ui/views/accessibility/accessibility_event_router_views.h',
         'browser/ui/views/accessibility/invert_bubble_view.cc',
         'browser/ui/views/accessibility/invert_bubble_view.h',
+        'browser/ui/views/app_list/app_list_dialog_contents_view.cc',
+        'browser/ui/views/app_list/app_list_dialog_contents_view.h',
         'browser/ui/views/app_list/linux/app_list_linux.cc',
         'browser/ui/views/app_list/linux/app_list_linux.h',
         'browser/ui/views/app_list/linux/app_list_service_linux.cc',

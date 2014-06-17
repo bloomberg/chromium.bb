@@ -18,10 +18,6 @@ namespace base {
 class FilePath;
 }
 
-namespace test {
-class AppListViewTestApi;
-}
-
 namespace app_list {
 class ApplicationDragAndDropHost;
 class AppListMainView;
@@ -78,10 +74,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   void UpdateBounds();
 
-  // Enables/disables a semi-transparent overlay over the app list (good for
-  // hiding the app list when a modal dialog is being shown).
-  void SetAppListOverlayVisible(bool visible);
-
   // Returns true if the app list should be centered and in landscape mode.
   bool ShouldCenterWindow() const;
 
@@ -117,8 +109,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   PaginationModel* GetAppsPaginationModel();
 
  private:
-  friend class ::test::AppListViewTestApi;
-
   void InitAsBubbleInternal(gfx::NativeView parent,
                             int initial_apps_page,
                             views::BubbleBorder::Arrow arrow,
@@ -156,10 +146,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   AppListMainView* app_list_main_view_;
   SpeechView* speech_view_;
-
-  // A semi-transparent white overlay that covers the app list while dialogs are
-  // open.
-  views::View* overlay_view_;
 
   ObserverList<AppListViewObserver> observers_;
   scoped_ptr<HideViewAnimationObserver> animation_observer_;

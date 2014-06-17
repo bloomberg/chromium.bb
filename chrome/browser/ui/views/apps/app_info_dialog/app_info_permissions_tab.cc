@@ -312,13 +312,9 @@ void ExpandableContainerView::ToggleDetailLevel() {
 
 }  // namespace
 
-AppInfoPermissionsTab::AppInfoPermissionsTab(
-    gfx::NativeWindow parent_window,
-    Profile* profile,
-    const extensions::Extension* app,
-    const base::Closure& close_callback)
-    : AppInfoTab(parent_window, profile, app, close_callback),
-      revoke_file_permissions_button_(NULL) {
+AppInfoPermissionsTab::AppInfoPermissionsTab(Profile* profile,
+                                             const extensions::Extension* app)
+    : AppInfoTab(profile, app), revoke_file_permissions_button_(NULL) {
   this->SetLayoutManager(new views::FillLayout);
 
   // Create a scrollview and add it to the tab.

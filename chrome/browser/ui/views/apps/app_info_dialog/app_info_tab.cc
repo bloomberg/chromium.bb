@@ -4,13 +4,8 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_tab.h"
 
-AppInfoTab::AppInfoTab(gfx::NativeWindow parent_window,
-                       Profile* profile,
-                       const extensions::Extension* app,
-                       const base::Closure& close_callback)
-    : parent_window_(parent_window),
-      profile_(profile),
-      app_(app),
-      close_callback_(close_callback) {}
+AppInfoTab::AppInfoTab(Profile* profile, const extensions::Extension* app)
+    : profile_(profile), app_(app) {
+}
 
 AppInfoTab::~AppInfoTab() {}

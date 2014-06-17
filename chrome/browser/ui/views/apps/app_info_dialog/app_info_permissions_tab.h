@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_APPS_APP_INFO_DIALOG_APP_INFO_PERMISSIONS_TAB_H_
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_tab.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
 
 class Profile;
@@ -27,10 +26,7 @@ class ScrollView;
 // control over the app's various permissions.
 class AppInfoPermissionsTab : public AppInfoTab, views::ButtonListener {
  public:
-  AppInfoPermissionsTab(gfx::NativeWindow parent_window,
-                        Profile* profile,
-                        const extensions::Extension* app,
-                        const base::Closure& close_callback);
+  AppInfoPermissionsTab(Profile* profile, const extensions::Extension* app);
 
   virtual ~AppInfoPermissionsTab();
 
