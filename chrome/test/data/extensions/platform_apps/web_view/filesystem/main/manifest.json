@@ -3,8 +3,7 @@
   "description": "Loads a guest which requests filesystem",
   "version": "1",
   "permissions": [
-    "webview",
-    "unlimitedStorage"
+    "webview"
   ],
   "webview": {
     "partitions": [
