@@ -6,17 +6,17 @@ html.col-resize * {
   cursor: col-resize !important;
 }
 
-.table[hasElementFocus] > list > [lead] {
+.table[has-element-focus] > list > [lead] {
   border-color: hsl(214, 91%, 65%);
   z-index: 2;
 }
 
-.table[hasElementFocus] > list > [selected] {
+.table[has-element-focus] > list > [selected] {
   background-color: hsl(214,91%,89%);
   border-color: hsl(214, 91%, 65%);
 }
 
-.table[hasElementFocus] > list > [lead][selected],
+.table[has-element-focus] > list > [lead][selected],
 list > [selected]:hover {
   background-color: hsl(214, 91%, 87%);
   border-color: hsl(214, 91%, 65%);

@@ -213,38 +213,38 @@ list:not([disabled]) > :hover {
  * these rules can be simplified (since they wont need to override other rules).
  */
 
-list:not([hasElementFocus]) > [selected],
-list:not([hasElementFocus]) > [lead][selected] {
+list:not([has-element-focus]) > [selected],
+list:not([has-element-focus]) > [lead][selected] {
   background-color: #d0d0d0;
   background-image: none;
 }
 
-list[hasElementFocus] > [selected],
-list[hasElementFocus] > [lead][selected],
-list:not([hasElementFocus]) > [selected]:hover,
-list:not([hasElementFocus]) > [selected][lead]:hover {
+list[has-element-focus] > [selected],
+list[has-element-focus] > [lead][selected],
+list:not([has-element-focus]) > [selected]:hover,
+list:not([has-element-focus]) > [selected][lead]:hover {
   background-color: rgb(187, 206, 233);
   background-image: none;
 }
 
-list[hasElementFocus] > [lead],
-list[hasElementFocus] > [lead][selected] {
+.settings-list[has-element-focus] > [lead],
+.settings-list[has-element-focus] > [lead][selected] {
   border-bottom: 1px solid rgb(120, 146, 180);
   border-top: 1px solid rgb(120, 146, 180);
 }
 
-list[hasElementFocus] > [lead]:nth-child(2),
-list[hasElementFocus] > [lead][selected]:nth-child(2) {
+.settings-list[has-element-focus] > [lead]:nth-child(2),
+.settings-list[has-element-focus] > [lead][selected]:nth-child(2) {
   border-top: 1px solid transparent;
 }
 
-list[hasElementFocus] > [lead]:nth-last-child(2),
-list[hasElementFocus] > [lead][selected]:nth-last-child(2) {
+.settings-list[has-element-focus] > [lead]:nth-last-child(2),
+.settings-list[has-element-focus] > [lead][selected]:nth-last-child(2) {
   border-bottom: 1px solid transparent;
 }
 
-list[disabled] > [lead][selected],
-list[disabled]:focus > [lead][selected] {
+.settings-list[disabled] > [lead][selected],
+.settings-list[disabled]:focus > [lead][selected] {
   border: none;
 }
 
@@ -287,7 +287,8 @@ list .row-delete-button {
 }
 
 list > *:not(:hover):not([selected]):not([lead]) .row-delete-button,
-list:not([hasElementFocus]) > *:not(:hover):not([selected]) .row-delete-button,
+list:not([has-element-focus]) > *:not(:hover):not([selected])
+    .row-delete-button,
 list[disabled] .row-delete-button,
 list .row-delete-button[disabled] {
   opacity: 0;
@@ -334,10 +335,9 @@ list > :not([editing]) [displaymode='edit'] {
 list > [editing] [displaymode='static'] {
   /* Don't use display:none because we need to keep an element focusable. */
   left: 0;
-  opacity: 0;
   pointer-events: none;
   position: absolute;
-  top: -10em;
+  visibility: hidden;
 }
 
 list > [editing] input:invalid {
@@ -404,7 +404,7 @@ html[enable-background-mode=false] #background-mode-section {
 /* UI Controls */
 
 /* LIST */
-list[hasElementFocus] {
+.settings-list[has-element-focus] {
 <if expr="not is_macosx">
   outline: 1px solid rgba(0, 128, 256, 0.5);
   outline-offset: -2px;
@@ -436,8 +436,8 @@ list.autocomplete-suggestions > div {
   height: auto;
 }
 
-list.autocomplete-suggestions:not([hasElementFocus]) > [selected],
-list.autocomplete-suggestions:not([hasElementFocus]) > [lead][selected] {
+list.autocomplete-suggestions:not([has-element-focus]) > [selected],
+list.autocomplete-suggestions:not([has-element-focus]) > [lead][selected] {
   background-color: rgb(187, 206, 233);
 }
 

@@ -40,14 +40,16 @@
   -webkit-padding-end: 4px;
   -webkit-padding-start: 4px;
   border: 1px solid darkGray;
+  /* Border should go "inside" the height. */
+  box-sizing: border-box;
   /* Set the line-height and min-height to match the height of an input element,
    * so that even empty cells renderer with the correct height. */
-  line-height: 1.75em;
-  min-height: 1.75em;
+  height: 2em;
+  line-height: 2em;
 }
 
 :-webkit-any(#autofill-edit-credit-card-overlay, #autofill-edit-address-overlay)
-    .settings-row div + :-webkit-any(input, select, textarea) {
+    .settings-row label > :-webkit-any(input, select, textarea, list) {
   margin-top: 4px;
 }
 

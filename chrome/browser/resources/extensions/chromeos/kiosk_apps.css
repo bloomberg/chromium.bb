@@ -36,7 +36,8 @@ list .row-delete-button {
 }
 
 list > *:not(:hover):not([selected]):not([lead]) .row-delete-button,
-list:not([hasElementFocus]) > *:not(:hover):not([selected]) .row-delete-button,
+list:not([has-element-focus]) > *:not(:hover):not([selected])
+    .row-delete-button,
 list[disabled] .row-delete-button,
 list .row-delete-button[disabled] {
   opacity: 0;
