@@ -6334,32 +6334,6 @@
    fun:_ZN5blink17WebLocalFrameImpl16createChildFrameERKN7WebCore16FrameLoadRequestEPNS1_21HTMLFrameOwnerElementE
 }
 {
-   bug_385386a
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7WebCore13MediaQueryExp13createIfValidERKN3WTF6StringEPNS_18CSSParserValueListE
-   fun:_ZN7WebCore14MediaQueryData13addExpressionEv
-   fun:_ZN7WebCore16MediaQueryParser14readFeatureEndENS_19MediaQueryTokenTypeERKNS_15MediaQueryTokenE
-   fun:_ZN7WebCore16MediaQueryParser12processTokenERKNS_15MediaQueryTokenE
-   fun:_ZN7WebCore16MediaQueryParser9parseImplEPNS_15MediaQueryTokenES2_
-   fun:_ZN7WebCore16MediaQueryParser18parseMediaQuerySetERKN3WTF6StringE
-   fun:_ZN7WebCore13MediaQuerySet6createERKN3WTF6StringE
-}
-{
-   bug_385386b
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7WebCore13MediaQueryExp13createIfValidERKN3WTF6StringEPNS_18CSSParserValueListE
-   fun:_ZN7WebCore14BisonCSSParser27createFloatingMediaQueryExpERKN3WTF12AtomicStringEPNS_18CSSParserValueListE
-   fun:_Z10cssyyparsePN7WebCore14BisonCSSParserE
-   fun:_ZN7WebCore14BisonCSSParser10parseSheetEPNS_18StyleSheetContentsERKN3WTF6StringERKNS3_12TextPositionEPNS_17CSSParserObserverEb
-   fun:_ZN7WebCore18StyleSheetContents21parseStringAtPositionERKN3WTF6StringERKNS1_12TextPositionEb
-   fun:_ZN7WebCore11StyleEngine10parseSheetEPNS_7ElementERKN3WTF6StringENS3_12TextPositionEb
-   fun:_ZN7WebCore11StyleEngine11createSheetEPNS_7ElementERKN3WTF6StringENS3_12TextPositionEb
-   fun:_ZN7WebCore12StyleElement11createSheetEPNS_7ElementERKN3WTF6StringE
-   fun:_ZN7WebCore12StyleElement7processEPNS_7ElementE
-}
-{
    bug_385396a
    Memcheck:Uninitialized
    ...
