@@ -66,8 +66,8 @@ private:
     }
 
     bool m_highAccuracy;
-    int m_maximumAge;
-    int m_timeout;
+    unsigned m_maximumAge;
+    unsigned m_timeout;
 };
 
 } // namespace WebCore
