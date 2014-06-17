@@ -54,6 +54,9 @@ const char kDisableNewKioskUI[] = "disable-new-kiosk-ui";
 const char kDisableQuickofficeComponentApp[] =
     "disable-quickoffice-component-app";
 
+// Disables rollback option on reset screen.
+const char kDisableRollbackOption[] = "disable-rollback-option";
+
 // Disables volume adjust sound.
 const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 
@@ -96,9 +99,6 @@ const char kEnableTouchpadThreeFingerClick[]
 // Enable Kiosk mode for ChromeOS. Note this switch refers to retail mode rather
 // than the kiosk app mode.
 const char kEnableKioskMode[] = "enable-kiosk-mode";
-
-// Enables rollback option for resetting ChromeOS.
-const char kEnableRollbackOption[] = "enable-rollback-option";
 
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[] = "enable-request-tablet-site";
