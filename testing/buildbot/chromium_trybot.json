@@ -5,10 +5,19 @@
   "gtest_tests": [
     "accessibility_unittests",
     "app_list_unittests",
-    "base_unittests",
+    {
+      "test": "base_unittests",
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      }
+    },
     {
       "test": "browser_tests",
-      "exclude_builders": ["tryserver.chromium:win_chromium_x64_rel"]
+      "exclude_builders": ["tryserver.chromium:win_chromium_x64_rel"],
+      "swarming": {
+        "can_use_on_swarming_builders": true,
+        "shards": 5
+      }
     },
     "cacheinvalidation_unittests",
     "cast_unittests",
@@ -42,7 +51,11 @@
     "gpu_unittests",
     {
       "test": "interactive_ui_tests",
-      "exclude_builders": ["tryserver.chromium:win_chromium_x64_rel"]
+      "exclude_builders": ["tryserver.chromium:win_chromium_x64_rel"],
+      "swarming": {
+        "can_use_on_swarming_builders": true,
+        "shards": 3
+      }
     },
     {
       "test": "installer_util_unittests",
@@ -69,7 +82,12 @@
       "test": "nacl_loader_unittests",
       "platforms": ["linux"]
     },
-    "net_unittests",
+    {
+      "test": "net_unittests",
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      }
+    },
     "ppapi_unittests",
     "printing_unittests",
     "remoting_unittests",
@@ -89,7 +107,13 @@
     "sync_integration_tests",
     "sync_unit_tests",
     "ui_unittests",
-    "unit_tests",
+    {
+      "test": "unit_tests",
+      "swarming": {
+        "can_use_on_swarming_builders": true,
+        "shards": 2
+      }
+    },
     "url_unittests",
     "webkit_compositor_bindings_unittests",
     {
