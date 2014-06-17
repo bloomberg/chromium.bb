@@ -124,6 +124,8 @@ void NetworkStateHandler::SetTechnologyEnabled(
       it != technologies.end(); ++it) {
     std::string* technology = *it;
     DCHECK(technology);
+    if (!shill_property_handler_->IsTechnologyAvailable(*technology))
+      continue;
     NET_LOG_USER("SetTechnologyEnabled",
                  base::StringPrintf("%s:%d", technology->c_str(), enabled));
     shill_property_handler_->SetTechnologyEnabled(
