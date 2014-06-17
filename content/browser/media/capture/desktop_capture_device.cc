@@ -134,6 +134,10 @@ class DesktopCaptureDevice::Core
   // True when waiting for |desktop_capturer_| to capture current frame.
   bool capture_in_progress_;
 
+  // True if the first capture call has returned. Used to log the first capture
+  // result.
+  bool first_capture_returned_;
+
   // The type of the capturer.
   DesktopMediaID::Type capturer_type_;
 
@@ -152,6 +156,7 @@ DesktopCaptureDevice::Core::Core(
       desktop_capturer_(capturer.Pass()),
       capture_task_posted_(false),
       capture_in_progress_(false),
+      first_capture_returned_(false),
       capturer_type_(type) {
   DCHECK(!task_runner_.get() || !thread_.get());
   if (thread_.get())
@@ -194,9 +199,8 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(capture_in_progress_);
 
-  static bool first_call = true;
-  if (first_call) {
-    first_call = false;
+  if (!first_capture_returned_) {
+    first_capture_returned_ = true;
     if (capturer_type_ == DesktopMediaID::TYPE_SCREEN) {
       IncrementDesktopCaptureCounter(frame ? FIRST_SCREEN_CAPTURE_SUCCEEDED
                                            : FIRST_SCREEN_CAPTURE_FAILED);
