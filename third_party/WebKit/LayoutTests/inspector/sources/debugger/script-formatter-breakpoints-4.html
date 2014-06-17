@@ -2,7 +2,7 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
-<script src="../../../inspector/sources/debugger/resources/unformatted4.js"></script>
+<script src="resources/unformatted4.js"></script>
 
 <script>
 
@@ -11,15 +11,6 @@ function f1()
     var a=0;var b=1;var c=3;var d=4;var e=5;
     var f=0;
     return 0;
-}
-
-function onload()
-{
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.showWebInspector();
-    }
-    runTest();
 }
 
 var test = function()
@@ -51,7 +42,7 @@ var test = function()
             {
                 InspectorTest.addResult("Removing breakpoint.");
                 var formattedSourceFrame = panel.visibleView;
-                InspectorTest.removeBreakpoint(formattedSourceFrame, 19);
+                InspectorTest.removeBreakpoint(formattedSourceFrame, 16);
                 InspectorTest.addResult("Unformatting.");
                 scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
                 var breakpoints = WebInspector.breakpointManager._storage._setting.get();
@@ -64,7 +55,7 @@ var test = function()
 }
 </script>
 </head>
-<body onload="onload()">
+<body onload="runTest()">
 <p>Tests the script formatting is working fine with breakpoints.
 </p>
 </body>

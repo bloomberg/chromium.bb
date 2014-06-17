@@ -1,23 +1,19 @@
 <html>
 <head>
 <title>Change inspected iframe's "src" attribute.</title>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/resources-test.js"></script>
+<script src="../inspector-test.js"></script>
+<script src="../resources-test.js"></script>
 <script>
-function onload()
-{
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.showWebInspector();
-    }
-    runTest();
-}
-
 function test()
 {
-    WebInspector.inspectorView.showPanel("sources");
-    WebInspector.inspectorView.showViewInDrawer("search");
-    InspectorTest.runAfterResourcesAreFinished(["search.html", "search.js", "search.css"], step2)
+    InspectorTest.reloadPage(step1);
+
+    function step1()
+    {
+        WebInspector.inspectorView.showPanel("sources");
+        WebInspector.inspectorView.showViewInDrawer("search");
+        InspectorTest.runAfterResourcesAreFinished(["search.html", "search.js", "search.css"], step2)
+    }
 
     function runSearchAndDumpResults(searchConfig, callback)
     {
@@ -135,8 +131,8 @@ function test()
 
 </script>
 </head>
-<body onload="onload()">
-<iframe src="../../inspector/search/resources/search.html">
+<body onload="runTest()">
+<iframe src="resources/search.html">
 <p>Tests that ScriptSearchScope performs search across all sources correctly.</p>
 See <a href="https://bugs.webkit.org/show_bug.cgi?id=41350">bug 41350</a>.
 </body>

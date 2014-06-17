@@ -51,7 +51,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/VoidCallback.h"
 #include "core/html/imports/HTMLImport.h"
 #include "core/html/imports/HTMLImportLoader.h"
 #include "core/html/imports/HTMLImportsController.h"
@@ -63,7 +62,6 @@
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorOverlay.h"
-#include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/CookieJar.h"
@@ -115,32 +113,6 @@ KURL urlWithoutFragment(const KURL& url)
     return result;
 }
 
-}
-
-class InspectorPageAgent::GetResourceContentLoadListener FINAL : public VoidCallback {
-public:
-    GetResourceContentLoadListener(InspectorPageAgent*, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback>);
-    virtual void handleEvent() OVERRIDE;
-private:
-    InspectorPageAgent* m_pageAgent;
-    String m_frameId;
-    String m_url;
-    RefPtr<GetResourceContentCallback> m_callback;
-};
-
-InspectorPageAgent::GetResourceContentLoadListener::GetResourceContentLoadListener(InspectorPageAgent* pageAgent, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback> callback)
-    : m_pageAgent(pageAgent)
-    , m_frameId(frameId)
-    , m_url(url)
-    , m_callback(callback)
-{
-}
-
-void InspectorPageAgent::GetResourceContentLoadListener::handleEvent()
-{
-    if (!m_callback->isActive())
-        return;
-    m_pageAgent->getResourceContentAfterResourcesContentLoaded(m_frameId, m_url, m_callback);
 }
 
 static bool decodeBuffer(const char* buffer, unsigned size, const String& textEncodingName, String* result)
@@ -281,26 +253,13 @@ void InspectorPageAgent::resourceContent(ErrorString* errorString, LocalFrame* f
     DocumentLoader* loader = assertDocumentLoader(errorString, frame);
     if (!loader)
         return;
-
     if (!cachedResourceContent(cachedResource(frame, url), result, base64Encoded))
         *errorString = "No resource with given URL found";
 }
 
 Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
 {
-    Document* document = frame->document();
-    if (!document)
-        return 0;
-    Resource* cachedResource = document->fetcher()->cachedResource(url);
-    if (!cachedResource) {
-        Vector<Document*> allImports = InspectorPageAgent::importsForFrame(frame);
-        for (Vector<Document*>::const_iterator it = allImports.begin(); it != allImports.end(); ++it) {
-            Document* import = *it;
-            cachedResource = import->fetcher()->cachedResource(url);
-            if (cachedResource)
-                break;
-        }
-    }
+    Resource* cachedResource = frame->document()->fetcher()->cachedResource(url);
     if (!cachedResource)
         cachedResource = memoryCache()->resourceForURL(url);
     return cachedResource;
@@ -444,7 +403,6 @@ void InspectorPageAgent::enable(ErrorString*)
     m_enabled = true;
     m_state->setBoolean(PageAgentState::pageAgentEnabled, true);
     m_instrumentingAgents->setInspectorPageAgent(this);
-    m_inspectorResourceContentLoader = adoptPtr(new InspectorResourceContentLoader(m_page));
 }
 
 void InspectorPageAgent::disable(ErrorString*)
@@ -454,7 +412,6 @@ void InspectorPageAgent::disable(ErrorString*)
     m_state->remove(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
     m_overlay->hide();
     m_instrumentingAgents->setInspectorPageAgent(0);
-    m_inspectorResourceContentLoader.clear();
     m_deviceMetricsOverridden = false;
 
     setShowPaintRects(0, false);
@@ -554,7 +511,7 @@ static PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie> > buildArrayForC
     return cookies;
 }
 
-static void cachedResourcesForDocument(Document* document, Vector<Resource*>& result, bool skipXHRs)
+static void cachedResourcesForDocument(Document* document, Vector<Resource*>& result)
 {
     const ResourceFetcher::DocumentResourceMap& allResources = document->fetcher()->allResources();
     ResourceFetcher::DocumentResourceMap::const_iterator end = allResources.end();
@@ -572,10 +529,6 @@ static void cachedResourcesForDocument(Document* document, Vector<Resource*>& re
             if (toFontResource(cachedResource)->stillNeedsLoad())
                 continue;
             break;
-        case Resource::Raw:
-            if (skipXHRs)
-                continue;
-            break;
         default:
             // All other Resource types download immediately.
             break;
@@ -585,8 +538,7 @@ static void cachedResourcesForDocument(Document* document, Vector<Resource*>& re
     }
 }
 
-// static
-Vector<Document*> InspectorPageAgent::importsForFrame(LocalFrame* frame)
+static Vector<Document*> importsForFrame(LocalFrame* frame)
 {
     Vector<Document*> result;
     Document* rootDocument = frame->document();
@@ -601,15 +553,15 @@ Vector<Document*> InspectorPageAgent::importsForFrame(LocalFrame* frame)
     return result;
 }
 
-static Vector<Resource*> cachedResourcesForFrame(LocalFrame* frame, bool skipXHRs)
+static Vector<Resource*> cachedResourcesForFrame(LocalFrame* frame)
 {
     Vector<Resource*> result;
     Document* rootDocument = frame->document();
-    Vector<Document*> loaders = InspectorPageAgent::importsForFrame(frame);
+    Vector<Document*> loaders = importsForFrame(frame);
 
-    cachedResourcesForDocument(rootDocument, result, skipXHRs);
+    cachedResourcesForDocument(rootDocument, result);
     for (size_t i = 0; i < loaders.size(); ++i)
-        cachedResourcesForDocument(loaders[i], result, skipXHRs);
+        cachedResourcesForDocument(loaders[i], result);
 
     return result;
 }
@@ -620,7 +572,7 @@ static Vector<KURL> allResourcesURLsForFrame(LocalFrame* frame)
 
     result.append(urlWithoutFragment(frame->loader().documentLoader()->url()));
 
-    Vector<Resource*> allResources = cachedResourcesForFrame(frame, false);
+    Vector<Resource*> allResources = cachedResourcesForFrame(frame);
     for (Vector<Resource*>::const_iterator it = allResources.begin(); it != allResources.end(); ++it)
         result.append(urlWithoutFragment((*it)->url()));
 
@@ -664,31 +616,12 @@ void InspectorPageAgent::getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page:
     object = buildObjectForFrameTree(m_page->deprecatedLocalMainFrame());
 }
 
-void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback> callback)
+void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, String* content, bool* base64Encoded)
 {
-    ErrorString errorString;
-    LocalFrame* frame = assertFrame(&errorString, frameId);
-    if (!frame) {
-        callback->sendFailure(errorString);
+    LocalFrame* frame = assertFrame(errorString, frameId);
+    if (!frame)
         return;
-    }
-    String content;
-    bool base64Encoded;
-    resourceContent(&errorString, frame, KURL(ParsedURLString, url), &content, &base64Encoded);
-    if (!errorString.isEmpty()) {
-        callback->sendFailure(errorString);
-        return;
-    }
-    callback->sendSuccess(content, base64Encoded);
-}
-
-void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback> callback)
-{
-    if (!m_inspectorResourceContentLoader) {
-        callback->sendFailure("Agent was not enabled before sending content requests.");
-        return;
-    }
-    m_inspectorResourceContentLoader->addListener(adoptPtr(new GetResourceContentLoadListener(this, frameId, url, callback)));
+    resourceContent(errorString, frame, KURL(ParsedURLString, url), content, base64Encoded);
 }
 
 static bool textContentForResource(Resource* cachedResource, String* result)
@@ -924,7 +857,7 @@ void InspectorPageAgent::loadEventFired(LocalFrame* frame)
 
 void InspectorPageAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)
 {
-    // FIXME: If "frame" is always guaranteed to be in the same Page as loader->frame()
+    // FIXME: If "frame" is always guarenteed to be in the same Page as loader->frame()
     // then all we need to check here is loader->frame()->isMainFrame()
     // and we don't need "frame" at all.
     if (loader->frame() == m_page->mainFrame()) {
@@ -932,8 +865,6 @@ void InspectorPageAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)
         m_scriptPreprocessorSource = m_pendingScriptPreprocessor;
         m_pendingScriptToEvaluateOnLoadOnce = String();
         m_pendingScriptPreprocessor = String();
-        if (m_inspectorResourceContentLoader)
-            m_inspectorResourceContentLoader->stop();
     }
     m_frontend->frameNavigated(buildObjectForFrame(loader->frame()));
 }
@@ -1171,7 +1102,7 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
          .setFrame(frameObject)
          .setResources(subresources);
 
-    Vector<Resource*> allResources = cachedResourcesForFrame(frame, true);
+    Vector<Resource*> allResources = cachedResourcesForFrame(frame);
     for (Vector<Resource*>::const_iterator it = allResources.begin(); it != allResources.end(); ++it) {
         Resource* cachedResource = *it;
 
@@ -1186,7 +1117,7 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
         subresources->addItem(resourceObject);
     }
 
-    Vector<Document*> allImports = InspectorPageAgent::importsForFrame(frame);
+    Vector<Document*> allImports = importsForFrame(frame);
     for (Vector<Document*>::const_iterator it = allImports.begin(); it != allImports.end(); ++it) {
         Document* import = *it;
         RefPtr<TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = TypeBuilder::Page::FrameResourceTree::Resources::create()

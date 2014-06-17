@@ -1,4 +1,5 @@
 
+Page reloaded.
 
 Running: testIgnoreCase
 Search result #1: uiSourceCode.uri = http://127.0.0.1:8000/inspector/search/resources/search.css

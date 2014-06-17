@@ -28,6 +28,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/CSSPropertyNames.h"
+#include "core/FetchInitiatorTypeNames.h"
 #include "core/InspectorTypeBuilder.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
@@ -48,13 +49,15 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
+#include "core/fetch/CSSStyleSheetResource.h"
+#include "core/fetch/ResourceClient.h"
+#include "core/fetch/ResourceFetcher.h"
+#include "core/fetch/StyleSheetResourceClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLHeadElement.h"
-#include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorHistory.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
-#include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
@@ -125,30 +128,45 @@ public:
     }
 };
 
-class InspectorCSSAgent::InspectorResourceContentLoaderCallback FINAL : public VoidCallback {
+class InspectorCSSAgent::EnableResourceClient FINAL : public StyleSheetResourceClient {
 public:
-    InspectorResourceContentLoaderCallback(InspectorCSSAgent*, PassRefPtr<EnableCallback>);
-    virtual void handleEvent() OVERRIDE;
+    EnableResourceClient(InspectorCSSAgent*, const Vector<InspectorStyleSheet*>&, PassRefPtr<EnableCallback>);
+
+    virtual void setCSSStyleSheet(const String&, const KURL&, const String&, const CSSStyleSheetResource*) OVERRIDE;
 
 private:
-    InspectorCSSAgent* m_cssAgent;
     RefPtr<EnableCallback> m_callback;
+    InspectorCSSAgent* m_cssAgent;
+    int m_pendingResources;
+    Vector<InspectorStyleSheet*> m_styleSheets;
 };
 
-InspectorCSSAgent::InspectorResourceContentLoaderCallback::InspectorResourceContentLoaderCallback(InspectorCSSAgent* cssAgent, PassRefPtr<EnableCallback> callback)
-    : m_cssAgent(cssAgent)
-    , m_callback(callback)
+InspectorCSSAgent::EnableResourceClient::EnableResourceClient(InspectorCSSAgent* cssAgent, const Vector<InspectorStyleSheet*>& styleSheets, PassRefPtr<EnableCallback> callback)
+    : m_callback(callback)
+    , m_cssAgent(cssAgent)
+    , m_pendingResources(styleSheets.size())
+    , m_styleSheets(styleSheets)
 {
+    for (size_t i = 0; i < styleSheets.size(); ++i) {
+        InspectorStyleSheet* styleSheet = styleSheets.at(i);
+        Document* document = styleSheet->ownerDocument();
+        FetchRequest request(ResourceRequest(styleSheet->finalURL()), FetchInitiatorTypeNames::internal);
+        ResourcePtr<Resource> resource = document->fetcher()->fetchCSSStyleSheet(request);
+        resource->addClient(this);
+    }
 }
 
-void InspectorCSSAgent::InspectorResourceContentLoaderCallback::handleEvent()
+void InspectorCSSAgent::EnableResourceClient::setCSSStyleSheet(const String&, const KURL& url, const String&, const CSSStyleSheetResource* resource)
 {
-    // enable always succeeds.
-    if (!m_callback->isActive())
+    const_cast<CSSStyleSheetResource*>(resource)->removeClient(this);
+    --m_pendingResources;
+    if (m_pendingResources)
         return;
 
-    m_cssAgent->wasEnabled();
-    m_callback->sendSuccess();
+    // enable always succeeds.
+    if (m_callback->isActive())
+        m_cssAgent->wasEnabled(m_callback.release());
+    delete this;
 }
 
 class InspectorCSSAgent::SetStyleSheetTextAction FINAL : public InspectorCSSAgent::StyleSheetAction {
@@ -383,7 +401,7 @@ void InspectorCSSAgent::discardAgent()
 void InspectorCSSAgent::restore()
 {
     if (m_state->getBoolean(CSSAgentState::cssAgentEnabled))
-        wasEnabled();
+        wasEnabled(nullptr);
 }
 
 void InspectorCSSAgent::flushPendingFrontendMessages()
@@ -416,15 +434,39 @@ void InspectorCSSAgent::resetNonPersistentData()
 void InspectorCSSAgent::enable(ErrorString*, PassRefPtr<EnableCallback> prpCallback)
 {
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, true);
-    if (!m_pageAgent->resourceContentLoader()) {
-        wasEnabled();
-        prpCallback->sendSuccess();
+
+    Vector<InspectorStyleSheet*> styleSheets;
+    collectAllStyleSheets(styleSheets);
+
+    // Re-issue stylesheet requets for resources that are no longer in memory cache.
+    Vector<InspectorStyleSheet*> styleSheetsToFetch;
+    HashSet<String> urlsToFetch;
+    for (size_t i = 0; i < styleSheets.size(); ++i) {
+        InspectorStyleSheet* styleSheet = styleSheets.at(i);
+        String url = styleSheet->finalURL();
+        if (urlsToFetch.contains(url))
+            continue;
+        CSSStyleSheet* pageStyleSheet = styleSheet->pageStyleSheet();
+        if (pageStyleSheet->isInline() || !pageStyleSheet->contents()->loadCompleted())
+            continue;
+        Document* document = styleSheet->ownerDocument();
+        if (!document)
+            continue;
+        Resource* cachedResource = document->fetcher()->cachedResource(document->completeURL(url));
+        if (cachedResource)
+            continue;
+        urlsToFetch.add(styleSheet->finalURL());
+        styleSheetsToFetch.append(styleSheet);
+    }
+
+    if (styleSheetsToFetch.isEmpty()) {
+        wasEnabled(prpCallback);
         return;
     }
-    m_pageAgent->resourceContentLoader()->addListener(adoptPtr(new InspectorCSSAgent::InspectorResourceContentLoaderCallback(this, prpCallback)));
+    new EnableResourceClient(this, styleSheetsToFetch, prpCallback);
 }
 
-void InspectorCSSAgent::wasEnabled()
+void InspectorCSSAgent::wasEnabled(PassRefPtr<EnableCallback> callback)
 {
     if (!m_state->getBoolean(CSSAgentState::cssAgentEnabled)) {
         // We were disabled while fetching resources.
@@ -435,6 +477,9 @@ void InspectorCSSAgent::wasEnabled()
     Vector<Document*> documents = m_domAgent->documents();
     for (Vector<Document*>::iterator it = documents.begin(); it != documents.end(); ++it)
         updateActiveStyleSheets(*it, InitialFrontendLoad);
+
+    if (callback)
+        callback->sendSuccess();
 }
 
 void InspectorCSSAgent::disable(ErrorString*)
@@ -501,7 +546,7 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
 void InspectorCSSAgent::updateActiveStyleSheets(Document* document, StyleSheetsUpdateType styleSheetsUpdateType)
 {
     Vector<CSSStyleSheet*> newSheetsVector;
-    InspectorCSSAgent::collectAllDocumentStyleSheets(document, newSheetsVector);
+    collectAllDocumentStyleSheets(document, newSheetsVector);
     setActiveStyleSheets(document, newSheetsVector, styleSheetsUpdateType);
 }
 
@@ -1123,17 +1168,25 @@ Element* InspectorCSSAgent::elementForId(ErrorString* errorString, int nodeId)
     return toElement(node);
 }
 
-// static
+void InspectorCSSAgent::collectAllStyleSheets(Vector<InspectorStyleSheet*>& result)
+{
+    Vector<CSSStyleSheet*> cssStyleSheets;
+    Vector<Document*> documents = m_domAgent->documents();
+    for (Vector<Document*>::iterator it = documents.begin(); it != documents.end(); ++it)
+        collectAllDocumentStyleSheets(*it, cssStyleSheets);
+    for (Vector<CSSStyleSheet*>::iterator it = cssStyleSheets.begin(); it != cssStyleSheets.end(); ++it)
+        result.append(bindStyleSheet(*it));
+}
+
 void InspectorCSSAgent::collectAllDocumentStyleSheets(Document* document, Vector<CSSStyleSheet*>& result)
 {
     const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > activeStyleSheets = document->styleEngine()->activeStyleSheetsForInspector();
     for (WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >::const_iterator it = activeStyleSheets.begin(); it != activeStyleSheets.end(); ++it) {
         CSSStyleSheet* styleSheet = it->get();
-        InspectorCSSAgent::collectStyleSheets(styleSheet, result);
+        collectStyleSheets(styleSheet, result);
     }
 }
 
-// static
 void InspectorCSSAgent::collectStyleSheets(CSSStyleSheet* styleSheet, Vector<CSSStyleSheet*>& result)
 {
     result.append(styleSheet);
@@ -1142,7 +1195,7 @@ void InspectorCSSAgent::collectStyleSheets(CSSStyleSheet* styleSheet, Vector<CSS
         if (rule->type() == CSSRule::IMPORT_RULE) {
             CSSStyleSheet* importedStyleSheet = toCSSImportRule(rule)->styleSheet();
             if (importedStyleSheet)
-                InspectorCSSAgent::collectStyleSheets(importedStyleSheet, result);
+                collectStyleSheets(importedStyleSheet, result);
         }
     }
 }
