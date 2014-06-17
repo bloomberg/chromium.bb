@@ -277,8 +277,12 @@ void DecryptingVideoDecoder::DeliverFrame(
 
   if (status == Decryptor::kNeedMoreData) {
     DVLOG(2) << "DeliverFrame() - kNeedMoreData";
-    state_ = scoped_pending_buffer_to_decode->end_of_stream() ? kDecodeFinished
-                                                              : kIdle;
+    if (scoped_pending_buffer_to_decode->end_of_stream()) {
+      state_ = kDecodeFinished;
+      output_cb_.Run(media::VideoFrame::CreateEOSFrame());
+    } else {
+      state_ = kIdle;
+    }
     base::ResetAndReturn(&decode_cb_).Run(kOk);
     return;
   }

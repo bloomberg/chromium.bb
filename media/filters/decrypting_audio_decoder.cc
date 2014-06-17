@@ -297,11 +297,9 @@ void DecryptingAudioDecoder::DeliverFrame(
     if (scoped_pending_buffer_to_decode->end_of_stream()) {
       state_ = kDecodeFinished;
       output_cb_.Run(AudioBuffer::CreateEOSBuffer());
-      base::ResetAndReturn(&decode_cb_).Run(kOk);
-      return;
+    } else {
+      state_ = kIdle;
     }
-
-    state_ = kIdle;
     base::ResetAndReturn(&decode_cb_).Run(kOk);
     return;
   }
@@ -309,6 +307,14 @@ void DecryptingAudioDecoder::DeliverFrame(
   DCHECK_EQ(status, Decryptor::kSuccess);
   DCHECK(!frames.empty());
   ProcessDecodedFrames(frames);
+
+  if (scoped_pending_buffer_to_decode->end_of_stream()) {
+    // Set |pending_buffer_to_decode_| back as we need to keep flushing the
+    // decryptor until kNeedMoreData is returned.
+    pending_buffer_to_decode_ = scoped_pending_buffer_to_decode;
+    DecodePendingBuffer();
+    return;
+  }
 
   state_ = kIdle;
   base::ResetAndReturn(&decode_cb_).Run(kOk);
