@@ -91,9 +91,9 @@ define i32 @_start() {
       if self.platform == 'arm':
         expected_triple_cpu = ['-mtriple=arm.*', '-mcpu=cortex.*']
       elif self.platform == 'x86-32':
-        expected_triple_cpu = ['-mtriple=i686.*', '-mcpu=pentium.*']
+        expected_triple_cpu = ['-mtriple=i686.*', '-mcpu=pentium4m.*']
       elif self.platform == 'x86-64':
-        expected_triple_cpu = ['-mtriple=x86_64.*', '-mcpu=core.*']
+        expected_triple_cpu = ['-mtriple=x86_64.*', '-mcpu=x86-64.*']
       elif self.platform == 'mips':
         expected_triple_cpu = ['-mtriple=mips.*', '-mcpu=mips32.*']
       else:
