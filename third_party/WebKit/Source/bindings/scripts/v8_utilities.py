@@ -155,6 +155,23 @@ def activity_logging_world_list(member, access_type=''):
     return set([''])  # At minimum, include isolated worlds.
 
 
+# [ActivityLogging]
+def activity_logging_world_check(member):
+    """Returns if an isolated world check is required when generating activity
+    logging code.
+
+    The check is required when there is no per-world binding code and logging is
+    required only for isolated world.
+    """
+    extended_attributes = member.extended_attributes
+    if 'LogActivity' not in extended_attributes:
+        return False
+    if ('PerWorldBindings' not in extended_attributes and
+        'LogAllWorlds' not in extended_attributes):
+        return True
+    return False
+
+
 # [CallWith]
 CALL_WITH_ARGUMENTS = {
     'ScriptState': 'scriptState',

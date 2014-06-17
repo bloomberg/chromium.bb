@@ -31,12 +31,12 @@
     attribute long height;
     [Reflect] attribute long hspace;
     [Reflect] attribute boolean isMap;
-    [Reflect, URL, PerWorldBindings, LogActivity=SetterOnly] attribute DOMString longDesc;
-    [Reflect, URL, PerWorldBindings, LogActivity=SetterOnly] attribute DOMString lowsrc;
+    [Reflect, URL, LogActivity=SetterOnly] attribute DOMString longDesc;
+    [Reflect, URL, LogActivity=SetterOnly] attribute DOMString lowsrc;
     [Reflect] attribute DOMString name;
     readonly attribute long naturalHeight;
     readonly attribute long naturalWidth;
-    [Reflect, URL, PerWorldBindings, LogActivity=SetterOnly] attribute DOMString src;
+    [Reflect, URL, LogActivity=SetterOnly] attribute DOMString src;
     [Reflect] attribute DOMString srcset;
     [Reflect, RuntimeEnabled=PictureSizes] attribute DOMString sizes;
     [RuntimeEnabled=PictureSizes] readonly attribute DOMString currentSrc;

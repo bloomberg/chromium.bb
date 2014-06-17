@@ -43,9 +43,9 @@
     [Replaceable, MeasureAs=BarPropScrollbars] readonly attribute BarProp scrollbars;
     [Replaceable, MeasureAs=BarPropStatusbar] readonly attribute BarProp statusbar;
     [Replaceable, MeasureAs=BarPropToolbar] readonly attribute BarProp toolbar;
-    [PerWorldBindings, LogActivity=GetterOnly] readonly attribute Navigator navigator;
+    [LogActivity=GetterOnly] readonly attribute Navigator navigator;
     [Replaceable] readonly attribute Navigator clientInformation;
-    [DoNotCheckSecurity, Unforgeable, Replaceable, PerWorldBindings, LogActivity, PutForwards=href] readonly attribute Location location;
+    [DoNotCheckSecurity, Unforgeable, Replaceable, LogActivity, PutForwards=href] readonly attribute Location location;
     [Custom, MeasureAs=WindowEvent, NotEnumerable] attribute Event event;
 
     Selection getSelection();
@@ -153,10 +153,10 @@
     [MeasureAs=PrefixedConvertPointFromNodeToPage] WebKitPoint webkitConvertPointFromNodeToPage([Default=Undefined] optional Node node,
                                                                                                 [Default=Undefined] optional WebKitPoint p);
 
-    [RuntimeEnabled=ApplicationCache, PerWorldBindings, LogActivity=GetterOnly] readonly attribute ApplicationCache applicationCache;
+    [RuntimeEnabled=ApplicationCache, LogActivity=GetterOnly] readonly attribute ApplicationCache applicationCache;
 
-    [RuntimeEnabled=SessionStorage, PerWorldBindings, LogActivity=GetterOnly, RaisesException=Getter] readonly attribute Storage sessionStorage;
-    [RuntimeEnabled=LocalStorage, PerWorldBindings, LogActivity=GetterOnly, RaisesException=Getter] readonly attribute Storage localStorage;
+    [RuntimeEnabled=SessionStorage, LogActivity=GetterOnly, RaisesException=Getter] readonly attribute Storage sessionStorage;
+    [RuntimeEnabled=LocalStorage, LogActivity=GetterOnly, RaisesException=Getter] readonly attribute Storage localStorage;
 
     // This is the interface orientation in degrees. Some examples are:
     //  0 is straight up; -90 is when the device is rotated 90 clockwise;
@@ -193,7 +193,7 @@
     attribute EventHandler onwebkitanimationiteration;
     attribute EventHandler onwebkitanimationstart;
     attribute EventHandler onwebkittransitionend;
-    [PerWorldBindings, LogActivity=SetterOnly] attribute EventHandler onwheel;
+    [LogActivity=SetterOnly] attribute EventHandler onwheel;
 
     [MeasureAs=WindowCaptureEvents] void captureEvents();
     [MeasureAs=WindowReleaseEvents] void releaseEvents();

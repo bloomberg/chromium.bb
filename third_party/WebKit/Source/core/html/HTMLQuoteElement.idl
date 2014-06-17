@@ -18,5 +18,5 @@
  */
 
 interface HTMLQuoteElement : HTMLElement {
-    [Reflect, URL, PerWorldBindings, LogActivity=SetterOnly] attribute DOMString cite;
+    [Reflect, URL, LogActivity=SetterOnly] attribute DOMString cite;
 };

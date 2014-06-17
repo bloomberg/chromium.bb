@@ -29,12 +29,12 @@
     NoInterfaceObject,
 ] interface Geolocation {
     // FIXME: should be: PositionOptions options: need PositionOptions.idl and dictionary http:/crbug.com/321462
-    [Custom, PerWorldBindings, LogActivity] void getCurrentPosition(PositionCallback successCallback,
+    [Custom, LogActivity] void getCurrentPosition(PositionCallback successCallback,
                                      optional PositionErrorCallback errorCallback,
                                      optional object options);
 
     // FIXME: should be: PositionOptions options: need PositionOptions.idl and dictionary http:/crbug.com/321462
-    [Custom, PerWorldBindings, LogActivity] long watchPosition(PositionCallback successCallback,
+    [Custom, LogActivity] long watchPosition(PositionCallback successCallback,
                                 optional PositionErrorCallback errorCallback,
                                 optional object options);
 

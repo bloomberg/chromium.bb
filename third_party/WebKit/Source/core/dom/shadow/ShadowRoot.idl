@@ -29,7 +29,7 @@ interface ShadowRoot : DocumentFragment {
 
     [ImplementedAs=olderShadowRootForBindings] readonly attribute ShadowRoot olderShadowRoot;
 
-    [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, LogActivity=SetterOnly, RaisesException=Setter] attribute DOMString innerHTML;
+    [TreatNullAs=NullString, CustomElementCallbacks, LogActivity=SetterOnly, RaisesException=Setter] attribute DOMString innerHTML;
 
     [RaisesException] Node cloneNode([Default=Undefined] optional boolean deep);
     Selection getSelection();

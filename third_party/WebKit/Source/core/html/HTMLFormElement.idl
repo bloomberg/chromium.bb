@@ -22,7 +22,7 @@
     OverrideBuiltins,
 ] interface HTMLFormElement : HTMLElement {
     [Reflect=accept_charset] attribute DOMString acceptCharset;
-    [Reflect, URL, PerWorldBindings, LogActivity=SetterOnly] attribute DOMString action;
+    [Reflect, URL, LogActivity=SetterOnly] attribute DOMString action;
     [Reflect, ReflectOnly="on"|"off", ReflectMissing="on", ReflectInvalid="on"] attribute DOMString autocomplete;
     [CustomElementCallbacks] attribute DOMString enctype;
     [CustomElementCallbacks] attribute DOMString encoding;
@@ -36,7 +36,7 @@
     [ImplementedAs=item] getter Element (unsigned long index);
     [NotEnumerable] getter (RadioNodeList or Element) (DOMString name);
 
-    [ImplementedAs=submitFromJavaScript, PerWorldBindings, LogActivity] void submit();
+    [ImplementedAs=submitFromJavaScript, LogActivity] void submit();
     [CustomElementCallbacks] void reset();
     boolean checkValidity();
 

@@ -28,8 +28,8 @@
     // We support multiple DOMString arguments to match FF / IE, e.g.:
     // document.write("a", "b", "c") --> document.write("abc")
     // document.write() --> document.write("")
-    [CallWith=ActiveWindow, PerWorldBindings, LogActivity, CustomElementCallbacks, RaisesException] void write(DOMString... text);
-    [CallWith=ActiveWindow, PerWorldBindings, LogActivity, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
+    [CallWith=ActiveWindow,LogActivity, CustomElementCallbacks, RaisesException] void write(DOMString... text);
+    [CallWith=ActiveWindow, LogActivity, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
 
     // Extensions
 

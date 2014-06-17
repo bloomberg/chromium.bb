@@ -403,8 +403,13 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
     {% endif %}
     {% endif %}{# not method.overloads #}
     {% if world_suffix in method.activity_logging_world_list %}
-    V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    V8PerContextData* contextData = scriptState->perContextData();
+    {% if method.activity_logging_world_check %}
+    if (scriptState->world().isIsolatedWorld() && contextData && contextData->activityLogger())
+    {% else %}
     if (contextData && contextData->activityLogger()) {
+    {% endif %}
         {# FIXME: replace toVectorOfArguments with toNativeArguments(info, 0)
            and delete toVectorOfArguments #}
         Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
