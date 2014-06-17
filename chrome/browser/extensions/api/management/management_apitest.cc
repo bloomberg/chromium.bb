@@ -141,26 +141,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, CreateAppShortcut) {
                                   "createAppShortcut.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
-                       CreateAppShortcutNotInStable) {
-  extensions::ScopedCurrentChannel channel(
-      chrome::VersionInfo::CHANNEL_STABLE);
-  ASSERT_TRUE(RunExtensionSubtest("management/test",
-                                  "createAppShortcutNotInStable.html"));
-}
-
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, GenerateAppForLink) {
   LoadExtensions();
   ASSERT_TRUE(RunExtensionSubtest("management/test",
                                   "generateAppForLink.html"));
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
-                       GenerateAppForLinkNotInStable) {
-  extensions::ScopedCurrentChannel channel(
-      chrome::VersionInfo::CHANNEL_STABLE);
-  ASSERT_TRUE(RunExtensionSubtest("management/test",
-                                  "generateAppForLinkNotInStable.html"));
 }
 
 // Fails often on Windows dbg bots. http://crbug.com/177163
@@ -346,15 +330,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchType) {
   LoadNamedExtension(basedir, "packaged_app");
 
   ASSERT_TRUE(RunExtensionSubtest("management/test", "launchType.html"));
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchTypeNotInStable) {
-  LoadExtensions();
-
-  extensions::ScopedCurrentChannel channel(
-      chrome::VersionInfo::CHANNEL_STABLE);
-  ASSERT_TRUE(RunExtensionSubtest("management/test",
-                                  "launchTypeNotInStable.html"));
 }
 
 class ExtensionManagementApiStreamlinedAppsTest

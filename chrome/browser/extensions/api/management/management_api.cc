@@ -36,7 +36,6 @@
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/api/management.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/notification_details.h"
@@ -239,8 +238,7 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   }
 
   info->launch_type = management::LAUNCH_TYPE_NONE;
-  if (GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
-      extension.is_app()) {
+  if (extension.is_app()) {
     LaunchType launch_type;
     if (extension.is_platform_app()) {
       launch_type = LAUNCH_TYPE_WINDOW;

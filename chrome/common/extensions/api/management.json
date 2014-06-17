@@ -20,7 +20,7 @@
         "id": "LaunchType",
         "type": "string",
         "enum": ["OPEN_AS_REGULAR_TAB", "OPEN_AS_PINNED_TAB", "OPEN_AS_WINDOW", "OPEN_FULL_SCREEN"],
-        "description": "These are all possible app launch types. Note: This enum is only available to Chrome users on the dev channel."
+        "description": "These are all possible app launch types."
       },
       {
         "id": "ExtensionInfo",
@@ -122,12 +122,12 @@
             "enum": ["admin", "development", "normal", "sideload", "other"]
           },
           "launchType": {
-            "description": "The app launch type (only present for apps). Note: This property is only available to Chrome users on the dev channel.",
+            "description": "The app launch type (only present for apps). This property is new in Chrome 37.",
             "$ref": "LaunchType",
             "optional": true
           },
           "availableLaunchTypes": {
-            "description": "The currently available launch types (only present for apps). Note: This property is only available to Chrome users on the dev channel.",
+            "description": "The currently available launch types (only present for apps). This property is new in Chrome 37.",
             "type": "array",
             "optional": true,
             "items": {
@@ -319,7 +319,7 @@
       },
       {
         "name": "createAppShortcut",
-        "description": "Display options to create shortcuts for an app. On Mac, only packaged app shortcuts can be created. Note: This function is only available to Chrome users on the dev channel.",
+        "description": "Display options to create shortcuts for an app. On Mac, only packaged app shortcuts can be created. This function is new in Chrome 37.",
         "parameters": [
           {
             "name": "id",
@@ -336,7 +336,7 @@
       },
       {
         "name": "setLaunchType",
-        "description": "Set the launch type of an app. Note: This function is only available to Chrome users on the dev channel.",
+        "description": "Set the launch type of an app. This function is new in Chrome 37.",
         "parameters": [
           {
             "name": "id",
@@ -358,7 +358,7 @@
       },
       {
         "name": "generateAppForLink",
-        "description": "Generate an app for a URL. Returns the generated bookmark app. Note: This function is only available to Chrome users on the dev channel.",
+        "description": "Generate an app for a URL. Returns the generated bookmark app. This function is new in Chrome 37.",
         "parameters": [
           {
             "name": "url",
