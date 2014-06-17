@@ -11,11 +11,7 @@ class ExtensionPointerLockTest : public extensions::PlatformAppBrowserTest {
  public:
   bool RunExtensionPointerLockTest(const char* app_path) {
     ExtensionTestMessageListener launched_listener("Launched", true);
-    LoadAndLaunchPlatformApp(app_path);
-    if (!launched_listener.WaitUntilSatisfied()) {
-      message_ = "Did not get the 'Launched' message.";
-      return false;
-    }
+    LoadAndLaunchPlatformApp(app_path, &launched_listener);
 
     ResultCatcher catcher;
 

@@ -199,7 +199,7 @@ const char kTestFilePath[] = "platform_apps/launch_files/test.txt";
 // LauncherPlatformAppBrowserTest relies on this behaviour, but is only run for
 // ash, so we test that it works here.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, CreateAndCloseAppWindow) {
-  const Extension* extension = LoadAndLaunchPlatformApp("minimal");
+  const Extension* extension = LoadAndLaunchPlatformApp("minimal", "Launched");
   AppWindow* window = CreateAppWindow(extension);
   CloseAppWindow(window);
 }
@@ -217,10 +217,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisabledWindowProperties) {
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
-  LoadAndLaunchPlatformApp("minimal");
-
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("minimal", "Launched");
 
   // The empty app doesn't add any context menu items, so its menu should
   // only include the developer tools.
@@ -239,12 +236,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
-  LoadAndLaunchPlatformApp("context_menu");
-
-  // Wait for the extension to tell us it's initialized its context menus and
-  // launched a window.
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("context_menu", "Launched");
 
   // The context_menu app has two context menu items. These, along with a
   // separator and the developer tools, is all that should be in the menu.
@@ -293,12 +285,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, InstalledAppWithContextMenu) {
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuTextField) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
-  LoadAndLaunchPlatformApp("context_menu");
-
-  // Wait for the extension to tell us it's initialized its context menus and
-  // launched a window.
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("context_menu", "Launched");
 
   // The context_menu app has one context menu item. This, along with a
   // separator and the developer tools, is all that should be in the menu.
@@ -321,12 +308,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuTextField) {
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuSelection) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
-  LoadAndLaunchPlatformApp("context_menu");
-
-  // Wait for the extension to tell us it's initialized its context menus and
-  // launched a window.
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("context_menu", "Launched");
 
   // The context_menu app has one context menu item. This, along with a
   // separator and the developer tools, is all that should be in the menu.
@@ -349,12 +331,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuSelection) {
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
-  LoadAndLaunchPlatformApp("context_menu_click");
-
-  // Wait for the extension to tell us it's initialized its context menus and
-  // launched a window.
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("context_menu_click", "Launched");
 
   // Test that the menu item shows up
   WebContents* web_contents = GetFirstAppWindowWebContents();
@@ -470,9 +447,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ExtensionWindowingApis) {
   ASSERT_EQ(0U, GetAppWindowCount());
 
   // Launch a platform app that shows a window.
-  ExtensionTestMessageListener launched_listener("Launched", false);
-  LoadAndLaunchPlatformApp("minimal");
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("minimal", "Launched");
   ASSERT_EQ(1U, GetAppWindowCount());
   int app_window_id = GetFirstAppWindow()->session_id().id();
 
@@ -487,9 +462,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ExtensionWindowingApis) {
   // to get a list of all the app windows, so we can test this.
 
   // Launch another platform app that also shows a window.
-  ExtensionTestMessageListener launched_listener2("Launched", false);
-  LoadAndLaunchPlatformApp("context_menu");
-  ASSERT_TRUE(launched_listener2.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("context_menu", "Launched");
 
   // There are two total app windows, but each app can only see its own.
   ASSERT_EQ(2U, GetAppWindowCount());
@@ -726,7 +699,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenLink) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::Source<content::WebContentsDelegate>(browser()));
-  LoadAndLaunchPlatformApp("open_link");
+  LoadAndLaunchPlatformApp("open_link", "Launched");
   observer.Wait();
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
 }
@@ -748,10 +721,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_AppWindowRestoreState) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        AppWindowAdjustBoundsToBeVisibleOnScreen) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
-
-  const Extension* extension = LoadAndLaunchPlatformApp("minimal");
-  EXPECT_TRUE(launched_listener.WaitUntilSatisfied());
+  const Extension* extension = LoadAndLaunchPlatformApp("minimal", "Launched");
 
   AppWindow* window = CreateAppWindow(extension);
 
@@ -839,10 +809,8 @@ class PlatformAppDevToolsBrowserTest : public PlatformAppBrowserTest {
 void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
     const char* name, int test_flags) {
   using content::DevToolsAgentHost;
-  ExtensionTestMessageListener launched_listener("Launched", false);
-  const Extension* extension = LoadAndLaunchPlatformApp(name);
+  const Extension* extension = LoadAndLaunchPlatformApp(name, "Launched");
   ASSERT_TRUE(extension);
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   AppWindow* window = GetFirstAppWindow();
   ASSERT_TRUE(window);
   ASSERT_EQ(window->window_key().empty(), (test_flags & HAS_ID) == 0);
@@ -916,7 +884,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, MAYBE_ReOpenedWithURL) {
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ConstrainedWindowRequest) {
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
   const Extension* extension =
-      LoadAndLaunchPlatformApp("optional_permission_request");
+      LoadAndLaunchPlatformApp("optional_permission_request", "Launched");
   ASSERT_TRUE(extension) << "Failed to load extension.";
 
   WebContents* web_contents = GetFirstAppWindowWebContents();
@@ -940,9 +908,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ConstrainedWindowRequest) {
 // relaunch it if it was running.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReloadRelaunches) {
   ExtensionTestMessageListener launched_listener("Launched", true);
-  const Extension* extension = LoadAndLaunchPlatformApp("reload");
+  const Extension* extension =
+      LoadAndLaunchPlatformApp("reload", &launched_listener);
   ASSERT_TRUE(extension);
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   ASSERT_TRUE(GetFirstAppWindow());
 
   // Now tell the app to reload itself
@@ -1081,8 +1049,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ComponentAppBackgroundPage) {
 #endif
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_Messaging) {
   ExtensionApiTest::ResultCatcher result_catcher;
-  LoadAndLaunchPlatformApp("messaging/app2");
-  LoadAndLaunchPlatformApp("messaging/app1");
+  LoadAndLaunchPlatformApp("messaging/app2", "Launched");
+  LoadAndLaunchPlatformApp("messaging/app1", "Launched");
   EXPECT_TRUE(result_catcher.GetNextResult());
 }
 
@@ -1095,9 +1063,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_Messaging) {
 #define MAYBE_WebContentsHasFocus DISABLED_WebContentsHasFocus
 #endif
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
-  ExtensionTestMessageListener launched_listener("Launched", true);
-  LoadAndLaunchPlatformApp("minimal");
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("minimal", "Launched");
 
   EXPECT_EQ(1LU, GetAppWindowCount());
   EXPECT_TRUE(GetFirstAppWindow()
@@ -1273,9 +1239,9 @@ IN_PROC_BROWSER_TEST_F(RestartDeviceTest, Restart) {
   ASSERT_EQ(0, num_request_restart_calls());
 
   ExtensionTestMessageListener launched_listener("Launched", true);
-  const Extension* extension = LoadAndLaunchPlatformApp("restart_device");
+  const Extension* extension = LoadAndLaunchPlatformApp("restart_device",
+                                                        &launched_listener);
   ASSERT_TRUE(extension);
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
   launched_listener.Reply("restart");
   ExtensionTestMessageListener restart_requested_listener("restartRequested",
@@ -1297,15 +1263,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReinstallDataCleanup) {
   std::string extension_id;
 
   {
-    ExtensionTestMessageListener launched_listener("Launched", false);
     const Extension* extension =
-        LoadAndLaunchPlatformApp("reinstall_data_cleanup");
+        LoadAndLaunchPlatformApp("reinstall_data_cleanup", "Launched");
     ASSERT_TRUE(extension);
     extension_id = extension->id();
 
     ExtensionApiTest::ResultCatcher result_catcher;
-    ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
-
     EXPECT_TRUE(result_catcher.GetNextResult());
   }
 
@@ -1313,16 +1276,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReinstallDataCleanup) {
   content::RunAllPendingInMessageLoop();
 
   {
-    ExtensionTestMessageListener launched_listener("Launched", false);
     const Extension* extension =
-        LoadAndLaunchPlatformApp("reinstall_data_cleanup");
+        LoadAndLaunchPlatformApp("reinstall_data_cleanup", "Launched");
     ASSERT_TRUE(extension);
     ASSERT_EQ(extension_id, extension->id());
 
     ExtensionApiTest::ResultCatcher result_catcher;
-
-    ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
-
     EXPECT_TRUE(result_catcher.GetNextResult());
   }
 }

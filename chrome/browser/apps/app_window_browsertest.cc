@@ -112,7 +112,7 @@ class AppWindowAPITest : public extensions::PlatformAppBrowserTest {
  private:
   bool BeginAppWindowAPITest(const char* testName) {
     ExtensionTestMessageListener launched_listener("Launched", true);
-    LoadAndLaunchPlatformApp("window_api");
+    LoadAndLaunchPlatformApp("window_api", &launched_listener);
     if (!launched_listener.WaitUntilSatisfied()) {
       message_ = "Did not get the 'Launched' message.";
       return false;

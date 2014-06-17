@@ -399,7 +399,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         tag_url6, content::NotificationService::AllSources());
     ui_test_utils::UrlLoadObserver observer7(
         tag_url7, content::NotificationService::AllSources());
-    LoadAndLaunchPlatformApp("web_view/isolation");
+    LoadAndLaunchPlatformApp("web_view/isolation", "Launched");
     observer1.Wait();
     observer2.Wait();
     observer3.Wait();
@@ -571,12 +571,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
           base::Bind(&WebViewTest::EmptyResponseHandler, kEmptyResponsePath));
     }
 
-    ExtensionTestMessageListener launched_listener("Launched", false);
-    LoadAndLaunchPlatformApp(app_location.c_str());
-    if (!launched_listener.WaitUntilSatisfied()) {
-      LOG(ERROR) << "TEST DID NOT LAUNCH.";
-      return;
-    }
+    LoadAndLaunchPlatformApp(app_location.c_str(), "Launched");
 
     // Flush any pending events to make sure we start with a clean slate.
     content::RunAllPendingInMessageLoop();
@@ -611,18 +606,13 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     ui_test_utils::UrlLoadObserver guest_observer(
         guest_url, content::NotificationService::AllSources());
 
-    ExtensionTestMessageListener guest_loaded_listener("guest-loaded", false);
-    LoadAndLaunchPlatformApp(app_path.c_str());
-    guest_observer.Wait();
+    LoadAndLaunchPlatformApp(app_path.c_str(), "guest-loaded");
 
+    guest_observer.Wait();
     content::Source<content::NavigationController> source =
         guest_observer.source();
     EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->
         IsIsolatedGuest());
-
-    bool satisfied = guest_loaded_listener.WaitUntilSatisfied();
-    if (!satisfied)
-      return NULL;
 
     content::WebContents* guest_web_contents = source->GetWebContents();
     return guest_web_contents;
@@ -635,9 +625,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   // they timeout (mostly on Windows).
   void MediaAccessAPIDenyTestHelper(const std::string& test_name) {
     ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
-    ExtensionTestMessageListener loaded_listener("loaded", false);
-    LoadAndLaunchPlatformApp("web_view/media_access/deny");
-    ASSERT_TRUE(loaded_listener.WaitUntilSatisfied());
+    LoadAndLaunchPlatformApp("web_view/media_access/deny", "loaded");
 
     content::WebContents* embedder_web_contents =
         GetFirstAppWindowWebContents();
@@ -670,8 +658,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     ExtensionTestMessageListener launched_listener("WebViewTest.LAUNCHED",
                                                    false);
     launched_listener.set_failure_message("WebViewTest.FAILURE");
-    LoadAndLaunchPlatformApp(app_path.c_str());
-    ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+    LoadAndLaunchPlatformApp(app_path.c_str(), &launched_listener);
 
     guest_web_contents_ = new_client.WaitForGuestCreated();
     SetBrowserClientForTesting(old_client);
@@ -1102,9 +1089,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
 
   // Launch the app and wait until it's ready to load a test.
-  ExtensionTestMessageListener launched_listener("Launched", false);
-  LoadAndLaunchPlatformApp("web_view/shim");
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("web_view/shim", "Launched");
 
   content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(embedder_web_contents);
@@ -1194,10 +1179,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialTeardown) {
 
   net::HostPortPair host_and_port = https_server.host_port_pair();
 
-  ExtensionTestMessageListener embedder_loaded_listener("EmbedderLoaded",
-                                                        false);
-  LoadAndLaunchPlatformApp("web_view/interstitial_teardown");
-  ASSERT_TRUE(embedder_loaded_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("web_view/interstitial_teardown", "EmbedderLoaded");
 
   GuestContentBrowserClient new_client;
   content::ContentBrowserClient* old_client =
@@ -1703,10 +1685,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_IndexedDBIsolation) {
 #define MAYBE_CloseOnLoadcommit CloseOnLoadcommit
 #endif
 IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_CloseOnLoadcommit) {
-  ExtensionTestMessageListener done_test_listener(
-      "done-close-on-loadcommit", false);
-  LoadAndLaunchPlatformApp("web_view/close_on_loadcommit");
-  ASSERT_TRUE(done_test_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("web_view/close_on_loadcommit",
+                           "done-close-on-loadcommit");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIDeny_TestDeny) {
@@ -1736,9 +1716,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
 
 void WebViewTest::MediaAccessAPIAllowTestHelper(const std::string& test_name) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
-  ExtensionTestMessageListener launched_listener("Launched", false);
-  LoadAndLaunchPlatformApp("web_view/media_access/allow");
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("web_view/media_access/allow", "Launched");
 
   content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(embedder_web_contents);
@@ -1861,10 +1839,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ChromeVoxInjection) {
 #define MAYBE_TearDownTest TearDownTest
 #endif
 IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_TearDownTest) {
-  ExtensionTestMessageListener first_loaded_listener("guest-loaded", false);
   const extensions::Extension* extension =
-      LoadAndLaunchPlatformApp("web_view/teardown");
-  ASSERT_TRUE(first_loaded_listener.WaitUntilSatisfied());
+      LoadAndLaunchPlatformApp("web_view/teardown", "guest-loaded");
   apps::AppWindow* window = NULL;
   if (!GetAppWindowCount())
     window = CreateAppWindow(extension);
@@ -1873,9 +1849,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_TearDownTest) {
   CloseAppWindow(window);
 
   // Load the app again.
-  ExtensionTestMessageListener second_loaded_listener("guest-loaded", false);
-  LoadAndLaunchPlatformApp("web_view/teardown");
-  ASSERT_TRUE(second_loaded_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("web_view/teardown", "guest-loaded");
 }
 
 // In following GeolocationAPIEmbedderHasNoAccess* tests, embedder (i.e. the
@@ -2053,9 +2027,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, WhitelistedContentScript) {
   ASSERT_EQ(extension_id, content_script_whitelisted_extension->id());
 
   // Now load an app with <webview>.
-  ExtensionTestMessageListener done_listener("TEST_PASSED", false);
-  LoadAndLaunchPlatformApp("web_view/content_script_whitelisted");
-  ASSERT_TRUE(done_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("web_view/content_script_whitelisted",
+                           "TEST_PASSED");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, SetPropertyOnDocumentReady) {

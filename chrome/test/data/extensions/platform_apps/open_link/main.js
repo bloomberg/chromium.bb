@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+chrome.test.sendMessage('Launched');
+
 chrome.test.getConfig(function(config) {
   var linkNode = document.getElementById('test-link');
   linkNode.href = 'http://localhost:' + config.testServer.port +

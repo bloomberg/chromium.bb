@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+chrome.test.sendMessage('Launched');
+
 chrome.test.getConfig(function(config) {
   var url = 'http://localhost:' + config.testServer.port +
       '/extensions/platform_apps/web_view/isolation/cookie.html';
@@ -31,5 +33,4 @@ chrome.test.getConfig(function(config) {
       "'></webview>" +
       "<webview id='webview7' partition='persist:2' src='" + url7 +
       "'></webview>";
-  chrome.test.sendMessage('Launched');
 });

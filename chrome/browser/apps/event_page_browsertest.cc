@@ -18,10 +18,8 @@ class AppEventPageTest : public PlatformAppBrowserTest {
  protected:
   void TestUnloadEventPage(const char* app_path) {
     // Load and launch the app.
-    ExtensionTestMessageListener launched_listener("launched", false);
-    const Extension* extension = LoadAndLaunchPlatformApp(app_path);
+    const Extension* extension = LoadAndLaunchPlatformApp(app_path, "launched");
     ASSERT_TRUE(extension);
-    ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
     content::WindowedNotificationObserver event_page_suspended(
         chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,

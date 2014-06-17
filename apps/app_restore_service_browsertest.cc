@@ -125,14 +125,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsSavedToPrefs) {
   FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
       "temp", temp_directory.path());
 
-  ExtensionTestMessageListener file_written_listener("fileWritten", false);
-  ExtensionTestMessageListener access_ok_listener(
-      "restartedFileAccessOK", false);
-
-  const Extension* extension =
-      LoadAndLaunchPlatformApp("file_access_saved_to_prefs_test");
+  const Extension* extension = LoadAndLaunchPlatformApp(
+      "file_access_saved_to_prefs_test", "fileWritten");
   ASSERT_TRUE(extension);
-  file_written_listener.WaitUntilSatisfied();
 
   SavedFilesService* saved_files_service = SavedFilesService::Get(profile());
 
@@ -170,14 +165,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_FileAccessIsRestored) {
   FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
       "temp", temp_directory.path());
 
-  ExtensionTestMessageListener file_written_listener("fileWritten", false);
   ExtensionTestMessageListener access_ok_listener(
       "restartedFileAccessOK", false);
 
   const Extension* extension =
-      LoadAndLaunchPlatformApp("file_access_restored_test");
+      LoadAndLaunchPlatformApp("file_access_restored_test", "fileWritten");
   ASSERT_TRUE(extension);
-  file_written_listener.WaitUntilSatisfied();
 
   ExtensionPrefs* extension_prefs =
       ExtensionPrefs::Get(browser()->profile());

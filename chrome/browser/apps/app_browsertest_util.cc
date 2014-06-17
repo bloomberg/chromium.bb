@@ -62,18 +62,27 @@ AppWindow* PlatformAppBrowserTest::GetFirstAppWindowForBrowser(
 }
 
 const Extension* PlatformAppBrowserTest::LoadAndLaunchPlatformApp(
-    const char* name) {
-  content::WindowedNotificationObserver app_loaded_observer(
-      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      content::NotificationService::AllSources());
-
+    const char* name,
+    ExtensionTestMessageListener* listener) {
+  DCHECK(listener);
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("platform_apps").AppendASCII(name));
   EXPECT_TRUE(extension);
 
   LaunchPlatformApp(extension);
 
-  app_loaded_observer.Wait();
+  EXPECT_TRUE(listener->WaitUntilSatisfied()) << "'" << listener->message()
+                                              << "' message was not receieved";
+
+  return extension;
+}
+
+const Extension* PlatformAppBrowserTest::LoadAndLaunchPlatformApp(
+    const char* name,
+    const std::string& message) {
+  ExtensionTestMessageListener launched_listener(message, false);
+  const Extension* extension =
+      LoadAndLaunchPlatformApp(name, &launched_listener);
 
   return extension;
 }
@@ -226,7 +235,8 @@ apps::AppWindow* PlatformAppBrowserTest::CreateTestAppWindow(
   ExtensionTestMessageListener loaded_listener("window_loaded", false);
 
   // Load and launch the test app.
-  const Extension* extension = LoadAndLaunchPlatformApp(kAppWindowTestApp);
+  const Extension* extension =
+      LoadAndLaunchPlatformApp(kAppWindowTestApp, &launched_listener);
   EXPECT_TRUE(extension);
   EXPECT_TRUE(launched_listener.WaitUntilSatisfied());
 

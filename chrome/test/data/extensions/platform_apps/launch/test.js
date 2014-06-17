@@ -3,5 +3,6 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onLaunched.addListener(function() {
+  chrome.test.sendMessage('Launched');
   chrome.test.notifyPass();
 });

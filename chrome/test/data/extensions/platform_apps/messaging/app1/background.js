@@ -26,6 +26,8 @@ function testConversation(port) {
   port.postMessage('message_1');
 }
 
+chrome.test.sendMessage('Launched');
+
 chrome.test.runTests([
 
   function connect() {

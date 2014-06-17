@@ -37,11 +37,7 @@ class AppWindowInteractiveTest : public extensions::PlatformAppBrowserTest {
  public:
   bool RunAppWindowInteractiveTest(const char* testName) {
     ExtensionTestMessageListener launched_listener("Launched", true);
-    LoadAndLaunchPlatformApp("window_api_interactive");
-    if (!launched_listener.WaitUntilSatisfied()) {
-      message_ = "Did not get the 'Launched' message.";
-      return false;
-    }
+    LoadAndLaunchPlatformApp("window_api_interactive", &launched_listener);
 
     ResultCatcher catcher;
     launched_listener.Reply(testName);
@@ -83,8 +79,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenWindow) {
 #endif
 
   ExtensionTestMessageListener launched_listener("Launched", true);
-  LoadAndLaunchPlatformApp("leave_fullscreen");
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("leave_fullscreen", &launched_listener);
 
   // We start by making sure the window is actually focused.
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
@@ -127,8 +122,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenDOM) {
 #endif
 
   ExtensionTestMessageListener launched_listener("Launched", true);
-  LoadAndLaunchPlatformApp("leave_fullscreen");
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("leave_fullscreen", &launched_listener);
 
   // We start by making sure the window is actually focused.
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
@@ -179,8 +173,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 #endif
 
   ExtensionTestMessageListener launched_listener("Launched", true);
-  LoadAndLaunchPlatformApp("prevent_leave_fullscreen");
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("prevent_leave_fullscreen", &launched_listener);
 
   // We start by making sure the window is actually focused.
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
@@ -228,8 +221,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 #endif
 
   ExtensionTestMessageListener launched_listener("Launched", true);
-  LoadAndLaunchPlatformApp("prevent_leave_fullscreen");
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("prevent_leave_fullscreen", &launched_listener);
 
   // We start by making sure the window is actually focused.
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
@@ -287,8 +279,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 #endif
 
   ExtensionTestMessageListener launched_listener("Launched", true);
-  LoadAndLaunchPlatformApp("prevent_leave_fullscreen_old");
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("prevent_leave_fullscreen_old", &launched_listener);
 
   // We start by making sure the window is actually focused.
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(

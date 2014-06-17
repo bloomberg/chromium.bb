@@ -18,13 +18,11 @@
 
 class AppCrashTest : public extensions::PlatformAppBrowserTest {
 public:
-  bool RunAppCrashTest(const char* name) {
-    ExtensionTestMessageListener listener("Done", false);
-    LoadAndLaunchPlatformApp(name);
-    return listener.WaitUntilSatisfied();
+ void RunAppCrashTest(const char* name) {
+   LoadAndLaunchPlatformApp(name, "Done");
   }
 };
 
 IN_PROC_BROWSER_TEST_F(AppCrashTest, HiddenWindows) {
-  ASSERT_TRUE(RunAppCrashTest("crashtest_hidden_windows"));
+  RunAppCrashTest("crashtest_hidden_windows");
 }

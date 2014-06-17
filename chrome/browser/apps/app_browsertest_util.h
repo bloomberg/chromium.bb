@@ -18,6 +18,7 @@ class WebContents;
 }
 
 class Browser;
+class ExtensionTestMessageListener;
 
 namespace extensions {
 class Extension;
@@ -33,8 +34,15 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
 
  protected:
   // Runs the app named |name| out of the platform_apps subdirectory. Waits
-  // until it is launched.
-  const Extension* LoadAndLaunchPlatformApp(const char* name);
+  // for the provided listener to be satisifed.
+  const Extension* LoadAndLaunchPlatformApp(
+      const char* name,
+      ExtensionTestMessageListener* listener);
+
+  // Runs the app named |name| out of the platform_apps subdirectory. Waits
+  // until the given message is received from the app.
+  const Extension* LoadAndLaunchPlatformApp(const char* name,
+                                            const std::string& message);
 
   // Installs the app named |name| out of the platform_apps subdirectory.
   const Extension* InstallPlatformApp(const char* name);

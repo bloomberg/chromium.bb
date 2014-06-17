@@ -36,6 +36,7 @@ function testConnect() {
 }
 
 chrome.app.runtime.onLaunched.addListener(function() {
+  chrome.test.sendMessage('Launched');
 
   chrome.test.runTests([
     testSendMessage,

@@ -271,7 +271,8 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
 #endif
 
   ASSERT_TRUE(ash::Shell::HasInstance()) << "No Instance";
-  const extensions::Extension* extension = LoadAndLaunchPlatformApp("minimal");
+  const extensions::Extension* extension = LoadAndLaunchPlatformApp("minimal",
+                                                                    "Launched");
 
   {
     // Test that ToggleFullscreen() toggles a platform's app's fullscreen

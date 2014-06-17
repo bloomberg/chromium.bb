@@ -159,13 +159,7 @@ class WebViewInteractiveTest
       return scoped_ptr<ExtensionTestMessageListener>();
     }
 
-    ExtensionTestMessageListener launched_listener("Launched", false);
-    LoadAndLaunchPlatformApp(app_location.c_str());
-    if (!launched_listener.WaitUntilSatisfied()) {
-      LOG(ERROR) << "TEST DID NOT LAUNCH.";
-      return scoped_ptr<ExtensionTestMessageListener>();
-    }
-
+    LoadAndLaunchPlatformApp(app_location.c_str(), "Launched");
     if (!ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow())) {
       LOG(ERROR) << "UNABLE TO FOCUS TEST WINDOW.";
       return scoped_ptr<ExtensionTestMessageListener>();
@@ -225,14 +219,9 @@ class WebViewInteractiveTest
     ui_test_utils::UrlLoadObserver guest_observer(
         guest_url, content::NotificationService::AllSources());
 
-    ExtensionTestMessageListener guest_connected_listener("connected", false);
-    LoadAndLaunchPlatformApp(app_name.c_str());
+    LoadAndLaunchPlatformApp(app_name.c_str(), "connected");
 
     guest_observer.Wait();
-
-    // Wait until the guest process reports that it has established a message
-    // channel with the app.
-    ASSERT_TRUE(guest_connected_listener.WaitUntilSatisfied());
     content::Source<content::NavigationController> source =
         guest_observer.source();
     EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->
@@ -663,11 +652,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_BlurEvent) {
 
 // Tests that guests receive edit commands and respond appropriately.
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, EditCommands) {
-  ExtensionTestMessageListener guest_connected_listener("connected", false);
-  LoadAndLaunchPlatformApp("web_view/edit_commands");
-  // Wait until the guest process reports that it has established a message
-  // channel with the app.
-  ASSERT_TRUE(guest_connected_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp("web_view/edit_commands", "connected");
 
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
       GetPlatformAppWindow()));
@@ -821,10 +806,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PopupPositioningMoved) {
 // of simulating mouse drag code's dependency on platforms.
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DragDropWithinWebView) {
-  ExtensionTestMessageListener guest_connected_listener("connected", false);
-  LoadAndLaunchPlatformApp("web_view/dnd_within_webview");
-  ASSERT_TRUE(guest_connected_listener.WaitUntilSatisfied());
-
+  LoadAndLaunchPlatformApp("web_view/dnd_within_webview", "connected");
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
 
   embedder_web_contents_ = GetFirstAppWindowWebContents();
@@ -867,10 +849,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Navigation) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Navigation_BackForwardKeys) {
-  ExtensionTestMessageListener launched_listener("Launched", false);
-  LoadAndLaunchPlatformApp("web_view/navigation");
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
-
+  LoadAndLaunchPlatformApp("web_view/navigation", "Launched");
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
       GetPlatformAppWindow()));
   // Flush any pending events to make sure we start with a clean slate.

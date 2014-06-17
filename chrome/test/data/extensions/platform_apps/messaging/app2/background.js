@@ -4,6 +4,8 @@
 
 var otherId = 'ljhhihhmjomkjokmknellgbidphmahkh';
 
+chrome.test.sendMessage('Launched');
+
 chrome.runtime.onConnectExternal.addListener(function(port) {
   port.onMessage.addListener(function(msg) {
     if (msg == 'ok_to_disconnect') {

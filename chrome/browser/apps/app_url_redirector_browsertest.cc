@@ -211,12 +211,10 @@ void PlatformAppUrlRedirectorBrowserTest::TestNavigationInApp(
 
   InstallPlatformApp(handler);
 
-  ExtensionTestMessageListener launcher_listener(launcher_done_message, false);
   ExtensionTestMessageListener handler_listener(handler_start_message, false);
 
-  LoadAndLaunchPlatformApp(launcher);
+  LoadAndLaunchPlatformApp(launcher, launcher_done_message);
 
-  ASSERT_TRUE(launcher_listener.WaitUntilSatisfied());
   ASSERT_TRUE(handler_listener.WaitUntilSatisfied());
 
   ASSERT_EQ(2U, GetAppWindowCount());
@@ -234,11 +232,7 @@ void PlatformAppUrlRedirectorBrowserTest::TestNegativeNavigationInApp(
       chrome::NOTIFICATION_TAB_ADDED,
       content::Source<content::WebContentsDelegate>(browser()));
 
-  ExtensionTestMessageListener launcher_done_listener(launcher_done_message,
-                                                      false);
-  LoadAndLaunchPlatformApp(launcher);
-
-  ASSERT_TRUE(launcher_done_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp(launcher, launcher_done_message);
 
   observer.Wait();
 
@@ -257,10 +251,7 @@ void PlatformAppUrlRedirectorBrowserTest::TestMismatchingNavigationInApp(
       chrome::NOTIFICATION_TAB_ADDED,
       content::Source<content::WebContentsDelegate>(browser()));
 
-  ExtensionTestMessageListener launcher_listener(launcher_done_message, false);
-  LoadAndLaunchPlatformApp(launcher);
-
-  ASSERT_TRUE(launcher_listener.WaitUntilSatisfied());
+  LoadAndLaunchPlatformApp(launcher, launcher_done_message);
 
   observer.Wait();
   ASSERT_EQ(1U, GetAppWindowCount());

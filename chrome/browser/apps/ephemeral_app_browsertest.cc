@@ -404,13 +404,14 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, ReceiveMessagesWhenLaunched) {
 
   // Verify that messages are received while the app is running.
   ExtensionApiTest::ResultCatcher result_catcher;
-  LoadAndLaunchPlatformApp("ephemeral_apps/messaging_sender_success");
+  LoadAndLaunchPlatformApp("ephemeral_apps/messaging_sender_success",
+                           "Launched");
   EXPECT_TRUE(result_catcher.GetNextResult());
 
   CloseApp(receiver->id());
 
   // Verify that messages are not received while the app is inactive.
-  LoadAndLaunchPlatformApp("ephemeral_apps/messaging_sender_fail");
+  LoadAndLaunchPlatformApp("ephemeral_apps/messaging_sender_fail", "Launched");
   EXPECT_TRUE(result_catcher.GetNextResult());
 }
 

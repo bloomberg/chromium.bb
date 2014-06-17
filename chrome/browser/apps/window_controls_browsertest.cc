@@ -52,10 +52,8 @@ content::WebContents* WindowControlsTest::GetWebContentsForExtensionWindow(
 
 IN_PROC_BROWSER_TEST_F(WindowControlsTest, CloseControlWorks) {
   // Launch app and wait for window to show up
-  ExtensionTestMessageListener window_opened("window-opened", false);
   const extensions::Extension* extension =
-      LoadAndLaunchPlatformApp("window_controls/buttons");
-  ASSERT_TRUE(window_opened.WaitUntilSatisfied());
+      LoadAndLaunchPlatformApp("window_controls/buttons", "window-opened");
 
   // Find WebContents of window
   content::WebContents* web_contents =
