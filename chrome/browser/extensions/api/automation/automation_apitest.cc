@@ -110,7 +110,14 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Events) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, Actions) {
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+// Timing out on linux ASan bot: http://crbug.com/385701
+#define MAYBE_Actions DISABLED_Actions
+#else
+#define MAYBE_Actions Actions
+#endif
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_Actions) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "actions.html"))
       << message_;
