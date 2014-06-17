@@ -132,6 +132,7 @@
 #include "web/FullscreenController.h"
 #include "web/GraphicsLayerFactoryChromium.h"
 #include "web/LinkHighlight.h"
+#include "web/NavigatorContentUtilsClientImpl.h"
 #include "web/PopupContainer.h"
 #include "web/PrerendererClientImpl.h"
 #include "web/SpeechRecognitionClientProxy.h"

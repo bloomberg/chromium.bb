@@ -201,21 +201,6 @@ private:
     WebCore::PagePopupDriver* m_pagePopupDriver;
 };
 
-class NavigatorContentUtilsClientImpl FINAL : public WebCore::NavigatorContentUtilsClient {
-public:
-    static PassOwnPtr<NavigatorContentUtilsClientImpl> create(WebViewImpl*);
-    virtual ~NavigatorContentUtilsClientImpl() { }
-
-    virtual void registerProtocolHandler(const String& scheme, const WebCore::KURL& baseURL, const WebCore::KURL&, const String& title) OVERRIDE;
-    virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const WebCore::KURL& baseURL, const WebCore::KURL&) OVERRIDE;
-    virtual void unregisterProtocolHandler(const String& scheme, const WebCore::KURL& baseURL, const WebCore::KURL&) OVERRIDE;
-
-private:
-    explicit NavigatorContentUtilsClientImpl(WebViewImpl*);
-
-    WebViewImpl* m_webView;
-};
-
 DEFINE_TYPE_CASTS(ChromeClientImpl, WebCore::ChromeClient, client, client->isChromeClientImpl(), client.isChromeClientImpl());
 
 } // namespace blink

@@ -57,6 +57,8 @@
       'MediaKeysClientImpl.h',
       'MIDIClientProxy.cpp',
       'MIDIClientProxy.h',
+      'NavigatorContentUtilsClientImpl.cpp',
+      'NavigatorContentUtilsClientImpl.h',
       'NotificationPresenterImpl.cpp',
       'NotificationPresenterImpl.h',
       'OpenedFrameTracker.cpp',

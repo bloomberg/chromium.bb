@@ -887,30 +887,4 @@ bool ChromeClientImpl::usesGpuRasterization()
     return m_webView->layerTreeView()->usesGpuRasterization();
 }
 
-PassOwnPtr<NavigatorContentUtilsClientImpl> NavigatorContentUtilsClientImpl::create(WebViewImpl* webView)
-{
-    return adoptPtr(new NavigatorContentUtilsClientImpl(webView));
-}
-
-NavigatorContentUtilsClientImpl::NavigatorContentUtilsClientImpl(WebViewImpl* webView)
-    : m_webView(webView)
-{
-}
-
-void NavigatorContentUtilsClientImpl::registerProtocolHandler(const String& scheme, const WebCore::KURL& baseURL, const WebCore::KURL& url, const String& title)
-{
-    m_webView->client()->registerProtocolHandler(scheme, baseURL, url, title);
-}
-
-NavigatorContentUtilsClient::CustomHandlersState NavigatorContentUtilsClientImpl::isProtocolHandlerRegistered(const String& scheme, const WebCore::KURL& baseURL, const WebCore::KURL& url)
-{
-    return static_cast<NavigatorContentUtilsClient::CustomHandlersState>(m_webView->client()->isProtocolHandlerRegistered(scheme, baseURL, url));
-}
-
-void NavigatorContentUtilsClientImpl::unregisterProtocolHandler(const String& scheme, const WebCore::KURL& baseURL, const WebCore::KURL& url)
-{
-    m_webView->client()->unregisterProtocolHandler(scheme, baseURL, url);
-}
-
-
 } // namespace blink
