@@ -58,6 +58,8 @@ class KeyboardContainerTargeter : public wm::MaskedWindowTargeter {
   // wm::MaskedWindowTargeter:
   virtual bool GetHitTestMask(aura::Window* window,
                               gfx::Path* mask) const OVERRIDE {
+    if (proxy_ && !proxy_->HasKeyboardWindow())
+      return true;
     gfx::Rect keyboard_bounds = proxy_ ? proxy_->GetKeyboardWindow()->bounds() :
         keyboard::DefaultKeyboardBoundsFromWindowBounds(window->bounds());
     mask->addRect(RectToSkRect(keyboard_bounds));
@@ -105,8 +107,12 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {}
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE { delete this; }
   virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {}
-  virtual bool HasHitTestMask() const OVERRIDE { return true; }
+  virtual bool HasHitTestMask() const OVERRIDE {
+    return !proxy_ || proxy_->HasKeyboardWindow();
+  }
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {
+    if (proxy_ && !proxy_->HasKeyboardWindow())
+      return;
     gfx::Rect keyboard_bounds = proxy_ ? proxy_->GetKeyboardWindow()->bounds() :
         keyboard::DefaultKeyboardBoundsFromWindowBounds(bounds_);
     mask->addRect(RectToSkRect(keyboard_bounds));

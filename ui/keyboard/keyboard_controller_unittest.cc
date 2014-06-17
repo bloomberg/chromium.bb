@@ -84,12 +84,8 @@ class TestFocusController : public ui::EventHandler {
 class TestKeyboardControllerProxy : public KeyboardControllerProxy {
  public:
   TestKeyboardControllerProxy()
-      : window_(new aura::Window(&delegate_)),
-        input_method_(ui::CreateInputMethod(NULL,
-                                            gfx::kNullAcceleratedWidget)) {
-    window_->Init(aura::WINDOW_LAYER_NOT_DRAWN);
-    window_->set_owned_by_parent(false);
-  }
+      : input_method_(
+            ui::CreateInputMethod(NULL, gfx::kNullAcceleratedWidget)) {}
 
   virtual ~TestKeyboardControllerProxy() {
     // Destroy the window before the delegate.
@@ -97,8 +93,15 @@ class TestKeyboardControllerProxy : public KeyboardControllerProxy {
   }
 
   // Overridden from KeyboardControllerProxy:
-  virtual bool HasKeyboardWindow() const OVERRIDE { return true; }
-  virtual aura::Window* GetKeyboardWindow() OVERRIDE { return window_.get(); }
+  virtual bool HasKeyboardWindow() const OVERRIDE { return window_; }
+  virtual aura::Window* GetKeyboardWindow() OVERRIDE {
+    if (!window_) {
+      window_.reset(new aura::Window(&delegate_));
+      window_->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+      window_->set_owned_by_parent(false);
+    }
+    return window_.get();
+  }
   virtual content::BrowserContext* GetBrowserContext() OVERRIDE { return NULL; }
   virtual ui::InputMethod* GetInputMethod() OVERRIDE {
     return input_method_.get();
@@ -343,6 +346,39 @@ TEST_F(KeyboardControllerTest, EventHitTestingInContainer) {
   ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE,
                         ui::EF_NONE);
   EXPECT_EQ(window.get(), targeter->FindTargetForEvent(root, &mouse2));
+}
+
+TEST_F(KeyboardControllerTest, KeyboardWindowCreation) {
+  const gfx::Rect& root_bounds = root_window()->bounds();
+  aura::test::EventCountDelegate delegate;
+  scoped_ptr<aura::Window> window(new aura::Window(&delegate));
+  window->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  window->SetBounds(root_bounds);
+  root_window()->AddChild(window.get());
+  window->Show();
+  window->Focus();
+
+  aura::Window* keyboard_container(controller()->GetContainerWindow());
+  keyboard_container->SetBounds(root_bounds);
+
+  root_window()->AddChild(keyboard_container);
+  keyboard_container->Show();
+
+  EXPECT_FALSE(proxy()->HasKeyboardWindow());
+
+  ui::EventTarget* root = root_window();
+  ui::EventTargeter* targeter = root->GetEventTargeter();
+  gfx::Point location(root_window()->bounds().width() / 2,
+                      root_window()->bounds().height() - 10);
+  ui::MouseEvent mouse(
+      ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE, ui::EF_NONE);
+  EXPECT_EQ(window.get(), targeter->FindTargetForEvent(root, &mouse));
+  EXPECT_FALSE(proxy()->HasKeyboardWindow());
+
+  EXPECT_EQ(
+      controller()->GetContainerWindow(),
+      controller()->GetContainerWindow()->GetEventHandlerForPoint(location));
+  EXPECT_FALSE(proxy()->HasKeyboardWindow());
 }
 
 TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
