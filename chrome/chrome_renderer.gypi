@@ -212,6 +212,8 @@
         'renderer/plugins/chrome_plugin_placeholder.h',
         'renderer/plugins/plugin_uma.cc',
         'renderer/plugins/plugin_uma.h',
+        'renderer/prefetch_helper.cc',
+        'renderer/prefetch_helper.h',
         'renderer/prerender/prerender_dispatcher.cc',
         'renderer/prerender/prerender_dispatcher.h',
         'renderer/prerender/prerender_extra_data.cc',

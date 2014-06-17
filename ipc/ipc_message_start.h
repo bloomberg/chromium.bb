@@ -66,6 +66,7 @@ enum IPCMessageStart {
   GamepadMsgStart,
   ShellMsgStart,
   AccessibilityMsgStart,
+  PrefetchMsgStart,
   PrerenderMsgStart,
   ChromotingMsgStart,
   OldBrowserPluginMsgStart,

@@ -9,6 +9,7 @@
 #include "chrome/common/cast_messages.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
+#include "chrome/common/prefetch_messages.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
