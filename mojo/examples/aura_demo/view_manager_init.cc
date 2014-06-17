@@ -30,7 +30,7 @@ class ViewManagerInit : public Application {
     VLOG(1) << "ViewManagerInit::DidConnection result=" << result;
   }
 
-  view_manager::IViewManagerInitPtr view_manager_init_;
+  view_manager::ViewManagerInitServicePtr view_manager_init_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerInit);
 };

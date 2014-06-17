@@ -59,7 +59,7 @@ ViewTreeNode* AddNodeToViewManager(ViewManagerSynchronizer* synchronizer,
 }
 
 ViewTreeNode* BuildNodeTree(ViewManagerSynchronizer* synchronizer,
-                            const Array<INodePtr>& nodes) {
+                            const Array<NodeDataPtr>& nodes) {
   std::vector<ViewTreeNode*> parents;
   ViewTreeNode* root = NULL;
   ViewTreeNode* last_node = NULL;
@@ -132,7 +132,7 @@ class ViewManagerTransaction {
   // service.
   virtual void DoActionCompleted(bool success) = 0;
 
-  IViewManager* service() { return synchronizer_->service_; }
+  ViewManagerService* service() { return synchronizer_->service_; }
 
   Id GetAndAdvanceNextServerChangeId() {
     return synchronizer_->next_server_change_id_++;
@@ -669,13 +669,13 @@ void ViewManagerSynchronizer::OnConnectionEstablished() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ViewManagerSynchronizer, IViewManagerClient implementation:
+// ViewManagerSynchronizer, ViewManagerClient implementation:
 
 void ViewManagerSynchronizer::OnViewManagerConnectionEstablished(
     ConnectionSpecificId connection_id,
     const String& creator_url,
     Id next_server_change_id,
-    Array<INodePtr> nodes) {
+    Array<NodeDataPtr> nodes) {
   connected_ = true;
   connection_id_ = connection_id;
   creator_url_ = TypeConverter<String, std::string>::ConvertFrom(creator_url);
@@ -685,7 +685,7 @@ void ViewManagerSynchronizer::OnViewManagerConnectionEstablished(
   AddRoot(BuildNodeTree(this, nodes));
 }
 
-void ViewManagerSynchronizer::OnRootsAdded(Array<INodePtr> nodes) {
+void ViewManagerSynchronizer::OnRootsAdded(Array<NodeDataPtr> nodes) {
   AddRoot(BuildNodeTree(this, nodes));
 }
 
@@ -707,7 +707,7 @@ void ViewManagerSynchronizer::OnNodeHierarchyChanged(
     Id new_parent_id,
     Id old_parent_id,
     Id server_change_id,
-    mojo::Array<INodePtr> nodes) {
+    mojo::Array<NodeDataPtr> nodes) {
   next_server_change_id_ = server_change_id + 1;
 
   BuildNodeTree(this, nodes);

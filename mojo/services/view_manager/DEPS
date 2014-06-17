@@ -16,7 +16,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "view_manager_connection_unittest.cc": [
+  "view_manager_unittest.cc": [
     "+mojo/service_manager/service_manager.h",
   ],
 }

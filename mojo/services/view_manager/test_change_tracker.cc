@@ -111,8 +111,8 @@ std::string ChangeNodeDescription(const std::vector<Change>& changes) {
   return JoinString(node_strings, ',');
 }
 
-void INodesToTestNodes(const Array<INodePtr>& data,
-                       std::vector<TestNode>* test_nodes) {
+void NodeDatasToTestNodes(const Array<NodeDataPtr>& data,
+                          std::vector<TestNode>* test_nodes) {
   for (size_t i = 0; i < data.size(); ++i) {
     TestNode node;
     node.parent_id = data[i]->parent_id;
@@ -148,20 +148,20 @@ void TestChangeTracker::OnViewManagerConnectionEstablished(
     ConnectionSpecificId connection_id,
     const String& creator_url,
     Id next_server_change_id,
-    Array<INodePtr> nodes) {
+    Array<NodeDataPtr> nodes) {
   Change change;
   change.type = CHANGE_TYPE_CONNECTION_ESTABLISHED;
   change.connection_id = connection_id;
   change.change_id = next_server_change_id;
   change.creator_url = creator_url;
-  INodesToTestNodes(nodes, &change.nodes);
+  NodeDatasToTestNodes(nodes, &change.nodes);
   AddChange(change);
 }
 
-void TestChangeTracker::OnRootsAdded(Array<INodePtr> nodes) {
+void TestChangeTracker::OnRootsAdded(Array<NodeDataPtr> nodes) {
   Change change;
   change.type = CHANGE_TYPE_ROOTS_ADDED;
-  INodesToTestNodes(nodes, &change.nodes);
+  NodeDatasToTestNodes(nodes, &change.nodes);
   AddChange(change);
 }
 
@@ -187,14 +187,14 @@ void TestChangeTracker::OnNodeHierarchyChanged(Id node_id,
                                                Id new_parent_id,
                                                Id old_parent_id,
                                                Id server_change_id,
-                                               Array<INodePtr> nodes) {
+                                               Array<NodeDataPtr> nodes) {
   Change change;
   change.type = CHANGE_TYPE_NODE_HIERARCHY_CHANGED;
   change.node_id = node_id;
   change.node_id2 = new_parent_id;
   change.node_id3 = old_parent_id;
   change.change_id = server_change_id;
-  INodesToTestNodes(nodes, &change.nodes);
+  NodeDatasToTestNodes(nodes, &change.nodes);
   AddChange(change);
 }
 

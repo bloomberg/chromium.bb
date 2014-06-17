@@ -30,6 +30,7 @@ enum ChangeType {
   CHANGE_TYPE_INPUT_EVENT,
 };
 
+// TODO(sky): consider nuking and converting directly to NodeData.
 struct TestNode {
   // Returns a string description of this.
   std::string ToString() const;
@@ -39,7 +40,7 @@ struct TestNode {
   Id view_id;
 };
 
-// Tracks a call to IViewManagerClient. See the individual functions for the
+// Tracks a call to ViewManagerClient. See the individual functions for the
 // fields that are used.
 struct Change {
   Change();
@@ -69,16 +70,16 @@ std::vector<std::string> ChangesToDescription1(
 // if change.size() != 1.
 std::string ChangeNodeDescription(const std::vector<Change>& changes);
 
-// Converts INodes to TestNodes.
-void INodesToTestNodes(const Array<INodePtr>& data,
-                       std::vector<TestNode>* test_nodes);
+// Converts NodeDatas to TestNodes.
+void NodeDatasToTestNodes(const Array<NodeDataPtr>& data,
+                          std::vector<TestNode>* test_nodes);
 
-// TestChangeTracker is used to record IViewManagerClient functions. It notifies
+// TestChangeTracker is used to record ViewManagerClient functions. It notifies
 // a delegate any time a change is added.
 class TestChangeTracker {
  public:
   // Used to notify the delegate when a change is added. A change corresponds to
-  // a single IViewManagerClient function.
+  // a single ViewManagerClient function.
   class Delegate {
    public:
     virtual void OnChangeAdded() = 0;
@@ -95,19 +96,19 @@ class TestChangeTracker {
   std::vector<Change>* changes() { return &changes_; }
 
   // Each of these functions generate a Change. There is one per
-  // IViewManagerClient function.
+  // ViewManagerClient function.
   void OnViewManagerConnectionEstablished(ConnectionSpecificId connection_id,
                                           const String& creator_url,
                                           Id next_server_change_id,
-                                          Array<INodePtr> nodes);
-  void OnRootsAdded(Array<INodePtr> nodes);
+                                          Array<NodeDataPtr> nodes);
+  void OnRootsAdded(Array<NodeDataPtr> nodes);
   void OnServerChangeIdAdvanced(Id change_id);
   void OnNodeBoundsChanged(Id node_id, RectPtr old_bounds, RectPtr new_bounds);
   void OnNodeHierarchyChanged(Id node_id,
                               Id new_parent_id,
                               Id old_parent_id,
                               Id server_change_id,
-                              Array<INodePtr> nodes);
+                              Array<NodeDataPtr> nodes);
   void OnNodeReordered(Id node_id,
                        Id relative_node_id,
                        OrderDirection direction,

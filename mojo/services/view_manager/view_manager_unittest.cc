@@ -36,12 +36,13 @@ namespace {
 
 const char kTestServiceURL[] = "mojo:test_url";
 
-// ViewManagerProxy is a proxy to an IViewManager. It handles invoking
-// IViewManager functions on the right thread in a synchronous manner (each
-// IViewManager cover function blocks until the response from the IViewManager
-// is returned). In addition it tracks the set of IViewManagerClient messages
-// received by way of a vector of Changes. Use DoRunLoopUntilChangesCount() to
-// wait for a certain number of messages to be received.
+// ViewManagerProxy is a proxy to an ViewManagerService. It handles invoking
+// ViewManagerService functions on the right thread in a synchronous manner
+// (each ViewManagerService cover function blocks until the response from the
+// ViewManagerService is returned). In addition it tracks the set of
+// ViewManagerClient messages received by way of a vector of Changes. Use
+// DoRunLoopUntilChangesCount() to wait for a certain number of messages to be
+// received.
 class ViewManagerProxy : public TestChangeTracker::Delegate {
  public:
   explicit ViewManagerProxy(TestChangeTracker* tracker)
@@ -84,8 +85,8 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     router_->CloseMessagePipe();
   }
 
-  // The following functions are cover methods for IViewManager. They block
-  // until the result is received.
+  // The following functions are cover methods for ViewManagerService. They
+  // block until the result is received.
   bool CreateNode(Id node_id) {
     changes_.clear();
     bool result = false;
@@ -194,7 +195,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
 
   void set_router(mojo::internal::Router* router) { router_ = router; }
 
-  void set_view_manager(IViewManager* view_manager) {
+  void set_view_manager(ViewManagerService* view_manager) {
     view_manager_ = view_manager;
   }
 
@@ -228,15 +229,15 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
       main_run_loop_->Quit();
   }
 
-  // Callbacks from the various IViewManager functions.
+  // Callbacks from the various ViewManagerService functions.
   void GotResult(bool* result_cache, bool result) {
     *result_cache = result;
     DCHECK(main_run_loop_);
     main_run_loop_->Quit();
   }
 
-  void GotNodeTree(std::vector<TestNode>* nodes, Array<INodePtr> results) {
-    INodesToTestNodes(results, nodes);
+  void GotNodeTree(std::vector<TestNode>* nodes, Array<NodeDataPtr> results) {
+    NodeDatasToTestNodes(results, nodes);
     DCHECK(main_run_loop_);
     main_run_loop_->Quit();
   }
@@ -256,7 +257,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   // MessageLoop of the test.
   base::MessageLoop* main_loop_;
 
-  IViewManager* view_manager_;
+  ViewManagerService* view_manager_;
 
   // Number of changes we're waiting on until we quit the current loop.
   size_t quit_count_;
@@ -278,7 +279,7 @@ base::RunLoop* ViewManagerProxy::main_run_loop_ = NULL;
 bool ViewManagerProxy::in_embed_ = false;
 
 class TestViewManagerClientConnection
-    : public InterfaceImpl<IViewManagerClient> {
+    : public InterfaceImpl<ViewManagerClient> {
  public:
   TestViewManagerClientConnection() : connection_(&tracker_) {
     tracker_.set_delegate(&connection_);
@@ -295,11 +296,11 @@ class TestViewManagerClientConnection
       ConnectionSpecificId connection_id,
       const String& creator_url,
       Id next_server_change_id,
-      Array<INodePtr> nodes) OVERRIDE {
+      Array<NodeDataPtr> nodes) OVERRIDE {
     tracker_.OnViewManagerConnectionEstablished(
         connection_id, creator_url, next_server_change_id, nodes.Pass());
   }
-  virtual void OnRootsAdded(Array<INodePtr> nodes) OVERRIDE {
+  virtual void OnRootsAdded(Array<NodeDataPtr> nodes) OVERRIDE {
     tracker_.OnRootsAdded(nodes.Pass());
   }
   virtual void OnServerChangeIdAdvanced(
@@ -315,7 +316,7 @@ class TestViewManagerClientConnection
                                       Id new_parent,
                                       Id old_parent,
                                       Id server_change_id,
-                                      Array<INodePtr> nodes) OVERRIDE {
+                                      Array<NodeDataPtr> nodes) OVERRIDE {
     tracker_.OnNodeHierarchyChanged(node, new_parent, old_parent,
                                     server_change_id, nodes.Pass());
   }
@@ -350,8 +351,8 @@ class TestViewManagerClientConnection
   DISALLOW_COPY_AND_ASSIGN(TestViewManagerClientConnection);
 };
 
-// Used with IViewManager::Embed(). Creates a TestViewManagerClientConnection,
-// which creates and owns the ViewManagerProxy.
+// Used with ViewManagerService::Embed(). Creates a
+// TestViewManagerClientConnection, which creates and owns the ViewManagerProxy.
 class EmbedServiceLoader : public ServiceLoader {
  public:
   EmbedServiceLoader() {}
@@ -396,9 +397,10 @@ void EmbedRootCallback(bool* result_cache,
   run_loop->Quit();
 }
 
-// Resposible for establishing the initial IViewManager connection. Blocks until
-// result is determined.
-bool EmbedRoot(IViewManagerInit* view_manager_init, const std::string& url) {
+// Resposible for establishing the initial ViewManagerService connection. Blocks
+// until result is determined.
+bool EmbedRoot(ViewManagerInitService* view_manager_init,
+               const std::string& url) {
   bool result = false;
   base::RunLoop run_loop;
   view_manager_init->EmbedRoot(url, base::Bind(&EmbedRootCallback,
@@ -411,9 +413,9 @@ bool EmbedRoot(IViewManagerInit* view_manager_init, const std::string& url) {
 
 typedef std::vector<std::string> Changes;
 
-class ViewManagerConnectionTest : public testing::Test {
+class ViewManagerTest : public testing::Test {
  public:
-  ViewManagerConnectionTest() : connection_(NULL), connection2_(NULL) {}
+  ViewManagerTest() : connection_(NULL), connection2_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     test_helper_.Init();
@@ -477,16 +479,16 @@ class ViewManagerConnectionTest : public testing::Test {
   base::MessageLoop loop_;
   shell::ShellTestHelper test_helper_;
 
-  IViewManagerInitPtr view_manager_init_;
+  ViewManagerInitServicePtr view_manager_init_;
 
   ViewManagerProxy* connection_;
   ViewManagerProxy* connection2_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewManagerConnectionTest);
+  DISALLOW_COPY_AND_ASSIGN(ViewManagerTest);
 };
 
 // Verifies client gets a valid id.
-TEST_F(ViewManagerConnectionTest, ValidId) {
+TEST_F(ViewManagerTest, ValidId) {
   // TODO(beng): this should really have the URL of the application that
   //             connected to ViewManagerInit.
   EXPECT_EQ("OnConnectionEstablished creator=",
@@ -501,7 +503,7 @@ TEST_F(ViewManagerConnectionTest, ValidId) {
 }
 
 // Verifies two clients/connections get different ids.
-TEST_F(ViewManagerConnectionTest, TwoClientsGetDifferentConnectionIds) {
+TEST_F(ViewManagerTest, TwoClientsGetDifferentConnectionIds) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   EXPECT_EQ("OnConnectionEstablished creator=mojo:test_url",
             ChangesToDescription1(connection2_->changes())[0]);
@@ -516,7 +518,7 @@ TEST_F(ViewManagerConnectionTest, TwoClientsGetDifferentConnectionIds) {
 }
 
 // Verifies client gets a valid id.
-TEST_F(ViewManagerConnectionTest, CreateNode) {
+TEST_F(ViewManagerTest, CreateNode) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   EXPECT_TRUE(connection_->changes().empty());
 
@@ -529,13 +531,13 @@ TEST_F(ViewManagerConnectionTest, CreateNode) {
   EXPECT_TRUE(connection_->changes().empty());
 }
 
-TEST_F(ViewManagerConnectionTest, CreateViewFailsWithBogusConnectionId) {
+TEST_F(ViewManagerTest, CreateViewFailsWithBogusConnectionId) {
   EXPECT_FALSE(connection_->CreateView(BuildViewId(2, 1)));
   EXPECT_TRUE(connection_->changes().empty());
 }
 
 // Verifies hierarchy changes.
-TEST_F(ViewManagerConnectionTest, AddRemoveNotify) {
+TEST_F(ViewManagerTest, AddRemoveNotify) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 3)));
 
@@ -565,7 +567,7 @@ TEST_F(ViewManagerConnectionTest, AddRemoveNotify) {
 }
 
 // Verifies AddNode fails when node is already in position.
-TEST_F(ViewManagerConnectionTest, AddNodeWithNoChange) {
+TEST_F(ViewManagerTest, AddNodeWithNoChange) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 3)));
 
@@ -588,7 +590,7 @@ TEST_F(ViewManagerConnectionTest, AddNodeWithNoChange) {
 }
 
 // Verifies AddNode fails when node is already in position.
-TEST_F(ViewManagerConnectionTest, AddAncestorFails) {
+TEST_F(ViewManagerTest, AddAncestorFails) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 3)));
 
@@ -610,7 +612,7 @@ TEST_F(ViewManagerConnectionTest, AddAncestorFails) {
 }
 
 // Verifies adding with an invalid id fails.
-TEST_F(ViewManagerConnectionTest, AddWithInvalidServerId) {
+TEST_F(ViewManagerTest, AddWithInvalidServerId) {
   // Create two nodes.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -620,7 +622,7 @@ TEST_F(ViewManagerConnectionTest, AddWithInvalidServerId) {
 }
 
 // Verifies adding to root sends right notifications.
-TEST_F(ViewManagerConnectionTest, AddToRoot) {
+TEST_F(ViewManagerTest, AddToRoot) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 21)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 3)));
 
@@ -650,7 +652,7 @@ TEST_F(ViewManagerConnectionTest, AddToRoot) {
 }
 
 // Verifies HierarchyChanged is correctly sent for various adds/removes.
-TEST_F(ViewManagerConnectionTest, NodeHierarchyChangedNodes) {
+TEST_F(ViewManagerTest, NodeHierarchyChangedNodes) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 11)));
   // Make 11 a child of 2.
@@ -733,7 +735,7 @@ TEST_F(ViewManagerConnectionTest, NodeHierarchyChangedNodes) {
   }
 }
 
-TEST_F(ViewManagerConnectionTest, NodeHierarchyChangedAddingKnownToUnknown) {
+TEST_F(ViewManagerTest, NodeHierarchyChangedAddingKnownToUnknown) {
   // Create the following structure: root -> 1 -> 11 and 2->21 (2 has no
   // parent).
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
@@ -780,7 +782,7 @@ TEST_F(ViewManagerConnectionTest, NodeHierarchyChangedAddingKnownToUnknown) {
   }
 }
 
-TEST_F(ViewManagerConnectionTest, ReorderNode) {
+TEST_F(ViewManagerTest, ReorderNode) {
   Id node1_id = BuildNodeId(1, 1);
   Id node2_id = BuildNodeId(1, 2);
   Id node3_id = BuildNodeId(1, 3);
@@ -859,7 +861,7 @@ TEST_F(ViewManagerConnectionTest, ReorderNode) {
 }
 
 // Verifies DeleteNode works.
-TEST_F(ViewManagerConnectionTest, DeleteNode) {
+TEST_F(ViewManagerTest, DeleteNode) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
@@ -887,13 +889,13 @@ TEST_F(ViewManagerConnectionTest, DeleteNode) {
 }
 
 // Verifies DeleteNode isn't allowed from a separate connection.
-TEST_F(ViewManagerConnectionTest, DeleteNodeFromAnotherConnectionDisallowed) {
+TEST_F(ViewManagerTest, DeleteNodeFromAnotherConnectionDisallowed) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   EXPECT_FALSE(connection2_->DeleteNode(BuildNodeId(1, 1)));
 }
 
 // Verifies DeleteView isn't allowed from a separate connection.
-TEST_F(ViewManagerConnectionTest, DeleteViewFromAnotherConnectionDisallowed) {
+TEST_F(ViewManagerTest, DeleteViewFromAnotherConnectionDisallowed) {
   ASSERT_TRUE(connection_->CreateView(BuildViewId(1, 1)));
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   EXPECT_FALSE(connection2_->DeleteView(BuildViewId(1, 1)));
@@ -901,7 +903,7 @@ TEST_F(ViewManagerConnectionTest, DeleteViewFromAnotherConnectionDisallowed) {
 
 // Verifies if a node was deleted and then reused that other clients are
 // properly notified.
-TEST_F(ViewManagerConnectionTest, ReuseDeletedNodeId) {
+TEST_F(ViewManagerTest, ReuseDeletedNodeId) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
 
@@ -944,7 +946,7 @@ TEST_F(ViewManagerConnectionTest, ReuseDeletedNodeId) {
 }
 
 // Assertions around setting a view.
-TEST_F(ViewManagerConnectionTest, SetView) {
+TEST_F(ViewManagerTest, SetView) {
   // Create nodes 1, 2 and 3 and the view 11. Nodes 2 and 3 are parented to 1.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -982,7 +984,7 @@ TEST_F(ViewManagerConnectionTest, SetView) {
 }
 
 // Verifies deleting a node with a view sends correct notifications.
-TEST_F(ViewManagerConnectionTest, DeleteNodeWithView) {
+TEST_F(ViewManagerTest, DeleteNodeWithView) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 3)));
@@ -1030,7 +1032,7 @@ TEST_F(ViewManagerConnectionTest, DeleteNodeWithView) {
 }
 
 // Sets view from one connection on another.
-TEST_F(ViewManagerConnectionTest, SetViewFromSecondConnection) {
+TEST_F(ViewManagerTest, SetViewFromSecondConnection) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -1059,7 +1061,7 @@ TEST_F(ViewManagerConnectionTest, SetViewFromSecondConnection) {
 }
 
 // Assertions for GetNodeTree.
-TEST_F(ViewManagerConnectionTest, GetNodeTree) {
+TEST_F(ViewManagerTest, GetNodeTree) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   // Create 11 in first connection and make it a child of 1.
@@ -1108,7 +1110,7 @@ TEST_F(ViewManagerConnectionTest, GetNodeTree) {
   }
 }
 
-TEST_F(ViewManagerConnectionTest, SetNodeBounds) {
+TEST_F(ViewManagerTest, SetNodeBounds) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1), 1));
 
@@ -1130,7 +1132,7 @@ TEST_F(ViewManagerConnectionTest, SetNodeBounds) {
 }
 
 // Various assertions around SetRoots.
-TEST_F(ViewManagerConnectionTest, SetRoots) {
+TEST_F(ViewManagerTest, SetRoots) {
   // Create 1, 2, and 3 in the first connection.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -1197,7 +1199,7 @@ TEST_F(ViewManagerConnectionTest, SetRoots) {
 }
 
 // Verify AddNode fails when trying to manipulate nodes in other roots.
-TEST_F(ViewManagerConnectionTest, CantMoveNodesFromOtherRoot) {
+TEST_F(ViewManagerTest, CantMoveNodesFromOtherRoot) {
   // Create 1 and 2 in the first connection.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -1215,7 +1217,7 @@ TEST_F(ViewManagerConnectionTest, CantMoveNodesFromOtherRoot) {
 
 // Verify RemoveNodeFromParent fails for nodes that are descendants of the
 // roots.
-TEST_F(ViewManagerConnectionTest, CantRemoveNodesInOtherRoots) {
+TEST_F(ViewManagerTest, CantRemoveNodesInOtherRoots) {
   // Create 1 and 2 in the first connection and parent both to the root.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -1251,7 +1253,7 @@ TEST_F(ViewManagerConnectionTest, CantRemoveNodesInOtherRoots) {
 }
 
 // Verify SetView fails for nodes that are not descendants of the roots.
-TEST_F(ViewManagerConnectionTest, CantRemoveSetViewInOtherRoots) {
+TEST_F(ViewManagerTest, CantRemoveSetViewInOtherRoots) {
   // Create 1 and 2 in the first connection and parent both to the root.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -1271,7 +1273,7 @@ TEST_F(ViewManagerConnectionTest, CantRemoveSetViewInOtherRoots) {
 }
 
 // Verify GetNodeTree fails for nodes that are not descendants of the roots.
-TEST_F(ViewManagerConnectionTest, CantGetNodeTreeOfOtherRoots) {
+TEST_F(ViewManagerTest, CantGetNodeTreeOfOtherRoots) {
   // Create 1 and 2 in the first connection and parent both to the root.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -1297,7 +1299,7 @@ TEST_F(ViewManagerConnectionTest, CantGetNodeTreeOfOtherRoots) {
   EXPECT_EQ("node=1,1 parent=null view=null", nodes[0].ToString());
 }
 
-TEST_F(ViewManagerConnectionTest, ConnectTwice) {
+TEST_F(ViewManagerTest, ConnectTwice) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
 

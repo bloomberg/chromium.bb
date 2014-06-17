@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/application/application.h"
-#include "mojo/services/view_manager/view_manager_init_connection.h"
+#include "mojo/services/view_manager/view_manager_init_service_impl.h"
 
 namespace mojo {
 namespace view_manager {
@@ -17,7 +17,7 @@ class ViewManagerApp : public Application {
   virtual void Initialize() MOJO_OVERRIDE {
     // TODO(sky): this needs some sort of authentication as well as making sure
     // we only ever have one active at a time.
-    AddService<ViewManagerInitConnection>(service_provider());
+    AddService<ViewManagerInitServiceImpl>(service_provider());
   }
 
  private:

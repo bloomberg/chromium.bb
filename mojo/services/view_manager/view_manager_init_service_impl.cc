@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/view_manager/view_manager_init_connection.h"
+#include "mojo/services/view_manager/view_manager_init_service_impl.h"
 
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/view_manager/ids.h"
-#include "mojo/services/view_manager/view_manager_connection.h"
+#include "mojo/services/view_manager/view_manager_service_impl.h"
 
 namespace mojo {
 namespace view_manager {
 namespace service {
 
-ViewManagerInitConnection::ConnectParams::ConnectParams() {}
+ViewManagerInitServiceImpl::ConnectParams::ConnectParams() {}
 
-ViewManagerInitConnection::ConnectParams::~ConnectParams() {}
+ViewManagerInitServiceImpl::ConnectParams::~ConnectParams() {}
 
-ViewManagerInitConnection::ViewManagerInitConnection(
+ViewManagerInitServiceImpl::ViewManagerInitServiceImpl(
     ServiceProvider* service_provider)
     : service_provider_(service_provider),
       root_node_manager_(service_provider, this),
       is_tree_host_ready_(false) {
 }
 
-ViewManagerInitConnection::~ViewManagerInitConnection() {
+ViewManagerInitServiceImpl::~ViewManagerInitServiceImpl() {
 }
 
-void ViewManagerInitConnection::MaybeEmbedRoot(
+void ViewManagerInitServiceImpl::MaybeEmbedRoot(
     const std::string& url,
     const Callback<void(bool)>& callback) {
   if (!is_tree_host_ready_)
@@ -36,7 +36,7 @@ void ViewManagerInitConnection::MaybeEmbedRoot(
   callback.Run(true);
 }
 
-void ViewManagerInitConnection::EmbedRoot(
+void ViewManagerInitServiceImpl::EmbedRoot(
     const String& url,
     const Callback<void(bool)>& callback) {
   if (connect_params_.get()) {
@@ -50,7 +50,7 @@ void ViewManagerInitConnection::EmbedRoot(
   MaybeEmbedRoot(url.To<std::string>(), callback);
 }
 
-void ViewManagerInitConnection::OnRootViewManagerWindowTreeHostCreated() {
+void ViewManagerInitServiceImpl::OnRootViewManagerWindowTreeHostCreated() {
   DCHECK(!is_tree_host_ready_);
   is_tree_host_ready_ = true;
   if (connect_params_.get())

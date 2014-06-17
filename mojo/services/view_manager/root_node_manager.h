@@ -29,10 +29,10 @@ namespace service {
 
 class RootViewManagerDelegate;
 class View;
-class ViewManagerConnection;
+class ViewManagerServiceImpl;
 
-// RootNodeManager is responsible for managing the set of ViewManagerConnections
-// as well as providing the root of the node hierarchy.
+// RootNodeManager is responsible for managing the set of
+// ViewManagerServiceImpls as well as providing the root of the node hierarchy.
 class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
  public:
   // Used to indicate if the server id should be incremented after notifiying
@@ -42,11 +42,11 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
     CHANGE_TYPE_DONT_ADVANCE_SERVER_CHANGE_ID,
   };
 
-  // Create when a ViewManagerConnection is about to make a change. Ensures
+  // Create when a ViewManagerServiceImpl is about to make a change. Ensures
   // clients are notified of the correct change id.
   class ScopedChange {
    public:
-    ScopedChange(ViewManagerConnection* connection,
+    ScopedChange(ViewManagerServiceImpl* connection,
                  RootNodeManager* root,
                  RootNodeManager::ChangeType change_type,
                  bool is_delete_node);
@@ -82,28 +82,28 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
                   RootViewManagerDelegate* view_manager_delegate);
   virtual ~RootNodeManager();
 
-  // Returns the id for the next ViewManagerConnection.
+  // Returns the id for the next ViewManagerServiceImpl.
   ConnectionSpecificId GetAndAdvanceNextConnectionId();
 
   Id next_server_change_id() const {
     return next_server_change_id_;
   }
 
-  void AddConnection(ViewManagerConnection* connection);
-  void RemoveConnection(ViewManagerConnection* connection);
+  void AddConnection(ViewManagerServiceImpl* connection);
+  void RemoveConnection(ViewManagerServiceImpl* connection);
 
   // Establishes the initial client. Similar to Connect(), but the resulting
   // client is allowed to do anything.
   void EmbedRoot(const std::string& url);
 
-  // See description of IViewManager::Embed() for details. This assumes
+  // See description of ViewManagerService::Embed() for details. This assumes
   // |node_ids| has been validated.
   void Embed(ConnectionSpecificId creator_id,
              const String& url,
              const Array<Id>& node_ids);
 
   // Returns the connection by id.
-  ViewManagerConnection* GetConnection(ConnectionSpecificId connection_id);
+  ViewManagerServiceImpl* GetConnection(ConnectionSpecificId connection_id);
 
   // Returns the Node identified by |id|.
   Node* GetNode(const NodeId& id);
@@ -125,11 +125,11 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   // Returns true if OnConnectionMessagedClient() was invoked for id.
   bool DidConnectionMessageClient(ConnectionSpecificId id) const;
 
-  ViewManagerConnection* GetConnectionByCreator(
+  ViewManagerServiceImpl* GetConnectionByCreator(
       ConnectionSpecificId creator_id,
       const std::string& url) const;
 
-  // These functions trivially delegate to all ViewManagerConnections, which in
+  // These functions trivially delegate to all ViewManagerServiceImpls, which in
   // term notify their clients.
   void ProcessNodeBoundsChanged(const Node* node,
                                 const gfx::Rect& old_bounds,
@@ -153,7 +153,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
     ~Context();
   };
 
-  typedef std::map<ConnectionSpecificId, ViewManagerConnection*> ConnectionMap;
+  typedef std::map<ConnectionSpecificId, ViewManagerServiceImpl*> ConnectionMap;
 
   // Invoked when a connection is about to make a change.  Subsequently followed
   // by FinishChange() once the change is done.
@@ -172,7 +172,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   }
 
   // Implementation of the two embed variants.
-  ViewManagerConnection* EmbedImpl(ConnectionSpecificId creator_id,
+  ViewManagerServiceImpl* EmbedImpl(ConnectionSpecificId creator_id,
                                    const String& url,
                                    const Array<Id>& node_ids);
 
@@ -190,12 +190,12 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   ServiceProvider* service_provider_;
 
-  // ID to use for next ViewManagerConnection.
+  // ID to use for next ViewManagerServiceImpl.
   ConnectionSpecificId next_connection_id_;
 
   Id next_server_change_id_;
 
-  // Set of ViewManagerConnections.
+  // Set of ViewManagerServiceImpls.
   ConnectionMap connection_map_;
 
   RootViewManager root_view_manager_;
@@ -203,12 +203,12 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   // Root node.
   Node root_;
 
-  // Set of ViewManagerConnections created by way of Connect(). These have to be
-  // explicitly destroyed.
-  std::set<ViewManagerConnection*> connections_created_by_connect_;
+  // Set of ViewManagerServiceImpls created by way of Connect(). These have to
+  // be explicitly destroyed.
+  std::set<ViewManagerServiceImpl*> connections_created_by_connect_;
 
   // If non-null we're processing a change. The ScopedChange is not owned by us
-  // (it's created on the stack by ViewManagerConnection).
+  // (it's created on the stack by ViewManagerServiceImpl).
   ScopedChange* current_change_;
 
   DISALLOW_COPY_AND_ASSIGN(RootNodeManager);

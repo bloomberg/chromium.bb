@@ -385,7 +385,8 @@ class ViewManagerTest : public testing::Test {
     *result_cache = result;
   }
 
-  bool EmbedRoot(IViewManagerInit* view_manager_init, const std::string& url) {
+  bool EmbedRoot(ViewManagerInitService* view_manager_init,
+                 const std::string& url) {
     bool result = false;
     view_manager_init->EmbedRoot(
         url,
@@ -411,7 +412,7 @@ class ViewManagerTest : public testing::Test {
   base::MessageLoop loop_;
   base::RunLoop* connect_loop_;
   shell::ShellTestHelper test_helper_;
-  IViewManagerInitPtr view_manager_init_;
+  ViewManagerInitServicePtr view_manager_init_;
   // Used to receive the most recent view manager loaded by an embed action.
   ViewManager* loaded_view_manager_;
   // The View Manager connection held by the window manager (app running at the

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/view_manager/view_manager_connection.h"
+#include "mojo/services/view_manager/view_manager_service_impl.h"
 
 #include "base/bind.h"
 #include "base/stl_util.h"
@@ -34,10 +34,11 @@ void GetDescendants(const Node* node, std::vector<const Node*>* nodes) {
 
 }  // namespace
 
-ViewManagerConnection::ViewManagerConnection(RootNodeManager* root_node_manager,
-                                             ConnectionSpecificId creator_id,
-                                             const std::string& creator_url,
-                                             const std::string& url)
+ViewManagerServiceImpl::ViewManagerServiceImpl(
+    RootNodeManager* root_node_manager,
+    ConnectionSpecificId creator_id,
+    const std::string& creator_url,
+    const std::string& url)
     : root_node_manager_(root_node_manager),
       id_(root_node_manager_->GetAndAdvanceNextConnectionId()),
       url_(url),
@@ -46,7 +47,7 @@ ViewManagerConnection::ViewManagerConnection(RootNodeManager* root_node_manager,
       delete_on_connection_error_(false) {
 }
 
-ViewManagerConnection::~ViewManagerConnection() {
+ViewManagerServiceImpl::~ViewManagerServiceImpl() {
   // Delete any views we own.
   while (!view_map_.empty()) {
     bool result = DeleteViewImpl(this, view_map_.begin()->second->id());
@@ -79,7 +80,7 @@ ViewManagerConnection::~ViewManagerConnection() {
   root_node_manager_->RemoveConnection(this);
 }
 
-const Node* ViewManagerConnection::GetNode(const NodeId& id) const {
+const Node* ViewManagerServiceImpl::GetNode(const NodeId& id) const {
   if (id_ == id.connection_id) {
     NodeMap::const_iterator i = node_map_.find(id.node_id);
     return i == node_map_.end() ? NULL : i->second;
@@ -87,7 +88,7 @@ const Node* ViewManagerConnection::GetNode(const NodeId& id) const {
   return root_node_manager_->GetNode(id);
 }
 
-const View* ViewManagerConnection::GetView(const ViewId& id) const {
+const View* ViewManagerServiceImpl::GetView(const ViewId& id) const {
   if (id_ == id.connection_id) {
     ViewMap::const_iterator i = view_map_.find(id.view_id);
     return i == view_map_.end() ? NULL : i->second;
@@ -95,7 +96,7 @@ const View* ViewManagerConnection::GetView(const ViewId& id) const {
   return root_node_manager_->GetView(id);
 }
 
-void ViewManagerConnection::SetRoots(const Array<Id>& node_ids) {
+void ViewManagerServiceImpl::SetRoots(const Array<Id>& node_ids) {
   DCHECK(roots_.empty());
   NodeIdSet roots;
   for (size_t i = 0; i < node_ids.size(); ++i) {
@@ -105,13 +106,13 @@ void ViewManagerConnection::SetRoots(const Array<Id>& node_ids) {
   roots_.swap(roots);
 }
 
-void ViewManagerConnection::OnViewManagerConnectionDestroyed(
+void ViewManagerServiceImpl::OnViewManagerServiceImplDestroyed(
     ConnectionSpecificId id) {
   if (creator_id_ == id)
     creator_id_ = kRootConnection;
 }
 
-void ViewManagerConnection::ProcessNodeBoundsChanged(
+void ViewManagerServiceImpl::ProcessNodeBoundsChanged(
     const Node* node,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
@@ -126,7 +127,7 @@ void ViewManagerConnection::ProcessNodeBoundsChanged(
   }
 }
 
-void ViewManagerConnection::ProcessNodeHierarchyChanged(
+void ViewManagerServiceImpl::ProcessNodeHierarchyChanged(
     const Node* node,
     const Node* new_parent,
     const Node* old_parent,
@@ -167,14 +168,14 @@ void ViewManagerConnection::ProcessNodeHierarchyChanged(
                                    NodeIdToTransportId(new_parent_id),
                                    NodeIdToTransportId(old_parent_id),
                                    server_change_id,
-                                   NodesToINodes(to_send));
+                                   NodesToNodeDatas(to_send));
 }
 
-void ViewManagerConnection::ProcessNodeReorder(const Node* node,
-                                               const Node* relative_node,
-                                               OrderDirection direction,
-                                               Id server_change_id,
-                                               bool originated_change) {
+void ViewManagerServiceImpl::ProcessNodeReorder(const Node* node,
+                                                const Node* relative_node,
+                                                OrderDirection direction,
+                                                Id server_change_id,
+                                                bool originated_change) {
   if (originated_change ||
       !known_nodes_.count(NodeIdToTransportId(node->id())) ||
       !known_nodes_.count(NodeIdToTransportId(relative_node->id()))) {
@@ -187,7 +188,7 @@ void ViewManagerConnection::ProcessNodeReorder(const Node* node,
                             server_change_id);
 }
 
-void ViewManagerConnection::ProcessNodeViewReplaced(
+void ViewManagerServiceImpl::ProcessNodeViewReplaced(
     const Node* node,
     const View* new_view,
     const View* old_view,
@@ -202,9 +203,9 @@ void ViewManagerConnection::ProcessNodeViewReplaced(
                                new_view_id, old_view_id);
 }
 
-void ViewManagerConnection::ProcessNodeDeleted(const NodeId& node,
-                                               Id server_change_id,
-                                               bool originated_change) {
+void ViewManagerServiceImpl::ProcessNodeDeleted(const NodeId& node,
+                                                Id server_change_id,
+                                                bool originated_change) {
   const bool in_known = known_nodes_.erase(NodeIdToTransportId(node)) > 0;
   const bool in_roots = roots_.erase(NodeIdToTransportId(node)) > 0;
 
@@ -225,15 +226,15 @@ void ViewManagerConnection::ProcessNodeDeleted(const NodeId& node,
   }
 }
 
-void ViewManagerConnection::ProcessViewDeleted(const ViewId& view,
-                                               bool originated_change) {
+void ViewManagerServiceImpl::ProcessViewDeleted(const ViewId& view,
+                                                bool originated_change) {
   if (originated_change)
     return;
   client()->OnViewDeleted(ViewIdToTransportId(view));
 }
 
-void ViewManagerConnection::ProcessViewInputEvent(const View* view,
-                                                  const ui::Event* event) {
+void ViewManagerServiceImpl::ProcessViewInputEvent(const View* view,
+                                                   const ui::Event* event) {
   DCHECK_EQ(id_, view->id().connection_id);
   client()->OnViewInputEvent(
       ViewIdToTransportId(view->id()),
@@ -241,12 +242,12 @@ void ViewManagerConnection::ProcessViewInputEvent(const View* view,
       base::Bind(&base::DoNothing));
 }
 
-void ViewManagerConnection::OnConnectionError() {
+void ViewManagerServiceImpl::OnConnectionError() {
   if (delete_on_connection_error_)
     delete this;
 }
 
-bool ViewManagerConnection::CanRemoveNodeFromParent(const Node* node) const {
+bool ViewManagerServiceImpl::CanRemoveNodeFromParent(const Node* node) const {
   if (!node)
     return false;
 
@@ -265,8 +266,8 @@ bool ViewManagerConnection::CanRemoveNodeFromParent(const Node* node) const {
             parent->id().connection_id == id_)));
 }
 
-bool ViewManagerConnection::CanAddNode(const Node* parent,
-                                       const Node* child) const {
+bool ViewManagerServiceImpl::CanAddNode(const Node* parent,
+                                        const Node* child) const {
   if (!parent || !child)
     return false;  // Both nodes must be valid.
 
@@ -284,9 +285,9 @@ bool ViewManagerConnection::CanAddNode(const Node* parent,
   return (IsNodeDescendantOfRoots(child) || child->id().connection_id == id_);
 }
 
-bool ViewManagerConnection::CanReorderNode(const Node* node,
-                                           const Node* relative_node,
-                                           OrderDirection direction) const {
+bool ViewManagerServiceImpl::CanReorderNode(const Node* node,
+                                            const Node* relative_node,
+                                            OrderDirection direction) const {
   if (!node || !relative_node)
     return false;
 
@@ -314,16 +315,16 @@ bool ViewManagerConnection::CanReorderNode(const Node* node,
   return true;
 }
 
-bool ViewManagerConnection::CanDeleteNode(const NodeId& node_id) const {
+bool ViewManagerServiceImpl::CanDeleteNode(const NodeId& node_id) const {
   return node_id.connection_id == id_;
 }
 
-bool ViewManagerConnection::CanDeleteView(const ViewId& view_id) const {
+bool ViewManagerServiceImpl::CanDeleteView(const ViewId& view_id) const {
   return view_id.connection_id == id_;
 }
 
-bool ViewManagerConnection::CanSetView(const Node* node,
-                                       const ViewId& view_id) const {
+bool ViewManagerServiceImpl::CanSetView(const Node* node,
+                                        const ViewId& view_id) const {
   if (!node || !IsNodeDescendantOfRoots(node))
     return false;
 
@@ -331,17 +332,17 @@ bool ViewManagerConnection::CanSetView(const Node* node,
   return (view && view_id.connection_id == id_) || view_id == ViewId();
 }
 
-bool ViewManagerConnection::CanSetFocus(const Node* node) const {
+bool ViewManagerServiceImpl::CanSetFocus(const Node* node) const {
   // TODO(beng): security.
   return true;
 }
 
-bool ViewManagerConnection::CanGetNodeTree(const Node* node) const {
+bool ViewManagerServiceImpl::CanGetNodeTree(const Node* node) const {
   return node &&
       (IsNodeDescendantOfRoots(node) || node->id().connection_id == id_);
 }
 
-bool ViewManagerConnection::CanEmbed(
+bool ViewManagerServiceImpl::CanEmbed(
     const mojo::Array<uint32_t>& node_ids) const {
   for (size_t i = 0; i < node_ids.size(); ++i) {
     const Node* node = GetNode(NodeIdFromTransportId(node_ids[i]));
@@ -351,8 +352,8 @@ bool ViewManagerConnection::CanEmbed(
   return node_ids.size() > 0;
 }
 
-bool ViewManagerConnection::DeleteNodeImpl(ViewManagerConnection* source,
-                                           const NodeId& node_id) {
+bool ViewManagerServiceImpl::DeleteNodeImpl(ViewManagerServiceImpl* source,
+                                            const NodeId& node_id) {
   DCHECK_EQ(node_id.connection_id, id_);
   Node* node = GetNode(node_id);
   if (!node)
@@ -373,8 +374,8 @@ bool ViewManagerConnection::DeleteNodeImpl(ViewManagerConnection* source,
   return true;
 }
 
-bool ViewManagerConnection::DeleteViewImpl(ViewManagerConnection* source,
-                                           const ViewId& view_id) {
+bool ViewManagerServiceImpl::DeleteViewImpl(ViewManagerServiceImpl* source,
+                                            const ViewId& view_id) {
   DCHECK_EQ(view_id.connection_id, id_);
   View* view = GetView(view_id);
   if (!view)
@@ -393,7 +394,7 @@ bool ViewManagerConnection::DeleteViewImpl(ViewManagerConnection* source,
   return true;
 }
 
-bool ViewManagerConnection::SetViewImpl(Node* node, const ViewId& view_id) {
+bool ViewManagerServiceImpl::SetViewImpl(Node* node, const ViewId& view_id) {
   DCHECK(node);  // CanSetView() should have verified node exists.
   View* view = GetView(view_id);
   RootNodeManager::ScopedChange change(
@@ -408,7 +409,7 @@ bool ViewManagerConnection::SetViewImpl(Node* node, const ViewId& view_id) {
   return true;
 }
 
-void ViewManagerConnection::GetUnknownNodesFrom(
+void ViewManagerServiceImpl::GetUnknownNodesFrom(
     const Node* node,
     std::vector<const Node*>* nodes) {
   const Id transport_id = NodeIdToTransportId(node->id());
@@ -421,7 +422,7 @@ void ViewManagerConnection::GetUnknownNodesFrom(
     GetUnknownNodesFrom(children[i], nodes);
 }
 
-void ViewManagerConnection::RemoveFromKnown(const Node* node) {
+void ViewManagerServiceImpl::RemoveFromKnown(const Node* node) {
   if (node->id().connection_id == id_)
     return;
   known_nodes_.erase(NodeIdToTransportId(node->id()));
@@ -430,7 +431,7 @@ void ViewManagerConnection::RemoveFromKnown(const Node* node) {
     RemoveFromKnown(children[i]);
 }
 
-bool ViewManagerConnection::AddRoots(
+bool ViewManagerServiceImpl::AddRoots(
     const std::vector<Id>& node_ids) {
   std::vector<const Node*> to_send;
   bool did_add_root = false;
@@ -455,11 +456,11 @@ bool ViewManagerConnection::AddRoots(
   if (!did_add_root)
     return false;
 
-  client()->OnRootsAdded(NodesToINodes(to_send));
+  client()->OnRootsAdded(NodesToNodeDatas(to_send));
   return true;
 }
 
-bool ViewManagerConnection::IsNodeDescendantOfRoots(const Node* node) const {
+bool ViewManagerServiceImpl::IsNodeDescendantOfRoots(const Node* node) const {
   if (roots_.empty())
     return true;
   if (!node)
@@ -477,7 +478,7 @@ bool ViewManagerConnection::IsNodeDescendantOfRoots(const Node* node) const {
   return false;
 }
 
-bool ViewManagerConnection::ShouldNotifyOnHierarchyChange(
+bool ViewManagerServiceImpl::ShouldNotifyOnHierarchyChange(
     const Node* node,
     const Node** new_parent,
     const Node** old_parent,
@@ -522,9 +523,9 @@ bool ViewManagerConnection::ShouldNotifyOnHierarchyChange(
   return known_nodes_.count(NodeIdToTransportId(node->id())) > 0;
 }
 
-Array<INodePtr> ViewManagerConnection::NodesToINodes(
+Array<NodeDataPtr> ViewManagerServiceImpl::NodesToNodeDatas(
     const std::vector<const Node*>& nodes) {
-  Array<INodePtr> array(nodes.size());
+  Array<NodeDataPtr> array(nodes.size());
   for (size_t i = 0; i < nodes.size(); ++i) {
     const Node* node = nodes[i];
     DCHECK(known_nodes_.count(NodeIdToTransportId(node->id())) > 0);
@@ -533,7 +534,7 @@ Array<INodePtr> ViewManagerConnection::NodesToINodes(
     // in roots), and should not be sent over.
     if (parent && known_nodes_.count(NodeIdToTransportId(parent->id())) == 0)
       parent = NULL;
-    INodePtr inode(INode::New());
+    NodeDataPtr inode(NodeData::New());
     inode->parent_id = NodeIdToTransportId(parent ? parent->id() : NodeId());
     inode->node_id = NodeIdToTransportId(node->id());
     inode->view_id =
@@ -544,7 +545,7 @@ Array<INodePtr> ViewManagerConnection::NodesToINodes(
   return array.Pass();
 }
 
-void ViewManagerConnection::CreateNode(
+void ViewManagerServiceImpl::CreateNode(
     Id transport_node_id,
     const Callback<void(bool)>& callback) {
   const NodeId node_id(NodeIdFromTransportId(transport_node_id));
@@ -558,20 +559,20 @@ void ViewManagerConnection::CreateNode(
   callback.Run(true);
 }
 
-void ViewManagerConnection::DeleteNode(
+void ViewManagerServiceImpl::DeleteNode(
     Id transport_node_id,
     const Callback<void(bool)>& callback) {
   const NodeId node_id(NodeIdFromTransportId(transport_node_id));
   bool did_delete = CanDeleteNode(node_id);
   if (did_delete) {
-    ViewManagerConnection* connection = root_node_manager_->GetConnection(
+    ViewManagerServiceImpl* connection = root_node_manager_->GetConnection(
         node_id.connection_id);
     did_delete = connection && connection->DeleteNodeImpl(this, node_id);
   }
   callback.Run(did_delete);
 }
 
-void ViewManagerConnection::AddNode(
+void ViewManagerServiceImpl::AddNode(
     Id parent_id,
     Id child_id,
     Id server_change_id,
@@ -591,7 +592,7 @@ void ViewManagerConnection::AddNode(
   callback.Run(success);
 }
 
-void ViewManagerConnection::RemoveNodeFromParent(
+void ViewManagerServiceImpl::RemoveNodeFromParent(
     Id node_id,
     Id server_change_id,
     const Callback<void(bool)>& callback) {
@@ -609,11 +610,11 @@ void ViewManagerConnection::RemoveNodeFromParent(
   callback.Run(success);
 }
 
-void ViewManagerConnection::ReorderNode(Id node_id,
-                                        Id relative_node_id,
-                                        OrderDirection direction,
-                                        Id server_change_id,
-                                        const Callback<void(bool)>& callback) {
+void ViewManagerServiceImpl::ReorderNode(Id node_id,
+                                         Id relative_node_id,
+                                         OrderDirection direction,
+                                         Id server_change_id,
+                                         const Callback<void(bool)>& callback) {
   bool success = false;
   if (server_change_id == root_node_manager_->next_server_change_id()) {
     Node* node = GetNode(NodeIdFromTransportId(node_id));
@@ -630,9 +631,9 @@ void ViewManagerConnection::ReorderNode(Id node_id,
   callback.Run(success);
 }
 
-void ViewManagerConnection::GetNodeTree(
+void ViewManagerServiceImpl::GetNodeTree(
     Id node_id,
-    const Callback<void(Array<INodePtr>)>& callback) {
+    const Callback<void(Array<NodeDataPtr>)>& callback) {
   Node* node = GetNode(NodeIdFromTransportId(node_id));
   std::vector<const Node*> nodes;
   if (CanGetNodeTree(node)) {
@@ -640,10 +641,10 @@ void ViewManagerConnection::GetNodeTree(
     for (size_t i = 0; i < nodes.size(); ++i)
       known_nodes_.insert(NodeIdToTransportId(nodes[i]->id()));
   }
-  callback.Run(NodesToINodes(nodes));
+  callback.Run(NodesToNodeDatas(nodes));
 }
 
-void ViewManagerConnection::CreateView(
+void ViewManagerServiceImpl::CreateView(
     Id transport_view_id,
     const Callback<void(bool)>& callback) {
   const ViewId view_id(ViewIdFromTransportId(transport_view_id));
@@ -655,28 +656,28 @@ void ViewManagerConnection::CreateView(
   callback.Run(true);
 }
 
-void ViewManagerConnection::DeleteView(
+void ViewManagerServiceImpl::DeleteView(
     Id transport_view_id,
     const Callback<void(bool)>& callback) {
   const ViewId view_id(ViewIdFromTransportId(transport_view_id));
   bool did_delete = CanDeleteView(view_id);
   if (did_delete) {
-    ViewManagerConnection* connection = root_node_manager_->GetConnection(
+    ViewManagerServiceImpl* connection = root_node_manager_->GetConnection(
         view_id.connection_id);
     did_delete = (connection && connection->DeleteViewImpl(this, view_id));
   }
   callback.Run(did_delete);
 }
 
-void ViewManagerConnection::SetView(Id transport_node_id,
-                                    Id transport_view_id,
-                                    const Callback<void(bool)>& callback) {
+void ViewManagerServiceImpl::SetView(Id transport_node_id,
+                                     Id transport_view_id,
+                                     const Callback<void(bool)>& callback) {
   Node* node = GetNode(NodeIdFromTransportId(transport_node_id));
   const ViewId view_id(ViewIdFromTransportId(transport_view_id));
   callback.Run(CanSetView(node, view_id) && SetViewImpl(node, view_id));
 }
 
-void ViewManagerConnection::SetViewContents(
+void ViewManagerServiceImpl::SetViewContents(
     Id view_id,
     ScopedSharedBufferHandle buffer,
     uint32_t buffer_size,
@@ -700,8 +701,8 @@ void ViewManagerConnection::SetViewContents(
   callback.Run(true);
 }
 
-void ViewManagerConnection::SetFocus(Id node_id,
-                                     const Callback<void(bool)> & callback) {
+void ViewManagerServiceImpl::SetFocus(Id node_id,
+                                      const Callback<void(bool)> & callback) {
   bool success = false;
   Node* node = GetNode(NodeIdFromTransportId(node_id));
   if (CanSetFocus(node)) {
@@ -711,7 +712,7 @@ void ViewManagerConnection::SetFocus(Id node_id,
   callback.Run(success);
 }
 
-void ViewManagerConnection::SetNodeBounds(
+void ViewManagerServiceImpl::SetNodeBounds(
     Id node_id,
     RectPtr bounds,
     const Callback<void(bool)>& callback) {
@@ -736,13 +737,13 @@ void ViewManagerConnection::SetNodeBounds(
   callback.Run(true);
 }
 
-void ViewManagerConnection::Embed(const String& url,
-                                  Array<uint32_t> node_ids,
-                                  const Callback<void(bool)>& callback) {
+void ViewManagerServiceImpl::Embed(const String& url,
+                                   Array<uint32_t> node_ids,
+                                   const Callback<void(bool)>& callback) {
   bool success = CanEmbed(node_ids);
   if (success) {
     // We may already have this connection, if so reuse it.
-    ViewManagerConnection* existing_connection =
+    ViewManagerServiceImpl* existing_connection =
         root_node_manager_->GetConnectionByCreator(id_, url.To<std::string>());
     if (existing_connection)
       success = existing_connection->AddRoots(node_ids.storage());
@@ -752,27 +753,27 @@ void ViewManagerConnection::Embed(const String& url,
   callback.Run(success);
 }
 
-void ViewManagerConnection::OnNodeHierarchyChanged(const Node* node,
-                                                   const Node* new_parent,
-                                                   const Node* old_parent) {
+void ViewManagerServiceImpl::OnNodeHierarchyChanged(const Node* node,
+                                                    const Node* new_parent,
+                                                    const Node* old_parent) {
   root_node_manager_->ProcessNodeHierarchyChanged(node, new_parent, old_parent);
 }
 
-void ViewManagerConnection::OnNodeViewReplaced(const Node* node,
-                                               const View* new_view,
-                                               const View* old_view) {
+void ViewManagerServiceImpl::OnNodeViewReplaced(const Node* node,
+                                                const View* new_view,
+                                                const View* old_view) {
   root_node_manager_->ProcessNodeViewReplaced(node, new_view, old_view);
 }
 
-void ViewManagerConnection::OnViewInputEvent(const View* view,
-                                             const ui::Event* event) {
-  ViewManagerConnection* connection = root_node_manager_->GetConnection(
+void ViewManagerServiceImpl::OnViewInputEvent(const View* view,
+                                              const ui::Event* event) {
+  ViewManagerServiceImpl* connection = root_node_manager_->GetConnection(
       view->id().connection_id);
   DCHECK(connection);
   connection->ProcessViewInputEvent(view, event);
 }
 
-void ViewManagerConnection::OnConnectionEstablished() {
+void ViewManagerServiceImpl::OnConnectionEstablished() {
   root_node_manager_->AddConnection(this);
 
   std::vector<const Node*> to_send;
@@ -787,7 +788,7 @@ void ViewManagerConnection::OnConnectionEstablished() {
       id_,
       creator_url_,
       root_node_manager_->next_server_change_id(),
-      NodesToINodes(to_send));
+      NodesToNodeDatas(to_send));
 }
 
 }  // namespace service

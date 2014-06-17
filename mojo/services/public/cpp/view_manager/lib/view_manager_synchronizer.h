@@ -25,7 +25,7 @@ class ViewManagerTransaction;
 
 // Manages the connection with the View Manager service.
 class ViewManagerSynchronizer : public ViewManager,
-                                public InterfaceImpl<IViewManagerClient> {
+                                public InterfaceImpl<ViewManagerClient> {
  public:
   explicit ViewManagerSynchronizer(ViewManagerDelegate* delegate);
   virtual ~ViewManagerSynchronizer();
@@ -94,13 +94,13 @@ class ViewManagerSynchronizer : public ViewManager,
   // Overridden from InterfaceImpl:
   virtual void OnConnectionEstablished() OVERRIDE;
 
-  // Overridden from IViewManagerClient:
+  // Overridden from ViewManagerClient:
   virtual void OnViewManagerConnectionEstablished(
       ConnectionSpecificId connection_id,
       const String& creator_url,
       Id next_server_change_id,
-      Array<INodePtr> nodes) OVERRIDE;
-  virtual void OnRootsAdded(Array<INodePtr> nodes) OVERRIDE;
+      Array<NodeDataPtr> nodes) OVERRIDE;
+  virtual void OnRootsAdded(Array<NodeDataPtr> nodes) OVERRIDE;
   virtual void OnServerChangeIdAdvanced(Id next_server_change_id) OVERRIDE;
   virtual void OnNodeBoundsChanged(Id node_id,
                                    RectPtr old_bounds,
@@ -109,7 +109,7 @@ class ViewManagerSynchronizer : public ViewManager,
                                       Id new_parent_id,
                                       Id old_parent_id,
                                       Id server_change_id,
-                                      Array<INodePtr> nodes) OVERRIDE;
+                                      Array<NodeDataPtr> nodes) OVERRIDE;
   virtual void OnNodeReordered(Id node_id,
                                Id relative_node_id,
                                OrderDirection direction,
@@ -152,7 +152,7 @@ class ViewManagerSynchronizer : public ViewManager,
   IdToNodeMap nodes_;
   IdToViewMap views_;
 
-  IViewManager* service_;
+  ViewManagerService* service_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerSynchronizer);
 };

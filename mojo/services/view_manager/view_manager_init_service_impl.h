@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_INIT_CONNECTION_H_
-#define MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_INIT_CONNECTION_H_
+#ifndef MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_INIT_SERVICE_IMPL_H_
+#define MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_INIT_SERVICE_IMPL_H_
 
 #include <string>
 
@@ -28,14 +28,14 @@ namespace service {
 #pragma warning(disable : 4275)
 #endif
 
-// Used to create the initial IViewManagerClient. Doesn't initiate the Connect()
+// Used to create the initial ViewManagerClient. Doesn't initiate the Connect()
 // until the WindowTreeHost has been created.
-class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitConnection
-    : public InterfaceImpl<IViewManagerInit>,
+class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceImpl
+    : public InterfaceImpl<ViewManagerInitService>,
       public RootViewManagerDelegate {
  public:
-  explicit ViewManagerInitConnection(ServiceProvider* service_provider);
-  virtual ~ViewManagerInitConnection();
+  explicit ViewManagerInitServiceImpl(ServiceProvider* service_provider);
+  virtual ~ViewManagerInitServiceImpl();
 
  private:
   struct ConnectParams {
@@ -49,7 +49,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitConnection
   void MaybeEmbedRoot(const std::string& url,
                       const Callback<void(bool)>& callback);
 
-  // IViewManagerInit overrides:
+  // ViewManagerInitService overrides:
   virtual void EmbedRoot(const String& url,
                          const Callback<void(bool)>& callback) OVERRIDE;
 
@@ -65,7 +65,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitConnection
 
   bool is_tree_host_ready_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewManagerInitConnection);
+  DISALLOW_COPY_AND_ASSIGN(ViewManagerInitServiceImpl);
 };
 
 #if defined(OS_WIN)
@@ -76,4 +76,4 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitConnection
 }  // namespace view_manager
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_INIT_CONNECTION_H_
+#endif  // MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_INIT_SERVICE_IMPL_H_

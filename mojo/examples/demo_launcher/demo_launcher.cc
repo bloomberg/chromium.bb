@@ -19,8 +19,8 @@ class DemoLauncher : public Application {
  private:
   // Overridden from Application:
   virtual void Initialize() MOJO_OVERRIDE {
-    ConnectTo<view_manager::IViewManagerInit>("mojo:mojo_view_manager",
-                                              &view_manager_init_);
+    ConnectTo<view_manager::ViewManagerInitService>("mojo:mojo_view_manager",
+                                                    &view_manager_init_);
     view_manager_init_->EmbedRoot("mojo:mojo_window_manager",
                                   base::Bind(&DemoLauncher::OnConnect,
                                              base::Unretained(this)));
@@ -28,7 +28,7 @@ class DemoLauncher : public Application {
 
   void OnConnect(bool success) {}
 
-  view_manager::IViewManagerInitPtr view_manager_init_;
+  view_manager::ViewManagerInitServicePtr view_manager_init_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoLauncher);
 };

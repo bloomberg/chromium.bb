@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_CONNECTION_H_
-#define MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_CONNECTION_H_
+#ifndef MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_SERVICE_IMPL_H_
+#define MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_SERVICE_IMPL_H_
 
 #include <set>
 #include <string>
@@ -37,18 +37,18 @@ class View;
 #endif
 
 // Manages a connection from the client.
-class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
-    : public InterfaceImpl<IViewManager>,
+class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
+    : public InterfaceImpl<ViewManagerService>,
       public NodeDelegate {
  public:
-  ViewManagerConnection(RootNodeManager* root_node_manager,
-                        ConnectionSpecificId creator_id,
-                        const std::string& creator_url,
-                        const std::string& url);
-  virtual ~ViewManagerConnection();
+  ViewManagerServiceImpl(RootNodeManager* root_node_manager,
+                         ConnectionSpecificId creator_id,
+                         const std::string& creator_url,
+                         const std::string& url);
+  virtual ~ViewManagerServiceImpl();
 
   // Used to mark this connection as originating from a call to
-  // IViewManager::Connect(). When set OnConnectionError() deletes |this|.
+  // ViewManagerService::Connect(). When set OnConnectionError() deletes |this|.
   void set_delete_on_connection_error() { delete_on_connection_error_ = true; }
 
   ConnectionSpecificId id() const { return id_; }
@@ -58,21 +58,21 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   // Returns the Node with the specified id.
   Node* GetNode(const NodeId& id) {
     return const_cast<Node*>(
-        const_cast<const ViewManagerConnection*>(this)->GetNode(id));
+        const_cast<const ViewManagerServiceImpl*>(this)->GetNode(id));
   }
   const Node* GetNode(const NodeId& id) const;
 
   // Returns the View with the specified id.
   View* GetView(const ViewId& id) {
     return const_cast<View*>(
-        const_cast<const ViewManagerConnection*>(this)->GetView(id));
+        const_cast<const ViewManagerServiceImpl*>(this)->GetView(id));
   }
   const View* GetView(const ViewId& id) const;
 
   void SetRoots(const Array<Id>& node_ids);
 
   // Invoked when a connection is destroyed.
-  void OnViewManagerConnectionDestroyed(ConnectionSpecificId id);
+  void OnViewManagerServiceImplDestroyed(ConnectionSpecificId id);
 
   // The following methods are invoked after the corresponding change has been
   // processed. They do the appropriate bookkeeping and update the client as
@@ -127,11 +127,11 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
 
   // Deletes a node owned by this connection. Returns true on success. |source|
   // is the connection that originated the change.
-  bool DeleteNodeImpl(ViewManagerConnection* source, const NodeId& node_id);
+  bool DeleteNodeImpl(ViewManagerServiceImpl* source, const NodeId& node_id);
 
   // Deletes a view owned by this connection. Returns true on success. |source|
   // is the connection that originated the change.
-  bool DeleteViewImpl(ViewManagerConnection* source, const ViewId& view_id);
+  bool DeleteViewImpl(ViewManagerServiceImpl* source, const ViewId& view_id);
 
   // Sets the view associated with a node.
   bool SetViewImpl(Node* node, const ViewId& view_id);
@@ -161,12 +161,12 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                                      const Node** old_parent,
                                      std::vector<const Node*>* to_send);
 
-  // Converts an array of Nodes to INodes. This assumes all the nodes are valid
-  // for the client. The parent of nodes the client is not allowed to see are
-  // set to NULL (in the returned INodes).
-  Array<INodePtr> NodesToINodes(const std::vector<const Node*>& nodes);
+  // Converts an array of Nodes to NodeDatas. This assumes all the nodes are
+  // valid for the client. The parent of nodes the client is not allowed to see
+  // are set to NULL (in the returned NodeDatas).
+  Array<NodeDataPtr> NodesToNodeDatas(const std::vector<const Node*>& nodes);
 
-  // Overridden from IViewManager:
+  // Overridden from ViewManagerService:
   virtual void CreateNode(Id transport_node_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
   virtual void DeleteNode(Id transport_node_id,
@@ -186,7 +186,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                            const Callback<void(bool)>& callback) OVERRIDE;
   virtual void GetNodeTree(
       Id node_id,
-      const Callback<void(Array<INodePtr>)>& callback) OVERRIDE;
+      const Callback<void(Array<NodeDataPtr>)>& callback) OVERRIDE;
   virtual void CreateView(Id transport_view_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
   virtual void DeleteView(Id transport_view_id,
@@ -253,7 +253,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   // See description above setter.
   bool delete_on_connection_error_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewManagerConnection);
+  DISALLOW_COPY_AND_ASSIGN(ViewManagerServiceImpl);
 };
 
 #if defined(OS_WIN)
@@ -264,4 +264,4 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
 }  // namespace view_manager
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_CONNECTION_H_
+#endif  // MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_SERVICE_IMPL_H_

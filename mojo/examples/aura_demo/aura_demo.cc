@@ -130,28 +130,28 @@ class DemoWindowTreeClient : public aura::client::WindowTreeClient {
 
 class AuraDemo;
 
-// Trivial IViewManagerClient implementation. Forwards to AuraDemo when
+// Trivial ViewManagerClient implementation. Forwards to AuraDemo when
 // connection established.
-class IViewManagerClientImpl
-    : public InterfaceImpl<view_manager::IViewManagerClient> {
+class ViewManagerClientImpl
+    : public InterfaceImpl<view_manager::ViewManagerClient> {
  public:
-  explicit IViewManagerClientImpl(AuraDemo* aura_demo)
+  explicit ViewManagerClientImpl(AuraDemo* aura_demo)
       : aura_demo_(aura_demo) {}
-  virtual ~IViewManagerClientImpl() {}
+  virtual ~ViewManagerClientImpl() {}
 
  private:
   void OnResult(bool result) {
-    VLOG(1) << "IViewManagerClientImpl::::OnResult result=" << result;
+    VLOG(1) << "ViewManagerClientImpl::::OnResult result=" << result;
     DCHECK(result);
   }
 
-  // IViewManagerClient:
+  // ViewManagerClient:
   virtual void OnViewManagerConnectionEstablished(
       uint16_t connection_id,
       const String& creator_url,
       uint32_t next_server_change_id,
-      mojo::Array<view_manager::INodePtr> nodes) OVERRIDE;
-  virtual void OnRootsAdded(Array<view_manager::INodePtr> nodes) OVERRIDE {
+      mojo::Array<view_manager::NodeDataPtr> nodes) OVERRIDE;
+  virtual void OnRootsAdded(Array<view_manager::NodeDataPtr> nodes) OVERRIDE {
     NOTREACHED();
   }
   virtual void OnServerChangeIdAdvanced(
@@ -166,7 +166,7 @@ class IViewManagerClientImpl
       uint32_t new_parent,
       uint32_t old_parent,
       uint32_t server_change_id,
-      mojo::Array<view_manager::INodePtr> nodes) OVERRIDE {
+      mojo::Array<view_manager::NodeDataPtr> nodes) OVERRIDE {
   }
   virtual void OnNodeReordered(
       uint32_t node_id,
@@ -190,7 +190,7 @@ class IViewManagerClientImpl
 
   AuraDemo* aura_demo_;
 
-  DISALLOW_COPY_AND_ASSIGN(IViewManagerClientImpl);
+  DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };
 
 class AuraDemo : public Application, public WindowTreeHostMojoDelegate {
@@ -201,11 +201,12 @@ class AuraDemo : public Application, public WindowTreeHostMojoDelegate {
         window2_(NULL),
         window21_(NULL),
         view_id_(0) {
-    AddService<IViewManagerClientImpl>(this);
+    AddService<ViewManagerClientImpl>(this);
   }
   virtual ~AuraDemo() {}
 
-  void SetRoot(view_manager::IViewManager* view_manager, uint32_t view_id) {
+  void SetRoot(view_manager::ViewManagerService* view_manager,
+               uint32_t view_id) {
     aura::Env::CreateInstance(true);
     view_manager_ = view_manager;
     view_id_ = view_id;
@@ -278,7 +279,7 @@ class AuraDemo : public Application, public WindowTreeHostMojoDelegate {
   scoped_ptr<DemoWindowDelegate> delegate2_;
   scoped_ptr<DemoWindowDelegate> delegate21_;
 
-  view_manager::IViewManager* view_manager_;
+  view_manager::ViewManagerService* view_manager_;
 
   aura::Window* window1_;
   aura::Window* window2_;
@@ -293,16 +294,16 @@ class AuraDemo : public Application, public WindowTreeHostMojoDelegate {
   DISALLOW_COPY_AND_ASSIGN(AuraDemo);
 };
 
-void IViewManagerClientImpl::OnViewManagerConnectionEstablished(
+void ViewManagerClientImpl::OnViewManagerConnectionEstablished(
       uint16_t connection_id,
       const String& creator_url,
       uint32_t next_server_change_id,
-      mojo::Array<view_manager::INodePtr> nodes) {
+      mojo::Array<view_manager::NodeDataPtr> nodes) {
   const uint32_t view_id = connection_id << 16 | 1;
-  client()->CreateView(view_id, base::Bind(&IViewManagerClientImpl::OnResult,
+  client()->CreateView(view_id, base::Bind(&ViewManagerClientImpl::OnResult,
                                            base::Unretained(this)));
   client()->SetView(nodes[0]->node_id, view_id,
-                    base::Bind(&IViewManagerClientImpl::OnResult,
+                    base::Bind(&ViewManagerClientImpl::OnResult,
                                base::Unretained(this)));
 
   aura_demo_->SetRoot(client(), view_id);

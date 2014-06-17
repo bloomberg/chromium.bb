@@ -8,17 +8,17 @@ import "view_manager_constants.mojom"
 
 module mojo.view_manager {
 
-struct INode {
+struct NodeData {
   uint32 parent_id;
   uint32 node_id;
   uint32 view_id;
   mojo.Rect bounds;
 };
 
-// IViewManagerInit is responsible for launching the client that controls the
-// root node. mojo::view_manager returns an instance of this. All other
+// ViewManagerInitService is responsible for launching the client that controls
+// the root node. mojo::view_manager returns an instance of this. All other
 // connections are established by the client this creates.
-interface IViewManagerInit {
+interface ViewManagerInitService {
   EmbedRoot(string url) => (bool success);
 };
 
@@ -32,8 +32,8 @@ interface IViewManagerInit {
 // connection id, and the lower 16 the id assigned by the client.
 //
 // The root node is identified with a connection id of 0, and value of 1.
-[Client=IViewManagerClient]
-interface IViewManager {
+[Client=ViewManagerClient]
+interface ViewManagerService {
   // Creates a new node with the specified id. It is up to the client to ensure
   // the id is unique to the connection (the id need not be globally unique).
   // Additionally the connection id (embedded in |node_id|) must match that of
@@ -86,7 +86,7 @@ interface IViewManager {
   // the first result in the return value, unless |node_id| is invalid, in which
   // case an empty vector is returned. The nodes are visited using a depth first
   // search (pre-order).
-  GetNodeTree(uint32 node_id) => (INode[] nodes);
+  GetNodeTree(uint32 node_id) => (NodeData[] nodes);
 
   // Creates a new view with the specified id. It is up to the client to ensure
   // the id is unique to the connection (the id need not be globally unique).
@@ -111,11 +111,11 @@ interface IViewManager {
 
   // Embeds the app at |url| in the specified nodes. More specifically this
   // creates a new connection to the specified url, expecting to get an
-  // IViewManagerClient and configures it with the root nodes |nodes|. Fails
+  // ViewManagerClient and configures it with the root nodes |nodes|. Fails
   // if |nodes| is empty or contains nodes that were not created by this
   // connection.
   // If a particular client invokes Embed() multiple times with the same url,
-  // the connection is reused. When this happens the IViewManagerClient is
+  // the connection is reused. When this happens the ViewManagerClient is
   // notified of the additional roots by way of OnRootsAdded().
   Embed(string url, uint32[] nodes) => (bool success);
 };
@@ -123,8 +123,8 @@ interface IViewManager {
 // Changes to nodes/views are not sent to the connection that originated the
 // change. For example, if connection 1 attaches a view to a node (SetView())
 // connection 1 does not receive OnNodeViewReplaced().
-[Client=IViewManager]
-interface IViewManagerClient {
+[Client=ViewManagerService]
+interface ViewManagerClient {
   // Invoked once the connection has been established. |connection_id| is the id
   // that uniquely identifies this connection. |next_server_change_id| is the
   // id of the next change the server is expecting. |nodes| are the nodes
@@ -132,11 +132,11 @@ interface IViewManagerClient {
   OnViewManagerConnectionEstablished(uint16 connection_id,
                                      string creator_url,
                                      uint32 next_server_change_id,
-                                     INode[] nodes);
+                                     NodeData[] nodes);
 
-  // See description of IViewManager::Connect() for details as to when this is
-  // invoked.
-  OnRootsAdded(INode[] nodes);
+  // See description of ViewManagerService::Connect() for details as to when
+  // this is invoked.
+  OnRootsAdded(NodeData[] nodes);
 
   // This is sent to clients when a change is made to the server that results
   // in the |server_change_id| changing but the client isn't notified. This is
@@ -159,7 +159,7 @@ interface IViewManagerClient {
                          uint32 new_parent,
                          uint32 old_parent,
                          uint32 server_change_id,
-                         INode[] nodes);
+                         NodeData[] nodes);
 
   // Invoked when the order of nodes within a parent changes.
   OnNodeReordered(uint32 node_id,

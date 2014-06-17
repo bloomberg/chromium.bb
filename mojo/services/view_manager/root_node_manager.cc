@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/view_manager/view.h"
-#include "mojo/services/view_manager/view_manager_connection.h"
+#include "mojo/services/view_manager/view_manager_service_impl.h"
 #include "ui/aura/env.h"
 
 namespace mojo {
@@ -15,7 +15,7 @@ namespace view_manager {
 namespace service {
 
 RootNodeManager::ScopedChange::ScopedChange(
-    ViewManagerConnection* connection,
+    ViewManagerServiceImpl* connection,
     RootNodeManager* root,
     RootNodeManager::ChangeType change_type,
     bool is_delete_node)
@@ -62,19 +62,19 @@ ConnectionSpecificId RootNodeManager::GetAndAdvanceNextConnectionId() {
   return id;
 }
 
-void RootNodeManager::AddConnection(ViewManagerConnection* connection) {
+void RootNodeManager::AddConnection(ViewManagerServiceImpl* connection) {
   DCHECK_EQ(0u, connection_map_.count(connection->id()));
   connection_map_[connection->id()] = connection;
 }
 
-void RootNodeManager::RemoveConnection(ViewManagerConnection* connection) {
+void RootNodeManager::RemoveConnection(ViewManagerServiceImpl* connection) {
   connection_map_.erase(connection->id());
   connections_created_by_connect_.erase(connection);
 
   // Notify remaining connections so that they can cleanup.
   for (ConnectionMap::const_iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    i->second->OnViewManagerConnectionDestroyed(connection->id());
+    i->second->OnViewManagerServiceImplDestroyed(connection->id());
   }
 }
 
@@ -91,7 +91,7 @@ void RootNodeManager::Embed(ConnectionSpecificId creator_id,
   EmbedImpl(creator_id, url, node_ids)->set_delete_on_connection_error();
 }
 
-ViewManagerConnection* RootNodeManager::GetConnection(
+ViewManagerServiceImpl* RootNodeManager::GetConnection(
     ConnectionSpecificId connection_id) {
   ConnectionMap::iterator i = connection_map_.find(connection_id);
   return i == connection_map_.end() ? NULL : i->second;
@@ -119,7 +119,7 @@ bool RootNodeManager::DidConnectionMessageClient(
   return current_change_ && current_change_->DidMessageConnection(id);
 }
 
-ViewManagerConnection* RootNodeManager::GetConnectionByCreator(
+ViewManagerServiceImpl* RootNodeManager::GetConnectionByCreator(
     ConnectionSpecificId creator_id,
     const std::string& url) const {
   for (ConnectionMap::const_iterator i = connection_map_.begin();
@@ -201,14 +201,14 @@ void RootNodeManager::FinishChange() {
   current_change_ = NULL;
 }
 
-ViewManagerConnection* RootNodeManager::EmbedImpl(
+ViewManagerServiceImpl* RootNodeManager::EmbedImpl(
     const ConnectionSpecificId creator_id,
     const String& url,
     const Array<Id>& node_ids) {
   MessagePipe pipe;
   service_provider_->ConnectToService(
       url,
-      ViewManagerConnection::Client::Name_,
+      ViewManagerServiceImpl::Client::Name_,
       pipe.handle1.Pass(),
       String());
 
@@ -217,8 +217,8 @@ ViewManagerConnection* RootNodeManager::EmbedImpl(
   if (it != connection_map_.end())
     creator_url = it->second->url();
 
-  ViewManagerConnection* connection =
-      new ViewManagerConnection(this,
+  ViewManagerServiceImpl* connection =
+      new ViewManagerServiceImpl(this,
                                 creator_id,
                                 creator_url,
                                 url.To<std::string>());
