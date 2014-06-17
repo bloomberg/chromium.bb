@@ -45,7 +45,6 @@ namespace WebCore {
             CRASH();
         {{return_default}};
     }
-    ASSERT(thisHandle->IsObject());
     {% endif %}
     {% for argument in method.arguments %}
     v8::Handle<v8::Value> {{argument.handle}} = {{argument.cpp_value_to_v8_value}};
@@ -61,7 +60,7 @@ namespace WebCore {
     v8::Handle<v8::Value> *argv = 0;
     {% endif %}
 
-    {% set this_handle_parameter = 'v8::Handle<v8::Object>::Cast(thisHandle), ' if method.call_with_this_handle else '' %}
+    {% set this_handle_parameter = 'thisHandle, ' if method.call_with_this_handle else '' %}
     {% if method.idl_type == 'boolean' %}
     return invokeCallback(m_scriptState.get(), m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv);
     {% else %}{# void #}

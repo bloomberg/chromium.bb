@@ -186,7 +186,6 @@ void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptVal
             CRASH();
         return;
     }
-    ASSERT(thisHandle->IsObject());
     v8::Handle<v8::Value> stringArgHandle = v8String(isolate, stringArg);
     if (stringArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
@@ -195,7 +194,7 @@ void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptVal
     }
     v8::Handle<v8::Value> argv[] = { stringArgHandle };
 
-    invokeCallback(m_scriptState.get(), m_callback.newLocal(isolate), v8::Handle<v8::Object>::Cast(thisHandle), 1, argv);
+    invokeCallback(m_scriptState.get(), m_callback.newLocal(isolate), thisHandle, 1, argv);
 }
 
 void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedSequenceArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >& sequenceArg)

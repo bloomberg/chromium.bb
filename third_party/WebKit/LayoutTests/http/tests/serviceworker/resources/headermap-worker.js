@@ -82,5 +82,17 @@ test(function() {
         assert_equals(headers.get(key), expectedMap[key]);
     });
 
-}, 'HeaderMap in ServiceWorkerGlobalScope');
+    // 'forEach()' with thisArg
+    var that = {}, saw_that;
+    headers = new HeaderMap;
+    headers.set('a', 'b');
+    headers.forEach(function() { saw_that = this; }, that);
+    assert_equals(saw_that, that, 'Passed thisArg should match');
 
+    headers.forEach(function() { 'use strict'; saw_that = this; }, 'abc');
+    assert_equals(saw_that, 'abc', 'Passed non-object thisArg should match');
+
+    headers.forEach(function() { saw_that = this; }, null);
+    assert_equals(saw_that, self, 'Passed null thisArg should be replaced with global object');
+
+}, 'HeaderMap in ServiceWorkerGlobalScope');

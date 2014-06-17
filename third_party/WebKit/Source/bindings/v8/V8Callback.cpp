@@ -41,11 +41,11 @@ bool invokeCallback(ScriptState* scriptState, v8::Local<v8::Function> callback, 
     return invokeCallback(scriptState, callback, scriptState->context()->Global(), argc, argv);
 }
 
-bool invokeCallback(ScriptState* scriptState, v8::Local<v8::Function> callback, v8::Handle<v8::Object> thisObject, int argc, v8::Handle<v8::Value> argv[])
+bool invokeCallback(ScriptState* scriptState, v8::Local<v8::Function> callback, v8::Handle<v8::Value> thisValue, int argc, v8::Handle<v8::Value> argv[])
 {
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(scriptState->executionContext(), callback, thisObject, argc, argv, scriptState->isolate());
+    ScriptController::callFunction(scriptState->executionContext(), callback, thisValue, argc, argv, scriptState->isolate());
     return !exceptionCatcher.HasCaught();
 }
 
