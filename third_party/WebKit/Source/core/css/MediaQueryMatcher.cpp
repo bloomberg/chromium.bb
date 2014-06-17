@@ -61,7 +61,7 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQueryMatcher)
 void MediaQueryMatcher::documentDestroyed()
 {
     m_listeners.clear();
-    m_document = 0;
+    m_document = nullptr;
 }
 
 AtomicString MediaQueryMatcher::mediaType() const
@@ -142,6 +142,7 @@ void MediaQueryMatcher::styleResolverChanged()
 
 void MediaQueryMatcher::trace(Visitor* visitor)
 {
+    visitor->trace(m_document);
     // We don't support tracing of vectors of OwnPtrs (ie. Vector<OwnPtr<Listener> >).
     // Since this is a transitional object we are just ifdef'ing it out when oilpan is not enabled.
 #if ENABLE(OILPAN)

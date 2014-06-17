@@ -75,7 +75,7 @@ private:
     PassOwnPtr<MediaQueryEvaluator> prepareEvaluator() const;
     AtomicString mediaType() const;
 
-    Document* m_document;
+    RawPtrWillBeMember<Document> m_document;
     WillBeHeapVector<OwnPtrWillBeMember<Listener> > m_listeners;
 
     // This value is incremented at style selector changes.
