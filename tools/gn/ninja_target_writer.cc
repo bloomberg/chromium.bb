@@ -94,7 +94,7 @@ std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep(
 
   if (!add_script_source_as_dep &&
       extra_hard_deps.empty() &&
-      target_->source_prereqs().empty() &&
+      target_->inputs().empty() &&
       target_->recursive_hard_deps().empty() &&
       (!list_sources_as_input_deps || target_->sources().empty()))
     return std::string();  // No input/hard deps.
@@ -124,7 +124,7 @@ std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   }
 
   // Input files are order-only deps.
-  const Target::FileList& prereqs = target_->source_prereqs();
+  const Target::FileList& prereqs = target_->inputs();
   for (size_t i = 0; i < prereqs.size(); i++) {
     out_ << " ";
     path_output_.WriteFile(out_, prereqs[i]);

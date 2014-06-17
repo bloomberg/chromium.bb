@@ -370,7 +370,7 @@ const char kData_Help[] =
     "  these but it is envisioned that test data can be listed here for use\n"
     "  running automated tests.\n"
     "\n"
-    "  See also \"gn help source_prereqs\" and \"gn help datadeps\", both of\n"
+    "  See also \"gn help inputs\" and \"gn help datadeps\", both of\n"
     "  which actually affect the build in concrete ways.\n";
 
 const char kDatadeps[] = "datadeps";
@@ -535,6 +535,51 @@ const char kIncludeDirs_Help[] =
     "\n"
     "Example:\n"
     "  include_dirs = [ \"src/include\", \"//third_party/foo\" ]\n";
+
+const char kInputs[] = "inputs";
+const char kInputs_HelpShort[] =
+    "inputs: [file list] Additional compile-time dependencies.";
+const char kInputs_Help[] =
+    "inputs: Additional compile-time dependencies.\n"
+    "\n"
+    "  Inputs are compile-time dependencies of the current target. This means\n"
+    "  that all inputs must be available before compiling any of the sources\n"
+    "  or executing any actions.\n"
+    "\n"
+    "  Inputs are typically only used for action and action_foreach targets.\n"
+    "\n"
+    "Inputs for actions\n"
+    "\n"
+    "  For action and action_foreach targets, inputs should be the inputs to\n"
+    "  script that don't vary. These should be all .py files that the script\n"
+    "  uses via imports (the main script itself will be an implcit dependency\n"
+    "  of the action so need not be listed).\n"
+    "\n"
+    "  For action targets, inputs should be the entire set of inputs the\n"
+    "  script needs. For action_foreach targets, inputs should be the set of\n"
+    "  dependencies that don't change. These will be applied to each script\n"
+    "  invocation over the sources.\n"
+    "\n"
+    "  Note that another way to declare input dependencies from an action\n"
+    "  is to have the action write a depfile (see \"gn help depfile\"). This\n"
+    "  allows the script to dynamically write input dependencies, that might\n"
+    "  not be known until actually executing the script. This is more\n"
+    "  efficient than doing processing while running GN to determine the\n"
+    "  inputs, and is easier to keep in-sync than hardcoding the list.\n"
+    "\n"
+    "Inputs for binary targets\n"
+    "\n"
+    "  Any input dependencies will be resolved before compiling any sources.\n"
+    "  Normally, all actions that a target depends on will be run before any\n"
+    "  files in a target are compiled. So if you depend on generated headers,\n"
+    "  you do not typically need to list them in the inputs section.\n"
+    "\n"
+    "Example\n"
+    "\n"
+    "  action(\"myscript\") {\n"
+    "    script = \"domything.py\"\n"
+    "    inputs = [ \"input.data\" ]\n"
+    "  }\n";
 
 const char kLdflags[] = "ldflags";
 const char kLdflags_HelpShort[] =
@@ -704,51 +749,6 @@ const char kScript_Help[] =
     "  for a action and action_foreach targets (see \"gn help action\" and\n"
     "  \"gn help action_foreach\").\n";
 
-const char kSourcePrereqs[] = "source_prereqs";
-const char kSourcePrereqs_HelpShort[] =
-    "source_prereqs: [file list] Additional compile-time dependencies.";
-const char kSourcePrereqs_Help[] =
-    "source_prereqs: Additional compile-time dependencies.\n"
-    "\n"
-    "  Inputs are compile-time dependencies of the current target. This means\n"
-    "  that all source prerequisites must be available before compiling any\n"
-    "  of the sources.\n"
-    "\n"
-    "  If one of your sources #includes a generated file, that file must be\n"
-    "  available before that source file is compiled. For subsequent builds,\n"
-    "  the \".d\" files will list the include dependencies of each source\n"
-    "  and Ninja can know about that dependency to make sure it's generated\n"
-    "  before compiling your source file. However, for the first run it's\n"
-    "  not possible for Ninja to know about this dependency.\n"
-    "\n"
-    "  Source prerequisites solves this problem by declaring such\n"
-    "  dependencies. It will introduce a Ninja \"implicit\" dependency for\n"
-    "  each source file in the target on the listed files.\n"
-    "\n"
-    "  For binary targets, the files in the \"source_prereqs\" should all be\n"
-    "  listed in the \"outputs\" section of another target. There is no\n"
-    "  reason to declare static source files as source prerequisites since\n"
-    "  the normal include file dependency management will handle them more\n"
-    "  efficiently anyway.\n"
-    "\n"
-    "  For action targets that don't generate \".d\" files, the\n"
-    "  \"source_prereqs\" section is how you can list known compile-time\n"
-    "  dependencies your script may have.\n"
-    "\n"
-    "  See also \"gn help data\" and \"gn help datadeps\" (which declare\n"
-    "  run-time rather than compile-time dependencies).\n"
-    "\n"
-    "Examples:\n"
-    "  executable(\"foo\") {\n"
-    "    sources = [ \"foo.cc\" ]\n"
-    "    source_prereqs = [ \"$root_gen_dir/something/generated_data.h\" ]\n"
-    "  }\n"
-    "\n"
-    "  action(\"myscript\") {\n"
-    "    script = \"domything.py\"\n"
-    "    source_prereqs = [ \"input.data\" ]\n"
-    "  }\n";
-
 const char kSources[] = "sources";
 const char kSources_HelpShort[] =
     "sources: [file list] Source files for a target.";
@@ -877,6 +877,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(DirectDependentConfigs)
     INSERT_VARIABLE(ForwardDependentConfigsFrom)
     INSERT_VARIABLE(IncludeDirs)
+    INSERT_VARIABLE(Inputs)
     INSERT_VARIABLE(Ldflags)
     INSERT_VARIABLE(Libs)
     INSERT_VARIABLE(LibDirs)
@@ -885,7 +886,6 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(Outputs)
     INSERT_VARIABLE(Public)
     INSERT_VARIABLE(Script)
-    INSERT_VARIABLE(SourcePrereqs)
     INSERT_VARIABLE(Sources)
     INSERT_VARIABLE(Visibility)
   }

@@ -55,7 +55,7 @@ void ActionTargetGenerator::DoRun() {
     return;
   }
 
-  FillSourcePrereqs();
+  FillInputs();
   if (err_->has_error())
     return;
 

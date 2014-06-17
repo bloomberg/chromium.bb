@@ -41,12 +41,12 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
   // included) and a source (should not be included).
   Target target(setup.settings(), Label(SourceDir("//foo/"), "target"));
   target.set_output_type(Target::EXECUTABLE);
-  target.source_prereqs().push_back(SourceFile("//foo/input.txt"));
+  target.inputs().push_back(SourceFile("//foo/input.txt"));
   target.sources().push_back(SourceFile("//foo/source.txt"));
   target.deps().push_back(LabelTargetPair(&base_target));
 
   // Dependent action to test that action sources will be treated the same as
-  // source_prereqs.
+  // inputs.
   Target action(setup.settings(), Label(SourceDir("//foo/"), "action"));
   action.set_output_type(Target::ACTION);
   action.action_values().set_script(SourceFile("//foo/script.py"));

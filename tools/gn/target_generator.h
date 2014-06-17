@@ -50,7 +50,7 @@ class TargetGenerator {
 
   void FillSources();
   void FillPublic();
-  void FillSourcePrereqs();
+  void FillInputs();
   void FillConfigs();
   void FillOutputs();
 

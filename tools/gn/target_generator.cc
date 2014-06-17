@@ -160,16 +160,23 @@ void TargetGenerator::FillPublic() {
   target_->public_headers().swap(dest_public);
 }
 
-void TargetGenerator::FillSourcePrereqs() {
-  const Value* value = scope_->GetValue(variables::kSourcePrereqs, true);
-  if (!value)
-    return;
+void TargetGenerator::FillInputs() {
+  const Value* value = scope_->GetValue(variables::kInputs, true);
+  if (!value) {
+    // Older versions used "source_prereqs". Allow use of this variable until
+    // all callers are updated.
+    // TODO(brettw) remove this eventually.
+    value = scope_->GetValue("source_prereqs", true);
 
-  Target::FileList dest_reqs;
+    if (!value)
+      return;
+  }
+
+  Target::FileList dest_inputs;
   if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
-                                  scope_->GetSourceDir(), &dest_reqs, err_))
+                                  scope_->GetSourceDir(), &dest_inputs, err_))
     return;
-  target_->source_prereqs().swap(dest_reqs);
+  target_->inputs().swap(dest_inputs);
 }
 
 void TargetGenerator::FillConfigs() {

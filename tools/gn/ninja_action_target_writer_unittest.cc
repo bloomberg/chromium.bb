@@ -59,8 +59,7 @@ TEST(NinjaActionTargetWriter, WriteArgsSubstitutions) {
 }
 
 // Makes sure that we write sources as input dependencies for actions with
-// both sources and source_prereqs (ACTION_FOREACH treats the sources
-// differently).
+// both sources and inputs (ACTION_FOREACH treats the sources differently).
 TEST(NinjaActionTargetWriter, ActionWithSources) {
   TestWithScope setup;
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
@@ -70,7 +69,7 @@ TEST(NinjaActionTargetWriter, ActionWithSources) {
   target.action_values().set_script(SourceFile("//foo/script.py"));
 
   target.sources().push_back(SourceFile("//foo/source.txt"));
-  target.source_prereqs().push_back(SourceFile("//foo/included.txt"));
+  target.inputs().push_back(SourceFile("//foo/included.txt"));
 
   target.action_values().outputs().push_back(
       SourceFile("//out/Debug/foo.out"));
@@ -159,7 +158,7 @@ TEST(NinjaActionTargetWriter, ForEach) {
   target.action_values().outputs().push_back(
       SourceFile("//out/Debug/{{source_name_part}}.out"));
 
-  target.source_prereqs().push_back(SourceFile("//foo/included.txt"));
+  target.inputs().push_back(SourceFile("//foo/included.txt"));
 
   // Posix.
   {
@@ -268,7 +267,7 @@ TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
   target.action_values().outputs().push_back(
       SourceFile("//out/Debug/{{source_name_part}}.out"));
 
-  target.source_prereqs().push_back(SourceFile("//foo/included.txt"));
+  target.inputs().push_back(SourceFile("//foo/included.txt"));
 
   // Posix.
   {

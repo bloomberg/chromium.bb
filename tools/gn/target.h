@@ -80,8 +80,8 @@ class Target : public Item {
   FileList& public_headers() { return public_headers_; }
 
   // Compile-time extra dependencies.
-  const FileList& source_prereqs() const { return source_prereqs_; }
-  FileList& source_prereqs() { return source_prereqs_; }
+  const FileList& inputs() const { return inputs_; }
+  FileList& inputs() { return inputs_; }
 
   // Runtime dependencies.
   const FileList& data() const { return data_; }
@@ -171,7 +171,7 @@ class Target : public Item {
   FileList sources_;
   bool all_headers_public_;
   FileList public_headers_;
-  FileList source_prereqs_;
+  FileList inputs_;
   FileList data_;
 
   bool hard_dep_;

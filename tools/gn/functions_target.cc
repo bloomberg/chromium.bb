@@ -17,7 +17,7 @@
 #define DEPS_VARS \
     "  Deps: data, datadeps, deps, forward_dependent_configs_from, hard_dep\n"
 #define GENERAL_TARGET_VARS \
-    "  General: configs, source_prereqs, sources\n"
+    "  General: configs, inputs, sources\n"
 
 namespace functions {
 
@@ -60,8 +60,8 @@ Value ExecuteGenericTarget(const char* target_type,
     "  directory being that of the root build directory. If you pass files\n"\
     "  to your script, see \"gn help rebase_path\" for how to convert\n" \
     "  file names to be relative to the build directory (file names in the\n" \
-    "  sources, outputs, and source_prereqs will be all treated as relative\n" \
-    "  to the current build file and converted as needed automatically).\n"
+    "  sources, outputs, and inputs will be all treated as relative to the\n" \
+    "  current build file and converted as needed automatically).\n"
 
 // Common help paragraph on script output directories.
 #define SCRIPT_EXECUTION_OUTPUTS \
@@ -90,17 +90,21 @@ const char kAction_Help[] =
     "\n"
     "Inputs\n"
     "\n"
-    "  In an action the \"sources\" and \"source_prereqs\" are treated the\n"
-    "  same: they're both input dependencies on script execution with no\n"
-    "  special handling. If you want to pass the sources to your script, you\n"
-    "  must do so explicitly by including them in the \"args\". Note also\n"
-    "  that this means there is no special handling of paths since GN\n"
-    "  doesn't know which of the args are paths and not. You will want to use\n"
+    "  In an action the \"sources\" and \"inputs\" are treated the same:\n"
+    "  they're both input dependencies on script execution with no special\n"
+    "  handling. If you want to pass the sources to your script, you must do\n"
+    "  so explicitly by including them in the \"args\". Note also that this\n"
+    "  means there is no special handling of paths since GN doesn't know\n"
+    "  which of the args are paths and not. You will want to use\n"
     "  rebase_path() to convert paths to be relative to the root_build_dir.\n"
+    "\n"
+    "  You can dynamically write input dependencies (for incremental rebuilds\n"
+    "  if an input file changes) by writing a depfile when the script is run\n"
+    "  (see \"gn help depfile\"). This is more flexible than \"inputs\".\n"
     "\n"
     "  It is recommended you put inputs to your script in the \"sources\"\n"
     "  variable, and stuff like other Python files required to run your\n"
-    "  script in the \"source_prereqs\" variable.\n"
+    "  script in the \"inputs\" variable.\n"
     "\n"
     ACTION_DEPS
     "\n"
@@ -118,7 +122,7 @@ const char kAction_Help[] =
     "Variables\n"
     "\n"
     "  args, data, datadeps, depfile, deps, outputs*, script*,\n"
-    "  source_prereqs, sources\n"
+    "  inputs, sources\n"
     "  * = required\n"
     "\n"
     "Example\n"
@@ -130,7 +134,7 @@ const char kAction_Help[] =
     "\n"
     "    # Our script imports this Python file so we want to rebuild if it\n"
     "    # changes.\n"
-    "    source_prereqs = [ \"helper_library.py\" ]\n"
+    "    inputs = [ \"helper_library.py\" ]\n"
     "\n"
     "    # Note that we have to manually pass the sources to our script if\n"
     "    # the script needs them as inputs.\n"
@@ -169,8 +173,12 @@ const char kActionForEach_Help[] =
     "\n"
     "  If your script takes additional data as input, such as a shared\n"
     "  configuration file or a Python module it uses, those files should be\n"
-    "  listed in the \"source_prereqs\" variable. These files are treated as\n"
+    "  listed in the \"inputs\" variable. These files are treated as\n"
     "  dependencies of each script invocation.\n"
+    "\n"
+    "  You can dynamically write input dependencies (for incremental rebuilds\n"
+    "  if an input file changes) by writing a depfile when the script is run\n"
+    "  (see \"gn help depfile\"). This is more flexible than \"inputs\".\n"
     "\n"
     ACTION_DEPS
     "\n"
@@ -185,7 +193,7 @@ const char kActionForEach_Help[] =
     "Variables\n"
     "\n"
     "  args, data, datadeps, depfile, deps, outputs*, script*,\n"
-    "  source_prereqs, sources*\n"
+    "  inputs, sources*\n"
     "  * = required\n"
     "\n"
     "Example\n"
@@ -198,7 +206,7 @@ const char kActionForEach_Help[] =
     "\n"
     "    # Our script reads this file each time, so we need to list is as a\n"
     "    # dependency so we can rebuild if it changes.\n"
-    "    source_prereqs = [ \"my_configuration.txt\" ]\n"
+    "    inputs = [ \"my_configuration.txt\" ]\n"
     "\n"
     "    # Transformation from source file name to output file names.\n"
     "    outputs = [ \"$target_gen_dir/{{source_name_part}}.h\",\n"
