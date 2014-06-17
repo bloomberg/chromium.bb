@@ -67,15 +67,15 @@ class LocalToRemoteSyncer : public SyncTask {
   void DidDeleteRemoteFile(const SyncStatusCallback& callback,
                            google_apis::GDataErrorCode error);
 
-  void UploadExistingFile(const SyncStatusCallback& callback);
-  void DidGetMD5ForUpload(const SyncStatusCallback& callback,
+  void UploadExistingFile(scoped_ptr<SyncTaskToken> token);
+  void DidGetMD5ForUpload(scoped_ptr<SyncTaskToken> token,
                           const std::string& local_file_md5);
-  void DidUploadExistingFile(const SyncStatusCallback& callback,
+  void DidUploadExistingFile(scoped_ptr<SyncTaskToken> token,
                              google_apis::GDataErrorCode error,
                              const GURL&,
                              scoped_ptr<google_apis::FileResource>);
   void DidUpdateDatabaseForUploadExistingFile(
-      const SyncStatusCallback& callback,
+      scoped_ptr<SyncTaskToken> token,
       SyncStatusCode status);
   void UpdateRemoteMetadata(const std::string& file_id,
                             const SyncStatusCallback& callback);

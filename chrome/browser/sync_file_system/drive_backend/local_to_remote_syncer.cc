@@ -321,9 +321,7 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
   if (local_change_.IsFile()) {
     if (synced_details.file_kind() == FILE_KIND_FILE) {
       // Non-conflicting local file update to existing remote regular file.
-      UploadExistingFile(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    base::Passed(&token)));
+      UploadExistingFile(token.Pass());
       return;
     }
 
@@ -393,15 +391,14 @@ void LocalToRemoteSyncer::DidDeleteRemoteFile(
   callback.Run(SYNC_STATUS_OK);
 }
 
-void LocalToRemoteSyncer::UploadExistingFile(
-    const SyncStatusCallback& callback)  {
+void LocalToRemoteSyncer::UploadExistingFile(scoped_ptr<SyncTaskToken> token) {
   DCHECK(remote_file_tracker_);
   DCHECK(remote_file_tracker_->has_synced_details());
   DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
 
   base::Callback<void(const std::string&)> did_calculate_callback =
       base::Bind(&LocalToRemoteSyncer::DidGetMD5ForUpload,
-                 weak_ptr_factory_.GetWeakPtr(), callback);
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token));
 
   sync_context_->GetFileTaskRunner()->PostTask(
       FROM_HERE,
@@ -413,11 +410,11 @@ void LocalToRemoteSyncer::UploadExistingFile(
 }
 
 void LocalToRemoteSyncer::DidGetMD5ForUpload(
-    const SyncStatusCallback& callback,
+    scoped_ptr<SyncTaskToken> token,
     const std::string& local_file_md5) {
   if (local_file_md5 == remote_file_tracker_->synced_details().md5()) {
     // Local file is not changed.
-    callback.Run(SYNC_STATUS_OK);
+    SyncCompleted(token.Pass(), SYNC_STATUS_OK);
     return;
   }
 
@@ -431,13 +428,12 @@ void LocalToRemoteSyncer::DidGetMD5ForUpload(
       "application/octet_stream",
       options,
       base::Bind(&LocalToRemoteSyncer::DidUploadExistingFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback),
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)),
       google_apis::ProgressCallback());
 }
 
 void LocalToRemoteSyncer::DidUploadExistingFile(
-    const SyncStatusCallback& callback,
+    scoped_ptr<SyncTaskToken> token,
     google_apis::GDataErrorCode error,
     const GURL&,
     scoped_ptr<google_apis::FileResource> entry) {
@@ -450,20 +446,24 @@ void LocalToRemoteSyncer::DidUploadExistingFile(
     // handle this as ListChangesTask.
 
     needs_remote_change_listing_ = true;
-    UpdateRemoteMetadata(remote_file_tracker_->file_id(),
-                         base::Bind(&ReturnRetryOnSuccess, callback));
+    UpdateRemoteMetadata(
+        remote_file_tracker_->file_id(),
+        base::Bind(&ReturnRetryOnSuccess,
+                   base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              base::Passed(&token))));
     return;
   }
 
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
-    callback.Run(status);
+    SyncCompleted(token.Pass(), status);
     return;
   }
 
   if (!entry) {
     NOTREACHED();
-    callback.Run(SYNC_STATUS_FAILED);
+    SyncCompleted(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
 
@@ -472,14 +472,14 @@ void LocalToRemoteSyncer::DidUploadExistingFile(
       *entry,
       base::Bind(&LocalToRemoteSyncer::DidUpdateDatabaseForUploadExistingFile,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+                 base::Passed(&token)));
 }
 
 void LocalToRemoteSyncer::DidUpdateDatabaseForUploadExistingFile(
-    const SyncStatusCallback& callback,
+    scoped_ptr<SyncTaskToken> token,
     SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
-    callback.Run(status);
+    SyncCompleted(token.Pass(), status);
     return;
   }
 
@@ -487,7 +487,7 @@ void LocalToRemoteSyncer::DidUpdateDatabaseForUploadExistingFile(
   if (!metadata_database()->FindFileByFileID(
           remote_file_tracker_->file_id(), &file)) {
     NOTREACHED();
-    callback.Run(SYNC_STATUS_FAILED);
+    SyncCompleted(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
 
@@ -501,11 +501,13 @@ void LocalToRemoteSyncer::DidUpdateDatabaseForUploadExistingFile(
     metadata_database()->UpdateTracker(
         remote_file_tracker_->tracker_id(),
         file.details(),
-        callback);
+        base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Passed(&token)));
     return;
   }
 
-  callback.Run(SYNC_STATUS_RETRY);
+  SyncCompleted(token.Pass(), SYNC_STATUS_RETRY);
 }
 
 void LocalToRemoteSyncer::UpdateRemoteMetadata(
