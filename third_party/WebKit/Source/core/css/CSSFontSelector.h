@@ -57,6 +57,7 @@ public:
 
     virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&) OVERRIDE;
     virtual void willUseFontData(const FontDescription&, const AtomicString& family, UChar32) OVERRIDE;
+    bool isPlatformFontAvailable(const FontDescription&, const AtomicString& family);
 
 #if !ENABLE(OILPAN)
     void clearDocument();

@@ -480,13 +480,25 @@ bool FontFaceSet::check(const String& fontString, const String& text, ExceptionS
         return false;
     }
 
-    FontFaceCache* fontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
+    CSSFontSelector* fontSelector = document()->styleEngine()->fontSelector();
+    FontFaceCache* fontFaceCache = fontSelector->fontFaceCache();
+
+    bool hasLoadedFaces = false;
     for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
         CSSSegmentedFontFace* face = fontFaceCache->get(font.fontDescription(), f->family());
-        if (face && !face->checkFont(nullToSpace(text)))
-            return false;
+        if (face) {
+            if (!face->checkFont(nullToSpace(text)))
+                return false;
+            hasLoadedFaces = true;
+        }
     }
-    return true;
+    if (hasLoadedFaces)
+        return true;
+    for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
+        if (fontSelector->isPlatformFontAvailable(font.fontDescription(), f->family()))
+            return true;
+    }
+    return false;
 }
 
 bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font)

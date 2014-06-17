@@ -149,6 +149,14 @@ void CSSFontSelector::willUseFontData(const FontDescription& fontDescription, co
         face->willUseFontData(fontDescription, character);
 }
 
+bool CSSFontSelector::isPlatformFontAvailable(const FontDescription& fontDescription, const AtomicString& passedFamily)
+{
+    AtomicString family = familyNameFromSettings(m_genericFontFamilySettings, fontDescription, passedFamily);
+    if (family.isEmpty())
+        family = passedFamily;
+    return FontCache::fontCache()->isPlatformFontAvailable(fontDescription, family);
+}
+
 #if !ENABLE(OILPAN)
 void CSSFontSelector::clearDocument()
 {
