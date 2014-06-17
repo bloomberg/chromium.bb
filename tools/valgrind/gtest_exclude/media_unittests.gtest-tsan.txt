@@ -1,3 +1,4 @@
 # Times out. http://crbug.com/385222
 FFmpegVideoDecoderTest.Initialize_Normal
+FFmpegVideoDecoderTest.Reinitialize_Failure
 FFmpegVideoDecoderTest.Reinitialize_Normal
