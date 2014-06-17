@@ -326,8 +326,12 @@ void InspectUI::StartListeningNotifications() {
       DevToolsTargetsUIHandler::CreateForRenderers(callback));
   AddTargetUIHandler(
       DevToolsTargetsUIHandler::CreateForWorkers(callback));
-  AddTargetUIHandler(
-      DevToolsTargetsUIHandler::CreateForAdb(callback, profile));
+  if (profile->IsOffTheRecord()) {
+    ShowIncognitoWarning();
+  } else {
+    AddTargetUIHandler(
+        DevToolsTargetsUIHandler::CreateForAdb(callback, profile));
+  }
 
   port_status_serializer_.reset(
       new PortForwardingStatusSerializer(
@@ -482,4 +486,8 @@ void InspectUI::PopulateTargets(const std::string& source,
 
 void InspectUI::PopulatePortStatus(const base::Value& status) {
   web_ui()->CallJavascriptFunction("populatePortStatus", status);
+}
+
+void InspectUI::ShowIncognitoWarning() {
+  web_ui()->CallJavascriptFunction("showIncognitoWarning");
 }

@@ -172,6 +172,10 @@ function populateWorkerTargets(data) {
     addToWorkersList(data[i]);
 }
 
+function showIncognitoWarning() {
+  $('devices-incognito').hidden = false;
+}
+
 function populateRemoteTargets(devices) {
   if (!devices)
     return;

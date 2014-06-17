@@ -89,6 +89,8 @@ class InspectUI : public content::WebUIController,
 
   void PopulatePortStatus(const base::Value& status);
 
+  void ShowIncognitoWarning();
+
   // A scoped container for notification registries.
   content::NotificationRegistrar notification_registrar_;
 
