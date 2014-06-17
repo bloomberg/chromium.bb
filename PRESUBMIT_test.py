@@ -470,17 +470,17 @@ class JSONParsingTest(unittest.TestCase):
     test_data = [
       ('invalid_json_1.json',
        ['{ x }'],
-       'Expecting property name: line 1 column 2 (char 2)'),
+       'Expecting property name:'),
       ('invalid_json_2.json',
        ['// Hello world!',
         '{ "hello": "world }'],
-       'Unterminated string starting at: line 2 column 12 (char 12)'),
+       'Unterminated string starting at:'),
       ('invalid_json_3.json',
        ['{ "a": "b", "c": "d", }'],
-       'Expecting property name: line 1 column 22 (char 22)'),
+       'Expecting property name:'),
       ('invalid_json_4.json',
        ['{ "a": "b" "c": "d" }'],
-       'Expecting , delimiter: line 1 column 11 (char 11)'),
+       'Expecting , delimiter:'),
       ]
 
     input_api.files = [MockFile(filename, contents)
@@ -488,7 +488,8 @@ class JSONParsingTest(unittest.TestCase):
 
     for (filename, _, expected_error) in test_data:
       actual_error = PRESUBMIT._GetJSONParseError(input_api, filename)
-      self.assertEqual(expected_error, str(actual_error))
+      self.assertTrue(expected_error in str(actual_error),
+                      "'%s' not found in '%s'" % (expected_error, actual_error))
 
   def testNoEatComments(self):
     input_api = MockInputApi()
