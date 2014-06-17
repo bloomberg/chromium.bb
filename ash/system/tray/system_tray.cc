@@ -26,7 +26,6 @@
 #include "ash/system/user/tray_user.h"
 #include "ash/system/user/tray_user_separator.h"
 #include "ash/system/web_notification/web_notification_tray.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"

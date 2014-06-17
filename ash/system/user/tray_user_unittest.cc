@@ -4,7 +4,6 @@
 
 #include <vector>
 
-#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/user_info.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -17,7 +16,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
-#include "base/command_line.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/gfx/animation/animation_container_element.h"
 #include "ui/views/view.h"
