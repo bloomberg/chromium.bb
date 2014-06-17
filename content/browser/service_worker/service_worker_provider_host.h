@@ -94,6 +94,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // versions.
   bool ValidateVersionForAssociation(ServiceWorkerVersion* version);
 
+  // Returns true if the context referred to by this host (i.e. |context_|) is
+  // still alive.
+  bool IsContextAlive();
+
   // Dispatches message event to the document.
   void PostMessage(const base::string16& message,
                    const std::vector<int>& sent_message_port_ids);

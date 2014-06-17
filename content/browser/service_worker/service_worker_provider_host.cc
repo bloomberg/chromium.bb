@@ -173,4 +173,8 @@ ServiceWorkerObjectInfo ServiceWorkerProviderHost::CreateHandleAndPass(
   return info;
 }
 
+bool ServiceWorkerProviderHost::IsContextAlive() {
+  return context_ != NULL;
+}
+
 }  // namespace content

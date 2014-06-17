@@ -412,6 +412,8 @@ void ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
        !it->IsAtEnd();
        it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
+    if (!host->IsContextAlive())
+      continue;
     if (ServiceWorkerUtils::ScopeMatches(version->scope(),
                                          host->document_url())) {
       // The spec's _Update algorithm says, "upgrades active version to a new
@@ -440,6 +442,8 @@ void ServiceWorkerRegisterJob::DisassociateWaitingVersionFromDocuments(
        !it->IsAtEnd();
        it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
+    if (!host->IsContextAlive())
+      continue;
     if (host->waiting_version() &&
         host->waiting_version()->version_id() == version_id) {
       host->SetWaitingVersion(NULL);

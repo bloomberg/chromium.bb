@@ -179,6 +179,14 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     BadMessageReceived();
     return;
   }
+  if (!provider_host->IsContextAlive()) {
+    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+        thread_id,
+        request_id,
+        WebServiceWorkerError::ErrorTypeDisabled,
+        base::ASCIIToUTF16(kDisabledErrorMessage)));
+    return;
+  }
 
   GetContext()->RegisterServiceWorker(
       pattern,
@@ -212,6 +220,14 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
       render_process_id_, provider_id);
   if (!provider_host) {
     BadMessageReceived();
+    return;
+  }
+  if (!provider_host->IsContextAlive()) {
+    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+        thread_id,
+        request_id,
+        blink::WebServiceWorkerError::ErrorTypeDisabled,
+        base::ASCIIToUTF16(kDisabledErrorMessage)));
     return;
   }
 
@@ -275,10 +291,14 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(
     return;
   ServiceWorkerProviderHost* provider_host =
       GetContext()->GetProviderHost(render_process_id_, provider_id);
-  if (!provider_host || !provider_host->SetHostedVersionId(version_id)) {
+  if (!provider_host) {
     BadMessageReceived();
     return;
   }
+  if (!provider_host->IsContextAlive())
+    return;
+  if (!provider_host->SetHostedVersionId(version_id))
+    BadMessageReceived();
 }
 
 void ServiceWorkerDispatcherHost::RegistrationComplete(
@@ -306,6 +326,9 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
   RegisterServiceWorkerHandle(handle.Pass());
 }
 
+// TODO(nhiroki): These message handlers that take |embedded_worker_id| as an
+// input should check if the worker refers to the live context. If the context
+// was deleted, handle the messege gracefully (http://crbug.com/371675).
 void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(int embedded_worker_id) {
   if (!GetContext())
     return;
