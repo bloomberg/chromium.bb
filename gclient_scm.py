@@ -356,13 +356,6 @@ class GitWrapper(SCMWrapper):
       verbose = ['--verbose']
       printed_path = True
 
-    if not managed:
-      self.Print('________ unmanaged solution; skipping %s' % self.relpath)
-      try:
-        return self._Capture(['rev-parse', '--verify', 'HEAD'])
-      except subprocess2.CalledProcessError:
-        return None
-
     url = self._CreateOrUpdateCache(url, options)
 
     if revision.startswith('refs/'):
@@ -394,6 +387,11 @@ class GitWrapper(SCMWrapper):
         # Make the output a little prettier. It's nice to have some whitespace
         # between projects when cloning.
         self.Print('')
+      return self._Capture(['rev-parse', '--verify', 'HEAD'])
+
+    if not managed:
+      self._UpdateBranchHeads(options, fetch=False)
+      self.Print('________ unmanaged solution; skipping %s' % self.relpath)
       return self._Capture(['rev-parse', '--verify', 'HEAD'])
 
     # See if the url has changed (the unittests use git://foo for the url, let

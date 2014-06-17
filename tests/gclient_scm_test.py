@@ -1413,17 +1413,19 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
                                 root_dir=self.root_dir,
                                 relpath=self.relpath)
 
+    expected_file_list = [join(self.base_path, "a"),
+                          join(self.base_path, "b")]
     file_list = []
     options.revision = 'unmanaged'
     scm.update(options, (), file_list)
 
-    self.assertEquals(file_list, [])
-    self.assertRaises(subprocess2.CalledProcessError,
-                      scm.revinfo, options, (), None)
-
+    self.assertEquals(file_list, expected_file_list)
+    self.assertEquals(scm.revinfo(options, (), None),
+                      '069c602044c5388d2d15c3f875b057c852003458')
     # indicates detached HEAD
-    self.assertRaises(subprocess2.CalledProcessError, self.getCurrentBranch)
-    self.checkInStdout('unmanaged solution; skipping')
+    self.assertEquals(self.getCurrentBranch(), None)
+    self.checkInStdout(
+      'Checked out refs/remotes/origin/master to a detached HEAD')
 
     rmtree(origin_root_dir)
 
@@ -1443,16 +1445,19 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
                                 root_dir=self.root_dir,
                                 relpath=self.relpath)
 
+    expected_file_list = [join(self.base_path, "a"),
+                          join(self.base_path, "b")]
     file_list = []
     options.revision = 'unmanaged'
     scm.update(options, (), file_list)
 
-    self.assertEquals(file_list, [])
-    self.assertRaises(subprocess2.CalledProcessError,
-                      scm.revinfo, options, (), None)
+    self.assertEquals(file_list, expected_file_list)
+    self.assertEquals(scm.revinfo(options, (), None),
+                      'a7142dc9f0009350b96a11f372b6ea658592aa95')
     # indicates detached HEAD
-    self.assertRaises(subprocess2.CalledProcessError, self.getCurrentBranch)
-    self.checkInStdout('unmanaged solution; skipping')
+    self.assertEquals(self.getCurrentBranch(), None)
+    self.checkInStdout(
+      'Checked out a7142dc9f0009350b96a11f372b6ea658592aa95 to a detached HEAD')
 
     rmtree(origin_root_dir)
 
@@ -1471,14 +1476,17 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
                                 root_dir=self.root_dir,
                                 relpath=self.relpath)
 
+    expected_file_list = [join(self.base_path, "a"),
+                          join(self.base_path, "b"),
+                          join(self.base_path, "c")]
     file_list = []
     options.revision = 'unmanaged'
     scm.update(options, (), file_list)
 
-    self.assertEquals(file_list, [])
-    self.assertRaises(subprocess2.CalledProcessError,
-                      scm.revinfo, options, (), None)
-    self.assertRaises(subprocess2.CalledProcessError, self.getCurrentBranch)
+    self.assertEquals(file_list, expected_file_list)
+    self.assertEquals(scm.revinfo(options, (), None),
+                      '9a51244740b25fa2ded5252ca00a3178d3f665a9')
+    self.assertEquals(self.getCurrentBranch(), 'feature')
     self.checkNotInStdout('Checked out feature to a detached HEAD')
 
     rmtree(origin_root_dir)
@@ -1498,16 +1506,20 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
                                 root_dir=self.root_dir,
                                 relpath=self.relpath)
 
+    expected_file_list = [join(self.base_path, "a"),
+                          join(self.base_path, "b"),
+                          join(self.base_path, "c")]
     file_list = []
     options.revision = 'unmanaged'
-    scm.update(options, (), [])
+    scm.update(options, (), file_list)
 
-    self.assertEquals(file_list, [])
-    self.assertRaises(subprocess2.CalledProcessError,
-                      scm.revinfo, options, (), None)
+    self.assertEquals(file_list, expected_file_list)
+    self.assertEquals(scm.revinfo(options, (), None),
+                      '9a51244740b25fa2ded5252ca00a3178d3f665a9')
     # indicates detached HEAD
-    self.assertRaises(subprocess2.CalledProcessError, self.getCurrentBranch)
-    self.checkInStdout('unmanaged solution; skipping')
+    self.assertEquals(self.getCurrentBranch(), None)
+    self.checkInStdout(
+      'Checked out refs/remotes/origin/feature to a detached HEAD')
 
     rmtree(origin_root_dir)
 
@@ -1526,14 +1538,17 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
                                 root_dir=self.root_dir,
                                 relpath=self.relpath)
 
+    expected_file_list = [join(self.base_path, "a"),
+                          join(self.base_path, "b"),
+                          join(self.base_path, "c")]
     file_list = []
     options.revision = 'unmanaged'
     scm.update(options, (), file_list)
 
-    self.assertEquals(file_list, [])
-    self.assertRaises(subprocess2.CalledProcessError,
-                      scm.revinfo, options, (), None)
-    self.assertRaises(subprocess2.CalledProcessError, self.getCurrentBranch)
+    self.assertEquals(file_list, expected_file_list)
+    self.assertEquals(scm.revinfo(options, (), None),
+                      '9a51244740b25fa2ded5252ca00a3178d3f665a9')
+    self.assertEquals(self.getCurrentBranch(), 'feature')
     self.checkNotInStdout(
       'Checked out refs/heads/feature to a detached HEAD')
 
