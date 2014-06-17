@@ -190,11 +190,11 @@ class GpuMemoryManagerTest : public testing::Test {
   }
   bool IsAllocationForegroundForSurfaceNo(
       const MemoryAllocation& alloc) {
-    return alloc.bytes_limit_when_visible == 1;
+    return alloc.bytes_limit_when_visible != 0;
   }
   bool IsAllocationBackgroundForSurfaceNo(
       const MemoryAllocation& alloc) {
-    return alloc.bytes_limit_when_visible == 1;
+    return alloc.bytes_limit_when_visible != 0;
   }
   bool IsAllocationHibernatedForSurfaceNo(
       const MemoryAllocation& alloc) {

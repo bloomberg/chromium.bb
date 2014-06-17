@@ -74,6 +74,7 @@ void GpuMemoryManager::UpdateAvailableGpuMemory() {
     return;
   }
 
+#if defined(OS_ANDROID)
   // On non-Android, we use an operating system query when possible.
   // We do not have a reliable concept of multiple GPUs existing in
   // a system, so just be safe and go with the minimum encountered.
@@ -97,12 +98,7 @@ void GpuMemoryManager::UpdateAvailableGpuMemory() {
     }
   }
 
-  if (!bytes_min)
-    return;
-
   client_hard_limit_bytes_ = bytes_min;
-
-#if defined(OS_ANDROID)
   // Clamp the observed value to a specific range on Android.
   client_hard_limit_bytes_ = std::max(client_hard_limit_bytes_,
                                       static_cast<uint64>(16 * 1024 * 1024));
@@ -327,7 +323,7 @@ void GpuMemoryManager::AssignNonSurfacesAllocations() {
     MemoryAllocation allocation;
 
     if (!client_state->hibernated_) {
-      allocation.bytes_limit_when_visible = 1;
+      allocation.bytes_limit_when_visible = client_hard_limit_bytes_;
       allocation.priority_cutoff_when_visible =
           MemoryAllocation::CUTOFF_ALLOW_EVERYTHING;
     }
