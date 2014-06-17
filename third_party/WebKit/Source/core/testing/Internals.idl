@@ -234,6 +234,8 @@
     // specified without security checks. Unspecified means this document.
     [RaisesException] void updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(optional Node node);
 
+    [RaisesException] void forceFullRepaint(Document document);
+
     // Returns a list of draggable/non-draggable regions in the document.
     [RaisesException] ClientRectList draggableRegions(Document document);
     [RaisesException] ClientRectList nonDraggableRegions(Document document);

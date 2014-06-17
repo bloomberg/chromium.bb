@@ -277,6 +277,7 @@ public:
     void stopTrackingRepaints(Document*, ExceptionState&);
     void updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(ExceptionState&);
     void updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(Node*, ExceptionState&);
+    void forceFullRepaint(Document*, ExceptionState&);
 
     PassRefPtrWillBeRawPtr<ClientRectList> draggableRegions(Document*, ExceptionState&);
     PassRefPtrWillBeRawPtr<ClientRectList> nonDraggableRegions(Document*, ExceptionState&);

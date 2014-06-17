@@ -2029,6 +2029,17 @@ void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(Node* 
     document->updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
 }
 
+void Internals::forceFullRepaint(Document* document, ExceptionState& exceptionState)
+{
+    if (!document || !document->view()) {
+        exceptionState.throwDOMException(InvalidAccessError, document ? "The document's view cannot be retrieved." : "The document provided is invalid.");
+        return;
+    }
+
+    if (RenderView *renderView = document->renderView())
+        renderView->repaintViewAndCompositedLayers();
+}
+
 PassRefPtrWillBeRawPtr<ClientRectList> Internals::draggableRegions(Document* document, ExceptionState& exceptionState)
 {
     return annotatedRegions(document, true, exceptionState);
