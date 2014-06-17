@@ -409,10 +409,6 @@ class TestGypAndroid(TestGypBase):
   """
   Subclass for testing the GYP Android makefile generator. Note that
   build/envsetup.sh and lunch must have been run before running tests.
-
-  TODO: This is currently an incomplete implementation. We do not support
-  run_built_executable(), so we pass only tests which do not use this. As a
-  result, support for host targets is not properly tested.
   """
   format = 'android'
 
@@ -455,6 +451,20 @@ class TestGypAndroid(TestGypBase):
           os.remove(os.path.join(out_dir, x, d))
 
     super(TestGypAndroid, self).__init__(*args, **kw)
+    self._adb_path = os.path.join(os.environ['ANDROID_HOST_OUT'], 'bin', 'adb')
+    self._device_serial = None
+    adb_devices_out = self._call_adb(['devices'])
+    devices = [l.split()[0] for l in adb_devices_out.splitlines()[1:-1]
+               if l.split()[1] == 'device']
+    if len(devices) == 0:
+      self._device_serial = None
+    else:
+      if len(devices) > 1:
+        self._device_serial = random.choice(devices)
+      else:
+        self._device_serial = devices[0]
+      self._call_adb(['root'])
+    self._to_install = set()
 
   def target_name(self, target):
     if target == self.ALL:
@@ -464,6 +474,8 @@ class TestGypAndroid(TestGypBase):
     if target in (None, self.DEFAULT):
       return self.ALL
     return target
+
+  _INSTALLABLE_PREFIX = 'Install: '
 
   def build(self, gyp_file, target=None, **kw):
     """
@@ -479,6 +491,11 @@ class TestGypAndroid(TestGypBase):
     makefile = os.path.join(self.workdir, chdir, 'GypAndroid.mk')
     os.environ['ONE_SHOT_MAKEFILE'] = makefile
     result = self.run(program=self.build_tool, **kw)
+    for l in self.stdout().splitlines():
+      if l.startswith(TestGypAndroid._INSTALLABLE_PREFIX):
+        self._to_install.add(os.path.abspath(os.path.join(
+            os.environ['ANDROID_BUILD_TOP'],
+            l[len(TestGypAndroid._INSTALLABLE_PREFIX):])))
     del os.environ['ONE_SHOT_MAKEFILE']
     return result
 
@@ -501,15 +518,10 @@ class TestGypAndroid(TestGypBase):
     """
     # Built files are in $ANDROID_PRODUCT_OUT. This requires copying logic from
     # the Android build system.
-    if type == None:
+    if type == None or type == self.EXECUTABLE:
       return os.path.join(os.environ['ANDROID_PRODUCT_OUT'], 'obj', 'GYP',
                           'shared_intermediates', name)
     subdir = kw.get('subdir')
-    if type == self.EXECUTABLE:
-      # We don't install executables
-      group = 'EXECUTABLES'
-      module_name = self.android_module(group, name, subdir)
-      return os.path.join(self.intermediates_dir(group, module_name), name)
     if type == self.STATIC_LIB:
       group = 'STATIC_LIBRARIES'
       module_name = self.android_module(group, name, subdir)
@@ -522,23 +534,98 @@ class TestGypAndroid(TestGypBase):
                           '%s.so' % module_name)
     assert False, 'Unhandled type'
 
+  def _adb_failure(self, command, msg, stdout, stderr):
+    """ Reports a failed adb command and fails the containing test.
+
+    Args:
+      command: The adb command that failed.
+      msg: The error description.
+      stdout: The standard output.
+      stderr: The standard error.
+    """
+    print '%s failed%s' % (' '.join(command), ': %s' % msg if msg else '')
+    print self.banner('STDOUT ')
+    stdout.seek(0)
+    print stdout.read()
+    print self.banner('STDERR ')
+    stderr.seek(0)
+    print stderr.read()
+    self.fail_test()
+
+  def _call_adb(self, command):
+    """ Calls the provided adb command.
+
+    If the command fails, the test fails.
+
+    Args:
+      command: The adb command to call.
+    Returns:
+      The command's output.
+    """
+    with tempfile.TemporaryFile(bufsize=0) as adb_out:
+      with tempfile.TemporaryFile(bufsize=0) as adb_err:
+        adb_command = [self._adb_path]
+        if self._device_serial:
+          adb_command += ['-s', self._device_serial]
+        is_shell = (command[0] == 'shell')
+        if is_shell:
+          command = [command[0], '%s; echo "\n$?";' % ' '.join(command[1:])]
+        adb_command += command
+        if subprocess.call(adb_command, stdout=adb_out, stderr=adb_err) != 0:
+          self._adb_failure(adb_command, None, adb_out, adb_err)
+        else:
+          adb_out.seek(0)
+          output = adb_out.read()
+          if is_shell:
+            output = output.splitlines(True)
+            try:
+              output[-2] = output[-2].rstrip('\r\n')
+              output, rc = (''.join(output[:-1]), int(output[-1]))
+            except ValueError:
+              self._adb_failure(adb_command, 'unexpected output format',
+                                adb_out, adb_err)
+            if rc != 0:
+              self._adb_failure(adb_command, 'exited with %d' % rc, adb_out,
+                                adb_err)
+          return output
+
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable program built from a gyp-generated configuration.
-
-    This is not correctly implemented for Android. For now, we simply check
-    that the executable file exists.
     """
-    # Running executables requires a device. Even if we build for target x86,
-    # the binary is not built with the correct toolchain options to actually
-    # run on the host.
-
-    # Copied from TestCommon.run()
     match = kw.pop('match', self.match)
-    status = None
-    if os.path.exists(self.built_file_path(name)):
-      status = 1
-    self._complete(None, None, None, None, status, match)
+
+    executable_file = self.built_file_path(name, type=self.EXECUTABLE, **kw)
+    if executable_file not in self._to_install:
+      self.fail_test()
+
+    if not self._device_serial:
+      self.skip_test(message='No devices attached.\n')
+
+    storage = self._call_adb(['shell', 'echo', '$ANDROID_DATA']).strip()
+    if not len(storage):
+      self.fail_test()
+
+    installed = set()
+    try:
+      for i in self._to_install:
+        a = os.path.abspath(
+            os.path.join(os.environ['ANDROID_BUILD_TOP'], i))
+        dest = '%s/%s' % (storage, os.path.basename(a))
+        self._call_adb(['push', os.path.abspath(a), dest])
+        installed.add(dest)
+        if i == executable_file:
+          device_executable = dest
+          self._call_adb(['shell', 'chmod', '755', device_executable])
+
+      out = self._call_adb(
+          ['shell', 'LD_LIBRARY_PATH=$LD_LIBRARY_PATH:%s' % storage,
+           device_executable])
+      out = out.replace('\r\n', '\n')
+      self._complete(out, kw.pop('stdout', None), None, None, None, match)
+    finally:
+      if len(installed):
+        self._call_adb(['shell', 'rm'] + list(installed))
 
   def match_single_line(self, lines = None, expected_line = None):
     """

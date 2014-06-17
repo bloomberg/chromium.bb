@@ -73,6 +73,9 @@ def PrepareCmake():
   CallSubProcess( ['make', 'cmake'], cwd=CMAKE_DIR)
 
 
+_ANDROID_SETUP = 'source build/envsetup.sh && lunch full-eng'
+
+
 def PrepareAndroidTree():
   """Prepare an Android tree to run 'android' format tests."""
   if os.environ['BUILDBOT_CLOBBER'] == '1':
@@ -103,8 +106,29 @@ def PrepareAndroidTree():
   print '@@@BUILD_STEP Build Android@@@'
   CallSubProcess(
       ['/bin/bash',
-       '-c', 'source build/envsetup.sh && lunch full-eng && make -j4'],
+       '-c', '%s && make -j4' % _ANDROID_SETUP],
       cwd=ANDROID_DIR)
+
+
+def StartAndroidEmulator():
+  """Start an android emulator from the built android tree."""
+  print '@@@BUILD_STEP Start Android emulator@@@'
+  android_host_bin = '$ANDROID_HOST_OUT/bin'
+  subprocess.Popen(
+      ['/bin/bash', '-c',
+       '%s && %s/emulator -no-window' % (_ANDROID_SETUP, android_host_bin)],
+      cwd=ANDROID_DIR)
+  CallSubProcess(
+      ['/bin/bash', '-c',
+       '%s && %s/adb wait-for-device' % (_ANDROID_SETUP, android_host_bin)],
+      cwd=ANDROID_DIR)
+
+
+def StopAndroidEmulator():
+  """Stop all android emulators."""
+  print '@@@BUILD_STEP Stop Android emulator@@@'
+  # If this fails, it's because there is no emulator running.
+  subprocess.call(['pkill', 'emulator.*'])
 
 
 def GypTestFormat(title, format=None, msvs_version=None, tests=[]):
@@ -137,8 +161,7 @@ def GypTestFormat(title, format=None, msvs_version=None, tests=[]):
     # using the 'android' backend, so this is done in a single shell.
     retcode = subprocess.call(
         ['/bin/bash',
-         '-c', 'source build/envsetup.sh && lunch full-eng && cd %s && %s'
-         % (ROOT_DIR, command)],
+         '-c', '%s && cd %s && %s' % (_ANDROID_SETUP, ROOT_DIR, command)],
         cwd=ANDROID_DIR, env=env)
   else:
     retcode = subprocess.call(command, cwd=ROOT_DIR, env=env, shell=True)
@@ -160,7 +183,11 @@ def GypBuild():
   # The Android gyp bot runs on linux so this must be tested first.
   if os.environ['BUILDBOT_BUILDERNAME'] == 'gyp-android':
     PrepareAndroidTree()
-    retcode += GypTestFormat('android')
+    StartAndroidEmulator()
+    try:
+      retcode += GypTestFormat('android')
+    finally:
+      StopAndroidEmulator()
   elif sys.platform.startswith('linux'):
     retcode += GypTestFormat('ninja')
     retcode += GypTestFormat('make')
