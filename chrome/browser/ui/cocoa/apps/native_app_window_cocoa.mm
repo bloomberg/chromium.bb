@@ -236,6 +236,25 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
     return YES;
 }
 
+- (void)drawCustomFrameRect:(NSRect)frameRect forView:(NSView*)view {
+  // Make the background color of the content area white. We can't just call
+  // -setBackgroundColor as that causes the title bar to be drawn in a solid
+  // color.
+  NSRect rect = [self contentRectForFrameRect:frameRect];
+  [[NSColor whiteColor] set];
+  NSRectFill(rect);
+
+  // Draw the native title bar. We remove the content area since the native
+  // implementation draws a gray background.
+  rect.origin.y = NSMaxY(rect);
+  rect.size.height = CGFLOAT_MAX;
+  rect = NSIntersectionRect(rect, frameRect);
+
+  [NSBezierPath clipRect:rect];
+  [super drawCustomFrameRect:frameRect
+                     forView:view];
+}
+
 @end
 
 @interface ShellCustomFrameNSWindow : ShellNSWindow {
