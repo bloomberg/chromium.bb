@@ -154,7 +154,7 @@ float RunOneForwardTest(int fft_log_size, int signal_type, float signal_value,
 
   status = ForwardFFT(x, y, fft_fwd_spec);
 
-  if (status) {
+  if (status != OMX_Sts_NoErr) {
     fprintf(stderr, "Forward FFT failed: status = %d\n", status);
     exit(1);
   }
@@ -223,7 +223,7 @@ float RunOneInverseTest(int fft_log_size, int signal_type, float signal_value,
 
   status = InverseFFT(y, z, fft_inv_spec);
 
-  if (status) {
+  if (status != OMX_Sts_NoErr) {
     fprintf(stderr, "Inverse FFT failed: status = %d\n", status);
     exit(1);
   }

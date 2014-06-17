@@ -51,7 +51,7 @@ typedef enum {
   S32,
 } s16_s32;
 
-#if defined(__arm__)
+#if defined(__arm__) || defined(__aarch64__)
 void TimeOneFloatFFT(int count, int fft_log_size, float signal_value,
                      int signal_type);
 void TimeFloatFFT(int count, float signal_value, int signal_type);
@@ -112,7 +112,7 @@ void TimeFFTUsage(char* prog) {
       "  -T          Run just one FFT timing test\n"
       "  -f          FFT type:\n"
       "              0 - Complex Float\n"
-#if defined(__arm__)
+#if defined(__arm__) || defined(__aarch64__)
       "              1 - Real Float\n"
 #endif
 #ifdef ENABLE_FIXED_POINT_FFT_TESTS
@@ -217,7 +217,7 @@ int main(int argc, char* argv[]) {
     printf("Warning:  -f ignored when -T not specified\n");
 
   if (test_mode) {
-#if defined(__arm__)
+#if defined(__arm__) || defined(__aarch64__)
     TimeFloatFFT(count, signal_value, signal_type);
 #endif
     TimeFloatRFFT(count, signal_value, signal_type);
@@ -229,7 +229,7 @@ int main(int argc, char* argv[]) {
 #endif
   } else {
     switch (fft_type) {
-#if defined(__arm__)
+#if defined(__arm__) || defined(__aarch64__)
       case 0:
         TimeOneFloatFFT(count, fft_log_size, signal_value, signal_type);
         break;
@@ -323,7 +323,7 @@ int ComputeCount(int nominal_count, int fft_log_size) {
   return count;
 }
 
-#if defined(__arm__)
+#if defined(__arm__) || defined(__aarch64__)
 void TimeOneFloatFFT(int count, int fft_log_size, float signal_value,
                      int signal_type) {
   struct AlignedPtr* x_aligned;
@@ -1061,11 +1061,11 @@ void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
 
     if(s16s32 == S32) {
       PrintResult("Forward RFFT16 (with S32)",
-		  fft_log_size, elapsed_time, count);
+                  fft_log_size, elapsed_time, count);
     }
     else {
       PrintResult("Forward RFFT16 (with S16)",
-		  fft_log_size, elapsed_time, count);
+                  fft_log_size, elapsed_time, count);
     }
   }
 
@@ -1124,11 +1124,11 @@ void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
 
     if(s16s32 == S32) {
       PrintResult("Inverse RFFT16 (with S32)",
-		  fft_log_size, elapsed_time, count);
+                  fft_log_size, elapsed_time, count);
     }
     else {
       PrintResult("Inverse RFFT16 (with S16)",
-		  fft_log_size, elapsed_time, count);
+                  fft_log_size, elapsed_time, count);
     }
   }
 

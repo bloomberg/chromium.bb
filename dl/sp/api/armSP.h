@@ -29,6 +29,8 @@
 #ifndef _armSP_H_
 #define _armSP_H_
 
+#include <stdint.h>
+
 #include "dl/api/omxtypes.h"
 
 #ifdef __cplusplus
@@ -87,6 +89,42 @@ typedef struct ARMsFFTSpec_FC32_Tag
     OMX_FC32* pTwiddle;
     OMX_FC32* pBuf;
 } ARMsFFTSpec_FC32;
+
+/*
+ * Compute log2(x), where x must be a power of 2.
+ */
+static inline OMX_U32 fastlog2(long x) {
+  OMX_U32 out;
+  asm("clz %0,%1\n\t"
+      "sub %0, %0, #63\n\t"
+      "neg %0, %0\n\t"
+      : "=r"(out)
+      : "r"(x)
+      :);
+  return out;
+}
+
+/*
+ *  Validate args. All pointers must be non-NULL; the source and
+ *  destination pointers must be aligned on a 32-byte boundary; the
+ *  FFT spec must have non-NULL pointers; and the FFT size must be
+ *  within range.
+ */
+static inline int validateParametersFC32(const void* pSrc,
+					 const void* pDst,
+					 const ARMsFFTSpec_FC32* pFFTSpec) {
+  return pSrc && pDst && pFFTSpec && !(((uintptr_t)pSrc) & 31) &&
+         !(((uintptr_t)pDst) & 31) && pFFTSpec->pTwiddle && pFFTSpec->pBuf &&
+         (pFFTSpec->N >= 2) && (pFFTSpec->N <= (1 << TWIDDLE_TABLE_ORDER));
+}
+
+static inline int validateParametersF32(const void* pSrc,
+					const void* pDst,
+					const ARMsFFTSpec_R_FC32* pFFTSpec) {
+  return pSrc && pDst && pFFTSpec && !(((uintptr_t)pSrc) & 31) &&
+         !(((uintptr_t)pDst) & 31) && pFFTSpec->pTwiddle && pFFTSpec->pBuf &&
+         (pFFTSpec->N >= 2) && (pFFTSpec->N <= (1 << TWIDDLE_TABLE_ORDER));
+}
 
 #ifdef __cplusplus
 }
