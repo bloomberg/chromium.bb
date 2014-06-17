@@ -5057,6 +5057,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="EasyUnlock.StartupTimeFromSuspend" units="milliseconds">
+  <owner>joshwoodward@google.com</owner>
+  <owner>tengs@chromium.org</owner>
+  <summary>
+    The time it takes after resuming from a suspended state (ie. opening the
+    Chromebook lid) to when a remote device is connected and a request is made.
+    Note that it is possible for the remote device not to be present when
+    resuming from suspend, and the device may be connected at a later time.
+    Therefore, large values for this metric may not be too meaningful due to
+    meddling users.
+  </summary>
+</histogram>
+
 <histogram name="EasyUnlock.UnlockEvent" enum="EasyUnlockUnlockEvent">
   <owner>joshwoodward@google.com</owner>
   <owner>tbarzic@chromium.org</owner>
