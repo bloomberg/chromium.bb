@@ -63,14 +63,17 @@ TEST_F(FindBarCocoaControllerTest, ShowAndHide) {
 
   ASSERT_GT([findBarView frame].origin.y, 0);
   ASSERT_FALSE([controller_ isFindBarVisible]);
+  ASSERT_TRUE([[controller_ view] isHidden]);
 
   [controller_ showFindBar:NO];
   EXPECT_EQ([findBarView frame].origin.y, 0);
   EXPECT_TRUE([controller_ isFindBarVisible]);
+  ASSERT_FALSE([[controller_ view] isHidden]);
 
   [controller_ hideFindBar:NO];
   EXPECT_GT([findBarView frame].origin.y, 0);
   EXPECT_FALSE([controller_ isFindBarVisible]);
+  ASSERT_TRUE([[controller_ view] isHidden]);
 }
 
 TEST_F(FindBarCocoaControllerTest, SetFindText) {

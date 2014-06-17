@@ -113,6 +113,7 @@ const float kRightEdgeOffset = 25;
 
   [findBarView_ setFrame:[self hiddenFindBarFrame]];
   defaultWidth_ = NSWidth([findBarView_ frame]);
+  [[self view] setHidden:YES];
 
   [self prepopulateText:[[FindPasteboard sharedInstance] findText]];
 }
@@ -449,7 +450,7 @@ const float kRightEdgeOffset = 25;
 
   // If the find bar is not visible, make it actually hidden, so it'll no longer
   // respond to key events.
-  [findBarView_ setHidden:![self isFindBarVisible]];
+  [[self view] setHidden:![self isFindBarVisible]];
   [[self browserWindowController] onFindBarVisibilityChanged];
 }
 
@@ -505,7 +506,7 @@ const float kRightEdgeOffset = 25;
 
   if (!animate) {
     [findBarView_ setFrame:endFrame];
-    [findBarView_ setHidden:![self isFindBarVisible]];
+    [[self view] setHidden:![self isFindBarVisible]];
     [[self browserWindowController] onFindBarVisibilityChanged];
     showHideAnimation_.reset(nil);
     return;
@@ -513,7 +514,7 @@ const float kRightEdgeOffset = 25;
 
   // If animating, ensure that the find bar is not hidden. Hidden status will be
   // updated at the end of the animation.
-  [findBarView_ setHidden:NO];
+  [[self view] setHidden:NO];
   //[[self browserWindowController] onFindBarVisibilityChanged];
 
   // Reset the frame to what was saved above.
