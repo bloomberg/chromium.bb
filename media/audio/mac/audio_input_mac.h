@@ -16,7 +16,6 @@
 
 namespace media {
 
-class AudioBus;
 class AudioManagerMac;
 
 // Implementation of AudioInputStream for Mac OS X using the audio queue service
@@ -83,8 +82,6 @@ class PCMQueueInAudioInputStream : public AudioInputStream {
   base::TimeTicks last_fill_;
   // Used to defer Start() to workaround http://crbug.com/160920.
   base::CancelableClosure deferred_start_cb_;
-
-  scoped_ptr<media::AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(PCMQueueInAudioInputStream);
 };

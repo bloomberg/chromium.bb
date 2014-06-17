@@ -10,7 +10,6 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/device_enumeration_win.h"
-#include "media/base/audio_bus.h"
 
 namespace media {
 
@@ -21,9 +20,7 @@ static WAVEHDR* GetNextBuffer(WAVEHDR* current) {
 }
 
 PCMWaveInAudioInputStream::PCMWaveInAudioInputStream(
-    AudioManagerWin* manager,
-    const AudioParameters& params,
-    int num_buffers,
+    AudioManagerWin* manager, const AudioParameters& params, int num_buffers,
     const std::string& device_id)
     : state_(kStateEmpty),
       manager_(manager),
@@ -32,8 +29,7 @@ PCMWaveInAudioInputStream::PCMWaveInAudioInputStream(
       callback_(NULL),
       num_buffers_(num_buffers),
       buffer_(NULL),
-      channels_(params.channels()),
-      audio_bus_(media::AudioBus::Create(params)) {
+      channels_(params.channels()) {
   DCHECK_GT(num_buffers_, 0);
   format_.wFormatTag = WAVE_FORMAT_PCM;
   format_.nChannels = params.channels() > 2 ? 2 : params.channels();
@@ -294,11 +290,11 @@ void PCMWaveInAudioInputStream::WaveCallback(HWAVEIN hwi, UINT msg,
       // there is currently no support for controlling the microphone volume
       // level.
       WAVEHDR* buffer = reinterpret_cast<WAVEHDR*>(param1);
-      obj->audio_bus_->FromInterleaved(reinterpret_cast<uint8*>(buffer->lpData),
-                                       obj->audio_bus_->frames(),
-                                       obj->format_.wBitsPerSample / 8);
-      obj->callback_->OnData(
-          obj, obj->audio_bus_.get(), buffer->dwBytesRecorded, 0.0);
+      obj->callback_->OnData(obj,
+                             reinterpret_cast<const uint8*>(buffer->lpData),
+                             buffer->dwBytesRecorded,
+                             buffer->dwBytesRecorded,
+                             0.0);
 
       // Queue the finished buffer back with the audio driver. Since we are
       // reusing the same buffers we can get away without calling

@@ -9,36 +9,19 @@
 #include "base/memory/shared_memory.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 
-using media::AudioBus;
-
 namespace content {
 
-AudioInputSyncWriter::AudioInputSyncWriter(base::SharedMemory* shared_memory,
-                                           int shared_memory_segment_count,
-                                           const media::AudioParameters& params)
+AudioInputSyncWriter::AudioInputSyncWriter(
+    base::SharedMemory* shared_memory,
+    int shared_memory_segment_count)
     : shared_memory_(shared_memory),
       shared_memory_segment_count_(shared_memory_segment_count),
       current_segment_id_(0),
-      creation_time_(base::Time::Now()),
-      audio_bus_memory_size_(AudioBus::CalculateMemorySize(params)) {
+      creation_time_(base::Time::Now()) {
   DCHECK_GT(shared_memory_segment_count, 0);
   DCHECK_EQ(shared_memory->requested_size() % shared_memory_segment_count, 0u);
   shared_memory_segment_size_ =
       shared_memory->requested_size() / shared_memory_segment_count;
-  DVLOG(1) << "SharedMemory::requested_size: "
-           << shared_memory->requested_size();
-  DVLOG(1) << "shared_memory_segment_count: " << shared_memory_segment_count;
-
-  // Create vector of audio buses by wrapping existing blocks of memory.
-  uint8* ptr = static_cast<uint8*>(shared_memory_->memory());
-  for (int i = 0; i < shared_memory_segment_count; ++i) {
-    media::AudioInputBuffer* buffer =
-        reinterpret_cast<media::AudioInputBuffer*>(ptr);
-    scoped_ptr<media::AudioBus> audio_bus =
-        media::AudioBus::WrapMemory(params, buffer->audio);
-    audio_buses_.push_back(audio_bus.release());
-    ptr += shared_memory_segment_size_;
-  }
 }
 
 AudioInputSyncWriter::~AudioInputSyncWriter() {}
@@ -48,9 +31,10 @@ void AudioInputSyncWriter::UpdateRecordedBytes(uint32 bytes) {
   socket_->Send(&bytes, sizeof(bytes));
 }
 
-void AudioInputSyncWriter::Write(const media::AudioBus* data,
-                                 double volume,
-                                 bool key_pressed) {
+uint32 AudioInputSyncWriter::Write(const void* data,
+                                   uint32 size,
+                                   double volume,
+                                   bool key_pressed) {
 #if !defined(OS_ANDROID)
   static const base::TimeDelta kLogDelayThreadhold =
       base::TimeDelta::FromMilliseconds(500);
@@ -75,22 +59,19 @@ void AudioInputSyncWriter::Write(const media::AudioBus* data,
   last_write_time_ = base::Time::Now();
 #endif
 
-  // Write audio parameters to shared memory.
   uint8* ptr = static_cast<uint8*>(shared_memory_->memory());
   ptr += current_segment_id_ * shared_memory_segment_size_;
   media::AudioInputBuffer* buffer =
       reinterpret_cast<media::AudioInputBuffer*>(ptr);
   buffer->params.volume = volume;
-  buffer->params.size = audio_bus_memory_size_;
+  buffer->params.size = size;
   buffer->params.key_pressed = key_pressed;
-
-  // Copy data from the native audio layer into shared memory using pre-
-  // allocated audio buses.
-  media::AudioBus* audio_bus = audio_buses_[current_segment_id_];
-  data->CopyTo(audio_bus);
+  memcpy(buffer->audio, data, size);
 
   if (++current_segment_id_ >= shared_memory_segment_count_)
     current_segment_id_ = 0;
+
+  return size;
 }
 
 void AudioInputSyncWriter::Close() {

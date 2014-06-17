@@ -108,9 +108,10 @@ class MEDIA_EXPORT AudioBus {
   // the channels are valid.
   void SwapChannels(int a, int b);
 
-  virtual ~AudioBus();
-
  private:
+  friend struct base::DefaultDeleter<AudioBus>;
+  ~AudioBus();
+
   AudioBus(int channels, int frames);
   AudioBus(int channels, int frames, float* data);
   AudioBus(int frames, const std::vector<float*>& channel_data);

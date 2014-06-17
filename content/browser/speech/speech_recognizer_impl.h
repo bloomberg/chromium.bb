@@ -16,7 +16,6 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace media {
-class AudioBus;
 class AudioManager;
 }
 
@@ -133,7 +132,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   virtual void OnError(media::AudioInputController* controller,
       media::AudioInputController::ErrorCode error_code) OVERRIDE;
   virtual void OnData(media::AudioInputController* controller,
-                      const media::AudioBus* data) OVERRIDE;
+                      const uint8* data, uint32 size) OVERRIDE;
   virtual void OnLog(media::AudioInputController* controller,
                      const std::string& message) OVERRIDE {}
 

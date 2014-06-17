@@ -49,7 +49,6 @@
 
 namespace media {
 
-class AudioBus;
 class AudioManagerMac;
 class DataBuffer;
 
@@ -165,10 +164,6 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
 
   // Used to defer Start() to workaround http://crbug.com/160920.
   base::CancelableClosure deferred_start_cb_;
-
-  // Extra audio bus used for storage of deinterleaved data for the OnData
-  // callback.
-  scoped_ptr<media::AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(AUAudioInputStream);
 };

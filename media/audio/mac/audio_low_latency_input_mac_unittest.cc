@@ -31,11 +31,9 @@ ACTION_P4(CheckCountAndPostQuitTask, count, limit, loop, closure) {
 
 class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
  public:
-  MOCK_METHOD4(OnData,
-               void(AudioInputStream* stream,
-                    const AudioBus* src,
-                    uint32 hardware_delay_bytes,
-                    double volume));
+  MOCK_METHOD5(OnData, void(AudioInputStream* stream,
+                            const uint8* src, uint32 size,
+                            uint32 hardware_delay_bytes, double volume));
   MOCK_METHOD1(OnError, void(AudioInputStream* stream));
 };
 
@@ -76,19 +74,12 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
 
   // AudioInputStream::AudioInputCallback implementation.
   virtual void OnData(AudioInputStream* stream,
-                      const AudioBus* src,
-                      uint32 hardware_delay_bytes,
-                      double volume) OVERRIDE {
-    const int num_samples = src->frames() * src->channels();
-    scoped_ptr<int16> interleaved(new int16[num_samples]);
-    const int bytes_per_sample = sizeof(*interleaved);
-    src->ToInterleaved(src->frames(), bytes_per_sample, interleaved.get());
-
+                      const uint8* src, uint32 size,
+                      uint32 hardware_delay_bytes, double volume) OVERRIDE {
     // Store data data in a temporary buffer to avoid making blocking
     // fwrite() calls in the audio callback. The complete buffer will be
     // written to file in the destructor.
-    const int size = bytes_per_sample * num_samples;
-    if (buffer_.Append((const uint8*)interleaved.get(), size)) {
+    if (buffer_.Append(src, size)) {
       bytes_to_write_ += size;
     }
   }
@@ -233,13 +224,18 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyMonoRecording) {
   AudioInputStream* ais = CreateAudioInputStream(CHANNEL_LAYOUT_MONO);
   EXPECT_TRUE(ais->Open());
 
+  int fs = static_cast<int>(AUAudioInputStream::HardwareSampleRate());
+  int samples_per_packet = fs / 100;
+  int bits_per_sample = 16;
+  uint32 bytes_per_packet = samples_per_packet * (bits_per_sample / 8);
+
   MockAudioInputCallback sink;
 
   // We use 10ms packets and will run the test until ten packets are received.
   // All should contain valid packets of the same size and a valid delay
   // estimate.
   base::RunLoop run_loop;
-  EXPECT_CALL(sink, OnData(ais, NotNull(), _, _))
+  EXPECT_CALL(sink, OnData(ais, NotNull(), bytes_per_packet, _, _))
       .Times(AtLeast(10))
       .WillRepeatedly(CheckCountAndPostQuitTask(
           &count, 10, &message_loop_, run_loop.QuitClosure()));
@@ -260,6 +256,11 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyStereoRecording) {
   AudioInputStream* ais = CreateAudioInputStream(CHANNEL_LAYOUT_STEREO);
   EXPECT_TRUE(ais->Open());
 
+  int fs = static_cast<int>(AUAudioInputStream::HardwareSampleRate());
+  int samples_per_packet = fs / 100;
+  int bits_per_sample = 16;
+  uint32 bytes_per_packet = 2 * samples_per_packet * (bits_per_sample / 8);
+
   MockAudioInputCallback sink;
 
   // We use 10ms packets and will run the test until ten packets are received.
@@ -273,7 +274,7 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyStereoRecording) {
   // ensure that we can land the patch but will revisit this test again when
   // more analysis of the delay estimates are done.
   base::RunLoop run_loop;
-  EXPECT_CALL(sink, OnData(ais, NotNull(), _, _))
+  EXPECT_CALL(sink, OnData(ais, NotNull(), bytes_per_packet, _, _))
       .Times(AtLeast(10))
       .WillRepeatedly(CheckCountAndPostQuitTask(
           &count, 10, &message_loop_, run_loop.QuitClosure()));

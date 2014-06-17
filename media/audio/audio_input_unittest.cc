@@ -24,7 +24,8 @@ class TestInputCallback : public AudioInputStream::AudioInputCallback {
         had_error_(0) {
   }
   virtual void OnData(AudioInputStream* stream,
-                      const AudioBus* source,
+                      const uint8* data,
+                      uint32 size,
                       uint32 hardware_delay_bytes,
                       double volume) OVERRIDE {
     ++callback_count_;

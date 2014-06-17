@@ -18,7 +18,6 @@
 
 namespace media {
 
-class AudioBus;
 class AudioManagerBase;
 
 class MEDIA_EXPORT FakeAudioInputStream
@@ -69,7 +68,6 @@ class MEDIA_EXPORT FakeAudioInputStream
   int beep_generated_in_buffers_;
   int beep_period_in_frames_;
   int frames_elapsed_;
-  scoped_ptr<media::AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAudioInputStream);
 };

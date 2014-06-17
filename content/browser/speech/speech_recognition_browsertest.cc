@@ -133,7 +133,6 @@ class SpeechRecognitionBrowserTest :
       size_t buffer_size,
       bool fill_with_noise) {
     DCHECK(controller.get());
-    const media::AudioParameters& audio_params = controller->audio_parameters();
     scoped_ptr<uint8[]> audio_buffer(new uint8[buffer_size]);
     if (fill_with_noise) {
       for (size_t i = 0; i < buffer_size; ++i)
@@ -142,13 +141,9 @@ class SpeechRecognitionBrowserTest :
     } else {
       memset(audio_buffer.get(), 0, buffer_size);
     }
-
-    scoped_ptr<media::AudioBus> audio_bus =
-        media::AudioBus::Create(audio_params);
-    audio_bus->FromInterleaved(&audio_buffer.get()[0],
-                               audio_bus->frames(),
-                               audio_params.bits_per_sample() / 8);
-    controller->event_handler()->OnData(controller, audio_bus.get());
+    controller->event_handler()->OnData(controller,
+                                        audio_buffer.get(),
+                                        buffer_size);
   }
 
   void FeedAudioController(int duration_ms, bool feed_with_noise) {

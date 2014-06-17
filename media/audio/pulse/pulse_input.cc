@@ -34,8 +34,6 @@ PulseAudioInputStream::PulseAudioInputStream(AudioManagerPulse* audio_manager,
       context_state_changed_(false) {
   DCHECK(mainloop);
   DCHECK(context);
-  CHECK(params_.IsValid());
-  audio_bus_ = AudioBus::Create(params_);
 }
 
 PulseAudioInputStream::~PulseAudioInputStream() {
@@ -274,11 +272,8 @@ void PulseAudioInputStream::ReadData() {
   int packet_size = params_.GetBytesPerBuffer();
   while (buffer_->forward_bytes() >= packet_size) {
     buffer_->Read(audio_data_buffer_.get(), packet_size);
-    audio_bus_->FromInterleaved(audio_data_buffer_.get(),
-                                audio_bus_->frames(),
-                                params_.bits_per_sample() / 8);
-    callback_->OnData(
-        this, audio_bus_.get(), hardware_delay, normalized_volume);
+    callback_->OnData(this, audio_data_buffer_.get(), packet_size,
+                      hardware_delay, normalized_volume);
 
     if (buffer_->forward_bytes() < packet_size)
       break;

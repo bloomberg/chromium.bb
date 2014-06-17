@@ -12,7 +12,6 @@
 
 namespace media {
 
-class AudioBus;
 class AudioManagerAndroid;
 
 // Implements PCM audio input support for Android using the Java AudioRecord
@@ -64,9 +63,6 @@ class MEDIA_EXPORT AudioRecordInputStream : public AudioInputStream {
 
   // Owned by j_audio_record_.
   uint8* direct_buffer_address_;
-
-  scoped_ptr<media::AudioBus> audio_bus_;
-  int bytes_per_sample_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRecordInputStream);
 };

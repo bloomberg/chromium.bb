@@ -43,9 +43,7 @@ AlsaPcmInputStream::AlsaPcmInputStream(AudioManagerBase* audio_manager,
       mixer_handle_(NULL),
       mixer_element_handle_(NULL),
       read_callback_behind_schedule_(false),
-      audio_bus_(AudioBus::Create(params)),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 AlsaPcmInputStream::~AlsaPcmInputStream() {}
 
@@ -210,11 +208,8 @@ void AlsaPcmInputStream::ReadAudio() {
     int frames_read = wrapper_->PcmReadi(device_handle_, audio_buffer_.get(),
                                          params_.frames_per_buffer());
     if (frames_read == params_.frames_per_buffer()) {
-      audio_bus_->FromInterleaved(audio_buffer_.get(),
-                                  audio_bus_->frames(),
-                                  params_.bits_per_sample() / 8);
-      callback_->OnData(
-          this, audio_bus_.get(), hardware_delay_bytes, normalized_volume);
+      callback_->OnData(this, audio_buffer_.get(), bytes_per_buffer_,
+                        hardware_delay_bytes, normalized_volume);
     } else {
       LOG(WARNING) << "PcmReadi returning less than expected frames: "
                    << frames_read << " vs. " << params_.frames_per_buffer()

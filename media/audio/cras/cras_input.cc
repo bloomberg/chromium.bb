@@ -27,7 +27,6 @@ CrasInputStream::CrasInputStream(const AudioParameters& params,
       stream_direction_(device_id == AudioManagerBase::kLoopbackInputDeviceId ?
                             CRAS_STREAM_POST_MIX_PRE_DSP : CRAS_STREAM_INPUT) {
   DCHECK(audio_manager_);
-  audio_bus_ = AudioBus::Create(params_);
 }
 
 CrasInputStream::~CrasInputStream() {
@@ -223,11 +222,8 @@ void CrasInputStream::ReadAudio(size_t frames,
   double normalized_volume = 0.0;
   GetAgcVolume(&normalized_volume);
 
-  audio_bus_->FromInterleaved(buffer,
-                              audio_bus_->frames(),
-                              params_.bits_per_sample() / 8);
   callback_->OnData(this,
-                    audio_bus_.get(),
+                    buffer,
                     frames * bytes_per_frame_,
                     bytes_latency,
                     normalized_volume);
