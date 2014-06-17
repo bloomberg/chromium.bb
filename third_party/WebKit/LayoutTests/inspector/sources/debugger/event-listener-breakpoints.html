@@ -85,8 +85,8 @@ function test()
 
         function testLoadBreakpointOnXHR(next)
         {
-            DOMDebuggerAgent.setEventListenerBreakpoint("load", "xmlHTTPrequest"); // test case-insensitive match
-            DOMDebuggerAgent.setEventListenerBreakpoint("error", "XMLHttpRequest");
+            pane._setBreakpoint("listener:load", ["xmlHTTPrequest"]); // test case-insensitive match
+            pane._setBreakpoint("listener:error", ["XMLHttpRequest"]);
             InspectorTest.waitUntilPaused(paused);
             InspectorTest.evaluateInPageWithTimeout("addLoadListeners()");
 
@@ -94,8 +94,8 @@ function test()
             {
                 InspectorTest.captureStackTrace(callFrames);
                 printEventTargetName(auxData);
-                DOMDebuggerAgent.removeEventListenerBreakpoint("load", "XMLHttpRequest");
-                DOMDebuggerAgent.removeEventListenerBreakpoint("error", "xmlHTTPrequest");
+                pane._removeBreakpoint("listener:load", ["XMLHttpRequest"]);
+                pane._removeBreakpoint("listener:error", ["xmlHTTPrequest"]);
                 InspectorTest.resumeExecution(resumed);
             }
 
