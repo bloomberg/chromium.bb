@@ -76,6 +76,14 @@ void PepperNetworkManager::OnNetworkList(int32_t result,
     for (size_t i = 0; i < addresses.size(); ++i) {
       talk_base::SocketAddress address;
       PpNetAddressToSocketAddress(addresses[i], &address);
+
+      if (address.family() == AF_INET6 && IPIsSiteLocal(address.ipaddr())) {
+        // Link-local IPv6 addresses can't be bound via the current PPAPI
+        // Bind() interface as designed (see crbug.com/384854); trying to do so
+        // would fail.
+        continue;
+      }
+
       talk_base::Network* network = new talk_base::Network(
           list.GetName(i), list.GetDisplayName(i), address.ipaddr(), 0);
       network->AddIP(address.ipaddr());

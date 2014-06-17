@@ -26,6 +26,44 @@ const int kReceiveBufferSize = 65536;
 // reached under normal conditions.
 const int kMaxSendBufferSize = 256 * 1024;
 
+// Enum for different actions that can be taken after sendto() returns an error.
+enum ErrorAction {
+  ERROR_ACTION_FAIL,
+  ERROR_ACTION_IGNORE,
+  ERROR_ACTION_RETRY,
+};
+
+// Returns ErrorAction to perform if sendto() fails with |error|.
+ErrorAction GetErrorAction(int error) {
+  switch (error) {
+    // UDP is connectionless, so we may receive ICMP unreachable or reset errors
+    // for previous sends to different addresses.
+    case PP_ERROR_ADDRESS_UNREACHABLE:
+    case PP_ERROR_CONNECTION_RESET:
+      return ERROR_ACTION_RETRY;
+
+    // Target address is invalid. The socket is still usable for different
+    // target addresses and the error can be ignored.
+    case PP_ERROR_ADDRESS_INVALID:
+      return ERROR_ACTION_IGNORE;
+
+    // May be returned when the packet is blocked by local firewall (see
+    // https://code.google.com/p/webrtc/issues/detail?id=1207). The firewall may
+    // still allow us to send to other addresses, so ignore the error for this
+    // particular send.
+    case PP_ERROR_NOACCESS:
+      return ERROR_ACTION_IGNORE;
+
+    // Indicates that the buffer in the network adapter is full, so drop this
+    // packet and assume the socket is still usable.
+    case PP_ERROR_NOMEMORY:
+      return ERROR_ACTION_IGNORE;
+
+    default:
+      return ERROR_ACTION_FAIL;
+  }
+}
+
 class UdpPacketSocket : public talk_base::AsyncPacketSocket {
  public:
   explicit UdpPacketSocket(const pp::InstanceHandle& instance);
@@ -61,6 +99,7 @@ class UdpPacketSocket : public talk_base::AsyncPacketSocket {
 
     scoped_refptr<net::IOBufferWithSize> data;
     pp::NetAddress address;
+    bool retried;
   };
 
   void OnBindCompleted(int error);
@@ -102,7 +141,8 @@ UdpPacketSocket::PendingPacket::PendingPacket(
     int buffer_size,
     const pp::NetAddress& address)
     : data(new net::IOBufferWithSize(buffer_size)),
-      address(address) {
+      address(address),
+      retried(true) {
   memcpy(data->data(), buffer, buffer_size);
 }
 
@@ -177,7 +217,8 @@ void UdpPacketSocket::OnBindCompleted(int result) {
       DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
     }
   } else {
-    LOG(ERROR) << "Failed to bind UDP socket: " << result;
+    LOG(ERROR) << "Failed to bind UDP socket to " << local_address_.ToString()
+               << ", error: " << result;
   }
 }
 
@@ -281,25 +322,25 @@ void UdpPacketSocket::OnSendCompleted(int result) {
   send_pending_ = false;
 
   if (result < 0) {
-    LOG(ERROR) << "Send failed on a UDP socket: " << result;
+    ErrorAction action = GetErrorAction(result);
+    switch (action) {
+      case ERROR_ACTION_FAIL:
+        LOG(ERROR) << "Send failed on a UDP socket: " << result;
+        error_ = EINVAL;
+        return;
 
-    // OS (e.g. OSX) may return EHOSTUNREACH when the peer has the
-    // same subnet address as the local host but connected to a
-    // different network. That error must be ingored because the
-    // socket may still be useful for other ICE canidadates (e.g. for
-    // STUN candidates with a different address). Unfortunately pepper
-    // interface currently returns PP_ERROR_FAILED for any error (see
-    // crbug.com/136406). It's not possible to distinguish that case
-    // from other errors and so we have to ingore all of them. This
-    // behavior matchers the libjingle's AsyncUDPSocket used by the
-    // host.
-    //
-    // TODO(sergeyu): Once implementation of the Pepper UDP interface
-    // is fixed, uncomment the code below, but ignore
-    // host-unreacheable error.
+      case ERROR_ACTION_RETRY:
+        // Retry resending only once.
+        if (!send_queue_.front().retried) {
+          send_queue_.front().retried = true;
+          DoSend();
+          return;
+        }
+        break;
 
-    // error_ = EINVAL;
-    // return;
+      case ERROR_ACTION_IGNORE:
+        break;
+    }
   }
 
   send_queue_size_ -= send_queue_.front().data->size();
