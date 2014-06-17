@@ -294,7 +294,7 @@ void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
 void QuicDispatcher::CleanUpSession(SessionMap::iterator it) {
   QuicConnection* connection = it->second->connection();
   QuicEncryptedPacket* connection_close_packet =
-          connection->ReleaseConnectionClosePacket();
+      connection->ReleaseConnectionClosePacket();
   write_blocked_list_.erase(connection);
   time_wait_list_manager_->AddConnectionIdToTimeWait(it->first,
                                                      connection->version(),
@@ -381,9 +381,7 @@ QuicSession* QuicDispatcher::CreateQuicSession(
     const IPEndPoint& client_address) {
   QuicServerSession* session = new QuicServerSession(
       config_,
-      CreateQuicConnection(connection_id,
-                           server_address,
-                           client_address),
+      CreateQuicConnection(connection_id, server_address, client_address),
       initial_flow_control_window_bytes_,
       this);
   session->InitializeSession(crypto_config_);

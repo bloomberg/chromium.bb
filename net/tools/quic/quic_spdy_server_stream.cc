@@ -56,7 +56,7 @@ void QuicSpdyServerStream::OnFinRead() {
   if (!request_headers_received_) {
     SendErrorResponse();  // We're not done reading headers.
   } else if ((headers_.content_length_status() ==
-             BalsaHeadersEnums::VALID_CONTENT_LENGTH) &&
+              BalsaHeadersEnums::VALID_CONTENT_LENGTH) &&
              body_.size() != headers_.content_length()) {
     SendErrorResponse();  // Invalid content length
   } else {
@@ -122,7 +122,7 @@ void QuicSpdyServerStream::SendErrorResponse() {
   SendHeadersAndBody(headers, "bad");
 }
 
-void QuicSpdyServerStream:: SendHeadersAndBody(
+void QuicSpdyServerStream::SendHeadersAndBody(
     const BalsaHeaders& response_headers,
     StringPiece body) {
   // We only support SPDY and HTTP, and neither handles bidirectional streaming.
