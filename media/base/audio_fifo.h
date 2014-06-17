@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_AUDIO_FIFO_H_
 #define MEDIA_BASE_AUDIO_FIFO_H_
 
-#include "base/atomicops.h"
 #include "media/base/audio_bus.h"
 #include "media/base/media_export.h"
 
@@ -15,8 +14,7 @@ namespace media {
 // The maximum number of audio frames in the FIFO is set at construction and
 // can not be extended dynamically.  The allocated memory is utilized as a
 // ring buffer.
-// This class is thread-safe in the limited sense that one thread may call
-// Push(), while a second thread calls Consume().
+// This class is thread-unsafe.
 class MEDIA_EXPORT AudioFifo {
  public:
   // Creates a new AudioFifo and allocates |channels| of length |frames|.
@@ -51,8 +49,8 @@ class MEDIA_EXPORT AudioFifo {
   const int max_frames_;
 
   // Number of actual elements in the FIFO.
-  volatile base::subtle::Atomic32 frames_pushed_;
-  volatile base::subtle::Atomic32 frames_consumed_;
+  int frames_pushed_;
+  int frames_consumed_;
 
   // Current read position.
   int read_pos_;

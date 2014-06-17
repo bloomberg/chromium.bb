@@ -6,9 +6,6 @@
 
 #include "base/logging.h"
 
-using base::subtle::Atomic32;
-using base::subtle::NoBarrier_Store;
-
 namespace media {
 
 // Given current position in the FIFO, the maximum number of elements in the
@@ -52,7 +49,6 @@ AudioFifo::~AudioFifo() {}
 
 int AudioFifo::frames() const {
   int delta = frames_pushed_ - frames_consumed_;
-  base::subtle::MemoryBarrier();
   return delta;
 }
 
@@ -83,12 +79,7 @@ void AudioFifo::Push(const AudioBus* source) {
     }
   }
 
-  // Ensure the data is *really* written before updating |frames_pushed_|.
-  base::subtle::MemoryBarrier();
-
-  Atomic32 new_frames_pushed = frames_pushed_ + source_size;
-  NoBarrier_Store(&frames_pushed_, new_frames_pushed);
-
+  frames_pushed_ += source_size;
   DCHECK_LE(frames(), max_frames());
   write_pos_ = UpdatePos(write_pos_, source_size, max_frames());
 }
@@ -128,9 +119,7 @@ void AudioFifo::Consume(AudioBus* destination,
     }
   }
 
-  Atomic32 new_frames_consumed = frames_consumed_ + frames_to_consume;
-  NoBarrier_Store(&frames_consumed_, new_frames_consumed);
-
+  frames_consumed_ += frames_to_consume;
   read_pos_ = UpdatePos(read_pos_, frames_to_consume, max_frames());
 }
 
