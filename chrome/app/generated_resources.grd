@@ -10209,7 +10209,7 @@ Chrome ran out of memory.
 
         <!-- Automatic Settings Reset strings -->
         <message name="IDS_AUTOMATIC_SETTINGS_RESET_BANNER_TEXT" desc="The text to show in a banner at the top of the chrome://settings page. The banner is displayed when Chrome detects that its settings have been tampered with and then resets them to factory defaults.">
-          Chrome detected that some of your browser settings were changed by another program and reset them to their original defaults.
+          Chrome detected that some of your browser settings were corrupted by another program and reset them to their original defaults.
         </message>
       </if>
 
