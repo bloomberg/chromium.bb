@@ -607,6 +607,32 @@ TEST_P(FrameProcessorTest, AppendWindowFilterWithInexactPreroll) {
   CheckReadsThenReadStalls(audio_.get(), "0P 0:9.75 10:20");
 }
 
+TEST_P(FrameProcessorTest, AllowNegativeFramePTSAndDTSBeforeOffsetAdjustment) {
+  InSequence s;
+  AddTestTracks(HAS_AUDIO);
+  new_media_segment_ = true;
+  bool using_sequence_mode = GetParam();
+  if (using_sequence_mode) {
+    frame_processor_->SetSequenceMode(true);
+    EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 3));
+  } else {
+    EXPECT_CALL(callbacks_,
+                PossibleDurationIncrease((frame_duration_ * 5) / 2));
+  }
+
+  ProcessFrames("-5K 5K 15K", "");
+
+  if (using_sequence_mode) {
+    EXPECT_EQ(frame_duration_ / 2, timestamp_offset_);
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,30) }");
+    CheckReadsThenReadStalls(audio_.get(), "0:-5 10:5 20:15");
+  } else {
+    EXPECT_EQ(base::TimeDelta(), timestamp_offset_);
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,25) }");
+    CheckReadsThenReadStalls(audio_.get(), "0:-5 5 15");
+  }
+}
+
 INSTANTIATE_TEST_CASE_P(SequenceMode, FrameProcessorTest, Values(true));
 INSTANTIATE_TEST_CASE_P(SegmentsMode, FrameProcessorTest, Values(false));
 

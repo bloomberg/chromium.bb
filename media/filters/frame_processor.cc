@@ -107,14 +107,12 @@ bool FrameProcessor::ProcessFrame(
              << ", DUR=" << frame_duration.InSecondsF();
 
     // Sanity check the timestamps.
-    if (presentation_timestamp < base::TimeDelta()) {
-      DVLOG(2) << __FUNCTION__ << ": Negative or unknown frame PTS: "
-               << presentation_timestamp.InSecondsF();
+    if (presentation_timestamp == kNoTimestamp()) {
+      DVLOG(2) << __FUNCTION__ << ": Unknown frame PTS";
       return false;
     }
-    if (decode_timestamp < base::TimeDelta()) {
-      DVLOG(2) << __FUNCTION__ << ": Negative or unknown frame DTS: "
-               << decode_timestamp.InSecondsF();
+    if (decode_timestamp == kNoTimestamp()) {
+      DVLOG(2) << __FUNCTION__ << ": Unknown frame DTS";
       return false;
     }
     if (decode_timestamp > presentation_timestamp) {
