@@ -611,11 +611,7 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
   main_message_loop.set_thread_name("MainThread");
   base::PlatformThread::SetName("CrAppShimMain");
 
-  // In tests, launching Chrome does nothing, and we won't get a ping response,
-  // so just assume the socket exists.
-  if (pid == -1 &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          app_mode::kLaunchedForTest)) {
+  if (pid == -1) {
     // Launch Chrome if it isn't already running.
     ProcessSerialNumber psn;
     CommandLine command_line(CommandLine::NO_PROGRAM);

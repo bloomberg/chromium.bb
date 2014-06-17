@@ -14,11 +14,6 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "extensions/common/manifest_handlers/file_handler_info.h"
 
-// Whether to enable update and launch of app shims in tests. (Normally shims
-// are never created or launched in tests). Note that update only creates
-// internal shim bundles, i.e. it does not create new shims in ~/Applications.
-extern bool g_app_shims_allow_update_and_launch_in_tests;
-
 namespace web_app {
 
 // Returns the full path of the .app shim that would be created by
