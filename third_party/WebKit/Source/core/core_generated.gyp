@@ -38,7 +38,7 @@
 
   'targets': [
     {
-      # GN version: //third_party/WebCore/Source/core:core_event_interfaces
+      # GN version: //third_party/WebKit/Source/core:core_event_interfaces
       'target_name': 'core_event_interfaces',
       'type': 'none',
       'actions': [

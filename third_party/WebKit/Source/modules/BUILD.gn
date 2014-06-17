@@ -3,9 +3,12 @@
 # found in the LICENSE file.
 
 import("//third_party/WebKit/Source/bindings/bindings.gni")
+import("//third_party/WebKit/Source/bindings/modules/v8/generated.gni")
+import("//third_party/WebKit/Source/build/make_file_arrays.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/modules/modules.gni")
 
+# GYP version: WebKit/Source/modules/modules.gyp:modules
 source_set("modules") {
   sources = rebase_path(modules_files, ".", "//")
   sources += rebase_path(bindings_modules_generated_aggregate_files, ".", "//")
@@ -28,6 +31,9 @@ source_set("modules") {
 
   deps = [
     ":make_modules_generated",
+    ":modules_fetch_polyfill",
+    ":modules_cache_polyfill",
+    ":modules_cache_storage_polyfill",
     "//third_party/WebKit/Source/core",
     "//third_party/sqlite",
     "//third_party/zlib",
@@ -41,6 +47,34 @@ source_set("modules") {
   }
 }
 
+# GYP version: WebKit/Source/modules/modules.gyp:modules (FetchPolyfill action)
+make_file_arrays("modules_fetch_polyfill") {
+  filename = "FetchPolyfill"
+  resources = [
+    "serviceworkers/polyfills/fetchPolyfill.js",
+  ]
+  namespace = "WebCore"
+}
+
+# GYP version: WebKit/Source/modules/modules.gyp:modules (CachePolyfill action)
+make_file_arrays("modules_cache_polyfill") {
+  filename = "CachePolyfill"
+  resources = [
+    "serviceworkers/polyfills/cachePolyfill.js",
+  ]
+  namespace = "WebCore"
+}
+
+# GYP version: WebKit/Source/modules/modules.gyp:modules (CacheStoragePolyfill action)
+make_file_arrays("modules_cache_storage_polyfill") {
+  filename = "CacheStoragePolyfill"
+  resources = [
+    "serviceworkers/polyfills/cacheStoragePolyfill.js",
+  ]
+  namespace = "WebCore"
+}
+
+# GYP version: WebKit/Source/modules/modules.gyp:modules_testing
 source_set("modules_testing") {
   sources = modules_testing_files
 
@@ -54,3 +88,10 @@ source_set("modules_testing") {
   ]
 }
 
+# GYP version: WebKit/Source/modules/modules.gyp:make_modules_generated
+group("make_modules_generated") {
+  deps = [
+    "//third_party/WebKit/Source/core:core_event_interfaces",
+    "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",
+  ]
+}

@@ -42,6 +42,8 @@
   },
   'targets': [
   {
+    # GN version: //third_party/WebKit/Source:config
+    #   (In GN this is a config rather than a target.)
     'target_name': 'config',
     'type': 'none',
     'direct_dependent_settings': {

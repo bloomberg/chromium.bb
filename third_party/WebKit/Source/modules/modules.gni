@@ -2,12 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file is gn GN version of modules.gypi. Note that all file lists are
-# relative to the source root.
+# This file is gn GN version of modules.gypi.
+
+blink_modules_output_dir = "$root_gen_dir/blink/modules"
+
 _gypi = exec_script(
     "//build/gypi_to_gn.py",
     [ rebase_path("modules.gypi"),
-      "--replace=<(SHARED_INTERMEDIATE_DIR)=$root_gen_dir"],
+      "--replace=<(SHARED_INTERMEDIATE_DIR)=$root_gen_dir",
+      "--replace=<(blink_modules_output_dir)=$blink_modules_output_dir" ],
     "scope",
     [ "modules.gypi" ])
 
@@ -45,5 +48,3 @@ modules_testing_dependency_idl_files =
 
 modules_testing_files = get_path_info(_gypi.modules_testing_files, "abspath")
 modules_unittest_files = get_path_info(_gypi.modules_unittest_files, "abspath")
-
-blink_modules_output_dir = "$root_gen_dir/blink/modules"

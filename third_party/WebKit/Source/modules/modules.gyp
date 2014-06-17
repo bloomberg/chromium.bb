@@ -35,6 +35,7 @@
     'modules.gypi',
   ],
   'targets': [{
+    # GN version: //third_party/WebKit/Source/modules:modules
     'target_name': 'modules',
     'type': 'static_library',
     'dependencies': [
@@ -60,6 +61,7 @@
     ],
     'actions': [
       {
+        # GN version: //third_party/WebKit/Source/modules:modules_fetch_polyfill
         'action_name': 'FetchPolyfill',
         'process_outputs_as_sources': 1,
         'variables': {
@@ -85,6 +87,7 @@
         ],
       },
       {
+        # GN version: //third_party/WebKit/Source/modules:modules_cache_polyfill
         'action_name': 'CachePolyfill',
         'process_outputs_as_sources': 1,
         'variables': {
@@ -110,6 +113,7 @@
         ],
       },
       {
+        # GN version: //third_party/WebKit/Source/modules:modules_cache_storage_polyfill
         'action_name': 'CacheStoragePolyfill',
         'process_outputs_as_sources': 1,
         'variables': {
@@ -139,6 +143,7 @@
     'msvs_disabled_warnings': [ 4267, 4334, ]
   },
   {
+    # GN version: //third_party/WebKit/Source/modules:modules_testing
     'target_name': 'modules_testing',
     'type': 'static_library',
     'dependencies': [
@@ -156,6 +161,7 @@
   },
   {
     # FIXME: should be in modules_generated.gyp
+    # GN version: //third_party/WebKit/Source/modules:make_modules_generated
     'target_name': 'make_modules_generated',
     'type': 'none',
     'hard_dependency': 1,
