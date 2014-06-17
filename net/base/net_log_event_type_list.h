@@ -1460,6 +1460,28 @@ EVENT_TYPE(QUIC_SESSION_BLOCKED_FRAME_RECEIVED)
 //   }
 EVENT_TYPE(QUIC_SESSION_BLOCKED_FRAME_SENT)
 
+// Session received a GOAWAY frame.
+//   {
+//     "quic_error":          <QuicErrorCode in the frame>,
+//     "last_good_stream_id": <Last correctly received stream id by the server>,
+//     "reason_phrase":       <Prose justifying go-away request>,
+//   }
+EVENT_TYPE(QUIC_SESSION_GOAWAY_FRAME_RECEIVED)
+
+// Session sent a GOAWAY frame.
+//   {
+//     "quic_error":          <QuicErrorCode in the frame>,
+//     "last_good_stream_id": <Last correctly received stream id by the server>,
+//     "reason_phrase":       <Prose justifying go-away request>,
+//   }
+EVENT_TYPE(QUIC_SESSION_GOAWAY_FRAME_SENT)
+
+// Session received a PING frame.
+EVENT_TYPE(QUIC_SESSION_PING_FRAME_RECEIVED)
+
+// Session sent a PING frame.
+EVENT_TYPE(QUIC_SESSION_PING_FRAME_SENT)
+
 // Session received a STOP_WAITING frame.
 //   {
 //     "sent_info": <Details of packet sent by the peer>

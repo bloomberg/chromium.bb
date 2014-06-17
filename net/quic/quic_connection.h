@@ -160,6 +160,9 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
   // Called when a Ping has been parsed.
   virtual void OnPingFrame(const QuicPingFrame& frame) {}
 
+  // Called when a GoAway has been parsed.
+  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) {}
+
   // Called when a RstStreamFrame has been parsed.
   virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) {}
 

@@ -195,6 +195,16 @@ base::Value* NetLogQuicBlockedFrameCallback(
   return dict;
 }
 
+base::Value* NetLogQuicGoAwayFrameCallback(
+    const QuicGoAwayFrame* frame,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetInteger("quic_error", frame->error_code);
+  dict->SetInteger("last_good_stream_id", frame->last_good_stream_id);
+  dict->SetString("reason_phrase", frame->reason_phrase);
+  return dict;
+}
+
 base::Value* NetLogQuicStopWaitingFrameCallback(
     const QuicStopWaitingFrame* frame,
     NetLog::LogLevel /* log_level */) {
@@ -386,6 +396,10 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
                      frame.connection_close_frame));
       break;
     case GOAWAY_FRAME:
+      net_log_.AddEvent(
+          NetLog::TYPE_QUIC_SESSION_GOAWAY_FRAME_SENT,
+          base::Bind(&NetLogQuicGoAwayFrameCallback,
+                     frame.goaway_frame));
       break;
     case WINDOW_UPDATE_FRAME:
       net_log_.AddEvent(
@@ -404,6 +418,10 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
           NetLog::TYPE_QUIC_SESSION_STOP_WAITING_FRAME_SENT,
           base::Bind(&NetLogQuicStopWaitingFrameCallback,
                      frame.stop_waiting_frame));
+      break;
+    case PING_FRAME:
+      // PingFrame has no contents to log, so just record that it was sent.
+      net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_PING_FRAME_SENT);
       break;
     default:
       DCHECK(false) << "Illegal frame type: " << frame.type;
@@ -576,6 +594,17 @@ void QuicConnectionLogger::OnBlockedFrame(const QuicBlockedFrame& frame) {
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_BLOCKED_FRAME_RECEIVED,
       base::Bind(&NetLogQuicBlockedFrameCallback, &frame));
+}
+
+void QuicConnectionLogger::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
+  net_log_.AddEvent(
+      NetLog::TYPE_QUIC_SESSION_GOAWAY_FRAME_RECEIVED,
+      base::Bind(&NetLogQuicGoAwayFrameCallback, &frame));
+}
+
+void QuicConnectionLogger::OnPingFrame(const QuicPingFrame& frame) {
+  // PingFrame has no contents to log, so just record that it was received.
+  net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_PING_FRAME_RECEIVED);
 }
 
 void QuicConnectionLogger::OnPublicResetPacket(

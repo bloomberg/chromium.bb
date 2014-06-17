@@ -53,6 +53,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
       const QuicConnectionCloseFrame& frame) OVERRIDE;
   virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) OVERRIDE;
   virtual void OnBlockedFrame(const QuicBlockedFrame& frame) OVERRIDE;
+  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE;
+  virtual void OnPingFrame(const QuicPingFrame& frame) OVERRIDE;
   virtual void OnPublicResetPacket(
       const QuicPublicResetPacket& packet) OVERRIDE;
   virtual void OnVersionNegotiationPacket(
