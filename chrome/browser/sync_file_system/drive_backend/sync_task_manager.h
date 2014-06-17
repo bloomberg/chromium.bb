@@ -10,13 +10,10 @@
 
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
-#include "base/files/file_path.h"
-#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/task_dependency_manager.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
@@ -29,6 +26,7 @@ class Location;
 namespace sync_file_system {
 namespace drive_backend {
 
+class SyncTask;
 class SyncTaskToken;
 struct BlockingFactor;
 
