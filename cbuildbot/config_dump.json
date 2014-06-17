@@ -18173,7 +18173,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt_cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"tot-cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt_cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
         "hwqual": false,
         "images": [
