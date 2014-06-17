@@ -69,8 +69,6 @@ protected:
     virtual RenderBox* embeddedContentBox() const OVERRIDE FINAL;
     virtual void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const OVERRIDE FINAL;
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle*) OVERRIDE FINAL;
-
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) OVERRIDE;
 
     void paintIntoRect(GraphicsContext*, const LayoutRect&);

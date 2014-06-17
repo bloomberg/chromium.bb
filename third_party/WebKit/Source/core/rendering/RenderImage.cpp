@@ -141,11 +141,6 @@ bool RenderImage::setImageSizeForAltText(ImageResource* newImage /* = 0 */)
     return true;
 }
 
-void RenderImage::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
-{
-    RenderReplaced::styleDidChange(diff, oldStyle);
-}
-
 void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
 {
     if (documentBeingDestroyed())
