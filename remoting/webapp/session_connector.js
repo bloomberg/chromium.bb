@@ -336,6 +336,15 @@ remoting.SessionConnector.prototype.getHostId = function() {
 };
 
 /**
+ * Get host display name.
+ *
+ * @return {string}
+ */
+remoting.SessionConnector.prototype.getHostDisplayName = function() {
+  return this.hostDisplayName_;
+};
+
+/**
  * Continue an IT2Me connection once an access token has been obtained.
  *
  * @param {string} token An OAuth2 access token.
@@ -393,10 +402,9 @@ remoting.SessionConnector.prototype.createSession_ = function() {
   var authenticationMethods =
      'third_party,spake2_pair,spake2_hmac,spake2_plain';
   this.clientSession_ = new remoting.ClientSession(
-      this.hostDisplayName_, this.passPhrase_, this.fetchPin_,
-      this.fetchThirdPartyToken_, authenticationMethods, this.hostId_,
-      this.hostJid_, this.hostPublicKey_, this.connectionMode_,
-      this.clientPairingId_, this.clientPairedSecret_);
+      this.passPhrase_, this.fetchPin_, this.fetchThirdPartyToken_,
+      authenticationMethods, this.hostId_, this.hostJid_, this.hostPublicKey_,
+      this.connectionMode_, this.clientPairingId_, this.clientPairedSecret_);
   this.clientSession_.logHostOfflineErrors(!this.refreshHostJidIfOffline_);
   this.clientSession_.addEventListener(
       remoting.ClientSession.Events.stateChanged,

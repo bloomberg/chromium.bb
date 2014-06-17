@@ -42,16 +42,6 @@ remoting.Toolbar = function(toolbar) {
    * @private
    */
   this.stubRight_ = 0;
-  /**
-   * @type {remoting.OptionsMenu}
-   * @private
-   */
-  this.optionsMenu_ = new remoting.OptionsMenu(
-      document.getElementById('send-ctrl-alt-del'),
-      document.getElementById('send-print-screen'),
-      document.getElementById('screen-resize-to-client'),
-      document.getElementById('screen-shrink-to-fit'),
-      document.getElementById('toggle-full-screen'));
 
   window.addEventListener('mousemove', remoting.Toolbar.onMouseMove, false);
   window.addEventListener('resize', this.center.bind(this), false);
@@ -60,6 +50,9 @@ remoting.Toolbar = function(toolbar) {
       function() {
         chrome.app.window.create('main.html', { 'width': 800, 'height': 600 });
       });
+  registerEventListener('send-ctrl-alt-del', 'click', remoting.sendCtrlAltDel);
+  registerEventListener('send-print-screen', 'click', remoting.sendPrintScreen);
+  registerEventListener('sign-out', 'click', remoting.signOut);
   registerEventListener('toolbar-disconnect', 'click', remoting.disconnect);
   registerEventListener('toolbar-stub', 'click',
       function() { remoting.toolbar.toggle(); });
@@ -108,16 +101,6 @@ remoting.Toolbar.prototype.center = function() {
  */
 remoting.Toolbar.prototype.toggle = function() {
   this.toolbar_.classList.toggle(remoting.Toolbar.VISIBLE_CLASS_);
-};
-
-/**
- * @param {remoting.ClientSession} clientSession The active session, or null if
- *     there is no connection.
- */
-remoting.Toolbar.prototype.setClientSession = function(clientSession) {
-  this.optionsMenu_.setClientSession(clientSession);
-  var connectedTo = document.getElementById('connected-to');
-  connectedTo.innerText = clientSession.getHostDisplayName();
 };
 
 /**

@@ -88,7 +88,6 @@
       'webapp/fullscreen_v2.js',
       'webapp/l10n.js',
       'webapp/menu_button.js',
-      'webapp/options_menu.js',
       'webapp/ui_mode.js',
       'webapp/toolbar.js',
       'webapp/window_frame.js',
