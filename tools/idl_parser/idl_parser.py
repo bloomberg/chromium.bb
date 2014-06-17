@@ -434,6 +434,7 @@ class IDLParser(object):
   # [30]
   def p_AttributeOrOperation(self, p):
     """AttributeOrOperation : STRINGIFIER StringifierAttributeOrOperation
+                            | StaticAttribute
                             | Attribute
                             | Operation"""
     if len(p) > 2:
@@ -450,6 +451,13 @@ class IDLParser(object):
       p[0] = self.BuildAttribute('STRINGIFIER', Boolean(True))
     else:
       p[0] = ListFromConcat(self.BuildAttribute('STRINGIFIER', p[1]), p[1])
+
+  # [31.1] FIXME: temporary production as part of moving |static| into
+  # base parser
+  def p_StaticAttribute(self, p):
+    """StaticAttribute : STATIC Attribute"""
+    p[2].AddChildren(self.BuildTrue('STATIC'))
+    p[0] = p[2]
 
   # [32]
   def p_Attribute(self, p):
