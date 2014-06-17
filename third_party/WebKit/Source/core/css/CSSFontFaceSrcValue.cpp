@@ -39,14 +39,6 @@
 
 namespace WebCore {
 
-void CSSFontFaceSrcValue::traceAfterDispatch(Visitor* visitor)
-{
-#if ENABLE(SVG_FONTS)
-    visitor->trace(m_svgFontFaceElement);
-#endif
-    CSSValue::traceAfterDispatch(visitor);
-}
-
 #if ENABLE(SVG_FONTS)
 bool CSSFontFaceSrcValue::isSVGFontFaceSrc() const
 {
