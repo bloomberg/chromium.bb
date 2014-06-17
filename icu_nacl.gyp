@@ -49,6 +49,10 @@
       },
       'sources': [
         'source/stubdata/stubdata.c',
+        # Temporary work around for an incremental build NOT rebuilding 
+        # icudata_nacl after an ICU version change.
+        # TODO(jungshik): Remove it once a fix for bug 384752 is in.
+        'source/common/unicode/uvernum.h',
       ],
       'dependencies': [
         '../../native_client/tools.gyp:prep_toolchain',
