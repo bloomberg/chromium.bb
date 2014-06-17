@@ -40,7 +40,7 @@ namespace internals {
 extern const char kSettingsEnforcementTrialName[];
 extern const char kSettingsEnforcementGroupNoEnforcement[];
 extern const char kSettingsEnforcementGroupEnforceAlways[];
-extern const char kSettingsEnforcementGroupEnforceAlwaysWithExtensions[];
+extern const char kSettingsEnforcementGroupEnforceAlwaysWithDSE[];
 extern const char kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE[];
 
 }  // namespace internals

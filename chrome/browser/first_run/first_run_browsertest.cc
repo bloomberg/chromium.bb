@@ -291,7 +291,7 @@ INSTANTIATE_TEST_CASE_P(
         chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,
         chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways,
         chrome_prefs::internals::
-            kSettingsEnforcementGroupEnforceAlwaysWithExtensions,
+            kSettingsEnforcementGroupEnforceAlwaysWithDSE,
         chrome_prefs::internals::
             kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE));
 
