@@ -121,6 +121,8 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoopWithDots);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoopMultiple);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileAddToCookie);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+                           StartReconcileAddToCookieTwice);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileAddToChrome);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileBadPrimary);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileOnlyOnce);
@@ -172,6 +174,10 @@ class AccountReconcilor : public KeyedService,
       const GoogleServiceAuthError& error,
       const std::vector<std::pair<std::string, bool> >& accounts);
   void ValidateAccountsFromTokenService();
+  // Note internally that this |account_id| is added to the cookie jar.
+  void MarkAccountAsAddedToCookie(const std::string& account_id);
+  // Note internally that this |account_id| is added to the token service.
+  void MarkAccountAsAddedToChrome(const std::string& account_id);
 
   void OnCookieChanged(const net::CanonicalCookie* cookie);
 
