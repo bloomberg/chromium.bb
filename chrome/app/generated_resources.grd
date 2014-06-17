@@ -9220,10 +9220,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Security error
       </message>
       <message name="IDS_SAFEBROWSING_V3_OPEN_DETAILS_BUTTON" desc="The text for the button that expands the details.">
-        Advanced
+        Details
       </message>
       <message name="IDS_SAFEBROWSING_V3_CLOSE_DETAILS_BUTTON" desc="The text for the button that hides the details.">
-        Hide advanced
+        Hide details
       </message>
       <message name="IDS_SAFEBROWSING_OVERRIDABLE_SAFETY_BUTTON" desc="The text for the button that takes the user back to the previous page.">
         Back to safety
