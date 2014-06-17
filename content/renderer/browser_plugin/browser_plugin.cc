@@ -221,7 +221,7 @@ void BrowserPlugin::ParseAllowTransparencyAttribute() {
 }
 
 void BrowserPlugin::ParseAutoSizeAttribute() {
-  last_view_size_ = plugin_rect_.size();
+  last_view_size_ = plugin_size();
   is_auto_size_state_dirty_ = true;
   UpdateGuestAutoSizeState(GetAutoSizeAttribute());
 }
@@ -283,6 +283,7 @@ void BrowserPlugin::Attach(int guest_instance_id,
   attach_params.visible = visible_;
   attach_params.opaque = !GetAllowTransparencyAttribute();
   attach_params.embedder_frame_url = embedder_frame_url_;
+  attach_params.origin = plugin_rect().origin();
   GetSizeParams(&attach_params.auto_size_params,
                 &attach_params.resize_guest_params,
                 false);
@@ -492,7 +493,7 @@ void BrowserPlugin::UpdateDeviceScaleFactor(float device_scale_factor) {
     return;
 
   BrowserPluginHostMsg_ResizeGuest_Params params;
-  PopulateResizeGuestParameters(&params, plugin_rect(), false);
+  PopulateResizeGuestParameters(&params, plugin_size(), true);
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
       render_view_routing_id_,
       guest_instance_id_,
@@ -680,7 +681,7 @@ void BrowserPlugin::updateGeometry(
   }
 
   BrowserPluginHostMsg_ResizeGuest_Params params;
-  PopulateResizeGuestParameters(&params, plugin_rect(), false);
+  PopulateResizeGuestParameters(&params, plugin_size(), false);
   paint_ack_received_ = false;
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
       render_view_routing_id_,
@@ -690,14 +691,14 @@ void BrowserPlugin::updateGeometry(
 
 void BrowserPlugin::PopulateResizeGuestParameters(
     BrowserPluginHostMsg_ResizeGuest_Params* params,
-    const gfx::Rect& view_rect,
+    const gfx::Size& view_size,
     bool needs_repaint) {
   params->size_changed = true;
-  params->view_rect = view_rect;
+  params->view_size = view_size;
   params->repaint = needs_repaint;
   params->scale_factor = GetDeviceScaleFactor();
   if (last_device_scale_factor_ != params->scale_factor){
-    params->repaint = true;
+    DCHECK(params->repaint);
     last_device_scale_factor_ = params->scale_factor;
   }
 }
@@ -716,8 +717,7 @@ void BrowserPlugin::GetSizeParams(
   if (view_size.IsEmpty())
     return;
   paint_ack_received_ = false;
-  gfx::Rect view_rect = gfx::Rect(plugin_rect_.origin(), view_size);
-  PopulateResizeGuestParameters(resize_guest_params, view_rect, needs_repaint);
+  PopulateResizeGuestParameters(resize_guest_params, view_size, needs_repaint);
 }
 
 void BrowserPlugin::updateFocus(bool focused) {

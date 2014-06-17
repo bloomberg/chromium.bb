@@ -172,8 +172,8 @@ TEST_F(BrowserPluginTest, InitialResize) {
   BrowserPluginHostMsg_Attach_Params params;
   MockBrowserPlugin* browser_plugin = GetCurrentPluginWithAttachParams(&params);
 
-  EXPECT_EQ(640, params.resize_guest_params.view_rect.width());
-  EXPECT_EQ(480, params.resize_guest_params.view_rect.height());
+  EXPECT_EQ(640, params.resize_guest_params.view_size.width());
+  EXPECT_EQ(480, params.resize_guest_params.view_size.height());
   ASSERT_TRUE(browser_plugin);
 }
 
@@ -255,8 +255,8 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
   BrowserPluginHostMsg_ResizeGuest::Read(msg, &param);
   instance_id = param.a;
   BrowserPluginHostMsg_ResizeGuest_Params params = param.b;
-  EXPECT_EQ(641, params.view_rect.width());
-  EXPECT_EQ(480, params.view_rect.height());
+  EXPECT_EQ(641, params.view_size.width());
+  EXPECT_EQ(480, params.view_size.height());
 
   {
     // We send a stale UpdateRect to the BrowserPlugin.

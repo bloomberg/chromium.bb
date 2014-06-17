@@ -45,8 +45,8 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
   // Indicates whether the parameters have been populated or not.
   IPC_STRUCT_MEMBER(bool, size_changed)
-  // The new rect of the guest view area.
-  IPC_STRUCT_MEMBER(gfx::Rect, view_rect)
+  // The new size of guest view.
+  IPC_STRUCT_MEMBER(gfx::Size, view_size)
   // Indicates the scale factor of the embedder WebView.
   IPC_STRUCT_MEMBER(float, scale_factor)
   // Indicates a request for a full repaint of the page.
@@ -63,6 +63,7 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_Attach_Params)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_AutoSize_Params, auto_size_params)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_ResizeGuest_Params,
                     resize_guest_params)
+  IPC_STRUCT_MEMBER(gfx::Point, origin)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)

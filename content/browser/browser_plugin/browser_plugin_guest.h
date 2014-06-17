@@ -261,7 +261,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // access it.
   void OnSetName(int instance_id, const std::string& name);
   // Updates the size state of the guest.
-  void OnSetSize(
+  void OnSetAutoSize(
       int instance_id,
       const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
       const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);

@@ -190,7 +190,8 @@ class CONTENT_EXPORT BrowserPlugin :
 
   int width() const { return plugin_rect_.width(); }
   int height() const { return plugin_rect_.height(); }
-  gfx::Rect plugin_rect() { return plugin_rect_; }
+  gfx::Size plugin_size() const { return plugin_rect_.size(); }
+  gfx::Rect plugin_rect() const { return plugin_rect_; }
   // Gets the Max Height value used for auto size.
   int GetAdjustedMaxHeight() const;
   // Gets the Max Width value used for auto size.
@@ -213,7 +214,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // Populates BrowserPluginHostMsg_ResizeGuest_Params with resize state.
   void PopulateResizeGuestParameters(
       BrowserPluginHostMsg_ResizeGuest_Params* params,
-      const gfx::Rect& view_size,
+      const gfx::Size& view_size,
       bool needs_repaint);
 
   // Populates BrowserPluginHostMsg_AutoSize_Params object with autosize state.
@@ -270,7 +271,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.
   SkBitmap* sad_guest_;
   bool guest_crashed_;
-  scoped_ptr<BrowserPluginHostMsg_ResizeGuest_Params> pending_resize_params_;
   bool is_auto_size_state_dirty_;
   // Maximum size constraint for autosize.
   gfx::Size max_auto_size_;

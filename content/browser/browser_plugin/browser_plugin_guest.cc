@@ -140,7 +140,7 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ReclaimCompositorResources,
                         OnReclaimCompositorResources)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetAutoSize, OnSetSize)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetAutoSize, OnSetAutoSize)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
@@ -161,7 +161,8 @@ void BrowserPluginGuest::Initialize(
   focused_ = params.focused;
   guest_visible_ = params.visible;
   guest_opaque_ = params.opaque;
-  guest_window_rect_ = params.resize_guest_params.view_rect;
+  guest_window_rect_ = gfx::Rect(params.origin,
+                                 params.resize_guest_params.view_size);
 
   auto_size_enabled_ = params.auto_size_params.enable;
   max_auto_size_ = params.auto_size_params.max_size;
@@ -199,7 +200,8 @@ void BrowserPluginGuest::Initialize(
 
   embedder_web_contents_observer_.reset(new EmbedderWebContentsObserver(this));
 
-  OnSetSize(instance_id_, params.auto_size_params, params.resize_guest_params);
+  OnSetAutoSize(
+      instance_id_, params.auto_size_params, params.resize_guest_params);
 
   // Create a swapped out RenderView for the guest in the embedder render
   // process, so that the embedder can access the guest's window object.
@@ -695,16 +697,16 @@ void BrowserPluginGuest::OnResizeGuest(
   // When autosize is turned off and as a result there is a layout change, we
   // send a sizechanged event.
   if (!auto_size_enabled_ && last_seen_auto_size_enabled_ &&
-      !params.view_rect.size().IsEmpty() && delegate_) {
-    delegate_->SizeChanged(last_seen_view_size_, params.view_rect.size());
+      !params.view_size.IsEmpty() && delegate_) {
+    delegate_->SizeChanged(last_seen_view_size_, params.view_size);
     last_seen_auto_size_enabled_ = false;
   }
   // Just resize the WebContents and repaint if needed.
-  full_size_ = params.view_rect.size();
-  if (!params.view_rect.size().IsEmpty())
-    GetWebContents()->GetView()->SizeContents(params.view_rect.size());
+  full_size_ = params.view_size;
+  if (!params.view_size.IsEmpty())
+    GetWebContents()->GetView()->SizeContents(params.view_size);
   if (params.repaint)
-    Send(new ViewMsg_Repaint(routing_id(), params.view_rect.size()));
+    Send(new ViewMsg_Repaint(routing_id(), params.view_size));
 }
 
 void BrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
@@ -725,7 +727,7 @@ void BrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
   }
 }
 
-void BrowserPluginGuest::OnSetSize(
+void BrowserPluginGuest::OnSetAutoSize(
     int instance_id,
     const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
     const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params) {
@@ -751,7 +753,7 @@ void BrowserPluginGuest::OnSetSize(
     Send(new ViewMsg_Repaint(routing_id(), max_auto_size_));
   } else if (!auto_size_enabled_ && old_auto_size_enabled) {
     GetWebContents()->GetRenderViewHost()->DisableAutoResize(
-        resize_guest_params.view_rect.size());
+        resize_guest_params.view_size);
   }
   OnResizeGuest(instance_id_, resize_guest_params);
 }
