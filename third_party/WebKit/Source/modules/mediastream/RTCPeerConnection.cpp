@@ -182,17 +182,24 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, PassRefPtr<RTCCo
     , m_iceConnectionState(ICEConnectionStateNew)
     , m_dispatchScheduledEventRunner(this, &RTCPeerConnection::dispatchScheduledEvent)
     , m_stopped(false)
+    , m_closed(false)
 {
     ScriptWrappable::init(this);
     Document* document = toDocument(executionContext());
 
+    // If we fail, set |m_closed| and |m_stopped| to true, to avoid hitting the assert in the destructor.
+
     if (!document->frame()) {
+        m_closed = true;
+        m_stopped = true;
         exceptionState.throwDOMException(NotSupportedError, "PeerConnections may not be created in detached documents.");
         return;
     }
 
     m_peerHandler = adoptPtr(blink::Platform::current()->createRTCPeerConnectionHandler(this));
     if (!m_peerHandler) {
+        m_closed = true;
+        m_stopped = true;
         exceptionState.throwDOMException(NotSupportedError, "No PeerConnection handler can be created, perhaps WebRTC is disabled?");
         return;
     }
@@ -200,6 +207,8 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, PassRefPtr<RTCCo
     document->frame()->loader().client()->dispatchWillStartUsingPeerConnectionHandler(m_peerHandler.get());
 
     if (!m_peerHandler->initialize(configuration, constraints)) {
+        m_closed = true;
+        m_stopped = true;
         exceptionState.throwDOMException(NotSupportedError, "Failed to initialize native PeerConnection.");
         return;
     }
@@ -207,9 +216,14 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, PassRefPtr<RTCCo
 
 RTCPeerConnection::~RTCPeerConnection()
 {
-    // This checks that stop() is called if necessary before the destructor.
-    // We are assuming that a wrapper is always created when RTCPeerConnection is created
-    ASSERT(m_dataChannels.isEmpty());
+    // This checks that close() or stop() is called before the destructor.
+    // We are assuming that a wrapper is always created when RTCPeerConnection is created.
+    ASSERT(m_closed || m_stopped);
+
+    // FIXME: Oilpan: We can't call stop here since it touches m_dataChannels.
+    // Another way to ensure that data channels are stopped at RTCPeerConnection
+    // destruction is needed.
+    stop();
 }
 
 void RTCPeerConnection::createOffer(PassOwnPtr<RTCSessionDescriptionCallback> successCallback, PassOwnPtr<RTCErrorCallback> errorCallback, const Dictionary& mediaConstraints, ExceptionState& exceptionState)
@@ -223,7 +237,7 @@ void RTCPeerConnection::createOffer(PassOwnPtr<RTCSessionDescriptionCallback> su
     if (exceptionState.hadException())
         return;
 
-    RefPtr<RTCSessionDescriptionRequest> request = RTCSessionDescriptionRequestImpl::create(executionContext(), successCallback, errorCallback);
+    RefPtr<RTCSessionDescriptionRequest> request = RTCSessionDescriptionRequestImpl::create(executionContext(), this, successCallback, errorCallback);
     m_peerHandler->createOffer(request.release(), constraints);
 }
 
@@ -238,7 +252,7 @@ void RTCPeerConnection::createAnswer(PassOwnPtr<RTCSessionDescriptionCallback> s
     if (exceptionState.hadException())
         return;
 
-    RefPtr<RTCSessionDescriptionRequest> request = RTCSessionDescriptionRequestImpl::create(executionContext(), successCallback, errorCallback);
+    RefPtr<RTCSessionDescriptionRequest> request = RTCSessionDescriptionRequestImpl::create(executionContext(), this, successCallback, errorCallback);
     m_peerHandler->createAnswer(request.release(), constraints);
 }
 
@@ -253,7 +267,7 @@ void RTCPeerConnection::setLocalDescription(PassRefPtrWillBeRawPtr<RTCSessionDes
         return;
     }
 
-    RefPtr<RTCVoidRequest> request = RTCVoidRequestImpl::create(executionContext(), successCallback, errorCallback);
+    RefPtr<RTCVoidRequest> request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
     m_peerHandler->setLocalDescription(request.release(), sessionDescription->webSessionDescription());
 }
 
@@ -277,7 +291,7 @@ void RTCPeerConnection::setRemoteDescription(PassRefPtrWillBeRawPtr<RTCSessionDe
         return;
     }
 
-    RefPtr<RTCVoidRequest> request = RTCVoidRequestImpl::create(executionContext(), successCallback, errorCallback);
+    RefPtr<RTCVoidRequest> request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
     m_peerHandler->setRemoteDescription(request.release(), sessionDescription->webSessionDescription());
 }
 
@@ -335,11 +349,12 @@ void RTCPeerConnection::addIceCandidate(RTCIceCandidate* iceCandidate, PassOwnPt
     ASSERT(successCallback);
     ASSERT(errorCallback);
 
-    RefPtr<RTCVoidRequest> request = RTCVoidRequestImpl::create(executionContext(), successCallback, errorCallback);
+    RefPtr<RTCVoidRequest> request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
 
     bool implemented = m_peerHandler->addICECandidate(request.release(), iceCandidate->webCandidate());
-    if (!implemented)
+    if (!implemented) {
         exceptionState.throwDOMException(NotSupportedError, "This method is not yet implemented.");
+    }
 }
 
 String RTCPeerConnection::signalingState() const
@@ -474,7 +489,7 @@ MediaStream* RTCPeerConnection::getStreamById(const String& streamId)
 
 void RTCPeerConnection::getStats(PassOwnPtr<RTCStatsCallback> successCallback, PassRefPtr<MediaStreamTrack> selector)
 {
-    RefPtr<RTCStatsRequest> statsRequest = RTCStatsRequestImpl::create(executionContext(), successCallback, selector);
+    RefPtr<RTCStatsRequest> statsRequest = RTCStatsRequestImpl::create(executionContext(), this, successCallback, selector);
     // FIXME: Add passing selector as part of the statsRequest.
     m_peerHandler->getStats(statsRequest.release());
 }
@@ -545,6 +560,7 @@ void RTCPeerConnection::close(ExceptionState& exceptionState)
         return;
 
     m_peerHandler->stop();
+    m_closed = true;
 
     changeIceConnectionState(ICEConnectionStateClosed);
     changeIceGatheringState(ICEGatheringStateComplete);
@@ -553,11 +569,13 @@ void RTCPeerConnection::close(ExceptionState& exceptionState)
 
 void RTCPeerConnection::negotiationNeeded()
 {
+    ASSERT(!m_closed);
     scheduleDispatchEvent(Event::create(EventTypeNames::negotiationneeded));
 }
 
 void RTCPeerConnection::didGenerateICECandidate(const blink::WebRTCICECandidate& webCandidate)
 {
+    ASSERT(!m_closed);
     ASSERT(executionContext()->isContextThread());
     if (webCandidate.isNull())
         scheduleDispatchEvent(RTCIceCandidateEvent::create(false, false, nullptr));
@@ -569,24 +587,28 @@ void RTCPeerConnection::didGenerateICECandidate(const blink::WebRTCICECandidate&
 
 void RTCPeerConnection::didChangeSignalingState(SignalingState newState)
 {
+    ASSERT(!m_closed);
     ASSERT(executionContext()->isContextThread());
     changeSignalingState(newState);
 }
 
 void RTCPeerConnection::didChangeICEGatheringState(ICEGatheringState newState)
 {
+    ASSERT(!m_closed);
     ASSERT(executionContext()->isContextThread());
     changeIceGatheringState(newState);
 }
 
 void RTCPeerConnection::didChangeICEConnectionState(ICEConnectionState newState)
 {
+    ASSERT(!m_closed);
     ASSERT(executionContext()->isContextThread());
     changeIceConnectionState(newState);
 }
 
 void RTCPeerConnection::didAddRemoteStream(const blink::WebMediaStream& remoteStream)
 {
+    ASSERT(!m_closed);
     ASSERT(executionContext()->isContextThread());
 
     if (m_signalingState == SignalingStateClosed)
@@ -600,6 +622,7 @@ void RTCPeerConnection::didAddRemoteStream(const blink::WebMediaStream& remoteSt
 
 void RTCPeerConnection::didRemoveRemoteStream(const blink::WebMediaStream& remoteStream)
 {
+    ASSERT(!m_closed);
     ASSERT(executionContext()->isContextThread());
 
     MediaStreamDescriptor* streamDescriptor = remoteStream;
@@ -620,6 +643,7 @@ void RTCPeerConnection::didRemoveRemoteStream(const blink::WebMediaStream& remot
 
 void RTCPeerConnection::didAddRemoteDataChannel(blink::WebRTCDataChannelHandler* handler)
 {
+    ASSERT(!m_closed);
     ASSERT(executionContext()->isContextThread());
 
     if (m_signalingState == SignalingStateClosed)

@@ -104,6 +104,10 @@ public:
 
     void close(ExceptionState&);
 
+    // We allow getStats after close, but not other calls or callbacks.
+    bool shouldFireDefaultCallbacks() { return !m_closed && !m_stopped; }
+    bool shouldFireGetStatsCallback() { return !m_stopped; }
+
     DEFINE_ATTRIBUTE_EVENT_LISTENER(negotiationneeded);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(icecandidate);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(signalingstatechange);
@@ -131,7 +135,11 @@ public:
     virtual void suspend() OVERRIDE;
     virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
-    virtual bool hasPendingActivity() const OVERRIDE { return !m_stopped; }
+    // We keep the this object alive until either stopped or closed.
+    virtual bool hasPendingActivity() const OVERRIDE
+    {
+        return !m_closed && !m_stopped;
+    }
 
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -162,6 +170,7 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
 
     bool m_stopped;
+    bool m_closed;
 };
 
 } // namespace WebCore

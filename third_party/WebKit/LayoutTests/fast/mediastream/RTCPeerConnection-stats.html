@@ -27,26 +27,8 @@ function error() {
     finishJSTest();
 }
 
-function statsHandler1(status)
+function verifyStats(status)
 {
-    testPassed("statsHandler1 was called");
-    shouldBeNonNull('status');
-    result = status.result();
-    shouldBe('result.length', '0');
-    shouldNotThrow('getUserMedia({audio:true, video:true}, gotStream)');
-}
-
-function gotStream(s) {
-    testPassed('Got a stream.');
-    stream = s;
-
-    pc.addStream(stream);
-    shouldNotThrow('pc.getStats(statsHandler2)');
-}
-
-function statsHandler2(status)
-{
-    testPassed("statsHandler2 was called");
     // Status must be a global variable to be used in test statements.
     status_g = status;
     result = status.result();
@@ -76,6 +58,37 @@ function statsHandler2(status)
     // Named getter: Can access results by their ID values.
     shouldBeNonNull('status_g.namedItem(res.id)');
     shouldBeNonNull('status_g[res.id]');
+}
+
+function statsHandler1(status)
+{
+    testPassed("statsHandler1 was called");
+    shouldBeNonNull('status');
+    result = status.result();
+    shouldBe('result.length', '0');
+    shouldNotThrow('getUserMedia({audio:true, video:true}, gotStream)');
+}
+
+function gotStream(s) {
+    testPassed('Got a stream.');
+    stream = s;
+
+    pc.addStream(stream);
+    shouldNotThrow('pc.getStats(statsHandler2)');
+}
+
+function statsHandler2(status)
+{
+    testPassed("statsHandler2 was called");
+    verifyStats(status);
+    shouldNotThrow('pc.close()');
+    shouldNotThrow('pc.getStats(statsHandler3)');
+}
+
+function statsHandler3(status)
+{
+    testPassed("statsHandler3 was called");
+    verifyStats(status);
     finishJSTest();
 }
 

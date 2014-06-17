@@ -7,8 +7,6 @@
 <script>
 description("Tests the RTCPeerConnection lifetime.");
 
-// This test times out if the Peer connection object is garbage collected.
-
 var dc = null;
 
 function dataChannelMessage(m)
@@ -24,7 +22,7 @@ function dataChannelOpen()
     shouldNotThrow("dc.send('xyzzy');");
 }
 
-function createPeerConnection()
+function createPeerConnectionAndDataChannel()
 {
     // The Peer Connection object is leaked
     var pc = new webkitRTCPeerConnection({iceServers:[]}, null);
@@ -32,11 +30,33 @@ function createPeerConnection()
     dc.onopen = dataChannelOpen;
 }
 
-createPeerConnection();
-gc();
+var pcB = null;
+var observationB = null;
+
+// Test that the PeerConnection object is gc'd if close is called.
+var pcA = new webkitRTCPeerConnection(null, null);
+var observationA = internals.observeGC(pcA);
+pcA.close();
+pcA = null;
+asyncGC(function() {
+    shouldBeTrue('observationA.wasCollected');
+    observationA = null;
+
+    // Test that the PeerConnection object is not gc'd if close is not called.
+    pcB = new webkitRTCPeerConnection(null, null);
+    observationB = internals.observeGC(pcB);
+    pcB = null;
+    asyncGC(function() {
+        shouldBeFalse('observationB.wasCollected');
+        observationB = null;
+
+        // This test times out if the Peer connection object is garbage collected.
+        createPeerConnectionAndDataChannel();
+        gc();
+    });
+});
 
 window.jsTestIsAsync = true;
-window.successfullyParsed = true;
 </script>
 </body>
 </html>
