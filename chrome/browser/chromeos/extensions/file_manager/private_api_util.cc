@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
@@ -39,60 +40,106 @@ struct GetSelectedFileInfoParams {
   std::vector<ui::SelectedFileInfo> selected_files;
 };
 
+// The callback type for GetFileNativeLocalPathFor{Opening,Saving}. It receives
+// the resolved local path when successful, and receives empty path for failure.
+typedef base::Callback<void(const base::FilePath&)> LocalPathCallback;
+
+// Converts a callback from Drive file system to LocalPathCallback.
+void OnDriveGetFile(const base::FilePath& path,
+                    const LocalPathCallback& callback,
+                    drive::FileError error,
+                    const base::FilePath& local_file_path,
+                    scoped_ptr<drive::ResourceEntry> entry) {
+  if (error != drive::FILE_ERROR_OK)
+    DLOG(ERROR) << "Failed to get " << path.value() << " with: " << error;
+  callback.Run(local_file_path);
+}
+
+// Gets a resolved local file path of a non native |path| for file opening.
+void GetFileNativeLocalPathForOpening(Profile* profile,
+                                      const base::FilePath& path,
+                                      const LocalPathCallback& callback) {
+  if (drive::util::IsUnderDriveMountPoint(path)) {
+    drive::FileSystemInterface* file_system =
+        drive::util::GetFileSystemByProfile(profile);
+    if (!file_system) {
+      DLOG(ERROR) << "Drive file selected while disabled: " << path.value();
+      callback.Run(base::FilePath());
+      return;
+    }
+    file_system->GetFile(drive::util::ExtractDrivePath(path),
+                         base::Bind(&OnDriveGetFile, path, callback));
+    return;
+  }
+
+  // TODO(kinaba) crbug.com/383207 implement this.
+  NOTREACHED();
+  callback.Run(base::FilePath());
+}
+
+// Gets a resolved local file path of a non native |path| for file saving.
+void GetFileNativeLocalPathForSaving(Profile* profile,
+                                     const base::FilePath& path,
+                                     const LocalPathCallback& callback) {
+  if (drive::util::IsUnderDriveMountPoint(path)) {
+    drive::FileSystemInterface* file_system =
+        drive::util::GetFileSystemByProfile(profile);
+    if (!file_system) {
+      DLOG(ERROR) << "Drive file selected while disabled: " << path.value();
+      callback.Run(base::FilePath());
+      return;
+    }
+    file_system->GetFileForSaving(drive::util::ExtractDrivePath(path),
+                                  base::Bind(&OnDriveGetFile, path, callback));
+    return;
+  }
+
+  // TODO(kinaba): For now, the only writable non-local volume is Drive.
+  NOTREACHED();
+  callback.Run(base::FilePath());
+}
+
 // Forward declarations of helper functions for GetSelectedFileInfo().
 void ContinueGetSelectedFileInfo(Profile* profile,
                                  scoped_ptr<GetSelectedFileInfoParams> params,
-                                 drive::FileError error,
-                                 const base::FilePath& local_file_path,
-                                 scoped_ptr<drive::ResourceEntry> entry);
+                                 const base::FilePath& local_file_path);
 
 // Part of GetSelectedFileInfo().
 void GetSelectedFileInfoInternal(Profile* profile,
                                  scoped_ptr<GetSelectedFileInfoParams> params) {
   DCHECK(profile);
-  drive::FileSystemInterface* file_system =
-      drive::util::GetFileSystemByProfile(profile);
 
   for (size_t i = params->selected_files.size();
        i < params->file_paths.size(); ++i) {
     const base::FilePath& file_path = params->file_paths[i];
 
-    if (!drive::util::IsUnderDriveMountPoint(file_path)) {
-      params->selected_files.push_back(
-          ui::SelectedFileInfo(file_path, base::FilePath()));
-    } else {
-      // |file_system| is NULL if Drive is disabled.
-      if (!file_system) {
-        ContinueGetSelectedFileInfo(profile,
-                                    params.Pass(),
-                                    drive::FILE_ERROR_FAILED,
-                                    base::FilePath(),
-                                    scoped_ptr<drive::ResourceEntry>());
-        return;
-      }
-      // When the caller of the select file dialog wants local file paths,
-      // we should retrieve Drive files onto the local cache.
+    if (file_manager::util::IsUnderNonNativeLocalPath(profile, file_path)) {
+      // When the caller of the select file dialog wants local file paths, and
+      // the selected path does not point to a native local path (e.g., Drive,
+      // MTP, or provided file system), we should resolve the path.
       switch (params->local_path_option) {
         case NO_LOCAL_PATH_RESOLUTION:
-          params->selected_files.push_back(
-              ui::SelectedFileInfo(file_path, base::FilePath()));
-          break;
+          break;  // No special handling needed.
         case NEED_LOCAL_PATH_FOR_OPENING:
-          file_system->GetFile(
-              drive::util::ExtractDrivePath(file_path),
+          GetFileNativeLocalPathForOpening(
+              profile,
+              file_path,
               base::Bind(&ContinueGetSelectedFileInfo,
                          profile,
                          base::Passed(&params)));
           return;  // Remaining work is done in ContinueGetSelectedFileInfo.
         case NEED_LOCAL_PATH_FOR_SAVING:
-          file_system->GetFileForSaving(
-              drive::util::ExtractDrivePath(file_path),
+          GetFileNativeLocalPathForSaving(
+              profile,
+              file_path,
               base::Bind(&ContinueGetSelectedFileInfo,
                          profile,
                          base::Passed(&params)));
           return;  // Remaining work is done in ContinueGetSelectedFileInfo.
       }
     }
+    params->selected_files.push_back(
+        ui::SelectedFileInfo(file_path, base::FilePath()));
   }
   params->callback.Run(params->selected_files);
 }
@@ -100,20 +147,9 @@ void GetSelectedFileInfoInternal(Profile* profile,
 // Part of GetSelectedFileInfo().
 void ContinueGetSelectedFileInfo(Profile* profile,
                                  scoped_ptr<GetSelectedFileInfoParams> params,
-                                 drive::FileError error,
-                                 const base::FilePath& local_file_path,
-                                 scoped_ptr<drive::ResourceEntry> entry) {
-  DCHECK(profile);
-
+                                 const base::FilePath& local_path) {
   const int index = params->selected_files.size();
   const base::FilePath& file_path = params->file_paths[index];
-  base::FilePath local_path;
-  if (error == drive::FILE_ERROR_OK) {
-    local_path = local_file_path;
-  } else {
-    DLOG(ERROR) << "Failed to get " << file_path.value()
-                << " with error code: " << error;
-  }
   params->selected_files.push_back(ui::SelectedFileInfo(file_path, local_path));
   GetSelectedFileInfoInternal(profile, params.Pass());
 }
