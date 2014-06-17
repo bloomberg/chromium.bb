@@ -22,7 +22,7 @@ SCRIPTS_DIR = os.path.abspath(os.path.dirname(__file__))
 FFMPEG_DIR = os.path.abspath(os.path.join(SCRIPTS_DIR, '..', '..'))
 
 
-USAGE = """Usage: %prog TARGET_OS TARGET_ARCH [options]
+USAGE = """Usage: %prog TARGET_OS TARGET_ARCH [options] -- [configure_args]
 
 Valid combinations are linux       [ia32|x64|mipsel|arm|arm-neon]
                        linux-noasm [ia32|x64]
@@ -170,12 +170,13 @@ def main(argv):
                     'is not necessary for generate_gyp.py')
   options, args = parser.parse_args(argv)
 
-  if len(args) != 2:
+  if len(args) < 2:
     parser.print_help()
     return 1
 
   target_os = args[0]
   target_arch = args[1]
+  configure_args = args[2:]
 
   if target_os not in ('linux', 'linux-noasm', 'win', 'win-vs2013', 'mac'):
     parser.print_help()
@@ -428,21 +429,27 @@ def main(argv):
   do_build_ffmpeg = functools.partial(
       BuildFFmpeg, target_os, target_arch, host_os, host_arch, parallel_jobs,
       options.config_only)
-  do_build_ffmpeg(
-      'Chromium', configure_flags['Common'] + configure_flags['Chromium'])
-  do_build_ffmpeg(
-      'Chrome', configure_flags['Common'] + configure_flags['Chrome'])
+  do_build_ffmpeg('Chromium',
+                  configure_flags['Common'] +
+                  configure_flags['Chromium'] +
+                  configure_args)
+  do_build_ffmpeg('Chrome',
+                  configure_flags['Common'] +
+                  configure_flags['Chrome'] +
+                  configure_args)
 
   if target_os == 'linux':
     do_build_ffmpeg('ChromiumOS',
                     configure_flags['Common'] +
                     configure_flags['Chromium'] +
-                    configure_flags['ChromiumOS'])
+                    configure_flags['ChromiumOS'] +
+                    configure_args)
 
     # ChromeOS enables MPEG4 which requires error resilience :(
     chrome_os_flags = (configure_flags['Common'] +
                        configure_flags['Chrome'] +
-                       configure_flags['ChromeOS'])
+                       configure_flags['ChromeOS'] +
+                       configure_args)
     chrome_os_flags.remove('--disable-error-resilience')
     do_build_ffmpeg('ChromeOS', chrome_os_flags)
 
