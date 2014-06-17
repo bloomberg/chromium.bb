@@ -151,6 +151,7 @@ static void removeElementFromDocumentMap(HTMLMediaElement* element, Document* do
 }
 
 class TrackDisplayUpdateScope {
+    STACK_ALLOCATED();
 public:
     TrackDisplayUpdateScope(HTMLMediaElement* mediaElement)
     {
@@ -164,7 +165,7 @@ public:
     }
 
 private:
-    HTMLMediaElement* m_mediaElement;
+    RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
 };
 
 static const AtomicString& AudioKindToString(WebMediaPlayerClient::AudioTrackKind kind)
