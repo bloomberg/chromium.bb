@@ -17,11 +17,54 @@ namespace ppapi {
 
 const char kFilePrefix[] = "files/";
 
+// IPC channel is asynchronously set up. So, the NaCl process may try to
+// send a OpenResource message to the host before the connection is
+// established. In such a case, it is necessary to wait for the set up
+// completion.
+class ManifestMessageFilter : public IPC::SyncMessageFilter {
+ public:
+  ManifestMessageFilter(base::WaitableEvent* shutdown_event)
+      : SyncMessageFilter(shutdown_event),
+        connected_event_(
+            true /* manual_reset */, false /* initially_signaled */) {
+  }
+
+  virtual bool Send(IPC::Message* message) OVERRIDE {
+    // Wait until set up is actually done.
+    connected_event_.Wait();
+    return SyncMessageFilter::Send(message);
+  }
+
+  // When set up is done, OnFilterAdded is called on IO thread. Unblocks the
+  // Send().
+  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE {
+    SyncMessageFilter::OnFilterAdded(sender);
+    connected_event_.Signal();
+  }
+
+  // If an error is found, unblocks the Send(), too, to return an error.
+  virtual void OnChannelError() OVERRIDE {
+    SyncMessageFilter::OnChannelError();
+    connected_event_.Signal();
+  }
+
+  // Similar to OnChannelError, unblocks the Send() on the channel closing.
+  virtual void OnChannelClosing() OVERRIDE {
+    SyncMessageFilter::OnChannelClosing();
+    connected_event_.Signal();
+  }
+
+ private:
+  base::WaitableEvent connected_event_;
+
+  DISALLOW_COPY_AND_ASSIGN(ManifestMessageFilter);
+};
+
 ManifestService::ManifestService(
     const IPC::ChannelHandle& handle,
     scoped_refptr<base::MessageLoopProxy> io_message_loop,
     base::WaitableEvent* shutdown_event) {
-  filter_ = new IPC::SyncMessageFilter(shutdown_event);
+  filter_ = new ManifestMessageFilter(shutdown_event);
   channel_ = IPC::ChannelProxy::Create(handle,
                                        IPC::Channel::MODE_SERVER,
                                        NULL,  // Listener
