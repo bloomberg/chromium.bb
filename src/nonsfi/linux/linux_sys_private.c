@@ -201,6 +201,14 @@ off_t lseek(int fd, off_t offset, int whence) {
 #endif
 }
 
+int dup(int fd) {
+  return errno_value_call(linux_syscall1(__NR_dup, fd));
+}
+
+int dup2(int oldfd, int newfd) {
+  return errno_value_call(linux_syscall2(__NR_dup2, oldfd, newfd));
+}
+
 /*
  * This is a stub since _start will call it but we don't want to
  * do the normal initialization.
