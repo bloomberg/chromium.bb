@@ -69,7 +69,7 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
     RefPtrWillBeMember<StyleRuleFontFace> m_fontFaceRule;
-    SVGFontElement* m_fontElement;
+    RawPtrWillBeMember<SVGFontElement> m_fontElement;
     WeakPtrFactory<SVGFontFaceElement> m_weakFactory;
 };
 

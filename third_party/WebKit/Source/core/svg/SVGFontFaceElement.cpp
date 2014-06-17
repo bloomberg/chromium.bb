@@ -49,7 +49,7 @@ using namespace SVGNames;
 inline SVGFontFaceElement::SVGFontFaceElement(Document& document)
     : SVGElement(font_faceTag, document)
     , m_fontFaceRule(StyleRuleFontFace::create())
-    , m_fontElement(0)
+    , m_fontElement(nullptr)
     , m_weakFactory(this)
 {
     ScriptWrappable::init(this);
@@ -282,7 +282,7 @@ void SVGFontFaceElement::rebuildFontFace()
         list = CSSValueList::createCommaSeparated();
         list->append(CSSFontFaceSrcValue::createLocal(fontFamily()));
     } else {
-        m_fontElement = 0;
+        m_fontElement = nullptr;
         // we currently ignore all but the last src element, alternatively we could concat them
         if (SVGFontFaceSrcElement* element = Traversal<SVGFontFaceSrcElement>::lastChild(*this))
             list = element->srcValue();
@@ -327,7 +327,7 @@ void SVGFontFaceElement::removedFrom(ContainerNode* rootParent)
     SVGElement::removedFrom(rootParent);
 
     if (rootParent->inDocument()) {
-        m_fontElement = 0;
+        m_fontElement = nullptr;
         document().accessSVGExtensions().unregisterSVGFontFaceElement(this);
 
         // FIXME: HTMLTemplateElement's document or imported  document can be active?
@@ -352,6 +352,7 @@ void SVGFontFaceElement::childrenChanged(bool changedByParser, Node* beforeChang
 void SVGFontFaceElement::trace(Visitor* visitor)
 {
     visitor->trace(m_fontFaceRule);
+    visitor->trace(m_fontElement);
     SVGElement::trace(visitor);
 }
 
