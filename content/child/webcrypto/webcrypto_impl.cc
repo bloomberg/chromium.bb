@@ -457,7 +457,24 @@ void DoImportKey(scoped_ptr<ImportKeyState> passed_state) {
 }
 
 void DoExportKeyReply(scoped_ptr<ExportKeyState> state) {
+#ifndef WEBCRYPTO_RESULT_ACCEPTS_JSON
+  // TODO(eroman): Remove idfef once blink rolls.
   CompleteWithBufferOrError(state->status, state->buffer, &state->result);
+#else
+  if (state->format != blink::WebCryptoKeyFormatJwk) {
+    CompleteWithBufferOrError(state->status, state->buffer, &state->result);
+    return;
+  }
+
+  if (state->status.IsError()) {
+    CompleteWithError(state->status, &state->result);
+  } else {
+    state->result.completeWithJson(
+        reinterpret_cast<const char*>(
+            webcrypto::Uint8VectorStart(&state->buffer)),
+        state->buffer.size());
+  }
+#endif
 }
 
 void DoExportKey(scoped_ptr<ExportKeyState> passed_state) {
