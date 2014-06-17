@@ -30,7 +30,6 @@
 
 namespace WebCore {
 
-    // WebCoreDragDestinationAction should be kept in sync with WebDragDestinationAction
     typedef enum {
         DragDestinationActionNone    = 0,
         DragDestinationActionDHTML   = 1,

@@ -3009,18 +3009,17 @@ void EventHandler::defaultKeyboardEventHandler(KeyboardEvent* event)
     }
 }
 
-bool EventHandler::dragHysteresisExceeded(const IntPoint& floatDragViewportLocation) const
+bool EventHandler::dragHysteresisExceeded(const FloatPoint& floatDragViewportLocation) const
 {
-    FloatPoint dragViewportLocation(floatDragViewportLocation.x(), floatDragViewportLocation.y());
-    return dragHysteresisExceeded(dragViewportLocation);
+    return dragHysteresisExceeded(flooredIntPoint(floatDragViewportLocation));
 }
 
-bool EventHandler::dragHysteresisExceeded(const FloatPoint& dragViewportLocation) const
+bool EventHandler::dragHysteresisExceeded(const IntPoint& dragViewportLocation) const
 {
     FrameView* view = m_frame->view();
     if (!view)
         return false;
-    IntPoint dragLocation = view->windowToContents(flooredIntPoint(dragViewportLocation));
+    IntPoint dragLocation = view->windowToContents(dragViewportLocation);
     IntSize delta = dragLocation - m_mouseDownPos;
 
     int threshold = GeneralDragHysteresis;
