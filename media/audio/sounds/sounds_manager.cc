@@ -4,7 +4,6 @@
 
 #include "media/audio/sounds/sounds_manager.h"
 
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
@@ -12,7 +11,6 @@
 #include "base/single_thread_task_runner.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/sounds/audio_stream_handler.h"
-#include "media/base/media_switches.h"
 
 namespace media {
 
