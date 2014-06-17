@@ -37,6 +37,10 @@ extern const char kAppListModeId[];
 // launch_now = false. This associates the shim without launching the app.
 extern const char kLaunchedByChromeProcessId[];
 
+// Indicates to the shim that it was launched for a test, so don't attempt to
+// launch Chrome.
+extern const char kLaunchedForTest[];
+
 // Path to an app shim bundle. Indicates to Chrome that this shim attempted to
 // launch but failed.
 extern const char kAppShimError[];

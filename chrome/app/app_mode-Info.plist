@@ -26,8 +26,6 @@
        <string>@APP_MODE_SHORTCUT_URL@</string>
        <key>CrBundleIdentifier</key>
        <string>@APP_MODE_BROWSER_BUNDLE_ID@</string>
-       <key>LSFileQuarantineEnabled</key>
-       <true/>
        <key>LSMinimumSystemVersion</key>
        <string>${MACOSX_DEPLOYMENT_TARGET}.0</string>
        <key>NSAppleScriptEnabled</key>
