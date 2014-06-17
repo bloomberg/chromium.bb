@@ -10,6 +10,7 @@
 
 #include <limits>
 #include <map>
+#include <set>
 #include <utility>
 
 #include "mojo/public/c/system/macros.h"
@@ -112,6 +113,7 @@ class ValidationTestInputParser {
   std::string* error_message_;
 
   std::map<std::string, PendingDistanceItem> pending_distance_items_;
+  std::set<std::string> anchors_;
 };
 
 #define DATA_TYPE(name, data_size, parse_data_func) \
@@ -329,6 +331,10 @@ bool ValidationTestInputParser::ParseDistance(const DataType& type,
 
 bool ValidationTestInputParser::ParseAnchor(const DataType& type,
                                             const std::string& value_string) {
+  if (anchors_.find(value_string) != anchors_.end())
+    return false;
+  anchors_.insert(value_string);
+
   std::map<std::string, PendingDistanceItem>::iterator iter =
       pending_distance_items_.find(value_string);
   if (iter == pending_distance_items_.end())

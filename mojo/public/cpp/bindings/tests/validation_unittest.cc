@@ -364,6 +364,8 @@ TEST(ValidationTest, InputParser) {
       "[b]1111111k",
       "[dist4]unmatched",
       "[anchr]hello [dist8]hello",
+      "[dist4]a [dist4]a [anchr]a",
+      "[dist4]a [anchr]a [dist4]a [anchr]a",
       "0 [handles]50",
       NULL
     };
