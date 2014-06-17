@@ -99,6 +99,17 @@ class Tab : public gfx::AnimationDelegate,
     return &hover_controller_;
   }
 
+  // Returns the inset within the first dragged tab to use when calculating the
+  // "drag insertion point".  If we simply used the x-coordinate of the tab,
+  // we'd be calculating based on a point well before where the user considers
+  // the tab to "be".  The value here is chosen to "feel good" based on the
+  // widths of the tab images and the tab overlap.
+  //
+  // Note that this must return a value smaller than the midpoint of any tab's
+  // width, or else the user won't be able to drag a tab to the left of the
+  // first tab in the strip.
+  static int leading_width_for_drag() { return 16; }
+
   // Returns the minimum possible size of a single unselected Tab.
   static gfx::Size GetMinimumUnselectedSize();
   // Returns the minimum possible size of a selected Tab. Selected tabs must

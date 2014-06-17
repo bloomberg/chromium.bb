@@ -330,11 +330,14 @@ class TabDragController : public content::WebContentsDelegate,
   void RunMoveLoop(const gfx::Vector2d& drag_offset);
 
   // Determines the index to insert tabs at. |dragged_bounds| is the bounds of
-  // the tabs being dragged, |start| the index of the tab to start looking from
-  // and |delta| the amount to increment (1 or -1).
-  int GetInsertionIndexFrom(const gfx::Rect& dragged_bounds,
-                            int start,
-                            int delta) const;
+  // the tabs being dragged, |start| the index of the tab to start looking from.
+  // The search proceeds to the end of the strip.
+  int GetInsertionIndexFrom(const gfx::Rect& dragged_bounds, int start) const;
+
+  // Like GetInsertionIndexFrom(), but searches backwards from |start| to the
+  // beginning of the strip.
+  int GetInsertionIndexFromReversed(const gfx::Rect& dragged_bounds,
+                                    int start) const;
 
   // Returns the index where the dragged WebContents should be inserted into
   // |attached_tabstrip_| given the DraggedTabView's bounds |dragged_bounds| in

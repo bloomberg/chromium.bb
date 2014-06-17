@@ -1246,22 +1246,44 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
 }
 
 int TabDragController::GetInsertionIndexFrom(const gfx::Rect& dragged_bounds,
-                                             int start,
-                                             int delta) const {
-  for (int i = start, tab_count = attached_tabstrip_->tab_count();
-       i >= 0 && i < tab_count; i += delta) {
+                                             int start) const {
+  const int last_tab = attached_tabstrip_->tab_count() - 1;
+  // Make the actual "drag insertion point" be just after the leading edge of
+  // the first dragged tab.  This is closer to where the user thinks of the tab
+  // as "starting" than just dragged_bounds.x(), especially with narrow tabs.
+  const int dragged_x = dragged_bounds.x() + Tab::leading_width_for_drag();
+  if (start < 0 || start > last_tab ||
+      dragged_x < attached_tabstrip_->ideal_bounds(start).x())
+    return -1;
+
+  for (int i = start; i <= last_tab; ++i) {
     const gfx::Rect& ideal_bounds = attached_tabstrip_->ideal_bounds(i);
-    gfx::Rect left_half, right_half;
-    ideal_bounds.SplitVertically(&left_half, &right_half);
-    if (dragged_bounds.x() >= right_half.x() &&
-        dragged_bounds.x() < right_half.right()) {
-      return i + 1;
-    } else if (dragged_bounds.x() >= left_half.x() &&
-               dragged_bounds.x() < left_half.right()) {
+    if (dragged_x < (ideal_bounds.x() + (ideal_bounds.width() / 2)))
       return i;
-    }
   }
-  return -1;
+
+  return (dragged_x < attached_tabstrip_->ideal_bounds(last_tab).right()) ?
+      (last_tab + 1) : -1;
+}
+
+int TabDragController::GetInsertionIndexFromReversed(
+    const gfx::Rect& dragged_bounds,
+    int start) const {
+  // Make the actual "drag insertion point" be just after the leading edge of
+  // the first dragged tab.  This is closer to where the user thinks of the tab
+  // as "starting" than just dragged_bounds.x(), especially with narrow tabs.
+  const int dragged_x = dragged_bounds.x() + Tab::leading_width_for_drag();
+  if (start < 0 || start >= attached_tabstrip_->tab_count() ||
+      dragged_x >= attached_tabstrip_->ideal_bounds(start).right())
+    return -1;
+
+  for (int i = start; i >= 0; --i) {
+    const gfx::Rect& ideal_bounds = attached_tabstrip_->ideal_bounds(i);
+    if (dragged_x >= (ideal_bounds.x() + (ideal_bounds.width() / 2)))
+      return i + 1;
+  }
+
+  return (dragged_x >= attached_tabstrip_->ideal_bounds(0).x()) ? 0 : -1;
 }
 
 int TabDragController::GetInsertionIndexForDraggedBounds(
@@ -1282,7 +1304,7 @@ int TabDragController::GetInsertionIndexForDraggedBounds(
       }
     }
   } else {
-    index = GetInsertionIndexFrom(dragged_bounds, 0, 1);
+    index = GetInsertionIndexFrom(dragged_bounds, 0);
   }
   if (index == -1) {
     int tab_count = attached_tabstrip_->tab_count();
@@ -1318,6 +1340,8 @@ bool TabDragController::ShouldDragToNextStackedTab(
   int next_x = attached_tabstrip_->ideal_bounds(index + 1).x();
   int mid_x = std::min(next_x - kStackedDistance,
                        active_x + (next_x - active_x) / 4);
+  // TODO(pkasting): Should this add Tab::leading_width_for_drag() as
+  // GetInsertionIndexFrom() does?
   return dragged_bounds.x() >= mid_x;
 }
 
@@ -1333,6 +1357,8 @@ bool TabDragController::ShouldDragToPreviousStackedTab(
   int previous_x = attached_tabstrip_->ideal_bounds(index - 1).x();
   int mid_x = std::max(previous_x + kStackedDistance,
                        active_x - (active_x - previous_x) / 4);
+  // TODO(pkasting): Should this add Tab::leading_width_for_drag() as
+  // GetInsertionIndexFrom() does?
   return dragged_bounds.x() <= mid_x;
 }
 
@@ -1342,11 +1368,11 @@ int TabDragController::GetInsertionIndexForDraggedBoundsStacked(
   int active_index = touch_layout->active_index();
   // Search from the active index to the front of the tabstrip. Do this as tabs
   // overlap each other from the active index.
-  int index = GetInsertionIndexFrom(dragged_bounds, active_index, -1);
+  int index = GetInsertionIndexFromReversed(dragged_bounds, active_index);
   if (index != active_index)
     return index;
   if (index == -1)
-    return GetInsertionIndexFrom(dragged_bounds, active_index + 1, 1);
+    return GetInsertionIndexFrom(dragged_bounds, active_index + 1);
 
   // The position to drag to corresponds to the active tab. If the next/previous
   // tab is stacked, then shorten the distance used to determine insertion
@@ -1354,7 +1380,7 @@ int TabDragController::GetInsertionIndexForDraggedBoundsStacked(
   // tabs. When tabs are stacked the next/previous tab is on top of the tab.
   if (active_index + 1 < attached_tabstrip_->tab_count() &&
       touch_layout->IsStacked(active_index + 1)) {
-    index = GetInsertionIndexFrom(dragged_bounds, active_index + 1, 1);
+    index = GetInsertionIndexFrom(dragged_bounds, active_index + 1);
     if (index == -1 && ShouldDragToNextStackedTab(dragged_bounds, active_index))
       index = active_index + 1;
     else if (index == -1)
