@@ -40,6 +40,7 @@ class ClusterBuilder {
                      int flags, const uint8* data, int size);
 
   scoped_ptr<Cluster> Finish();
+  scoped_ptr<Cluster> FinishWithUnknownSize();
 
  private:
   void AddBlockGroupInternal(int track_num, int64 timecode,

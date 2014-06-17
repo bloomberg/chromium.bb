@@ -143,6 +143,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
     case kWebMIdCRC32:
     case kWebMIdCues:
     case kWebMIdChapters:
+      // TODO(matthewjheaney): Implement support for chapters.
       if (cur_size < (result + element_size)) {
         // We don't have the whole element yet. Signal we need more data.
         return 0;
@@ -242,61 +243,70 @@ int WebMStreamParser::ParseCluster(const uint8* data, int size) {
   if (!cluster_parser_)
     return -1;
 
-  int id;
-  int64 element_size;
-  int result = WebMParseElementHeader(data, size, &id, &element_size);
+  int result = 0;
+  int bytes_parsed;
+  bool cluster_ended;
+  do {
+    cluster_ended = false;
 
-  if (result <= 0)
-    return result;
+    // If we are not parsing a cluster then handle the case when the next
+    // element is not a cluster.
+    if (!parsing_cluster_) {
+      int id;
+      int64 element_size;
+      bytes_parsed = WebMParseElementHeader(data, size, &id, &element_size);
 
-  // TODO(matthewjheaney): implement support for chapters
-  if (id == kWebMIdCues || id == kWebMIdChapters) {
-    // TODO(wolenetz): Handle unknown-sized cluster parse completion correctly.
-    // See http://crbug.com/335676.
-    if (size < (result + element_size)) {
-      // We don't have the whole element yet. Signal we need more data.
-      return 0;
+      if (bytes_parsed < 0)
+        return bytes_parsed;
+
+      if (bytes_parsed == 0)
+        return result;
+
+      if (id != kWebMIdCluster) {
+        ChangeState(kParsingHeaders);
+        return result;
+      }
     }
-    // Skip the element.
-    return result + element_size;
-  }
 
-  if (id == kWebMIdEBMLHeader) {
-    // TODO(wolenetz): Handle unknown-sized cluster parse completion correctly.
-    // See http://crbug.com/335676.
-    ChangeState(kParsingHeaders);
-    return 0;
-  }
+    bytes_parsed = cluster_parser_->Parse(data, size);
 
-  int bytes_parsed = cluster_parser_->Parse(data, size);
+    if (bytes_parsed < 0)
+      return bytes_parsed;
 
-  if (bytes_parsed <= 0)
-    return bytes_parsed;
+    // If cluster detected, immediately notify new segment if we have not
+    // already done this.
+    if (!parsing_cluster_ && bytes_parsed > 0) {
+      parsing_cluster_ = true;
+      new_segment_cb_.Run();
+    }
 
-  // If cluster detected, immediately notify new segment if we have not already
-  // done this.
-  if (id == kWebMIdCluster && !parsing_cluster_) {
-    parsing_cluster_ = true;
-    new_segment_cb_.Run();
-  }
+    const BufferQueue& audio_buffers = cluster_parser_->GetAudioBuffers();
+    const BufferQueue& video_buffers = cluster_parser_->GetVideoBuffers();
+    const TextBufferQueueMap& text_map = cluster_parser_->GetTextBuffers();
 
-  const BufferQueue& audio_buffers = cluster_parser_->GetAudioBuffers();
-  const BufferQueue& video_buffers = cluster_parser_->GetVideoBuffers();
-  const TextBufferQueueMap& text_map = cluster_parser_->GetTextBuffers();
+    cluster_ended = cluster_parser_->cluster_ended();
 
-  bool cluster_ended = cluster_parser_->cluster_ended();
+    if ((!audio_buffers.empty() || !video_buffers.empty() ||
+         !text_map.empty()) &&
+        !new_buffers_cb_.Run(audio_buffers, video_buffers, text_map)) {
+      return -1;
+    }
 
-  if ((!audio_buffers.empty() || !video_buffers.empty() || !text_map.empty()) &&
-      !new_buffers_cb_.Run(audio_buffers, video_buffers, text_map)) {
-    return -1;
-  }
+    if (cluster_ended) {
+      parsing_cluster_ = false;
+      end_of_segment_cb_.Run();
+    }
 
-  if (cluster_ended) {
-    parsing_cluster_ = false;
-    end_of_segment_cb_.Run();
-  }
+    result += bytes_parsed;
+    data += bytes_parsed;
+    size -= bytes_parsed;
 
-  return bytes_parsed;
+    // WebMClusterParser returns 0 and |cluster_ended| is true if previously
+    // parsing an unknown-size cluster and |data| does not continue that
+    // cluster. Try parsing again in that case.
+  } while (size > 0 && (bytes_parsed > 0 || cluster_ended));
+
+  return result;
 }
 
 void WebMStreamParser::FireNeedKey(const std::string& key_id) {

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "media/base/data_buffer.h"
+#include "media/formats/webm/webm_constants.h"
 
 namespace media {
 
@@ -174,6 +175,16 @@ scoped_ptr<Cluster> ClusterBuilder::Finish() {
   DCHECK_NE(cluster_timecode_, -1);
 
   UpdateUInt64(kClusterSizeOffset, bytes_used_ - (kClusterSizeOffset + 8));
+
+  scoped_ptr<Cluster> ret(new Cluster(buffer_.Pass(), bytes_used_));
+  Reset();
+  return ret.Pass();
+}
+
+scoped_ptr<Cluster> ClusterBuilder::FinishWithUnknownSize() {
+  DCHECK_NE(cluster_timecode_, -1);
+
+  UpdateUInt64(kClusterSizeOffset, kWebMUnknownSize);
 
   scoped_ptr<Cluster> ret(new Cluster(buffer_.Pass(), bytes_used_));
   Reset();

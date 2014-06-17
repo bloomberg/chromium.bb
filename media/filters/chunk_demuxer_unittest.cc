@@ -673,6 +673,13 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<bool> {
   scoped_ptr<Cluster> GenerateCluster(int first_audio_timecode,
                                       int first_video_timecode,
                                       int block_count) {
+    return GenerateCluster(first_audio_timecode, first_video_timecode,
+                           block_count, false);
+  }
+  scoped_ptr<Cluster> GenerateCluster(int first_audio_timecode,
+                                      int first_video_timecode,
+                                      int block_count,
+                                      bool unknown_size) {
     CHECK_GT(block_count, 0);
 
     int size = 10;
@@ -722,7 +729,7 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<bool> {
                        kWebMFlagKeyframe, data.get(), size);
     }
 
-    return cb.Finish();
+    return unknown_size ? cb.FinishWithUnknownSize() : cb.Finish();
   }
 
   scoped_ptr<Cluster> GenerateSingleStreamCluster(int timecode,
@@ -2893,11 +2900,14 @@ TEST_P(ChunkDemuxerTest, EmitBuffersDuringAbort) {
 #endif
 
 TEST_P(ChunkDemuxerTest, WebMIsParsingMediaSegmentDetection) {
-  // TODO(wolenetz): Also test 'unknown' sized clusters.
-  // See http://crbug.com/335676.
   const uint8 kBuffer[] = {
     0x1F, 0x43, 0xB6, 0x75, 0x83,  // CLUSTER (size = 3)
     0xE7, 0x81, 0x01,                // Cluster TIMECODE (value = 1)
+
+    0x1F, 0x43, 0xB6, 0x75, 0xFF,  // CLUSTER (size = unknown; really 3 due to:)
+    0xE7, 0x81, 0x02,                // Cluster TIMECODE (value = 2)
+    /* e.g. put some blocks here... */
+    0x1A, 0x45, 0xDF, 0xA3, 0x8A,  // EBMLHEADER (size = 10, not fully appended)
   };
 
   // This array indicates expected return value of IsParsingMediaSegment()
@@ -2905,6 +2915,11 @@ TEST_P(ChunkDemuxerTest, WebMIsParsingMediaSegmentDetection) {
   const bool kExpectedReturnValues[] = {
     false, false, false, false, true,
     true, true, false,
+
+    false, false, false, false, true,
+    true, true, true,
+
+    true, true, true, true, false,
   };
 
   COMPILE_ASSERT(arraysize(kBuffer) == arraysize(kExpectedReturnValues),
@@ -3452,6 +3467,17 @@ TEST_P(ChunkDemuxerTest, SeekCompletesWithoutTextCues) {
   // Verify that audio & video streams continue to return expected values.
   CheckExpectedBuffers(audio_stream, "160 180");
   CheckExpectedBuffers(video_stream, "180 210");
+}
+
+TEST_P(ChunkDemuxerTest, ClusterWithUnknownSize) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
+
+  AppendCluster(GenerateCluster(0, 0, 4, true));
+  CheckExpectedRanges(kSourceId, "{ [0,46) }");
+
+  // A new cluster indicates end of the previous cluster with unknown size.
+  AppendCluster(GenerateCluster(46, 66, 5, true));
+  CheckExpectedRanges(kSourceId, "{ [0,115) }");
 }
 
 // Generate two sets of tests: one using FrameProcessor, and one using
