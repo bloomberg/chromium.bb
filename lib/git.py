@@ -548,34 +548,6 @@ class ManifestCheckout(Manifest):
       manifest_path = os.path.join(root, '.repo', 'manifest.xml')
     return root, manifest_path
 
-  def ProjectIsContentMerging(self, project):
-    """Returns whether the given project has content merging enabled in git.
-
-    Note this functionality should *only* be used against a remote that is
-    known to be >=gerrit-2.2; <gerrit-2.2 lacks the required branch holding
-    this data thus will trigger a RunCommandError.
-
-    Returns:
-      True if content merging is enabled.
-
-    Raises:
-      AssertionError: If no patchable checkout was found or if the patchable
-        checkout does not have a pushable project remote.
-      RunCommandError: If the branch can't be fetched due to network
-        conditions or if this was invoked against a <gerrit-2.2 server,
-        or a mirror that has refs/meta/config stripped from it.
-    """
-    result = self._content_merging.get(project)
-    if result is None:
-      checkouts = self.FindCheckouts(project, only_patchable=True)
-      if len(checkouts) < 1:
-        raise AssertionError('No patchable checkout of %s was found' % project)
-      for checkout in checkouts:
-        checkout.AssertPushable()
-        self._content_merging[project] = result = _GitRepoIsContentMerging(
-            checkout['local_path'], checkout['push_remote'])
-    return result
-
   def FindCheckouts(self, project, branch=None, only_patchable=False):
     """Returns the list of checkouts for a given |project|/|branch|.
 
@@ -755,47 +727,6 @@ class ManifestCheckout(Manifest):
                       for (target, abspath) in obj.includes)
       cls._instance_cache[(root, md5)] = (obj, sources)
     return obj
-
-
-def _GitRepoIsContentMerging(git_repo, remote):
-  """Identify if the given git repo has content merging marked.
-
-  This is a gerrit >=2.2 bit of functionality; specifically, the content
-  merging configuration is stored in a specially crafted branch which
-  we access.  If the branch is fetchable, we either return True or False.
-
-  Args:
-    git_repo: The local path to the git repository to inspect.
-    remote: The configured remote to use from the given git repository.
-
-  Returns:
-    True if content merging is enabled, False if not.
-
-  Raises:
-    RunCommandError: Thrown if fetching fails due to either the namespace
-      not existing, or a network error intervening.
-  """
-  # Need to use the manifest to get upstream gerrit; also, if upstream
-  # doesn't provide a refs/meta/config for the repo, this will fail.
-  RunGit(git_repo, ['fetch', '-f', remote, 'refs/meta/config:refs/meta/config'])
-
-  content = RunGit(git_repo, ['show', 'refs/meta/config:project.config'],
-                   error_code_ok=True)
-
-  if content.returncode != 0:
-    return False
-
-  try:
-    result = RunGit(git_repo, ['config', '-f', '/dev/stdin', '--get',
-                               'submit.mergeContent'], input=content.output)
-    return result.output.strip().lower() == 'true'
-  except cros_build_lib.RunCommandError as e:
-    # If the field isn't set at all, exit code is 1.
-    # Anything else is a bad invocation or an indecipherable state.
-    if e.result.returncode != 1:
-      raise
-
-  return False
 
 
 def RunGit(git_repo, cmd, retry=True, **kwargs):

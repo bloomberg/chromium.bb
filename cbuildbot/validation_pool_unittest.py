@@ -70,9 +70,6 @@ class MockManifest(object):
     for key, attr in kwargs.iteritems():
       setattr(self, key, attr)
 
-  def ProjectIsContentMerging(self, _project):
-    return False
-
 
 # pylint: disable=W0212,R0904
 class Base(cros_test_lib.MockTestCase):
@@ -208,17 +205,15 @@ class TestPatchSeries(MoxBase):
   def _ValidateTransactionCall(self, _changes):
     yield
 
-  def GetPatchSeries(self, helper_pool=None, force_content_merging=False):
+  def GetPatchSeries(self, helper_pool=None):
     if helper_pool is None:
       helper_pool = self.MakeHelper(cros_internal=True, cros=True)
-    series = validation_pool.PatchSeries(self.build_root, helper_pool,
-                                         force_content_merging)
+    series = validation_pool.PatchSeries(self.build_root, helper_pool)
 
     # Suppress transactions.
     series._Transaction = self._ValidateTransactionCall
     series.GetGitRepoForChange = \
         lambda change, **kwargs: os.path.join(self.build_root, change.project)
-    series._IsContentMerging = lambda change: False
 
     return series
 
@@ -248,25 +243,16 @@ class TestPatchSeries(MoxBase):
     self.assertEqual(value.root, self.build_root)
     return True
 
-  def SetPatchApply(self, patch, trivial=True):
+  def SetPatchApply(self, patch, trivial=False):
     self.mox.StubOutWithMock(patch, 'ApplyAgainstManifest')
     return patch.ApplyAgainstManifest(
         mox.Func(self._ValidatePatchApplyManifest),
         trivial=trivial)
 
   def assertResults(self, series, changes, applied=(), failed_tot=(),
-                    failed_inflight=(), frozen=True, dryrun=False):
-    # Convenience; set the content pool as necessary.
-    for remote in set(x.remote for x in changes):
-      try:
-        helper = series._helper_pool.GetHelper(remote)
-        series._content_merging_projects.setdefault(helper, frozenset())
-      except validation_pool.GerritHelperNotAvailable:
-        continue
-
+                    failed_inflight=(), frozen=True):
     manifest = MockManifest(self.build_root)
-    result = series.Apply(changes, dryrun=dryrun,
-                          frozen=frozen, manifest=manifest)
+    result = series.Apply(changes, frozen=frozen, manifest=manifest)
 
     _GetIds = lambda seq:[x.id for x in seq]
     _GetFailedIds = lambda seq: _GetIds(x.patch for x in seq)
@@ -789,15 +775,14 @@ class TestCoreLogic(MoxBase):
   def MakeFailure(self, patch, inflight=True):
     return cros_patch.ApplyPatchException(patch, inflight=inflight)
 
-  def GetPool(self, changes, applied=(), tot=(),
-              inflight=(), dryrun=True, **kwargs):
+  def GetPool(self, changes, applied=(), tot=(), inflight=(), **kwargs):
     pool = self.MakePool(changes=changes, **kwargs)
     applied = list(applied)
     tot = [self.MakeFailure(x, inflight=False) for x in tot]
     inflight = [self.MakeFailure(x, inflight=True) for x in inflight]
     # pylint: disable=E1120,E1123
     validation_pool.PatchSeries.Apply(
-        changes, dryrun=dryrun, manifest=mox.IgnoreArg()
+        changes, manifest=mox.IgnoreArg()
         ).AndReturn((applied, tot, inflight))
 
     for patch in applied:
@@ -821,8 +806,7 @@ class TestCoreLogic(MoxBase):
     slave_pool.changes = patches
     for patch in patches:
       # pylint: disable=E1120, E1123
-      validation_pool.PatchSeries.ApplyChange(
-          patch, dryrun=mox.IgnoreArg(), manifest=mox.IgnoreArg())
+      validation_pool.PatchSeries.ApplyChange(patch, manifest=mox.IgnoreArg())
 
     self.mox.ReplayAll()
     self.assertEqual(True, slave_pool.ApplyPoolIntoRepo())
@@ -979,8 +963,7 @@ class TestCoreLogic(MoxBase):
 
     # pylint: disable=E1120,E1123
     validation_pool.PatchSeries.Apply(
-        patches, dryrun=False, manifest=mox.IgnoreArg()).AndRaise(
-        MyException)
+        patches, manifest=mox.IgnoreArg()).AndRaise(MyException)
     errors = [mox.Func(functools.partial(VerifyCQError, x)) for x in patches]
     pool._HandleApplyFailure(errors).AndReturn(None)
 

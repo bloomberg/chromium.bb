@@ -359,16 +359,14 @@ def _PatchWrapException(functor):
 class PatchSeries(object):
   """Class representing a set of patches applied to a single git repository."""
 
-  def __init__(self, path, helper_pool=None, force_content_merging=False,
-               forced_manifest=None, deps_filter_fn=None, is_submitting=False):
+  def __init__(self, path, helper_pool=None, forced_manifest=None,
+               deps_filter_fn=None, is_submitting=False):
     """Constructor.
 
     Args:
       path: Path to the buildroot.
       helper_pool: Pool of allowed GerritHelpers to be used for fetching
         patches. Defaults to allowing both internal and external fetches.
-      force_content_merging: Allow merging of trivial conflicts, even if they
-        are disabled by Gerrit.
       forced_manifest: A manifest object to use for mapping projects to
         repositories. Defaults to the buildroot.
       deps_filter_fn: A function which specifies what patches you would
@@ -378,8 +376,6 @@ class PatchSeries(object):
         used to print better error messages.
     """
     self.manifest = forced_manifest
-    self._content_merging_projects = {}
-    self.force_content_merging = force_content_merging
 
     if helper_pool is None:
       helper_pool = HelperPool.SimpleCreate(cros_internal=True, cros=True)
@@ -455,30 +451,9 @@ class PatchSeries(object):
     return project_dir
 
   @_ManifestDecorator
-  def _IsContentMerging(self, change):
-    """Discern if the given change has Content Merging enabled in gerrit.
-
-    Note if the instance was created w/ force_content_merging=True,
-    then this function will lie and always return True to avoid the
-    admin-level access required of <=gerrit-2.1.
-
-    Returns:
-      True if the change's project has content merging enabled, False if not.
-
-    Raises:
-      AssertionError: If the gerrit helper requested is disallowed.
-      GerritException: If there is a failure in querying gerrit.
-    """
-    if self.force_content_merging:
-      return True
-    return self.manifest.ProjectIsContentMerging(change.project)
-
-  @_ManifestDecorator
-  def ApplyChange(self, change, dryrun=False):
-    # If we're in dryrun mode, then 3way is always allowed.
-    # Otherwise, allow 3way only if the gerrit project allows it.
-    trivial = False if dryrun else not self._IsContentMerging(change)
-    return change.ApplyAgainstManifest(self.manifest, trivial=trivial)
+  def ApplyChange(self, change):
+    # Always enable content merging.
+    return change.ApplyAgainstManifest(self.manifest, trivial=False)
 
   def _LookupHelper(self, patch):
     """Returns the helper for the given cros_patch.PatchQuery object."""
@@ -814,8 +789,8 @@ class PatchSeries(object):
       yield change
 
   @_ManifestDecorator
-  def Apply(self, changes, dryrun=False, frozen=True,
-            honor_ordering=False, changes_filter=None):
+  def Apply(self, changes, frozen=True, honor_ordering=False,
+            changes_filter=None):
     """Applies changes from pool into the build root specified by the manifest.
 
     This method resolves each given change down into a set of transactions-
@@ -831,8 +806,6 @@ class PatchSeries(object):
     Args:
       changes: A sequence of cros_patch.GitRepoPatch instances to resolve
         and apply.
-      dryrun: If True, then content-merging is explicitly forced,
-        and no modifications to gerrit will occur.
       frozen: If True, then resolving of the given changes is explicitly
         limited to just the passed in changes, or known committed changes.
         This is basically CQ/Paladin mode, used to limit the changes being
@@ -895,8 +868,7 @@ class PatchSeries(object):
           logging.debug("Attempting transaction for %s: changes: %s",
                         inducing_change,
                         ', '.join(map(str, transaction_changes)))
-          self._ApplyChanges(inducing_change, transaction_changes,
-                             dryrun=dryrun)
+          self._ApplyChanges(inducing_change, transaction_changes)
       except cros_patch.PatchException as e:
         logging.info("Failed applying transaction for %s: %s",
                      inducing_change, e)
@@ -965,7 +937,7 @@ class PatchSeries(object):
       raise
 
   @_PatchWrapException
-  def _ApplyChanges(self, _inducing_change, changes, dryrun=False):
+  def _ApplyChanges(self, _inducing_change, changes):
     """Apply a given ordered sequence of changes.
 
     Args:
@@ -975,7 +947,6 @@ class PatchSeries(object):
         convert any failures, assigning blame appropriately.
       manifest: A ManifestCheckout instance representing what we're working on.
       changes: A ordered sequence of GitRepoPatch instances to apply.
-      dryrun: Whether or not this is considered a production run.
     """
     # Bail immediately if we know one of the requisite patches won't apply.
     for change in changes:
@@ -989,7 +960,7 @@ class PatchSeries(object):
         continue
 
       try:
-        self.ApplyChange(change, dryrun=dryrun)
+        self.ApplyChange(change)
       except cros_patch.PatchException as e:
         if not e.inflight:
           self.failed_tot[change.id] = e
@@ -1010,8 +981,7 @@ class PatchSeries(object):
       git_repo: Absolute path to the git repository to operate upon.
       tracking_branch: Which tracking branch patches should apply against.
       kwargs: See PatchSeries.__init__ for the various optional args;
-        note forced_manifest cannot be used here, and force_content_merging
-        defaults to True in this usage.
+        note forced_manifest cannot be used here.
 
     Returns:
       A PatchSeries instance w/ a forced manifest.
@@ -1020,9 +990,7 @@ class PatchSeries(object):
     if 'forced_manifest' in kwargs:
       raise ValueError("RawPatchSeries doesn't allow a forced_manifest "
                        "argument.")
-    merging = kwargs.setdefault('force_content_merging', True)
-    kwargs['forced_manifest'] = _ManifestShim(
-        git_repo, tracking_branch, content_merging=merging)
+    kwargs['forced_manifest'] = _ManifestShim(git_repo, tracking_branch)
 
     return cls(git_repo, **kwargs)
 
@@ -1039,15 +1007,13 @@ class _ManifestShim(object):
   arguments -- they just always return information about this project.
   """
 
-  def __init__(self, path, tracking_branch, remote='origin',
-               content_merging=True):
+  def __init__(self, path, tracking_branch, remote='origin'):
 
     tracking_branch = 'refs/remotes/%s/%s' % (
         remote, git.StripRefs(tracking_branch),
     )
     attrs = dict(local_path=path, path=path, tracking_branch=tracking_branch)
     self.checkout = git.ProjectCheckout(attrs)
-    self.content_merging = content_merging
 
   def FindCheckouts(self, *_args, **_kwargs):
     """Returns the list of checkouts.
@@ -1060,10 +1026,6 @@ class _ManifestShim(object):
       A list of ProjectCheckout objects.
     """
     return [self.checkout]
-
-  def ProjectIsContentMerging(self, *_args, **_kwargs):
-    """Check whether this project has content-merging enabled."""
-    return self.content_merging
 
 
 class CalculateSuspects(object):
@@ -1772,7 +1734,7 @@ class ValidationPool(object):
       try:
         # pylint: disable=E1123
         applied, failed_tot, failed_inflight = patch_series.Apply(
-            self.changes, dryrun=self.dryrun, manifest=manifest)
+            self.changes, manifest=manifest)
       except (KeyboardInterrupt, RuntimeError, SystemExit):
         raise
       except Exception as e:
@@ -1808,8 +1770,7 @@ class ValidationPool(object):
       for change in self.changes:
         try:
           # pylint: disable=E1123
-          patch_series.ApplyChange(change, dryrun=self.dryrun,
-                                   manifest=manifest)
+          patch_series.ApplyChange(change, manifest=manifest)
         except cros_patch.PatchException as e:
           # Fail if any patch cannot be applied.
           self._HandleApplyFailure([InternalCQError(change, e)])

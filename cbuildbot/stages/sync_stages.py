@@ -98,14 +98,13 @@ class PatchChangesStage(generic_stages.BuilderStage):
     class NoisyPatchSeries(validation_pool.PatchSeries):
       """Custom PatchSeries that adds links to buildbot logs for remote trys."""
 
-      def ApplyChange(self, change, dryrun=False):
+      def ApplyChange(self, change):
         if isinstance(change, cros_patch.GerritPatch):
           cros_build_lib.PrintBuildbotLink(str(change), change.url)
         elif isinstance(change, cros_patch.UploadedLocalPatch):
           cros_build_lib.PrintBuildbotStepText(str(change))
 
-        return validation_pool.PatchSeries.ApplyChange(self, change,
-                                                       dryrun=dryrun)
+        return validation_pool.PatchSeries.ApplyChange(self, change)
 
     # If we're an external builder, ignore internal patches.
     helper_pool = validation_pool.HelperPool.SimpleCreate(
@@ -114,7 +113,6 @@ class PatchChangesStage(generic_stages.BuilderStage):
     # Limit our resolution to non-manifest patches.
     patch_series = NoisyPatchSeries(
         self._build_root,
-        force_content_merging=True,
         helper_pool=helper_pool,
         deps_filter_fn=lambda p: not trybot_patch_pool.ManifestFilter(p))
 
