@@ -52,12 +52,6 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport
   // Empty class.
 #elif defined(OS_POSIX)
   SandboxSupport();
-  // TODO(dro): crbug.com/382411 Remove this function, once the blink side
-  // does not need it anymore.
-  virtual void getFontFamilyForCharacter(
-      WebUChar32 character,
-      const char* preferred_locale,
-      blink::WebFontFamily* family);
   virtual void getFallbackFontForCharacter(
       WebUChar32 character,
       const char* preferred_locale,
@@ -109,31 +103,6 @@ bool PpapiWebKitPlatformSupportImpl::SandboxSupport::loadFont(
 
 PpapiWebKitPlatformSupportImpl::SandboxSupport::SandboxSupport()
     : creation_thread_(base::PlatformThread::CurrentId()) {
-}
-
-void
-PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
-    WebUChar32 character,
-    const char* preferred_locale,
-    blink::WebFontFamily* family) {
-  ppapi::ProxyLock::AssertAcquired();
-  // For debugging crbug.com/312965
-  CHECK_EQ(creation_thread_, base::PlatformThread::CurrentId());
-  const std::map<int32_t, blink::WebFallbackFont>::const_iterator iter =
-      unicode_font_families_.find(character);
-  if (iter != unicode_font_families_.end()) {
-    family->name = iter->second.name;
-    family->isBold = iter->second.isBold;
-    family->isItalic = iter->second.isItalic;
-    return;
-  }
-
-  blink::WebFallbackFont fallbackFont;
-  GetFallbackFontForCharacter(character, preferred_locale, &fallbackFont);
-  unicode_font_families_.insert(std::make_pair(character, fallbackFont));
-  family->name = fallbackFont.name;
-  family->isBold = fallbackFont.isBold;
-  family->isItalic = fallbackFont.isItalic;
 }
 
 void

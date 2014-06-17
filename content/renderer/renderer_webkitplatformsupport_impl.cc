@@ -205,12 +205,6 @@ class RendererWebKitPlatformSupportImpl::SandboxSupport
       CGFontRef* container,
       uint32* font_id);
 #elif defined(OS_POSIX)
-  // TODO(dro): crbug.com/382411 Remove this function, once the blink side
-  // does not need it anymore.
-  virtual void getFontFamilyForCharacter(
-        blink::WebUChar32 character,
-        const char* preferred_locale,
-        blink::WebFontFamily* family);
   virtual void getFallbackFontForCharacter(
       blink::WebUChar32 character,
       const char* preferred_locale,
@@ -603,30 +597,6 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
 // whole class for android.
 
 #elif defined(OS_POSIX)
-
-void
-RendererWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
-    blink::WebUChar32 character,
-    const char* preferred_locale,
-    blink::WebFontFamily* family) {
-  base::AutoLock lock(unicode_font_families_mutex_);
-  const std::map<int32_t, blink::WebFallbackFont>::const_iterator iter =
-      unicode_font_families_.find(character);
-  if (iter != unicode_font_families_.end()) {
-    family->name = iter->second.name;
-    family->isBold = iter->second.isBold;
-    family->isItalic = iter->second.isItalic;
-    return;
-  }
-
-  blink::WebFallbackFont fallbackFont;
-  GetFallbackFontForCharacter(character, preferred_locale, &fallbackFont);
-  unicode_font_families_.insert(std::make_pair(character, fallbackFont));
-  family->name = fallbackFont.name;
-  family->isBold = fallbackFont.isBold;
-  family->isItalic = fallbackFont.isItalic;
-}
-
 
 void
 RendererWebKitPlatformSupportImpl::SandboxSupport::getFallbackFontForCharacter(
