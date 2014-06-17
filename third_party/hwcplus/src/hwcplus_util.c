@@ -6,8 +6,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <hardware/hardware.h>
+#include <android/log.h>
 #include <cutils/properties.h>
+#include <hardware/hardware.h>
 
 #define LOG_BUF_SIZE 1024
 
@@ -64,6 +65,33 @@ int __android_log_print(int prio, const char* tag, const char* fmt, ...) {
     return __android_log_write(prio, tag, buf);
 }
 
+void __android_log_assert(const char* cond,
+                          const char* tag,
+                          const char* fmt,
+                          ...) {
+    char buf[LOG_BUF_SIZE];
+
+    if (fmt) {
+        va_list ap;
+        va_start(ap, fmt);
+        vsnprintf(buf, LOG_BUF_SIZE, fmt, ap);
+        va_end(ap);
+    } else {
+        /* Msg not provided, log condition.  N.B. Do not use cond directly as
+         * format string as it could contain spurious '%' syntax (e.g.
+         * "%d" in "blocks%devs == 0").
+         */
+        if (cond)
+            snprintf(buf, LOG_BUF_SIZE, "Assertion failed: %s", cond);
+        else
+            snprintf(buf, LOG_BUF_SIZE, "Unspecified assertion failed");
+    }
+
+    __android_log_write(ANDROID_LOG_FATAL, tag, buf);
+
+    __builtin_trap(); /* trap so we have a chance to debug the situation */
+}
+
 int property_get(const char* key, char* value, const char* default_value) {
     printf("property_get %s\n", key);
     const char* r = default_value;
@@ -72,4 +100,3 @@ int property_get(const char* key, char* value, const char* default_value) {
     strncpy(value, r, PROPERTY_VALUE_MAX);
     return strlen(r);
 }
-
