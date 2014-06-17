@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <string>
-#include <vector>
 
 #include "google_apis/gcm/engine/checkin_request.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
@@ -90,7 +89,6 @@ class CheckinRequestTest : public testing::Test {
   net::TestURLFetcherFactory url_fetcher_factory_;
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
   checkin_proto::ChromeBuildProto chrome_build_proto_;
-  std::vector<std::string> account_ids_;
   scoped_ptr<CheckinRequest> request_;
   FakeGCMStatsRecorder recorder_;
 };
@@ -102,7 +100,6 @@ CheckinRequestTest::CheckinRequestTest()
       checkin_device_type_(0),
       url_request_context_getter_(new net::TestURLRequestContextGetter(
           message_loop_.message_loop_proxy())) {
-  account_ids_.push_back("account_id");
 }
 
 CheckinRequestTest::~CheckinRequestTest() {}
@@ -129,7 +126,6 @@ void CheckinRequestTest::CreateRequest(uint64 android_id,
       android_id,
       security_token,
       kSettingsDigest,
-      account_ids_,
       chrome_build_proto_);
   // Then create a request with that protobuf and specified android_id,
   // security_token.
@@ -212,8 +208,6 @@ TEST_F(CheckinRequestTest, FetcherDataAndURL) {
 #endif
 
   EXPECT_EQ(kSettingsDigest, request_proto.digest());
-  EXPECT_EQ(1, request_proto.account_cookie_size());
-  EXPECT_EQ("[account_id]", request_proto.account_cookie(0));
 }
 
 TEST_F(CheckinRequestTest, ResponseBodyEmpty) {

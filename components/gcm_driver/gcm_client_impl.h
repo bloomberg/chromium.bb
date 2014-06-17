@@ -84,7 +84,6 @@ class GCMClientImpl
   virtual void Initialize(
       const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
-      const std::vector<std::string>& account_ids,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
@@ -272,7 +271,6 @@ class GCMClientImpl
   scoped_ptr<MCSClient> mcs_client_;
 
   scoped_ptr<CheckinRequest> checkin_request_;
-  std::vector<std::string> account_ids_;
 
   // Cached registration info.
   RegistrationInfoMap registrations_;

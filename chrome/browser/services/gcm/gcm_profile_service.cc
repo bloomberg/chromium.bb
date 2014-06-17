@@ -28,6 +28,64 @@
 
 namespace gcm {
 
+#if !defined(OS_ANDROID)
+class GCMProfileService::IdentityObserver : public IdentityProvider::Observer {
+ public:
+  IdentityObserver(Profile* profile, GCMDriver* driver);
+  virtual ~IdentityObserver();
+
+  // IdentityProvider::Observer:
+  virtual void OnActiveAccountLogin() OVERRIDE;
+  virtual void OnActiveAccountLogout() OVERRIDE;
+
+  std::string SignedInUserName() const;
+
+ private:
+  GCMDriver* driver_;
+  scoped_ptr<IdentityProvider> identity_provider_;
+
+  // The account ID that this service is responsible for. Empty when the service
+  // is not running.
+  std::string account_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(IdentityObserver);
+};
+
+GCMProfileService::IdentityObserver::IdentityObserver(Profile* profile,
+                                                      GCMDriver* driver)
+    : driver_(driver) {
+  identity_provider_.reset(new ProfileIdentityProvider(
+      SigninManagerFactory::GetForProfile(profile),
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+      LoginUIServiceFactory::GetForProfile(profile)));
+  identity_provider_->AddObserver(this);
+
+  OnActiveAccountLogin();
+}
+
+GCMProfileService::IdentityObserver::~IdentityObserver() {
+  identity_provider_->RemoveObserver(this);
+}
+
+void GCMProfileService::IdentityObserver::OnActiveAccountLogin() {
+  // This might be called multiple times when the password changes.
+  const std::string account_id = identity_provider_->GetActiveAccountId();
+  if (account_id == account_id_)
+    return;
+  account_id_ = account_id;
+
+  driver_->OnSignedIn();
+}
+
+void GCMProfileService::IdentityObserver::OnActiveAccountLogout() {
+  driver_->Purge();
+}
+
+std::string GCMProfileService::IdentityObserver::SignedInUserName() const {
+  return driver_->IsStarted() ? account_id_ : std::string();
+}
+#endif  // !defined(OS_ANDROID)
+
 // static
 bool GCMProfileService::IsGCMEnabled(Profile* profile) {
   return profile->GetPrefs()->GetBoolean(prefs::kGCMChannelEnabled);
@@ -60,12 +118,10 @@ GCMProfileService::GCMProfileService(
 
   driver_ = CreateGCMDriverDesktop(
       gcm_client_factory.Pass(),
-      scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
-          SigninManagerFactory::GetForProfile(profile_),
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
-          LoginUIServiceFactory::GetForProfile(profile_))),
       profile_->GetPath().Append(chrome::kGCMStoreDirname),
       profile_->GetRequestContext());
+
+  identity_observer_.reset(new IdentityObserver(profile, driver_.get()));
 }
 #endif  // defined(OS_ANDROID)
 
@@ -96,10 +152,23 @@ void GCMProfileService::Register(const std::string& app_id,
 }
 
 void GCMProfileService::Shutdown() {
+#if !defined(OS_ANDROID)
+  identity_observer_.reset();
+#endif  // !defined(OS_ANDROID)
+
   if (driver_) {
     driver_->Shutdown();
     driver_.reset();
   }
+}
+
+std::string GCMProfileService::SignedInUserName() const {
+#if defined(OS_ANDROID)
+  return std::string();
+#else
+  return identity_observer_ ? identity_observer_->SignedInUserName()
+                            : std::string();
+#endif  // defined(OS_ANDROID)
 }
 
 void GCMProfileService::SetDriverForTesting(GCMDriver* driver) {

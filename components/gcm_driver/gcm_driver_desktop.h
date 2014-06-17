@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_driver.h"
-#include "google_apis/gaia/identity_provider.h"
 
 namespace base {
 class FilePath;
@@ -37,11 +36,10 @@ class GCMAppHandler;
 class GCMClientFactory;
 
 // GCMDriver implementation for desktop and Chrome OS, using GCMClient.
-class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
+class GCMDriverDesktop : public GCMDriver {
  public:
   GCMDriverDesktop(
       scoped_ptr<GCMClientFactory> gcm_client_factory,
-      scoped_ptr<IdentityProvider> identity_provider,
       const GCMClient::ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,
@@ -50,12 +48,10 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
   virtual ~GCMDriverDesktop();
 
-  // IdentityProvider::Observer implementation:
-  virtual void OnActiveAccountLogin() OVERRIDE;
-  virtual void OnActiveAccountLogout() OVERRIDE;
-
   // GCMDriver overrides:
   virtual void Shutdown() OVERRIDE;
+  virtual void OnSignedIn() OVERRIDE;
+  virtual void Purge() OVERRIDE;
   virtual void AddAppHandler(const std::string& app_id,
                              GCMAppHandler* handler) OVERRIDE;
   virtual void RemoveAppHandler(const std::string& app_id) OVERRIDE;
@@ -71,7 +67,6 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
                                 bool clear_logs) OVERRIDE;
   virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,
                                bool recording) OVERRIDE;
-  virtual std::string SignedInUserName() const OVERRIDE;
 
  protected:
   // GCMDriver implementation:
@@ -94,9 +89,6 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
   // Remove cached data when GCM service is stopped.
   void RemoveCachedData();
 
-  // Checks out of GCM and erases any cached and persisted data.
-  void CheckOut();
-
   void DoRegister(const std::string& app_id,
                   const std::vector<std::string>& sender_ids);
   void DoUnregister(const std::string& app_id);
@@ -116,6 +108,13 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
 
   void GetGCMStatisticsFinished(const GCMClient::GCMStatistics& stats);
 
+  // Flag to indicate whether the user is signed in to a GAIA account.
+  // TODO(jianli): To be removed when sign-in enforcement is dropped.
+  bool signed_in_;
+
+  // Flag to indicate if GCM is started.
+  bool gcm_started_;
+
   // Flag to indicate if GCM is enabled.
   bool gcm_enabled_;
 
@@ -127,11 +126,6 @@ class GCMDriverDesktop : public GCMDriver, public IdentityProvider::Observer {
   // it may be out of date while connection changes are happening.
   bool connected_;
 
-  // The account ID that this service is responsible for. Empty when the service
-  // is not running.
-  std::string account_id_;
-
-  scoped_ptr<IdentityProvider> identity_provider_;
   scoped_refptr<base::SequencedTaskRunner> ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> io_thread_;
 

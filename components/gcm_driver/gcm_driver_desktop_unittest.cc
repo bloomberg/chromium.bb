@@ -19,8 +19,6 @@
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client_factory.h"
-#include "google_apis/gaia/fake_identity_provider.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -109,9 +107,6 @@ class GCMDriverTest : public testing::Test {
   void UnregisterCompleted(GCMClient::Result result);
 
   base::ScopedTempDir temp_dir_;
-  FakeOAuth2TokenService token_service_;
-  scoped_ptr<FakeIdentityProvider> identity_provider_owner_;
-  FakeIdentityProvider* identity_provider_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::MessageLoopForUI message_loop_;
   base::Thread io_thread_;
@@ -130,14 +125,11 @@ class GCMDriverTest : public testing::Test {
 };
 
 GCMDriverTest::GCMDriverTest()
-    : identity_provider_(NULL),
-      task_runner_(new base::TestSimpleTaskRunner()),
+    : task_runner_(new base::TestSimpleTaskRunner()),
       io_thread_("IOThread"),
       registration_result_(GCMClient::UNKNOWN_ERROR),
       send_result_(GCMClient::UNKNOWN_ERROR),
       unregistration_result_(GCMClient::UNKNOWN_ERROR) {
-  identity_provider_owner_.reset(new FakeIdentityProvider(&token_service_));
-  identity_provider_ = identity_provider_owner_.get();
 }
 
 GCMDriverTest::~GCMDriverTest() {
@@ -196,7 +188,6 @@ void GCMDriverTest::CreateDriver(
           gcm_client_start_mode,
           base::MessageLoopProxy::current(),
           io_thread_.message_loop_proxy())).Pass(),
-      identity_provider_owner_.PassAs<IdentityProvider>(),
       GCMClient::ChromeBuildInfo(),
       temp_dir_.path(),
       request_context,
@@ -218,14 +209,13 @@ void GCMDriverTest::RemoveAppHandlers() {
 }
 
 void GCMDriverTest::SignIn(const std::string& account_id) {
-  token_service_.AddAccount(account_id);
-  identity_provider_->LogIn(account_id);
+  driver_->OnSignedIn();
   PumpIOLoop();
   PumpUILoop();
 }
 
 void GCMDriverTest::SignOut() {
-  identity_provider_->LogOut();
+  driver_->Purge();
   PumpIOLoop();
   PumpUILoop();
 }
@@ -297,31 +287,13 @@ void GCMDriverTest::UnregisterCompleted(GCMClient::Result result) {
     async_operation_completed_callback_.Run();
 }
 
-TEST_F(GCMDriverTest, CreateGCMDriverBeforeSignIn) {
+TEST_F(GCMDriverTest, Create) {
   // Create GCMDriver first. GCM is not started.
   CreateDriver(FakeGCMClient::NO_DELAY_START);
   EXPECT_FALSE(driver()->IsStarted());
 
   // Sign in. GCM is still not started.
   SignIn(kTestAccountID1);
-  EXPECT_FALSE(driver()->IsStarted());
-  EXPECT_FALSE(driver()->IsConnected());
-  EXPECT_FALSE(gcm_app_handler()->connected());
-
-  // GCM will be started only after both sign-in and app handler being added.
-  AddAppHandlers();
-  EXPECT_TRUE(driver()->IsStarted());
-  PumpIOLoop();
-  EXPECT_TRUE(driver()->IsConnected());
-  EXPECT_TRUE(gcm_app_handler()->connected());
-}
-
-TEST_F(GCMDriverTest, CreateGCMDriverAfterSignIn) {
-  // Sign in. Nothings happens since GCMDriver is not created.
-  SignIn(kTestAccountID1);
-
-  // Create GCMDriver after sign-in. GCM is not started.
-  CreateDriver(FakeGCMClient::NO_DELAY_START);
   EXPECT_FALSE(driver()->IsStarted());
   EXPECT_FALSE(driver()->IsConnected());
   EXPECT_FALSE(gcm_app_handler()->connected());

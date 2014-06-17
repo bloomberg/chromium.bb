@@ -432,7 +432,7 @@ void MCSProbe::CheckIn() {
   chrome_build_proto.set_chrome_version(kChromeVersion);
 
   CheckinRequest::RequestInfo request_info(
-      0, 0, std::string(), std::vector<std::string>(), chrome_build_proto);
+      0, 0, std::string(), chrome_build_proto);
 
   checkin_request_.reset(new CheckinRequest(
       GServicesSettings::DefaultCheckinURL(),

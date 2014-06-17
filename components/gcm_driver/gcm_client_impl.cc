@@ -266,7 +266,6 @@ GCMClientImpl::~GCMClientImpl() {
 void GCMClientImpl::Initialize(
     const ChromeBuildInfo& chrome_build_info,
     const base::FilePath& path,
-    const std::vector<std::string>& account_ids,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
@@ -284,7 +283,6 @@ void GCMClientImpl::Initialize(
   network_session_ = new net::HttpNetworkSession(*network_session_params);
 
   chrome_build_info_ = chrome_build_info;
-  account_ids_ = account_ids;
 
   gcm_store_.reset(
       new GCMStoreImpl(path, blocking_task_runner, encryptor.Pass()));
@@ -402,7 +400,6 @@ void GCMClientImpl::StartCheckin() {
   CheckinRequest::RequestInfo request_info(device_checkin_info_.android_id,
                                            device_checkin_info_.secret,
                                            gservices_settings_.digest(),
-                                           account_ids_,
                                            chrome_build_proto);
   checkin_request_.reset(
       new CheckinRequest(gservices_settings_.GetCheckinURL(),

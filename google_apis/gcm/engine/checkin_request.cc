@@ -81,12 +81,10 @@ CheckinRequest::RequestInfo::RequestInfo(
     uint64 android_id,
     uint64 security_token,
     const std::string& settings_digest,
-    const std::vector<std::string>& account_ids,
     const checkin_proto::ChromeBuildProto& chrome_build_proto)
     : android_id(android_id),
       security_token(security_token),
       settings_digest(settings_digest),
-      account_ids(account_ids),
       chrome_build_proto(chrome_build_proto) {
 }
 
@@ -128,13 +126,6 @@ void CheckinRequest::Start() {
 #else
   checkin->set_type(checkin_proto::DEVICE_CHROME_BROWSER);
 #endif
-
-  for (std::vector<std::string>::const_iterator iter =
-           request_info_.account_ids.begin();
-       iter != request_info_.account_ids.end();
-       ++iter) {
-    request.add_account_cookie("[" + *iter + "]");
-  }
 
   std::string upload_data;
   CHECK(request.SerializeToString(&upload_data));

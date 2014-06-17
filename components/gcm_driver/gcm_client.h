@@ -208,7 +208,6 @@ class GCMClient {
   // connection.
   // |chrome_build_info|: chrome info, i.e., version, channel and etc.
   // |store_path|: path to the GCM store.
-  // |account_ids|: account IDs to be related to the device when checking in.
   // |blocking_task_runner|: for running blocking file tasks.
   // |url_request_context_getter|: for url requests.
   // |delegate|: the delegate whose methods will be called asynchronously in
@@ -216,7 +215,6 @@ class GCMClient {
   virtual void Initialize(
       const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
-      const std::vector<std::string>& account_ids,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,

@@ -91,7 +91,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_l10n_util.h"
-#include "google_apis/gaia/identity_provider.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -114,13 +113,6 @@
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "components/storage_monitor/storage_monitor.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings/device_identity_provider.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
-#elif !defined(OS_ANDROID)
-#include "google_apis/gaia/dummy_identity_provider.h"
 #endif
 
 #if defined(USE_AURA)
@@ -1026,14 +1018,13 @@ void BrowserProcessImpl::CreateGCMDriver() {
   CHECK(PathService::Get(chrome::DIR_GLOBAL_GCM_STORE, &store_path));
   gcm_driver_ = gcm::CreateGCMDriverDesktop(
       make_scoped_ptr(new gcm::GCMClientFactory),
-#if defined(OS_CHROMEOS)
-      scoped_ptr<IdentityProvider>(new chromeos::DeviceIdentityProvider(
-          chromeos::DeviceOAuth2TokenServiceFactory::Get())),
-#else
-      scoped_ptr<IdentityProvider>(new DummyIdentityProvider),
-#endif  // defined(OS_CHROMEOS)
       store_path,
       system_request_context());
+  // Sign-in is not required for device-level GCM usage. So we just call
+  // OnSignedIn to assume always signed-in. Note that GCM will not be started
+  // at this point since no one has asked for it yet.
+  // TODO(jianli): To be removed when sign-in enforcement is dropped.
+  gcm_driver_->OnSignedIn();
 #endif  // defined(OS_ANDROID)
 }
 

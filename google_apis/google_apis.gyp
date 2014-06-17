@@ -59,12 +59,6 @@
             'cup/client_update_protocol_openssl.cc',
           ],
         }],
-        ['chromeos==1 or OS == "android"', {
-          'sources!': [
-            'gaia/dummy_identity_provider.cc',
-            'gaia/dummy_identity_provider.h',
-          ]
-        }],
       ],
       'sources': [
         'cup/client_update_protocol.cc',
@@ -101,8 +95,6 @@
         'drive/task_util.h',
         'drive/time_util.cc',
         'drive/time_util.h',
-        'gaia/dummy_identity_provider.cc',
-        'gaia/dummy_identity_provider.h',
         'gaia/gaia_auth_consumer.cc',
         'gaia/gaia_auth_consumer.h',
         'gaia/gaia_auth_fetcher.cc',

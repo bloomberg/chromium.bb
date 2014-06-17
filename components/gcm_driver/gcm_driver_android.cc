@@ -92,6 +92,12 @@ bool GCMDriverAndroid::RegisterBindings(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
+void GCMDriverAndroid::OnSignedIn() {
+}
+
+void GCMDriverAndroid::Purge() {
+}
+
 void GCMDriverAndroid::Enable() {
 }
 
@@ -125,10 +131,6 @@ void GCMDriverAndroid::GetGCMStatistics(
 void GCMDriverAndroid::SetGCMRecording(const GetGCMStatisticsCallback& callback,
                                        bool recording) {
   NOTIMPLEMENTED();
-}
-
-std::string GCMDriverAndroid::SignedInUserName() const {
-  return std::string();
 }
 
 GCMClient::Result GCMDriverAndroid::EnsureStarted() {

@@ -8,8 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
-class IdentityProvider;
-
 namespace base {
 class FilePath;
 }
@@ -25,7 +23,6 @@ class GCMClientFactory;
 
 scoped_ptr<GCMDriver> CreateGCMDriverDesktop(
     scoped_ptr<GCMClientFactory> gcm_client_factory,
-    scoped_ptr<IdentityProvider> identity_provider,
     const base::FilePath& store_path,
     const scoped_refptr<net::URLRequestContextGetter>& request_context);
 

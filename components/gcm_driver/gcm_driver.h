@@ -67,6 +67,14 @@ class GCMDriver {
   // been called, no other GCMDriver methods may be used.
   virtual void Shutdown();
 
+  // Call this method when the user signs in to a GAIA account.
+  // TODO(jianli): To be removed when sign-in enforcement is dropped.
+  virtual void OnSignedIn() = 0;
+
+  // Removes all the cached and persisted GCM data. If the GCM service is
+  // restarted after the purge, a new Android ID will be obtained.
+  virtual void Purge() = 0;
+
   // Adds a handler for a given app.
   virtual void AddAppHandler(const std::string& app_id, GCMAppHandler* handler);
 
@@ -98,9 +106,6 @@ class GCMDriver {
   // Enables/disables GCM activity recording, and then returns the stats.
   virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,
                                bool recording) = 0;
-
-  // Returns the user name if the profile is signed in. Empty string otherwise.
-  virtual std::string SignedInUserName() const = 0;
 
  protected:
   // Ensures that the GCM service starts (if necessary conditions are met).

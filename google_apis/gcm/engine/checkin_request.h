@@ -6,7 +6,6 @@
 #define GOOGLE_APIS_GCM_ENGINE_CHECKIN_REQUEST_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -43,7 +42,6 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
     RequestInfo(uint64 android_id,
                 uint64 security_token,
                 const std::string& settings_digest,
-                const std::vector<std::string>& account_ids,
                 const checkin_proto::ChromeBuildProto& chrome_build_proto);
     ~RequestInfo();
 
@@ -53,8 +51,6 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
     uint64 security_token;
     // Digest of GServices settings on the device.
     std::string settings_digest;
-    // Account IDs of GAIA accounts related to this device.
-    std::vector<std::string> account_ids;
     // Information of the Chrome build of this device.
     checkin_proto::ChromeBuildProto chrome_build_proto;
   };
