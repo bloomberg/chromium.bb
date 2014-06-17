@@ -565,16 +565,23 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   // matches the ID it gets from the OS. Depending on the OS and configuration
   // we get this ID differently.
   content::DesktopMediaID::Id dialog_window_id = 0;
+
+  // If there is |parent_window| or |parent_web_contents|, the picker window
+  // is embedded in the parent and does not have its own native window id, so we
+  // do not filter in that case.
+  if (!parent_window && !parent_web_contents) {
 #if defined(USE_ASH)
-  if (chrome::IsNativeWindowInAsh(widget->GetNativeWindow())) {
-    dialog_window_id = content::DesktopMediaID::RegisterAuraWindow(
-        widget->GetNativeWindow()).id;
-    DCHECK_NE(dialog_window_id, 0);
-  }
+    if (chrome::IsNativeWindowInAsh(widget->GetNativeWindow())) {
+      dialog_window_id = content::DesktopMediaID::RegisterAuraWindow(
+          widget->GetNativeWindow()).id;
+      DCHECK_NE(dialog_window_id, 0);
+    }
 #endif
-  if (dialog_window_id == 0) {
-    dialog_window_id = AcceleratedWidgetToDesktopMediaId(
-        widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+
+    if (dialog_window_id == 0) {
+      dialog_window_id = AcceleratedWidgetToDesktopMediaId(
+          widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+    }
   }
 
   list_view_->StartUpdating(dialog_window_id);
