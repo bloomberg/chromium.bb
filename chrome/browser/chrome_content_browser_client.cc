@@ -1700,6 +1700,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNaClDebug,
       switches::kEnableNaClNonSfiMode,
       switches::kEnableNetBenchmarking,
+      switches::kEnableShowModalDialog,
       switches::kEnableStreamlinedHostedApps,
       switches::kEnableWatchdog,
       switches::kEnableWebBasedSignin,

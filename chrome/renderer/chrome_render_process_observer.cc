@@ -262,6 +262,9 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   WebRuntimeFeatures::enableRequestAutocomplete(true);
 #endif
 
+  if (command_line.HasSwitch(switches::kEnableShowModalDialog))
+    WebRuntimeFeatures::enableShowModalDialog(true);
+
   RenderThread* thread = RenderThread::Get();
   resource_delegate_.reset(new RendererResourceDelegate());
   thread->SetResourceDispatcherDelegate(resource_delegate_.get());
