@@ -19,6 +19,7 @@ const MojoLogLevel MOJO_LOG_LEVEL_WARNING = 1;
 const MojoLogLevel MOJO_LOG_LEVEL_ERROR = 2;
 const MojoLogLevel MOJO_LOG_LEVEL_FATAL = 3;
 #else
+#define MOJO_LOG_LEVEL_VERBOSE ((MojoLogLevel) -1)
 #define MOJO_LOG_LEVEL_INFO ((MojoLogLevel) 0)
 #define MOJO_LOG_LEVEL_WARNING ((MojoLogLevel) 1)
 #define MOJO_LOG_LEVEL_ERROR ((MojoLogLevel) 2)
