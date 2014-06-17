@@ -22,7 +22,6 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
 #include "chrome/browser/search/suggestions/suggestions_service.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/search/suggestions/suggestions_source.h"
@@ -50,14 +49,29 @@ using suggestions::SuggestionsServiceFactory;
 
 namespace {
 
-// Name of histograms keeping track of Most Visited statistics.
+// Total number of tiles displayed.
 const char kNumTilesHistogramName[] = "NewTabPage.NumberOfTiles";
+// Tracking thumbnails.
 const char kNumLocalThumbnailTilesHistogramName[] =
     "NewTabPage.NumberOfThumbnailTiles";
 const char kNumEmptyTilesHistogramName[] = "NewTabPage.NumberOfGrayTiles";
 const char kNumServerTilesHistogramName[] = "NewTabPage.NumberOfExternalTiles";
-const char kProviderImpressionsHistogramFormat[] =
-    "NewTabPage.SuggestionsImpression.%s";
+// Client suggestion opened.
+const char kOpenedItemClientHistogramName[] = "NewTabPage.MostVisited.client";
+// Server suggestion opened, no provider.
+const char kOpenedItemServerHistogramName[] = "NewTabPage.MostVisited.server";
+// Server suggestion opened with provider.
+const char kOpenedItemServerProviderHistogramFormat[] =
+    "NewTabPage.MostVisited.server%d";
+// Client impression.
+const char kImpressionClientHistogramName[] =
+    "NewTabPage.SuggestionsImpression.client";
+// Server suggestion impression, no provider.
+const char kImpressionServerHistogramName[] =
+    "NewTabPage.SuggestionsImpression.server";
+// Server suggestion impression with provider.
+const char kImpressionServerHistogramFormat[] =
+    "NewTabPage.SuggestionsImpression.server%d";
 
 void ExtractMostVisitedTitlesAndURLs(
     const history::MostVisitedURLList& visited_list,
@@ -137,13 +151,13 @@ void GetUrlThumbnailTask(
                  base::Owned(j_callback_pass)));
 }
 
-void LogImpressionForProvider(const std::string& provider, int position,
-                              int num_sites) {
-  const std::string histogram_name =
-      base::StringPrintf(kProviderImpressionsHistogramFormat,
-                         provider.c_str());
+// Log an event for a given |histogram| at a given element |position|. This
+// routine exists because regular histogram macros are cached thus can't be used
+// if the name of the histogram will change at a given call site.
+void LogHistogramEvent(const std::string& histogram, int position,
+                       int num_sites) {
   base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-      histogram_name,
+      histogram,
       1,
       num_sites,
       num_sites + 1,
@@ -259,6 +273,30 @@ void MostVisitedSites::BlacklistUrl(JNIEnv* env,
   }
 }
 
+void MostVisitedSites::RecordOpenedMostVisitedItem(JNIEnv* env,
+                                                   jobject obj,
+                                                   jint index) {
+  switch (mv_source_) {
+    case TOP_SITES: {
+      HISTOGRAM_SPARSE_SLOWLY(kOpenedItemClientHistogramName, index);
+      break;
+    }
+    case SUGGESTIONS_SERVICE: {
+      if (server_suggestions_.suggestions_size() > index) {
+        if (server_suggestions_.suggestions(index).providers_size()) {
+          std::string histogram = base::StringPrintf(
+              kOpenedItemServerProviderHistogramFormat,
+              server_suggestions_.suggestions(index).providers(0));
+          LogHistogramEvent(histogram, index, num_sites_);
+        } else {
+          HISTOGRAM_SPARSE_SLOWLY(kOpenedItemServerHistogramName, index);
+        }
+      }
+      break;
+    }
+  }
+}
+
 void MostVisitedSites::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
@@ -315,10 +353,9 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
   mv_source_ = TOP_SITES;
 
   int num_tiles = urls.size();
-  UMA_HISTOGRAM_CUSTOM_COUNTS(kNumTilesHistogramName, num_tiles, 0, num_sites_,
-                              num_sites_ + 1);
+  HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, num_tiles);
   for (int i = 0; i < num_tiles; ++i) {
-    LogImpressionForProvider("client", i, num_sites_);
+    HISTOGRAM_SPARSE_SLOWLY(kImpressionClientHistogramName, i);
   }
 
   JNIEnv* env = AttachCurrentThread();
@@ -341,21 +378,25 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
 
   std::vector<base::string16> titles;
   std::vector<std::string> urls;
-  UMA_HISTOGRAM_CUSTOM_COUNTS(kNumTilesHistogramName, size, 0, num_sites_,
-                              num_sites_ + 1);
-  for (int i = 0; i < size && i < num_sites_; ++i) {
+
+  int i = 0;
+  for (; i < size && i < num_sites_; ++i) {
     const ChromeSuggestion& suggestion = suggestions_profile.suggestions(i);
     titles.push_back(base::UTF8ToUTF16(suggestion.title()));
     urls.push_back(suggestion.url());
     if (suggestion.providers_size()) {
-      LogImpressionForProvider(
-          "server" + base::IntToString(suggestion.providers(0)), i, num_sites_);
+      std::string histogram = base::StringPrintf(
+          kImpressionServerHistogramFormat, suggestion.providers(0));
+      LogHistogramEvent(histogram, i, num_sites_);
     } else {
-      LogImpressionForProvider("server", i, num_sites_);
+      HISTOGRAM_SPARSE_SLOWLY(kImpressionServerHistogramName, i);
     }
   }
+  HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, i);
 
   mv_source_ = SUGGESTIONS_SERVICE;
+  // Keep a copy of the suggestions for eventual logging.
+  server_suggestions_ = suggestions_profile;
 
   JNIEnv* env = AttachCurrentThread();
   Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(

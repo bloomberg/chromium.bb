@@ -12,11 +12,11 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 namespace suggestions {
-class SuggestionsProfile;
 class SuggestionsService;
 }
 
@@ -40,6 +40,7 @@ class MostVisitedSites : public content::NotificationObserver {
                        jstring url,
                        jobject j_callback);
   void BlacklistUrl(JNIEnv* env, jobject obj, jstring j_url);
+  void RecordOpenedMostVisitedItem(JNIEnv* env, jobject obj, jint index);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -106,6 +107,9 @@ class MostVisitedSites : public content::NotificationObserver {
   // Number of tiles for which no thumbnail is found/specified and a gray tile
   // is used as the main tile.
   int num_empty_thumbs_;
+
+  // Copy of the server suggestions (if enabled). Used for logging.
+  suggestions::SuggestionsProfile server_suggestions_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<MostVisitedSites> weak_ptr_factory_;
