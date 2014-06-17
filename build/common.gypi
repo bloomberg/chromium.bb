@@ -107,11 +107,12 @@
             # NOTE: currently only nacl is generating gyp files on an arm board.
             #    The arm.* -> arm substitution in chrome's common.gypi isn't
             #    appropriate in that context as we actually use target_arch==arm
-            #    to me x86 -> arm cross compile. When actually running on an arm
-            #    board, we'll generate ia32 for now, so that the generation
+            #    to mean x86 -> arm cross compile. When actually running on an
+            #    arm board, we'll generate ia32 for now, so that the generation
             #    succeeds.
             'target_arch%':
-              '<!(uname -m | sed -e "s/i.86/ia32/;s/x86_64/x64/;s/amd64/x64/;s/arm.*/ia32/")'
+                '<!(echo "<!pymod_do_main(detect_nacl_host_arch)" | sed -e "s/arm.*/ia32/")',
+
           }, {  # OS!="linux"
             'target_arch%': 'ia32',
           }],
@@ -120,6 +121,7 @@
       # These come from the above variable scope.
       'nacl_standalone%': '<(nacl_standalone)',
       'target_arch%': '<(target_arch)',
+      'host_arch%': '<(target_arch)',
       'branding%': '<(branding)',
       'buildtype%': '<(buildtype)',
 
