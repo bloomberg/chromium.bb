@@ -428,7 +428,7 @@ void HTMLElement::setOuterText(const String &text, ExceptionState& exceptionStat
         newChild = Text::create(document(), text);
 
     // textToFragment might cause mutation events.
-    if (!this || !parentNode())
+    if (!parentNode())
         exceptionState.throwDOMException(HierarchyRequestError, "The element has no parent.");
 
     if (exceptionState.hadException())
