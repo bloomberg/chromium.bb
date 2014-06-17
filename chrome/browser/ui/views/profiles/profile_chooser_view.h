@@ -56,7 +56,6 @@ class ProfileChooserView : public views::BubbleDelegateView,
                          views::View* anchor_view,
                          views::BubbleBorder::Arrow arrow,
                          views::BubbleBorder::BubbleAlignment border_alignment,
-                         const gfx::Rect& anchor_rect,
                          Browser* browser);
   static bool IsShowing();
   static void Hide();
@@ -78,7 +77,6 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   ProfileChooserView(views::View* anchor_view,
                      views::BubbleBorder::Arrow arrow,
-                     const gfx::Rect& anchor_rect,
                      Browser* browser,
                      profiles::BubbleViewMode view_mode,
                      signin::GAIAServiceType service_type);

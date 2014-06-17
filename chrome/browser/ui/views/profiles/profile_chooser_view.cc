@@ -449,13 +449,12 @@ void ProfileChooserView::ShowBubble(
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow,
     views::BubbleBorder::BubbleAlignment border_alignment,
-    const gfx::Rect& anchor_rect,
     Browser* browser) {
   if (IsShowing())
     return;
 
-  profile_bubble_ = new ProfileChooserView(anchor_view, arrow, anchor_rect,
-                                           browser, view_mode, service_type);
+  profile_bubble_ = new ProfileChooserView(anchor_view, arrow, browser,
+                                           view_mode, service_type);
   views::BubbleDelegateView::CreateBubble(profile_bubble_);
   profile_bubble_->set_close_on_deactivate(close_on_deactivate_for_testing_);
   profile_bubble_->SetAlignment(border_alignment);
@@ -476,7 +475,6 @@ void ProfileChooserView::Hide() {
 
 ProfileChooserView::ProfileChooserView(views::View* anchor_view,
                                        views::BubbleBorder::Arrow arrow,
-                                       const gfx::Rect& anchor_rect,
                                        Browser* browser,
                                        profiles::BubbleViewMode view_mode,
                                        signin::GAIAServiceType service_type)
