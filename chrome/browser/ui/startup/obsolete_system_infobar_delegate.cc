@@ -17,10 +17,6 @@
 #include "chrome/browser/mac/obsolete_system.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#endif
-
 // static
 void ObsoleteSystemInfoBarDelegate::Create(InfoBarService* infobar_service) {
 #if defined(OS_MACOSX)
@@ -28,19 +24,6 @@ void ObsoleteSystemInfoBarDelegate::Create(InfoBarService* infobar_service) {
       !ObsoleteSystemMac::Has32BitOnlyCPU()) {
     return;
   }
-#elif defined(TOOLKIT_GTK)
-  // We've deprecated support for Ubuntu Lucid.  Rather than attempting to
-  // determine whether you're using that, we instead key off the GTK version;
-  // this will also deprecate other distributions (including variants of Ubuntu)
-  // that are of a similar age.
-  // Version key:
-  //   RHEL 6:             GTK 2.18
-  //   Debian 6 (Squeeze): GTK 2.20
-  //   Ubuntu Lucid:       GTK 2.20
-  //   openSUSE 12.2       GTK 2.24
-  //   Ubuntu Precise:     GTK 2.24
-  if (!gtk_check_version(2, 24, 0))
-    return;
 #elif defined(OS_WIN)
   // On Windows we no longer support non-SSE2 machines since Chrome 35.
   if (base::CPU().has_sse2())

@@ -1116,17 +1116,8 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   panel_manager->CloseAll();
 }
 
-// Skip the test since system-minimize might not be supported for some window
-// managers on Linux.
-#if defined(TOOLKIT_GTK)
-#define MAYBE_AddNewPanelNotWithSystemMinimizedDetachedPanel \
-    DISABLED_AddNewPanelNotWithSystemMinimizedDetachedPanel
-#else
-#define MAYBE_AddNewPanelNotWithSystemMinimizedDetachedPanel \
-    AddNewPanelNotWithSystemMinimizedDetachedPanel
-#endif
 IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
-                       MAYBE_AddNewPanelNotWithSystemMinimizedDetachedPanel) {
+                       AddNewPanelNotWithSystemMinimizedDetachedPanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create 1 detached panel.
@@ -1153,17 +1144,8 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   panel_manager->CloseAll();
 }
 
-// Skip the test since system-minimize might not be supported for some window
-// managers on Linux.
-#if defined(TOOLKIT_GTK)
-#define MAYBE_AddNewPanelNotWithSystemMinimizedStack \
-    DISABLED_AddNewPanelNotWithSystemMinimizedStack
-#else
-#define MAYBE_AddNewPanelNotWithSystemMinimizedStack \
-    AddNewPanelNotWithSystemMinimizedStack
-#endif
 IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
-                       MAYBE_AddNewPanelNotWithSystemMinimizedStack) {
+                       AddNewPanelNotWithSystemMinimizedStack) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create one stack with 2 panels.
@@ -1252,15 +1234,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ClosePanels) {
   panel_manager->CloseAll();
 }
 
-// Skip the test since active state might not be fully supported for some window
-// managers.
-#if defined(TOOLKIT_GTK) || defined(OS_MACOSX)
-#define MAYBE_FocusNextPanelOnPanelClose DISABLED_FocusNextPanelOnPanelClose
-#else
-#define MAYBE_FocusNextPanelOnPanelClose FocusNextPanelOnPanelClose
-#endif
-IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
-                       MAYBE_FocusNextPanelOnPanelClose) {
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, FocusNextPanelOnPanelClose) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create 3 stacked panels.
@@ -1287,7 +1261,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
 // Skip the test since active state might not be fully supported for some window
 // managers.
-#if defined(TOOLKIT_GTK) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #define MAYBE_FocusNextUnminimizedPanelOnPanelClose \
     DISABLED_FocusNextUnminimizedPanelOnPanelClose
 #else
@@ -1471,7 +1445,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   EXPECT_TRUE(panel1_testing->IsWindowVisible());
   EXPECT_TRUE(panel2_testing->IsWindowVisible());
 
- // Panels' visibility should not be affected when entering full-screen mode.
+  // Panels' visibility should not be affected when entering full-screen mode.
   mock_display_settings_provider()->EnableFullScreenMode(true);
   EXPECT_TRUE(panel1_testing->IsWindowVisible());
   EXPECT_TRUE(panel2_testing->IsWindowVisible());

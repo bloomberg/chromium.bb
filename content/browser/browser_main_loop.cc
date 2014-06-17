@@ -519,7 +519,6 @@ void BrowserMainLoop::MainMessageLoopStart() {
 }
 
 int BrowserMainLoop::PreCreateThreads() {
-
   if (parts_) {
     TRACE_EVENT0("startup",
         "BrowserMainLoop::CreateThreads:PreCreateThreads");
@@ -680,7 +679,6 @@ int BrowserMainLoop::CreateThreads() {
     }
 
     TRACE_EVENT_END0("startup", "BrowserMainLoop::CreateThreads:start");
-
   }
   created_threads_ = true;
   return result_code_;
@@ -1059,12 +1057,6 @@ bool BrowserMainLoop::InitializeToolkit() {
   // TODO(stevenjb): Move platform specific code into platform specific Parts
   // (Need to add InitializeToolkit stage to BrowserParts).
   // See also GTK setup in EarlyInitialization, above, and associated comments.
-
-#if defined(TOOLKIT_GTK)
-  // It is important for this to happen before the first run dialog, as it
-  // styles the dialog as well.
-  gfx::InitRCStyles();
-#endif
 
 #if defined(OS_WIN)
   // Init common control sex.

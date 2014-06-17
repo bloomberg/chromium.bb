@@ -150,23 +150,6 @@ using content::HostZoomMap;
 
 namespace {
 
-// Constrict us to a very specific platform and architecture to make sure
-// ifdefs don't cause problems with the check.
-#if defined(OS_LINUX) && defined(TOOLKIT_GTK) && defined(ARCH_CPU_X86_64) && \
-  !defined(_GLIBCXX_DEBUG)
-// Make sure that the ProfileImpl doesn't grow. We're currently trying to drive
-// the number of services that are included in ProfileImpl (instead of using
-// BrowserContextKeyedServiceFactory) to zero.
-//
-// If you don't know about this effort, please read:
-//   https://sites.google.com/a/chromium.org/dev/developers/design-documents/profile-architecture
-//
-// REVIEWERS: Do not let anyone increment this. We need to drive the number of
-// raw accessed services down to zero. DO NOT LET PEOPLE REGRESS THIS UNLESS
-// THE PATCH ITSELF IS MAKING PROGRESS ON PKSF REFACTORING.
-COMPILE_ASSERT(sizeof(ProfileImpl) <= 744u, profile_impl_size_unexpected);
-#endif
-
 #if defined(ENABLE_SESSION_SERVICE)
 // Delay, in milliseconds, before we explicitly create the SessionService.
 static const int kCreateSessionServiceDelayMS = 500;

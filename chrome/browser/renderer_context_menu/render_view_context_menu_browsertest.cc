@@ -89,15 +89,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   ASSERT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SAVEIMAGEAS));
 }
 
-// GTK requires a X11-level mouse event to open a context menu correctly.
-#if defined(TOOLKIT_GTK)
-#define MAYBE_RealMenu DISABLED_RealMenu
-#else
-#define MAYBE_RealMenu RealMenu
-#endif
 // Opens a link in a new tab via a "real" context menu.
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
-                       MAYBE_RealMenu) {
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, RealMenu) {
   ContextMenuNotificationObserver menu_observer(
       IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
   ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(

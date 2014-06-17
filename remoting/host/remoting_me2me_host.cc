@@ -88,6 +88,7 @@
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_LINUX)
+#include <gtk/gtk.h>
 #include "remoting/host/audio_capturer_linux.h"
 #endif  // defined(OS_LINUX)
 
@@ -98,11 +99,6 @@
 #include "remoting/host/pairing_registry_delegate_win.h"
 #include "remoting/host/win/session_desktop_environment.h"
 #endif  // defined(OS_WIN)
-
-#if defined(TOOLKIT_GTK)
-#include "ui/gfx/gtk_util.h"
-#endif  // defined(TOOLKIT_GTK)
-
 using remoting::protocol::PairingRegistry;
 
 namespace {
@@ -1346,12 +1342,12 @@ void HostProcess::OnCrash(const std::string& function_name,
 }
 
 int HostProcessMain() {
-#if defined(TOOLKIT_GTK)
+#if defined(OS_LINUX)
   // Required for any calls into GTK functions, such as the Disconnect and
   // Continue windows, though these should not be used for the Me2Me case
   // (crbug.com/104377).
-  gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
-#endif  // TOOLKIT_GTK
+  gtk_init(NULL, NULL);
+#endif
 
   // Enable support for SSL server sockets, which must be done while still
   // single-threaded.

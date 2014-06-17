@@ -1382,14 +1382,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   observer.Wait();
 }
 
-// Tests that FindBar fits within a narrow browser window.
-// Flaky on Linux/GTK: http://crbug.com/136443.
-#if defined(TOOLKIT_GTK)
-#define MAYBE_FitWindow DISABLED_FitWindow
-#else
-#define MAYBE_FitWindow FitWindow
-#endif
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FitWindow) {
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FitWindow) {
   Browser::CreateParams params(Browser::TYPE_POPUP, browser()->profile(),
                                browser()->host_desktop_type());
   params.initial_bounds = gfx::Rect(0, 0, 250, 500);
@@ -1598,7 +1591,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, WindowedNPAPIPluginHidden) {
   // Now get the region of the plugin before the find bar is shown.
   HWND hwnd = tab->GetNativeView()->GetHost()->GetAcceleratedWidget();
   HWND child = NULL;
-  EnumChildWindows(hwnd, EnumerateChildren,reinterpret_cast<LPARAM>(&child));
+  EnumChildWindows(hwnd, EnumerateChildren, reinterpret_cast<LPARAM>(&child));
 
   RECT region_before, region_after;
   int result = GetWindowRgnBox(child, &region_before);

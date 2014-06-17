@@ -32,13 +32,6 @@ const int kPanelCollectionRightMargin = 24;
 // After the time expires, we bring up/down the titlebars as planned.
 const int kMaxDelayWaitForBottomBarVisibilityChangeMs = 1000;
 
-// See usage below.
-#if defined(TOOLKIT_GTK)
-const int kDelayBeforeCollapsingFromTitleOnlyStateMs = 2000;
-#else
-const int kDelayBeforeCollapsingFromTitleOnlyStateMs = 0;
-#endif
-
 // After focus changed, one panel lost active status, another got it,
 // we refresh layout with a delay.
 const int kRefreshLayoutAfterActivePanelChangeDelayMs = 600;  // arbitrary
@@ -535,19 +528,6 @@ void DockedPanelCollection::BringUpOrDownTitlebars(bool bring_up) {
       // of time.
       task_delay_ms = kMaxDelayWaitForBottomBarVisibilityChangeMs;
     }
-  }
-
-  // On some OSes, the interaction with native Taskbars/Docks may be improved
-  // if the panels do not go back to minimized state too fast. For example,
-  // with a taskbar in auto-hide mode, the taskbar will cover the panel in
-  // title-only mode which appears on hover. Leaving it up for a little longer
-  // would allow the user to be able to click on it.
-  //
-  // Currently, no platforms use both delays.
-  DCHECK(task_delay_ms == 0 ||
-         kDelayBeforeCollapsingFromTitleOnlyStateMs == 0);
-  if (!bring_up && task_delay_ms == 0) {
-    task_delay_ms = kDelayBeforeCollapsingFromTitleOnlyStateMs;
   }
 
   // OnAutoHidingDesktopBarVisibilityChanged will handle this.

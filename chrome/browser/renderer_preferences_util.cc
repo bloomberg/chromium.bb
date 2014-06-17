@@ -14,11 +14,6 @@
 #include "ui/gfx/font_render_params_linux.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
-#include "ui/gfx/gtk_util.h"
-#endif
-
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/controls/textfield/textfield.h"
 #endif
@@ -84,31 +79,7 @@ void UpdateFromSystemSettings(
       pref_service->GetBoolean(prefs::kEnableDoNotTrack);
   prefs->default_zoom_level = pref_service->GetDouble(prefs::kDefaultZoomLevel);
 
-#if defined(TOOLKIT_GTK)
-  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
-  prefs->focus_ring_color = theme_service->get_focus_ring_color();
-  prefs->thumb_active_color = theme_service->get_thumb_active_color();
-  prefs->thumb_inactive_color = theme_service->get_thumb_inactive_color();
-  prefs->track_color = theme_service->get_track_color();
-  prefs->active_selection_bg_color =
-      theme_service->get_active_selection_bg_color();
-  prefs->active_selection_fg_color =
-      theme_service->get_active_selection_fg_color();
-  prefs->inactive_selection_bg_color =
-      theme_service->get_inactive_selection_bg_color();
-  prefs->inactive_selection_fg_color =
-      theme_service->get_inactive_selection_fg_color();
-
-  // Dividing GTK's cursor blink cycle time (in milliseconds) by this value
-  // yields an appropriate value for RendererPreferences::caret_blink_interval.
-  // This matches the logic in the WebKit GTK port.
-  const double kGtkCursorBlinkCycleFactor = 2000.0;
-  const base::TimeDelta cursor_blink_time = gfx::GetCursorBlinkCycle();
-  prefs->caret_blink_interval =
-      cursor_blink_time.InMilliseconds() ?
-      cursor_blink_time.InMilliseconds() / kGtkCursorBlinkCycleFactor :
-      0;
-#elif defined(USE_DEFAULT_RENDER_THEME)
+#if defined(USE_DEFAULT_RENDER_THEME)
   prefs->focus_ring_color = SkColorSetRGB(0x4D, 0x90, 0xFE);
 
 #if defined(OS_CHROMEOS)

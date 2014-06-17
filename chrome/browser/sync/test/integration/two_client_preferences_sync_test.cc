@@ -65,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, Race) {
   ASSERT_TRUE(StringPrefMatches(prefs::kHomePage));
 
   ChangeStringPref(0, prefs::kHomePage, "http://www.google.com/0");
-  ChangeStringPref(1, prefs::kHomePage,"http://www.google.com/1");
+  ChangeStringPref(1, prefs::kHomePage, "http://www.google.com/1");
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(StringPrefMatches(prefs::kHomePage));
 }
@@ -515,22 +515,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kAcceptLanguages) {
   ASSERT_TRUE(StringPrefMatches(prefs::kAcceptLanguages));
 }
 
-// TCM ID - 7590682
-#if defined(TOOLKIT_GTK)
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kUsesSystemTheme) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kUsesSystemTheme));
-
-  ChangeBooleanPref(0, prefs::kUsesSystemTheme);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_FALSE(BooleanPrefMatches(prefs::kUsesSystemTheme));
-}
-#endif  // TOOLKIT_GTK
-
 // TCM ID - 6473347.
 #if defined(OS_CHROMEOS)
 // Disabled, http://crbug.com/351159 .
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, DISABLED_kTapToClickEnabled) {
+IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
+                       DISABLED_kTapToClickEnabled) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(BooleanPrefMatches(prefs::kTapToClickEnabled));
 

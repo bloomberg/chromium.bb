@@ -68,18 +68,6 @@ NetErrorHelperCore::FrameType GetFrameType(const blink::WebFrame* frame) {
   return NetErrorHelperCore::SUB_FRAME;
 }
 
-// Copied from localized_error.cc.
-// TODO(mmenke):  Share code?
-bool LocaleIsRTL() {
-#if defined(TOOLKIT_GTK)
-  // base::i18n::IsRTL() uses the GTK text direction, which doesn't work within
-  // the renderer sandbox.
-  return base::i18n::ICUIsRTL();
-#else
-  return base::i18n::IsRTL();
-#endif
-}
-
 }  // namespace
 
 NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
@@ -342,15 +330,11 @@ void NetErrorHelper::OnNavigationCorrectionsFetched(
   // it to a temporary to prevent any potential re-entrancy issues.
   scoped_ptr<content::ResourceFetcher> fetcher(
       correction_fetcher_.release());
-  if (!response.isNull() && response.httpStatusCode() == 200) {
-    core_->OnNavigationCorrectionsFetched(
-        data, render_frame()->GetRenderView()->GetAcceptLanguages(),
-        LocaleIsRTL());
-  } else {
-    core_->OnNavigationCorrectionsFetched(
-        "", render_frame()->GetRenderView()->GetAcceptLanguages(),
-        LocaleIsRTL());
-  }
+  bool success = (!response.isNull() && response.httpStatusCode() == 200);
+  core_->OnNavigationCorrectionsFetched(
+      success ? data : "",
+      render_frame()->GetRenderView()->GetAcceptLanguages(),
+      base::i18n::IsRTL());
 }
 
 void NetErrorHelper::OnTrackingRequestComplete(

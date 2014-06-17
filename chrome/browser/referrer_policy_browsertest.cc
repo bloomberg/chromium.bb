@@ -25,19 +25,6 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
-// GTK requires a X11-level mouse event to open a context menu correctly.
-#if defined(TOOLKIT_GTK)
-#define MAYBE_ContextMenuOrigin DISABLED_ContextMenuOrigin
-#define MAYBE_HttpsContextMenuOrigin DISABLED_HttpsContextMenuOrigin
-#define MAYBE_ContextMenuRedirect DISABLED_ContextMenuRedirect
-#define MAYBE_HttpsContextMenuRedirect DISABLED_HttpsContextMenuRedirect
-#else
-#define MAYBE_ContextMenuOrigin ContextMenuOrigin
-#define MAYBE_HttpsContextMenuOrigin HttpsContextMenuOrigin
-#define MAYBE_ContextMenuRedirect ContextMenuRedirect
-#define MAYBE_HttpsContextMenuRedirect HttpsContextMenuRedirect
-#endif
-
 namespace {
 
 const base::FilePath::CharType kDocRoot[] =
@@ -47,23 +34,23 @@ const base::FilePath::CharType kDocRoot[] =
 
 class ReferrerPolicyTest : public InProcessBrowserTest {
  public:
-   ReferrerPolicyTest() {}
-   virtual ~ReferrerPolicyTest() {}
+  ReferrerPolicyTest() {}
+  virtual ~ReferrerPolicyTest() {}
 
-   virtual void SetUp() OVERRIDE {
-     test_server_.reset(new net::SpawnedTestServer(
-                            net::SpawnedTestServer::TYPE_HTTP,
-                            net::SpawnedTestServer::kLocalhost,
-                            base::FilePath(kDocRoot)));
-     ASSERT_TRUE(test_server_->Start());
-     ssl_test_server_.reset(new net::SpawnedTestServer(
-                                net::SpawnedTestServer::TYPE_HTTPS,
-                                net::SpawnedTestServer::kLocalhost,
-                                base::FilePath(kDocRoot)));
-     ASSERT_TRUE(ssl_test_server_->Start());
+  virtual void SetUp() OVERRIDE {
+    test_server_.reset(new net::SpawnedTestServer(
+                           net::SpawnedTestServer::TYPE_HTTP,
+                           net::SpawnedTestServer::kLocalhost,
+                           base::FilePath(kDocRoot)));
+    ASSERT_TRUE(test_server_->Start());
+    ssl_test_server_.reset(new net::SpawnedTestServer(
+                               net::SpawnedTestServer::TYPE_HTTPS,
+                               net::SpawnedTestServer::kLocalhost,
+                               base::FilePath(kDocRoot)));
+    ASSERT_TRUE(ssl_test_server_->Start());
 
-     InProcessBrowserTest::SetUp();
-   }
+    InProcessBrowserTest::SetUp();
+  }
 
  protected:
   enum ExpectedReferrer {
@@ -342,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsMiddleClickTargetBlankOrigin) {
 }
 
 // Context menu, from HTTP to HTTP.
-IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MAYBE_ContextMenuOrigin) {
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, ContextMenuOrigin) {
   ContextMenuNotificationObserver context_menu_observer(
       IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
   RunReferrerTest(blink::WebReferrerPolicyOrigin,
@@ -355,7 +342,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MAYBE_ContextMenuOrigin) {
 }
 
 // Context menu, from HTTPS to HTTP.
-IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MAYBE_HttpsContextMenuOrigin) {
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsContextMenuOrigin) {
   ContextMenuNotificationObserver context_menu_observer(
       IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
   RunReferrerTest(blink::WebReferrerPolicyOrigin,
@@ -485,7 +472,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
 }
 
 // Context menu, from HTTP to HTTP via server redirect.
-IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MAYBE_ContextMenuRedirect) {
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, ContextMenuRedirect) {
   ContextMenuNotificationObserver context_menu_observer(
       IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
   RunReferrerTest(blink::WebReferrerPolicyOrigin,
@@ -498,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MAYBE_ContextMenuRedirect) {
 }
 
 // Context menu, from HTTPS to HTTP via server redirect.
-IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MAYBE_HttpsContextMenuRedirect) {
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsContextMenuRedirect) {
   ContextMenuNotificationObserver context_menu_observer(
       IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
   RunReferrerTest(blink::WebReferrerPolicyOrigin,
