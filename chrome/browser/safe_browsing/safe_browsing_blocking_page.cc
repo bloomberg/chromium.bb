@@ -481,21 +481,16 @@ void SafeBrowsingBlockingPage::SetReportingPreference(bool report) {
 // kSafeBrowsingExtendedReportingEnabled should be updated.
 // TODO(felt): Remove this in M-39. crbug.com/384668
 void SafeBrowsingBlockingPage::UpdateReportingPref() {
-  LOG(ERROR) << "1";
   if (!reporting_checkbox_checked_)
     return;
-  LOG(ERROR) << "2";
   if (IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled))
     return;
-  LOG(ERROR) << "3";
   Profile* profile = Profile::FromBrowserContext(
       web_contents_->GetBrowserContext());
   if (profile->GetPrefs()->HasPrefPath(
       prefs::kSafeBrowsingExtendedReportingEnabled))
     return;
-  LOG(ERROR) << "4";
   SetReportingPreference(true);
-  LOG(ERROR) << "5";
 }
 
 void SafeBrowsingBlockingPage::OnProceed() {
