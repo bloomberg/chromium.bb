@@ -509,7 +509,7 @@ virtual void AsyncTexSubImage2DCHROMIUM(GLenum target,
                                         const void* data) OVERRIDE;
 virtual void AsyncTexImage2DCHROMIUM(GLenum target,
                                      GLint level,
-                                     GLint internalformat,
+                                     GLenum internalformat,
                                      GLsizei width,
                                      GLsizei height,
                                      GLint border,

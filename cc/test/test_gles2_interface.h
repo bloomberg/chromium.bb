@@ -99,7 +99,7 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
 
   virtual void AsyncTexImage2DCHROMIUM(GLenum target,
                                        GLint level,
-                                       GLint internalformat,
+                                       GLenum internalformat,
                                        GLsizei width,
                                        GLsizei height,
                                        GLint border,

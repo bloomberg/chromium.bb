@@ -10558,8 +10558,6 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM");
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
-  // TODO(kloveless): Change HandleAsyncTexImage2DCHROMIUM command to use
-  // unsigned integer for internalformat.
   GLenum internal_format = static_cast<GLenum>(c.internalformat);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);

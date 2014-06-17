@@ -3858,7 +3858,7 @@ void GLES2Implementation::FreeAllAsyncUploadBuffers() {
 }
 
 void GLES2Implementation::AsyncTexImage2DCHROMIUM(
-    GLenum target, GLint level, GLint internalformat, GLsizei width,
+    GLenum target, GLint level, GLenum internalformat, GLsizei width,
     GLsizei height, GLint border, GLenum format, GLenum type,
     const void* pixels) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();

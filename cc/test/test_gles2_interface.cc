@@ -226,7 +226,7 @@ void TestGLES2Interface::TexParameteri(GLenum target,
 
 void TestGLES2Interface::AsyncTexImage2DCHROMIUM(GLenum target,
                                                  GLint level,
-                                                 GLint internalformat,
+                                                 GLenum internalformat,
                                                  GLsizei width,
                                                  GLsizei height,
                                                  GLint border,

@@ -1433,7 +1433,7 @@ void GLES2TraceImplementation::AsyncTexSubImage2DCHROMIUM(GLenum target,
 
 void GLES2TraceImplementation::AsyncTexImage2DCHROMIUM(GLenum target,
                                                        GLint level,
-                                                       GLint internalformat,
+                                                       GLenum internalformat,
                                                        GLsizei width,
                                                        GLsizei height,
                                                        GLint border,
