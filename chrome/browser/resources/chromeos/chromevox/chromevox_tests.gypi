@@ -122,11 +122,16 @@
         '<(DEPTH)/chrome/browser/extensions/browsertest_util.h',
 
         'common/aria_util_test.js',
+        'common/command_store_test.js',
         'common/cursor_selection_test.js',
         'common/editable_text_area_shadow_test.js',
+        'common/editable_text_test.js',
+        'common/find_util_test.js',
         'common/key_sequence_test.js',
         'common/math_semantic_tree_test.js',
+        'common/page_selection_test.js',
         'common/selection_util_test.js',
+        'common/spannable_test.js',
       ],
       'conditions': [
         ['use_chromevox_next==1', {

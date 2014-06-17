@@ -23,16 +23,18 @@ function assertUndefined(a) {
 
 /**
  * Asserts that a given function call raises an exception.
- * @param {string} error The name of the exception we expect to throw.
+ * @param {string} msg The message to print if this fails.
  * @param {Function} fn The function to call.
+ * @param {string} error The name of the exception we expect to throw.
  * @return {boolean} True if it throws the exception.
  */
-function assertException(error, fn) {
+function assertException(msg, fn, error) {
   try {
     fn();
   } catch (e) {
     if (error && e.name != error) {
-      throw new Error('Expected to throw ' + error + ' but threw ' + e.name);
+      throw new Error('Expected to throw ' + error + ' but threw ' + e.name +
+          ' - ' + msg);
     }
 
     return true;

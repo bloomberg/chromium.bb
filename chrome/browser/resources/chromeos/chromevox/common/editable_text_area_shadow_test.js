@@ -48,7 +48,6 @@ three
 /**
  * Test the get line of a multiline textarea with wrapping instead of
  * explicit newlines.
- * @export
  */
 TEST_F('CvoxShadowUnitTest', 'MultilineWrap', function() {
   this.loadDoc(function() {/*!
