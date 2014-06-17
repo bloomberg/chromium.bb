@@ -72,7 +72,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/svg/SVGPaint.h"
-#include "core/svg/SVGParserUtilities.h"
 #include "platform/FloatConversion.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/BitArray.h"

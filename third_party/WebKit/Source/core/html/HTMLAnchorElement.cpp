@@ -43,7 +43,6 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderImage.h"
-#include "core/svg/graphics/SVGImage.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/network/DNS.h"
 #include "platform/network/ResourceRequest.h"

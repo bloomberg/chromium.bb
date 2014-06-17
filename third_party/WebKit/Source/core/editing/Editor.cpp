@@ -31,7 +31,6 @@
 #include "core/CSSPropertyNames.h"
 #include "core/EventNames.h"
 #include "core/HTMLNames.h"
-#include "core/SVGNames.h"
 #include "core/XLinkNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/clipboard/Clipboard.h"

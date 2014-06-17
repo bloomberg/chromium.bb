@@ -29,7 +29,6 @@
 #include "core/dom/StyleEngine.h"
 
 #include "core/HTMLNames.h"
-#include "core/SVGNames.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/FontFaceCache.h"
@@ -46,7 +45,6 @@
 #include "core/page/InjectedStyleSheets.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
-#include "core/svg/SVGStyleElement.h"
 #include "platform/URLPatternMatcher.h"
 
 namespace WebCore {

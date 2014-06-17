@@ -25,7 +25,6 @@
 
 #include "core/XLinkNames.h"
 #include "core/dom/Attribute.h"
-#include "core/rendering/svg/RenderSVGHiddenContainer.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResourceLinearGradient.h"
 #include "core/rendering/svg/RenderSVGResourceRadialGradient.h"
