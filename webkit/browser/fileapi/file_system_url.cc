@@ -7,6 +7,8 @@
 #include <sstream>
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
+#include "net/base/escape.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -85,7 +87,14 @@ GURL FileSystemURL::ToGURL() const {
   if (url.empty())
     return GURL();
 
-  url.append(virtual_path_.AsUTF8Unsafe());
+  // Exactly match with DOMFileSystemBase::createFileSystemURL()'s encoding
+  // behavior, where the path is escaped by KURL::encodeWithURLEscapeSequences
+  // which is essentially encodeURIComponent except '/'.
+  std::string escaped = net::EscapeQueryParamValue(
+      virtual_path_.NormalizePathSeparatorsTo('/').AsUTF8Unsafe(),
+      false /* use_plus */);
+  ReplaceSubstringsAfterOffset(&escaped, 0, "%2F", "/");
+  url.append(escaped);
 
   // Build nested GURL.
   return GURL(url);

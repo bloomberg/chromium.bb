@@ -173,6 +173,7 @@ TEST(FileSystemURLTest, ToGURL) {
     "filesystem:http://chromium.org/isolated/directory/file2",
     "filesystem:http://chromium.org/external/directory/file2",
     "filesystem:http://chromium.org/test/directory/file3",
+    "filesystem:http://chromium.org/test/plus%2B/space%20/colon%3A",
   };
 
   for (size_t i = 0; i < arraysize(kTestURL); ++i) {
