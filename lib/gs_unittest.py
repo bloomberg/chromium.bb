@@ -556,6 +556,45 @@ class GSContextTest(AbstractGSContextTest):
     self.gs_mock.assertCommandContains(['acl', 'set', '/my/file/acl',
                                         'gs://abc/1'])
 
+  def testChangeAcl(self):
+    """Test changing an ACL."""
+    basic_file = """
+-g foo:READ
+
+-u bar:FULL_CONTROL"""
+    comment_file = """
+# Give foo READ permission
+-g foo:READ # Now foo can read this
+  # This whole line should be removed
+-u bar:FULL_CONTROL
+# A comment at the end"""
+    tempfile = os.path.join(self.tempdir, 'tempfile')
+    ctx = gs.GSContext()
+
+    osutils.WriteFile(tempfile, basic_file)
+    ctx.ChangeACL('gs://abc/1', acl_args_file=tempfile)
+    self.gs_mock.assertCommandContains([
+        'acl', 'ch', '-g', 'foo:READ', '-u', 'bar:FULL_CONTROL', 'gs://abc/1'
+    ])
+
+    osutils.WriteFile(tempfile, comment_file)
+    ctx.ChangeACL('gs://abc/1', acl_args_file=tempfile)
+    self.gs_mock.assertCommandContains([
+        'acl', 'ch', '-g', 'foo:READ', '-u', 'bar:FULL_CONTROL', 'gs://abc/1'
+    ])
+
+    ctx.ChangeACL('gs://abc/1',
+                  acl_args=['-g', 'foo:READ', '-u', 'bar:FULL_CONTROL'])
+    self.gs_mock.assertCommandContains([
+        'acl', 'ch', '-g', 'foo:READ', '-u', 'bar:FULL_CONTROL', 'gs://abc/1'
+    ])
+
+    with self.assertRaises(gs.GSContextException):
+      ctx.ChangeACL('gs://abc/1', acl_args_file=tempfile, acl_args=['foo'])
+
+    with self.assertRaises(gs.GSContextException):
+      ctx.ChangeACL('gs://abc/1')
+
   def testIncrement(self):
     """Test ability to atomically increment a counter."""
     ctx = gs.GSContext()

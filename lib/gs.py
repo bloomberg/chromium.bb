@@ -706,6 +706,34 @@ class GSContext(object):
 
     self.DoCommand(['acl', 'set', acl, upload_url])
 
+  def ChangeACL(self, upload_url, acl_args_file=None, acl_args=None):
+    """Change access on a file already in google storage with "acl ch".
+
+    Args:
+      upload_url: gs:// url that will have acl applied to it.
+      acl_args_file: A file with arguments to the gsutil acl ch command. The
+                     arguments can be spread across multiple lines. Comments
+                     start with a # character and extend to the end of the
+                     line. Exactly one of this argument or acl_args must be
+                     set.
+      acl_args: A list of arguments for the gsutil acl ch command. Exactly
+                one of this argument or acl_args must be set.
+    """
+    if acl_args_file and acl_args:
+      raise GSContextException(
+          'ChangeACL invoked with both acl_args and acl_args set.')
+    if not acl_args_file and not acl_args:
+      raise GSContextException(
+          'ChangeACL invoked with neither acl_args nor acl_args set.')
+
+    if acl_args_file:
+      lines = osutils.ReadFile(acl_args_file).splitlines()
+      # Strip out comments.
+      lines = [x.split('#', 1)[0].strip() for x in lines]
+      acl_args = ' '.join([x for x in lines if x]).split()
+
+    self.DoCommand(['acl', 'ch'] + acl_args + [upload_url])
+
   def Exists(self, path, **kwargs):
     """Checks whether the given object exists.
 
