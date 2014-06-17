@@ -39,7 +39,8 @@ def DownloadCrx(ext, extension, crxdir):
   """Download .crx file from WebStore and update entry."""
   cros_build_lib.Info('Extension "%s"(%s)...', extension['name'], ext)
 
-  update_url = '%s?x=id%%3D%s%%26uc' % (extension['external_update_url'], ext)
+  update_url = ('%s?x=prodversion%%3D35.1.1.1%%26id%%3D%s%%26uc' %
+      (extension['external_update_url'], ext))
   response = urllib.urlopen(update_url)
   if response.getcode() != 200:
     cros_build_lib.Error('Cannot get update response, URL: %s, error: %d',
