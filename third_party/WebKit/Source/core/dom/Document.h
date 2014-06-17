@@ -1413,8 +1413,8 @@ private:
     Timer<Document> m_didAssociateFormControlsTimer;
     WillBeHeapHashSet<RefPtrWillBeMember<Element> > m_associatedFormControls;
 
-    HashSet<SVGUseElement*> m_useElementsNeedingUpdate;
-    HashSet<Element*> m_layerUpdateSVGFilterElements;
+    WillBeHeapHashSet<RawPtrWillBeMember<SVGUseElement> > m_useElementsNeedingUpdate;
+    WillBeHeapHashSet<RawPtrWillBeMember<Element> > m_layerUpdateSVGFilterElements;
 
     bool m_hasViewportUnits;
 

@@ -2099,8 +2099,8 @@ bool Document::dirtyElementsForLayerUpdate()
 {
     if (m_layerUpdateSVGFilterElements.isEmpty())
         return false;
-    HashSet<Element*>::iterator end = m_layerUpdateSVGFilterElements.end();
-    for (HashSet<Element*>::iterator it = m_layerUpdateSVGFilterElements.begin(); it != end; ++it)
+
+    for (WillBeHeapHashSet<RawPtrWillBeMember<Element> >::iterator it = m_layerUpdateSVGFilterElements.begin(), end = m_layerUpdateSVGFilterElements.end(); it != end; ++it)
         (*it)->setNeedsStyleRecalc(LocalStyleChange);
     m_layerUpdateSVGFilterElements.clear();
     return true;
@@ -2139,12 +2139,11 @@ void Document::updateUseShadowTreesIfNeeded()
     if (m_useElementsNeedingUpdate.isEmpty())
         return;
 
-    Vector<SVGUseElement*> elements;
+    WillBeHeapVector<RawPtrWillBeMember<SVGUseElement> > elements;
     copyToVector(m_useElementsNeedingUpdate, elements);
     m_useElementsNeedingUpdate.clear();
 
-    Vector<SVGUseElement*>::iterator end = elements.end();
-    for (Vector<SVGUseElement*>::iterator it = elements.begin(); it != end; ++it)
+    for (WillBeHeapVector<RawPtrWillBeMember<SVGUseElement> >::iterator it = elements.begin(), end = elements.end(); it != end; ++it)
         (*it)->buildPendingResource();
 }
 
@@ -5839,6 +5838,8 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_mediaQueryMatcher);
     visitor->trace(m_registrationContext);
     visitor->trace(m_associatedFormControls);
+    visitor->trace(m_useElementsNeedingUpdate);
+    visitor->trace(m_layerUpdateSVGFilterElements);
     visitor->trace(m_templateDocument);
     visitor->trace(m_templateDocumentHost);
     visitor->trace(m_visibilityObservers);
