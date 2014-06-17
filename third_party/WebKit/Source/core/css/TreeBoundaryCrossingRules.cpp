@@ -79,12 +79,9 @@ void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* elemen
         unsigned boundaryBehavior = SelectorChecker::ScopeContainsLastMatchedElement;
         bool isInnerTreeScope = element->treeScope().isInclusiveAncestorOf(scopingNode->treeScope());
 
-        // If a given scoping node is a shadow root,
-        // we should use ScopeIsShadowHost.
-        if (scopingNode && scopingNode->isShadowRoot()) {
-            boundaryBehavior |= SelectorChecker::ScopeIsShadowHost;
-            scopingNode = toShadowRoot(scopingNode)->host();
-        }
+        // If a given scoping node is a shadow root, we should use ScopeIsShadowRoot.
+        if (scopingNode && scopingNode->isShadowRoot())
+            boundaryBehavior |= SelectorChecker::ScopeIsShadowRoot;
 
         CascadeOrder cascadeOrder = isInnerTreeScope ? innerCascadeOrder : outerCascadeOrder;
         for (CSSStyleSheetRuleSubSet::iterator it = ruleSubSet->begin(); it != ruleSubSet->end(); ++it) {

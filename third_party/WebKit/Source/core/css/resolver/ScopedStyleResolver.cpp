@@ -120,10 +120,8 @@ void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& colle
     if (!applyAuthorStyles)
         behaviorAtBoundary |= SelectorChecker::ScopeContainsLastMatchedElement;
 
-    if (m_scopingNode.isShadowRoot()) {
-        scopingNode = toShadowRoot(m_scopingNode).host();
-        behaviorAtBoundary |= SelectorChecker::ScopeIsShadowHost;
-    }
+    if (m_scopingNode.isShadowRoot())
+        behaviorAtBoundary |= SelectorChecker::ScopeIsShadowRoot;
 
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
