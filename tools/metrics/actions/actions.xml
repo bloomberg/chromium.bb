@@ -8734,13 +8734,29 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Options_SafeBrowsingDownloadFeedbackCheckbox_Disable">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>felt@chromium.org</owner>
+  <description>Safe Browsing download feedback disabled</description>
+  <obsolete>
+    Deprecated 6/14. Replaced by SafeBrowsingExtendedReportingCheckbox_Disable.
+  </obsolete>
 </action>
 
 <action name="Options_SafeBrowsingDownloadFeedbackCheckbox_Enable">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>felt@chromium.org</owner>
+  <description>Safe Browsing download feedback enabled</description>
+  <obsolete>
+    Deprecated 6/14. Replaced by SafeBrowsingExtendedReportingCheckbox_Enable.
+  </obsolete>
+</action>
+
+<action name="Options_SafeBrowsingExtendedReportingCheckbox_Disable">
+  <owner>felt@chromium.org</owner>
+  <description>Safe Browsing Extended Reporting disabled</description>
+</action>
+
+<action name="Options_SafeBrowsingExtendedReportingCheckbox_Enable">
+  <owner>felt@chromium.org</owner>
+  <description>Safe Browsing Extended Reporting enabled</description>
 </action>
 
 <action name="Options_SearchEngineChanged">
