@@ -5,7 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_HARDWARE_RENDERER_H_
 #define ANDROID_WEBVIEW_BROWSER_HARDWARE_RENDERER_H_
 
-#include "android_webview/browser/hardware_renderer_interface.h"
 #include "android_webview/browser/shared_renderer_state.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
@@ -26,19 +25,16 @@ namespace android_webview {
 class AwGLSurface;
 class ParentOutputSurface;
 
-class HardwareRenderer : public HardwareRendererInterface,
-                         public cc::LayerTreeHostClient,
+class HardwareRenderer : public cc::LayerTreeHostClient,
                          public cc::LayerTreeHostSingleThreadClient,
                          public cc::DelegatedFrameResourceCollectionClient {
  public:
   explicit HardwareRenderer(SharedRendererState* state);
   virtual ~HardwareRenderer();
 
-  // HardwareRendererInterface overrides.
-  virtual bool DrawGL(bool stencil_enabled,
-                      int framebuffer_binding_ext,
-                      AwDrawGLInfo* draw_info,
-                      DrawGLResult* result) OVERRIDE;
+  bool DrawGL(bool stencil_enabled,
+              int framebuffer_binding_ext,
+              AwDrawGLInfo* draw_info);
 
   // cc::LayerTreeHostClient overrides.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE {}

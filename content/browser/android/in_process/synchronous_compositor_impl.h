@@ -48,16 +48,14 @@ class SynchronousCompositorImpl
   // SynchronousCompositor
   virtual void SetClient(SynchronousCompositorClient* compositor_client)
       OVERRIDE;
-  virtual bool InitializeHwDraw(
-      scoped_refptr<gfx::GLSurface> surface) OVERRIDE;
+  virtual bool InitializeHwDraw() OVERRIDE;
   virtual void ReleaseHwDraw() OVERRIDE;
   virtual gpu::GLInProcessContext* GetShareContext() OVERRIDE;
   virtual scoped_ptr<cc::CompositorFrame> DemandDrawHw(
       gfx::Size surface_size,
       const gfx::Transform& transform,
       gfx::Rect viewport,
-      gfx::Rect clip,
-      bool stencil_enabled) OVERRIDE;
+      gfx::Rect clip) OVERRIDE;
   virtual bool DemandDrawSw(SkCanvas* canvas) OVERRIDE;
   virtual void ReturnResources(
       const cc::CompositorFrameAck& frame_ack) OVERRIDE;

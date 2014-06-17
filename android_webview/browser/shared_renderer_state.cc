@@ -16,9 +16,6 @@ DrawGLInput::DrawGLInput() : width(0), height(0) {
 DrawGLInput::~DrawGLInput() {
 }
 
-DrawGLResult::DrawGLResult() : clip_contains_visible_rect(false) {
-}
-
 SharedRendererState::SharedRendererState(
     scoped_refptr<base::MessageLoopProxy> ui_loop,
     BrowserViewRendererClient* client)
@@ -26,8 +23,6 @@ SharedRendererState::SharedRendererState(
       client_on_ui_(client),
       weak_factory_on_ui_thread_(this),
       ui_thread_weak_ptr_(weak_factory_on_ui_thread_.GetWeakPtr()),
-      compositor_(NULL),
-      memory_policy_dirty_(false),
       hardware_allowed_(false),
       hardware_initialized_(false),
       share_context_(NULL) {
@@ -53,34 +48,6 @@ void SharedRendererState::ClientRequestDrawGLOnUIThread() {
   if (!client_on_ui_->RequestDrawGL(NULL, false)) {
     LOG(ERROR) << "Failed to request GL process. Deadlock likely";
   }
-}
-
-void SharedRendererState::SetCompositorOnUiThread(
-    content::SynchronousCompositor* compositor) {
-  base::AutoLock lock(lock_);
-  DCHECK(ui_loop_->BelongsToCurrentThread());
-  compositor_ = compositor;
-}
-
-content::SynchronousCompositor* SharedRendererState::GetCompositor() {
-  base::AutoLock lock(lock_);
-  DCHECK(compositor_);
-  return compositor_;
-}
-
-void SharedRendererState::SetMemoryPolicy(
-    const content::SynchronousCompositorMemoryPolicy new_policy) {
-  base::AutoLock lock(lock_);
-  if (memory_policy_ != new_policy) {
-    memory_policy_ = new_policy;
-    memory_policy_dirty_ = true;
-  }
-}
-
-content::SynchronousCompositorMemoryPolicy
-SharedRendererState::GetMemoryPolicy() const {
-  base::AutoLock lock(lock_);
-  return memory_policy_;
 }
 
 void SharedRendererState::SetDrawGLInput(scoped_ptr<DrawGLInput> input) {
@@ -124,16 +91,6 @@ gpu::GLInProcessContext* SharedRendererState::GetSharedContext() const {
   base::AutoLock lock(lock_);
   DCHECK(share_context_);
   return share_context_;
-}
-
-void SharedRendererState::SetMemoryPolicyDirty(bool is_dirty) {
-  base::AutoLock lock(lock_);
-  memory_policy_dirty_ = is_dirty;
-}
-
-bool SharedRendererState::IsMemoryPolicyDirty() const {
-  base::AutoLock lock(lock_);
-  return memory_policy_dirty_;
 }
 
 void SharedRendererState::ReturnResources(

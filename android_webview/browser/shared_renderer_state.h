@@ -5,11 +5,11 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_SHARED_RENDERER_STATE_H_
 #define ANDROID_WEBVIEW_BROWSER_SHARED_RENDERER_STATE_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
-#include "content/public/browser/android/synchronous_compositor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 
@@ -27,7 +27,6 @@ class BrowserViewRendererClient;
 
 // Set by BrowserViewRenderer and read by HardwareRenderer.
 struct DrawGLInput {
-  gfx::Rect global_visible_rect;
   gfx::Vector2d scroll_offset;
   int width;
   int height;
@@ -35,13 +34,6 @@ struct DrawGLInput {
 
   DrawGLInput();
   ~DrawGLInput();
-};
-
-// Set by HardwareRenderer and read by BrowserViewRenderer.
-struct DrawGLResult {
-  bool clip_contains_visible_rect;
-
-  DrawGLResult();
 };
 
 // This class holds renderer state that is shared between UI and RT threads.
@@ -57,17 +49,6 @@ class SharedRendererState {
 
   void ClientRequestDrawGL();
 
-  // This function should only be called on UI thread.
-  void SetCompositorOnUiThread(content::SynchronousCompositor* compositor);
-
-  // This function can be called on both UI and RT thread.
-  content::SynchronousCompositor* GetCompositor();
-
-  void SetMemoryPolicy(const content::SynchronousCompositorMemoryPolicy policy);
-  content::SynchronousCompositorMemoryPolicy GetMemoryPolicy() const;
-
-  void SetMemoryPolicyDirty(bool is_dirty);
-  bool IsMemoryPolicyDirty() const;
   void SetDrawGLInput(scoped_ptr<DrawGLInput> input);
   scoped_ptr<DrawGLInput> PassDrawGLInput();
 
@@ -98,11 +79,6 @@ class SharedRendererState {
 
   // Accessed by both UI and RT thread.
   mutable base::Lock lock_;
-  content::SynchronousCompositor* compositor_;
-  content::SynchronousCompositorMemoryPolicy memory_policy_;
-  // Set to true when SetMemoryPolicy called with a different memory policy.
-  // Set to false when memory policy is read and enforced to compositor.
-  bool memory_policy_dirty_;
   scoped_ptr<DrawGLInput> draw_gl_input_;
   bool hardware_allowed_;
   bool hardware_initialized_;

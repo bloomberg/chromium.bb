@@ -89,13 +89,12 @@ void SynchronousCompositor::SetGpuService(
   g_factory.Get().SetDeferredGpuService(service);
 }
 
-bool SynchronousCompositorImpl::InitializeHwDraw(
-    scoped_refptr<gfx::GLSurface> surface) {
+bool SynchronousCompositorImpl::InitializeHwDraw() {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
 
   scoped_refptr<cc::ContextProvider> onscreen_context =
-      g_factory.Get().CreateOnscreenContextProviderForCompositorThread(surface);
+      g_factory.Get().CreateOnscreenContextProviderForCompositorThread();
 
   bool success = output_surface_->InitializeHwDraw(onscreen_context);
 
@@ -120,13 +119,12 @@ scoped_ptr<cc::CompositorFrame> SynchronousCompositorImpl::DemandDrawHw(
     gfx::Size surface_size,
     const gfx::Transform& transform,
     gfx::Rect viewport,
-    gfx::Rect clip,
-    bool stencil_enabled) {
+    gfx::Rect clip) {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
 
-  scoped_ptr<cc::CompositorFrame> frame = output_surface_->DemandDrawHw(
-      surface_size, transform, viewport, clip, stencil_enabled);
+  scoped_ptr<cc::CompositorFrame> frame =
+      output_surface_->DemandDrawHw(surface_size, transform, viewport, clip);
   if (frame.get())
     UpdateFrameMetaData(frame->metadata);
   return frame.Pass();
@@ -150,15 +148,6 @@ bool SynchronousCompositorImpl::DemandDrawSw(SkCanvas* canvas) {
 
 void SynchronousCompositorImpl::UpdateFrameMetaData(
     const cc::CompositorFrameMetadata& frame_metadata) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&SynchronousCompositorImpl::UpdateFrameMetaData,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   frame_metadata));
-    return;
-  }
   RenderWidgetHostViewAndroid* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
       contents_->GetRenderWidgetHostView());
   if (rwhv)

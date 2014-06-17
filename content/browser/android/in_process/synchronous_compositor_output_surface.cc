@@ -79,10 +79,8 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
   capabilities_.deferred_gl_initialization = true;
   capabilities_.draw_and_swap_full_viewport_every_frame = true;
   capabilities_.adjust_deadline_for_parent = false;
-  if (IsDelegatedRendererEnabled()) {
-    capabilities_.delegated_rendering = true;
-    capabilities_.max_frames_pending = 1;
-  }
+  capabilities_.delegated_rendering = true;
+  capabilities_.max_frames_pending = 1;
   // Cannot call out to GetDelegate() here as the output surface is not
   // constructed on the correct thread.
 
@@ -139,10 +137,6 @@ void SynchronousCompositorOutputSurface::SetNeedsBeginFrame(bool enable) {
 void SynchronousCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   DCHECK(CalledOnValidThread());
-  if (!ForcedDrawToSoftwareDevice() && !IsDelegatedRendererEnabled()) {
-    DCHECK(context_provider_);
-    context_provider_->ContextGL()->ShallowFlushCHROMIUM();
-  }
 
   frame_holder_.reset(new cc::CompositorFrame);
   frame->AssignTo(frame_holder_.get());
@@ -176,14 +170,12 @@ SynchronousCompositorOutputSurface::DemandDrawHw(
     gfx::Size surface_size,
     const gfx::Transform& transform,
     gfx::Rect viewport,
-    gfx::Rect clip,
-    bool stencil_enabled) {
+    gfx::Rect clip) {
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
   DCHECK(context_provider_);
 
   surface_size_ = surface_size;
-  SetExternalStencilTest(stencil_enabled);
   InvokeComposite(transform, viewport, clip, true);
 
   return frame_holder_.Pass();
@@ -205,7 +197,6 @@ SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
 
   surface_size_ = gfx::Size(canvas->getDeviceSize().width(),
                             canvas->getDeviceSize().height());
-  SetExternalStencilTest(false);
 
   InvokeComposite(transform, clip, clip, false);
 

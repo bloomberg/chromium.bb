@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/values.h"
+#include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "skia/ext/refptr.h"
 #include "ui/gfx/rect.h"
@@ -24,7 +25,6 @@ struct AwDrawSWFunctionTable;
 
 namespace content {
 class ContentViewCore;
-class SynchronousCompositor;
 struct SynchronousCompositorMemoryPolicy;
 class WebContents;
 }
@@ -81,8 +81,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
               const gfx::Vector2d& scroll,
               const gfx::Rect& global_visible_rect,
               const gfx::Rect& clip);
-  void DidDrawGL(scoped_ptr<DrawGLResult> result);
-  void DidDrawDelegated(scoped_ptr<DrawGLResult> result);
+  void DidDrawDelegated();
 
   // CapturePicture API methods.
   skia::RefPtr<SkPicture> CapturePicture(int width, int height);
@@ -149,12 +148,11 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   void EnsureContinuousInvalidation(bool force_invalidate);
   bool DrawSWInternal(jobject java_canvas, const gfx::Rect& clip_bounds);
   bool CompositeSW(SkCanvas* canvas);
-  void DidComposite(bool force_invalidate);
+  void DidComposite();
   scoped_ptr<base::Value> RootLayerStateAsValue(
       const gfx::Vector2dF& total_scroll_offset_dip,
       const gfx::SizeF& scrollable_size_dip);
 
-  bool OnDrawHardwareLegacy(jobject java_canvas);
   bool OnDrawHardware(jobject java_canvas);
   void ReturnResources();
 
@@ -188,7 +186,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   base::WeakPtr<BrowserViewRenderer> ui_thread_weak_ptr_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
-  bool has_compositor_;
+  content::SynchronousCompositor* compositor_;
 
   bool is_paused_;
   bool view_visible_;
@@ -230,17 +228,12 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   gfx::Vector2dF overscroll_rounding_error_;
 
   GlobalTileManager::Key tile_manager_key_;
+  content::SynchronousCompositorMemoryPolicy memory_policy_;
 
   // The following 2 are used to construct a memory policy and set the memory
   // policy on the shared_renderer_state_ atomically.
   size_t num_tiles_;
   size_t num_bytes_;
-
-  // TODO(boliu): This is a short term solution to support
-  // SynchronousCompositorClient methods called on RenderThread. This is only
-  // used on data that must be modified immediately instead of being posted
-  // back to UI.
-  base::Lock render_thread_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewRenderer);
 };

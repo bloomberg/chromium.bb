@@ -68,8 +68,7 @@ class SynchronousCompositorOutputSurface
   scoped_ptr<cc::CompositorFrame> DemandDrawHw(gfx::Size surface_size,
                                                const gfx::Transform& transform,
                                                gfx::Rect viewport,
-                                               gfx::Rect clip,
-                                               bool stencil_enabled);
+                                               gfx::Rect clip);
   void ReturnResources(const cc::CompositorFrameAck& frame_ack);
   scoped_ptr<cc::CompositorFrame> DemandDrawSw(SkCanvas* canvas);
   void SetMemoryPolicy(const SynchronousCompositorMemoryPolicy& policy);

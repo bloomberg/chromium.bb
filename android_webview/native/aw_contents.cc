@@ -13,12 +13,10 @@
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
 #include "android_webview/browser/hardware_renderer.h"
-#include "android_webview/browser/hardware_renderer_legacy.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
 #include "android_webview/common/aw_hit_test_data.h"
-#include "android_webview/common/aw_switches.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/native/aw_autofill_client.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
@@ -369,25 +367,14 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
 
   if (!hardware_renderer_) {
     DCHECK(!shared_renderer_state_.IsHardwareInitialized());
-    if (switches::UbercompEnabled()) {
-      hardware_renderer_.reset(new HardwareRenderer(&shared_renderer_state_));
-    } else {
-      hardware_renderer_.reset(
-          new HardwareRendererLegacy(&shared_renderer_state_));
-    }
+    hardware_renderer_.reset(new HardwareRenderer(&shared_renderer_state_));
     shared_renderer_state_.SetHardwareInitialized(true);
   }
 
-  scoped_ptr<DrawGLResult> result(new DrawGLResult);
   if (hardware_renderer_->DrawGL(state_restore.stencil_enabled(),
                                  state_restore.framebuffer_binding_ext(),
-                                 draw_info,
-                                 result.get())) {
-    if (switches::UbercompEnabled()) {
-      browser_view_renderer_.DidDrawDelegated(result.Pass());
-    } else {
-      browser_view_renderer_.DidDrawGL(result.Pass());
-    }
+                                 draw_info)) {
+    browser_view_renderer_.DidDrawDelegated();
   }
 }
 

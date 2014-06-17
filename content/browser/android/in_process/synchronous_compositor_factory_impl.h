@@ -12,10 +12,6 @@
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
 #include "webkit/common/gpu/context_provider_web_context.h"
 
-namespace gfx {
-class GLSurface;
-}
-
 namespace gpu {
 class GLInProcessContext;
 }
@@ -57,8 +53,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   void CompositorReleasedHardwareDraw();
 
   scoped_refptr<cc::ContextProvider>
-      CreateOnscreenContextProviderForCompositorThread(
-          scoped_refptr<gfx::GLSurface> surface);
+      CreateOnscreenContextProviderForCompositorThread();
   gpu::GLInProcessContext* GetShareContext();
 
  private:

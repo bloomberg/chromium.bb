@@ -8,7 +8,6 @@
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
-#include "android_webview/common/aw_switches.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
 #include "android_webview/native/aw_web_contents_view_delegate.h"
@@ -65,11 +64,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   // Not yet supported in single-process mode.
   cl->AppendSwitch(switches::kDisableSharedWorkers);
-
-  cl->AppendSwitch(switches::kEnableUbercomp);
-  if (!switches::UbercompEnabled()) {
-    cl->AppendSwitch(switches::kDisableDelegatedRenderer);
-  }
 
   // File system API not supported (requires some new API; internal bug 6930981)
   cl->AppendSwitch(switches::kDisableFileSystem);

@@ -19,7 +19,6 @@ class CompositorFrameAck;
 }
 
 namespace gfx {
-class GLSurface;
 class Transform;
 };
 
@@ -67,9 +66,8 @@ class CONTENT_EXPORT SynchronousCompositor {
   // Synchronously initialize compositor for hardware draw. Can only be called
   // while compositor is in software only mode, either after compositor is
   // first created or after ReleaseHwDraw is called. It is invalid to
-  // DemandDrawHw before this returns true. |surface| is the GLSurface that
-  // should be used to create the underlying hardware context.
-  virtual bool InitializeHwDraw(scoped_refptr<gfx::GLSurface> surface) = 0;
+  // DemandDrawHw before this returns true.
+  virtual bool InitializeHwDraw() = 0;
 
   // Reverse of InitializeHwDraw above. Can only be called while hardware draw
   // is already initialized. Brings compositor back to software only mode and
@@ -82,14 +80,12 @@ class CONTENT_EXPORT SynchronousCompositor {
   virtual gpu::GLInProcessContext* GetShareContext() = 0;
 
   // "On demand" hardware draw. The content is first clipped to |damage_area|,
-  // then transformed through |transform|, and finally clipped to |view_size|
-  // and by the existing stencil buffer if any.
+  // then transformed through |transform|, and finally clipped to |view_size|.
   virtual scoped_ptr<cc::CompositorFrame> DemandDrawHw(
       gfx::Size surface_size,
       const gfx::Transform& transform,
       gfx::Rect viewport,
-      gfx::Rect clip,
-      bool stencil_enabled) = 0;
+      gfx::Rect clip) = 0;
 
   // For delegated rendering, return resources from parent compositor to this.
   // Note that all resources must be returned before ReleaseHwDraw.

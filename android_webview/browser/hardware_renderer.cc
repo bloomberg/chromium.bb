@@ -128,8 +128,7 @@ void HardwareRenderer::DidBeginMainFrame() {
 
 bool HardwareRenderer::DrawGL(bool stencil_enabled,
                               int framebuffer_binding_ext,
-                              AwDrawGLInfo* draw_info,
-                              DrawGLResult* result) {
+                              AwDrawGLInfo* draw_info) {
   TRACE_EVENT0("android_webview", "HardwareRenderer::DrawGL");
 
   // We need to watch if the current Android context has changed and enforce

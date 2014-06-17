@@ -6,7 +6,6 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_result_codes.h"
-#include "android_webview/common/aw_switches.h"
 #include "base/android/build_info.h"
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/command_line.h"
