@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/options/create_profile_handler.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
