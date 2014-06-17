@@ -32,6 +32,8 @@
     # have to export the blink header settings so that relative paths in these
     # headers resolve correctly.
     '../third_party/WebKit/public/blink_headers.gyp:blink_headers',
+    # The public render_widget_host.h needs to re-export skia defines.
+    '../skia/skia.gyp:skia',
   ],
   'include_dirs': [
     '..',
