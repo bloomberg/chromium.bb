@@ -662,7 +662,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   if (request_spec == chrome::kChromeUIChromeSigninURL) {
 #endif
     net::HttpResponseHeaders* response_headers = request->response_headers();
-    if (response_headers->HasHeader("x-frame-options"))
+    if (response_headers && response_headers->HasHeader("x-frame-options"))
       response_headers->RemoveHeader("x-frame-options");
   }
 
