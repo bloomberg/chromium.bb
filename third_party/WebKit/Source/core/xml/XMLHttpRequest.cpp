@@ -35,6 +35,8 @@
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/Stream.h"
+#include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/DOMFormData.h"
 #include "core/html/HTMLDocument.h"
@@ -42,7 +44,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/ThreadableLoader.h"
-#include "core/frame/Settings.h"
 #include "core/xml/XMLHttpRequestProgressEvent.h"
 #include "core/xml/XMLHttpRequestUpload.h"
 #include "platform/Logging.h"
@@ -572,6 +573,9 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
     }
 
     if (!async && executionContext()->isDocument()) {
+        // Use count for XHR synchronous requests.
+        UseCounter::count(document(), UseCounter::XMLHttpRequestSynchronous);
+
         if (document()->settings() && !document()->settings()->syncXHRInDocumentsEnabled()) {
             exceptionState.throwDOMException(InvalidAccessError, "Synchronous requests are disabled for this page.");
             return;
