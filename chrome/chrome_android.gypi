@@ -72,6 +72,13 @@
         'additional_input_paths': [
           '<@(chrome_android_pak_output_resources)',
         ],
+        'conditions': [
+          ['component != "shared_library" and target_arch != "arm64" and target_arch != "x64"', {
+            # Only enable the chromium linker on regular builds, since the
+            # component build crashes on Android 4.4. See b/11379966
+            'use_chromium_linker': '1',
+          }],
+        ],
       },
       'includes': [ '../build/java_apk.gypi', ],
     },

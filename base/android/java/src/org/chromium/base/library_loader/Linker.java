@@ -474,15 +474,24 @@ public class Linker {
     public static void useSharedRelros(Bundle bundle) {
         // Ensure the bundle uses the application's class loader, not the framework
         // one which doesn't know anything about LibInfo.
-        if (bundle != null)
+        // Also, hold a fresh copy of it so the caller can't recycle it.
+        Bundle clonedBundle = null;
+        if (bundle != null) {
             bundle.setClassLoader(LibInfo.class.getClassLoader());
-
-        if (DEBUG) Log.i(TAG, "useSharedRelros() called with " + bundle);
-
+            clonedBundle = new Bundle(LibInfo.class.getClassLoader());
+            Parcel p = Parcel.obtain();
+            bundle.writeToParcel(p, 0);
+            clonedBundle.readFromParcel(p);
+            p.recycle();
+        }
+        if (DEBUG) {
+            Log.i(TAG, "useSharedRelros() called with " + bundle +
+                    ",cloned " + clonedBundle);
+        }
         synchronized (Linker.class) {
             // Note that in certain cases, this can be called before
             // initServiceProcess() in service processes.
-            sSharedRelros = bundle;
+            sSharedRelros = clonedBundle;
             // Tell any listener blocked in finishLibraryLoad() about it.
             Linker.class.notifyAll();
         }
