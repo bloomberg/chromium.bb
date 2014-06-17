@@ -854,7 +854,8 @@ FcDirScanConfig (FcFontSet	*set,
 
 FcPrivate FcBool
 FcDirScanOnly (FcStrSet		*dirs,
-	       const FcChar8	*dir);
+	       const FcChar8	*dir,
+	       FcConfig		*config);
 
 /* fcfont.c */
 FcPrivate int
