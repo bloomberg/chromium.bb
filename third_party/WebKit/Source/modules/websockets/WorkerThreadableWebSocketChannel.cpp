@@ -187,6 +187,20 @@ void WorkerThreadableWebSocketChannel::disconnect()
     m_bridge.clear();
 }
 
+void WorkerThreadableWebSocketChannel::suspend()
+{
+    m_workerClientWrapper->suspend();
+    if (m_bridge)
+        m_bridge->suspend();
+}
+
+void WorkerThreadableWebSocketChannel::resume()
+{
+    m_workerClientWrapper->resume();
+    if (m_bridge)
+        m_bridge->resume();
+}
+
 void WorkerThreadableWebSocketChannel::trace(Visitor* visitor)
 {
     visitor->trace(m_workerClientWrapper);
@@ -303,6 +317,22 @@ void WorkerThreadableWebSocketChannel::Peer::disconnect()
         return;
     m_mainWebSocketChannel->disconnect();
     m_mainWebSocketChannel = nullptr;
+}
+
+void WorkerThreadableWebSocketChannel::Peer::suspend()
+{
+    ASSERT(isMainThread());
+    if (!m_mainWebSocketChannel)
+        return;
+    m_mainWebSocketChannel->suspend();
+}
+
+void WorkerThreadableWebSocketChannel::Peer::resume()
+{
+    ASSERT(isMainThread());
+    if (!m_mainWebSocketChannel)
+        return;
+    m_mainWebSocketChannel->resume();
 }
 
 static void workerGlobalScopeDidConnect(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper, const String& subprotocol, const String& extensions)
@@ -493,6 +523,22 @@ void WorkerThreadableWebSocketChannel::Bridge::disconnect()
 {
     clearClientWrapper();
     terminatePeer();
+}
+
+void WorkerThreadableWebSocketChannel::Bridge::suspend()
+{
+    if (hasTerminatedPeer())
+        return;
+
+    m_loaderProxy.postTaskToLoader(CallClosureTask::create(bind(&Peer::suspend, m_peer)));
+}
+
+void WorkerThreadableWebSocketChannel::Bridge::resume()
+{
+    if (hasTerminatedPeer())
+        return;
+
+    m_loaderProxy.postTaskToLoader(CallClosureTask::create(bind(&Peer::resume, m_peer)));
 }
 
 void WorkerThreadableWebSocketChannel::Bridge::clearClientWrapper()

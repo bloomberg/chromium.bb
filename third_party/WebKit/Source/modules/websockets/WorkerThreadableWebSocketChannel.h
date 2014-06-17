@@ -84,8 +84,8 @@ public:
     virtual void close(int code, const String& reason) OVERRIDE;
     virtual void fail(const String& reason, MessageLevel, const String&, unsigned) OVERRIDE;
     virtual void disconnect() OVERRIDE; // Will suppress didClose().
-    virtual void suspend() OVERRIDE { }
-    virtual void resume() OVERRIDE { }
+    virtual void suspend() OVERRIDE;
+    virtual void resume() OVERRIDE;
 
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -110,6 +110,8 @@ public:
         void close(int code, const String& reason);
         void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);
         void disconnect();
+        void suspend();
+        void resume();
 
         // WebSocketChannelClient functions.
         virtual void didConnect(const String& subprotocol, const String& extensions) OVERRIDE;
@@ -150,6 +152,8 @@ private:
         void close(int code, const String& reason);
         void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);
         void disconnect();
+        void suspend();
+        void resume();
 
     private:
         Bridge(PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, WorkerGlobalScope&);

@@ -31,18 +31,24 @@
 #ifndef ThreadableWebSocketChannelClientWrapper_h
 #define ThreadableWebSocketChannelClientWrapper_h
 
+#include "core/dom/ExecutionContextTask.h"
+#include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class ThreadableWebSocketChannelClientWrapper : public ThreadSafeRefCountedWillBeGarbageCollected<ThreadableWebSocketChannelClientWrapper> {
+class ExecutionContext;
+class WebSocketChannelClient;
+
+class ThreadableWebSocketChannelClientWrapper : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<ThreadableWebSocketChannelClientWrapper> {
 public:
     static PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> create(WebSocketChannelClient*);
+    ~ThreadableWebSocketChannelClientWrapper();
 
     void clearClient();
 
@@ -54,12 +60,27 @@ public:
     void didClose(WebSocketChannelClient::ClosingHandshakeCompletionStatus, unsigned short code, const String& reason);
     void didReceiveMessageError();
 
+    void suspend();
+    void resume();
+
     void trace(Visitor*) { }
 
 private:
     ThreadableWebSocketChannelClientWrapper(WebSocketChannelClient*);
 
+    void processPendingTasks();
+
+    static void didConnectCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, const String& subprotocol, const String& extensions);
+    static void didReceiveMessageCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, const String& message);
+    static void didReceiveBinaryDataCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, PassOwnPtr<Vector<char> >);
+    static void didConsumeBufferedAmountCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, unsigned long);
+    static void didStartClosingHandshakeCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>);
+    static void didCloseCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, WebSocketChannelClient::ClosingHandshakeCompletionStatus, unsigned short code, const String& reason);
+    static void didReceiveMessageErrorCallback(ExecutionContext*, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>);
+
     WebSocketChannelClient* m_client;
+    bool m_suspended;
+    Vector<OwnPtr<ExecutionContextTask> > m_pendingTasks;
 };
 
 } // namespace WebCore
