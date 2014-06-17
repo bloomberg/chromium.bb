@@ -295,6 +295,21 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   scoped_ptr<IdentitySigninFlow> signin_flow_;
 };
 
+class IdentityGetProfileUserInfoFunction
+    : public ChromeUIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("identity.getProfileUserInfo",
+                             IDENTITY_GETPROFILEUSERINFO);
+
+  IdentityGetProfileUserInfoFunction();
+
+ private:
+  virtual ~IdentityGetProfileUserInfoFunction();
+
+  // UIThreadExtensionFunction implementation.
+  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+};
+
 class IdentityRemoveCachedAuthTokenFunction
     : public ChromeSyncExtensionFunction {
  public:

@@ -21,6 +21,7 @@
     "geolocation",
     "hid",
     "identity",
+    "identity.email",
     "idle",
     "location",
     {"mediaGalleries": ["read", "allAutoDetected"]},

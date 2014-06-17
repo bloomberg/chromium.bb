@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -33,6 +34,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
@@ -581,6 +583,35 @@ IN_PROC_BROWSER_TEST_F(IdentityOldProfilesGetAccountsFunctionTest,
   std::vector<std::string> only_primary;
   only_primary.push_back("1");
   EXPECT_TRUE(ExpectGetAccounts(only_primary));
+}
+
+class IdentityGetProfileUserInfoFunctionTest : public ExtensionBrowserTest {
+ protected:
+  scoped_ptr<api::identity::ProfileUserInfo> RunGetProfileUserInfo() {
+    scoped_refptr<IdentityGetProfileUserInfoFunction> func(
+        new IdentityGetProfileUserInfoFunction);
+    func->set_extension(utils::CreateEmptyExtension(kExtensionId).get());
+    scoped_ptr<base::Value> value(
+        utils::RunFunctionAndReturnSingleResult(func.get(), "[]", browser()));
+    return api::identity::ProfileUserInfo::FromValue(*value.get());
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest, NotSignedIn) {
+  scoped_ptr<api::identity::ProfileUserInfo> info = RunGetProfileUserInfo();
+  EXPECT_TRUE(info->email.empty());
+  EXPECT_TRUE(info->id.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest, SignedIn) {
+  profile()->GetPrefs()
+      ->SetString(prefs::kGoogleServicesUsername, "president@example.com");
+  profile()->GetPrefs()
+      ->SetString(prefs::kGoogleServicesUserAccountId, "12345");
+
+  scoped_ptr<api::identity::ProfileUserInfo> info = RunGetProfileUserInfo();
+  EXPECT_EQ("president@example.com", info->email);
+  EXPECT_EQ("12345", info->id);
 }
 
 class GetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {

@@ -762,6 +762,26 @@ std::string IdentityGetAuthTokenFunction::GetOAuth2ClientId() const {
   return client_id;
 }
 
+IdentityGetProfileUserInfoFunction::IdentityGetProfileUserInfoFunction() {
+}
+
+IdentityGetProfileUserInfoFunction::~IdentityGetProfileUserInfoFunction() {
+}
+
+ExtensionFunction::ResponseAction IdentityGetProfileUserInfoFunction::Run() {
+  if (GetProfile()->IsOffTheRecord()) {
+    return RespondNow(Error(identity_constants::kOffTheRecord));
+  }
+
+  api::identity::ProfileUserInfo profile_user_info;
+  profile_user_info.email =
+      GetProfile()->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
+  profile_user_info.id =
+      GetProfile()->GetPrefs()->GetString(prefs::kGoogleServicesUserAccountId);
+
+  return RespondNow(OneArgument(profile_user_info.ToValue().release()));
+}
+
 IdentityRemoveCachedAuthTokenFunction::IdentityRemoveCachedAuthTokenFunction() {
 }
 
