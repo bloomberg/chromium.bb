@@ -1102,10 +1102,6 @@ const char kSigninProcess[]                 = "signin-process";
 // chrome.debugger page. Required to attach to extension background pages.
 const char kSilentDebuggerExtensionAPI[]    = "silent-debugger-extension-api";
 
-// Changes the DCHECKS to dump memory and continue instead of displaying error
-// dialog. This is valid only in Release mode when gyp dcheck_always_on=1.
-const char kSilentDumpOnDCHECK[]            = "silent-dump-on-dcheck";
-
 // Causes Chrome to launch without opening any windows by default. Useful if
 // one wishes to use Chrome as an ash server.
 const char kSilentLaunch[]                  = "silent-launch";

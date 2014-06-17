@@ -74,7 +74,7 @@ VlogInfo* g_vlog_info = NULL;
 VlogInfo* g_vlog_info_prev = NULL;
 
 const char* const log_severity_names[LOG_NUM_SEVERITIES] = {
-  "INFO", "WARNING", "ERROR", "ERROR_REPORT", "FATAL" };
+  "INFO", "WARNING", "ERROR", "FATAL" };
 
 const char* log_severity_name(int severity)
 {
@@ -115,9 +115,6 @@ bool show_error_dialogs = false;
 // An assert handler override specified by the client to be called instead of
 // the debug message dialog and process termination.
 LogAssertHandlerFunction log_assert_handler = NULL;
-// An report handler override specified by the client to be called instead of
-// the debug message dialog.
-LogReportHandlerFunction log_report_handler = NULL;
 // A log message handler that gets notified of every log message we process.
 LogMessageHandlerFunction log_message_handler = NULL;
 
@@ -402,7 +399,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
 }
 
 void SetMinLogLevel(int level) {
-  min_log_level = std::min(LOG_ERROR_REPORT, level);
+  min_log_level = std::min(LOG_FATAL, level);
 }
 
 int GetMinLogLevel() {
@@ -439,10 +436,6 @@ void SetLogAssertHandler(LogAssertHandlerFunction handler) {
   log_assert_handler = handler;
 }
 
-void SetLogReportHandler(LogReportHandlerFunction handler) {
-  log_report_handler = handler;
-}
-
 void SetLogMessageHandler(LogMessageHandlerFunction handler) {
   log_message_handler = handler;
 }
@@ -466,6 +459,7 @@ template std::string* MakeCheckOpString<std::string, std::string>(
     const std::string&, const std::string&, const char* name);
 #endif
 
+#if !defined(NDEBUG)
 // Displays a message box to the user with the error message in it.
 // Used for fatal messages, where we close the app simultaneously.
 // This is for developers only; we don't use this in circumstances
@@ -516,6 +510,7 @@ void DisplayDebugMessageInDialog(const std::string& str) {
   // You can just look at stderr.
 #endif
 }
+#endif  // !defined(NDEBUG)
 
 #if defined(OS_WIN)
 LogMessage::SaveLastError::SaveLastError() : last_error_(::GetLastError()) {
@@ -591,7 +586,6 @@ LogMessage::~LogMessage() {
         priority = ANDROID_LOG_WARN;
         break;
       case LOG_ERROR:
-      case LOG_ERROR_REPORT:
         priority = ANDROID_LOG_ERROR;
         break;
       case LOG_FATAL:
@@ -659,13 +653,6 @@ LogMessage::~LogMessage() {
 #endif
       // Crash the process to generate a dump.
       base::debug::BreakDebugger();
-    }
-  } else if (severity_ == LOG_ERROR_REPORT) {
-    // We are here only if the user runs with --enable-dcheck in release mode.
-    if (log_report_handler) {
-      log_report_handler(std::string(stream_.str()));
-    } else {
-      DisplayDebugMessageInDialog(stream_.str());
     }
   }
 }

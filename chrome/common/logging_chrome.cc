@@ -90,15 +90,6 @@ MSVC_DISABLE_OPTIMIZE();
 void SilentRuntimeAssertHandler(const std::string& str) {
   base::debug::BreakDebugger();
 }
-void SilentRuntimeReportHandler(const std::string& str) {
-}
-#if defined(OS_WIN)
-// Handler to silently dump the current process when there is an assert in
-// chrome.
-void DumpProcessAssertHandler(const std::string& str) {
-  base::debug::DumpWithoutCrashing();
-}
-#endif  // OS_WIN
 MSVC_ENABLE_OPTIMIZE();
 
 // Suppresses error/assertion dialogs and enables the logging of
@@ -108,7 +99,6 @@ void SuppressDialogs() {
     return;
 
   logging::SetLogAssertHandler(SilentRuntimeAssertHandler);
-  logging::SetLogReportHandler(SilentRuntimeReportHandler);
 
 #if defined(OS_WIN)
   UINT new_flags = SEM_FAILCRITICALERRORS |
@@ -356,11 +346,6 @@ void InitChromeLogging(const CommandLine& command_line,
 #if defined(OS_WIN)
   // Enable trace control and transport through event tracing for Windows.
   logging::LogEventProvider::Initialize(kChromeTraceProviderName);
-#endif
-
-#if DCHECK_IS_ON && defined(NDEBUG) && defined(OS_WIN)
-  if (command_line.HasSwitch(switches::kSilentDumpOnDCHECK))
-    logging::SetLogReportHandler(DumpProcessAssertHandler);
 #endif
 
   chrome_logging_initialized_ = true;

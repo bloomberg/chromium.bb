@@ -38,9 +38,6 @@ void WriteSeverityToStream(logging::LogSeverity severity, std::ostream* out) {
     case logging::LOG_ERROR:
       *out << "ERROR";
       break;
-    case logging::LOG_ERROR_REPORT:
-      *out << "ERROR_REPORT";
-      break;
     case logging::LOG_FATAL:
       *out << "FATAL";
       break;

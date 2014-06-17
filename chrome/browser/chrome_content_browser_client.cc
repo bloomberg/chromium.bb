@@ -1714,7 +1714,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kProfilingFile,
       switches::kProfilingFlush,
       switches::kRecordMode,
-      switches::kSilentDumpOnDCHECK,
       translate::switches::kTranslateSecurityOrigin,
     };
 
@@ -1736,7 +1735,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       chromeos::switches::kLoginProfile,
 #endif
       switches::kMemoryProfiling,
-      switches::kSilentDumpOnDCHECK,
     };
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,

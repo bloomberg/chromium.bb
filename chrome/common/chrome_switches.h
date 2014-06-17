@@ -304,7 +304,6 @@ extern const char kSetToken[];
 extern const char kShowAppList[];
 extern const char kShowIcons[];
 extern const char kSigninProcess[];
-extern const char kSilentDumpOnDCHECK[];
 extern const char kSimulateUpgrade[];
 extern const char kSimulateCriticalUpdate[];
 extern const char kSimulateOutdated[];

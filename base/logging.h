@@ -127,18 +127,13 @@
 // GetLastError() on Windows and errno on POSIX).
 //
 // The supported severity levels for macros that allow you to specify one
-// are (in increasing order of severity) INFO, WARNING, ERROR, ERROR_REPORT,
-// and FATAL.
+// are (in increasing order of severity) INFO, WARNING, ERROR, and FATAL.
 //
 // Very important: logging a message at the FATAL severity level causes
 // the program to terminate (after the message is logged).
 //
-// Note the special severity of ERROR_REPORT only available/relevant in normal
-// mode, which displays error dialog without terminating the program. There is
-// no error dialog for severity ERROR or below in normal mode.
-//
-// There is also the special severity of DFATAL, which logs FATAL in
-// debug mode, ERROR in normal mode.
+// There is the special severity of DFATAL, which logs FATAL in debug mode,
+// ERROR in normal mode.
 
 namespace logging {
 
@@ -276,13 +271,6 @@ BASE_EXPORT void SetShowErrorDialogs(bool enable_dialogs);
 typedef void (*LogAssertHandlerFunction)(const std::string& str);
 BASE_EXPORT void SetLogAssertHandler(LogAssertHandlerFunction handler);
 
-// Sets the Log Report Handler that will be used to notify of check failures
-// in non-debug mode. The default handler shows a dialog box and continues
-// the execution, however clients can use this function to override with their
-// own handling.
-typedef void (*LogReportHandlerFunction)(const std::string& str);
-BASE_EXPORT void SetLogReportHandler(LogReportHandlerFunction handler);
-
 // Sets the Log Message Handler that gets passed every log message before
 // it's sent to other log destinations (if any).
 // Returns true to signal that it handled the message and the message
@@ -299,9 +287,8 @@ const LogSeverity LOG_VERBOSE = -1;  // This is level 1 verbosity
 const LogSeverity LOG_INFO = 0;
 const LogSeverity LOG_WARNING = 1;
 const LogSeverity LOG_ERROR = 2;
-const LogSeverity LOG_ERROR_REPORT = 3;
-const LogSeverity LOG_FATAL = 4;
-const LogSeverity LOG_NUM_SEVERITIES = 5;
+const LogSeverity LOG_FATAL = 3;
+const LogSeverity LOG_NUM_SEVERITIES = 4;
 
 // LOG_DFATAL is LOG_FATAL in debug mode, ERROR in normal mode
 #ifdef NDEBUG
@@ -319,9 +306,6 @@ const LogSeverity LOG_DFATAL = LOG_FATAL;
   logging::ClassName(__FILE__, __LINE__, logging::LOG_WARNING , ##__VA_ARGS__)
 #define COMPACT_GOOGLE_LOG_EX_ERROR(ClassName, ...) \
   logging::ClassName(__FILE__, __LINE__, logging::LOG_ERROR , ##__VA_ARGS__)
-#define COMPACT_GOOGLE_LOG_EX_ERROR_REPORT(ClassName, ...) \
-  logging::ClassName(__FILE__, __LINE__, \
-                     logging::LOG_ERROR_REPORT , ##__VA_ARGS__)
 #define COMPACT_GOOGLE_LOG_EX_FATAL(ClassName, ...) \
   logging::ClassName(__FILE__, __LINE__, logging::LOG_FATAL , ##__VA_ARGS__)
 #define COMPACT_GOOGLE_LOG_EX_DFATAL(ClassName, ...) \
@@ -333,8 +317,6 @@ const LogSeverity LOG_DFATAL = LOG_FATAL;
   COMPACT_GOOGLE_LOG_EX_WARNING(LogMessage)
 #define COMPACT_GOOGLE_LOG_ERROR \
   COMPACT_GOOGLE_LOG_EX_ERROR(LogMessage)
-#define COMPACT_GOOGLE_LOG_ERROR_REPORT \
-  COMPACT_GOOGLE_LOG_EX_ERROR_REPORT(LogMessage)
 #define COMPACT_GOOGLE_LOG_FATAL \
   COMPACT_GOOGLE_LOG_EX_FATAL(LogMessage)
 #define COMPACT_GOOGLE_LOG_DFATAL \
@@ -354,10 +336,9 @@ const LogSeverity LOG_DFATAL = LOG_FATAL;
 const LogSeverity LOG_0 = LOG_ERROR;
 #endif
 
-// As special cases, we can assume that LOG_IS_ON(ERROR_REPORT) and
-// LOG_IS_ON(FATAL) always hold.  Also, LOG_IS_ON(DFATAL) always holds
-// in debug mode.  In particular, CHECK()s will always fire if they
-// fail.
+// As special cases, we can assume that LOG_IS_ON(FATAL) always holds. Also,
+// LOG_IS_ON(DFATAL) always holds in debug mode. In particular, CHECK()s will
+// always fire if they fail.
 #define LOG_IS_ON(severity) \
   ((::logging::LOG_ ## severity) >= ::logging::GetMinLogLevel())
 

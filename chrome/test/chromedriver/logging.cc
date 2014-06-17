@@ -64,7 +64,6 @@ const LevelPair kNameToLevel[] = {
 Log::Level GetLevelFromSeverity(int severity) {
   switch (severity) {
     case logging::LOG_FATAL:
-    case logging::LOG_ERROR_REPORT:
     case logging::LOG_ERROR:
       return Log::kError;
     case logging::LOG_WARNING:

@@ -37,7 +37,6 @@ bool LogEventProvider::LogMessage(logging::LogSeverity severity,
         level = TRACE_LEVEL_WARNING;
         break;
       case LOG_ERROR:
-      case LOG_ERROR_REPORT:
         level = TRACE_LEVEL_ERROR;
         break;
       case LOG_FATAL:
