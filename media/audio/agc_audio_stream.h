@@ -73,12 +73,10 @@ class MEDIA_EXPORT AgcAudioStream : public AudioInterface {
 
   AgcAudioStream()
       : agc_is_enabled_(false), max_volume_(0.0), normalized_volume_(0.0) {
-    DVLOG(1) << __FUNCTION__;
   }
 
   virtual ~AgcAudioStream() {
     DCHECK(thread_checker_.CalledOnValidThread());
-    DVLOG(1) << __FUNCTION__;
   }
 
  protected:
@@ -87,7 +85,6 @@ class MEDIA_EXPORT AgcAudioStream : public AudioInterface {
   // The timer is only started if AGC mode is first enabled using the
   // SetAutomaticGainControl() method.
   void StartAgc() {
-    DVLOG(1) << "StartAgc()";
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!agc_is_enabled_ || timer_.IsRunning())
       return;
@@ -105,7 +102,6 @@ class MEDIA_EXPORT AgcAudioStream : public AudioInterface {
   // Stops the periodic timer which periodically checks and updates the
   // current microphone volume level.
   void StopAgc() {
-    DVLOG(1) << "StopAgc()";
     DCHECK(thread_checker_.CalledOnValidThread());
     if (timer_.IsRunning())
       timer_.Stop();

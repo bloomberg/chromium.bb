@@ -37,10 +37,10 @@ class SpeechRecognizerImpl::OnDataConverter
                   const AudioParameters& output_params);
   virtual ~OnDataConverter();
 
-  // Converts input |data| buffer into an AudioChunk where the input format
+  // Converts input audio |data| bus into an AudioChunk where the input format
   // is given by |input_parameters_| and the output format by
   // |output_parameters_|.
-  scoped_refptr<AudioChunk> Convert(const uint8* data, size_t size);
+  scoped_refptr<AudioChunk> Convert(const AudioBus* data);
 
  private:
   // media::AudioConverter::InputCallback implementation.
@@ -132,11 +132,10 @@ SpeechRecognizerImpl::OnDataConverter::~OnDataConverter() {
 }
 
 scoped_refptr<AudioChunk> SpeechRecognizerImpl::OnDataConverter::Convert(
-    const uint8* data, size_t size) {
-  CHECK_EQ(size, static_cast<size_t>(input_parameters_.GetBytesPerBuffer()));
+    const AudioBus* data) {
+  CHECK_EQ(data->frames(), input_parameters_.frames_per_buffer());
 
-  input_bus_->FromInterleaved(
-      data, input_bus_->frames(), input_parameters_.bits_per_sample() / 8);
+  data->CopyTo(input_bus_.get());
 
   waiting_for_input_ = true;
   audio_converter_.Convert(output_bus_.get());
@@ -272,13 +271,10 @@ void SpeechRecognizerImpl::OnError(AudioInputController* controller,
 }
 
 void SpeechRecognizerImpl::OnData(AudioInputController* controller,
-                                  const uint8* data, uint32 size) {
-  if (size == 0)  // This could happen when audio capture stops and is normal.
-    return;
-
+                                  const AudioBus* data) {
   // Convert audio from native format to fixed format used by WebSpeech.
   FSMEventArgs event_args(EVENT_AUDIO_DATA);
-  event_args.audio_data = audio_converter_->Convert(data, size);
+  event_args.audio_data = audio_converter_->Convert(data);
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&SpeechRecognizerImpl::DispatchEvent,

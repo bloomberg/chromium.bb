@@ -53,8 +53,8 @@ class MockAudioInputControllerEventHandler
   MOCK_METHOD1(OnRecording, void(AudioInputController* controller));
   MOCK_METHOD2(OnError, void(AudioInputController* controller,
                              AudioInputController::ErrorCode error_code));
-  MOCK_METHOD3(OnData, void(AudioInputController* controller,
-                            const uint8* data, uint32 size));
+  MOCK_METHOD2(OnData,
+               void(AudioInputController* controller, const AudioBus* data));
   MOCK_METHOD2(OnLog,
                void(AudioInputController* controller,
                     const std::string& message));
@@ -117,10 +117,10 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
       .Times(Exactly(1));
 
   // OnData() shall be called ten times.
-  EXPECT_CALL(event_handler, OnData(NotNull(), NotNull(), _))
+  EXPECT_CALL(event_handler, OnData(NotNull(), NotNull()))
       .Times(AtLeast(10))
-      .WillRepeatedly(CheckCountAndPostQuitTask(&count, 10,
-          message_loop_.message_loop_proxy()));
+      .WillRepeatedly(CheckCountAndPostQuitTask(
+          &count, 10, message_loop_.message_loop_proxy()));
 
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   AudioParameters params(AudioParameters::AUDIO_FAKE, kChannelLayout,
@@ -163,10 +163,10 @@ TEST_F(AudioInputControllerTest, DISABLED_RecordAndError) {
       .Times(Exactly(1));
 
   // OnData() shall be called ten times.
-  EXPECT_CALL(event_handler, OnData(NotNull(), NotNull(), _))
+  EXPECT_CALL(event_handler, OnData(NotNull(), NotNull()))
       .Times(AtLeast(10))
-      .WillRepeatedly(CheckCountAndPostQuitTask(&count, 10,
-          message_loop_.message_loop_proxy()));
+      .WillRepeatedly(CheckCountAndPostQuitTask(
+          &count, 10, message_loop_.message_loop_proxy()));
 
   // OnError() will be called after the data stream stops while the
   // controller is in a recording state.

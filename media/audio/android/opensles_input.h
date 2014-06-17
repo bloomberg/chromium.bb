@@ -17,6 +17,7 @@
 
 namespace media {
 
+class AudioBus;
 class AudioManagerAndroid;
 
 // Implements PCM audio input support for Android using the OpenSLES API.
@@ -93,6 +94,8 @@ class OpenSLESInputStream : public AudioInputStream {
   int buffer_size_bytes_;
 
   bool started_;
+
+  scoped_ptr<media::AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenSLESInputStream);
 };

@@ -82,6 +82,7 @@ class AlsaPcmInputStream : public AgcAudioStream<AudioInputStream> {
   snd_mixer_elem_t* mixer_element_handle_; // Handle to the capture element.
   scoped_ptr<uint8[]> audio_buffer_;  // Buffer used for reading audio data.
   bool read_callback_behind_schedule_;
+  scoped_ptr<AudioBus> audio_bus_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<AlsaPcmInputStream> weak_factory_;

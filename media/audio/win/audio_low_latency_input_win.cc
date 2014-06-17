@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/avrt_wrapper_win.h"
+#include "media/base/audio_bus.h"
 
 using base::win::ScopedComPtr;
 using base::win::ScopedCOMInitializer;
@@ -33,10 +34,9 @@ bool IsDefaultCommunicationDevice(IMMDeviceEnumerator* enumerator,
 
 }  // namespace
 
-WASAPIAudioInputStream::WASAPIAudioInputStream(
-    AudioManagerWin* manager,
-    const AudioParameters& params,
-    const std::string& device_id)
+WASAPIAudioInputStream::WASAPIAudioInputStream(AudioManagerWin* manager,
+                                               const AudioParameters& params,
+                                               const std::string& device_id)
     : manager_(manager),
       capture_thread_(NULL),
       opened_(false),
@@ -49,7 +49,8 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(
       device_id_(device_id),
       perf_count_to_100ns_units_(0.0),
       ms_to_frame_count_(0.0),
-      sink_(NULL) {
+      sink_(NULL),
+      audio_bus_(media::AudioBus::Create(params)) {
   DCHECK(manager_);
 
   // Load the Avrt DLL if not already loaded. Required to support MMCSS.
@@ -436,16 +437,15 @@ void WASAPIAudioInputStream::Run() {
           // size which was specified at construction.
           uint32 delay_frames = static_cast<uint32>(audio_delay_frames + 0.5);
           while (buffer_frame_index >= packet_size_frames_) {
-            uint8* audio_data =
-                reinterpret_cast<uint8*>(capture_buffer.get());
+            // Copy data to audio bus to match the OnData interface.
+            uint8* audio_data = reinterpret_cast<uint8*>(capture_buffer.get());
+            audio_bus_->FromInterleaved(
+                audio_data, audio_bus_->frames(), format_.wBitsPerSample / 8);
 
             // Deliver data packet, delay estimation and volume level to
             // the user.
-            sink_->OnData(this,
-                          audio_data,
-                          packet_size_bytes_,
-                          delay_frames * frame_size_,
-                          volume);
+            sink_->OnData(
+                this, audio_bus_.get(), delay_frames * frame_size_, volume);
 
             // Store parts of the recorded data which can't be delivered
             // using the current packet size. The stored section will be used

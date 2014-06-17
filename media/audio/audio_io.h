@@ -109,8 +109,9 @@ class MEDIA_EXPORT AudioInputStream {
     // Called by the audio recorder when a full packet of audio data is
     // available. This is called from a special audio thread and the
     // implementation should return as soon as possible.
-    virtual void OnData(AudioInputStream* stream, const uint8* src,
-                        uint32 size, uint32 hardware_delay_bytes,
+    virtual void OnData(AudioInputStream* stream,
+                        const AudioBus* source,
+                        uint32 hardware_delay_bytes,
                         double volume) = 0;
 
     // There was an error while recording audio. The audio sink cannot be

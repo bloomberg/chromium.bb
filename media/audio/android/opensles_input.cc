@@ -7,6 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "media/audio/android/audio_manager_android.h"
+#include "media/base/audio_bus.h"
 
 #define LOG_ON_FAILURE_AND_RETURN(op, ...)      \
   do {                                          \
@@ -27,7 +28,8 @@ OpenSLESInputStream::OpenSLESInputStream(AudioManagerAndroid* audio_manager,
       simple_buffer_queue_(NULL),
       active_buffer_index_(0),
       buffer_size_bytes_(0),
-      started_(false) {
+      started_(false),
+      audio_bus_(media::AudioBus::Create(params)) {
   DVLOG(2) << __PRETTY_FUNCTION__;
   format_.formatType = SL_DATAFORMAT_PCM;
   format_.numChannels = static_cast<SLuint32>(params.channels());
@@ -295,13 +297,14 @@ void OpenSLESInputStream::ReadBufferQueue() {
 
   TRACE_EVENT0("audio", "OpenSLESOutputStream::ReadBufferQueue");
 
+  // Convert from interleaved format to deinterleaved audio bus format.
+  audio_bus_->FromInterleaved(audio_data_[active_buffer_index_],
+                              audio_bus_->frames(),
+                              format_.bitsPerSample / 8);
+
   // TODO(henrika): Investigate if it is possible to get an accurate
   // delay estimation.
-  callback_->OnData(this,
-                    audio_data_[active_buffer_index_],
-                    buffer_size_bytes_,
-                    buffer_size_bytes_,
-                    0.0);
+  callback_->OnData(this, audio_bus_.get(), buffer_size_bytes_, 0.0);
 
   // Done with this buffer. Send it to device for recording.
   SLresult err =

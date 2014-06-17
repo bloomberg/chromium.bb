@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_SYNC_WRITER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_SYNC_WRITER_H_
 
+#include "base/memory/scoped_vector.h"
 #include "base/process/process.h"
 #include "base/sync_socket.h"
 #include "base/time/time.h"
 #include "media/audio/audio_input_controller.h"
+#include "media/audio/audio_parameters.h"
+#include "media/base/audio_bus.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -26,16 +29,16 @@ namespace content {
 class AudioInputSyncWriter : public media::AudioInputController::SyncWriter {
  public:
   explicit AudioInputSyncWriter(base::SharedMemory* shared_memory,
-                                int shared_memory_segment_count);
+                                int shared_memory_segment_count,
+                                const media::AudioParameters& params);
 
   virtual ~AudioInputSyncWriter();
 
-  // media::AudioOutputController::SyncWriter implementation.
+  // media::AudioInputController::SyncWriter implementation.
   virtual void UpdateRecordedBytes(uint32 bytes) OVERRIDE;
-  virtual uint32 Write(const void* data,
-                       uint32 size,
-                       double volume,
-                       bool key_pressed) OVERRIDE;
+  virtual void Write(const media::AudioBus* data,
+                     double volume,
+                     bool key_pressed) OVERRIDE;
   virtual void Close() OVERRIDE;
 
   bool Init();
@@ -64,6 +67,13 @@ class AudioInputSyncWriter : public media::AudioInputController::SyncWriter {
 
   // The time of the last Write call.
   base::Time last_write_time_;
+
+  // Size in bytes of each audio bus.
+  const int audio_bus_memory_size_;
+
+  // Vector of audio buses allocated during construction and deleted in the
+  // destructor.
+  ScopedVector<media::AudioBus> audio_buses_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputSyncWriter);
 };

@@ -7,14 +7,18 @@
 #include "base/logging.h"
 #include "jni/AudioRecordInput_jni.h"
 #include "media/audio/android/audio_manager_android.h"
+#include "media/base/audio_bus.h"
 
 namespace media {
 
 AudioRecordInputStream::AudioRecordInputStream(
-    AudioManagerAndroid* audio_manager, const AudioParameters& params)
+    AudioManagerAndroid* audio_manager,
+    const AudioParameters& params)
     : audio_manager_(audio_manager),
       callback_(NULL),
-      direct_buffer_address_(NULL) {
+      direct_buffer_address_(NULL),
+      audio_bus_(media::AudioBus::Create(params)),
+      bytes_per_sample_(params.bits_per_sample() / 8) {
   DVLOG(2) << __PRETTY_FUNCTION__;
   DCHECK(params.IsValid());
   j_audio_record_.Reset(
@@ -48,10 +52,13 @@ bool AudioRecordInputStream::RegisterAudioRecordInput(JNIEnv* env) {
 void AudioRecordInputStream::OnData(JNIEnv* env, jobject obj, jint size,
                                     jint hardware_delay_bytes) {
   DCHECK(direct_buffer_address_);
+  DCHECK_EQ(size,
+            audio_bus_->frames() * audio_bus_->channels() * bytes_per_sample_);
   // Passing zero as the volume parameter indicates there is no access to a
   // hardware volume slider.
-  callback_->OnData(this, direct_buffer_address_, size, hardware_delay_bytes,
-                    0.0);
+  audio_bus_->FromInterleaved(
+      direct_buffer_address_, audio_bus_->frames(), bytes_per_sample_);
+  callback_->OnData(this, audio_bus_.get(), hardware_delay_bytes, 0.0);
 }
 
 bool AudioRecordInputStream::Open() {

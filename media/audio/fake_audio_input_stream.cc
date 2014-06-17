@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/base/audio_bus.h"
 
 using base::TimeTicks;
 using base::TimeDelta;
@@ -48,17 +49,20 @@ FakeAudioInputStream::FakeAudioInputStream(AudioManagerBase* manager,
     : audio_manager_(manager),
       callback_(NULL),
       buffer_size_((params.channels() * params.bits_per_sample() *
-                    params.frames_per_buffer()) / 8),
+                    params.frames_per_buffer()) /
+                   8),
       params_(params),
       thread_("FakeAudioRecordingThread"),
       callback_interval_(base::TimeDelta::FromMilliseconds(
           (params.frames_per_buffer() * 1000) / params.sample_rate())),
-      beep_duration_in_buffers_(
-          kBeepDurationMilliseconds * params.sample_rate() /
-          params.frames_per_buffer() / 1000),
+      beep_duration_in_buffers_(kBeepDurationMilliseconds *
+                                params.sample_rate() /
+                                params.frames_per_buffer() /
+                                1000),
       beep_generated_in_buffers_(0),
       beep_period_in_frames_(params.sample_rate() / kBeepFrequency),
-      frames_elapsed_(0) {
+      frames_elapsed_(0),
+      audio_bus_(AudioBus::Create(params)) {
 }
 
 FakeAudioInputStream::~FakeAudioInputStream() {}
@@ -66,6 +70,7 @@ FakeAudioInputStream::~FakeAudioInputStream() {}
 bool FakeAudioInputStream::Open() {
   buffer_.reset(new uint8[buffer_size_]);
   memset(buffer_.get(), 0, buffer_size_);
+  audio_bus_->Zero();
   return true;
 }
 
@@ -141,7 +146,9 @@ void FakeAudioInputStream::DoCallback() {
       beep_generated_in_buffers_ = 0;
   }
 
-  callback_->OnData(this, buffer_.get(), buffer_size_, buffer_size_, 1.0);
+  audio_bus_->FromInterleaved(
+      buffer_.get(), audio_bus_->frames(), params_.bits_per_sample() / 8);
+  callback_->OnData(this, audio_bus_.get(), buffer_size_, 1.0);
   frames_elapsed_ += params_.frames_per_buffer();
 
   thread_.message_loop()->PostDelayedTask(

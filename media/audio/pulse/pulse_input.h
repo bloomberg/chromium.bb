@@ -75,6 +75,8 @@ class PulseAudioInputStream : public AgcAudioStream<AudioInputStream> {
   // Flag indicating the state of the context has been changed.
   bool context_state_changed_;
 
+  scoped_ptr<AudioBus> audio_bus_;
+
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(PulseAudioInputStream);

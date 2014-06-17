@@ -117,8 +117,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   virtual void OnError(media::AudioInputController* controller,
       media::AudioInputController::ErrorCode error_code) OVERRIDE;
   virtual void OnData(media::AudioInputController* controller,
-                      const uint8* data,
-                      uint32 size) OVERRIDE;
+                      const media::AudioBus* data) OVERRIDE;
   virtual void OnLog(media::AudioInputController* controller,
                      const std::string& message) OVERRIDE;
 

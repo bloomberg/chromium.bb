@@ -13,6 +13,7 @@
 #include "media/audio/fake_audio_output_stream.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_input_controller_factory.h"
+#include "media/base/audio_bus.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
@@ -66,6 +67,13 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
          ChannelLayoutToChannelCount(SpeechRecognizerImpl::kChannelLayout) *
          SpeechRecognizerImpl::kNumBitsPerAudioSample) / (8 * 1000);
     audio_packet_.resize(audio_packet_length_bytes);
+
+    const int channels =
+        ChannelLayoutToChannelCount(SpeechRecognizerImpl::kChannelLayout);
+    bytes_per_sample_ = SpeechRecognizerImpl::kNumBitsPerAudioSample / 8;
+    const int frames = audio_packet_length_bytes / channels / bytes_per_sample_;
+    audio_bus_ = media::AudioBus::Create(channels, frames);
+    audio_bus_->Zero();
   }
 
   void CheckEventsConsistency() {
@@ -147,10 +155,17 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
     AudioInputController::set_factory_for_testing(NULL);
   }
 
+  void CopyPacketToAudioBus() {
+    // Copy the created signal into an audio bus in a deinterleaved format.
+    audio_bus_->FromInterleaved(
+        &audio_packet_[0], audio_bus_->frames(), bytes_per_sample_);
+  }
+
   void FillPacketWithTestWaveform() {
     // Fill the input with a simple pattern, a 125Hz sawtooth waveform.
     for (size_t i = 0; i < audio_packet_.size(); ++i)
       audio_packet_[i] = static_cast<uint8>(i);
+    CopyPacketToAudioBus();
   }
 
   void FillPacketWithNoise() {
@@ -160,6 +175,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
       value += factor;
       audio_packet_[i] = value % 100;
     }
+    CopyPacketToAudioBus();
   }
 
  protected:
@@ -178,6 +194,8 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   net::TestURLFetcherFactory url_fetcher_factory_;
   TestAudioInputControllerFactory audio_input_controller_factory_;
   std::vector<uint8> audio_packet_;
+  scoped_ptr<media::AudioBus> audio_bus_;
+  int bytes_per_sample_;
   float volume_;
   float noise_volume_;
 };
@@ -222,8 +240,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
   // full recording to complete.
   const size_t kNumChunks = 5;
   for (size_t i = 0; i < kNumChunks; ++i) {
-    controller->event_handler()->OnData(controller, &audio_packet_[0],
-                                        audio_packet_.size());
+    controller->event_handler()->OnData(controller, audio_bus_.get());
     base::MessageLoop::current()->RunUntilIdle();
     net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
@@ -264,8 +281,7 @@ TEST_F(SpeechRecognizerImplTest, CancelWithData) {
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
-  controller->event_handler()->OnData(controller, &audio_packet_[0],
-                                      audio_packet_.size());
+  controller->event_handler()->OnData(controller, audio_bus_.get());
   base::MessageLoop::current()->RunUntilIdle();
   recognizer_->AbortRecognition();
   base::MessageLoop::current()->RunUntilIdle();
@@ -285,8 +301,7 @@ TEST_F(SpeechRecognizerImplTest, ConnectionError) {
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
-  controller->event_handler()->OnData(controller, &audio_packet_[0],
-                                      audio_packet_.size());
+  controller->event_handler()->OnData(controller, audio_bus_.get());
   base::MessageLoop::current()->RunUntilIdle();
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
@@ -323,8 +338,7 @@ TEST_F(SpeechRecognizerImplTest, ServerError) {
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
-  controller->event_handler()->OnData(controller, &audio_packet_[0],
-                                      audio_packet_.size());
+  controller->event_handler()->OnData(controller, audio_bus_.get());
   base::MessageLoop::current()->RunUntilIdle();
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
@@ -377,8 +391,7 @@ TEST_F(SpeechRecognizerImplTest, AudioControllerErrorWithData) {
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
-  controller->event_handler()->OnData(controller, &audio_packet_[0],
-                                      audio_packet_.size());
+  controller->event_handler()->OnData(controller, audio_bus_.get());
   controller->event_handler()->OnError(controller,
       AudioInputController::UNKNOWN_ERROR);
   base::MessageLoop::current()->RunUntilIdle();
@@ -403,8 +416,7 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackIssued) {
                      GoogleOneShotRemoteEngine::kAudioPacketIntervalMs + 1;
   // The vector is already filled with zero value samples on create.
   for (int i = 0; i < num_packets; ++i) {
-    controller->event_handler()->OnData(controller, &audio_packet_[0],
-                                        audio_packet_.size());
+    controller->event_handler()->OnData(controller, audio_bus_.get());
   }
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(recognition_started_);
@@ -432,14 +444,12 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackNotIssued) {
 
   // The vector is already filled with zero value samples on create.
   for (int i = 0; i < num_packets / 2; ++i) {
-    controller->event_handler()->OnData(controller, &audio_packet_[0],
-                                        audio_packet_.size());
+    controller->event_handler()->OnData(controller, audio_bus_.get());
   }
 
   FillPacketWithTestWaveform();
   for (int i = 0; i < num_packets / 2; ++i) {
-    controller->event_handler()->OnData(controller, &audio_packet_[0],
-                                        audio_packet_.size());
+    controller->event_handler()->OnData(controller, audio_bus_.get());
   }
 
   base::MessageLoop::current()->RunUntilIdle();
@@ -470,21 +480,18 @@ TEST_F(SpeechRecognizerImplTest, SetInputVolumeCallback) {
                     GoogleOneShotRemoteEngine::kAudioPacketIntervalMs;
   FillPacketWithNoise();
   for (int i = 0; i < num_packets; ++i) {
-    controller->event_handler()->OnData(controller, &audio_packet_[0],
-                                        audio_packet_.size());
+    controller->event_handler()->OnData(controller, audio_bus_.get());
   }
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(-1.0f, volume_);  // No audio volume set yet.
 
   // The vector is already filled with zero value samples on create.
-  controller->event_handler()->OnData(controller, &audio_packet_[0],
-                                      audio_packet_.size());
+  controller->event_handler()->OnData(controller, audio_bus_.get());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FLOAT_EQ(0.74939233f, volume_);
 
   FillPacketWithTestWaveform();
-  controller->event_handler()->OnData(controller, &audio_packet_[0],
-                                      audio_packet_.size());
+  controller->event_handler()->OnData(controller, audio_bus_.get());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_NEAR(0.89926866f, volume_, 0.00001f);
   EXPECT_FLOAT_EQ(0.75071919f, noise_volume_);

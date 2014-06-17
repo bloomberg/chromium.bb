@@ -20,6 +20,7 @@
 
 namespace media {
 
+class AudioBus;
 class AudioManagerWin;
 
 class PCMWaveInAudioInputStream : public AudioInputStream {
@@ -122,6 +123,10 @@ class PCMWaveInAudioInputStream : public AudioInputStream {
 
   // Lock used to avoid conflicts when Stop() is called during a callback.
   base::Lock lock_;
+
+  // Extra audio bus used for storage of deinterleaved data for the OnData
+  // callback.
+  scoped_ptr<media::AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(PCMWaveInAudioInputStream);
 };

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "media/audio/mac/audio_manager_mac.h"
+#include "media/base/audio_bus.h"
 #include "media/base/data_buffer.h"
 
 namespace media {
@@ -31,11 +32,10 @@ static std::ostream& operator<<(std::ostream& os,
 // http://developer.apple.com/library/mac/#technotes/tn2091/_index.html
 // for more details and background regarding this implementation.
 
-AUAudioInputStream::AUAudioInputStream(
-    AudioManagerMac* manager,
-    const AudioParameters& input_params,
-    const AudioParameters& output_params,
-    AudioDeviceID audio_device_id)
+AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
+                                       const AudioParameters& input_params,
+                                       const AudioParameters& output_params,
+                                       AudioDeviceID audio_device_id)
     : manager_(manager),
       sink_(NULL),
       audio_unit_(0),
@@ -43,7 +43,8 @@ AUAudioInputStream::AUAudioInputStream(
       started_(false),
       hardware_latency_frames_(0),
       fifo_delay_bytes_(0),
-      number_of_channels_in_frame_(0) {
+      number_of_channels_in_frame_(0),
+      audio_bus_(media::AudioBus::Create(input_params)) {
   DCHECK(manager_);
 
   // Set up the desired (output) format specified by the client.
@@ -542,12 +543,13 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
     // Read from FIFO into temporary data buffer.
     fifo_->Read(data_->writable_data(), requested_size_bytes_);
 
+    // Copy captured (and interleaved) data into deinterleaved audio bus.
+    audio_bus_->FromInterleaved(
+        data_->data(), audio_bus_->frames(), format_.mBitsPerChannel / 8);
+
     // Deliver data packet, delay estimation and volume level to the user.
-    sink_->OnData(this,
-                  data_->data(),
-                  requested_size_bytes_,
-                  capture_delay_bytes,
-                  normalized_volume);
+    sink_->OnData(
+        this, audio_bus_.get(), capture_delay_bytes, normalized_volume);
   }
 
   return noErr;
