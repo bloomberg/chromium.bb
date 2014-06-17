@@ -53,6 +53,15 @@ ScriptedAnimationController::~ScriptedAnimationController()
 {
 }
 
+void ScriptedAnimationController::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+    visitor->trace(m_eventQueue);
+#if ENABLE(OILPAN)
+    visitor->trace(m_perFrameEvents);
+#endif
+}
+
 void ScriptedAnimationController::suspend()
 {
     ++m_suspendCount;
@@ -168,7 +177,7 @@ void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTime
     if (m_suspendCount)
         return;
 
-    RefPtr<ScriptedAnimationController> protect(this);
+    RefPtrWillBeRawPtr<ScriptedAnimationController> protect(this);
 
     dispatchEvents();
     executeCallbacks(monotonicTimeNow);

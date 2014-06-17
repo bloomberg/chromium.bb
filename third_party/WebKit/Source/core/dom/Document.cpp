@@ -5841,6 +5841,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_contextFeatures);
     visitor->trace(m_styleSheetList);
     visitor->trace(m_mediaQueryMatcher);
+    visitor->trace(m_scriptedAnimationController);
     visitor->trace(m_registrationContext);
     visitor->trace(m_associatedFormControls);
     visitor->trace(m_useElementsNeedingUpdate);

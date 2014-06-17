@@ -1385,7 +1385,7 @@ private:
 
     OwnPtr<TouchEventTargetSet> m_touchEventTargets;
 
-    RefPtr<ScriptedAnimationController> m_scriptedAnimationController;
+    RefPtrWillBeMember<ScriptedAnimationController> m_scriptedAnimationController;
     OwnPtr<MainThreadTaskRunner> m_taskRunner;
     OwnPtr<TextAutosizer> m_textAutosizer;
     OwnPtr<FastTextAutosizer> m_fastTextAutosizer;

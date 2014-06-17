@@ -40,14 +40,15 @@ class Event;
 class EventTarget;
 class RequestAnimationFrameCallback;
 
-class ScriptedAnimationController : public RefCounted<ScriptedAnimationController> {
+class ScriptedAnimationController : public RefCountedWillBeGarbageCollectedFinalized<ScriptedAnimationController> {
 public:
-    static PassRefPtr<ScriptedAnimationController> create(Document* document)
+    static PassRefPtrWillBeRawPtr<ScriptedAnimationController> create(Document* document)
     {
-        return adoptRef(new ScriptedAnimationController(document));
+        return adoptRefWillBeNoop(new ScriptedAnimationController(document));
     }
     ~ScriptedAnimationController();
-    void clearDocumentPointer() { m_document = 0; }
+    void trace(Visitor*);
+    void clearDocumentPointer() { m_document = nullptr; }
 
     typedef int CallbackId;
 
@@ -73,11 +74,11 @@ private:
     CallbackList m_callbacks;
     CallbackList m_callbacksToInvoke; // only non-empty while inside executeCallbacks
 
-    Document* m_document;
+    RawPtrWillBeMember<Document> m_document;
     CallbackId m_nextCallbackId;
     int m_suspendCount;
-    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_eventQueue;
-    ListHashSet<std::pair<const EventTarget*, const StringImpl*> > m_perFrameEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event> > m_eventQueue;
+    WillBeHeapListHashSet<std::pair<RawPtrWillBeMember<const EventTarget>, const StringImpl*> > m_perFrameEvents;
 };
 
 }
