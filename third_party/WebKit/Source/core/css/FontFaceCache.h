@@ -61,6 +61,7 @@ public:
     const ListHashSet<RefPtrWillBeMember<FontFace> >& cssConnectedFontFaces() const { return m_cssConnectedFontFaces; }
 
     unsigned version() const { return m_version; }
+    void incrementVersion() { ++m_version; }
 
     void trace(Visitor*);
 
