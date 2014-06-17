@@ -27,6 +27,8 @@ class DictionaryValue;
 
 namespace chromeos {
 
+class CoreOobeActor;
+
 // WebUI implementation of HIDDetectionScreenActor.
 class HIDDetectionScreenHandler
     : public HIDDetectionScreenActor,
@@ -37,7 +39,7 @@ class HIDDetectionScreenHandler
  public:
   typedef device::InputServiceLinux::InputDeviceInfo InputDeviceInfo;
 
-  HIDDetectionScreenHandler();
+  explicit HIDDetectionScreenHandler(CoreOobeActor* core_oobe_actor);
   virtual ~HIDDetectionScreenHandler();
 
   // HIDDetectionScreenActor implementation:
@@ -142,6 +144,8 @@ class HIDDetectionScreenHandler
   void HandleOnContinue();
 
   Delegate* delegate_;
+
+  CoreOobeActor* core_oobe_actor_;
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_;

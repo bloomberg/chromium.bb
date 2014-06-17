@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -21,12 +20,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/idle_detector.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -52,10 +50,6 @@ const char kJsApiNetworkOnExit[] = "networkOnExit";
 const char kJsApiNetworkOnLanguageChanged[] = "networkOnLanguageChanged";
 const char kJsApiNetworkOnInputMethodChanged[] = "networkOnInputMethodChanged";
 const char kJsApiNetworkOnTimezoneChanged[] = "networkOnTimezoneChanged";
-
-const int kDerelectDetectionTimeoutSeconds = 8 * 60 * 60;  // 8 hours.
-const int kDerelectIdleTimeoutSeconds = 5 * 60;  // 5 minutes.
-const int kOobeTimerUpdateIntervalSeconds = 5 * 60;  // 5 minutes.
 
 // Returns true if element was inserted.
 bool InsertString(const std::string& str, std::set<std::string>& to) {
@@ -104,7 +98,6 @@ NetworkScreenHandler::NetworkScreenHandler(CoreOobeActor* core_oobe_actor)
       should_reinitialize_language_keyboard_list_(false),
       weak_ptr_factory_(this) {
   DCHECK(core_oobe_actor_);
-  SetupTimeouts();
 
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
@@ -171,11 +164,7 @@ void NetworkScreenHandler::Show() {
         track.find("testimage") != std::string::npos)
       return;
   }
-
-  if (IsDerelict())
-    StartIdleDetection();
-  else
-    StartOobeTimer();
+  core_oobe_actor_->InitDemoModeDetection();
 }
 
 void NetworkScreenHandler::Hide() {
@@ -268,7 +257,7 @@ void NetworkScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
 // NetworkScreenHandler, private: ----------------------------------------------
 
 void NetworkScreenHandler::HandleOnExit() {
-  idle_detector_.reset();
+  core_oobe_actor_->StopDemoModeDetection();
   ClearErrors();
   if (screen_)
     screen_->OnContinuePressed();
@@ -355,90 +344,6 @@ void NetworkScreenHandler::OnSystemTimezoneChanged() {
   std::string current_timezone_id;
   CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
   CallJS("setTimezone", current_timezone_id);
-}
-
-void NetworkScreenHandler::StartIdleDetection() {
-  if (!idle_detector_.get()) {
-    idle_detector_.reset(
-        new IdleDetector(base::Closure(),
-                         base::Bind(&NetworkScreenHandler::OnIdle,
-                                    weak_ptr_factory_.GetWeakPtr())));
-  }
-  idle_detector_->Start(derelict_idle_timeout_);
-}
-
-void NetworkScreenHandler::StartOobeTimer() {
-  oobe_timer_.Start(FROM_HERE,
-                    oobe_timer_update_interval_,
-                    this,
-                    &NetworkScreenHandler::OnOobeTimerUpdate);
-}
-
-void NetworkScreenHandler::OnIdle() {
-  LoginDisplayHost* host = LoginDisplayHostImpl::default_host();
-  host->StartDemoAppLaunch();
-}
-
-void NetworkScreenHandler::OnOobeTimerUpdate() {
-  time_on_oobe_ += oobe_timer_update_interval_;
-
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetInt64(prefs::kTimeOnOobe, time_on_oobe_.InSeconds());
-
-  if (IsDerelict()) {
-    oobe_timer_.Stop();
-    StartIdleDetection();
-  }
-}
-
-void NetworkScreenHandler::SetupTimeouts() {
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  DCHECK(cmdline);
-
-  PrefService* prefs = g_browser_process->local_state();
-  time_on_oobe_ =
-      base::TimeDelta::FromSeconds(prefs->GetInt64(prefs::kTimeOnOobe));
-
-  int derelict_detection_timeout;
-  if (!cmdline->HasSwitch(switches::kDerelictDetectionTimeout) ||
-      !base::StringToInt(
-          cmdline->GetSwitchValueASCII(switches::kDerelictDetectionTimeout),
-          &derelict_detection_timeout)) {
-    derelict_detection_timeout = kDerelectDetectionTimeoutSeconds;
-  }
-  derelict_detection_timeout_ =
-      base::TimeDelta::FromSeconds(derelict_detection_timeout);
-
-  int derelict_idle_timeout;
-  if (!cmdline->HasSwitch(switches::kDerelictIdleTimeout) ||
-      !base::StringToInt(
-          cmdline->GetSwitchValueASCII(switches::kDerelictIdleTimeout),
-          &derelict_idle_timeout)) {
-    derelict_idle_timeout = kDerelectIdleTimeoutSeconds;
-  }
-  derelict_idle_timeout_ = base::TimeDelta::FromSeconds(derelict_idle_timeout);
-
-
-  int oobe_timer_update_interval;
-  if (!cmdline->HasSwitch(switches::kOobeTimerInterval) ||
-      !base::StringToInt(
-          cmdline->GetSwitchValueASCII(switches::kOobeTimerInterval),
-          &oobe_timer_update_interval)) {
-    oobe_timer_update_interval = kOobeTimerUpdateIntervalSeconds;
-  }
-  oobe_timer_update_interval_ =
-      base::TimeDelta::FromSeconds(oobe_timer_update_interval);
-
-  // In case we'd be derelict before our timer is set to trigger, reduce
-  // the interval so we check again when we're scheduled to go derelict.
-  oobe_timer_update_interval_ =
-      std::max(std::min(oobe_timer_update_interval_,
-                        derelict_detection_timeout_ - time_on_oobe_),
-               base::TimeDelta::FromSeconds(0));
-}
-
-bool NetworkScreenHandler::IsDerelict() {
-  return time_on_oobe_ >= derelict_detection_timeout_;
 }
 
 base::ListValue* NetworkScreenHandler::GetLanguageList() {

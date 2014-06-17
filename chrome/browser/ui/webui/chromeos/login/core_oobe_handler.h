@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/version_info_updater.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/demo_mode_detector.h"
 
 namespace base {
 class ListValue;
@@ -83,6 +84,8 @@ class CoreOobeHandler : public BaseScreenHandler,
   virtual void SetKeyboardState(bool shown, const gfx::Rect& bounds) OVERRIDE;
   virtual void SetClientAreaSize(int width, int height) OVERRIDE;
   virtual void ShowDeviceResetScreen() OVERRIDE;
+  virtual void InitDemoModeDetection() OVERRIDE;
+  virtual void StopDemoModeDetection() OVERRIDE;
 
   // Handlers for JS WebUI messages.
   void HandleEnableLargeCursor(bool enabled);
@@ -137,6 +140,8 @@ class CoreOobeHandler : public BaseScreenHandler,
   Delegate* delegate_;
 
   scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
+
+  DemoModeDetector demo_mode_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreOobeHandler);
 };

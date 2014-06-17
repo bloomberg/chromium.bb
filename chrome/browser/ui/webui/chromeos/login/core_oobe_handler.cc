@@ -395,4 +395,12 @@ void CoreOobeHandler::HandleHeaderBarVisible() {
     login_display_host->SetStatusAreaVisible(true);
 }
 
+void CoreOobeHandler::InitDemoModeDetection() {
+  demo_mode_detector_.InitDetection();
+}
+
+void CoreOobeHandler::StopDemoModeDetection() {
+  demo_mode_detector_.StopDetection();
+}
+
 }  // namespace chromeos
