@@ -243,6 +243,8 @@ void MediaQueryData::addParserValue(MediaQueryTokenType type, const MediaQueryTo
     } else if (type == DelimiterToken) {
         value.unit = CSSParserValue::Operator;
         value.iValue = token.delimiter();
+        value.id = CSSValueInvalid;
+        value.isInt = false;
     } else {
         CSSParserFunction* function = new CSSParserFunction;
         function->name.init(token.value());

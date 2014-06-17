@@ -274,6 +274,7 @@ inline void CSSParserValue::setFromFunction(CSSParserFunction* function)
     id = CSSValueInvalid;
     this->function = function;
     unit = Function;
+    isInt = false;
 }
 
 inline void CSSParserValue::setFromValueList(PassOwnPtr<CSSParserValueList> valueList)
@@ -281,6 +282,7 @@ inline void CSSParserValue::setFromValueList(PassOwnPtr<CSSParserValueList> valu
     id = CSSValueInvalid;
     this->valueList = valueList.leakPtr();
     unit = ValueList;
+    isInt = false;
 }
 
 }
