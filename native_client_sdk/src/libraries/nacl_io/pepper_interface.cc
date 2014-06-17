@@ -42,6 +42,27 @@ PP_Resource ScopedResource::Release() {
   return result;
 }
 
+ScopedVar::ScopedVar(PepperInterface* ppapi)
+    : ppapi_(ppapi), var_(PP_MakeUndefined()) {}
+
+ScopedVar::ScopedVar(PepperInterface* ppapi, PP_Var var)
+    : ppapi_(ppapi), var_(var) {}
+
+ScopedVar::~ScopedVar() {
+  ppapi_->GetVarInterface()->Release(var_);
+}
+
+void ScopedVar::Reset(PP_Var var) {
+  ppapi_->GetVarInterface()->Release(var_);
+  var_ = var;
+}
+
+PP_Var ScopedVar::Release() {
+  PP_Var result = var_;
+  var_ = PP_MakeUndefined();
+  return result;
+}
+
 int PPErrorToErrno(int32_t err) {
   // If not an error, then just return it.
   if (err >= PP_OK)

@@ -61,6 +61,10 @@ std::string FakeVarManager::Describe(const FakeVarData& var_data) {
       rtn << "ArrayBuffer of size " << var_data.buffer_value.length
           << " with id " << var_data.id;
       break;
+    case PP_VARTYPE_DICTIONARY:
+      rtn << "Dictionary of size " << var_data.dict_value.size() << " with id "
+          << var_data.id;
+      break;
     default:
       rtn << "resource of type " << var_data.type
           << " with id " << var_data.id;

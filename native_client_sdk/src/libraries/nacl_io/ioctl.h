@@ -44,7 +44,7 @@
 #define NACL_IOC_PIPE_GETISPACE 0xadcd07
 
 /*
- * ioctl used to pass messages from JavaScript to a jspipe node.
+ * ioctl used to pass messages from JavaScript to a node.
  * Argument type is "struct PP_Var*".
  */
 #define NACL_IOC_HANDLEMESSAGE 0xadcd05

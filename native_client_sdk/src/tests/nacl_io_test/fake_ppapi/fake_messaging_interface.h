@@ -15,7 +15,7 @@ class FakeVarManager;
 
 // Fake version of the MessagingInterface which simply records any
 // messages sent to it via PostMessage and makes them available as
-// a std::vector of std::string.
+// a std::vector of PP_Var.
 class FakeMessagingInterface : public nacl_io::MessagingInterface {
  public:
   FakeMessagingInterface(FakeVarManager* manager,

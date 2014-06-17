@@ -6,6 +6,8 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stdarg.h>
+
 #include <string>
 
 #include "nacl_io/dir_node.h"
@@ -53,6 +55,14 @@ void Filesystem::OnNodeDestroyed(Node* node) {
 
 Error Filesystem::Filesystem_VIoctl(int request, va_list args) {
   return EINVAL;
+}
+
+Error Filesystem::Filesystem_Ioctl(int request, ...) {
+  va_list args;
+  va_start(args, request);
+  Error error = Filesystem_VIoctl(request, args);
+  va_end(args);
+  return error;
 }
 
 }  // namespace nacl_io

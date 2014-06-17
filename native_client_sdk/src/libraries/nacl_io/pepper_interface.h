@@ -153,6 +153,29 @@ class ScopedResource {
   DISALLOW_COPY_AND_ASSIGN(ScopedResource);
 };
 
+class ScopedVar {
+ public:
+  // Does not AddRef.
+  explicit ScopedVar(PepperInterface* ppapi);
+  ScopedVar(PepperInterface* ppapi, PP_Var var);
+  ~ScopedVar();
+
+  PP_Var pp_var() const { return var_; }
+
+  // Set a new var, releasing the old one. Does not AddRef the new
+  // resource.
+  void Reset(PP_Var resource);
+
+  // Return the var without decrementing its refcount.
+  PP_Var Release();
+
+ private:
+  PepperInterface* ppapi_;
+  PP_Var var_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedVar);
+};
+
 }  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_PEPPER_INTERFACE_H_

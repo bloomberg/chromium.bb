@@ -87,6 +87,9 @@ class Filesystem : public sdk_util::RefObject {
   virtual Error Rename(const Path& path, const Path& newpath) = 0;
   virtual Error Filesystem_VIoctl(int request, va_list args);
 
+  // Helper function that forwards to Filesystem_VIoctl.
+  Error Filesystem_Ioctl(int request, ...);
+
   // Assumes that |node| is non-NULL.
   void OnNodeCreated(Node* node);
 
