@@ -13,6 +13,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -51,6 +52,10 @@ namespace {
 
 // Name of histograms keeping track of Most Visited statistics.
 const char kNumTilesHistogramName[] = "NewTabPage.NumberOfTiles";
+const char kNumLocalThumbnailTilesHistogramName[] =
+    "NewTabPage.NumberOfThumbnailTiles";
+const char kNumEmptyTilesHistogramName[] = "NewTabPage.NumberOfGrayTiles";
+const char kNumServerTilesHistogramName[] = "NewTabPage.NumberOfExternalTiles";
 const char kProviderImpressionsHistogramFormat[] =
     "NewTabPage.SuggestionsImpression.%s";
 
@@ -78,38 +83,10 @@ SkBitmap ExtractThumbnail(const base::RefCountedMemory& image_data) {
   return image.get() ? *image : SkBitmap();
 }
 
-void OnObtainedThumbnail(
-    ScopedJavaGlobalRef<jobject>* bitmap,
-    ScopedJavaGlobalRef<jobject>* j_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  JNIEnv* env = AttachCurrentThread();
-  Java_ThumbnailCallback_onMostVisitedURLsThumbnailAvailable(
-      env, j_callback->obj(), bitmap->obj());
-}
-
 void AddForcedURLOnUIThread(scoped_refptr<history::TopSites> top_sites,
                             const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   top_sites->AddForcedURL(url, base::Time::Now());
-}
-
-void OnSuggestionsThumbnailAvailable(
-    ScopedJavaGlobalRef<jobject>* j_callback,
-    const GURL& url,
-    const SkBitmap* bitmap) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaGlobalRef<jobject>* j_bitmap_ref =
-      new ScopedJavaGlobalRef<jobject>();
-  if (bitmap) {
-    j_bitmap_ref->Reset(
-        env,
-        gfx::ConvertToJavaBitmap(bitmap).obj());
-  }
-
-  Java_ThumbnailCallback_onMostVisitedURLsThumbnailAvailable(
-      env, j_callback->obj(), j_bitmap_ref->obj());
 }
 
 // Runs on the DB thread.
@@ -117,6 +94,7 @@ void GetUrlThumbnailTask(
     std::string url_string,
     scoped_refptr<TopSites> top_sites,
     ScopedJavaGlobalRef<jobject>* j_callback,
+    MostVisitedSites::LookupSuccessCallback lookup_success_ui_callback,
     base::Closure lookup_failed_ui_callback) {
   JNIEnv* env = AttachCurrentThread();
 
@@ -144,6 +122,7 @@ void GetUrlThumbnailTask(
     if (!lookup_failed_ui_callback.is_null()) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE, lookup_failed_ui_callback);
+      delete j_bitmap_ref;
       return;
     }
   }
@@ -154,19 +133,8 @@ void GetUrlThumbnailTask(
       new ScopedJavaGlobalRef<jobject>(*j_callback);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &OnObtainedThumbnail,
-          base::Owned(j_bitmap_ref), base::Owned(j_callback_pass)));
-}
-
-void GetSuggestionsThumbnailOnUIThread(
-    SuggestionsService* suggestions_service,
-    const std::string& url_string,
-    ScopedJavaGlobalRef<jobject>* j_callback) {
-  suggestions_service->GetPageThumbnail(
-      GURL(url_string),
-      base::Bind(&OnSuggestionsThumbnailAvailable,
-                 base::Owned(new ScopedJavaGlobalRef<jobject>(*j_callback))));
+      base::Bind(lookup_success_ui_callback, base::Owned(j_bitmap_ref),
+                 base::Owned(j_callback_pass)));
 }
 
 void LogImpressionForProvider(const std::string& provider, int position,
@@ -186,7 +154,8 @@ void LogImpressionForProvider(const std::string& provider, int position,
 }  // namespace
 
 MostVisitedSites::MostVisitedSites(Profile* profile)
-    : profile_(profile), num_sites_(0), weak_ptr_factory_(this) {
+    : profile_(profile), num_sites_(0), num_local_thumbs_(0),
+      num_server_thumbs_(0), num_empty_thumbs_(0), weak_ptr_factory_(this) {
   // Register the debugging page for the Suggestions Service and the thumbnails
   // debugging page.
   content::URLDataSource::Add(profile_,
@@ -199,6 +168,10 @@ MostVisitedSites::~MostVisitedSites() {
 
 void MostVisitedSites::Destroy(JNIEnv* env, jobject obj) {
   delete this;
+}
+
+void MostVisitedSites::OnLoadingComplete(JNIEnv* env, jobject obj) {
+  RecordUMAMetrics();
 }
 
 void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
@@ -241,15 +214,21 @@ void MostVisitedSites::GetURLThumbnail(JNIEnv* env,
   SuggestionsService* suggestions_service =
       SuggestionsServiceFactory::GetForProfile(profile_);
   base::Closure lookup_failed_callback = suggestions_service ?
-      base::Bind(&GetSuggestionsThumbnailOnUIThread,
+      base::Bind(&MostVisitedSites::GetSuggestionsThumbnailOnUIThread,
+                 weak_ptr_factory_.GetWeakPtr(),
                  suggestions_service, url_string,
                  base::Owned(new ScopedJavaGlobalRef<jobject>(*j_callback))) :
       base::Closure();
+  LookupSuccessCallback lookup_success_callback =
+      base::Bind(&MostVisitedSites::OnObtainedThumbnail,
+                 weak_ptr_factory_.GetWeakPtr());
+
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
           base::Bind(
               &GetUrlThumbnailTask, url_string, top_sites,
-              base::Owned(j_callback), lookup_failed_callback));
+              base::Owned(j_callback), lookup_success_callback,
+              lookup_failed_callback));
 }
 
 void MostVisitedSites::BlacklistUrl(JNIEnv* env,
@@ -384,6 +363,63 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
       j_observer->obj(),
       ToJavaArrayOfStrings(env, titles).obj(),
       ToJavaArrayOfStrings(env, urls).obj());
+}
+
+void MostVisitedSites::OnObtainedThumbnail(
+    ScopedJavaGlobalRef<jobject>* bitmap,
+    ScopedJavaGlobalRef<jobject>* j_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  JNIEnv* env = AttachCurrentThread();
+  if (bitmap->obj()) {
+    num_local_thumbs_++;
+  } else {
+    num_empty_thumbs_++;
+  }
+  Java_ThumbnailCallback_onMostVisitedURLsThumbnailAvailable(
+      env, j_callback->obj(), bitmap->obj());
+}
+
+void MostVisitedSites::GetSuggestionsThumbnailOnUIThread(
+    SuggestionsService* suggestions_service,
+    const std::string& url_string,
+    ScopedJavaGlobalRef<jobject>* j_callback) {
+  suggestions_service->GetPageThumbnail(
+      GURL(url_string),
+      base::Bind(&MostVisitedSites::OnSuggestionsThumbnailAvailable,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(new ScopedJavaGlobalRef<jobject>(*j_callback))));
+}
+
+void MostVisitedSites::OnSuggestionsThumbnailAvailable(
+    ScopedJavaGlobalRef<jobject>* j_callback,
+    const GURL& url,
+    const SkBitmap* bitmap) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaGlobalRef<jobject>* j_bitmap_ref =
+      new ScopedJavaGlobalRef<jobject>();
+  if (bitmap) {
+    num_server_thumbs_++;
+    j_bitmap_ref->Reset(
+        env,
+        gfx::ConvertToJavaBitmap(bitmap).obj());
+  } else {
+    num_empty_thumbs_++;
+  }
+
+  Java_ThumbnailCallback_onMostVisitedURLsThumbnailAvailable(
+      env, j_callback->obj(), j_bitmap_ref->obj());
+}
+
+void MostVisitedSites::RecordUMAMetrics() {
+  HISTOGRAM_SPARSE_SLOWLY(kNumLocalThumbnailTilesHistogramName,
+                          num_local_thumbs_);
+  num_local_thumbs_ = 0;
+  HISTOGRAM_SPARSE_SLOWLY(kNumEmptyTilesHistogramName, num_empty_thumbs_);
+  num_empty_thumbs_ = 0;
+  HISTOGRAM_SPARSE_SLOWLY(kNumServerTilesHistogramName, num_server_thumbs_);
+  num_server_thumbs_ = 0;
 }
 
 static jlong Init(JNIEnv* env, jobject obj, jobject jprofile) {

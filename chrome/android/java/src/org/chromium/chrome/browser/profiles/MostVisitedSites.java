@@ -116,8 +116,16 @@ public class MostVisitedSites {
         nativeBlacklistUrl(mNativeMostVisitedSites, url);
     }
 
+    /**
+     * Called when the loading of the Most Visited page is complete.
+     */
+    public void onLoadingComplete() {
+        nativeOnLoadingComplete(mNativeMostVisitedSites);
+    }
+
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeMostVisitedSites);
+    private native void nativeOnLoadingComplete(long nativeMostVisitedSites);
     private native void nativeSetMostVisitedURLsObserver(long nativeMostVisitedSites,
             MostVisitedURLsObserver observer, int numSites);
     private native void nativeGetURLThumbnail(long nativeMostVisitedSites, String url,
