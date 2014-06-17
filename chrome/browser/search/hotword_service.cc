@@ -45,9 +45,7 @@ namespace {
 // Allowed languages for hotwording.
 static const char* kSupportedLocales[] = {
   "en",
-  "de",
-  "fr",
-  "ru"
+  "en_us",
 };
 
 // Enum describing the state of the hotword preference.
@@ -168,7 +166,7 @@ bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
   StringToLowerASCII(&normalized_locale);
 
   for (size_t i = 0; i < arraysize(kSupportedLocales); i++) {
-    if (normalized_locale.compare(0, 2, kSupportedLocales[i]) == 0)
+    if (kSupportedLocales[i] == normalized_locale)
       return true;
   }
   return false;
