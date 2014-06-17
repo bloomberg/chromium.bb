@@ -50,6 +50,7 @@ enum SVGLengthMode {
 };
 
 class SVGLengthContext {
+    STACK_ALLOCATED();
 public:
     explicit SVGLengthContext(const SVGElement*);
 
@@ -80,7 +81,7 @@ private:
     float convertValueFromUserUnitsToEXS(float value, ExceptionState&) const;
     float convertValueFromEXSToUserUnits(float value, ExceptionState&) const;
 
-    const SVGElement* m_context;
+    RawPtrWillBeMember<const SVGElement> m_context;
     FloatRect m_overridenViewport;
 };
 
