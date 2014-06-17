@@ -1084,6 +1084,8 @@
         'tools/balsa/split.cc',
         'tools/balsa/split.h',
         'tools/balsa/string_piece_utils.h',
+        'tools/quic/spdy_utils.cc',
+        'tools/quic/spdy_utils.h',
       ],
     },
     {
@@ -1453,8 +1455,6 @@
             'tools/quic/quic_spdy_server_stream.h',
             'tools/quic/quic_time_wait_list_manager.h',
             'tools/quic/quic_time_wait_list_manager.cc',
-            'tools/quic/spdy_utils.cc',
-            'tools/quic/spdy_utils.h',
           ],
         },
         {

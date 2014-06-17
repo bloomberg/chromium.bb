@@ -14,7 +14,8 @@ QuicClock::QuicClock() {
 QuicClock::~QuicClock() {}
 
 QuicTime QuicClock::ApproximateNow() const {
-  // Chrome does not have a distinct notion of ApproximateNow().
+  // At the moment, Chrome does not have a distinct notion of ApproximateNow().
+  // We should consider implementing this using MessageLoop::recent_time_.
   return Now();
 }
 
