@@ -167,6 +167,12 @@ struct NaClChromeMainArgs {
    */
   size_t prereserved_sandbox_size;
 #endif
+
+  /*
+   * Descriptor for the user nexe module to load and run. This is optional and
+   * may be NULL if SRPC is used for module loading.
+   */
+  struct NaClDesc *nexe_desc;
 };
 
 #if NACL_LINUX || NACL_OSX

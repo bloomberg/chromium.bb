@@ -193,6 +193,7 @@ static void NaClSecureServiceLoadModuleRpcCallback(
   (*done_cls->Run)(done_cls);
 }
 
+/* TODO(teravest): Remove this once http://crbug.com/333950 is resolved. */
 static void NaClSecureServiceLoadModuleRpc(
     struct NaClSrpcRpc      *rpc,
     struct NaClSrpcArg      **in_args,

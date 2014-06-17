@@ -42,9 +42,20 @@ env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
                        'run_sel_main_chrome_test',
                        is_broken=not env.Bit('nacl_static_link'))
 
+# Test using a newer path for loading the nexe which doesn't use SRPC.
+node = env.CommandTest(
+    'sel_main_chrome_no_srpc_load_test.out',
+    env.AddBootstrap(sel_main_chrome_test,
+                     ['--no_srpc_load_module'] + test_command_args),
+    osenv=env_vars,
+    stdout_golden=env.File('../hello_world/hello_world.stdout'))
+env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
+                       'run_sel_main_chrome_no_srpc_load_test',
+                       is_broken=not env.Bit('nacl_static_link'))
+
 # Also test with validation cache and mmap info for main nexe.
 node = env.CommandTest(
-    'sel_main_chrome_test_vcache.out',
+    'sel_main_chrome_vcache_test.out',
     env.AddBootstrap(sel_main_chrome_test, test_command_args + ['-vcache']),
     osenv=env_vars + ['NACLVERBOSITY=1'],
     filter_regex='"(NaClElfFileMapSegment: EXERCISING MMAP LOAD PATH)"',
@@ -52,4 +63,17 @@ node = env.CommandTest(
     stderr_golden=env.File('../mmap_main_nexe/mmap_main_nexe_rpc.stderr'))
 env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
                        'run_sel_main_chrome_vcache_test',
+                       is_broken=not env.Bit('nacl_static_link'))
+
+node = env.CommandTest(
+    'sel_main_chrome_vcache_no_srpc_load_test.out',
+    env.AddBootstrap(sel_main_chrome_test,
+                     ['--no_srpc_load_module'] + test_command_args +
+                     ['-vcache']),
+    osenv=env_vars + ['NACLVERBOSITY=1'],
+    filter_regex='"(NaClElfFileMapSegment: EXERCISING MMAP LOAD PATH)"',
+    filter_group_only='true',
+    stderr_golden=env.File('../mmap_main_nexe/mmap_main_nexe_rpc.stderr'))
+env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
+                       'run_sel_main_chrome_vcache_no_srpc_load_test',
                        is_broken=not env.Bit('nacl_static_link'))

@@ -91,6 +91,7 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
 #if NACL_LINUX
   args->prereserved_sandbox_size = 0;
 #endif
+  args->nexe_desc = NULL;
   return args;
 }
 
@@ -259,6 +260,12 @@ int NaClChromeMainLoad(struct NaClApp *nap,
    * called.
    */
   NaClSetUpBootstrapChannel(nap, args->imc_bootstrap_handle);
+
+  if (args->nexe_desc) {
+    NaClAppLoadModule(nap, args->nexe_desc, NULL, NULL);
+    NaClDescUnref(args->nexe_desc);
+    args->nexe_desc = NULL;
+  }
 
   NACL_FI_FATAL("BeforeSecureCommandChannel");
   /*

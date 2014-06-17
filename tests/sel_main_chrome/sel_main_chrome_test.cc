@@ -28,6 +28,10 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
 
+// A global variable that specifies whether the module should be loaded via
+// SRPC. Its value is controlled by a command line flag; see
+// NaClHandleLoadModuleArg() for where it's set.
+bool g_load_module_srpc;
 
 int OpenFileReadOnly(const char *filename) {
 #if NACL_WINDOWS
@@ -131,15 +135,20 @@ void WINAPI DummyRendererThread(void *thread_arg) {
   struct ThreadArgs *args = (struct ThreadArgs *) thread_arg;
 
   nacl::DescWrapperFactory desc_wrapper_factory;
-  struct NaClDesc *desc = NaClDescIoFromFileInfo(args->file_info,
-                                                 NACL_ABI_O_RDONLY);
-  CHECK(desc != NULL);
-  nacl::DescWrapper *nexe_desc = desc_wrapper_factory.MakeGenericCleanup(desc);
-  CHECK(nexe_desc != NULL);
   DummyLauncher launcher(args->channel);
   NaClSrpcChannel trusted_channel;
   NaClSrpcChannel untrusted_channel;
-  CHECK(launcher.SetupCommandAndLoad(&trusted_channel, nexe_desc));
+  if (g_load_module_srpc) {
+    struct NaClDesc *desc = NaClDescIoFromFileInfo(args->file_info,
+                                                   NACL_ABI_O_RDONLY);
+    CHECK(desc != NULL);
+    nacl::DescWrapper *nexe_desc =
+        desc_wrapper_factory.MakeGenericCleanup(desc);
+    CHECK(nexe_desc != NULL);
+    CHECK(launcher.SetupCommandAndLoad(&trusted_channel, nexe_desc));
+  } else {
+    CHECK(launcher.SetupCommand(&trusted_channel));
+  }
   CHECK(launcher.StartModuleAndSetupAppChannel(&trusted_channel,
                                                &untrusted_channel));
 }
@@ -178,6 +187,26 @@ struct NaClDesc *MakeExampleDesc() {
   return NaClDescMakeCustomDesc(NULL, &funcs);
 }
 
+void NaClHandleLoadModuleArg(int *argc_p, char ***argv_p) {
+  static const char kNoSrpcLoadModule[] = "--no_srpc_load_module";
+  int argc = *argc_p;
+  char **argv = *argv_p;
+  char *argv0;
+
+  g_load_module_srpc = true;
+  CHECK(argc >= 1);
+
+  argv0 = argv[0];
+  if (strcmp(argv[1], kNoSrpcLoadModule) == 0) {
+    g_load_module_srpc = false;
+    --argc;
+    ++argv;
+  }
+  *argc_p = argc;
+  *argv_p = argv;
+  (*argv_p)[0] = argv0;
+}
+
 int main(int argc, char **argv) {
   // Note that we deliberately do not call NaClAllModulesInit() here,
   // in order to mimic what we expect the Chromium side to do.
@@ -187,6 +216,7 @@ int main(int argc, char **argv) {
   struct ThreadArgs thread_args;
 
   NaClHandleBootstrapArgs(&argc, &argv);
+  NaClHandleLoadModuleArg(&argc, &argv);
 #if NACL_LINUX
   args->prereserved_sandbox_size = g_prereserved_sandbox_size;
 #endif
@@ -229,6 +259,21 @@ int main(int argc, char **argv) {
     args->validation_cache = &test_cache;
     thread_args.file_info.file_token.lo = test_handle.expected_token_lo;
     thread_args.file_info.file_token.hi = test_handle.expected_token_hi;
+  }
+  if (!g_load_module_srpc) {
+    NaClFileInfo info;
+    info.desc = OpenFileHandleReadExec(argv[2]);
+#if NACL_WINDOWS
+    info.desc = _open_osfhandle(info.desc, _O_RDONLY | _O_BINARY);
+#endif
+    if (argc == 4) {
+      info.file_token.lo = test_handle.expected_token_lo;
+      info.file_token.hi = test_handle.expected_token_hi;
+    } else {
+      info.file_token.lo = 0;
+      info.file_token.hi = 0;
+    }
+    args->nexe_desc = NaClDescIoFromFileInfo(info, NACL_ABI_O_RDONLY);
   }
 
   NaClThread thread;
