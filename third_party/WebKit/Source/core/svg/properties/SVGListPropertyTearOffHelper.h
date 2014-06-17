@@ -44,7 +44,7 @@ public:
     typedef ItemProperty ItemPropertyType;
     typedef typename ItemPropertyType::TearOffType ItemTearOffType;
 
-    static PassRefPtr<ItemPropertyType> getValueForInsertionFromTearOff(PassRefPtr<ItemTearOffType> passNewItem)
+    static PassRefPtr<ItemPropertyType> getValueForInsertionFromTearOff(PassRefPtr<ItemTearOffType> passNewItem, SVGElement* contextElement, const QualifiedName& attributeName)
     {
         RefPtr<ItemTearOffType> newItem = passNewItem;
 
@@ -54,13 +54,14 @@ public:
         if (newItem->isImmutable()
             || (newItem->contextElement() && !newItem->target()->ownerList())) {
             // We have to copy the incoming |newItem|,
-            // Otherwise we'll end up having two tearoffs that operate on the same SVGProperty. Consider the example above:
+            // Otherwise we'll end up having two tearoffs that operate on the same SVGProperty. Consider the example below:
             // SVGRectElements SVGAnimatedLength 'width' property baseVal points to the same tear off object
             // that's inserted into SVGTextElements SVGAnimatedLengthList 'x'. textElement.x.baseVal.getItem(0).value += 150 would
             // mutate the rectElement width _and_ the textElement x list. That's obviously wrong, take care of that.
             return newItem->target()->clone();
         }
 
+        newItem->attachToSVGElementAttribute(contextElement, attributeName);
         return newItem->target();
     }
 
@@ -202,9 +203,9 @@ protected:
     {
     }
 
-    static PassRefPtr<ItemPropertyType> getValueForInsertionFromTearOff(PassRefPtr<ItemTearOffType> passNewItem)
+    PassRefPtr<ItemPropertyType> getValueForInsertionFromTearOff(PassRefPtr<ItemTearOffType> passNewItem)
     {
-        return ItemTraits::getValueForInsertionFromTearOff(passNewItem);
+        return ItemTraits::getValueForInsertionFromTearOff(passNewItem, toDerived()->contextElement(), toDerived()->attributeName());
     }
 
     PassRefPtr<ItemTearOffType> createItemTearOff(PassRefPtr<ItemPropertyType> value)
@@ -212,7 +213,10 @@ protected:
         if (!value)
             return nullptr;
 
-        return ItemTraits::createTearOff(value, toDerived()->contextElement(), toDerived()->propertyIsAnimVal(), toDerived()->attributeName());
+        if (value->ownerList() == toDerived()->target())
+            return ItemTraits::createTearOff(value, toDerived()->contextElement(), toDerived()->propertyIsAnimVal(), toDerived()->attributeName());
+
+        return ItemTraits::createTearOff(value, 0, PropertyIsNotAnimVal, nullQName());
     }
 
 private:

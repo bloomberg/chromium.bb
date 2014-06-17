@@ -83,6 +83,15 @@ public:
         return m_attributeName;
     }
 
+    void attachToSVGElementAttribute(SVGElement* contextElement, const QualifiedName& attributeName)
+    {
+        ASSERT(!isImmutable());
+        ASSERT(contextElement);
+        ASSERT(attributeName != nullQName());
+        m_contextElement = contextElement;
+        m_attributeName = attributeName;
+    }
+
     virtual AnimatedPropertyType type() const = 0;
 
 protected:

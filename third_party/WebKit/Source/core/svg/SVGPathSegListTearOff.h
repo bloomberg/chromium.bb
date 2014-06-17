@@ -31,6 +31,7 @@
 #ifndef SVGPathSegListTearOff_h
 #define SVGPathSegListTearOff_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGPathSegList.h"
 #include "core/svg/properties/SVGListPropertyTearOffHelper.h"
 
@@ -43,9 +44,12 @@ public:
     // FIXME: Currently SVGPathSegitself is a tear-off.
     typedef SVGPathSeg ItemTearOffType;
 
-    static PassRefPtr<ItemPropertyType> getValueForInsertionFromTearOff(PassRefPtr<ItemTearOffType> passNewItem)
+    static PassRefPtr<ItemPropertyType> getValueForInsertionFromTearOff(PassRefPtr<ItemTearOffType> passNewItem, SVGElement* contextElement, const QualifiedName& attributeName)
     {
-        return passNewItem;
+        ASSERT(attributeName == SVGNames::dAttr);
+        RefPtr<ItemTearOffType> newItem = passNewItem;
+        newItem->setContextElement(contextElement);
+        return newItem.release();
     }
 
     static PassRefPtr<ItemTearOffType> createTearOff(PassRefPtr<ItemPropertyType> passValue, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName&)
