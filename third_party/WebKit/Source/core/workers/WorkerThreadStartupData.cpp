@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WorkerThreadStartupData.h"
+#include "core/workers/WorkerThreadStartupData.h"
 
 #include "platform/network/ContentSecurityPolicyParsers.h"
 

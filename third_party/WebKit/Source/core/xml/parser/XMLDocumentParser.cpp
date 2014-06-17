@@ -30,14 +30,13 @@
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 #include <libxslt/xslt.h>
-#include "FetchInitiatorTypeNames.h"
-#include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
-#include "XMLNSNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
+#include "core/FetchInitiatorTypeNames.h"
+#include "core/HTMLNames.h"
+#include "core/XMLNSNames.h"
 #include "core/dom/CDATASection.h"
 #include "core/dom/Comment.h"
 #include "core/dom/Document.h"
@@ -61,6 +60,7 @@
 #include "core/xml/parser/SharedBufferReader.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
 #include "core/xml/parser/XMLParserInput.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"

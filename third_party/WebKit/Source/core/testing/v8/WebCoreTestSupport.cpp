@@ -24,14 +24,14 @@
  */
 
 #include "config.h"
-#include "WebCoreTestSupport.h"
+#include "core/testing/v8/WebCoreTestSupport.h"
 
-#include "InternalSettings.h"
-#include "Internals.h"
 #include "bindings/core/v8/V8Internals.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
+#include "core/testing/InternalSettings.h"
+#include "core/testing/Internals.h"
 
 using namespace WebCore;
 

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WorkerObjectProxy.h"
+#include "core/workers/WorkerObjectProxy.h"
 
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/ExecutionContext.h"

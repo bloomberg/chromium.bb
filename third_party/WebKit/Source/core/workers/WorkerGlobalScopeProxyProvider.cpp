@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WorkerGlobalScopeProxyProvider.h"
+#include "core/workers/WorkerGlobalScopeProxyProvider.h"
 
 namespace WebCore {
 

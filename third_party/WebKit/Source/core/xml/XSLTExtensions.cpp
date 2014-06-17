@@ -27,7 +27,7 @@
 #include "config.h"
 
 #include "core/xml/XSLTExtensions.h"
-#include "RuntimeEnabledFeatures.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/Assertions.h"
 
 #include <libxml/xpathInternals.h>

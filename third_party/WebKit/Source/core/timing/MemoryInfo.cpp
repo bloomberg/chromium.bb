@@ -31,13 +31,13 @@
 #include "config.h"
 #include "core/timing/MemoryInfo.h"
 
-#include "RuntimeEnabledFeatures.h"
-#include <limits>
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
+#include <limits>
 
 namespace WebCore {
 

@@ -29,8 +29,8 @@
 #include "config.h"
 #include "core/xml/XMLErrors.h"
 
-#include "HTMLNames.h"
-#include "SVGNames.h"
+#include "core/HTMLNames.h"
+#include "core/SVGNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"

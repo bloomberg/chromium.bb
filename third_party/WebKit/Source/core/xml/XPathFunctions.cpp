@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/xml/XPathFunctions.h"
 
-#include "XMLNames.h"
+#include "core/XMLNames.h"
 #include "core/dom/Attr.h"
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"

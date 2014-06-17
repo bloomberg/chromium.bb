@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "InternalProfilers.h"
+#include "core/testing/InternalProfilers.h"
 
 #include "public/platform/Platform.h"
 #include "wtf/text/CString.h"

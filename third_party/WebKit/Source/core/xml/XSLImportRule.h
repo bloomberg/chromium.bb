@@ -23,10 +23,10 @@
 #ifndef XSLImportRule_h
 #define XSLImportRule_h
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/StyleSheetResourceClient.h"
 #include "core/xml/XSLStyleSheet.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {

@@ -23,9 +23,8 @@
 #include "config.h"
 #include "core/xml/XMLHttpRequest.h"
 
-#include "FetchInitiatorTypeNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/ExceptionCode.h"
@@ -47,6 +46,7 @@
 #include "core/xml/XMLHttpRequestProgressEvent.h"
 #include "core/xml/XMLHttpRequestUpload.h"
 #include "platform/Logging.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/HTTPParsers.h"

@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "MockPagePopupDriver.h"
+#include "core/testing/MockPagePopupDriver.h"
 
-#include "CSSPropertyNames.h"
-#include "CSSValueKeywords.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/CSSPropertyNames.h"
+#include "core/CSSValueKeywords.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/loader/FrameLoadRequest.h"
