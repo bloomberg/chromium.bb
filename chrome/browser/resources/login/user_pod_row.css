@@ -252,7 +252,7 @@ html[dir=rtl] .pod .capslock-hint {
 .action-box-button {
   background-color: transparent;
   background-image: url('chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_NORMAL');
-  border: 0 !important;
+  border: 0;
   height: 13px;
   margin: 5px;
   padding: 0;

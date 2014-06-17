@@ -23,8 +23,17 @@
   width: 180px;
 }
 
-.pod.hovered {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+.pod.faded {
+  opacity: .4;
+}
+
+.pod.hovered:not(.focused) {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  opacity: 0.9 !important;
+}
+
+.pod.focused {
+  box-shadow: 0 12px 21px rgba(0, 0, 0, 0.2);
 }
 
 .pod .main-pane {
@@ -45,10 +54,10 @@
 }
 
 .pod .name {
-  color: black;
+  color: #363636;
   font-size: 15px;
   line-height: 20px;
-  margin: 5px 0 5px;
+  margin: 10px 0 10px;
 }
 
 /* For local/unlocked profiles, the name box becomes the focused element.
@@ -64,31 +73,61 @@ sign-in button. */
 }
 
 .pod .locked-indicator {
-  background-image: url('chrome://theme/IDR_ICON_PROFILES_LOCKED');
+  background-image: -webkit-image-set(
+      url('chrome://theme/IDR_ICON_PROFILES_LOCKED') 1x,
+      url('chrome://theme/IDR_ICON_PROFILES_LOCKED@2x') 2x);
   background-repeat: no-repeat;
   height: 35px;
-  left: 10px;
+  left: 8px;
   position: absolute;
-  top: 10px;
+  top: 8px;
   width: 35px;
   z-index: 1;
 }
 
 html[dir=rtl] .pod .locked-indicator {
-  right: 10px;
+  right: 8px;
 }
 
 .pod .supervised-indicator {
-  background-image: url('chrome://theme/IDR_ICON_PROFILES_SUPERVISED');
+  background-image: -webkit-image-set(
+      url('chrome://theme/IDR_ICON_PROFILES_SUPERVISED') 1x,
+      url('chrome://theme/IDR_ICON_PROFILES_SUPERVISED@2x') 2x);
   background-repeat: no-repeat;
   height: 35px;
-  left: 10px;
+  left: 8px;
   position: absolute;
-  top: 10px;
+  top: 8px;
   width: 35px;
   z-index: 1;
 }
 
 html[dir=rtl] .pod .supervised-indicator {
-  right: 10px;
+  right: 8px;
+}
+
+.action-box-area {
+  background-color: #f5f5f5;
+  height: 24px;
+  width: 24px;
+}
+
+.action-box-button,
+.action-box-button:hover,
+.action-box-area.active .action-box-button {
+  background-image: none;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #989898;
+  height: 0;
+  left: 6px;
+  margin: 0;
+  position: absolute;
+  top: 9px;
+  width: 0;
+}
+
+.action-box-button:hover,
+.action-box-area.active .action-box-button {
+  border-top: 6px solid #4c4c4c;
 }

@@ -7,8 +7,8 @@
 * that are needed by the desktop user chooser screen
 */
 #login-header-bar {
-  -webkit-padding-after: 10px;
-  -webkit-padding-before: 10px;
+  -webkit-padding-after: 16px;
+  -webkit-padding-before: 16px;
   background-color: white;
   border-top: 1px solid #e2e2e2;
   bottom: 0;
@@ -18,7 +18,7 @@
 }
 
 .header-bar-item:first-child {
-  -webkit-padding-start: 20px;
+  -webkit-padding-start: 16px;
 }
 
 .header-bar-item {
@@ -35,13 +35,22 @@ html[dir=rtl] #login-header-bar button {
 }
 
 #login-header-bar #add-user-button {
-  background-image: url('chrome://theme/IDR_ICON_PROFILES_ADD_USER');
+  background-image: -webkit-image-set(
+      url('chrome://theme/IDR_ICON_PROFILES_ADD_USER') 1x,
+      url('chrome://theme/IDR_ICON_PROFILES_ADD_USER@2x') 2x);
 }
 
 #login-header-bar #guest-user-button {
-  background-image: url('chrome://theme/IDR_ICON_PROFILES_BROWSE_GUEST');
+  background-image: -webkit-image-set(
+      url('chrome://theme/IDR_ICON_PROFILES_BROWSE_GUEST') 1x,
+      url('chrome://theme/IDR_ICON_PROFILES_BROWSE_GUEST@2x') 2x);
   border-right: 1px solid #e2e2e2;
   margin-right: 10px;
+}
+
+html[dir=rtl] #login-header-bar #guest-user-button {
+  border-left: 1px solid #e2e2e2;
+  margin-left: 10px;
 }
 
 #login-header-bar button {
@@ -53,4 +62,18 @@ html[dir=rtl] #login-header-bar button {
   box-shadow: none;
   cursor: pointer;
   font-size: 12px;
+}
+
+#logo {
+  content: -webkit-image-set(
+      url('../../../app/theme/%DISTRIBUTION%/product_logo_name_48.png') 1x,
+      url('../../../app/theme/%DISTRIBUTION%/product_logo_name_96.png') 2x);
+  height: 18px;
+  position: absolute;
+  right: 16px;
+  top: 20px;
+}
+
+html[dir=rtl] #logo {
+  left: 16px;
 }

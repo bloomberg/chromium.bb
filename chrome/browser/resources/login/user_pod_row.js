@@ -23,6 +23,14 @@ cr.define('login', function() {
   var MARGIN_BY_COLUMNS = [undefined, 40, 40, 40, 40, 40, 12];
 
   /**
+   * Mapping between number of columns in the desktop pod-row and margin
+   * between user pods for such layout.
+   * @type {Array.<number>}
+   * @const
+   */
+  var DESKTOP_MARGIN_BY_COLUMNS = [undefined, 15, 15, 15, 15, 15, 15];
+
+  /**
    * Maximal number of columns currently supported by pod-row.
    * @type {number}
    * @const
@@ -45,6 +53,7 @@ cr.define('login', function() {
   var CROS_POD_HEIGHT = 213;
   var DESKTOP_POD_HEIGHT = 216;
   var POD_ROW_PADDING = 10;
+  var DESKTOP_ROW_PADDING = 15;
 
   /**
    * Minimal padding between user pod and virtual keyboard.
@@ -980,11 +989,15 @@ cr.define('login', function() {
       this.resetTabOrder();
       this.classList.toggle('expanded', expanded);
       if (expanded) {
+        var isDesktopUserManager = Oobe.getInstance().displayType ==
+            DISPLAY_TYPE.DESKTOP_USER_MANAGER;
+        var rowPadding = isDesktopUserManager ? DESKTOP_ROW_PADDING :
+                                                POD_ROW_PADDING;
         this.usualLeft = this.left;
         this.usualTop = this.top;
         if (this.left + PUBLIC_EXPANDED_WIDTH >
-            $('pod-row').offsetWidth - POD_ROW_PADDING)
-          this.left = $('pod-row').offsetWidth - POD_ROW_PADDING -
+            $('pod-row').offsetWidth - rowPadding)
+          this.left = $('pod-row').offsetWidth - rowPadding -
               PUBLIC_EXPANDED_WIDTH;
         var expandedHeight = this.expandedHeight_;
         if (this.top + expandedHeight > $('pod-row').offsetHeight)
@@ -1813,9 +1826,14 @@ cr.define('login', function() {
      * @private
      */
     columnsToWidth_: function(columns) {
-      var margin = MARGIN_BY_COLUMNS[columns];
-      return 2 * POD_ROW_PADDING + columns *
-          this.userPodWidth_ + (columns - 1) * margin;
+      var isDesktopUserManager = Oobe.getInstance().displayType ==
+          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
+      var margin = isDesktopUserManager ? DESKTOP_MARGIN_BY_COLUMNS[columns] :
+                                          MARGIN_BY_COLUMNS[columns];
+      var rowPadding = isDesktopUserManager ? DESKTOP_ROW_PADDING :
+                                              POD_ROW_PADDING;
+      return 2 * rowPadding + columns * this.userPodWidth_ +
+          (columns - 1) * margin;
     },
 
     /**
@@ -1823,7 +1841,11 @@ cr.define('login', function() {
      * @private
      */
     rowsToHeight_: function(rows) {
-      return 2 * POD_ROW_PADDING + rows * this.userPodHeight_;
+      var isDesktopUserManager = Oobe.getInstance().displayType ==
+          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
+      var rowPadding = isDesktopUserManager ? DESKTOP_ROW_PADDING :
+                                              POD_ROW_PADDING;
+      return 2 * rowPadding + rows * this.userPodHeight_;
     },
 
     /**
@@ -1865,7 +1887,10 @@ cr.define('login', function() {
       var columns = this.columns = layout.columns;
       var rows = this.rows = layout.rows;
       var maxPodsNumber = columns * rows;
-      var margin = MARGIN_BY_COLUMNS[columns];
+      var isDesktopUserManager = Oobe.getInstance().displayType ==
+          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
+      var margin = isDesktopUserManager ? DESKTOP_MARGIN_BY_COLUMNS[columns] :
+                                          MARGIN_BY_COLUMNS[columns];
       this.parentNode.setPreferredSize(
           this.columnsToWidth_(columns), this.rowsToHeight_(rows));
       var height = this.userPodHeight_;
@@ -1886,8 +1911,13 @@ cr.define('login', function() {
         pod.hidden = false;
         var column = index % columns;
         var row = Math.floor(index / columns);
-        pod.left = POD_ROW_PADDING + column * (width + margin);
-        pod.top = POD_ROW_PADDING + row * height;
+        var rowPadding = isDesktopUserManager ? DESKTOP_ROW_PADDING :
+                                                POD_ROW_PADDING;
+        pod.left = rowPadding + column * (width + margin);
+
+        // On desktop, we want the rows to always be equally spaced.
+        pod.top = isDesktopUserManager ? row * (height + rowPadding) :
+                                         row * height + rowPadding;
       });
       Oobe.getInstance().updateScreenSize(this.parentNode);
     },
@@ -1959,7 +1989,12 @@ cr.define('login', function() {
         if (pod != podToFocus) {
           pod.isActionBoxMenuHovered = false;
           pod.classList.remove('focused');
-          pod.classList.remove('faded');
+          // On Desktop, the faded style is not set correctly, so we should
+          // manually fade out non-focused pods.
+          if (pod.user.isDesktopUser)
+            pod.classList.add('faded');
+          else
+            pod.classList.remove('faded');
           pod.reset(false);
         }
       }
