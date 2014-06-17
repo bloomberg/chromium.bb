@@ -24,7 +24,6 @@
 #include "net/base/net_util.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_test_util.h"
-#include "net/dns/host_cache.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,9 +34,12 @@ namespace {
 const size_t kMaxJobs = 10u;
 const size_t kMaxRetryAttempts = 4u;
 
-PrioritizedDispatcher::Limits DefaultLimits() {
-  PrioritizedDispatcher::Limits limits(NUM_PRIORITIES, kMaxJobs);
-  return limits;
+HostResolver::Options DefaultOptions() {
+  HostResolver::Options options;
+  options.max_concurrent_resolves = kMaxJobs;
+  options.max_retry_attempts = kMaxRetryAttempts;
+  options.enable_caching = true;
+  return options;
 }
 
 HostResolverImpl::ProcTaskParams DefaultParams(
@@ -422,7 +424,7 @@ class HostResolverImplTest : public testing::Test {
   HostResolverImplTest() : proc_(new MockHostResolverProc()) {}
 
   void CreateResolver() {
-    CreateResolverWithLimitsAndParams(DefaultLimits(),
+    CreateResolverWithLimitsAndParams(kMaxJobs,
                                       DefaultParams(proc_.get()));
   }
 
@@ -431,8 +433,7 @@ class HostResolverImplTest : public testing::Test {
   void CreateSerialResolver() {
     HostResolverImpl::ProcTaskParams params = DefaultParams(proc_.get());
     params.max_retry_attempts = 0u;
-    PrioritizedDispatcher::Limits limits(NUM_PRIORITIES, 1);
-    CreateResolverWithLimitsAndParams(limits, params);
+    CreateResolverWithLimitsAndParams(1u, params);
   }
 
  protected:
@@ -470,10 +471,12 @@ class HostResolverImplTest : public testing::Test {
   }
 
   virtual void CreateResolverWithLimitsAndParams(
-      const PrioritizedDispatcher::Limits& limits,
+      size_t max_concurrent_resolves,
       const HostResolverImpl::ProcTaskParams& params) {
-    resolver_.reset(new HostResolverImpl(HostCache::CreateDefaultCache(),
-                                         limits, params, NULL));
+    HostResolverImpl::Options options = DefaultOptions();
+    options.max_concurrent_resolves = max_concurrent_resolves;
+    resolver_.reset(new HostResolverImpl(options, NULL));
+    resolver_->set_proc_params_for_test(params);
   }
 
   // The Request will not be made until a call to |Resolve()|, and the Job will
@@ -835,10 +838,10 @@ TEST_F(HostResolverImplTest, StartWithinCallback) {
   set_handler(new MyHandler());
 
   // Turn off caching for this host resolver.
-  resolver_.reset(new HostResolverImpl(scoped_ptr<HostCache>(),
-                                       DefaultLimits(),
-                                       DefaultParams(proc_.get()),
-                                       NULL));
+  HostResolver::Options options = DefaultOptions();
+  options.enable_caching = false;
+  resolver_.reset(new HostResolverImpl(options, NULL));
+  resolver_->set_proc_params_for_test(DefaultParams(proc_.get()));
 
   for (size_t i = 0; i < 4; ++i) {
     EXPECT_EQ(ERR_IO_PENDING, CreateRequest("a", 80 + i)->Resolve()) << i;
@@ -1272,11 +1275,8 @@ TEST_F(HostResolverImplTest, MultipleAttempts) {
   // (500ms * 3).
   params.unresponsive_delay = base::TimeDelta::FromMilliseconds(500);
 
-  resolver_.reset(
-      new HostResolverImpl(HostCache::CreateDefaultCache(),
-                           DefaultLimits(),
-                           params,
-                           NULL));
+  resolver_.reset(new HostResolverImpl(DefaultOptions(), NULL));
+  resolver_->set_proc_params_for_test(params);
 
   // Resolve "host1".
   HostResolver::RequestInfo info(HostPortPair("host1", 70));
@@ -1353,12 +1353,12 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
 
   // HostResolverImplTest implementation:
   virtual void CreateResolverWithLimitsAndParams(
-      const PrioritizedDispatcher::Limits& limits,
+      size_t max_concurrent_resolves,
       const HostResolverImpl::ProcTaskParams& params) OVERRIDE {
-    resolver_.reset(new HostResolverImpl(HostCache::CreateDefaultCache(),
-                                         limits,
-                                         params,
-                                         NULL));
+    HostResolverImpl::Options options = DefaultOptions();
+    options.max_concurrent_resolves = max_concurrent_resolves;
+    resolver_.reset(new HostResolverImpl(options, NULL));
+    resolver_->set_proc_params_for_test(params);
     // Disable IPv6 support probing.
     resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
     dns_client_ = new MockDnsClient(DnsConfig(), dns_rules_);
@@ -1688,10 +1688,9 @@ TEST_F(HostResolverImplDnsTest, DontDisableDnsClientOnSporadicFailure) {
 TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost) {
   // Use regular SystemHostResolverCall!
   scoped_refptr<HostResolverProc> proc(new SystemHostResolverProc());
-  resolver_.reset(new HostResolverImpl(HostCache::CreateDefaultCache(),
-                                       DefaultLimits(),
-                                       DefaultParams(proc.get()),
-                                       NULL));
+  resolver_.reset(new HostResolverImpl(DefaultOptions(), NULL));
+  resolver_->set_proc_params_for_test(DefaultParams(proc.get()));
+
   resolver_->SetDnsClient(
       scoped_ptr<DnsClient>(new MockDnsClient(DnsConfig(), dns_rules_)));
   resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_IPV4);
@@ -1786,9 +1785,7 @@ TEST_F(HostResolverImplDnsTest, CancelWithTwoTransactionsActive) {
 // Delete a resolver with some active requests and some queued requests.
 TEST_F(HostResolverImplDnsTest, DeleteWithActiveTransactions) {
   // At most 10 Jobs active at once.
-  CreateResolverWithLimitsAndParams(
-      PrioritizedDispatcher::Limits(NUM_PRIORITIES, 10u),
-      DefaultParams(proc_.get()));
+  CreateResolverWithLimitsAndParams(10u, DefaultParams(proc_.get()));
 
   resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
   ChangeDnsConfig(CreateValidDnsConfig());
@@ -1899,9 +1896,7 @@ TEST_F(HostResolverImplDnsTest, SerialResolver) {
 // Test the case where the AAAA query is started when another transaction
 // completes.
 TEST_F(HostResolverImplDnsTest, AAAAStartsAfterOtherJobFinishes) {
-  CreateResolverWithLimitsAndParams(
-      PrioritizedDispatcher::Limits(NUM_PRIORITIES, 2),
-      DefaultParams(proc_.get()));
+  CreateResolverWithLimitsAndParams(2u, DefaultParams(proc_.get()));
   set_fallback_to_proctask(false);
   resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
   ChangeDnsConfig(CreateValidDnsConfig());
@@ -1960,9 +1955,7 @@ TEST_F(HostResolverImplDnsTest, InvalidDnsConfigWithPendingRequests) {
   // make sure that aborting the first HostResolverImpl::Job does not trigger
   // another DnsTransaction on the second Job when it releases its second
   // prioritized dispatcher slot.
-  CreateResolverWithLimitsAndParams(
-      PrioritizedDispatcher::Limits(NUM_PRIORITIES, 3u),
-      DefaultParams(proc_.get()));
+  CreateResolverWithLimitsAndParams(3u, DefaultParams(proc_.get()));
 
   resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
   ChangeDnsConfig(CreateValidDnsConfig());
@@ -2003,9 +1996,7 @@ TEST_F(HostResolverImplDnsTest,
   // occupying two slots has its DnsTask aborted is the case most likely to run
   // into problems.
   for (size_t limit = 1u; limit < 6u; ++limit) {
-    CreateResolverWithLimitsAndParams(
-        PrioritizedDispatcher::Limits(NUM_PRIORITIES, limit),
-        DefaultParams(proc_.get()));
+    CreateResolverWithLimitsAndParams(limit, DefaultParams(proc_.get()));
 
     resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
     ChangeDnsConfig(CreateValidDnsConfig());
@@ -2052,9 +2043,7 @@ TEST_F(HostResolverImplDnsTest, ManuallyDisableDnsClientWithPendingRequests) {
   // make sure that aborting the first HostResolverImpl::Job does not trigger
   // another DnsTransaction on the second Job when it releases its second
   // prioritized dispatcher slot.
-  CreateResolverWithLimitsAndParams(
-      PrioritizedDispatcher::Limits(NUM_PRIORITIES, 3u),
-      DefaultParams(proc_.get()));
+  CreateResolverWithLimitsAndParams(3u, DefaultParams(proc_.get()));
 
   resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
   ChangeDnsConfig(CreateValidDnsConfig());

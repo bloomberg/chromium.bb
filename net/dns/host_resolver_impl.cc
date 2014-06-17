@@ -1258,9 +1258,9 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     DCHECK(!is_queued());
     PrioritizedDispatcher::Handle handle;
     if (!at_head) {
-      handle = resolver_->dispatcher_.Add(this, priority());
+      handle = resolver_->dispatcher_->Add(this, priority());
     } else {
-      handle = resolver_->dispatcher_.AddAtHead(this, priority());
+      handle = resolver_->dispatcher_->AddAtHead(this, priority());
     }
     // The dispatcher could have started |this| in the above call to Add, which
     // could have called Schedule again. In that case |handle| will be null,
@@ -1399,10 +1399,10 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   void ReduceToOneJobSlot() {
     DCHECK_GE(num_occupied_job_slots_, 1u);
     if (is_queued()) {
-      resolver_->dispatcher_.Cancel(handle_);
+      resolver_->dispatcher_->Cancel(handle_);
       handle_.Reset();
     } else if (num_occupied_job_slots_ > 1) {
-      resolver_->dispatcher_.OnJobFinished();
+      resolver_->dispatcher_->OnJobFinished();
       --num_occupied_job_slots_;
     }
     DCHECK_EQ(1u, num_occupied_job_slots_);
@@ -1412,7 +1412,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     if (is_queued()) {
       if (priority() != static_cast<RequestPriority>(handle_.priority()))
         priority_change_time_ = base::TimeTicks::Now();
-      handle_ = resolver_->dispatcher_.ChangePriority(handle_, priority());
+      handle_ = resolver_->dispatcher_->ChangePriority(handle_, priority());
     }
   }
 
@@ -1659,9 +1659,9 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       KillDnsTask();
 
       // Signal dispatcher that a slot has opened.
-      resolver_->dispatcher_.OnJobFinished();
+      resolver_->dispatcher_->OnJobFinished();
     } else if (is_queued()) {
-      resolver_->dispatcher_.Cancel(handle_);
+      resolver_->dispatcher_->Cancel(handle_);
       handle_.Reset();
     }
 
@@ -1783,19 +1783,17 @@ HostResolverImpl::ProcTaskParams::ProcTaskParams(
       max_retry_attempts(max_retry_attempts),
       unresponsive_delay(base::TimeDelta::FromMilliseconds(6000)),
       retry_factor(2) {
+  // Maximum of 4 retry attempts for host resolution.
+  static const size_t kDefaultMaxRetryAttempts = 4u;
+  if (max_retry_attempts == HostResolver::kDefaultRetryAttempts)
+    max_retry_attempts = kDefaultMaxRetryAttempts;
 }
 
 HostResolverImpl::ProcTaskParams::~ProcTaskParams() {}
 
-HostResolverImpl::HostResolverImpl(
-    scoped_ptr<HostCache> cache,
-    const PrioritizedDispatcher::Limits& job_limits,
-    const ProcTaskParams& proc_params,
-    NetLog* net_log)
-    : cache_(cache.Pass()),
-      dispatcher_(job_limits),
-      max_queued_jobs_(job_limits.total_jobs * 100u),
-      proc_params_(proc_params),
+HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
+    : max_queued_jobs_(0),
+      proc_params_(NULL, options.max_retry_attempts),
       net_log_(net_log),
       default_address_family_(ADDRESS_FAMILY_UNSPECIFIED),
       received_dns_config_(false),
@@ -1807,14 +1805,14 @@ HostResolverImpl::HostResolverImpl(
       fallback_to_proctask_(true),
       weak_ptr_factory_(this),
       probe_weak_ptr_factory_(this) {
+  if (options.enable_caching)
+    cache_ = HostCache::CreateDefaultCache();
 
-  DCHECK_GE(dispatcher_.num_priorities(), static_cast<size_t>(NUM_PRIORITIES));
+  PrioritizedDispatcher::Limits job_limits = options.GetDispatcherLimits();
+  dispatcher_.reset(new PrioritizedDispatcher(job_limits));
+  max_queued_jobs_ = job_limits.total_jobs * 100u;
 
-  // Maximum of 4 retry attempts for host resolution.
-  static const size_t kDefaultMaxRetryAttempts = 4u;
-
-  if (proc_params_.max_retry_attempts == HostResolver::kDefaultRetryAttempts)
-    proc_params_.max_retry_attempts = kDefaultMaxRetryAttempts;
+  DCHECK_GE(dispatcher_->num_priorities(), static_cast<size_t>(NUM_PRIORITIES));
 
 #if defined(OS_WIN)
   EnsureWinsockInit();
@@ -1842,7 +1840,7 @@ HostResolverImpl::HostResolverImpl(
 
 HostResolverImpl::~HostResolverImpl() {
   // Prevent the dispatcher from starting new jobs.
-  dispatcher_.SetLimitsToZero();
+  dispatcher_->SetLimitsToZero();
   // It's now safe for Jobs to call KillDsnTask on destruction, because
   // OnJobComplete will not start any new jobs.
   STLDeleteValues(&jobs_);
@@ -1852,7 +1850,7 @@ HostResolverImpl::~HostResolverImpl() {
 }
 
 void HostResolverImpl::SetMaxQueuedJobs(size_t value) {
-  DCHECK_EQ(0u, dispatcher_.num_queued_jobs());
+  DCHECK_EQ(0u, dispatcher_->num_queued_jobs());
   DCHECK_GT(value, 0u);
   max_queued_jobs_ = value;
 }
@@ -1900,8 +1898,8 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
     job->Schedule(false);
 
     // Check for queue overflow.
-    if (dispatcher_.num_queued_jobs() > max_queued_jobs_) {
-      Job* evicted = static_cast<Job*>(dispatcher_.EvictOldestLowest());
+    if (dispatcher_->num_queued_jobs() > max_queued_jobs_) {
+      Job* evicted = static_cast<Job*>(dispatcher_->EvictOldestLowest());
       DCHECK(evicted);
       evicted->OnEvicted();  // Deletes |evicted|.
       if (evicted == job) {
@@ -2203,8 +2201,8 @@ void HostResolverImpl::AbortAllInProgressJobs() {
   // aborting the old ones.  This is needed so that it won't start the second
   // DnsTransaction for a job in |jobs_to_abort| if the DnsConfig just became
   // invalid.
-  PrioritizedDispatcher::Limits limits = dispatcher_.GetLimits();
-  dispatcher_.SetLimits(
+  PrioritizedDispatcher::Limits limits = dispatcher_->GetLimits();
+  dispatcher_->SetLimits(
       PrioritizedDispatcher::Limits(limits.reserved_slots.size(), 0));
 
   // Life check to bail once |this| is deleted.
@@ -2217,20 +2215,20 @@ void HostResolverImpl::AbortAllInProgressJobs() {
   }
 
   if (self)
-    dispatcher_.SetLimits(limits);
+    dispatcher_->SetLimits(limits);
 }
 
 void HostResolverImpl::AbortDnsTasks() {
   // Pause the dispatcher so it won't start any new dispatcher jobs while
   // aborting the old ones.  This is needed so that it won't start the second
   // DnsTransaction for a job if the DnsConfig just changed.
-  PrioritizedDispatcher::Limits limits = dispatcher_.GetLimits();
-  dispatcher_.SetLimits(
+  PrioritizedDispatcher::Limits limits = dispatcher_->GetLimits();
+  dispatcher_->SetLimits(
       PrioritizedDispatcher::Limits(limits.reserved_slots.size(), 0));
 
   for (JobMap::iterator it = jobs_.begin(); it != jobs_.end(); ++it)
     it->second->AbortDnsTask();
-  dispatcher_.SetLimits(limits);
+  dispatcher_->SetLimits(limits);
 }
 
 void HostResolverImpl::TryServingAllJobsFromHosts() {

@@ -30,4 +30,7 @@ void NetworkStateHandlerObserver::NetworkPropertiesUpdated(
     const NetworkState* network) {
 }
 
+void NetworkStateHandlerObserver::IsShuttingDown() {
+}
+
 }  // namespace chromeos

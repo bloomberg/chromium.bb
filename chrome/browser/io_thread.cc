@@ -101,6 +101,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
+#include "chromeos/network/host_resolver_impl_chromeos.h"
 #endif
 
 using content::BrowserThread;
@@ -185,8 +186,15 @@ scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
     }
   }
 
-  scoped_ptr<net::HostResolver> global_host_resolver(
-      net::HostResolver::CreateSystemResolver(options, net_log));
+  scoped_ptr<net::HostResolver> global_host_resolver;
+#if defined OS_CHROMEOS
+  global_host_resolver =
+      chromeos::HostResolverImplChromeOS::CreateSystemResolver(options,
+                                                               net_log);
+#else
+  global_host_resolver =
+      net::HostResolver::CreateSystemResolver(options, net_log);
+#endif
 
   // Determine if we should disable IPv6 support.
   if (command_line.HasSwitch(switches::kEnableIPv6)) {

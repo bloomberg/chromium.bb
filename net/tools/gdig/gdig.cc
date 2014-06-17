@@ -421,12 +421,11 @@ void GDig::OnDnsConfig(const DnsConfig& dns_config_const) {
 
   scoped_ptr<DnsClient> dns_client(DnsClient::CreateClient(NULL));
   dns_client->SetConfig(dns_config);
+  HostResolver::Options options;
+  options.max_concurrent_resolves = parallellism_;
+  options.max_retry_attempts = 1u;
   scoped_ptr<HostResolverImpl> resolver(
-      new HostResolverImpl(
-          HostCache::CreateDefaultCache(),
-          PrioritizedDispatcher::Limits(NUM_PRIORITIES, parallellism_),
-          HostResolverImpl::ProcTaskParams(NULL, 1),
-          log_.get()));
+      new HostResolverImpl(options, log_.get()));
   resolver->SetDnsClient(dns_client.Pass());
   resolver_ = resolver.Pass();
 

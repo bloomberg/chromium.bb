@@ -13,6 +13,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/base/net_util.h"
+#include "net/base/prioritized_dispatcher.h"
 #include "net/base/request_priority.h"
 
 namespace base {
@@ -47,6 +48,8 @@ class NET_EXPORT HostResolver {
   // |enable_caching| controls whether a HostCache is used.
   struct NET_EXPORT Options {
     Options();
+
+    PrioritizedDispatcher::Limits GetDispatcherLimits() const;
 
     size_t max_concurrent_resolves;
     size_t max_retry_attempts;
@@ -105,13 +108,11 @@ class NET_EXPORT HostResolver {
   // Opaque type used to cancel a request.
   typedef void* RequestHandle;
 
-  // This value can be passed into CreateSystemResolver as the
-  // |max_concurrent_resolves| parameter. It will select a default level of
-  // concurrency.
+  // Set Options.max_concurrent_resolves to this to select a default level
+  // of concurrency.
   static const size_t kDefaultParallelism = 0;
 
-  // This value can be passed into CreateSystemResolver as the
-  // |max_retry_attempts| parameter.
+  // Set Options.max_retry_attempts to this to select a default retry value.
   static const size_t kDefaultRetryAttempts = -1;
 
   // If any completion callbacks are pending when the resolver is destroyed,

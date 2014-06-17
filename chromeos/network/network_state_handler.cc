@@ -60,6 +60,7 @@ NetworkStateHandler::NetworkStateHandler() {
 }
 
 NetworkStateHandler::~NetworkStateHandler() {
+  FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_, IsShuttingDown());
   STLDeleteContainerPointers(network_list_.begin(), network_list_.end());
   STLDeleteContainerPointers(device_list_.begin(), device_list_.end());
 }
@@ -658,11 +659,19 @@ void NetworkStateHandler::UpdateIPConfigProperties(
     if (!network)
       return;
     network->IPConfigPropertiesChanged(properties);
+    if (network->path() == default_network_path_)
+      NotifyDefaultNetworkChanged(network);
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     DeviceState* device = GetModifiableDeviceState(path);
     if (!device)
       return;
     device->IPConfigPropertiesChanged(ip_config_path, properties);
+    if (!default_network_path_.empty()) {
+      const NetworkState* default_network =
+          GetNetworkState(default_network_path_);
+      if (default_network && default_network->device_path() == path)
+        NotifyDefaultNetworkChanged(default_network);
+    }
   }
 }
 

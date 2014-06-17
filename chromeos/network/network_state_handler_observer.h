@@ -44,6 +44,10 @@ class CHROMEOS_EXPORT NetworkStateHandlerObserver {
   // wifi strength.
   virtual void NetworkPropertiesUpdated(const NetworkState* network);
 
+  // Called just before NetworkStateHandler is destroyed so that observers
+  // can safely stop observing.
+  virtual void IsShuttingDown();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkStateHandlerObserver);
 };
