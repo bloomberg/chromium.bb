@@ -168,8 +168,11 @@ void CoreOobeHandler::ShowDeviceResetScreen() {
       wizard_controller->AdvanceToScreen(WizardController::kResetScreenName);
     } else {
       scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
-      LoginDisplayHostImpl::default_host()->StartWizard(
-          WizardController::kResetScreenName, params.Pass());
+      DCHECK(LoginDisplayHostImpl::default_host());
+      if (LoginDisplayHostImpl::default_host()) {
+        LoginDisplayHostImpl::default_host()->StartWizard(
+            WizardController::kResetScreenName, params.Pass());
+      }
     }
   }
 }

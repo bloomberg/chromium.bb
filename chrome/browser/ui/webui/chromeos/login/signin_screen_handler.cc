@@ -1128,9 +1128,10 @@ void SigninScreenHandler::HandleAccountPickerReady() {
 
   PrefService* prefs = g_browser_process->local_state();
   if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
-    if (core_oobe_actor_)
+    if (core_oobe_actor_) {
       core_oobe_actor_->ShowDeviceResetScreen();
-    return;
+      return;
+    }
   }
 
   is_account_picker_showing_first_time_ = true;
