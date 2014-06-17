@@ -158,24 +158,6 @@ bool Version3Enabled() {
   return false;
 }
 
-class SafeBrowsingBlockingPageV3 : public SafeBrowsingBlockingPage {
- public:
-  SafeBrowsingBlockingPageV3(SafeBrowsingUIManager* ui_manager,
-                             content::WebContents* web_contents,
-                             const UnsafeResourceList& unsafe_resources);
-
-  // InterstitialPageDelegate method:
-  virtual std::string GetHTMLContents() OVERRIDE;
-
- private:
-  // Fills the passed dictionary with the values to be passed to the template
-  // when creating the HTML.
-  void PopulateMalwareLoadTimeData(base::DictionaryValue* load_time_data);
-  void PopulatePhishingLoadTimeData(base::DictionaryValue* load_time_data);
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV3);
-};
-
 }  // namespace
 
 // static
@@ -499,16 +481,21 @@ void SafeBrowsingBlockingPage::SetReportingPreference(bool report) {
 // kSafeBrowsingExtendedReportingEnabled should be updated.
 // TODO(felt): Remove this in M-39. crbug.com/384668
 void SafeBrowsingBlockingPage::UpdateReportingPref() {
+  LOG(ERROR) << "1";
   if (!reporting_checkbox_checked_)
     return;
+  LOG(ERROR) << "2";
   if (IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled))
     return;
+  LOG(ERROR) << "3";
   Profile* profile = Profile::FromBrowserContext(
       web_contents_->GetBrowserContext());
   if (profile->GetPrefs()->HasPrefPath(
       prefs::kSafeBrowsingExtendedReportingEnabled))
     return;
+  LOG(ERROR) << "4";
   SetReportingPreference(true);
+  LOG(ERROR) << "5";
 }
 
 void SafeBrowsingBlockingPage::OnProceed() {

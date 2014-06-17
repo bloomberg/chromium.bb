@@ -9252,7 +9252,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware.
       </message>
       <message name="IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_SUBRESOURCE" desc="The explanation of why Safe Browsing has blocked the page.">
-        Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware. The malicious content comes from <ph name="SUBRESOURCE_HOST">$1<ex>evil.com</ex></ph>, a known malware distributor.
+        Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware. The malicious content comes from <ph name="SUBRESOURCE_HOST">$2<ex>evil.com</ex></ph>, a known malware distributor.
       </message>
       <message name="IDS_MALWARE_V3_PROCEED_PARAGRAPH" desc="The paragraph that lets the user skip the warning.">
         If you understand the risks to your security, you may <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this unsafe site<ph name="END_LINK">&lt;/a&gt;</ph> before the dangerous programs have been removed.

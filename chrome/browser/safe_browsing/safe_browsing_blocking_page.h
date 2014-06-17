@@ -82,11 +82,10 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   virtual void OnDontProceed() OVERRIDE;
 
  protected:
+  template <class TestSBInterstitialPage>
   friend class SafeBrowsingBlockingPageTest;
+  template <class TestSBInterstitialPage>
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
-                           ProceedThenDontProceed);
-  friend class SafeBrowsingBlockingPageV2Test;
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageV2Test,
                            ProceedThenDontProceed);
 
   void SetReportingPreference(bool report);
@@ -106,8 +105,10 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
     return interstitial_page_;
   }
 
+  template <class TestSBInterstitialPage>
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
       MalwareReportsTransitionDisabled);
+  template <class TestSBInterstitialPage>
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
       MalwareReportsToggling);
 
@@ -284,6 +285,24 @@ class SafeBrowsingBlockingPageV2 : public SafeBrowsingBlockingPage {
   std::string trialCondition_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV2);
+};
+
+class SafeBrowsingBlockingPageV3 : public SafeBrowsingBlockingPage {
+ public:
+  SafeBrowsingBlockingPageV3(SafeBrowsingUIManager* ui_manager,
+                             content::WebContents* web_contents,
+                             const UnsafeResourceList& unsafe_resources);
+
+  // InterstitialPageDelegate method:
+  virtual std::string GetHTMLContents() OVERRIDE;
+
+ private:
+  // Fills the passed dictionary with the values to be passed to the template
+  // when creating the HTML.
+  void PopulateMalwareLoadTimeData(base::DictionaryValue* load_time_data);
+  void PopulatePhishingLoadTimeData(base::DictionaryValue* load_time_data);
+
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV3);
 };
 
 // Factory for creating SafeBrowsingBlockingPage.  Useful for tests.

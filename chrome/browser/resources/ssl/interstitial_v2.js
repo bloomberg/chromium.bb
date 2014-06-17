@@ -30,7 +30,7 @@ function setupEvents() {
       sendCommand(ssl ? CMD_PROCEED : SB_CMD_PROCEED);
     });
   } else if (!ssl) {
-    $('finalParagraph').classList.add('hidden');
+    $('final-paragraph').classList.add('hidden');
   }
 
   if (ssl && overridable) {
