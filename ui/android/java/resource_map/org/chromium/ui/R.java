@@ -46,7 +46,6 @@ public final class R {
         public static int color_picker_simple;
         public static int color_button_swatch;
         public static int more_colors_button_border;
-        public static int color_picker_simple_border;
         public static int gradient;
         public static int text;
         public static int seek_bar;
