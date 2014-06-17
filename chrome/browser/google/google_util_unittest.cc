@@ -354,3 +354,54 @@ TEST(GoogleUtilTest, GoogleBaseURLFixup) {
   EXPECT_EQ("http://www.foo.com/",
             google_util::CommandLineGoogleBaseURL().spec());
 }
+
+TEST(GoogleUtilTest, YoutubeDomains) {
+  EXPECT_TRUE(IsYoutubeDomainUrl(GURL("http://www.youtube.com"),
+                                 google_util::ALLOW_SUBDOMAIN,
+                                 google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_TRUE(IsYoutubeDomainUrl(GURL("http://youtube.com"),
+                                 google_util::ALLOW_SUBDOMAIN,
+                                 google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_TRUE(IsYoutubeDomainUrl(GURL("http://youtube.com/path/main.html"),
+                                 google_util::ALLOW_SUBDOMAIN,
+                                 google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_FALSE(IsYoutubeDomainUrl(GURL("http://notyoutube.com"),
+                                 google_util::ALLOW_SUBDOMAIN,
+                                 google_util::DISALLOW_NON_STANDARD_PORTS));
+
+  // TLD checks.
+  EXPECT_TRUE(IsYoutubeDomainUrl(GURL("http://www.youtube.ca"),
+                                 google_util::ALLOW_SUBDOMAIN,
+                                 google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_TRUE(IsYoutubeDomainUrl(GURL("http://www.youtube.co.uk"),
+                                 google_util::ALLOW_SUBDOMAIN,
+                                 google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_FALSE(IsYoutubeDomainUrl(GURL("http://www.youtube.notrealtld"),
+                                  google_util::ALLOW_SUBDOMAIN,
+                                  google_util::DISALLOW_NON_STANDARD_PORTS));
+
+  // Subdomain checks.
+  EXPECT_TRUE(IsYoutubeDomainUrl(GURL("http://images.youtube.com"),
+                                 google_util::ALLOW_SUBDOMAIN,
+                                 google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_FALSE(IsYoutubeDomainUrl(GURL("http://images.youtube.com"),
+                                  google_util::DISALLOW_SUBDOMAIN,
+                                  google_util::DISALLOW_NON_STANDARD_PORTS));
+
+  // Port and scheme checks.
+  EXPECT_TRUE(IsYoutubeDomainUrl(GURL("http://www.youtube.com:80"),
+                                 google_util::DISALLOW_SUBDOMAIN,
+                                 google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_TRUE(IsYoutubeDomainUrl(GURL("https://www.youtube.com:443"),
+                                 google_util::DISALLOW_SUBDOMAIN,
+                                 google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_FALSE(IsYoutubeDomainUrl(GURL("http://www.youtube.com:123"),
+                                  google_util::DISALLOW_SUBDOMAIN,
+                                  google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_TRUE(IsYoutubeDomainUrl(GURL("http://www.youtube.com:123"),
+                                 google_util::DISALLOW_SUBDOMAIN,
+                                 google_util::ALLOW_NON_STANDARD_PORTS));
+  EXPECT_FALSE(IsYoutubeDomainUrl(GURL("file://www.youtube.com"),
+                                  google_util::DISALLOW_SUBDOMAIN,
+                                  google_util::DISALLOW_NON_STANDARD_PORTS));
+}

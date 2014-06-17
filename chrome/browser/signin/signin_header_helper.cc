@@ -167,10 +167,14 @@ bool AppendMirrorRequestHeaderIfPossible(
   bool is_google_url =
       !switches::IsEnableWebBasedSignin() &&
       is_new_profile_management &&
-      google_util::IsGoogleDomainUrl(
-          url,
-          google_util::ALLOW_SUBDOMAIN,
-          google_util::DISALLOW_NON_STANDARD_PORTS);
+      (google_util::IsGoogleDomainUrl(
+           url,
+           google_util::ALLOW_SUBDOMAIN,
+           google_util::DISALLOW_NON_STANDARD_PORTS) ||
+       google_util::IsYoutubeDomainUrl(
+           url,
+           google_util::ALLOW_SUBDOMAIN,
+           google_util::DISALLOW_NON_STANDARD_PORTS));
   if (!is_google_url && !IsDriveOrigin(origin))
     return false;
 

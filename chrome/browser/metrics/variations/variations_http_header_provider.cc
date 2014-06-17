@@ -252,17 +252,8 @@ bool VariationsHttpHeaderProvider::ShouldAppendHeaders(const GURL& url) {
       return true;
   }
 
-  // The below mirrors logic in IsGoogleDomainUrl(), but for youtube.<TLD>.
-  const size_t tld_length = net::registry_controlled_domains::GetRegistryLength(
-      host,
-      net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-  if ((tld_length == 0) || (tld_length == std::string::npos))
-    return false;
-
-  const std::string host_minus_tld(host, 0, host.length() - tld_length);
-  return LowerCaseEqualsASCII(host_minus_tld, "youtube.") ||
-      EndsWith(host_minus_tld, ".youtube.", false);
+  return google_util::IsYoutubeDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
+                                         google_util::ALLOW_NON_STANDARD_PORTS);
 }
 
 }  // namespace chrome_variations

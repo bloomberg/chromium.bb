@@ -40,6 +40,37 @@ bool IsPathHomePageBase(const std::string& path) {
   return (path == "/") || (path == "/webhp");
 }
 
+// True if |host| is "[www.]<domain_in_lower_case>.<TLD>" with a valid TLD. If
+// |subdomain_permission| is ALLOW_SUBDOMAIN, we check against host
+// "*.<domain_in_lower_case>.<TLD>" instead.
+bool IsValidHostName(const std::string& host,
+                     const std::string& domain_in_lower_case,
+                     google_util::SubdomainPermission subdomain_permission) {
+  size_t tld_length = net::registry_controlled_domains::GetRegistryLength(
+      host,
+      net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  if ((tld_length == 0) || (tld_length == std::string::npos))
+    return false;
+  // Removes the tld and the preceding dot.
+  std::string host_minus_tld(host, 0, host.length() - tld_length - 1);
+  if (LowerCaseEqualsASCII(host_minus_tld, domain_in_lower_case.c_str()))
+    return true;
+  if (subdomain_permission == google_util::ALLOW_SUBDOMAIN)
+    return EndsWith(host_minus_tld, "." + domain_in_lower_case, false);
+  return LowerCaseEqualsASCII(host_minus_tld,
+                              ("www." + domain_in_lower_case).c_str());
+}
+
+// True if |url| is a valid URL with HTTP or HTTPS scheme. If |port_permission|
+// is DISALLOW_NON_STANDARD_PORTS, this also requires |url| to use the standard
+// port for its scheme (80 for HTTP, 443 for HTTPS).
+bool IsValidURL(const GURL& url, google_util::PortPermission port_permission) {
+  return url.is_valid() && url.SchemeIsHTTPOrHTTPS() &&
+      (url.port().empty() ||
+       (port_permission == google_util::ALLOW_NON_STANDARD_PORTS));
+}
+
 }  // namespace
 
 
@@ -139,26 +170,14 @@ bool IsGoogleHostname(const std::string& host,
   if (base_url.is_valid() && (host == base_url.host()))
     return true;
 
-  size_t tld_length = net::registry_controlled_domains::GetRegistryLength(
-      host,
-      net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-  if ((tld_length == 0) || (tld_length == std::string::npos))
-    return false;
-  std::string host_minus_tld(host, 0, host.length() - tld_length);
-  if (LowerCaseEqualsASCII(host_minus_tld, "google."))
-    return true;
-  if (subdomain_permission == ALLOW_SUBDOMAIN)
-    return EndsWith(host_minus_tld, ".google.", false);
-  return LowerCaseEqualsASCII(host_minus_tld, "www.google.");
+  return IsValidHostName(host, "google", subdomain_permission);
 }
 
 bool IsGoogleDomainUrl(const GURL& url,
                        SubdomainPermission subdomain_permission,
                        PortPermission port_permission) {
-  return url.is_valid() && url.SchemeIsHTTPOrHTTPS() &&
-      (url.port().empty() || (port_permission == ALLOW_NON_STANDARD_PORTS)) &&
-      google_util::IsGoogleHostname(url.host(), subdomain_permission);
+  return IsValidURL(url, port_permission) &&
+      IsGoogleHostname(url.host(), subdomain_permission);
 }
 
 bool IsGoogleHomePageUrl(const GURL& url) {
@@ -186,6 +205,13 @@ bool IsGoogleSearchUrl(const GURL& url) {
   // the path type.
   return HasGoogleSearchQueryParam(url.ref()) ||
       (!is_home_page_base && HasGoogleSearchQueryParam(url.query()));
+}
+
+bool IsYoutubeDomainUrl(const GURL& url,
+                        SubdomainPermission subdomain_permission,
+                        PortPermission port_permission) {
+  return IsValidURL(url, port_permission) &&
+      IsValidHostName(url.host(), "youtube", subdomain_permission);
 }
 
 }  // namespace google_util

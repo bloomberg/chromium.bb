@@ -102,6 +102,13 @@ bool IsGoogleHomePageUrl(const GURL& url);
 // True if |url| represents a valid Google search URL.
 bool IsGoogleSearchUrl(const GURL& url);
 
+// True if |url| is a valid youtube.<TLD> URL.  If |port_permission| is
+// DISALLOW_NON_STANDARD_PORTS, this also requires |url| to use the standard
+// port for its scheme (80 for HTTP, 443 for HTTPS).
+bool IsYoutubeDomainUrl(const GURL& url,
+                        SubdomainPermission subdomain_permission,
+                        PortPermission port_permission);
+
 }  // namespace google_util
 
 #endif  // CHROME_BROWSER_GOOGLE_GOOGLE_UTIL_H__
