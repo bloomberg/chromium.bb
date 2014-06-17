@@ -41,7 +41,6 @@ public:
         AllowChildFrameContent = 1 << 10,
         ChildFrameHitTest = 1 << 11,
         IgnorePointerEventsNone = 1 << 12,
-        TouchAction = 1 << 13, // Hit testing for touch-action considers only block-level elements
     };
 
     typedef unsigned HitTestRequestType;
@@ -64,7 +63,6 @@ public:
     bool allowsChildFrameContent() const { return m_requestType & AllowChildFrameContent; }
     bool isChildFrameHitTest() const { return m_requestType & ChildFrameHitTest; }
     bool ignorePointerEventsNone() const { return m_requestType & IgnorePointerEventsNone; }
-    bool touchAction() const { return m_requestType & TouchAction; }
 
     // Convenience functions
     bool touchMove() const { return move() && touchEvent(); }

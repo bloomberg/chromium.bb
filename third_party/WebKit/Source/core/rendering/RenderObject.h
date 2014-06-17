@@ -950,14 +950,9 @@ public:
 
     bool isInert() const;
 
-    bool visibleForTouchAction() const;
+    bool supportsTouchAction() const;
 
-    bool visibleToHitTestRequest(const HitTestRequest& request) const
-    {
-        if (request.touchAction() && !visibleForTouchAction())
-            return false;
-        return style()->visibility() == VISIBLE && (request.ignorePointerEventsNone() || style()->pointerEvents() != PE_NONE) && !isInert();
-    }
+    bool visibleToHitTestRequest(const HitTestRequest& request) const { return style()->visibility() == VISIBLE && (request.ignorePointerEventsNone() || style()->pointerEvents() != PE_NONE) && !isInert(); }
 
     bool visibleToHitTesting() const { return style()->visibility() == VISIBLE && style()->pointerEvents() != PE_NONE && !isInert(); }
 
