@@ -6,14 +6,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 
-// Debugger is flaky on browser_tests on Windows, Linux, and Chrome OS:
-// crbug.com/234166.
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE(x) DISABLED_##x
-#else
-#define MAYBE(x) x
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE(Debugger)) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Debugger) {
   ASSERT_TRUE(RunExtensionTest("debugger")) << message_;
 }

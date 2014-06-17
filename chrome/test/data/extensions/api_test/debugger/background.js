@@ -140,7 +140,9 @@ chrome.test.runTests([
   },
 
   function createAndDiscoverTab() {
-    function onUpdated(tabId) {
+    function onUpdated(tabId, changeInfo) {
+      if (changeInfo.status == 'loading')
+        return;
       chrome.tabs.onUpdated.removeListener(onUpdated);
       chrome.debugger.getTargets(function(targets) {
         var page = targets.filter(
