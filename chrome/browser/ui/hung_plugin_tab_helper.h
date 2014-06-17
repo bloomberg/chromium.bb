@@ -11,7 +11,8 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/infobars/core/infobar_manager.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -36,8 +37,8 @@ class InfoBarDelegate;
 // - Hide the infobar if the plugin starts responding again.
 // - Keep track of all of this for any number of plugins.
 class HungPluginTabHelper
-    : public infobars::InfoBarManager::Observer,
-      public content::WebContentsObserver,
+    : public content::WebContentsObserver,
+      public content::NotificationObserver,
       public content::WebContentsUserData<HungPluginTabHelper> {
  public:
   virtual ~HungPluginTabHelper();
@@ -48,6 +49,11 @@ class HungPluginTabHelper
   virtual void PluginHungStatusChanged(int plugin_child_id,
                                        const base::FilePath& plugin_path,
                                        bool is_hung) OVERRIDE;
+
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Called by an infobar when the user selects to kill the plugin.
   void KillPlugin(int child_id);
@@ -71,16 +77,10 @@ class HungPluginTabHelper
   // be called even if the bar is not opened, in which case it will do nothing.
   void CloseBar(PluginState* state);
 
-  // infobars::InfoBarManager::Observer:
-  virtual void OnInfoBarRemoved(infobars::InfoBar* infobar,
-                                bool animate) OVERRIDE;
+  content::NotificationRegistrar registrar_;
 
   // All currently hung plugins.
   PluginStateMap hung_plugins_;
-
-  // The number of hung plugin infobars open. We use this to determine when we
-  // should remove ourself as an observer of InfoBarManager notifications.
-  int number_of_infobars_;
 
   DISALLOW_COPY_AND_ASSIGN(HungPluginTabHelper);
 };
