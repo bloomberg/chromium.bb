@@ -207,12 +207,16 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
             config['chrome_sdk'],
             'Config %s: has chrome_sdk but not sync_chrome.' % build_name)
 
-  def testARMNoVMTest(self):
-    """Verify ARM builds don't get VMTests turned on by accident."""
+  def testNoTestSupport(self):
+    """VM/unit tests shouldn't be enabled for builders without test support."""
     for build_name, config in cbuildbot_config.config.iteritems():
-      if build_name.startswith('arm-') or config['arm']:
-        self.assertTrue(not config['vm_tests'],
-                        "ARM builder %s can't run vm tests!" % build_name)
+      if not config['tests_supported']:
+        self.assertFalse(
+            config['unittests'],
+            'Config %s: has tests_supported but unittests=True.' % build_name)
+        self.assertEqual(
+            config['vm_tests'], [],
+            'Config %s: has test_supported but requests vm_tests.' % build_name)
 
   def testHWTestsIFFArchivingHWTestArtifacts(self):
     """Make sure all configs upload artifacts that need them for hw testing."""

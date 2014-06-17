@@ -110,7 +110,8 @@ def OverrideConfigForTrybot(build_config, options):
     # In trybots, we want to always run VM tests and all unit tests, so that
     # developers will get better testing for their changes.
     if (my_config['build_type'] == constants.PALADIN_TYPE
-        and not my_config['arm'] and build_config['vm_tests'] is not None):
+        and my_config['tests_supported']
+        and build_config['vm_tests'] is not None):
       my_config['vm_tests'] = [constants.SIMPLE_AU_TEST_TYPE,
                                constants.CROS_VM_TEST_TYPE]
       my_config['quick_unit'] = False
@@ -456,8 +457,9 @@ _settings = dict(
 # build_type -- Type of builder.  Check constants.VALID_BUILD_TYPES.
   build_type=constants.PFQ_TYPE,
 
-# arm -- Whether the board we are building is arm-based.
-  arm=False,
+# Whether the tests for the board we are building can be run on the builder.
+# Normally, we wouldn't be able to run unit and VM tests form non-x86 boards.
+  tests_supported=True,
 
 # images -- List of images we want to build -- see build_image for more details.
   images=['test'],
@@ -877,9 +879,10 @@ _default = _config(**_settings)
 
 # Arch-specific mixins.
 
-arm = _config(
-  arm=True,
-  # VM/tests are broken on arm.
+# Config parameters for builders that do not run tests on the builder. Anything
+# non-x86 tests will fall under this category.
+non_testable_builder = _config(
+  tests_supported=False,
   unittests=False,
   vm_tests=[],
 )
@@ -996,7 +999,8 @@ brillo_non_testable = brillo.derive(
   paygen_skip_testing=True,
 )
 
-beaglebone = arm.derive(brillo_non_testable, rootfs_verification=False)
+beaglebone = non_testable_builder.derive(brillo_non_testable,
+                                         rootfs_verification=False)
 
 # This adds Chrome branding.
 official_chrome = _config(
@@ -1038,7 +1042,7 @@ incremental.add_config('x86-generic-incremental',
 )
 
 incremental.add_config('daisy-incremental',
-  arm,
+  non_testable_builder,
   boards=['daisy'],
 )
 
@@ -1099,7 +1103,7 @@ telemetry.add_config('amd64-generic-telemetry',
 )
 
 telemetry.add_config('arm-generic-telemetry',
-  arm,
+  non_testable_builder,
   boards=['arm-generic'],
 )
 
@@ -1135,7 +1139,7 @@ internal_chromium_pfq.add_config('x86-generic-chromium-pfq',
 )
 
 internal_chromium_pfq.add_config('daisy-chromium-pfq',
-  arm,
+  non_testable_builder,
   boards=['daisy'],
 )
 
@@ -1161,7 +1165,7 @@ chrome_pfq.add_config('lumpy-chrome-pfq',
 )
 
 chrome_pfq.add_config('daisy_spring-chrome-pfq',
-  arm,
+  non_testable_builder,
   boards=['daisy_spring'],
   hw_tests=HWTestConfig.DefaultListPFQ(),
 )
@@ -1210,7 +1214,7 @@ chrome_perf = chrome_info.derive(
 )
 
 chrome_perf.add_config('daisy-chrome-perf',
-  arm,
+  non_testable_builder,
   boards=['daisy'],
   trybot_list=True,
 )
@@ -1232,7 +1236,7 @@ chromium_info.add_config('x86-generic-tot-chrome-pfq-informational',
 
 chromium_info_daisy = \
 chromium_info.add_config('daisy-tot-chrome-pfq-informational',
-  arm,
+  non_testable_builder,
   boards=['daisy'],
 )
 
@@ -1269,7 +1273,7 @@ chrome_info.add_config('lumpy-webrtc-chrome-pfq-informational',
   boards=['lumpy'],
 )
 chrome_info.add_config('daisy-webrtc-chrome-pfq-informational',
-  arm,
+  non_testable_builder,
   boards=['daisy'],
 )
 chromium_info_x86.add_config('x86-webrtc-chromium-pfq-informational',
@@ -1352,7 +1356,7 @@ def _AddFullConfigs():
 
   for board in _arm_full_boards:
     full_prebuilts.add_config('%s-%s' % (board, CONFIG_TYPE_FULL),
-      arm,
+    non_testable_builder,
       boards=[board],
     )
 
@@ -1477,10 +1481,12 @@ _config.add_group(constants.PRE_CQ_BUILDER_NAME,
   # amd64 w/kernel 3.10.
   pre_cq.add_config('rambi-pre-cq', boards=['rambi']),
   # daisy w/kernel 3.8.
-  pre_cq.add_config('daisy_spring-pre-cq', arm, boards=['daisy_spring']),
+  pre_cq.add_config('daisy_spring-pre-cq', non_testable_builder,
+                    boards=['daisy_spring']),
 
   # lumpy w/kernel 3.8.
-  compile_only_pre_cq.add_config('lumpy-pre-cq', arm, boards=['lumpy']),
+  compile_only_pre_cq.add_config('lumpy-pre-cq', non_testable_builder,
+                                 boards=['lumpy']),
   # amd64 w/kernel 3.4.
   compile_only_pre_cq.add_config('parrot-pre-cq', boards=['parrot']),
 )
@@ -1762,13 +1768,6 @@ internal_paladin.add_config('x86-zgb-paladin',
   paladin_builder_name='x86-zgb paladin',
 )
 
-internal_paladin.add_config('storm-paladin',
-  brillo_non_testable,
-  boards=['storm'],
-  important=False,
-  paladin_builder_name='storm paladin',
-)
-
 internal_paladin.add_config('link_freon-paladin',
   boards=['link_freon'],
   important=False,
@@ -1783,32 +1782,39 @@ internal_paladin.add_config('stumpy_moblab-paladin',
 )
 
 
-### Arm paladins (CQ builders).
+### Paladins (CQ builders) which do not run VM or Unit tests on the builder
+### itself.
+internal_notest_paladin = internal_paladin.derive(non_testable_builder)
 
-internal_arm_paladin = internal_paladin.derive(arm)
-
-internal_arm_paladin.add_config('daisy-paladin',
+internal_notest_paladin.add_config('daisy-paladin',
   boards=['daisy'],
   paladin_builder_name='daisy paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
-internal_arm_paladin.add_config('daisy_spring-paladin',
+internal_notest_paladin.add_config('daisy_spring-paladin',
   full_paladin,
   boards=['daisy_spring'],
   paladin_builder_name='daisy_spring paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
-internal_arm_paladin.add_config('peach_pit-paladin',
+internal_notest_paladin.add_config('peach_pit-paladin',
   boards=['peach_pit'],
   paladin_builder_name='peach_pit paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
-internal_arm_paladin.add_config('nyan-paladin',
+internal_notest_paladin.add_config('nyan-paladin',
   boards=['nyan'],
   paladin_builder_name='nyan paladin',
+)
+
+internal_notest_paladin.add_config('storm-paladin',
+  brillo_non_testable,
+  boards=['storm'],
+  important=False,
+  paladin_builder_name='storm paladin',
 )
 
 internal_brillo_paladin = internal_paladin.derive(brillo)
@@ -2040,7 +2046,7 @@ _release.add_config('lumpy-release',
 
 ### Arm release configs.
 
-_arm_release = _release.derive(arm)
+_arm_release = _release.derive(non_testable_builder)
 
 _arm_release.add_config('daisy-release',
   boards=['daisy'],
@@ -2080,7 +2086,7 @@ _brillo_release.add_config('gizmo-release',
    paygen=False,
 )
 
-_arm_brillo_release = _brillo_release.derive(arm)
+_arm_brillo_release = _brillo_release.derive(non_testable_builder)
 
 _arm_brillo_release.add_config('storm-release',
    boards=['storm'],
@@ -2367,7 +2373,7 @@ def _AddFirmwareConfigs():
 
   for board in _arm_firmware_boards:
     _firmware_release.add_config('%s-%s' % (board, CONFIG_TYPE_FIRMWARE),
-      arm,
+      non_testable_builder,
       boards=[board],
     )
 
@@ -2383,7 +2389,7 @@ _factory_release.add_config('x86-mario-factory',
 # This is an example factory branch configuration for arm.
 # Modify it to match your factory branch.
 _factory_release.add_config('daisy-factory',
-  arm,
+  non_testable_builder,
   boards=['daisy'],
 )
 
