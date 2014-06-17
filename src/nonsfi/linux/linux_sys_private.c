@@ -64,6 +64,16 @@ int clock_gettime(clockid_t clk_id, struct timespec *ts) {
   return result;
 }
 
+int clock_getres(clockid_t clk_id, struct timespec *res) {
+  struct linux_abi_timespec linux_res;
+  int result = errno_value_call(
+      linux_syscall2(__NR_clock_getres, clk_id, (uintptr_t) &linux_res));
+  /* Unlike clock_gettime, clock_getres allows NULL timespecs. */
+  if (result == 0 && res != NULL)
+    linux_timespec_to_nacl_timespec(&linux_res, res);
+  return result;
+}
+
 int sched_yield(void) {
   return errno_value_call(linux_syscall0(__NR_sched_yield));
 }

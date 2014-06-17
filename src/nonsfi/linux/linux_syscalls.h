@@ -29,6 +29,7 @@
 # define __NR_set_thread_area    243
 # define __NR_exit_group         252
 # define __NR_clock_gettime      265
+# define __NR_clock_getres       266
 
 #elif defined(__arm__)
 
@@ -49,6 +50,7 @@
 # define __NR_futex              240
 # define __NR_exit_group         248
 # define __NR_clock_gettime      263
+# define __NR_clock_getres       264
 # define __NR_ARM_set_tls        0xf0005
 
 #else
