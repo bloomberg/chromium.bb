@@ -796,8 +796,8 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
   if ((abs(point_in_screen.x() - last_move_screen_loc_) > threshold ||
         (initial_move_ && !AreTabsConsecutive()))) {
     TabStripModel* attached_model = GetModel(attached_tabstrip_);
-    gfx::Rect bounds = GetDraggedViewTabStripBounds(dragged_view_point);
-    int to_index = GetInsertionIndexForDraggedBounds(bounds);
+    int to_index = GetInsertionIndexForDraggedBounds(
+        GetDraggedViewTabStripBounds(dragged_view_point));
     bool do_move = true;
     // While dragging within a tabstrip the expectation is the insertion index
     // is based on the left edge of the tabs being dragged. OTOH when dragging
@@ -1004,8 +1004,8 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
     tab_strip_point.set_x(
         attached_tabstrip_->GetMirroredXInView(tab_strip_point.x()));
     tab_strip_point.Offset(0, -mouse_offset_.y());
-    gfx::Rect bounds = GetDraggedViewTabStripBounds(tab_strip_point);
-    int index = GetInsertionIndexForDraggedBounds(bounds);
+    int index = GetInsertionIndexForDraggedBounds(
+        GetDraggedViewTabStripBounds(tab_strip_point));
     attach_index_ = index;
     attach_x_ = tab_strip_point.x();
     base::AutoReset<bool> setter(&is_mutating_, true);
@@ -1288,6 +1288,11 @@ int TabDragController::GetInsertionIndexFromReversed(
 
 int TabDragController::GetInsertionIndexForDraggedBounds(
     const gfx::Rect& dragged_bounds) const {
+  // If the strip has no tabs, the only position to insert at is 0.
+  const int tab_count = attached_tabstrip_->tab_count();
+  if (!tab_count)
+    return 0;
+
   int index = -1;
   if (attached_tabstrip_->touch_layout_.get()) {
     index = GetInsertionIndexForDraggedBoundsStacked(dragged_bounds);
@@ -1307,14 +1312,9 @@ int TabDragController::GetInsertionIndexForDraggedBounds(
     index = GetInsertionIndexFrom(dragged_bounds, 0);
   }
   if (index == -1) {
-    int tab_count = attached_tabstrip_->tab_count();
-    int right_tab_x = tab_count == 0 ? 0 :
+    const int last_tab_right =
         attached_tabstrip_->ideal_bounds(tab_count - 1).right();
-    if (dragged_bounds.right() > right_tab_x) {
-      index = GetModel(attached_tabstrip_)->count();
-    } else {
-      index = 0;
-    }
+    index = (dragged_bounds.right() > last_tab_right) ? tab_count : 0;
   }
 
   if (!drag_data_[0].attached_tab) {
@@ -1826,7 +1826,7 @@ gfx::Rect TabDragController::CalculateDraggedBrowserBounds(
   // maximized windows, add an additional vertical offset extracted from the tab
   // strip.
   if (source->GetWidget()->IsMaximized())
-    new_bounds.Offset(0, -source->button_v_offset());
+    new_bounds.Offset(0, -source->kNewTabButtonVerticalOffset);
   return new_bounds;
 }
 

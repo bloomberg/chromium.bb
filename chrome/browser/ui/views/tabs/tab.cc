@@ -359,12 +359,9 @@ Tab::ImageCacheEntry::~ImageCacheEntry() {}
 
 // static
 const char Tab::kViewClassName[] = "Tab";
-
-// static
-Tab::TabImage Tab::tab_alpha_ = {0};
 Tab::TabImage Tab::tab_active_ = {0};
 Tab::TabImage Tab::tab_inactive_ = {0};
-// static
+Tab::TabImage Tab::tab_alpha_ = {0};
 Tab::ImageCache* Tab::image_cache_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
