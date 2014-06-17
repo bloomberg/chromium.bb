@@ -105,6 +105,7 @@ LONG RegKey::CreateKey(const wchar_t* name, REGSAM access) {
   if (result == ERROR_SUCCESS) {
     Close();
     key_ = subkey;
+    wow64access_ = access & kWow64AccessMask;
   }
 
   return result;
@@ -143,6 +144,7 @@ LONG RegKey::OpenKey(const wchar_t* relative_key_name, REGSAM access) {
   if (result == ERROR_SUCCESS) {
     Close();
     key_ = subkey;
+    wow64access_ = access & kWow64AccessMask;
   }
   return result;
 }
@@ -161,7 +163,6 @@ void RegKey::Set(HKEY key) {
   if (key_ != key) {
     Close();
     key_ = key;
-    wow64access_ = 0;
   }
 }
 

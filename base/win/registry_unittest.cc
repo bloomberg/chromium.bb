@@ -277,6 +277,24 @@ TEST_F(RegistryTest, DISABLED_Wow64RedirectedFromNative) {
   ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(kRootKey));
 }
 
+// Test for the issue found in http://crbug.com/384587 where OpenKey would call
+// Close() and reset wow64_access_ flag to 0 and cause a NOTREACHED to hit on a
+// subsequent OpenKey call.
+TEST_F(RegistryTest, SameWowFlags) {
+  RegKey key;
+
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE,
+                     L"Software",
+                     KEY_READ | KEY_WOW64_64KEY));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.OpenKey(L"Microsoft",
+                        KEY_READ | KEY_WOW64_64KEY));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.OpenKey(L"Windows",
+                        KEY_READ | KEY_WOW64_64KEY));
+}
+
 // TODO(wfh): flaky test on Vista.  See http://crbug.com/377917
 TEST_F(RegistryTest, DISABLED_Wow64NativeFromRedirected) {
   if (!IsRedirectorPresent())
