@@ -131,8 +131,8 @@ public class TabModelOrderController {
      */
     public boolean willOpenInForeground(TabLaunchType type, boolean isNewTabIncognito) {
         // Restore is handling the active index by itself.
-        return (type != TabLaunchType.FROM_LONGPRESS_BACKGROUND &&
-                        type != TabLaunchType.FROM_RESTORE)
+        if (type == TabLaunchType.FROM_RESTORE) return false;
+        return type != TabLaunchType.FROM_LONGPRESS_BACKGROUND
                 || (!mTabModelSelector.isIncognitoSelected() && isNewTabIncognito);
     }
 
