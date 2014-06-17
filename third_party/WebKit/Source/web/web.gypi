@@ -214,7 +214,6 @@
       'WebRuntimeFeatures.cpp',
       'WebScopedMicrotaskSuppression.cpp',
       'WebScopedUserGesture.cpp',
-      'WebScopedUserGesture.cpp',
       'WebScopedWindowFocusAllowedIndicator.cpp',
       'WebScriptBindings.cpp',
       'WebScriptController.cpp',
