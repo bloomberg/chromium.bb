@@ -1468,10 +1468,10 @@ InstallStatus InstallProductsHelper(
                               unpack_path.value(),
                               NULL)) {
     installer_state.WriteInstallerResult(
-        UNCOMPRESSION_FAILED,
+        UNPACKING_FAILED,
         IDS_INSTALL_UNCOMPRESSION_FAILED_BASE,
         NULL);
-    return UNCOMPRESSION_FAILED;
+    return UNPACKING_FAILED;
   }
 
   VLOG(1) << "unpacked to " << unpack_path.value();
