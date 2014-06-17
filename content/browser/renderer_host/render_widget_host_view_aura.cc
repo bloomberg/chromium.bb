@@ -306,7 +306,16 @@ void GetScreenInfoForWindow(WebScreenInfo* results, aura::Window* window) {
   results->depth = 24;
   results->depthPerComponent = 8;
   results->deviceScaleFactor = display.device_scale_factor();
+
+  // The Display rotation and the WebScreenInfo orientation are not the same
+  // angle. The former is the physical display rotation while the later is the
+  // rotation required by the content to be shown properly on the screen, in
+  // other words, relative to the physical display.
   results->orientationAngle = display.RotationAsDegree();
+  if (results->orientationAngle == 90)
+    results->orientationAngle = 270;
+  else if (results->orientationAngle == 270)
+    results->orientationAngle = 90;
 }
 
 bool PointerEventActivates(const ui::Event& event) {
