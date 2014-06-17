@@ -399,6 +399,7 @@ class RemotePageTarget : public DevToolsTargetImpl,
   virtual std::string GetFrontendURL() OVERRIDE;
 
   // DevToolsTargetImpl overrides.
+  virtual std::string GetId() const OVERRIDE;
   virtual bool IsAttached() const OVERRIDE;
   virtual bool Activate() const OVERRIDE;
   virtual bool Close() const OVERRIDE;
@@ -473,6 +474,10 @@ DevToolsTargetImpl* RemotePageTarget::GetTarget() {
 
 std::string RemotePageTarget::GetFrontendURL() {
   return frontend_url_;
+}
+
+std::string RemotePageTarget::GetId() const {
+  return remote_id_;
 }
 
 bool RemotePageTarget::IsAttached() const {
