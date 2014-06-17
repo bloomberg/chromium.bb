@@ -77,6 +77,7 @@
 #include "media/audio/sounds/sounds_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -976,7 +977,8 @@ void LoginDisplayHostImpl::ShowWebUI() {
   LOG(WARNING) << "Login WebUI >> Show already initialized UI";
   login_window_->Show();
   login_view_->GetWebContents()->Focus();
-  login_view_->RequestFocus();
+  if (::switches::IsTextInputFocusManagerEnabled())
+    login_view_->RequestFocus();
   login_view_->SetStatusAreaVisible(status_area_saved_visibility_);
   login_view_->OnPostponedShow();
 
