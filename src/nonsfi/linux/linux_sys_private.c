@@ -55,6 +55,23 @@ int gettimeofday(struct timeval *tv, void *tz) {
   return result;
 }
 
+int nanosleep(const struct timespec *req, struct timespec *rem) {
+  struct linux_abi_timespec linux_req;
+  nacl_timespec_to_linux_timespec(req, &linux_req);
+  struct linux_abi_timespec linux_rem;
+  int result = errno_value_call(linux_syscall2(__NR_nanosleep,
+                                               (uintptr_t) &linux_req,
+                                               (uintptr_t) &linux_rem));
+
+  /*
+   * NaCl does not support async signals, so we don't fill out rem on
+   * result == -EINTR.
+   */
+  if (result == 0 && rem != NULL)
+    linux_timespec_to_nacl_timespec(&linux_rem, rem);
+  return result;
+}
+
 int clock_gettime(clockid_t clk_id, struct timespec *ts) {
   struct linux_abi_timespec linux_ts;
   int result = errno_value_call(

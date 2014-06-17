@@ -93,6 +93,7 @@ def BuildScriptX86(status, context):
                     'run_dup_test',
                     'run_hello_world_test',
                     'run_mmap_test',
+                    'run_nanosleep_test',
                     'run_printf_test',
                     'run_pwrite_test',
                     'run_thread_test'])
