@@ -28,6 +28,7 @@
 #ifndef HTMLCanvasElement_h
 #define HTMLCanvasElement_h
 
+#include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "platform/geometry/FloatRect.h"

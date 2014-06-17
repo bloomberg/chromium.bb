@@ -27,6 +27,7 @@
 #include "core/html/HTMLSourceElement.h"
 
 #include "core/HTMLNames.h"
+#include "core/events/Event.h"
 #include "core/events/EventSender.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPictureElement.h"

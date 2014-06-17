@@ -35,6 +35,7 @@
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/EffectInput.h"
 #include "core/animation/TimingInput.h"
+#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "platform/RuntimeEnabledFeatures.h"
 

@@ -21,6 +21,7 @@
 #ifndef HTMLFrameOwnerElement_h
 #define HTMLFrameOwnerElement_h
 
+#include "core/dom/Document.h"
 #include "core/frame/FrameOwner.h"
 #include "core/html/HTMLElement.h"
 #include "wtf/HashCountedSet.h"

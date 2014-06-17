@@ -34,6 +34,7 @@
 #include "core/HTMLNames.h"
 #include "core/MathMLNames.h"
 #include "core/SVGNames.h"
+#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/custom/CustomElementObserver.h"
 #include "core/dom/custom/CustomElementScheduler.h"

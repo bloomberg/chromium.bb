@@ -31,6 +31,7 @@
 #ifndef HTMLImportsController_h
 #define HTMLImportsController_h
 
+#include "core/dom/DocumentSupplementable.h"
 #include "core/fetch/RawResource.h"
 #include "core/html/LinkResource.h"
 #include "core/html/imports/HTMLImport.h"

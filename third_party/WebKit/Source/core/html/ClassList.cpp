@@ -25,6 +25,7 @@
 #include "config.h"
 #include "core/html/ClassList.h"
 
+#include "core/dom/Document.h"
 
 namespace WebCore {
 

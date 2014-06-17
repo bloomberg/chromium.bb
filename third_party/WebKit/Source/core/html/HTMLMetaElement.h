@@ -23,6 +23,7 @@
 #ifndef HTMLMetaElement_h
 #define HTMLMetaElement_h
 
+#include "core/dom/ViewportDescription.h"
 #include "core/html/HTMLElement.h"
 
 namespace WebCore {

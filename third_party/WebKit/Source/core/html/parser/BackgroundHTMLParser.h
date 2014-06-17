@@ -26,12 +26,14 @@
 #ifndef BackgroundHTMLParser_h
 #define BackgroundHTMLParser_h
 
+#include "core/dom/DocumentEncodingData.h"
 #include "core/html/parser/BackgroundHTMLInputStream.h"
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLPreloadScanner.h"
 #include "core/html/parser/HTMLSourceTracker.h"
 #include "core/html/parser/HTMLTreeBuilderSimulator.h"
+#include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/WeakPtr.h"

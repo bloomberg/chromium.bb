@@ -43,6 +43,7 @@ namespace WebCore {
 
 class CustomElementDescriptor;
 class CustomElementMicrotaskImportStep;
+class CustomElementRegistrationContext;
 class Element;
 class HTMLImportChild;
 

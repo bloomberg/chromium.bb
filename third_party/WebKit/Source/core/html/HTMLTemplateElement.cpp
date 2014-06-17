@@ -32,6 +32,7 @@
 
 #include "core/html/HTMLTemplateElement.h"
 
+#include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/TemplateContentDocumentFragment.h"
 

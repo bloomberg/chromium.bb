@@ -27,6 +27,7 @@
 #include "core/xml/XPathNodeSet.h"
 
 #include "core/dom/Attr.h"
+#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
 

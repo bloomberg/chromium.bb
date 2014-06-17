@@ -31,6 +31,7 @@ namespace WebCore {
 
 class ExceptionState;
 class Position;
+class Range;
 class RenderTextControl;
 class VisiblePosition;
 

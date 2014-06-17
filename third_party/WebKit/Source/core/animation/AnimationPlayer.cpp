@@ -33,6 +33,7 @@
 
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationTimeline.h"
+#include "core/dom/Document.h"
 #include "core/events/AnimationPlayerEvent.h"
 #include "core/frame/UseCounter.h"
 

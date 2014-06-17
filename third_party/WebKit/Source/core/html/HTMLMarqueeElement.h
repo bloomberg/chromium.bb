@@ -25,6 +25,7 @@
 
 #include "core/dom/ActiveDOMObject.h"
 #include "core/html/HTMLElement.h"
+#include "platform/Timer.h"
 
 namespace WebCore {
 

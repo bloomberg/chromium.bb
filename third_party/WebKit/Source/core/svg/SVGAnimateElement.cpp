@@ -27,6 +27,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
 #include "core/svg/SVGAnimatedTypeAnimator.h"
 #include "core/svg/SVGDocumentExtensions.h"

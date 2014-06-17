@@ -467,6 +467,11 @@ const AtomicString& Element::getAttribute(const QualifiedName& name) const
     return nullAtom;
 }
 
+bool Element::shouldIgnoreAttributeCase() const
+{
+    return isHTMLElement() && document().isHTMLDocument();
+}
+
 void Element::scrollIntoView(bool alignToTop)
 {
     document().updateLayoutIgnorePendingStylesheets();

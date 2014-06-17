@@ -26,6 +26,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/DOMURLUtils.h"
+#include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
 #include "platform/LinkHash.h"
 

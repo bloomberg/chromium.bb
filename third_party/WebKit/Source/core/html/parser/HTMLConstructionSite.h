@@ -27,6 +27,7 @@
 #ifndef HTMLConstructionSite_h
 #define HTMLConstructionSite_h
 
+#include "core/dom/Document.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/html/parser/HTMLElementStack.h"
 #include "core/html/parser/HTMLFormattingElementList.h"

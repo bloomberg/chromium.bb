@@ -29,7 +29,7 @@
 #include "core/HTMLNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Attribute.h"
-#include "core/dom/Document.h"
+#include "core/dom/ContainerNode.h"
 #include "core/dom/ElementData.h"
 #include "core/dom/SpaceSplitString.h"
 #include "core/html/CollectionType.h"
@@ -42,11 +42,13 @@ namespace WebCore {
 class ActiveAnimations;
 class Attr;
 class Attribute;
+class CSSStyleDeclaration;
 class ClientRect;
 class ClientRectList;
 class CustomElementDefinition;
 class DOMStringMap;
 class DOMTokenList;
+class Document;
 class ElementRareData;
 class ElementShadow;
 class ExceptionState;
@@ -748,11 +750,6 @@ inline const AtomicString& Element::getClassAttribute() const
     if (isSVGElement())
         return getAttribute(HTMLNames::classAttr);
     return fastGetAttribute(HTMLNames::classAttr);
-}
-
-inline bool Element::shouldIgnoreAttributeCase() const
-{
-    return isHTMLElement() && document().isHTMLDocument();
 }
 
 inline void Element::setIdAttribute(const AtomicString& value)

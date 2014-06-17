@@ -28,6 +28,7 @@
 #ifndef FullscreenElementStack_h
 #define FullscreenElementStack_h
 
+#include "core/dom/Document.h"
 #include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/Element.h"
 #include "platform/Supplementable.h"
@@ -39,12 +40,8 @@
 
 namespace WebCore {
 
-class Document;
-class Element;
-class Node;
 class RenderFullScreen;
 class RenderStyle;
-class ExecutionContext;
 
 class FullscreenElementStack FINAL
     : public NoBaseWillBeGarbageCollectedFinalized<FullscreenElementStack>

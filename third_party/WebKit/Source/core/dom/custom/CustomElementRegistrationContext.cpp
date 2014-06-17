@@ -34,6 +34,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
+#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementDefinition.h"

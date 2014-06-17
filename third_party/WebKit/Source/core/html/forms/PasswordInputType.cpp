@@ -33,6 +33,7 @@
 #include "core/html/forms/PasswordInputType.h"
 
 #include "core/InputTypeNames.h"
+#include "core/dom/Document.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
 #include "wtf/Assertions.h"

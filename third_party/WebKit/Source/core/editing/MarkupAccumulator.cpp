@@ -33,6 +33,7 @@
 #include "core/XMLNames.h"
 #include "core/dom/CDATASection.h"
 #include "core/dom/Comment.h"
+#include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/ProcessingInstruction.h"

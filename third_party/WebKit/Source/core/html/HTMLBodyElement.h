@@ -24,6 +24,7 @@
 #ifndef HTMLBodyElement_h
 #define HTMLBodyElement_h
 
+#include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
 
 namespace WebCore {

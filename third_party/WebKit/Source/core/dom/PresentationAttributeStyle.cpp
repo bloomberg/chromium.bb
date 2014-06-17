@@ -35,6 +35,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLInputElement.h"
+#include "platform/Timer.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/CString.h"

@@ -13,6 +13,7 @@
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/Timing.h"
+#include "core/dom/Document.h"
 #include <gtest/gtest.h>
 #include <v8.h>
 
