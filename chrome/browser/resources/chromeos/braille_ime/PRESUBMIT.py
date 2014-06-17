@@ -14,10 +14,10 @@ def CheckChangeOnUpload(input_api, output_api):
     return []
   sys.path.insert(0, input_api.PresubmitLocalPath())
   try:
-    from check_braille_ime import check_braille_ime
+    from check_braille_ime import CheckBrailleIme
   finally:
     sys.path.pop(0)
-  success, output = check_braille_ime()
+  success, output = CheckBrailleIme()
   if not success:
     return [output_api.PresubmitError(
         'Braille IME closure compilation failed',
