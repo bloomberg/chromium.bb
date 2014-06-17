@@ -95,6 +95,7 @@ bool WebSocket::EventQueue::isEmpty() const
 
 void WebSocket::EventQueue::suspend()
 {
+    m_resumeTimer.stop();
     if (m_state != Active)
         return;
 
