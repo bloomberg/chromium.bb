@@ -2509,7 +2509,12 @@ void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
     set_ideal_bounds(i, bounds);
   }
 
-  newtab_button_bounds_.set_x(newtab_button_bounds_.x() - delta);
+  // Don't just subtract |delta| from the New Tab x-coordinate, as we might have
+  // overflow tabs that will be able to animate into the strip, in which case
+  // the new tab button should stay where it is.
+  newtab_button_bounds_.set_x(std::min(
+      width() - newtab_button_bounds_.width(),
+      ideal_bounds(tab_count() - 1).right() + kNewTabButtonHorizontalOffset));
 
   PrepareForAnimation();
 
