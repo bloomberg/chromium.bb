@@ -141,11 +141,12 @@ class Plugin : public pp::Instance {
   void HistogramTimeSmall(const std::string& name, int64_t ms);
 
   // Load a nacl module from the file specified in file_handle.
-  // Only to be used from a background (non-main) thread.
-  // This will fully initialize the |subprocess| if the load was successful.
-  bool LoadNaClModuleFromBackgroundThread(PP_FileHandle file_handle,
-                                          NaClSubprocess* subprocess,
-                                          const SelLdrStartParams& params);
+  // Only to be used from a background (non-main) thread for the PNaCl
+  // translator. This will fully initialize the |subprocess| if the load was
+  // successful.
+  bool LoadHelperNaClModule(PP_FileHandle file_handle,
+                            NaClSubprocess* subprocess,
+                            const SelLdrStartParams& params);
 
   // Start sel_ldr from the main thread, given the start params.
   // |pp_error| is set by CallOnMainThread (should be PP_OK).
