@@ -49,16 +49,6 @@ void SdchDictionaryFetcher::Schedule(const GURL& dictionary_url) {
   ScheduleDelayedRun();
 }
 
-void SdchDictionaryFetcher::Cancel() {
-  DCHECK(CalledOnValidThread());
-
-  while (!fetch_queue_.empty())
-    fetch_queue_.pop();
-  attempted_load_.clear();
-  weak_factory_.InvalidateWeakPtrs();
-  current_fetch_.reset(NULL);
-}
-
 void SdchDictionaryFetcher::ScheduleDelayedRun() {
   if (fetch_queue_.empty() || current_fetch_.get() || task_is_pending_)
     return;
@@ -73,10 +63,6 @@ void SdchDictionaryFetcher::StartFetching() {
   DCHECK(CalledOnValidThread());
   DCHECK(task_is_pending_);
   task_is_pending_ = false;
-
-  // Handle losing the race against Cancel().
-  if (fetch_queue_.empty())
-    return;
 
   DCHECK(context_.get());
   current_fetch_.reset(net::URLFetcher::Create(

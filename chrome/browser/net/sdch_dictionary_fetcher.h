@@ -37,8 +37,9 @@ class SdchDictionaryFetcher
   virtual ~SdchDictionaryFetcher();
 
   // Implementation of SdchFetcher class.
+  // This method gets the requested dictionary, and then calls back into the
+  // SdchManager class with the dictionary's text.
   virtual void Schedule(const GURL& dictionary_url) OVERRIDE;
-  virtual void Cancel() OVERRIDE;
 
  private:
   // Delay in ms between Schedule and actual download.
