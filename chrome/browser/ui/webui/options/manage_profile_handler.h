@@ -72,6 +72,10 @@ class ManageProfileHandler : public OptionsPageUIHandler,
   // This is used to detect duplicate profile names.
   void SendExistingProfileNames();
 
+  // Show disconnect managed profile dialog after generating domain and user
+  // specific strings.
+  void ShowDisconnectManagedProfileDialog(const base::ListValue* args);
+
   // Callback for the "setProfileIconAndName" message. Sets the name and icon
   // of a given profile.
   // |args| is of the form: [

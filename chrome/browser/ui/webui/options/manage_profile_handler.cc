@@ -185,6 +185,10 @@ void ManageProfileHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("refreshGaiaPicture",
       base::Bind(&ManageProfileHandler::RefreshGaiaPicture,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "showDisconnectManagedProfileDialog",
+      base::Bind(&ManageProfileHandler::ShowDisconnectManagedProfileDialog,
+                 base::Unretained(this)));
 }
 
 void ManageProfileHandler::Uninitialize() {
@@ -311,6 +315,14 @@ void ManageProfileHandler::SendExistingProfileNames() {
 
   web_ui()->CallJavascriptFunction(
       "ManageProfileOverlay.receiveExistingProfileNames", profile_name_dict);
+}
+
+void ManageProfileHandler::ShowDisconnectManagedProfileDialog(
+    const base::ListValue* args) {
+  base::DictionaryValue replacements;
+  GenerateSignedinUserSpecificStrings(&replacements);
+  web_ui()->CallJavascriptFunction(
+      "ManageProfileOverlay.showDisconnectManagedProfileDialog", replacements);
 }
 
 void ManageProfileHandler::SetProfileIconAndName(const base::ListValue* args) {
@@ -467,10 +479,6 @@ void ManageProfileHandler::RequestCreateProfileUpdate(
   web_ui()->CallJavascriptFunction("CreateProfileOverlay.updateSignedInStatus",
                                    base::StringValue(username),
                                    base::FundamentalValue(has_error));
-
-  base::DictionaryValue replacements;
-  GenerateSignedinUserSpecificStrings(&replacements);
-  web_ui()->CallJavascriptFunction("loadTimeData.overrideValues", replacements);
 
   OnCreateSupervisedUserPrefChange();
 }

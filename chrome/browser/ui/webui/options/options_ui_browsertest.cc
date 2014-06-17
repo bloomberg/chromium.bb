@@ -202,8 +202,13 @@ IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, MAYBE_VerifyManagedSignout) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       "var dialog = $('manage-profile-overlay-disconnect-managed');"
       "var original_status = dialog.hidden;"
-      "$('start-stop-sync').click();"
-      "domAutomationController.send(original_status && !dialog.hidden);",
+      "var original = ManageProfileOverlay.showDisconnectManagedProfileDialog;"
+      "var teststub = function(event) {"
+      "  original(event);"
+      "  domAutomationController.send(original_status && !dialog.hidden);"
+      "};"
+      "ManageProfileOverlay.showDisconnectManagedProfileDialog = teststub;"
+      "$('start-stop-sync').click();",
       &result));
 
   EXPECT_TRUE(result);

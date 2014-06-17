@@ -123,7 +123,7 @@ cr.define('options', function() {
           if (self.signoutAllowed_)
             SyncSetupOverlay.showStopSyncingUI();
           else
-            ManageProfileOverlay.showDisconnectManagedProfileDialog();
+            chrome.send('showDisconnectManagedProfileDialog');
         } else if (cr.isChromeOS) {
           SyncSetupOverlay.showSetupUI();
         } else {
