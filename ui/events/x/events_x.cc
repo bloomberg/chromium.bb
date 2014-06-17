@@ -162,12 +162,15 @@ int GetEventFlagsFromXKeyEvent(XEvent* xevent) {
   // For example, when a user hits XK_Multi_key, XK_apostrophe, and XK_e in
   // order to input "é", then XIM generates a key event with keycode=0 and
   // state=0 for the composition, and the sequence of X11 key events will be
-  // XK_Multi_key, XK_apostrophe, **NoSymbol**, and XK_e.
+  // XK_Multi_key, XK_apostrophe, **NoSymbol**, and XK_e.  If the user used
+  // shift key and/or caps lock key, state can be ShiftMask, LockMask or both.
   //
   // We have to send these fabricated key events to XIM so it can correctly
   // handle the character compositions.
+  const unsigned int shift_lock_mask = ShiftMask | LockMask;
   const bool fabricated_by_xim =
-      xevent->xkey.keycode == 0 && xevent->xkey.state == 0;
+      xevent->xkey.keycode == 0 &&
+      (xevent->xkey.state & ~shift_lock_mask) == 0;
   const int ime_fabricated_flag =
       fabricated_by_xim ? ui::EF_IME_FABRICATED_KEY : 0;
 #endif

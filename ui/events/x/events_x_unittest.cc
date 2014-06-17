@@ -279,7 +279,6 @@ TEST(EventsXTest, NumpadKeyEvents) {
   struct {
     bool is_numpad_key;
     int x_keysym;
-    ui::KeyboardCode ui_keycode;
   } keys[] = {
     // XK_KP_Space and XK_KP_Equal are the extrema in the conventional
     // keysymdef.h numbering.
@@ -428,5 +427,37 @@ TEST(EventsXTest, FunctionKeyEvents) {
   // Max function key code plus 1.
   EXPECT_FALSE(HasFunctionKeyFlagSetIfSupported(display, XK_F35 + 1));
 }
+
+#if !defined(OS_CHROMEOS)
+TEST(EventsXTest, ImeFabricatedKeyEvents) {
+  Display* display = gfx::GetXDisplay();
+
+  unsigned int state_to_be_fabricated[] = {
+    0, ShiftMask, LockMask, ShiftMask | LockMask,
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(state_to_be_fabricated); ++i) {
+    unsigned int state = state_to_be_fabricated[i];
+    for (int is_char = 0; is_char < 2; ++is_char) {
+      XEvent x_event;
+      InitKeyEvent(display, &x_event, true, 0, state);
+      ui::KeyEvent key_event(&x_event, is_char);
+      EXPECT_TRUE(key_event.flags() & ui::EF_IME_FABRICATED_KEY);
+    }
+  }
+
+  unsigned int state_to_be_not_fabricated[] = {
+    ControlMask, Mod1Mask, Mod2Mask, ShiftMask | ControlMask,
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(state_to_be_not_fabricated); ++i) {
+    unsigned int state = state_to_be_not_fabricated[i];
+    for (int is_char = 0; is_char < 2; ++is_char) {
+      XEvent x_event;
+      InitKeyEvent(display, &x_event, true, 0, state);
+      ui::KeyEvent key_event(&x_event, is_char);
+      EXPECT_FALSE(key_event.flags() & ui::EF_IME_FABRICATED_KEY);
+    }
+  }
+}
+#endif
 
 }  // namespace ui
