@@ -23,8 +23,9 @@ namespace gfx {
 class RectF;
 }
 
-namespace content {
+struct MediaPlayerHostMsg_Initialize_Params;
 
+namespace content {
 class WebMediaPlayerAndroid;
 
 // Class for managing all the WebMediaPlayerAndroid objects in the same
@@ -43,7 +44,8 @@ class RendererMediaPlayerManager : public RenderFrameObserver {
                   int player_id,
                   const GURL& url,
                   const GURL& first_party_for_cookies,
-                  int demuxer_client_id);
+                  int demuxer_client_id,
+                  const GURL& frame_url);
 
   // Starts the player.
   void Start(int player_id);

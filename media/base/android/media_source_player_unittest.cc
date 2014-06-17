@@ -167,7 +167,8 @@ class MediaSourcePlayerTest : public testing::Test {
                            base::Unretained(&manager_)),
                 base::Bind(&MockMediaPlayerManager::OnMediaResourcesReleased,
                            base::Unretained(&manager_)),
-                scoped_ptr<DemuxerAndroid>(demuxer_)),
+                scoped_ptr<DemuxerAndroid>(demuxer_),
+                GURL()),
         decoder_callback_hook_executed_(false),
         surface_texture_a_is_next_(true) {}
   virtual ~MediaSourcePlayerTest() {}

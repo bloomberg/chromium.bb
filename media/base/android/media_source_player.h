@@ -42,7 +42,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
                     MediaPlayerManager* manager,
                     const RequestMediaResourcesCB& request_media_resources_cb,
                     const ReleaseMediaResourcesCB& release_media_resources_cb,
-                    scoped_ptr<DemuxerAndroid> demuxer);
+                    scoped_ptr<DemuxerAndroid> demuxer,
+                    const GURL& frame_url);
   virtual ~MediaSourcePlayer();
 
   // MediaPlayerAndroid implementation.

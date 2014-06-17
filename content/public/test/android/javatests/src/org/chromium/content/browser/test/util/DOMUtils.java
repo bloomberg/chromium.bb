@@ -127,7 +127,7 @@ public class DOMUtils {
         return getNodeField("value", viewCore, nodeId);
     }
 
-    private static String getNodeField(String fieldName, final ContentViewCore viewCore,
+    public static String getNodeField(String fieldName, final ContentViewCore viewCore,
             String nodeId)
             throws InterruptedException, TimeoutException {
         StringBuilder sb = new StringBuilder();
