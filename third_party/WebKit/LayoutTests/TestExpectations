@@ -633,10 +633,20 @@ crbug.com/243782 virtual/android/fullscreen/full-screen-remove-ancestor.html [ P
 
 crbug.com/267888 [ Android ] crypto [ Skip ]
 
+# On Linux RSA support in WebCrypto requires a very recent version of NSS (which fixes some bugs).
 crbug.com/382732 [ Linux ] crypto/rsa-oaep-generate-non-extractable-key.html [ Failure Pass ]
 crbug.com/382732 [ Linux ] crypto/rsa-oaep-key-manipulation.html [ Failure Pass ]
 crbug.com/382732 [ Linux ] crypto/rsa-oaep-plaintext-length.html [ Failure Pass ]
 crbug.com/382732 [ Linux ] crypto/rsa-oaep-wrap-unwrap-aes.html [ Failure Pass ]
+crbug.com/378315 [ Linux ] crypto/clone-rsaHashedKey-private.html [ Failure Pass ]
+crbug.com/378315 [ Linux ] crypto/clone-rsaHashedKey-public.html [ Failure Pass ]
+crbug.com/378315 [ Linux ] crypto/exportKey-unextractable.html [ Failure Pass ]
+crbug.com/378315 [ Linux ] crypto/rsa-export-private-key.html [ Failure Pass ]
+crbug.com/378315 [ Linux ] crypto/rsa-indexeddb.html [ Failure Pass ]
+crbug.com/378315 [ Linux ] crypto/rsa-oaep-encrypt-parseAlgorithm-failures.html [ Failure Pass ]
+crbug.com/378315 [ Linux ] crypto/rsassa-pkcs1-v1_5-import-jwk-small-key.html [ Failure Pass ]
+crbug.com/378315 [ Linux ] crypto/rsassa-pkcs1-v1_5-import-jwk.html [ Failure Pass ]
+crbug.com/378315 [ Linux ] crypto/rsassa-pkcs1-v1_5-sign-verify.html [ Failure Pass ]
 
 crbug.com/327698 [ Win Release ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 crbug.com/327698 [ Debug Mac Win ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
