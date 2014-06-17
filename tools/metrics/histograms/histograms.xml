@@ -37252,6 +37252,45 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="423" label="MixedContentFont"/>
   <int value="424" label="PrefixedCursorZoomIn"/>
   <int value="425" label="PrefixedCursorZoomOut"/>
+  <int value="426" label="CSSCharsetRuleEncoding"/>
+  <int value="427" label="DocumentSetCharset"/>
+  <int value="428" label="DocumentDefaultCharset"/>
+  <int value="429" label="TextEncoderConstructor"/>
+  <int value="430" label="TextEncoderEncode"/>
+  <int value="431" label="TextDecoderConstructor"/>
+  <int value="432" label="TextDecoderDecode"/>
+  <int value="433" label="FocusInOutEvent"/>
+  <int value="434" label="MouseEventMovementX"/>
+  <int value="435" label="MouseEventMovementY"/>
+  <int value="436" label="MixedContentTextTrack"/>
+  <int value="437" label="MixedContentRaw"/>
+  <int value="438" label="MixedContentImage"/>
+  <int value="439" label="MixedContentMedia"/>
+  <int value="440" label="DocumentFonts"/>
+  <int value="441" label="MixedContentFormsSubmitted"/>
+  <int value="442" label="FormsSubmitted"/>
+  <int value="443" label="TextInputEventOnInput"/>
+  <int value="444" label="TextInputEventOnTextArea"/>
+  <int value="445" label="TextInputEventOnContentEditable"/>
+  <int value="446" label="TextInputEventOnNotNode"/>
+  <int value="447" label="WebkitBeforeTextInsertedOnInput"/>
+  <int value="448" label="WebkitBeforeTextInsertedOnTextArea"/>
+  <int value="449" label="WebkitBeforeTextInsertedOnContentEditable"/>
+  <int value="450" label="WebkitBeforeTextInsertedOnNotNode"/>
+  <int value="451" label="WebkitEditableContentChangedOnInput"/>
+  <int value="452" label="WebkitEditableContentChangedOnTextArea"/>
+  <int value="453" label="WebkitEditableContentChangedOnContentEditable"/>
+  <int value="454" label="WebkitEditableContentChangedOnNotNode"/>
+  <int value="455" label="HTMLImports"/>
+  <int value="456" label="ElementCreateShadowRoot"/>
+  <int value="457" label="DocumentRegisterElement"/>
+  <int value="458" label="EditingAppleInterchangeNewline"/>
+  <int value="459" label="EditingAppleConvertedSpace"/>
+  <int value="460" label="EditingApplePasteAsQuotation"/>
+  <int value="461" label="EditingAppleStyleSpanClass"/>
+  <int value="462" label="EditingAppleTabSpanClass"/>
+  <int value="463" label="HTMLImportsAsyncAttribute"/>
+  <int value="464" label="FontFaceSetReady"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
