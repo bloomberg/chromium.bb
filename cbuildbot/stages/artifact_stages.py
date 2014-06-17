@@ -232,7 +232,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       # Build the factory toolkit.
       chroot_dir = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
       chroot_tmp_dir = os.path.join(chroot_dir, 'tmp')
-      with osutils.TempDir(base_dir=chroot_tmp_dir) as tempdir:
+      with osutils.TempDir(base_dir=chroot_tmp_dir, sudo_rm=True) as tempdir:
         # Build the factory toolkit.
         if config['factory_toolkit']:
           toolkit_dir = os.path.join(tempdir, 'factory_toolkit')
