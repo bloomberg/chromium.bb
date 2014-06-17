@@ -11,9 +11,9 @@
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/gles2/command_buffer_impl.h"
 #include "mojo/services/native_viewport/native_viewport.h"
-#include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
+#include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
 #include "ui/events/event.h"
 
 namespace mojo {

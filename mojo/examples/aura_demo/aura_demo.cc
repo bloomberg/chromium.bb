@@ -13,7 +13,7 @@
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
-#include "mojo/services/native_viewport/native_viewport.mojom.h"
+#include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"

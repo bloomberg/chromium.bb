@@ -124,7 +124,7 @@
       'target_name': 'mojo_native_viewport_bindings',
       'type': 'static_library',
       'sources': [
-        'services/native_viewport/native_viewport.mojom',
+        'services/public/interfaces/native_viewport/native_viewport.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [

@@ -1,10 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "../gles2/command_buffer.mojom"
-import "../public/interfaces/geometry/geometry.mojom"
-import "../public/interfaces/input_events/input_events.mojom"
+import "../../../gles2/command_buffer.mojom"
+import "../geometry/geometry.mojom"
+import "../input_events/input_events.mojom"
 
 module mojo {
 

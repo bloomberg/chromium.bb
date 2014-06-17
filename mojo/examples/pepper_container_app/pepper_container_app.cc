@@ -15,7 +15,7 @@
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
-#include "mojo/services/native_viewport/native_viewport.mojom.h"
+#include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 
