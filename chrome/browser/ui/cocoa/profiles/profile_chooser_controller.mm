@@ -1015,16 +1015,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [container addSubview:separator];
       yOffset = NSMaxY([separator frame]);
     }
-  } else if (viewMode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
-    NSView* currentProfileAccountsView = [self createCurrentProfileAccountsView:
-        NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
-    [container addSubview:currentProfileAccountsView];
-    yOffset = NSMaxY([currentProfileAccountsView frame]);
-
-    NSBox* accountsSeparator = [self separatorWithFrame:
-        NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
-    [container addSubview:accountsSeparator];
-    yOffset = NSMaxY([accountsSeparator frame]);
   }
 
   // For supervised users, add the disclaimer text.
@@ -1040,6 +1030,18 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         [self separatorWithFrame:NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
     [container addSubview:separator];
     yOffset = NSMaxY([separator frame]);
+  }
+
+  if (viewMode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
+    NSView* currentProfileAccountsView = [self createCurrentProfileAccountsView:
+        NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
+    [container addSubview:currentProfileAccountsView];
+    yOffset = NSMaxY([currentProfileAccountsView frame]);
+
+    NSBox* accountsSeparator = [self separatorWithFrame:
+        NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
+    [container addSubview:accountsSeparator];
+    yOffset = NSMaxY([accountsSeparator frame]);
   }
 
   // Active profile card.

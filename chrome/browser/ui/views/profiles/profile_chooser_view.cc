@@ -864,6 +864,14 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   layout->StartRow(1, 0);
   layout->AddView(current_profile_view);
 
+  if (view_mode_ != profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
+    DCHECK(current_profile_accounts);
+    layout->StartRow(0, 0);
+    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+    layout->StartRow(1, 0);
+    layout->AddView(current_profile_accounts);
+  }
+
   if (browser_->profile()->IsSupervised()) {
     layout->StartRow(0, 0);
     layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
@@ -875,12 +883,6 @@ views::View* ProfileChooserView::CreateProfileChooserView(
     layout->StartRow(1, 0);
     if (switches::IsFastUserSwitching())
       layout->AddView(CreateOtherProfilesView(other_profiles));
-  } else {
-    DCHECK(current_profile_accounts);
-    layout->StartRow(0, 0);
-    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
-    layout->StartRow(1, 0);
-    layout->AddView(current_profile_accounts);
   }
 
   layout->StartRow(0, 0);
