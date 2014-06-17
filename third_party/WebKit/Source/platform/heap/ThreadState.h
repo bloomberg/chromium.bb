@@ -52,6 +52,7 @@ class HeapObjectHeader;
 class PersistentNode;
 class Visitor;
 class SafePointBarrier;
+class SafePointAwareMutexLocker;
 template<typename Header> class ThreadHeap;
 class CallbackStack;
 
@@ -369,7 +370,7 @@ public:
     // Mark current thread as running inside safepoint.
     void enterSafePointWithoutPointers() { enterSafePoint(NoHeapPointersOnStack, 0); }
     void enterSafePointWithPointers(void* scopeMarker) { enterSafePoint(HeapPointersOnStack, scopeMarker); }
-    void leaveSafePoint();
+    void leaveSafePoint(SafePointAwareMutexLocker* = 0);
     bool isAtSafePoint() const { return m_atSafePoint; }
 
     class SafePointScope {
@@ -510,6 +511,7 @@ private:
     ~ThreadState();
 
     friend class SafePointBarrier;
+    friend class SafePointAwareMutexLocker;
 
     void enterSafePoint(StackState, void*);
     NO_SANITIZE_ADDRESS void copyStackUntilSafePointScope();
@@ -599,6 +601,55 @@ public:
 template<> class ThreadStateFor<AnyThread> {
 public:
     static ThreadState* state() { return ThreadState::current(); }
+};
+
+// The SafePointAwareMutexLocker is used to enter a safepoint while waiting for
+// a mutex lock. It also ensures that the lock is not held while waiting for a GC
+// to complete in the leaveSafePoint method, by releasing the lock if the
+// leaveSafePoint method cannot complete without blocking, see
+// SafePointBarrier::checkAndPark.
+class SafePointAwareMutexLocker {
+    WTF_MAKE_NONCOPYABLE(SafePointAwareMutexLocker);
+public:
+    explicit SafePointAwareMutexLocker(Mutex& mutex) : m_mutex(mutex), m_locked(false)
+    {
+        ThreadState* state = ThreadState::current();
+        do {
+            bool leaveSafePoint = false;
+            if (!state->isAtSafePoint()) {
+                state->enterSafePoint(ThreadState::HeapPointersOnStack, this);
+                leaveSafePoint = true;
+            }
+            m_mutex.lock();
+            m_locked = true;
+            if (leaveSafePoint) {
+                // When leaving the safepoint we might end up release the mutex
+                // if another thread is requesting a GC, see
+                // SafePointBarrier::checkAndPark. This is the case where we
+                // loop around to reacquire the lock.
+                state->leaveSafePoint(this);
+            }
+        } while (!m_locked);
+    }
+
+    ~SafePointAwareMutexLocker()
+    {
+        ASSERT(m_locked);
+        m_mutex.unlock();
+    }
+
+private:
+    friend class SafePointBarrier;
+
+    void reset()
+    {
+        ASSERT(m_locked);
+        m_mutex.unlock();
+        m_locked = false;
+    }
+
+    Mutex& m_mutex;
+    bool m_locked;
 };
 
 }

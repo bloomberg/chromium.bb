@@ -220,7 +220,7 @@ DatabaseBackendBase::DatabaseBackendBase(DatabaseContext* databaseContext, const
         m_name = "";
 
     {
-        MutexLocker locker(guidMutex());
+        SafePointAwareMutexLocker locker(guidMutex());
         m_guid = guidForOriginAndName(securityOrigin()->toString(), name);
         HashSet<DatabaseBackendBase*>* hashSet = guidToDatabaseMap().get(m_guid);
         if (!hashSet) {
@@ -266,7 +266,7 @@ void DatabaseBackendBase::closeDatabase()
     // See comment at the top this file regarding calling removeOpenDatabase().
     DatabaseTracker::tracker().removeOpenDatabase(this);
     {
-        MutexLocker locker(guidMutex());
+        SafePointAwareMutexLocker locker(guidMutex());
 
         HashSet<DatabaseBackendBase*>* hashSet = guidToDatabaseMap().get(m_guid);
         ASSERT(hashSet);
@@ -329,7 +329,7 @@ bool DatabaseBackendBase::performOpenAndVerify(bool shouldSetVersionInNewDatabas
 
     String currentVersion;
     {
-        MutexLocker locker(guidMutex());
+        SafePointAwareMutexLocker locker(guidMutex());
 
         GuidVersionMap::iterator entry = guidToVersionMap().find(m_guid);
         if (entry != guidToVersionMap().end()) {
@@ -506,14 +506,14 @@ void DatabaseBackendBase::setExpectedVersion(const String& version)
 
 String DatabaseBackendBase::getCachedVersion() const
 {
-    MutexLocker locker(guidMutex());
+    SafePointAwareMutexLocker locker(guidMutex());
     return guidToVersionMap().get(m_guid).isolatedCopy();
 }
 
 void DatabaseBackendBase::setCachedVersion(const String& actualVersion)
 {
     // Update the in memory database version map.
-    MutexLocker locker(guidMutex());
+    SafePointAwareMutexLocker locker(guidMutex());
     updateGuidVersionMap(m_guid, actualVersion);
 }
 

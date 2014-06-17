@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 
+#include "platform/heap/Handle.h"
 #include <sqlite3.h>
 #include "wtf/text/CString.h"
 
@@ -44,6 +45,7 @@ SQLiteFileSystem::SQLiteFileSystem()
 
 int SQLiteFileSystem::openDatabase(const String& filename, sqlite3** database, bool forWebSQLDatabase)
 {
+    ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
     if (!forWebSQLDatabase)
         return sqlite3_open(filename.utf8().data(), database);
 

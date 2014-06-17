@@ -104,7 +104,7 @@ static Mutex& threadAttachMutex()
 
 static double lockingTimeout()
 {
-    // Wait time for parking all threads is at most 500 MS.
+    // Wait time for parking all threads is at most 100 MS.
     return 0.100;
 }
 
@@ -186,10 +186,17 @@ public:
         ASSERT(ThreadState::current()->isAtSafePoint());
     }
 
-    void checkAndPark(ThreadState* state)
+    void checkAndPark(ThreadState* state, SafePointAwareMutexLocker* locker = 0)
     {
         ASSERT(!state->isSweepInProgress());
         if (!acquireLoad(&m_canResume)) {
+            // If we are leaving the safepoint from a SafePointAwareMutexLocker
+            // call out to release the lock before going to sleep. This enables the
+            // lock to be acquired in the sweep phase, e.g. during weak processing
+            // or finalization. The SafePointAwareLocker will reenter the safepoint
+            // and reacquire the lock after leaving this safepoint.
+            if (locker)
+                locker->reset();
             pushAllRegisters(this, state, parkAfterPushRegisters);
             state->performPendingSweep();
         }
@@ -201,10 +208,10 @@ public:
         pushAllRegisters(this, state, enterSafePointAfterPushRegisters);
     }
 
-    void leaveSafePoint(ThreadState* state)
+    void leaveSafePoint(ThreadState* state, SafePointAwareMutexLocker* locker = 0)
     {
         if (atomicIncrement(&m_unparkedThreadCount) > 0)
-            checkAndPark(state);
+            checkAndPark(state, locker);
     }
 
 private:
@@ -745,8 +752,11 @@ void ThreadState::safePoint(StackState stackState)
 {
     checkThread();
     performPendingGC(stackState);
+    ASSERT(!m_atSafePoint);
     m_stackState = stackState;
+    m_atSafePoint = true;
     s_safePointBarrier->checkAndPark(this);
+    m_atSafePoint = false;
     m_stackState = HeapPointersOnStack;
 }
 
@@ -791,11 +801,11 @@ void ThreadState::enterSafePoint(StackState stackState, void* scopeMarker)
     s_safePointBarrier->enterSafePoint(this);
 }
 
-void ThreadState::leaveSafePoint()
+void ThreadState::leaveSafePoint(SafePointAwareMutexLocker* locker)
 {
     checkThread();
     ASSERT(m_atSafePoint);
-    s_safePointBarrier->leaveSafePoint(this);
+    s_safePointBarrier->leaveSafePoint(this, locker);
     m_atSafePoint = false;
     m_stackState = HeapPointersOnStack;
     clearSafePointScopeMarker();
