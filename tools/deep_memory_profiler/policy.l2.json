@@ -25,6 +25,7 @@
     "mmap-gpu-gles2-createbuffer",
     "mmap-skia-font",
     "mmap-catch-all",
+    "tc-webcore-cachedmatchedproperties",
     "tc-webcore-fontcache",
     "tc-skia",
     "tc-renderobject",
