@@ -11,29 +11,49 @@ namespace mojo {
 namespace internal {
 namespace {
 
-int GetChromiumLogLevel(MojoLogLevel log_level) {
-  // Our log levels correspond, except for "fatal":
-  COMPILE_ASSERT(logging::LOG_VERBOSE == MOJO_LOG_LEVEL_VERBOSE,
-                 verbose_log_level_value_mismatch);
-  COMPILE_ASSERT(logging::LOG_INFO == MOJO_LOG_LEVEL_INFO,
-                 info_log_level_value_mismatch);
-  COMPILE_ASSERT(logging::LOG_WARNING == MOJO_LOG_LEVEL_WARNING,
-                 warning_log_level_value_mismatch);
-  COMPILE_ASSERT(logging::LOG_ERROR == MOJO_LOG_LEVEL_ERROR,
-                 error_log_level_value_mismatch);
+// We rely on log levels being the same numerically:
+COMPILE_ASSERT(logging::LOG_VERBOSE == MOJO_LOG_LEVEL_VERBOSE,
+               verbose_log_level_value_mismatch);
+COMPILE_ASSERT(logging::LOG_INFO == MOJO_LOG_LEVEL_INFO,
+               info_log_level_value_mismatch);
+COMPILE_ASSERT(logging::LOG_WARNING == MOJO_LOG_LEVEL_WARNING,
+               warning_log_level_value_mismatch);
+COMPILE_ASSERT(logging::LOG_ERROR == MOJO_LOG_LEVEL_ERROR,
+               error_log_level_value_mismatch);
+COMPILE_ASSERT(logging::LOG_FATAL == MOJO_LOG_LEVEL_FATAL,
+               fatal_log_level_value_mismatch);
 
-  return (log_level >= MOJO_LOG_LEVEL_FATAL) ? logging::LOG_FATAL : log_level;
+int MojoToChromiumLogLevel(MojoLogLevel log_level) {
+  // See the compile asserts above.
+  return static_cast<int>(log_level);
+}
+
+MojoLogLevel ChromiumToMojoLogLevel(int chromium_log_level) {
+  // See the compile asserts above.
+  return static_cast<MojoLogLevel>(chromium_log_level);
 }
 
 void LogMessage(MojoLogLevel log_level, const char* message) {
+  int chromium_log_level = MojoToChromiumLogLevel(log_level);
+  int chromium_min_log_level = logging::GetMinLogLevel();
+  // "Fatal" errors aren't suppressable.
+  DCHECK_LE(chromium_min_log_level, logging::LOG_FATAL);
+  if (chromium_log_level < chromium_min_log_level)
+    return;
+
   // TODO(vtl): Possibly, we should try to pull out the file and line number
   // from |message|.
-  logging::LogMessage(__FILE__, __LINE__,
-                      GetChromiumLogLevel(log_level)).stream() << message;
+  logging::LogMessage(__FILE__, __LINE__, chromium_log_level).stream()
+      << message;
+}
+
+MojoLogLevel GetMinimumLogLevel() {
+  return ChromiumToMojoLogLevel(logging::GetMinLogLevel());
 }
 
 const MojoLogger kDefaultLogger = {
-  LogMessage
+  LogMessage,
+  GetMinimumLogLevel
 };
 
 }  // namespace

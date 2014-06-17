@@ -25,5 +25,32 @@ TEST(LoggerTest, Basic) {
   }, "");
 }
 
+TEST(LoggerTest, LogLevels) {
+  Environment environment;
+  const MojoLogger* const logger = GetDefaultLogger();
+
+  for (MojoLogLevel log_level = MOJO_LOG_LEVEL_VERBOSE-1;
+       log_level <= MOJO_LOG_LEVEL_FATAL+1;
+       log_level++) {
+    Environment::SetMinimumLogLevel(log_level);
+
+    if (log_level <= MOJO_LOG_LEVEL_FATAL)
+      EXPECT_EQ(log_level, logger->GetMinimumLogLevel());
+    else
+      EXPECT_EQ(MOJO_LOG_LEVEL_FATAL, logger->GetMinimumLogLevel());
+
+    logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE-1, "Logged at VERBOSE-1 level");
+    logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE, "Logged at VERBOSE level");
+    logger->LogMessage(MOJO_LOG_LEVEL_INFO, "Logged at INFO level");
+    logger->LogMessage(MOJO_LOG_LEVEL_WARNING, "Logged at WARNING level");
+    logger->LogMessage(MOJO_LOG_LEVEL_ERROR, "Logged at ERROR level");
+
+    // This should kill us:
+    EXPECT_DEATH({
+      logger->LogMessage(MOJO_LOG_LEVEL_FATAL, "Logged at FATAL level");
+    }, "");
+  }
+}
+
 }  // namespace
 }  // namespace mojo

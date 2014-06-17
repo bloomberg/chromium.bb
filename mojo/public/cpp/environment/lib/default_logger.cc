@@ -7,8 +7,12 @@
 #include <stdio.h>
 #include <stdlib.h>  // For |abort()|.
 
+#include <algorithm>
+
 namespace mojo {
 namespace {
+
+MojoLogLevel g_minimum_log_level = MOJO_LOG_LEVEL_INFO;
 
 const char* GetLogLevelString(MojoLogLevel log_level) {
   if (log_level < MOJO_LOG_LEVEL_VERBOSE)
@@ -28,18 +32,36 @@ const char* GetLogLevelString(MojoLogLevel log_level) {
 }
 
 void LogMessage(MojoLogLevel log_level, const char* message) {
+  if (log_level < g_minimum_log_level)
+    return;
+
   // TODO(vtl): Add timestamp also?
   fprintf(stderr, "%s:%s\n", GetLogLevelString(log_level), message);
   if (log_level >= MOJO_LOG_LEVEL_FATAL)
     abort();
 }
 
+MojoLogLevel GetMinimumLogLevel() {
+  return g_minimum_log_level;
+}
+
 const MojoLogger kDefaultLogger = {
-  LogMessage
+  LogMessage,
+  GetMinimumLogLevel
 };
 
 }  // namespace
 
+namespace internal {
+
+// Declared in mojo/public/cpp/environment/lib/default_logger_internal.h:
+void SetMinimumLogLevel(MojoLogLevel minimum_log_level) {
+  g_minimum_log_level = std::min(minimum_log_level, MOJO_LOG_LEVEL_FATAL);
+}
+
+}  // namespace internal
+
+// Declared in mojo/public/cpp/environment/default_logger.h:
 const MojoLogger* GetDefaultLogger() {
   return &kDefaultLogger;
 }
