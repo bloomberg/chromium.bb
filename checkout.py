@@ -594,11 +594,11 @@ class GitCheckout(CheckoutBase):
       try:
         # Look if the commit hash already exist. If so, we can skip a
         # 'git fetch' call.
-        revision = self._check_output_git(['rev-parse', revision])
+        revision = self._check_output_git(['rev-parse', revision]).rstrip()
       except subprocess.CalledProcessError:
         self._check_call_git(
             ['fetch', self.remote, self.remote_branch, '--quiet'])
-        revision = self._check_output_git(['rev-parse', revision])
+        revision = self._check_output_git(['rev-parse', revision]).rstrip()
       self._check_call_git(['checkout', '--force', '--quiet', revision])
     else:
       branches, active = self._branches()
