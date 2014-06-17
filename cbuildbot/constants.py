@@ -338,6 +338,7 @@ PATCH_TAGS = (INTERNAL_PATCH_TAG, EXTERNAL_PATCH_TAG)
 TREE_OPEN = 'open'
 TREE_THROTTLED = 'throttled'
 TREE_CLOSED = 'closed'
+VALID_TREE_STATUSES = (TREE_OPEN, TREE_THROTTLED, TREE_CLOSED)
 
 _GERRIT_QUERY_TEMPLATE = ('status:open AND '
                           'label:Code-Review=+2 AND '

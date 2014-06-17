@@ -4,16 +4,34 @@
 
 """Manage tree status."""
 
+import httplib
 import json
 import logging
+import os
+import socket
 import time
 import urllib
+import urllib2
 
 from chromite.cbuildbot import constants
+from chromite.lib import osutils
 from chromite.lib import timeout_util
 
 
-STATUS_URL = 'https://chromiumos-status.appspot.com/current?format=json'
+CROS_TREE_STATUS_URL = 'https://chromiumos-status.appspot.com'
+CROS_TREE_STATUS_JSON_URL = '%s/current?format=json' % CROS_TREE_STATUS_URL
+CROS_TREE_STATUS_UPDATE_URL = '%s/status' % CROS_TREE_STATUS_URL
+
+_USER_NAME = 'buildbot@chromium.org'
+_PASSWORD_PATH = '/home/chrome-bot/.status_password'
+
+
+class PasswordFileDoesNotExist(Exception):
+  """Raised when password file does not exist."""
+
+
+class InvalidTreeStatus(Exception):
+  """Raised when user wants to set an invalid tree status."""
 
 
 def _GetStatus(status_url):
@@ -58,7 +76,7 @@ def WaitForTreeStatus(status_url=None, period=1, timeout=1, throttled_ok=False):
     acceptable status.
   """
   if not status_url:
-    status_url = STATUS_URL
+    status_url = CROS_TREE_STATUS_JSON_URL
 
   acceptable_states = set([constants.TREE_OPEN])
   verb = 'open'
@@ -98,7 +116,7 @@ def IsTreeOpen(status_url=None, period=1, timeout=1, throttled_ok=False):
     timeout expired before tree reached acceptable status.
   """
   if not status_url:
-    status_url = STATUS_URL
+    status_url = CROS_TREE_STATUS_JSON_URL
 
   try:
     WaitForTreeStatus(status_url=status_url, period=period, timeout=timeout,
@@ -108,29 +126,56 @@ def IsTreeOpen(status_url=None, period=1, timeout=1, throttled_ok=False):
   return True
 
 
-def GetTreeStatus(status_url, polling_period=0, timeout=0):
-  """Returns the current tree status as fetched from |status_url|.
+def _GetPassword():
+  """Returns the password for updating tree status."""
+  if not os.path.exists(_PASSWORD_PATH):
+    raise PasswordFileDoesNotExist(
+        'Unable to retrieve password. %s does not exist',
+        _PASSWORD_PATH)
 
-  This function returns the tree status as a string, either
-  constants.TREE_OPEN, constants.TREE_THROTTLED, or constants.TREE_CLOSED.
+  return osutils.ReadFile(_PASSWORD_PATH).strip()
+
+
+def _UpdateTreeStatus(status_url, message):
+  """Updates the tree status to |message|.
 
   Args:
-    status_url: The status url to check i.e.
-      'https://status.appspot.com/current?format=json'
-    polling_period: Time to wait in seconds between polling attempts.
-    timeout: Maximum time in seconds to wait for status.
-
-  Returns:
-    constants.TREE_OPEN, constants.TREE_THROTTLED, or constants.TREE_CLOSED
-
-  Raises:
-    time_out.TimeoutError if the timeout expired before the status could be
-    successfully fetched.
+    status_url: The tree status URL.
+    message: The tree status text to post .
   """
-  acceptable_states = set([constants.TREE_OPEN, constants.TREE_THROTTLED,
-                           constants.TREE_CLOSED])
-  def _get_status():
-    return _GetStatus(status_url)
+  password = _GetPassword()
+  params = urllib.urlencode({
+      'message': message,
+      'username': _USER_NAME,
+      'password': password,
+  })
+  headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+  req = urllib2.Request(status_url, data=params, headers=headers)
+  try:
+    urllib2.urlopen(req)
+  except (urllib2.URLError, httplib.HTTPException, socket.error) as e:
+    logging.error('Unable to update tree status: %s', e)
+    raise e
+  else:
+    logging.info('Updated tree status to %s', message)
 
-  return timeout_util.WaitForReturnValue(acceptable_states, _get_status,
-                                         timeout, polling_period)
+
+def UpdateTreeStatus(status, message, status_url=None):
+  """Updates the tree status to |status| with additional |message|.
+
+  Args:
+    status: A status in constants.VALID_TREE_STATUSES.
+    message: A string to display as part of the tree status.
+    status_url: The tree status URL.
+  """
+  if status_url is None:
+    status_url = CROS_TREE_STATUS_UPDATE_URL
+
+  if status not in constants.VALID_TREE_STATUSES:
+    raise InvalidTreeStatus('%s is not a valid tree status.' % status)
+
+  status_text = 'Tree is %(status)s (cbuildbot: %(message)s)' % {
+      'status': status,
+      'message': message}
+
+  _UpdateTreeStatus(status_url, status_text)
