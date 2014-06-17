@@ -3175,6 +3175,42 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
             scroll_layer->TotalScrollOffset().ToString());
 }
 
+void CheckLayerScrollDelta(LayerImpl* layer, gfx::Vector2dF scroll_delta) {
+  const gfx::Transform target_space_transform =
+      layer->draw_properties().target_space_transform;
+  EXPECT_TRUE(target_space_transform.IsScaleOrTranslation());
+  gfx::Point translated_point;
+  target_space_transform.TransformPoint(&translated_point);
+  gfx::Point expected_point = gfx::Point() - ToRoundedVector2d(scroll_delta);
+  EXPECT_EQ(expected_point.ToString(), translated_point.ToString());
+}
+
+TEST_F(LayerTreeHostImplTest,
+       ExternalRootLayerScrollOffsetDelegationReflectedInNextDraw) {
+  TestScrollOffsetDelegate scroll_delegate;
+  host_impl_->SetViewportSize(gfx::Size(10, 20));
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  LayerImpl* clip_layer = scroll_layer->parent()->parent();
+  clip_layer->SetBounds(gfx::Size(10, 20));
+  host_impl_->SetRootLayerScrollOffsetDelegate(&scroll_delegate);
+
+  // Draw first frame to clear any pending draws and check scroll.
+  DrawFrame();
+  CheckLayerScrollDelta(scroll_layer, gfx::Vector2dF(0.f, 0.f));
+  EXPECT_FALSE(host_impl_->active_tree()->needs_update_draw_properties());
+
+  // Set external scroll delta on delegate and notify LayerTreeHost.
+  gfx::Vector2dF scroll_delta(10.f, 10.f);
+  scroll_delegate.set_getter_return_value(scroll_delta);
+  host_impl_->OnRootLayerDelegatedScrollOffsetChanged();
+
+  // Check scroll delta reflected in layer.
+  DrawFrame();
+  CheckLayerScrollDelta(scroll_layer, scroll_delta);
+
+  host_impl_->SetRootLayerScrollOffsetDelegate(NULL);
+}
+
 TEST_F(LayerTreeHostImplTest, OverscrollRoot) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));

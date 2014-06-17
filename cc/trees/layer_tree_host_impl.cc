@@ -2539,6 +2539,7 @@ void LayerTreeHostImpl::SetRootLayerScrollOffsetDelegate(
 void LayerTreeHostImpl::OnRootLayerDelegatedScrollOffsetChanged() {
   DCHECK(root_layer_scroll_offset_delegate_ != NULL);
   client_->SetNeedsCommitOnImplThread();
+  active_tree_->set_needs_update_draw_properties();
 }
 
 void LayerTreeHostImpl::ClearCurrentlyScrollingLayer() {
