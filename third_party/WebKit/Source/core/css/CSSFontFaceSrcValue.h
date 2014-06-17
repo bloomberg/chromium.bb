@@ -73,7 +73,7 @@ public:
 
     bool equals(const CSSFontFaceSrcValue&) const;
 
-    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+    void traceAfterDispatch(Visitor*);
 
 private:
     CSSFontFaceSrcValue(const String& resource, bool local)
@@ -81,7 +81,7 @@ private:
         , m_resource(resource)
         , m_isLocal(local)
 #if ENABLE(SVG_FONTS)
-        , m_svgFontFaceElement(0)
+        , m_svgFontFaceElement(nullptr)
 #endif
     {
     }
@@ -97,7 +97,7 @@ private:
     ResourcePtr<FontResource> m_fetched;
 
 #if ENABLE(SVG_FONTS)
-    SVGFontFaceElement* m_svgFontFaceElement;
+    RawPtrWillBeMember<SVGFontFaceElement> m_svgFontFaceElement;
 #endif
 };
 
