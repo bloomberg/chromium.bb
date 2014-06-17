@@ -691,6 +691,10 @@ class GestureRecognizerTest : public AuraTestBase,
                          : switches::kUnifiedGestureDetectorDisabled);
 
     AuraTestBase::SetUp();
+    ui::GestureConfiguration::set_min_touch_down_duration_in_seconds_for_click(
+        0.001);
+    ui::GestureConfiguration::set_show_press_delay_in_ms(2);
+    ui::GestureConfiguration::set_long_press_time_in_seconds(0.003);
   }
 
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerTest);
@@ -1325,6 +1329,9 @@ TEST_P(GestureRecognizerTest, GestureEventNonRailFling) {
 
 // Check that appropriate touch events generate long press events
 TEST_P(GestureRecognizerTest, GestureEventLongPress) {
+  ui::GestureConfiguration::set_max_touch_down_duration_in_seconds_for_click(
+      0.0025);
+
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -1376,7 +1383,6 @@ TEST_P(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
-  ui::GestureConfiguration::set_long_press_time_in_seconds(.01);
   const int kWindowWidth = 123;
   const int kWindowHeight = 45;
   const int kTouchId = 6;
@@ -1420,6 +1426,8 @@ TEST_P(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
 
 // Check that appropriate touch events generate long tap events
 TEST_P(GestureRecognizerTest, GestureEventLongTap) {
+  ui::GestureConfiguration::set_max_touch_down_duration_in_seconds_for_click(
+      0.0025);
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -1472,7 +1480,6 @@ TEST_P(GestureRecognizerTest, GestureEventLongPressCancelledBySecondTap) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
-  ui::GestureConfiguration::set_long_press_time_in_seconds(.01);
   const int kWindowWidth = 300;
   const int kWindowHeight = 400;
   const int kTouchId1 = 8;
