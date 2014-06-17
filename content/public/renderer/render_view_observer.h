@@ -11,7 +11,6 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/web/WebIconURL.h"
 
 class GURL;
 
@@ -29,6 +28,7 @@ class WebGestureEvent;
 class WebLocalFrame;
 class WebMouseEvent;
 class WebNode;
+class WebString;
 class WebTouchEvent;
 class WebURL;
 struct WebURLError;
