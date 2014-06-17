@@ -118,6 +118,7 @@ def Main(args):
         'nacl-toolchain-linux-pnacl-x86_64',
         'nacl-toolchain-linux-pnacl-x86_32',
         'nacl-toolchain-mac-pnacl-x86_32',
+        'nacl-toolchain-win7-pnacl-x86_64',
         ]
 
     if options.dry_run:
