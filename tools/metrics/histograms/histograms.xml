@@ -48037,7 +48037,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <suffix name="exp8" label="Likelihood threshold experiment 8."/>
   <suffix name="exp9" label="Likelihood threshold experiment 9."/>
   <suffix name="gws" label="GWS triggered prerender."/>
-  <suffix name="instant" label="Instant search prerender."/>
+  <suffix name="Instant" label="Instant search prerender."/>
   <suffix name="localpredictor" label="Local predictor triggered prerender."/>
   <suffix name="omnibox" label="Triggered from the omnibox."/>
   <suffix name="wash" label="Multiple sources could have triggered."/>
