@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_codecs.idl modified Tue May  6 05:14:19 2014. */
+/* From pp_codecs.idl modified Tue Jun 10 13:32:45 2014. */
 
 #ifndef PPAPI_C_PP_CODECS_H_
 #define PPAPI_C_PP_CODECS_H_
@@ -35,7 +35,8 @@ typedef enum {
   PP_VIDEOPROFILE_H264STEREOHIGH = 9,
   PP_VIDEOPROFILE_H264MULTIVIEWHIGH = 10,
   PP_VIDEOPROFILE_VP8MAIN = 11,
-  PP_VIDEOPROFILE_MAX = PP_VIDEOPROFILE_VP8MAIN
+  PP_VIDEOPROFILE_VP9MAIN = 12,
+  PP_VIDEOPROFILE_MAX = PP_VIDEOPROFILE_VP9MAIN
 } PP_VideoProfile;
 /**
  * @}
@@ -66,7 +67,7 @@ struct PP_VideoPicture {
    *   GL_TEXTURE_2D                 (normalized texture coordinates)
    *   GL_TEXTURE_RECTANGLE_ARB      (dimension dependent texture coordinates)
    *
-   * The pixel format of the texture is GL_BGRA.
+   * The pixel format of the texture is GL_RGBA.
    */
   uint32_t texture_target;
   /**

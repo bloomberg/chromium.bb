@@ -18,6 +18,7 @@
 #include "media/base/limits.h"
 #include "media/base/video_decoder.h"
 #include "media/filters/ffmpeg_video_decoder.h"
+#include "media/filters/vpx_video_decoder.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/pp_errors.h"
@@ -124,10 +125,15 @@ VideoDecoderShim::DecoderImpl::~DecoderImpl() {
 void VideoDecoderShim::DecoderImpl::Initialize(
     media::VideoDecoderConfig config) {
   DCHECK(!decoder_);
-  scoped_ptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder(
-      new media::FFmpegVideoDecoder(base::MessageLoopProxy::current()));
-  ffmpeg_video_decoder->set_decode_nalus(true);
-  decoder_ = ffmpeg_video_decoder.Pass();
+  if (config.codec() == media::kCodecVP9) {
+    decoder_.reset(
+        new media::VpxVideoDecoder(base::MessageLoopProxy::current()));
+  } else {
+    scoped_ptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder(
+        new media::FFmpegVideoDecoder(base::MessageLoopProxy::current()));
+    ffmpeg_video_decoder->set_decode_nalus(true);
+    decoder_ = ffmpeg_video_decoder.Pass();
+  }
   max_decodes_at_decoder_ = decoder_->GetMaxDecodeRequests();
   // We can use base::Unretained() safely in decoder callbacks because we call
   // VideoDecoder::Stop() before deletion. Stop() guarantees there will be no
@@ -324,6 +330,8 @@ bool VideoDecoderShim::Initialize(
     codec = media::kCodecH264;
   else if (profile <= media::VP8PROFILE_MAX)
     codec = media::kCodecVP8;
+  else if (profile <= media::VP9PROFILE_MAX)
+    codec = media::kCodecVP9;
   DCHECK_NE(codec, media::kUnknownVideoCodec);
 
   media::VideoDecoderConfig config(

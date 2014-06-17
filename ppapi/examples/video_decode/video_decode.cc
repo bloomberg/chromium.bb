@@ -228,7 +228,6 @@ Decoder::Decoder(MyInstance* instance,
       next_picture_id_(0),
       flushing_(false),
       resetting_(false) {
-// TODO(bbudge) Remove this for final patch.
 #if defined USE_VP8_TESTDATA_INSTEAD_OF_H264
   const PP_VideoProfile kBitstreamProfile = PP_VIDEOPROFILE_VP8MAIN;
 #else

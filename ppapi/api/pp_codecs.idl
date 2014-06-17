@@ -19,7 +19,8 @@ enum PP_VideoProfile {
   PP_VIDEOPROFILE_H264STEREOHIGH = 9,
   PP_VIDEOPROFILE_H264MULTIVIEWHIGH = 10,
   PP_VIDEOPROFILE_VP8MAIN = 11,
-  PP_VIDEOPROFILE_MAX = PP_VIDEOPROFILE_VP8MAIN
+  PP_VIDEOPROFILE_VP9MAIN = 12,
+  PP_VIDEOPROFILE_MAX = PP_VIDEOPROFILE_VP9MAIN
 };
 
 /**
@@ -45,7 +46,7 @@ struct PP_VideoPicture {
    *   GL_TEXTURE_2D                 (normalized texture coordinates)
    *   GL_TEXTURE_RECTANGLE_ARB      (dimension dependent texture coordinates)
    *
-   * The pixel format of the texture is GL_BGRA.
+   * The pixel format of the texture is GL_RGBA.
    */
   uint32_t texture_target;
 
