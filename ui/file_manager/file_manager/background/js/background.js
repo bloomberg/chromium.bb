@@ -20,10 +20,16 @@ var LaunchType = Object.freeze({
  */
 function Background() {
   /**
-   * Map of all currently open app windows. The key is an app id.
+   * Map of all currently open app windows. The key is an app ID.
    * @type {Object.<string, AppWindow>}
    */
   this.appWindows = {};
+
+  /**
+   * Map of all currently open file dialogs. The key is an app ID.
+   * @type {Object.<string, DOMWindow>}
+   */
+  this.dialogs = {};
 
   /**
    * Synchronous queue for asynchronous calls.
@@ -536,18 +542,36 @@ SingletonAppWindowWrapper.prototype.reopen = function(opt_callback) {
 
 /**
  * Prefix for the file manager window ID.
+ * @type {string}
+ * @const
  */
 var FILES_ID_PREFIX = 'files#';
 
 /**
  * Regexp matching a file manager window ID.
+ * @type {RegExp}
+ * @const
  */
 var FILES_ID_PATTERN = new RegExp('^' + FILES_ID_PREFIX + '(\\d*)$');
 
 /**
+ * Prefix for the dialog ID.
+ * @type {string}
+ * @const
+ */
+var DIALOG_ID_PREFIX = 'dialog#';
+
+/**
  * Value of the next file manager window ID.
+ * @type {number}
  */
 var nextFileManagerWindowID = 0;
+
+/**
+ * Value of the next file manager dialog ID.
+ * @type {number}
+ */
+var nextFileManagerDialogID = 0;
 
 /**
  * File manager window create options.
@@ -681,6 +705,19 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
         opt_callback(appId);
       onTaskCompleted();
     });
+  });
+}
+
+/**
+ * Registers dialog window to the background page.
+ *
+ * @param {DOMWindow} dialogWindow Window of the dialog.
+ */
+function registerDialog(dialogWindow) {
+  var id = DIALOG_ID_PREFIX + (nextFileManagerDialogID++);
+  background.dialogs[id] = dialogWindow;
+  dialogWindow.addEventListener('pagehide', function() {
+    delete background.dialogs[id];
   });
 }
 

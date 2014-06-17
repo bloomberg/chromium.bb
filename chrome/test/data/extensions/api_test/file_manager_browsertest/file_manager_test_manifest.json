@@ -14,6 +14,7 @@
       "file_manager/copy_between_windows.js",
       "file_manager/create_new_folder.js",
       "file_manager/drive_specific.js",
+      "file_manager/file_dialog.js",
       "file_manager/file_display.js",
       "file_manager/folder_shortcuts.js",
       "file_manager/grid_view.js",
@@ -35,6 +36,7 @@
     ]
   },
   "permissions": [
+    "fileSystem",
     "tabs",
     "chrome-extension://oobinhbdbiehknkpbpejbbpdbkdjmoco/*",
     "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/*"

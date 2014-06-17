@@ -53,9 +53,6 @@ test.util.async.openMainWindow = function(appState, callback) {
 /**
  * Obtains window information.
  *
- * @param {string} appIdPrefix ID prefix of the requested window.
- * @param {function(Array.<{innerWidth:number, innerHeight:number}>)} callback
- *     Completion callback with the window information.
  * @return {Object.<string, {innerWidth:number, innerHeight:number}>} Map window
  *     ID and window information.
  */
@@ -66,6 +63,12 @@ test.util.sync.getWindows = function() {
     windows[id] = {
       innerWidth: windowWrapper.contentWindow.innerWidth,
       innerHeight: windowWrapper.contentWindow.innerHeight
+    };
+  }
+  for (var id in background.dialogs) {
+    windows[id] = {
+      innerWidth: background.dialogs[id].innerWidth,
+      innerHeight: background.dialogs[id].innerHeight
     };
   }
   return windows;
@@ -684,11 +687,14 @@ test.util.registerRemoteTestUtils = function() {
     // Prepare arguments.
     var args = request.args.slice();  // shallow copy
     if (request.appId) {
-      if (!background.appWindows[request.appId]) {
+      if (background.appWindows[request.appId]) {
+        args.unshift(background.appWindows[request.appId].contentWindow);
+      } else if (background.dialogs[request.appId]) {
+        args.unshift(background.dialogs[request.appId]);
+      } else {
         console.error('Specified window not found: ' + request.appId);
         return false;
       }
-      args.unshift(background.appWindows[request.appId].contentWindow);
     }
     // Call the test utility function and respond the result.
     if (test.util.async[request.func]) {

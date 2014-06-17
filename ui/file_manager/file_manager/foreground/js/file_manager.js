@@ -677,6 +677,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.backgroundPage_ = backgroundPage;
       this.backgroundPage_.background.ready(function() {
         loadTimeData.data = this.backgroundPage_.background.stringData;
+        if (util.platform.runningInBrowser()) {
+          this.backgroundPage_.registerDialog(window);
+        }
         callback();
       }.bind(this));
     }.bind(this));
@@ -2960,14 +2963,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
     }
 
-    switch (util.getKeyModifiers(event) + event.keyCode) {
-      case 'Ctrl-190':  // Ctrl-. => Toggle filter files.
+    switch (util.getKeyModifiers(event) + event.keyIdentifier) {
+      case 'Ctrl-U+00BE':  // Ctrl-. => Toggle filter files.
         this.fileFilter_.setFilterHidden(
             !this.fileFilter_.isFilterHiddenOn());
         event.preventDefault();
         return;
 
-      case '27':  // Escape => Cancel dialog.
+      case 'U+001B':  // Escape => Cancel dialog.
         if (this.dialogType != DialogType.FULL_PAGE) {
           // If there is nothing else for ESC to do, then cancel the dialog.
           event.preventDefault();
