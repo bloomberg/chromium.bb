@@ -160,22 +160,25 @@ public:
     bool inUseShadowTree() const;
 
     class InvalidationGuard {
+        STACK_ALLOCATED();
         WTF_MAKE_NONCOPYABLE(InvalidationGuard);
     public:
         InvalidationGuard(SVGElement* element) : m_element(element) { }
         ~InvalidationGuard() { m_element->invalidateInstances(); }
+
     private:
-        SVGElement* m_element;
+        RawPtrWillBeMember<SVGElement> m_element;
     };
 
     class InstanceUpdateBlocker {
+        STACK_ALLOCATED();
         WTF_MAKE_NONCOPYABLE(InstanceUpdateBlocker);
     public:
         InstanceUpdateBlocker(SVGElement* targetElement);
         ~InstanceUpdateBlocker();
 
     private:
-        SVGElement* m_targetElement;
+        RawPtrWillBeMember<SVGElement> m_targetElement;
     };
 
     void invalidateInstances();
