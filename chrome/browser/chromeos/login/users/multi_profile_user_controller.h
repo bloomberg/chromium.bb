@@ -80,7 +80,6 @@ class MultiProfileUserController {
   static const char kBehaviorUnrestricted[];
   static const char kBehaviorPrimaryOnly[];
   static const char kBehaviorNotAllowed[];
-  static const char kBehaviorOwnerPrimaryOnly[];
 
  private:
   friend class MultiProfileUserControllerTest;

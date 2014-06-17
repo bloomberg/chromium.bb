@@ -1665,9 +1665,6 @@ Press any key to continue exploring.
   <message name="IDS_MULTI_PROFILES_PRIMARY_ONLY_POLICY_MSG" desc="Text that is shown on the bubble shown for user pod which is not allowed in multi-profiles session because of primary-only policy.">
     The administrator for this account requires this account to be the first signed-in account in a multiple sign-in session.
   </message>
-  <message name="IDS_MULTI_PROFILES_OWNER_PRIMARY_ONLY_MSG" desc="Text that is shown on the bubble shown for owner user pod which is not allowed in multi-profiles session because it has to be primary user in the session.">
-    This owner account has to be the first signed-in account in a multiple sign-in session.
-  </message>
   <message name="IDS_LOCAL_STATE_ERROR_TEXT_0" desc="Text for notification that Local State file is corrupted and powerwash is required.">
     Unfortunately, <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> is unable to recover your settings. To fix the error, <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> must reset your device with Powerwash.
   </message>

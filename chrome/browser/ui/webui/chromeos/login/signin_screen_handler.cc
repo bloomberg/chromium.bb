@@ -334,8 +334,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_MULTI_PROFILES_NOT_ALLOWED_POLICY_MSG);
   builder->Add("multiProfilesPrimaryOnlyPolicyMsg",
                IDS_MULTI_PROFILES_PRIMARY_ONLY_POLICY_MSG);
-  builder->Add("multiProfilesOwnerPrimaryOnlyMsg",
-               IDS_MULTI_PROFILES_OWNER_PRIMARY_ONLY_MSG);
 
   // Strings used by password changed dialog.
   builder->Add("passwordChangedTitle", IDS_LOGIN_PASSWORD_CHANGED_TITLE);

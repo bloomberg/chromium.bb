@@ -317,11 +317,10 @@ const UserList& UserManagerImpl::GetUsers() const {
 }
 
 UserList UserManagerImpl::GetUsersAdmittedForMultiProfile() const {
-  // Supervised users are not allowed to use multi-profiles.
+  // Supervised users are not allowed to use multi profile.
   if (logged_in_users_.size() == 1 &&
-      GetPrimaryUser()->GetType() != User::USER_TYPE_REGULAR) {
+      GetPrimaryUser()->GetType() != User::USER_TYPE_REGULAR)
     return UserList();
-  }
 
   UserList result;
   int num_users_allowed = 0;
@@ -338,10 +337,8 @@ UserList UserManagerImpl::GetUsersAdmittedForMultiProfile() const {
 
       // Users with a policy that prevents them being added to a session will be
       // shown in login UI but will be grayed out.
-      // Same applies to owner account (see http://crbug.com/385034).
       if (check == MultiProfileUserController::ALLOWED ||
-          check == MultiProfileUserController::NOT_ALLOWED_POLICY_FORBIDS ||
-          check == MultiProfileUserController::NOT_ALLOWED_OWNER_AS_SECONDARY) {
+          check == MultiProfileUserController::NOT_ALLOWED_POLICY_FORBIDS) {
         result.push_back(*it);
         if (check == MultiProfileUserController::ALLOWED)
           num_users_allowed++;
@@ -1293,7 +1290,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
 
 void UserManagerImpl::RetrieveTrustedDevicePolicies() {
   ephemeral_users_enabled_ = false;
-  owner_email_.clear();
+  owner_email_ = "";
 
   // Schedule a callback if device policy has not yet been verified.
   if (CrosSettingsProvider::TRUSTED != cros_settings_->PrepareTrustedValues(

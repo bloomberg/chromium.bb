@@ -530,8 +530,6 @@ cr.define('login', function() {
         this.querySelector('.mp-policy-title').hidden = false;
         if (this.user.multiProfilesPolicy == 'primary-only')
           this.querySelector('.mp-policy-primary-only-msg').hidden = false;
-        else if (this.user.multiProfilesPolicy == 'owner-primary-only')
-          this.querySelector('.mp-owner-primary-only-msg').hidden = false;
         else
           this.querySelector('.mp-policy-not-allowed-msg').hidden = false;
       } else if (this.user_.isApp) {
