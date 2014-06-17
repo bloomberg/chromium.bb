@@ -307,6 +307,9 @@ const char kDisablePasswordManagerReauthentication[] =
 // Enables searching for people from the apps list search box.
 const char kDisablePeopleSearch[]           = "disable-people-search";
 
+// Don't use bubbles for content permissions requests instead of infobars.
+const char kDisablePermissionsBubbles[]      = "disable-permissions-bubbles";
+
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 

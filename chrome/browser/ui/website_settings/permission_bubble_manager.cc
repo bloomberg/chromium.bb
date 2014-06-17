@@ -63,8 +63,15 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PermissionBubbleManager);
 
 // static
 bool PermissionBubbleManager::Enabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePermissionsBubbles);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePermissionsBubbles))
+    return true;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePermissionsBubbles))
+    return false;
+
+  return false;
 }
 
 PermissionBubbleManager::PermissionBubbleManager(

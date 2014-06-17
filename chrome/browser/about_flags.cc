@@ -1706,7 +1706,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_NAME,
     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnablePermissionsBubbles)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePermissionsBubbles,
+                              switches::kDisablePermissionsBubbles)
   },
   {
     "enable-session-crashed-bubble",

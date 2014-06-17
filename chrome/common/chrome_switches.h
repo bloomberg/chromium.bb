@@ -93,6 +93,7 @@ extern const char kDisableOfflineAutoReloadVisibleOnly[];
 extern const char kDisableOriginChip[];
 extern const char kDisablePasswordManagerReauthentication[];
 extern const char kDisablePeopleSearch[];
+extern const char kDisablePermissionsBubbles[];
 extern const char kDisablePnacl[];
 extern const char kDisablePopupBlocking[];
 extern const char kDisablePreconnect[];
