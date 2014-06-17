@@ -238,8 +238,8 @@ def SetUpArch():
   # do auto feature detection based on CPUID, but constrained by what is
   # accepted by NaCl validators.
   cpu_map = {
-      'X8632': 'pentium4',
-      'X8664': 'core2',
+      'X8632': 'pentium4m',
+      'X8664': 'x86-64',
       'ARM': 'cortex-a9',
       'MIPS32': 'mips32r2'}
   env.set('LLC_MCPU', '-mcpu=%s' % cpu_map[base_arch])
