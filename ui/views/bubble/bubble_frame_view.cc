@@ -21,10 +21,11 @@
 
 namespace {
 
-// Padding, in pixels, for the title view, when it exists.
+// Insets for the title bar views in pixels.
 const int kTitleTopInset = 12;
 const int kTitleLeftInset = 19;
 const int kTitleBottomInset = 12;
+const int kTitleRightInset = 7;
 
 // Get the |vertical| or horizontal amount that |available_bounds| overflows
 // |window_bounds|.
@@ -58,7 +59,8 @@ const char BubbleFrameView::kViewClassName[] = "BubbleFrameView";
 
 // static
 gfx::Insets BubbleFrameView::GetTitleInsets() {
-  return gfx::Insets(kTitleTopInset, kTitleLeftInset, kTitleBottomInset, 0);
+  return gfx::Insets(kTitleTopInset, kTitleLeftInset,
+                     kTitleBottomInset, kTitleRightInset);
 }
 
 BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
@@ -80,8 +82,8 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
                    *rb.GetImageNamed(IDR_CLOSE_DIALOG_H).ToImageSkia());
   close_->SetImage(CustomButton::STATE_PRESSED,
                    *rb.GetImageNamed(IDR_CLOSE_DIALOG_P).ToImageSkia());
-  close_->SetSize(close_->GetPreferredSize());
   close_->SetBorder(scoped_ptr<Border>());
+  close_->SetSize(close_->GetPreferredSize());
   close_->SetVisible(false);
   AddChildView(close_);
 }
@@ -180,31 +182,30 @@ gfx::Size BubbleFrameView::GetMinimumSize() const {
 
 void BubbleFrameView::Layout() {
   gfx::Rect bounds(GetContentsBounds());
+  bounds.Inset(GetTitleInsets());
   if (bounds.IsEmpty())
     return;
 
-  // Small additional insets yield the desired 10px visual close button insets.
-  bounds.Inset(0, 0, close_->width() + 1, 0);
-  close_->SetPosition(gfx::Point(bounds.right(), bounds.y() + 2));
+  // The close button top inset is actually smaller than the title top inset.
+  close_->SetPosition(gfx::Point(bounds.right() - close_->width(),
+                                 bounds.y() - 5));
 
-  gfx::Rect title_bounds(bounds);
-  title_bounds.Inset(kTitleLeftInset, kTitleTopInset, 0, 0);
   gfx::Size title_size(title_->GetPreferredSize());
-  const int title_width = std::max(0, close_->bounds().x() - title_bounds.x());
+  const int title_width = std::max(0, close_->x() - bounds.x());
   title_size.SetToMin(gfx::Size(title_width, title_size.height()));
-  title_bounds.set_size(title_size);
-  title_->SetBoundsRect(title_bounds);
+  bounds.set_size(title_size);
+  title_->SetBoundsRect(bounds);
 
   if (titlebar_extra_view_) {
-    const int extra_width = close_->bounds().x() - title_->bounds().right();
+    const int extra_width = close_->x() - title_->bounds().right();
     gfx::Size size = titlebar_extra_view_->GetPreferredSize();
     size.SetToMin(gfx::Size(std::max(0, extra_width), size.height()));
     gfx::Rect titlebar_extra_view_bounds(
-        bounds.right() - size.width(),
-        title_bounds.y(),
+        close_->x() - size.width(),
+        bounds.y(),
         size.width(),
-        title_bounds.height());
-    titlebar_extra_view_bounds.Subtract(title_bounds);
+        bounds.height());
+    titlebar_extra_view_bounds.Subtract(bounds);
     titlebar_extra_view_->SetBoundsRect(titlebar_extra_view_bounds);
   }
 }
