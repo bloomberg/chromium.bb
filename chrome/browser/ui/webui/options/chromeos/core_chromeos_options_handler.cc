@@ -320,15 +320,10 @@ void CoreChromeOSOptionsHandler::GetLocalizedValues(
   if (connector->IsEnterpriseManaged()) {
     // Managed machines have no "owner".
     localized_strings->SetString("controlledSettingOwner", base::string16());
-    localized_strings->SetString("controlledSettingsOwner", base::string16());
   } else {
     localized_strings->SetString("controlledSettingOwner",
         l10n_util::GetStringFUTF16(
             IDS_OPTIONS_CONTROLLED_SETTING_OWNER,
-            base::ASCIIToUTF16(user_manager->GetOwnerEmail())));
-    localized_strings->SetString("controlledSettingsOwner",
-        l10n_util::GetStringFUTF16(
-            IDS_OPTIONS_CONTROLLED_SETTINGS_OWNER,
             base::ASCIIToUTF16(user_manager->GetOwnerEmail())));
   }
 }

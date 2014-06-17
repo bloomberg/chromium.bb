@@ -48,14 +48,10 @@ cr.define('options', function() {
       if (this.showWhitelist_) {
         options.accounts.UserList.decorate(userList);
       } else {
+        $('ownerOnlyWarning').hidden = false;
         this.managed = AccountsOptions.whitelistIsManaged();
-        var controlledIndicator = document.querySelector(
-            '#accountsPage .controlled-settings-header ' +
-            '.controlled-setting-indicator');
-        controlledIndicator.setAttribute('controlled-by',
-                                         this.managed ? 'policy' : 'owner');
-        controlledIndicator.location = cr.ui.ArrowLocation.TOP_START;
       }
+
       this.addEventListener('visibleChange', this.handleVisibleChange_);
 
       $('useWhitelistCheck').addEventListener('change',

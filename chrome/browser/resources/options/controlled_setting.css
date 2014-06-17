@@ -27,16 +27,6 @@
   padding: 0;
 }
 
-.overlay .page .controlled-settings-header h1 {
-  -webkit-margin-end: 0;
-  -webkit-padding-end: 0;
-  display: inline-block;
-}
-
-.overlay .page .controlled-settings-header h1 + span {
-  -webkit-margin-end: 30px;
-}
-
 .controlled-setting-indicator:not([controlled-by]) {
   display: none;
 }
