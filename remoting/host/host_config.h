@@ -40,6 +40,8 @@ extern const char kHostSecretHashConfigPath[];
 extern const char kPrivateKeyConfigPath[];
 // Whether consent is given for usage stats reporting.
 extern const char kUsageStatsConsentConfigPath[];
+// Whether to offer VP9 encoding to clients.
+extern const char kEnableVp9ConfigPath[];
 
 // HostConfig interace provides read-only access to host configuration.
 class HostConfig {

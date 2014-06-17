@@ -124,6 +124,9 @@ const char kAuthSocknameSwitchName[] = "ssh-auth-sockname";
 // when it is successfully started.
 const char kSignalParentSwitchName[] = "signal-parent";
 
+// Command line switch used to enable VP9 encoding.
+const char kEnableVp9SwitchName[] = "enable-vp9";
+
 // Value used for --host-config option to indicate that the path must be read
 // from stdin.
 const char kStdinConfigPath[] = "-";
@@ -287,6 +290,7 @@ class HostProcess
   std::string serialized_config_;
   std::string host_owner_;
   bool use_service_account_;
+  bool enable_vp9_;
 
   scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
   std::string host_domain_;
@@ -331,6 +335,7 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
     : context_(context.Pass()),
       state_(HOST_INITIALIZING),
       use_service_account_(false),
+      enable_vp9_(false),
       host_username_match_required_(false),
       allow_nat_traversal_(true),
       allow_relay_(true),
@@ -816,6 +821,14 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
     host_owner_ = xmpp_server_config_.username;
     use_service_account_ = false;
   }
+
+  // Allow offering of VP9 encoding to be overridden by the command-line.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableVp9SwitchName)) {
+    enable_vp9_ = true;
+  } else {
+    config->GetBoolean(kEnableVp9ConfigPath, &enable_vp9_);
+  }
+
   return true;
 }
 
@@ -1189,6 +1202,13 @@ void HostProcess::StartHost() {
       context_->video_encode_task_runner(),
       context_->network_task_runner(),
       context_->ui_task_runner()));
+
+  if (enable_vp9_) {
+    scoped_ptr<protocol::CandidateSessionConfig> config =
+        host_->protocol_config()->Clone();
+    config->EnableVideoCodec(protocol::ChannelConfig::CODEC_VP9);
+    host_->set_protocol_config(config.Pass());
+  }
 
   // TODO(simonmorris): Get the maximum session duration from a policy.
 #if defined(OS_LINUX)

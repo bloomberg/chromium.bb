@@ -139,12 +139,13 @@ class ChromotingHost : public base::NonThreadSafe,
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response) OVERRIDE;
 
+  // Gets the candidate configuration for the protocol.
+  const protocol::CandidateSessionConfig* protocol_config() const {
+    return protocol_config_.get();
+  }
+
   // Sets desired configuration for the protocol. Must be called before Start().
   void set_protocol_config(scoped_ptr<protocol::CandidateSessionConfig> config);
-
-  base::WeakPtr<ChromotingHost> AsWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
 
   // The host uses a pairing registry to generate and store pairing information
   // for clients for PIN-less authentication.
@@ -154,6 +155,10 @@ class ChromotingHost : public base::NonThreadSafe,
   void set_pairing_registry(
       scoped_refptr<protocol::PairingRegistry> pairing_registry) {
     pairing_registry_ = pairing_registry;
+  }
+
+  base::WeakPtr<ChromotingHost> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
   }
 
  private:

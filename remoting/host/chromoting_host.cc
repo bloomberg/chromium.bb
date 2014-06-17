@@ -31,8 +31,6 @@ namespace remoting {
 
 namespace {
 
-const char kEnableVp9SwitchName[] = "enable-vp9";
-
 const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
   // Number of initial errors (in sequence) to ignore before applying
   // exponential back-off rules.
@@ -91,11 +89,6 @@ ChromotingHost::ChromotingHost(
   DCHECK(signal_strategy);
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
-
-  // Enable VP9 if specified on the command-line.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableVp9SwitchName)) {
-    protocol_config_->EnableVideoCodec(protocol::ChannelConfig::CODEC_VP9);
-  }
 
   if (!desktop_environment_factory_->SupportsAudioCapture()) {
     protocol_config_->DisableAudioChannel();
