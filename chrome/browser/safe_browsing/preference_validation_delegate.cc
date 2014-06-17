@@ -72,7 +72,7 @@ void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
 
 void PreferenceValidationDelegate::OnSplitPreferenceValidation(
     const std::string& pref_path,
-    const base::DictionaryValue* dict_value,
+    const base::DictionaryValue* /* dict_value */,
     const std::vector<std::string>& invalid_keys,
     PrefHashStoreTransaction::ValueState value_state,
     TrackedPreferenceHelper::ResetAction /* reset_action */) {

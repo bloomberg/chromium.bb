@@ -83,6 +83,21 @@ class PreferenceValidationDelegateTest : public testing::Test {
   scoped_ptr<TrackedPreferenceValidationDelegate> instance_;
 };
 
+// Tests that a NULL value results in an incident with no value.
+TEST_F(PreferenceValidationDelegateTest, NullValue) {
+  instance_->OnAtomicPreferenceValidation(kPrefPath_,
+                                          NULL,
+                                          PrefHashStoreTransaction::CLEARED,
+                                          TrackedPreferenceHelper::DONT_RESET);
+  safe_browsing::ClientIncidentReport_IncidentData* incident =
+      incidents_.back();
+  EXPECT_FALSE(incident->tracked_preference().has_atomic_value());
+  EXPECT_EQ(
+      safe_browsing::
+          ClientIncidentReport_IncidentData_TrackedPreferenceIncident::CLEARED,
+      incident->tracked_preference().value_state());
+}
+
 // Tests that all supported value types can be stringified into an incident. The
 // parameters for the test are the type of value to test and the expected value
 // string.
@@ -137,6 +152,7 @@ TEST_P(PreferenceValidationDelegateValues, Value) {
                                           MakeValue(value_type_).get(),
                                           PrefHashStoreTransaction::CLEARED,
                                           TrackedPreferenceHelper::DONT_RESET);
+  ASSERT_EQ(1U, incidents_.size());
   safe_browsing::ClientIncidentReport_IncidentData* incident =
       incidents_.back();
   EXPECT_EQ(std::string(expected_value_),
@@ -214,7 +230,7 @@ class PreferenceValidationDelegateWithIncident
 TEST_P(PreferenceValidationDelegateWithIncident, Atomic) {
   instance_->OnAtomicPreferenceValidation(
       kPrefPath_, null_value_.get(), value_state_, reset_action_);
-  EXPECT_EQ(1U, incidents_.size());
+  ASSERT_EQ(1U, incidents_.size());
   safe_browsing::ClientIncidentReport_IncidentData* incident =
       incidents_.back();
   EXPECT_TRUE(incident->has_tracked_preference());
@@ -232,7 +248,7 @@ TEST_P(PreferenceValidationDelegateWithIncident, Atomic) {
 TEST_P(PreferenceValidationDelegateWithIncident, Split) {
   instance_->OnSplitPreferenceValidation(
       kPrefPath_, &dict_value_, invalid_keys_, value_state_, reset_action_);
-  EXPECT_EQ(1U, incidents_.size());
+  ASSERT_EQ(1U, incidents_.size());
   safe_browsing::ClientIncidentReport_IncidentData* incident =
       incidents_.back();
   EXPECT_TRUE(incident->has_tracked_preference());
