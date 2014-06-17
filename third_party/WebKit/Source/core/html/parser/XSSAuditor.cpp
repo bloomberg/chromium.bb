@@ -249,15 +249,16 @@ static bool isSemicolonSeparatedAttribute(const HTMLToken::Attribute& attribute)
     return threadSafeMatch(attribute.name, SVGNames::valuesAttr);
 }
 
-static bool semicolonSeparatedValueContainsJavaScriptURL(const String& value)
+static String semicolonSeparatedValueContainingJavaScriptURL(const String& value)
 {
     Vector<String> valueList;
     value.split(';', valueList);
     for (size_t i = 0; i < valueList.size(); ++i) {
-        if (protocolIsJavaScript(valueList[i]))
-            return true;
+        String stripped = stripLeadingAndTrailingHTMLSpaces(valueList[i]);
+        if (protocolIsJavaScript(stripped))
+            return stripped;
     }
-    return false;
+    return emptyString();
 }
 
 XSSAuditor::XSSAuditor()
@@ -600,14 +601,24 @@ bool XSSAuditor::eraseDangerousAttributesIfInjected(const FilterTokenRequest& re
 
     bool didBlockScript = false;
     for (size_t i = 0; i < request.token.attributes().size(); ++i) {
+        bool eraseAttribute = false;
+        bool valueContainsJavaScriptURL = false;
         const HTMLToken::Attribute& attribute = request.token.attributes().at(i);
-        bool isInlineEventHandler = isNameOfInlineEventHandler(attribute.name);
-        // FIXME: It would be better if we didn't create a new String for every attribute in the document.
-        String strippedValue = stripLeadingAndTrailingHTMLSpaces(String(attribute.value));
-        bool valueContainsJavaScriptURL = (!isInlineEventHandler && protocolIsJavaScript(strippedValue)) || (isSemicolonSeparatedAttribute(attribute) && semicolonSeparatedValueContainsJavaScriptURL(strippedValue));
-        if (!isInlineEventHandler && !valueContainsJavaScriptURL)
-            continue;
-        if (!isContainedInRequest(canonicalize(snippetFromAttribute(request, attribute), ScriptLikeAttributeTruncation)))
+        // FIXME: Don't create a new String for every attribute.value in the document.
+        if (isNameOfInlineEventHandler(attribute.name)) {
+            eraseAttribute = isContainedInRequest(canonicalize(snippetFromAttribute(request, attribute), ScriptLikeAttributeTruncation));
+        } else if (protocolIsJavaScript(stripLeadingAndTrailingHTMLSpaces(String(attribute.value)))) {
+            valueContainsJavaScriptURL = true;
+            eraseAttribute = isContainedInRequest(canonicalize(snippetFromAttribute(request, attribute), ScriptLikeAttributeTruncation));
+        } else if (isSemicolonSeparatedAttribute(attribute)) {
+            String subValue = semicolonSeparatedValueContainingJavaScriptURL(String(attribute.value));
+            if (!subValue.isEmpty()) {
+                valueContainsJavaScriptURL = true;
+                eraseAttribute = isContainedInRequest(canonicalize(nameFromAttribute(request, attribute), NoTruncation))
+                    && isContainedInRequest(canonicalize(subValue, ScriptLikeAttributeTruncation));
+            }
+        }
+        if (!eraseAttribute)
             continue;
         request.token.eraseValueOfAttribute(i);
         if (valueContainsJavaScriptURL)
@@ -648,9 +659,18 @@ String XSSAuditor::canonicalizedSnippetForTagName(const FilterTokenRequest& requ
     return canonicalize(request.sourceTracker.sourceForToken(request.token).substring(0, request.token.name().size() + 1), NoTruncation);
 }
 
+String XSSAuditor::nameFromAttribute(const FilterTokenRequest& request, const HTMLToken::Attribute& attribute)
+{
+    // The range inlcudes the character which terminates the name. So,
+    // for an input of |name="value"|, the snippet is |name=|.
+    int start = attribute.nameRange.start - request.token.startIndex();
+    int end = attribute.valueRange.start - request.token.startIndex();
+    return request.sourceTracker.sourceForToken(request.token).substring(start, end - start);
+}
+
 String XSSAuditor::snippetFromAttribute(const FilterTokenRequest& request, const HTMLToken::Attribute& attribute)
 {
-    // The range doesn't inlcude the character which terminates the value. So,
+    // The range doesn't include the character which terminates the value. So,
     // for an input of |name="value"|, the snippet is |name="value|. For an
     // unquoted input of |name=value |, the snippet is |name=value|.
     // FIXME: We should grab one character before the name also.

@@ -103,6 +103,7 @@ private:
 
     String canonicalizedSnippetForTagName(const FilterTokenRequest&);
     String canonicalizedSnippetForJavaScript(const FilterTokenRequest&);
+    String nameFromAttribute(const FilterTokenRequest&, const HTMLToken::Attribute&);
     String snippetFromAttribute(const FilterTokenRequest&, const HTMLToken::Attribute&);
     String canonicalize(String, TruncationKind);
 
