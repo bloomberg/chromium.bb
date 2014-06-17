@@ -56,7 +56,6 @@ class RenderWidgetHelper;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewFrameSubscriber;
-class ScreenOrientationDispatcherHost;
 class StoragePartition;
 class StoragePartitionImpl;
 
@@ -180,9 +179,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Fires the webrtc log message callback with |message|, if callback is set.
   void WebRtcLogMessage(const std::string& message);
 #endif
-
-  scoped_refptr<ScreenOrientationDispatcherHost>
-      screen_orientation_dispatcher_host() const;
 
   // Used to extend the lifetime of the sessions until the render view
   // in the renderer is fully closed. This is static because its also called
@@ -450,9 +446,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   WebRtcStopRtpDumpCallback stop_rtp_dump_callback_;
 #endif
-
-  // Message filter and dispatcher for screen orientation.
-  ScreenOrientationDispatcherHost* screen_orientation_dispatcher_host_;
 
   int worker_ref_count_;
 
