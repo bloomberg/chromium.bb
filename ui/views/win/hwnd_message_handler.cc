@@ -2093,10 +2093,8 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
     TouchEvents touch_events;
     for (int i = 0; i < num_points; ++i) {
       POINT point;
-      point.x = TOUCH_COORD_TO_PIXEL(input[i].x) /
-                gfx::win::GetUndocumentedDPITouchScale();
-      point.y = TOUCH_COORD_TO_PIXEL(input[i].y) /
-                gfx::win::GetUndocumentedDPITouchScale();
+      point.x = TOUCH_COORD_TO_PIXEL(input[i].x);
+      point.y = TOUCH_COORD_TO_PIXEL(input[i].y);
 
       if (base::win::GetVersion() == base::win::VERSION_WIN7) {
         // Windows 7 sends touch events for touches in the non-client area,

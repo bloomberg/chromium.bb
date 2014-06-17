@@ -27,20 +27,10 @@ int GetMinimizeButtonOffsetForWindow(HWND hwnd) {
     return 0;
   }
 
-  // Most versions of Windows return screen coordinates for
-  // WM_GETTITLEBARINFOEX. Since chrome is not dpi aware (currently) we need to
-  // unscale these coordinates. Surface Pro seems to be unique, in that it
-  // returns local coordinates (eg they don't need to be scaled). There doesn't
-  // appear to be a clear way to detect this, so we assume that if the minimize
-  // button is outside the bounds of the window coordinates are scaled.
-  RECT window_rect = {0};
-  GetWindowRect(hwnd, &window_rect);
+  // WM_GETTITLEBARINFOEX returns rects in screen coordinates in pixels.
+  // We need to convert the minimize button corner offset to DIP before
+  // returning it.
   POINT minimize_button_corner = { titlebar_info.rgrect[2].left, 0 };
-  if (minimize_button_corner.x > window_rect.right) {
-    minimize_button_corner.x =
-        static_cast<int>(minimize_button_corner.x /
-                         gfx::win::GetUndocumentedDPIScale());
-  }
   MapWindowPoints(HWND_DESKTOP, hwnd, &minimize_button_corner, 1);
   return minimize_button_corner.x / gfx::win::GetDeviceScaleFactor();
 }
