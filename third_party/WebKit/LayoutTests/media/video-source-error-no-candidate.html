@@ -8,7 +8,7 @@
 
             var sources = [];
             var errorCount = 0;
-            var expectedErrorCount = 5;
+            var expectedErrorCount = 4;
 
             function errorEvent(evt)
             {
@@ -49,9 +49,8 @@
 
        <video onloadstart="start()" controls>
             <source id=missing-src type="video/blahblah">
-            <source id=bogus-type src=content/test.mp4 type="video/blahblah">
-            <source id=unsupported-media-query src=content/test.mp4 media=print>
-            <source id=empty-src src="" type="video/mp4">
+            <source id=bogus-type src=content/test.ogv type="video/blahblah">
+            <source id=empty-src src="" type="video/ogg">
             <source id=no-extension-no-type src=nonexistent>
         </video>
         
