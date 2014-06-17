@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_CONTENT_PUBLIC_WEB_ACTIVITY_H_
-#define ATHENA_CONTENT_PUBLIC_WEB_ACTIVITY_H_
+#ifndef ATHENA_CONTENT_PUBLIC_APP_ACTIVITY_H_
+#define ATHENA_CONTENT_PUBLIC_APP_ACTIVITY_H_
 
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_view_model.h"
 #include "content/public/browser/web_contents_observer.h"
 
-namespace content {
-class BrowserContext;
-class WebContents;
+namespace apps {
+class ShellAppWindow;
 }
 
 namespace views {
@@ -20,12 +19,12 @@ class WebView;
 
 namespace athena {
 
-class WebActivity : public Activity,
+class AppActivity : public Activity,
                     public ActivityViewModel,
                     public content::WebContentsObserver {
  public:
-  WebActivity(content::BrowserContext* context, const GURL& gurl);
-  virtual ~WebActivity();
+  explicit AppActivity(apps::ShellAppWindow* app_window);
+  virtual ~AppActivity();
 
  protected:
   // Activity:
@@ -44,14 +43,12 @@ class WebActivity : public Activity,
       const std::vector<content::FaviconURL>& candidates) OVERRIDE;
 
  private:
-  content::BrowserContext* browser_context_;
-  content::WebContents* web_contents_;
-  const GURL url_;
+  scoped_ptr<apps::ShellAppWindow> app_window_;
   views::WebView* web_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebActivity);
+  DISALLOW_COPY_AND_ASSIGN(AppActivity);
 };
 
 }  // namespace athena
 
-#endif  // ATHENA_CONTENT_WEB_ACTIVITY_H_
+#endif  // ATHENA_CONTENT_APP_ACTIVITY_H_

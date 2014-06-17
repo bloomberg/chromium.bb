@@ -4,6 +4,7 @@
 
 #include "apps/shell/browser/default_shell_browser_main_delegate.h"
 
+#include "apps/shell/browser/default_shell_app_window_controller.h"
 #include "apps/shell/browser/shell_desktop_controller.h"
 #include "apps/shell/browser/shell_extension_system.h"
 #include "base/command_line.h"
@@ -42,7 +43,9 @@ void DefaultShellBrowserMainDelegate::Shutdown() {
 
 ShellDesktopController*
 DefaultShellBrowserMainDelegate::CreateDesktopController() {
-  return new ShellDesktopController();
+  ShellDesktopController* desktop = new ShellDesktopController();
+  desktop->SetAppWindowController(new DefaultShellAppWindowController(desktop));
+  return desktop;
 }
 
 }  // namespace apps

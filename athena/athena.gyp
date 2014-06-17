@@ -75,6 +75,8 @@
         'content/public/content_app_model_builder.h',
         'content/content_activity_factory.cc',
         'content/content_app_model_builder.cc',
+        'content/app_activity.h',
+        'content/app_activity.cc',
         'content/web_activity.h',
         'content/web_activity.cc',
       ],

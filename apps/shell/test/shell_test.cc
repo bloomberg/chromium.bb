@@ -43,7 +43,7 @@ void AppShellTest::RunTestOnMainThreadLoop() {
   TearDownOnMainThread();
 
   // Clean up the app window.
-  ShellDesktopController::instance()->CloseAppWindow();
+  ShellDesktopController::instance()->CloseAppWindows();
 }
 
 bool AppShellTest::LoadAndLaunchApp(const base::FilePath& app_dir) {

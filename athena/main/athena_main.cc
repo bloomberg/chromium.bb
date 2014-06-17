@@ -9,6 +9,7 @@
 #include "athena/content/public/content_activity_factory.h"
 #include "athena/content/public/content_app_model_builder.h"
 #include "athena/home/public/home_card.h"
+#include "athena/main/athena_app_window_controller.h"
 #include "athena/main/athena_launcher.h"
 #include "athena/main/placeholder.h"
 #include "athena/main/url_search_provider.h"
@@ -53,7 +54,9 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
   virtual apps::ShellDesktopController* CreateDesktopController() OVERRIDE {
     // TODO(mukai): create Athena's own ShellDesktopController subclass so that
     // it can initialize its own window manager logic.
-    return new apps::ShellDesktopController();
+    apps::ShellDesktopController* desktop = new apps::ShellDesktopController();
+    desktop->SetAppWindowController(new athena::AthenaAppWindowController());
+    return desktop;
   }
 
  private:

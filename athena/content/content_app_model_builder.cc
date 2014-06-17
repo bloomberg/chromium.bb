@@ -37,10 +37,11 @@ gfx::ImageSkia CreateFlatColorImage(SkColor color) {
 class DummyItem : public app_list::AppListItem {
  public:
   DummyItem(const std::string& id,
+            const GURL& url,
             SkColor color,
             content::BrowserContext* browser_context)
       : app_list::AppListItem(id),
-        id_(id),
+        url_(url),
         browser_context_(browser_context) {
 
     SetIcon(CreateFlatColorImage(color), false /* has_shadow */);
@@ -51,11 +52,10 @@ class DummyItem : public app_list::AppListItem {
   // Overridden from app_list::AppListItem:
   virtual void Activate(int event_flags) OVERRIDE {
     ActivityManager::Get()->AddActivity(
-        ActivityFactory::Get()->CreateAppActivity(
-            browser_context_, id_));
+        ActivityFactory::Get()->CreateWebActivity(browser_context_, url_));
   }
 
-  std::string id_;
+  GURL url_;
   content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyItem);
@@ -98,16 +98,19 @@ ContentAppModelBuilder::~ContentAppModelBuilder() {
 }
 
 void ContentAppModelBuilder::PopulateApps(app_list::AppListModel* model) {
-  model->AddItem(scoped_ptr<app_list::AppListItem>(
-      new DummyItem("mail", SK_ColorRED, browser_context_)));
-  model->AddItem(scoped_ptr<app_list::AppListItem>(
-      new DummyItem("calendar", SK_ColorBLUE, browser_context_)));
-  model->AddItem(scoped_ptr<app_list::AppListItem>(
-      new DummyItem("video", SK_ColorGREEN, browser_context_)));
-  model->AddItem(scoped_ptr<app_list::AppListItem>(
-      new DummyItem("music", SK_ColorYELLOW, browser_context_)));
-  model->AddItem(scoped_ptr<app_list::AppListItem>(
-      new DummyItem("contact", SK_ColorCYAN, browser_context_)));
+  model->AddItem(scoped_ptr<app_list::AppListItem>(new DummyItem(
+      "mail", GURL("http://gmail.com/"), SK_ColorRED, browser_context_)));
+  model->AddItem(scoped_ptr<app_list::AppListItem>(new DummyItem(
+      "calendar", GURL("https://calendar.google.com/"),
+      SK_ColorBLUE, browser_context_)));
+  model->AddItem(scoped_ptr<app_list::AppListItem>(new DummyItem(
+      "video", GURL("http://youtube.com/"), SK_ColorGREEN, browser_context_)));
+  model->AddItem(scoped_ptr<app_list::AppListItem>(new DummyItem(
+      "music", GURL("http://play.google.com/music"),
+      SK_ColorYELLOW, browser_context_)));
+  model->AddItem(scoped_ptr<app_list::AppListItem>(new DummyItem(
+      "contact", GURL("https://www.google.com/contacts"),
+      SK_ColorCYAN, browser_context_)));
 
   ShellExtensionSystem* extension_system =
       GetShellExtensionSystem(browser_context_);

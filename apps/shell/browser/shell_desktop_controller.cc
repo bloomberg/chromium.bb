@@ -4,7 +4,7 @@
 
 #include "apps/shell/browser/shell_desktop_controller.h"
 
-#include "apps/shell/browser/shell_app_window.h"
+#include "apps/shell/browser/shell_app_window_controller.h"
 #include "content/public/browser/context_factory.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -173,8 +173,7 @@ ShellDesktopController::ShellDesktopController() {
 }
 
 ShellDesktopController::~ShellDesktopController() {
-  // The app window must be explicitly closed before desktop teardown.
-  DCHECK(!app_window_);
+  app_window_controller_.reset();
   g_instance = NULL;
   DestroyRootWindow();
   aura::Env::DeleteInstance();
@@ -185,22 +184,20 @@ ShellDesktopController* ShellDesktopController::instance() {
   return g_instance;
 }
 
-ShellAppWindow* ShellDesktopController::CreateAppWindow(
-    content::BrowserContext* context) {
-  aura::Window* root_window = host_->window();
-
-  app_window_.reset(new ShellAppWindow);
-  app_window_->Init(context, root_window->bounds().size());
-
-  // Attach the web contents view to our window hierarchy.
-  aura::Window* content = app_window_->GetNativeWindow();
-  root_window->AddChild(content);
-  content->Show();
-
-  return app_window_.get();
+void ShellDesktopController::SetAppWindowController(
+    ShellAppWindowController* app_window_controller) {
+  app_window_controller_.reset(app_window_controller);
 }
 
-void ShellDesktopController::CloseAppWindow() { app_window_.reset(); }
+ShellAppWindow* ShellDesktopController::CreateAppWindow(
+    content::BrowserContext* context) {
+  return app_window_controller_->CreateAppWindow(context);
+}
+
+void ShellDesktopController::CloseAppWindows() {
+  if (app_window_controller_)
+    app_window_controller_->CloseAppWindows();
+}
 
 aura::Window* ShellDesktopController::GetDefaultParent(
     aura::Window* context,
@@ -221,7 +218,7 @@ void ShellDesktopController::OnDisplayModeChanged(
 void ShellDesktopController::OnHostCloseRequested(
     const aura::WindowTreeHost* host) {
   DCHECK_EQ(host_.get(), host);
-  CloseAppWindow();
+  CloseAppWindows();
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::MessageLoop::QuitClosure());
 }

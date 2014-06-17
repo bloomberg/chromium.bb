@@ -49,6 +49,7 @@ class UserActivityDetector;
 namespace apps {
 
 class ShellAppWindow;
+class ShellAppWindowController;
 
 // Handles desktop-related tasks for app_shell.
 class ShellDesktopController : public aura::client::WindowTreeClient,
@@ -72,12 +73,16 @@ class ShellDesktopController : public aura::client::WindowTreeClient,
   // Creates the window that hosts the app.
   void CreateRootWindow();
 
+  // Sets the controller to create/close the app windows. Takes the ownership of
+  // |app_window_controller|.
+  void SetAppWindowController(ShellAppWindowController* app_window_controller);
+
   // Creates a new app window and adds it to the desktop. The desktop maintains
   // ownership of the window.
   ShellAppWindow* CreateAppWindow(content::BrowserContext* context);
 
-  // Closes and destroys the app window.
-  void CloseAppWindow();
+  // Closes and destroys the app windows.
+  void CloseAppWindows();
 
   // Overridden from aura::client::WindowTreeClient:
   virtual aura::Window* GetDefaultParent(aura::Window* context,
@@ -130,7 +135,7 @@ class ShellDesktopController : public aura::client::WindowTreeClient,
 #endif
 
   // The desktop supports a single app window.
-  scoped_ptr<ShellAppWindow> app_window_;
+  scoped_ptr<ShellAppWindowController> app_window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDesktopController);
 };

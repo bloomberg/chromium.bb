@@ -7,6 +7,7 @@
 #include <string>
 
 #include "athena/test/sample_activity.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
@@ -34,10 +35,11 @@ Activity* SampleActivityFactory::CreateWebActivity(
 }
 
 Activity* SampleActivityFactory::CreateAppActivity(
-    content::BrowserContext* browser_context,
-    const std::string& app_id) {
+    apps::ShellAppWindow* app_window) {
+  // SampleActivityFactory can't own the |app_window|, so it must be NULL.
+  DCHECK(app_window == NULL);
   return new SampleActivity(
-      kDefaultAppColor, kDefaultAppContentColor, base::UTF8ToUTF16(app_id));
+      kDefaultAppColor, kDefaultAppContentColor, base::UTF8ToUTF16("App"));
 }
 
 }  // namespace test
