@@ -565,7 +565,8 @@ void WebLocalFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
     // FIXME: This should be moved to WebRemoteFrame.
     ASSERT(frame()->deprecatedLocalOwner());
     frame()->deprecatedLocalOwner()->setNeedsCompositingUpdate();
-    frame()->ownerRenderer()->layer()->updateSelfPaintingLayer();
+    if (RenderPart* renderer = frame()->ownerRenderer())
+        renderer->layer()->updateSelfPaintingLayer();
 }
 
 void WebLocalFrameImpl::setPermissionClient(WebPermissionClient* permissionClient)
