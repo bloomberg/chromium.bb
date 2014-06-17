@@ -615,6 +615,8 @@ void IOThread::InitAsync() {
     drp_flags |= DataReductionProxyParams::kPromoAllowed;
   globals_->data_reduction_proxy_params.reset(
       new DataReductionProxyParams(drp_flags));
+  network_delegate->set_data_reduction_proxy_params(
+      globals_->data_reduction_proxy_params.get());
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
