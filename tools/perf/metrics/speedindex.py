@@ -6,6 +6,7 @@ import collections
 
 from metrics import Metric
 from telemetry.core import bitmap
+from telemetry.value import scalar
 
 
 class SpeedIndexMetric(Metric):
@@ -51,7 +52,8 @@ class SpeedIndexMetric(Metric):
     index = self._impl.CalculateSpeedIndex(tab)
     # Release the tab so that it can be disconnected.
     self._impl = None
-    results.Add('speed_index', 'ms', index, chart_name=chart_name)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, '%s.speed_index' % chart_name, 'ms', index))
 
   def IsFinished(self, tab):
     """Decide whether the timeline recording should be stopped.
