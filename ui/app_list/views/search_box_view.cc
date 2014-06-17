@@ -16,6 +16,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/image_view.h"
@@ -57,10 +58,12 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
 #if !defined(OS_CHROMEOS)
   menu_button_ = new views::MenuButton(NULL, base::string16(), this, false);
   menu_button_->SetBorder(views::Border::NullBorder());
-  menu_button_->SetIcon(*rb.GetImageSkiaNamed(IDR_APP_LIST_TOOLS_NORMAL));
-  menu_button_->SetHoverIcon(*rb.GetImageSkiaNamed(IDR_APP_LIST_TOOLS_HOVER));
-  menu_button_->SetPushedIcon(*rb.GetImageSkiaNamed(
-      IDR_APP_LIST_TOOLS_PRESSED));
+  menu_button_->SetImage(views::Button::STATE_NORMAL,
+                         *rb.GetImageSkiaNamed(IDR_APP_LIST_TOOLS_NORMAL));
+  menu_button_->SetImage(views::Button::STATE_HOVERED,
+                         *rb.GetImageSkiaNamed(IDR_APP_LIST_TOOLS_HOVER));
+  menu_button_->SetImage(views::Button::STATE_PRESSED,
+                         *rb.GetImageSkiaNamed(IDR_APP_LIST_TOOLS_PRESSED));
   AddChildView(menu_button_);
 #endif
 

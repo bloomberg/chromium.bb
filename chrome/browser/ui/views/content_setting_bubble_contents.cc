@@ -293,9 +293,7 @@ void ContentSettingBubbleContents::Init() {
       views::MenuButton* menu_button = new views::MenuButton(
           NULL, base::UTF8ToUTF16((i->second.selected_device.name)),
           this, true);
-      menu_button->set_alignment(views::TextButton::ALIGN_LEFT);
-      menu_button->SetBorder(scoped_ptr<views::Border>(
-          new views::TextButtonNativeThemeBorder(menu_button)));
+      menu_button->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       menu_button->set_animate_on_state_change(false);
 
       MediaMenuParts* menu_view = new MediaMenuParts(i->first);
@@ -337,8 +335,8 @@ void ContentSettingBubbleContents::Init() {
     // Set all the menu buttons to the width we calculated above.
     for (MediaMenuPartsMap::const_iterator i = media_menus_.begin();
          i != media_menus_.end(); ++i) {
-      i->first->set_min_width(menu_width);
-      i->first->set_max_width(menu_width);
+      i->first->set_min_size(gfx::Size(menu_width, 0));
+      i->first->set_max_size(gfx::Size(menu_width, 0));
     }
   }
 
@@ -467,7 +465,7 @@ void ContentSettingBubbleContents::OnMenuButtonClicked(
 int ContentSettingBubbleContents::GetPreferredMediaMenuWidth(
     views::MenuButton* button,
     ui::SimpleMenuModel* menu_model) {
-  base::string16 title = button->text();
+  base::string16 title = button->GetText();
 
   int width = button->GetPreferredSize().width();
   for (int i = 0; i < menu_model->GetItemCount(); ++i) {

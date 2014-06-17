@@ -18,7 +18,7 @@ class Canvas;
 
 namespace views {
 class LabelButton;
-class Border;
+class LabelButtonBorder;
 }
 
 namespace libgtk2ui {
@@ -29,7 +29,7 @@ class Gtk2Border : public views::Border, public ui::NativeThemeObserver {
  public:
   Gtk2Border(Gtk2UI* gtk2_ui,
              views::LabelButton* owning_button,
-             scoped_ptr<views::Border> border);
+             scoped_ptr<views::LabelButtonBorder> border);
   virtual ~Gtk2Border();
 
   // Overridden from views::Border:
@@ -46,8 +46,6 @@ class Gtk2Border : public views::Border, public ui::NativeThemeObserver {
                   const gfx::Rect& rect,
                   gfx::Canvas* canvas);
 
-  bool ShouldDrawBorder(bool focused, views::Button::ButtonState state);
-
   Gtk2UI* gtk2_ui_;
 
   gfx::ImageSkia button_images_[2][views::Button::STATE_COUNT];
@@ -58,7 +56,7 @@ class Gtk2Border : public views::Border, public ui::NativeThemeObserver {
 
   // The views::Border that we are replacing in native mode. We keep track of
   // this for inset information.
-  scoped_ptr<views::Border> border_;
+  scoped_ptr<views::LabelButtonBorder> border_;
 
   ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> observer_manager_;
 

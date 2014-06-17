@@ -1641,6 +1641,7 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
   button_drag_utils::SetURLAndDragImage(web_contents->GetURL(),
                                         web_contents->GetTitle(),
                                         favicon,
+                                        NULL,
                                         data,
                                         sender->GetWidget());
 }

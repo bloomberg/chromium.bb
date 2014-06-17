@@ -35,6 +35,7 @@ class NativeTheme;
 namespace views {
 class Border;
 class LabelButton;
+class LabelButtonBorder;
 class View;
 class WindowButtonOrderObserver;
 
@@ -125,7 +126,7 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // Builds a Border which paints the native button style.
   virtual scoped_ptr<Border> CreateNativeBorder(
       views::LabelButton* owning_button,
-      scoped_ptr<views::Border> border) = 0;
+      scoped_ptr<views::LabelButtonBorder> border) = 0;
 
   // Notifies the observer about changes about how window buttons should be
   // laid out. If the order is anything other than the default min,max,close on
