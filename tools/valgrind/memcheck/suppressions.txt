@@ -6313,18 +6313,6 @@
    fun:_ZN8chromeos21DeviceSettingsService4LoadEv
 }
 {
-   bug_385198
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN8app_list19DictionaryDataStore5FlushERKN4base8CallbackIFvvEEE
-   fun:_ZN8app_list16HistoryDataStore5FlushERKN4base8CallbackIFvvEEE
-   fun:_ZN8app_list4test12_GLOBAL__N_116StoreFlushWaiter4WaitEi
-   fun:_ZN8app_list4test17SearchHistoryTest5FlushEv
-   fun:_ZN8app_list4test17SearchHistoryTest8TearDownEv
-}
-{
    bug_385381
    Memcheck:Unaddressable
    fun:_ZN7WebCore23FrameLoaderStateMachine9advanceToENS0_5StateE

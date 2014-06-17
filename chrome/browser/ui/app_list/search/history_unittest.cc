@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/search/history.h"
 #include "chrome/browser/ui/app_list/search/history_data.h"
 #include "chrome/browser/ui/app_list/search/history_data_observer.h"
@@ -35,13 +34,8 @@ class HistoryDataLoadWaiter : public HistoryDataObserver {
   explicit HistoryDataLoadWaiter(HistoryData* data) : data_(data)  {}
   virtual ~HistoryDataLoadWaiter() {}
 
-  void Wait(int timeout_ms) {
+  void Wait() {
     data_->AddObserver(this);
-
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromMilliseconds(timeout_ms),
-                 this,
-                 &HistoryDataLoadWaiter::OnTimeOut);
 
     run_loop_.reset(new base::RunLoop);
     run_loop_->Run();
@@ -50,10 +44,6 @@ class HistoryDataLoadWaiter : public HistoryDataObserver {
   }
 
  private:
-  void OnTimeOut() {
-    run_loop_->Quit();
-  }
-
   // HistoryDataObserver overrides:
   virtual void OnHistoryDataLoadedFromStore() OVERRIDE {
     run_loop_->Quit();
@@ -61,7 +51,6 @@ class HistoryDataLoadWaiter : public HistoryDataObserver {
 
   HistoryData* data_;  // Not owned.
   scoped_ptr<base::RunLoop> run_loop_;
-  base::OneShotTimer<HistoryDataLoadWaiter> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryDataLoadWaiter);
 };
@@ -75,31 +64,21 @@ class StoreFlushWaiter {
   explicit StoreFlushWaiter(HistoryDataStore* store) : store_(store) {}
   ~StoreFlushWaiter() {}
 
-  void Wait(int timeout_ms) {
+  void Wait() {
     store_->Flush(
         base::Bind(&StoreFlushWaiter::OnFlushed, base::Unretained(this)));
-
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromMilliseconds(timeout_ms),
-                 this,
-                 &StoreFlushWaiter::OnTimeOut);
 
     run_loop_.reset(new base::RunLoop);
     run_loop_->Run();
   }
 
  private:
-  void OnTimeOut() {
-    run_loop_->Quit();
-  }
-
   void OnFlushed() {
     run_loop_->Quit();
   }
 
   HistoryDataStore* store_;  // Not owned.
   scoped_ptr<base::RunLoop> run_loop_;
-  base::OneShotTimer<StoreFlushWaiter> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(StoreFlushWaiter);
 };
@@ -130,14 +109,12 @@ class SearchHistoryTest : public testing::Test {
         new HistoryData(history_->store_.get(), kMaxPrimary, kMaxSecondary));
     history_->data_->AddObserver(history_.get());
 
-    HistoryDataLoadWaiter waiter(history_->data_.get());
-    waiter.Wait(1000);
+    HistoryDataLoadWaiter(history_->data_.get()).Wait();
     ASSERT_TRUE(history_->IsReady());
   }
 
   void Flush() {
-    StoreFlushWaiter waiter(history_->store_.get());
-    waiter.Wait(1000);
+    StoreFlushWaiter(history_->store_.get()).Wait();
   }
 
   size_t GetKnownResults(const std::string& query) {
