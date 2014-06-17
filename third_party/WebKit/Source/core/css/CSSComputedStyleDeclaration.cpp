@@ -2862,6 +2862,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyPaintOrder:
         case CSSPropertyWritingMode:
             return getSVGPropertyCSSValue(propertyID, DoNotUpdateLayout);
+
+        case CSSPropertyAll:
+            return nullptr;
     }
 
     logUnimplementedPropertyID(propertyID);

@@ -425,6 +425,7 @@ orientation
 user-zoom
 -webkit-tap-highlight-color
 -webkit-app-region
+all
 
 // Internal properties.
 -internal-marquee-direction

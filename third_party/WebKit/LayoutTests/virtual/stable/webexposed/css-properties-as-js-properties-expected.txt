@@ -4,6 +4,7 @@ alignContent
 alignItems
 alignSelf
 alignmentBaseline
+all
 backfaceVisibility
 background
 backgroundAttachment

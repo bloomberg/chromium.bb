@@ -674,6 +674,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyUserZoom:
     case CSSPropertyZIndex:
     case CSSPropertyZoom:
+    case CSSPropertyAll:
         return false;
     case CSSPropertyInvalid:
         ASSERT_NOT_REACHED();

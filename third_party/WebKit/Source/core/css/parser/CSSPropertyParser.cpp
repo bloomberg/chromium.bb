@@ -1611,6 +1611,14 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyUserZoom:
         validPrimitive = false;
         break;
+
+    case CSSPropertyAll:
+        if (id == CSSValueInitial || id == CSSValueInherit || id == CSSValueUnset) {
+            validPrimitive = true;
+            break;
+        }
+        return false;
+
     default:
         return parseSVGValue(propId, important);
     }
@@ -3072,11 +3080,14 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty()
     CSSParserValue* value = m_valueList->current();
     if (value->unit != CSSPrimitiveValue::CSS_IDENT)
         return nullptr;
+    // Since all is valid css property keyword, cssPropertyID for all
+    // returns non-null value. We need to check "all" before
+    // cssPropertyID check.
+    if (equalIgnoringCase(value, "all"))
+        return cssValuePool().createIdentifierValue(CSSValueAll);
     CSSPropertyID result = cssPropertyID(value->string);
     if (result && RuntimeCSSEnabled::isCSSPropertyEnabled(result))
         return cssValuePool().createIdentifierValue(result);
-    if (equalIgnoringCase(value, "all"))
-        return cssValuePool().createIdentifierValue(CSSValueAll);
     if (equalIgnoringCase(value, "none"))
         return cssValuePool().createIdentifierValue(CSSValueNone);
     return nullptr;
@@ -7177,7 +7188,9 @@ bool CSSPropertyParser::parseWillChange(bool important)
 
         CSSPropertyID property = cssPropertyID(currentValue->string);
         if (property && RuntimeCSSEnabled::isCSSPropertyEnabled(property)) {
-            if (property == CSSPropertyWillChange)
+            // Now "all" is used by both CSSValue and CSSPropertyValue.
+            // Need to return false when currentValue is CSSPropertyAll.
+            if (property == CSSPropertyWillChange || property == CSSPropertyAll)
                 return false;
             values->append(cssValuePool().createIdentifierValue(property));
         } else {

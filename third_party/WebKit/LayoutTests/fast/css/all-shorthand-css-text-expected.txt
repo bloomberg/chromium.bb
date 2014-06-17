@@ -17,14 +17,14 @@ PASS contains(cssRules[4].cssText, "color: red !important;") is true
 FAIL contains(cssRules[4].cssText, "background: initial;") should be true. Was false.
 PASS contains(cssRules[4].cssText, "direction: ") is false
 PASS contains(cssRules[4].cssText, "unicode-bidi: ") is false
-FAIL cssRules[5].cssText should be div { all: inherit; }. Was div { }.
-PASS cssRules[6].cssText is not "div { all: inherit; color: red; }"
+PASS cssRules[5].cssText is "div { all: inherit; }"
+FAIL cssRules[6].cssText should not be div { all: inherit; color: red; }.
 PASS contains(cssRules[6].cssText, "color: red;") is true
 PASS contains(cssRules[6].cssText, "direction: ") is false
 PASS contains(cssRules[6].cssText, "unicode-bidi: ") is false
-FAIL cssRules[7].cssText should be div { all: inherit; }. Was div { color: red; }.
-FAIL cssRules[8].cssText should be div { all: inherit !important; }. Was div { color: red; }.
-PASS cssRules[9].cssText is not "div { all: inherit; color: red !important; }"
+FAIL cssRules[7].cssText should be div { all: inherit; }. Was div { color: red; all: inherit; }.
+FAIL cssRules[8].cssText should be div { all: inherit !important; }. Was div { color: red; all: inherit !important; }.
+FAIL cssRules[9].cssText should not be div { all: inherit; color: red !important; }.
 PASS contains(cssRules[9].cssText, "color: red !important") is true
 FAIL contains(cssRules[9].cssText, "background: inherit;") should be true. Was false.
 PASS contains(cssRules[9].cssText, "direction: ") is false
