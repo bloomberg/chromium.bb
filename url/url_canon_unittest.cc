@@ -132,11 +132,16 @@ TEST(URLCanonTest, DoAppendUTF8) {
   }
 }
 
+#if defined(GTEST_HAS_DEATH_TEST)
 // TODO(mattm): Can't run this in debug mode for now, since the DCHECK will
 // cause the Chromium stacktrace dialog to appear and hang the test.
 // See http://crbug.com/49580.
-#if defined(GTEST_HAS_DEATH_TEST) && defined(NDEBUG)
-TEST(URLCanonTest, DoAppendUTF8Invalid) {
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
+#define MAYBE_DoAppendUTF8Invalid DoAppendUTF8Invalid
+#else
+#define MAYBE_DoAppendUTF8Invalid DISABLED_DoAppendUTF8Invalid
+#endif
+TEST(URLCanonTest, MAYBE_DoAppendUTF8Invalid) {
   std::string out_str;
   StdStringCanonOutput output(&out_str);
   // Invalid code point (too large).
@@ -146,7 +151,7 @@ TEST(URLCanonTest, DoAppendUTF8Invalid) {
     EXPECT_EQ("", out_str);
   }, "");
 }
-#endif
+#endif  // defined(GTEST_HAS_DEATH_TEST)
 
 TEST(URLCanonTest, UTF) {
   // Low-level test that we handle reading, canonicalization, and writing
