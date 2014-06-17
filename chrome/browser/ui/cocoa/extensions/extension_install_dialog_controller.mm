@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -21,7 +22,7 @@ namespace {
 void ShowExtensionInstallDialogImpl(
     const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
-    const ExtensionInstallPrompt::Prompt& prompt) {
+    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) {
   // These objects will delete themselves when the dialog closes.
   if (!show_params.parent_web_contents) {
     new WindowedInstallDialogController(show_params, delegate, prompt);
@@ -36,7 +37,8 @@ void ShowExtensionInstallDialogImpl(
 ExtensionInstallDialogController::ExtensionInstallDialogController(
     const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
-    const ExtensionInstallPrompt::Prompt& prompt) : delegate_(delegate) {
+    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt)
+    : delegate_(delegate) {
   view_controller_.reset([[ExtensionInstallViewController alloc]
       initWithNavigator:show_params.navigator
                delegate:this

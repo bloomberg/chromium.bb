@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -77,10 +78,11 @@ class ExtensionInstallPrompt
   // prompt. Gets populated with raw data and exposes getters for formatted
   // strings so that the GTK/views/Cocoa install dialogs don't have to repeat
   // that logic.
-  class Prompt {
+  // Ref-counted because we pass around the prompt independent of the full
+  // ExtensionInstallPrompt.
+  class Prompt : public base::RefCountedThreadSafe<Prompt> {
    public:
     explicit Prompt(PromptType type);
-    ~Prompt();
 
     // Sets the permission list for this prompt.
     void SetPermissions(const std::vector<base::string16>& permissions);
@@ -161,6 +163,10 @@ class ExtensionInstallPrompt
     }
 
    private:
+    friend class base::RefCountedThreadSafe<Prompt>;
+
+    virtual ~Prompt();
+
     bool ShouldDisplayRevokeFilesButton() const;
 
     PromptType type_;
@@ -198,6 +204,8 @@ class ExtensionInstallPrompt
     std::vector<base::FilePath> retained_files_;
 
     scoped_refptr<ExtensionInstallPromptExperiment> experiment_;
+
+    DISALLOW_COPY_AND_ASSIGN(Prompt);
   };
 
   static const int kMinExtensionRating = 0;
@@ -234,7 +242,7 @@ class ExtensionInstallPrompt
 
   typedef base::Callback<void(const ExtensionInstallPrompt::ShowParams&,
                               ExtensionInstallPrompt::Delegate*,
-                              const ExtensionInstallPrompt::Prompt&)>
+                              scoped_refptr<ExtensionInstallPrompt::Prompt>)>
       ShowDialogCallback;
 
   // Callback to show the default extension install dialog.
@@ -282,7 +290,7 @@ class ExtensionInstallPrompt
   virtual void ConfirmStandaloneInstall(Delegate* delegate,
                                         const extensions::Extension* extension,
                                         SkBitmap* icon,
-                                        const Prompt& prompt);
+                                        scoped_refptr<Prompt> prompt);
 
   // This is called by the installer to verify whether the installation from
   // the webstore should proceed. |show_dialog_callback| is optional and can be
@@ -319,7 +327,7 @@ class ExtensionInstallPrompt
       Delegate* delegate,
       const extensions::Extension* extension,
       const ShowDialogCallback& show_dialog_callback,
-      const Prompt& prompt);
+      scoped_refptr<Prompt> prompt);
 
   // This is called by the extension permissions API to verify whether an
   // extension may be granted additional permissions.
@@ -395,7 +403,7 @@ class ExtensionInstallPrompt
   Delegate* delegate_;
 
   // A pre-filled prompt.
-  Prompt prompt_;
+  scoped_refptr<Prompt> prompt_;
 
   // Used to show the confirm dialog.
   ShowDialogCallback show_dialog_callback_;

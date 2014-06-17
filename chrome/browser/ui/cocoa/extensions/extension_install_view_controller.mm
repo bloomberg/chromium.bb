@@ -180,17 +180,17 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
 
 - (id)initWithNavigator:(content::PageNavigator*)navigator
                delegate:(ExtensionInstallPrompt::Delegate*)delegate
-                 prompt:(const ExtensionInstallPrompt::Prompt&)prompt {
+                 prompt:(scoped_refptr<ExtensionInstallPrompt::Prompt>)prompt {
   // We use a different XIB in the case of bundle installs, installs with
   // webstore data, or no permission warnings. These are laid out nicely for
   // the data they display.
   NSString* nibName = nil;
-  if (prompt.type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT) {
+  if (prompt->type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT) {
     nibName = @"ExtensionInstallPromptBundle";
-  } else if (prompt.has_webstore_data()) {
+  } else if (prompt->has_webstore_data()) {
     nibName = @"ExtensionInstallPromptWebstoreData";
-  } else if (!prompt.ShouldShowPermissions() &&
-             prompt.GetRetainedFileCount() == 0) {
+  } else if (!prompt->ShouldShowPermissions() &&
+             prompt->GetRetainedFileCount() == 0) {
     nibName = @"ExtensionInstallPromptNoWarnings";
   } else {
     nibName = @"ExtensionInstallPrompt";
@@ -200,8 +200,8 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
                               bundle:base::mac::FrameworkBundle()])) {
     navigator_ = navigator;
     delegate_ = delegate;
-    prompt_.reset(new ExtensionInstallPrompt::Prompt(prompt));
-    warnings_.reset([[self buildWarnings:prompt] retain]);
+    prompt_ = prompt;
+    warnings_.reset([[self buildWarnings:*prompt] retain]);
   }
   return self;
 }

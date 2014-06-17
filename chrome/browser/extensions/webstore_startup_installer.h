@@ -30,8 +30,8 @@ class WebstoreStartupInstaller : public WebstoreInstallWithPrompt {
   virtual ~WebstoreStartupInstaller();
 
   // Implementations of WebstoreStandaloneInstaller Template Method's hooks.
-  virtual scoped_ptr<ExtensionInstallPrompt::Prompt>
-      CreateInstallPrompt() const OVERRIDE;
+  virtual scoped_refptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
+      const OVERRIDE;
 
  private:
   bool show_prompt_;

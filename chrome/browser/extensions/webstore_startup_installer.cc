@@ -18,14 +18,13 @@ WebstoreStartupInstaller::WebstoreStartupInstaller(
 
 WebstoreStartupInstaller::~WebstoreStartupInstaller() {}
 
-scoped_ptr<ExtensionInstallPrompt::Prompt>
+scoped_refptr<ExtensionInstallPrompt::Prompt>
 WebstoreStartupInstaller::CreateInstallPrompt() const {
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt;
   if (show_prompt_) {
-    prompt.reset(new ExtensionInstallPrompt::Prompt(
-        ExtensionInstallPrompt::INSTALL_PROMPT));
+    return new ExtensionInstallPrompt::Prompt(
+        ExtensionInstallPrompt::INSTALL_PROMPT);
   }
-  return prompt.Pass();
+  return NULL;
 }
 
 }  // namespace extensions

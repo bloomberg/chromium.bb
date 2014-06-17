@@ -50,12 +50,10 @@ const GURL& WebstoreInstallWithPrompt::GetRequestorURL() const {
   return dummy_requestor_url_;
 }
 
-scoped_ptr<ExtensionInstallPrompt::Prompt>
+scoped_refptr<ExtensionInstallPrompt::Prompt>
 WebstoreInstallWithPrompt::CreateInstallPrompt() const {
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
-      new ExtensionInstallPrompt::Prompt(
-          ExtensionInstallPrompt::INSTALL_PROMPT));
-  return prompt.Pass();
+  return new ExtensionInstallPrompt::Prompt(
+      ExtensionInstallPrompt::INSTALL_PROMPT);
 }
 
 scoped_ptr<ExtensionInstallPrompt>

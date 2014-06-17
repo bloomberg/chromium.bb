@@ -325,7 +325,7 @@ void WebstoreStandaloneInstaller::ShowInstallUI() {
 
   install_ui_ = CreateInstallUI();
   install_ui_->ConfirmStandaloneInstall(
-      this, localized_extension_for_display_.get(), &icon_, *install_prompt_);
+      this, localized_extension_for_display_.get(), &icon_, install_prompt_);
 }
 
 void WebstoreStandaloneInstaller::OnWebStoreDataFetcherDone() {

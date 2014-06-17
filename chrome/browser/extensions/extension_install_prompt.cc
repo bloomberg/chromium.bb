@@ -493,8 +493,8 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(content::WebContents* contents)
       bundle_(NULL),
       install_ui_(ExtensionInstallUI::Create(ProfileForWebContents(contents))),
       show_params_(contents),
-      delegate_(NULL),
-      prompt_(UNSET_PROMPT_TYPE) {}
+      delegate_(NULL) {
+}
 
 ExtensionInstallPrompt::ExtensionInstallPrompt(
     Profile* profile,
@@ -505,8 +505,8 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(
       bundle_(NULL),
       install_ui_(ExtensionInstallUI::Create(profile)),
       show_params_(native_window, navigator),
-      delegate_(NULL),
-      prompt_(UNSET_PROMPT_TYPE) {}
+      delegate_(NULL) {
+}
 
 ExtensionInstallPrompt::~ExtensionInstallPrompt() {
 }
@@ -518,7 +518,7 @@ void ExtensionInstallPrompt::ConfirmBundleInstall(
   bundle_ = bundle;
   permissions_ = permissions;
   delegate_ = bundle;
-  prompt_.set_type(BUNDLE_INSTALL_PROMPT);
+  prompt_ = new Prompt(BUNDLE_INSTALL_PROMPT);
 
   ShowConfirmation();
 }
@@ -527,7 +527,7 @@ void ExtensionInstallPrompt::ConfirmStandaloneInstall(
     Delegate* delegate,
     const Extension* extension,
     SkBitmap* icon,
-    const ExtensionInstallPrompt::Prompt& prompt) {
+    scoped_refptr<Prompt> prompt) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   extension_ = extension;
   permissions_ = extension->permissions_data()->active_permissions();
@@ -558,7 +558,7 @@ void ExtensionInstallPrompt::ConfirmInstall(
   extension_ = extension;
   permissions_ = extension->permissions_data()->active_permissions();
   delegate_ = delegate;
-  prompt_.set_type(INSTALL_PROMPT);
+  prompt_ = new Prompt(INSTALL_PROMPT);
   show_dialog_callback_ = show_dialog_callback;
 
   // We special-case themes to not show any confirm UI. Instead they are
@@ -591,12 +591,16 @@ void ExtensionInstallPrompt::ConfirmReEnable(Delegate* delegate,
           extension->id(), extensions::Extension::DISABLE_REMOTE_INSTALL);
   bool is_ephemeral =
       extensions::util::IsEphemeralApp(extension->id(), install_ui_->profile());
+
+  PromptType type = UNSET_PROMPT_TYPE;
   if (is_ephemeral)
-    prompt_.set_type(LAUNCH_PROMPT);
+    type = LAUNCH_PROMPT;
   else if (is_remote_install)
-    prompt_.set_type(REMOTE_INSTALL_PROMPT);
+    type = REMOTE_INSTALL_PROMPT;
   else
-    prompt_.set_type(RE_ENABLE_PROMPT);
+    type = RE_ENABLE_PROMPT;
+  prompt_ = new Prompt(type);
+
   LoadImageIfNeeded();
 }
 
@@ -604,7 +608,7 @@ void ExtensionInstallPrompt::ConfirmExternalInstall(
     Delegate* delegate,
     const Extension* extension,
     const ShowDialogCallback& show_dialog_callback,
-    const Prompt& prompt) {
+    scoped_refptr<Prompt> prompt) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   extension_ = extension;
   permissions_ = extension->permissions_data()->active_permissions();
@@ -623,7 +627,7 @@ void ExtensionInstallPrompt::ConfirmPermissions(
   extension_ = extension;
   permissions_ = permissions;
   delegate_ = delegate;
-  prompt_.set_type(PERMISSIONS_PROMPT);
+  prompt_ = new Prompt(PERMISSIONS_PROMPT);
 
   LoadImageIfNeeded();
 }
@@ -635,9 +639,9 @@ void ExtensionInstallPrompt::ReviewPermissions(
   DCHECK(ui_loop_ == base::MessageLoop::current());
   extension_ = extension;
   permissions_ = extension->permissions_data()->active_permissions();
-  prompt_.set_retained_files(retained_file_paths);
+  prompt_ = new Prompt(POST_INSTALL_PERMISSIONS_PROMPT);
+  prompt_->set_retained_files(retained_file_paths);
   delegate_ = delegate;
-  prompt_.set_type(POST_INSTALL_PERMISSIONS_PROMPT);
 
   LoadImageIfNeeded();
 }
@@ -703,29 +707,30 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
 }
 
 void ExtensionInstallPrompt::ShowConfirmation() {
-  if (prompt_.type() == INSTALL_PROMPT)
-    prompt_.set_experiment(ExtensionInstallPromptExperiment::Find());
+  if (prompt_->type() == INSTALL_PROMPT)
+    prompt_->set_experiment(ExtensionInstallPromptExperiment::Find());
   else
-    prompt_.set_experiment(ExtensionInstallPromptExperiment::ControlGroup());
+    prompt_->set_experiment(ExtensionInstallPromptExperiment::ControlGroup());
 
   if (permissions_.get()) {
     if (extension_) {
       const extensions::PermissionsData* permissions_data =
           extension_->permissions_data();
-      prompt_.SetPermissions(permissions_data->GetPermissionMessageStrings());
-      prompt_.SetPermissionsDetails(
+      prompt_->SetPermissions(permissions_data->GetPermissionMessageStrings());
+      prompt_->SetPermissionsDetails(
           permissions_data->GetPermissionMessageDetailsStrings());
     } else {
       const extensions::PermissionMessageProvider* message_provider =
           extensions::PermissionMessageProvider::Get();
-      prompt_.SetPermissions(message_provider->GetWarningMessages(
+      prompt_->SetPermissions(message_provider->GetWarningMessages(
           permissions_, Manifest::TYPE_UNKNOWN));
-      prompt_.SetPermissionsDetails(message_provider->GetWarningMessagesDetails(
-          permissions_, Manifest::TYPE_UNKNOWN));
+      prompt_->SetPermissionsDetails(
+          message_provider->GetWarningMessagesDetails(permissions_,
+                                                      Manifest::TYPE_UNKNOWN));
     }
   }
 
-  switch (prompt_.type()) {
+  switch (prompt_->type()) {
     case PERMISSIONS_PROMPT:
     case RE_ENABLE_PROMPT:
     case INLINE_INSTALL_PROMPT:
@@ -734,12 +739,12 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     case LAUNCH_PROMPT:
     case POST_INSTALL_PERMISSIONS_PROMPT:
     case REMOTE_INSTALL_PROMPT: {
-      prompt_.set_extension(extension_);
-      prompt_.set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
+      prompt_->set_extension(extension_);
+      prompt_->set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
       break;
     }
     case BUNDLE_INSTALL_PROMPT: {
-      prompt_.set_bundle(bundle_);
+      prompt_->set_bundle(bundle_);
       break;
     }
     default:

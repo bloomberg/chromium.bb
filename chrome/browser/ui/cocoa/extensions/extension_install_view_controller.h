@@ -10,7 +10,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "ui/gfx/image/image_skia.h"
@@ -43,7 +43,7 @@ class PageNavigator;
 
   content::PageNavigator* navigator_;  // weak
   ExtensionInstallPrompt::Delegate* delegate_;  // weak
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt_;
+  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt_;
 
   base::scoped_nsobject<NSArray> warnings_;
   BOOL isComputingRowHeight_;
@@ -64,7 +64,7 @@ class PageNavigator;
 
 - (id)initWithNavigator:(content::PageNavigator*)navigator
                delegate:(ExtensionInstallPrompt::Delegate*)delegate
-                 prompt:(const ExtensionInstallPrompt::Prompt&)prompt;
+                 prompt:(scoped_refptr<ExtensionInstallPrompt::Prompt>)prompt;
 - (IBAction)storeLinkClicked:(id)sender; // Callback for "View details" link.
 - (IBAction)cancel:(id)sender;
 - (IBAction)ok:(id)sender;

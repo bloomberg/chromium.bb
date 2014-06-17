@@ -10,7 +10,7 @@ namespace {
 void ShowExtensionInstallDialogImpl(
     const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
-    const ExtensionInstallPrompt::Prompt& prompt) {
+    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) {
   NOTIMPLEMENTED();
 }
 

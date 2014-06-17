@@ -26,7 +26,7 @@ class ExtensionInstallDialogController :
   ExtensionInstallDialogController(
       const ExtensionInstallPrompt::ShowParams& show_params,
       ExtensionInstallPrompt::Delegate* delegate,
-      const ExtensionInstallPrompt::Prompt& prompt);
+      scoped_refptr<ExtensionInstallPrompt::Prompt> prompt);
   virtual ~ExtensionInstallDialogController();
 
   // ExtensionInstallPrompt::Delegate implementation.

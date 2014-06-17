@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INSTALL_PROMPT_TEST_UTILS_H_
 #define CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INSTALL_PROMPT_TEST_UTILS_H_
 
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 
 namespace chrome {
@@ -42,11 +43,12 @@ scoped_refptr<extensions::Extension> LoadInstallPromptExtension();
 gfx::Image LoadInstallPromptIcon();
 
 // Builds a prompt using the given extension.
-ExtensionInstallPrompt::Prompt BuildExtensionInstallPrompt(
+scoped_refptr<ExtensionInstallPrompt::Prompt> BuildExtensionInstallPrompt(
     extensions::Extension* extension);
 
-ExtensionInstallPrompt::Prompt BuildExtensionPostInstallPermissionsPrompt(
-    extensions::Extension* extension);
+scoped_refptr<ExtensionInstallPrompt::Prompt>
+    BuildExtensionPostInstallPermissionsPrompt(
+        extensions::Extension* extension);
 
 }  // namespace chrome
 

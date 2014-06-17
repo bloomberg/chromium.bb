@@ -57,7 +57,7 @@ class ProgrammableInstallPrompt : public ExtensionInstallPrompt {
       Delegate* delegate,
       const Extension* extension,
       SkBitmap* icon,
-      const ExtensionInstallPrompt::Prompt& prompt) OVERRIDE {
+      scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) OVERRIDE {
     delegate_ = delegate;
   }
 

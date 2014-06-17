@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest, BasicTest) {
   ExtensionInstallPrompt::ShowParams show_params(tab);
 
   chrome::MockExtensionInstallPromptDelegate delegate;
-  ExtensionInstallPrompt::Prompt prompt =
+  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt =
       chrome::BuildExtensionInstallPrompt(extension_.get());
 
   ExtensionInstallDialogController* controller =
@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest,
   ExtensionInstallPrompt::ShowParams show_params(tab);
 
   chrome::MockExtensionInstallPromptDelegate delegate;
-  ExtensionInstallPrompt::Prompt prompt =
+  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt =
       chrome::BuildExtensionPostInstallPermissionsPrompt(extension_.get());
 
   ExtensionInstallDialogController* controller =

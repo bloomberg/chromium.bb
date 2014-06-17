@@ -91,8 +91,8 @@ class WebstoreStandaloneInstaller
 
   // Should return an installation prompt with desired properties or NULL if
   // no prompt should be shown.
-  virtual scoped_ptr<ExtensionInstallPrompt::Prompt>
-      CreateInstallPrompt() const = 0;
+  virtual scoped_refptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
+      const = 0;
 
   // Perform all necessary checks to make sure inline install is permitted,
   // e.g. in the extension's properties in the store. The implementation may
@@ -196,7 +196,7 @@ class WebstoreStandaloneInstaller
 
   // Installation dialog and its underlying prompt.
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
-  scoped_ptr<ExtensionInstallPrompt::Prompt> install_prompt_;
+  scoped_refptr<ExtensionInstallPrompt::Prompt> install_prompt_;
 
   // For fetching webstore JSON data.
   scoped_ptr<WebstoreDataFetcher> webstore_data_fetcher_;

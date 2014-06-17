@@ -21,7 +21,7 @@ void TestingShowAppListInstallDialogController(
     WindowedInstallDialogController** controller,
     const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
-    const ExtensionInstallPrompt::Prompt& prompt) {
+    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) {
   *controller =
       new WindowedInstallDialogController(show_params, delegate, prompt);
 }

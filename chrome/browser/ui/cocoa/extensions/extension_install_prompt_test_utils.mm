@@ -71,20 +71,23 @@ gfx::Image LoadInstallPromptIcon() {
       file_contents.length());
 }
 
-ExtensionInstallPrompt::Prompt BuildExtensionInstallPrompt(
+scoped_refptr<ExtensionInstallPrompt::Prompt> BuildExtensionInstallPrompt(
     Extension* extension) {
-  ExtensionInstallPrompt::Prompt prompt(ExtensionInstallPrompt::INSTALL_PROMPT);
-  prompt.set_extension(extension);
-  prompt.set_icon(LoadInstallPromptIcon());
+  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt =
+      new ExtensionInstallPrompt::Prompt(
+          ExtensionInstallPrompt::INSTALL_PROMPT);
+  prompt->set_extension(extension);
+  prompt->set_icon(LoadInstallPromptIcon());
   return prompt;
 }
 
-ExtensionInstallPrompt::Prompt BuildExtensionPostInstallPermissionsPrompt(
-    Extension* extension) {
-  ExtensionInstallPrompt::Prompt prompt(
-      ExtensionInstallPrompt::POST_INSTALL_PERMISSIONS_PROMPT);
-  prompt.set_extension(extension);
-  prompt.set_icon(LoadInstallPromptIcon());
+scoped_refptr<ExtensionInstallPrompt::Prompt>
+BuildExtensionPostInstallPermissionsPrompt(Extension* extension) {
+  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt =
+      new ExtensionInstallPrompt::Prompt(
+          ExtensionInstallPrompt::POST_INSTALL_PERMISSIONS_PROMPT);
+  prompt->set_extension(extension);
+  prompt->set_icon(LoadInstallPromptIcon());
   return prompt;
 }
 

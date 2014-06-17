@@ -47,8 +47,8 @@ class WebstoreInlineInstaller
   virtual bool ShouldShowPostInstallUI() const OVERRIDE;
   virtual bool ShouldShowAppInstalledBubble() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual scoped_ptr<ExtensionInstallPrompt::Prompt>
-      CreateInstallPrompt() const OVERRIDE;
+  virtual scoped_refptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
+      const OVERRIDE;
   virtual bool CheckInlineInstallPermitted(
       const base::DictionaryValue& webstore_data,
       std::string* error) const OVERRIDE;

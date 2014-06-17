@@ -21,14 +21,14 @@
 
 - (id)initWithNavigator:(content::PageNavigator*)navigator
                delegate:(WindowedInstallDialogController*)delegate
-                 prompt:(const ExtensionInstallPrompt::Prompt&)prompt;
+                 prompt:(scoped_refptr<ExtensionInstallPrompt::Prompt>)prompt;
 
 @end
 
 WindowedInstallDialogController::WindowedInstallDialogController(
     const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
-    const ExtensionInstallPrompt::Prompt& prompt)
+    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt)
     : delegate_(delegate) {
   install_controller_.reset([[WindowedInstallController alloc]
       initWithNavigator:show_params.navigator
@@ -72,7 +72,7 @@ void WindowedInstallDialogController::InstallUIAbort(bool user_initiated) {
 
 - (id)initWithNavigator:(content::PageNavigator*)navigator
                delegate:(WindowedInstallDialogController*)delegate
-                 prompt:(const ExtensionInstallPrompt::Prompt&)prompt {
+                 prompt:(scoped_refptr<ExtensionInstallPrompt::Prompt>)prompt {
   base::scoped_nsobject<NSWindow> controlledPanel(
       [[NSPanel alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
                                  styleMask:NSTitledWindowMask
@@ -94,7 +94,7 @@ void WindowedInstallDialogController::InstallUIAbort(bool user_initiated) {
     if ([window respondsToSelector:@selector(setAnimationBehavior:)])
       [window setAnimationBehavior:NSWindowAnimationBehaviorAlertPanel];
 
-    [window setTitle:base::SysUTF16ToNSString(prompt.GetDialogTitle())];
+    [window setTitle:base::SysUTF16ToNSString(prompt->GetDialogTitle())];
     NSRect viewFrame = [[installViewController_ view] frame];
     [window setFrame:[window frameRectForContentRect:viewFrame]
              display:NO];

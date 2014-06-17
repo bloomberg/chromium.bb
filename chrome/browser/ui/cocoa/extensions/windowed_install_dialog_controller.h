@@ -24,7 +24,7 @@ class WindowedInstallDialogController
   WindowedInstallDialogController(
       const ExtensionInstallPrompt::ShowParams& show_params,
       ExtensionInstallPrompt::Delegate* delegate,
-      const ExtensionInstallPrompt::Prompt& prompt);
+      scoped_refptr<ExtensionInstallPrompt::Prompt> prompt);
   virtual ~WindowedInstallDialogController();
 
   // Invoked by the -[NSWindow windowWillClose:] notification after a dialog

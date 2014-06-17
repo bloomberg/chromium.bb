@@ -156,7 +156,7 @@ WebContents* EphemeralAppLauncher::GetWebContents() const {
   return web_contents() ? web_contents() : dummy_web_contents_.get();
 }
 
-scoped_ptr<ExtensionInstallPrompt::Prompt>
+scoped_refptr<ExtensionInstallPrompt::Prompt>
 EphemeralAppLauncher::CreateInstallPrompt() const {
   DCHECK(extension_.get() != NULL);
 
@@ -165,9 +165,9 @@ EphemeralAppLauncher::CreateInstallPrompt() const {
   extensions::PermissionMessages permissions =
       extension_->permissions_data()->GetPermissionMessages();
   if (permissions.empty())
-    return scoped_ptr<ExtensionInstallPrompt::Prompt>();
+    return NULL;
 
-  return make_scoped_ptr(new ExtensionInstallPrompt::Prompt(
+  return make_scoped_refptr(new ExtensionInstallPrompt::Prompt(
       ExtensionInstallPrompt::LAUNCH_PROMPT));
 }
 

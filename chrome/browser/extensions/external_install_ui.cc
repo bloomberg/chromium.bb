@@ -101,7 +101,7 @@ class ExternalInstallDialogDelegate
 
   // The UI for showing the install dialog when enabling.
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
-  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt_;
+  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt_;
 
   Browser* browser_;
   base::WeakPtr<ExtensionService> service_weak_;
@@ -167,10 +167,11 @@ class ExternalInstallMenuAlert : public GlobalErrorWithStandardBubble,
 // Shows a menu item and a global error bubble, replacing the install dialog.
 class ExternalInstallGlobalError : public ExternalInstallMenuAlert {
  public:
-  ExternalInstallGlobalError(ExtensionService* service,
-                             const Extension* extension,
-                             ExternalInstallDialogDelegate* delegate,
-                             const ExtensionInstallPrompt::Prompt& prompt);
+  ExternalInstallGlobalError(
+      ExtensionService* service,
+      const Extension* extension,
+      ExternalInstallDialogDelegate* delegate,
+      scoped_refptr<ExtensionInstallPrompt::Prompt> prompt);
   virtual ~ExternalInstallGlobalError();
 
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
@@ -189,7 +190,7 @@ class ExternalInstallGlobalError : public ExternalInstallMenuAlert {
   // having been clicked (perhaps because the user enabled the extension
   // manually).
   ExternalInstallDialogDelegate* delegate_;
-  const ExtensionInstallPrompt::Prompt* prompt_;
+  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExternalInstallGlobalError);
@@ -200,7 +201,7 @@ static void CreateExternalInstallGlobalError(
     const std::string& extension_id,
     const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* prompt_delegate,
-    const ExtensionInstallPrompt::Prompt& prompt) {
+    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) {
   if (!service.get())
     return;
   const Extension* extension = service->GetInstalledExtension(extension_id);
@@ -242,8 +243,8 @@ ExternalInstallDialogDelegate::ExternalInstallDialogDelegate(
       use_global_error_(use_global_error) {
   AddRef();  // Balanced in Proceed or Abort.
 
-  prompt_.reset(new ExtensionInstallPrompt::Prompt(
-      ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT));
+  prompt_ = new ExtensionInstallPrompt::Prompt(
+      ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT);
 
   // If we don't have a browser, we can't go to the webstore to fetch data.
   // This should only happen in tests.
@@ -324,7 +325,7 @@ void ExternalInstallDialogDelegate::ShowInstallUI() {
                      extension_id_) :
           ExtensionInstallPrompt::GetDefaultShowDialogCallback();
 
-  install_ui_->ConfirmExternalInstall(this, extension, callback, *prompt_);
+  install_ui_->ConfirmExternalInstall(this, extension, callback, prompt_);
 }
 
 ExternalInstallDialogDelegate::~ExternalInstallDialogDelegate() {
@@ -461,10 +462,10 @@ ExternalInstallGlobalError::ExternalInstallGlobalError(
     ExtensionService* service,
     const Extension* extension,
     ExternalInstallDialogDelegate* delegate,
-    const ExtensionInstallPrompt::Prompt& prompt)
+    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt)
     : ExternalInstallMenuAlert(service, extension),
       delegate_(delegate),
-      prompt_(&prompt) {
+      prompt_(prompt) {
 }
 
 ExternalInstallGlobalError::~ExternalInstallGlobalError() {
