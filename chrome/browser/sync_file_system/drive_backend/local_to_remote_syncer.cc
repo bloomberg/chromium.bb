@@ -173,9 +173,7 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
       remote_parent_folder_tracker_ = active_ancestor_tracker.Pass();
       target_path_ = active_ancestor_path.Append(missing_components[0]);
       token->RecordLog("Detected missing parent folder.");
-      CreateRemoteFolder(base::Bind(
-          &LocalToRemoteSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
-          base::Passed(&token)));
+      CreateRemoteFolder(token.Pass());
       return;
     }
 
@@ -232,9 +230,7 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
   }
 
   token->RecordLog("Detected a new folder.");
-  CreateRemoteFolder(base::Bind(
-      &LocalToRemoteSyncer::SyncCompleted,
-      weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+  CreateRemoteFolder(token.Pass());
 }
 
 void LocalToRemoteSyncer::SyncCompleted(scoped_ptr<SyncTaskToken> token,
@@ -279,9 +275,7 @@ void LocalToRemoteSyncer::HandleConflict(scoped_ptr<SyncTaskToken> token) {
   if (!metadata_database()->FindFileByFileID(
           remote_file_tracker_->file_id(), &remote_file_metadata)) {
     NOTREACHED();
-    CreateRemoteFolder(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  base::Passed(&token)));
+    CreateRemoteFolder(token.Pass());
     return;
   }
 
@@ -300,10 +294,7 @@ void LocalToRemoteSyncer::HandleConflict(scoped_ptr<SyncTaskToken> token) {
     return;
   }
 
-  // Create new remote folder.
-  CreateRemoteFolder(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::Passed(&token)));
+  CreateRemoteFolder(token.Pass());
 }
 
 void LocalToRemoteSyncer::HandleExistingRemoteFile(
@@ -591,9 +582,7 @@ void LocalToRemoteSyncer::DidDeleteForCreateFolder(
     return;
   }
 
-  CreateRemoteFolder(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::Passed(&token)));
+  CreateRemoteFolder(token.Pass());
 }
 
 void LocalToRemoteSyncer::UploadNewFile(const SyncStatusCallback& callback) {
@@ -638,7 +627,7 @@ void LocalToRemoteSyncer::DidUploadNewFile(
 }
 
 void LocalToRemoteSyncer::CreateRemoteFolder(
-    const SyncStatusCallback& callback) {
+    scoped_ptr<SyncTaskToken> token) {
   DCHECK(remote_parent_folder_tracker_);
 
   base::FilePath title = fileapi::VirtualPath::BaseName(target_path_);
@@ -652,11 +641,11 @@ void LocalToRemoteSyncer::CreateRemoteFolder(
   folder_creator_->Run(base::Bind(
       &LocalToRemoteSyncer::DidCreateRemoteFolder,
       weak_ptr_factory_.GetWeakPtr(),
-      callback));
+      base::Passed(&token)));
 }
 
 void LocalToRemoteSyncer::DidCreateRemoteFolder(
-    const SyncStatusCallback& callback,
+    scoped_ptr<SyncTaskToken> token,
     const std::string& file_id,
     SyncStatusCode status) {
   if (status == SYNC_FILE_ERROR_NOT_FOUND)
@@ -664,17 +653,21 @@ void LocalToRemoteSyncer::DidCreateRemoteFolder(
 
   scoped_ptr<FolderCreator> deleter = folder_creator_.Pass();
   if (status != SYNC_STATUS_OK) {
-    callback.Run(status);
+    SyncCompleted(token.Pass(), status);
     return;
   }
 
   MetadataDatabase::ActivationStatus activation_status =
       metadata_database()->TryActivateTracker(
           remote_parent_folder_tracker_->tracker_id(),
-          file_id, callback);
+          file_id,
+          base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(token.Pass())));
   switch (activation_status) {
     case MetadataDatabase::ACTIVATION_PENDING:
-      // |callback| will be invoked by MetadataDatabase later in this case.
+      // The task will be finalized by the callback passed to MetadataDatabase
+      // in this case.
       return;
     case MetadataDatabase::ACTIVATION_FAILED_ANOTHER_ACTIVE_TRACKER:
       // The activation failed due to another tracker that has another parent.
@@ -684,12 +677,14 @@ void LocalToRemoteSyncer::DidCreateRemoteFolder(
           remote_parent_folder_tracker_->file_id(), file_id,
           base::Bind(&LocalToRemoteSyncer::DidDetachResourceForCreationConflict,
                      weak_ptr_factory_.GetWeakPtr(),
-                     callback));
+                     base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                base::Passed(&token))));
       return;
   }
 
   NOTREACHED();
-  callback.Run(SYNC_STATUS_FAILED);
+  SyncCompleted(token.Pass(), SYNC_STATUS_FAILED);
   return;
 }
 

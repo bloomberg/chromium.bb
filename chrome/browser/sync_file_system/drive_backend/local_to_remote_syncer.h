@@ -95,8 +95,8 @@ class LocalToRemoteSyncer : public SyncTask {
                         const GURL& upload_location,
                         scoped_ptr<google_apis::FileResource> entry);
 
-  void CreateRemoteFolder(const SyncStatusCallback& callback);
-  void DidCreateRemoteFolder(const SyncStatusCallback& callback,
+  void CreateRemoteFolder(scoped_ptr<SyncTaskToken> token);
+  void DidCreateRemoteFolder(scoped_ptr<SyncTaskToken> token,
                              const std::string& file_id,
                              SyncStatusCode status);
   void DidDetachResourceForCreationConflict(const SyncStatusCallback& callback,
