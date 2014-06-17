@@ -51,19 +51,26 @@
         <link rel="stylesheet"
             href="chrome://provided-file-systems/provided_file_systems.css">
         <div id="requestTimeline">
-          <div class="request-timeline-padding"
-              style="min-height: {{rows.length * rowHeight}}px">
-            <template id="request-timeline-request"
-                repeat="{{request in chart}}">
-              <div class="request-timeline-request"
-                  title="{{request.id}}"
-                  data-state="{{request.state}}"
-                  data-request-type="{{request.requestType}}"
-                  style="left: {{request.left * scale}}px;
-                      top: {{request.row * rowHeight}}px;
-                      width: {{request.length * scale}}px">
-              </div>
-            </template>
+          <div class="request-timeline-toolbar">
+            <button on-click="{{zoomOutClicked}}">&ndash;</button>
+            <button on-click="{{zoomInClicked}}">+</button>
+          </div>
+          <div class="request-timeline-scroller">
+            <div class="request-timeline-padding"
+                style="min-height: {{rows.length * ROW_HEIGHT}}px">
+              <div class="request-timeline-scroller">
+              <template id="request-timeline-request"
+                  repeat="{{request in chart}}">
+                <div class="request-timeline-request"
+                    title="{{request.id}}"
+                    data-state="{{request.state}}"
+                    data-request-type="{{request.requestType}}"
+                    style="-webkit-margin-start: {{request.left * scale}}px;
+                        top: {{request.row * ROW_HEIGHT}}px;
+                        width: {{request.length * scale}}px">
+                </div>
+              </template>
+            </div>
           </div>
         </div>
       </template>

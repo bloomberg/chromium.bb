@@ -81,6 +81,20 @@ Polymer('request-events', {
 // Defines the request-timeline element.
 Polymer('request-timeline', {
   /**
+   * Step for zoomin in and out.
+   * @type {number}
+   * @const
+   */
+  SCALE_STEP: 1.5,
+
+  /**
+   * Height of each row in the chart in pixels.
+   * @type {number}
+   * @const
+   */
+  ROW_HEIGHT: 14,
+
+  /**
    * Observes changes in the model.
    * @type {Object.<string, string>}
    */
@@ -98,6 +112,26 @@ Polymer('request-timeline', {
       requestAnimationFrame(activeUpdateAnimation);
     }.bind(this);
     activeUpdateAnimation();
+  },
+
+  /**
+   * Zooms in the timeline.
+   * @param {Event} event Event.
+   * @param {number} detail Detail.
+   * @param {HTMLElement} sender Sender.
+   */
+  zoomInClicked: function(event, detail, sender) {
+    this.scale *= this.SCALE_STEP;
+  },
+
+  /**
+   * Zooms out the timeline.
+   * @param {Event} event Event.
+   * @param {number} detail Detail.
+   * @param {HTMLElement} sender Sender.
+   */
+  zoomOutClicked: function(event, detail, sender) {
+    this.scale /= this.SCALE_STEP;
   },
 
   /**
@@ -232,13 +266,7 @@ Polymer('request-timeline', {
    * Scale of the chart.
    * @type {number}
    */
-  scale: 0.1,
-
-  /**
-   * Height of each row in the chart in pixels.
-   * @type {number}
-   */
-  rowHeight: 14,
+  scale: 1,
 
   /**
    * Time of the first created request.
