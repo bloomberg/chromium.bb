@@ -699,6 +699,13 @@ void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
   }
   OnHostMoved(bounds_.origin());
   OnHostResized(bounds_.size());
+
+  if (HasWMSpecProperty("_NET_WM_STATE_FULLSCREEN") == fullscreen) {
+    Relayout();
+    ResetWindowRegion();
+  }
+  // Else: the widget will be relaid out either when the window bounds change or
+  // when |xwindow_|'s fullscreen state changes.
 }
 
 bool DesktopWindowTreeHostX11::IsFullscreen() const {
@@ -1177,41 +1184,33 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
   std::copy(atom_list.begin(), atom_list.end(),
             inserter(window_properties_, window_properties_.begin()));
 
-  if (!restored_bounds_.IsEmpty() && !IsMaximized()) {
+  if (restored_bounds_.IsEmpty()) {
+    DCHECK(!IsFullscreen());
+    if (IsMaximized()) {
+      // The request that we become maximized originated from a different
+      // process. |bounds_| already contains our maximized bounds. Do a best
+      // effort attempt to get restored bounds by setting it to our previously
+      // set bounds (and if we get this wrong, we aren't any worse off since
+      // we'd otherwise be returning our maximized bounds).
+      restored_bounds_ = previous_bounds_;
+    }
+  } else if (!IsMaximized() && !IsFullscreen()) {
     // If we have restored bounds, but WM_STATE no longer claims to be
-    // maximized, we should clear our restored bounds.
+    // maximized or fullscreen, we should clear our restored bounds.
     restored_bounds_ = gfx::Rect();
-  } else if (IsMaximized() && restored_bounds_.IsEmpty()) {
-    // The request that we become maximized originated from a different process.
-    // |bounds_| already contains our maximized bounds. Do a best effort attempt
-    // to get restored bounds by setting it to our previously set bounds (and if
-    // we get this wrong, we aren't any worse off since we'd otherwise be
-    // returning our maximized bounds).
-    restored_bounds_ = previous_bounds_;
   }
 
-  is_fullscreen_ = HasWMSpecProperty("_NET_WM_STATE_FULLSCREEN");
+  // Ignore requests by the window manager to enter or exit fullscreen (e.g. as
+  // a result of pressing a window manager accelerator key). Chrome does not
+  // handle window manager initiated fullscreen. In particular, Chrome needs to
+  // do preprocessing before the x window's fullscreen state is toggled.
+
   is_always_on_top_ = HasWMSpecProperty("_NET_WM_STATE_ABOVE");
 
   // Now that we have different window properties, we may need to relayout the
   // window. (The windows code doesn't need this because their window change is
   // synchronous.)
-  //
-  // TODO(erg): While this does work, there's a quick flash showing the
-  // tabstrip/toolbar/etc. when going into fullscreen mode before hiding those
-  // parts of the UI because we receive the sizing event from the window
-  // manager before we receive the event that changes the fullscreen state.
-  // Unsure what to do about that.
-  Widget* widget = native_widget_delegate_->AsWidget();
-  NonClientView* non_client_view = widget->non_client_view();
-  // non_client_view may be NULL, especially during creation.
-  if (non_client_view) {
-    non_client_view->client_view()->InvalidateLayout();
-    non_client_view->InvalidateLayout();
-  }
-  widget->GetRootView()->Layout();
-  // Refresh the window's border, which may need to be updated if we have
-  // changed the window's maximization state.
+  Relayout();
   ResetWindowRegion();
 }
 
@@ -1355,7 +1354,7 @@ void DesktopWindowTreeHostX11::ResetWindowRegion() {
     XDestroyRegion(window_shape_);
   window_shape_ = NULL;
 
-  if (!IsMaximized()) {
+  if (!IsMaximized() && !IsFullscreen()) {
     gfx::Path window_mask;
     views::Widget* widget = native_widget_delegate_->AsWidget();
     if (widget->non_client_view()) {
@@ -1494,6 +1493,17 @@ void DesktopWindowTreeHostX11::SetWindowTransparency() {
   compositor()->SetHostHasTransparentBackground(use_argb_visual_);
   window()->SetTransparent(use_argb_visual_);
   content_window_->SetTransparent(use_argb_visual_);
+}
+
+void DesktopWindowTreeHostX11::Relayout() {
+  Widget* widget = native_widget_delegate_->AsWidget();
+  NonClientView* non_client_view = widget->non_client_view();
+  // non_client_view may be NULL, especially during creation.
+  if (non_client_view) {
+    non_client_view->client_view()->InvalidateLayout();
+    non_client_view->InvalidateLayout();
+  }
+  widget->GetRootView()->Layout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

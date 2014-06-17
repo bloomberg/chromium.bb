@@ -225,6 +225,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   void SetWindowTransparency();
 
+  // Relayout the widget's client and non-client views.
+  void Relayout();
+
   // ui::PlatformEventDispatcher:
   virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
   virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
@@ -261,8 +264,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // The window manager state bits.
   std::set< ::Atom> window_properties_;
 
-  // Local flag for fullscreen state to avoid a state mismatch between
-  // server and local window_properties_ during app-initiated fullscreen.
+  // Whether |xwindow_| was requested to be fullscreen via SetFullscreen().
   bool is_fullscreen_;
 
   // True if the window should stay on top of most other windows.

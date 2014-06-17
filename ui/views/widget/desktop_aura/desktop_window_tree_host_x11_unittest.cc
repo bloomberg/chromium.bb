@@ -31,39 +31,50 @@ namespace views {
 
 namespace {
 
-// Blocks till |window| becomes maximized.
-class MaximizeWaiter : public X11PropertyChangeWaiter {
+// Blocks till the window state hint, |hint|, is set or unset.
+class WMStateWaiter : public X11PropertyChangeWaiter {
  public:
-  explicit MaximizeWaiter(XID window)
-      : X11PropertyChangeWaiter(window, "_NET_WM_STATE") {
+  WMStateWaiter(XID window,
+                const char* hint,
+                bool wait_till_set)
+      : X11PropertyChangeWaiter(window, "_NET_WM_STATE"),
+        hint_(hint),
+        wait_till_set_(wait_till_set) {
 
     const char* kAtomsToCache[] = {
-        "_NET_WM_STATE_MAXIMIZED_VERT",
+        hint,
         NULL
     };
     atom_cache_.reset(new ui::X11AtomCache(gfx::GetXDisplay(), kAtomsToCache));
   }
 
-  virtual ~MaximizeWaiter() {
+  virtual ~WMStateWaiter() {
   }
 
  private:
   // X11PropertyChangeWaiter:
   virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) OVERRIDE {
-    std::vector<Atom> wm_states;
-    if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &wm_states)) {
+    std::vector<Atom> hints;
+    if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &hints)) {
       std::vector<Atom>::iterator it = std::find(
-          wm_states.begin(),
-          wm_states.end(),
-          atom_cache_->GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"));
-      return it == wm_states.end();
+          hints.begin(),
+          hints.end(),
+          atom_cache_->GetAtom(hint_));
+      bool hint_set = (it != hints.end());
+      return hint_set != wait_till_set_;
     }
     return true;
   }
 
   scoped_ptr<ui::X11AtomCache> atom_cache_;
 
-  DISALLOW_COPY_AND_ASSIGN(MaximizeWaiter);
+  // The name of the hint to wait to get set or unset.
+  const char* hint_;
+
+  // Whether we are waiting for |hint| to be set or unset.
+  bool wait_till_set_;
+
+  DISALLOW_COPY_AND_ASSIGN(WMStateWaiter);
 };
 
 // A NonClientFrameView with a window mask with the bottom right corner cut out.
@@ -245,7 +256,7 @@ TEST_F(DesktopWindowTreeHostX11Test, Shape) {
     // The shape should be changed to a rectangle which fills the entire screen
     // when |widget1| is maximized.
     {
-      MaximizeWaiter waiter(xid1);
+      WMStateWaiter waiter(xid1, "_NET_WM_STATE_MAXIMIZED_VERT", true);
       widget1->Maximize();
       waiter.Wait();
     }
@@ -296,6 +307,64 @@ TEST_F(DesktopWindowTreeHostX11Test, Shape) {
   EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 15, 5));
   EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 95, 15));
   EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, 105, 15));
+}
+
+// Test that the widget ignores changes in fullscreen state initiated by the
+// window manager (e.g. via a window manager accelerator key).
+TEST_F(DesktopWindowTreeHostX11Test, WindowManagerTogglesFullscreen) {
+  if (!ui::WmSupportsHint(ui::GetAtom("_NET_WM_STATE_FULLSCREEN")))
+    return;
+
+  scoped_ptr<Widget> widget = CreateWidget(new ShapedWidgetDelegate());
+  XID xid = widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
+  widget->Show();
+  ui::X11EventSource::GetInstance()->DispatchXEvents();
+
+  gfx::Rect initial_bounds = widget->GetWindowBoundsInScreen();
+  {
+    WMStateWaiter waiter(xid, "_NET_WM_STATE_FULLSCREEN", true);
+    widget->SetFullscreen(true);
+    waiter.Wait();
+  }
+  EXPECT_TRUE(widget->IsFullscreen());
+
+  // Emulate the window manager exiting fullscreen via a window manager
+  // accelerator key. It should not affect the widget's fullscreen state.
+  {
+    const char* kAtomsToCache[] = {
+        "_NET_WM_STATE",
+        "_NET_WM_STATE_FULLSCREEN",
+        NULL
+    };
+    Display* display = gfx::GetXDisplay();
+    ui::X11AtomCache atom_cache(display, kAtomsToCache);
+
+    XEvent xclient;
+    memset(&xclient, 0, sizeof(xclient));
+    xclient.type = ClientMessage;
+    xclient.xclient.window = xid;
+    xclient.xclient.message_type = atom_cache.GetAtom("_NET_WM_STATE");
+    xclient.xclient.format = 32;
+    xclient.xclient.data.l[0] = 0;
+    xclient.xclient.data.l[1] = atom_cache.GetAtom("_NET_WM_STATE_FULLSCREEN");
+    xclient.xclient.data.l[2] = 0;
+    xclient.xclient.data.l[3] = 1;
+    xclient.xclient.data.l[4] = 0;
+    XSendEvent(display, DefaultRootWindow(display), False,
+               SubstructureRedirectMask | SubstructureNotifyMask,
+               &xclient);
+
+    WMStateWaiter waiter(xid, "_NET_WM_STATE_FULLSCREEN", false);
+    waiter.Wait();
+  }
+  EXPECT_TRUE(widget->IsFullscreen());
+
+  // Calling Widget::SetFullscreen(false) should clear the widget's fullscreen
+  // state and clean things up.
+  widget->SetFullscreen(false);
+  EXPECT_FALSE(widget->IsFullscreen());
+  EXPECT_EQ(initial_bounds.ToString(),
+            widget->GetWindowBoundsInScreen().ToString());
 }
 
 }  // namespace views
