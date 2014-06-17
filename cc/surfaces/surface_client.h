@@ -16,6 +16,7 @@ class CC_SURFACES_EXPORT SurfaceClient {
 
   virtual void ReturnResources(const ReturnedResourceArray& resources) = 0;
 };
-}
+
+}  // namespace cc
 
 #endif  // CC_SURFACES_SURFACE_CLIENT_H_
