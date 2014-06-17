@@ -541,6 +541,7 @@ void HTMLCanvasElement::trace(Visitor* visitor)
 {
     visitor->trace(m_observers);
     visitor->trace(m_context);
+    DocumentVisibilityObserver::trace(visitor);
     HTMLElement::trace(visitor);
 }
 

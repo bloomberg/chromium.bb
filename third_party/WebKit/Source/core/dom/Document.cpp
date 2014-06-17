@@ -379,7 +379,7 @@ private:
 };
 
 DocumentVisibilityObserver::DocumentVisibilityObserver(Document& document)
-    : m_document(0)
+    : m_document(nullptr)
 {
     registerObserver(document);
 }
@@ -391,11 +391,16 @@ DocumentVisibilityObserver::~DocumentVisibilityObserver()
 #endif
 }
 
+void DocumentVisibilityObserver::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+}
+
 void DocumentVisibilityObserver::unregisterObserver()
 {
     if (m_document) {
         m_document->unregisterVisibilityObserver(this);
-        m_document = 0;
+        m_document = nullptr;
     }
 }
 

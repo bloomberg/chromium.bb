@@ -225,10 +225,14 @@ public:
     // DocumentVisibilityObserver::setDocument
     void setObservedDocument(Document&);
 
+protected:
+    void trace(Visitor*);
+
 private:
     void registerObserver(Document&);
     void unregisterObserver();
-    Document* m_document;
+
+    RawPtrWillBeMember<Document> m_document;
 };
 
 class Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext, public ExecutionContextClient
