@@ -23,7 +23,7 @@ class ViewPrivate {
   }
 
   void set_id(Id id) { view_->id_ = id; }
-  void set_node(ViewTreeNode* node) { view_->node_ = node; }
+  void set_node(Node* node) { view_->node_ = node; }
 
   ViewManager* view_manager() { return view_->manager_; }
   void set_view_manager(ViewManager* manager) {

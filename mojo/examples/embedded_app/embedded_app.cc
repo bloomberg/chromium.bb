@@ -9,22 +9,22 @@
 #include "mojo/examples/window_manager/window_manager.mojom.h"
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/services/navigation/navigation.mojom.h"
+#include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
-#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
-#include "mojo/services/public/cpp/view_manager/view_tree_node_observer.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
+using mojo::view_manager::Node;
+using mojo::view_manager::NodeObserver;
 using mojo::view_manager::View;
 using mojo::view_manager::ViewManager;
 using mojo::view_manager::ViewManagerDelegate;
 using mojo::view_manager::ViewObserver;
-using mojo::view_manager::ViewTreeNode;
-using mojo::view_manager::ViewTreeNodeObserver;
 
 namespace mojo {
 namespace examples {
@@ -32,7 +32,7 @@ namespace examples {
 class EmbeddedApp : public Application,
                     public ViewManagerDelegate,
                     public ViewObserver,
-                    public ViewTreeNodeObserver {
+                    public NodeObserver {
  public:
   EmbeddedApp() : view_manager_(NULL) {
     url::AddStandardScheme("mojo");
@@ -79,8 +79,7 @@ class EmbeddedApp : public Application,
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnRootAdded(ViewManager* view_manager,
-                           ViewTreeNode* root) OVERRIDE {
+  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
     View* view = View::Create(view_manager);
     view->AddObserver(this);
     root->SetActiveView(view);
@@ -89,12 +88,10 @@ class EmbeddedApp : public Application,
     roots_[root->id()] = root;
     ProcessPendingNodeColor(root->id());
   }
-  virtual void OnRootRemoved(ViewManager* view_manager,
-                             ViewTreeNode* root) OVERRIDE {
+  virtual void OnRootRemoved(ViewManager* view_manager, Node* root) OVERRIDE {
     roots_.erase(root->id());
 
-    std::map<ViewTreeNode*, View*>::const_iterator it =
-        views_to_reap_.find(root);
+    std::map<Node*, View*>::const_iterator it = views_to_reap_.find(root);
     if (it != views_to_reap_.end())
       it->second->Destroy();
   }
@@ -105,12 +102,12 @@ class EmbeddedApp : public Application,
       window_manager_->CloseWindow(view->node()->id());
   }
 
-  // Overridden from ViewTreeNodeObserver:
+  // Overridden from NodeObserver:
   virtual void OnNodeActiveViewChange(
-      ViewTreeNode* node,
+      Node* node,
       View* old_view,
       View* new_view,
-      ViewTreeNodeObserver::DispositionChangePhase phase) OVERRIDE {
+      NodeObserver::DispositionChangePhase phase) OVERRIDE {
     if (new_view == 0)
       views_to_reap_[node] = old_view;
   }
@@ -131,9 +128,9 @@ class EmbeddedApp : public Application,
 
   view_manager::ViewManager* view_manager_;
   IWindowManagerPtr window_manager_;
-  std::map<ViewTreeNode*, View*> views_to_reap_;
+  std::map<Node*, View*> views_to_reap_;
 
-  typedef std::map<uint32, ViewTreeNode*> RootMap;
+  typedef std::map<uint32, Node*> RootMap;
   RootMap roots_;
 
   // We can receive navigations for nodes we don't have yet.

@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "mojo/services/public/cpp/view_manager/view_manager_types.h"
+#include "mojo/services/public/cpp/view_manager/types.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class SkBitmap;
@@ -15,9 +15,9 @@ class SkBitmap;
 namespace mojo {
 namespace view_manager {
 
+class Node;
 class ViewManager;
 class ViewObserver;
-class ViewTreeNode;
 
 // Views are owned by the ViewManager.
 class View {
@@ -27,7 +27,7 @@ class View {
   void Destroy();
 
   Id id() const { return id_; }
-  ViewTreeNode* node() { return node_; }
+  Node* node() { return node_; }
 
   void AddObserver(ViewObserver* observer);
   void RemoveObserver(ViewObserver* observer);
@@ -46,7 +46,7 @@ class View {
   void LocalDestroy();
 
   Id id_;
-  ViewTreeNode* node_;
+  Node* node_;
   ViewManager* manager_;
 
   ObserverList<ViewObserver> observers_;

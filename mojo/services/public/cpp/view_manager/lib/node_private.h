@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_LIB_VIEW_TREE_NODE_PRIVATE_H_
-#define MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_LIB_VIEW_TREE_NODE_PRIVATE_H_
+#ifndef MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_LIB_NODE_PRIVATE_H_
+#define MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_LIB_NODE_PRIVATE_H_
 
 #include "base/basictypes.h"
 
-#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
+#include "mojo/services/public/cpp/view_manager/node.h"
 
 namespace mojo {
 namespace view_manager {
 
-class ViewTreeNodePrivate {
+class NodePrivate {
  public:
-  explicit ViewTreeNodePrivate(ViewTreeNode* node);
-  ~ViewTreeNodePrivate();
+  explicit NodePrivate(Node* node);
+  ~NodePrivate();
 
-  static ViewTreeNode* LocalCreate();
+  static Node* LocalCreate();
 
-  ObserverList<ViewTreeNodeObserver>* observers() { return &node_->observers_; }
+  ObserverList<NodeObserver>* observers() { return &node_->observers_; }
 
   void ClearParent() { node_->parent_ = NULL; }
 
@@ -33,13 +33,13 @@ class ViewTreeNodePrivate {
   void LocalDestroy() {
     node_->LocalDestroy();
   }
-  void LocalAddChild(ViewTreeNode* child) {
+  void LocalAddChild(Node* child) {
     node_->LocalAddChild(child);
   }
-  void LocalRemoveChild(ViewTreeNode* child) {
+  void LocalRemoveChild(Node* child) {
     node_->LocalRemoveChild(child);
   }
-  void LocalReorder(ViewTreeNode* relative, OrderDirection direction) {
+  void LocalReorder(Node* relative, OrderDirection direction) {
     node_->LocalReorder(relative, direction);
   }
   void LocalSetActiveView(View* view) {
@@ -51,12 +51,12 @@ class ViewTreeNodePrivate {
   }
 
  private:
-  ViewTreeNode* node_;
+  Node* node_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewTreeNodePrivate);
+  DISALLOW_COPY_AND_ASSIGN(NodePrivate);
 };
 
 }  // namespace view_manager
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_LIB_VIEW_TREE_NODE_PRIVATE_H_
+#endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_LIB_NODE_PRIVATE_H_

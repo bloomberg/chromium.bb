@@ -4,11 +4,11 @@
 
 #include "base/basictypes.h"
 #include "mojo/public/cpp/application/application.h"
+#include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
-#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
 #include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "mojo/views/native_widget_view_manager.h"
 #include "mojo/views/views_init.h"
@@ -24,7 +24,7 @@ namespace examples {
 
 class NodeView : public views::View {
  public:
-  explicit NodeView(view_manager::ViewTreeNode* node) : node_(node) {
+  explicit NodeView(view_manager::Node* node) : node_(node) {
     // This class is provisional and assumes that the node has already been
     // added to a parent. I suspect we'll want to make an improved version of
     // this that lives in ui/views akin to NativeViewHost that properly
@@ -39,7 +39,7 @@ class NodeView : public views::View {
   }
 
  private:
-  view_manager::ViewTreeNode* node_;
+  view_manager::Node* node_;
 
   DISALLOW_COPY_AND_ASSIGN(NodeView);
 };
@@ -114,13 +114,13 @@ class Browser : public Application,
 
   // view_manager::ViewManagerDelegate:
   virtual void OnRootAdded(view_manager::ViewManager* view_manager,
-                           view_manager::ViewTreeNode* root) OVERRIDE {
+                           view_manager::Node* root) OVERRIDE {
     // TODO: deal with OnRootAdded() being invoked multiple times.
     view_manager_ = view_manager;
     view_ = view_manager::View::Create(view_manager_);
     view_manager_->GetRoots().front()->SetActiveView(view_);
 
-    content_node_ = view_manager::ViewTreeNode::Create(view_manager_);
+    content_node_ = view_manager::Node::Create(view_manager_);
     root->AddChild(content_node_);
 
     root->SetFocus();
@@ -128,7 +128,7 @@ class Browser : public Application,
     CreateWidget(root->bounds().size());
   }
   virtual void OnRootRemoved(view_manager::ViewManager* view_manager,
-                             view_manager::ViewTreeNode* root) OVERRIDE {
+                             view_manager::Node* root) OVERRIDE {
   }
 
   // views::TextfieldController:
@@ -160,7 +160,7 @@ class Browser : public Application,
 
   view_manager::ViewManager* view_manager_;
   view_manager::View* view_;
-  view_manager::ViewTreeNode* content_node_;
+  view_manager::Node* content_node_;
   launcher::LauncherPtr launcher_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);

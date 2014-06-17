@@ -8,11 +8,11 @@
 #include "mojo/examples/window_manager/window_manager.mojom.h"
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/services/navigation/navigation.mojom.h"
+#include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
-#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
 #include "ui/events/event_constants.h"
 
 #if defined CreateWindow
@@ -20,12 +20,12 @@
 #endif
 
 using mojo::view_manager::Id;
+using mojo::view_manager::Node;
+using mojo::view_manager::NodeObserver;
 using mojo::view_manager::View;
 using mojo::view_manager::ViewManager;
 using mojo::view_manager::ViewManagerDelegate;
 using mojo::view_manager::ViewObserver;
-using mojo::view_manager::ViewTreeNode;
-using mojo::view_manager::ViewTreeNodeObserver;
 
 namespace mojo {
 namespace examples {
@@ -68,7 +68,7 @@ class WindowManager : public Application,
   virtual ~WindowManager() {}
 
   void CloseWindow(Id node_id) {
-    ViewTreeNode* node = view_manager_->GetNodeById(node_id);
+    Node* node = view_manager_->GetNodeById(node_id);
     DCHECK(node);
     node->Destroy();
   }
@@ -93,12 +93,11 @@ class WindowManager : public Application,
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnRootAdded(ViewManager* view_manager,
-                           ViewTreeNode* root) OVERRIDE {
+  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
     DCHECK(!view_manager_);
     view_manager_ = view_manager;
 
-    ViewTreeNode* node = ViewTreeNode::Create(view_manager);
+    Node* node = Node::Create(view_manager);
     view_manager->GetRoots().front()->AddChild(node);
     node->SetBounds(gfx::Rect(800, 600));
     parent_node_id_ = node->id();
@@ -110,7 +109,7 @@ class WindowManager : public Application,
   }
 
   void CreateWindow(const std::string& url) {
-    ViewTreeNode* node = view_manager_->GetNodeById(parent_node_id_);
+    Node* node = view_manager_->GetNodeById(parent_node_id_);
 
     gfx::Rect bounds(50, 50, 400, 400);
     if (!node->children().empty()) {
@@ -119,7 +118,7 @@ class WindowManager : public Application,
       bounds.set_origin(position);
     }
 
-    ViewTreeNode* embedded = ViewTreeNode::Create(view_manager_);
+    Node* embedded = Node::Create(view_manager_);
     node->AddChild(embedded);
     embedded->SetBounds(bounds);
     embedded->Embed(url);

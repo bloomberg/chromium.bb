@@ -2,54 +2,54 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
+#include "mojo/services/public/cpp/view_manager/node.h"
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
+#include "mojo/services/public/cpp/view_manager/lib/node_private.h"
+#include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
-#include "mojo/services/public/cpp/view_manager/view_tree_node_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace view_manager {
 
-// ViewTreeNode ----------------------------------------------------------------
+// Node ------------------------------------------------------------------------
 
-typedef testing::Test ViewTreeNodeTest;
+typedef testing::Test NodeTest;
 
 // Subclass with public ctor/dtor.
-class TestViewTreeNode : public ViewTreeNode {
+class TestNode : public Node {
  public:
-  TestViewTreeNode() {
-    ViewTreeNodePrivate(this).set_id(1);
+  TestNode() {
+    NodePrivate(this).set_id(1);
   }
-  ~TestViewTreeNode() {}
+  ~TestNode() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestViewTreeNode);
+  DISALLOW_COPY_AND_ASSIGN(TestNode);
 };
 
-TEST_F(ViewTreeNodeTest, AddChild) {
-  TestViewTreeNode v1;
-  TestViewTreeNode v11;
+TEST_F(NodeTest, AddChild) {
+  TestNode v1;
+  TestNode v11;
   v1.AddChild(&v11);
   EXPECT_EQ(1U, v1.children().size());
 }
 
-TEST_F(ViewTreeNodeTest, RemoveChild) {
-  TestViewTreeNode v1;
-  TestViewTreeNode v11;
+TEST_F(NodeTest, RemoveChild) {
+  TestNode v1;
+  TestNode v11;
   v1.AddChild(&v11);
   EXPECT_EQ(1U, v1.children().size());
   v1.RemoveChild(&v11);
   EXPECT_EQ(0U, v1.children().size());
 }
 
-TEST_F(ViewTreeNodeTest, Reparent) {
-  TestViewTreeNode v1;
-  TestViewTreeNode v2;
-  TestViewTreeNode v11;
+TEST_F(NodeTest, Reparent) {
+  TestNode v1;
+  TestNode v2;
+  TestNode v11;
   v1.AddChild(&v11);
   EXPECT_EQ(1U, v1.children().size());
   v2.AddChild(&v11);
@@ -57,28 +57,28 @@ TEST_F(ViewTreeNodeTest, Reparent) {
   EXPECT_EQ(0U, v1.children().size());
 }
 
-TEST_F(ViewTreeNodeTest, Contains) {
-  TestViewTreeNode v1;
+TEST_F(NodeTest, Contains) {
+  TestNode v1;
 
   // Direct descendant.
-  TestViewTreeNode v11;
+  TestNode v11;
   v1.AddChild(&v11);
   EXPECT_TRUE(v1.Contains(&v11));
 
   // Indirect descendant.
-  TestViewTreeNode v111;
+  TestNode v111;
   v11.AddChild(&v111);
   EXPECT_TRUE(v1.Contains(&v111));
 }
 
-TEST_F(ViewTreeNodeTest, GetChildById) {
-  TestViewTreeNode v1;
-  ViewTreeNodePrivate(&v1).set_id(1);
-  TestViewTreeNode v11;
-  ViewTreeNodePrivate(&v11).set_id(11);
+TEST_F(NodeTest, GetChildById) {
+  TestNode v1;
+  NodePrivate(&v1).set_id(1);
+  TestNode v11;
+  NodePrivate(&v11).set_id(11);
   v1.AddChild(&v11);
-  TestViewTreeNode v111;
-  ViewTreeNodePrivate(&v111).set_id(111);
+  TestNode v111;
+  NodePrivate(&v111).set_id(111);
   v11.AddChild(&v111);
 
   // Find direct & indirect descendents.
@@ -86,20 +86,20 @@ TEST_F(ViewTreeNodeTest, GetChildById) {
   EXPECT_EQ(&v111, v1.GetChildById(v111.id()));
 }
 
-// ViewTreeNodeObserver --------------------------------------------------------
+// NodeObserver --------------------------------------------------------
 
-typedef testing::Test ViewTreeNodeObserverTest;
+typedef testing::Test NodeObserverTest;
 
-bool TreeChangeParamsMatch(const ViewTreeNodeObserver::TreeChangeParams& lhs,
-                           const ViewTreeNodeObserver::TreeChangeParams& rhs) {
+bool TreeChangeParamsMatch(const NodeObserver::TreeChangeParams& lhs,
+                           const NodeObserver::TreeChangeParams& rhs) {
   return lhs.target == rhs.target &&  lhs.old_parent == rhs.old_parent &&
       lhs.new_parent == rhs.new_parent && lhs.receiver == rhs.receiver &&
       lhs.phase == rhs.phase;
 }
 
-class TreeChangeObserver : public ViewTreeNodeObserver {
+class TreeChangeObserver : public NodeObserver {
  public:
-  explicit TreeChangeObserver(ViewTreeNode* observee) : observee_(observee) {
+  explicit TreeChangeObserver(Node* observee) : observee_(observee) {
     observee_->AddObserver(this);
   }
   virtual ~TreeChangeObserver() {
@@ -115,24 +115,24 @@ class TreeChangeObserver : public ViewTreeNodeObserver {
   }
 
  private:
-  // Overridden from ViewTreeNodeObserver:
+  // Overridden from NodeObserver:
   virtual void OnTreeChange(const TreeChangeParams& params) OVERRIDE {
     received_params_.push_back(params);
   }
 
-  ViewTreeNode* observee_;
+  Node* observee_;
   std::vector<TreeChangeParams> received_params_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeChangeObserver);
 };
 
 // Adds/Removes v11 to v1.
-TEST_F(ViewTreeNodeObserverTest, TreeChange_SimpleAddRemove) {
-  TestViewTreeNode v1;
+TEST_F(NodeObserverTest, TreeChange_SimpleAddRemove) {
+  TestNode v1;
   TreeChangeObserver o1(&v1);
   EXPECT_TRUE(o1.received_params().empty());
 
-  TestViewTreeNode v11;
+  TestNode v11;
   TreeChangeObserver o11(&v11);
   EXPECT_TRUE(o11.received_params().empty());
 
@@ -141,20 +141,20 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_SimpleAddRemove) {
   v1.AddChild(&v11);
 
   EXPECT_EQ(2U, o1.received_params().size());
-  ViewTreeNodeObserver::TreeChangeParams p1;
+  NodeObserver::TreeChangeParams p1;
   p1.target = &v11;
   p1.receiver = &v1;
   p1.old_parent = NULL;
   p1.new_parent = &v1;
-  p1.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
+  p1.phase = NodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p1, o1.received_params().back()));
 
   EXPECT_EQ(2U, o11.received_params().size());
-  ViewTreeNodeObserver::TreeChangeParams p11 = p1;
+  NodeObserver::TreeChangeParams p11 = p1;
   p11.receiver = &v11;
-  p11.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
+  p11.phase = NodeObserver::DISPOSITION_CHANGING;
   EXPECT_TRUE(TreeChangeParamsMatch(p11, o11.received_params().front()));
-  p11.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
+  p11.phase = NodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p11, o11.received_params().back()));
 
   o1.Reset();
@@ -171,14 +171,14 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_SimpleAddRemove) {
   p1.receiver = &v1;
   p1.old_parent = &v1;
   p1.new_parent = NULL;
-  p1.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
+  p1.phase = NodeObserver::DISPOSITION_CHANGING;
   EXPECT_TRUE(TreeChangeParamsMatch(p1, o1.received_params().front()));
 
   EXPECT_EQ(2U, o11.received_params().size());
   p11 = p1;
   p11.receiver = &v11;
   EXPECT_TRUE(TreeChangeParamsMatch(p11, o11.received_params().front()));
-  p11.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
+  p11.phase = NodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p11, o11.received_params().back()));
 }
 
@@ -189,8 +189,8 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_SimpleAddRemove) {
 //  +- v1111
 //  +- v1112
 // Then adds/removes v111 from v11.
-TEST_F(ViewTreeNodeObserverTest, TreeChange_NestedAddRemove) {
-  TestViewTreeNode v1, v11, v111, v1111, v1112;
+TEST_F(NodeObserverTest, TreeChange_NestedAddRemove) {
+  TestNode v1, v11, v111, v1111, v1112;
 
   // Root tree.
   v1.AddChild(&v11);
@@ -201,7 +201,7 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_NestedAddRemove) {
 
   TreeChangeObserver o1(&v1), o11(&v11), o111(&v111), o1111(&v1111),
       o1112(&v1112);
-  ViewTreeNodeObserver::TreeChangeParams p1, p11, p111, p1111, p1112;
+  NodeObserver::TreeChangeParams p1, p11, p111, p1111, p1112;
 
   // Add.
 
@@ -212,7 +212,7 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_NestedAddRemove) {
   p1.receiver = &v1;
   p1.old_parent = NULL;
   p1.new_parent = &v11;
-  p1.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
+  p1.phase = NodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p1, o1.received_params().back()));
 
   EXPECT_EQ(2U, o11.received_params().size());
@@ -223,25 +223,25 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_NestedAddRemove) {
   EXPECT_EQ(2U, o111.received_params().size());
   p111 = p11;
   p111.receiver = &v111;
-  p111.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
+  p111.phase = NodeObserver::DISPOSITION_CHANGING;
   EXPECT_TRUE(TreeChangeParamsMatch(p111, o111.received_params().front()));
-  p111.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
+  p111.phase = NodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p111, o111.received_params().back()));
 
   EXPECT_EQ(2U, o1111.received_params().size());
   p1111 = p111;
   p1111.receiver = &v1111;
-  p1111.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
+  p1111.phase = NodeObserver::DISPOSITION_CHANGING;
   EXPECT_TRUE(TreeChangeParamsMatch(p1111, o1111.received_params().front()));
-  p1111.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
+  p1111.phase = NodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p1111, o1111.received_params().back()));
 
   EXPECT_EQ(2U, o1112.received_params().size());
   p1112 = p111;
   p1112.receiver = &v1112;
-  p1112.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
+  p1112.phase = NodeObserver::DISPOSITION_CHANGING;
   EXPECT_TRUE(TreeChangeParamsMatch(p1112, o1112.received_params().front()));
-  p1112.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
+  p1112.phase = NodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p1112, o1112.received_params().back()));
 
   // Remove.
@@ -263,7 +263,7 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_NestedAddRemove) {
   p1.receiver = &v1;
   p1.old_parent = &v11;
   p1.new_parent = NULL;
-  p1.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
+  p1.phase = NodeObserver::DISPOSITION_CHANGING;
   EXPECT_TRUE(TreeChangeParamsMatch(p1, o1.received_params().front()));
 
   EXPECT_EQ(2U, o11.received_params().size());
@@ -274,30 +274,30 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_NestedAddRemove) {
   EXPECT_EQ(2U, o111.received_params().size());
   p111 = p11;
   p111.receiver = &v111;
-  p111.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
+  p111.phase = NodeObserver::DISPOSITION_CHANGING;
   EXPECT_TRUE(TreeChangeParamsMatch(p111, o111.received_params().front()));
-  p111.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
+  p111.phase = NodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p111, o111.received_params().back()));
 
   EXPECT_EQ(2U, o1111.received_params().size());
   p1111 = p111;
   p1111.receiver = &v1111;
-  p1111.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
+  p1111.phase = NodeObserver::DISPOSITION_CHANGING;
   EXPECT_TRUE(TreeChangeParamsMatch(p1111, o1111.received_params().front()));
-  p1111.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
+  p1111.phase = NodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p1111, o1111.received_params().back()));
 
   EXPECT_EQ(2U, o1112.received_params().size());
   p1112 = p111;
   p1112.receiver = &v1112;
-  p1112.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
+  p1112.phase = NodeObserver::DISPOSITION_CHANGING;
   EXPECT_TRUE(TreeChangeParamsMatch(p1112, o1112.received_params().front()));
-  p1112.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
+  p1112.phase = NodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p1112, o1112.received_params().back()));
 }
 
-TEST_F(ViewTreeNodeObserverTest, TreeChange_Reparent) {
-  TestViewTreeNode v1, v11, v12, v111;
+TEST_F(NodeObserverTest, TreeChange_Reparent) {
+  TestNode v1, v11, v12, v111;
   v1.AddChild(&v11);
   v1.AddChild(&v12);
   v11.AddChild(&v111);
@@ -309,56 +309,56 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_Reparent) {
 
   // v1 (root) should see both changing and changed notifications.
   EXPECT_EQ(4U, o1.received_params().size());
-  ViewTreeNodeObserver::TreeChangeParams p1;
+  NodeObserver::TreeChangeParams p1;
   p1.target = &v111;
   p1.receiver = &v1;
   p1.old_parent = &v11;
   p1.new_parent = &v12;
-  p1.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
+  p1.phase = NodeObserver::DISPOSITION_CHANGING;
   EXPECT_TRUE(TreeChangeParamsMatch(p1, o1.received_params().front()));
-  p1.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
+  p1.phase = NodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p1, o1.received_params().back()));
 
   // v11 should see changing notifications.
   EXPECT_EQ(2U, o11.received_params().size());
-  ViewTreeNodeObserver::TreeChangeParams p11;
+  NodeObserver::TreeChangeParams p11;
   p11 = p1;
   p11.receiver = &v11;
-  p11.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
+  p11.phase = NodeObserver::DISPOSITION_CHANGING;
   EXPECT_TRUE(TreeChangeParamsMatch(p11, o11.received_params().front()));
 
   // v12 should see changed notifications.
   EXPECT_EQ(2U, o12.received_params().size());
-  ViewTreeNodeObserver::TreeChangeParams p12;
+  NodeObserver::TreeChangeParams p12;
   p12 = p1;
   p12.receiver = &v12;
-  p12.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
+  p12.phase = NodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p12, o12.received_params().back()));
 
   // v111 should see both changing and changed notifications.
   EXPECT_EQ(2U, o111.received_params().size());
-  ViewTreeNodeObserver::TreeChangeParams p111;
+  NodeObserver::TreeChangeParams p111;
   p111 = p1;
   p111.receiver = &v111;
-  p111.phase = ViewTreeNodeObserver::DISPOSITION_CHANGING;
+  p111.phase = NodeObserver::DISPOSITION_CHANGING;
   EXPECT_TRUE(TreeChangeParamsMatch(p111, o111.received_params().front()));
-  p111.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
+  p111.phase = NodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p111, o111.received_params().back()));
 }
 
 namespace {
 
-class OrderChangeObserver : public ViewTreeNodeObserver {
+class OrderChangeObserver : public NodeObserver {
  public:
   struct Change {
-    ViewTreeNode* node;
-    ViewTreeNode* relative_node;
+    Node* node;
+    Node* relative_node;
     OrderDirection direction;
     DispositionChangePhase phase;
   };
   typedef std::vector<Change> Changes;
 
-  explicit OrderChangeObserver(ViewTreeNode* observee) : observee_(observee) {
+  explicit OrderChangeObserver(Node* observee) : observee_(observee) {
     observee_->AddObserver(this);
   }
   virtual ~OrderChangeObserver() {
@@ -372,9 +372,9 @@ class OrderChangeObserver : public ViewTreeNodeObserver {
   }
 
  private:
-  // Overridden from ViewTreeNodeObserver:
-  virtual void OnNodeReordered(ViewTreeNode* node,
-                               ViewTreeNode* relative_node,
+  // Overridden from NodeObserver:
+  virtual void OnNodeReordered(Node* node,
+                               Node* relative_node,
                                OrderDirection direction,
                                DispositionChangePhase phase) OVERRIDE {
     Change change;
@@ -385,7 +385,7 @@ class OrderChangeObserver : public ViewTreeNodeObserver {
     changes_.push_back(change);
   }
 
-  ViewTreeNode* observee_;
+  Node* observee_;
   Changes changes_;
 
   DISALLOW_COPY_AND_ASSIGN(OrderChangeObserver);
@@ -393,8 +393,8 @@ class OrderChangeObserver : public ViewTreeNodeObserver {
 
 }  // namespace
 
-TEST_F(ViewTreeNodeObserverTest, Order) {
-  TestViewTreeNode v1, v11, v12, v13;
+TEST_F(NodeObserverTest, Order) {
+  TestNode v1, v11, v12, v13;
   v1.AddChild(&v11);
   v1.AddChild(&v12);
   v1.AddChild(&v13);
@@ -418,12 +418,12 @@ TEST_F(ViewTreeNodeObserverTest, Order) {
     EXPECT_EQ(&v11, changes[0].node);
     EXPECT_EQ(&v13, changes[0].relative_node);
     EXPECT_EQ(ORDER_ABOVE, changes[0].direction);
-    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGING, changes[0].phase);
+    EXPECT_EQ(NodeObserver::DISPOSITION_CHANGING, changes[0].phase);
 
     EXPECT_EQ(&v11, changes[1].node);
     EXPECT_EQ(&v13, changes[1].relative_node);
     EXPECT_EQ(ORDER_ABOVE, changes[1].direction);
-    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGED, changes[1].phase);
+    EXPECT_EQ(NodeObserver::DISPOSITION_CHANGED, changes[1].phase);
   }
 
   {
@@ -440,12 +440,12 @@ TEST_F(ViewTreeNodeObserverTest, Order) {
     EXPECT_EQ(&v11, changes[0].node);
     EXPECT_EQ(&v12, changes[0].relative_node);
     EXPECT_EQ(ORDER_BELOW, changes[0].direction);
-    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGING, changes[0].phase);
+    EXPECT_EQ(NodeObserver::DISPOSITION_CHANGING, changes[0].phase);
 
     EXPECT_EQ(&v11, changes[1].node);
     EXPECT_EQ(&v12, changes[1].relative_node);
     EXPECT_EQ(ORDER_BELOW, changes[1].direction);
-    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGED, changes[1].phase);
+    EXPECT_EQ(NodeObserver::DISPOSITION_CHANGED, changes[1].phase);
   }
 
   {
@@ -462,12 +462,12 @@ TEST_F(ViewTreeNodeObserverTest, Order) {
     EXPECT_EQ(&v11, changes[0].node);
     EXPECT_EQ(&v12, changes[0].relative_node);
     EXPECT_EQ(ORDER_ABOVE, changes[0].direction);
-    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGING, changes[0].phase);
+    EXPECT_EQ(NodeObserver::DISPOSITION_CHANGING, changes[0].phase);
 
     EXPECT_EQ(&v11, changes[1].node);
     EXPECT_EQ(&v12, changes[1].relative_node);
     EXPECT_EQ(ORDER_ABOVE, changes[1].direction);
-    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGED, changes[1].phase);
+    EXPECT_EQ(NodeObserver::DISPOSITION_CHANGED, changes[1].phase);
   }
 
   {
@@ -484,12 +484,12 @@ TEST_F(ViewTreeNodeObserverTest, Order) {
     EXPECT_EQ(&v11, changes[0].node);
     EXPECT_EQ(&v12, changes[0].relative_node);
     EXPECT_EQ(ORDER_BELOW, changes[0].direction);
-    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGING, changes[0].phase);
+    EXPECT_EQ(NodeObserver::DISPOSITION_CHANGING, changes[0].phase);
 
     EXPECT_EQ(&v11, changes[1].node);
     EXPECT_EQ(&v12, changes[1].relative_node);
     EXPECT_EQ(ORDER_BELOW, changes[1].direction);
-    EXPECT_EQ(ViewTreeNodeObserver::DISPOSITION_CHANGED, changes[1].phase);
+    EXPECT_EQ(NodeObserver::DISPOSITION_CHANGED, changes[1].phase);
   }
 }
 
@@ -507,14 +507,14 @@ std::string RectToString(const gfx::Rect& rect) {
                             rect.x(), rect.y(), rect.width(), rect.height());
 }
 
-std::string PhaseToString(ViewTreeNodeObserver::DispositionChangePhase phase) {
-  return phase == ViewTreeNodeObserver::DISPOSITION_CHANGING ?
+std::string PhaseToString(NodeObserver::DispositionChangePhase phase) {
+  return phase == NodeObserver::DISPOSITION_CHANGING ?
       "changing" : "changed";
 }
 
-class BoundsChangeObserver : public ViewTreeNodeObserver {
+class BoundsChangeObserver : public NodeObserver {
  public:
-  explicit BoundsChangeObserver(ViewTreeNode* node) : node_(node) {
+  explicit BoundsChangeObserver(Node* node) : node_(node) {
     node_->AddObserver(this);
   }
   virtual ~BoundsChangeObserver() {
@@ -528,8 +528,8 @@ class BoundsChangeObserver : public ViewTreeNodeObserver {
   }
 
  private:
-  // Overridden from ViewTreeNodeObserver:
-  virtual void OnNodeBoundsChange(ViewTreeNode* node,
+  // Overridden from NodeObserver:
+  virtual void OnNodeBoundsChange(Node* node,
                                   const gfx::Rect& old_bounds,
                                   const gfx::Rect& new_bounds,
                                   DispositionChangePhase phase) OVERRIDE {
@@ -542,7 +542,7 @@ class BoundsChangeObserver : public ViewTreeNodeObserver {
             PhaseToString(phase).c_str()));
   }
 
-  ViewTreeNode* node_;
+  Node* node_;
   Changes changes_;
 
   DISALLOW_COPY_AND_ASSIGN(BoundsChangeObserver);
@@ -550,8 +550,8 @@ class BoundsChangeObserver : public ViewTreeNodeObserver {
 
 }  // namespace
 
-TEST_F(ViewTreeNodeObserverTest, SetBounds) {
-  TestViewTreeNode v1;
+TEST_F(NodeObserverTest, SetBounds) {
+  TestNode v1;
   {
     BoundsChangeObserver observer(&v1);
     v1.SetBounds(gfx::Rect(0, 0, 100, 100));

@@ -8,15 +8,15 @@
 #include <string>
 #include <vector>
 
-#include "mojo/services/public/cpp/view_manager/view_manager_types.h"
+#include "mojo/services/public/cpp/view_manager/types.h"
 
 namespace mojo {
 class Application;
 namespace view_manager {
 
+class Node;
 class View;
 class ViewManagerDelegate;
-class ViewTreeNode;
 
 class ViewManager {
  public:
@@ -27,10 +27,10 @@ class ViewManager {
   virtual const std::string& GetEmbedderURL() const = 0;
 
   // Returns all root nodes known to this connection.
-  virtual const std::vector<ViewTreeNode*>& GetRoots() const = 0;
+  virtual const std::vector<Node*>& GetRoots() const = 0;
 
   // Returns a Node or View known to this connection.
-  virtual ViewTreeNode* GetNodeById(Id id) = 0;
+  virtual Node* GetNodeById(Id id) = 0;
   virtual View* GetViewById(Id id) = 0;
 
  protected:

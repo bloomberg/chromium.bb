@@ -5,7 +5,7 @@
 #ifndef MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_UTIL_H_
 #define MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_UTIL_H_
 
-#include "mojo/services/public/cpp/view_manager/view_manager_types.h"
+#include "mojo/services/public/cpp/view_manager/types.h"
 
 // TODO(beng): #$*&@#(@ MacOSX SDK!
 #if defined(HiWord)

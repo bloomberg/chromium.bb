@@ -8,13 +8,13 @@
 namespace mojo {
 namespace view_manager {
 
+class Node;
 class ViewManager;
-class ViewTreeNode;
 
 class ViewManagerDelegate {
  public:
-  virtual void OnRootAdded(ViewManager* view_manager, ViewTreeNode* root) {}
-  virtual void OnRootRemoved(ViewManager* view_manager, ViewTreeNode* root) {}
+  virtual void OnRootAdded(ViewManager* view_manager, Node* root) {}
+  virtual void OnRootRemoved(ViewManager* view_manager, Node* root) {}
 
  protected:
   virtual ~ViewManagerDelegate() {}

@@ -8,21 +8,21 @@
 #include "mojo/examples/window_manager/window_manager.mojom.h"
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/services/navigation/navigation.mojom.h"
+#include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
-#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
-#include "mojo/services/public/cpp/view_manager/view_tree_node_observer.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
 
+using mojo::view_manager::Node;
+using mojo::view_manager::NodeObserver;
 using mojo::view_manager::View;
 using mojo::view_manager::ViewManager;
 using mojo::view_manager::ViewManagerDelegate;
 using mojo::view_manager::ViewObserver;
-using mojo::view_manager::ViewTreeNode;
-using mojo::view_manager::ViewTreeNodeObserver;
 
 namespace mojo {
 namespace examples {
@@ -66,14 +66,13 @@ class NestingApp : public Application,
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnRootAdded(ViewManager* view_manager,
-                           ViewTreeNode* root) OVERRIDE {
+  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
     View* view = View::Create(view_manager);
     root->SetActiveView(view);
     view->SetColor(SK_ColorCYAN);
     view->AddObserver(this);
 
-    nested_ = ViewTreeNode::Create(view_manager);
+    nested_ = Node::Create(view_manager);
     root->AddChild(nested_);
     nested_->SetBounds(gfx::Rect(20, 20, 50, 50));
     nested_->Embed(kEmbeddedAppURL);
@@ -84,8 +83,7 @@ class NestingApp : public Application,
     NavigateChild();
   }
 
-  virtual void OnRootRemoved(ViewManager* view_manager,
-                             ViewTreeNode* root) OVERRIDE {
+  virtual void OnRootRemoved(ViewManager* view_manager, Node* root) OVERRIDE {
     // TODO(beng): reap views & child nodes.
     nested_ = NULL;
   }
@@ -107,7 +105,7 @@ class NestingApp : public Application,
   }
 
   std::string color_;
-  ViewTreeNode* nested_;
+  Node* nested_;
   navigation::NavigatorPtr navigator_;
   IWindowManagerPtr window_manager_;
 

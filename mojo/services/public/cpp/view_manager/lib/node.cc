@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
+#include "mojo/services/public/cpp/view_manager/node.h"
 
-#include "mojo/services/public/cpp/view_manager/lib/view_manager_synchronizer.h"
+#include "mojo/services/public/cpp/view_manager/lib/node_private.h"
+#include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
-#include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
+#include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
-#include "mojo/services/public/cpp/view_manager/view_tree_node_observer.h"
 
 namespace mojo {
 namespace view_manager {
@@ -16,33 +16,33 @@ namespace view_manager {
 namespace {
 
 void NotifyViewTreeChangeAtReceiver(
-    ViewTreeNode* receiver,
-    const ViewTreeNodeObserver::TreeChangeParams& params) {
-  ViewTreeNodeObserver::TreeChangeParams local_params = params;
+    Node* receiver,
+    const NodeObserver::TreeChangeParams& params) {
+  NodeObserver::TreeChangeParams local_params = params;
   local_params.receiver = receiver;
-  FOR_EACH_OBSERVER(ViewTreeNodeObserver,
-                    *ViewTreeNodePrivate(receiver).observers(),
+  FOR_EACH_OBSERVER(NodeObserver,
+                    *NodePrivate(receiver).observers(),
                     OnTreeChange(local_params));
 }
 
 void NotifyViewTreeChangeUp(
-    ViewTreeNode* start_at,
-    const ViewTreeNodeObserver::TreeChangeParams& params) {
-  for (ViewTreeNode* current = start_at; current; current = current->parent())
+    Node* start_at,
+    const NodeObserver::TreeChangeParams& params) {
+  for (Node* current = start_at; current; current = current->parent())
     NotifyViewTreeChangeAtReceiver(current, params);
 }
 
 void NotifyViewTreeChangeDown(
-    ViewTreeNode* start_at,
-    const ViewTreeNodeObserver::TreeChangeParams& params) {
+    Node* start_at,
+    const NodeObserver::TreeChangeParams& params) {
   NotifyViewTreeChangeAtReceiver(start_at, params);
-  ViewTreeNode::Children::const_iterator it = start_at->children().begin();
+  Node::Children::const_iterator it = start_at->children().begin();
   for (; it != start_at->children().end(); ++it)
     NotifyViewTreeChangeDown(*it, params);
 }
 
 void NotifyViewTreeChange(
-    const ViewTreeNodeObserver::TreeChangeParams& params) {
+    const NodeObserver::TreeChangeParams& params) {
   NotifyViewTreeChangeDown(params.target, params);
   if (params.old_parent)
     NotifyViewTreeChangeUp(params.old_parent, params);
@@ -52,73 +52,71 @@ void NotifyViewTreeChange(
 
 class ScopedTreeNotifier {
  public:
-  ScopedTreeNotifier(ViewTreeNode* target,
-                     ViewTreeNode* old_parent,
-                     ViewTreeNode* new_parent) {
+  ScopedTreeNotifier(Node* target, Node* old_parent, Node* new_parent) {
     params_.target = target;
     params_.old_parent = old_parent;
     params_.new_parent = new_parent;
     NotifyViewTreeChange(params_);
   }
   ~ScopedTreeNotifier() {
-    params_.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
+    params_.phase = NodeObserver::DISPOSITION_CHANGED;
     NotifyViewTreeChange(params_);
   }
 
  private:
-  ViewTreeNodeObserver::TreeChangeParams params_;
+  NodeObserver::TreeChangeParams params_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTreeNotifier);
 };
 
-void RemoveChildImpl(ViewTreeNode* child, ViewTreeNode::Children* children) {
-  ViewTreeNode::Children::iterator it =
+void RemoveChildImpl(Node* child, Node::Children* children) {
+  Node::Children::iterator it =
       std::find(children->begin(), children->end(), child);
   if (it != children->end()) {
     children->erase(it);
-    ViewTreeNodePrivate(child).ClearParent();
+    NodePrivate(child).ClearParent();
   }
 }
 
 class ScopedOrderChangedNotifier {
  public:
-  ScopedOrderChangedNotifier(ViewTreeNode* node,
-                             ViewTreeNode* relative_node,
+  ScopedOrderChangedNotifier(Node* node,
+                             Node* relative_node,
                              OrderDirection direction)
       : node_(node),
         relative_node_(relative_node),
         direction_(direction) {
     FOR_EACH_OBSERVER(
-        ViewTreeNodeObserver,
-        *ViewTreeNodePrivate(node_).observers(),
+        NodeObserver,
+        *NodePrivate(node_).observers(),
         OnNodeReordered(node_,
                         relative_node_,
                         direction_,
-                        ViewTreeNodeObserver::DISPOSITION_CHANGING));
+                        NodeObserver::DISPOSITION_CHANGING));
 
   }
   ~ScopedOrderChangedNotifier() {
     FOR_EACH_OBSERVER(
-        ViewTreeNodeObserver,
-        *ViewTreeNodePrivate(node_).observers(),
+        NodeObserver,
+        *NodePrivate(node_).observers(),
         OnNodeReordered(node_,
                         relative_node_,
                         direction_,
-                        ViewTreeNodeObserver::DISPOSITION_CHANGED));
+                        NodeObserver::DISPOSITION_CHANGED));
   }
 
  private:
-  ViewTreeNode* node_;
-  ViewTreeNode* relative_node_;
+  Node* node_;
+  Node* relative_node_;
   OrderDirection direction_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedOrderChangedNotifier);
 };
 
 // Returns true if the order actually changed.
-bool ReorderImpl(ViewTreeNode::Children* children,
-                 ViewTreeNode* node,
-                 ViewTreeNode* relative,
+bool ReorderImpl(Node::Children* children,
+                 Node* node,
+                 Node* relative,
                  OrderDirection direction) {
   DCHECK(relative);
   DCHECK_NE(node, relative);
@@ -148,32 +146,30 @@ bool ReorderImpl(ViewTreeNode::Children* children,
 
 class ScopedSetActiveViewNotifier {
  public:
-  ScopedSetActiveViewNotifier(ViewTreeNode* node,
-                              View* old_view,
-                              View* new_view)
+  ScopedSetActiveViewNotifier(Node* node, View* old_view, View* new_view)
       : node_(node),
         old_view_(old_view),
         new_view_(new_view) {
     FOR_EACH_OBSERVER(
-        ViewTreeNodeObserver,
-        *ViewTreeNodePrivate(node).observers(),
+        NodeObserver,
+        *NodePrivate(node).observers(),
         OnNodeActiveViewChange(node_,
                                old_view_,
                                new_view_,
-                               ViewTreeNodeObserver::DISPOSITION_CHANGING));
+                               NodeObserver::DISPOSITION_CHANGING));
   }
   ~ScopedSetActiveViewNotifier() {
     FOR_EACH_OBSERVER(
-        ViewTreeNodeObserver,
-        *ViewTreeNodePrivate(node_).observers(),
+        NodeObserver,
+        *NodePrivate(node_).observers(),
         OnNodeActiveViewChange(node_,
                                old_view_,
                                new_view_,
-                               ViewTreeNodeObserver::DISPOSITION_CHANGED));
+                               NodeObserver::DISPOSITION_CHANGED));
   }
 
  private:
-  ViewTreeNode* node_;
+  Node* node_;
   View* old_view_;
   View* new_view_;
 
@@ -182,32 +178,32 @@ class ScopedSetActiveViewNotifier {
 
 class ScopedSetBoundsNotifier {
  public:
-  ScopedSetBoundsNotifier(ViewTreeNode* node,
+  ScopedSetBoundsNotifier(Node* node,
                           const gfx::Rect& old_bounds,
                           const gfx::Rect& new_bounds)
       : node_(node),
         old_bounds_(old_bounds),
         new_bounds_(new_bounds) {
     FOR_EACH_OBSERVER(
-        ViewTreeNodeObserver,
-        *ViewTreeNodePrivate(node_).observers(),
+        NodeObserver,
+        *NodePrivate(node_).observers(),
         OnNodeBoundsChange(node_,
                            old_bounds_,
                            new_bounds_,
-                           ViewTreeNodeObserver::DISPOSITION_CHANGING));
+                           NodeObserver::DISPOSITION_CHANGING));
   }
   ~ScopedSetBoundsNotifier() {
     FOR_EACH_OBSERVER(
-        ViewTreeNodeObserver,
-        *ViewTreeNodePrivate(node_).observers(),
+        NodeObserver,
+        *NodePrivate(node_).observers(),
         OnNodeBoundsChange(node_,
                            old_bounds_,
                            new_bounds_,
-                           ViewTreeNodeObserver::DISPOSITION_CHANGED));
+                           NodeObserver::DISPOSITION_CHANGED));
   }
 
  private:
-  ViewTreeNode* node_;
+  Node* node_;
   const gfx::Rect old_bounds_;
   const gfx::Rect new_bounds_;
 
@@ -216,190 +212,189 @@ class ScopedSetBoundsNotifier {
 
 class ScopedDestructionNotifier {
  public:
-  explicit ScopedDestructionNotifier(ViewTreeNode* node)
+  explicit ScopedDestructionNotifier(Node* node)
       : node_(node) {
     FOR_EACH_OBSERVER(
-        ViewTreeNodeObserver,
-        *ViewTreeNodePrivate(node_).observers(),
-        OnNodeDestroy(node_, ViewTreeNodeObserver::DISPOSITION_CHANGING));
+        NodeObserver,
+        *NodePrivate(node_).observers(),
+        OnNodeDestroy(node_, NodeObserver::DISPOSITION_CHANGING));
   }
   ~ScopedDestructionNotifier() {
     FOR_EACH_OBSERVER(
-        ViewTreeNodeObserver,
-        *ViewTreeNodePrivate(node_).observers(),
-        OnNodeDestroy(node_, ViewTreeNodeObserver::DISPOSITION_CHANGED));
+        NodeObserver,
+        *NodePrivate(node_).observers(),
+        OnNodeDestroy(node_, NodeObserver::DISPOSITION_CHANGED));
   }
 
  private:
-  ViewTreeNode* node_;
+  Node* node_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedDestructionNotifier);
 };
 
 // Some operations are only permitted in the connection that created the node.
-bool OwnsNode(ViewManager* manager, ViewTreeNode* node) {
+bool OwnsNode(ViewManager* manager, Node* node) {
   return !manager ||
-      static_cast<ViewManagerSynchronizer*>(manager)->OwnsNode(node->id());
+      static_cast<ViewManagerClientImpl*>(manager)->OwnsNode(node->id());
 }
 
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// ViewTreeNode, public:
+// Node, public:
 
 // static
-ViewTreeNode* ViewTreeNode::Create(ViewManager* view_manager) {
-  ViewTreeNode* node = new ViewTreeNode(view_manager);
-  static_cast<ViewManagerSynchronizer*>(view_manager)->AddNode(node);
+Node* Node::Create(ViewManager* view_manager) {
+  Node* node = new Node(view_manager);
+  static_cast<ViewManagerClientImpl*>(view_manager)->AddNode(node);
   return node;
 }
 
-void ViewTreeNode::Destroy() {
+void Node::Destroy() {
   if (!OwnsNode(manager_, this))
     return;
 
   if (manager_)
-    static_cast<ViewManagerSynchronizer*>(manager_)->DestroyViewTreeNode(id_);
+    static_cast<ViewManagerClientImpl*>(manager_)->DestroyNode(id_);
   while (!children_.empty())
     children_.front()->Destroy();
   LocalDestroy();
 }
 
-void ViewTreeNode::SetBounds(const gfx::Rect& bounds) {
+void Node::SetBounds(const gfx::Rect& bounds) {
   if (!OwnsNode(manager_, this))
     return;
 
   if (manager_)
-    static_cast<ViewManagerSynchronizer*>(manager_)->SetBounds(id_, bounds);
+    static_cast<ViewManagerClientImpl*>(manager_)->SetBounds(id_, bounds);
   LocalSetBounds(bounds_, bounds);
 }
 
-void ViewTreeNode::AddObserver(ViewTreeNodeObserver* observer) {
+void Node::AddObserver(NodeObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void ViewTreeNode::RemoveObserver(ViewTreeNodeObserver* observer) {
+void Node::RemoveObserver(NodeObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void ViewTreeNode::AddChild(ViewTreeNode* child) {
+void Node::AddChild(Node* child) {
   // TODO(beng): not necessarily valid to all connections, but possibly to the
   //             embeddee in an embedder-embeddee relationship.
   if (manager_)
-    CHECK_EQ(ViewTreeNodePrivate(child).view_manager(), manager_);
+    CHECK_EQ(NodePrivate(child).view_manager(), manager_);
   LocalAddChild(child);
   if (manager_)
-    static_cast<ViewManagerSynchronizer*>(manager_)->AddChild(child->id(), id_);
+    static_cast<ViewManagerClientImpl*>(manager_)->AddChild(child->id(), id_);
 }
 
-void ViewTreeNode::RemoveChild(ViewTreeNode* child) {
+void Node::RemoveChild(Node* child) {
   // TODO(beng): not necessarily valid to all connections, but possibly to the
   //             embeddee in an embedder-embeddee relationship.
   if (manager_)
-    CHECK_EQ(ViewTreeNodePrivate(child).view_manager(), manager_);
+    CHECK_EQ(NodePrivate(child).view_manager(), manager_);
   LocalRemoveChild(child);
   if (manager_) {
-    static_cast<ViewManagerSynchronizer*>(manager_)->RemoveChild(child->id(),
-                                                                 id_);
+    static_cast<ViewManagerClientImpl*>(manager_)->RemoveChild(child->id(),
+                                                               id_);
   }
 }
 
-void ViewTreeNode::MoveToFront() {
+void Node::MoveToFront() {
   Reorder(parent_->children_.back(), ORDER_ABOVE);
 }
 
-void ViewTreeNode::MoveToBack() {
+void Node::MoveToBack() {
   Reorder(parent_->children_.front(), ORDER_BELOW);
 }
 
-void ViewTreeNode::Reorder(ViewTreeNode* relative, OrderDirection direction) {
+void Node::Reorder(Node* relative, OrderDirection direction) {
   if (!LocalReorder(relative, direction))
     return;
   if (manager_) {
-    static_cast<ViewManagerSynchronizer*>(manager_)->Reorder(id_,
-                                                             relative->id(),
-                                                             direction);
+    static_cast<ViewManagerClientImpl*>(manager_)->Reorder(id_,
+                                                            relative->id(),
+                                                            direction);
   }
 }
 
-bool ViewTreeNode::Contains(ViewTreeNode* child) const {
+bool Node::Contains(Node* child) const {
   if (manager_)
-    CHECK_EQ(ViewTreeNodePrivate(child).view_manager(), manager_);
-  for (ViewTreeNode* p = child->parent(); p; p = p->parent()) {
+    CHECK_EQ(NodePrivate(child).view_manager(), manager_);
+  for (Node* p = child->parent(); p; p = p->parent()) {
     if (p == this)
       return true;
   }
   return false;
 }
 
-ViewTreeNode* ViewTreeNode::GetChildById(Id id) {
+Node* Node::GetChildById(Id id) {
   if (id == id_)
     return this;
   // TODO(beng): this could be improved depending on how we decide to own nodes.
   Children::const_iterator it = children_.begin();
   for (; it != children_.end(); ++it) {
-    ViewTreeNode* node = (*it)->GetChildById(id);
+    Node* node = (*it)->GetChildById(id);
     if (node)
       return node;
   }
   return NULL;
 }
 
-void ViewTreeNode::SetActiveView(View* view) {
+void Node::SetActiveView(View* view) {
   // TODO(beng): not necessarily valid to all connections, but possibly to the
   //             embeddee in an embedder-embeddee relationship.
   if (manager_)
     CHECK_EQ(ViewPrivate(view).view_manager(), manager_);
   LocalSetActiveView(view);
   if (manager_) {
-    static_cast<ViewManagerSynchronizer*>(manager_)->SetActiveView(
+    static_cast<ViewManagerClientImpl*>(manager_)->SetActiveView(
         id_, active_view_->id());
   }
 }
 
-void ViewTreeNode::SetFocus() {
+void Node::SetFocus() {
   if (manager_)
-    static_cast<ViewManagerSynchronizer*>(manager_)->SetFocus(id_);
+    static_cast<ViewManagerClientImpl*>(manager_)->SetFocus(id_);
 }
 
-void ViewTreeNode::Embed(const String& url) {
-  static_cast<ViewManagerSynchronizer*>(manager_)->Embed(url, id_);
+void Node::Embed(const String& url) {
+  static_cast<ViewManagerClientImpl*>(manager_)->Embed(url, id_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ViewTreeNode, protected:
+// Node, protected:
 
-ViewTreeNode::ViewTreeNode()
+Node::Node()
     : manager_(NULL),
       id_(-1),
       parent_(NULL),
       active_view_(NULL) {}
 
-ViewTreeNode::~ViewTreeNode() {
+Node::~Node() {
   ScopedDestructionNotifier notifier(this);
   if (parent_)
     parent_->LocalRemoveChild(this);
   // TODO(beng): It'd be better to do this via a destruction observer in the
-  //             synchronizer.
+  //             ViewManagerClientImpl.
   if (manager_)
-    static_cast<ViewManagerSynchronizer*>(manager_)->RemoveNode(id_);
+    static_cast<ViewManagerClientImpl*>(manager_)->RemoveNode(id_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ViewTreeNode, private:
+// Node, private:
 
-ViewTreeNode::ViewTreeNode(ViewManager* manager)
+Node::Node(ViewManager* manager)
     : manager_(manager),
-      id_(static_cast<ViewManagerSynchronizer*>(
-          manager_)->CreateViewTreeNode()),
+      id_(static_cast<ViewManagerClientImpl*>(manager_)->CreateNode()),
       parent_(NULL),
       active_view_(NULL) {}
 
-void ViewTreeNode::LocalDestroy() {
+void Node::LocalDestroy() {
   delete this;
 }
 
-void ViewTreeNode::LocalAddChild(ViewTreeNode* child) {
+void Node::LocalAddChild(Node* child) {
   ScopedTreeNotifier notifier(child, child->parent(), this);
   if (child->parent())
     RemoveChildImpl(child, &child->parent_->children_);
@@ -407,18 +402,17 @@ void ViewTreeNode::LocalAddChild(ViewTreeNode* child) {
   child->parent_ = this;
 }
 
-void ViewTreeNode::LocalRemoveChild(ViewTreeNode* child) {
+void Node::LocalRemoveChild(Node* child) {
   DCHECK_EQ(this, child->parent());
   ScopedTreeNotifier notifier(child, this, NULL);
   RemoveChildImpl(child, &children_);
 }
 
-bool ViewTreeNode::LocalReorder(ViewTreeNode* relative,
-                                OrderDirection direction) {
+bool Node::LocalReorder(Node* relative, OrderDirection direction) {
   return ReorderImpl(&parent_->children_, this, relative, direction);
 }
 
-void ViewTreeNode::LocalSetActiveView(View* view) {
+void Node::LocalSetActiveView(View* view) {
   ScopedSetActiveViewNotifier notifier(this, active_view_, view);
   if (active_view_)
     ViewPrivate(active_view_).set_node(NULL);
@@ -427,8 +421,8 @@ void ViewTreeNode::LocalSetActiveView(View* view) {
     ViewPrivate(active_view_).set_node(this);
 }
 
-void ViewTreeNode::LocalSetBounds(const gfx::Rect& old_bounds,
-                                  const gfx::Rect& new_bounds) {
+void Node::LocalSetBounds(const gfx::Rect& old_bounds,
+                          const gfx::Rect& new_bounds) {
   DCHECK(old_bounds == bounds_);
   ScopedSetBoundsNotifier notifier(this, old_bounds, new_bounds);
   bounds_ = new_bounds;

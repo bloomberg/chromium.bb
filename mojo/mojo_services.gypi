@@ -242,7 +242,7 @@
       'target_name': 'mojo_view_manager_common',
       'type': 'static_library',
       'sources': [
-        'services/public/cpp/view_manager/view_manager_types.h',
+        'services/public/cpp/view_manager/types.h',
       ],
     },
     {
@@ -311,24 +311,21 @@
         'mojo_view_manager_common',
       ],
       'sources': [
+        'services/public/cpp/view_manager/lib/node.cc',
+        'services/public/cpp/view_manager/lib/node_observer.cc',
+        'services/public/cpp/view_manager/lib/node_private.cc',
+        'services/public/cpp/view_manager/lib/node_private.h',
         'services/public/cpp/view_manager/lib/view.cc',
         'services/public/cpp/view_manager/lib/view_private.cc',
         'services/public/cpp/view_manager/lib/view_private.h',
-        'services/public/cpp/view_manager/lib/view_manager_synchronizer.cc',
-        'services/public/cpp/view_manager/lib/view_manager_synchronizer.h',
-        'services/public/cpp/view_manager/lib/view_tree_host.cc',
-        'services/public/cpp/view_manager/lib/view_tree_node.cc',
-        'services/public/cpp/view_manager/lib/view_tree_node_observer.cc',
-        'services/public/cpp/view_manager/lib/view_tree_node_private.cc',
-        'services/public/cpp/view_manager/lib/view_tree_node_private.h',
+        'services/public/cpp/view_manager/lib/view_manager_client_impl.cc',
+        'services/public/cpp/view_manager/lib/view_manager_client_impl.h',
+        'services/public/cpp/view_manager/node.h',
+        'services/public/cpp/view_manager/node_observer.h',
         'services/public/cpp/view_manager/view.h',
         'services/public/cpp/view_manager/view_manager.h',
         'services/public/cpp/view_manager/view_manager_delegate.h',
-        'services/public/cpp/view_manager/view_manager_types.h',
         'services/public/cpp/view_manager/view_observer.h',
-        'services/public/cpp/view_manager/view_tree_host.h',
-        'services/public/cpp/view_manager/view_tree_node.h',
-        'services/public/cpp/view_manager/view_tree_node_observer.h',
       ],
     },
     {
@@ -346,10 +343,9 @@
         'mojo_view_manager_lib',
       ],
       'sources': [
+        'services/public/cpp/view_manager/tests/node_unittest.cc',
         'services/public/cpp/view_manager/tests/view_unittest.cc',
         'services/public/cpp/view_manager/tests/view_manager_unittest.cc',
-        'services/public/cpp/view_manager/tests/view_tree_host_unittest.cc',
-        'services/public/cpp/view_manager/tests/view_tree_node_unittest.cc',
       ],
       'conditions': [
         ['use_aura==1', {

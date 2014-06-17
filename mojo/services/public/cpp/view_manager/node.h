@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_TREE_NODE_H_
-#define MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_TREE_NODE_H_
+#ifndef MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_NODE_H_
+#define MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_NODE_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/array.h"
-#include "mojo/services/public/cpp/view_manager/view_manager_types.h"
+#include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager_constants.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -19,17 +19,17 @@ namespace view_manager {
 
 class View;
 class ViewManager;
-class ViewTreeNodeObserver;
+class NodeObserver;
 
-// ViewTreeNodes are owned by the ViewManager.
-// TODO(beng): Right now, you'll have to implement a ViewTreeNodeObserver to
-//             track destruction and NULL any pointers you have.
+// Nodes are owned by the ViewManager.
+// TODO(beng): Right now, you'll have to implement a NodeObserver to track
+//             destruction and NULL any pointers you have.
 //             Investigate some kind of smart pointer or weak pointer for these.
-class ViewTreeNode {
+class Node {
  public:
-  typedef std::vector<ViewTreeNode*> Children;
+  typedef std::vector<Node*> Children;
 
-  static ViewTreeNode* Create(ViewManager* view_manager);
+  static Node* Create(ViewManager* view_manager);
 
   // Destroys this node and all its children.
   void Destroy();
@@ -42,24 +42,24 @@ class ViewTreeNode {
   void SetBounds(const gfx::Rect& bounds);
 
   // Observation.
-  void AddObserver(ViewTreeNodeObserver* observer);
-  void RemoveObserver(ViewTreeNodeObserver* observer);
+  void AddObserver(NodeObserver* observer);
+  void RemoveObserver(NodeObserver* observer);
 
   // Tree.
-  ViewTreeNode* parent() { return parent_; }
-  const ViewTreeNode* parent() const { return parent_; }
+  Node* parent() { return parent_; }
+  const Node* parent() const { return parent_; }
   const Children& children() const { return children_; }
 
-  void AddChild(ViewTreeNode* child);
-  void RemoveChild(ViewTreeNode* child);
+  void AddChild(Node* child);
+  void RemoveChild(Node* child);
 
-  void Reorder(ViewTreeNode* relative, OrderDirection direction);
+  void Reorder(Node* relative, OrderDirection direction);
   void MoveToFront();
   void MoveToBack();
 
-  bool Contains(ViewTreeNode* child) const;
+  bool Contains(Node* child) const;
 
-  ViewTreeNode* GetChildById(Id id);
+  Node* GetChildById(Id id);
 
   // View.
   void SetActiveView(View* view);
@@ -73,36 +73,36 @@ class ViewTreeNode {
 
  protected:
   // This class is subclassed only by test classes that provide a public ctor.
-  ViewTreeNode();
-  ~ViewTreeNode();
+  Node();
+  ~Node();
 
  private:
-  friend class ViewTreeNodePrivate;
+  friend class NodePrivate;
 
-  explicit ViewTreeNode(ViewManager* manager);
+  explicit Node(ViewManager* manager);
 
   void LocalDestroy();
-  void LocalAddChild(ViewTreeNode* child);
-  void LocalRemoveChild(ViewTreeNode* child);
+  void LocalAddChild(Node* child);
+  void LocalRemoveChild(Node* child);
   // Returns true if the order actually changed.
-  bool LocalReorder(ViewTreeNode* relative, OrderDirection direction);
+  bool LocalReorder(Node* relative, OrderDirection direction);
   void LocalSetActiveView(View* view);
   void LocalSetBounds(const gfx::Rect& old_bounds, const gfx::Rect& new_bounds);
 
   ViewManager* manager_;
   Id id_;
-  ViewTreeNode* parent_;
+  Node* parent_;
   Children children_;
 
-  ObserverList<ViewTreeNodeObserver> observers_;
+  ObserverList<NodeObserver> observers_;
 
   gfx::Rect bounds_;
   View* active_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewTreeNode);
+  DISALLOW_COPY_AND_ASSIGN(Node);
 };
 
 }  // namespace view_manager
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_TREE_NODE_H_
+#endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_NODE_H_

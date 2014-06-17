@@ -6,11 +6,11 @@
 
 #include "base/strings/string_tokenizer.h"
 #include "mojo/public/cpp/application/application.h"
+#include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
-#include "mojo/services/public/cpp/view_manager/view_manager_types.h"
-#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
 #include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -103,7 +103,7 @@ class ImageViewer : public Application,
 
   // Overridden from view_manager::ViewManagerDelegate:
   virtual void OnRootAdded(view_manager::ViewManager* view_manager,
-                           view_manager::ViewTreeNode* root) OVERRIDE {
+                           view_manager::Node* root) OVERRIDE {
     content_view_ = view_manager::View::Create(view_manager);
     root->SetActiveView(content_view_);
     content_view_->SetColor(SK_ColorRED);
