@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys_internal.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,13 +50,18 @@ EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
   if (!ValidateToken(params->token_id))
     return RespondNow(Error(kErrorInvalidToken));
 
-  chromeos::platform_keys::GenerateRSAKey(
+  chromeos::PlatformKeysService* service =
+      chromeos::PlatformKeysServiceFactory::GetForBrowserContext(
+          browser_context());
+  DCHECK(service);
+
+  service->GenerateRSAKey(
       params->token_id,
       params->modulus_length,
+      extension_id(),
       base::Bind(
           &EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey,
-          this),
-      browser_context());
+          this));
   return RespondLater();
 }
 
@@ -82,12 +89,17 @@ EnterprisePlatformKeysInternalSignFunction::Run() {
   if (!ValidateToken(params->token_id))
     return RespondNow(Error(kErrorInvalidToken));
 
-  chromeos::platform_keys::Sign(
+  chromeos::PlatformKeysService* service =
+      chromeos::PlatformKeysServiceFactory::GetForBrowserContext(
+          browser_context());
+  DCHECK(service);
+
+  service->Sign(
       params->token_id,
       params->public_key,
       params->data,
-      base::Bind(&EnterprisePlatformKeysInternalSignFunction::OnSigned, this),
-      browser_context());
+      extension_id(),
+      base::Bind(&EnterprisePlatformKeysInternalSignFunction::OnSigned, this));
   return RespondLater();
 }
 

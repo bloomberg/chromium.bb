@@ -337,10 +337,22 @@ function runTests(userToken) {
           })
           .then(callbackPass(function(success) {
                   assertEq(true, success, "Signature invalid.");
+                  // Try to sign data with the same key a second time, which
+                  // must fail.
+                  return userToken.subtleCrypto.sign(
+                      {}, cachedKeyPair.privateKey, data);
                 }),
                 function(error) {
             assertTrue(false, "Verification failed: " + error);
-          });
+          })
+          .then(function(signature) {
+                  assertTrue(false, "Second sign call was expected to fail.");
+                }, callbackPass(function(error) {
+                  assertTrue(error instanceof Error);
+                  assertEq(
+                      'The operation failed for an operation-specific reason',
+                      error.message);
+          }));
     },
 
     // Imports and removes certificates for privateKeyPkcs8, which was imported

@@ -38,7 +38,7 @@ const char kErrorAlgorithmNotSupported[] = "Algorithm not supported.";
 
 // The current maximal RSA modulus length that ChromeOS's TPM supports for key
 // generation.
-const unsigned int kMaxRSAModulusLength = 2048;
+const unsigned int kMaxRSAModulusLengthBits = 2048;
 }
 
 namespace chromeos {
@@ -126,8 +126,8 @@ void GetCertDatabase(const std::string& token_id,
 
 class GenerateRSAKeyState : public NSSOperationState {
  public:
-  GenerateRSAKeyState(unsigned int modulus_length,
-                      const GenerateKeyCallback& callback);
+  GenerateRSAKeyState(unsigned int modulus_length_bits,
+                      const subtle::GenerateKeyCallback& callback);
   virtual ~GenerateRSAKeyState() {}
 
   virtual void OnError(const tracked_objects::Location& from,
@@ -142,18 +142,18 @@ class GenerateRSAKeyState : public NSSOperationState {
         from, base::Bind(callback_, public_key_spki_der, error_message));
   }
 
-  const unsigned int modulus_length_;
+  const unsigned int modulus_length_bits_;
 
  private:
   // Must be called on origin thread, use CallBack() therefore.
-  GenerateKeyCallback callback_;
+  subtle::GenerateKeyCallback callback_;
 };
 
 class SignState : public NSSOperationState {
  public:
   SignState(const std::string& public_key,
             const std::string& data,
-            const SignCallback& callback);
+            const subtle::SignCallback& callback);
   virtual ~SignState() {}
 
   virtual void OnError(const tracked_objects::Location& from,
@@ -173,7 +173,7 @@ class SignState : public NSSOperationState {
 
  private:
   // Must be called on origin thread, use CallBack() therefore.
-  SignCallback callback_;
+  subtle::SignCallback callback_;
 };
 
 class GetCertificatesState : public NSSOperationState {
@@ -252,15 +252,15 @@ NSSOperationState::NSSOperationState()
     : origin_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
 }
 
-GenerateRSAKeyState::GenerateRSAKeyState(unsigned int modulus_length,
-                                         const GenerateKeyCallback& callback)
-    : modulus_length_(modulus_length),
-      callback_(callback) {
+GenerateRSAKeyState::GenerateRSAKeyState(
+    unsigned int modulus_length_bits,
+    const subtle::GenerateKeyCallback& callback)
+    : modulus_length_bits_(modulus_length_bits), callback_(callback) {
 }
 
 SignState::SignState(const std::string& public_key,
                      const std::string& data,
-                     const SignCallback& callback)
+                     const subtle::SignCallback& callback)
     : public_key_(public_key), data_(data), callback_(callback) {
 }
 
@@ -286,7 +286,7 @@ RemoveCertificateState::RemoveCertificateState(
 void GenerateRSAKeyOnWorkerThread(scoped_ptr<GenerateRSAKeyState> state) {
   scoped_ptr<crypto::RSAPrivateKey> rsa_key(
       crypto::RSAPrivateKey::CreateSensitive(state->slot_.get(),
-                                             state->modulus_length_));
+                                             state->modulus_length_bits_));
   if (!rsa_key) {
     LOG(ERROR) << "Couldn't create key.";
     state->OnError(FROM_HERE, kErrorInternal);
@@ -470,15 +470,17 @@ void RemoveCertificateWithDB(scoped_ptr<RemoveCertificateState> state,
 
 }  // namespace
 
+namespace subtle {
+
 void GenerateRSAKey(const std::string& token_id,
-                    unsigned int modulus_length,
+                    unsigned int modulus_length_bits,
                     const GenerateKeyCallback& callback,
                     BrowserContext* browser_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<GenerateRSAKeyState> state(
-      new GenerateRSAKeyState(modulus_length, callback));
+      new GenerateRSAKeyState(modulus_length_bits, callback));
 
-  if (modulus_length > kMaxRSAModulusLength) {
+  if (modulus_length_bits > kMaxRSAModulusLengthBits) {
     state->OnError(FROM_HERE, kErrorAlgorithmNotSupported);
     return;
   }
@@ -509,6 +511,8 @@ void Sign(const std::string& token_id,
                   browser_context,
                   state_ptr);
 }
+
+}  // namespace subtle
 
 void GetCertificates(const std::string& token_id,
                      const GetCertificatesCallback& callback,

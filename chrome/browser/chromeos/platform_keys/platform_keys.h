@@ -26,25 +26,23 @@ namespace chromeos {
 
 namespace platform_keys {
 
-// If the generation was successful, |public_key_spki_der| will contain the DER
-// encoding of the SubjectPublicKeyInfo of the generated key and |error_message|
-// will be empty. If it failed, |public_key_spki_der| will be empty and
-// |error_message| contain an error message.
+namespace subtle {
+// Functions of this namespace shouldn't be called directly from the context of
+// an extension. Instead use PlatformKeysService which enforces restrictions
+// upon extensions.
+
 typedef base::Callback<void(const std::string& public_key_spki_der,
                             const std::string& error_message)>
     GenerateKeyCallback;
 
-// Generates a RSA key with |modulus_length|. |token_id| is currently ignored,
-// instead the user token associated with |browser_context| is always used.
-// |callback| will be invoked with the resulting public key or an error.
+// Generates a RSA key pair with |modulus_length_bits|. |token_id| is currently
+// ignored, instead the user token associated with |browser_context| is always
+// used. |callback| will be invoked with the resulting public key or an error.
 void GenerateRSAKey(const std::string& token_id,
-                    unsigned int modulus_length,
+                    unsigned int modulus_length_bits,
                     const GenerateKeyCallback& callback,
                     content::BrowserContext* browser_context);
 
-// If signing was successful, |signature| will be contain the signature and
-// |error_message| will be empty. If it failed, |signature| will be empty and
-// |error_message| contain an error message.
 typedef base::Callback<void(const std::string& signature,
                             const std::string& error_message)> SignCallback;
 
@@ -59,6 +57,8 @@ void Sign(const std::string& token_id,
           const std::string& data,
           const SignCallback& callback,
           content::BrowserContext* browser_context);
+
+}  // namespace subtle
 
 // If the list of certificates could be successfully retrieved, |certs| will
 // contain the list of available certificates (maybe empty) and |error_message|
