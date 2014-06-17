@@ -22437,6 +22437,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Profile.LockedProfilesDuration" units="minutes">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    How long locked profiles have been locked for. This is logged each time any
+    profile is loaded. Note that this does not track the total time the profile
+    was locked, but rather the span from when the profile was locked to when the
+    measurement takes place.
+  </summary>
+</histogram>
+
 <histogram name="Profile.NetUserCount" enum="ProfileNetUserCount">
   <owner>bcwhite@chromium.org</owner>
   <owner>rlp@chromium.org</owner>

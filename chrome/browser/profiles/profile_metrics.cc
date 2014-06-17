@@ -84,6 +84,30 @@ bool CountProfileInformation(ProfileManager* manager, ProfileCounts* counts) {
   return true;
 }
 
+void LogLockedProfileInformation(ProfileManager* manager) {
+  const ProfileInfoCache& info_cache = manager->GetProfileInfoCache();
+  size_t number_of_profiles = info_cache.GetNumberOfProfiles();
+
+  base::Time now = base::Time::Now();
+  const int kMinutesInProfileValidDuration =
+      base::TimeDelta::FromDays(28).InMinutes();
+  for (size_t i = 0; i < number_of_profiles; ++i) {
+    // Find when locked profiles were locked
+    if (info_cache.ProfileIsSigninRequiredAtIndex(i)) {
+      base::TimeDelta time_since_lock = now -
+          info_cache.GetProfileActiveTimeAtIndex(i);
+      // Specifying 100 buckets for the histogram to get a higher level of
+      // granularity in the reported data, given the large number of possible
+      // values (kMinutesInProfileValidDuration > 40,000).
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Profile.LockedProfilesDuration",
+                                  time_since_lock.InMinutes(),
+                                  1,
+                                  kMinutesInProfileValidDuration,
+                                  100);
+    }
+  }
+}
+
 }  // namespace
 
 enum ProfileAvatar {
@@ -152,6 +176,7 @@ void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager) {
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSignedInProfilesWithGAIAIcons",
                              counts.gaia_icon);
 
+    LogLockedProfileInformation(manager);
     UpdateReportedOSProfileStatistics(counts.total, counts.signedin);
   }
 }
