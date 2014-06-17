@@ -561,6 +561,7 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
 
 void VTTParser::trace(Visitor* visitor)
 {
+    visitor->trace(m_document);
     visitor->trace(m_cueList);
     visitor->trace(m_regionList);
 }

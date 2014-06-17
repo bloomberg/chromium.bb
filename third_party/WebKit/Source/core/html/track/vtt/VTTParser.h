@@ -113,7 +113,7 @@ public:
 private:
     VTTParser(VTTParserClient*, Document&);
 
-    Document* m_document;
+    RawPtrWillBeMember<Document> m_document;
     ParseState m_state;
 
     void parse();
