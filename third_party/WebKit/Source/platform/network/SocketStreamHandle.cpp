@@ -194,6 +194,8 @@ bool SocketStreamHandle::send(const char* data, int length)
             return false;
         }
         m_buffer.append(data, length);
+        if (m_client)
+            m_client->didUpdateBufferedAmount(this, bufferedAmount());
         return true;
     }
     int bytesWritten = 0;
@@ -201,14 +203,14 @@ bool SocketStreamHandle::send(const char* data, int length)
         bytesWritten = sendInternal(data, length);
     if (bytesWritten < 0)
         return false;
-    if (m_client)
-        m_client->didConsumeBufferedAmount(this, bytesWritten);
     if (m_buffer.size() + length - bytesWritten > bufferSize) {
         // FIXME: report error to indicate that buffer has no more space.
         return false;
     }
     if (bytesWritten < length) {
         m_buffer.append(data + bytesWritten, length - bytesWritten);
+        if (m_client)
+            m_client->didUpdateBufferedAmount(this, bufferedAmount());
     }
     return true;
 }
@@ -257,9 +259,9 @@ bool SocketStreamHandle::sendPendingData()
             return false;
         ASSERT(m_buffer.size() - bytesWritten <= bufferSize);
         m_buffer.consume(bytesWritten);
-        if (m_client)
-            m_client->didConsumeBufferedAmount(this, bytesWritten);
     } while (!pending && !m_buffer.isEmpty());
+    if (m_client)
+        m_client->didUpdateBufferedAmount(this, bufferedAmount());
     return true;
 }
 

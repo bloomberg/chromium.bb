@@ -37,24 +37,24 @@
 
 namespace WebCore {
 
-class WebSocketChannelClient {
-public:
-    virtual ~WebSocketChannelClient() { }
-    virtual void didConnect(const String& subprotocol, const String& extensions) { }
-    virtual void didReceiveMessage(const String&) { }
-    virtual void didReceiveBinaryData(PassOwnPtr<Vector<char> >) { }
-    virtual void didReceiveMessageError() { }
-    virtual void didConsumeBufferedAmount(unsigned long consumed) { }
-    virtual void didStartClosingHandshake() { }
-    enum ClosingHandshakeCompletionStatus {
-        ClosingHandshakeIncomplete,
-        ClosingHandshakeComplete
-    };
-    virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short /* code */, const String& /* reason */) { }
+    class WebSocketChannelClient {
+    public:
+        virtual ~WebSocketChannelClient() { }
+        virtual void didConnect(const String& subprotocol, const String& extensions) { }
+        virtual void didReceiveMessage(const String&) { }
+        virtual void didReceiveBinaryData(PassOwnPtr<Vector<char> >) { }
+        virtual void didReceiveMessageError() { }
+        virtual void didUpdateBufferedAmount(unsigned long /* bufferedAmount */) { }
+        virtual void didStartClosingHandshake() { }
+        enum ClosingHandshakeCompletionStatus {
+            ClosingHandshakeIncomplete,
+            ClosingHandshakeComplete
+        };
+        virtual void didClose(unsigned long /* unhandledBufferedAmount */, ClosingHandshakeCompletionStatus, unsigned short /* code */, const String& /* reason */) { }
 
-protected:
-    WebSocketChannelClient() { }
-};
+    protected:
+        WebSocketChannelClient() { }
+    };
 
 } // namespace WebCore
 

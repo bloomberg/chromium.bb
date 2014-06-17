@@ -82,6 +82,7 @@ public:
     virtual WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
     virtual WebSocketChannel::SendResult send(PassRefPtr<BlobDataHandle>) OVERRIDE;
     virtual WebSocketChannel::SendResult send(PassOwnPtr<Vector<char> > data) OVERRIDE;
+    virtual unsigned long bufferedAmount() const OVERRIDE;
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
     virtual void close(int code, const String& reason) OVERRIDE;
@@ -165,6 +166,7 @@ private:
     bool m_receivingMessageTypeIsText;
     int64_t m_sendingQuota;
     int64_t m_receivedDataSizeForFlowControl;
+    unsigned long m_bufferedAmount;
     size_t m_sentSizeOfTopMessage;
 
     String m_sourceURLAtConstruction;

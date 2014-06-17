@@ -72,11 +72,11 @@ MainThreadWebSocketChannel::MainThreadWebSocketChannel(Document* document, WebSo
     , m_closingTimer(this, &MainThreadWebSocketChannel::closingTimerFired)
     , m_state(ChannelIdle)
     , m_shouldDiscardReceivedData(false)
+    , m_unhandledBufferedAmount(0)
     , m_identifier(0)
     , m_hasContinuousFrame(false)
     , m_closeEventCode(CloseEventCodeAbnormalClosure)
     , m_outgoingFrameQueueStatus(OutgoingFrameQueueOpen)
-    , m_numConsumedBytesInCurrentFrame(0)
     , m_blobLoaderStatus(BlobLoaderNotStarted)
     , m_sourceURLAtConstruction(sourceURL)
     , m_lineNumberAtConstruction(lineNumber)
@@ -158,6 +158,14 @@ WebSocketChannel::SendResult MainThreadWebSocketChannel::send(PassOwnPtr<Vector<
     enqueueVector(WebSocketFrame::OpCodeBinary, data);
     processOutgoingFrameQueue();
     return WebSocketChannel::SendSuccess;
+}
+
+unsigned long MainThreadWebSocketChannel::bufferedAmount() const
+{
+    WTF_LOG(Network, "MainThreadWebSocketChannel %p bufferedAmount()", this);
+    ASSERT(m_handle);
+    ASSERT(!m_suspended);
+    return m_handle->bufferedAmount();
 }
 
 void MainThreadWebSocketChannel::close(int code, const String& reason)
@@ -288,12 +296,13 @@ void MainThreadWebSocketChannel::didCloseSocketStream(SocketStreamHandle* handle
     if (m_outgoingFrameQueueStatus != OutgoingFrameQueueClosed)
         abortOutgoingFrameQueue();
     if (m_handle) {
+        m_unhandledBufferedAmount = m_handle->bufferedAmount();
         WebSocketChannelClient* client = m_client;
         m_client = 0;
         clearDocument();
         m_handle = nullptr;
         if (client)
-            client->didClose(m_receivedClosingHandshake ? WebSocketChannelClient::ClosingHandshakeComplete : WebSocketChannelClient::ClosingHandshakeIncomplete, m_closeEventCode, m_closeEventReason);
+            client->didClose(m_unhandledBufferedAmount, m_receivedClosingHandshake ? WebSocketChannelClient::ClosingHandshakeComplete : WebSocketChannelClient::ClosingHandshakeIncomplete, m_closeEventCode, m_closeEventReason);
     }
     deref();
 }
@@ -324,35 +333,10 @@ void MainThreadWebSocketChannel::didReceiveSocketStreamData(SocketStreamHandle* 
     processBuffer();
 }
 
-void MainThreadWebSocketChannel::didConsumeBufferedAmount(SocketStreamHandle*, size_t consumed)
+void MainThreadWebSocketChannel::didUpdateBufferedAmount(SocketStreamHandle*, size_t bufferedAmount)
 {
-    if (m_framingOverheadQueue.isEmpty()) {
-        // Ignore the handshake consumption.
-        return;
-    }
-    if (!m_client || m_state == ChannelClosed)
-        return;
-    size_t remain = consumed;
-    while (remain > 0) {
-        ASSERT(!m_framingOverheadQueue.isEmpty());
-        const FramingOverhead& frame = m_framingOverheadQueue.first();
-
-        ASSERT(m_numConsumedBytesInCurrentFrame <= frame.frameDataSize());
-        size_t consumedInThisFrame = std::min(remain, frame.frameDataSize() - m_numConsumedBytesInCurrentFrame);
-        remain -= consumedInThisFrame;
-        m_numConsumedBytesInCurrentFrame += consumedInThisFrame;
-
-        if (m_numConsumedBytesInCurrentFrame == frame.frameDataSize()) {
-            if (m_client && WebSocketFrame::isNonControlOpCode(frame.opcode())) {
-                // FIXME: As |consumed| is the number of possibly compressed
-                // bytes, we can't determine the number of consumed original
-                // bytes in the middle of a frame.
-                m_client->didConsumeBufferedAmount(frame.originalPayloadLength());
-            }
-            m_framingOverheadQueue.takeFirst();
-            m_numConsumedBytesInCurrentFrame = 0;
-        }
-    }
+    if (m_client)
+        m_client->didUpdateBufferedAmount(bufferedAmount);
 }
 
 void MainThreadWebSocketChannel::didFailSocketStream(SocketStreamHandle* handle, const SocketStreamError& error)
@@ -861,7 +845,6 @@ bool MainThreadWebSocketChannel::sendFrame(WebSocketFrame::OpCode opCode, const 
 
     Vector<char> frameData;
     frame.makeFrameData(frameData);
-    m_framingOverheadQueue.append(FramingOverhead(opCode, frameData.size(), dataLength));
 
     m_perMessageDeflate.resetDeflateBuffer();
     return m_handle->send(frameData.data(), frameData.size());

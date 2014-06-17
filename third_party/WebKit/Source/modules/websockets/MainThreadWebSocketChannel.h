@@ -75,6 +75,7 @@ public:
     virtual WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
     virtual WebSocketChannel::SendResult send(PassRefPtr<BlobDataHandle>) OVERRIDE;
     virtual WebSocketChannel::SendResult send(PassOwnPtr<Vector<char> > data) OVERRIDE;
+    virtual unsigned long bufferedAmount() const OVERRIDE;
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
     virtual void close(int code, const String& reason) OVERRIDE;
@@ -88,7 +89,7 @@ public:
     virtual void didOpenSocketStream(SocketStreamHandle*) OVERRIDE;
     virtual void didCloseSocketStream(SocketStreamHandle*) OVERRIDE;
     virtual void didReceiveSocketStreamData(SocketStreamHandle*, const char*, int) OVERRIDE;
-    virtual void didConsumeBufferedAmount(SocketStreamHandle*, size_t consumed) OVERRIDE;
+    virtual void didUpdateBufferedAmount(SocketStreamHandle*, size_t bufferedAmount) OVERRIDE;
     virtual void didFailSocketStream(SocketStreamHandle*, const SocketStreamError&) OVERRIDE;
 
     // FileReaderLoaderClient functions.
@@ -99,25 +100,6 @@ public:
 
 private:
     MainThreadWebSocketChannel(Document*, WebSocketChannelClient*, const String&, unsigned);
-
-    class FramingOverhead {
-    public:
-        FramingOverhead(WebSocketFrame::OpCode opcode, size_t frameDataSize, size_t originalPayloadLength)
-            : m_opcode(opcode)
-            , m_frameDataSize(frameDataSize)
-            , m_originalPayloadLength(originalPayloadLength)
-        {
-        }
-
-        WebSocketFrame::OpCode opcode() const { return m_opcode; }
-        size_t frameDataSize() const { return m_frameDataSize; }
-        size_t originalPayloadLength() const { return m_originalPayloadLength; }
-
-    private:
-        WebSocketFrame::OpCode m_opcode;
-        size_t m_frameDataSize;
-        size_t m_originalPayloadLength;
-    };
 
     void clearDocument();
 
@@ -214,6 +196,7 @@ private:
     Timer<MainThreadWebSocketChannel> m_closingTimer;
     ChannelState m_state;
     bool m_shouldDiscardReceivedData;
+    unsigned long m_unhandledBufferedAmount;
 
     unsigned long m_identifier; // m_identifier == 0 means that we could not obtain a valid identifier.
 
@@ -226,10 +209,6 @@ private:
 
     Deque<OwnPtr<QueuedFrame> > m_outgoingFrameQueue;
     OutgoingFrameQueueStatus m_outgoingFrameQueueStatus;
-    Deque<FramingOverhead> m_framingOverheadQueue;
-    // The number of bytes that are already consumed (i.e. sent) in the
-    // current frame.
-    size_t m_numConsumedBytesInCurrentFrame;
 
     // FIXME: Load two or more Blobs simultaneously for better performance.
     OwnPtr<FileReaderLoader> m_blobLoader;

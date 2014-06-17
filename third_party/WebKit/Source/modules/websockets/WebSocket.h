@@ -120,9 +120,9 @@ public:
     virtual void didReceiveMessage(const String& message) OVERRIDE;
     virtual void didReceiveBinaryData(PassOwnPtr<Vector<char> >) OVERRIDE;
     virtual void didReceiveMessageError() OVERRIDE;
-    virtual void didConsumeBufferedAmount(unsigned long) OVERRIDE;
+    virtual void didUpdateBufferedAmount(unsigned long bufferedAmount) OVERRIDE;
     virtual void didStartClosingHandshake() OVERRIDE;
-    virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
+    virtual void didClose(unsigned long unhandledBufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
 
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -208,7 +208,6 @@ private:
     // Updates m_bufferedAmountAfterClose given the amount of data passed to
     // send() method after the state changed to CLOSING or CLOSED.
     void updateBufferedAmountAfterClose(unsigned long);
-    void reflectBufferedAmountConsumption(Timer<WebSocket>*);
 
     void releaseChannel();
 
@@ -222,9 +221,6 @@ private:
     State m_state;
     KURL m_url;
     unsigned long m_bufferedAmount;
-    // The consumed buffered amount that will be reflected to m_bufferedAmount
-    // later. It will be cleared once reflected.
-    unsigned long m_consumedBufferedAmount;
     unsigned long m_bufferedAmountAfterClose;
     BinaryType m_binaryType;
     // The subprotocol the server selected.
@@ -232,7 +228,6 @@ private:
     String m_extensions;
 
     RefPtrWillBeMember<EventQueue> m_eventQueue;
-    Timer<WebSocket> m_bufferedAmountConsumeTimer;
 };
 
 } // namespace WebCore

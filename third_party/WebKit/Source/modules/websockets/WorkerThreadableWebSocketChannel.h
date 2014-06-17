@@ -81,6 +81,7 @@ public:
         ASSERT_NOT_REACHED();
         return WebSocketChannel::SendFail;
     }
+    virtual unsigned long bufferedAmount() const OVERRIDE;
     virtual void close(int code, const String& reason) OVERRIDE;
     virtual void fail(const String& reason, MessageLevel, const String&, unsigned) OVERRIDE;
     virtual void disconnect() OVERRIDE; // Will suppress didClose().
@@ -117,9 +118,9 @@ public:
         virtual void didConnect(const String& subprotocol, const String& extensions) OVERRIDE;
         virtual void didReceiveMessage(const String& message) OVERRIDE;
         virtual void didReceiveBinaryData(PassOwnPtr<Vector<char> >) OVERRIDE;
-        virtual void didConsumeBufferedAmount(unsigned long) OVERRIDE;
+        virtual void didUpdateBufferedAmount(unsigned long bufferedAmount) OVERRIDE;
         virtual void didStartClosingHandshake() OVERRIDE;
-        virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
+        virtual void didClose(unsigned long unhandledBufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
         virtual void didReceiveMessageError() OVERRIDE;
 
     private:

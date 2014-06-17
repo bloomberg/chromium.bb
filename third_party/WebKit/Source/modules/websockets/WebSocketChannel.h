@@ -88,6 +88,7 @@ public:
     // For WorkerThreadableWebSocketChannel.
     virtual SendResult send(PassOwnPtr<Vector<char> >) = 0;
 
+    virtual unsigned long bufferedAmount() const = 0;
     virtual void close(int code, const String& reason) = 0;
 
     // Log the reason text and close the connection. Will call didClose().

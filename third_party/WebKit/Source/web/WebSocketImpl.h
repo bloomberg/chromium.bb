@@ -71,9 +71,9 @@ public:
     virtual void didReceiveMessage(const String& message) OVERRIDE;
     virtual void didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData) OVERRIDE;
     virtual void didReceiveMessageError() OVERRIDE;
-    virtual void didConsumeBufferedAmount(unsigned long consumed) OVERRIDE;
+    virtual void didUpdateBufferedAmount(unsigned long bufferedAmount) OVERRIDE;
     virtual void didStartClosingHandshake() OVERRIDE;
-    virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
+    virtual void didClose(unsigned long bufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
 
 private:
     RefPtrWillBePersistent<WebCore::WebSocketChannel> m_private;
@@ -81,7 +81,6 @@ private:
     BinaryType m_binaryType;
     WebString m_subprotocol;
     WebString m_extensions;
-    unsigned long m_bufferedAmount;
 };
 
 } // namespace blink
