@@ -29,18 +29,21 @@
 #ifndef XMLTreeViewer_h
 #define XMLTreeViewer_h
 
+#include "platform/heap/Handle.h"
+
 namespace WebCore {
 
 class Document;
 
 class XMLTreeViewer FINAL {
+    STACK_ALLOCATED();
 public:
     explicit XMLTreeViewer(Document*);
 
     void transformDocumentToTreeView();
 
 private:
-    Document* m_document;
+    RawPtrWillBeMember<Document> m_document;
 };
 
 } // namespace WebCore
