@@ -127,8 +127,11 @@
         'common/key_sequence_test.js',
         'common/math_semantic_tree_test.js',
         'common/selection_util_test.js',
-
-        '../chromevox2/cvox2/background/background.extjs',
+      ],
+      'conditions': [
+        ['use_chromevox_next==1', {
+          'sources': ['../chromevox2/cvox2/background/background.extjs'],
+        }],
       ],
     },  # target chromevox_tests
     {

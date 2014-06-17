@@ -24,7 +24,7 @@ bool ExtensionJSBrowserTest::RunJavascriptTestF(bool is_async,
                                                 const std::string& test_fixture,
                                                 const std::string& test_name) {
   EXPECT_TRUE(load_waiter_->browser_context());
-  if (!load_waiter_.browser_context())
+  if (!load_waiter_->browser_context())
     return false;
   ConstValueVector args;
   args.push_back(new base::StringValue(test_fixture));
