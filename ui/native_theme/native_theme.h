@@ -42,6 +42,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
  public:
   // The part to be painted / sized.
   enum Part {
+    kComboboxArrow,
     kCheckbox,
     kInnerSpinButton,
     kMenuList,

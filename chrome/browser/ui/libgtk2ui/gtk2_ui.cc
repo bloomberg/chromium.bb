@@ -751,7 +751,7 @@ void Gtk2UI::GetScrollbarColors(GdkColor* thumb_active_color,
   // Draw scrollbar thumb part and track into offscreen image
   const int kWidth  = 100;
   const int kHeight = 20;
-  GtkStyle*  style  = gtk_rc_get_style(scrollbar);
+  GtkStyle* style   = gtk_rc_get_style(scrollbar);
   GdkWindow* gdk_window = gtk_widget_get_window(window);
   GdkPixmap* pm     = gdk_pixmap_new(gdk_window, kWidth, kHeight, -1);
   GdkRectangle rect = { 0, 0, kWidth, kHeight };

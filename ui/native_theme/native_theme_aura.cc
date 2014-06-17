@@ -263,7 +263,7 @@ void NativeThemeAura::PaintPainter(NineImagePainter* painter,
                                    SkCanvas* sk_canvas,
                                    const gfx::Rect& rect) const {
   DCHECK(painter);
-  scoped_ptr<gfx::Canvas> canvas(CreateCanvas(sk_canvas));
+  scoped_ptr<gfx::Canvas> canvas(CommonThemeCreateCanvas(sk_canvas));
   painter->Paint(canvas.get(), rect);
 }
 
@@ -286,7 +286,7 @@ void NativeThemeAura::PaintDualPainter(
     const gfx::Rect& rect,
     State state) const {
   DCHECK(dual_painter);
-  scoped_ptr<gfx::Canvas> canvas(CreateCanvas(sk_canvas));
+  scoped_ptr<gfx::Canvas> canvas(CommonThemeCreateCanvas(sk_canvas));
   dual_painter->fill_painter->Paint(
       canvas.get(), rect, dual_painter->fill_alphas[state]);
   dual_painter->stroke_painter->Paint(
@@ -301,7 +301,7 @@ void NativeThemeAura::PaintDualPainterTransition(
     State endState,
     double progress) const {
   DCHECK(dual_painter);
-  scoped_ptr<gfx::Canvas> canvas(CreateCanvas(sk_canvas));
+  scoped_ptr<gfx::Canvas> canvas(CommonThemeCreateCanvas(sk_canvas));
   uint8 fill_alpha = dual_painter->fill_alphas[startState] +
                      (dual_painter->fill_alphas[endState] -
                       dual_painter->fill_alphas[startState]) *

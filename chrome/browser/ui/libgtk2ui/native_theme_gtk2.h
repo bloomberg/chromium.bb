@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_UI_LIBGTK2UI_NATIVE_THEME_GTK2_H_
 #define CHROME_BROWSER_UI_LIBGTK2UI_NATIVE_THEME_GTK2_H_
 
+#include <gtk/gtk.h>
+
 #include "chrome/browser/ui/libgtk2ui/owned_widget_gtk2.h"
 #include "ui/native_theme/native_theme_base.h"
 
 typedef struct _GdkColor GdkColor;
-typedef struct _GtkStyle GtkStyle;
-typedef struct _GtkWidget GtkWidget;
 
 namespace libgtk2ui {
 
@@ -22,6 +22,14 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
   static NativeThemeGtk2* instance();
 
   // Overridden from ui::NativeThemeBase:
+  virtual gfx::Size GetPartSize(Part part,
+                                State state,
+                                const ExtraParams& extra) const OVERRIDE;
+  virtual void Paint(SkCanvas* canvas,
+                     Part part,
+                     State state,
+                     const gfx::Rect& rect,
+                     const ExtraParams& extra) const OVERRIDE;
   virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
   virtual void PaintMenuPopupBackground(
       SkCanvas* canvas,
@@ -50,6 +58,10 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
   GtkStyle* GetTooltipStyle() const;
   GtkStyle* GetMenuStyle() const;
   GtkStyle* GetMenuItemStyle() const;
+
+  void PaintComboboxArrow(SkCanvas* canvas,
+                          GtkStateType state,
+                          const gfx::Rect& rect) const;
 
   mutable GtkWidget* fake_window_;
   mutable GtkWidget* fake_tooltip_;

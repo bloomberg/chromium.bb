@@ -8,6 +8,8 @@
 #include <gtk/gtk.h>
 #include <string>
 
+#include "ui/native_theme/native_theme.h"
+
 class SkBitmap;
 
 namespace aura {
@@ -52,6 +54,9 @@ aura::Window* GetAuraTransientParent(GtkWidget* dialog);
 
 // Clears the transient parent for |dialog|.
 void ClearAuraTransientParent(GtkWidget* dialog);
+
+// Converts a NativeTheme state to a GtkStateType.
+GtkStateType GetGtkState(ui::NativeTheme::State state);
 
 }  // namespace libgtk2ui
 

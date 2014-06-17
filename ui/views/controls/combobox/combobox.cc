@@ -19,6 +19,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/color_constants.h"
@@ -217,6 +218,14 @@ void PaintArrowButton(
                         x, 0, arrow_button_images[0]->width(), height);
 }
 
+// Returns the size of the disclosure arrow.
+gfx::Size ArrowSize(const ui::NativeTheme* native_theme) {
+  ui::NativeTheme::ExtraParams ignored;
+  return native_theme->GetPartSize(ui::NativeTheme::kComboboxArrow,
+                                   ui::NativeTheme::kNormal,
+                                   ignored);
+}
+
 }  // namespace
 
 // static
@@ -231,8 +240,6 @@ Combobox::Combobox(ui::ComboboxModel* model)
       listener_(NULL),
       selected_index_(model_->GetDefaultIndex()),
       invalid_(false),
-      disclosure_arrow_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_MENU_DROPARROW).ToImageSkia()),
       dropdown_open_(false),
       text_button_(new TransparentButton(this)),
       arrow_button_(new TransparentButton(this)),
@@ -354,7 +361,8 @@ void Combobox::Layout() {
     }
     case STYLE_ACTION: {
       arrow_button_width = GetDisclosureArrowLeftPadding() +
-          disclosure_arrow_->width() + GetDisclosureArrowRightPadding();
+          ArrowSize(GetNativeTheme()).width() +
+          GetDisclosureArrowRightPadding();
       text_button_width = width() - arrow_button_width;
       break;
     }
@@ -411,7 +419,7 @@ gfx::Size Combobox::GetPreferredSize() const {
   gfx::Insets insets = GetInsets();
   int total_width = std::max(kMinComboboxWidth, content_size_.width()) +
       insets.width() + GetDisclosureArrowLeftPadding() +
-      disclosure_arrow_->width() + GetDisclosureArrowRightPadding();
+      ArrowSize(GetNativeTheme()).width() + GetDisclosureArrowRightPadding();
   return gfx::Size(total_width, content_size_.height() + insets.height());
 }
 
@@ -655,7 +663,8 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
     selected_index_ = 0;
   base::string16 text = model()->GetItemAt(selected_index_);
 
-  int disclosure_arrow_offset = width() - disclosure_arrow_->width() -
+  gfx::Size arrow_size = ArrowSize(GetNativeTheme());
+  int disclosure_arrow_offset = width() - arrow_size.width() -
       GetDisclosureArrowLeftPadding() - GetDisclosureArrowRightPadding();
 
   const gfx::FontList& font_list = Combobox::GetFontList();
@@ -669,12 +678,24 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
 
   int arrow_x = disclosure_arrow_offset + GetDisclosureArrowLeftPadding();
   gfx::Rect arrow_bounds(arrow_x,
-                         height() / 2 - disclosure_arrow_->height() / 2,
-                         disclosure_arrow_->width(),
-                         disclosure_arrow_->height());
+                         height() / 2 - arrow_size.height() / 2,
+                         arrow_size.width(),
+                         arrow_size.height());
   AdjustBoundsForRTLUI(&arrow_bounds);
 
-  canvas->DrawImageInt(*disclosure_arrow_, arrow_bounds.x(), arrow_bounds.y());
+  // TODO(estade): hack alert! Remove this direct call into CommonTheme. For now
+  // STYLE_ACTION isn't properly themed so we have to override the NativeTheme
+  // behavior. See crbug.com/384071
+  if (style_ == STYLE_ACTION) {
+    ui::CommonThemePaintComboboxArrow(canvas->sk_canvas(), arrow_bounds);
+  } else {
+    ui::NativeTheme::ExtraParams ignored;
+    GetNativeTheme()->Paint(canvas->sk_canvas(),
+                            ui::NativeTheme::kComboboxArrow,
+                            ui::NativeTheme::kNormal,
+                            arrow_bounds,
+                            ignored);
+  }
 }
 
 void Combobox::PaintButtons(gfx::Canvas* canvas) {

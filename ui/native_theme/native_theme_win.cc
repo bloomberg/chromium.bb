@@ -283,6 +283,9 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
     return;
 
   switch (part) {
+    case kComboboxArrow:
+      CommonThemePaintComboboxArrow(canvas, rect);
+      return;
     case kMenuPopupGutter:
       CommonThemePaintMenuGutter(canvas, rect);
       return;

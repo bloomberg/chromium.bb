@@ -8,6 +8,7 @@
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
@@ -122,6 +123,10 @@ gfx::Size CommonThemeGetPartSize(NativeTheme::Part part,
                                  const NativeTheme::ExtraParams& extra) {
   gfx::Size size;
   switch (part) {
+    case NativeTheme::kComboboxArrow:
+      return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_MENU_DROPARROW).Size();
+
     case NativeTheme::kMenuCheck: {
       const gfx::ImageSkia* check =
           ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -134,6 +139,12 @@ gfx::Size CommonThemeGetPartSize(NativeTheme::Part part,
   }
 
   return size;
+}
+
+void CommonThemePaintComboboxArrow(SkCanvas* canvas, const gfx::Rect& rect) {
+  gfx::ImageSkia* arrow = ui::ResourceBundle::GetSharedInstance().
+      GetImageSkiaNamed(IDR_MENU_DROPARROW);
+  CommonThemeCreateCanvas(canvas)->DrawImageInt(*arrow, rect.x(), rect.y());
 }
 
 void CommonThemePaintMenuSeparator(
@@ -187,6 +198,16 @@ void CommonThemePaintMenuItemBackground(SkCanvas* canvas,
       break;
   }
   canvas->drawRect(gfx::RectToSkRect(rect), paint);
+}
+
+// static
+scoped_ptr<gfx::Canvas> CommonThemeCreateCanvas(SkCanvas* sk_canvas) {
+  // TODO(pkotwicz): Do something better and don't infer device
+  // scale factor from canvas scale.
+  SkMatrix m = sk_canvas->getTotalMatrix();
+  float device_scale = static_cast<float>(SkScalarAbs(m.getScaleX()));
+  return scoped_ptr<gfx::Canvas>(
+      gfx::Canvas::CreateCanvasWithoutScaling(sk_canvas, device_scale));
 }
 
 }  // namespace ui

@@ -44,9 +44,6 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   NativeThemeBase();
   virtual ~NativeThemeBase();
 
-  // Creates a gfx::Canvas wrapping an SkCanvas.
-  static scoped_ptr<gfx::Canvas> CreateCanvas(SkCanvas* sk_canvas);
-
   // Draw the arrow. Used by scrollbar and inner spin button.
   virtual void PaintArrowButton(
       SkCanvas* gc,

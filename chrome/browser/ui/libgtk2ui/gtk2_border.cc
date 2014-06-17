@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/ui/libgtk2ui/gtk2_ui.h"
+#include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 #include "chrome/browser/ui/libgtk2ui/native_theme_gtk2.h"
 #include "third_party/skia/include/effects/SkLerpXfermode.h"
 #include "ui/base/theme_provider.h"
@@ -26,17 +27,6 @@ namespace libgtk2ui {
 namespace {
 
 const int kNumberOfFocusedStates = 2;
-
-GtkStateType GetGtkState(ui::NativeTheme::State state) {
-  switch (state) {
-    case ui::NativeTheme::kDisabled: return GTK_STATE_INSENSITIVE;
-    case ui::NativeTheme::kHovered:  return GTK_STATE_PRELIGHT;
-    case ui::NativeTheme::kNormal:   return GTK_STATE_NORMAL;
-    case ui::NativeTheme::kPressed:  return GTK_STATE_ACTIVE;
-    case ui::NativeTheme::kMaxState: NOTREACHED() << "Unknown state: " << state;
-  }
-  return GTK_STATE_NORMAL;
-}
 
 class ButtonImageSkiaSource : public gfx::ImageSkiaSource {
  public:
