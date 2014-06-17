@@ -54,7 +54,7 @@ public:
         SVG_LENGTHTYPE_PC = LengthTypePC
     };
 
-    static PassRefPtr<SVGLengthTearOff> create(PassRefPtr<SVGLength> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    static PassRefPtr<SVGLengthTearOff> create(PassRefPtr<SVGLength> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return adoptRef(new SVGLengthTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
@@ -71,7 +71,7 @@ public:
     void convertToSpecifiedUnits(unsigned short unitType, ExceptionState&);
 
 private:
-    SVGLengthTearOff(PassRefPtr<SVGLength>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = nullQName());
+    SVGLengthTearOff(PassRefPtr<SVGLength>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
 
 } // namespace WebCore

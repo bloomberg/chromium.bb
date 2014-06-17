@@ -782,12 +782,12 @@ static inline QualifiedName createQualifiedName(const AtomicString& namespaceURI
 {
     AtomicString prefix, localName;
     if (!Document::parseQualifiedName(qualifiedName, prefix, localName, exceptionState))
-        return nullQName();
+        return QualifiedName::null();
 
     QualifiedName qName(prefix, localName, namespaceURI);
     if (!Document::hasValidNamespaceForElements(qName)) {
         exceptionState.throwDOMException(NamespaceError, "The namespace URI provided ('" + namespaceURI + "') is not valid for the qualified name provided ('" + qualifiedName + "').");
-        return nullQName();
+        return QualifiedName::null();
     }
 
     return qName;
@@ -796,7 +796,7 @@ static inline QualifiedName createQualifiedName(const AtomicString& namespaceURI
 PassRefPtrWillBeRawPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState)
 {
     QualifiedName qName(createQualifiedName(namespaceURI, qualifiedName, exceptionState));
-    if (qName == nullQName())
+    if (qName == QualifiedName::null())
         return nullptr;
 
     return createElement(qName, false);
@@ -805,7 +805,7 @@ PassRefPtrWillBeRawPtr<Element> Document::createElementNS(const AtomicString& na
 PassRefPtrWillBeRawPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& typeExtension, ExceptionState& exceptionState)
 {
     QualifiedName qName(createQualifiedName(namespaceURI, qualifiedName, exceptionState));
-    if (qName == nullQName())
+    if (qName == QualifiedName::null())
         return nullptr;
 
     RefPtrWillBeRawPtr<Element> element;

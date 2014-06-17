@@ -81,7 +81,7 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
         return 0;
     }
 
-    QualifiedName tagName = nullQName();
+    QualifiedName tagName = QualifiedName::null();
     if (!constructorBuilder->validateOptions(type, tagName, exceptionState))
         return 0;
 

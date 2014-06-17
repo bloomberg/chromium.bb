@@ -40,7 +40,7 @@ void SVGPropertyTearOffBase::commitChange()
     ASSERT(!isImmutable());
     if (!contextElement() || isAnimVal())
         return;
-    ASSERT(m_attributeName != nullQName());
+    ASSERT(m_attributeName != QualifiedName::null());
     contextElement()->invalidateSVGAttributes();
     contextElement()->svgAttributeChanged(m_attributeName);
 }

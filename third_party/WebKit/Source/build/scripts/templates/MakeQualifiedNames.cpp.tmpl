@@ -64,15 +64,15 @@ void init()
 
     // Tags
     {% for tag in tags|sort %}
-    createQualifiedName((void*)&{{tag|symbol}}Tag, {{tag|symbol}}Impl, {{namespace_prefix}}NS);
+    QualifiedName::createStatic((void*)&{{tag|symbol}}Tag, {{tag|symbol}}Impl, {{namespace_prefix}}NS);
     {% endfor %}
 
     // Attrs
     {% for attr in attrs|sort %}
     {% if use_namespace_for_attrs %}
-    createQualifiedName((void*)&{{attr|symbol}}Attr, {{attr|symbol}}Impl, {{namespace_prefix}}NS);
+    QualifiedName::createStatic((void*)&{{attr|symbol}}Attr, {{attr|symbol}}Impl, {{namespace_prefix}}NS);
     {% else %}
-    createQualifiedName((void*)&{{attr|symbol}}Attr, {{attr|symbol}}Impl);
+    QualifiedName::createStatic((void*)&{{attr|symbol}}Attr, {{attr|symbol}}Impl);
     {% endif %}
     {% endfor %}
 }

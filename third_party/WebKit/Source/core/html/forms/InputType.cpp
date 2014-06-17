@@ -763,7 +763,7 @@ bool InputType::hasLegalLinkAttribute(const QualifiedName&) const
 
 const QualifiedName& InputType::subResourceAttributeName() const
 {
-    return nullQName();
+    return QualifiedName::null();
 }
 
 bool InputType::supportsIndeterminateAppearance() const

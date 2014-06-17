@@ -40,13 +40,13 @@ class SVGPointListTearOff FINAL :
     public SVGListPropertyTearOffHelper<SVGPointListTearOff, SVGPointList>,
     public ScriptWrappable {
 public:
-    static PassRefPtr<SVGPointListTearOff> create(PassRefPtr<SVGPointList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    static PassRefPtr<SVGPointListTearOff> create(PassRefPtr<SVGPointList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return adoptRef(new SVGPointListTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
 
 private:
-    SVGPointListTearOff(PassRefPtr<SVGPointList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    SVGPointListTearOff(PassRefPtr<SVGPointList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
         : SVGListPropertyTearOffHelper<SVGPointListTearOff, SVGPointList>(target, contextElement, propertyIsAnimVal, attributeName)
     {
         ScriptWrappable::init(this);

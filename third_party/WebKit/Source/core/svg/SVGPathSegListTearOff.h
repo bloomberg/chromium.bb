@@ -64,13 +64,13 @@ class SVGPathSegListTearOff FINAL :
     public SVGListPropertyTearOffHelper<SVGPathSegListTearOff, SVGPathSegList>,
     public ScriptWrappable {
 public:
-    static PassRefPtr<SVGPathSegListTearOff> create(PassRefPtr<SVGPathSegList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    static PassRefPtr<SVGPathSegListTearOff> create(PassRefPtr<SVGPathSegList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return adoptRef(new SVGPathSegListTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
 
 private:
-    SVGPathSegListTearOff(PassRefPtr<SVGPathSegList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    SVGPathSegListTearOff(PassRefPtr<SVGPathSegList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
         : SVGListPropertyTearOffHelper<SVGPathSegListTearOff, SVGPathSegList>(target, contextElement, propertyIsAnimVal, attributeName)
     {
         ScriptWrappable::init(this);

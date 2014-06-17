@@ -34,32 +34,63 @@ struct QualifiedNameComponents {
     StringImpl* m_namespace;
 };
 
+// This struct is used to pass data between QualifiedName and the QNameTranslator.
+// For hashing and equality only the QualifiedNameComponents fields are used.
+struct QualifiedNameData {
+    QualifiedNameComponents m_components;
+    bool m_isStatic;
+};
+
 class QualifiedName {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     class QualifiedNameImpl : public RefCounted<QualifiedNameImpl> {
     public:
-        static PassRefPtr<QualifiedNameImpl> create(const AtomicString& prefix, const AtomicString& localName, const AtomicString& namespaceURI)
+        static PassRefPtr<QualifiedNameImpl> create(const AtomicString& prefix, const AtomicString& localName, const AtomicString& namespaceURI, bool isStatic)
         {
-            return adoptRef(new QualifiedNameImpl(prefix, localName, namespaceURI));
+            return adoptRef(new QualifiedNameImpl(prefix, localName, namespaceURI, isStatic));
         }
 
         ~QualifiedNameImpl();
 
         unsigned computeHash() const;
 
-        mutable unsigned m_existingHash;
+        bool hasOneRef() const
+        {
+            return m_isStatic || RefCounted<QualifiedNameImpl>::hasOneRef();
+        }
+
+        void ref()
+        {
+            if (m_isStatic)
+                return;
+            RefCounted<QualifiedNameImpl>::ref();
+        }
+
+        void deref()
+        {
+            if (m_isStatic)
+                return;
+            RefCounted<QualifiedNameImpl>::deref();
+        }
+
         const AtomicString m_prefix;
         const AtomicString m_localName;
         const AtomicString m_namespace;
         mutable AtomicString m_localNameUpper;
+        // We rely on StringHasher's hashMemory clearing out the top 8 bits when
+        // doing hashing and use one of the bits for the m_isStatic value.
+        mutable unsigned m_existingHash : 24;
+        unsigned m_isStatic : 1;
 
     private:
-        QualifiedNameImpl(const AtomicString& prefix, const AtomicString& localName, const AtomicString& namespaceURI)
-            : m_existingHash(0)
-            , m_prefix(prefix)
+        QualifiedNameImpl(const AtomicString& prefix, const AtomicString& localName, const AtomicString& namespaceURI, bool isStatic)
+            : m_prefix(prefix)
             , m_localName(localName)
             , m_namespace(namespaceURI)
+            , m_existingHash(0)
+            , m_isStatic(isStatic)
+
         {
             ASSERT(!namespaceURI.isEmpty() || namespaceURI.isNull());
         }
@@ -102,7 +133,16 @@ public:
     // Init routine for globals
     static void init();
 
+    static const QualifiedName& null();
+
+    // The below methods are only for creating static global QNames that need no ref counting.
+    static void createStatic(void* targetAddress, StringImpl* name);
+    static void createStatic(void* targetAddress, StringImpl* name, const AtomicString& nameNamespace);
+
 private:
+    // This constructor is used only to create global/static QNames that don't require any ref counting.
+    QualifiedName(const AtomicString& prefix, const AtomicString& localName, const AtomicString& namespaceURI, bool isStatic);
+
     RefPtr<QualifiedNameImpl> m_impl;
 };
 
@@ -110,8 +150,6 @@ private:
 extern const QualifiedName anyName;
 inline const QualifiedName& anyQName() { return anyName; }
 #endif
-
-const QualifiedName& nullQName();
 
 inline bool operator==(const AtomicString& a, const QualifiedName& q) { return a == q.localName(); }
 inline bool operator!=(const AtomicString& a, const QualifiedName& q) { return a != q.localName(); }
@@ -139,9 +177,6 @@ struct QualifiedNameHash {
     static const bool safeToCompareToEmptyOrDeleted = false;
 };
 
-void createQualifiedName(void* targetAddress, StringImpl* name);
-void createQualifiedName(void* targetAddress, StringImpl* name, const AtomicString& nameNamespace);
-
 }
 
 namespace WTF {
@@ -154,7 +189,7 @@ namespace WTF {
 
     template<> struct HashTraits<WebCore::QualifiedName> : SimpleClassHashTraits<WebCore::QualifiedName> {
         static const bool emptyValueIsZero = false;
-        static WebCore::QualifiedName emptyValue() { return WebCore::nullQName(); }
+        static WebCore::QualifiedName emptyValue() { return WebCore::QualifiedName::null(); }
     };
 }
 

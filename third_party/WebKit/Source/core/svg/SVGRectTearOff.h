@@ -39,7 +39,7 @@ namespace WebCore {
 
 class SVGRectTearOff : public SVGPropertyTearOff<SVGRect>, public ScriptWrappable {
 public:
-    static PassRefPtr<SVGRectTearOff> create(PassRefPtr<SVGRect> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    static PassRefPtr<SVGRectTearOff> create(PassRefPtr<SVGRect> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return adoptRef(new SVGRectTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
@@ -54,7 +54,7 @@ public:
     float height() { return target()->height(); }
 
 private:
-    SVGRectTearOff(PassRefPtr<SVGRect>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = nullQName());
+    SVGRectTearOff(PassRefPtr<SVGRect>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
 
 } // namespace WebCore

@@ -40,13 +40,13 @@ class SVGLengthListTearOff FINAL :
     public SVGListPropertyTearOffHelper<SVGLengthListTearOff, SVGLengthList>,
     public ScriptWrappable {
 public:
-    static PassRefPtr<SVGLengthListTearOff> create(PassRefPtr<SVGLengthList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    static PassRefPtr<SVGLengthListTearOff> create(PassRefPtr<SVGLengthList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return adoptRef(new SVGLengthListTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
 
 private:
-    SVGLengthListTearOff(PassRefPtr<SVGLengthList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    SVGLengthListTearOff(PassRefPtr<SVGLengthList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
         : SVGListPropertyTearOffHelper<SVGLengthListTearOff, SVGLengthList>(target, contextElement, propertyIsAnimVal, attributeName)
     {
         ScriptWrappable::init(this);

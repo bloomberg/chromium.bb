@@ -41,7 +41,7 @@ class SVGMatrixTearOff;
 
 class SVGPointTearOff : public SVGPropertyTearOff<SVGPoint>, public ScriptWrappable {
 public:
-    static PassRefPtr<SVGPointTearOff> create(PassRefPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    static PassRefPtr<SVGPointTearOff> create(PassRefPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return adoptRef(new SVGPointTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
@@ -54,7 +54,7 @@ public:
     PassRefPtr<SVGPointTearOff> matrixTransform(PassRefPtr<SVGMatrixTearOff>);
 
 protected:
-    SVGPointTearOff(PassRefPtr<SVGPoint>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = nullQName());
+    SVGPointTearOff(PassRefPtr<SVGPoint>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
 
 } // namespace WebCore

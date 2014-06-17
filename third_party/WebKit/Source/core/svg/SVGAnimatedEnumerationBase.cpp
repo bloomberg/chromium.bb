@@ -55,7 +55,7 @@ void SVGAnimatedEnumerationBase::setBaseVal(unsigned short value, ExceptionState
 
     m_baseValueUpdated = true;
 
-    ASSERT(this->attributeName() != nullQName());
+    ASSERT(this->attributeName() != QualifiedName::null());
     contextElement()->invalidateSVGAttributes();
     contextElement()->svgAttributeChanged(this->attributeName());
 }

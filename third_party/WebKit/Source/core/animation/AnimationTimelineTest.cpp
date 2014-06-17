@@ -90,7 +90,7 @@ protected:
     {
         document = Document::create();
         document->animationClock().resetTimeForTesting();
-        element = Element::create(nullQName() , document.get());
+        element = Element::create(QualifiedName::null() , document.get());
         platformTiming = new MockPlatformTiming;
         timeline = AnimationTimeline::create(document.get(), adoptPtrWillBeNoop(platformTiming));
         ASSERT_EQ(0, timeline->currentTimeInternal());

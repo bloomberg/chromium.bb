@@ -198,7 +198,7 @@ public:
     }
 
 protected:
-    SVGListPropertyTearOffHelper(PassRefPtr<ListPropertyType> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    SVGListPropertyTearOffHelper(PassRefPtr<ListPropertyType> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
         : SVGPropertyTearOff<ListPropertyType>(target, contextElement, propertyIsAnimVal, attributeName)
     {
     }
@@ -216,7 +216,7 @@ protected:
         if (value->ownerList() == toDerived()->target())
             return ItemTraits::createTearOff(value, toDerived()->contextElement(), toDerived()->propertyIsAnimVal(), toDerived()->attributeName());
 
-        return ItemTraits::createTearOff(value, 0, PropertyIsNotAnimVal, nullQName());
+        return ItemTraits::createTearOff(value, 0, PropertyIsNotAnimVal, QualifiedName::null());
     }
 
 private:

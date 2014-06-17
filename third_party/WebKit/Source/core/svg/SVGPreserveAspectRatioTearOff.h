@@ -59,7 +59,7 @@ public:
         SVG_MEETORSLICE_SLICE = SVGPreserveAspectRatio::SVG_MEETORSLICE_SLICE
     };
 
-    static PassRefPtr<SVGPreserveAspectRatioTearOff> create(PassRefPtr<SVGPreserveAspectRatio> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    static PassRefPtr<SVGPreserveAspectRatioTearOff> create(PassRefPtr<SVGPreserveAspectRatio> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return adoptRef(new SVGPreserveAspectRatioTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
@@ -70,7 +70,7 @@ public:
     unsigned short meetOrSlice() { return target()->meetOrSlice(); }
 
 private:
-    SVGPreserveAspectRatioTearOff(PassRefPtr<SVGPreserveAspectRatio>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = nullQName());
+    SVGPreserveAspectRatioTearOff(PassRefPtr<SVGPreserveAspectRatio>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
 
 } // namespace WebCore

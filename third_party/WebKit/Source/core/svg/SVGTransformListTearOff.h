@@ -41,7 +41,7 @@ class SVGTransformListTearOff FINAL :
     public SVGListPropertyTearOffHelper<SVGTransformListTearOff, SVGTransformList>,
     public ScriptWrappable {
 public:
-    static PassRefPtr<SVGTransformListTearOff> create(PassRefPtr<SVGTransformList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    static PassRefPtr<SVGTransformListTearOff> create(PassRefPtr<SVGTransformList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return adoptRef(new SVGTransformListTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }

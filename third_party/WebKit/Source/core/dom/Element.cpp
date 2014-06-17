@@ -1037,7 +1037,7 @@ bool Element::hasLegalLinkAttribute(const QualifiedName&) const
 
 const QualifiedName& Element::subResourceAttributeName() const
 {
-    return nullQName();
+    return QualifiedName::null();
 }
 
 inline void Element::attributeChangedFromParserOrByCloning(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason reason)

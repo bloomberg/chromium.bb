@@ -66,7 +66,7 @@ KURL getSubResourceURLFromElement(Element* element)
 {
     ASSERT(element);
     const QualifiedName& attributeName = element->subResourceAttributeName();
-    if (attributeName == nullQName())
+    if (attributeName == QualifiedName::null())
         return KURL();
 
     String value = element->getAttribute(attributeName);

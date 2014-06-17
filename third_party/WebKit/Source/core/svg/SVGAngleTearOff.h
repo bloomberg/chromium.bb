@@ -39,7 +39,7 @@ namespace WebCore {
 
 class SVGAngleTearOff FINAL : public SVGPropertyTearOff<SVGAngle>, public ScriptWrappable {
 public:
-    static PassRefPtr<SVGAngleTearOff> create(PassRefPtr<SVGAngle> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    static PassRefPtr<SVGAngleTearOff> create(PassRefPtr<SVGAngle> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
         return adoptRef(new SVGAngleTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
