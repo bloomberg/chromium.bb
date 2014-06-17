@@ -138,11 +138,13 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/textures/texture-npot-video.html',
         ['android'], bug=334204)
 
+    # ChromeOS: affecting all devices.
+    self.Fail('conformance/extensions/webgl-depth-texture.html',
+        ['chromeos'], bug=382651)
+
     # ChromeOS: all Intel except for pinetrail (stumpy, parrot, peppy,...)
     # We will just include pinetrail here for now as we don't want to list
     # every single Intel device ID.
-    self.Fail('conformance/extensions/webgl-depth-texture.html',
-        ['chromeos', 'intel'], bug=375556)
     self.Fail('conformance/glsl/misc/empty_main.vert.html',
         ['chromeos', 'intel'], bug=375556)
     self.Fail('conformance/glsl/misc/gl_position_unset.vert.html',
@@ -151,6 +153,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['chromeos', 'intel'], bug=375556)
     self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
         ['chromeos', 'intel'], bug=375556)
+    self.Fail('conformance/textures/texture-size-limit.html',
+        ['chromeos', 'intel'], bug=385361)
 
     # ChromeOS: pinetrail (alex, mario, zgb).
     self.Fail('conformance/attribs/gl-vertex-attrib-render.html',
@@ -228,32 +232,3 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['chromeos', ('intel', 0xa011)], bug=375554)
     self.Skip('conformance/uniforms/uniform-default-values.html',
         ['chromeos', ('intel', 0xa011)], bug=375554)
-
-    # ChromeOS ARM Mali (peach_pit).
-    # The bug refers to the partner tracker crbug.com/p/29017.
-    # TODO(ihf): Restrict fail to ('arm', 'mali') once this GPU is detected.
-    self.Fail('conformance/canvas/to-data-url-test.html',
-        ['chromeos'], bug=29017)
-    self.Fail('conformance/state/state-uneffected-after-compositing.html',
-        ['chromeos'], bug=29017)
-
-    # ChromeOS ARM Tegra.
-    # The bug refers to the partner tracker crbug.com/p/28982.
-    # TODO(ihf): Restrict fail to ('nvidia', '...') once this GPU is detected.
-    self.Fail('conformance/extensions/oes-texture-float-with-video.html',
-        ['chromeos'], bug=28982)
-    self.Fail('conformance/extensions/oes-texture-half-float-with-video.html',
-        ['chromeos'], bug=28982)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-video.html',
-        ['chromeos'], bug=28982)
-    self.Fail(
-        'conformance/textures/tex-image-and-sub-image-2d-with-video-rgb565.html',
-        ['chromeos'], bug=28982)
-    self.Fail(
-        'conformance/textures/tex-image-and-sub-image-2d-with-video-rgba4444.html',
-        ['chromeos'], bug=28982)
-    self.Fail(
-        'conformance/textures/tex-image-and-sub-image-2d-with-video-rgba5551.html',
-        ['chromeos'], bug=28982)
-    self.Fail('conformance/textures/texture-npot-video.html',
-        ['chromeos'], bug=28982)
