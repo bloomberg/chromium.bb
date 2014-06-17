@@ -4,8 +4,6 @@
 
 #include "chrome/browser/printing/print_view_manager_base.h"
 
-#include <map>
-
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
@@ -30,11 +28,6 @@
 #include "printing/metafile_impl.h"
 #include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(OS_WIN)
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
-#endif
 
 #if defined(ENABLE_FULL_PRINTING)
 #include "chrome/browser/printing/print_error_dialog.h"
