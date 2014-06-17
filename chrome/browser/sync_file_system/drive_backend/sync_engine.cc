@@ -176,9 +176,10 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
       base::MessageLoopProxy::current();
-  // TODO(peria): Create another task runner to manage SyncWorker.
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner =
-      base::MessageLoopProxy::current();
+      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          worker_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   scoped_refptr<base::SequencedTaskRunner> file_task_runner =
       worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
           worker_pool->GetSequenceToken(),
