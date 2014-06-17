@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "google_apis/google_api_keys.h"
