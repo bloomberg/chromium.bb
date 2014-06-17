@@ -132,7 +132,7 @@ class UserManager {
   // is sorted by last login date with the most recent user at the beginning.
   virtual const UserList& GetUsers() const = 0;
 
-  // Returns list of users admitted for logging in into multiprofile session.
+  // Returns list of users admitted for logging in into multi-profile session.
   virtual UserList GetUsersAdmittedForMultiProfile() const = 0;
 
   // Returns a list of users who are currently logged in.
