@@ -34,6 +34,7 @@ enum FieldTypeGroupForMetrics {
   CREDIT_CARD_DATE,
   CREDIT_CARD_TYPE,
   PASSWORD,
+  ADDRESS_LINE_3,
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
 
@@ -86,6 +87,9 @@ int GetFieldTypeGroupMetric(const ServerFieldType field_type,
           break;
         case ADDRESS_HOME_LINE2:
           group = ADDRESS_LINE_2;
+          break;
+        case ADDRESS_HOME_LINE3:
+          group = ADDRESS_LINE_3;
           break;
         case ADDRESS_HOME_CITY:
           group = ADDRESS_CITY;

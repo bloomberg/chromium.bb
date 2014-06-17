@@ -217,11 +217,24 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   if (autocomplete_attribute_value == "address-line2")
     return HTML_TYPE_ADDRESS_LINE2;
 
+  if (autocomplete_attribute_value == "address-line3")
+    return HTML_TYPE_ADDRESS_LINE3;
+
+  // TODO(estade): remove support for "locality" and "region".
   if (autocomplete_attribute_value == "locality")
-    return HTML_TYPE_LOCALITY;
+    return HTML_TYPE_ADDRESS_LEVEL2;
 
   if (autocomplete_attribute_value == "region")
-    return HTML_TYPE_REGION;
+    return HTML_TYPE_ADDRESS_LEVEL1;
+
+  if (autocomplete_attribute_value == "address-level1")
+    return HTML_TYPE_ADDRESS_LEVEL1;
+
+  if (autocomplete_attribute_value == "address-level2")
+    return HTML_TYPE_ADDRESS_LEVEL2;
+
+  if (autocomplete_attribute_value == "address-level3")
+    return HTML_TYPE_ADDRESS_LEVEL3;
 
   if (autocomplete_attribute_value == "country")
     return HTML_TYPE_COUNTRY_CODE;

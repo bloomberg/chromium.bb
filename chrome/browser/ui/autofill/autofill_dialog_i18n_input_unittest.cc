@@ -74,14 +74,5 @@ TEST(AutofillDialogI18nInput, IvoryCoastNoStreetLine2) {
   EXPECT_EQ("fr", language_code);
 }
 
-TEST(AutofillDialogI18nInput, FullySupportedCountries) {
-  const std::vector<std::string>& regions =
-      ::i18n::addressinput::GetRegionCodes();
-  for (size_t i = 0; i < regions.size(); ++i) {
-    bool should_be_supported = !(regions[i] == "KR" || regions[i] == "CN");
-    EXPECT_EQ(should_be_supported, CountryIsFullySupported(regions[i]));
-  }
-}
-
 }  // namespace i18ninput
 }  // namespace autofill

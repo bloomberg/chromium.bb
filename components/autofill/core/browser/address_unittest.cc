@@ -159,12 +159,14 @@ TEST(AddressTest, GetStreetAddress) {
   Address address;
   EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
   EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+  EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE3).empty());
   EXPECT_EQ(base::string16(), address.GetInfo(type, "en-US"));
 
   // Address has only line 1.
   address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
   EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+  EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE3).empty());
   EXPECT_EQ(ASCIIToUTF16("123 Example Ave."), address.GetInfo(type, "en-US"));
 
   // Address has only line 2.
@@ -172,6 +174,7 @@ TEST(AddressTest, GetStreetAddress) {
   address.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Apt 42."));
   EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+  EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE3).empty());
   EXPECT_EQ(ASCIIToUTF16("\nApt 42."), address.GetInfo(type, "en-US"));
 
   // Address has lines 1 and 2.
@@ -179,12 +182,32 @@ TEST(AddressTest, GetStreetAddress) {
   address.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Apt. 42"));
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+  EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE3).empty());
   EXPECT_EQ(ASCIIToUTF16("123 Example Ave.\n"
                          "Apt. 42"),
             address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
   EXPECT_EQ(ASCIIToUTF16("123 Example Ave.\n"
                          "Apt. 42"),
             address.GetInfo(type, "en-US"));
+
+  // A wild third line appears.
+  address.SetRawInfo(ADDRESS_HOME_LINE3, ASCIIToUTF16("Living room couch"));
+  EXPECT_EQ(ASCIIToUTF16("Living room couch"),
+            address.GetRawInfo(ADDRESS_HOME_LINE3));
+  EXPECT_EQ(ASCIIToUTF16("123 Example Ave.\n"
+                         "Apt. 42\n"
+                         "Living room couch"),
+            address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+
+  // The second line vanishes.
+  address.SetRawInfo(ADDRESS_HOME_LINE2, base::string16());
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
+  EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE3).empty());
+  EXPECT_EQ(ASCIIToUTF16("123 Example Ave.\n"
+                         "\n"
+                         "Living room couch"),
+            address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
 }
 
 // Verifies that overwriting an address with N lines with one that has fewer
@@ -248,15 +271,18 @@ TEST(AddressTest, SetStreetAddress) {
       ASCIIToUTF16("456 New St., Apt. 17");
   const base::string16 multi_line_street_address =
       ASCIIToUTF16("789 Fancy Pkwy.\n"
-                   "Unit 3.14");
+                   "Unit 3.14\n"
+                   "Box 9");
   const AutofillType type = AutofillType(ADDRESS_HOME_STREET_ADDRESS);
 
   // Start with a non-empty address.
   Address address;
   address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
   address.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Apt. 42"));
+  address.SetRawInfo(ADDRESS_HOME_LINE3, ASCIIToUTF16("and a half"));
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE3).empty());
 
   // Attempting to set a one-line address should fail, as the single line might
   // actually represent multiple logical lines, combined into one due to the
@@ -264,20 +290,24 @@ TEST(AddressTest, SetStreetAddress) {
   EXPECT_FALSE(address.SetInfo(type, one_line_street_address, "en-US"));
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE1));
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE2));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE3));
 
   // Attempting to set a multi-line address should succeed.
   EXPECT_TRUE(address.SetInfo(type, multi_line_street_address, "en-US"));
   EXPECT_EQ(ASCIIToUTF16("789 Fancy Pkwy."),
             address.GetRawInfo(ADDRESS_HOME_LINE1));
   EXPECT_EQ(ASCIIToUTF16("Unit 3.14"), address.GetRawInfo(ADDRESS_HOME_LINE2));
+  EXPECT_EQ(ASCIIToUTF16("Box 9"), address.GetRawInfo(ADDRESS_HOME_LINE3));
 
   // Attempting to set an empty address should also succeed, and clear out the
   // previously stored data.
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE3).empty());
   EXPECT_TRUE(address.SetInfo(type, empty_street_address, "en-US"));
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE1));
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE2));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE3));
 }
 
 // Verifies that Address::SetInfio() rejects setting data for

@@ -78,6 +78,7 @@ FieldTypeGroup AutofillType::group() const {
 
     case ADDRESS_HOME_LINE1:
     case ADDRESS_HOME_LINE2:
+    case ADDRESS_HOME_LINE3:
     case ADDRESS_HOME_APT_NUM:
     case ADDRESS_HOME_CITY:
     case ADDRESS_HOME_STATE:
@@ -90,6 +91,7 @@ FieldTypeGroup AutofillType::group() const {
 
     case ADDRESS_BILLING_LINE1:
     case ADDRESS_BILLING_LINE2:
+    case ADDRESS_BILLING_LINE3:
     case ADDRESS_BILLING_APT_NUM:
     case ADDRESS_BILLING_CITY:
     case ADDRESS_BILLING_STATE:
@@ -152,8 +154,10 @@ FieldTypeGroup AutofillType::group() const {
     case HTML_TYPE_STREET_ADDRESS:
     case HTML_TYPE_ADDRESS_LINE1:
     case HTML_TYPE_ADDRESS_LINE2:
-    case HTML_TYPE_LOCALITY:
-    case HTML_TYPE_REGION:
+    case HTML_TYPE_ADDRESS_LINE3:
+    case HTML_TYPE_ADDRESS_LEVEL1:
+    case HTML_TYPE_ADDRESS_LEVEL2:
+    case HTML_TYPE_ADDRESS_LEVEL3:
     case HTML_TYPE_COUNTRY_CODE:
     case HTML_TYPE_COUNTRY_NAME:
     case HTML_TYPE_POSTAL_CODE:
@@ -204,6 +208,9 @@ ServerFieldType AutofillType::GetStorableType() const {
 
     case ADDRESS_BILLING_LINE2:
       return ADDRESS_HOME_LINE2;
+
+    case ADDRESS_BILLING_LINE3:
+      return ADDRESS_HOME_LINE3;
 
     case ADDRESS_BILLING_APT_NUM:
       return ADDRESS_HOME_APT_NUM;
@@ -297,11 +304,17 @@ ServerFieldType AutofillType::GetStorableType() const {
     case HTML_TYPE_ADDRESS_LINE2:
       return ADDRESS_HOME_LINE2;
 
-    case HTML_TYPE_LOCALITY:
+    case HTML_TYPE_ADDRESS_LINE3:
+      return ADDRESS_HOME_LINE3;
+
+    case HTML_TYPE_ADDRESS_LEVEL1:
+      return ADDRESS_HOME_STATE;
+
+    case HTML_TYPE_ADDRESS_LEVEL2:
       return ADDRESS_HOME_CITY;
 
-    case HTML_TYPE_REGION:
-      return ADDRESS_HOME_STATE;
+    case HTML_TYPE_ADDRESS_LEVEL3:
+      return ADDRESS_HOME_DEPENDENT_LOCALITY;
 
     case HTML_TYPE_COUNTRY_CODE:
     case HTML_TYPE_COUNTRY_NAME:
@@ -508,6 +521,8 @@ std::string AutofillType::ToString() const {
       return "ADDRESS_HOME_LINE1";
     case ADDRESS_HOME_LINE2:
       return "ADDRESS_HOME_LINE2";
+    case ADDRESS_HOME_LINE3:
+      return "ADDRESS_HOME_LINE3";
     case ADDRESS_HOME_APT_NUM:
       return "ADDRESS_HOME_APT_NUM";
     case ADDRESS_HOME_CITY:
@@ -522,6 +537,8 @@ std::string AutofillType::ToString() const {
       return "ADDRESS_BILLING_LINE1";
     case ADDRESS_BILLING_LINE2:
       return "ADDRESS_BILLING_LINE2";
+    case ADDRESS_BILLING_LINE3:
+      return "ADDRESS_BILLING_LINE3";
     case ADDRESS_BILLING_APT_NUM:
       return "ADDRESS_BILLING_APT_NUM";
     case ADDRESS_BILLING_CITY:
@@ -609,10 +626,14 @@ std::string AutofillType::ToString() const {
       return "HTML_TYPE_ADDRESS_LINE1";
     case HTML_TYPE_ADDRESS_LINE2:
       return "HTML_TYPE_ADDRESS_LINE2";
-    case HTML_TYPE_LOCALITY:
-      return "HTML_TYPE_LOCALITY";
-    case HTML_TYPE_REGION:
-      return "HTML_TYPE_REGION";
+    case HTML_TYPE_ADDRESS_LINE3:
+      return "HTML_TYPE_ADDRESS_LINE3";
+    case HTML_TYPE_ADDRESS_LEVEL1:
+      return "HTML_TYPE_ADDRESS_LEVEL1";
+    case HTML_TYPE_ADDRESS_LEVEL2:
+      return "HTML_TYPE_ADDRESS_LEVEL2";
+    case HTML_TYPE_ADDRESS_LEVEL3:
+      return "HTML_TYPE_ADDRESS_LEVEL3";
     case HTML_TYPE_COUNTRY_CODE:
       return "HTML_TYPE_COUNTRY_CODE";
     case HTML_TYPE_COUNTRY_NAME:

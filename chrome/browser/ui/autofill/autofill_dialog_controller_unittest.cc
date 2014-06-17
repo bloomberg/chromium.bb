@@ -93,15 +93,15 @@ const char* kFieldsFromPage[] =
       "cc-csc",
       "billing name",
       "billing address-line1",
-      "billing locality",
-      "billing region",
+      "billing address-level2",
+      "billing address-level1",
       "billing postal-code",
       "billing country",
       "billing tel",
       "shipping name",
       "shipping address-line1",
-      "shipping locality",
-      "shipping region",
+      "shipping address-level2",
+      "shipping address-level1",
       "shipping postal-code",
       "shipping country",
       "shipping tel",
@@ -2416,7 +2416,7 @@ TEST_F(AutofillDialogControllerTest, ShippingSectionCanBeHidden) {
   FormFieldData cc_field;
   cc_field.autocomplete_attribute = "cc-number";
   FormFieldData billing_field;
-  billing_field.autocomplete_attribute = "billing region";
+  billing_field.autocomplete_attribute = "billing address-level1";
 
   FormData form_data;
   form_data.fields.push_back(email_field);
@@ -2442,7 +2442,7 @@ TEST_F(AutofillDialogControllerTest, ShippingSectionCanBeHiddenForWallet) {
   FormFieldData cc_field;
   cc_field.autocomplete_attribute = "cc-number";
   FormFieldData billing_field;
-  billing_field.autocomplete_attribute = "billing region";
+  billing_field.autocomplete_attribute = "billing address-level1";
 
   FormData form_data;
   form_data.fields.push_back(email_field);
@@ -3151,22 +3151,6 @@ TEST_F(AutofillDialogControllerTest, IconReservedForCreditCardField) {
   }
 }
 
-TEST_F(AutofillDialogControllerTest, NoPartiallySupportedCountriesSuggested) {
-  SwitchToAutofill();
-
-  std::string partially_supported_country = "KR";
-  ASSERT_FALSE(i18ninput::CountryIsFullySupported(partially_supported_country));
-  ASSERT_FALSE(controller()->MenuModelForSection(SECTION_BILLING));
-
-  AutofillProfile verified_profile(test::GetVerifiedProfile());
-  verified_profile.SetRawInfo(ADDRESS_HOME_COUNTRY,
-                              ASCIIToUTF16(partially_supported_country));
-  controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
-
-  EXPECT_FALSE(
-      controller()->SuggestionStateForSection(SECTION_BILLING).visible);
-}
-
 TEST_F(AutofillDialogControllerTest, CountryChangeUpdatesSection) {
   TestAutofillDialogView* view = controller()->GetView();
   view->ClearSectionUpdates();
@@ -3449,58 +3433,6 @@ TEST_F(AutofillDialogControllerTest, LimitedCcChoices) {
   // Even though Discover isn't in FormData, it's allowed because Wallet always
   // generates a MC Virtual card.
   ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberDiscover, true);
-}
-
-TEST_F(AutofillDialogControllerTest, CountriesWithDependentLocalityHidden) {
-  ui::ComboboxModel* model =
-      controller()->ComboboxModelForAutofillType(ADDRESS_BILLING_COUNTRY);
-  for (int i = 0; i < model->GetItemCount(); ++i) {
-    EXPECT_NE(base::ASCIIToUTF16("China"), model->GetItemAt(i));
-    EXPECT_NE(base::ASCIIToUTF16("South Korea"), model->GetItemAt(i));
-  }
-
-  model = controller()->ComboboxModelForAutofillType(ADDRESS_HOME_COUNTRY);
-  for (int i = 0; i < model->GetItemCount(); ++i) {
-    EXPECT_NE(base::ASCIIToUTF16("China"), model->GetItemAt(i));
-    EXPECT_NE(base::ASCIIToUTF16("South Korea"), model->GetItemAt(i));
-  }
-}
-
-TEST_F(AutofillDialogControllerTest, DontSuggestHiddenCountries) {
-  SwitchToAutofill();
-
-  FieldValueMap outputs;
-  outputs[ADDRESS_HOME_COUNTRY] = ASCIIToUTF16("US");
-  controller()->GetView()->SetUserInput(SECTION_SHIPPING, outputs);
-
-  AutofillProfile cn_profile(test::GetVerifiedProfile());
-  cn_profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("Chinese User"));
-  cn_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CN"));
-  controller()->GetTestingManager()->AddTestingProfile(&cn_profile);
-
-  controller()->UserEditedOrActivatedInput(
-      SECTION_SHIPPING,
-      NAME_FULL,
-      gfx::NativeView(),
-      gfx::Rect(),
-      cn_profile.GetRawInfo(NAME_FULL).substr(0, 1),
-      true);
-  EXPECT_EQ(UNKNOWN_TYPE, controller()->popup_input_type());
-
-  AutofillProfile us_profile(test::GetVerifiedProfile());
-  us_profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("American User"));
-  ASSERT_NE(cn_profile.GetRawInfo(NAME_FULL)[0],
-            us_profile.GetRawInfo(NAME_FULL)[0]);
-  controller()->GetTestingManager()->AddTestingProfile(&us_profile);
-
-  controller()->UserEditedOrActivatedInput(
-      SECTION_SHIPPING,
-      NAME_FULL,
-      gfx::NativeView(),
-      gfx::Rect(),
-      us_profile.GetRawInfo(NAME_FULL).substr(0, 1),
-      true);
-  EXPECT_EQ(NAME_FULL, controller()->popup_input_type());
 }
 
 TEST_F(AutofillDialogControllerTest, SuggestCountrylessProfiles) {

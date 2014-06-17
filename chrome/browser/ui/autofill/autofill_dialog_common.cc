@@ -37,8 +37,9 @@ bool ServerTypeEncompassesFieldType(ServerFieldType type,
 
   // The page may ask for individual address lines; this roughly matches the
   // street address blob.
-  if (server_type == ADDRESS_HOME_LINE1 || server_type == ADDRESS_HOME_LINE2 ||
-          field_type.html_type() == HTML_TYPE_FULL_ADDRESS) {
+  if (server_type == ADDRESS_HOME_LINE1 ||
+          server_type == ADDRESS_HOME_LINE2 ||
+          server_type == ADDRESS_HOME_LINE3) {
     return autofill_type.GetStorableType() == ADDRESS_HOME_STREET_ADDRESS;
   }
 

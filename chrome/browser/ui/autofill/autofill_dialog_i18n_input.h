@@ -61,11 +61,6 @@ ServerFieldType TypeForField(::i18n::addressinput::AddressField field,
 bool FieldForType(ServerFieldType server_type,
                   ::i18n::addressinput::AddressField* field);
 
-// Whether or not |country_code| has a fully supported address format.
-// TODO(dbeam): remove this when filling dependent locality is supported.
-// http://crbug.com/340929
-bool CountryIsFullySupported(const std::string& country_code);
-
 }  // namespace i18ninput
 }  // namespace autofill
 

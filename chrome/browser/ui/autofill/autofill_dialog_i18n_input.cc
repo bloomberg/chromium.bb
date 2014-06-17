@@ -196,17 +196,5 @@ bool FieldForType(ServerFieldType server_type,
   }
 }
 
-bool CountryIsFullySupported(const std::string& country_code) {
-  DCHECK_EQ(2U, country_code.size());
-  std::vector< ::i18n::addressinput::AddressUiComponent> components =
-      ::i18n::addressinput::BuildComponents(
-          country_code, g_browser_process->GetApplicationLocale(), NULL);
-  for (size_t i = 0; i < components.size(); ++i) {
-    if (components[i].field == ::i18n::addressinput::DEPENDENT_LOCALITY)
-      return false;
-  }
-  return true;
-}
-
 }  // namespace i18ninput
 }  // namespace autofill

@@ -15,6 +15,7 @@
 #include "grit/components_strings.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
@@ -25,6 +26,7 @@
 #include "third_party/WebKit/public/web/WebTextAreaElement.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using blink::WebConsoleMessage;
 using blink::WebDocument;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
@@ -80,6 +82,11 @@ void FormCache::ExtractNewForms(const WebFrame& frame,
   WebVector<WebFormElement> web_forms;
   document.forms(web_forms);
 
+  // Log an error message for deprecated attributes, but only the first time
+  // the form is parsed.
+  bool log_deprecation_messages =
+      parsed_forms_.find(&frame) == parsed_forms_.end();
+
   size_t num_fields_seen = 0;
   for (size_t i = 0; i < web_forms.size(); ++i) {
     WebFormElement form_element = web_forms[i];
@@ -91,6 +98,23 @@ void FormCache::ExtractNewForms(const WebFrame& frame,
     size_t num_editable_elements = 0;
     for (size_t j = 0; j < control_elements.size(); ++j) {
       WebFormControlElement element = control_elements[j];
+
+      if (log_deprecation_messages) {
+        std::string autocomplete_attribute =
+            base::UTF16ToUTF8(element.getAttribute("autocomplete"));
+
+        static const char* const deprecated[] = { "region", "locality" };
+        for (size_t i = 0; i < arraysize(deprecated); ++i) {
+          if (autocomplete_attribute.find(deprecated[i]) != std::string::npos) {
+            WebConsoleMessage console_message = WebConsoleMessage(
+                WebConsoleMessage::LevelWarning,
+                WebString(base::ASCIIToUTF16(std::string("autocomplete='") +
+                    deprecated[i] + "' is deprecated and will soon be ignored. "
+                    "See http://goo.gl/YjeSsW")));
+            element.document().frame()->addMessageToConsole(console_message);
+          }
+        }
+      }
 
       // Save original values of <select> elements so we can restore them
       // when |ClearFormWithNode()| is invoked.

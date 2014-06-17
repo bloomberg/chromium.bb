@@ -654,9 +654,6 @@ AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
 
 bool CountryFilter(const std::set<base::string16>& possible_values,
                    const std::string& country_code) {
-  if (!i18ninput::CountryIsFullySupported(country_code))
-    return false;
-
   if (!possible_values.empty() &&
       !possible_values.count(base::ASCIIToUTF16(country_code))) {
     return false;
@@ -3031,9 +3028,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
       for (size_t i = 0; i < profiles.size(); ++i) {
         const AutofillProfile& profile = *profiles[i];
         if (!i18ninput::AddressHasCompleteAndVerifiedData(
-                profile, g_browser_process->GetApplicationLocale()) ||
-            !i18ninput::CountryIsFullySupported(
-                base::UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY)))) {
+                profile, g_browser_process->GetApplicationLocale())) {
           continue;
         }
 
