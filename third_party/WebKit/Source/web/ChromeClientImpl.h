@@ -134,7 +134,7 @@ public:
     virtual void annotatedRegionsChanged() OVERRIDE;
     virtual bool paintCustomOverhangArea(WebCore::GraphicsContext*, const WebCore::IntRect&, const WebCore::IntRect&, const WebCore::IntRect&) OVERRIDE;
     virtual PassOwnPtr<WebCore::ColorChooser> createColorChooser(WebCore::LocalFrame*, WebCore::ColorChooserClient*, const WebCore::Color&) OVERRIDE;
-    virtual PassRefPtr<WebCore::DateTimeChooser> openDateTimeChooser(WebCore::DateTimeChooserClient*, const WebCore::DateTimeChooserParameters&) OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<WebCore::DateTimeChooser> openDateTimeChooser(WebCore::DateTimeChooserClient*, const WebCore::DateTimeChooserParameters&) OVERRIDE;
     virtual void openTextDataListChooser(WebCore::HTMLInputElement&) OVERRIDE;
     virtual void runOpenPanel(WebCore::LocalFrame*, PassRefPtr<WebCore::FileChooser>) OVERRIDE;
     virtual void enumerateChosenDirectory(WebCore::FileChooser*) OVERRIDE;

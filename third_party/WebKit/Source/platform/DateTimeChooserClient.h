@@ -32,20 +32,22 @@
 #define DateTimeChooserClient_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class PLATFORM_EXPORT DateTimeChooserClient {
+class PLATFORM_EXPORT DateTimeChooserClient : public WillBeGarbageCollectedMixin {
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DateTimeChooserClient);
 public:
-    virtual ~DateTimeChooserClient();
-
     // Called when user picked a value.
     virtual void didChooseValue(const String&) = 0;
     // Called when user picked a value.
     virtual void didChooseValue(double) = 0;
     // Called when chooser has ended.
     virtual void didEndChooser() = 0;
+
+    virtual void trace(Visitor*) { }
 };
 
 } // namespace WebCore

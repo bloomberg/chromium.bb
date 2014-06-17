@@ -26,6 +26,7 @@
 #include "core/page/FocusType.h"
 #include "platform/Cursor.h"
 #include "platform/HostWindow.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
@@ -117,7 +118,7 @@ public:
     void print(LocalFrame*);
 
     PassOwnPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color& initialColor);
-    PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&);
+    PassRefPtrWillBeRawPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&);
     void openTextDataListChooser(HTMLInputElement&);
 
     void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>);

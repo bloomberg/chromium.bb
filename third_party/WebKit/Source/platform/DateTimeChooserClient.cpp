@@ -33,8 +33,6 @@
 
 namespace WebCore {
 
-DateTimeChooserClient::~DateTimeChooserClient()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DateTimeChooserClient)
 
 } // namespace WebCore

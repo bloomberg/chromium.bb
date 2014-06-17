@@ -341,7 +341,7 @@ PassOwnPtr<ColorChooser> Chrome::createColorChooser(LocalFrame* frame, ColorChoo
     return m_client->createColorChooser(frame, client, initialColor);
 }
 
-PassRefPtr<DateTimeChooser> Chrome::openDateTimeChooser(DateTimeChooserClient* client, const DateTimeChooserParameters& parameters)
+PassRefPtrWillBeRawPtr<DateTimeChooser> Chrome::openDateTimeChooser(DateTimeChooserClient* client, const DateTimeChooserParameters& parameters)
 {
     notifyPopupOpeningObservers();
     return m_client->openDateTimeChooser(client, parameters);

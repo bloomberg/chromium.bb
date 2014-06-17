@@ -62,8 +62,6 @@ PassRefPtrWillBeRawPtr<PickerIndicatorElement> PickerIndicatorElement::create(Do
 
 PickerIndicatorElement::~PickerIndicatorElement()
 {
-    closePopup();
-    ASSERT(!m_chooser);
 }
 
 RenderObject* PickerIndicatorElement::createRenderer(RenderStyle*)
@@ -154,7 +152,9 @@ bool PickerIndicatorElement::isPickerIndicatorElement() const
 void PickerIndicatorElement::trace(Visitor* visitor)
 {
     visitor->trace(m_pickerIndicatorOwner);
+    visitor->trace(m_chooser);
     HTMLDivElement::trace(visitor);
+    DateTimeChooserClient::trace(visitor);
 }
 
 }

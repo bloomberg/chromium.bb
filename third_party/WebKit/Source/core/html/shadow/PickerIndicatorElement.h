@@ -42,6 +42,7 @@ class HTMLInputElement;
 class PagePopup;
 
 class PickerIndicatorElement FINAL : public HTMLDivElement, public DateTimeChooserClient {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PickerIndicatorElement);
 public:
     // PickerIndicatorOwner implementer must call removePickerIndicatorOwner when
     // it doesn't handle event, e.g. at destruction.
@@ -79,7 +80,7 @@ private:
     HTMLInputElement* hostInput();
 
     RawPtrWillBeMember<PickerIndicatorOwner> m_pickerIndicatorOwner;
-    RefPtr<DateTimeChooser> m_chooser;
+    RefPtrWillBeMember<DateTimeChooser> m_chooser;
     bool m_isInOpenPopup;
 };
 
