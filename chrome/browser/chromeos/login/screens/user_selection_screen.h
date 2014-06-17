@@ -26,6 +26,11 @@ class UserSelectionScreen : public wm::UserActivityObserver {
   UserSelectionScreen();
   virtual ~UserSelectionScreen();
 
+  static const UserList PrepareUserListForSending(
+      const UserList& users,
+      std::string owner,
+      bool is_signin_to_add);
+
   void SetHandler(LoginDisplayWebUIHandler* handler);
 
   void Init(const UserList& users, bool show_guest);

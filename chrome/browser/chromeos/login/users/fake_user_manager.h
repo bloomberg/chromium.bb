@@ -135,6 +135,11 @@ class FakeUserManager : public UserManager {
     owner_email_ = owner_email;
   }
 
+  void set_multi_profile_user_controller(
+      MultiProfileUserController* controller) {
+    multi_profile_user_controller_ = controller;
+  }
+
  private:
   // We use this internal function for const-correctness.
   User* GetActiveUserInternal() const;
@@ -149,6 +154,7 @@ class FakeUserManager : public UserManager {
   // If set this is the active user. If empty, the first created user is the
   // active user.
   std::string active_user_id_;
+  MultiProfileUserController* multi_profile_user_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeUserManager);
 };

@@ -187,28 +187,16 @@ void UserSelectionScreen::OnUserActivity(const ui::Event* event) {
   password_clear_timer_.Reset();
 }
 
-void UserSelectionScreen::SendUserList(bool animated) {
-  base::ListValue users_list;
-  const UserList& users = GetUsers();
+// static
+const UserList UserSelectionScreen::PrepareUserListForSending(
+    const UserList& users,
+    std::string owner,
+    bool is_signin_to_add) {
 
-  // TODO(nkostylev): Move to a separate method in UserManager.
-  // http://crbug.com/230852
-  bool is_signin_to_add = LoginDisplayHostImpl::default_host() &&
-                          UserManager::Get()->IsUserLoggedIn();
-
-  user_auth_type_map_.clear();
-
-  bool single_user = users.size() == 1;
-  std::string owner;
-  chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
+  UserList users_to_send;
   bool has_owner = owner.size() > 0;
   size_t max_non_owner_users = has_owner ? kMaxUsers - 1 : kMaxUsers;
   size_t non_owner_count = 0;
-
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-
-  bool is_enterprise_managed = connector->IsEnterpriseManaged();
 
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
     const std::string& user_id = (*it)->email();
@@ -218,35 +206,69 @@ void UserSelectionScreen::SendUserList(bool animated) {
 
     if ((is_public_account && !is_signin_to_add) || is_owner ||
         (!is_public_account && non_owner_count < max_non_owner_users)) {
-      ScreenlockBridge::LockHandler::AuthType initial_auth_type =
-          ShouldForceOnlineSignIn(*it)
-              ? ScreenlockBridge::LockHandler::ONLINE_SIGN_IN
-              : ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
-      user_auth_type_map_[user_id] = initial_auth_type;
-
-      base::DictionaryValue* user_dict = new base::DictionaryValue();
-      FillUserDictionary(
-          *it, is_owner, is_signin_to_add, initial_auth_type, user_dict);
-      bool signed_in = (*it)->is_logged_in();
-      // Single user check here is necessary because owner info might not be
-      // available when running into login screen on first boot.
-      // See http://crosbug.com/12723
-      bool can_remove_user =
-          ((!single_user || is_enterprise_managed) && !user_id.empty() &&
-           !is_owner && !is_public_account && !signed_in && !is_signin_to_add);
-      user_dict->SetBoolean(kKeyCanRemove, can_remove_user);
 
       if (!is_owner)
         ++non_owner_count;
-      if (is_owner && users_list.GetSize() > kMaxUsers) {
+      if (is_owner && users_to_send.size() > kMaxUsers) {
         // Owner is always in the list.
-        users_list.Insert(kMaxUsers - 1, user_dict);
-        while (users_list.GetSize() > kMaxUsers)
-          users_list.Remove(kMaxUsers, NULL);
-      } else if (users_list.GetSize() < kMaxUsers) {
-        users_list.Append(user_dict);
+        users_to_send.insert(users_to_send.begin() + (kMaxUsers - 1), *it);
+        while (users_to_send.size() > kMaxUsers)
+          users_to_send.erase(users_to_send.begin() + kMaxUsers);
+      } else if (users_to_send.size() < kMaxUsers) {
+        users_to_send.push_back(*it);
       }
     }
+  }
+  return users_to_send;
+}
+
+void UserSelectionScreen::SendUserList(bool animated) {
+  base::ListValue users_list;
+  const UserList& users = GetUsers();
+
+  // TODO(nkostylev): Move to a separate method in UserManager.
+  // http://crbug.com/230852
+  bool single_user = users.size() == 1;
+  bool is_signin_to_add = LoginDisplayHostImpl::default_host() &&
+                          UserManager::Get()->IsUserLoggedIn();
+  std::string owner;
+  chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
+
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  bool is_enterprise_managed = connector->IsEnterpriseManaged();
+
+  const UserList users_to_send = PrepareUserListForSending(users,
+                                                           owner,
+                                                           is_signin_to_add);
+
+  user_auth_type_map_.clear();
+
+  for (UserList::const_iterator it = users_to_send.begin();
+       it != users_to_send.end();
+       ++it) {
+    const std::string& user_id = (*it)->email();
+    bool is_owner = (user_id == owner);
+    bool is_public_account =
+        ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT);
+    ScreenlockBridge::LockHandler::AuthType initial_auth_type =
+      ShouldForceOnlineSignIn(*it)
+          ? ScreenlockBridge::LockHandler::ONLINE_SIGN_IN
+          : ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
+    user_auth_type_map_[user_id] = initial_auth_type;
+
+    base::DictionaryValue* user_dict = new base::DictionaryValue();
+    FillUserDictionary(
+        *it, is_owner, is_signin_to_add, initial_auth_type, user_dict);
+    bool signed_in = (*it)->is_logged_in();
+    // Single user check here is necessary because owner info might not be
+    // available when running into login screen on first boot.
+    // See http://crosbug.com/12723
+    bool can_remove_user =
+        ((!single_user || is_enterprise_managed) && !user_id.empty() &&
+         !is_owner && !is_public_account && !signed_in && !is_signin_to_add);
+    user_dict->SetBoolean(kKeyCanRemove, can_remove_user);
+    users_list.Append(user_dict);
   }
 
   handler_->LoadUsers(users_list, animated, show_guest_);

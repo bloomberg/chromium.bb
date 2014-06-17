@@ -17,7 +17,8 @@ namespace chromeos {
 
 FakeUserManager::FakeUserManager()
     : supervised_user_manager_(new FakeSupervisedUserManager),
-      primary_user_(NULL) {}
+      primary_user_(NULL),
+      multi_profile_user_controller_(NULL) {}
 
 FakeUserManager::~FakeUserManager() {
   // Can't use STLDeleteElements because of the private destructor of User.
@@ -124,7 +125,7 @@ void FakeUserManager::SaveUserDisplayName(
 }
 
 MultiProfileUserController* FakeUserManager::GetMultiProfileUserController() {
-  return NULL;
+  return multi_profile_user_controller_;
 }
 
 SupervisedUserManager* FakeUserManager::GetSupervisedUserManager() {

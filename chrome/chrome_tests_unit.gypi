@@ -1791,6 +1791,7 @@
         'browser/ui/website_settings/permission_bubble_manager_unittest.cc',
         'browser/ui/website_settings/permission_menu_model_unittest.cc',
         'browser/ui/website_settings/website_settings_unittest.cc',
+        'browser/ui/webui/chromeos/login/signin_userlist_unittest.cc',
         'browser/ui/webui/fileicon_source_unittest.cc',
         'browser/ui/webui/history_ui_unittest.cc',
         'browser/ui/webui/ntp/ntp_user_data_logger_unittest.cc',
