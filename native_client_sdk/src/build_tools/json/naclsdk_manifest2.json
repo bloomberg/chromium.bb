@@ -363,6 +363,25 @@
       "revision": 0,
       "stability": "canary",
       "version": 0
+    },
+    {
+      "archives": [
+        {
+          "checksum": {
+            "sha1": "9f6a8fc33df9cfc2b48dc6f017e9de01efd546b9"
+          },
+          "host_os": "linux",
+          "size": 399561504,
+          "url": "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.277747/naclsdk_bionic.tar.bz2"
+        }
+      ],
+      "description": "Bionic Canary",
+      "name": "bionic_canary",
+      "recommended": "no",
+      "repath": "pepper_37",
+      "revision": 277747,
+      "stability": "canary",
+      "version": 37
     }
   ],
   "manifest_version": 2
