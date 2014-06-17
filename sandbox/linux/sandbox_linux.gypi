@@ -344,5 +344,23 @@
         }
       ],
     }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'sandbox_linux_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'sandbox_linux_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+            'sandbox_linux_unittests.isolate',
+          ],
+          'sources': [
+            'sandbox_linux_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }
