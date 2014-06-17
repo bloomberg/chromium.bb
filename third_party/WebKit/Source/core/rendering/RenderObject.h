@@ -821,7 +821,10 @@ public:
     LayoutRect boundsRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const;
 
     // Actually do the paint invalidate of rect r for this object which has been computed in the coordinate space
-    // of paintInvalidationContainer. If paintInvalidationContainer is 0, invalidate paints via the view.
+    // of the GraphicsLayer backing of |paintInvalidationContainer|. Note that this coordinaten space is not the same
+    // as the local coordinate space of |paintInvalidationContainer| in the presence of layer squashing.
+    // If |paintInvalidationContainer| is 0, invalidate paints via the view.
+    // FIXME: |paintInvalidationContainer| should never be 0. See crbug.com/363699.
     void invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const IntRect&, InvalidationReason) const;
 
     // Invalidate the paint of the entire object. Called when, e.g., the color of a border changes, or when a border

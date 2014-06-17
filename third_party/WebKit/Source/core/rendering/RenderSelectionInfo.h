@@ -62,8 +62,15 @@ class RenderSelectionInfo : public RenderSelectionInfoBase {
 public:
     RenderSelectionInfo(RenderObject* o, bool clipToVisibleContent)
         : RenderSelectionInfoBase(o)
-        , m_rect(o->canUpdateSelectionOnRootLineBoxes() ? o->selectionRectForPaintInvalidation(m_repaintContainer, clipToVisibleContent) : LayoutRect())
     {
+        if (o->canUpdateSelectionOnRootLineBoxes()) {
+            m_rect = o->selectionRectForPaintInvalidation(m_repaintContainer, clipToVisibleContent);
+            // FIXME: groupedMapping() leaks the squashing abstraction. See RenderBlockSelectionInfo for more details.
+            if (m_repaintContainer && m_repaintContainer->groupedMapping())
+                RenderLayer::mapRectToRepaintBacking(m_repaintContainer, m_repaintContainer, m_rect);
+        } else {
+            m_rect = LayoutRect();
+        }
     }
 
     void repaint()
@@ -83,13 +90,22 @@ class RenderBlockSelectionInfo : public RenderSelectionInfoBase {
 public:
     RenderBlockSelectionInfo(RenderBlock* b)
         : RenderSelectionInfoBase(b)
-        , m_rects(b->canUpdateSelectionOnRootLineBoxes() ? block()->selectionGapRectsForRepaint(m_repaintContainer) : GapRects())
     {
+        if (b->canUpdateSelectionOnRootLineBoxes())
+            m_rects = block()->selectionGapRectsForRepaint(m_repaintContainer);
+        else
+            m_rects = GapRects();
     }
 
     void repaint()
     {
-        m_object->invalidatePaintUsingContainer(m_repaintContainer, enclosingIntRect(m_rects), InvalidationSelection);
+        LayoutRect repaintRect = enclosingIntRect(m_rects);
+        // FIXME: this is leaking the squashing abstraction. However, removing the groupedMapping() condiitional causes
+        // RenderBox::mapRectToRepaintBacking to get called, which makes rect adjustments even if you pass the same
+        // repaintContainer as the render object. Find out why it does that and fix.
+        if (m_repaintContainer && m_repaintContainer->groupedMapping())
+            RenderLayer::mapRectToRepaintBacking(m_repaintContainer, m_repaintContainer, repaintRect);
+        m_object->invalidatePaintUsingContainer(m_repaintContainer, enclosingIntRect(repaintRect), InvalidationSelection);
     }
 
     RenderBlock* block() const { return toRenderBlock(m_object); }
