@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "components/signin/core/browser/signin_error_controller.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/appkit_utils.h"
@@ -19,6 +20,8 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/nine_image_painter_factory.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/text_elider.h"
 
 namespace {
@@ -49,21 +52,26 @@ NSImage* GetImageFromResourceID(int resourceId) {
 @interface CustomThemeButtonCell : NSButtonCell {
  @private
    BOOL isThemedWindow_;
+   base::scoped_nsobject<NSImage> authenticationErrorImage_;
 }
 - (void)setIsThemedWindow:(BOOL)isThemedWindow;
+- (void)setHasError:(BOOL)hasError;
+
 @end
 
 @implementation CustomThemeButtonCell
 - (id)initWithThemedWindow:(BOOL)isThemedWindow {
   if ((self = [super init])) {
     isThemedWindow_ = isThemedWindow;
+    authenticationErrorImage_.reset();
   }
   return self;
 }
 
 - (NSSize)cellSize {
   NSSize buttonSize = [super cellSize];
-  buttonSize.width += 2 * kButtonPadding - 2 * kButtonDefaultPadding;
+  CGFloat errorWidth = [authenticationErrorImage_ size].width;
+  buttonSize.width += 2 * (kButtonPadding - kButtonDefaultPadding) + errorWidth;
   buttonSize.height = kButtonHeight;
   return buttonSize;
 }
@@ -72,7 +80,27 @@ NSImage* GetImageFromResourceID(int resourceId) {
           withFrame:(NSRect)frame
              inView:(NSView*)controlView {
   frame.origin.x = kButtonPadding;
-  // Ensure there's always a padding between the text and the image.
+
+  // If there's an auth error, draw a warning icon before the cell image.
+  if (authenticationErrorImage_) {
+    NSSize imageSize = [authenticationErrorImage_ size];
+    NSRect rect = NSMakeRect(
+        frame.size.width - imageSize.width,
+        (kButtonHeight - imageSize.height) / 2,
+        imageSize.width,
+        imageSize.height);
+    [authenticationErrorImage_ drawInRect:rect
+                       fromRect:NSZeroRect
+                      operation:NSCompositeSourceOver
+                       fraction:1.0
+                 respectFlipped:YES
+                          hints:nil];
+    // Padding between the title and the error image.
+    frame.size.width -= kButtonTitleImageSpacing;
+  }
+
+  // Padding between the title (or error image, if it exists) and the
+  // button's drop down image.
   frame.size.width -= kButtonTitleImageSpacing;
   return [super drawTitle:title withFrame:frame inView:controlView];
 }
@@ -106,11 +134,23 @@ NSImage* GetImageFromResourceID(int resourceId) {
 - (void)setIsThemedWindow:(BOOL)isThemedWindow {
   isThemedWindow_ = isThemedWindow;
 }
+
+- (void)setHasError:(BOOL)hasError {
+  if (hasError) {
+    authenticationErrorImage_.reset(
+        [ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR).ToNSImage() retain]);
+  } else {
+    authenticationErrorImage_.reset();
+  }
+}
+
 @end
 
 @interface AvatarButtonController (Private)
 - (base::string16)getElidedAvatarName;
 - (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent;
+- (void)updateErrorStatus:(BOOL)hasError;
 - (void)dealloc;
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
 @end
@@ -135,6 +175,10 @@ NSImage* GetImageFromResourceID(int resourceId) {
     button_.reset(hoverButton);
     base::scoped_nsobject<CustomThemeButtonCell> cell(
         [[CustomThemeButtonCell alloc] initWithThemedWindow:isThemedWindow_]);
+    SigninErrorController* errorController =
+        profiles::GetSigninErrorController(browser->profile());
+    if (errorController)
+      [cell setHasError:errorController->HasError()];
     [button_ setCell:cell.get()];
     [self setView:button_];
 
@@ -156,7 +200,6 @@ NSImage* GetImageFromResourceID(int resourceId) {
                selector:@selector(themeDidChangeNotification:)
                    name:kBrowserThemeDidChangeNotification
                  object:nil];
-
   }
   return self;
 }
@@ -189,7 +232,6 @@ NSImage* GetImageFromResourceID(int resourceId) {
   // The button text has a black foreground and a white drop shadow for regular
   // windows, and a light text with a dark drop shadow for guest windows
   // which are themed with a dark background.
-  // TODO(noms): Figure out something similar for themed windows, if possible.
   base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   [shadow setShadowOffset:NSMakeSize(0, -1)];
   [shadow setShadowBlurRadius:0];
@@ -237,6 +279,11 @@ NSImage* GetImageFromResourceID(int resourceId) {
         browserWindowControllerForWindow:browser_->window()->GetNativeWindow()]
         layoutSubviews];
   }
+}
+
+- (void)updateErrorStatus:(BOOL)hasError {
+  [[button_ cell] setHasError:hasError];
+  [self updateAvatarButtonAndLayoutParent:YES];
 }
 
 @end

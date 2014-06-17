@@ -106,6 +106,10 @@ class WebContents;
 // account from the active profile if possible.
 - (IBAction)showAccountRemovalView:(id)sender;
 
+// Shows the account reauthentication view to re-sign in the currently selected
+// account from the active profile if possible.
+- (IBAction)showAccountReauthenticationView:(id)sender;
+
 // Removes the current account |accountIdToRemove_|.
 - (IBAction)removeAccount:(id)sender;
 
