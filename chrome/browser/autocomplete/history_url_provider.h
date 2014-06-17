@@ -90,6 +90,7 @@ class URLDatabase;
 struct HistoryURLProviderParams {
   HistoryURLProviderParams(const AutocompleteInput& input,
                            bool trim_http,
+                           const AutocompleteMatch& what_you_typed_match,
                            const std::string& languages,
                            TemplateURL* default_search_provider,
                            const SearchTermsData& search_terms_data);
@@ -108,6 +109,9 @@ struct HistoryURLProviderParams {
 
   // Set when "http://" should be trimmed from the beginning of the URLs.
   bool trim_http;
+
+  // A match corresponding to what the user typed.
+  AutocompleteMatch what_you_typed_match;
 
   // Set by the main thread to cancel this request.  If this flag is set when
   // the query runs, the query will be abandoned.  This allows us to avoid
@@ -221,16 +225,14 @@ class HistoryURLProvider : public HistoryProvider {
   // Frees params_gets_deleted on exit.
   void QueryComplete(HistoryURLProviderParams* params_gets_deleted);
 
-  // Given a |match| containing the "what you typed" suggestion created by
-  // SuggestExactInput(), looks up its info in the DB.  If found, fills in the
-  // title from the DB, promotes the match's priority to that of an inline
+  // Looks up the info for params->what_you_typed_match in the DB.  If found,
+  // fills in the title, promotes the match's priority to that of an inline
   // autocomplete match (maybe it should be slightly better?), and places it on
-  // the front of |matches| (so we pick the right matches to throw away
-  // when culling redirects to/from it).  Returns whether a match was promoted.
+  // the front of |matches| (so we pick the right matches to throw away when
+  // culling redirects to/from it).  Returns whether a match was promoted.
   bool FixupExactSuggestion(history::URLDatabase* db,
-                            const AutocompleteInput& input,
                             const VisitClassifier& classifier,
-                            AutocompleteMatch* match,
+                            HistoryURLProviderParams* params,
                             history::HistoryMatches* matches) const;
 
   // Helper function for FixupExactSuggestion, this returns true if the input
@@ -239,9 +241,8 @@ class HistoryURLProvider : public HistoryProvider {
   bool CanFindIntranetURL(history::URLDatabase* db,
                           const AutocompleteInput& input) const;
 
-  // Determines if |match| is suitable for inline autocomplete.  If so, and if
-  // |params| is non-NULL, promotes the match.  Returns whether |match| is
-  // suitable for inline autocomplete.
+  // Determines if |match| is suitable for inline autocomplete.  If so, promotes
+  // the match.  Returns whether |match| was promoted.
   bool PromoteMatchForInlineAutocomplete(const history::HistoryMatch& match,
                                          HistoryURLProviderParams* params);
 
@@ -255,7 +256,6 @@ class HistoryURLProvider : public HistoryProvider {
       history::URLDatabase* db,
       const HistoryURLProviderParams& params,
       bool have_what_you_typed_match,
-      const AutocompleteMatch& what_you_typed_match,
       history::HistoryMatches* matches);
 
   // Removes results that have been rarely typed or visited, and not any time
