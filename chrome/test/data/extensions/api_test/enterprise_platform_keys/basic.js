@@ -309,17 +309,26 @@ function runTests(userToken) {
             assertTrue(false, "Export failed: " + error);
           })
           .then(callbackPass(function(signature) {
+                  var importParams = {
+                    name: algorithm.name,
+                    // RsaHashedImportParams
+                    hash: {
+                      name: "SHA-1",
+                    }
+                  };
                   assertTrue(!!signature, "No signature.");
                   assertTrue(signature.length != 0, "Signature is empty.");
                   cachedSignature = signature;
                   return window.crypto.subtle.importKey(
-                      "spki", cachedSpki, algorithm, false, ["verify"]);
+                      "spki", cachedSpki, importParams, false, ["verify"]);
                 }),
                 function(error) { assertTrue(false, "Sign failed: " + error); })
           .then(callbackPass(function(webCryptoPublicKey) {
                   assertTrue(!!webCryptoPublicKey);
                   assertEq(algorithm.modulusLength,
                            webCryptoPublicKey.algorithm.modulusLength);
+                  assertEq(algorithm.publicExponent,
+                           webCryptoPublicKey.algorithm.publicExponent);
                   return window.crypto.subtle.verify(
                       algorithm, webCryptoPublicKey, cachedSignature, data);
                 }),
@@ -364,8 +373,8 @@ function runTests(userToken) {
     function algorithmParameterMissingModulusLength() {
       var algorithm = {
         name: "RSASSA-PKCS1-v1_5",
-        publicExponent:
-            new Uint8Array([0x01, 0x00, 0x01]),  // Equivalent to 65537
+        // Equivalent to 65537
+        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
         hash: {
           name: "SHA-1",
         }
@@ -386,8 +395,28 @@ function runTests(userToken) {
       var algorithm = {
         name: 'RSASSA-PKCS1-v1_5',
         modulusLength: 512,
-        publicExponent:
-            new Uint8Array([0x01, 0x00, 0x01]),  // Equivalent to 65537
+        // Equivalent to 65537
+        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+      };
+      userToken.subtleCrypto.generateKey(algorithm, false, ['sign']).then(
+          function(keyPair) {
+            assertTrue(false, 'generateKey was expected to fail');
+          },
+          callbackPass(function(error) {
+      assertEq(
+          new Error('Error: A required parameter was missing our out-of-range'),
+          error);
+      }));
+    },
+
+    // Call generate key with invalid algorithm parameter, unsupported public
+    // exponent.
+    function algorithmParameterUnsupportedPublicExponent() {
+      var algorithm = {
+        name: 'RSASSA-PKCS1-v1_5',
+        modulusLength: 512,
+        // Different from 65537.
+        publicExponent: new Uint8Array([0x01, 0x01]),
       };
       userToken.subtleCrypto.generateKey(algorithm, false, ['sign']).then(
           function(keyPair) {

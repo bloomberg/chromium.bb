@@ -142,7 +142,7 @@ class GenerateRSAKeyState : public NSSOperationState {
         from, base::Bind(callback_, public_key_spki_der, error_message));
   }
 
-  unsigned int modulus_length_;
+  const unsigned int modulus_length_;
 
  private:
   // Must be called on origin thread, use CallBack() therefore.
@@ -168,8 +168,8 @@ class SignState : public NSSOperationState {
         from, base::Bind(callback_, signature, error_message));
   }
 
-  std::string public_key_;
-  std::string data_;
+  const std::string public_key_;
+  const std::string data_;
 
  private:
   // Must be called on origin thread, use CallBack() therefore.
@@ -254,7 +254,8 @@ NSSOperationState::NSSOperationState()
 
 GenerateRSAKeyState::GenerateRSAKeyState(unsigned int modulus_length,
                                          const GenerateKeyCallback& callback)
-    : modulus_length_(modulus_length), callback_(callback) {
+    : modulus_length_(modulus_length),
+      callback_(callback) {
 }
 
 SignState::SignState(const std::string& public_key,

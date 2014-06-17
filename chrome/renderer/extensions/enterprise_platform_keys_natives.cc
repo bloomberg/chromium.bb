@@ -12,6 +12,7 @@
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebCryptoNormalize.h"
 
 namespace extensions {
@@ -48,6 +49,13 @@ scoped_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
   if (rsaHashedKeyGen) {
     dict->SetIntegerWithoutPathExpansion("modulusLength",
                                          rsaHashedKeyGen->modulusLengthBits());
+    const blink::WebVector<unsigned char>& public_exponent =
+        rsaHashedKeyGen->publicExponent();
+    dict->SetWithoutPathExpansion(
+        "publicExponent",
+        base::BinaryValue::CreateWithCopiedBuffer(
+            reinterpret_cast<const char*>(public_exponent.data()),
+            public_exponent.size()));
   }
   // Otherwise, |algorithm| is missing support here or no parameters were
   // required.

@@ -51,6 +51,25 @@ function catchInvalidTokenError(reject) {
   return false;
 }
 
+// Returns true if |array| is a BigInteger describing the standard public
+// exponent 65537. In particular, it ignores leading zeros as required by the
+// BigInteger definition in WebCrypto.
+function equalsStandardPublicExponent(array) {
+  var expected = [0x01, 0x00, 0x01];
+  if (array.length < expected.length)
+    return false;
+  for (var i = 0; i < array.length; i++) {
+    var expectedDigit = 0;
+    if (i < expected.length) {
+      // |expected| is symmetric, endianness doesn't matter.
+      expectedDigit = expected[i];
+    }
+    if (array[array.length - 1 - i] !== expectedDigit)
+      return false;
+  }
+  return true;
+}
+
 /**
  * Implementation of WebCrypto.SubtleCrypto used in enterprise.platformKeys.
  * @param {string} tokenId The id of the backing Token.
@@ -83,7 +102,9 @@ SubtleCryptoImpl.prototype.generateKey =
       throw CreateSyntaxError();
     }
 
-    if (normalizedAlgorithmParameters.name !== 'RSASSA-PKCS1-v1_5') {
+    if (normalizedAlgorithmParameters.name !== 'RSASSA-PKCS1-v1_5' ||
+        !equalsStandardPublicExponent(
+            normalizedAlgorithmParameters.publicExponent)) {
       // Note: This deviates from WebCrypto.SubtleCrypto.
       throw CreateNotSupportedError();
     }
