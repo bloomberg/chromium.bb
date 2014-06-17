@@ -182,9 +182,8 @@ source_set("browser") {
       "__ATLHOST_H__",
     ]
     deps += [
-      # TODO(GYP)
-      #"//third_party/iaccessible2",
-      #"//third_party/isimpledom",
+      "//third_party/iaccessible2",
+      "//third_party/isimpledom",
     ]
     libs += [
       "comctl32.lib",

@@ -24,6 +24,7 @@ def ExtractImportantEnvironment():
   current environment."""
   envvars_to_save = (
       'goma_.*',  # TODO(scottmg): This is ugly, but needed for goma.
+      'include',  # Needed by midl compiler.
       'path',
       'pathext',
       'systemroot',
