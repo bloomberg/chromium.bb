@@ -18,7 +18,7 @@ gen_spec() {
   # Trunk packages need to install to a custom path so they don't conflict with
   # release channel packages.
   local PACKAGE_FILENAME="${PACKAGE}"
-  if [ "$CHANNEL" = "trunk" ] || [ "$CHANNEL" = "asan" ]; then
+  if [ "$CHANNEL" != "stable" ]; then
     local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
     PACKAGE_FILENAME="${PACKAGE}-${CHANNEL}"
     local MENUNAME="${MENUNAME} (${CHANNEL})"
@@ -47,15 +47,8 @@ stage_install_rpm() {
     local DEFAULT_FLAGS="--user-data-dir=\"${SXS_USER_DATA_DIR}\""
 
     # Avoid file collisions between channels.
-    # TODO(phajdan.jr): Do that for all packages for SxS,
-    # http://crbug.com/38598 .
-    # We can't do this for now for all packages because of
-    # http://crbug.com/295103 , and ultimately http://crbug.com/22703 .
-    # Also see https://groups.google.com/a/chromium.org/d/msg/chromium-dev/DBEqOORaRiw/pE0bNI6h0kcJ .
-    if [ "$CHANNEL" = "trunk" ] || [ "$CHANNEL" = "asan" ]; then
-      local PACKAGE="${PACKAGE}-${CHANNEL}"
-      local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
-    fi
+    local PACKAGE="${PACKAGE}-${CHANNEL}"
+    local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
 
     # Make it possible to distinguish between menu entries
     # for different channels.
@@ -188,19 +181,23 @@ verify_channel() {
   case $CHANNEL in
     stable )
       CHANNEL=stable
-      REPLACES="unstable beta"
+      # TODO(phajdan.jr): Remove REPLACES completely.
+      REPLACES="dummy"
       ;;
     unstable|dev|alpha )
       CHANNEL=unstable
-      REPLACES="stable beta"
+      # TODO(phajdan.jr): Remove REPLACES completely.
+      REPLACES="dummy"
       ;;
     testing|beta )
       CHANNEL=beta
-      REPLACES="unstable stable"
+      # TODO(phajdan.jr): Remove REPLACES completely.
+      REPLACES="dummy"
       ;;
     trunk|asan )
       # This is a special package, mostly for development testing, so don't make
       # it replace any installed release packages.
+      # TODO(phajdan.jr): Remove REPLACES completely.
       REPLACES="dummy"
       # Setting this to empty will prevent it from updating any existing configs
       # from release packages.
