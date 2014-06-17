@@ -250,6 +250,9 @@ public class ImeAdapter {
         if (nativeImeAdapter != 0) {
             nativeAttachImeAdapter(mNativeImeAdapterAndroid);
         }
+        if (mTextInputType == sTextInputTypeNone) {
+            dismissInput(false);
+        }
     }
 
     /**
@@ -258,13 +261,7 @@ public class ImeAdapter {
      * @param nativeImeAdapter The pointer to the native ImeAdapter object.
      */
     public void attach(long nativeImeAdapter) {
-        if (mNativeImeAdapterAndroid != 0) {
-            nativeResetImeAdapter(mNativeImeAdapterAndroid);
-        }
-        mNativeImeAdapterAndroid = nativeImeAdapter;
-        if (nativeImeAdapter != 0) {
-            nativeAttachImeAdapter(mNativeImeAdapterAndroid);
-        }
+        attach(nativeImeAdapter, sTextInputTypeNone);
     }
 
     private void showKeyboard() {
