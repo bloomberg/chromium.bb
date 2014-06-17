@@ -577,9 +577,11 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingRegexp) {
   EXPECT_EQ(0U, result.size());
 }
 
-static bool AddTimestampedLogin(LoginDatabase* db, std::string url,
+static bool AddTimestampedLogin(LoginDatabase* db,
+                                std::string url,
                                 const std::string& unique_string,
-                                const base::Time& time) {
+                                const base::Time& time,
+                                bool date_is_creation) {
   // Example password form.
   PasswordForm form;
   form.origin = GURL(url + std::string("/LoginAuth"));
@@ -588,7 +590,10 @@ static bool AddTimestampedLogin(LoginDatabase* db, std::string url,
   form.password_element = ASCIIToUTF16(unique_string);
   form.submit_element = ASCIIToUTF16("signIn");
   form.signon_realm = url;
-  form.date_created = time;
+  if (date_is_creation)
+    form.date_created = time;
+  else
+    form.date_synced = time;
   return db->AddLogin(form) == AddChangeForForm(form);
 }
 
@@ -610,11 +615,11 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   base::TimeDelta one_day = base::TimeDelta::FromDays(1);
 
   // Create one with a 0 time.
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "1", "foo1", base::Time()));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "1", "foo1", base::Time(), true));
   // Create one for now and +/- 1 day.
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "2", "foo2", now - one_day));
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "3", "foo3", now));
-  EXPECT_TRUE(AddTimestampedLogin(&db_, "4", "foo4", now + one_day));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "2", "foo2", now - one_day, true));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "3", "foo3", now, true));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "4", "foo4", now + one_day, true));
 
   // Verify inserts worked.
   EXPECT_TRUE(db_.GetAutofillableLogins(&result));
@@ -639,6 +644,49 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
 
   // Verify nothing is left.
   EXPECT_TRUE(db_.GetAutofillableLogins(&result));
+  EXPECT_EQ(0U, result.size());
+}
+
+TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
+  ScopedVector<autofill::PasswordForm> result;
+
+  base::Time now = base::Time::Now();
+  base::TimeDelta one_day = base::TimeDelta::FromDays(1);
+
+  // Create one with a 0 time.
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "1", "foo1", base::Time(), false));
+  // Create one for now and +/- 1 day.
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "2", "foo2", now - one_day, false));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "3", "foo3", now, false));
+  EXPECT_TRUE(AddTimestampedLogin(&db_, "4", "foo4", now + one_day, false));
+
+  // Verify inserts worked.
+  EXPECT_TRUE(db_.GetAutofillableLogins(&result.get()));
+  EXPECT_EQ(4U, result.size());
+  result.clear();
+
+  // Get everything from today's date and on.
+  EXPECT_TRUE(db_.GetLoginsSyncedBetween(now, base::Time(), &result.get()));
+  ASSERT_EQ(2U, result.size());
+  EXPECT_EQ("3", result[0]->signon_realm);
+  EXPECT_EQ("4", result[1]->signon_realm);
+  result.clear();
+
+  // Delete everything from today's date and on.
+  db_.RemoveLoginsSyncedBetween(now, base::Time());
+
+  // Should have deleted half of what we inserted.
+  EXPECT_TRUE(db_.GetAutofillableLogins(&result.get()));
+  ASSERT_EQ(2U, result.size());
+  EXPECT_EQ("1", result[0]->signon_realm);
+  EXPECT_EQ("2", result[1]->signon_realm);
+  result.clear();
+
+  // Delete with 0 date (should delete all).
+  db_.RemoveLoginsSyncedBetween(base::Time(), now);
+
+  // Verify nothing is left.
+  EXPECT_TRUE(db_.GetAutofillableLogins(&result.get()));
   EXPECT_EQ(0U, result.size());
 }
 
@@ -814,6 +862,7 @@ TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
 
   // Simulate the user changing their password.
   complete_form.password_value = ASCIIToUTF16("new_password");
+  complete_form.date_synced = base::Time::Now();
   EXPECT_EQ(UpdateChangeForForm(complete_form), db_.UpdateLogin(complete_form));
 
   // Both still exist now.

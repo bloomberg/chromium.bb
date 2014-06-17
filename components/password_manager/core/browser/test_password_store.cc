@@ -111,6 +111,13 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginsCreatedBetweenImpl(
   return changes;
 }
 
+PasswordStoreChangeList TestPasswordStore::RemoveLoginsSyncedBetweenImpl(
+    base::Time begin,
+    base::Time end) {
+  PasswordStoreChangeList changes;
+  return changes;
+}
+
 bool TestPasswordStore::FillAutofillableLogins(
     std::vector<autofill::PasswordForm*>* forms) {
   return true;

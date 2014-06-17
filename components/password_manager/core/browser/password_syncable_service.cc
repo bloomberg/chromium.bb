@@ -221,6 +221,7 @@ syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
   ScopedVector<autofill::PasswordForm> new_sync_entries;
   ScopedVector<autofill::PasswordForm> updated_sync_entries;
   ScopedVector<autofill::PasswordForm> deleted_entries;
+  base::Time time_now = base::Time::Now();
 
   for (syncer::SyncChangeList::const_iterator it = change_list.begin();
        it != change_list.end();
@@ -231,10 +232,12 @@ syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
                           form.get());
     switch (it->change_type()) {
       case syncer::SyncChange::ACTION_ADD: {
+        form->date_synced = time_now;
         new_sync_entries.push_back(form.release());
         break;
       }
       case syncer::SyncChange::ACTION_UPDATE: {
+        form->date_synced = time_now;
         updated_sync_entries.push_back(form.release());
         break;
       }
@@ -368,10 +371,12 @@ void PasswordSyncableService::CreateOrUpdateEntry(
   // Check whether the data from sync is already in the password store.
   PasswordEntryMap::iterator existing_local_entry_iter =
       umatched_data_from_password_db->find(tag);
+  base::Time time_now = base::Time::Now();
   if (existing_local_entry_iter == umatched_data_from_password_db->end()) {
     // The sync data is not in the password store, so we need to create it in
     // the password store. Add the entry to the new_entries list.
     scoped_ptr<autofill::PasswordForm> new_password(new autofill::PasswordForm);
+    new_password->date_synced = time_now;
     PasswordFromSpecifics(password_specifics, new_password.get());
     new_sync_entries->push_back(new_password.release());
   } else {
@@ -384,6 +389,7 @@ void PasswordSyncableService::CreateOrUpdateEntry(
       case IDENTICAL:
         break;
       case SYNC:
+        new_password->date_synced = time_now;
         updated_sync_entries->push_back(new_password.release());
         break;
       case LOCAL:

@@ -87,17 +87,26 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
       const autofill::PasswordForm& form,
       password_manager::PasswordStoreChangeList* changes) OVERRIDE;
   virtual bool RemoveLogin(const autofill::PasswordForm& form) OVERRIDE;
-  virtual bool RemoveLoginsCreatedBetween(
-      const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
+  virtual bool RemoveLoginsCreatedBetween(base::Time delete_begin,
+                                          base::Time delete_end) OVERRIDE;
+  virtual bool RemoveLoginsSyncedBetween(
+      base::Time delete_begin,
+      base::Time delete_end,
+      password_manager::PasswordStoreChangeList* changes) OVERRIDE;
   virtual bool GetLogins(const autofill::PasswordForm& form,
                          PasswordFormList* forms) OVERRIDE;
-  virtual bool GetLoginsCreatedBetween(const base::Time& get_begin,
-                                       const base::Time& get_end,
+  virtual bool GetLoginsCreatedBetween(base::Time get_begin,
+                                       base::Time get_end,
                                        PasswordFormList* forms) OVERRIDE;
   virtual bool GetAutofillableLogins(PasswordFormList* forms) OVERRIDE;
   virtual bool GetBlacklistLogins(PasswordFormList* forms) OVERRIDE;
 
  private:
+  enum TimestampToCompare {
+    CREATION_TIMESTAMP,
+    SYNC_TIMESTAMP,
+  };
+
   // Adds a login form without checking for one to replace first.
   bool RawAddLogin(const autofill::PasswordForm& form);
 
@@ -106,6 +115,20 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
 
   // Helper for GetLoginsCreatedBetween().
   bool GetAllLogins(PasswordFormList* forms);
+
+  // Retrieves password created/synced in the time interval. Returns |true| if
+  // the operation succeeded.
+  bool GetLoginsBetween(base::Time get_begin,
+                        base::Time get_end,
+                        TimestampToCompare date_to_compare,
+                        PasswordFormList* forms);
+
+  // Removes password created/synced in the time interval. Returns |true| if the
+  // operation succeeded. |changes| will contain the changes applied.
+  bool RemoveLoginsBetween(base::Time get_begin,
+                           base::Time get_end,
+                           TimestampToCompare date_to_compare,
+                           password_manager::PasswordStoreChangeList* changes);
 
   // Generates a profile-specific app string based on profile_id_.
   std::string GetProfileSpecificAppString() const;

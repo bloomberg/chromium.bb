@@ -965,6 +965,40 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
   return changes;
 }
 
+PasswordStoreChangeList PasswordStoreMac::RemoveLoginsSyncedBetweenImpl(
+    base::Time delete_begin,
+    base::Time delete_end) {
+  PasswordStoreChangeList changes;
+  std::vector<PasswordForm*> forms;
+  if (login_metadata_db_->GetLoginsSyncedBetween(
+          delete_begin, delete_end, &forms)) {
+    if (login_metadata_db_->RemoveLoginsSyncedBetween(delete_begin,
+                                                      delete_end)) {
+      // We can't delete from the Keychain by date because we may be sharing
+      // items with database entries that weren't in the delete range. Instead,
+      // we find all the Keychain items we own but aren't using any more and
+      // delete those.
+      std::vector<PasswordForm*> orphan_keychain_forms =
+          GetUnusedKeychainForms();
+      // This is inefficient, since we have to re-look-up each keychain item
+      // one at a time to delete it even though the search step already had a
+      // list of Keychain item references. If this turns out to be noticeably
+      // slow we'll need to rearchitect to allow the search and deletion steps
+      // to share.
+      RemoveKeychainForms(orphan_keychain_forms);
+      STLDeleteElements(&orphan_keychain_forms);
+
+      for (std::vector<PasswordForm*>::const_iterator it = forms.begin();
+           it != forms.end();
+           ++it) {
+        changes.push_back(
+            PasswordStoreChange(PasswordStoreChange::REMOVE, **it));
+      }
+    }
+  }
+  return changes;
+}
+
 void PasswordStoreMac::GetLoginsImpl(
     const autofill::PasswordForm& form,
     AuthorizationPromptPolicy prompt_policy,

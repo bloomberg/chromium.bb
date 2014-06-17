@@ -68,9 +68,15 @@ class FailingBackend : public PasswordStoreX::NativeBackend {
   }
   virtual bool RemoveLogin(const PasswordForm& form) OVERRIDE { return false; }
 
-  virtual bool RemoveLoginsCreatedBetween(
-      const base::Time& delete_begin,
-      const base::Time& delete_end) OVERRIDE {
+  virtual bool RemoveLoginsCreatedBetween(base::Time delete_begin,
+                                          base::Time delete_end) OVERRIDE {
+    return false;
+  }
+
+  virtual bool RemoveLoginsSyncedBetween(
+      base::Time delete_begin,
+      base::Time delete_end,
+      password_manager::PasswordStoreChangeList* changes) OVERRIDE {
     return false;
   }
 
@@ -79,8 +85,8 @@ class FailingBackend : public PasswordStoreX::NativeBackend {
     return false;
   }
 
-  virtual bool GetLoginsCreatedBetween(const base::Time& get_begin,
-                                       const base::Time& get_end,
+  virtual bool GetLoginsCreatedBetween(base::Time get_begin,
+                                       base::Time get_end,
                                        PasswordFormList* forms) OVERRIDE {
     return false;
   }
@@ -121,13 +127,28 @@ class MockBackend : public PasswordStoreX::NativeBackend {
     return true;
   }
 
-  virtual bool RemoveLoginsCreatedBetween(
-      const base::Time& delete_begin,
-      const base::Time& delete_end) OVERRIDE {
+  virtual bool RemoveLoginsCreatedBetween(base::Time delete_begin,
+                                          base::Time delete_end) OVERRIDE {
     for (size_t i = 0; i < all_forms_.size(); ++i) {
       if (delete_begin <= all_forms_[i].date_created &&
           (delete_end.is_null() || all_forms_[i].date_created < delete_end))
         erase(i--);
+    }
+    return true;
+  }
+
+  virtual bool RemoveLoginsSyncedBetween(
+      base::Time delete_begin,
+      base::Time delete_end,
+      password_manager::PasswordStoreChangeList* changes) OVERRIDE {
+    DCHECK(changes);
+    for (size_t i = 0; i < all_forms_.size(); ++i) {
+      if (delete_begin <= all_forms_[i].date_synced &&
+          (delete_end.is_null() || all_forms_[i].date_synced < delete_end)) {
+        changes->push_back(password_manager::PasswordStoreChange(
+            password_manager::PasswordStoreChange::REMOVE, all_forms_[i]));
+        erase(i--);
+      }
     }
     return true;
   }
@@ -140,8 +161,8 @@ class MockBackend : public PasswordStoreX::NativeBackend {
     return true;
   }
 
-  virtual bool GetLoginsCreatedBetween(const base::Time& get_begin,
-                                       const base::Time& get_end,
+  virtual bool GetLoginsCreatedBetween(base::Time get_begin,
+                                       base::Time get_end,
                                        PasswordFormList* forms) OVERRIDE {
     for (size_t i = 0; i < all_forms_.size(); ++i)
       if (get_begin <= all_forms_[i].date_created &&

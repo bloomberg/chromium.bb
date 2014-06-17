@@ -110,6 +110,21 @@ PasswordStoreChangeList PasswordStoreX::RemoveLoginsCreatedBetweenImpl(
   return changes;
 }
 
+PasswordStoreChangeList PasswordStoreX::RemoveLoginsSyncedBetweenImpl(
+    base::Time delete_begin,
+    base::Time delete_end) {
+  CheckMigration();
+  PasswordStoreChangeList changes;
+  if (use_native_backend() &&
+      backend_->RemoveLoginsSyncedBetween(delete_begin, delete_end, &changes)) {
+    allow_fallback_ = false;
+  } else if (allow_default_store()) {
+    changes = PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(delete_begin,
+                                                                  delete_end);
+  }
+  return changes;
+}
+
 namespace {
 struct LoginLessThan {
   bool operator()(const PasswordForm* a, const PasswordForm* b) {

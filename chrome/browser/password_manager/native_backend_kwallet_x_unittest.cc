@@ -171,12 +171,17 @@ class NativeBackendKWalletTestBase : public testing::Test {
                                 const PasswordForm& actual);
   static void CheckPasswordChanges(const PasswordStoreChangeList& expected,
                                    const PasswordStoreChangeList& actual);
+  static void CheckPasswordChangesWithResult(
+      const PasswordStoreChangeList* expected,
+      const PasswordStoreChangeList* actual,
+      bool result);
 
   PasswordForm old_form_google_;
   PasswordForm form_google_;
   PasswordForm form_isc_;
 };
 
+// static
 void NativeBackendKWalletTestBase::CheckPasswordForm(
     const PasswordForm& expected, const PasswordForm& actual) {
   EXPECT_EQ(expected.origin, actual.origin);
@@ -197,6 +202,7 @@ void NativeBackendKWalletTestBase::CheckPasswordForm(
   EXPECT_EQ(expected.date_synced, actual.date_synced);
 }
 
+// static
 void NativeBackendKWalletTestBase::CheckPasswordChanges(
     const PasswordStoreChangeList& expected,
     const PasswordStoreChangeList& actual) {
@@ -205,6 +211,15 @@ void NativeBackendKWalletTestBase::CheckPasswordChanges(
     EXPECT_EQ(expected[i].type(), actual[i].type());
     CheckPasswordForm(expected[i].form(), actual[i].form());
   }
+}
+
+// static
+void NativeBackendKWalletTestBase::CheckPasswordChangesWithResult(
+    const PasswordStoreChangeList* expected,
+    const PasswordStoreChangeList* actual,
+    bool result) {
+  EXPECT_TRUE(result);
+  CheckPasswordChanges(*expected, *actual);
 }
 
 class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
@@ -790,6 +805,73 @@ TEST_F(NativeBackendKWalletTest, ListLoginsAppends) {
   ExpectationArray expected;
   expected.push_back(make_pair(std::string(form_google_.signon_realm), forms));
   CheckPasswordForms("Chrome Form Data (42)", expected);
+}
+
+TEST_F(NativeBackendKWalletTest, RemoveLoginsSyncedBetween) {
+  NativeBackendKWalletStub backend(42);
+  EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
+
+  base::Time now = base::Time::Now();
+  base::Time next_day = now + base::TimeDelta::FromDays(1);
+  form_google_.date_synced = now;
+  form_isc_.date_synced = next_day;
+  form_google_.date_created = base::Time();
+  form_isc_.date_created = base::Time();
+
+  BrowserThread::PostTask(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                 base::Unretained(&backend),
+                 form_google_));
+  BrowserThread::PostTask(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                 base::Unretained(&backend),
+                 form_isc_));
+
+  PasswordStoreChangeList expected_changes;
+  expected_changes.push_back(
+      PasswordStoreChange(PasswordStoreChange::REMOVE, form_google_));
+  PasswordStoreChangeList changes;
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(&NativeBackendKWalletStub::RemoveLoginsSyncedBetween,
+                 base::Unretained(&backend),
+                 base::Time(),
+                 next_day,
+                 &changes),
+      base::Bind(&NativeBackendKWalletTest::CheckPasswordChangesWithResult,
+                 &expected_changes,
+                 &changes));
+  RunDBThread();
+
+  std::vector<const PasswordForm*> forms;
+  forms.push_back(&form_isc_);
+  ExpectationArray expected;
+  expected.push_back(make_pair(std::string(form_isc_.signon_realm), forms));
+  CheckPasswordForms("Chrome Form Data (42)", expected);
+
+  // Remove form_isc_.
+  expected_changes.clear();
+  expected_changes.push_back(
+      PasswordStoreChange(PasswordStoreChange::REMOVE, form_isc_));
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(&NativeBackendKWalletStub::RemoveLoginsSyncedBetween,
+                 base::Unretained(&backend),
+                 next_day,
+                 base::Time(),
+                 &changes),
+      base::Bind(&NativeBackendKWalletTest::CheckPasswordChangesWithResult,
+                 &expected_changes,
+                 &changes));
+  RunDBThread();
+
+  CheckPasswordForms("Chrome Form Data (42)", ExpectationArray());
 }
 
 // TODO(mdm): add more basic tests here at some point.

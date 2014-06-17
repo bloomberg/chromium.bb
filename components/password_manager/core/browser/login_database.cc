@@ -354,19 +354,20 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   // Replacement is necessary to deal with updating imported credentials. See
   // crbug.com/349138 for details.
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
-      "UPDATE OR REPLACE logins SET "
-      "action_url = ?, "
-      "password_value = ?, "
-      "ssl_valid = ?, "
-      "preferred = ?, "
-      "possible_usernames = ?, "
-      "times_used = ?, "
-      "submit_element = ? "
-      "WHERE origin_url = ? AND "
-      "username_element = ? AND "
-      "username_value = ? AND "
-      "password_element = ? AND "
-      "signon_realm = ?"));
+                                          "UPDATE OR REPLACE logins SET "
+                                          "action_url = ?, "
+                                          "password_value = ?, "
+                                          "ssl_valid = ?, "
+                                          "preferred = ?, "
+                                          "possible_usernames = ?, "
+                                          "times_used = ?, "
+                                          "submit_element = ?, "
+                                          "date_synced = ? "
+                                          "WHERE origin_url = ? AND "
+                                          "username_element = ? AND "
+                                          "username_value = ? AND "
+                                          "password_element = ? AND "
+                                          "signon_realm = ?"));
   s.BindString(0, form.action.spec());
   s.BindBlob(1, encrypted_password.data(),
              static_cast<int>(encrypted_password.length()));
@@ -376,12 +377,13 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   s.BindBlob(4, pickle.data(), pickle.size());
   s.BindInt(5, form.times_used);
   s.BindString16(6, form.submit_element);
+  s.BindInt64(7, form.date_synced.ToInternalValue());
 
-  s.BindString(7, form.origin.spec());
-  s.BindString16(8, form.username_element);
-  s.BindString16(9, form.username_value);
-  s.BindString16(10, form.password_element);
-  s.BindString(11, form.signon_realm);
+  s.BindString(8, form.origin.spec());
+  s.BindString16(9, form.username_element);
+  s.BindString16(10, form.username_value);
+  s.BindString16(11, form.password_element);
+  s.BindString(12, form.signon_realm);
 
   if (!s.Run())
     return PasswordStoreChangeList();
@@ -421,6 +423,19 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(const base::Time delete_begin,
   s.BindInt64(0, delete_begin.ToTimeT());
   s.BindInt64(1, delete_end.is_null() ? std::numeric_limits<int64>::max()
                                       : delete_end.ToTimeT());
+
+  return s.Run();
+}
+
+bool LoginDatabase::RemoveLoginsSyncedBetween(base::Time delete_begin,
+                                              base::Time delete_end) {
+  sql::Statement s(db_.GetCachedStatement(
+      SQL_FROM_HERE,
+      "DELETE FROM logins WHERE date_synced >= ? AND date_synced < ?"));
+  s.BindInt64(0, delete_begin.ToInternalValue());
+  s.BindInt64(1,
+              delete_end.is_null() ? base::Time::Max().ToInternalValue()
+                                   : delete_end.ToInternalValue());
 
   return s.Run();
 }
@@ -589,6 +604,38 @@ bool LoginDatabase::GetLoginsCreatedBetween(
   s.BindInt64(0, begin.ToTimeT());
   s.BindInt64(1, end.is_null() ? std::numeric_limits<int64>::max()
                                : end.ToTimeT());
+
+  while (s.Step()) {
+    scoped_ptr<PasswordForm> new_form(new PasswordForm());
+    EncryptionResult result = InitPasswordFormFromStatement(new_form.get(), s);
+    if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
+      return false;
+    if (result == ENCRYPTION_RESULT_ITEM_FAILURE)
+      continue;
+    DCHECK(result == ENCRYPTION_RESULT_SUCCESS);
+    forms->push_back(new_form.release());
+  }
+  return s.Succeeded();
+}
+
+bool LoginDatabase::GetLoginsSyncedBetween(
+    const base::Time begin,
+    const base::Time end,
+    std::vector<autofill::PasswordForm*>* forms) const {
+  DCHECK(forms);
+  sql::Statement s(db_.GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT origin_url, action_url, username_element, username_value, "
+      "password_element, password_value, submit_element, signon_realm, "
+      "ssl_valid, preferred, date_created, blacklisted_by_user, "
+      "scheme, password_type, possible_usernames, times_used, form_data, "
+      "use_additional_auth, date_synced FROM logins "
+      "WHERE date_synced >= ? AND date_synced < ?"
+      "ORDER BY origin_url"));
+  s.BindInt64(0, begin.ToInternalValue());
+  s.BindInt64(1,
+              end.is_null() ? base::Time::Max().ToInternalValue()
+                            : end.ToInternalValue());
 
   while (s.Step()) {
     scoped_ptr<PasswordForm> new_form(new PasswordForm());

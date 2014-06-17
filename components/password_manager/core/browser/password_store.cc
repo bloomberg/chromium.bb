@@ -112,6 +112,17 @@ void PasswordStore::RemoveLoginsCreatedBetween(const base::Time& delete_begin,
                             this, delete_begin, delete_end)));
 }
 
+void PasswordStore::RemoveLoginsSyncedBetween(base::Time delete_begin,
+                                              base::Time delete_end) {
+  ScheduleTask(
+      base::Bind(&PasswordStore::WrapModificationTask,
+                 this,
+                 base::Bind(&PasswordStore::RemoveLoginsSyncedBetweenImpl,
+                            this,
+                            delete_begin,
+                            delete_end)));
+}
+
 void PasswordStore::GetLogins(
     const PasswordForm& form,
     AuthorizationPromptPolicy prompt_policy,

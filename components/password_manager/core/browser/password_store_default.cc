@@ -70,6 +70,25 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
   return changes;
 }
 
+PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(
+    base::Time delete_begin,
+    base::Time delete_end) {
+  std::vector<PasswordForm*> forms;
+  PasswordStoreChangeList changes;
+  if (login_db_->GetLoginsSyncedBetween(delete_begin, delete_end, &forms)) {
+    if (login_db_->RemoveLoginsSyncedBetween(delete_begin, delete_end)) {
+      for (std::vector<PasswordForm*>::const_iterator it = forms.begin();
+           it != forms.end();
+           ++it) {
+        changes.push_back(
+            PasswordStoreChange(PasswordStoreChange::REMOVE, **it));
+      }
+    }
+  }
+  STLDeleteElements(&forms);
+  return changes;
+}
+
 void PasswordStoreDefault::GetLoginsImpl(
     const autofill::PasswordForm& form,
     AuthorizationPromptPolicy prompt_policy,

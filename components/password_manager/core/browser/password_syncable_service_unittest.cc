@@ -82,6 +82,25 @@ SyncChange CreateSyncChange(const autofill::PasswordForm& password,
   return SyncChange(FROM_HERE, type, data);
 }
 
+class FormFinder {
+ public:
+  explicit FormFinder(const autofill::PasswordForm& form) : form_(form) {}
+  ~FormFinder() {}
+
+  bool operator()(const autofill::PasswordForm& form) const;
+
+ private:
+  const autofill::PasswordForm form_;
+};
+
+bool FormFinder::operator()(const autofill::PasswordForm& form) const {
+  return form.origin == form_.origin &&
+         form.username_element == form_.username_element &&
+         form.username_value == form_.username_value &&
+         form.password_element == form_.password_element &&
+         form.signon_realm == form_.signon_realm;
+}
+
 // A testable implementation of the |PasswordSyncableService| that mocks
 // out all interaction with the password database.
 class MockPasswordSyncableService : public PasswordSyncableService {
@@ -267,9 +286,15 @@ PasswordStoreChangeList PasswordStoreDataVerifier::VerifyChange(
     PasswordStoreChange::Type type,
     const autofill::PasswordForm& password,
     std::vector<autofill::PasswordForm>* password_list) {
-  std::vector<autofill::PasswordForm>::iterator it =
-      std::find(password_list->begin(), password_list->end(), password);
+  std::vector<autofill::PasswordForm>::iterator it = std::find_if(
+      password_list->begin(), password_list->end(), FormFinder(password));
   EXPECT_NE(password_list->end(), it);
+  PasswordsEqual(GetPasswordSpecifics(SyncDataFromPassword(*it)),
+                 GetPasswordSpecifics(SyncDataFromPassword(password)));
+  if (type != PasswordStoreChange::REMOVE) {
+    EXPECT_FALSE(password.date_synced.is_null()) << password.signon_realm;
+    EXPECT_FALSE(password.date_synced.is_max()) << password.signon_realm;
+  }
   password_list->erase(it);
   return PasswordStoreChangeList(1, PasswordStoreChange(type, password));
 }

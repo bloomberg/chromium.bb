@@ -64,6 +64,16 @@ class PasswordStoreConsumerHelper
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreConsumerHelper);
 };
 
+// PasswordForm::date_synced is a local field. Therefore it may be different
+// across clients.
+void ClearSyncDateField(std::vector<PasswordForm>* forms) {
+  for (std::vector<PasswordForm>::iterator it = forms->begin();
+       it != forms->end();
+       ++it) {
+    it->date_synced = base::Time();
+  }
+}
+
 }  // namespace
 
 namespace passwords_helper {
@@ -137,6 +147,7 @@ bool ProfileContainsSamePasswordFormsAsVerifier(int index) {
   std::vector<PasswordForm> forms;
   GetLogins(GetVerifierPasswordStore(), verifier_forms);
   GetLogins(GetPasswordStore(index), forms);
+  ClearSyncDateField(&forms);
   bool result =
       password_manager::ContainsSamePasswordForms(verifier_forms, forms);
   if (!result) {
@@ -159,6 +170,8 @@ bool ProfilesContainSamePasswordForms(int index_a, int index_b) {
   std::vector<PasswordForm> forms_b;
   GetLogins(GetPasswordStore(index_a), forms_a);
   GetLogins(GetPasswordStore(index_b), forms_b);
+  ClearSyncDateField(&forms_a);
+  ClearSyncDateField(&forms_b);
   bool result = password_manager::ContainsSamePasswordForms(forms_a, forms_b);
   if (!result) {
     LOG(ERROR) << "Password forms in Profile" << index_a << ":";

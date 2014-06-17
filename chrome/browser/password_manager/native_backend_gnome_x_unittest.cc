@@ -309,6 +309,13 @@ void CheckPasswordChanges(const PasswordStoreChangeList& expected_list,
   }
 }
 
+void CheckPasswordChangesWithResult(const PasswordStoreChangeList* expected,
+                                    const PasswordStoreChangeList* actual,
+                                    bool result) {
+  EXPECT_TRUE(result);
+  CheckPasswordChanges(*expected, *actual);
+}
+
 }  // anonymous namespace
 
 class NativeBackendGnomeTest : public testing::Test {
@@ -946,6 +953,67 @@ TEST_F(NativeBackendGnomeTest, ListLoginsAppends) {
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
     CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
+}
+
+TEST_F(NativeBackendGnomeTest, RemoveLoginsSyncedBetween) {
+  NativeBackendGnome backend(42);
+  backend.Init();
+
+  base::Time now = base::Time::Now();
+  base::Time next_day = now + base::TimeDelta::FromDays(1);
+  form_google_.date_synced = now;
+  form_isc_.date_synced = next_day;
+  form_google_.date_created = base::Time();
+  form_isc_.date_created = base::Time();
+
+  BrowserThread::PostTask(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                 base::Unretained(&backend),
+                 form_google_));
+  BrowserThread::PostTask(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                 base::Unretained(&backend),
+                 form_isc_));
+
+  PasswordStoreChangeList expected_changes;
+  expected_changes.push_back(
+      PasswordStoreChange(PasswordStoreChange::REMOVE, form_google_));
+  PasswordStoreChangeList changes;
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(&NativeBackendGnome::RemoveLoginsSyncedBetween,
+                 base::Unretained(&backend),
+                 base::Time(),
+                 next_day,
+                 &changes),
+      base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
+  RunBothThreads();
+
+  EXPECT_EQ(1u, mock_keyring_items.size());
+  if (mock_keyring_items.size() > 0)
+    CheckMockKeyringItem(&mock_keyring_items[0], form_isc_, "chrome-42");
+
+  // Remove form_isc_.
+  expected_changes.clear();
+  expected_changes.push_back(
+      PasswordStoreChange(PasswordStoreChange::REMOVE, form_isc_));
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(&NativeBackendGnome::RemoveLoginsSyncedBetween,
+                 base::Unretained(&backend),
+                 next_day,
+                 base::Time(),
+                 &changes),
+      base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
+  RunBothThreads();
+
+  EXPECT_EQ(0u, mock_keyring_items.size());
 }
 
 // TODO(mdm): add more basic tests here at some point.
