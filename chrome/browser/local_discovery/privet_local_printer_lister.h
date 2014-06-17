@@ -57,10 +57,11 @@ class PrivetLocalPrinterLister : PrivetDeviceLister::Delegate {
   typedef std::map<std::string, linked_ptr<DeviceContext> > DeviceContextMap;
 
   void OnPrivetInfoDone(DeviceContext* context,
-                        std::string name,
+                        const std::string& name,
                         const base::DictionaryValue* json_value);
 
-  void OnPrivetResolved(scoped_ptr<PrivetHTTPClient> http_client);
+  void OnPrivetResolved(const std::string& name,
+                        scoped_ptr<PrivetHTTPClient> http_client);
 
   scoped_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory_;
   DeviceContextMap device_contexts_;

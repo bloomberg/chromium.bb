@@ -117,6 +117,11 @@ void PrivetNotificationsListener::DeviceChanged(
 
 void PrivetNotificationsListener::CreateInfoOperation(
     scoped_ptr<PrivetHTTPClient> http_client) {
+  if (!http_client) {
+    // Do nothing if resolution fails.
+    return;
+  }
+
   std::string name = http_client->GetName();
   DeviceContextMap::iterator device_iter = devices_seen_.find(name);
   DCHECK(device_iter != devices_seen_.end());
