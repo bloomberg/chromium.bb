@@ -197,7 +197,7 @@ def ExtractAll(zip_path, path=None, no_clobber=True):
 def DoZip(inputs, output, base_dir):
   with zipfile.ZipFile(output, 'w') as outfile:
     for f in inputs:
-      CheckZipPath(f)
+      CheckZipPath(os.path.relpath(f, base_dir))
       outfile.write(f, os.path.relpath(f, base_dir))
 
 
