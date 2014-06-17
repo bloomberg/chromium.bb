@@ -1577,12 +1577,27 @@ bool TileManager::EvictionTileIterator::EvictionOrderComparator::operator()(
       a_tile->priority_for_tree_priority(tree_priority_);
   const TilePriority& b_priority =
       b_tile->priority_for_tree_priority(tree_priority_);
-  bool prioritize_low_res = tree_priority_ != SMOOTHNESS_TAKES_PRIORITY;
+  bool prioritize_low_res = tree_priority_ == SMOOTHNESS_TAKES_PRIORITY;
 
-  if (b_priority.resolution != a_priority.resolution) {
-    return (prioritize_low_res && b_priority.resolution == LOW_RESOLUTION) ||
-           (!prioritize_low_res && b_priority.resolution == HIGH_RESOLUTION) ||
-           (a_priority.resolution == NON_IDEAL_RESOLUTION);
+  // Now we have to return true iff b is lower priority than a.
+
+  // If the bin is the same but the resolution is not, then the order will be
+  // determined by whether we prioritize low res or not.
+  // TODO(vmpstr): Remove this when TilePriority is no longer a member of Tile
+  // class but instead produced by the iterators.
+  if (b_priority.priority_bin == a_priority.priority_bin &&
+      b_priority.resolution != a_priority.resolution) {
+    // Non ideal resolution should be sorted higher than other resolutions.
+    if (a_priority.resolution == NON_IDEAL_RESOLUTION)
+      return false;
+
+    if (b_priority.resolution == NON_IDEAL_RESOLUTION)
+      return true;
+
+    if (prioritize_low_res)
+      return a_priority.resolution == LOW_RESOLUTION;
+
+    return a_priority.resolution == HIGH_RESOLUTION;
   }
   return a_priority.IsHigherPriorityThan(b_priority);
 }
