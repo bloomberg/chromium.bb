@@ -428,13 +428,6 @@ source_set("core_generated") {
   configs += [ ":core_include_dirs" ]
   include_dirs = [
     "$root_gen_dir/blink",
-    # FIXME: Remove these once the bindings script generates qualified
-    # includes for these correctly. (Sequences don"t work yet.)
-    bindings_v8_custom_dir,
-    "html",
-    "html/shadow",
-    "inspector",
-    "svg",
   ]
 
   cflags = []

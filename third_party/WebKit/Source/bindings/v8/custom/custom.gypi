@@ -4,7 +4,6 @@
 
 {
     'variables': {
-        'bindings_v8_custom_dir': '.',
         'bindings_v8_custom_files': [
             'V8ArrayBufferCustom.cpp',
             'V8ArrayBufferCustom.h',

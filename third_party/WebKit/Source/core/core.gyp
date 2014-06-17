@@ -251,15 +251,6 @@
       ],
       'include_dirs': [
         '<@(webcore_include_dirs)',
-
-        # FIXME: Remove these once the bindings script generates qualified
-        # includes for these correctly. (Sequences don't work yet.)
-        # http://crbug.com/377364
-        '<(bindings_v8_custom_dir)',
-        'html',
-        'html/shadow',
-        'inspector',
-        'svg',
       ],
       'sources': [
         # FIXME: should be bindings_core_v8_files http://crbug.com/358074
