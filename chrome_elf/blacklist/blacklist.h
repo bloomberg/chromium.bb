@@ -21,16 +21,16 @@ extern const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount];
 extern NtMapViewOfSectionFunction g_nt_map_view_of_section_func;
 #endif
 
-// Attempts to leave a beacon in the current user's registry hive.
-// If the blacklist beacon doesn't say it is enabled or there are any other
-// errors when creating the beacon, returns false. Otherwise returns true.
-// The intent of the beacon is to act as an extra failure mode protection
-// whereby if Chrome for some reason fails to start during blacklist setup,
-// it will skip blacklisting on the subsequent run.
+// Attempts to leave a beacon in the current user's registry hive. If the
+// blacklist beacon doesn't say it is enabled or there are any other errors when
+// creating the beacon, returns false. Otherwise returns true. The intent of the
+// beacon is to act as an extra failure mode protection whereby if Chrome
+// repeatedly fails to start during blacklist setup, it will skip blacklisting
+// on the subsequent run.
 bool LeaveSetupBeacon();
 
-// Looks for the beacon that LeaveSetupBeacon() creates and resets it to
-// to show the setup was successful.
+// Looks for the setup running beacon that LeaveSetupBeacon() creates and resets
+// it to to show the setup was successful.
 // Returns true if the beacon was successfully set to BLACKLIST_ENABLED.
 bool ResetBeacon();
 

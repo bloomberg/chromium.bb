@@ -40,11 +40,14 @@ enum BlacklistSetupEventType {
   // The blacklist setup code failed to execute.
   BLACKLIST_SETUP_FAILED,
 
-  // The blacklist thunk setup code failed to execute.
+  // Deprecated. The blacklist thunk setup code failed to execute.
   BLACKLIST_THUNK_SETUP_FAILED,
 
-  // The blacklist interception code failed to execute.
+  // Deprecated. The blacklist interception code failed to execute.
   BLACKLIST_INTERCEPTION_FAILED,
+
+  // The blacklist was disabled for this run (after it failed too many times).
+  BLACKLIST_SETUP_DISABLED,
 
   // Always keep this at the end.
   BLACKLIST_SETUP_EVENT_MAX,
@@ -140,26 +143,21 @@ void BrowserBlacklistBeaconSetup() {
   blacklist_registry_key.ReadValueDW(blacklist::kBeaconState, &blacklist_state);
 
   if (blacklist_state == blacklist::BLACKLIST_ENABLED) {
+    // The blacklist was enabled successfully so we record the event (along with
+    // the number of failed previous attempts).
     RecordBlacklistSetupEvent(BLACKLIST_SETUP_RAN_SUCCESSFULLY);
-  } else {
-    switch (blacklist_state) {
-      case blacklist::BLACKLIST_SETUP_RUNNING:
-        RecordBlacklistSetupEvent(BLACKLIST_SETUP_FAILED);
-        break;
-      case blacklist::BLACKLIST_THUNK_SETUP:
-        RecordBlacklistSetupEvent(BLACKLIST_THUNK_SETUP_FAILED);
-        break;
-      case blacklist::BLACKLIST_INTERCEPTING:
-        RecordBlacklistSetupEvent(BLACKLIST_INTERCEPTION_FAILED);
-        break;
-    }
-
-    // Since some part of the blacklist failed, mark it as disabled
-    // for this version.
-    if (blacklist_state != blacklist::BLACKLIST_DISABLED) {
-      blacklist_registry_key.WriteValue(blacklist::kBeaconState,
-                                        blacklist::BLACKLIST_DISABLED);
-    }
+    DWORD attempt_count = 0;
+    blacklist_registry_key.ReadValueDW(blacklist::kBeaconAttemptCount,
+                                       &attempt_count);
+    UMA_HISTOGRAM_COUNTS_100("Blacklist.RetryAttempts.Success", attempt_count);
+  } else if (blacklist_state == blacklist::BLACKLIST_SETUP_FAILED) {
+    // We can set the state to disabled without checking that the maximum number
+    // of attempts was exceeded because blacklist.cc has already done this.
+    RecordBlacklistSetupEvent(BLACKLIST_SETUP_FAILED);
+    blacklist_registry_key.WriteValue(blacklist::kBeaconState,
+                                      blacklist::BLACKLIST_DISABLED);
+  } else if (blacklist_state == blacklist::BLACKLIST_DISABLED) {
+    RecordBlacklistSetupEvent(BLACKLIST_SETUP_DISABLED);
   }
 
   // Find the last recorded blacklist version.
@@ -168,7 +166,8 @@ void BrowserBlacklistBeaconSetup() {
                                    &blacklist_version);
 
   if (blacklist_version != TEXT(CHROME_VERSION_STRING)) {
-    // The blacklist hasn't been enabled for this version yet, so enable it.
+    // The blacklist hasn't been enabled for this version yet, so enable it
+    // and reset the failure count to zero.
     LONG set_version = blacklist_registry_key.WriteValue(
         blacklist::kBeaconVersion,
         TEXT(CHROME_VERSION_STRING));
@@ -176,6 +175,9 @@ void BrowserBlacklistBeaconSetup() {
     LONG set_state = blacklist_registry_key.WriteValue(
         blacklist::kBeaconState,
         blacklist::BLACKLIST_ENABLED);
+
+    blacklist_registry_key.WriteValue(blacklist::kBeaconAttemptCount,
+                                      static_cast<DWORD>(0));
 
     // Only report the blacklist as getting setup when both registry writes
     // succeed, since otherwise the blacklist wasn't properly setup.

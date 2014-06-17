@@ -117,55 +117,29 @@ TEST_F(ChromeBlacklistTrialTest, VerifyFirstRun) {
   ASSERT_EQ(version, GetBlacklistVersion());
 }
 
-TEST_F(ChromeBlacklistTrialTest, SetupFailed) {
-  // Set the registry to indicate that the blacklist setup is running,
-  // which means it failed to run correctly last time for this version.
+TEST_F(ChromeBlacklistTrialTest, BlacklistFailed) {
+  // Ensure when the blacklist set up failed we set the state to disabled for
+  // future runs.
   blacklist_registry_key_->WriteValue(blacklist::kBeaconVersion,
                                       TEXT(CHROME_VERSION_STRING));
   blacklist_registry_key_->WriteValue(blacklist::kBeaconState,
-                                      blacklist::BLACKLIST_SETUP_RUNNING);
-
-   BrowserBlacklistBeaconSetup();
-
-  // Since the blacklist setup failed, it should now be disabled.
-  ASSERT_EQ(blacklist::BLACKLIST_DISABLED, GetBlacklistState());
-}
-
-TEST_F(ChromeBlacklistTrialTest, ThunkSetupFailed) {
-  // Set the registry to indicate that the blacklist thunk setup is running,
-  // which means it failed to run correctly last time for this version.
-  blacklist_registry_key_->WriteValue(blacklist::kBeaconVersion,
-                                      TEXT(CHROME_VERSION_STRING));
-  blacklist_registry_key_->WriteValue(blacklist::kBeaconState,
-                                      blacklist::BLACKLIST_THUNK_SETUP);
+                                      blacklist::BLACKLIST_SETUP_FAILED);
 
   BrowserBlacklistBeaconSetup();
 
-  // Since the blacklist thunk setup failed, it should now be disabled.
-  ASSERT_EQ(blacklist::BLACKLIST_DISABLED, GetBlacklistState());
-}
-
-TEST_F(ChromeBlacklistTrialTest, InterceptionFailed) {
-  // Set the registry to indicate that an interception is running,
-  // which means it failed to run correctly last time for this version.
-  blacklist_registry_key_->WriteValue(blacklist::kBeaconVersion,
-                                      TEXT(CHROME_VERSION_STRING));
-  blacklist_registry_key_->WriteValue(blacklist::kBeaconState,
-                                      blacklist::BLACKLIST_INTERCEPTING);
-
-  BrowserBlacklistBeaconSetup();
-
-  // Since an interception failed, the blacklist should now be disabled.
   ASSERT_EQ(blacklist::BLACKLIST_DISABLED, GetBlacklistState());
 }
 
 TEST_F(ChromeBlacklistTrialTest, VersionChanged) {
-  // Mark the blacklist as disabled for an older version, so it should
-  // get enabled for this new version.
+  // Mark the blacklist as disabled for an older version, it should
+  // get enabled for this new version.  Also record a non-zero number of
+  // setup failures, which should be reset to zero.
   blacklist_registry_key_->WriteValue(blacklist::kBeaconVersion,
                                       L"old_version");
   blacklist_registry_key_->WriteValue(blacklist::kBeaconState,
                                       blacklist::BLACKLIST_DISABLED);
+  blacklist_registry_key_->WriteValue(blacklist::kBeaconAttemptCount,
+                                      blacklist::kBeaconMaxAttempts);
 
   BrowserBlacklistBeaconSetup();
 
@@ -175,6 +149,12 @@ TEST_F(ChromeBlacklistTrialTest, VersionChanged) {
   chrome::VersionInfo version_info;
   base::string16 expected_version(base::UTF8ToUTF16(version_info.Version()));
   ASSERT_EQ(expected_version, GetBlacklistVersion());
+
+  // The counter should be reset.
+  DWORD attempt_count = blacklist::kBeaconMaxAttempts;
+  blacklist_registry_key_->ReadValueDW(blacklist::kBeaconAttemptCount,
+                                       &attempt_count);
+  ASSERT_EQ(static_cast<DWORD>(0), attempt_count);
 }
 
 TEST_F(ChromeBlacklistTrialTest, AddFinchBlacklistToRegistry) {

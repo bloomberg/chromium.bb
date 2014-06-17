@@ -7,6 +7,8 @@
 #ifndef CHROME_ELF_CHROME_ELF_CONSTANTS_H_
 #define CHROME_ELF_CHROME_ELF_CONSTANTS_H_
 
+#include <windows.h>
+
 // directory names
 extern const wchar_t kAppDataDirName[];
 extern const wchar_t kCanaryAppDataDirName[];
@@ -25,20 +27,21 @@ extern const wchar_t kRegistryFinchListPath[];
 // The properties for the blacklist beacon.
 extern const wchar_t kBeaconVersion[];
 extern const wchar_t kBeaconState[];
+extern const wchar_t kBeaconAttemptCount[];
+
+// The number of failures that can occur on startup with the beacon enabled
+// before we give up and turn off the blacklist.
+extern const DWORD kBeaconMaxAttempts;
 
 // The states for the blacklist setup code.
 enum BlacklistState {
   BLACKLIST_DISABLED = 0,
   BLACKLIST_ENABLED,
-  // The blacklist setup code is running. If this is still set at startup,
-  // it means the last setup crashed.
+  // The blacklist setup code is running. If this is the state at startup, it
+  // means the last setup crashed.
   BLACKLIST_SETUP_RUNNING,
-  // The blacklist thunk setup code is running. If this is still set at startup,
-  // it means the last setup crashed during thunk setup.
-  BLACKLIST_THUNK_SETUP,
-  // The blacklist code is currently intercepting MapViewOfSection. If this is
-  // still set at startup, it means we crashed during interception.
-  BLACKLIST_INTERCEPTING,
+  // If the last setup crashed, we reassign the state to failed.
+  BLACKLIST_SETUP_FAILED,
   // Always keep this at the end.
   BLACKLIST_STATE_MAX,
 };

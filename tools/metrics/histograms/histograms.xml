@@ -1852,12 +1852,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Blacklist.RetryAttempts.Success">
+  <owner>csharp@chromium.org</owner>
+  <owner>krstnmnlsn@chromium.org</owner>
+  <summary>
+    Records the number of attempts needed before the blacklist is properly set
+    up. This is logged immediately after a successful setup.
+  </summary>
+</histogram>
+
 <histogram name="Blacklist.Setup" enum="BlacklistSetup">
   <owner>csharp@chromium.org</owner>
   <summary>
     Records the successes and failures when running the browser blacklist setup
     code. Used to determine if the blacklist is working as intended during
-    startup(since the blacklist runs before crash reporting is set up).  This
+    startup (since the blacklist runs before crash reporting is set up). This
     only occurs on Windows.
   </summary>
 </histogram>
@@ -33661,6 +33670,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="Blacklist failed."/>
   <int value="3" label="Blacklist thunk setup failed."/>
   <int value="4" label="Blacklist interception failed."/>
+  <int value="5" label="Blacklist disabled."/>
 </enum>
 
 <enum name="BluetoothPairingMethod" type="int">

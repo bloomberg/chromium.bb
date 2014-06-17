@@ -59,20 +59,54 @@ namespace {
 // determine if the blacklist is enabled for them.
 bool g_blacklist_initialized = false;
 
-// Record that the thunk setup completed succesfully and close the registry
-// key handle since it is no longer needed.
-void RecordSuccessfulThunkSetup(HKEY* key) {
-  if (key != NULL) {
-    DWORD blacklist_state = blacklist::BLACKLIST_SETUP_RUNNING;
-    ::RegSetValueEx(*key,
-                    blacklist::kBeaconState,
-                    0,
-                    REG_DWORD,
-                    reinterpret_cast<LPBYTE>(&blacklist_state),
-                    sizeof(blacklist_state));
-    ::RegCloseKey(*key);
-    key = NULL;
+// Helper to set DWORD registry values.
+DWORD SetDWValue(HKEY* key, const wchar_t* property, DWORD value) {
+  return ::RegSetValueEx(*key,
+                         property,
+                         0,
+                         REG_DWORD,
+                         reinterpret_cast<LPBYTE>(&value),
+                         sizeof(value));
+}
+
+bool GenerateStateFromBeaconAndAttemptCount(HKEY* key, DWORD blacklist_state) {
+  LONG result = 0;
+  if (blacklist_state == blacklist::BLACKLIST_SETUP_RUNNING) {
+    // Some part of the blacklist setup failed last time.  If this has occured
+    // blacklist::kBeaconMaxAttempts times in a row we switch the state to
+    // failed and skip setting up the blacklist.
+    DWORD attempt_count = 0;
+    DWORD attempt_count_size = sizeof(attempt_count);
+    result = ::RegQueryValueEx(*key,
+                               blacklist::kBeaconAttemptCount,
+                               0,
+                               NULL,
+                               reinterpret_cast<LPBYTE>(&attempt_count),
+                               &attempt_count_size);
+
+    if (result == ERROR_FILE_NOT_FOUND)
+      attempt_count = 0;
+    else if (result != ERROR_SUCCESS)
+      return false;
+
+    ++attempt_count;
+    SetDWValue(key, blacklist::kBeaconAttemptCount, attempt_count);
+
+    if (attempt_count >= blacklist::kBeaconMaxAttempts) {
+      blacklist_state = blacklist::BLACKLIST_SETUP_FAILED;
+      SetDWValue(key, blacklist::kBeaconState, blacklist_state);
+      return false;
+    }
+  } else if (blacklist_state == blacklist::BLACKLIST_ENABLED) {
+    // If the blacklist succeeded on the previous run reset the failure
+    // counter.
+    result =
+        SetDWValue(key, blacklist::kBeaconAttemptCount, static_cast<DWORD>(0));
+    if (result != ERROR_SUCCESS) {
+      return false;
+    }
   }
+  return true;
 }
 
 }  // namespace
@@ -102,7 +136,7 @@ bool LeaveSetupBeacon() {
     return false;
 
   // Retrieve the current blacklist state.
-  DWORD blacklist_state = BLACKLIST_DISABLED;
+  DWORD blacklist_state = BLACKLIST_STATE_MAX;
   DWORD blacklist_state_size = sizeof(blacklist_state);
   DWORD type = 0;
   result = ::RegQueryValueEx(key,
@@ -112,21 +146,18 @@ bool LeaveSetupBeacon() {
                              reinterpret_cast<LPBYTE>(&blacklist_state),
                              &blacklist_state_size);
 
-  if (blacklist_state != BLACKLIST_ENABLED ||
-      result != ERROR_SUCCESS || type != REG_DWORD) {
+  if (blacklist_state == BLACKLIST_DISABLED || result != ERROR_SUCCESS ||
+      type != REG_DWORD) {
     ::RegCloseKey(key);
     return false;
   }
 
-  // Mark the blacklist setup code as running so if it crashes the blacklist
-  // won't be enabled for the next run.
-  blacklist_state = BLACKLIST_SETUP_RUNNING;
-  result = ::RegSetValueEx(key,
-                           kBeaconState,
-                           0,
-                           REG_DWORD,
-                           reinterpret_cast<LPBYTE>(&blacklist_state),
-                           sizeof(blacklist_state));
+  if (!GenerateStateFromBeaconAndAttemptCount(&key, blacklist_state)) {
+    ::RegCloseKey(key);
+    return false;
+  }
+
+  result = SetDWValue(&key, kBeaconState, BLACKLIST_SETUP_RUNNING);
   ::RegCloseKey(key);
 
   return (result == ERROR_SUCCESS);
@@ -147,15 +178,28 @@ bool ResetBeacon() {
   if (result != ERROR_SUCCESS)
     return false;
 
-  DWORD blacklist_state = BLACKLIST_ENABLED;
-  result = ::RegSetValueEx(key,
-                           kBeaconState,
-                           0,
-                           REG_DWORD,
-                           reinterpret_cast<LPBYTE>(&blacklist_state),
-                           sizeof(blacklist_state));
-  ::RegCloseKey(key);
+  DWORD blacklist_state = BLACKLIST_STATE_MAX;
+  DWORD blacklist_state_size = sizeof(blacklist_state);
+  DWORD type = 0;
+  result = ::RegQueryValueEx(key,
+                             kBeaconState,
+                             0,
+                             &type,
+                             reinterpret_cast<LPBYTE>(&blacklist_state),
+                             &blacklist_state_size);
 
+  if (result != ERROR_SUCCESS || type != REG_DWORD) {
+    ::RegCloseKey(key);
+    return false;
+  }
+
+  // Reaching this point with the setup running state means the setup
+  // succeeded and so we reset to enabled.  Any other state indicates that setup
+  // was skipped; in that case we leave the state alone for later recording.
+  if (blacklist_state == BLACKLIST_SETUP_RUNNING)
+    result = SetDWValue(&key, kBeaconState, BLACKLIST_ENABLED);
+
+  ::RegCloseKey(key);
   return (result == ERROR_SUCCESS);
 }
 
@@ -253,7 +297,8 @@ bool Initialize(bool force) {
   if (IsNonBrowserProcess())
     return false;
 
-  // Check to see if a beacon is present, abort if so.
+  // Check to see if the blacklist beacon is still set to running (indicating a
+  // failure) or disabled, and abort if so.
   if (!force && !LeaveSetupBeacon())
     return false;
 
@@ -268,30 +313,6 @@ bool Initialize(bool force) {
   if (!thunk)
     return false;
 
-  // Record that we are starting the thunk setup code.
-  HKEY key = NULL;
-  DWORD disposition = 0;
-  LONG result = ::RegCreateKeyEx(HKEY_CURRENT_USER,
-                                 kRegistryBeaconPath,
-                                 0,
-                                 NULL,
-                                 REG_OPTION_NON_VOLATILE,
-                                 KEY_QUERY_VALUE | KEY_SET_VALUE,
-                                 NULL,
-                                 &key,
-                                 &disposition);
-  if (result == ERROR_SUCCESS) {
-    DWORD blacklist_state = BLACKLIST_THUNK_SETUP;
-    ::RegSetValueEx(key,
-                    kBeaconState,
-                    0,
-                    REG_DWORD,
-                    reinterpret_cast<LPBYTE>(&blacklist_state),
-                    sizeof(blacklist_state));
-  } else {
-    key = NULL;
-  }
-
   BYTE* thunk_storage = reinterpret_cast<BYTE*>(&g_thunk_storage);
 
   // Mark the thunk storage as readable and writeable, since we
@@ -301,7 +322,6 @@ bool Initialize(bool force) {
                       sizeof(g_thunk_storage),
                       PAGE_EXECUTE_READWRITE,
                       &old_protect)) {
-    RecordSuccessfulThunkSetup(&key);
     return false;
   }
 
@@ -352,8 +372,6 @@ bool Initialize(bool force) {
                                                       sizeof(g_thunk_storage),
                                                       PAGE_EXECUTE_READ,
                                                       &old_protect);
-
-  RecordSuccessfulThunkSetup(&key);
 
   AddDllsFromRegistryToBlacklist();
 
