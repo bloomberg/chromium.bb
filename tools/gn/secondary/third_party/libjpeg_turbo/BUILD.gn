@@ -9,10 +9,15 @@ if (cpu_arch == "arm") {
   import("//build/config/arm.gni")
 }
 
-source_set("simd") {
+if (cpu_arch == "x86" || cpu_arch == "x64") {
+
+import("//third_party/yasm/yasm_assemble.gni")
+
+yasm_assemble("simd_asm") {
+  defines = []
+
   if (cpu_arch == "x86") {
     sources = [
-      "simd/jsimd_i386.c",
       "simd/jccolmmx.asm",
       "simd/jccolss2.asm",
       "simd/jcgrammx.asm",
@@ -47,9 +52,11 @@ source_set("simd") {
       "simd/jisseflt.asm",
       "simd/jsimdcpu.asm",
     ]
+    defines += [
+      "__x86__",
+    ]
   } else if (cpu_arch == "x64") {
     sources = [
-      "simd/jsimd_x86_64.c",
       "simd/jccolss2-64.asm",
       "simd/jcgrass2-64.asm",
       "simd/jcqnts2f-64.asm",
@@ -65,6 +72,52 @@ source_set("simd") {
       "simd/jiss2fst-64.asm",
       "simd/jiss2int-64.asm",
       "simd/jiss2red-64.asm",
+    ]
+    defines += [
+      "__x86_64__",
+    ]
+  }
+
+  if (is_win) {
+    defines += [
+      "MSVC",
+    ]
+    include_dirs = [ "win" ]
+    if (cpu_arch == "x86") {
+      defines += [
+        "WIN32",
+      ]
+    } else {
+      defines += [
+        "WIN64",
+      ]
+    }
+  } else if (is_mac) {
+    defines += [
+      "MACHO",
+    ]
+    include_dirs = [ "mac" ]
+  } else if (is_linux) {
+    defines += [
+      "ELF",
+    ]
+    include_dirs = [ "linux" ]
+  }
+
+}
+
+}
+
+source_set("simd") {
+  if (cpu_arch == "x86") {
+    deps = [ ":simd_asm" ]
+    sources = [
+      "simd/jsimd_i386.c",
+    ]
+  } else if (cpu_arch == "x64") {
+    deps = [ ":simd_asm" ]
+    sources = [
+      "simd/jsimd_x86_64.c",
     ]
   } else if (cpu_arch == "arm" && arm_version >= 7 &&
              (arm_use_neon || arm_optionally_use_neon)) {

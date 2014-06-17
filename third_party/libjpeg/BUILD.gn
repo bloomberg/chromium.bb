@@ -5,6 +5,10 @@
 # Do not use the targets in this file unless you need a certain libjpeg
 # implementation. Use the meta target //third_party:jpeg instead.
 
+config("libjpeg_config") {
+  include_dirs = [ "." ]
+}
+
 source_set("libjpeg") {
   sources = [
     "jcapimin.c",
@@ -66,5 +70,10 @@ source_set("libjpeg") {
   defines = [ "NO_GETENV" ]  # getenv() is not thread-safe.
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [
+    ":libjpeg_config",
+    "//build/config/compiler:no_chromium_code",
+  ]
+
+  direct_dependent_configs = [ ":libjpeg_config" ]
 }

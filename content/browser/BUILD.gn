@@ -334,7 +334,6 @@ source_set("browser") {
       "web_contents/touch_editable_impl_aura.h",
       "renderer_host/ui_events_helper.cc",
       "renderer_host/ui_events_helper.h",
-      "context_factory.cc",
     ]
   }
 

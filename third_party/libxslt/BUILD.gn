@@ -67,7 +67,7 @@ static_library("libxslt") {
   } else if (is_win) {
     include_dirs = [ "win32" ]
   } else if (is_mac) {
-    include_dits = [ "mac" ]
+    include_dirs = [ "mac" ]
   }
 
   if (is_clang) {

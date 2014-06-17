@@ -204,7 +204,10 @@ component("gl") {
       "scoped_cgl.h",
     ]
 
-    libs = [ "OpenGL.framework" ]
+    libs = [
+      "IOSurface.framework",
+      "OpenGL.framework",
+    ]
   }
   if (is_android) {
     sources += [
