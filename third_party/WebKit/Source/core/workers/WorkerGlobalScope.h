@@ -34,7 +34,6 @@
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowBase64.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/workers/WorkerConsole.h"
 #include "core/workers/WorkerEventQueue.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
@@ -121,11 +120,6 @@ namespace WebCore {
         virtual double timerAlignmentInterval() const OVERRIDE FINAL;
 
         WorkerInspectorController* workerInspectorController() { return m_workerInspectorController.get(); }
-        // These methods are used for GC marking. See JSWorkerGlobalScope::visitChildrenVirtual(SlotVisitor&) in
-        // JSWorkerGlobalScopeCustom.cpp.
-        WorkerConsole* optionalConsole() const { return m_console.get(); }
-        WorkerNavigator* optionalNavigator() const { return m_navigator.get(); }
-        WorkerLocation* optionalLocation() const { return m_location.get(); }
 
         bool isClosing() { return m_closing; }
 
