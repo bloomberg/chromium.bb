@@ -168,6 +168,10 @@ void SessionCrashedBubbleView::ShowForReal(
       BrowserView::GetBrowserViewForBrowser(browser)->toolbar()->app_menu();
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
+
+  if (!web_contents)
+    return;
+
   SessionCrashedBubbleView* crash_bubble =
       new SessionCrashedBubbleView(anchor_view, browser, web_contents,
                                    offer_uma_optin);
