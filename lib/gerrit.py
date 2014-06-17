@@ -71,18 +71,25 @@ class GerritHelper(object):
     host = constants.GOB_HOST % ('%s-review' % gob)
     return cls(host, gob, **kwargs)
 
-  def SetReviewers(self, change, add=(), remove=()):
+  def SetReviewers(self, change, add=(), remove=(), dryrun=False):
     """Modify the list of reviewers on a gerrit change.
 
     Args:
       change: ChangeId or change number for a gerrit review.
       add: Sequence of email addresses of reviewers to add.
       remove: Sequence of email addresses of reviewers to remove.
+      dryrun: If True, only print what would have been done.
     """
     if add:
-      gob_util.AddReviewers(self.host, change, add)
+      if dryrun:
+        cros_build_lib.Info('Would have added %s to "%s"', add, change)
+      else:
+        gob_util.AddReviewers(self.host, change, add)
     if remove:
-      gob_util.RemoveReviewers(self.host, change, remove)
+      if dryrun:
+        cros_build_lib.Info('Would have removed %s to "%s"', remove, change)
+      else:
+        gob_util.RemoveReviewers(self.host, change, remove)
 
   def GetChangeDetail(self, change_num):
     """Return detailed information about a gerrit change.
@@ -314,7 +321,7 @@ class GerritHelper(object):
       return
     if dryrun:
       if msg:
-        cros_build_lib.Info('Would have add message "%s" to change "%s".',
+        cros_build_lib.Info('Would have added message "%s" to change "%s".',
                             msg, change)
       if labels:
         for key, val in labels.iteritems():

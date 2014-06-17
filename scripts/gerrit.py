@@ -67,6 +67,31 @@ def limits(cls):
   return lims
 
 
+# TODO: This func really needs to be merged into the core gerrit logic.
+def GetGerrit(opts, cl=None):
+  """Auto pick the right gerrit instance based on the |cl|
+
+  Args:
+    opts: The general options object.
+    cl: A CL taking one of the forms: 1234 *1234 chromium:1234
+
+  Returns:
+    A tuple of a gerrit object and a sanitized CL #.
+  """
+  gob = opts.gob
+  if not cl is None:
+    if cl.startswith('*'):
+      gob = constants.INTERNAL_GOB_INSTANCE
+      cl = cl[1:]
+    elif ':' in cl:
+      gob, cl = cl.split(':', 1)
+
+  if not gob in opts.gerrit:
+    opts.gerrit[gob] = gerrit.GetGerritHelper(gob=gob, print_cmd=opts.debug)
+
+  return (opts.gerrit[gob], cl)
+
+
 def GetApprovalSummary(_opts, cls):
   """Return a dict of the most important approvals"""
   approvs = dict([(x, '') for x in GERRIT_SUMMARY_CATS])
@@ -141,7 +166,8 @@ def FilteredQuery(opts, query):
   """Query gerrit and filter/clean up the results"""
   ret = []
 
-  for cl in opts.gerrit.Query(query, raw=True, bypass_cache=False):
+  helper, _ = GetGerrit(opts)
+  for cl in helper.Query(query, raw=True, bypass_cache=False):
     # Gerrit likes to return a stats record too.
     if not 'project' in cl:
       continue
@@ -161,15 +187,6 @@ def FilteredQuery(opts, query):
   else:
     key = lambda x: x[opts.sort]
   return sorted(ret, key=key)
-
-
-def ChangeNumberToCommit(opts, idx):
-  """Given a gerrit CL #, return the revision info
-
-  This is the form that the gerrit ssh interface expects.
-  """
-  cl = opts.gerrit.QuerySingleRecord(idx, raw=True)
-  return cl['currentPatchSet']['revision']
 
 
 def IsApprover(cl, users):
@@ -219,57 +236,63 @@ def UserActMine(opts):
 
 def UserActInspect(opts, *args):
   """Inspect CL number <n> [n ...]"""
-  for idx in args:
-    cl = FilteredQuery(opts, idx)
+  for arg in args:
+    cl = FilteredQuery(opts, arg)
     if cl:
       PrintCl(opts, cl[0], None)
     else:
-      print('no results found for CL %s' % idx)
+      print('no results found for CL %s' % arg)
 
 
 def UserActReview(opts, *args):
   """Mark CL <n> [n ...] with code review status <-2,-1,0,1,2>"""
   num = args[-1]
-  for idx in args[:-1]:
-    opts.gerrit.SetReview(idx, labels={'Code-Review': num}, dryrun=opts.dryrun)
+  for arg in args[:-1]:
+    helper, cl = GetGerrit(opts, arg)
+    helper.SetReview(cl, labels={'Code-Review': num}, dryrun=opts.dryrun)
 UserActReview.arg_min = 2
 
 
 def UserActVerify(opts, *args):
   """Mark CL <n> [n ...] with verify status <-1,0,1>"""
   num = args[-1]
-  for idx in args[:-1]:
-    opts.gerrit.SetReview(idx, labels={'Verified': num}, dryrun=opts.dryrun)
+  for arg in args[:-1]:
+    helper, cl = GetGerrit(opts, arg)
+    helper.SetReview(cl, labels={'Verified': num}, dryrun=opts.dryrun)
 UserActVerify.arg_min = 2
 
 
 def UserActReady(opts, *args):
   """Mark CL <n> [n ...] with ready status <0,1,2>"""
   num = args[-1]
-  for idx in args[:-1]:
-    opts.gerrit.SetReview(idx, labels={'Commit-Queue': num}, dryrun=opts.dryrun)
+  for arg in args[:-1]:
+    helper, cl = GetGerrit(opts, arg)
+    helper.SetReview(cl, labels={'Commit-Queue': num}, dryrun=opts.dryrun)
 UserActReady.arg_min = 2
 
 
 def UserActSubmit(opts, *args):
   """Submit CL <n> [n ...]"""
-  for idx in args:
-    opts.gerrit.SubmitChange(idx, dryrun=opts.dryrun)
+  for arg in args:
+    helper, cl = GetGerrit(opts, arg)
+    helper.SubmitChange(cl, dryrun=opts.dryrun)
 
 
 def UserActAbandon(opts, *args):
   """Abandon CL <n> [n ...]"""
-  for idx in args:
-    opts.gerrit.AbandonChange(idx, dryrun=opts.dryrun)
+  for arg in args:
+    helper, cl = GetGerrit(opts, arg)
+    helper.AbandonChange(cl, dryrun=opts.dryrun)
 
 
 def UserActRestore(opts, *args):
   """Restore CL <n> [n ...] that was abandoned"""
-  for idx in args:
-    opts.gerrit.RestoreChange(idx, dryrun=opts.dryrun)
+  for arg in args:
+    helper, cl = GetGerrit(opts, arg)
+    helper.RestoreChange(cl, dryrun=opts.dryrun)
 
 
-def UserActReviewers(opts, idx, *args):
+def UserActReviewers(opts, cl, *args):
   """Add/remove reviewers' emails for CL <n> (prepend with '~' to remove)"""
   emails = args
   # Allow for optional leading '~'.
@@ -289,19 +312,22 @@ def UserActReviewers(opts, idx, *args):
         'Invalid email address(es): %s' % ', '.join(invalid_list))
 
   if add_list or remove_list:
-    opts.gerrit.SetReviewers(idx, add=add_list, remove=remove_list,
-                             dryrun=opts.dryrun)
+    helper, cl = GetGerrit(opts, cl)
+    helper.SetReviewers(cl, add=add_list, remove=remove_list,
+                        dryrun=opts.dryrun)
 
 
-def UserActMessage(opts, idx, message):
+def UserActMessage(opts, cl, message):
   """Add a message to CL <n>"""
-  opts.gerrit.SetReview(idx, msg=message, dryrun=opts.dryrun)
+  helper, cl = GetGerrit(opts, cl)
+  helper.SetReview(cl, msg=message, dryrun=opts.dryrun)
 
 
 def UserActDeletedraft(opts, *args):
   """Delete draft patch set <n> [n ...]"""
-  for idx in args:
-    opts.gerrit.DeleteDraft(idx, dryrun=opts.dryrun)
+  for arg in args:
+    helper, cl = GetGerrit(opts, arg)
+    helper.DeleteDraft(cl, dryrun=opts.dryrun)
 
 
 def main(argv):
@@ -327,7 +353,10 @@ Example:
   $ gerrit inspect *28123   # Inspect CL 28123 on the internal gerrit.
   $ gerrit verify 28123 1   # Mark CL 28123 as verified (+1).
 Scripting:
-  $ gerrit ready `gerrit --raw mine` 1   # Mark *ALL* of your CLs ready.
+  $ gerrit ready `gerrit --raw mine` 1      # Mark *ALL* of your public CLs \
+ready.
+  $ gerrit ready `gerrit --raw -i mine` 1   # Mark *ALL* of your internal CLs \
+ready.
 
 Actions:"""
   indent = max([len(x) - len(act_pfx) for x in actions])
@@ -337,9 +366,11 @@ Actions:"""
 
   parser = commandline.ArgumentParser(usage=usage)
   parser.add_argument('-i', '--internal', dest='gob', action='store_const',
+                      default=constants.EXTERNAL_GOB_INSTANCE,
                       const=constants.INTERNAL_GOB_INSTANCE,
                       help='Query internal Chromium Gerrit instance')
   parser.add_argument('-g', '--gob',
+                      default=constants.EXTERNAL_GOB_INSTANCE,
                       help='Gerrit (on borg) instance to query (default: %s)' %
                            (constants.EXTERNAL_GOB_INSTANCE))
   parser.add_argument('--sort', default='number',
@@ -354,30 +385,17 @@ Actions:"""
   parser.add_argument('args', nargs='+')
   opts = parser.parse_args(argv)
 
+  # A cache of gerrit helpers we'll load on demand.
+  opts.gerrit = {}
+  opts.Freeze()
+
   # pylint: disable=W0603
   global COLOR
   COLOR = terminal.Color(enabled=opts.color)
 
-  # TODO: This sucks.  We assume that all actions which take an argument are
-  # a CL #.  Or at least, there's no other reason for it to start with a *.
-  # We do this to automatically select internal vs external gerrit as this
-  # convention is encoded in much of our system.  However, the rest of this
-  # script doesn't expect (or want) the leading *.
-  args = opts.args
-  if len(args) > 1:
-    if args[1][0] == '*':
-      opts.gob = constants.INTERNAL_GOB_INSTANCE
-      args[1] = args[1][1:]
-
-  if opts.gob is None:
-    opts.gob = constants.EXTERNAL_GOB_INSTANCE
-
-  opts.gerrit = gerrit.GetGerritHelper(gob=opts.gob, print_cmd=opts.debug)
-  opts.Freeze()
-
   # Now look up the requested user action and run it.
-  cmd = args[0].lower()
-  args = args[1:]
+  cmd = opts.args[0].lower()
+  args = opts.args[1:]
   functor = globals().get(act_pfx + cmd.capitalize())
   if functor:
     argspec = inspect.getargspec(functor)
