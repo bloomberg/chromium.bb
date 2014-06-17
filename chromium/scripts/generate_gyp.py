@@ -131,7 +131,7 @@ GN_SOURCE_END = """]
 """
 
 # Controls GYP conditional stanza generation.
-SUPPORTED_ARCHITECTURES = ['ia32', 'arm', 'arm-neon']
+SUPPORTED_ARCHITECTURES = ['ia32', 'arm', 'arm-neon', 'x64']
 SUPPORTED_TARGETS = ['Chromium', 'Chrome', 'ChromiumOS', 'ChromeOS']
 # Mac doesn't have any platform specific files, so just use linux and win.
 SUPPORTED_PLATFORMS = ['linux', 'win']
@@ -364,7 +364,7 @@ class SourceSet(object):
     # Only build a non-trivial conditional if it's a subset of all supported
     # architectures.
     arch_conditions = []
-    if self.architectures == set(SUPPORTED_ARCHITECTURES + ['x64']):
+    if self.architectures == set(SUPPORTED_ARCHITECTURES):
       arch_conditions.append('1')
     else:
       for arch in self.architectures:
@@ -430,7 +430,7 @@ class SourceSet(object):
     # architectures. targets. Arch conditions look like:
     #   (cpu_arch == "arm" || (cpu_arch == "arm" && arm_use_neon))
     arch_conditions = []
-    if self.architectures != set(SUPPORTED_ARCHITECTURES + ['x64']):
+    if self.architectures != set(SUPPORTED_ARCHITECTURES):
       for arch in self.architectures:
         if arch == 'arm-neon':
           arch_conditions.append('(cpu_arch == "arm" && arm_use_neon)')
@@ -642,11 +642,6 @@ def main():
         # Generate the set of source files to build said target.
         s = GetSourceFileSet(object_to_sources, object_files)
         sets.append(SourceSet(s, set([arch]), set([target]), set([platform])))
-
-        # x64 and ia32 are the same file set.
-        if arch == 'ia32':
-          sets.append(SourceSet(s, set(['x64']), set([target]),
-                      set([platform])))
 
   sets = CreatePairwiseDisjointSets(sets)
   # Open for writing.
