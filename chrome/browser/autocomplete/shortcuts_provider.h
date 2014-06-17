@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/shortcuts_backend.h"
-#include "chrome/browser/autocomplete/url_prefix.h"
 
 class Profile;
 class ShortcutsProviderTest;

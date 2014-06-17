@@ -1,6 +1,9 @@
 blundell@chromium.org
 jochen@chromium.org
 
+per-file autocomplete.gypi=pkasting@chromium.org
+per-file autocomplete.gypi=mpearson@chromium.org
+
 per-file autofill*=dhollowa@chromium.org
 per-file autofill*=isherman@chromium.org
 per-file autofill*=kaiwang@chromium.org

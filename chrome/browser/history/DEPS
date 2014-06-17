@@ -20,7 +20,6 @@ include_rules = [
   "!chrome/browser/autocomplete/autocomplete_result.h",
   "!chrome/browser/autocomplete/history_provider_util.h",
   "!chrome/browser/autocomplete/history_url_provider.h",
-  "!chrome/browser/autocomplete/url_prefix.h",
   "!chrome/browser/bookmarks/bookmark_model_factory.h",
   "!chrome/browser/browser_process.h",
   "!chrome/browser/chromeos/login/existing_user_controller.h",
@@ -47,6 +46,7 @@ include_rules = [
   "!chrome/browser/ui/profile_error_dialog.h",
   "!chrome/browser/ui/webui/ntp/most_visited_handler.h",
   "!chrome/browser/ui/webui/ntp/new_tab_ui.h",
+  "!components/autocomplete/url_prefix.h",
   "!components/bookmarks/browser/bookmark_model.h",
   "!components/bookmarks/browser/bookmark_utils.h",
 ]

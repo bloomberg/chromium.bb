@@ -11,6 +11,7 @@
   },
   'includes': [
     'auto_login_parser.gypi',
+    'autocomplete.gypi',
     'autofill.gypi',
     'bookmarks.gypi',
     'breakpad.gypi',

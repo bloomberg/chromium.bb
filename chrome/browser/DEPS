@@ -8,6 +8,7 @@ include_rules = [
   "+chrome_elf/create_file",
   "+chrome_elf/dll_hash",
   "+chromeos",
+  "+components/autocomplete",
   "+components/autofill/content/browser",
   "+components/autofill/content/common",
   "+components/autofill/core/browser",
