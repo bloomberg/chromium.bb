@@ -1742,14 +1742,14 @@ const Experiment kExperiments[] = {
     kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kDisableCast)
   },
-#endif
   {
     "prefetch-search-results",
     IDS_FLAGS_PREFETCH_SEARCH_RESULTS_NAME,
     IDS_FLAGS_PREFETCH_SEARCH_RESULTS_DESCRIPTION,
-    kOsDesktop,
+    kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kPrefetchSearchResults)
   },
+#endif
 #if defined(ENABLE_APP_LIST)
   {
     "enable-experimental-app-list",

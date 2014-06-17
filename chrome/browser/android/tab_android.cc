@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
@@ -395,6 +396,20 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
     bool prefetched_page_loaded = HasPrerenderedUrl(gurl);
     // Getting the load status before MaybeUsePrerenderedPage() b/c it resets.
     chrome::NavigateParams params(NULL, web_contents());
+    InstantSearchPrerenderer* prerenderer =
+        InstantSearchPrerenderer::GetForProfile(GetProfile());
+    if (prerenderer) {
+      const base::string16& search_terms =
+          chrome::ExtractSearchTermsFromURL(GetProfile(), gurl);
+      if (!search_terms.empty() &&
+          prerenderer->CanCommitQuery(web_contents_.get(), search_terms)) {
+        prerenderer->Commit(search_terms);
+
+        if (prerenderer->UsePrerenderedPage(gurl, &params))
+          return FULL_PRERENDERED_PAGE_LOAD;
+      }
+      prerenderer->Cancel();
+    }
     if (prerender_manager->MaybeUsePrerenderedPage(gurl, &params)) {
       return prefetched_page_loaded ?
           FULL_PRERENDERED_PAGE_LOAD : PARTIAL_PRERENDERED_PAGE_LOAD;
