@@ -163,6 +163,8 @@ const char* const kXkbIndicators[][2] = {{"am", "AM"},
 const char* const kExtensionIdMigrationMap[][2] = {
   // Official Japanese IME extension ID.
   {"fpfbhcjppmaeaijcidgiibchfbnhbelj", "gjaehgfemfahhmlgpdfknkhdnemmolop"},
+  // Official M17n keyboard extension ID.
+  {"habcdindjejkmepknlhkkloncjcpcnbf", "gjaehgfemfahhmlgpdfknkhdnemmolop"},
 };
 
 const size_t kExtensionIdLen = 32;

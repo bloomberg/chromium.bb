@@ -17,7 +17,7 @@ namespace extension_ime_util {
 
 #if defined(OFFICIAL_BUILD)
 const char kXkbExtensionId[] = "jkghodnilhceideoidjikpgommlajknk";
-const char kM17nExtensionId[] = "habcdindjejkmepknlhkkloncjcpcnbf";
+const char kM17nExtensionId[] = "gjaehgfemfahhmlgpdfknkhdnemmolop";
 const char kHangulExtensionId[] = "bdgdidmhaijohebebipajioienkglgfo";
 const char kMozcExtensionId[] = "gjaehgfemfahhmlgpdfknkhdnemmolop";
 const char kT13nExtensionId[] = "gjaehgfemfahhmlgpdfknkhdnemmolop";

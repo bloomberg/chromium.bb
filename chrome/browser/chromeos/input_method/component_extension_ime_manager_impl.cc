@@ -43,11 +43,6 @@ struct WhitelistedComponentExtensionIME {
     "/usr/share/chromeos-assets/input_methods/google_xkb",
   },
   {
-    // Official Google Keyboards Input.
-    extension_ime_util::kM17nExtensionId,
-    "/usr/share/chromeos-assets/input_methods/google_keyboards",
-  },
-  {
     // Google input tools.
     extension_ime_util::kT13nExtensionId,
     "/usr/share/chromeos-assets/input_methods/input_tools",
