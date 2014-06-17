@@ -140,6 +140,7 @@ crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/serviceworkerobj
 crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/state.html [ Leak ]
 crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/unregister.html [ Leak ]
 crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/waiting.html [ Leak ]
+crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/window-close-during-registration.html [ Leak ]
 
 crbug.com/364408 inspector/extensions/extensions-audits-content-script.html [ Leak ]
 crbug.com/364408 inspector/extensions/extensions-eval-content-script.html [ Leak ]
