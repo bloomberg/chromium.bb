@@ -27,7 +27,8 @@ namespace {
 std::string SanitizeBehaviorValue(const std::string& value) {
   if (value == MultiProfileUserController::kBehaviorUnrestricted ||
       value == MultiProfileUserController::kBehaviorPrimaryOnly ||
-      value == MultiProfileUserController::kBehaviorNotAllowed) {
+      value == MultiProfileUserController::kBehaviorNotAllowed ||
+      value == MultiProfileUserController::kBehaviorOwnerPrimaryOnly) {
     return value;
   }
 
@@ -40,6 +41,11 @@ std::string SanitizeBehaviorValue(const std::string& value) {
 const char MultiProfileUserController::kBehaviorUnrestricted[] = "unrestricted";
 const char MultiProfileUserController::kBehaviorPrimaryOnly[] = "primary-only";
 const char MultiProfileUserController::kBehaviorNotAllowed[] = "not-allowed";
+
+// Note: this policy value is not a real one an is only returned locally for
+// owner users instead of default one kBehaviorUnrestricted.
+const char MultiProfileUserController::kBehaviorOwnerPrimaryOnly[] =
+    "owner-primary-only";
 
 MultiProfileUserController::MultiProfileUserController(
     MultiProfileUserControllerDelegate* delegate,
@@ -164,6 +170,10 @@ std::string MultiProfileUserController::GetCachedValue(
   std::string value;
   if (dict && dict->GetStringWithoutPathExpansion(user_email, &value))
     return SanitizeBehaviorValue(value);
+
+  // Owner is not allowed to be secondary user (see http://crbug.com/385034).
+  if (UserManager::Get()->GetOwnerEmail() == user_email)
+    return std::string(kBehaviorOwnerPrimaryOnly);
 
   return std::string(kBehaviorUnrestricted);
 }

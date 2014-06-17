@@ -303,6 +303,8 @@ TEST_F(MultiProfileUserControllerTest, NoSecondaryOwner) {
 
   EXPECT_EQ(MultiProfileUserController::NOT_ALLOWED_OWNER_AS_SECONDARY,
             controller()->IsUserAllowedInSession(kUsers[1]));
+  EXPECT_EQ(MultiProfileUserController::kBehaviorOwnerPrimaryOnly,
+            GetCachedBehavior(1));
 
   EXPECT_EQ(0, user_not_allowed_count());
   LoginUser(1);
