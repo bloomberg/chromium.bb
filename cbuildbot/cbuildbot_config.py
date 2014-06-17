@@ -1768,6 +1768,13 @@ internal_paladin.add_config('x86-zgb-paladin',
   paladin_builder_name='x86-zgb paladin',
 )
 
+internal_paladin.add_config('mipsel-o32-generic-paladin',
+  brillo_non_testable,
+  boards=['mipsel-o32-generic'],
+  important=False,
+  paladin_builder_name='mipsel-o32-generic paladin',
+)
+
 internal_paladin.add_config('link_freon-paladin',
   boards=['link_freon'],
   important=False,
@@ -2110,6 +2117,12 @@ _config.add_group('beaglebone-release-group',
     # This build doesn't generate signed images, so don't try to release them.
     paygen=False,
   ).derive(_grouped_variant_config),
+)
+
+_release.add_config('mipsel-o32-generic-release',
+  brillo_non_testable,
+  boards=['mipsel-o32-generic'],
+  paygen_skip_delta_payloads=True,
 )
 
 _release.add_config('stumpy_moblab-release',
