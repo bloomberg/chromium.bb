@@ -224,10 +224,6 @@ def WhitelistLibsForExtensionCommand(target, source, env):
 # to be made available to webpages that use this NaCl extension,
 # which are in a different origin.
 # See: http://code.google.com/chrome/extensions/manifest.html
-#
-# Alternatively, we could try to use the chrome commandline switch
-# '--disable-extensions-resource-whitelist', but that would not be what
-# users will need to do.
 def WhitelistLibsForExtension(env, target_dir, nmf, extension_manifest):
   if env.Bit('nacl_static_link'):
     # For static linking, assume the nexe and nmf files are already

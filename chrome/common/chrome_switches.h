@@ -83,7 +83,6 @@ extern const char kDisableDnsProbes[];
 extern const char kDisableDomainReliability[];
 extern const char kDisableExtensionsFileAccessCheck[];
 extern const char kDisableExtensionsHttpThrottling[];
-extern const char kDisableExtensionsResourceWhitelist[];
 extern const char kDisableExtensions[];
 extern const char kDisableFullscreenWithinTab[];
 extern const char kDisableIPv6[];

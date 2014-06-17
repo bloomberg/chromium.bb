@@ -268,10 +268,6 @@ const char kDisableExtensionsFileAccessCheck[] =
 const char kDisableExtensionsHttpThrottling[] =
     "disable-extensions-http-throttling";
 
-// Disable mandatory enforcement of web_accessible_resources in extensions.
-const char kDisableExtensionsResourceWhitelist[] =
-    "disable-extensions-resource-whitelist";
-
 // Disables embedding of Flash fullscreen widgets within the browser window.
 // This restores the old code paths where Flash fullscreen would display in its
 // own separate, always-on-top window.  In addition, this disables the new logic
