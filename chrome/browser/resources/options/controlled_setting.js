@@ -94,10 +94,13 @@ cr.define('options', function() {
             'extension': loadTimeData.getString('controlledSettingsExtension'),
             'extensionWithName': loadTimeData.getString(
                 'controlledSettingsExtensionWithName'),
+            'policy': loadTimeData.getString('controlledSettingsPolicy'),
           };
           if (cr.isChromeOS) {
             defaultStrings.shared =
                 loadTimeData.getString('controlledSettingsShared');
+            defaultStrings.owner =
+                loadTimeData.getString('controlledSettingsOwner');
           }
         } else {
           var defaultStrings = {

@@ -83,8 +83,6 @@ void AccountsOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_ACCOUNTS_USERNAME_FORMAT));
   localized_strings->SetString("add_users", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_ADD_USERS));
-  localized_strings->SetString("owner_only", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_ACCOUNTS_OWNER_ONLY));
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
