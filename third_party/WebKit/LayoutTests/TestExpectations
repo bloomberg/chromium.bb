@@ -1122,9 +1122,6 @@ crbug.com/384566 svg/custom/textPath-change-reference2.svg [ ImageOnlyFailure Pa
 
 crbug.com/384396 [ Win ] battery-status/page-visibility.html [ Pass Failure Timeout ]
 
-# Made substantially flakier in r176213
-crbug.com/354447 inspector-protocol/stylesheet-tracking-restart.html [ Pass Failure Timeout ]
-
 Bug(eae) fast/text/justify-ideograph-complex.html [ NeedsRebaseline ]
 Bug(eae) fast/text/justify-ideograph-simple.html [ NeedsRebaseline ]
 Bug(eae) media/track/track-cue-rendering-vertical.html [ NeedsRebaseline ]

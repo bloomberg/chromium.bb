@@ -517,16 +517,15 @@ void InspectorCSSAgent::setActiveStyleSheets(Document* document, const Vector<CS
     }
 
     HashSet<CSSStyleSheet*> removedSheets(*documentCSSStyleSheets);
-
-    HashSet<CSSStyleSheet*> addedSheets;
+    Vector<CSSStyleSheet*> addedSheets;
     for (Vector<CSSStyleSheet*>::const_iterator it = allSheetsVector.begin(); it != allSheetsVector.end(); ++it) {
         CSSStyleSheet* cssStyleSheet = *it;
         if (removedSheets.contains(cssStyleSheet)) {
             removedSheets.remove(cssStyleSheet);
             if (isInitialFrontendLoad)
-                addedSheets.add(cssStyleSheet);
+                addedSheets.append(cssStyleSheet);
         } else {
-            addedSheets.add(cssStyleSheet);
+            addedSheets.append(cssStyleSheet);
         }
     }
 
@@ -543,7 +542,7 @@ void InspectorCSSAgent::setActiveStyleSheets(Document* document, const Vector<CS
         }
     }
 
-    for (HashSet<CSSStyleSheet*>::iterator it = addedSheets.begin(); it != addedSheets.end(); ++it) {
+    for (Vector<CSSStyleSheet*>::iterator it = addedSheets.begin(); it != addedSheets.end(); ++it) {
         CSSStyleSheet* cssStyleSheet = *it;
         bool isNew = isInitialFrontendLoad || !m_cssStyleSheetToInspectorStyleSheet.contains(cssStyleSheet);
         if (isNew) {
