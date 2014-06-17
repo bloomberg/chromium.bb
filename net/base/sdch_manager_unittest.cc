@@ -441,5 +441,38 @@ TEST_F(SdchManagerTest, HttpsCorrectlySupported) {
   EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(secure_url));
 }
 
+TEST_F(SdchManagerTest, ClearDictionaryData) {
+  std::string dictionary_domain("x.y.z.google.com");
+  GURL blacklist_url("http://bad.chromium.org");
+
+  std::string dictionary_text(NewSdchDictionary(dictionary_domain));
+  std::string tmp_hash;
+  std::string server_hash;
+
+  SdchManager::GenerateHash(dictionary_text, &tmp_hash, &server_hash);
+
+  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(
+      dictionary_text, GURL("http://" + dictionary_domain)));
+  SdchManager::Dictionary* dictionary = NULL;
+  sdch_manager()->GetVcdiffDictionary(
+      server_hash,
+      GURL("http://" + dictionary_domain + "/random_url"),
+      &dictionary);
+  EXPECT_TRUE(dictionary);
+
+  sdch_manager()->BlacklistDomain(GURL(blacklist_url));
+  EXPECT_FALSE(sdch_manager()->IsInSupportedDomain(blacklist_url));
+
+  sdch_manager()->ClearData();
+
+  dictionary = NULL;
+  sdch_manager()->GetVcdiffDictionary(
+      server_hash,
+      GURL("http://" + dictionary_domain + "/random_url"),
+      &dictionary);
+  EXPECT_FALSE(dictionary);
+  EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(blacklist_url));
+}
+
 }  // namespace net
 

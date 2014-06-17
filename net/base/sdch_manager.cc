@@ -224,6 +224,20 @@ SdchManager::~SdchManager() {
   }
 }
 
+void SdchManager::ClearData() {
+  blacklisted_domains_.clear();
+  exponential_blacklist_count_.clear();
+  allow_latency_experiment_.clear();
+  if (fetcher_.get())
+    fetcher_->Cancel();
+
+  // Note that this may result in not having dictionaries we've advertised
+  // for incoming responses.  The window is relatively small (as ClearData()
+  // is not expected to be called frequently), so we rely on meta-refresh
+  // to handle this case.
+  dictionaries_.clear();
+}
+
 // static
 void SdchManager::SdchErrorRecovery(ProblemCodes problem) {
   UMA_HISTOGRAM_ENUMERATION("Sdch3.ProblemCodes_4", problem, MAX_PROBLEM_CODE);
@@ -252,9 +266,9 @@ void SdchManager::BlacklistDomain(const GURL& url) {
   if (count > 0)
     return;  // Domain is already blacklisted.
 
-  count = 1 + 2 * exponential_blacklist_count[domain];
+  count = 1 + 2 * exponential_blacklist_count_[domain];
   if (count > 0)
-    exponential_blacklist_count[domain] = count;
+    exponential_blacklist_count_[domain] = count;
   else
     count = INT_MAX;
 
@@ -265,13 +279,13 @@ void SdchManager::BlacklistDomainForever(const GURL& url) {
   SetAllowLatencyExperiment(url, false);
 
   std::string domain(StringToLowerASCII(url.host()));
-  exponential_blacklist_count[domain] = INT_MAX;
+  exponential_blacklist_count_[domain] = INT_MAX;
   blacklisted_domains_[domain] = INT_MAX;
 }
 
 void SdchManager::ClearBlacklistings() {
   blacklisted_domains_.clear();
-  exponential_blacklist_count.clear();
+  exponential_blacklist_count_.clear();
 }
 
 void SdchManager::ClearDomainBlacklisting(const std::string& domain) {
@@ -285,10 +299,10 @@ int SdchManager::BlackListDomainCount(const std::string& domain) {
 }
 
 int SdchManager::BlacklistDomainExponential(const std::string& domain) {
-  if (exponential_blacklist_count.end() ==
-      exponential_blacklist_count.find(domain))
+  if (exponential_blacklist_count_.end() ==
+      exponential_blacklist_count_.find(domain))
     return 0;
-  return exponential_blacklist_count[StringToLowerASCII(domain)];
+  return exponential_blacklist_count_[StringToLowerASCII(domain)];
 }
 
 bool SdchManager::IsInSupportedDomain(const GURL& url) {

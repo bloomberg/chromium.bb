@@ -49,6 +49,11 @@ class SdchFetcher {
   // from a server.  The callee is responsible for getting that dictionary_text,
   // and then calling back to AddSdchDictionary() to the SdchManager instance.
   virtual void Schedule(const GURL& dictionary_url) = 0;
+
+  // The Cancel() method is called to cancel all pending dictionary fetches.
+  // This is used for implementation of ClearData() below.
+  virtual void Cancel() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SdchFetcher);
 };
@@ -234,6 +239,9 @@ class NET_EXPORT SdchManager : public NON_EXPORTED_BASE(base::NonThreadSafe) {
   SdchManager();
   ~SdchManager();
 
+  // Clear data (for browser data removal).
+  void ClearData();
+
   // Record stats on various errors.
   static void SdchErrorRecovery(ProblemCodes problem);
 
@@ -358,7 +366,7 @@ class NET_EXPORT SdchManager : public NON_EXPORTED_BASE(base::NonThreadSafe) {
 
   // Support exponential backoff in number of domain accesses before
   // blacklisting expires.
-  DomainCounter exponential_blacklist_count;
+  DomainCounter exponential_blacklist_count_;
 
   // List of hostnames for which a latency experiment is allowed (because a
   // round trip test has recently passed).
