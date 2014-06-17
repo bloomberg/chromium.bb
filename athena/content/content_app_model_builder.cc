@@ -4,16 +4,34 @@
 
 #include "athena/content/public/content_app_model_builder.h"
 
+#include "apps/shell/browser/shell_extension_system.h"
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
+#include "extensions/common/extension.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
+
+using extensions::ShellExtensionSystem;
 
 namespace athena {
 
 namespace {
 
 const int kIconSize = 64;
+
+ShellExtensionSystem* GetShellExtensionSystem(
+    content::BrowserContext* context) {
+  return static_cast<ShellExtensionSystem*>(
+      extensions::ExtensionSystem::Get(context));
+}
+
+gfx::ImageSkia CreateFlatColorImage(SkColor color) {
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, kIconSize, kIconSize);
+  bitmap.allocPixels();
+  bitmap.eraseColor(color);
+  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+}
 
 // Same dummy item.
 class DummyItem : public app_list::AppListItem {
@@ -25,11 +43,7 @@ class DummyItem : public app_list::AppListItem {
         id_(id),
         browser_context_(browser_context) {
 
-    SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, kIconSize, kIconSize);
-    bitmap.allocPixels();
-    bitmap.eraseColor(color);
-    SetIcon(gfx::ImageSkia::CreateFrom1xBitmap(bitmap), false /* has_shadow */);
+    SetIcon(CreateFlatColorImage(color), false /* has_shadow */);
     SetName(id);
   }
 
@@ -45,6 +59,32 @@ class DummyItem : public app_list::AppListItem {
   content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyItem);
+};
+
+class AppItem : public app_list::AppListItem {
+ public:
+  AppItem(scoped_refptr<extensions::Extension> extension,
+          content::BrowserContext* browser_context)
+      : app_list::AppListItem(extension->id()),
+        extension_(extension),
+        browser_context_(browser_context) {
+    // TODO(mukai): componentize extension_icon_image and use it.
+    SetIcon(CreateFlatColorImage(SK_ColorBLACK), false);
+    SetName(extension->name());
+  }
+
+ private:
+  // Overridden from app_list::AppListItem:
+  virtual void Activate(int event_flags) OVERRIDE {
+    // TODO(mukai): Pass |extension_| when the extension system supports
+    // multiple extensions.
+    GetShellExtensionSystem(browser_context_)->LaunchApp();
+  }
+
+  scoped_refptr<extensions::Extension> extension_;
+  content::BrowserContext* browser_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppItem);
 };
 
 }  // namespace
@@ -68,6 +108,13 @@ void ContentAppModelBuilder::PopulateApps(app_list::AppListModel* model) {
       new DummyItem("music", SK_ColorYELLOW, browser_context_)));
   model->AddItem(scoped_ptr<app_list::AppListItem>(
       new DummyItem("contact", SK_ColorCYAN, browser_context_)));
+
+  ShellExtensionSystem* extension_system =
+      GetShellExtensionSystem(browser_context_);
+  if (extension_system && extension_system->extension()) {
+    model->AddItem(scoped_ptr<app_list::AppListItem>(
+        new AppItem(extension_system->extension(), browser_context_)));
+  }
 }
 
 }  // namespace athena

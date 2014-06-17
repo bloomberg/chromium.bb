@@ -1,8 +1,10 @@
 include_rules = [
+  "+apps/shell/browser",
   "+athena/activity/public",
   "+athena/home/public",
   "+athena/input/public",
   "+content/public",
+  "+extensions/common",
   "+ui/app_list",
   "+ui/views",
 ]

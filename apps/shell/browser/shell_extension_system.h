@@ -45,6 +45,8 @@ class ShellExtensionSystem : public ExtensionSystem {
   // KeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
+  scoped_refptr<Extension> extension() { return extension_; }
+
   // ExtensionSystem implementation:
   virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE;
   virtual ExtensionService* extension_service() OVERRIDE;

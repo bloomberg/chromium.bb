@@ -29,12 +29,6 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
 
   // apps::ShellBrowserMainDelegate:
   virtual void Start(content::BrowserContext* context) OVERRIDE {
-    athena::StartAthena(
-        apps::ShellDesktopController::instance()->host()->window(),
-        new athena::ContentActivityFactory(),
-        new athena::ContentAppModelBuilder(context));
-    athena::HomeCard::Get()->RegisterSearchProvider(
-        new athena::UrlSearchProvider(context));
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(kAppSwitch)) {
       base::FilePath app_dir(command_line->GetSwitchValueNative(kAppSwitch));
@@ -44,6 +38,13 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
               extensions::ExtensionSystem::Get(context));
       extension_system->LoadApp(app_absolute_dir);
     }
+
+    athena::StartAthena(
+        apps::ShellDesktopController::instance()->host()->window(),
+        new athena::ContentActivityFactory(),
+        new athena::ContentAppModelBuilder(context));
+    athena::HomeCard::Get()->RegisterSearchProvider(
+        new athena::UrlSearchProvider(context));
     CreateTestPages(context);
   }
 

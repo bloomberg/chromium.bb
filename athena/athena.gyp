@@ -59,7 +59,7 @@
     },
     {
       'target_name': 'athena_content_lib',
-      'type': '<(component)',
+      'type': 'static_library',
       'dependencies': [
         'athena_lib',
         '../content/content.gyp:content_browser',
