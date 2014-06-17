@@ -46,22 +46,34 @@ const float zeroTolerance = 1e-6f;
 
 // Class for remembering absolute quads of a target node and what node they represent.
 class SubtargetGeometry {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     SubtargetGeometry(Node* node, const FloatQuad& quad)
         : m_node(node)
         , m_quad(quad)
     { }
+    void trace(Visitor* visitor) { visitor->trace(m_node); }
 
     Node* node() const { return m_node; }
     FloatQuad quad() const { return m_quad; }
     IntRect boundingBox() const { return m_quad.enclosingBoundingBox(); }
 
 private:
-    Node* m_node;
+    RawPtrWillBeMember<Node> m_node;
     FloatQuad m_quad;
 };
 
-typedef Vector<SubtargetGeometry> SubtargetGeometryList;
+}
+
+}
+
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::TouchAdjustment::SubtargetGeometry)
+
+namespace WebCore {
+
+namespace TouchAdjustment {
+
+typedef WillBeHeapVector<SubtargetGeometry> SubtargetGeometryList;
 typedef bool (*NodeFilter)(Node*);
 typedef void (*AppendSubtargetsForNode)(Node*, SubtargetGeometryList&);
 typedef float (*DistanceFunction)(const IntPoint&, const IntRect&, const SubtargetGeometry&);
