@@ -77,6 +77,7 @@ class HardwareRenderer : public HardwareRendererInterface,
   // Information from draw.
   gfx::Size viewport_;
   gfx::Rect clip_;
+  bool stencil_enabled_;
   bool viewport_clip_valid_for_dcheck_;
 
   scoped_refptr<AwGLSurface> gl_surface_;

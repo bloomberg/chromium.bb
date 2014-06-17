@@ -74,6 +74,7 @@ scoped_refptr<cc::ContextProvider> CreateContext(
 HardwareRenderer::HardwareRenderer(SharedRendererState* state)
     : shared_renderer_state_(state),
       last_egl_context_(eglGetCurrentContext()),
+      stencil_enabled_(false),
       viewport_clip_valid_for_dcheck_(false),
       root_layer_(cc::Layer::Create()),
       output_surface_(NULL) {
@@ -121,6 +122,7 @@ void HardwareRenderer::DidBeginMainFrame() {
   // starts. We set the draw constraints here.
   DCHECK(output_surface_);
   DCHECK(viewport_clip_valid_for_dcheck_);
+  output_surface_->SetExternalStencilTest(stencil_enabled_);
   output_surface_->SetDrawConstraints(viewport_, clip_);
 }
 
@@ -190,6 +192,7 @@ bool HardwareRenderer::DrawGL(bool stencil_enabled,
                 draw_info->clip_top,
                 draw_info->clip_right - draw_info->clip_left,
                 draw_info->clip_bottom - draw_info->clip_top);
+  stencil_enabled_ = stencil_enabled;
 
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix().setColMajorf(draw_info->transform);
