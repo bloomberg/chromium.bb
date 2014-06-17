@@ -27,8 +27,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/omaha_query_params/omaha_query_params.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -206,10 +204,7 @@ bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
 }  // namespace
 
 PnaclComponentInstaller::PnaclComponentInstaller()
-    : per_user_(false), updates_disabled_(false), cus_(NULL) {
-#if defined(OS_CHROMEOS)
-  per_user_ = true;
-#endif
+    : updates_disabled_(false), cus_(NULL) {
 }
 
 PnaclComponentInstaller::~PnaclComponentInstaller() {
@@ -224,31 +219,9 @@ void PnaclComponentInstaller::OnUpdateError(int error) {
 // and the base directory will be:
 // <profile>\AppData\Local\Google\Chrome\User Data\pnacl\.
 base::FilePath PnaclComponentInstaller::GetPnaclBaseDirectory() {
-  // For ChromeOS, temporarily make this user-dependent (for integrity) until
-  // we find a better solution.
-  // This is not ideal because of the following:
-  //   (a) We end up with per-user copies instead of a single copy
-  //   (b) The profile can change as users log in to different accounts
-  //   so we need to watch for user-login-events (see pnacl_profile_observer.h).
-  if (per_user_) {
-    DCHECK(!current_profile_path_.empty());
-    base::FilePath path =
-        current_profile_path_.Append(FILE_PATH_LITERAL("pnacl"));
-    return path;
-  } else {
-    base::FilePath result;
-    CHECK(PathService::Get(chrome::DIR_PNACL_BASE, &result));
-    return result;
-  }
-}
-
-void PnaclComponentInstaller::OnProfileChange() {
-  // On chromeos, we want to find the --login-profile=<foo> dir.
-  // Even though the path does vary between users, the content
-  // changes when logging out and logging in.
-  ProfileManager* pm = g_browser_process->profile_manager();
-  current_profile_path_ =
-      pm->user_data_dir().Append(pm->GetInitialProfileDir());
+  base::FilePath result;
+  CHECK(PathService::Get(chrome::DIR_PNACL_BASE, &result));
+  return result;
 }
 
 bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
@@ -394,37 +367,6 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
   }
 }
 
-// Remove old per-profile copies of PNaCl (was for ChromeOS).
-// TODO(jvoung): Delete this code once most ChromeOS users have reaped
-// their old per-profile copies of PNaCl.
-void ReapOldChromeOSPnaclFiles(PnaclComponentInstaller* pci) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::FilePath path = pci->GetPnaclBaseDirectory();
-  if (!base::PathExists(path))
-    return;
-
-  // Do a basic sanity check first.
-  if (pci->per_user() &&
-      path.BaseName().value().compare(FILE_PATH_LITERAL("pnacl")) == 0)
-    base::DeleteFile(path, true);
-}
-
-void GetProfileInformation(PnaclComponentInstaller* pci) {
-  // Bail if not logged in yet.
-  if (!g_browser_process->profile_manager()->IsLoggedIn()) {
-    return;
-  }
-
-  pci->OnProfileChange();
-
-  // Do not actually register PNaCl for component updates, for CHROMEOS.
-  // Just get the profile information and delete the per-profile files
-  // if they exist.
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          base::Bind(&ReapOldChromeOSPnaclFiles, pci));
-}
-
 }  // namespace
 
 void PnaclComponentInstaller::RegisterPnaclComponent(
@@ -433,27 +375,9 @@ void PnaclComponentInstaller::RegisterPnaclComponent(
   // Register PNaCl by default (can be disabled).
   updates_disabled_ = command_line.HasSwitch(switches::kDisablePnaclInstall);
   cus_ = cus;
-  // If per_user, create a profile observer to watch for logins.
-  // Only do so after cus_ is set to something non-null.
-  if (per_user_ && !profile_observer_) {
-    profile_observer_.reset(new PnaclProfileObserver(this));
-  }
-  if (per_user_) {
-    // Figure out profile information, before proceeding to look for files.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, base::Bind(&GetProfileInformation, this));
-  } else {
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            base::Bind(&StartPnaclUpdateRegistration, this));
-  }
-}
-
-void PnaclComponentInstaller::ReRegisterPnacl() {
-  DCHECK(per_user_);
-  // Figure out profile information, before proceeding to look for files.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(&GetProfileInformation, this));
+  BrowserThread::PostTask(BrowserThread::FILE,
+                          FROM_HERE,
+                          base::Bind(&StartPnaclUpdateRegistration, this));
 }
 
 }  // namespace component_updater

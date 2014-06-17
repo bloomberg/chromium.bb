@@ -387,14 +387,8 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
   RegisterRecoveryComponent(cus, g_browser_process->local_state());
   RegisterPepperFlashComponent(cus);
   RegisterSwiftShaderComponent(cus);
-#endif
-
-#if !defined(OS_ANDROID)
   g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(
       cus, command_line);
-#endif
-
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   RegisterWidevineCdmComponent(cus);
 #endif
 

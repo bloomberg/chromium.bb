@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/version.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
-#include "chrome/browser/component_updater/pnacl/pnacl_profile_observer.h"
 
 namespace base {
 class CommandLine;
@@ -54,17 +53,7 @@ class PnaclComponentInstaller : public ComponentInstaller {
   void RegisterPnaclComponent(ComponentUpdateService* cus,
                               const base::CommandLine& command_line);
 
-  // Check the PNaCl version again and re-register with the component
-  // updater service.
-  void ReRegisterPnacl();
-
   CrxComponent GetCrxComponent();
-
-  // Return true if PNaCl installs are separated by user.
-  bool per_user() const { return per_user_; }
-
-  // If per_user, function to call when profile is changed.
-  void OnProfileChange();
 
   // Return true if PNaCl updates are disabled.
   bool updates_disabled() const { return updates_disabled_; }
@@ -87,10 +76,7 @@ class PnaclComponentInstaller : public ComponentInstaller {
   ComponentUpdateService* cus() const { return cus_; }
 
  private:
-  bool per_user_;
   bool updates_disabled_;
-  scoped_ptr<PnaclProfileObserver> profile_observer_;
-  base::FilePath current_profile_path_;
   base::Version current_version_;
   std::string current_fingerprint_;
   ComponentUpdateService* cus_;
