@@ -561,15 +561,17 @@ void ViewManagerServiceImpl::CreateNode(
 
 void ViewManagerServiceImpl::DeleteNode(
     Id transport_node_id,
+    Id server_change_id,
     const Callback<void(bool)>& callback) {
   const NodeId node_id(NodeIdFromTransportId(transport_node_id));
-  bool did_delete = CanDeleteNode(node_id);
-  if (did_delete) {
+  bool success = false;
+  if (server_change_id == root_node_manager_->next_server_change_id() &&
+      CanDeleteNode(node_id)) {
     ViewManagerServiceImpl* connection = root_node_manager_->GetConnection(
         node_id.connection_id);
-    did_delete = connection && connection->DeleteNodeImpl(this, node_id);
+    success = connection && connection->DeleteNodeImpl(this, node_id);
   }
-  callback.Run(did_delete);
+  callback.Run(success);
 }
 
 void ViewManagerServiceImpl::AddNode(

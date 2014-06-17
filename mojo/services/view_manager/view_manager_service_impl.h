@@ -170,6 +170,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   virtual void CreateNode(Id transport_node_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
   virtual void DeleteNode(Id transport_node_id,
+                          Id server_change_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
   virtual void AddNode(Id parent_id,
                        Id child_id,

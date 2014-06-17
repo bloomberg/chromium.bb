@@ -233,8 +233,9 @@ class DestroyNodeTransaction : public ViewManagerTransaction {
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
-    GetAndAdvanceNextServerChangeId();
-    service()->DeleteNode(node_id_, ActionCompletedCallback());
+    service()->DeleteNode(node_id_,
+                          GetAndAdvanceNextServerChangeId(),
+                          ActionCompletedCallback());
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): recovery?

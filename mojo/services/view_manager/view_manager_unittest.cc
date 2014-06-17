@@ -162,10 +162,11 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     RunMainLoop();
     return result;
   }
-  bool DeleteNode(Id node_id) {
+  bool DeleteNode(Id node_id, Id server_change_id) {
     changes_.clear();
     bool result = false;
     view_manager_->DeleteNode(node_id,
+                              server_change_id,
                               base::Bind(&ViewManagerProxy::GotResult,
                                          base::Unretained(this), &result));
     RunMainLoop();
@@ -878,7 +879,7 @@ TEST_F(ViewManagerTest, DeleteNode) {
 
   // Delete 2.
   {
-    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 2)));
+    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 2), 2));
     EXPECT_TRUE(connection_->changes().empty());
 
     connection2_->DoRunLoopUntilChangesCount(1);
@@ -891,7 +892,7 @@ TEST_F(ViewManagerTest, DeleteNode) {
 // Verifies DeleteNode isn't allowed from a separate connection.
 TEST_F(ViewManagerTest, DeleteNodeFromAnotherConnectionDisallowed) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  EXPECT_FALSE(connection2_->DeleteNode(BuildNodeId(1, 1)));
+  EXPECT_FALSE(connection2_->DeleteNode(BuildNodeId(1, 1), 1));
 }
 
 // Verifies DeleteView isn't allowed from a separate connection.
@@ -922,7 +923,7 @@ TEST_F(ViewManagerTest, ReuseDeletedNodeId) {
 
   // Delete 2.
   {
-    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 2)));
+    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 2), 2));
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
@@ -998,7 +999,7 @@ TEST_F(ViewManagerTest, DeleteNodeWithView) {
   // Delete node 2. The second connection should not see this because the node
   // was not known to it.
   {
-    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 2)));
+    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 2), 1));
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
@@ -1022,7 +1023,7 @@ TEST_F(ViewManagerTest, DeleteNodeWithView) {
 
   // Delete 3.
   {
-    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 3)));
+    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 3), 3));
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
@@ -1189,7 +1190,7 @@ TEST_F(ViewManagerTest, SetRoots) {
   // Delete 4, client shouldn't receive a delete since it should no longer know
   // about 4.
   {
-    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 4)));
+    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 4), 5));
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));

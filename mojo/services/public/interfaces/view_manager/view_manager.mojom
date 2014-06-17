@@ -43,7 +43,7 @@ interface ViewManagerService {
   // Deletes a node. This does not recurse. No hierarchy change notifications
   // are sent as a result of this. Only the connection that created the node can
   // delete it.
-  DeleteNode(uint32 node_id) => (bool success);
+  DeleteNode(uint32 node_id, uint32 change_id) => (bool success);
 
   // Sets the specified bounds of the specified node.
   SetNodeBounds(uint32 node_id, mojo.Rect bounds) => (bool success);
