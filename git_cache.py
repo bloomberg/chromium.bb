@@ -278,7 +278,7 @@ class Mirror(object):
 
     # Download zip file to a temporary directory.
     try:
-      tempdir = tempfile.mkdtemp()
+      tempdir = tempfile.mkdtemp(prefix='_cache_tmp', dir=self.GetCachePath())
       self.print('Downloading %s' % latest_checkout)
       code = gsutil.call('cp', latest_checkout, tempdir)
       if code:
@@ -344,7 +344,7 @@ class Mirror(object):
                           len(pack_files) > GC_AUTOPACKLIMIT)
       if should_bootstrap:
         tempdir = tempfile.mkdtemp(
-            suffix=self.basedir, dir=self.GetCachePath())
+            prefix='_cache_tmp', suffix=self.basedir, dir=self.GetCachePath())
         bootstrapped = not depth and bootstrap and self.bootstrap_repo(tempdir)
         if bootstrapped:
           # Bootstrap succeeded; delete previous cache, if any.
@@ -408,8 +408,8 @@ class Mirror(object):
       except OSError:
         logging.warn('Unable to delete temporary pack file %s' % f)
 
-  @staticmethod
-  def BreakLocks(path):
+  @classmethod
+  def BreakLocks(cls, path):
     did_unlock = False
     lf = Lockfile(path)
     if lf.break_lock():
@@ -420,6 +420,7 @@ class Mirror(object):
     if os.path.exists(lf):
       os.remove(lf)
       did_unlock = True
+    cls.DeleteTmpPackFiles(path)
     return did_unlock
 
   def unlock(self):
@@ -432,7 +433,9 @@ class Mirror(object):
     repo_dirs = set([os.path.join(cachepath, path) for path in dirlist
                      if os.path.isdir(os.path.join(cachepath, path))])
     for dirent in dirlist:
-      if (dirent.endswith('.lock') and
+      if dirent.startswith('_cache_tmp') or dirent.startswith('tmp'):
+        gclient_utils.rmtree(os.path.join(cachepath, dirent))
+      elif (dirent.endswith('.lock') and
           os.path.isfile(os.path.join(cachepath, dirent))):
         repo_dirs.add(os.path.join(cachepath, dirent[:-5]))
 
