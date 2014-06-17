@@ -19,7 +19,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
-#include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -148,34 +147,19 @@ CommandService* CommandService::Get(content::BrowserContext* context) {
 
 // static
 bool CommandService::RemovesBookmarkShortcut(const Extension* extension) {
-  const UIOverrides* ui_overrides = UIOverrides::Get(extension);
-  const SettingsOverrides* settings_overrides =
-      SettingsOverrides::Get(extension);
-
-  return ((settings_overrides &&
-           SettingsOverrides::RemovesBookmarkShortcut(*settings_overrides)) ||
-          (ui_overrides &&
-           UIOverrides::RemovesBookmarkShortcut(*ui_overrides))) &&
-         (extension->permissions_data()->HasAPIPermission(
-              APIPermission::kBookmarkManagerPrivate) ||
-          FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled());
+  return UIOverrides::RemovesBookmarkShortcut(extension) &&
+      (extension->permissions_data()->HasAPIPermission(
+          APIPermission::kBookmarkManagerPrivate) ||
+       FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled());
 }
 
 // static
 bool CommandService::RemovesBookmarkOpenPagesShortcut(
     const Extension* extension) {
-  const UIOverrides* ui_overrides = UIOverrides::Get(extension);
-  const SettingsOverrides* settings_overrides =
-      SettingsOverrides::Get(extension);
-
-  return ((settings_overrides &&
-           SettingsOverrides::RemovesBookmarkOpenPagesShortcut(
-               *settings_overrides)) ||
-          (ui_overrides &&
-           UIOverrides::RemovesBookmarkOpenPagesShortcut(*ui_overrides))) &&
-         (extension->permissions_data()->HasAPIPermission(
-              APIPermission::kBookmarkManagerPrivate) ||
-          FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled());
+  return UIOverrides::RemovesBookmarkOpenPagesShortcut(extension) &&
+      (extension->permissions_data()->HasAPIPermission(
+          APIPermission::kBookmarkManagerPrivate) ||
+       FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled());
 }
 
 bool CommandService::GetBrowserActionCommand(const std::string& extension_id,

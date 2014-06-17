@@ -17,36 +17,6 @@
         "type": "object",
         "description": "Chrome settings which can be overriden by an extension.",
         "properties": {
-          // TODO(wittman): Remove for M37.
-          "bookmarks_ui": {
-            "type": "object",
-            "description": "Settings to permit bookmarks user interface customization by extensions.",
-            "optional": true,
-            "nodoc": true,
-            "properties": {
-              "remove_button": {
-                "type": "boolean",
-                "description": "If <code>true</code>, the built-in bookmark button will be removed from the user interface.",
-                "optional": true
-              },
-              "remove_bookmark_shortcut": {
-                "type": "boolean",
-                "description": "If <code>true</code>, the built-in \"Bookmark this page...\" shortcut key is removed and the extension is permitted to override the shortcut by binding it in the commands section of the manifest. The corresponding menu item is also removed or overridden as well.",
-                "optional": true
-              },
-              "remove_bookmark_open_pages_shortcut": {
-                "type": "boolean",
-                "nodoc": true,
-                "description": "[Private] If <code>true</code>, the built-in \"Bookmark open pages...\" shortcut key and corresponding menu item is removed.",
-                "optional": true
-              },
-              "hide_bookmark_button": {
-                "type": "boolean",
-                "description": "Deprecated. Use remove_button instead.",
-                "optional": true
-              }
-            }
-          },
           "homepage": {
             "description": "New value for the homepage.",
             "optional": true,

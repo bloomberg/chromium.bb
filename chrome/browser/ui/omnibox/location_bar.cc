@@ -6,7 +6,6 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
@@ -25,14 +24,7 @@ bool LocationBar::IsBookmarkStarHiddenByExtension() const {
       extensions::ExtensionRegistry::Get(profile_)->enabled_extensions();
   for (extensions::ExtensionSet::const_iterator i = extension_set.begin();
        i != extension_set.end(); ++i) {
-    using extensions::UIOverrides;
-    using extensions::SettingsOverrides;
-    const UIOverrides* ui_overrides = UIOverrides::Get(i->get());
-    const SettingsOverrides* settings_overrides =
-        SettingsOverrides::Get(i->get());
-    if (((settings_overrides &&
-          SettingsOverrides::RemovesBookmarkButton(*settings_overrides)) ||
-         (ui_overrides && UIOverrides::RemovesBookmarkButton(*ui_overrides))) &&
+    if (extensions::UIOverrides::RemovesBookmarkButton(*i) &&
         ((*i)->permissions_data()->HasAPIPermission(
              extensions::APIPermission::kBookmarkManagerPrivate) ||
          extensions::FeatureSwitch::enable_override_bookmarks_ui()

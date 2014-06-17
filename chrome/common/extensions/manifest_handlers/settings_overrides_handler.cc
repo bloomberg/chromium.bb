@@ -112,115 +112,6 @@ std::string RemoveWwwPrefix(const std::string& url) {
 
 }  // namespace
 
-// The manifest permission implementation supports a permission for overriding
-// the bookmark UI.
-class SettingsOverridesHandler::ManifestPermissionImpl
-    : public ManifestPermission {
- public:
-  explicit ManifestPermissionImpl(bool override_bookmarks_ui_permission)
-      : override_bookmarks_ui_permission_(override_bookmarks_ui_permission) {}
-
-  // extensions::ManifestPermission overrides.
-  virtual std::string name() const OVERRIDE {
-    return manifest_keys::kSettingsOverride;
-  }
-
-  virtual std::string id() const OVERRIDE {
-    return name();
-  }
-
-  virtual bool HasMessages() const OVERRIDE {
-    return override_bookmarks_ui_permission_;
-  }
-
-  virtual PermissionMessages GetMessages() const OVERRIDE {
-    PermissionMessages result;
-    if (override_bookmarks_ui_permission_) {
-      result.push_back(PermissionMessage(
-          PermissionMessage::kOverrideBookmarksUI,
-          l10n_util::GetStringUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_OVERRIDE_BOOKMARKS_UI)));
-    }
-    return result;
-  }
-
-  virtual bool FromValue(const base::Value* value) OVERRIDE {
-    return value && value->GetAsBoolean(&override_bookmarks_ui_permission_);
-  }
-
-  virtual scoped_ptr<base::Value> ToValue() const OVERRIDE {
-    return scoped_ptr<base::Value>(
-        new base::FundamentalValue(override_bookmarks_ui_permission_)).Pass();
-  }
-
-  virtual ManifestPermission* Clone() const OVERRIDE {
-    return scoped_ptr<ManifestPermissionImpl>(
-        new ManifestPermissionImpl(
-            override_bookmarks_ui_permission_)).release();
-  }
-
-  virtual ManifestPermission* Diff(const ManifestPermission* rhs) const
-      OVERRIDE {
-    const ManifestPermissionImpl* other =
-        static_cast<const ManifestPermissionImpl*>(rhs);
-
-    return scoped_ptr<ManifestPermissionImpl>(new ManifestPermissionImpl(
-        override_bookmarks_ui_permission_ &&
-        !other->override_bookmarks_ui_permission_)).release();
-  }
-
-  virtual ManifestPermission* Union(const ManifestPermission* rhs) const
-      OVERRIDE {
-    const ManifestPermissionImpl* other =
-        static_cast<const ManifestPermissionImpl*>(rhs);
-
-    return scoped_ptr<ManifestPermissionImpl>(new ManifestPermissionImpl(
-        override_bookmarks_ui_permission_ ||
-        other->override_bookmarks_ui_permission_)).release();
-  }
-
-  virtual ManifestPermission* Intersect(const ManifestPermission* rhs) const
-      OVERRIDE {
-    const ManifestPermissionImpl* other =
-        static_cast<const ManifestPermissionImpl*>(rhs);
-
-    return scoped_ptr<ManifestPermissionImpl>(new ManifestPermissionImpl(
-        override_bookmarks_ui_permission_ &&
-        other->override_bookmarks_ui_permission_)).release();
-  }
-
-  virtual bool Contains(const ManifestPermission* rhs) const OVERRIDE {
-    const ManifestPermissionImpl* other =
-        static_cast<const ManifestPermissionImpl*>(rhs);
-
-    return !other->override_bookmarks_ui_permission_ ||
-        override_bookmarks_ui_permission_;
-  }
-
-  virtual bool Equal(const ManifestPermission* rhs) const OVERRIDE {
-    const ManifestPermissionImpl* other =
-        static_cast<const ManifestPermissionImpl*>(rhs);
-
-    return override_bookmarks_ui_permission_ ==
-        other->override_bookmarks_ui_permission_;
-  }
-
-  virtual void Write(IPC::Message* m) const OVERRIDE {
-    IPC::WriteParam(m, override_bookmarks_ui_permission_);
-  }
-
-  virtual bool Read(const IPC::Message* m, PickleIterator* iter) OVERRIDE {
-    return IPC::ReadParam(m, iter, &override_bookmarks_ui_permission_);
-  }
-
-  virtual void Log(std::string* log) const OVERRIDE {
-    IPC::LogParam(override_bookmarks_ui_permission_, log);
-  }
-
- private:
-  bool override_bookmarks_ui_permission_;
-};
-
 SettingsOverrides::SettingsOverrides() {}
 
 SettingsOverrides::~SettingsOverrides() {}
@@ -230,29 +121,6 @@ const SettingsOverrides* SettingsOverrides::Get(
     const Extension* extension) {
   return static_cast<SettingsOverrides*>(
       extension->GetManifestData(manifest_keys::kSettingsOverride));
-}
-
-// static
-bool SettingsOverrides::RemovesBookmarkButton(
-    const SettingsOverrides& settings_overrides) {
-  return settings_overrides.bookmarks_ui &&
-      settings_overrides.bookmarks_ui->remove_button &&
-      *settings_overrides.bookmarks_ui->remove_button;
-}
-
-// static
-bool SettingsOverrides::RemovesBookmarkShortcut(
-    const SettingsOverrides& settings_overrides) {
-  return settings_overrides.bookmarks_ui &&
-      settings_overrides.bookmarks_ui->remove_bookmark_shortcut &&
-      *settings_overrides.bookmarks_ui->remove_bookmark_shortcut;
-}
-
-bool SettingsOverrides::RemovesBookmarkOpenPagesShortcut(
-    const SettingsOverrides& settings_overrides) {
-  return settings_overrides.bookmarks_ui &&
-      settings_overrides.bookmarks_ui->remove_bookmark_open_pages_shortcut &&
-      *settings_overrides.bookmarks_ui->remove_bookmark_open_pages_shortcut;
 }
 
 SettingsOverridesHandler::SettingsOverridesHandler() {}
@@ -269,26 +137,15 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
     return false;
 
   scoped_ptr<SettingsOverrides> info(new SettingsOverrides);
-  info->bookmarks_ui.swap(settings->bookmarks_ui);
-  // Support backward compatibility for deprecated key
-  // chrome_settings_overrides.bookmarks_ui.hide_bookmark_button.
-  if (info->bookmarks_ui && !info->bookmarks_ui->remove_button &&
-      info->bookmarks_ui->hide_bookmark_button) {
-    info->bookmarks_ui->remove_button.reset(
-        new bool(*info->bookmarks_ui->hide_bookmark_button));
-  }
   info->homepage = ParseHomepage(*settings, error);
   info->search_engine = ParseSearchEngine(settings.get(), error);
   info->startup_pages = ParseStartupPage(*settings, error);
-  if (!info->bookmarks_ui && !info->homepage &&
-      !info->search_engine && info->startup_pages.empty()) {
+  if (!info->homepage && !info->search_engine && info->startup_pages.empty()) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         manifest_errors::kInvalidEmptyDictionary,
         manifest_keys::kSettingsOverride);
     return false;
   }
-  info->manifest_permission.reset(new ManifestPermissionImpl(
-      SettingsOverrides::RemovesBookmarkButton(*info)));
 
   if (info->search_engine) {
     PermissionsParser::AddAPIPermission(
@@ -323,43 +180,6 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
   return true;
 }
 
-bool SettingsOverridesHandler::Validate(
-    const Extension* extension,
-    std::string* error,
-    std::vector<InstallWarning>* warnings) const {
-  const SettingsOverrides* settings_overrides =
-      SettingsOverrides::Get(extension);
-
-  if (settings_overrides && settings_overrides->bookmarks_ui) {
-    if (!FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled()) {
-      warnings->push_back(InstallWarning(
-          ErrorUtils::FormatErrorMessage(
-              manifest_errors::kUnrecognizedManifestProperty,
-              manifest_keys::kBookmarkUI,
-              manifest_keys::kSettingsOverride)));
-    } else if (settings_overrides->bookmarks_ui->hide_bookmark_button) {
-      warnings->push_back(InstallWarning(
-            ErrorUtils::FormatErrorMessage(
-                manifest_errors::kKeyIsDeprecatedWithReplacement,
-                manifest_keys::kHideBookmarkButton,
-                manifest_keys::kRemoveButton)));
-    }
-  }
-
-  return true;
-}
-
-ManifestPermission* SettingsOverridesHandler::CreatePermission() {
-  return new ManifestPermissionImpl(false);
-}
-
-ManifestPermission* SettingsOverridesHandler::CreateInitialRequiredPermission(
-    const Extension* extension) {
-  const SettingsOverrides* data = SettingsOverrides::Get(extension);
-  if (data)
-    return data->manifest_permission->Clone();
-  return NULL;
-}
 const std::vector<std::string> SettingsOverridesHandler::Keys() const {
   return SingleKey(manifest_keys::kSettingsOverride);
 }
