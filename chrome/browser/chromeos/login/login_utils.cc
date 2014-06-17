@@ -19,7 +19,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
-#include "base/path_service.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -88,22 +87,6 @@
 using content::BrowserThread;
 
 namespace chromeos {
-
-namespace {
-
-#if defined(ENABLE_RLZ)
-// Flag file that disables RLZ tracking, when present.
-const base::FilePath::CharType kRLZDisabledFlagName[] =
-    FILE_PATH_LITERAL(".rlz_disabled");
-
-base::FilePath GetRlzDisabledFlagPath() {
-  base::FilePath homedir;
-  PathService::Get(base::DIR_HOME, &homedir);
-  return homedir.Append(kRLZDisabledFlagName);
-}
-#endif
-
-}  // namespace
 
 struct DoBrowserLaunchOnLocaleLoadedData;
 
