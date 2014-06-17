@@ -1,7 +1,7 @@
 <?php
 require_once '../../resources/portabilityLayer.php';
 
-$pingFilename = sys_get_temp_dir() . "/ping.txt";
+$pingFilename = sys_get_temp_dir() . "/ping." . $_GET["test"];
 while (!file_exists($pingFilename)) {
     usleep(10000);
     // file_exists() caches results, we want to invalidate the cache.

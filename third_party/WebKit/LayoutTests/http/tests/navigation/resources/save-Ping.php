@@ -9,7 +9,8 @@ foreach ($httpHeaders as $name => $value) {
         fwrite($pingFile, "$name: $value\n");
 }
 fclose($pingFile);
-rename(sys_get_temp_dir() . "/ping.txt.tmp", sys_get_temp_dir() . "/ping.txt");
+$finalPingFilename = sys_get_temp_dir() . "/ping." . $_GET["test"];
+rename(sys_get_temp_dir() . "/ping.txt.tmp", $finalPingFilename);
 foreach ($_COOKIE as $name => $value)
     setcookie($name, "deleted", time() - 60, "/");
 ?>
