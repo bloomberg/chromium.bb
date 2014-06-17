@@ -97,12 +97,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "components/policy/core/browser/browser_policy_connector.h"
-#else
-#include "components/policy/core/common/policy_service_stub.h"
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
-
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "ui/views/focus/view_storage.h"
@@ -110,21 +104,16 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 #endif
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
+#if defined(OS_ANDROID)
+#include "components/gcm_driver/gcm_driver_android.h"
+#else
+#include "chrome/browser/services/gcm/gcm_desktop_utils.h"
+#include "components/gcm_driver/gcm_client_factory.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "components/storage_monitor/storage_monitor.h"
-#endif
-
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-#include "chrome/browser/plugins/plugins_resource_service.h"
-#endif
-
-#if defined(ENABLE_WEBRTC)
-#include "chrome/browser/media/webrtc_log_uploader.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -134,11 +123,22 @@
 #include "google_apis/gaia/dummy_identity_provider.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "components/gcm_driver/gcm_driver_android.h"
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#endif
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "components/policy/core/browser/browser_policy_connector.h"
 #else
-#include "chrome/browser/services/gcm/gcm_desktop_utils.h"
-#include "components/gcm_driver/gcm_client_factory.h"
+#include "components/policy/core/common/policy_service_stub.h"
+#endif  // defined(ENABLE_CONFIGURATION_POLICY)
+
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+#include "chrome/browser/plugins/plugins_resource_service.h"
+#endif
+
+#if defined(ENABLE_WEBRTC)
+#include "chrome/browser/media/webrtc_log_uploader.h"
 #endif
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -195,7 +195,10 @@ BrowserProcessImpl::BrowserProcessImpl(
   InitIdleMonitor();
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
   apps::AppsClient::Set(ChromeAppsClient::GetInstance());
+#endif
+
   extensions::ExtensionsClient::Set(
       extensions::ChromeExtensionsClient::GetInstance());
 

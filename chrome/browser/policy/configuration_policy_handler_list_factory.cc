@@ -370,9 +370,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kFullscreenAllowed,
     prefs::kFullscreenAllowed,
     base::Value::TYPE_BOOLEAN },
+#if defined(ENABLE_EXTENSIONS)
   { key::kFullscreenAllowed,
     apps::prefs::kAppFullscreenAllowed,
     base::Value::TYPE_BOOLEAN },
+#endif  // defined(ENABLE_EXTENSIONS)
 #endif  // !defined(OS_MACOSX) && !defined(OS_IOS)
 
 #if defined(OS_CHROMEOS)

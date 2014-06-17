@@ -2098,6 +2098,7 @@
         }],
         ['enable_extensions==0', {
           'sources/': [
+            ['exclude', '^../apps/'],
             ['exclude', '^../extensions/'],
             ['exclude', '^browser/extensions/activity_log/'],
             ['exclude', '^browser/extensions/api/'],

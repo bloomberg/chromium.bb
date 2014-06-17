@@ -74,8 +74,10 @@ TestingBrowserProcess::TestingBrowserProcess()
       platform_part_(new TestingBrowserProcessPlatformPart()),
       extensions_browser_client_(
           new extensions::ChromeExtensionsBrowserClient) {
-  extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
+#if defined(ENABLE_EXTENSIONS)
   apps::AppsClient::Set(ChromeAppsClient::GetInstance());
+#endif
+  extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 }
 
 TestingBrowserProcess::~TestingBrowserProcess() {

@@ -138,7 +138,6 @@
               'schema_files': [
                 # These should be eliminated. See crbug.com/305852.
                 'activity_log_private.json',
-                'app_window.idl',
                 'events.json',
                 'file_system.idl',
                 'manifest_types.json',

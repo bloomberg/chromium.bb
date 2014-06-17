@@ -94,7 +94,9 @@
         ['enable_extensions==0',
           {
             'sources/': [
-              ['exclude', '^apps/'],
+              ['exclude', '.*'],
+              ['include', 'ui/web_contents_sizer\.cc$'],
+              ['include', 'ui/web_contents_sizer\.mm$'],
             ],
           }
         ],
