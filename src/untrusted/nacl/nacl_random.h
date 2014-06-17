@@ -14,9 +14,9 @@ extern "C" {
 #endif
 
 /**
- *  @nacl
- *  Initialize the secure random number generator.
- *  @return Returns zero on success, or a non-zero error number on failure.
+ * nacl_secure_random_init() is deprecated.  Calling it before calling
+ * nacl_secure_random() is no longer required.  It always returns 0,
+ * indicating success.
  */
 extern int nacl_secure_random_init(void);
 

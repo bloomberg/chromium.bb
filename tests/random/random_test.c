@@ -10,11 +10,10 @@
 
 #include <nacl/nacl_random.h>
 
+#include "native_client/src/include/nacl_assert.h"
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
 int TestMain(void) {
-  nacl_secure_random_init();
-
   int result = 0;
 
   uint8_t byte1 = 0;
@@ -78,6 +77,13 @@ int TestMain(void) {
        */
     }
   }
+
+  /*
+   * Calling nacl_secure_random_init() is no longer required, but we
+   * provide it for compatibility.  It should always return 0 for success.
+   */
+  int init_result = nacl_secure_random_init();
+  ASSERT_EQ(init_result, 0);
 
   return result;
 }
