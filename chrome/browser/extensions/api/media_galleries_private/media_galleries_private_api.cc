@@ -14,12 +14,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_manager.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/media_galleries_private/media_galleries_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/event_router.h"
@@ -367,56 +365,6 @@ void MediaGalleriesPrivateRemoveAllGalleryWatchFunction::OnPreferencesInit() {
       extension_id(), preferences);
 #endif
   SendResponse(true);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//              MediaGalleriesPrivateGetHandlersFunction                     //
-///////////////////////////////////////////////////////////////////////////////
-
-MediaGalleriesPrivateGetHandlersFunction::
-~MediaGalleriesPrivateGetHandlersFunction() {
-}
-
-bool MediaGalleriesPrivateGetHandlersFunction::RunAsync() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(GetProfile())->extension_service();
-  DCHECK(service);
-
-  base::ListValue* result_list = new base::ListValue;
-
-  for (ExtensionSet::const_iterator iter = service->extensions()->begin();
-       iter != service->extensions()->end();
-       ++iter) {
-    const Extension* extension = iter->get();
-    if (GetProfile()->IsOffTheRecord() &&
-        !util::IsIncognitoEnabled(extension->id(), GetProfile()))
-      continue;
-
-    MediaGalleriesHandler::List* handler_list =
-        MediaGalleriesHandler::GetHandlers(extension);
-    if (!handler_list)
-      continue;
-
-    for (MediaGalleriesHandler::List::const_iterator action_iter =
-             handler_list->begin();
-         action_iter != handler_list->end();
-         ++action_iter) {
-      const MediaGalleriesHandler* action = action_iter->get();
-      base::DictionaryValue* handler = new base::DictionaryValue;
-      handler->SetString("extensionId", action->extension_id());
-      handler->SetString("id", action->id());
-      handler->SetString("title", action->title());
-      handler->SetString("iconUrl", action->icon_path());
-      result_list->Append(handler);
-    }
-  }
-
-  SetResult(result_list);
-  SendResponse(true);
-
-  return true;
 }
 
 }  // namespace extensions

@@ -36155,7 +36155,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="434" label="WALLPAPERPRIVATE_SETCUSTOMWALLPAPERLAYOUT"/>
   <int value="435" label="DOWNLOADSINTERNAL_DETERMINEFILENAME"/>
   <int value="436" label="SYNCFILESYSTEM_GETFILESYNCSTATUSES"/>
-  <int value="437" label="MEDIAGALLERIESPRIVATE_GETHANDLERS"/>
+  <int value="437" label="DELETED_MEDIAGALLERIESPRIVATE_GETHANDLERS"/>
   <int value="438" label="WALLPAPERPRIVATE_RESETWALLPAPER"/>
   <int value="439" label="DEVELOPERPRIVATE_PERMISSIONS"/>
   <int value="440" label="WEBSTOREPRIVATE_ENABLEAPPLAUNCHER"/>

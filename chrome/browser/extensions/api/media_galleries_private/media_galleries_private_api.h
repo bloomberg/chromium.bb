@@ -146,20 +146,6 @@ class MediaGalleriesPrivateRemoveAllGalleryWatchFunction
   void OnPreferencesInit();
 };
 
-// Implements the chrome.mediaGalleriesPrivate.getHandlers method.
-class MediaGalleriesPrivateGetHandlersFunction
-    : public ChromeAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.getHandlers",
-                             MEDIAGALLERIESPRIVATE_GETHANDLERS);
-
- protected:
-  virtual ~MediaGalleriesPrivateGetHandlersFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
-};
-
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_PRIVATE_MEDIA_GALLERIES_PRIVATE_API_H_

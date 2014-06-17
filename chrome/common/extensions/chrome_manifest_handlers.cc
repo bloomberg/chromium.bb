@@ -16,7 +16,6 @@
 #include "chrome/common/extensions/api/input_ime/input_components_handler.h"
 #endif
 #include "chrome/common/extensions/api/managed_mode_private/managed_mode_handler.h"
-#include "chrome/common/extensions/api/media_galleries_private/media_galleries_handler.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
@@ -62,7 +61,6 @@ void RegisterChromeManifestHandlers() {
   (new InputComponentsHandler)->Register();
 #endif
   (new ManagedModeHandler)->Register();
-  (new MediaGalleriesHandlerParser)->Register();
   (new MimeTypesHandlerParser)->Register();
   (new MinimumChromeVersionChecker)->Register();
   (new NaClModulesHandler)->Register();

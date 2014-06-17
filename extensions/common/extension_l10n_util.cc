@@ -184,22 +184,6 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
     }
   }
 
-  base::ListValue* media_galleries_handlers = NULL;
-  if (manifest->GetList(keys::kMediaGalleriesHandlers,
-                        &media_galleries_handlers)) {
-    key.assign(keys::kMediaGalleriesHandlers);
-    for (size_t i = 0; i < media_galleries_handlers->GetSize(); i++) {
-      base::DictionaryValue* handler = NULL;
-      if (!media_galleries_handlers->GetDictionary(i, &handler)) {
-        *error = errors::kInvalidMediaGalleriesHandler;
-        return false;
-      }
-      if (!LocalizeManifestValue(
-              keys::kPageActionDefaultTitle, messages, handler, error))
-        return false;
-    }
-  }
-
   // Initialize all input_components
   base::ListValue* input_components = NULL;
   if (manifest->GetList(keys::kInputComponents, &input_components)) {

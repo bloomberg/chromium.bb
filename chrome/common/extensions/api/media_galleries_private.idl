@@ -26,29 +26,11 @@ namespace mediaGalleriesPrivate {
   callback AddGalleryWatchCallback = void (AddGalleryWatchResult result);
   callback GetAllGalleryWatchCallback = void (DOMString[] galleryIds);
 
-  // A dictionary that describes a media galleries handler.
-  [inline_doc] dictionary MediaGalleriesHandler {
-    // Unique action id per extension.
-    DOMString id;
-
-    // ID of the extension handling this handler.
-    DOMString extensionId;
-
-    // Localized title describing the action.
-    DOMString title;
-
-    // Url of the icon.
-    DOMString iconUrl;
-  };
-
-  callback GetHandlersCallback = void (MediaGalleriesHandler[] handlers);
-
   interface Functions {
     static void addGalleryWatch(DOMString galleryId,
                                 AddGalleryWatchCallback callback);
     static void removeGalleryWatch(DOMString galleryId);
     static void getAllGalleryWatch(GetAllGalleryWatchCallback callback);
     static void removeAllGalleryWatch();
-    static void getHandlers(GetHandlersCallback callback);
   };
 };

@@ -84,8 +84,6 @@
       'common/extensions/api/input_ime/input_components_handler.h',
       'common/extensions/api/managed_mode_private/managed_mode_handler.cc',
       'common/extensions/api/managed_mode_private/managed_mode_handler.h',
-      'common/extensions/api/media_galleries_private/media_galleries_handler.h',
-      'common/extensions/api/media_galleries_private/media_galleries_handler.cc',
       'common/extensions/api/notifications/notification_style.cc',
       'common/extensions/api/notifications/notification_style.h',
       'common/extensions/api/omnibox/omnibox_handler.cc',
