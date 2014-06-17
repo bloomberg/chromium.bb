@@ -451,6 +451,9 @@ private:
     enum DirectionOfPlayback { Backward, Forward };
     DirectionOfPlayback directionOfPlayback() const;
 
+    // Returns the "effective playback rate" value as specified in the HTML5 spec.
+    double effectivePlaybackRate() const;
+
     // Creates placeholder AudioTrack and/or VideoTrack objects when WebMemediaPlayer objects
     // advertise they have audio and/or video, but don't explicitly signal them via
     // addAudioTrack() and addVideoTrack().

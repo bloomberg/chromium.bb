@@ -2116,8 +2116,12 @@ void HTMLMediaElement::setPlaybackRate(double rate)
         scheduleEvent(EventTypeNames::ratechange);
     }
 
-    if (m_player && potentiallyPlaying() && m_player->rate() != rate && !m_mediaController)
-        m_player->setRate(rate);
+    updatePlaybackRate();
+}
+
+double HTMLMediaElement::effectivePlaybackRate() const
+{
+    return m_mediaController ? m_mediaController->playbackRate() : m_playbackRate;
 }
 
 HTMLMediaElement::DirectionOfPlayback HTMLMediaElement::directionOfPlayback() const
@@ -2127,7 +2131,7 @@ HTMLMediaElement::DirectionOfPlayback HTMLMediaElement::directionOfPlayback() co
 
 void HTMLMediaElement::updatePlaybackRate()
 {
-    double effectiveRate = m_mediaController ? m_mediaController->playbackRate() : m_playbackRate;
+    double effectiveRate = effectivePlaybackRate();
     if (m_player && potentiallyPlaying() && m_player->rate() != effectiveRate)
         m_player->setRate(effectiveRate);
 }
@@ -2340,7 +2344,7 @@ void HTMLMediaElement::playbackProgressTimerFired(Timer<HTMLMediaElement>*)
     if (!m_seeking)
         scheduleTimeupdateEvent(true);
 
-    if (!m_playbackRate)
+    if (!effectivePlaybackRate())
         return;
 
     if (!m_paused && hasMediaControls())
@@ -3275,7 +3279,7 @@ void HTMLMediaElement::updatePlayState()
         if (playerPaused) {
             // Set rate, muted before calling play in case they were set before the media engine was setup.
             // The media engine should just stash the rate and muted values since it isn't already playing.
-            m_player->setRate(m_playbackRate);
+            m_player->setRate(effectivePlaybackRate());
             updateVolume();
 
             m_player->play();
