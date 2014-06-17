@@ -51,6 +51,21 @@
   [gfx::SkColorToCalibratedNSColor(message_center::kProgressBarSliceColor) set];
   [path fill];
 }
+
+- (id)accessibilityAttributeValue:(NSString*)attribute {
+  double progressValue = 0.0;
+  if ([attribute isEqualToString:NSAccessibilityDescriptionAttribute]) {
+    progressValue = [self doubleValue];
+  } else if ([attribute isEqualToString:NSAccessibilityMinValueAttribute]) {
+    progressValue = [self minValue];
+  } else if ([attribute isEqualToString:NSAccessibilityMaxValueAttribute]) {
+    progressValue = [self maxValue];
+  } else {
+    return [super accessibilityAttributeValue:attribute];
+  }
+
+  return [NSString stringWithFormat:@"%lf", progressValue];
+}
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
