@@ -412,6 +412,8 @@ def ProvisionDevices(options):
   provision_cmd = ['build/android/provision_devices.py', '-t', options.target]
   if options.auto_reconnect:
     provision_cmd.append('--auto-reconnect')
+  if options.skip_wipe:
+    provision_cmd.append('--skip-wipe')
   RunCmd(provision_cmd)
 
 
@@ -647,6 +649,8 @@ def GetDeviceStepsOptParser():
   parser.add_option(
       '--auto-reconnect', action='store_true',
       help='Push script to device which restarts adbd on disconnections.')
+  parser.add_option('--skip-wipe', action='store_true',
+                    help='Do not wipe devices during provisioning.')
   parser.add_option(
       '--logcat-dump-output',
       help='The logcat dump output will be "tee"-ed into this file')
