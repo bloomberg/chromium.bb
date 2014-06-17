@@ -294,6 +294,13 @@ jlong AwContents::GetWebContents(JNIEnv* env, jobject obj) {
 
 void AwContents::Destroy(JNIEnv* env, jobject obj) {
   java_ref_.reset();
+
+  // We clear the contents_client_bridge_ here so that we break the link with
+  // the java peer. This is important for the popup window case, where we are
+  // swapping AwContents out that share the same java AwContentsClientBridge.
+  // See b/15074651.
+  contents_client_bridge_.reset();
+
   // We do not delete AwContents immediately. Some applications try to delete
   // Webview in ShouldOverrideUrlLoading callback, which is a sync IPC from
   // Webkit.
