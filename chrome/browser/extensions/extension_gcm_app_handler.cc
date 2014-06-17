@@ -25,6 +25,8 @@ namespace extensions {
 
 namespace {
 
+const char kDummyAppId[] = "extension.guard.dummy.id";
+
 base::LazyInstance<BrowserContextKeyedAPIFactory<ExtensionGCMAppHandler> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
@@ -94,15 +96,37 @@ void ExtensionGCMAppHandler::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
   if (IsGCMPermissionEnabled(extension))
-    GetGCMDriver()->AddAppHandler(extension->id(), this);
+    AddAppHandler(extension->id());
 }
 
 void ExtensionGCMAppHandler::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
-  if (IsGCMPermissionEnabled(extension))
-    GetGCMDriver()->RemoveAppHandler(extension->id());
+  if (!IsGCMPermissionEnabled(extension))
+    return;
+
+  if (reason == UnloadedExtensionInfo::REASON_UPDATE &&
+      GetGCMDriver()->app_handlers().size() == 1) {
+    // When the extension is being updated, it will be first unloaded and then
+    // loaded again by ExtensionService::AddExtension. If the app handler for
+    // this extension is the only handler, removing it and adding it again will
+    // cause the GCM service being stopped and restarted unnecessarily. To work
+    // around this, we add a dummy app handler to guard against it. This dummy
+    // app handler will be removed once the extension loading logic is done.
+    //
+    // Also note that the GCM message routing will not be interruptted during
+    // the update process since unloading and reloading extension are done in
+    // the single function ExtensionService::AddExtension.
+    AddDummyAppHandler();
+
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ExtensionGCMAppHandler::RemoveDummyAppHandler,
+                   weak_factory_.GetWeakPtr()));
+  }
+
+  RemoveAppHandler(extension->id());
 }
 
 void ExtensionGCMAppHandler::OnExtensionUninstalled(
@@ -114,8 +138,16 @@ void ExtensionGCMAppHandler::OnExtensionUninstalled(
         base::Bind(&ExtensionGCMAppHandler::OnUnregisterCompleted,
                    weak_factory_.GetWeakPtr(),
                    extension->id()));
-    GetGCMDriver()->RemoveAppHandler(extension->id());
+    RemoveAppHandler(extension->id());
   }
+}
+
+void ExtensionGCMAppHandler::AddDummyAppHandler() {
+  AddAppHandler(kDummyAppId);
+}
+
+void ExtensionGCMAppHandler::RemoveDummyAppHandler() {
+  RemoveAppHandler(kDummyAppId);
 }
 
 gcm::GCMDriver* ExtensionGCMAppHandler::GetGCMDriver() const {
@@ -125,6 +157,14 @@ gcm::GCMDriver* ExtensionGCMAppHandler::GetGCMDriver() const {
 void ExtensionGCMAppHandler::OnUnregisterCompleted(
     const std::string& app_id, gcm::GCMClient::Result result) {
   // Nothing to do.
+}
+
+void ExtensionGCMAppHandler::AddAppHandler(const std::string& app_id) {
+  GetGCMDriver()->AddAppHandler(app_id, this);
+}
+
+void ExtensionGCMAppHandler::RemoveAppHandler(const std::string& app_id) {
+  GetGCMDriver()->RemoveAppHandler(app_id);
 }
 
 }  // namespace extensions

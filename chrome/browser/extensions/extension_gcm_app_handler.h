@@ -56,10 +56,15 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
       const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
 
  protected:
+  // Could be overridden by testing purpose.
   virtual void OnUnregisterCompleted(const std::string& app_id,
                                      gcm::GCMClient::Result result);
+  virtual void AddAppHandler(const std::string& app_id);
+  virtual void RemoveAppHandler(const std::string& app_id);
 
- private:
+  gcm::GCMDriver* GetGCMDriver() const;
+
+private:
   friend class BrowserContextKeyedAPIFactory<ExtensionGCMAppHandler>;
 
   // ExtensionRegistryObserver implementation.
@@ -72,7 +77,8 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
   virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
                                       const Extension* extension) OVERRIDE;
 
-  gcm::GCMDriver* GetGCMDriver() const;
+  void AddDummyAppHandler();
+  void RemoveDummyAppHandler();
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "ExtensionGCMAppHandler"; }

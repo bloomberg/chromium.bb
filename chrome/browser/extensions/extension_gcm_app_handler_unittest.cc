@@ -9,14 +9,18 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -25,6 +29,7 @@
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/gcm_driver/fake_gcm_app_handler.h"
@@ -36,6 +41,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -131,7 +137,8 @@ class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
   FakeExtensionGCMAppHandler(Profile* profile, Waiter* waiter)
       : ExtensionGCMAppHandler(profile),
         waiter_(waiter),
-        unregistration_result_(gcm::GCMClient::UNKNOWN_ERROR) {
+        unregistration_result_(gcm::GCMClient::UNKNOWN_ERROR),
+        app_handler_count_drop_to_zero_(false) {
   }
 
   virtual ~FakeExtensionGCMAppHandler() {
@@ -156,13 +163,23 @@ class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
     waiter_->SignalCompleted();
   }
 
+  virtual void RemoveAppHandler(const std::string& app_id) OVERRIDE{
+    ExtensionGCMAppHandler::RemoveAppHandler(app_id);
+    if (!GetGCMDriver()->app_handlers().size())
+      app_handler_count_drop_to_zero_ = true;
+  }
+
   gcm::GCMClient::Result unregistration_result() const {
     return unregistration_result_;
+  }
+  bool app_handler_count_drop_to_zero() const {
+    return app_handler_count_drop_to_zero_;
   }
 
  private:
   Waiter* waiter_;
   gcm::GCMClient::Result unregistration_result_;
+  bool app_handler_count_drop_to_zero_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeExtensionGCMAppHandler);
 };
@@ -192,9 +209,15 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
   // Overridden from test::Test:
   virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
     // Make BrowserThread work in unittest.
     thread_bundle_.reset(new content::TestBrowserThreadBundle(
         content::TestBrowserThreadBundle::REAL_IO_THREAD));
+
+    // Allow extension update to unpack crx in process.
+    in_process_utility_thread_helper_.reset(
+        new content::InProcessUtilityThreadHelper);
 
     // This is needed to create extension service under CrOS.
 #if defined(OS_CHROMEOS)
@@ -212,9 +235,14 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     // Create extension service in order to uninstall the extension.
     TestExtensionSystem* extension_system(
         static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile())));
+    base::FilePath extensions_install_dir =
+        temp_dir_.path().Append(FILE_PATH_LITERAL("Extensions"));
     extension_system->CreateExtensionService(
-        CommandLine::ForCurrentProcess(), base::FilePath(), false);
+        CommandLine::ForCurrentProcess(), extensions_install_dir, false);
     extension_service_ = extension_system->Get(profile())->extension_service();
+    extension_service_->set_extensions_enabled(true);
+    extension_service_->set_show_extensions_prompts(false);
+    extension_service_->set_install_updates_when_idle_for_test(false);
 
     // Enable GCM such that tests could be run on all channels.
     profile()->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled, true);
@@ -237,12 +265,6 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
   // Returns a barebones test extension.
   scoped_refptr<Extension> CreateExtension() {
-#if defined(OS_WIN)
-    base::FilePath path(FILE_PATH_LITERAL("c:\\foo"));
-#elif defined(OS_POSIX)
-    base::FilePath path(FILE_PATH_LITERAL("/foo"));
-#endif
-
     base::DictionaryValue manifest;
     manifest.SetString(manifest_keys::kVersion, "1.0.0.0");
     manifest.SetString(manifest_keys::kName, kTestExtensionName);
@@ -252,10 +274,11 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
     std::string error;
     scoped_refptr<Extension> extension = Extension::Create(
-        path.AppendASCII(kTestExtensionName),
-        Manifest::INVALID_LOCATION,
+        temp_dir_.path(),
+        Manifest::UNPACKED,
         manifest,
         Extension::NO_FLAGS,
+        "ldnnhddmnhbkjipkidpdiheffobcpfmf",
         &error);
     EXPECT_TRUE(extension.get()) << error;
     EXPECT_TRUE(
@@ -266,6 +289,38 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
   void LoadExtension(const Extension* extension) {
     extension_service_->AddExtension(extension);
+  }
+
+  static bool IsCrxInstallerDone(extensions::CrxInstaller** installer,
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
+    return content::Source<extensions::CrxInstaller>(source).ptr() ==
+           *installer;
+  }
+
+  void UpdateExtension(const Extension* extension,
+                       const std::string& update_crx) {
+    base::FilePath data_dir;
+    if (!PathService::Get(chrome::DIR_TEST_DATA, &data_dir)) {
+      ADD_FAILURE();
+      return;
+    }
+    data_dir = data_dir.AppendASCII("extensions");
+    data_dir = data_dir.AppendASCII(update_crx);
+
+    base::FilePath path = temp_dir_.path();
+    path = path.Append(data_dir.BaseName());
+    ASSERT_TRUE(base::CopyFile(data_dir, path));
+
+    extensions::CrxInstaller* installer = NULL;
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+        base::Bind(&IsCrxInstallerDone, &installer));
+    extension_service_->UpdateExtension(
+        extension->id(), path, true, &installer);
+
+    if (installer)
+      observer.Wait();
   }
 
   void DisableExtension(const Extension* extension) {
@@ -328,9 +383,12 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
  private:
   scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  scoped_ptr<content::InProcessUtilityThreadHelper>
+      in_process_utility_thread_helper_;
   scoped_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;  // Not owned.
   gcm::FakeSigninManager* signin_manager_;  // Not owned.
+  base::ScopedTempDir temp_dir_;
 
   // This is needed to create extension service under CrOS.
 #if defined(OS_CHROMEOS)
@@ -398,6 +456,37 @@ TEST_F(ExtensionGCMAppHandlerTest, UnregisterOnExtensionUninstall) {
 
   // Clean up.
   GetGCMDriver()->RemoveAppHandler("Foo");
+}
+
+TEST_F(ExtensionGCMAppHandlerTest, UpdateExtensionWithGcmPermissionKept) {
+  scoped_refptr<Extension> extension(CreateExtension());
+
+  // App handler is added when the extension is loaded.
+  LoadExtension(extension);
+  waiter()->PumpUILoop();
+  EXPECT_TRUE(HasAppHandlers(extension->id()));
+
+  // App handler count should not drop to zero when the extension is updated.
+  UpdateExtension(extension, "gcm2.crx");
+  waiter()->PumpUILoop();
+  EXPECT_FALSE(gcm_app_handler()->app_handler_count_drop_to_zero());
+  EXPECT_TRUE(HasAppHandlers(extension->id()));
+}
+
+TEST_F(ExtensionGCMAppHandlerTest, UpdateExtensionWithGcmPermissionRemoved) {
+  scoped_refptr<Extension> extension(CreateExtension());
+
+  // App handler is added when the extension is loaded.
+  LoadExtension(extension);
+  waiter()->PumpUILoop();
+  EXPECT_TRUE(HasAppHandlers(extension->id()));
+
+  // App handler is removed when the extension is updated to the version that
+  // has GCM permission removed.
+  UpdateExtension(extension, "good2.crx");
+  waiter()->PumpUILoop();
+  EXPECT_TRUE(gcm_app_handler()->app_handler_count_drop_to_zero());
+  EXPECT_FALSE(HasAppHandlers(extension->id()));
 }
 
 }  // namespace extensions
