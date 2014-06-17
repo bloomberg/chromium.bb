@@ -29,6 +29,12 @@
  */
 
 /**
+ * FIXME: ES5 strict mode check is suppressed due to multiple uses of arguments.callee.
+ * @fileoverview
+ * @suppress {es5Strict}
+ */
+
+/**
  * @param {InjectedScriptHostClass} InjectedScriptHost
  * @param {Window} inspectedWindow
  * @param {number} injectedScriptId
@@ -3955,16 +3961,17 @@ WebGLCallFormatter.prototype = {
 
         // Sort to get rid of ambiguity.
         for (var value in this._enumValueToNames) {
-            var names = this._enumValueToNames[value];
+            var numericValue = Number(value);
+            var names = this._enumValueToNames[numericValue];
             if (names.length > 1) {
                 // Choose one enum name if possible. For example:
                 //   [BLEND_EQUATION, BLEND_EQUATION_RGB] => BLEND_EQUATION
                 //   [COLOR_ATTACHMENT0, COLOR_ATTACHMENT0_WEBGL] => COLOR_ATTACHMENT0
                 var common = commonSubstring(names);
                 if (common)
-                    this._enumValueToNames[value] = [common];
+                    this._enumValueToNames[numericValue] = [common];
                 else
-                    this._enumValueToNames[value] = names.sort();
+                    this._enumValueToNames[numericValue] = names.sort();
             }
         }
     },
