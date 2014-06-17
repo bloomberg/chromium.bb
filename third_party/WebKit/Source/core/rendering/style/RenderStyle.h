@@ -1011,13 +1011,23 @@ public:
     DraggableRegionMode getDraggableRegionMode() const { return rareNonInheritedData->m_draggableRegionMode; }
     void setDraggableRegionMode(DraggableRegionMode v) { SET_VAR(rareNonInheritedData, m_draggableRegionMode, v); }
 
-    void resetBorder() { resetBorderImage(); resetBorderTop(); resetBorderRight(); resetBorderBottom(); resetBorderLeft(); resetBorderRadius(); }
+    void resetBorder()
+    {
+        resetBorderImage();
+        resetBorderTop();
+        resetBorderRight();
+        resetBorderBottom();
+        resetBorderLeft();
+        resetBorderTopLeftRadius();
+        resetBorderTopRightRadius();
+        resetBorderBottomLeftRadius();
+        resetBorderBottomRightRadius();
+    }
     void resetBorderTop() { SET_VAR(surround, border.m_top, BorderValue()); }
     void resetBorderRight() { SET_VAR(surround, border.m_right, BorderValue()); }
     void resetBorderBottom() { SET_VAR(surround, border.m_bottom, BorderValue()); }
     void resetBorderLeft() { SET_VAR(surround, border.m_left, BorderValue()); }
     void resetBorderImage() { SET_VAR(surround, border.m_image, NinePieceImage()); }
-    void resetBorderRadius() { resetBorderTopLeftRadius(); resetBorderTopRightRadius(); resetBorderBottomLeftRadius(); resetBorderBottomRightRadius(); }
     void resetBorderTopLeftRadius() { SET_VAR(surround, border.m_topLeft, initialBorderRadius()); }
     void resetBorderTopRightRadius() { SET_VAR(surround, border.m_topRight, initialBorderRadius()); }
     void resetBorderBottomLeftRadius() { SET_VAR(surround, border.m_bottomLeft, initialBorderRadius()); }
@@ -1187,7 +1197,6 @@ public:
     void setListStyleImage(PassRefPtr<StyleImage>);
     void setListStylePosition(EListStylePosition v) { inherited_flags._list_style_position = v; }
 
-    void resetMargin() { SET_VAR(surround, margin, LengthBox(Fixed)); }
     void setMarginTop(const Length& v) { SET_VAR(surround, margin.m_top, v); }
     void setMarginBottom(const Length& v) { SET_VAR(surround, margin.m_bottom, v); }
     void setMarginLeft(const Length& v) { SET_VAR(surround, margin.m_left, v); }
