@@ -199,77 +199,9 @@ namespace cmds {
 
 // These are hand written commands.
 // TODO(gman): Attempt to make these auto-generated.
-
 struct GetAttribLocation {
   typedef GetAttribLocation ValueType;
   static const CommandId kCmdId = kGetAttribLocation;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  typedef GLint Result;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(
-      GLuint _program, uint32 _name_shm_id, uint32 _name_shm_offset,
-      uint32 _location_shm_id, uint32 _location_shm_offset,
-      uint32 _data_size) {
-    SetHeader();
-    program = _program;
-    name_shm_id = _name_shm_id;
-    name_shm_offset = _name_shm_offset;
-    location_shm_id = _location_shm_id;
-    location_shm_offset = _location_shm_offset;
-    data_size = _data_size;
-  }
-
-  void* Set(
-      void* cmd, GLuint _program, uint32 _name_shm_id, uint32 _name_shm_offset,
-      uint32 _location_shm_id, uint32 _location_shm_offset,
-      uint32 _data_size) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _program, _name_shm_id, _name_shm_offset, _location_shm_id,
-            _location_shm_offset, _data_size);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  CommandHeader header;
-  uint32 program;
-  uint32 name_shm_id;
-  uint32 name_shm_offset;
-  uint32 location_shm_id;
-  uint32 location_shm_offset;
-  uint32 data_size;
-};
-
-COMPILE_ASSERT(sizeof(GetAttribLocation) == 28,
-               Sizeof_GetAttribLocation_is_not_28);
-COMPILE_ASSERT(offsetof(GetAttribLocation, header) == 0,
-               OffsetOf_GetAttribLocation_header_not_0);
-COMPILE_ASSERT(offsetof(GetAttribLocation, program) == 4,
-               OffsetOf_GetAttribLocation_program_not_4);
-COMPILE_ASSERT(offsetof(GetAttribLocation, name_shm_id) == 8,
-               OffsetOf_GetAttribLocation_name_shm_id_not_8);
-COMPILE_ASSERT(offsetof(GetAttribLocation, name_shm_offset) == 12,
-               OffsetOf_GetAttribLocation_name_shm_offset_not_12);
-COMPILE_ASSERT(offsetof(GetAttribLocation, location_shm_id) == 16,
-               OffsetOf_GetAttribLocation_location_shm_id_not_16);
-COMPILE_ASSERT(offsetof(GetAttribLocation, location_shm_offset) == 20,
-               OffsetOf_GetAttribLocation_location_shm_offset_not_20);
-COMPILE_ASSERT(offsetof(GetAttribLocation, data_size) == 24,
-               OffsetOf_GetAttribLocation_data_size_not_24);
-
-
-struct GetAttribLocationBucket {
-  typedef GetAttribLocationBucket ValueType;
-  static const CommandId kCmdId = kGetAttribLocationBucket;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
@@ -310,18 +242,18 @@ struct GetAttribLocationBucket {
   uint32 location_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetAttribLocationBucket) == 20,
-               Sizeof_GetAttribLocationBucket_is_not_24);
-COMPILE_ASSERT(offsetof(GetAttribLocationBucket, header) == 0,
-               OffsetOf_GetAttribLocationBucket_header_not_0);
-COMPILE_ASSERT(offsetof(GetAttribLocationBucket, program) == 4,
-               OffsetOf_GetAttribLocationBucket_program_not_4);
-COMPILE_ASSERT(offsetof(GetAttribLocationBucket, name_bucket_id) == 8,
-               OffsetOf_GetAttribLocationBucket_name_bucket_id_not_8);
-COMPILE_ASSERT(offsetof(GetAttribLocationBucket, location_shm_id) == 12,
-               OffsetOf_GetAttribLocationBucket_location_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetAttribLocationBucket, location_shm_offset) == 16,
-               OffsetOf_GetAttribLocationBucket_location_shm_offset_not_16);
+COMPILE_ASSERT(sizeof(GetAttribLocation) == 20,
+               Sizeof_GetAttribLocation_is_not_24);
+COMPILE_ASSERT(offsetof(GetAttribLocation, header) == 0,
+               OffsetOf_GetAttribLocation_header_not_0);
+COMPILE_ASSERT(offsetof(GetAttribLocation, program) == 4,
+               OffsetOf_GetAttribLocation_program_not_4);
+COMPILE_ASSERT(offsetof(GetAttribLocation, name_bucket_id) == 8,
+               OffsetOf_GetAttribLocation_name_bucket_id_not_8);
+COMPILE_ASSERT(offsetof(GetAttribLocation, location_shm_id) == 12,
+               OffsetOf_GetAttribLocation_location_shm_id_not_12);
+COMPILE_ASSERT(offsetof(GetAttribLocation, location_shm_offset) == 16,
+               OffsetOf_GetAttribLocation_location_shm_offset_not_16);
 
 struct GetUniformLocation {
   typedef GetUniformLocation ValueType;
@@ -340,72 +272,6 @@ struct GetUniformLocation {
   }
 
   void Init(
-      GLuint _program, uint32 _name_shm_id, uint32 _name_shm_offset,
-      uint32 _location_shm_id, uint32 _location_shm_offset,
-      uint32 _data_size) {
-    SetHeader();
-    program = _program;
-    name_shm_id = _name_shm_id;
-    name_shm_offset = _name_shm_offset;
-    location_shm_id = _location_shm_id;
-    location_shm_offset = _location_shm_offset;
-    data_size = _data_size;
-  }
-
-  void* Set(
-      void* cmd, GLuint _program, uint32 _name_shm_id, uint32 _name_shm_offset,
-      uint32 _location_shm_id, uint32 _location_shm_offset,
-      uint32 _data_size) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _program, _name_shm_id, _name_shm_offset, _location_shm_id,
-            _location_shm_offset, _data_size);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  CommandHeader header;
-  uint32 program;
-  uint32 name_shm_id;
-  uint32 name_shm_offset;
-  uint32 location_shm_id;
-  uint32 location_shm_offset;
-  uint32 data_size;
-};
-
-COMPILE_ASSERT(sizeof(GetUniformLocation) == 28,
-               Sizeof_GetUniformLocation_is_not_28);
-COMPILE_ASSERT(offsetof(GetUniformLocation, header) == 0,
-               OffsetOf_GetUniformLocation_header_not_0);
-COMPILE_ASSERT(offsetof(GetUniformLocation, program) == 4,
-               OffsetOf_GetUniformLocation_program_not_4);
-COMPILE_ASSERT(offsetof(GetUniformLocation, name_shm_id) == 8,
-               OffsetOf_GetUniformLocation_name_shm_id_not_8);
-COMPILE_ASSERT(offsetof(GetUniformLocation, name_shm_offset) == 12,
-               OffsetOf_GetUniformLocation_name_shm_offset_not_12);
-COMPILE_ASSERT(offsetof(GetUniformLocation, location_shm_id) == 16,
-               OffsetOf_GetUniformLocation_location_shm_id_not_16);
-COMPILE_ASSERT(offsetof(GetUniformLocation, location_shm_offset) == 20,
-               OffsetOf_GetUniformLocation_location_shm_offset_not_20);
-COMPILE_ASSERT(offsetof(GetUniformLocation, data_size) == 24,
-               OffsetOf_GetUniformLocation_data_size_not_24);
-
-struct GetUniformLocationBucket {
-  typedef GetUniformLocationBucket ValueType;
-  static const CommandId kCmdId = kGetUniformLocationBucket;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  typedef GLint Result;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(
       GLuint _program, uint32 _name_bucket_id,
       uint32 _location_shm_id, uint32 _location_shm_offset) {
     SetHeader();
@@ -432,18 +298,18 @@ struct GetUniformLocationBucket {
   uint32 location_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetUniformLocationBucket) == 20,
-               Sizeof_GetUniformLocationBucket_is_not_24);
-COMPILE_ASSERT(offsetof(GetUniformLocationBucket, header) == 0,
-               OffsetOf_GetUniformLocationBucket_header_not_0);
-COMPILE_ASSERT(offsetof(GetUniformLocationBucket, program) == 4,
-               OffsetOf_GetUniformLocationBucket_program_not_4);
-COMPILE_ASSERT(offsetof(GetUniformLocationBucket, name_bucket_id) == 8,
-               OffsetOf_GetUniformLocationBucket_name_bucket_id_not_8);
-COMPILE_ASSERT(offsetof(GetUniformLocationBucket, location_shm_id) == 12,
-               OffsetOf_GetUniformLocationBucket_location_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetUniformLocationBucket, location_shm_offset) == 16,
-               OffsetOf_GetUniformLocationBucket_location_shm_offset_not_16);
+COMPILE_ASSERT(sizeof(GetUniformLocation) == 20,
+               Sizeof_GetUniformLocation_is_not_24);
+COMPILE_ASSERT(offsetof(GetUniformLocation, header) == 0,
+               OffsetOf_GetUniformLocation_header_not_0);
+COMPILE_ASSERT(offsetof(GetUniformLocation, program) == 4,
+               OffsetOf_GetUniformLocation_program_not_4);
+COMPILE_ASSERT(offsetof(GetUniformLocation, name_bucket_id) == 8,
+               OffsetOf_GetUniformLocation_name_bucket_id_not_8);
+COMPILE_ASSERT(offsetof(GetUniformLocation, location_shm_id) == 12,
+               OffsetOf_GetUniformLocation_location_shm_id_not_12);
+COMPILE_ASSERT(offsetof(GetUniformLocation, location_shm_offset) == 16,
+               OffsetOf_GetUniformLocation_location_shm_offset_not_16);
 
 struct GenMailboxCHROMIUM {
   typedef GenMailboxCHROMIUM ValueType;

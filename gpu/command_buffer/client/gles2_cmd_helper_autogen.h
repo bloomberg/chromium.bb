@@ -25,18 +25,6 @@ void AttachShader(GLuint program, GLuint shader) {
   }
 }
 
-void BindAttribLocation(GLuint program,
-                        GLuint index,
-                        uint32_t name_shm_id,
-                        uint32_t name_shm_offset,
-                        uint32_t data_size) {
-  gles2::cmds::BindAttribLocation* c =
-      GetCmdSpace<gles2::cmds::BindAttribLocation>();
-  if (c) {
-    c->Init(program, index, name_shm_id, name_shm_offset, data_size);
-  }
-}
-
 void BindAttribLocationBucket(GLuint program,
                               GLuint index,
                               uint32_t name_bucket_id) {
@@ -193,6 +181,19 @@ void CompileShader(GLuint shader) {
   }
 }
 
+void CompressedTexImage2DBucket(GLenum target,
+                                GLint level,
+                                GLenum internalformat,
+                                GLsizei width,
+                                GLsizei height,
+                                GLuint bucket_id) {
+  gles2::cmds::CompressedTexImage2DBucket* c =
+      GetCmdSpace<gles2::cmds::CompressedTexImage2DBucket>();
+  if (c) {
+    c->Init(target, level, internalformat, width, height, bucket_id);
+  }
+}
+
 void CompressedTexImage2D(GLenum target,
                           GLint level,
                           GLenum internalformat,
@@ -215,16 +216,18 @@ void CompressedTexImage2D(GLenum target,
   }
 }
 
-void CompressedTexImage2DBucket(GLenum target,
-                                GLint level,
-                                GLenum internalformat,
-                                GLsizei width,
-                                GLsizei height,
-                                GLuint bucket_id) {
-  gles2::cmds::CompressedTexImage2DBucket* c =
-      GetCmdSpace<gles2::cmds::CompressedTexImage2DBucket>();
+void CompressedTexSubImage2DBucket(GLenum target,
+                                   GLint level,
+                                   GLint xoffset,
+                                   GLint yoffset,
+                                   GLsizei width,
+                                   GLsizei height,
+                                   GLenum format,
+                                   GLuint bucket_id) {
+  gles2::cmds::CompressedTexSubImage2DBucket* c =
+      GetCmdSpace<gles2::cmds::CompressedTexSubImage2DBucket>();
   if (c) {
-    c->Init(target, level, internalformat, width, height, bucket_id);
+    c->Init(target, level, xoffset, yoffset, width, height, format, bucket_id);
   }
 }
 
@@ -251,21 +254,6 @@ void CompressedTexSubImage2D(GLenum target,
             imageSize,
             data_shm_id,
             data_shm_offset);
-  }
-}
-
-void CompressedTexSubImage2DBucket(GLenum target,
-                                   GLint level,
-                                   GLint xoffset,
-                                   GLint yoffset,
-                                   GLsizei width,
-                                   GLsizei height,
-                                   GLenum format,
-                                   GLuint bucket_id) {
-  gles2::cmds::CompressedTexSubImage2DBucket* c =
-      GetCmdSpace<gles2::cmds::CompressedTexSubImage2DBucket>();
-  if (c) {
-    c->Init(target, level, xoffset, yoffset, width, height, format, bucket_id);
   }
 }
 
@@ -945,16 +933,6 @@ void ShaderBinary(GLsizei n,
             binary_shm_id,
             binary_shm_offset,
             length);
-  }
-}
-
-void ShaderSource(GLuint shader,
-                  uint32_t data_shm_id,
-                  uint32_t data_shm_offset,
-                  uint32_t data_size) {
-  gles2::cmds::ShaderSource* c = GetCmdSpace<gles2::cmds::ShaderSource>();
-  if (c) {
-    c->Init(shader, data_shm_id, data_shm_offset, data_size);
   }
 }
 
@@ -1746,18 +1724,6 @@ void ConsumeTextureCHROMIUMImmediate(GLenum target, const GLbyte* mailbox) {
           gles2::cmds::ConsumeTextureCHROMIUMImmediate>(size);
   if (c) {
     c->Init(target, mailbox);
-  }
-}
-
-void BindUniformLocationCHROMIUM(GLuint program,
-                                 GLint location,
-                                 uint32_t name_shm_id,
-                                 uint32_t name_shm_offset,
-                                 uint32_t data_size) {
-  gles2::cmds::BindUniformLocationCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::BindUniformLocationCHROMIUM>();
-  if (c) {
-    c->Init(program, location, name_shm_id, name_shm_offset, data_size);
   }
 }
 

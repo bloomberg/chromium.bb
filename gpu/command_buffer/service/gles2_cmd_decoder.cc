@@ -4728,21 +4728,6 @@ void GLES2DecoderImpl::DoBindAttribLocation(
   glBindAttribLocation(program->service_id(), index, name);
 }
 
-error::Error GLES2DecoderImpl::HandleBindAttribLocation(
-    uint32 immediate_data_size, const cmds::BindAttribLocation& c) {
-  GLuint program = static_cast<GLuint>(c.program);
-  GLuint index = static_cast<GLuint>(c.index);
-  uint32 name_size = c.data_size;
-  const char* name = GetSharedMemoryAs<const char*>(
-      c.name_shm_id, c.name_shm_offset, name_size);
-  if (name == NULL) {
-    return error::kOutOfBounds;
-  }
-  std::string name_str(name, name_size);
-  DoBindAttribLocation(program, index, name_str.c_str());
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderImpl::HandleBindAttribLocationBucket(
     uint32 immediate_data_size, const cmds::BindAttribLocationBucket& c) {
   GLuint program = static_cast<GLuint>(c.program);
@@ -4791,21 +4776,6 @@ void GLES2DecoderImpl::DoBindUniformLocationCHROMIUM(
         GL_INVALID_VALUE,
         "glBindUniformLocationCHROMIUM", "location out of range");
   }
-}
-
-error::Error GLES2DecoderImpl::HandleBindUniformLocationCHROMIUM(
-    uint32 immediate_data_size, const cmds::BindUniformLocationCHROMIUM& c) {
-  GLuint program = static_cast<GLuint>(c.program);
-  GLint location = static_cast<GLint>(c.location);
-  uint32 name_size = c.data_size;
-  const char* name = GetSharedMemoryAs<const char*>(
-      c.name_shm_id, c.name_shm_offset, name_size);
-  if (name == NULL) {
-    return error::kOutOfBounds;
-  }
-  std::string name_str(name, name_size);
-  DoBindUniformLocationCHROMIUM(program, location, name_str.c_str());
-  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleBindUniformLocationCHROMIUMBucket(
@@ -6701,17 +6671,6 @@ error::Error GLES2DecoderImpl::ShaderSourceHelper(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleShaderSource(
-    uint32 immediate_data_size, const cmds::ShaderSource& c) {
-  uint32 data_size = c.data_size;
-  const char* data = GetSharedMemoryAs<const char*>(
-      c.data_shm_id, c.data_shm_offset, data_size);
-  if (!data) {
-    return error::kOutOfBounds;
-  }
-  return ShaderSourceHelper(c.shader, data, data_size);
-}
-
 error::Error GLES2DecoderImpl::HandleShaderSourceBucket(
   uint32 immediate_data_size, const cmds::ShaderSourceBucket& c) {
   Bucket* bucket = GetBucket(c.data_bucket_id);
@@ -7637,19 +7596,6 @@ error::Error GLES2DecoderImpl::GetAttribLocationHelper(
 
 error::Error GLES2DecoderImpl::HandleGetAttribLocation(
     uint32 immediate_data_size, const cmds::GetAttribLocation& c) {
-  uint32 name_size = c.data_size;
-  const char* name = GetSharedMemoryAs<const char*>(
-      c.name_shm_id, c.name_shm_offset, name_size);
-  if (!name) {
-    return error::kOutOfBounds;
-  }
-  std::string name_str(name, name_size);
-  return GetAttribLocationHelper(
-    c.program, c.location_shm_id, c.location_shm_offset, name_str);
-}
-
-error::Error GLES2DecoderImpl::HandleGetAttribLocationBucket(
-    uint32 immediate_data_size, const cmds::GetAttribLocationBucket& c) {
   Bucket* bucket = GetBucket(c.name_bucket_id);
   if (!bucket) {
     return error::kInvalidArguments;
@@ -7696,19 +7642,6 @@ error::Error GLES2DecoderImpl::GetUniformLocationHelper(
 
 error::Error GLES2DecoderImpl::HandleGetUniformLocation(
     uint32 immediate_data_size, const cmds::GetUniformLocation& c) {
-  uint32 name_size = c.data_size;
-  const char* name = GetSharedMemoryAs<const char*>(
-      c.name_shm_id, c.name_shm_offset, name_size);
-  if (!name) {
-    return error::kOutOfBounds;
-  }
-  std::string name_str(name, name_size);
-  return GetUniformLocationHelper(
-    c.program, c.location_shm_id, c.location_shm_offset, name_str);
-}
-
-error::Error GLES2DecoderImpl::HandleGetUniformLocationBucket(
-    uint32 immediate_data_size, const cmds::GetUniformLocationBucket& c) {
   Bucket* bucket = GetBucket(c.name_bucket_id);
   if (!bucket) {
     return error::kInvalidArguments;

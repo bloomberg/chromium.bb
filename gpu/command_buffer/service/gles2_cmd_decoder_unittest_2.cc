@@ -472,25 +472,6 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix4fvImmediate, 0>(
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::RenderbufferStorage, 0>(
-    bool valid) {
-  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
-                    kServiceRenderbufferId);
-  if (valid) {
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_,
-                RenderbufferStorageEXT(GL_RENDERBUFFER, _, 3, 4))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
-  }
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::TexParameterf, 0>(
     bool /* valid */) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);

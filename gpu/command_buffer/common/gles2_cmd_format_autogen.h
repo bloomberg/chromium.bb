@@ -79,65 +79,6 @@ COMPILE_ASSERT(offsetof(AttachShader, program) == 4,
 COMPILE_ASSERT(offsetof(AttachShader, shader) == 8,
                OffsetOf_AttachShader_shader_not_8);
 
-struct BindAttribLocation {
-  typedef BindAttribLocation ValueType;
-  static const CommandId kCmdId = kBindAttribLocation;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLuint _program,
-            GLuint _index,
-            uint32_t _name_shm_id,
-            uint32_t _name_shm_offset,
-            uint32_t _data_size) {
-    SetHeader();
-    program = _program;
-    index = _index;
-    name_shm_id = _name_shm_id;
-    name_shm_offset = _name_shm_offset;
-    data_size = _data_size;
-  }
-
-  void* Set(void* cmd,
-            GLuint _program,
-            GLuint _index,
-            uint32_t _name_shm_id,
-            uint32_t _name_shm_offset,
-            uint32_t _data_size) {
-    static_cast<ValueType*>(cmd)
-        ->Init(_program, _index, _name_shm_id, _name_shm_offset, _data_size);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t program;
-  uint32_t index;
-  uint32_t name_shm_id;
-  uint32_t name_shm_offset;
-  uint32_t data_size;
-};
-
-COMPILE_ASSERT(sizeof(BindAttribLocation) == 24,
-               Sizeof_BindAttribLocation_is_not_24);
-COMPILE_ASSERT(offsetof(BindAttribLocation, header) == 0,
-               OffsetOf_BindAttribLocation_header_not_0);
-COMPILE_ASSERT(offsetof(BindAttribLocation, program) == 4,
-               OffsetOf_BindAttribLocation_program_not_4);
-COMPILE_ASSERT(offsetof(BindAttribLocation, index) == 8,
-               OffsetOf_BindAttribLocation_index_not_8);
-COMPILE_ASSERT(offsetof(BindAttribLocation, name_shm_id) == 12,
-               OffsetOf_BindAttribLocation_name_shm_id_not_12);
-COMPILE_ASSERT(offsetof(BindAttribLocation, name_shm_offset) == 16,
-               OffsetOf_BindAttribLocation_name_shm_offset_not_16);
-COMPILE_ASSERT(offsetof(BindAttribLocation, data_size) == 20,
-               OffsetOf_BindAttribLocation_data_size_not_20);
-
 struct BindAttribLocationBucket {
   typedef BindAttribLocationBucket ValueType;
   static const CommandId kCmdId = kBindAttribLocationBucket;
@@ -915,6 +856,72 @@ COMPILE_ASSERT(offsetof(CompileShader, header) == 0,
 COMPILE_ASSERT(offsetof(CompileShader, shader) == 4,
                OffsetOf_CompileShader_shader_not_4);
 
+struct CompressedTexImage2DBucket {
+  typedef CompressedTexImage2DBucket ValueType;
+  static const CommandId kCmdId = kCompressedTexImage2DBucket;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLint _level,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLuint _bucket_id) {
+    SetHeader();
+    target = _target;
+    level = _level;
+    internalformat = _internalformat;
+    width = _width;
+    height = _height;
+    bucket_id = _bucket_id;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLuint _bucket_id) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _level, _internalformat, _width, _height, _bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  int32_t level;
+  uint32_t internalformat;
+  int32_t width;
+  int32_t height;
+  uint32_t bucket_id;
+  static const int32_t border = 0;
+};
+
+COMPILE_ASSERT(sizeof(CompressedTexImage2DBucket) == 28,
+               Sizeof_CompressedTexImage2DBucket_is_not_28);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, header) == 0,
+               OffsetOf_CompressedTexImage2DBucket_header_not_0);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, target) == 4,
+               OffsetOf_CompressedTexImage2DBucket_target_not_4);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, level) == 8,
+               OffsetOf_CompressedTexImage2DBucket_level_not_8);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, internalformat) == 12,
+               OffsetOf_CompressedTexImage2DBucket_internalformat_not_12);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, width) == 16,
+               OffsetOf_CompressedTexImage2DBucket_width_not_16);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, height) == 20,
+               OffsetOf_CompressedTexImage2DBucket_height_not_20);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, bucket_id) == 24,
+               OffsetOf_CompressedTexImage2DBucket_bucket_id_not_24);
+
 struct CompressedTexImage2D {
   typedef CompressedTexImage2D ValueType;
   static const CommandId kCmdId = kCompressedTexImage2D;
@@ -999,9 +1006,9 @@ COMPILE_ASSERT(offsetof(CompressedTexImage2D, data_shm_id) == 28,
 COMPILE_ASSERT(offsetof(CompressedTexImage2D, data_shm_offset) == 32,
                OffsetOf_CompressedTexImage2D_data_shm_offset_not_32);
 
-struct CompressedTexImage2DBucket {
-  typedef CompressedTexImage2DBucket ValueType;
-  static const CommandId kCmdId = kCompressedTexImage2DBucket;
+struct CompressedTexSubImage2DBucket {
+  typedef CompressedTexSubImage2DBucket ValueType;
+  static const CommandId kCmdId = kCompressedTexSubImage2DBucket;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
@@ -1013,57 +1020,74 @@ struct CompressedTexImage2DBucket {
 
   void Init(GLenum _target,
             GLint _level,
-            GLenum _internalformat,
+            GLint _xoffset,
+            GLint _yoffset,
             GLsizei _width,
             GLsizei _height,
+            GLenum _format,
             GLuint _bucket_id) {
     SetHeader();
     target = _target;
     level = _level;
-    internalformat = _internalformat;
+    xoffset = _xoffset;
+    yoffset = _yoffset;
     width = _width;
     height = _height;
+    format = _format;
     bucket_id = _bucket_id;
   }
 
   void* Set(void* cmd,
             GLenum _target,
             GLint _level,
-            GLenum _internalformat,
+            GLint _xoffset,
+            GLint _yoffset,
             GLsizei _width,
             GLsizei _height,
+            GLenum _format,
             GLuint _bucket_id) {
-    static_cast<ValueType*>(cmd)
-        ->Init(_target, _level, _internalformat, _width, _height, _bucket_id);
+    static_cast<ValueType*>(cmd)->Init(_target,
+                                       _level,
+                                       _xoffset,
+                                       _yoffset,
+                                       _width,
+                                       _height,
+                                       _format,
+                                       _bucket_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32_t target;
   int32_t level;
-  uint32_t internalformat;
+  int32_t xoffset;
+  int32_t yoffset;
   int32_t width;
   int32_t height;
+  uint32_t format;
   uint32_t bucket_id;
-  static const int32_t border = 0;
 };
 
-COMPILE_ASSERT(sizeof(CompressedTexImage2DBucket) == 28,
-               Sizeof_CompressedTexImage2DBucket_is_not_28);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, header) == 0,
-               OffsetOf_CompressedTexImage2DBucket_header_not_0);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, target) == 4,
-               OffsetOf_CompressedTexImage2DBucket_target_not_4);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, level) == 8,
-               OffsetOf_CompressedTexImage2DBucket_level_not_8);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, internalformat) == 12,
-               OffsetOf_CompressedTexImage2DBucket_internalformat_not_12);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, width) == 16,
-               OffsetOf_CompressedTexImage2DBucket_width_not_16);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, height) == 20,
-               OffsetOf_CompressedTexImage2DBucket_height_not_20);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, bucket_id) == 24,
-               OffsetOf_CompressedTexImage2DBucket_bucket_id_not_24);
+COMPILE_ASSERT(sizeof(CompressedTexSubImage2DBucket) == 36,
+               Sizeof_CompressedTexSubImage2DBucket_is_not_36);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, header) == 0,
+               OffsetOf_CompressedTexSubImage2DBucket_header_not_0);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, target) == 4,
+               OffsetOf_CompressedTexSubImage2DBucket_target_not_4);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, level) == 8,
+               OffsetOf_CompressedTexSubImage2DBucket_level_not_8);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, xoffset) == 12,
+               OffsetOf_CompressedTexSubImage2DBucket_xoffset_not_12);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, yoffset) == 16,
+               OffsetOf_CompressedTexSubImage2DBucket_yoffset_not_16);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, width) == 20,
+               OffsetOf_CompressedTexSubImage2DBucket_width_not_20);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, height) == 24,
+               OffsetOf_CompressedTexSubImage2DBucket_height_not_24);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, format) == 28,
+               OffsetOf_CompressedTexSubImage2DBucket_format_not_28);
+COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, bucket_id) == 32,
+               OffsetOf_CompressedTexSubImage2DBucket_bucket_id_not_32);
 
 struct CompressedTexSubImage2D {
   typedef CompressedTexSubImage2D ValueType;
@@ -1161,89 +1185,6 @@ COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, data_shm_id) == 36,
                OffsetOf_CompressedTexSubImage2D_data_shm_id_not_36);
 COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, data_shm_offset) == 40,
                OffsetOf_CompressedTexSubImage2D_data_shm_offset_not_40);
-
-struct CompressedTexSubImage2DBucket {
-  typedef CompressedTexSubImage2DBucket ValueType;
-  static const CommandId kCmdId = kCompressedTexSubImage2DBucket;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLenum _target,
-            GLint _level,
-            GLint _xoffset,
-            GLint _yoffset,
-            GLsizei _width,
-            GLsizei _height,
-            GLenum _format,
-            GLuint _bucket_id) {
-    SetHeader();
-    target = _target;
-    level = _level;
-    xoffset = _xoffset;
-    yoffset = _yoffset;
-    width = _width;
-    height = _height;
-    format = _format;
-    bucket_id = _bucket_id;
-  }
-
-  void* Set(void* cmd,
-            GLenum _target,
-            GLint _level,
-            GLint _xoffset,
-            GLint _yoffset,
-            GLsizei _width,
-            GLsizei _height,
-            GLenum _format,
-            GLuint _bucket_id) {
-    static_cast<ValueType*>(cmd)->Init(_target,
-                                       _level,
-                                       _xoffset,
-                                       _yoffset,
-                                       _width,
-                                       _height,
-                                       _format,
-                                       _bucket_id);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t target;
-  int32_t level;
-  int32_t xoffset;
-  int32_t yoffset;
-  int32_t width;
-  int32_t height;
-  uint32_t format;
-  uint32_t bucket_id;
-};
-
-COMPILE_ASSERT(sizeof(CompressedTexSubImage2DBucket) == 36,
-               Sizeof_CompressedTexSubImage2DBucket_is_not_36);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, header) == 0,
-               OffsetOf_CompressedTexSubImage2DBucket_header_not_0);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, target) == 4,
-               OffsetOf_CompressedTexSubImage2DBucket_target_not_4);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, level) == 8,
-               OffsetOf_CompressedTexSubImage2DBucket_level_not_8);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, xoffset) == 12,
-               OffsetOf_CompressedTexSubImage2DBucket_xoffset_not_12);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, yoffset) == 16,
-               OffsetOf_CompressedTexSubImage2DBucket_yoffset_not_16);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, width) == 20,
-               OffsetOf_CompressedTexSubImage2DBucket_width_not_20);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, height) == 24,
-               OffsetOf_CompressedTexSubImage2DBucket_height_not_24);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, format) == 28,
-               OffsetOf_CompressedTexSubImage2DBucket_format_not_28);
-COMPILE_ASSERT(offsetof(CompressedTexSubImage2DBucket, bucket_id) == 32,
-               OffsetOf_CompressedTexSubImage2DBucket_bucket_id_not_32);
 
 struct CopyTexImage2D {
   typedef CopyTexImage2D ValueType;
@@ -4542,58 +4483,6 @@ COMPILE_ASSERT(offsetof(ShaderBinary, binary_shm_offset) == 24,
                OffsetOf_ShaderBinary_binary_shm_offset_not_24);
 COMPILE_ASSERT(offsetof(ShaderBinary, length) == 28,
                OffsetOf_ShaderBinary_length_not_28);
-
-struct ShaderSource {
-  typedef ShaderSource ValueType;
-  static const CommandId kCmdId = kShaderSource;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLuint _shader,
-            uint32_t _data_shm_id,
-            uint32_t _data_shm_offset,
-            uint32_t _data_size) {
-    SetHeader();
-    shader = _shader;
-    data_shm_id = _data_shm_id;
-    data_shm_offset = _data_shm_offset;
-    data_size = _data_size;
-  }
-
-  void* Set(void* cmd,
-            GLuint _shader,
-            uint32_t _data_shm_id,
-            uint32_t _data_shm_offset,
-            uint32_t _data_size) {
-    static_cast<ValueType*>(cmd)
-        ->Init(_shader, _data_shm_id, _data_shm_offset, _data_size);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t shader;
-  uint32_t data_shm_id;
-  uint32_t data_shm_offset;
-  uint32_t data_size;
-};
-
-COMPILE_ASSERT(sizeof(ShaderSource) == 20, Sizeof_ShaderSource_is_not_20);
-COMPILE_ASSERT(offsetof(ShaderSource, header) == 0,
-               OffsetOf_ShaderSource_header_not_0);
-COMPILE_ASSERT(offsetof(ShaderSource, shader) == 4,
-               OffsetOf_ShaderSource_shader_not_4);
-COMPILE_ASSERT(offsetof(ShaderSource, data_shm_id) == 8,
-               OffsetOf_ShaderSource_data_shm_id_not_8);
-COMPILE_ASSERT(offsetof(ShaderSource, data_shm_offset) == 12,
-               OffsetOf_ShaderSource_data_shm_offset_not_12);
-COMPILE_ASSERT(offsetof(ShaderSource, data_size) == 16,
-               OffsetOf_ShaderSource_data_size_not_16);
 
 struct ShaderSourceBucket {
   typedef ShaderSourceBucket ValueType;
@@ -8346,65 +8235,6 @@ COMPILE_ASSERT(offsetof(ConsumeTextureCHROMIUMImmediate, header) == 0,
                OffsetOf_ConsumeTextureCHROMIUMImmediate_header_not_0);
 COMPILE_ASSERT(offsetof(ConsumeTextureCHROMIUMImmediate, target) == 4,
                OffsetOf_ConsumeTextureCHROMIUMImmediate_target_not_4);
-
-struct BindUniformLocationCHROMIUM {
-  typedef BindUniformLocationCHROMIUM ValueType;
-  static const CommandId kCmdId = kBindUniformLocationCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLuint _program,
-            GLint _location,
-            uint32_t _name_shm_id,
-            uint32_t _name_shm_offset,
-            uint32_t _data_size) {
-    SetHeader();
-    program = _program;
-    location = _location;
-    name_shm_id = _name_shm_id;
-    name_shm_offset = _name_shm_offset;
-    data_size = _data_size;
-  }
-
-  void* Set(void* cmd,
-            GLuint _program,
-            GLint _location,
-            uint32_t _name_shm_id,
-            uint32_t _name_shm_offset,
-            uint32_t _data_size) {
-    static_cast<ValueType*>(cmd)
-        ->Init(_program, _location, _name_shm_id, _name_shm_offset, _data_size);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t program;
-  int32_t location;
-  uint32_t name_shm_id;
-  uint32_t name_shm_offset;
-  uint32_t data_size;
-};
-
-COMPILE_ASSERT(sizeof(BindUniformLocationCHROMIUM) == 24,
-               Sizeof_BindUniformLocationCHROMIUM_is_not_24);
-COMPILE_ASSERT(offsetof(BindUniformLocationCHROMIUM, header) == 0,
-               OffsetOf_BindUniformLocationCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(BindUniformLocationCHROMIUM, program) == 4,
-               OffsetOf_BindUniformLocationCHROMIUM_program_not_4);
-COMPILE_ASSERT(offsetof(BindUniformLocationCHROMIUM, location) == 8,
-               OffsetOf_BindUniformLocationCHROMIUM_location_not_8);
-COMPILE_ASSERT(offsetof(BindUniformLocationCHROMIUM, name_shm_id) == 12,
-               OffsetOf_BindUniformLocationCHROMIUM_name_shm_id_not_12);
-COMPILE_ASSERT(offsetof(BindUniformLocationCHROMIUM, name_shm_offset) == 16,
-               OffsetOf_BindUniformLocationCHROMIUM_name_shm_offset_not_16);
-COMPILE_ASSERT(offsetof(BindUniformLocationCHROMIUM, data_size) == 20,
-               OffsetOf_BindUniformLocationCHROMIUM_data_size_not_20);
 
 struct BindUniformLocationCHROMIUMBucket {
   typedef BindUniformLocationCHROMIUMBucket ValueType;

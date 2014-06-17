@@ -22,8 +22,6 @@ TEST_P(GLES2DecoderTest1, AttachShaderValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
-// TODO(gman): BindAttribLocation
-
 // TODO(gman): BindAttribLocationBucket
 
 TEST_P(GLES2DecoderTest1, BindBufferValidArgs) {
@@ -348,12 +346,12 @@ TEST_P(GLES2DecoderTest1, ColorMaskValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 // TODO(gman): CompileShader
+// TODO(gman): CompressedTexImage2DBucket
 // TODO(gman): CompressedTexImage2D
 
-// TODO(gman): CompressedTexImage2DBucket
+// TODO(gman): CompressedTexSubImage2DBucket
 // TODO(gman): CompressedTexSubImage2D
 
-// TODO(gman): CompressedTexSubImage2DBucket
 // TODO(gman): CopyTexImage2D
 
 TEST_P(GLES2DecoderTest1, CopyTexSubImage2DValidArgs) {
@@ -898,8 +896,6 @@ TEST_P(GLES2DecoderTest1, GenTexturesImmediateInvalidArgs) {
 // TODO(gman): GetAttachedShaders
 
 // TODO(gman): GetAttribLocation
-
-// TODO(gman): GetAttribLocationBucket
 
 TEST_P(GLES2DecoderTest1, GetBooleanvValidArgs) {
   EXPECT_CALL(*gl_, GetError())
@@ -1626,8 +1622,6 @@ TEST_P(GLES2DecoderTest1, GetTexParameterivInvalidArgs2_1) {
 
 // TODO(gman): GetUniformLocation
 
-// TODO(gman): GetUniformLocationBucket
-
 TEST_P(GLES2DecoderTest1, GetVertexAttribfvValidArgs) {
   SpecializedSetup<cmds::GetVertexAttribfv, 0>(true);
   typedef cmds::GetVertexAttribfv::Result Result;
@@ -1913,4 +1907,49 @@ TEST_P(GLES2DecoderTest1, PolygonOffsetValidArgs) {
 }
 // TODO(gman): ReadPixels
 
+// TODO(gman): ReleaseShaderCompiler
+
+TEST_P(GLES2DecoderTest1, RenderbufferStorageValidArgs) {
+  SpecializedSetup<cmds::RenderbufferStorage, 0>(true);
+  cmds::RenderbufferStorage cmd;
+  cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 3, 4);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest1, RenderbufferStorageInvalidArgs0_0) {
+  EXPECT_CALL(*gl_, RenderbufferStorageEXT(_, _, _, _)).Times(0);
+  SpecializedSetup<cmds::RenderbufferStorage, 0>(false);
+  cmds::RenderbufferStorage cmd;
+  cmd.Init(GL_FRAMEBUFFER, GL_RGBA4, 3, 4);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest1, RenderbufferStorageInvalidArgs2_0) {
+  EXPECT_CALL(*gl_, RenderbufferStorageEXT(_, _, _, _)).Times(0);
+  SpecializedSetup<cmds::RenderbufferStorage, 0>(false);
+  cmds::RenderbufferStorage cmd;
+  cmd.Init(GL_RENDERBUFFER, GL_RGBA4, -1, 4);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest1, RenderbufferStorageInvalidArgs3_0) {
+  EXPECT_CALL(*gl_, RenderbufferStorageEXT(_, _, _, _)).Times(0);
+  SpecializedSetup<cmds::RenderbufferStorage, 0>(false);
+  cmds::RenderbufferStorage cmd;
+  cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 3, -1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest1, SampleCoverageValidArgs) {
+  EXPECT_CALL(*gl_, SampleCoverage(1, true));
+  SpecializedSetup<cmds::SampleCoverage, 0>(true);
+  cmds::SampleCoverage cmd;
+  cmd.Init(1, true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_

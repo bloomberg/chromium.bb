@@ -1123,14 +1123,14 @@ void GLES2Implementation::DeleteShaderStub(
 
 GLint GLES2Implementation::GetAttribLocationHelper(
     GLuint program, const char* name) {
-  typedef cmds::GetAttribLocationBucket::Result Result;
+  typedef cmds::GetAttribLocation::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return -1;
   }
   *result = -1;
   SetBucketAsCString(kResultBucketId, name);
-  helper_->GetAttribLocationBucket(
+  helper_->GetAttribLocation(
       program, kResultBucketId, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   helper_->SetBucketSize(kResultBucketId, 0);
@@ -1152,14 +1152,14 @@ GLint GLES2Implementation::GetAttribLocation(
 
 GLint GLES2Implementation::GetUniformLocationHelper(
     GLuint program, const char* name) {
-  typedef cmds::GetUniformLocationBucket::Result Result;
+  typedef cmds::GetUniformLocation::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return -1;
   }
   *result = -1;
   SetBucketAsCString(kResultBucketId, name);
-  helper_->GetUniformLocationBucket(program, kResultBucketId,
+  helper_->GetUniformLocation(program, kResultBucketId,
                                     GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   helper_->SetBucketSize(kResultBucketId, 0);

@@ -1242,10 +1242,14 @@ _PEPPER_INTERFACES = [
 #               a NonImmediate type is a type that stays a pointer even in
 #               and immediate version of acommand.
 # gen_cmd:      Whether or not this function geneates a command. Default = True.
-# immediate:    Whether or not to generate an immediate command for the GL
-#               function. The default is if there is exactly 1 pointer argument
-#               in the GL function an immediate command is generated.
-# bucket:       True to generate a bucket version of the command.
+# data_transfer_methods: Array of methods that are used for transfering the
+#               pointer data.  Possible values: 'immediate', 'shm', 'bucket'.
+#               The default is 'immediate' if the command has one pointer
+#               argument, otherwise 'shm'. One command is generated for each
+#               transfer method. Affects only commands which are not of type
+#               'HandWritten', 'GETn' or 'GLcharN'.
+#               Note: the command arguments that affect this are the final args,
+#               taking cmd_args override into consideration.
 # impl_func:    Whether or not to generate the GLES2Implementation part of this
 #               command.
 # impl_decl:    Whether or not to generate the GLES2Implementation declaration
@@ -1290,9 +1294,8 @@ _FUNCTION_INFO = {
   'AttachShader': {'decoder_func': 'DoAttachShader'},
   'BindAttribLocation': {
     'type': 'GLchar',
-    'bucket': True,
+    'data_transfer_methods': ['bucket'],
     'needs_size': True,
-    'immediate': False,
   },
   'BindBuffer': {
     'type': 'Bind',
@@ -1332,14 +1335,14 @@ _FUNCTION_INFO = {
   },
   'BufferData': {
     'type': 'Manual',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'client_test': False,
   },
   'BufferSubData': {
     'type': 'Data',
     'client_test': False,
     'decoder_func': 'DoBufferSubData',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
   },
   'CheckFramebufferStatus': {
     'type': 'Is',
@@ -1387,6 +1390,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoCreateAndConsumeTextureCHROMIUM',
     'impl_func': False,
     'type': 'HandWritten',
+    'data_transfer_methods': ['immediate'],
     'unit_test': False,
     'client_test': False,
     'extension': True,
@@ -1398,7 +1402,7 @@ _FUNCTION_INFO = {
   },
   'EnableFeatureCHROMIUM': {
     'type': 'Custom',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'decoder_func': 'DoEnableFeatureCHROMIUM',
     'expectation': False,
     'cmd_args': 'GLuint bucket_id, GLint* result',
@@ -1410,14 +1414,12 @@ _FUNCTION_INFO = {
   'CompileShader': {'decoder_func': 'DoCompileShader', 'unit_test': False},
   'CompressedTexImage2D': {
     'type': 'Manual',
-    'immediate': False,
-    'bucket': True,
+    'data_transfer_methods': ['bucket', 'shm'],
   },
   'CompressedTexSubImage2D': {
     'type': 'Data',
-    'bucket': True,
+    'data_transfer_methods': ['bucket', 'shm'],
     'decoder_func': 'DoCompressedTexSubImage2D',
-    'immediate': False,
   },
   'CopyTexImage2D': {
     'decoder_func': 'DoCopyTexImage2D',
@@ -1441,7 +1443,6 @@ _FUNCTION_INFO = {
   },
   'DestroyImageCHROMIUM': {
     'type': 'Manual',
-    'immediate': False,
     'client_test': False,
     'gen_cmd': False,
     'extension': True,
@@ -1555,7 +1556,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoDeleteSharedIdsCHROMIUM',
     'impl_func': False,
     'expectation': False,
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'extension': True,
     'chromium': True,
   },
@@ -1646,7 +1647,6 @@ _FUNCTION_INFO = {
   },
   'GenMailboxCHROMIUM': {
     'type': 'HandWritten',
-    'immediate': False,
     'impl_func': False,
     'extension': True,
     'chromium': True,
@@ -1673,13 +1673,13 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoGenSharedIdsCHROMIUM',
     'impl_func': False,
     'expectation': False,
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'extension': True,
     'chromium': True,
   },
   'GetActiveAttrib': {
     'type': 'Custom',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'cmd_args':
         'GLidProgram program, GLuint index, uint32_t name_bucket_id, '
         'void* result',
@@ -1691,7 +1691,7 @@ _FUNCTION_INFO = {
   },
   'GetActiveUniform': {
     'type': 'Custom',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'cmd_args':
         'GLidProgram program, GLuint index, uint32_t name_bucket_id, '
         'void* result',
@@ -1703,14 +1703,12 @@ _FUNCTION_INFO = {
   },
   'GetAttachedShaders': {
     'type': 'Custom',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'cmd_args': 'GLidProgram program, void* result, uint32_t result_size',
     'result': ['SizedResult<GLuint>'],
   },
   'GetAttribLocation': {
     'type': 'HandWritten',
-    'immediate': False,
-    'bucket': True,
     'needs_size': True,
     'cmd_args':
         'GLidProgram program, const char* name, NonImmediate GLint* location',
@@ -1767,7 +1765,7 @@ _FUNCTION_INFO = {
   },
   'GetMultipleIntegervCHROMIUM': {
     'type': 'Custom',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'expectation': False,
     'extension': True,
     'chromium': True,
@@ -1781,7 +1779,6 @@ _FUNCTION_INFO = {
   },
   'GetProgramInfoCHROMIUM': {
     'type': 'Custom',
-    'immediate': False,
     'expectation': False,
     'impl_func': False,
     'extension': True,
@@ -1817,7 +1814,7 @@ _FUNCTION_INFO = {
   },
   'GetShaderPrecisionFormat': {
     'type': 'Custom',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'cmd_args':
       'GLenumShaderType shadertype, GLenumShaderPrecision precisiontype, '
       'void* result',
@@ -1859,18 +1856,16 @@ _FUNCTION_INFO = {
     },
   'GetUniformfv': {
     'type': 'Custom',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'result': ['SizedResult<GLfloat>'],
   },
   'GetUniformiv': {
     'type': 'Custom',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'result': ['SizedResult<GLint>'],
   },
   'GetUniformLocation': {
     'type': 'HandWritten',
-    'immediate': False,
-    'bucket': True,
     'needs_size': True,
     'cmd_args':
         'GLidProgram program, const char* name, NonImmediate GLint* location',
@@ -1895,7 +1890,7 @@ _FUNCTION_INFO = {
   },
   'GetVertexAttribPointerv': {
     'type': 'Custom',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'result': ['SizedResult<GLuint>'],
     'client_test': False,
   },
@@ -2027,7 +2022,7 @@ _FUNCTION_INFO = {
         '// it is easier to specify the result going to some specific place\n'
         '// that exactly fits the rectangle of pixels.\n',
     'type': 'Custom',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'impl_func': False,
     'client_test': False,
     'cmd_args':
@@ -2044,7 +2039,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoRegisterSharedIdsCHROMIUM',
     'impl_func': False,
     'expectation': False,
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'extension': True,
     'chromium': True,
   },
@@ -2058,8 +2053,7 @@ _FUNCTION_INFO = {
   },
   'ShaderSource': {
     'type': 'Manual',
-    'immediate': False,
-    'bucket': True,
+    'data_transfer_methods': ['bucket'],
     'needs_size': True,
     'client_test': False,
     'cmd_args':
@@ -2089,7 +2083,7 @@ _FUNCTION_INFO = {
   },
   'TexImage2D': {
     'type': 'Manual',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'client_test': False,
   },
   'TexParameterf': {
@@ -2122,7 +2116,7 @@ _FUNCTION_INFO = {
   },
   'TexSubImage2D': {
     'type': 'Manual',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'client_test': False,
     'cmd_args': 'GLenumTextureTarget target, GLint level, '
                 'GLint xoffset, GLint yoffset, '
@@ -2273,7 +2267,6 @@ _FUNCTION_INFO = {
   'GetRequestableExtensionsCHROMIUM': {
     'type': 'Custom',
     'impl_func': False,
-    'immediate': False,
     'cmd_args': 'uint32_t bucket_id',
     'extension': True,
     'chromium': True,
@@ -2281,7 +2274,6 @@ _FUNCTION_INFO = {
   'RequestExtensionCHROMIUM': {
     'type': 'Custom',
     'impl_func': False,
-    'immediate': False,
     'client_test': False,
     'cmd_args': 'uint32_t bucket_id',
     'extension': True,
@@ -2297,7 +2289,6 @@ _FUNCTION_INFO = {
     'type': 'HandWritten',
     'impl_func': False,
     'gen_cmd': False,
-    'immediate': False,
     'extension': True,
     'chromium': True,
   },
@@ -2379,7 +2370,7 @@ _FUNCTION_INFO = {
   'BeginQueryEXT': {
     'type': 'Manual',
     'cmd_args': 'GLenumQueryTarget target, GLidQuery id, void* sync_data',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'gl_test_func': 'glBeginQuery',
     'pepper_interface': 'Query',
   },
@@ -2405,10 +2396,9 @@ _FUNCTION_INFO = {
   'BindUniformLocationCHROMIUM': {
     'type': 'GLchar',
     'extension': True,
-    'bucket': True,
+    'data_transfer_methods': ['bucket'],
     'needs_size': True,
     'gl_test_func': 'DoBindUniformLocationCHROMIUM',
-    'immediate': False,
   },
   'InsertEventMarkerEXT': {
     'type': 'GLcharN',
@@ -2491,7 +2481,6 @@ _FUNCTION_INFO = {
   'TraceBeginCHROMIUM': {
     'type': 'Custom',
     'impl_func': False,
-    'immediate': False,
     'client_test': False,
     'cmd_args': 'GLuint bucket_id',
     'extension': True,
@@ -2499,7 +2488,6 @@ _FUNCTION_INFO = {
   },
   'TraceEndCHROMIUM': {
     'impl_func': False,
-    'immediate': False,
     'client_test': False,
     'decoder_func': 'DoTraceEndCHROMIUM',
     'unit_test': False,
@@ -2508,7 +2496,7 @@ _FUNCTION_INFO = {
   },
   'AsyncTexImage2DCHROMIUM': {
     'type': 'Manual',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'client_test': False,
     'cmd_args': 'GLenumTextureTarget target, GLint level, '
         'GLintTextureInternalFormat internalformat, '
@@ -2523,7 +2511,7 @@ _FUNCTION_INFO = {
   },
   'AsyncTexSubImage2DCHROMIUM': {
     'type': 'Manual',
-    'immediate': False,
+    'data_transfer_methods': ['shm'],
     'client_test': False,
     'cmd_args': 'GLenumTextureTarget target, GLint level, '
         'GLint xoffset, GLint yoffset, '
@@ -2537,14 +2525,12 @@ _FUNCTION_INFO = {
   },
   'WaitAsyncTexImage2DCHROMIUM': {
     'type': 'Manual',
-    'immediate': False,
     'client_test': False,
     'extension': True,
     'chromium': True,
   },
   'WaitAllAsyncTexImage2DCHROMIUM': {
     'type': 'Manual',
-    'immediate': False,
     'client_test': False,
     'extension': True,
     'chromium': True,
@@ -2725,21 +2711,9 @@ class TypeHandler(object):
     if func.GetInfo('needs_size') and not func.name.endswith('Bucket'):
       func.AddCmdArg(DataSizeArgument('data_size'))
 
-  def AddImmediateFunction(self, generator, func):
-    """Adds an immediate version of a function."""
-    # Generate an immediate command if there is only 1 pointer arg.
-    immediate = func.GetInfo('immediate')  # can be True, False or None
-    if immediate == True or immediate == None:
-      if func.num_pointer_args == 1 or immediate:
-        generator.AddFunction(ImmediateFunction(func))
-        return True
-
-  def AddBucketFunction(self, generator, func):
-    """Adds a bucket version of a function."""
-    # Generate an immediate command if there is only 1 pointer arg.
-    bucket = func.GetInfo('bucket')  # can be True, False or None
-    if bucket:
-      generator.AddFunction(BucketFunction(func))
+  def NeedsDataTransferFunction(self, func):
+    """Overriden from TypeHandler."""
+    return func.num_pointer_args >= 1
 
   def WriteStruct(self, func, file):
     """Writes a structure that matches the arguments to a function."""
@@ -3594,9 +3568,9 @@ class CustomHandler(TypeHandler):
 class TodoHandler(CustomHandler):
   """Handle for commands that are not yet implemented."""
 
-  def AddImmediateFunction(self, generator, func):
-    """Overrriden from TypeHandler."""
-    pass
+  def NeedsDataTransferFunction(self, func):
+    """Overriden from TypeHandler."""
+    return False
 
   def WriteImmediateFormatTest(self, func, file):
     """Overrriden from TypeHandler."""
@@ -3645,6 +3619,13 @@ class HandWrittenHandler(CustomHandler):
     """Add or adjust anything type specific for this function."""
     CustomHandler.InitFunction(self, func)
     func.can_auto_generate = False
+
+  def NeedsDataTransferFunction(self, func):
+    """Overriden from TypeHandler."""
+    # If specified explicitly, force the data transfer method.
+    if func.GetInfo('data_transfer_methods'):
+      return True
+    return False
 
   def WriteStruct(self, func, file):
     """Overrriden from TypeHandler."""
@@ -4615,9 +4596,9 @@ class GETnHandler(TypeHandler):
   def __init__(self):
     TypeHandler.__init__(self)
 
-  def AddImmediateFunction(self, generator, func):
-    """Overrriden from TypeHandler."""
-    pass
+  def NeedsDataTransferFunction(self, func):
+    """Overriden from TypeHandler."""
+    return False
 
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
@@ -5621,9 +5602,9 @@ class GLcharNHandler(CustomHandler):
     func.cmd_args = []
     func.AddCmdArg(Argument('bucket_id', 'GLuint'))
 
-  def AddImmediateFunction(self, generator, func):
-    """Overrriden from TypeHandler."""
-    pass
+  def NeedsDataTransferFunction(self, func):
+    """Overriden from TypeHandler."""
+    return False
 
   def AddBucketFunction(self, generator, func):
     """Overrriden from TypeHandler."""
@@ -6779,6 +6760,10 @@ class Function(object):
       gl_func_name = self.original_name
     return gl_func_name
 
+  def GetDataTransferMethods(self):
+    return self.GetInfo('data_transfer_methods',
+                        ['immediate' if self.num_pointer_args == 1 else 'shm'])
+
   def AddCmdArg(self, arg):
     """Adds a cmd argument to this function."""
     self.cmd_args.append(arg)
@@ -7333,9 +7318,16 @@ class GLGenerator(object):
 
         gen_cmd = f.GetInfo('gen_cmd')
         if gen_cmd == True or gen_cmd == None:
-          if not f.type_handler.AddImmediateFunction(self, f):
+          if f.type_handler.NeedsDataTransferFunction(f):
+            methods = f.GetDataTransferMethods()
+            if 'immediate' in methods:
+              self.AddFunction(ImmediateFunction(f))
+            if 'bucket' in methods:
+              self.AddFunction(BucketFunction(f))
+            if 'shm' in methods:
+              self.AddFunction(f)
+          else:
             self.AddFunction(f)
-          f.type_handler.AddBucketFunction(self, f)
 
     self.Log("Auto Generated Functions    : %d" %
              len([f for f in self.functions if f.can_auto_generate or

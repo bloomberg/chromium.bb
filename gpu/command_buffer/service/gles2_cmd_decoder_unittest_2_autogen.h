@@ -12,52 +12,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
-// TODO(gman): ReleaseShaderCompiler
-
-TEST_P(GLES2DecoderTest2, RenderbufferStorageValidArgs) {
-  SpecializedSetup<cmds::RenderbufferStorage, 0>(true);
-  cmds::RenderbufferStorage cmd;
-  cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 3, 4);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, RenderbufferStorageInvalidArgs0_0) {
-  EXPECT_CALL(*gl_, RenderbufferStorageEXT(_, _, _, _)).Times(0);
-  SpecializedSetup<cmds::RenderbufferStorage, 0>(false);
-  cmds::RenderbufferStorage cmd;
-  cmd.Init(GL_FRAMEBUFFER, GL_RGBA4, 3, 4);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, RenderbufferStorageInvalidArgs2_0) {
-  EXPECT_CALL(*gl_, RenderbufferStorageEXT(_, _, _, _)).Times(0);
-  SpecializedSetup<cmds::RenderbufferStorage, 0>(false);
-  cmds::RenderbufferStorage cmd;
-  cmd.Init(GL_RENDERBUFFER, GL_RGBA4, -1, 4);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, RenderbufferStorageInvalidArgs3_0) {
-  EXPECT_CALL(*gl_, RenderbufferStorageEXT(_, _, _, _)).Times(0);
-  SpecializedSetup<cmds::RenderbufferStorage, 0>(false);
-  cmds::RenderbufferStorage cmd;
-  cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 3, -1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, SampleCoverageValidArgs) {
-  EXPECT_CALL(*gl_, SampleCoverage(1, true));
-  SpecializedSetup<cmds::SampleCoverage, 0>(true);
-  cmds::SampleCoverage cmd;
-  cmd.Init(1, true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
 TEST_P(GLES2DecoderTest2, ScissorValidArgs) {
   EXPECT_CALL(*gl_, Scissor(1, 2, 3, 4));
   SpecializedSetup<cmds::Scissor, 0>(true);
@@ -85,8 +39,6 @@ TEST_P(GLES2DecoderTest2, ScissorInvalidArgs3_0) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 // TODO(gman): ShaderBinary
-
-// TODO(gman): ShaderSource
 
 // TODO(gman): ShaderSourceBucket
 
@@ -749,8 +701,6 @@ TEST_P(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
 // TODO(gman): ProduceTextureDirectCHROMIUMImmediate
 // TODO(gman): ConsumeTextureCHROMIUMImmediate
 // TODO(gman): CreateAndConsumeTextureCHROMIUMImmediate
-// TODO(gman): BindUniformLocationCHROMIUM
-
 // TODO(gman): BindUniformLocationCHROMIUMBucket
 // TODO(gman): BindTexImage2DCHROMIUM
 // TODO(gman): ReleaseTexImage2DCHROMIUM
@@ -762,5 +712,13 @@ TEST_P(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
 // TODO(gman): AsyncTexImage2DCHROMIUM
 
 // TODO(gman): WaitAsyncTexImage2DCHROMIUM
+
+// TODO(gman): WaitAllAsyncTexImage2DCHROMIUM
+
+// TODO(gman): DiscardFramebufferEXTImmediate
+// TODO(gman): LoseContextCHROMIUM
+// TODO(gman): InsertSyncPointCHROMIUM
+
+// TODO(gman): WaitSyncPointCHROMIUM
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
