@@ -259,8 +259,7 @@ class ShelfFocusSearch : public views::FocusSearch {
 
 // AnimationDelegate used when inserting a new item. This steadily increases the
 // opacity of the layer as the animation progress.
-class FadeInAnimationDelegate
-    : public views::BoundsAnimator::OwnedAnimationDelegate {
+class FadeInAnimationDelegate : public gfx::AnimationDelegate {
  public:
   explicit FadeInAnimationDelegate(views::View* view) : view_(view) {}
   virtual ~FadeInAnimationDelegate() {}
@@ -314,8 +313,7 @@ void ReflectItemStatus(const ShelfItem& item, ShelfButton* button) {
 
 // AnimationDelegate used when deleting an item. This steadily decreased the
 // opacity of the layer as the animation progress.
-class ShelfView::FadeOutAnimationDelegate
-    : public views::BoundsAnimator::OwnedAnimationDelegate {
+class ShelfView::FadeOutAnimationDelegate : public gfx::AnimationDelegate {
  public:
   FadeOutAnimationDelegate(ShelfView* host, views::View* view)
       : shelf_view_(host),
@@ -343,8 +341,7 @@ class ShelfView::FadeOutAnimationDelegate
 // AnimationDelegate used to trigger fading an element in. When an item is
 // inserted this delegate is attached to the animation that expands the size of
 // the item.  When done it kicks off another animation to fade the item in.
-class ShelfView::StartFadeAnimationDelegate
-    : public views::BoundsAnimator::OwnedAnimationDelegate {
+class ShelfView::StartFadeAnimationDelegate : public gfx::AnimationDelegate {
  public:
   StartFadeAnimationDelegate(ShelfView* host,
                              views::View* view)
@@ -904,7 +901,8 @@ void ShelfView::FadeIn(views::View* view) {
   view->layer()->SetOpacity(0);
   AnimateToIdealBounds();
   bounds_animator_->SetAnimationDelegate(
-      view, new FadeInAnimationDelegate(view), true);
+      view,
+      scoped_ptr<gfx::AnimationDelegate>(new FadeInAnimationDelegate(view)));
 }
 
 void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
@@ -1255,8 +1253,8 @@ void ShelfView::StartFadeInLastVisibleItem() {
     last_visible_view->layer()->SetOpacity(0);
     bounds_animator_->SetAnimationDelegate(
         last_visible_view,
-        new ShelfView::StartFadeAnimationDelegate(this, last_visible_view),
-        true);
+        scoped_ptr<gfx::AnimationDelegate>(
+            new StartFadeAnimationDelegate(this, last_visible_view)));
   }
 }
 
@@ -1452,7 +1450,9 @@ void ShelfView::ShelfItemAdded(int model_index) {
   if (model_index <= last_visible_index_ ||
       model_index >= model_->FirstPanelIndex()) {
     bounds_animator_->SetAnimationDelegate(
-        view, new StartFadeAnimationDelegate(this, view), true);
+        view,
+        scoped_ptr<gfx::AnimationDelegate>(
+            new StartFadeAnimationDelegate(this, view)));
   } else {
     // Undo the hiding if animation does not run.
     view->layer()->SetOpacity(1.0f);
@@ -1486,7 +1486,9 @@ void ShelfView::ShelfItemRemoved(int model_index, ShelfID id) {
     // of the views to their target location.
     bounds_animator_->AnimateViewTo(view, view->bounds());
     bounds_animator_->SetAnimationDelegate(
-        view, new FadeOutAnimationDelegate(this, view), true);
+        view,
+        scoped_ptr<gfx::AnimationDelegate>(
+            new FadeOutAnimationDelegate(this, view)));
   } else {
     // We don't need to show a fade out animation for invisible |view|. When an
     // item is ripped out from the shelf, its |view| is already invisible.

@@ -38,13 +38,6 @@ class View;
 class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
                                     public gfx::AnimationContainerObserver {
  public:
-  // If |delete_when_done| is set to true in |SetAnimationDelegate| the
-  // |AnimationDelegate| must subclass this class.
-  class OwnedAnimationDelegate : public gfx::AnimationDelegate {
-   public:
-    virtual ~OwnedAnimationDelegate() {}
-  };
-
   explicit BoundsAnimator(View* view);
   virtual ~BoundsAnimator();
 
@@ -74,12 +67,9 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
   // Stops animating the specified view.
   void StopAnimatingView(View* view);
 
-  // Sets the delegate for the animation created for the specified view. If
-  // |delete_when_done| is true the |delegate| is deleted when done and
-  // |delegate| must subclass OwnedAnimationDelegate.
+  // Sets the delegate for the animation for the specified view.
   void SetAnimationDelegate(View* view,
-                            gfx::AnimationDelegate* delegate,
-                            bool delete_when_done);
+                            scoped_ptr<gfx::AnimationDelegate> delegate);
 
   // Returns true if BoundsAnimator is animating the bounds of |view|.
   bool IsAnimating(View* view) const;
@@ -111,13 +101,7 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
  private:
   // Tracks data about the view being animated.
   struct Data {
-    Data()
-        : delete_delegate_when_done(false),
-          animation(NULL),
-          delegate(NULL) {}
-
-    // If true the delegate is deleted when done.
-    bool delete_delegate_when_done;
+    Data() : animation(NULL), delegate(NULL) {}
 
     // The initial bounds.
     gfx::Rect start_bounds;
@@ -128,7 +112,7 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
     // The animation. We own this.
     gfx::SlideAnimation* animation;
 
-    // Additional delegate for the animation, may be null.
+    // Delegate for the animation, may be null. We own this.
     gfx::AnimationDelegate* delegate;
   };
 

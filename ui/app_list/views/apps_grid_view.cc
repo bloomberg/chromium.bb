@@ -98,8 +98,7 @@ const int kFolderDroppingCircleRadius = 15;
 // the original position, then the item is moved to just before its target
 // position and opacity set to 0. When the animation runs, this delegate moves
 // the layer and fades it out while fading in the item at the same time.
-class RowMoveAnimationDelegate
-    : public views::BoundsAnimator::OwnedAnimationDelegate {
+class RowMoveAnimationDelegate : public gfx::AnimationDelegate {
  public:
   RowMoveAnimationDelegate(views::View* view,
                            ui::Layer* layer,
@@ -146,8 +145,7 @@ class RowMoveAnimationDelegate
 // ItemRemoveAnimationDelegate is used to show animation for removing an item.
 // This happens when user drags an item into a folder. The dragged item will
 // be removed from the original list after it is dropped into the folder.
-class ItemRemoveAnimationDelegate
-    : public views::BoundsAnimator::OwnedAnimationDelegate {
+class ItemRemoveAnimationDelegate : public gfx::AnimationDelegate {
  public:
   explicit ItemRemoveAnimationDelegate(views::View* view)
       : view_(view) {
@@ -171,8 +169,7 @@ class ItemRemoveAnimationDelegate
 // ItemMoveAnimationDelegate observes when an item finishes animating when it is
 // not moving between rows. This is to ensure an item is repainted for the
 // "zoom out" case when releasing an item being dragged.
-class ItemMoveAnimationDelegate
-    : public views::BoundsAnimator::OwnedAnimationDelegate {
+class ItemMoveAnimationDelegate : public gfx::AnimationDelegate {
  public:
   ItemMoveAnimationDelegate(views::View* view) : view_(view) {}
 
@@ -1222,7 +1219,9 @@ void AppsGridView::AnimateToIdealBounds() {
     } else if (visible || bounds_animator_.IsAnimating(view)) {
       bounds_animator_.AnimateViewTo(view, target);
       bounds_animator_.SetAnimationDelegate(
-          view, new ItemMoveAnimationDelegate(view), true);
+          view,
+          scoped_ptr<gfx::AnimationDelegate>(
+              new ItemMoveAnimationDelegate(view)));
     } else {
       view->SetBoundsRect(target);
     }
@@ -1264,8 +1263,8 @@ void AppsGridView::AnimationBetweenRows(views::View* view,
 
   bounds_animator_.SetAnimationDelegate(
       view,
-      new RowMoveAnimationDelegate(view, layer.release(), current_out),
-      true);
+      scoped_ptr<gfx::AnimationDelegate>(
+          new RowMoveAnimationDelegate(view, layer.release(), current_out)));
 }
 
 void AppsGridView::ExtractDragLocation(const ui::LocatedEvent& event,
@@ -1683,7 +1682,9 @@ void AppsGridView::MoveItemToFolder(views::View* item_view,
   view_model_.Remove(drag_view_index);
   bounds_animator_.AnimateViewTo(drag_view_, drag_view_->bounds());
   bounds_animator_.SetAnimationDelegate(
-      drag_view_, new ItemRemoveAnimationDelegate(drag_view_), true);
+      drag_view_,
+      scoped_ptr<gfx::AnimationDelegate>(
+          new ItemRemoveAnimationDelegate(drag_view_)));
   UpdatePaging();
 }
 
@@ -1791,7 +1792,9 @@ void AppsGridView::ReparentItemToAnotherFolder(views::View* item_view,
   view_model_.Remove(drag_view_index);
   bounds_animator_.AnimateViewTo(drag_view_, drag_view_->bounds());
   bounds_animator_.SetAnimationDelegate(
-      drag_view_, new ItemRemoveAnimationDelegate(drag_view_), true);
+      drag_view_,
+      scoped_ptr<gfx::AnimationDelegate>(
+          new ItemRemoveAnimationDelegate(drag_view_)));
   UpdatePaging();
 }
 

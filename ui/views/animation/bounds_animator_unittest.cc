@@ -32,7 +32,7 @@ class TestBoundsAnimator : public BoundsAnimator {
   DISALLOW_COPY_AND_ASSIGN(TestBoundsAnimator);
 };
 
-class OwnedDelegate : public BoundsAnimator::OwnedAnimationDelegate {
+class OwnedDelegate : public gfx::AnimationDelegate {
  public:
   OwnedDelegate() {}
 
@@ -110,12 +110,12 @@ class BoundsAnimatorTest : public testing::Test {
 
 // Checks animate view to.
 TEST_F(BoundsAnimatorTest, AnimateViewTo) {
-  TestAnimationDelegate delegate;
   gfx::Rect initial_bounds(0, 0, 10, 10);
   child()->SetBoundsRect(initial_bounds);
   gfx::Rect target_bounds(10, 10, 20, 20);
   animator()->AnimateViewTo(child(), target_bounds);
-  animator()->SetAnimationDelegate(child(), &delegate, false);
+  animator()->SetAnimationDelegate(
+      child(), scoped_ptr<gfx::AnimationDelegate>(new TestAnimationDelegate()));
 
   // The animator should be animating now.
   EXPECT_TRUE(animator()->IsAnimating());
@@ -136,7 +136,8 @@ TEST_F(BoundsAnimatorTest, AnimateViewTo) {
 // Make sure an AnimationDelegate is deleted when canceled.
 TEST_F(BoundsAnimatorTest, DeleteDelegateOnCancel) {
   animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
-  animator()->SetAnimationDelegate(child(), new OwnedDelegate(), true);
+  animator()->SetAnimationDelegate(
+      child(), scoped_ptr<gfx::AnimationDelegate>(new OwnedDelegate()));
 
   animator()->Cancel();
 
@@ -152,7 +153,8 @@ TEST_F(BoundsAnimatorTest, DeleteDelegateOnCancel) {
 // scheduled.
 TEST_F(BoundsAnimatorTest, DeleteDelegateOnNewAnimate) {
   animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
-  animator()->SetAnimationDelegate(child(), new OwnedDelegate(), true);
+  animator()->SetAnimationDelegate(
+      child(), scoped_ptr<gfx::AnimationDelegate>(new OwnedDelegate()));
 
   animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
 
@@ -166,7 +168,8 @@ TEST_F(BoundsAnimatorTest, StopAnimating) {
   scoped_ptr<OwnedDelegate> delegate(new OwnedDelegate());
 
   animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
-  animator()->SetAnimationDelegate(child(), new OwnedDelegate(), true);
+  animator()->SetAnimationDelegate(
+      child(), scoped_ptr<gfx::AnimationDelegate>(new OwnedDelegate()));
 
   animator()->StopAnimatingView(child());
 

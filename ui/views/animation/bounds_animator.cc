@@ -110,13 +110,12 @@ const SlideAnimation* BoundsAnimator::GetAnimationForView(View* view) {
   return !IsAnimating(view) ? NULL : data_[view].animation;
 }
 
-void BoundsAnimator::SetAnimationDelegate(View* view,
-                                          AnimationDelegate* delegate,
-                                          bool delete_when_done) {
+void BoundsAnimator::SetAnimationDelegate(
+    View* view,
+    scoped_ptr<AnimationDelegate> delegate) {
   DCHECK(IsAnimating(view));
 
-  data_[view].delegate = delegate;
-  data_[view].delete_delegate_when_done = delete_when_done;
+  data_[view].delegate = delegate.release();
 }
 
 void BoundsAnimator::StopAnimatingView(View* view) {
@@ -177,10 +176,8 @@ void BoundsAnimator::CleanupData(bool send_cancel, Data* data, View* view) {
   if (send_cancel && data->delegate)
     data->delegate->AnimationCanceled(data->animation);
 
-  if (data->delete_delegate_when_done) {
-    delete static_cast<OwnedAnimationDelegate*>(data->delegate);
-    data->delegate = NULL;
-  }
+  delete data->delegate;
+  data->delegate = NULL;
 
   if (data->animation) {
     data->animation->set_delegate(NULL);

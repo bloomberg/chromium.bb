@@ -144,8 +144,7 @@ base::string16 GetClipboardText() {
 
 // Animation delegate used when a dragged tab is released. When done sets the
 // dragging state to false.
-class ResetDraggingStateDelegate
-    : public views::BoundsAnimator::OwnedAnimationDelegate {
+class ResetDraggingStateDelegate : public gfx::AnimationDelegate {
  public:
   explicit ResetDraggingStateDelegate(Tab* tab) : tab_(tab) {
   }
@@ -460,8 +459,7 @@ class NewTabButtonTargeter : public views::MaskedViewTargeter {
 //
 // AnimationDelegate used when removing a tab. Does the necessary cleanup when
 // done.
-class TabStrip::RemoveTabDelegate
-    : public views::BoundsAnimator::OwnedAnimationDelegate {
+class TabStrip::RemoveTabDelegate : public gfx::AnimationDelegate {
  public:
   RemoveTabDelegate(TabStrip* tab_strip, Tab* tab);
 
@@ -1643,11 +1641,9 @@ void TabStrip::ScheduleRemoveTabAnimation(Tab* tab) {
   gfx::Rect tab_bounds = tab->bounds();
   tab_bounds.set_width(0);
   bounds_animator_.AnimateViewTo(tab, tab_bounds);
-
-  // Register delegate to do cleanup when done, BoundsAnimator takes
-  // ownership of RemoveTabDelegate.
-  bounds_animator_.SetAnimationDelegate(tab, new RemoveTabDelegate(this, tab),
-                                        true);
+  bounds_animator_.SetAnimationDelegate(
+      tab,
+      scoped_ptr<gfx::AnimationDelegate>(new RemoveTabDelegate(this, tab)));
 
   // Don't animate the new tab button when dragging tabs. Otherwise it looks
   // like the new tab button magically appears from beyond the end of the tab
@@ -1976,7 +1972,8 @@ void TabStrip::StoppedDraggingTab(Tab* tab, bool* is_first_tab) {
   // Install a delegate to reset the dragging state when done. We have to leave
   // dragging true for the tab otherwise it'll draw beneath the new tab button.
   bounds_animator_.SetAnimationDelegate(
-      tab, new ResetDraggingStateDelegate(tab), true);
+      tab,
+      scoped_ptr<gfx::AnimationDelegate>(new ResetDraggingStateDelegate(tab)));
 }
 
 void TabStrip::OwnDragController(TabDragController* controller) {
@@ -2532,8 +2529,8 @@ void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
   // ownership of RemoveTabDelegate.
   bounds_animator_.SetAnimationDelegate(
       tab_closing,
-      new RemoveTabDelegate(this, tab_closing),
-      true);
+      scoped_ptr<gfx::AnimationDelegate>(
+          new RemoveTabDelegate(this, tab_closing)));
 }
 
 bool TabStrip::IsPointInTab(Tab* tab,

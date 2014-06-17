@@ -17,6 +17,8 @@ class Animation;
 //  state of an animation.
 class GFX_EXPORT AnimationDelegate {
  public:
+  virtual ~AnimationDelegate() {}
+
   // Called when an animation has completed.
   virtual void AnimationEnded(const Animation* animation) {}
 
@@ -25,9 +27,6 @@ class GFX_EXPORT AnimationDelegate {
 
   // Called when an animation has been canceled.
   virtual void AnimationCanceled(const Animation* animation) {}
-
- protected:
-  virtual ~AnimationDelegate() {}
 };
 
 }  // namespace gfx
