@@ -223,22 +223,6 @@ class WallpaperManager: public content::NotificationObserver {
   // Returns the appropriate wallpaper resolution for all root windows.
   static WallpaperResolution GetAppropriateResolution();
 
-  // Returns custom wallpaper path. Append |sub_dir|, |user_id_hash| and |file|
-  // to custom wallpaper directory.
-  static base::FilePath GetCustomWallpaperPath(const char* sub_dir,
-                                               const std::string& user_id_hash,
-                                               const std::string& file);
-
-  // Record data for User Metrics Analysis.
-  static void RecordUma(User::WallpaperType type, int index);
-
-  // Saves original custom wallpaper to |path| (absolute path) on filesystem
-  // and starts resizing operation of the custom wallpaper if necessary.
-  static void SaveCustomWallpaper(const std::string& user_id_hash,
-                                  const base::FilePath& path,
-                                  ash::WallpaperLayout layout,
-                                  scoped_ptr<gfx::ImageSkia> image);
-
   void SetCommandLineForTesting(base::CommandLine* command_line);
 
   // Indicates imminent shutdown, allowing the WallpaperManager to remove any
@@ -251,6 +235,12 @@ class WallpaperManager: public content::NotificationObserver {
   // Loads wallpaper asynchronously if the current wallpaper is not the
   // wallpaper of logged in user.
   void EnsureLoggedInUserWallpaperLoaded();
+
+  // Returns custom wallpaper path. Append |sub_dir|, |user_id_hash| and |file|
+  // to custom wallpaper directory.
+  base::FilePath GetCustomWallpaperPath(const char* sub_dir,
+                                        const std::string& user_id_hash,
+                                        const std::string& file) const;
 
   // Gets wallpaper information of logged in user.
   bool GetLoggedInUserWallpaperInfo(WallpaperInfo* info);
@@ -452,6 +442,16 @@ class WallpaperManager: public content::NotificationObserver {
                           bool update_wallpaper,
                           MovableOnDestroyCallbackHolder on_finish,
                           const UserImage& user_image);
+
+  // Record data for User Metrics Analysis.
+  void RecordUma(User::WallpaperType type, int index) const;
+
+  // Saves original custom wallpaper to |path| (absolute path) on filesystem
+  // and starts resizing operation of the custom wallpaper if necessary.
+  void SaveCustomWallpaper(const std::string& user_id_hash,
+                           const base::FilePath& path,
+                           ash::WallpaperLayout layout,
+                           scoped_ptr<gfx::ImageSkia> image) const;
 
   // Creates new PendingWallpaper request (or updates currently pending).
   void ScheduleSetUserWallpaper(const std::string& user_id, bool delayed);
