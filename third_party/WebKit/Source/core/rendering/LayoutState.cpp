@@ -33,22 +33,39 @@
 
 namespace WebCore {
 
-LayoutState::LayoutState(LayoutState* prev, RenderBox& renderer, const LayoutSize& offset, LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, ColumnInfo* columnInfo)
-    : m_columnInfo(columnInfo)
-    , m_next(prev)
-#ifndef NDEBUG
-    , m_renderer(&renderer)
+LayoutState::LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, RenderView& view)
+    : m_clipped(false)
+    , m_isPaginated(pageLogicalHeight)
+    , m_pageLogicalHeightChanged(pageLogicalHeightChanged)
+    , m_cachedOffsetsEnabled(true)
+#if ASSERT_ENABLED
+    , m_layoutDeltaXSaturated(false)
+    , m_layoutDeltaYSaturated(false)
 #endif
+    , m_columnInfo(0)
+    , m_next(0)
+    , m_pageLogicalHeight(pageLogicalHeight)
+    , m_renderer(view)
 {
-    ASSERT(m_next);
+    ASSERT(!view.layoutState());
+    view.pushLayoutState(*this);
+}
 
+LayoutState::LayoutState(RenderBox& renderer, const LayoutSize& offset, LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, ColumnInfo* columnInfo)
+    : m_columnInfo(columnInfo)
+    , m_next(renderer.view()->layoutState())
+    , m_renderer(renderer)
+{
+    renderer.view()->pushLayoutState(*this);
+    m_cachedOffsetsEnabled = m_next->m_cachedOffsetsEnabled && renderer.supportsLayoutStateCachedOffsets();
     bool fixed = renderer.isOutOfFlowPositioned() && renderer.style()->position() == FixedPosition;
     if (fixed) {
         // FIXME: This doesn't work correctly with transforms.
         FloatPoint fixedOffset = renderer.view()->localToAbsolute(FloatPoint(), IsFixed);
         m_paintOffset = LayoutSize(fixedOffset.x(), fixedOffset.y()) + offset;
-    } else
-        m_paintOffset = prev->m_paintOffset + offset;
+    } else {
+        m_paintOffset = m_next->m_paintOffset + offset;
+    }
 
     if (renderer.isOutOfFlowPositioned() && !fixed) {
         if (RenderObject* container = renderer.container()) {
@@ -62,9 +79,9 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox& renderer, const LayoutSiz
     if (renderer.isInFlowPositioned() && renderer.hasLayer())
         m_paintOffset += renderer.layer()->offsetForInFlowPosition();
 
-    m_clipped = !fixed && prev->m_clipped;
+    m_clipped = !fixed && m_next->m_clipped;
     if (m_clipped)
-        m_clipRect = prev->m_clipRect;
+        m_clipRect = m_next->m_clipRect;
 
     if (renderer.hasOverflowClip()) {
         LayoutSize deltaSize = RuntimeEnabledFeatures::repaintAfterLayoutEnabled() ? LayoutSize() : renderer.view()->layoutDelta();
@@ -119,21 +136,39 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox& renderer, const LayoutSiz
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
 }
 
+inline static bool shouldDisableLayoutStateForSubtree(RenderObject& renderer)
+{
+    RenderObject* object = &renderer;
+    while (object) {
+        if (object->supportsLayoutStateCachedOffsets())
+            return true;
+        object = object->container();
+    }
+    return false;
+}
+
 LayoutState::LayoutState(RenderObject& root)
     : m_clipped(false)
     , m_isPaginated(false)
     , m_pageLogicalHeightChanged(false)
+    , m_cachedOffsetsEnabled(shouldDisableLayoutStateForSubtree(root))
 #if ASSERT_ENABLED
     , m_layoutDeltaXSaturated(false)
     , m_layoutDeltaYSaturated(false)
 #endif
     , m_columnInfo(0)
-    , m_next(0)
+    , m_next(root.view()->layoutState())
     , m_pageLogicalHeight(0)
-#ifndef NDEBUG
-    , m_renderer(&root)
-#endif
+    , m_renderer(root)
 {
+    // FIXME: Why does RenderTableSection create this wonky LayoutState?
+    ASSERT(!m_next || root.isTableSection());
+    // We'll end up pushing in RenderView itself, so don't bother adding it.
+    if (root.isRenderView())
+        return;
+
+    root.view()->pushLayoutState(*this);
+
     RenderObject* container = root.container();
     FloatPoint absContentPoint = container->localToAbsolute(FloatPoint(), UseTransforms);
     m_paintOffset = LayoutSize(absContentPoint.x(), absContentPoint.y());
@@ -146,14 +181,12 @@ LayoutState::LayoutState(RenderObject& root)
     }
 }
 
-void* LayoutState::operator new(size_t sz)
+LayoutState::~LayoutState()
 {
-    return partitionAlloc(Partitions::getRenderingPartition(), sz);
-}
-
-void LayoutState::operator delete(void* ptr)
-{
-    partitionFree(ptr);
+    if (m_renderer.view()->layoutState()) {
+        ASSERT(m_renderer.view()->layoutState() == this);
+        m_renderer.view()->popLayoutState();
+    }
 }
 
 void LayoutState::clearPaginationInformation()

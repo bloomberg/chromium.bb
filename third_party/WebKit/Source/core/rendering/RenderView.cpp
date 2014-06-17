@@ -57,7 +57,6 @@ RenderView::RenderView(Document* document)
     , m_pageLogicalHeight(0)
     , m_pageLogicalHeightChanged(false)
     , m_layoutState(0)
-    , m_layoutStateDisableCount(0)
     , m_renderQuoteHead(0)
     , m_renderCounterCount(0)
 {
@@ -183,7 +182,6 @@ void RenderView::checkLayoutState()
     if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
         ASSERT(layoutDeltaMatches(LayoutSize()));
     }
-    ASSERT(!m_layoutStateDisableCount);
     ASSERT(!m_layoutState->next());
 }
 #endif
@@ -252,7 +250,7 @@ void RenderView::layout()
     if (!needsLayout())
         return;
 
-    RootLayoutStateScope rootLayoutStateScope(*this);
+    LayoutState rootLayoutState(pageLogicalHeight(), pageLogicalHeightChanged(), *this);
 
     m_pageLogicalHeightChanged = false;
 
@@ -458,6 +456,7 @@ void RenderView::invalidateTreeAfterLayout(const RenderLayerModelObject& paintIn
     if (doingFullRepaint() && !viewRect().isEmpty())
         repaintViewRectangle(viewRect());
 
+    LayoutState rootLayoutState(0, false, *this);
     RenderBlock::invalidateTreeAfterLayout(paintInvalidationContainer);
 }
 
@@ -907,26 +906,6 @@ float RenderView::zoomFactor() const
     return m_frameView->frame().pageZoomFactor();
 }
 
-void RenderView::pushLayoutState(RenderObject& root)
-{
-    ASSERT(m_layoutStateDisableCount == 0);
-    ASSERT(m_layoutState == 0);
-
-    pushLayoutStateForCurrentFlowThread(root);
-    m_layoutState = new LayoutState(root);
-}
-
-bool RenderView::shouldDisableLayoutStateForSubtree(RenderObject& renderer) const
-{
-    RenderObject* o = &renderer;
-    while (o) {
-        if (o->shouldDisableLayoutState())
-            return true;
-        o = o->container();
-    }
-    return false;
-}
-
 void RenderView::updateHitTestResult(HitTestResult& result, const LayoutPoint& point)
 {
     if (result.innerNode())
@@ -972,20 +951,20 @@ FlowThreadController* RenderView::flowThreadController()
     return m_flowThreadController.get();
 }
 
-void RenderView::pushLayoutStateForCurrentFlowThread(const RenderObject& object)
+void RenderView::pushLayoutState(LayoutState& layoutState)
 {
-    if (!m_flowThreadController)
-        return;
-
-    RenderFlowThread* currentFlowThread = m_flowThreadController->currentRenderFlowThread();
-    if (!currentFlowThread)
-        return;
-
-    currentFlowThread->pushFlowThreadLayoutState(object);
+    if (m_flowThreadController) {
+        RenderFlowThread* currentFlowThread = m_flowThreadController->currentRenderFlowThread();
+        if (currentFlowThread)
+            currentFlowThread->pushFlowThreadLayoutState(layoutState.renderer());
+    }
+    m_layoutState = &layoutState;
 }
 
-void RenderView::popLayoutStateForCurrentFlowThread()
+void RenderView::popLayoutState()
 {
+    ASSERT(m_layoutState);
+    m_layoutState = m_layoutState->next();
     if (!m_flowThreadController)
         return;
 

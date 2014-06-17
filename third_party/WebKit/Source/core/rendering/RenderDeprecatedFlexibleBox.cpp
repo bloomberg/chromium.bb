@@ -263,8 +263,8 @@ void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren)
     LayoutRepainter repainter(*this, checkForPaintInvalidationDuringLayout());
 
     {
-        // LayoutStateMaintainer needs this deliberate scope to pop before repaint
-        LayoutStateMaintainer statePusher(*this, locationOffset());
+        // LayoutState needs this deliberate scope to pop before repaint
+        LayoutState state(*this, locationOffset());
 
         LayoutSize previousSize = size();
 

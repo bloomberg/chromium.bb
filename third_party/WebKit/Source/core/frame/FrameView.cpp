@@ -104,33 +104,6 @@ static RenderLayer::UpdateLayerPositionsFlags updateLayerPositionFlags(RenderLay
     return flags;
 }
 
-class FrameViewLayoutStateMaintainer {
-    WTF_MAKE_NONCOPYABLE(FrameViewLayoutStateMaintainer);
-public:
-    FrameViewLayoutStateMaintainer(RenderObject& root, bool inSubtreeLayout)
-        : m_view(*root.view())
-        , m_inSubtreeLayout(inSubtreeLayout)
-        , m_disabled(inSubtreeLayout && m_view.shouldDisableLayoutStateForSubtree(root))
-    {
-        if (m_inSubtreeLayout)
-            m_view.pushLayoutState(root);
-        if (m_disabled)
-            m_view.disableLayoutState();
-    }
-
-    ~FrameViewLayoutStateMaintainer()
-    {
-        if (m_disabled)
-            m_view.enableLayoutState();
-        if (m_inSubtreeLayout)
-            m_view.popLayoutState();
-    }
-private:
-    RenderView& m_view;
-    bool m_inSubtreeLayout;
-    bool m_disabled;
-};
-
 FrameView::FrameView(LocalFrame* frame)
     : m_frame(frame)
     , m_canHaveScrollbars(true)
@@ -809,7 +782,8 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
     // FIXME: The 300 other lines in layout() probably belong in other helper functions
     // so that a single human could understand what layout() is actually doing.
 
-    FrameViewLayoutStateMaintainer statePusher(*rootForThisLayout, inSubtreeLayout);
+    LayoutState layoutState(*rootForThisLayout);
+
     forceLayoutParentViewIfNeeded();
 
     // FIXME (crbug.com/256657): Do not do two layouts for text autosizing.
@@ -1059,7 +1033,7 @@ void FrameView::invalidateTree(RenderObject* root)
     // Until those states are fully fledged, I'll just disable the ASSERTS.
     DisableCompositingQueryAsserts compositingQueryAssertsDisabler;
 
-    RootLayoutStateScope rootLayoutStateScope(*root);
+    LayoutState rootLayoutState(*root);
 
     root->invalidateTreeAfterLayout(*root->containerForPaintInvalidation());
 

@@ -321,7 +321,7 @@ void RenderBox::layout()
         return;
     }
 
-    LayoutStateMaintainer statePusher(*this, locationOffset());
+    LayoutState state(*this, locationOffset());
     while (child) {
         child->layoutIfNeeded();
         ASSERT(!child->needsLayout());
@@ -1588,7 +1588,7 @@ void RenderBox::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInv
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
     if (view()->doingFullRepaint()) {
-        LayoutStateMaintainer statePusher(*this, isTableRow() ? LayoutSize() : locationOffset());
+        LayoutState state(*this, isTableRow() ? LayoutSize() : locationOffset());
         RenderObject::invalidateTreeAfterLayout(newPaintInvalidationContainer);
         return;
     }
@@ -1628,7 +1628,7 @@ void RenderBox::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInv
         // FIXME: This concept of a tree walking state for fast lookups should be generalized away from
         // just layout.
         // FIXME: Table rows shouldn't be special-cased.
-        LayoutStateMaintainer statePusher(*this, isTableRow() ? LayoutSize() : locationOffset());
+        LayoutState state(*this, isTableRow() ? LayoutSize() : locationOffset());
         RenderObject::invalidateTreeAfterLayout(newPaintInvalidationContainer);
     }
 }
@@ -1817,7 +1817,7 @@ void RenderBox::mapLocalToContainer(const RenderLayerModelObject* repaintContain
         return;
 
     if (RenderView* v = view()) {
-        if (v->canUseLayoutStateForContainer(repaintContainer)) {
+        if (v->canMapUsingLayoutStateForContainer(repaintContainer)) {
             LayoutState* layoutState = v->layoutState();
             LayoutSize offset = layoutState->paintOffset() + locationOffset();
             if (style()->hasInFlowPosition() && layer())
@@ -1870,7 +1870,7 @@ void RenderBox::mapLocalToContainer(const RenderLayerModelObject* repaintContain
 void RenderBox::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
 {
     // We don't expect to be called during layout.
-    ASSERT(!view() || !view()->layoutStateEnabled());
+    ASSERT(!view() || !view()->layoutStateCachedOffsetsEnabled());
 
     bool isFixedPos = style()->position() == FixedPosition;
     bool hasTransform = hasLayer() && layer()->transform();
@@ -2020,7 +2020,7 @@ void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* 
     RenderStyle* styleToUse = style();
     if (RenderView* v = view()) {
         // LayoutState is only valid for root-relative, non-fixed position repainting
-        if (v->canUseLayoutStateForContainer(paintInvalidationContainer) && styleToUse->position() != FixedPosition) {
+        if (v->canMapUsingLayoutStateForContainer(paintInvalidationContainer) && styleToUse->position() != FixedPosition) {
             LayoutState* layoutState = v->layoutState();
 
             if (layer() && layer()->transform())

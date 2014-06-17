@@ -425,7 +425,7 @@ void RenderTable::layout()
     bool sectionMoved = false;
     LayoutUnit movedSectionLogicalTop = 0;
     {
-        LayoutStateMaintainer statePusher(*this, locationOffset());
+        LayoutState state(*this, locationOffset());
 
         setLogicalHeight(0);
 

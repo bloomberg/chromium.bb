@@ -242,7 +242,7 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren)
 
     {
         FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(this);
-        LayoutStateMaintainer statePusher(*this, locationOffset());
+        LayoutState state(*this, locationOffset());
 
         m_numberOfInFlowChildrenOnFirstLine = -1;
 

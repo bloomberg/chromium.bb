@@ -48,7 +48,7 @@ void RenderVTTCue::layout()
     if (!m_cue->regionId().isEmpty())
         return;
 
-    LayoutStateMaintainer statePusher(*this, locationOffset());
+    LayoutState state(*this, locationOffset());
 
     if (m_cue->snapToLines())
         repositionCueSnapToLinesSet();

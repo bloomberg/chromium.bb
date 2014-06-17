@@ -39,7 +39,6 @@ namespace WebCore {
 
 class BasicShape;
 class BidiContext;
-class LayoutStateMaintainer;
 class LineLayoutState;
 class RenderInline;
 class RenderText;

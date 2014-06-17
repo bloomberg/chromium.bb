@@ -161,7 +161,7 @@ void RenderTableRow::layout()
     ASSERT(needsLayout());
 
     // Table rows do not add translation.
-    LayoutStateMaintainer statePusher(*this, LayoutSize());
+    LayoutState state(*this, LayoutSize());
 
     for (RenderTableCell* cell = firstCell(); cell; cell = cell->nextCell()) {
         SubtreeLayoutScope layouter(*cell);

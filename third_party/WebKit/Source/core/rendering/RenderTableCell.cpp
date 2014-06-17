@@ -378,7 +378,7 @@ void RenderTableCell::mapRectToPaintInvalidationBacking(const RenderLayerModelOb
         return;
     r.setY(r.y());
     RenderView* v = view();
-    if ((!v || !v->canUseLayoutStateForContainer(paintInvalidationContainer)) && parent())
+    if ((!v || !v->canMapUsingLayoutStateForContainer(paintInvalidationContainer)) && parent())
         r.moveBy(-parentBox()->location()); // Rows are in the same coordinate space, so don't add their offset in.
     RenderBlockFlow::mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, fixed);
 }

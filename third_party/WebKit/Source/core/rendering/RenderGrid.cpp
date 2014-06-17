@@ -319,7 +319,7 @@ void RenderGrid::layoutBlock(bool relayoutChildren)
     // FIXME: Much of this method is boiler plate that matches RenderBox::layoutBlock and Render*FlexibleBox::layoutBlock.
     // It would be nice to refactor some of the duplicate code.
     LayoutRepainter repainter(*this, checkForPaintInvalidationDuringLayout());
-    LayoutStateMaintainer statePusher(*this, locationOffset());
+    LayoutState state(*this, locationOffset());
 
     LayoutSize previousSize = size();
 

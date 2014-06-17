@@ -377,7 +377,7 @@ void RenderBlock::invalidateTreeAfterLayout(const RenderLayerModelObject& invali
     // Take care of positioned objects. This is required as LayoutState keeps a single clip rect.
     if (TrackedRendererListHashSet* positionedObjects = this->positionedObjects()) {
         TrackedRendererListHashSet::iterator end = positionedObjects->end();
-        LayoutStateMaintainer statePusher(*this, isTableRow() ? LayoutSize() : locationOffset());
+        LayoutState state(*this, isTableRow() ? LayoutSize() : locationOffset());
         for (TrackedRendererListHashSet::iterator it = positionedObjects->begin(); it != end; ++it) {
             RenderBox* box = *it;
 
@@ -1573,8 +1573,8 @@ bool RenderBlock::simplifiedLayout()
 
 
     {
-        // LayoutStateMaintainer needs this deliberate scope to pop before repaint
-        LayoutStateMaintainer statePusher(*this, locationOffset());
+        // LayoutState needs this deliberate scope to pop before repaint
+        LayoutState state(*this, locationOffset());
 
         if (needsPositionedMovementLayout() && !tryLayoutDoingPositionedMovementOnly())
             return false;

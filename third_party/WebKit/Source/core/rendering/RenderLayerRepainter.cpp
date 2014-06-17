@@ -71,7 +71,7 @@ void RenderLayerRepainter::repaintAfterLayout(bool shouldCheckForRepaint)
         // FIXME: LayoutState does not work with RenderLayers as there is not a 1-to-1
         // mapping between them and the RenderObjects. It would be neat to enable
         // LayoutState outside the layout() phase and use it here.
-        ASSERT(!view->layoutStateEnabled());
+        ASSERT(!view->layoutStateCachedOffsetsEnabled());
 
         const RenderLayerModelObject* repaintContainer = m_renderer.containerForPaintInvalidation();
         LayoutRect oldRepaintRect = m_repaintRect;

@@ -1023,7 +1023,7 @@ public:
         return layoutDidGetCalled() || mayNeedPaintInvalidation();
     }
 
-    bool shouldDisableLayoutState() const { return hasColumns() || hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode(); }
+    bool supportsLayoutStateCachedOffsets() const { return !hasColumns() && !hasTransform() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
 
     void setNeedsOverflowRecalcAfterStyleChange();
     void markContainingBlocksForOverflowRecalc();
