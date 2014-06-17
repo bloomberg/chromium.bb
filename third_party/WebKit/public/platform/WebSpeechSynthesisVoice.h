@@ -58,7 +58,7 @@ public:
     BLINK_PLATFORM_EXPORT void setIsDefault(bool);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<WebCore::PlatformSpeechSynthesisVoice>() const;
+    BLINK_PLATFORM_EXPORT operator WebCore::PlatformSpeechSynthesisVoice*() const;
 #endif
 
 private:

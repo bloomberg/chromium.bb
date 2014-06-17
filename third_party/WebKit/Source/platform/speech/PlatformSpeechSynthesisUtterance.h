@@ -27,23 +27,22 @@
 #define PlatformSpeechSynthesisUtterance_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/Handle.h"
 #include "platform/speech/PlatformSpeechSynthesisVoice.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class PlatformSpeechSynthesisUtteranceClient {
+class PlatformSpeechSynthesisUtteranceClient : public GarbageCollectedMixin {
 public:
     // Implement methods as needed.
 protected:
     virtual ~PlatformSpeechSynthesisUtteranceClient() { }
 };
 
-class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance : public RefCounted<PlatformSpeechSynthesisUtterance> {
+class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance FINAL : public GarbageCollectedFinalized<PlatformSpeechSynthesisUtterance> {
 public:
-    static PassRefPtr<PlatformSpeechSynthesisUtterance> create(PlatformSpeechSynthesisUtteranceClient*);
+    static PlatformSpeechSynthesisUtterance* create(PlatformSpeechSynthesisUtteranceClient*);
 
     const String& text() const { return m_text; }
     void setText(const String& text) { m_text = text; }
@@ -51,7 +50,7 @@ public:
     const String& lang() const { return m_lang; }
     void setLang(const String& lang) { m_lang = lang; }
 
-    PlatformSpeechSynthesisVoice* voice() const { return m_voice.get(); }
+    PlatformSpeechSynthesisVoice* voice() const { return m_voice; }
     void setVoice(PlatformSpeechSynthesisVoice* voice) { m_voice = voice; }
 
     // Range = [0, 1] where 1 is the default.
@@ -70,15 +69,16 @@ public:
     void setStartTime(double startTime) { m_startTime = startTime; }
 
     PlatformSpeechSynthesisUtteranceClient* client() const { return m_client; }
-    void setClient(PlatformSpeechSynthesisUtteranceClient* client) { m_client = client; }
+
+    void trace(Visitor*);
 
 private:
     explicit PlatformSpeechSynthesisUtterance(PlatformSpeechSynthesisUtteranceClient*);
 
-    PlatformSpeechSynthesisUtteranceClient* m_client;
+    Member<PlatformSpeechSynthesisUtteranceClient> m_client;
     String m_text;
     String m_lang;
-    RefPtr<PlatformSpeechSynthesisVoice> m_voice;
+    Member<PlatformSpeechSynthesisVoice> m_voice;
     float m_volume;
     float m_rate;
     float m_pitch;

@@ -36,25 +36,25 @@
 
 namespace WebCore {
 
-PassOwnPtr<PlatformSpeechSynthesizer> PlatformSpeechSynthesizer::create(PlatformSpeechSynthesizerClient* client)
+PlatformSpeechSynthesizer* PlatformSpeechSynthesizer::create(PlatformSpeechSynthesizerClient* client)
 {
-    OwnPtr<PlatformSpeechSynthesizer> synthesizer = adoptPtr(new PlatformSpeechSynthesizer(client));
+    PlatformSpeechSynthesizer* synthesizer = new PlatformSpeechSynthesizer(client);
     synthesizer->initializeVoiceList();
-    return synthesizer.release();
+    return synthesizer;
 }
 
 PlatformSpeechSynthesizer::PlatformSpeechSynthesizer(PlatformSpeechSynthesizerClient* client)
     : m_speechSynthesizerClient(client)
 {
-    m_webSpeechSynthesizerClient = adoptPtr(new WebSpeechSynthesizerClientImpl(this, client));
-    m_webSpeechSynthesizer = adoptPtr(blink::Platform::current()->createSpeechSynthesizer(m_webSpeechSynthesizerClient.get()));
+    m_webSpeechSynthesizerClient = new WebSpeechSynthesizerClientImpl(this, client);
+    m_webSpeechSynthesizer = adoptPtr(blink::Platform::current()->createSpeechSynthesizer(m_webSpeechSynthesizerClient));
 }
 
 PlatformSpeechSynthesizer::~PlatformSpeechSynthesizer()
 {
 }
 
-void PlatformSpeechSynthesizer::speak(PassRefPtr<PlatformSpeechSynthesisUtterance> utterance)
+void PlatformSpeechSynthesizer::speak(PlatformSpeechSynthesisUtterance* utterance)
 {
     if (!m_webSpeechSynthesizer || !m_webSpeechSynthesizerClient)
         return;
@@ -80,7 +80,7 @@ void PlatformSpeechSynthesizer::cancel()
         m_webSpeechSynthesizer->cancel();
 }
 
-void PlatformSpeechSynthesizer::setVoiceList(Vector<RefPtr<PlatformSpeechSynthesisVoice> >& voices)
+void PlatformSpeechSynthesizer::setVoiceList(HeapVector<Member<PlatformSpeechSynthesisVoice> >& voices)
 {
     m_voiceList = voices;
 }
@@ -89,6 +89,13 @@ void PlatformSpeechSynthesizer::initializeVoiceList()
 {
     if (m_webSpeechSynthesizer.get())
         m_webSpeechSynthesizer->updateVoiceList();
+}
+
+void PlatformSpeechSynthesizer::trace(Visitor* visitor)
+{
+    visitor->trace(m_speechSynthesizerClient);
+    visitor->trace(m_voiceList);
+    visitor->trace(m_webSpeechSynthesizerClient);
 }
 
 } // namespace WebCore

@@ -28,14 +28,14 @@
 
 namespace WebCore {
 
-PassRefPtr<PlatformSpeechSynthesisVoice> PlatformSpeechSynthesisVoice::create(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault)
+PlatformSpeechSynthesisVoice* PlatformSpeechSynthesisVoice::create(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault)
 {
-    return adoptRef(new PlatformSpeechSynthesisVoice(voiceURI, name, lang, localService, isDefault));
+    return new PlatformSpeechSynthesisVoice(voiceURI, name, lang, localService, isDefault);
 }
 
-PassRefPtr<PlatformSpeechSynthesisVoice> PlatformSpeechSynthesisVoice::create()
+PlatformSpeechSynthesisVoice* PlatformSpeechSynthesisVoice::create()
 {
-    return adoptRef(new PlatformSpeechSynthesisVoice());
+    return new PlatformSpeechSynthesisVoice();
 }
 
 PlatformSpeechSynthesisVoice::PlatformSpeechSynthesisVoice(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault)

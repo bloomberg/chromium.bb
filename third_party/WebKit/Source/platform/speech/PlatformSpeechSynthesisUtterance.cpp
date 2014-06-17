@@ -28,9 +28,9 @@
 
 namespace WebCore {
 
-PassRefPtr<PlatformSpeechSynthesisUtterance> PlatformSpeechSynthesisUtterance::create(PlatformSpeechSynthesisUtteranceClient* client)
+PlatformSpeechSynthesisUtterance* PlatformSpeechSynthesisUtterance::create(PlatformSpeechSynthesisUtteranceClient* client)
 {
-    return adoptRef(new PlatformSpeechSynthesisUtterance(client));
+    return new PlatformSpeechSynthesisUtterance(client);
 }
 
 PlatformSpeechSynthesisUtterance::PlatformSpeechSynthesisUtterance(PlatformSpeechSynthesisUtteranceClient* client)
@@ -39,6 +39,12 @@ PlatformSpeechSynthesisUtterance::PlatformSpeechSynthesisUtterance(PlatformSpeec
     , m_rate(1.0f)
     , m_pitch(1.0f)
 {
+}
+
+void PlatformSpeechSynthesisUtterance::trace(Visitor* visitor)
+{
+    visitor->trace(m_client);
+    visitor->trace(m_voice);
 }
 
 } // namespace WebCore

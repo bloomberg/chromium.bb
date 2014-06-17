@@ -62,9 +62,8 @@ public:
     BLINK_PLATFORM_EXPORT double startTime() const; // In seconds.
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebSpeechSynthesisUtterance(const PassRefPtr<WebCore::PlatformSpeechSynthesisUtterance>&);
+    BLINK_PLATFORM_EXPORT WebSpeechSynthesisUtterance(WebCore::PlatformSpeechSynthesisUtterance*);
     BLINK_PLATFORM_EXPORT WebSpeechSynthesisUtterance& operator=(WebCore::PlatformSpeechSynthesisUtterance*);
-    BLINK_PLATFORM_EXPORT operator PassRefPtr<WebCore::PlatformSpeechSynthesisUtterance>() const;
     BLINK_PLATFORM_EXPORT operator WebCore::PlatformSpeechSynthesisUtterance*() const;
 #endif
 

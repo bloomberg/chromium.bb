@@ -31,12 +31,12 @@
 
 namespace WebCore {
 
-PassOwnPtr<PlatformSpeechSynthesizerMock> PlatformSpeechSynthesizerMock::create(PlatformSpeechSynthesizerClient* client)
+PlatformSpeechSynthesizerMock* PlatformSpeechSynthesizerMock::create(PlatformSpeechSynthesizerClient* client)
 {
-    OwnPtr<PlatformSpeechSynthesizerMock> synthesizer = adoptPtr(new PlatformSpeechSynthesizerMock(client));
+    PlatformSpeechSynthesizerMock* synthesizer = new PlatformSpeechSynthesizerMock(client);
     synthesizer->initializeVoiceList();
     client->voicesDidChange();
-    return synthesizer.release();
+    return synthesizer;
 }
 
 PlatformSpeechSynthesizerMock::PlatformSpeechSynthesizerMock(PlatformSpeechSynthesizerClient* client)
@@ -74,7 +74,7 @@ void PlatformSpeechSynthesizerMock::initializeVoiceList()
     m_voiceList.append(PlatformSpeechSynthesisVoice::create(String("mock.voice.logan"), String("logan"), String("fr-CA"), true, true));
 }
 
-void PlatformSpeechSynthesizerMock::speak(PassRefPtr<PlatformSpeechSynthesisUtterance> utterance)
+void PlatformSpeechSynthesizerMock::speak(PlatformSpeechSynthesisUtterance* utterance)
 {
     ASSERT(!m_utterance);
     m_utterance = utterance;
@@ -107,5 +107,10 @@ void PlatformSpeechSynthesizerMock::resume()
     client()->didResumeSpeaking(m_utterance);
 }
 
+void PlatformSpeechSynthesizerMock::trace(Visitor* visitor)
+{
+    visitor->trace(m_utterance);
+    PlatformSpeechSynthesizer::trace(visitor);
+}
 
 } // namespace WebCore

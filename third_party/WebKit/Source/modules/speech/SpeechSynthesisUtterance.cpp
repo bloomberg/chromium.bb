@@ -43,7 +43,6 @@ SpeechSynthesisUtterance::SpeechSynthesisUtterance(ExecutionContext* context, co
 
 SpeechSynthesisUtterance::~SpeechSynthesisUtterance()
 {
-    m_platformUtterance->setClient(0);
 }
 
 ExecutionContext* SpeechSynthesisUtterance::executionContext() const
@@ -73,6 +72,7 @@ void SpeechSynthesisUtterance::setVoice(SpeechSynthesisVoice* voice)
 
 void SpeechSynthesisUtterance::trace(Visitor* visitor)
 {
+    visitor->trace(m_platformUtterance);
     visitor->trace(m_voice);
     EventTargetWithInlineData::trace(visitor);
 }

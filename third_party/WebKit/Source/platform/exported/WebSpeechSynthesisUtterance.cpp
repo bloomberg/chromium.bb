@@ -35,7 +35,7 @@ using namespace WebCore;
 
 namespace blink {
 
-WebSpeechSynthesisUtterance::WebSpeechSynthesisUtterance(const PassRefPtr<PlatformSpeechSynthesisUtterance>& utterance)
+WebSpeechSynthesisUtterance::WebSpeechSynthesisUtterance(WebCore::PlatformSpeechSynthesisUtterance* utterance)
     : m_private(utterance)
 {
 }
@@ -54,11 +54,6 @@ void WebSpeechSynthesisUtterance::assign(const WebSpeechSynthesisUtterance& othe
 void WebSpeechSynthesisUtterance::reset()
 {
     m_private.reset();
-}
-
-WebSpeechSynthesisUtterance::operator PassRefPtr<PlatformSpeechSynthesisUtterance>() const
-{
-    return m_private.get();
 }
 
 WebSpeechSynthesisUtterance::operator PlatformSpeechSynthesisUtterance*() const

@@ -50,7 +50,7 @@ public:
     virtual ~SpeechRecognition();
 
     // Attributes.
-    SpeechGrammarList* grammars() { return m_grammars.get(); }
+    SpeechGrammarList* grammars() { return m_grammars; }
     void setGrammars(SpeechGrammarList* grammars) { m_grammars = grammars; }
     String lang() { return m_lang; }
     void setLang(const String& lang) { m_lang = lang; }
@@ -110,7 +110,7 @@ private:
     bool m_interimResults;
     unsigned long m_maxAlternatives;
 
-    SpeechRecognitionController* m_controller;
+    RawPtrWillBeMember<SpeechRecognitionController> m_controller;
     bool m_stoppedByActiveDOMObject;
     bool m_started;
     bool m_stopping;

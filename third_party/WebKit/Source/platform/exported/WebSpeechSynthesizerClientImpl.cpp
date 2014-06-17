@@ -42,9 +42,9 @@ WebSpeechSynthesizerClientImpl::~WebSpeechSynthesizerClientImpl()
 
 void WebSpeechSynthesizerClientImpl::setVoiceList(const blink::WebVector<blink::WebSpeechSynthesisVoice>& voices)
 {
-    Vector<RefPtr<PlatformSpeechSynthesisVoice> > outVoices;
+    HeapVector<Member<PlatformSpeechSynthesisVoice> > outVoices;
     for (size_t i = 0; i < voices.size(); i++)
-        outVoices.append(PassRefPtr<PlatformSpeechSynthesisVoice>(voices[i]));
+        outVoices.append(voices[i]);
     m_synthesizer->setVoiceList(outVoices);
     m_client->voicesDidChange();
 }
@@ -82,6 +82,12 @@ void WebSpeechSynthesizerClientImpl::wordBoundaryEventOccurred(const blink::WebS
 void WebSpeechSynthesizerClientImpl::sentenceBoundaryEventOccurred(const blink::WebSpeechSynthesisUtterance& utterance, unsigned charIndex)
 {
     m_client->boundaryEventOccurred(utterance, SpeechSentenceBoundary, charIndex);
+}
+
+void WebSpeechSynthesizerClientImpl::trace(Visitor* visitor)
+{
+    visitor->trace(m_synthesizer);
+    visitor->trace(m_client);
 }
 
 } // namespace WebCore

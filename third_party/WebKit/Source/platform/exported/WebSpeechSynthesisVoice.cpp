@@ -72,7 +72,7 @@ void WebSpeechSynthesisVoice::setIsDefault(bool isDefault)
     m_private->setIsDefault(isDefault);
 }
 
-WebSpeechSynthesisVoice::operator PassRefPtr<WebCore::PlatformSpeechSynthesisVoice>() const
+WebSpeechSynthesisVoice::operator WebCore::PlatformSpeechSynthesisVoice*() const
 {
     return m_private.get();
 }

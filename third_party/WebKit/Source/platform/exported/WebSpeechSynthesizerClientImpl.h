@@ -26,21 +26,20 @@
 #ifndef WebSpeechSynthesizerClientImpl_h
 #define WebSpeechSynthesizerClientImpl_h
 
+#include "platform/heap/Handle.h"
 #include "platform/speech/PlatformSpeechSynthesizer.h"
 #include "public/platform/WebSpeechSynthesisUtterance.h"
 #include "public/platform/WebSpeechSynthesisVoice.h"
 #include "public/platform/WebSpeechSynthesizerClient.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
 class PlatformSpeechSynthesizer;
 class PlatformSpeechSynthesizerClient;
 
-class WebSpeechSynthesizerClientImpl : public blink::WebSpeechSynthesizerClient {
+class WebSpeechSynthesizerClientImpl FINAL : public GarbageCollectedFinalized<WebSpeechSynthesizerClientImpl>, public blink::WebSpeechSynthesizerClient {
 public:
-    explicit WebSpeechSynthesizerClientImpl(PlatformSpeechSynthesizer*, PlatformSpeechSynthesizerClient*);
+    WebSpeechSynthesizerClientImpl(PlatformSpeechSynthesizer*, PlatformSpeechSynthesizerClient*);
     virtual ~WebSpeechSynthesizerClientImpl();
 
     virtual void setVoiceList(const blink::WebVector<blink::WebSpeechSynthesisVoice>& voices);
@@ -52,9 +51,11 @@ public:
     virtual void wordBoundaryEventOccurred(const blink::WebSpeechSynthesisUtterance&, unsigned charIndex);
     virtual void sentenceBoundaryEventOccurred(const blink::WebSpeechSynthesisUtterance&, unsigned charIndex);
 
+    void trace(Visitor*);
+
 private:
-    PlatformSpeechSynthesizer* m_synthesizer;
-    PlatformSpeechSynthesizerClient* m_client;
+    Member<PlatformSpeechSynthesizer> m_synthesizer;
+    Member<PlatformSpeechSynthesizerClient> m_client;
 };
 
 } // namespace WebCore

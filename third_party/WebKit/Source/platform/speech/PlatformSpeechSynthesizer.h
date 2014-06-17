@@ -27,8 +27,8 @@
 #define PlatformSpeechSynthesizer_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/Handle.h"
 #include "platform/speech/PlatformSpeechSynthesisVoice.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -44,47 +44,54 @@ enum SpeechBoundary {
 };
 
 class PlatformSpeechSynthesisUtterance;
+class WebSpeechSynthesizerClientImpl;
 
-class PlatformSpeechSynthesizerClient {
+class PlatformSpeechSynthesizerClient : public GarbageCollectedMixin {
 public:
-    virtual void didStartSpeaking(PassRefPtr<PlatformSpeechSynthesisUtterance>) = 0;
-    virtual void didFinishSpeaking(PassRefPtr<PlatformSpeechSynthesisUtterance>) = 0;
-    virtual void didPauseSpeaking(PassRefPtr<PlatformSpeechSynthesisUtterance>) = 0;
-    virtual void didResumeSpeaking(PassRefPtr<PlatformSpeechSynthesisUtterance>) = 0;
-    virtual void speakingErrorOccurred(PassRefPtr<PlatformSpeechSynthesisUtterance>) = 0;
-    virtual void boundaryEventOccurred(PassRefPtr<PlatformSpeechSynthesisUtterance>, SpeechBoundary, unsigned charIndex) = 0;
+    virtual void didStartSpeaking(PlatformSpeechSynthesisUtterance*) = 0;
+    virtual void didFinishSpeaking(PlatformSpeechSynthesisUtterance*) = 0;
+    virtual void didPauseSpeaking(PlatformSpeechSynthesisUtterance*) = 0;
+    virtual void didResumeSpeaking(PlatformSpeechSynthesisUtterance*) = 0;
+    virtual void speakingErrorOccurred(PlatformSpeechSynthesisUtterance*) = 0;
+    virtual void boundaryEventOccurred(PlatformSpeechSynthesisUtterance*, SpeechBoundary, unsigned charIndex) = 0;
     virtual void voicesDidChange() = 0;
+
+    virtual void trace(Visitor*) { }
 protected:
     virtual ~PlatformSpeechSynthesizerClient() { }
 };
 
-class PLATFORM_EXPORT PlatformSpeechSynthesizer {
+class PLATFORM_EXPORT PlatformSpeechSynthesizer : public GarbageCollectedFinalized<PlatformSpeechSynthesizer> {
     WTF_MAKE_NONCOPYABLE(PlatformSpeechSynthesizer);
 public:
-    static PassOwnPtr<PlatformSpeechSynthesizer> create(PlatformSpeechSynthesizerClient*);
+    static PlatformSpeechSynthesizer* create(PlatformSpeechSynthesizerClient*);
 
     virtual ~PlatformSpeechSynthesizer();
 
-    const Vector<RefPtr<PlatformSpeechSynthesisVoice> >& voiceList() const { return m_voiceList; }
-    virtual void speak(PassRefPtr<PlatformSpeechSynthesisUtterance>);
+    const HeapVector<Member<PlatformSpeechSynthesisVoice> >& voiceList() const { return m_voiceList; }
+    virtual void speak(PlatformSpeechSynthesisUtterance*);
     virtual void pause();
     virtual void resume();
     virtual void cancel();
 
     PlatformSpeechSynthesizerClient* client() const { return m_speechSynthesizerClient; }
 
-    void setVoiceList(Vector<RefPtr<PlatformSpeechSynthesisVoice> >&);
+    void setVoiceList(HeapVector<Member<PlatformSpeechSynthesisVoice> >&);
+
+    virtual void trace(Visitor*);
 
 protected:
-    virtual void initializeVoiceList();
     explicit PlatformSpeechSynthesizer(PlatformSpeechSynthesizerClient*);
-    Vector<RefPtr<PlatformSpeechSynthesisVoice> > m_voiceList;
+
+    virtual void initializeVoiceList();
+
+    HeapVector<Member<PlatformSpeechSynthesisVoice> > m_voiceList;
 
 private:
-    PlatformSpeechSynthesizerClient* m_speechSynthesizerClient;
+    Member<PlatformSpeechSynthesizerClient> m_speechSynthesizerClient;
 
     OwnPtr<blink::WebSpeechSynthesizer> m_webSpeechSynthesizer;
-    OwnPtr<blink::WebSpeechSynthesizerClient> m_webSpeechSynthesizerClient;
+    Member<WebCore::WebSpeechSynthesizerClientImpl> m_webSpeechSynthesizerClient;
 };
 
 } // namespace WebCore

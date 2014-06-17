@@ -171,7 +171,7 @@ SpeechRecognition::SpeechRecognition(ExecutionContext* context)
     , m_continuous(false)
     , m_interimResults(false)
     , m_maxAlternatives(1)
-    , m_controller(0)
+    , m_controller(nullptr)
     , m_stoppedByActiveDOMObject(false)
     , m_started(false)
     , m_stopping(false)
@@ -195,6 +195,9 @@ SpeechRecognition::~SpeechRecognition()
 void SpeechRecognition::trace(Visitor* visitor)
 {
     visitor->trace(m_grammars);
+#if ENABLE(OILPAN)
+    visitor->trace(m_controller);
+#endif
     visitor->trace(m_finalResults);
     EventTargetWithInlineData::trace(visitor);
 }

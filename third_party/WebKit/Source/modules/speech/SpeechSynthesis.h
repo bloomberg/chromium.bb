@@ -34,7 +34,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 #include "platform/speech/PlatformSpeechSynthesizer.h"
-#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
@@ -43,7 +42,7 @@ class PlatformSpeechSynthesizerClient;
 
 class SpeechSynthesis FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SpeechSynthesis>, public PlatformSpeechSynthesizerClient, public ScriptWrappable, public ContextLifecycleObserver, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SpeechSynthesis>);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesis);
+    USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesis);
 public:
     static SpeechSynthesis* create(ExecutionContext*);
 
@@ -59,7 +58,7 @@ public:
     const HeapVector<Member<SpeechSynthesisVoice> >& getVoices();
 
     // Used in testing to use a mock platform synthesizer
-    void setPlatformSynthesizer(PassOwnPtr<PlatformSpeechSynthesizer>);
+    void setPlatformSynthesizer(PlatformSpeechSynthesizer*);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged);
 
@@ -72,12 +71,12 @@ private:
 
     // PlatformSpeechSynthesizerClient override methods.
     virtual void voicesDidChange() OVERRIDE;
-    virtual void didStartSpeaking(PassRefPtr<PlatformSpeechSynthesisUtterance>) OVERRIDE;
-    virtual void didPauseSpeaking(PassRefPtr<PlatformSpeechSynthesisUtterance>) OVERRIDE;
-    virtual void didResumeSpeaking(PassRefPtr<PlatformSpeechSynthesisUtterance>) OVERRIDE;
-    virtual void didFinishSpeaking(PassRefPtr<PlatformSpeechSynthesisUtterance>) OVERRIDE;
-    virtual void speakingErrorOccurred(PassRefPtr<PlatformSpeechSynthesisUtterance>) OVERRIDE;
-    virtual void boundaryEventOccurred(PassRefPtr<PlatformSpeechSynthesisUtterance>, SpeechBoundary, unsigned charIndex) OVERRIDE;
+    virtual void didStartSpeaking(PlatformSpeechSynthesisUtterance*) OVERRIDE;
+    virtual void didPauseSpeaking(PlatformSpeechSynthesisUtterance*) OVERRIDE;
+    virtual void didResumeSpeaking(PlatformSpeechSynthesisUtterance*) OVERRIDE;
+    virtual void didFinishSpeaking(PlatformSpeechSynthesisUtterance*) OVERRIDE;
+    virtual void speakingErrorOccurred(PlatformSpeechSynthesisUtterance*) OVERRIDE;
+    virtual void boundaryEventOccurred(PlatformSpeechSynthesisUtterance*, SpeechBoundary, unsigned charIndex) OVERRIDE;
 
     void startSpeakingImmediately();
     void handleSpeakingCompleted(SpeechSynthesisUtterance*, bool errorOccurred);
@@ -86,7 +85,7 @@ private:
     // Returns the utterance at the front of the queue.
     SpeechSynthesisUtterance* currentSpeechUtterance() const;
 
-    OwnPtr<PlatformSpeechSynthesizer> m_platformSpeechSynthesizer;
+    Member<PlatformSpeechSynthesizer> m_platformSpeechSynthesizer;
     HeapVector<Member<SpeechSynthesisVoice> > m_voiceList;
     HeapDeque<Member<SpeechSynthesisUtterance> > m_utteranceQueue;
     bool m_isPaused;
