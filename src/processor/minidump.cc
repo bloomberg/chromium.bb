@@ -366,6 +366,24 @@ static void PrintValueOrInvalid(bool valid,
   }
 }
 
+// Converts a time_t to a string showing the time in UTC.
+string TimeTToUTCString(time_t tt) {
+  struct tm timestruct;
+#ifdef _WIN32
+  gmtime_s(&timestruct, &tt);
+#else
+  gmtime_r(&tt, &timestruct);
+#endif
+
+  char timestr[20];
+  int rv = strftime(timestr, 20, "%Y-%m-%d %H:%M:%S", &timestruct);
+  if (rv == 0) {
+    return string();
+  }
+
+  return string(timestr);
+}
+
 
 //
 // MinidumpObject
@@ -2797,8 +2815,9 @@ void MinidumpModule::Print() {
          module_.size_of_image);
   printf("  checksum                        = 0x%x\n",
          module_.checksum);
-  printf("  time_date_stamp                 = 0x%x\n",
-         module_.time_date_stamp);
+  printf("  time_date_stamp                 = 0x%x %s\n",
+         module_.time_date_stamp,
+         TimeTToUTCString(module_.time_date_stamp).c_str());
   printf("  module_name_rva                 = 0x%x\n",
          module_.module_name_rva);
   printf("  version_info.signature          = 0x%x\n",
@@ -2872,8 +2891,9 @@ void MinidumpModule::Print() {
              cv_record_20->cv_header.signature);
       printf("  (cv_record).cv_header.offset    = 0x%x\n",
              cv_record_20->cv_header.offset);
-      printf("  (cv_record).signature           = 0x%x\n",
-             cv_record_20->signature);
+      printf("  (cv_record).signature           = 0x%x %s\n",
+             cv_record_20->signature,
+             TimeTToUTCString(cv_record_20->signature).c_str());
       printf("  (cv_record).age                 = %d\n",
              cv_record_20->age);
       printf("  (cv_record).pdb_file_name       = \"%s\"\n",
@@ -2899,13 +2919,19 @@ void MinidumpModule::Print() {
            misc_record->length);
     printf("  (misc_record).unicode           = %d\n",
            misc_record->unicode);
-    // Don't bother printing the UTF-16, we don't really even expect to ever
-    // see this misc_record anyway.
-    if (misc_record->unicode)
+    if (misc_record->unicode) {
+      string misc_record_data_utf8;
+      ConvertUTF16BufferToUTF8String(
+          reinterpret_cast<const uint16_t*>(misc_record->data),
+          misc_record->length - offsetof(MDImageDebugMisc, data),
+          &misc_record_data_utf8,
+          false);  // already swapped
+      printf("  (misc_record).data              = \"%s\"\n",
+             misc_record_data_utf8.c_str());
+    } else {
       printf("  (misc_record).data              = \"%s\"\n",
              misc_record->data);
-    else
-      printf("  (misc_record).data              = (UTF-16)\n");
+    }
   } else {
     printf("  (misc_record)                   = (null)\n");
   }
@@ -3830,6 +3856,12 @@ void MinidumpSystemInfo::Print() {
          system_info_.csd_version_rva);
   printf("  suite_mask                                 = 0x%x\n",
          system_info_.suite_mask);
+  if (system_info_.processor_architecture == MD_CPU_ARCHITECTURE_X86 ||
+      system_info_.processor_architecture == MD_CPU_ARCHITECTURE_X86_WIN64) {
+    printf("  cpu.x86_cpu_info (valid):\n");
+  } else {
+    printf("  cpu.x86_cpu_info (invalid):\n");
+  }
   for (unsigned int i = 0; i < 3; ++i) {
     printf("  cpu.x86_cpu_info.vendor_id[%d]              = 0x%x\n",
            i, system_info_.cpu.x86_cpu_info.vendor_id[i]);
@@ -3840,6 +3872,14 @@ void MinidumpSystemInfo::Print() {
          system_info_.cpu.x86_cpu_info.feature_information);
   printf("  cpu.x86_cpu_info.amd_extended_cpu_features = 0x%x\n",
          system_info_.cpu.x86_cpu_info.amd_extended_cpu_features);
+  if (system_info_.processor_architecture != MD_CPU_ARCHITECTURE_X86 &&
+      system_info_.processor_architecture != MD_CPU_ARCHITECTURE_X86_WIN64) {
+    printf("  cpu.other_cpu_info (valid):\n");
+    for (unsigned int i = 0; i < 2; ++i) {
+      printf("  cpu.other_cpu_info.processor_features[%d]   = 0x%" PRIx64 "\n",
+             i, system_info_.cpu.other_cpu_info.processor_features[i]);
+    }
+  }
   const string* csd_version = GetCSDVersion();
   if (csd_version) {
     printf("  (csd_version)                              = \"%s\"\n",
@@ -3964,19 +4004,9 @@ void MinidumpMiscInfo::Print() {
   PrintValueOrInvalid(misc_info_.flags1 & MD_MISCINFO_FLAGS1_PROCESS_ID,
                       kNumberFormatDecimal, misc_info_.process_id);
   if (misc_info_.flags1 & MD_MISCINFO_FLAGS1_PROCESS_TIMES) {
-    struct tm timestruct;
-#ifdef _WIN32
-    gmtime_s(&timestruct,
-             reinterpret_cast<time_t*>(&misc_info_.process_create_time));
-#else
-    gmtime_r(reinterpret_cast<time_t*>(&misc_info_.process_create_time),
-             &timestruct);
-#endif
-    char timestr[20];
-    strftime(timestr, 20, "%Y-%m-%d %H:%M:%S", &timestruct);
     printf("  process_create_time          = 0x%x %s\n",
            misc_info_.process_create_time,
-           timestr);
+           TimeTToUTCString(misc_info_.process_create_time).c_str());
   } else {
     printf("  process_create_time          = (invalid)\n");
   }
@@ -4786,16 +4816,9 @@ void Minidump::Print() {
   printf("  stream_count         = %d\n",      header_.stream_count);
   printf("  stream_directory_rva = 0x%x\n",    header_.stream_directory_rva);
   printf("  checksum             = 0x%x\n",    header_.checksum);
-  struct tm timestruct;
-#ifdef _WIN32
-  gmtime_s(&timestruct, reinterpret_cast<time_t*>(&header_.time_date_stamp));
-#else
-  gmtime_r(reinterpret_cast<time_t*>(&header_.time_date_stamp), &timestruct);
-#endif
-  char timestr[20];
-  strftime(timestr, 20, "%Y-%m-%d %H:%M:%S", &timestruct);
-  printf("  time_date_stamp      = 0x%x %s\n", header_.time_date_stamp,
-                                               timestr);
+  printf("  time_date_stamp      = 0x%x %s\n",
+         header_.time_date_stamp,
+         TimeTToUTCString(header_.time_date_stamp).c_str());
   printf("  flags                = 0x%" PRIx64 "\n",  header_.flags);
   printf("\n");
 
