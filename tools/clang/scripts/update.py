@@ -15,9 +15,8 @@ import sys
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-# TODO(hans): update the wiki to cover Windows when Clang is stable enough.
 # Note: this revision is only used for Windows. Other platforms use update.sh.
-LLVM_WIN_REVISION = os.environ.get('LLVM_WIN_REVISION', '210586')
+LLVM_WIN_REVISION = 'HEAD'
 
 # Path constants. (All of these should be absolute paths.)
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -30,8 +29,9 @@ CLANG_DIR = os.path.join(LLVM_DIR, 'tools', 'clang')
 COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'projects', 'compiler-rt')
 STAMP_FILE = os.path.join(LLVM_BUILD_DIR, 'cr_build_revision')
 
-LLVM_REPO_URL = os.environ.get('LLVM_REPO_URL',
-                               'https://llvm.org/svn/llvm-project')
+LLVM_REPO_URL='https://llvm.org/svn/llvm-project'
+if 'LLVM_REPO_URL' in os.environ:
+  LLVM_REPO_URL = os.environ['LLVM_REPO_URL']
 
 
 def ReadStampFile():
