@@ -50,9 +50,8 @@ public:
     virtual void didReceiveMessage(const WebString& message) { }
     virtual void didReceiveArrayBuffer(const WebArrayBuffer& arrayBuffer) { }
     virtual void didReceiveMessageError() { }
-    virtual void didUpdateBufferedAmount(unsigned long bufferedAmount) { }
     virtual void didStartClosingHandshake() { }
-    virtual void didClose(unsigned long bufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const WebString& reason) { }
+    virtual void didClose(unsigned long unhandledBufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const WebString& reason) { }
 };
 
 } // namespace blink

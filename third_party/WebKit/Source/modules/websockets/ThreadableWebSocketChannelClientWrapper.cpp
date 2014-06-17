@@ -80,9 +80,9 @@ void ThreadableWebSocketChannelClientWrapper::didReceiveBinaryData(PassOwnPtr<Ve
         processPendingTasks();
 }
 
-void ThreadableWebSocketChannelClientWrapper::didUpdateBufferedAmount(unsigned long bufferedAmount)
+void ThreadableWebSocketChannelClientWrapper::didConsumeBufferedAmount(unsigned long consumed)
 {
-    m_pendingTasks.append(createCallbackTask(&didUpdateBufferedAmountCallback, this, bufferedAmount));
+    m_pendingTasks.append(createCallbackTask(&didConsumeBufferedAmountCallback, this, consumed));
     if (!m_suspended)
         processPendingTasks();
 }
@@ -94,9 +94,9 @@ void ThreadableWebSocketChannelClientWrapper::didStartClosingHandshake()
         processPendingTasks();
 }
 
-void ThreadableWebSocketChannelClientWrapper::didClose(unsigned long unhandledBufferedAmount, WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
+void ThreadableWebSocketChannelClientWrapper::didClose(WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
 {
-    m_pendingTasks.append(createCallbackTask(&didCloseCallback, this, unhandledBufferedAmount, closingHandshakeCompletion, code, reason));
+    m_pendingTasks.append(createCallbackTask(&didCloseCallback, this, closingHandshakeCompletion, code, reason));
     if (!m_suspended)
         processPendingTasks();
 }
@@ -150,11 +150,11 @@ void ThreadableWebSocketChannelClientWrapper::didReceiveBinaryDataCallback(Execu
         wrapper->m_client->didReceiveBinaryData(binaryData);
 }
 
-void ThreadableWebSocketChannelClientWrapper::didUpdateBufferedAmountCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper, unsigned long bufferedAmount)
+void ThreadableWebSocketChannelClientWrapper::didConsumeBufferedAmountCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper, unsigned long consumed)
 {
     ASSERT_UNUSED(context, !context);
     if (wrapper->m_client)
-        wrapper->m_client->didUpdateBufferedAmount(bufferedAmount);
+        wrapper->m_client->didConsumeBufferedAmount(consumed);
 }
 
 void ThreadableWebSocketChannelClientWrapper::didStartClosingHandshakeCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper)
@@ -164,11 +164,11 @@ void ThreadableWebSocketChannelClientWrapper::didStartClosingHandshakeCallback(E
         wrapper->m_client->didStartClosingHandshake();
 }
 
-void ThreadableWebSocketChannelClientWrapper::didCloseCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper, unsigned long unhandledBufferedAmount, WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
+void ThreadableWebSocketChannelClientWrapper::didCloseCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper, WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
 {
     ASSERT_UNUSED(context, !context);
     if (wrapper->m_client)
-        wrapper->m_client->didClose(unhandledBufferedAmount, closingHandshakeCompletion, code, reason);
+        wrapper->m_client->didClose(closingHandshakeCompletion, code, reason);
 }
 
 void ThreadableWebSocketChannelClientWrapper::didReceiveMessageErrorCallback(ExecutionContext* context, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> wrapper)

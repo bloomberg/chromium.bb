@@ -116,7 +116,7 @@ public:
         ::testing::Mock::VerifyAndClear(m_websocket->channel());
         EXPECT_CALL(channel(), disconnect()).Times(AnyNumber());
 
-        m_websocket->didClose(0, WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
+        m_websocket->didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
         m_websocket.clear();
         Heap::collectAllGarbage();
     }
@@ -294,7 +294,7 @@ TEST_F(WebSocketTest, didClose)
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_EQ(WebSocket::CONNECTING, m_websocket->readyState());
 
-    m_websocket->didClose(0, WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
+    m_websocket->didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
 
     EXPECT_EQ(WebSocket::CLOSED, m_websocket->readyState());
 }
@@ -463,7 +463,7 @@ TEST_F(WebSocketTest, closeWhenClosed)
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_EQ(WebSocket::CLOSING, m_websocket->readyState());
 
-    m_websocket->didClose(0, WebSocketChannelClient::ClosingHandshakeComplete, 1000, String());
+    m_websocket->didClose(WebSocketChannelClient::ClosingHandshakeComplete, 1000, String());
     EXPECT_EQ(WebSocket::CLOSED, m_websocket->readyState());
     m_websocket->close(m_exceptionState);
 
@@ -523,7 +523,7 @@ TEST_F(WebSocketTest, sendStringWhenClosed)
 
     EXPECT_FALSE(m_exceptionState.hadException());
 
-    m_websocket->didClose(0, WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
+    m_websocket->didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
     checkpoint.Call(1);
 
     m_websocket->send("hello", m_exceptionState);
@@ -642,7 +642,7 @@ TEST_F(WebSocketTest, sendArrayBufferWhenClosed)
 
     EXPECT_FALSE(m_exceptionState.hadException());
 
-    m_websocket->didClose(0, WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
+    m_websocket->didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, 1006, "");
     checkpoint.Call(1);
 
     m_websocket->send(view->buffer().get(), m_exceptionState);

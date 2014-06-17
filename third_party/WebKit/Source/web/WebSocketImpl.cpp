@@ -42,6 +42,7 @@
 #include "public/platform/WebURL.h"
 #include "public/web/WebDocument.h"
 #include "wtf/ArrayBuffer.h"
+#include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
 using namespace WebCore;
@@ -51,6 +52,7 @@ namespace blink {
 WebSocketImpl::WebSocketImpl(const WebDocument& document, WebSocketClient* client)
     : m_client(client)
     , m_binaryType(BinaryTypeBlob)
+    , m_bufferedAmount(0)
 {
     RefPtrWillBeRawPtr<Document> coreDocument = PassRefPtrWillBeRawPtr<Document>(document);
     if (RuntimeEnabledFeatures::experimentalWebSocketEnabled()) {
@@ -95,17 +97,19 @@ WebString WebSocketImpl::extensions()
 
 bool WebSocketImpl::sendText(const WebString& message)
 {
+    m_bufferedAmount += message.utf8().length();
     return m_private->send(message) == WebSocketChannel::SendSuccess;
 }
 
 bool WebSocketImpl::sendArrayBuffer(const WebArrayBuffer& webArrayBuffer)
 {
+    m_bufferedAmount += webArrayBuffer.byteLength();
     return m_private->send(*PassRefPtr<ArrayBuffer>(webArrayBuffer), 0, webArrayBuffer.byteLength()) == WebSocketChannel::SendSuccess;
 }
 
 unsigned long WebSocketImpl::bufferedAmount() const
 {
-    return m_private->bufferedAmount();
+    return m_bufferedAmount;
 }
 
 void WebSocketImpl::close(int code, const WebString& reason)
@@ -153,9 +157,9 @@ void WebSocketImpl::didReceiveMessageError()
     m_client->didReceiveMessageError();
 }
 
-void WebSocketImpl::didUpdateBufferedAmount(unsigned long bufferedAmount)
+void WebSocketImpl::didConsumeBufferedAmount(unsigned long consumed)
 {
-    m_client->didUpdateBufferedAmount(bufferedAmount);
+    m_bufferedAmount -= consumed;
 }
 
 void WebSocketImpl::didStartClosingHandshake()
@@ -163,9 +167,9 @@ void WebSocketImpl::didStartClosingHandshake()
     m_client->didStartClosingHandshake();
 }
 
-void WebSocketImpl::didClose(unsigned long bufferedAmount, ClosingHandshakeCompletionStatus status, unsigned short code, const String& reason)
+void WebSocketImpl::didClose(ClosingHandshakeCompletionStatus status, unsigned short code, const String& reason)
 {
-    m_client->didClose(bufferedAmount, static_cast<WebSocketClient::ClosingHandshakeCompletionStatus>(status), code, WebString(reason));
+    m_client->didClose(m_bufferedAmount, static_cast<WebSocketClient::ClosingHandshakeCompletionStatus>(status), code, WebString(reason));
 }
 
 } // namespace blink
