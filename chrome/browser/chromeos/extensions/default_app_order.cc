@@ -102,7 +102,7 @@ void GetDefault(std::vector<std::string>* app_ids) {
     "hhaomjibdihmijegdhdafkllkbggdgoj",  // Files
     extension_misc::kGooglePlayMusicAppId,
     "mmimngoggfoobjdlefbcabngfnmieonb",  // Play Books
-    "fppdphmgcddhjeddoeghpjefkdlccljb",  // Play Movies
+    "gdijeikdkaembjbdobgfkoidjkpbmlkd",  // Play Movies & TV
     "fobcpibfeplaikcclojfdhfdmbbeofai",  // Games
     "joodangkbfjnajiiifokapkpmhfnpleo",  // Calculator
     "hfhhnacclhffhdffklopdkcgdhifgngh",  // Camera
