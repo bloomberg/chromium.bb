@@ -47,26 +47,26 @@
 
 .autoRowAutoColumnSpanningLine {
     background-color: indigo;
-    grid-column: span line;
+    grid-column: span line; /* This is treated as "span 1". */
     grid-row: auto;
 }
 
 .autoRowSpanningLineAutoColumn {
     background-color: moccasin;
     grid-column: auto;
-    grid-row: span line;
+    grid-row: span line; /* This is treated as "span 1". */
 }
 
 .autoRowAutoColumnSpanning2Line {
     background-color: sienna;
-    grid-column: span 2 line;
+    grid-column: span 2 line; /* This is treated as "span 1". */
     grid-row: auto;
 }
 
 .autoRowSpanning2LineAutoColumn {
     background-color: tomato;
     grid-column: auto;
-    grid-row: span 2 line;
+    grid-row: span 2 line; /* This is treated as "span 1". */
 }
 </style>
 <script src="../../resources/check-layout.js"></script>
@@ -121,18 +121,17 @@
 <div style="position: relative">
     <div class="grid gridAutoFlowRow gridNamedGridLinesColumns">
         <div class="sizedToGridArea autoRowFirstColumn" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
-        <div class="sizedToGridArea autoRowAutoColumnSpanning2Line" data-offset-x="50" data-offset-y="0" data-expected-width="300" data-expected-height="50"></div>
+        <div class="sizedToGridArea autoRowAutoColumnSpanning2Line" data-offset-x="50" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
         <div class="sizedToGridArea autoRowSecondColumn" data-offset-x="50" data-offset-y="50" data-expected-width="100" data-expected-height="50"></div>
-        <div class="sizedToGridArea autoRowAutoColumnSpanning2Line" data-offset-x="150" data-offset-y="50" data-expected-width="200" data-expected-height="50"></div>
+        <div class="sizedToGridArea autoRowAutoColumnSpanning2Line" data-offset-x="150" data-offset-y="0" data-expected-width="200" data-expected-height="50"></div>
+        <div class="sizedToGridArea autoRowThirdColumn" data-offset-x="150" data-offset-y="50" data-expected-width="200" data-expected-height="50"></div>
+        <div class="sizedToGridArea autoRowAutoColumnSpanningLine" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="50"></div>
+        <div class="sizedToGridArea autoRowAutoColumnSpanning2Line" data-offset-x="0" data-offset-y="100" data-expected-width="50" data-expected-height="50"></div>
+        <div class="sizedToGridArea autoRowFirstColumn" data-offset-x="0" data-offset-y="150" data-expected-width="50" data-expected-height="50"></div>
+        <div class="sizedToGridArea autoRowAutoColumnSpanningLine" data-offset-x="50" data-offset-y="100" data-expected-width="100" data-expected-height="50"></div>
         <div class="sizedToGridArea autoRowThirdColumn" data-offset-x="150" data-offset-y="100" data-expected-width="200" data-expected-height="50"></div>
-        <div class="sizedToGridArea autoRowAutoColumnSpanningLine" data-offset-x="0" data-offset-y="100" data-expected-width="150" data-expected-height="50"></div>
-        <div class="sizedToGridArea autoRowAutoColumnSpanning2Line" data-offset-x="0" data-offset-y="150" data-expected-width="350" data-expected-height="50"></div>
-        <div class="sizedToGridArea autoRowFirstColumn" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="50"></div>
-        <div class="sizedToGridArea autoRowFirstColumn" data-offset-x="0" data-offset-y="200" data-expected-width="50" data-expected-height="50"></div>
-        <div class="sizedToGridArea autoRowAutoColumnSpanningLine" data-offset-x="50" data-offset-y="200" data-expected-width="100" data-expected-height="50"></div>
-        <div class="sizedToGridArea autoRowThirdColumn" data-offset-x="150" data-offset-y="200" data-expected-width="200" data-expected-height="50"></div>
-        <div class="sizedToGridArea autoRowAutoColumnSpanningLine" data-offset-x="0" data-offset-y="250" data-expected-width="150" data-expected-height="50"></div>
-        <div class="sizedToGridArea autoRowAutoColumnSpanningLine" data-offset-x="150" data-offset-y="250" data-expected-width="200" data-expected-height="50"></div>
+        <div class="sizedToGridArea autoRowAutoColumnSpanningLine" data-offset-x="50" data-offset-y="150" data-expected-width="100" data-expected-height="50"></div>
+        <div class="sizedToGridArea autoRowAutoColumnSpanningLine" data-offset-x="150" data-offset-y="150" data-expected-width="200" data-expected-height="50"></div>
     </div>
 </div>
 
@@ -183,18 +182,17 @@
 <div style="position: relative">
     <div class="grid gridAutoFlowColumn gridNamedGridLinesRows">
         <div class="sizedToGridArea firstRowAutoColumn" data-offset-x="0" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
-        <div class="sizedToGridArea autoRowSpanning2LineAutoColumn" data-offset-x="0" data-offset-y="50" data-expected-width="100" data-expected-height="300"></div>
+        <div class="sizedToGridArea autoRowSpanning2LineAutoColumn" data-offset-x="0" data-offset-y="50" data-expected-width="100" data-expected-height="100"></div>
         <div class="sizedToGridArea secondRowAutoColumn" data-offset-x="100" data-offset-y="50" data-expected-width="100" data-expected-height="100"></div>
-        <div class="sizedToGridArea autoRowSpanning2LineAutoColumn" data-offset-x="100" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div>
+        <div class="sizedToGridArea autoRowSpanning2LineAutoColumn" data-offset-x="0" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div>
+        <div class="sizedToGridArea thirdRowAutoColumn" data-offset-x="100" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div>
+        <div class="sizedToGridArea autoRowSpanningLineAutoColumn" data-offset-x="100" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
+        <div class="sizedToGridArea autoRowSpanning2LineAutoColumn" data-offset-x="200" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
+        <div class="sizedToGridArea firstRowAutoColumn" data-offset-x="300" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
+        <div class="sizedToGridArea autoRowSpanningLineAutoColumn" data-offset-x="200" data-offset-y="50" data-expected-width="100" data-expected-height="100"></div>
         <div class="sizedToGridArea thirdRowAutoColumn" data-offset-x="200" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div>
-        <div class="sizedToGridArea autoRowSpanningLineAutoColumn" data-offset-x="200" data-offset-y="0" data-expected-width="100" data-expected-height="150"></div>
-        <div class="sizedToGridArea autoRowSpanning2LineAutoColumn" data-offset-x="300" data-offset-y="0" data-expected-width="100" data-expected-height="350"></div>
-        <div class="sizedToGridArea firstRowAutoColumn" data-offset-x="100" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
-        <div class="sizedToGridArea firstRowAutoColumn" data-offset-x="400" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
-        <div class="sizedToGridArea autoRowSpanningLineAutoColumn" data-offset-x="400" data-offset-y="50" data-expected-width="100" data-expected-height="100"></div>
-        <div class="sizedToGridArea thirdRowAutoColumn" data-offset-x="400" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div>
-        <div class="sizedToGridArea autoRowSpanningLineAutoColumn" data-offset-x="500" data-offset-y="0" data-expected-width="100" data-expected-height="150"></div>
-        <div class="sizedToGridArea autoRowSpanningLineAutoColumn" data-offset-x="500" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div>
+        <div class="sizedToGridArea autoRowSpanningLineAutoColumn" data-offset-x="300" data-offset-y="50" data-expected-width="100" data-expected-height="100"></div>
+        <div class="sizedToGridArea autoRowSpanningLineAutoColumn" data-offset-x="300" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div-->
     </div>
 </div>
 

@@ -56,6 +56,12 @@ void GridResolvedPosition::initialAndFinalPositionsFromStyle(const RenderStyle& 
 
     if (finalPosition.isNamedGridArea() && !isValidNamedLineOrArea(finalPosition.namedGridLine(), gridContainerStyle, finalPositionSide))
         finalPosition.setAutoPosition();
+
+    // If the grid item has an automatic position and a grid span for a named line in a given dimension, instead treat the grid span as one.
+    if (initialPosition.isAuto() && finalPosition.isSpan() && !finalPosition.namedGridLine().isNull())
+        finalPosition.setSpanPosition(1, String());
+    if (finalPosition.isAuto() && initialPosition.isSpan() && !initialPosition.namedGridLine().isNull())
+        initialPosition.setSpanPosition(1, String());
 }
 
 GridSpan GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(const RenderStyle& gridContainerStyle, const RenderBox& gridItem, GridTrackSizingDirection direction, const GridResolvedPosition& resolvedInitialPosition)

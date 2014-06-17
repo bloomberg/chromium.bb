@@ -114,6 +114,11 @@ struct GridSpan {
         return resolvedInitialPosition == o.resolvedInitialPosition && resolvedFinalPosition == o.resolvedFinalPosition;
     }
 
+    size_t integerSpan() const
+    {
+        return resolvedFinalPosition.toInt() - resolvedInitialPosition.toInt() + 1;
+    }
+
     GridResolvedPosition resolvedInitialPosition;
     GridResolvedPosition resolvedFinalPosition;
 
