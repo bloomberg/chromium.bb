@@ -14,6 +14,7 @@ component("sandbox") {
     "os_compatibility.h",
     "policy.cc",
     "policy.h",
+    "xpc.h",
   ]
 
   defines = [ "SANDBOX_IMPLEMENTATION" ]
@@ -21,7 +22,34 @@ component("sandbox") {
 
   deps = [
     "//base",
+    ":generate_stubs",
   ]
+}
+
+generate_stubs_script = "//tools/generate_stubs/generate_stubs.py"
+generate_stubs_header = "xpc_stubs_header.fragment"
+generate_stubs_sig_public = "xpc_stubs.sig"
+generate_stubs_sig_private = "xpc_private_stubs.sig"
+generate_stubs_project = "sandbox/mac"
+generate_stubs_output_stem = "xpc_stubs"
+
+action("generate_stubs") {
+  script = generate_stubs_script
+  sources = [ generate_stubs_sig_public, generate_stubs_sig_private ]
+  source_prereqs = [ generate_stubs_header ]
+  outputs = [
+    "$target_gen_dir/$generate_stubs_output_stem.cc",
+    "$target_gen_dir/$generate_stubs_output_stem.h",
+  ]
+  args = [
+    "-i", rebase_path(target_gen_dir, root_build_dir),
+    "-o", rebase_path(target_gen_dir, root_build_dir),
+    "-t", "posix_stubs",
+    "-e", rebase_path(generate_stubs_header, root_build_dir),
+    "-s", generate_stubs_output_stem,
+    "-p", generate_stubs_project,
+  ]
+  args += rebase_path(sources, root_build_dir)
 }
 
 test("sandbox_mac_unittests") {

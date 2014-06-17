@@ -18,12 +18,14 @@
         'os_compatibility.h',
         'policy.cc',
         'policy.h',
+        'xpc.h',
       ],
       'dependencies': [
         '../base/base.gyp:base',
       ],
       'include_dirs': [
         '..',
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'defines': [
         'SANDBOX_IMPLEMENTATION',
@@ -33,6 +35,43 @@
           '$(SDKROOT)/usr/lib/libbsm.dylib',
         ],
       },
+      'actions': [
+        {
+          'variables': {
+            'generate_stubs_script': '../tools/generate_stubs/generate_stubs.py',
+            'generate_stubs_header_path': 'xpc_stubs_header.fragment',
+            'generate_stubs_sig_public_path': 'xpc_stubs.sig',
+            'generate_stubs_sig_private_path': 'xpc_private_stubs.sig',
+            'generate_stubs_project': 'sandbox/mac',
+            'generate_stubs_output_stem': 'xpc_stubs',
+          },
+          'action_name': 'generate_stubs',
+          'inputs': [
+            '<(generate_stubs_script)',
+            '<(generate_stubs_header_path)',
+            '<(generate_stubs_sig_public_path)',
+            '<(generate_stubs_sig_private_path)',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/<(generate_stubs_output_stem).cc',
+            '<(INTERMEDIATE_DIR)/<(generate_stubs_project)/<(generate_stubs_output_stem).h',
+          ],
+          'action': [
+            'python',
+            '<(generate_stubs_script)',
+            '-i', '<(INTERMEDIATE_DIR)',
+            '-o', '<(SHARED_INTERMEDIATE_DIR)/<(generate_stubs_project)',
+            '-t', 'posix_stubs',
+            '-e', '<(generate_stubs_header_path)',
+            '-s', '<(generate_stubs_output_stem)',
+            '-p', '<(generate_stubs_project)',
+            '<(generate_stubs_sig_public_path)',
+            '<(generate_stubs_sig_private_path)',
+          ],
+          'process_outputs_as_sources': 1,
+          'message': 'Generating XPC stubs for 10.6 compatability.',
+        },
+      ],
     },
     {
       'target_name': 'sandbox_mac_unittests',
