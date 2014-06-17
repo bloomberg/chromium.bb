@@ -192,7 +192,6 @@ void MediaGalleriesPrivateAddGalleryWatchFunction::OnPreferencesInit(
     return;
   }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
   MediaGalleriesPrivateEventRouter* router =
       MediaGalleriesPrivateAPI::Get(GetProfile())->GetEventRouter();
   DCHECK(router);
@@ -208,11 +207,6 @@ void MediaGalleriesPrivateAddGalleryWatchFunction::OnPreferencesInit(
       base::Bind(&MediaGalleriesPrivateAddGalleryWatchFunction::HandleResponse,
                  this,
                  gallery_pref_id));
-#else
-  // Recursive gallery watch operation is not currently supported on Mac:
-  // crbug.com/144491
-  HandleResponse(gallery_pref_id, false);
-#endif
 }
 
 void MediaGalleriesPrivateAddGalleryWatchFunction::HandleResponse(
@@ -248,8 +242,6 @@ bool MediaGalleriesPrivateRemoveGalleryWatchFunction::RunAsync() {
   if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
 
-  // Remove gallery watch operation is currently supported on Mac:
-  // crbug.com/144491
   scoped_ptr<RemoveGalleryWatch::Params> params(
       RemoveGalleryWatch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -266,7 +258,6 @@ bool MediaGalleriesPrivateRemoveGalleryWatchFunction::RunAsync() {
 
 void MediaGalleriesPrivateRemoveGalleryWatchFunction::OnPreferencesInit(
     const std::string& pref_id) {
-#if defined(OS_WIN) || defined(OS_LINUX)
   base::FilePath gallery_file_path;
   MediaGalleryPrefId gallery_pref_id = 0;
   if (!GetGalleryFilePathAndId(pref_id,
@@ -290,7 +281,6 @@ void MediaGalleriesPrivateRemoveGalleryWatchFunction::OnPreferencesInit(
   GalleryWatchStateTracker* state_tracker = MediaGalleriesPrivateAPI::Get(
       GetProfile())->GetGalleryWatchStateTracker();
   state_tracker->OnGalleryWatchRemoved(extension_id(), gallery_pref_id);
-#endif
   SendResponse(true);
 }
 
@@ -318,7 +308,6 @@ bool MediaGalleriesPrivateGetAllGalleryWatchFunction::RunAsync() {
 
 void MediaGalleriesPrivateGetAllGalleryWatchFunction::OnPreferencesInit() {
   std::vector<std::string> result;
-#if defined(OS_WIN) || defined(OS_LINUX)
   GalleryWatchStateTracker* state_tracker = MediaGalleriesPrivateAPI::Get(
       GetProfile())->GetGalleryWatchStateTracker();
   MediaGalleryPrefIdSet gallery_ids =
@@ -327,7 +316,6 @@ void MediaGalleriesPrivateGetAllGalleryWatchFunction::OnPreferencesInit() {
        iter != gallery_ids.end(); ++iter) {
     result.push_back(base::Uint64ToString(*iter));
   }
-#endif
   results_ = GetAllGalleryWatch::Results::Create(result);
   SendResponse(true);
 }
@@ -355,7 +343,6 @@ bool MediaGalleriesPrivateRemoveAllGalleryWatchFunction::RunAsync() {
 }
 
 void MediaGalleriesPrivateRemoveAllGalleryWatchFunction::OnPreferencesInit() {
-#if defined(OS_WIN) || defined(OS_LINUX)
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(
           GetProfile());
@@ -363,7 +350,6 @@ void MediaGalleriesPrivateRemoveAllGalleryWatchFunction::OnPreferencesInit() {
       GetProfile())->GetGalleryWatchStateTracker();
   state_tracker->RemoveAllGalleryWatchersForExtension(
       extension_id(), preferences);
-#endif
   SendResponse(true);
 }
 
