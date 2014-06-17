@@ -15,38 +15,41 @@ import java.util.Map;
  */
 @UsedByReflection("HttpUrlRequestFactory.java")
 class ChromiumUrlRequestFactory extends HttpUrlRequestFactory {
-    private static ChromiumUrlRequestContext sRequestContext;
+    private UrlRequestContext mRequestContext;
 
     @UsedByReflection("HttpUrlRequestFactory.java")
-    public ChromiumUrlRequestFactory(Context context) {
-        if (sRequestContext == null && isEnabled()) {
+    public ChromiumUrlRequestFactory(
+            Context context, HttpUrlRequestFactoryConfig config) {
+        if (isEnabled()) {
             System.loadLibrary("cronet");
-            sRequestContext = ChromiumUrlRequestContext.getInstance(context);
+            mRequestContext = new UrlRequestContext(
+                    context.getApplicationContext(), UserAgent.from(context),
+                    config.toString());
         }
     }
 
     @Override
-    protected boolean isEnabled() {
+    public boolean isEnabled() {
         return Build.VERSION.SDK_INT >= 14;
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "Chromium/" + UrlRequestContext.getVersion();
     }
 
     @Override
-    protected HttpUrlRequest createRequest(String url, int requestPriority,
+    public HttpUrlRequest createRequest(String url, int requestPriority,
             Map<String, String> headers, HttpUrlRequestListener listener) {
-        return new ChromiumUrlRequest(sRequestContext, url, requestPriority,
+        return new ChromiumUrlRequest(mRequestContext, url, requestPriority,
                 headers, listener);
     }
 
     @Override
-    protected HttpUrlRequest createRequest(String url, int requestPriority,
+    public HttpUrlRequest createRequest(String url, int requestPriority,
             Map<String, String> headers, WritableByteChannel channel,
             HttpUrlRequestListener listener) {
-        return new ChromiumUrlRequest(sRequestContext, url, requestPriority,
+        return new ChromiumUrlRequest(mRequestContext, url, requestPriority,
                 headers, channel, listener);
     }
 }

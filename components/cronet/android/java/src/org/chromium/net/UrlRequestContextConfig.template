@@ -1,0 +1,14 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.net;
+
+// A simple auto-generated interface used to list config params as used by
+// both org.chromium.net.HttpUrlRequestFactoryConfig and
+// net/cronet/android/org_chromium_net_UrlRequestContext.h
+public interface UrlRequestContextConfig {
+#define DEFINE_CONTEXT_CONFIG(x) public static final String x = #x;
+#include "components/cronet/android/org_chromium_net_UrlRequestContextConfig_list.h"
+#undef DEFINE_CONTEXT_CONFIG
+}

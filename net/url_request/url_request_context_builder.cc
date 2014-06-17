@@ -210,6 +210,12 @@ void URLRequestContextBuilder::set_proxy_config_service(
   proxy_config_service_.reset(proxy_config_service);
 }
 
+void URLRequestContextBuilder::SetSpdyAndQuicEnabled(bool spdy_enabled,
+                                                     bool quic_enabled) {
+  http_network_session_params_.next_protos =
+      NextProtosWithSpdyAndQuic(spdy_enabled, quic_enabled);
+}
+
 URLRequestContext* URLRequestContextBuilder::Build() {
   BasicURLRequestContext* context = new BasicURLRequestContext;
   URLRequestContextStorage* storage = context->storage();

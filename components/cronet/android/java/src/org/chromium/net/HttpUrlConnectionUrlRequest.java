@@ -169,6 +169,15 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
 
     @Override
     public void start() {
+        getExecutor().execute(new Runnable() {
+            @Override
+            public void run() {
+                startOnExecutorThread();
+            }
+        });
+    }
+
+    private void startOnExecutorThread() {
         boolean readingResponse = false;
         try {
             synchronized (mLock) {

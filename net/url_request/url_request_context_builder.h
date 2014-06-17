@@ -23,17 +23,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
+#include "net/base/network_delegate.h"
+#include "net/dns/host_resolver.h"
 #include "net/socket/next_proto.h"
 
 namespace net {
 
 class FtpTransactionFactory;
-class HostResolver;
 class HostMappingRules;
 class HttpAuthHandlerFactory;
 class ProxyConfigService;
 class URLRequestContext;
-class NetworkDelegate;
 
 class NET_EXPORT URLRequestContextBuilder {
  public:
@@ -143,6 +143,10 @@ class NET_EXPORT URLRequestContextBuilder {
       const HttpNetworkSessionParams& http_network_session_params) {
     http_network_session_params_ = http_network_session_params;
   }
+
+  // Adjust |http_network_session_params_.next_protos| to enable SPDY and QUIC.
+  void SetSpdyAndQuicEnabled(bool spdy_enabled,
+                             bool quic_enabled);
 
   URLRequestContext* Build();
 

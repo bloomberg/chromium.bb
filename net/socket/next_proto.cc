@@ -20,6 +20,19 @@ NextProtoVector NextProtosDefaults() {
   return next_protos;
 }
 
+NextProtoVector NextProtosWithSpdyAndQuic(bool spdy_enabled,
+                                          bool quic_enabled) {
+  NextProtoVector next_protos;
+  next_protos.push_back(kProtoHTTP11);
+  if (quic_enabled)
+    next_protos.push_back(kProtoQUIC1SPDY3);
+  if (spdy_enabled) {
+    next_protos.push_back(kProtoSPDY3);
+    next_protos.push_back(kProtoSPDY31);
+  }
+  return next_protos;
+}
+
 NextProtoVector NextProtosSpdy3() {
   NextProtoVector next_protos;
   next_protos.push_back(kProtoHTTP11);

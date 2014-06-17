@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestFactory;
+import org.chromium.net.HttpUrlRequestFactoryConfig;
 import org.chromium.net.HttpUrlRequestListener;
 import org.chromium.net.LibraryLoader;
 import org.chromium.net.UrlRequest;
@@ -40,8 +41,11 @@ public class CronetSampleActivity extends Activity {
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
 
     public static final String POST_DATA_KEY = "postData";
+    public static final String CONFIG_KEY = "config";
 
     UrlRequestContext mRequestContext;
+
+    HttpUrlRequestFactory mRequestFactory;
 
     String mUrl;
 
@@ -52,7 +56,7 @@ public class CronetSampleActivity extends Activity {
     class SampleRequestContext extends UrlRequestContext {
         public SampleRequestContext() {
             super(getApplicationContext(), "Cronet Sample",
-                    UrlRequestContext.LOG_VERBOSE);
+                  new HttpUrlRequestFactoryConfig().toString());
         }
     }
 
@@ -132,6 +136,27 @@ public class CronetSampleActivity extends Activity {
         }
 
         mRequestContext = new SampleRequestContext();
+        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
+        config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.IN_MEMORY,
+                               100 * 1024)
+              .enableSPDY(true)
+              .enableQUIC(true);
+
+        // Override config if it is passed from the launcher.
+        String configString = getCommandLineArg(CONFIG_KEY);
+        if (configString != null) {
+            try {
+                Log.i(TAG, "Using Config: " + configString);
+                config = new HttpUrlRequestFactoryConfig(configString);
+            } catch (org.json.JSONException e) {
+                Log.e(TAG, "Invalid Config.", e);
+                finish();
+                return;
+            }
+        }
+
+        mRequestFactory = HttpUrlRequestFactory.createFactory(
+                getApplicationContext(), config);
 
         String appUrl = getUrlFromIntent(getIntent());
         if (appUrl == null) {
@@ -162,7 +187,7 @@ public class CronetSampleActivity extends Activity {
         return intent != null ? intent.getDataString() : null;
     }
 
-    private void applyCommandLineToRequest(UrlRequest request) {
+    private String getCommandLineArg(String key) {
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         Log.i(TAG, "Cronet extras: " + extras);
@@ -172,15 +197,22 @@ public class CronetSampleActivity extends Activity {
                 for (int i = 0; i < commandLine.length; ++i) {
                     Log.i(TAG,
                             "Cronet commandLine[" + i + "]=" + commandLine[i]);
-                    if (commandLine[i].equals(POST_DATA_KEY)) {
-                        InputStream dataStream = new ByteArrayInputStream(
-                                commandLine[++i].getBytes());
-                        ReadableByteChannel dataChannel = Channels.newChannel(
-                                dataStream);
-                        request.setUploadChannel("text/plain", dataChannel);
+                    if (commandLine[i].equals(key)) {
+                        return commandLine[++i];
                     }
                 }
             }
+        }
+        return null;
+    }
+
+    private void applyCommandLineToRequest(UrlRequest request) {
+        String postData = getCommandLineArg(POST_DATA_KEY);
+        if (postData != null) {
+            InputStream dataStream = new ByteArrayInputStream(
+                    postData.getBytes());
+            ReadableByteChannel dataChannel = Channels.newChannel(dataStream);
+            request.setUploadChannel("text/plain", dataChannel);
         }
     }
 
@@ -192,9 +224,8 @@ public class CronetSampleActivity extends Activity {
         HashMap<String, String> headers = new HashMap<String, String>();
         HttpUrlRequestListener listener = new SampleHttpUrlRequestListener();
 
-        HttpUrlRequest request = HttpUrlRequestFactory.newRequest(
-                getApplicationContext(), url,
-                UrlRequestPriority.MEDIUM, headers, listener);
+        HttpUrlRequest request = mRequestFactory.createRequest(
+                url, UrlRequestPriority.MEDIUM, headers, listener);
         request.start();
     }
 

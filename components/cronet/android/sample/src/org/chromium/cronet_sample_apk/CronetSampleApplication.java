@@ -4,15 +4,15 @@
 
 package org.chromium.cronet_sample_apk;
 
+import android.app.Application;
 import android.util.Log;
 
-import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.PathUtils;
 
 /**
  * Application for managing the Cronet Sample.
  */
-public class CronetSampleApplication extends BaseChromiumApplication {
+public class CronetSampleApplication extends Application {
     private static final String TAG = "CronetSampleApplication";
 
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "cronet_sample";

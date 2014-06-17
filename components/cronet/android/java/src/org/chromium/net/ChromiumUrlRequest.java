@@ -32,7 +32,7 @@ class ChromiumUrlRequest extends UrlRequest implements HttpUrlRequest {
 
     private long mSize;
 
-    public ChromiumUrlRequest(ChromiumUrlRequestContext requestContext,
+    public ChromiumUrlRequest(UrlRequestContext requestContext,
             String url, int priority, Map<String, String> headers,
             HttpUrlRequestListener listener) {
         this(requestContext, url, priority, headers,
@@ -40,7 +40,7 @@ class ChromiumUrlRequest extends UrlRequest implements HttpUrlRequest {
         mBufferFullResponse = true;
     }
 
-    public ChromiumUrlRequest(ChromiumUrlRequestContext requestContext,
+    public ChromiumUrlRequest(UrlRequestContext requestContext,
             String url, int priority, Map<String, String> headers,
             WritableByteChannel sink, HttpUrlRequestListener listener) {
         super(requestContext, url, convertRequestPriority(priority), headers,

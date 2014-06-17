@@ -43,6 +43,9 @@ NET_EXPORT NextProtoVector NextProtosHttpOnly();
 // SPDY 3 and 3.1.
 NET_EXPORT NextProtoVector NextProtosDefaults();
 
+NET_EXPORT NextProtoVector NextProtosWithSpdyAndQuic(bool spdy_enabled,
+                                                     bool quic_enabled);
+
 // All of these also enable QUIC.
 NET_EXPORT NextProtoVector NextProtosSpdy3();
 NET_EXPORT NextProtoVector NextProtosSpdy31();

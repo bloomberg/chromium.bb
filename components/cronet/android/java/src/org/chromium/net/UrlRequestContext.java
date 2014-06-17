@@ -7,6 +7,7 @@ package org.chromium.net;
 import android.content.Context;
 import android.os.ConditionVariable;
 import android.os.Process;
+import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -16,9 +17,10 @@ import org.chromium.base.JNINamespace;
  */
 @JNINamespace("cronet")
 public class UrlRequestContext {
-    protected static final int LOG_NONE = 0;
-    protected static final int LOG_DEBUG = 1;
-    protected static final int LOG_VERBOSE = 2;
+    private static final int LOG_NONE = 0;
+    private static final int LOG_DEBUG = 1;
+    private static final int LOG_VERBOSE = 2;
+    private static final String LOG_TAG = "ChromiumNetwork";
 
     /**
      * Native peer object, owned by UrlRequestContext.
@@ -30,13 +32,14 @@ public class UrlRequestContext {
     /**
      * Constructor.
      *
-     * @param loggingLevel see {@link #LOG_NONE}, {@link #LOG_DEBUG} and
-     *            {@link #LOG_VERBOSE}.
      */
     protected UrlRequestContext(Context context, String userAgent,
-            int loggingLevel) {
+            String config) {
         mUrlRequestContextPeer = nativeCreateRequestContextPeer(context,
-                userAgent, loggingLevel);
+                userAgent, getLoggingLevel(), config);
+        if (mUrlRequestContextPeer == 0)
+            throw new NullPointerException("Context Peer creation failed");
+
         // TODO(mef): Revisit the need of block here.
         mStarted.block(2000);
     }
@@ -100,12 +103,28 @@ public class UrlRequestContext {
         return mUrlRequestContextPeer;
     }
 
+    /**
+     * @return loggingLevel see {@link #LOG_NONE}, {@link #LOG_DEBUG} and
+     *         {@link #LOG_VERBOSE}.
+     */
+    private int getLoggingLevel() {
+        int loggingLevel;
+        if (Log.isLoggable(LOG_TAG, Log.VERBOSE)) {
+            loggingLevel = LOG_VERBOSE;
+        } else if (Log.isLoggable(LOG_TAG, Log.DEBUG)) {
+            loggingLevel = LOG_DEBUG;
+        } else {
+            loggingLevel = LOG_NONE;
+        }
+        return loggingLevel;
+    }
+
     private static native String nativeGetVersion();
 
     // Returns an instance URLRequestContextPeer to be stored in
     // mUrlRequestContextPeer.
     private native long nativeCreateRequestContextPeer(Context context,
-            String userAgent, int loggingLevel);
+            String userAgent, int loggingLevel, String config);
 
     private native void nativeReleaseRequestContextPeer(
             long urlRequestContextPeer);

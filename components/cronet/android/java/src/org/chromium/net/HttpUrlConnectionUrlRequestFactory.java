@@ -16,29 +16,30 @@ class HttpUrlConnectionUrlRequestFactory extends HttpUrlRequestFactory {
 
     private final Context mContext;
 
-    public HttpUrlConnectionUrlRequestFactory(Context context) {
+    public HttpUrlConnectionUrlRequestFactory(
+            Context context, HttpUrlRequestFactoryConfig config) {
         mContext = context.getApplicationContext();
     }
 
     @Override
-    protected boolean isEnabled() {
+    public boolean isEnabled() {
         return true;
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return "HttpUrlConnection";
     }
 
     @Override
-    protected HttpUrlRequest createRequest(String url, int requestPriority,
+    public HttpUrlRequest createRequest(String url, int requestPriority,
             Map<String, String> headers, HttpUrlRequestListener listener) {
         return new HttpUrlConnectionUrlRequest(mContext, url, requestPriority,
                 headers, listener);
     }
 
     @Override
-    protected HttpUrlRequest createRequest(String url, int requestPriority,
+    public HttpUrlRequest createRequest(String url, int requestPriority,
             Map<String, String> headers, WritableByteChannel channel,
             HttpUrlRequestListener listener) {
         return new HttpUrlConnectionUrlRequest(mContext, url, requestPriority,

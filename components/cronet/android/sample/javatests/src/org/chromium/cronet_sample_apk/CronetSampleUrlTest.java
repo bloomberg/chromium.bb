@@ -7,6 +7,7 @@ package org.chromium.cronet_sample_apk;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.HttpUrlRequestFactoryConfig;
 
 import java.io.File;
 
@@ -85,5 +86,27 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
         assertTrue(file.length() != 0);
         assertTrue(file.delete());
         assertTrue(!file.exists());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testLegacyLoadUrl() throws Exception {
+        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
+        config.enableLegacyMode(true);
+
+        String[] commandLineArgs = {
+                CronetSampleActivity.CONFIG_KEY, config.toString() };
+        CronetSampleActivity activity =
+                launchCronetSampleWithUrlAndCommandLineArgs(URL,
+                                                            commandLineArgs);
+
+        // Make sure the activity was created as expected.
+        assertNotNull(activity);
+
+        waitForActiveShellToBeDoneLoading();
+
+        // Make sure that the URL is set as expected.
+        assertEquals(URL, activity.getUrl());
+        assertEquals(200, activity.getHttpStatusCode());
     }
 }
