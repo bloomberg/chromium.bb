@@ -461,7 +461,6 @@
       'graphics/cpu/arm/filters/FEBlendNEON.h',
       'graphics/cpu/arm/filters/FECompositeArithmeticNEON.h',
       'graphics/cpu/arm/filters/FEGaussianBlurNEON.h',
-      'graphics/cpu/arm/filters/FELightingNEON.h',
       'graphics/cpu/arm/filters/NEONHelpers.h',
       'graphics/filters/FEBlend.cpp',
       'graphics/filters/FEBlend.h',

@@ -143,23 +143,17 @@
 #endif
 
 
-/* CPU(ARM_TRADITIONAL) - Thumb2 is not available, only traditional ARM (v4 or greater) */
 /* CPU(ARM_THUMB2) - Thumb2 instruction set is available */
-/* Only one of these will be defined. */
-#if !defined(WTF_CPU_ARM_TRADITIONAL) && !defined(WTF_CPU_ARM_THUMB2)
+#if !defined(WTF_CPU_ARM_THUMB2)
 #  if defined(thumb2) || defined(__thumb2__) \
     || ((defined(__thumb) || defined(__thumb__)) && WTF_THUMB_ARCH_VERSION == 4)
-#    define WTF_CPU_ARM_TRADITIONAL 0
 #    define WTF_CPU_ARM_THUMB2 1
 #  elif WTF_ARM_ARCH_AT_LEAST(4)
-#    define WTF_CPU_ARM_TRADITIONAL 1
 #    define WTF_CPU_ARM_THUMB2 0
 #  else
-#    error "Not supported ARM architecture"
+#    error "Unsupported ARM architecture"
 #  endif
-#elif CPU(ARM_TRADITIONAL) && CPU(ARM_THUMB2) /* Sanity Check */
-#  error "Cannot use both of WTF_CPU_ARM_TRADITIONAL and WTF_CPU_ARM_THUMB2 platforms"
-#endif /* !defined(WTF_CPU_ARM_TRADITIONAL) && !defined(WTF_CPU_ARM_THUMB2) */
+#endif /* !defined(WTF_CPU_ARM_THUMB2) */
 
 #if defined(__ARM_NEON__) && !defined(WTF_CPU_ARM_NEON)
 #define WTF_CPU_ARM_NEON 1

@@ -40,8 +40,6 @@
 
 namespace WebCore {
 
-struct FELightingPaintingDataForNeon;
-
 class PLATFORM_EXPORT FELighting : public FilterEffect {
 public:
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
@@ -89,7 +87,6 @@ protected:
     virtual bool affectsTransparentPixels() OVERRIDE { return true; }
 
     static void platformApplyGenericWorker(PlatformApplyGenericParameters*);
-    static void platformApplyNeonWorker(FELightingPaintingDataForNeon*);
 
     FELighting(Filter*, LightingType, const Color&, float, float, float, float, float, float, PassRefPtr<LightSource>);
 
@@ -105,9 +102,6 @@ protected:
 
     inline void platformApplyGenericPaint(LightingData&, LightSource::PaintingData&, int startX, int startY);
     inline void platformApplyGeneric(LightingData&, LightSource::PaintingData&);
-
-    static int getPowerCoefficients(float exponent);
-    inline void platformApplyNeon(LightingData&, LightSource::PaintingData&);
 
     LightingType m_lightingType;
     RefPtr<LightSource> m_lightSource;
