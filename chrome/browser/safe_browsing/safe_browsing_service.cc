@@ -380,7 +380,15 @@ SafeBrowsingProtocolConfig SafeBrowsingService::GetProtocolConfig() const {
 #else
   config.client_name = "chromium";
 #endif
+
+  // Mark client string to allow server to differentiate mobile.
+#if defined(OS_ANDROID)
+  config.client_name.append("-a");
+#elif defined(OS_IOS)
+  config.client_name.append("-i");
 #endif
+
+#endif  // defined(OS_WIN)
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
   config.disable_auto_update =
       cmdline->HasSwitch(switches::kSbDisableAutoUpdate) ||
