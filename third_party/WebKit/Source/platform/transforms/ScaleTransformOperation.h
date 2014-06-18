@@ -45,6 +45,8 @@ public:
     double y() const { return m_y; }
     double z() const { return m_z; }
 
+    virtual bool canBlendWith(const TransformOperation& other) const;
+
 private:
     virtual bool isIdentity() const OVERRIDE { return m_x == 1 &&  m_y == 1 &&  m_z == 1; }
 

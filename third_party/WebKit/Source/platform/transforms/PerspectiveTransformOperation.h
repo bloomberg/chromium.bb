@@ -39,6 +39,11 @@ public:
 
     double perspective() const { return m_p; }
 
+    virtual bool canBlendWith(const TransformOperation& other) const
+    {
+        return isSameType(other);
+    }
+
 private:
     virtual bool isIdentity() const OVERRIDE { return !m_p; }
     virtual OperationType type() const OVERRIDE { return Perspective; }

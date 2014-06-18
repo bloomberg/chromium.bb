@@ -39,6 +39,11 @@ public:
 
     TransformationMatrix matrix() const {return m_matrix; }
 
+    virtual bool canBlendWith(const TransformOperation& other) const
+    {
+        return false;
+    }
+
 private:
     virtual bool isIdentity() const OVERRIDE { return m_matrix.isIdentity(); }
 

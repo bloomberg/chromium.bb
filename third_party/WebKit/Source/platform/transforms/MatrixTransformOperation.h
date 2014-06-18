@@ -44,6 +44,11 @@ public:
 
     TransformationMatrix matrix() const { return TransformationMatrix(m_a, m_b, m_c, m_d, m_e, m_f); }
 
+    virtual bool canBlendWith(const TransformOperation& other) const
+    {
+        return false;
+    }
+
 private:
     virtual bool isIdentity() const OVERRIDE { return m_a == 1 && !m_b && !m_c && m_d == 1 && !m_e && !m_f; }
 

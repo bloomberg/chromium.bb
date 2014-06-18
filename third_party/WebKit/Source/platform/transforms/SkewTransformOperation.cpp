@@ -40,4 +40,9 @@ PassRefPtr<TransformOperation> SkewTransformOperation::blend(const TransformOper
     return SkewTransformOperation::create(WebCore::blend(fromAngleX, m_angleX, progress), WebCore::blend(fromAngleY, m_angleY, progress), m_type);
 }
 
+bool SkewTransformOperation::canBlendWith(const TransformOperation& other) const
+{
+    return isSameType(other);
+}
+
 } // namespace WebCore

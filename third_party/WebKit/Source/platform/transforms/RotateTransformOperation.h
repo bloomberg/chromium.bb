@@ -46,10 +46,14 @@ public:
     double z() const { return m_z; }
     double angle() const { return m_angle; }
 
+    FloatPoint3D axis() const;
+    static bool shareSameAxis(const RotateTransformOperation* fromRotation, const RotateTransformOperation* toRotation, FloatPoint3D* axis, double* fromAngle, double* toAngle);
+
+    virtual bool canBlendWith(const TransformOperation& other) const;
+    virtual OperationType type() const OVERRIDE { return m_type; }
+
 private:
     virtual bool isIdentity() const OVERRIDE { return !m_angle; }
-
-    virtual OperationType type() const OVERRIDE { return m_type; }
 
     virtual bool operator==(const TransformOperation& o) const OVERRIDE
     {

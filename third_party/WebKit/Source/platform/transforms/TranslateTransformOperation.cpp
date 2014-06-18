@@ -40,4 +40,13 @@ PassRefPtr<TransformOperation> TranslateTransformOperation::blend(const Transfor
     return TranslateTransformOperation::create(m_x.blend(fromX, progress, ValueRangeAll), m_y.blend(fromY, progress, ValueRangeAll), WebCore::blend(fromZ, m_z, progress), m_type);
 }
 
+bool TranslateTransformOperation::canBlendWith(const TransformOperation& other) const
+{
+    return other.type() == Translate
+        || other.type() == TranslateX
+        || other.type() == TranslateY
+        || other.type() == TranslateZ
+        || other.type() == Translate3D;
+}
+
 } // namespace WebCore

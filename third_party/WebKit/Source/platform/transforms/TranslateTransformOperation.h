@@ -43,6 +43,8 @@ public:
         return adoptRef(new TranslateTransformOperation(tx, ty, tz, type));
     }
 
+    virtual bool canBlendWith(const TransformOperation& other) const;
+
     double x(const FloatSize& borderBoxSize) const { return floatValueForLength(m_x, borderBoxSize.width()); }
     double y(const FloatSize& borderBoxSize) const { return floatValueForLength(m_y, borderBoxSize.height()); }
 

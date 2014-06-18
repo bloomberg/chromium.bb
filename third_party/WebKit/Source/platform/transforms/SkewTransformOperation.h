@@ -39,6 +39,7 @@ public:
     double angleX() const { return m_angleX; }
     double angleY() const { return m_angleY; }
 
+    virtual bool canBlendWith(const TransformOperation& other) const;
 private:
     virtual bool isIdentity() const OVERRIDE { return !m_angleX && !m_angleY; }
     virtual OperationType type() const OVERRIDE { return m_type; }

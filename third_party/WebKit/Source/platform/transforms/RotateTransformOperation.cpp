@@ -23,12 +23,64 @@
 #include "platform/transforms/RotateTransformOperation.h"
 
 #include "platform/animation/AnimationUtilities.h"
+#include "platform/geometry/FloatPoint3D.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
 using namespace std;
 
 namespace WebCore {
+
+static const double angleEpsilon = 1e-4;
+
+FloatPoint3D RotateTransformOperation::axis() const
+{
+    return FloatPoint3D(x(), y(), z());
+}
+
+bool RotateTransformOperation::shareSameAxis(const RotateTransformOperation* from, const RotateTransformOperation* to, FloatPoint3D* axis, double* fromAngle, double* toAngle)
+{
+    *axis = FloatPoint3D(0, 0, 1);
+    *fromAngle = 0;
+    *toAngle = 0;
+
+    if (!from && !to)
+        return true;
+
+    bool fromZero = !from || from->axis().isZero();
+    bool toZero = !to || to->axis().isZero();
+
+    if (fromZero && toZero)
+        return true;
+
+    if (fromZero) {
+        *axis = to->axis();
+        *toAngle = to->angle();
+        return true;
+    }
+
+    if (toZero) {
+        *axis = from->axis();
+        *fromAngle = from->angle();
+        return true;
+    }
+
+    FloatPoint3D fromAxis = from->axis();
+    FloatPoint3D toAxis = to->axis();
+
+    double fromSquared = fromAxis.lengthSquared();
+    double toSquared   = toAxis.lengthSquared();
+
+    double dot = fromAxis.dot(toAxis);
+    double error = std::abs(1 - (dot * dot) / (fromSquared * toSquared));
+
+    if (error > angleEpsilon)
+        return false;
+    *axis = from->axis();
+    *fromAngle = from->angle();
+    *toAngle = to->angle();
+    return true;
+}
 
 PassRefPtr<TransformOperation> RotateTransformOperation::blend(const TransformOperation* from, double progress, bool blendToIdentity)
 {
@@ -50,6 +102,12 @@ PassRefPtr<TransformOperation> RotateTransformOperation::blend(const TransformOp
                                                 fromOp ? fromOp->m_z : m_z,
                                                 WebCore::blend(fromAngle, m_angle, progress), m_type);
     }
+    double fromAngle;
+    double toAngle;
+    FloatPoint3D axis;
+
+    if (shareSameAxis(fromOp, this, &axis, &fromAngle, &toAngle))
+        return RotateTransformOperation::create(axis.x(), axis.y(), axis.z(), WebCore::blend(fromAngle, toAngle, progress), m_type);
 
     const RotateTransformOperation* toOp = this;
 
@@ -91,6 +149,11 @@ PassRefPtr<TransformOperation> RotateTransformOperation::blend(const TransformOp
         z = 1;
     }
     return RotateTransformOperation::create(x, y, z, angle, Rotate3D);
+}
+
+bool RotateTransformOperation::canBlendWith(const TransformOperation& other) const
+{
+    return other.isSameType(*this);
 }
 
 } // namespace WebCore

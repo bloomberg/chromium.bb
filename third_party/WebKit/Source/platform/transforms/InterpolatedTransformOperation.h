@@ -44,6 +44,11 @@ public:
         return adoptRef(new InterpolatedTransformOperation(from, to, progress));
     }
 
+    virtual bool canBlendWith(const TransformOperation& other) const
+    {
+        return isSameType(other);
+    }
+
 private:
     virtual bool isIdentity() const OVERRIDE { return false; }
 

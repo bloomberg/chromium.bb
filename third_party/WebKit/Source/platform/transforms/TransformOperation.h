@@ -65,6 +65,7 @@ public:
 
     virtual OperationType type() const = 0;
     bool isSameType(const TransformOperation& other) const { return other.type() == type(); }
+    virtual bool canBlendWith(const TransformOperation& other) const = 0;
 
     bool is3DOperation() const
     {

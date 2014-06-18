@@ -41,7 +41,7 @@ class IntRect;
 class LayoutRect;
 class FloatRect;
 class FloatQuad;
-
+class FloatBox;
 #if CPU(X86_64)
 #define TRANSFORMATION_MATRIX_USE_X86_64_SSE2
 #endif
@@ -151,6 +151,8 @@ public:
     // Projects the four corners of the quad and takes a bounding box,
     // while sanitizing values created when the w component is negative.
     LayoutRect clampedBoundsOfProjectedQuad(const FloatQuad&) const;
+
+    void transformBox(FloatBox&) const;
 
     double m11() const { return m_matrix[0][0]; }
     void setM11(double f) { m_matrix[0][0] = f; }

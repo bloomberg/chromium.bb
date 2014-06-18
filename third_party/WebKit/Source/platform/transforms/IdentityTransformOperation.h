@@ -36,6 +36,11 @@ public:
         return adoptRef(new IdentityTransformOperation());
     }
 
+    virtual bool canBlendWith(const TransformOperation& other) const
+    {
+        return isSameType(other);
+    }
+
 private:
     virtual bool isIdentity() const OVERRIDE FINAL { return true; }
     virtual OperationType type() const OVERRIDE { return Identity; }

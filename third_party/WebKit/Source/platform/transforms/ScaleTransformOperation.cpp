@@ -45,4 +45,14 @@ PassRefPtr<TransformOperation> ScaleTransformOperation::blend(const TransformOpe
                                            WebCore::blend(fromZ, m_z, progress), m_type);
 }
 
+
+bool ScaleTransformOperation::canBlendWith(const TransformOperation& other) const
+{
+    return other.type() == ScaleX
+        || other.type() == ScaleY
+        || other.type() == ScaleZ
+        || other.type() == Scale3D
+        || other.type() == Scale;
+}
+
 } // namespace WebCore
