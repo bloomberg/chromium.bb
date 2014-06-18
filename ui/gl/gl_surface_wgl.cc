@@ -285,6 +285,10 @@ PbufferGLSurfaceWGL::PbufferGLSurfaceWGL(const gfx::Size& size)
     : size_(size),
       device_context_(NULL),
       pbuffer_(NULL) {
+  // Some implementations of Pbuffer do not support having a 0 size. For such
+  // cases use a (1, 1) surface.
+  if (size_.GetArea() == 0)
+    size_.SetSize(1, 1);
 }
 
 PbufferGLSurfaceWGL::~PbufferGLSurfaceWGL() {
