@@ -309,8 +309,8 @@ void DemoInstance::Paint(int32_t result, int32_t frame) {
     float x = frame % 800;
     float y = 200 - 200 * factor_sin;
     const float transform[16] = {
-      fabs(factor_sin) + 0.2f, 0.0f, 0.0f, 0.0f,
-      0.0f, fabs(factor_sin) + 0.2f, 0.0f, 0.0f,
+      fabsf(factor_sin) + 0.2f, 0.0f, 0.0f, 0.0f,
+      0.0f, fabsf(factor_sin) + 0.2f, 0.0f, 0.0f,
       0.0f, 0.0f, 1.0f, 0.0f,
          x,    y, 0.0f, 1.0f,
     };
