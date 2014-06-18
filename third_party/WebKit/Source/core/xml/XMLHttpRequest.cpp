@@ -573,9 +573,6 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
     }
 
     if (!async && executionContext()->isDocument()) {
-        // Use count for XHR synchronous requests.
-        UseCounter::count(document(), UseCounter::XMLHttpRequestSynchronous);
-
         if (document()->settings() && !document()->settings()->syncXHRInDocumentsEnabled()) {
             exceptionState.throwDOMException(InvalidAccessError, "Synchronous requests are disabled for this page.");
             return;
@@ -895,6 +892,8 @@ void XMLHttpRequest::createRequest(PassRefPtr<FormData> httpBody, ExceptionState
             setPendingActivity(this);
         }
     } else {
+        // Use count for XHR synchronous requests.
+        UseCounter::count(&executionContext, UseCounter::XMLHttpRequestSynchronous);
         ThreadableLoader::loadResourceSynchronously(executionContext, request, *this, options, resourceLoaderOptions);
     }
 
