@@ -3,6 +3,9 @@ davemoore@chromium.org
 noms@chromium.org
 rlp@chromium.org
 
+# ProfileManager and GetDefaultProfile and related
+skuhne@chromium.org
+
 # Primarily for ProfileIOData and friends.
 willchan@chromium.org
 mmenke@chromium.org
