@@ -89,8 +89,8 @@ public:
     void unsuspendRedrawAll() { }
     void forceRedraw() { }
 
-    PassRefPtrWillBeRawPtr<NodeList> getIntersectionList(PassRefPtr<SVGRectTearOff>, SVGElement* referenceElement) const;
-    PassRefPtrWillBeRawPtr<NodeList> getEnclosureList(PassRefPtr<SVGRectTearOff>, SVGElement* referenceElement) const;
+    PassRefPtrWillBeRawPtr<StaticNodeList> getIntersectionList(PassRefPtr<SVGRectTearOff>, SVGElement* referenceElement) const;
+    PassRefPtrWillBeRawPtr<StaticNodeList> getEnclosureList(PassRefPtr<SVGRectTearOff>, SVGElement* referenceElement) const;
     bool checkIntersection(SVGElement*, PassRefPtr<SVGRectTearOff>) const;
     bool checkEnclosure(SVGElement*, PassRefPtr<SVGRectTearOff>) const;
     void deselectAll();
@@ -148,7 +148,7 @@ private:
     };
 
     bool checkIntersectionOrEnclosure(const SVGElement&, const FloatRect&, CheckIntersectionOrEnclosure) const;
-    PassRefPtrWillBeRawPtr<NodeList> collectIntersectionOrEnclosureList(const FloatRect&, SVGElement*, CheckIntersectionOrEnclosure) const;
+    PassRefPtrWillBeRawPtr<StaticNodeList> collectIntersectionOrEnclosureList(const FloatRect&, SVGElement*, CheckIntersectionOrEnclosure) const;
 
     RefPtr<SVGAnimatedLength> m_x;
     RefPtr<SVGAnimatedLength> m_y;

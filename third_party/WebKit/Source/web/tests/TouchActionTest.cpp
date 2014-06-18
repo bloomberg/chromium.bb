@@ -35,6 +35,7 @@
 #include "core/dom/ClientRectList.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -159,7 +160,7 @@ void TouchActionTest::runShadowDOMTest(std::string file)
 
     // Oilpan: see runTouchActionTest() comment why these are persistent references.
     RefPtrWillBePersistent<WebCore::Document> document = static_cast<PassRefPtrWillBeRawPtr<WebCore::Document> >(webView->mainFrame()->document());
-    RefPtrWillBePersistent<WebCore::NodeList> hostNodes = document->querySelectorAll("[shadow-host]", es);
+    RefPtrWillBePersistent<WebCore::StaticNodeList> hostNodes = document->querySelectorAll("[shadow-host]", es);
     ASSERT_FALSE(es.hadException());
     ASSERT_GE(hostNodes->length(), 1u);
 
@@ -200,7 +201,7 @@ void TouchActionTest::runTestOnTree(WebCore::ContainerNode* root, WebView* webVi
     WebCore::TrackExceptionState es;
 
     // Oilpan: see runTouchActionTest() comment why these are persistent references.
-    RefPtrWillBePersistent<WebCore::NodeList> nodes = root->querySelectorAll("[expected-action]", es);
+    RefPtrWillBePersistent<WebCore::StaticNodeList> nodes = root->querySelectorAll("[expected-action]", es);
     ASSERT_FALSE(es.hadException());
 
     for (unsigned index = 0; index < nodes->length(); index++) {

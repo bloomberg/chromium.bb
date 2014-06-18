@@ -44,7 +44,7 @@ namespace {
 
 class ChildListRecord : public MutationRecord {
 public:
-    ChildListRecord(PassRefPtrWillBeRawPtr<Node> target, PassRefPtrWillBeRawPtr<NodeList> added, PassRefPtrWillBeRawPtr<NodeList> removed, PassRefPtrWillBeRawPtr<Node> previousSibling, PassRefPtrWillBeRawPtr<Node> nextSibling)
+    ChildListRecord(PassRefPtrWillBeRawPtr<Node> target, PassRefPtrWillBeRawPtr<StaticNodeList> added, PassRefPtrWillBeRawPtr<StaticNodeList> removed, PassRefPtrWillBeRawPtr<Node> previousSibling, PassRefPtrWillBeRawPtr<Node> nextSibling)
         : m_target(target)
         , m_addedNodes(added)
         , m_removedNodes(removed)
@@ -66,14 +66,14 @@ public:
 private:
     virtual const AtomicString& type() OVERRIDE;
     virtual Node* target() OVERRIDE { return m_target.get(); }
-    virtual NodeList* addedNodes() OVERRIDE { return m_addedNodes.get(); }
-    virtual NodeList* removedNodes() OVERRIDE { return m_removedNodes.get(); }
+    virtual StaticNodeList* addedNodes() OVERRIDE { return m_addedNodes.get(); }
+    virtual StaticNodeList* removedNodes() OVERRIDE { return m_removedNodes.get(); }
     virtual Node* previousSibling() OVERRIDE { return m_previousSibling.get(); }
     virtual Node* nextSibling() OVERRIDE { return m_nextSibling.get(); }
 
     RefPtrWillBeMember<Node> m_target;
-    RefPtrWillBeMember<NodeList> m_addedNodes;
-    RefPtrWillBeMember<NodeList> m_removedNodes;
+    RefPtrWillBeMember<StaticNodeList> m_addedNodes;
+    RefPtrWillBeMember<StaticNodeList> m_removedNodes;
     RefPtrWillBeMember<Node> m_previousSibling;
     RefPtrWillBeMember<Node> m_nextSibling;
 };
@@ -97,10 +97,10 @@ public:
 private:
     virtual Node* target() OVERRIDE { return m_target.get(); }
     virtual String oldValue() OVERRIDE { return m_oldValue; }
-    virtual NodeList* addedNodes() OVERRIDE { return lazilyInitializeEmptyNodeList(m_addedNodes); }
-    virtual NodeList* removedNodes() OVERRIDE { return lazilyInitializeEmptyNodeList(m_removedNodes); }
+    virtual StaticNodeList* addedNodes() OVERRIDE { return lazilyInitializeEmptyNodeList(m_addedNodes); }
+    virtual StaticNodeList* removedNodes() OVERRIDE { return lazilyInitializeEmptyNodeList(m_removedNodes); }
 
-    static NodeList* lazilyInitializeEmptyNodeList(RefPtrWillBeMember<NodeList>& nodeList)
+    static StaticNodeList* lazilyInitializeEmptyNodeList(RefPtrWillBeMember<StaticNodeList>& nodeList)
     {
         if (!nodeList)
             nodeList = StaticNodeList::createEmpty();
@@ -109,8 +109,8 @@ private:
 
     RefPtrWillBeMember<Node> m_target;
     String m_oldValue;
-    RefPtrWillBeMember<NodeList> m_addedNodes;
-    RefPtrWillBeMember<NodeList> m_removedNodes;
+    RefPtrWillBeMember<StaticNodeList> m_addedNodes;
+    RefPtrWillBeMember<StaticNodeList> m_removedNodes;
 };
 
 class AttributesRecord : public RecordWithEmptyNodeLists {
@@ -158,8 +158,8 @@ public:
 private:
     virtual const AtomicString& type() OVERRIDE { return m_record->type(); }
     virtual Node* target() OVERRIDE { return m_record->target(); }
-    virtual NodeList* addedNodes() OVERRIDE { return m_record->addedNodes(); }
-    virtual NodeList* removedNodes() OVERRIDE { return m_record->removedNodes(); }
+    virtual StaticNodeList* addedNodes() OVERRIDE { return m_record->addedNodes(); }
+    virtual StaticNodeList* removedNodes() OVERRIDE { return m_record->removedNodes(); }
     virtual Node* previousSibling() OVERRIDE { return m_record->previousSibling(); }
     virtual Node* nextSibling() OVERRIDE { return m_record->nextSibling(); }
     virtual const AtomicString& attributeName() OVERRIDE { return m_record->attributeName(); }
@@ -190,7 +190,7 @@ const AtomicString& CharacterDataRecord::type()
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<MutationRecord> MutationRecord::createChildList(PassRefPtrWillBeRawPtr<Node> target, PassRefPtrWillBeRawPtr<NodeList> added, PassRefPtrWillBeRawPtr<NodeList> removed, PassRefPtrWillBeRawPtr<Node> previousSibling, PassRefPtrWillBeRawPtr<Node> nextSibling)
+PassRefPtrWillBeRawPtr<MutationRecord> MutationRecord::createChildList(PassRefPtrWillBeRawPtr<Node> target, PassRefPtrWillBeRawPtr<StaticNodeList> added, PassRefPtrWillBeRawPtr<StaticNodeList> removed, PassRefPtrWillBeRawPtr<Node> previousSibling, PassRefPtrWillBeRawPtr<Node> nextSibling)
 {
     return adoptRefWillBeNoop(new ChildListRecord(target, added, removed, previousSibling, nextSibling));
 }

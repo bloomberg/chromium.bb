@@ -556,9 +556,9 @@ const QualifiedName& HTMLTableElement::subResourceAttributeName() const
     return backgroundAttr;
 }
 
-PassRefPtrWillBeRawPtr<HTMLCollection> HTMLTableElement::rows()
+PassRefPtrWillBeRawPtr<HTMLTableRowsCollection> HTMLTableElement::rows()
 {
-    return ensureCachedHTMLCollection(TableRows);
+    return toHTMLTableRowsCollection(ensureCachedHTMLCollection(TableRows).get());
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> HTMLTableElement::tBodies()

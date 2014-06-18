@@ -35,12 +35,14 @@
 
 namespace WebCore {
 
+class LabelsNodeList;
+
 // LabelableElement represents "labelable element" defined in the HTML
 // specification, and provides the implementation of the "labels" attribute.
 class LabelableElement : public HTMLElement {
 public:
     virtual ~LabelableElement();
-    PassRefPtrWillBeRawPtr<NodeList> labels();
+    PassRefPtrWillBeRawPtr<LabelsNodeList> labels();
     virtual bool supportLabels() const { return false; }
 
     virtual void trace(Visitor*) OVERRIDE;

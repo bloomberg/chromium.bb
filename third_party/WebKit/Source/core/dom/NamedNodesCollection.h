@@ -41,7 +41,7 @@ namespace WebCore {
 
 class NamedNodesCollection FINAL : public NodeList {
 public:
-    static PassRefPtrWillBeRawPtr<NodeList> create(const WillBeHeapVector<RefPtrWillBeMember<Element> >& nodes)
+    static PassRefPtrWillBeRawPtr<NamedNodesCollection> create(const WillBeHeapVector<RefPtrWillBeMember<Element> >& nodes)
     {
         return adoptRefWillBeNoop(new NamedNodesCollection(nodes));
     }

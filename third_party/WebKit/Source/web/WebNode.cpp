@@ -36,6 +36,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
+#include "core/dom/TagCollection.h"
 #include "core/editing/markup.h"
 #include "core/events/Event.h"
 #include "core/html/HTMLCollection.h"

@@ -60,7 +60,7 @@ public:
     PassRefPtrWillBeRawPtr<HTMLElement> insertRow(int index, ExceptionState&);
     void deleteRow(int index, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<HTMLCollection> rows();
+    PassRefPtrWillBeRawPtr<HTMLTableRowsCollection> rows();
     PassRefPtrWillBeRawPtr<HTMLCollection> tBodies();
 
     const AtomicString& rules() const;

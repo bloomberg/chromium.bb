@@ -28,6 +28,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLCollection.h"
+#include "core/html/HTMLFormControlsCollection.h"
 #include "core/html/HTMLLegendElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/rendering/RenderFieldset.h"
@@ -100,9 +101,9 @@ HTMLLegendElement* HTMLFieldSetElement::legend() const
     return Traversal<HTMLLegendElement>::firstChild(*this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLCollection> HTMLFieldSetElement::elements()
+PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> HTMLFieldSetElement::elements()
 {
-    return ensureCachedHTMLCollection(FormControls);
+    return toHTMLFormControlsCollection(ensureCachedHTMLCollection(FormControls).get());
 }
 
 void HTMLFieldSetElement::refreshElementsIfNeeded() const

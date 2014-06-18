@@ -171,7 +171,7 @@ bool InsertionPoint::isContentInsertionPoint() const
     return isHTMLContentElement(*this) && isActive();
 }
 
-PassRefPtrWillBeRawPtr<NodeList> InsertionPoint::getDistributedNodes()
+PassRefPtrWillBeRawPtr<StaticNodeList> InsertionPoint::getDistributedNodes()
 {
     document().updateDistributionForNodeIfNeeded(this);
 

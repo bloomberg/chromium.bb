@@ -41,15 +41,15 @@ class Document;
 class Element;
 class ExceptionState;
 class Node;
-class NodeList;
 class SimpleNodeList;
+class StaticNodeList;
 class SpaceSplitString;
 
 class SelectorDataList {
 public:
     void initialize(const CSSSelectorList&);
     bool matches(Element&) const;
-    PassRefPtrWillBeRawPtr<NodeList> queryAll(ContainerNode& rootNode) const;
+    PassRefPtrWillBeRawPtr<StaticNodeList> queryAll(ContainerNode& rootNode) const;
     PassRefPtrWillBeRawPtr<Element> queryFirst(ContainerNode& rootNode) const;
 
 private:
@@ -91,7 +91,7 @@ public:
     static PassOwnPtr<SelectorQuery> adopt(CSSSelectorList&);
 
     bool matches(Element&) const;
-    PassRefPtrWillBeRawPtr<NodeList> queryAll(ContainerNode& rootNode) const;
+    PassRefPtrWillBeRawPtr<StaticNodeList> queryAll(ContainerNode& rootNode) const;
     PassRefPtrWillBeRawPtr<Element> queryFirst(ContainerNode& rootNode) const;
 private:
     explicit SelectorQuery(CSSSelectorList&);

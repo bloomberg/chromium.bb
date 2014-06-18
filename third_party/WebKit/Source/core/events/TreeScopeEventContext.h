@@ -28,7 +28,6 @@
 #define TreeScopeEventContext_h
 
 #include "core/dom/Node.h"
-#include "core/dom/NodeList.h"
 #include "core/dom/TreeScope.h"
 #include "core/events/EventTarget.h"
 #include "wtf/PassRefPtr.h"
@@ -40,6 +39,7 @@ namespace WebCore {
 class EventPath;
 class EventTarget;
 class Node;
+class StaticNodeList;
 class TouchEventContext;
 class TreeScope;
 
@@ -60,7 +60,7 @@ public:
     TouchEventContext* touchEventContext() const { return m_touchEventContext.get(); }
     TouchEventContext* ensureTouchEventContext();
 
-    PassRefPtrWillBeRawPtr<NodeList> ensureEventPath(EventPath&);
+    PassRefPtrWillBeRawPtr<StaticNodeList> ensureEventPath(EventPath&);
 
     bool isInclusiveAncestorOf(const TreeScopeEventContext&);
     void addChild(TreeScopeEventContext& child) { m_children.append(&child); }
@@ -79,7 +79,7 @@ private:
     RawPtrWillBeMember<TreeScope> m_treeScope;
     RefPtrWillBeMember<EventTarget> m_target;
     RefPtrWillBeMember<EventTarget> m_relatedTarget;
-    RefPtrWillBeMember<NodeList> m_eventPath;
+    RefPtrWillBeMember<StaticNodeList> m_eventPath;
     RefPtrWillBeMember<TouchEventContext> m_touchEventContext;
 
     WillBeHeapVector<RawPtrWillBeMember<TreeScopeEventContext> > m_children;

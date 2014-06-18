@@ -40,12 +40,12 @@
 namespace WebCore {
 
 class Node;
-class NodeList;
 class QualifiedName;
+class StaticNodeList;
 
 class MutationRecord : public RefCountedWillBeGarbageCollectedFinalized<MutationRecord>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<MutationRecord> createChildList(PassRefPtrWillBeRawPtr<Node> target, PassRefPtrWillBeRawPtr<NodeList> added, PassRefPtrWillBeRawPtr<NodeList> removed, PassRefPtrWillBeRawPtr<Node> previousSibling, PassRefPtrWillBeRawPtr<Node> nextSibling);
+    static PassRefPtrWillBeRawPtr<MutationRecord> createChildList(PassRefPtrWillBeRawPtr<Node> target, PassRefPtrWillBeRawPtr<StaticNodeList> added, PassRefPtrWillBeRawPtr<StaticNodeList> removed, PassRefPtrWillBeRawPtr<Node> previousSibling, PassRefPtrWillBeRawPtr<Node> nextSibling);
     static PassRefPtrWillBeRawPtr<MutationRecord> createAttributes(PassRefPtrWillBeRawPtr<Node> target, const QualifiedName&, const AtomicString& oldValue);
     static PassRefPtrWillBeRawPtr<MutationRecord> createCharacterData(PassRefPtrWillBeRawPtr<Node> target, const String& oldValue);
     static PassRefPtrWillBeRawPtr<MutationRecord> createWithNullOldValue(PassRefPtrWillBeRawPtr<MutationRecord>);
@@ -60,8 +60,8 @@ public:
     virtual const AtomicString& type() = 0;
     virtual Node* target() = 0;
 
-    virtual NodeList* addedNodes() = 0;
-    virtual NodeList* removedNodes() = 0;
+    virtual StaticNodeList* addedNodes() = 0;
+    virtual StaticNodeList* removedNodes() = 0;
     virtual Node* previousSibling() { return 0; }
     virtual Node* nextSibling() { return 0; }
 

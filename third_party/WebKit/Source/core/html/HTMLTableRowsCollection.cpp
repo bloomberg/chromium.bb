@@ -143,8 +143,9 @@ HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table)
     ASSERT(isHTMLTableElement(table));
 }
 
-PassRefPtrWillBeRawPtr<HTMLTableRowsCollection> HTMLTableRowsCollection::create(ContainerNode& table, CollectionType)
+PassRefPtrWillBeRawPtr<HTMLTableRowsCollection> HTMLTableRowsCollection::create(ContainerNode& table, CollectionType type)
 {
+    ASSERT_UNUSED(type, type == TableRows);
     return adoptRefWillBeNoop(new HTMLTableRowsCollection(table));
 }
 

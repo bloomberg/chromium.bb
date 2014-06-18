@@ -135,7 +135,7 @@ bool SelectorDataList::matches(Element& targetElement) const
     return false;
 }
 
-PassRefPtrWillBeRawPtr<NodeList> SelectorDataList::queryAll(ContainerNode& rootNode) const
+PassRefPtrWillBeRawPtr<StaticNodeList> SelectorDataList::queryAll(ContainerNode& rootNode) const
 {
     WillBeHeapVector<RefPtrWillBeMember<Node> > result;
     execute<AllElementsSelectorQueryTrait>(rootNode, result);
@@ -481,7 +481,7 @@ bool SelectorQuery::matches(Element& element) const
     return m_selectors.matches(element);
 }
 
-PassRefPtrWillBeRawPtr<NodeList> SelectorQuery::queryAll(ContainerNode& rootNode) const
+PassRefPtrWillBeRawPtr<StaticNodeList> SelectorQuery::queryAll(ContainerNode& rootNode) const
 {
     return m_selectors.queryAll(rootNode);
 }

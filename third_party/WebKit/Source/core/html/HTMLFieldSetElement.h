@@ -30,6 +30,7 @@ namespace WebCore {
 
 class FormAssociatedElement;
 class HTMLCollection;
+class HTMLFormControlsCollection;
 
 class HTMLFieldSetElement FINAL : public HTMLFormControlElement {
 public:
@@ -37,7 +38,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
     HTMLLegendElement* legend() const;
 
-    PassRefPtrWillBeRawPtr<HTMLCollection> elements();
+    PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> elements();
 
     const FormAssociatedElement::List& associatedElements() const;
 

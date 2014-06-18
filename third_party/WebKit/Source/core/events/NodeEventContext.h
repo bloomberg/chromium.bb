@@ -35,7 +35,6 @@ namespace WebCore {
 
 class EventTarget;
 class Node;
-class NodeList;
 class TouchEventContext;
 
 class NodeEventContext {

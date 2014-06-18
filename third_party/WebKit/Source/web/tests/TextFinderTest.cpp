@@ -8,6 +8,7 @@
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
+#include "core/dom/NodeList.h"
 #include "core/dom/Range.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLElement.h"

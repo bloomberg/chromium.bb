@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/fetch/FontResource.h"
 
+#include "core/dom/TagCollection.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "platform/SharedBuffer.h"
@@ -168,7 +169,7 @@ bool FontResource::ensureSVGFontData()
 
 SVGFontElement* FontResource::getSVGFontById(const String& fontName) const
 {
-    RefPtrWillBeRawPtr<HTMLCollection> collection = m_externalSVGDocument->getElementsByTagNameNS(SVGNames::fontTag.namespaceURI(), SVGNames::fontTag.localName());
+    RefPtrWillBeRawPtr<TagCollection> collection = m_externalSVGDocument->getElementsByTagNameNS(SVGNames::fontTag.namespaceURI(), SVGNames::fontTag.localName());
     if (!collection)
         return 0;
 

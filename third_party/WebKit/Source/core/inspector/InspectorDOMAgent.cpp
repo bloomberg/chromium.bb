@@ -41,16 +41,16 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
-#include "core/events/EventListener.h"
-#include "core/events/EventTarget.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeList.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/PseudoElement.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/markup.h"
+#include "core/events/EventListener.h"
+#include "core/events/EventTarget.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/LocalFrame.h"
@@ -621,7 +621,7 @@ void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, c
         return;
 
     TrackExceptionState exceptionState;
-    RefPtrWillBeRawPtr<NodeList> nodes = toContainerNode(node)->querySelectorAll(AtomicString(selectors), exceptionState);
+    RefPtrWillBeRawPtr<StaticNodeList> nodes = toContainerNode(node)->querySelectorAll(AtomicString(selectors), exceptionState);
     if (exceptionState.hadException()) {
         *errorString = "DOM Error while querying";
         return;
@@ -1032,7 +1032,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         for (Vector<Document*>::iterator it = docs.begin(); it != docs.end(); ++it) {
             Document* document = *it;
             TrackExceptionState exceptionState;
-            RefPtrWillBeRawPtr<NodeList> nodeList = document->querySelectorAll(AtomicString(whitespaceTrimmedQuery), exceptionState);
+            RefPtrWillBeRawPtr<StaticNodeList> nodeList = document->querySelectorAll(AtomicString(whitespaceTrimmedQuery), exceptionState);
             if (exceptionState.hadException() || !nodeList)
                 continue;
 

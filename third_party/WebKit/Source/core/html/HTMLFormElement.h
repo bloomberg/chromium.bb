@@ -42,6 +42,7 @@ class FormAssociatedElement;
 class FormData;
 class GenericEventQueue;
 class HTMLFormControlElement;
+class HTMLFormControlsCollection;
 class HTMLImageElement;
 class HTMLInputElement;
 
@@ -51,7 +52,7 @@ public:
     virtual ~HTMLFormElement();
     virtual void trace(Visitor*) OVERRIDE;
 
-    PassRefPtrWillBeRawPtr<HTMLCollection> elements();
+    PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> elements();
     void getNamedElements(const AtomicString&, WillBeHeapVector<RefPtrWillBeMember<Element> >&);
 
     unsigned length() const;

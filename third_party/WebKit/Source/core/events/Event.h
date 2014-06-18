@@ -177,7 +177,7 @@ public:
     EventPath& eventPath() { ASSERT(m_eventPath); return *m_eventPath; }
     EventPath& ensureEventPath();
 
-    PassRefPtrWillBeRawPtr<NodeList> path() const;
+    PassRefPtrWillBeRawPtr<StaticNodeList> path() const;
 
     bool isBeingDispatched() const { return eventPhase(); }
 

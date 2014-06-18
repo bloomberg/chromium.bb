@@ -32,7 +32,6 @@
 #include "bindings/v8/ScriptValue.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/NodeList.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "platform/heap/Handle.h"
 #include "wtf/ArrayBuffer.h"
@@ -65,6 +64,7 @@ class Page;
 class PagePopupController;
 class Range;
 class SerializedScriptValue;
+class StaticNodeList;
 class ShadowRoot;
 class TypeConversions;
 
@@ -186,7 +186,7 @@ public:
     PassRefPtrWillBeRawPtr<LayerRectList> touchEventTargetLayerRects(Document*, ExceptionState&);
 
     // This is used to test rect based hit testing like what's done on touch screens.
-    PassRefPtrWillBeRawPtr<NodeList> nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
+    PassRefPtrWillBeRawPtr<StaticNodeList> nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
         unsigned bottomPadding, unsigned leftPadding, bool ignoreClipping, bool allowShadowContent, bool allowChildFrameContent, ExceptionState&) const;
 
     void emitInspectorDidBeginFrame(int frameId = 0);
@@ -216,9 +216,6 @@ public:
     String layerTreeAsText(Document*, ExceptionState&) const;
     String elementLayerTreeAsText(Element*, unsigned flags, ExceptionState&) const;
     String elementLayerTreeAsText(Element*, ExceptionState&) const;
-
-    PassRefPtrWillBeRawPtr<NodeList> paintOrderListBeforePromote(Element*, ExceptionState&);
-    PassRefPtrWillBeRawPtr<NodeList> paintOrderListAfterPromote(Element*, ExceptionState&);
 
     bool scrollsWithRespectTo(Element*, Element*, ExceptionState&);
     bool isUnclippedDescendant(Element*, ExceptionState&);

@@ -39,6 +39,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ScriptForbiddenScope.h"
 #include "core/dom/SelectorQuery.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MutationEvent.h"
@@ -1021,7 +1022,7 @@ PassRefPtrWillBeRawPtr<Element> ContainerNode::querySelector(const AtomicString&
     return selectorQuery->queryFirst(*this);
 }
 
-PassRefPtrWillBeRawPtr<NodeList> ContainerNode::querySelectorAll(const AtomicString& selectors, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<StaticNodeList> ContainerNode::querySelectorAll(const AtomicString& selectors, ExceptionState& exceptionState)
 {
     if (selectors.isEmpty()) {
         exceptionState.throwDOMException(SyntaxError, "The provided selector is empty.");
@@ -1213,7 +1214,7 @@ void ContainerNode::checkForSiblingStyleChanges(bool finishedParsingCallback, No
     }
 }
 
-PassRefPtrWillBeRawPtr<HTMLCollection> ContainerNode::getElementsByTagName(const AtomicString& localName)
+PassRefPtrWillBeRawPtr<TagCollection> ContainerNode::getElementsByTagName(const AtomicString& localName)
 {
     if (localName.isNull())
         return nullptr;
@@ -1223,7 +1224,7 @@ PassRefPtrWillBeRawPtr<HTMLCollection> ContainerNode::getElementsByTagName(const
     return ensureRareData().ensureNodeLists().addCache<TagCollection>(*this, TagCollectionType, localName);
 }
 
-PassRefPtrWillBeRawPtr<HTMLCollection> ContainerNode::getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName)
+PassRefPtrWillBeRawPtr<TagCollection> ContainerNode::getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName)
 {
     if (localName.isNull())
         return nullptr;
@@ -1236,14 +1237,14 @@ PassRefPtrWillBeRawPtr<HTMLCollection> ContainerNode::getElementsByTagNameNS(con
 
 // Takes an AtomicString in argument because it is common for elements to share the same name attribute.
 // Therefore, the NameNodeList factory function expects an AtomicString type.
-PassRefPtrWillBeRawPtr<NodeList> ContainerNode::getElementsByName(const AtomicString& elementName)
+PassRefPtrWillBeRawPtr<NameNodeList> ContainerNode::getElementsByName(const AtomicString& elementName)
 {
     return ensureRareData().ensureNodeLists().addCache<NameNodeList>(*this, NameNodeListType, elementName);
 }
 
 // Takes an AtomicString in argument because it is common for elements to share the same set of class names.
 // Therefore, the ClassNodeList factory function expects an AtomicString type.
-PassRefPtrWillBeRawPtr<HTMLCollection> ContainerNode::getElementsByClassName(const AtomicString& classNames)
+PassRefPtrWillBeRawPtr<ClassCollection> ContainerNode::getElementsByClassName(const AtomicString& classNames)
 {
     return ensureRareData().ensureNodeLists().addCache<ClassCollection>(*this, ClassCollectionType, classNames);
 }

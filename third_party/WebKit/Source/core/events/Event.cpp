@@ -217,7 +217,7 @@ EventPath& Event::ensureEventPath()
     return *m_eventPath;
 }
 
-PassRefPtrWillBeRawPtr<NodeList> Event::path() const
+PassRefPtrWillBeRawPtr<StaticNodeList> Event::path() const
 {
     if (!m_currentTarget || !m_currentTarget->toNode())
         return StaticNodeList::createEmpty();

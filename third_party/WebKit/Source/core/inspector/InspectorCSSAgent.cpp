@@ -48,7 +48,6 @@
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeList.h"
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceFetcher.h"

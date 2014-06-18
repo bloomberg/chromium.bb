@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<NodeList> TreeScopeEventContext::ensureEventPath(EventPath& path)
+PassRefPtrWillBeRawPtr<StaticNodeList> TreeScopeEventContext::ensureEventPath(EventPath& path)
 {
     if (m_eventPath)
         return m_eventPath;

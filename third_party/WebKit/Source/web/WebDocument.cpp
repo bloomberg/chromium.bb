@@ -43,7 +43,6 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/FullscreenElementStack.h"
-#include "core/dom/NodeList.h"
 #include "core/dom/StyleEngine.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLBodyElement.h"

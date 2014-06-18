@@ -2443,7 +2443,7 @@ void Node::updateAncestorConnectedSubframeCountForInsertion() const
         node->incrementConnectedSubframeCount(count);
 }
 
-PassRefPtrWillBeRawPtr<NodeList> Node::getDestinationInsertionPoints()
+PassRefPtrWillBeRawPtr<StaticNodeList> Node::getDestinationInsertionPoints()
 {
     document().updateDistributionForNodeIfNeeded(this);
     WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;

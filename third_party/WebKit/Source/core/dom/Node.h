@@ -79,6 +79,7 @@ class RenderBoxModelObject;
 class RenderObject;
 class RenderStyle;
 class ShadowRoot;
+class StaticNodeList;
 class TagCollection;
 class Text;
 class TouchEvent;
@@ -666,7 +667,7 @@ public:
     void updateAncestorConnectedSubframeCountForRemoval() const;
     void updateAncestorConnectedSubframeCountForInsertion() const;
 
-    PassRefPtrWillBeRawPtr<NodeList> getDestinationInsertionPoints();
+    PassRefPtrWillBeRawPtr<StaticNodeList> getDestinationInsertionPoints();
 
     void setAlreadySpellChecked(bool flag) { setFlag(flag, AlreadySpellCheckedFlag); }
     bool isAlreadySpellChecked() { return getFlag(AlreadySpellCheckedFlag); }

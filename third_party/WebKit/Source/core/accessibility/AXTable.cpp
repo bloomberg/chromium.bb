@@ -40,6 +40,7 @@
 #include "core/html/HTMLTableColElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTableRowElement.h"
+#include "core/html/HTMLTableRowsCollection.h"
 #include "core/html/HTMLTableSectionElement.h"
 #include "core/rendering/RenderTableCell.h"
 
@@ -137,8 +138,9 @@ bool AXTable::isDataTable() const
             return false;
     }
 
-    RefPtrWillBeRawPtr<HTMLCollection> rows = tableElement->rows();
-    for (unsigned rowIndex = 0; rowIndex < rows->length(); ++rowIndex) {
+    RefPtrWillBeRawPtr<HTMLTableRowsCollection> rows = tableElement->rows();
+    unsigned rowCount = rows->length();
+    for (unsigned rowIndex = 0; rowIndex < rowCount; ++rowIndex) {
         Element* rowElement = rows->item(rowIndex);
         if (elementHasAriaRole(rowElement))
             return false;

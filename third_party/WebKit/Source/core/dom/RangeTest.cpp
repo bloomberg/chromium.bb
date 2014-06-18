@@ -7,6 +7,7 @@
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Element.h"
+#include "core/dom/NodeList.h"
 #include "core/dom/Text.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLDocument.h"

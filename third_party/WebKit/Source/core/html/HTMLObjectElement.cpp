@@ -28,11 +28,11 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/TagCollection.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/FormDataList.h"
-#include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLMetaElement.h"
@@ -242,7 +242,7 @@ bool HTMLObjectElement::shouldAllowQuickTimeClassIdQuirk()
         || !equalIgnoringCase(classId(), "clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B"))
         return false;
 
-    RefPtrWillBeRawPtr<HTMLCollection> metaElements = document().getElementsByTagName(HTMLNames::metaTag.localName());
+    RefPtrWillBeRawPtr<TagCollection> metaElements = document().getElementsByTagName(HTMLNames::metaTag.localName());
     unsigned length = metaElements->length();
     for (unsigned i = 0; i < length; ++i) {
         ASSERT(metaElements->item(i)->isHTMLElement());

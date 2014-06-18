@@ -375,7 +375,7 @@ bool SVGSVGElement::checkIntersectionOrEnclosure(const SVGElement& element, cons
     return result;
 }
 
-PassRefPtrWillBeRawPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const FloatRect& rect,
+PassRefPtrWillBeRawPtr<StaticNodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const FloatRect& rect,
     SVGElement* referenceElement, CheckIntersectionOrEnclosure mode) const
 {
     WillBeHeapVector<RefPtrWillBeMember<Node> > nodes;
@@ -400,14 +400,14 @@ PassRefPtrWillBeRawPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureLi
     return StaticNodeList::adopt(nodes);
 }
 
-PassRefPtrWillBeRawPtr<NodeList> SVGSVGElement::getIntersectionList(PassRefPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
+PassRefPtrWillBeRawPtr<StaticNodeList> SVGSVGElement::getIntersectionList(PassRefPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     return collectIntersectionOrEnclosureList(rect->target()->value(), referenceElement, CheckIntersection);
 }
 
-PassRefPtrWillBeRawPtr<NodeList> SVGSVGElement::getEnclosureList(PassRefPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
+PassRefPtrWillBeRawPtr<StaticNodeList> SVGSVGElement::getEnclosureList(PassRefPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
 {
     document().updateLayoutIgnorePendingStylesheets();
 

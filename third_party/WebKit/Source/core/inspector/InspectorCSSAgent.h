@@ -54,7 +54,6 @@ class InspectorResourceAgent;
 class InstrumentingAgents;
 class MediaList;
 class Node;
-class NodeList;
 class PlatformFontUsage;
 class RenderText;
 class StyleResolver;

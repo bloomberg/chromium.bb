@@ -31,9 +31,12 @@
 
 namespace WebCore {
 
+class ClassCollection;
 class ExceptionState;
 class FloatPoint;
 class HTMLCollection;
+class StaticNodeList;
+class TagCollection;
 
 namespace Private {
     template<class GenericNode, class GenericNodeContainer>
@@ -79,7 +82,7 @@ public:
     Node* traverseToChildAt(unsigned index) const;
 
     PassRefPtrWillBeRawPtr<Element> querySelector(const AtomicString& selectors, ExceptionState&);
-    PassRefPtrWillBeRawPtr<NodeList> querySelectorAll(const AtomicString& selectors, ExceptionState&);
+    PassRefPtrWillBeRawPtr<StaticNodeList> querySelectorAll(const AtomicString& selectors, ExceptionState&);
 
     void insertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);
     void replaceChild(PassRefPtrWillBeRawPtr<Node> newChild, Node* oldChild, ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -87,10 +90,10 @@ public:
     void appendChild(PassRefPtrWillBeRawPtr<Node> newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
 
     Element* getElementById(const AtomicString& id) const;
-    PassRefPtrWillBeRawPtr<HTMLCollection> getElementsByTagName(const AtomicString&);
-    PassRefPtrWillBeRawPtr<HTMLCollection> getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName);
-    PassRefPtrWillBeRawPtr<NodeList> getElementsByName(const AtomicString& elementName);
-    PassRefPtrWillBeRawPtr<HTMLCollection> getElementsByClassName(const AtomicString& classNames);
+    PassRefPtrWillBeRawPtr<TagCollection> getElementsByTagName(const AtomicString&);
+    PassRefPtrWillBeRawPtr<TagCollection> getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName);
+    PassRefPtrWillBeRawPtr<NameNodeList> getElementsByName(const AtomicString& elementName);
+    PassRefPtrWillBeRawPtr<ClassCollection> getElementsByClassName(const AtomicString& classNames);
     PassRefPtrWillBeRawPtr<RadioNodeList> radioNodeList(const AtomicString&, bool onlyMatchImgElements = false);
 
     // These methods are only used during parsing.
