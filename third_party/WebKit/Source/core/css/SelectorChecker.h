@@ -168,9 +168,9 @@ inline bool SelectorChecker::checkExactAttribute(const Element& element, const Q
 {
     if (!element.hasAttributesWithoutUpdate())
         return false;
-    AttributeIteratorAccessor attributes = element.attributesIterator();
-    AttributeConstIterator end = attributes.end();
-    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+    AttributeCollection attributes = element.attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
         if (it->matches(selectorAttributeName) && (!value || it->value().impl() == value))
             return true;
     }

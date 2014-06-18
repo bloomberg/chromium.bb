@@ -171,7 +171,7 @@ public:
     // Internal methods that assume the existence of attribute storage, one should use hasAttributes()
     // before calling them. This is not a trivial getter and its return value should be cached for
     // performance.
-    AttributeIteratorAccessor attributesIterator() const { return elementData()->attributesIterator(); }
+    AttributeCollection attributes() const { return elementData()->attributes(); }
     size_t attributeCount() const;
     const Attribute& attributeAt(unsigned index) const;
     const Attribute* findAttributeByName(const QualifiedName&) const;
@@ -284,7 +284,7 @@ public:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) { }
 
     // For exposing to DOM only.
-    NamedNodeMap* attributes() const;
+    NamedNodeMap* attributesForBindings() const;
 
     enum AttributeModificationReason {
         ModifiedDirectly,

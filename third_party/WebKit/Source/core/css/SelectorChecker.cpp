@@ -499,10 +499,10 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
 
     const AtomicString& selectorValue =  selector.value();
 
-    AttributeIteratorAccessor attributes = element.attributesIterator();
-    AttributeConstIterator end = attributes.end();
-    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
-        const Attribute& attributeItem = **it;
+    AttributeCollection attributes = element.attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+        const Attribute& attributeItem = *it;
 
         if (!attributeItem.matches(selectorAttr))
             continue;

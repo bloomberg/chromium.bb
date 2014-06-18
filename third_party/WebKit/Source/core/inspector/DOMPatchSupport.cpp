@@ -197,9 +197,9 @@ bool DOMPatchSupport::innerPatchNode(Digest* oldDigest, Digest* newDigest, Excep
 
         // FIXME: Create a function in Element for copying properties. cloneDataFromElement() is close but not enough for this case.
         if (newElement->hasAttributesWithoutUpdate()) {
-            AttributeIteratorAccessor attributes = newElement->attributesIterator();
-            AttributeConstIterator end = attributes.end();
-            for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+            AttributeCollection attributes = newElement->attributes();
+            AttributeCollection::const_iterator end = attributes.end();
+            for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
                 if (!m_domEditor->setAttribute(oldElement, it->name().localName(), it->value(), exceptionState))
                     return false;
             }
@@ -430,9 +430,9 @@ PassOwnPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(Node* node, Un
 
         if (element.hasAttributesWithoutUpdate()) {
             OwnPtr<blink::WebCryptoDigestor> attrsDigestor = createDigestor(HashAlgorithmSha1);
-            AttributeIteratorAccessor attributes = element.attributesIterator();
-            AttributeConstIterator end = attributes.end();
-            for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+            AttributeCollection attributes = element.attributes();
+            AttributeCollection::const_iterator end = attributes.end();
+            for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
                 addStringToDigestor(attrsDigestor.get(), it->name().toString());
                 addStringToDigestor(attrsDigestor.get(), it->value().string());
             }

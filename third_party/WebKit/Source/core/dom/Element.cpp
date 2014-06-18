@@ -317,7 +317,7 @@ void Element::setBooleanAttribute(const QualifiedName& name, bool value)
         removeAttribute(name);
 }
 
-NamedNodeMap* Element::attributes() const
+NamedNodeMap* Element::attributesForBindings() const
 {
     ElementRareData& rareData = const_cast<Element*>(this)->ensureElementRareData();
     if (NamedNodeMap* attributeMap = rareData.attributeMap())
@@ -1211,9 +1211,9 @@ const AtomicString& Element::locateNamespacePrefix(const AtomicString& namespace
         return prefix();
 
     if (hasAttributes()) {
-        AttributeIteratorAccessor attributes = attributesIterator();
-        AttributeConstIterator end = attributes.end();
-        for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+        AttributeCollection attributes = this->attributes();
+        AttributeCollection::const_iterator end = attributes.end();
+        for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
             if (it->prefix() == xmlnsAtom && it->value() == namespaceToLocate)
                 return it->localName();
         }
@@ -3007,9 +3007,9 @@ void Element::detachAllAttrNodesFromElement()
     AttrNodeList* list = this->attrNodeList();
     ASSERT(list);
 
-    AttributeIteratorAccessor attributes = attributesIterator();
-    AttributeConstIterator end = attributes.end();
-    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+    AttributeCollection attributes = this->attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
         if (RefPtrWillBeRawPtr<Attr> attrNode = findAttrNodeInList(*list, it->name()))
             attrNode->detachFromElementWithValue(it->value());
     }
@@ -3075,9 +3075,9 @@ void Element::cloneAttributesFromElement(const Element& other)
     else
         m_elementData = other.m_elementData->makeUniqueCopy();
 
-    AttributeIteratorAccessor attributes = m_elementData->attributesIterator();
-    AttributeConstIterator end = attributes.end();
-    for (AttributeConstIterator it = attributes.begin(); it != end; ++it)
+    AttributeCollection attributes = m_elementData->attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it)
         attributeChangedFromParserOrByCloning(it->name(), it->value(), ModifiedByCloning);
 }
 

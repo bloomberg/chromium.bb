@@ -303,9 +303,9 @@ void WebPageSerializerImpl::openTagToString(Element* element,
     result.append(element->nodeName().lower());
     // Go through all attributes and serialize them.
     if (element->hasAttributes()) {
-        AttributeIteratorAccessor attributes = element->attributesIterator();
-        AttributeConstIterator end = attributes.end();
-        for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+        AttributeCollection attributes = element->attributes();
+        AttributeCollection::const_iterator end = attributes.end();
+        for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
             result.append(' ');
             // Add attribute pair
             result.append(it->name().toString());

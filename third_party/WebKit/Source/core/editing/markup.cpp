@@ -110,10 +110,10 @@ static void completeURLs(DocumentFragment& fragment, const String& baseURL)
     for (Element* element = ElementTraversal::firstWithin(fragment); element; element = ElementTraversal::next(*element, &fragment)) {
         if (!element->hasAttributes())
             continue;
-        AttributeIteratorAccessor attributes = element->attributesIterator();
-        AttributeConstIterator end = attributes.end();
-        for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
-            if (element->isURLAttribute(**it) && !it->value().isEmpty())
+        AttributeCollection attributes = element->attributes();
+        AttributeCollection::const_iterator end = attributes.end();
+        for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+            if (element->isURLAttribute(*it) && !it->value().isEmpty())
                 changes.append(AttributeChange(element, it->name(), KURL(parsedBaseURL, it->value()).string()));
         }
     }
@@ -290,13 +290,13 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
     const bool shouldOverrideStyleAttr = shouldAnnotateOrForceInline || shouldApplyWrappingStyle(element);
 
     if (element.hasAttributes()) {
-        AttributeIteratorAccessor attributes = element.attributesIterator();
-        AttributeConstIterator end = attributes.end();
-        for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+        AttributeCollection attributes = element.attributes();
+        AttributeCollection::const_iterator end = attributes.end();
+        for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
             // We'll handle the style attribute separately, below.
             if (it->name() == styleAttr && shouldOverrideStyleAttr)
                 continue;
-            appendAttribute(out, element, **it, 0);
+            appendAttribute(out, element, *it, 0);
         }
     }
 

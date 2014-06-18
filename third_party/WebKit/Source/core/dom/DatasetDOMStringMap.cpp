@@ -157,9 +157,9 @@ void DatasetDOMStringMap::getNames(Vector<String>& names)
     if (!m_element->hasAttributes())
         return;
 
-    AttributeIteratorAccessor attributes = m_element->attributesIterator();
-    AttributeConstIterator end = attributes.end();
-    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+    AttributeCollection attributes = m_element->attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
         if (isValidAttributeName(it->localName()))
             names.append(convertAttributeNameToPropertyName(it->localName()));
     }
@@ -170,9 +170,9 @@ String DatasetDOMStringMap::item(const String& name)
     if (!m_element->hasAttributes())
         return String();
 
-    AttributeIteratorAccessor attributes = m_element->attributesIterator();
-    AttributeConstIterator end = attributes.end();
-    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+    AttributeCollection attributes = m_element->attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
         if (propertyNameMatchesAttributeName(name, it->localName()))
             return it->value();
     }
@@ -185,9 +185,9 @@ bool DatasetDOMStringMap::contains(const String& name)
     if (!m_element->hasAttributes())
         return false;
 
-    AttributeIteratorAccessor attributes = m_element->attributesIterator();
-    AttributeConstIterator end = attributes.end();
-    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+    AttributeCollection attributes = m_element->attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
         if (propertyNameMatchesAttributeName(name, it->localName()))
             return true;
     }

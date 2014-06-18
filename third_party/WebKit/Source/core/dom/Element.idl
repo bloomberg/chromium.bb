@@ -34,7 +34,7 @@
     [RaisesException, CustomElementCallbacks, MeasureAs=ElementRemoveAttributeNode] Attr removeAttributeNode([Default=Undefined, TypeChecking=Nullable] optional Attr oldAttr); // Removed from DOM4.
     HTMLCollection getElementsByTagName(DOMString name);
 
-    [PerWorldBindings] readonly attribute NamedNodeMap     attributes;
+    [PerWorldBindings, ImplementedAs=attributesForBindings] readonly attribute NamedNodeMap     attributes;
     [MeasureAs=HasAttributes] boolean hasAttributes();
 
     // DOM Level 2 Core

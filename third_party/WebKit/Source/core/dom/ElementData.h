@@ -43,36 +43,17 @@ class ShareableElementData;
 class StylePropertySet;
 class UniqueElementData;
 
-class AttributeConstIterator {
+class AttributeCollection {
 public:
-    AttributeConstIterator(const Attribute* array, unsigned index)
-        : m_array(array)
-        , m_index(index)
-    { }
+    typedef const Attribute* const_iterator;
 
-    const Attribute* operator*() const { return &m_array[m_index]; }
-    const Attribute* operator->() const { return &m_array[m_index]; }
-    AttributeConstIterator& operator++() { ++m_index; return *this; }
-
-    bool operator==(const AttributeConstIterator& other) const { return m_index == other.m_index; }
-    bool operator!=(const AttributeConstIterator& other) const { return !(*this == other); }
-
-    unsigned index() const { return m_index; }
-
-private:
-    const Attribute* m_array;
-    unsigned m_index;
-};
-
-class AttributeIteratorAccessor {
-public:
-    AttributeIteratorAccessor(const Attribute* array, unsigned size)
+    AttributeCollection(const Attribute* array, unsigned size)
         : m_array(array)
         , m_size(size)
     { }
 
-    AttributeConstIterator begin() const { return AttributeConstIterator(m_array, 0); }
-    AttributeConstIterator end() const { return AttributeConstIterator(m_array, m_size); }
+    const_iterator begin() const { return m_array; }
+    const_iterator end() const { return m_array + m_size; }
 
     unsigned size() const { return m_size; }
 
@@ -105,7 +86,7 @@ public:
     size_t attributeCount() const;
     bool hasAttributes() const { return !!attributeCount(); }
 
-    AttributeIteratorAccessor attributesIterator() const;
+    AttributeCollection attributes() const;
 
     const Attribute& attributeAt(unsigned index) const;
     const Attribute* findAttributeByName(const QualifiedName&) const;
@@ -243,11 +224,12 @@ inline const Attribute* ElementData::attributeBase() const
 
 inline size_t ElementData::findAttributeIndexByName(const QualifiedName& name, bool shouldIgnoreCase) const
 {
-    AttributeIteratorAccessor attributes = attributesIterator();
-    AttributeConstIterator end = attributes.end();
-    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+    AttributeCollection attributes = this->attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    unsigned index = 0;
+    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it, ++index) {
         if (it->name().matchesPossiblyIgnoringCase(name, shouldIgnoreCase))
-            return it.index();
+            return index;
     }
     return kNotFound;
 }
@@ -259,14 +241,15 @@ inline size_t ElementData::findAttributeIndexByName(const AtomicString& name, bo
     bool doSlowCheck = shouldIgnoreAttributeCase;
 
     // Optimize for the case where the attribute exists and its name exactly matches.
-    AttributeIteratorAccessor attributes = attributesIterator();
-    AttributeConstIterator end = attributes.end();
-    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+    AttributeCollection attributes = this->attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    unsigned index = 0;
+    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it, ++index) {
         // FIXME: Why check the prefix? Namespaces should be all that matter.
         // Most attributes (all of HTML and CSS) have no namespace.
         if (!it->name().hasPrefix()) {
             if (name == it->localName())
-                return it.index();
+                return index;
         } else {
             doSlowCheck = true;
         }
@@ -277,22 +260,22 @@ inline size_t ElementData::findAttributeIndexByName(const AtomicString& name, bo
     return kNotFound;
 }
 
-inline AttributeIteratorAccessor ElementData::attributesIterator() const
+inline AttributeCollection ElementData::attributes() const
 {
     if (isUnique()) {
         const Vector<Attribute, 4>& attributeVector = static_cast<const UniqueElementData*>(this)->m_attributeVector;
-        return AttributeIteratorAccessor(attributeVector.data(), attributeVector.size());
+        return AttributeCollection(attributeVector.data(), attributeVector.size());
     }
-    return AttributeIteratorAccessor(static_cast<const ShareableElementData*>(this)->m_attributeArray, m_arraySize);
+    return AttributeCollection(static_cast<const ShareableElementData*>(this)->m_attributeArray, m_arraySize);
 }
 
 inline const Attribute* ElementData::findAttributeByName(const QualifiedName& name) const
 {
-    AttributeIteratorAccessor attributes = attributesIterator();
-    AttributeConstIterator end = attributes.end();
-    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+    AttributeCollection attributes = this->attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
         if (it->name().matches(name))
-            return *it;
+            return it;
     }
     return 0;
 }

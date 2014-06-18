@@ -390,9 +390,9 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
         if (!contextElement->hasAttributes())
             return;
 
-        AttributeIteratorAccessor attributes = contextElement->attributesIterator();
-        AttributeConstIterator end = attributes.end();
-        for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+        AttributeCollection attributes = contextElement->attributes();
+        AttributeCollection::const_iterator end = attributes.end();
+        for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
             RefPtrWillBeRawPtr<Attr> attr = contextElement->ensureAttr(it->name());
             if (nodeMatches(attr.get(), AttributeAxis, nodeTest()))
                 nodes.append(attr.release());

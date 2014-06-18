@@ -124,9 +124,9 @@ static void makePresentationAttributeCacheKey(Element& element, PresentationAttr
     // Interpretation of the size attributes on <input> depends on the type attribute.
     if (isHTMLInputElement(element))
         return;
-    AttributeIteratorAccessor attributes = element.attributesIterator();
-    AttributeConstIterator end = attributes.end();
-    for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+    AttributeCollection attributes = element.attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
         if (!element.isPresentationAttribute(it->name()))
             continue;
         if (!it->namespaceURI().isNull())
@@ -179,9 +179,9 @@ PassRefPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
         cacheCleaner.didHitPresentationAttributeCache();
     } else {
         style = MutableStylePropertySet::create(element.isSVGElement() ? SVGAttributeMode : HTMLAttributeMode);
-        AttributeIteratorAccessor attributes = element.attributesIterator();
-        AttributeConstIterator end = attributes.end();
-        for (AttributeConstIterator it = attributes.begin(); it != end; ++it)
+        AttributeCollection attributes = element.attributes();
+        AttributeCollection::const_iterator end = attributes.end();
+        for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it)
             element.collectStyleForPresentationAttribute(it->name(), it->value(), toMutableStylePropertySet(style));
     }
 

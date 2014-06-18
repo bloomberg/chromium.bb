@@ -1327,9 +1327,9 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
                 return element.namespaceURI() == namespaceURI;
 
             if (element.hasAttributes()) {
-                AttributeIteratorAccessor attributes = element.attributesIterator();
-                AttributeConstIterator end = attributes.end();
-                for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+                AttributeCollection attributes = element.attributes();
+                AttributeCollection::const_iterator end = attributes.end();
+                for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
                     if (it->localName() == xmlnsAtom)
                         return it->value() == namespaceURI;
                 }
@@ -1412,9 +1412,9 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
                 return element.namespaceURI();
 
             if (element.hasAttributes()) {
-                AttributeIteratorAccessor attributes = element.attributesIterator();
-                AttributeConstIterator end = attributes.end();
-                for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+                AttributeCollection attributes = element.attributes();
+                AttributeCollection::const_iterator end = attributes.end();
+                for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
                     if (it->prefix() == xmlnsAtom && it->localName() == prefix) {
                         if (!it->value().isEmpty())
                             return it->value();
@@ -1575,9 +1575,9 @@ unsigned short Node::compareDocumentPositionInternal(const Node* otherNode, Shad
         // We are comparing two attributes on the same node. Crawl our attribute map and see which one we hit first.
         const Element* owner1 = attr1->ownerElement();
         owner1->synchronizeAllAttributes();
-        AttributeIteratorAccessor attributes = owner1->attributesIterator();
-        AttributeConstIterator end = attributes.end();
-        for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+        AttributeCollection attributes = owner1->attributes();
+        AttributeCollection::const_iterator end = attributes.end();
+        for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
             // If neither of the two determining nodes is a child node and nodeType is the same for both determining nodes, then an
             // implementation-dependent order between the determining nodes is returned. This order is stable as long as no nodes of
             // the same nodeType are inserted into or removed from the direct container. This would be the case, for example,
