@@ -553,7 +553,10 @@ int SSLServerSocketNSS::BufferSend(void) {
   const char* buf1;
   const char* buf2;
   unsigned int len1, len2;
-  memio_GetWriteParams(nss_bufs_, &buf1, &len1, &buf2, &len2);
+  if (memio_GetWriteParams(nss_bufs_, &buf1, &len1, &buf2, &len2)) {
+    // The error code itself is ignored, so just return ERR_ABORTED.
+    return ERR_ABORTED;
+  }
   const unsigned int len = len1 + len2;
 
   int rv = 0;

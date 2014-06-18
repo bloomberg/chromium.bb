@@ -442,17 +442,21 @@ void memio_PutReadResult(memio_Private *secret, int bytes_read)
     }
 }
 
-void memio_GetWriteParams(memio_Private *secret,
-                          const char **buf1, unsigned int *len1,
-                          const char **buf2, unsigned int *len2)
+int memio_GetWriteParams(memio_Private *secret,
+                         const char **buf1, unsigned int *len1,
+                         const char **buf2, unsigned int *len2)
 {
     struct memio_buffer* mb = &((PRFilePrivate *)secret)->writebuf;
     PR_ASSERT(mb->bufsize);
+
+    if (mb->last_err)
+        return mb->last_err;
 
     *buf1 = &mb->buf[mb->head];
     *len1 = memio_buffer_used_contiguous(mb);
     *buf2 = mb->buf;
     *len2 = memio_buffer_wrapped_bytes(mb);
+    return 0;
 }
 
 void memio_PutWriteResult(memio_Private *secret, int bytes_written)

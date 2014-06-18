@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -528,6 +529,38 @@ void FakeBlockingStreamSocket::OnReadCompleted(int result) {
     base::ResetAndReturn(&pending_read_callback_).Run(result);
   }
 }
+
+// CountingStreamSocket wraps an existing StreamSocket and maintains a count of
+// reads and writes on the socket.
+class CountingStreamSocket : public WrappedStreamSocket {
+ public:
+  explicit CountingStreamSocket(scoped_ptr<StreamSocket> transport)
+      : WrappedStreamSocket(transport.Pass()),
+        read_count_(0),
+        write_count_(0) {}
+  virtual ~CountingStreamSocket() {}
+
+  // Socket implementation:
+  virtual int Read(IOBuffer* buf,
+                   int buf_len,
+                   const CompletionCallback& callback) OVERRIDE {
+    read_count_++;
+    return transport_->Read(buf, buf_len, callback);
+  }
+  virtual int Write(IOBuffer* buf,
+                    int buf_len,
+                    const CompletionCallback& callback) OVERRIDE {
+    write_count_++;
+    return transport_->Write(buf, buf_len, callback);
+  }
+
+  int read_count() const { return read_count_; }
+  int write_count() const { return write_count_; }
+
+ private:
+  int read_count_;
+  int write_count_;
+};
 
 // CompletionCallback that will delete the associated StreamSocket when
 // the callback is invoked.
@@ -1317,6 +1350,75 @@ TEST_F(SSLClientSocketTest, Write_WithSynchronousError) {
   // SSLClientSocketOpenSSL treats any errors as a simple EOF.
   EXPECT_EQ(0, rv);
 #endif
+}
+
+// If there is a Write failure at the transport with no follow-up Read, although
+// the write error will not be returned to the client until a future Read or
+// Write operation, SSLClientSocket should not spin attempting to re-write on
+// the socket. This is a regression test for part of https://crbug.com/381160.
+TEST_F(SSLClientSocketTest, Write_WithSynchronousErrorNoRead) {
+  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
+                                SpawnedTestServer::kLocalhost,
+                                base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr;
+  ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+  TestCompletionCallback callback;
+  scoped_ptr<StreamSocket> real_transport(
+      new TCPClientSocket(addr, NULL, NetLog::Source()));
+  // Note: intermediate sockets' ownership are handed to |sock|, but a pointer
+  // is retained in order to query them.
+  scoped_ptr<SynchronousErrorStreamSocket> error_socket(
+      new SynchronousErrorStreamSocket(real_transport.Pass()));
+  SynchronousErrorStreamSocket* raw_error_socket = error_socket.get();
+  scoped_ptr<CountingStreamSocket> counting_socket(
+      new CountingStreamSocket(error_socket.PassAs<StreamSocket>()));
+  CountingStreamSocket* raw_counting_socket = counting_socket.get();
+  int rv = callback.GetResult(counting_socket->Connect(callback.callback()));
+  ASSERT_EQ(OK, rv);
+
+  // Disable TLS False Start to avoid handshake non-determinism.
+  SSLConfig ssl_config;
+  ssl_config.false_start_enabled = false;
+
+  scoped_ptr<SSLClientSocket> sock(
+      CreateSSLClientSocket(counting_socket.PassAs<StreamSocket>(),
+                            test_server.host_port_pair(),
+                            ssl_config));
+
+  rv = callback.GetResult(sock->Connect(callback.callback()));
+  ASSERT_EQ(OK, rv);
+  ASSERT_TRUE(sock->IsConnected());
+
+  // Simulate an unclean/forcible shutdown on the underlying socket.
+  raw_error_socket->SetNextWriteError(ERR_CONNECTION_RESET);
+
+  const char request_text[] = "GET / HTTP/1.0\r\n\r\n";
+  static const int kRequestTextSize =
+      static_cast<int>(arraysize(request_text) - 1);
+  scoped_refptr<IOBuffer> request_buffer(new IOBuffer(kRequestTextSize));
+  memcpy(request_buffer->data(), request_text, kRequestTextSize);
+
+  // This write should complete synchronously, because the TLS ciphertext
+  // can be created and placed into the outgoing buffers independent of the
+  // underlying transport.
+  rv = callback.GetResult(
+      sock->Write(request_buffer.get(), kRequestTextSize, callback.callback()));
+  ASSERT_EQ(kRequestTextSize, rv);
+
+  // Let the event loop spin for a little bit of time. Even on platforms where
+  // pumping the state machine involve thread hops, there should be no further
+  // writes on the transport socket.
+  //
+  // TODO(davidben): Avoid the arbitrary timeout?
+  int old_write_count = raw_counting_socket->write_count();
+  base::RunLoop loop;
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, loop.QuitClosure(), base::TimeDelta::FromMilliseconds(100));
+  loop.Run();
+  EXPECT_EQ(old_write_count, raw_counting_socket->write_count());
 }
 
 // Test the full duplex mode, with Read and Write pending at the same time.

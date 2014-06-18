@@ -79,12 +79,13 @@ int memio_GetReadableBufferSize(memio_Private *secret);
 void memio_PutReadResult(memio_Private *secret, int bytes_read);
 
 /* Ask memio what data it has to send to the network.
- * Returns up to two buffers of data by writing the positions and lengths into
- * |buf1|, |len1| and |buf2|, |len2|.
+ * If there was previous a write error, the NSPR error code is returned.
+ * Otherwise, it returns 0 and provides up to two buffers of data by
+ * writing the positions and lengths into |buf1|, |len1| and |buf2|, |len2|.
  */
-void memio_GetWriteParams(memio_Private *secret,
-                          const char **buf1, unsigned int *len1,
-                          const char **buf2, unsigned int *len2);
+int memio_GetWriteParams(memio_Private *secret,
+                         const char **buf1, unsigned int *len1,
+                         const char **buf2, unsigned int *len2);
 
 /* Tell memio how many bytes were sent to the network.
  * If bytes_written is < 0, it is treated as an NSPR error code.
