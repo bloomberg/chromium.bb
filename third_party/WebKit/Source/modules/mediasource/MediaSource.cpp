@@ -31,7 +31,6 @@
 #include "config.h"
 #include "modules/mediasource/MediaSource.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
@@ -506,13 +505,7 @@ PassOwnPtr<WebSourceBuffer> MediaSource::createWebSourceBuffer(const String& typ
 {
     WebSourceBuffer* webSourceBuffer = 0;
 
-    // FIXME: Always use the new frame processor once it has stabilized enough. See http://crbug.com/249422.
-    WebMediaSource::FrameProcessorChoice frameProcessorChoice = RuntimeEnabledFeatures::mediaSourceExperimentalEnabled() ?
-        WebMediaSource::UseNewFrameProcessor : WebMediaSource::UseLegacyFrameProcessor;
-
-    WTF_LOG(Media, "MediaSource::createWebSourceBuffer() %p : frameProcessorChoice = %i", this, frameProcessorChoice);
-
-    switch (m_webMediaSource->addSourceBuffer(type, codecs, frameProcessorChoice, &webSourceBuffer)) {
+    switch (m_webMediaSource->addSourceBuffer(type, codecs, &webSourceBuffer)) {
     case WebMediaSource::AddStatusOk:
         return adoptPtr(webSourceBuffer);
     case WebMediaSource::AddStatusNotSupported:
