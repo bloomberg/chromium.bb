@@ -1082,6 +1082,7 @@
             'browser/accessibility/android_hit_testing_browsertest.cc',
             'browser/accessibility/cross_platform_accessibility_browsertest.cc',
             'browser/accessibility/dump_accessibility_tree_browsertest.cc',
+            'browser/battery_status/battery_status_browsertest.cc',
             'browser/compositor/image_transport_factory_browsertest.cc',
             'browser/bookmarklet_browsertest.cc',
             'browser/child_process_security_policy_browsertest.cc',

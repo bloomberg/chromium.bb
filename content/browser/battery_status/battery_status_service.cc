@@ -11,10 +11,10 @@
 namespace content {
 
 BatteryStatusService::BatteryStatusService()
-    : status_updated_(false),
+    : update_callback_(base::Bind(&BatteryStatusService::UpdateBatteryStatus,
+                                  base::Unretained(this))),
+      status_updated_(false),
       is_shutdown_(false) {
-  update_callback_ = base::Bind(&BatteryStatusService::UpdateBatteryStatus,
-                                base::Unretained(this));
   callback_list_.set_removal_callback(
       base::Bind(&BatteryStatusService::ConsumersChanged,
                  base::Unretained(this)));
@@ -36,8 +36,13 @@ BatteryStatusService::AddCallback(const BatteryUpdateCallback& callback) {
   if (!battery_fetcher_)
     battery_fetcher_.reset(new BatteryStatusManager(update_callback_));
 
-  if (callback_list_.empty())
-    battery_fetcher_->StartListeningBatteryChange();
+  if (callback_list_.empty()) {
+    bool success = battery_fetcher_->StartListeningBatteryChange();
+    if (!success) {
+        // Make sure the promise resolves with the default values in Blink.
+        callback.Run(blink::WebBatteryStatus());
+    }
+  }
 
   if (status_updated_) {
     // Send recent status to the new callback if already available.
@@ -80,7 +85,7 @@ void BatteryStatusService::NotifyConsumers(
 
 void BatteryStatusService::Shutdown() {
   if (!callback_list_.empty())
-      battery_fetcher_->StopListeningBatteryChange();
+    battery_fetcher_->StopListeningBatteryChange();
   battery_fetcher_.reset();
   is_shutdown_ = true;
 }

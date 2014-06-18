@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <title>Battery Status API test : default values</title>
+    <script type="text/javascript">
+
+      function checkBatteryInfo(battery) {
+        return battery.charging &&
+               battery.chargingTime == 0 &&
+               battery.dischargingTime == Infinity &&
+               battery.level == 1.0;
+      }
+
+      function testBattery() {
+        navigator.getBattery().then(
+          function(battery) {
+            if (checkBatteryInfo(battery))
+              pass();
+            else
+              fail();
+        }, fail());
+      }
+
+      function pass() {
+        document.getElementById('status').innerHTML = 'PASS';
+        document.location = '#pass';
+      }
+
+      function fail() {
+        document.location = '#fail';
+      }
+    </script>
+  </head>
+  <body onLoad="testBattery()">
+    <div id="status">FAIL</div>
+  </body>
+</html>
