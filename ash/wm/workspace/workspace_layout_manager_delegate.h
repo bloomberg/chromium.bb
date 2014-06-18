@@ -39,6 +39,9 @@ class WorkspaceLayoutManagerDelegate {
   // A window state type has changed.
   virtual void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                            wm::WindowStateType old_type) = 0;
+
+  // The work area insets have changed, altering the total available space.
+  virtual void OnDisplayWorkAreaInsetsChanged() = 0;
 };
 
 }  // namespace ash

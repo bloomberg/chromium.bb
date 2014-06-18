@@ -4,6 +4,8 @@
 
 #include "ash/wm/workspace/workspace_layout_manager.h"
 
+#include <string>
+
 #include "ash/display/display_layout.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
@@ -41,7 +43,7 @@ namespace {
 
 class MaximizeDelegateView : public views::WidgetDelegateView {
  public:
-  MaximizeDelegateView(const gfx::Rect& initial_bounds)
+  explicit MaximizeDelegateView(const gfx::Rect& initial_bounds)
       : initial_bounds_(initial_bounds) {
   }
   virtual ~MaximizeDelegateView() {}
@@ -790,9 +792,6 @@ class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
     UpdateDisplay("800x600");
     default_container_ = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
                                              kShellWindowId_DefaultContainer);
-    // We set the size to something smaller then the display to avoid resizing
-    // issues with the shelf.
-    default_container_->SetBounds(gfx::Rect(0, 0, 800, 500));
   }
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
@@ -944,6 +943,33 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
                                    window3.get()));
 }
 
+// Tests that when hidding the shelf, that the backdrop resizes to fill the
+// entire workspace area.
+TEST_F(WorkspaceLayoutManagerBackdropTest, ShelfVisibilityChangesBounds) {
+  ShelfLayoutManager* shelf_layout_manager =
+      Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+  ShowTopWindowBackdrop(true);
+  RunAllPendingInMessageLoop();
+
+  ASSERT_EQ(SHELF_VISIBLE, shelf_layout_manager->visibility_state());
+  gfx::Rect initial_bounds = default_container()->children()[0]->bounds();
+  shelf_layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+  shelf_layout_manager->UpdateVisibilityState();
+
+  // When the shelf is re-shown WorkspaceLayoutManager shrinks all children
+  // including the backdrop.
+  shelf_layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  shelf_layout_manager->UpdateVisibilityState();
+  gfx::Rect reduced_bounds = default_container()->children()[0]->bounds();
+  EXPECT_LT(reduced_bounds.height(), initial_bounds.height());
+
+  shelf_layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+  shelf_layout_manager->UpdateVisibilityState();
+
+  EXPECT_GT(default_container()->children()[0]->bounds().height(),
+            reduced_bounds.height());
+}
+
 class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
  public:
   WorkspaceLayoutManagerKeyboardTest() {}
@@ -985,14 +1011,14 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
  private:
   gfx::Insets restore_work_area_insets_;
   gfx::Rect keyboard_bounds_;
-  WorkspaceLayoutManager *layout_manager_;
+  WorkspaceLayoutManager* layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManagerKeyboardTest);
 };
 
 class FakeTextInputClient : public ui::DummyTextInputClient {
  public:
-  FakeTextInputClient(gfx::NativeWindow window) : window_(window) {}
+  explicit FakeTextInputClient(gfx::NativeWindow window) : window_(window) {}
   virtual ~FakeTextInputClient() {}
 
   virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE {

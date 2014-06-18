@@ -45,6 +45,7 @@ class WorkspaceBackdropDelegate : public aura::WindowObserver,
   virtual void OnPostWindowStateTypeChange(
       wm::WindowState* window_state,
       wm::WindowStateType old_type) OVERRIDE;
+  virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
 
  private:
   // Restack the backdrop relatively to the other windows in the container.

@@ -91,6 +91,10 @@ void WorkspaceBackdropDelegate::OnPostWindowStateTypeChange(
   RestackBackdrop();
 }
 
+void WorkspaceBackdropDelegate::OnDisplayWorkAreaInsetsChanged() {
+  AdjustToContainerBounds();
+}
+
 void WorkspaceBackdropDelegate::RestackBackdrop() {
   // Avoid recursive calls.
   if (in_restacking_)

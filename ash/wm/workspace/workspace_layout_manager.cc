@@ -4,6 +4,8 @@
 
 #include "ash/wm/workspace/workspace_layout_manager.h"
 
+#include <algorithm>
+
 #include "ash/display/display_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -135,7 +137,7 @@ void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
   ui::InputMethod* input_method =
       root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
   ui::TextInputClient* text_input_client = input_method->GetTextInputClient();
-  if(!text_input_client)
+  if (!text_input_client)
     return;
   aura::Window *window = text_input_client->GetAttachedWindow();
   if (!window || !window_->Contains(window))
@@ -163,6 +165,8 @@ void WorkspaceLayoutManager::OnDisplayWorkAreaInsetsChanged() {
     const wm::WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
     AdjustAllWindowsBoundsForWorkAreaChange(&event);
   }
+  if (backdrop_delegate_)
+    backdrop_delegate_->OnDisplayWorkAreaInsetsChanged();
 }
 
 //////////////////////////////////////////////////////////////////////////////
