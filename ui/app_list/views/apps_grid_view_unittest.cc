@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
@@ -42,7 +42,7 @@ const int kHeight = 240;
 class PageFlipWaiter : public PaginationModelObserver {
  public:
   PageFlipWaiter(base::MessageLoopForUI* ui_loop, PaginationModel* model)
-      : ui_loop_(ui_loop), model_(model), wait_(false), page_changed_(false) {
+      : ui_loop_(ui_loop), model_(model), wait_(false) {
     model_->AddObserver(this);
   }
 
@@ -50,34 +50,28 @@ class PageFlipWaiter : public PaginationModelObserver {
     model_->RemoveObserver(this);
   }
 
-  bool Wait(int time_out_ms) {
+  void Wait() {
     DCHECK(!wait_);
     wait_ = true;
-    page_changed_ = false;
-
-    if (time_out_ms) {
-      wait_timer_.Stop();
-      wait_timer_.Start(FROM_HERE,
-                        base::TimeDelta::FromMilliseconds(time_out_ms),
-                        this, &PageFlipWaiter::OnWaitTimeOut);
-    }
 
     ui_loop_->Run();
     wait_ = false;
-    return page_changed_;
   }
+
+  void Reset() { selected_pages_.clear(); }
+
+  const std::string& selected_pages() const { return selected_pages_; }
 
  private:
-  void OnWaitTimeOut() {
-    ui_loop_->Quit();
-  }
-
   // PaginationModelObserver overrides:
   virtual void TotalPagesChanged() OVERRIDE {
   }
   virtual void SelectedPageChanged(int old_selected,
                                    int new_selected) OVERRIDE {
-    page_changed_ = true;
+    if (!selected_pages_.empty())
+      selected_pages_ += ',';
+    selected_pages_ += base::IntToString(new_selected);
+
     if (wait_)
       ui_loop_->Quit();
   }
@@ -89,8 +83,7 @@ class PageFlipWaiter : public PaginationModelObserver {
   base::MessageLoopForUI* ui_loop_;
   PaginationModel* model_;
   bool wait_;
-  bool page_changed_;
-  base::OneShotTimer<PageFlipWaiter> wait_timer_;
+  std::string selected_pages_;
 
   DISALLOW_COPY_AND_ASSIGN(PageFlipWaiter);
 };
@@ -518,18 +511,14 @@ TEST_F(AppsGridViewTest, MouseDragFlipPage) {
                              apps_grid_view_->height() / 2);
 
   // Drag to right edge.
+  page_flip_waiter.Reset();
   SimulateDrag(AppsGridView::MOUSE, from, to);
 
-  // Page should be flipped after sometime.
-  EXPECT_TRUE(page_flip_waiter.Wait(0));
-  EXPECT_EQ(1, GetPaginationModel()->selected_page());
-
-  // Stay there and page should be flipped again.
-  EXPECT_TRUE(page_flip_waiter.Wait(0));
-  EXPECT_EQ(2, GetPaginationModel()->selected_page());
-
-  // Stay there longer and no page flip happen since we are at the last page.
-  EXPECT_FALSE(page_flip_waiter.Wait(100));
+  // Page should be flipped after sometime to hit page 1 and 2 then stop.
+  while (test_api_->HasPendingPageFlip()) {
+    page_flip_waiter.Wait();
+  }
+  EXPECT_EQ("1,2", page_flip_waiter.selected_pages());
   EXPECT_EQ(2, GetPaginationModel()->selected_page());
 
   apps_grid_view_->EndDrag(true);
@@ -537,16 +526,15 @@ TEST_F(AppsGridViewTest, MouseDragFlipPage) {
   // Now drag to the left edge and test the other direction.
   to.set_x(0);
 
+  page_flip_waiter.Reset();
   SimulateDrag(AppsGridView::MOUSE, from, to);
 
-  EXPECT_TRUE(page_flip_waiter.Wait(0));
-  EXPECT_EQ(1, GetPaginationModel()->selected_page());
-
-  EXPECT_TRUE(page_flip_waiter.Wait(0));
+  while (test_api_->HasPendingPageFlip()) {
+    page_flip_waiter.Wait();
+  }
+  EXPECT_EQ("1,0", page_flip_waiter.selected_pages());
   EXPECT_EQ(0, GetPaginationModel()->selected_page());
 
-  EXPECT_FALSE(page_flip_waiter.Wait(100));
-  EXPECT_EQ(0, GetPaginationModel()->selected_page());
   apps_grid_view_->EndDrag(true);
 }
 

@@ -45,5 +45,9 @@ void AppsGridViewTestApi::DisableSynchronousDrag() {
 #endif
 }
 
+bool AppsGridViewTestApi::HasPendingPageFlip() const {
+  return view_->page_flip_timer_.IsRunning();
+}
+
 }  // namespace test
 }  // namespace app_list
