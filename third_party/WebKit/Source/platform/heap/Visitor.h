@@ -259,6 +259,8 @@ public:
     template<typename T>
     void trace(const WeakMember<T>& t)
     {
+        // Check that we actually know the definition of T when tracing.
+        COMPILE_ASSERT(sizeof(T), WeNeedToKnowTheDefinitionOfTheTypeWeAreTracing);
         registerWeakCell(const_cast<WeakMember<T>&>(t).cell());
     }
 
