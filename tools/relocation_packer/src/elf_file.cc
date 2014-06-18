@@ -26,6 +26,10 @@ static const Elf32_Word kStubIdentifier = 0x4c4c554eu;
 static const Elf32_Sword DT_ANDROID_ARM_REL_OFFSET = DT_LOPROC;
 static const Elf32_Sword DT_ANDROID_ARM_REL_SIZE = DT_LOPROC + 1;
 
+// Alignment to preserve, in bytes.  This must be at least as large as the
+// largest d_align and sh_addralign values found in the loaded file.
+static const size_t kPreserveAlignment = 256;
+
 namespace {
 
 // Get section data.  Checks that the section has exactly one data entry,
@@ -91,6 +95,7 @@ void VerboseLogSectionHeader(const std::string& section_name,
   VLOG("  sh_addr = %u\n", section_header->sh_addr);
   VLOG("  sh_offset = %u\n", section_header->sh_offset);
   VLOG("  sh_size = %u\n", section_header->sh_size);
+  VLOG("  sh_addralign = %u\n", section_header->sh_addralign);
 }
 
 // Verbose ELF section data logging.
@@ -99,6 +104,7 @@ void VerboseLogSectionData(const Elf_Data* data) {
   VLOG("    d_buf = %p\n", data->d_buf);
   VLOG("    d_off = %lu\n", data->d_off);
   VLOG("    d_size = %lu\n", data->d_size);
+  VLOG("    d_align = %lu\n", data->d_align);
 }
 
 }  // namespace
@@ -190,8 +196,12 @@ bool ElfFile::Load() {
       has_debug_section = true;
     }
 
+    // Ensure we preserve alignment, repeated later for the data block(s).
+    CHECK(section_header->sh_addralign <= kPreserveAlignment);
+
     Elf_Data* data = NULL;
     while ((data = elf_getdata(section, data)) != NULL) {
+      CHECK(data->d_align <= kPreserveAlignment);
       VerboseLogSectionData(data);
     }
   }
@@ -654,7 +664,6 @@ void AdjustRelocationTargets(Elf* elf,
 
         // Is the relocation's target after the hole's start?
         if (*target > hole_start) {
-
           // Copy on first write.  Recompute target to point into the newly
           // allocated buffer.
           if (area == data->d_buf) {
@@ -675,6 +684,14 @@ void AdjustRelocationTargets(Elf* elf,
       delete [] area;
     }
   }
+}
+
+// Pad relocations with a given number of R_ARM_NONE relocations.
+void PadRelocations(size_t count,
+                    std::vector<Elf32_Rel>* relocations) {
+  const Elf32_Rel r_arm_none = {R_ARM_NONE, 0};
+  std::vector<Elf32_Rel> padding(count, r_arm_none);
+  relocations->insert(relocations->end(), padding.begin(), padding.end());
 }
 
 // Adjust relocations so that the offset that they indicate will be correct
@@ -725,9 +742,9 @@ bool ElfFile::PackRelocations() {
       other_relocations.push_back(relocation);
     }
   }
-  VLOG("R_ARM_RELATIVE: %lu entries\n", relative_relocations.size());
-  VLOG("Other         : %lu entries\n", other_relocations.size());
-  VLOG("Total         : %lu entries\n", relocations.size());
+  LOG("R_ARM_RELATIVE: %lu entries\n", relative_relocations.size());
+  LOG("Other         : %lu entries\n", other_relocations.size());
+  LOG("Total         : %lu entries\n", relocations.size());
 
   // If no relative relocations then we have nothing packable.  Perhaps
   // the shared object has already been packed?
@@ -736,23 +753,48 @@ bool ElfFile::PackRelocations() {
     return false;
   }
 
-  // Pre-calculate the size of the hole we will close up when we rewrite
-  // .reldyn.  We have to adjust all relocation addresses to account for this.
-  Elf32_Shdr* section_header = elf32_getshdr(rel_dyn_section_);
-  const Elf32_Off hole_start = section_header->sh_offset;
-  const size_t hole_size =
-      relative_relocations.size() * sizeof(relative_relocations[0]);
-
   // Unless padding, pre-apply R_ARM_RELATIVE relocations to account for the
   // hole, and pre-adjust all relocation offsets accordingly.
   if (!is_padding_rel_dyn_) {
+    // Pre-calculate the size of the hole we will close up when we rewrite
+    // .rel.dyn.  We have to adjust relocation addresses to account for this.
+    Elf32_Shdr* section_header = elf32_getshdr(rel_dyn_section_);
+    const Elf32_Off hole_start = section_header->sh_offset;
+    size_t hole_size =
+        relative_relocations.size() * sizeof(relative_relocations[0]);
+    const size_t unaligned_hole_size = hole_size;
+
+    // Adjust the actual hole size to preserve alignment.
+    hole_size -= hole_size % kPreserveAlignment;
+    LOG("Compaction    : %lu bytes\n", hole_size);
+
+    // Adjusting for alignment may have removed any packing benefit.
+    if (hole_size == 0) {
+      LOG("Too few R_ARM_RELATIVE relocations to pack after alignment\n");
+      return false;
+    }
+
+    // Add R_ARM_NONE relocations to other_relocations to preserve alignment.
+    const size_t padding_bytes = unaligned_hole_size - hole_size;
+    CHECK(padding_bytes % sizeof(other_relocations[0]) == 0);
+    const size_t required = padding_bytes / sizeof(other_relocations[0]);
+    PadRelocations(required, &other_relocations);
+    LOG("Alignment pad : %lu relocations\n", required);
+
     // Apply relocations to all R_ARM_RELATIVE data to relocate it into the
     // area it will occupy once the hole in .rel.dyn is removed.
     AdjustRelocationTargets(elf_, hole_start, -hole_size, relative_relocations);
     // Relocate the relocations.
     AdjustRelocations(hole_start, -hole_size, &relative_relocations);
     AdjustRelocations(hole_start, -hole_size, &other_relocations);
+  } else {
+    // If padding, add R_ARM_NONE relocations to other_relocations to make it
+    // the same size as the the original relocations we read in.  This makes
+    // the ResizeSection() below a no-op.
+    const size_t required = relocations.size() - other_relocations.size();
+    PadRelocations(required, &other_relocations);
   }
+
 
   // Pack R_ARM_RELATIVE relocations.
   const size_t initial_bytes =
@@ -787,17 +829,6 @@ bool ElfFile::PackRelocations() {
     return false;
   }
 
-  // If padding, add R_ARM_NONE relocations to other_relocations to make it
-  // the same size as the the original relocations we read in.  This makes
-  // the ResizeSection() below a no-op.
-  if (is_padding_rel_dyn_) {
-    const Elf32_Rel r_arm_none = {R_ARM_NONE, 0};
-    const size_t required = relocations.size() - other_relocations.size();
-    std::vector<Elf32_Rel> padding(required, r_arm_none);
-    other_relocations.insert(
-        other_relocations.end(), padding.begin(), padding.end());
-  }
-
   // Rewrite the current .rel.dyn section to be only the non-R_ARM_RELATIVE
   // relocations, then shrink it to size.
   const void* section_data = &other_relocations[0];
@@ -817,7 +848,7 @@ bool ElfFile::PackRelocations() {
   std::vector<Elf32_Dyn> dynamics(
       dynamic_base,
       dynamic_base + data->d_size / sizeof(dynamics[0]));
-  section_header = elf32_getshdr(android_rel_dyn_section_);
+  Elf32_Shdr* section_header = elf32_getshdr(android_rel_dyn_section_);
   // Use two of the spare slots to describe the .android.rel.dyn section.
   const Elf32_Dyn offset_dyn
       = {DT_ANDROID_ARM_REL_OFFSET, {section_header->sh_offset}};
@@ -898,16 +929,20 @@ bool ElfFile::UnpackRelocations() {
   // hold as unpacked relative relocations, then this is a padded file.
   const bool is_padded = padding == relative_relocations.size();
 
-  // Pre-calculate the size of the hole we will open up when we rewrite
-  // .reldyn.  We have to adjust all relocation addresses to account for this.
-  Elf32_Shdr* section_header = elf32_getshdr(rel_dyn_section_);
-  const Elf32_Off hole_start = section_header->sh_offset;
-  const size_t hole_size =
-      relative_relocations.size() * sizeof(relative_relocations[0]);
-
   // Unless padded, pre-apply R_ARM_RELATIVE relocations to account for the
   // hole, and pre-adjust all relocation offsets accordingly.
   if (!is_padded) {
+    // Pre-calculate the size of the hole we will open up when we rewrite
+    // .rel.dyn.  We have to adjust relocation addresses to account for this.
+    Elf32_Shdr* section_header = elf32_getshdr(rel_dyn_section_);
+    const Elf32_Off hole_start = section_header->sh_offset;
+    size_t hole_size =
+        relative_relocations.size() * sizeof(relative_relocations[0]);
+
+    // Adjust the hole size for the padding added to preserve alignment.
+    hole_size -= padding * sizeof(other_relocations[0]);
+    LOG("Expansion     : %lu bytes\n", hole_size);
+
     // Apply relocations to all R_ARM_RELATIVE data to relocate it into the
     // area it will occupy once the hole in .rel.dyn is opened.
     AdjustRelocationTargets(elf_, hole_start, hole_size, relative_relocations);
