@@ -496,7 +496,7 @@ hooks = [
     '--bucket',
     'chromium-gn',
     '-s',
-    'src/tools/gn/bin/win/gn.exe.sha1'
+    'src/buildtools/win/gn.exe.sha1'
 ],
     'pattern':
          '.',
@@ -513,7 +513,7 @@ hooks = [
     '--bucket',
     'chromium-gn',
     '-s',
-    'src/tools/gn/bin/mac/gn.sha1'
+    'src/buildtools/mac/gn.sha1'
 ],
     'pattern':
          '.',
@@ -530,12 +530,80 @@ hooks = [
     '--bucket',
     'chromium-gn',
     '-s',
+    'src/buildtools/linux32/gn.sha1'
+],
+    'pattern':
+         '.',
+    'name':
+         'gn_linux32'
+},
+    {
+    'action':
+         [
+    'download_from_google_storage',
+    '--no_resume',
+    '--platform=linux*',
+    '--no_auth',
+    '--bucket',
+    'chromium-gn',
+    '-s',
+    'src/buildtools/linux64/gn.sha1'
+],
+    'pattern':
+         '.',
+    'name':
+         'gn_linux64'
+},
+    {
+    'action':
+         [
+    'download_from_google_storage',
+    '--no_resume',
+    '--platform=win32',
+    '--no_auth',
+    '--bucket',
+    'chromium-gn',
+    '-s',
+    'src/tools/gn/bin/win/gn.exe.sha1'
+],
+    'pattern':
+         '.',
+    'name':
+         'gn_old_win'
+},
+    {
+    'action':
+         [
+    'download_from_google_storage',
+    '--no_resume',
+    '--platform=darwin',
+    '--no_auth',
+    '--bucket',
+    'chromium-gn',
+    '-s',
+    'src/tools/gn/bin/mac/gn.sha1'
+],
+    'pattern':
+         '.',
+    'name':
+         'gn_old_mac'
+},
+    {
+    'action':
+         [
+    'download_from_google_storage',
+    '--no_resume',
+    '--platform=linux*',
+    '--no_auth',
+    '--bucket',
+    'chromium-gn',
+    '-s',
     'src/tools/gn/bin/linux/gn.sha1'
 ],
     'pattern':
          '.',
     'name':
-         'gn_linux'
+         'gn_old_linux'
 },
     {
     'action':
@@ -552,7 +620,7 @@ hooks = [
     'pattern':
          '.',
     'name':
-         'gn_linux32'
+         'gn_old_linux32'
 },
     {
     'action':
