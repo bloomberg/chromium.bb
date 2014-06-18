@@ -1990,6 +1990,9 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
   Returns:
     Settings object that holds details about loaded *.isolated file.
   """
+  logging.debug(
+      'fetch_isolated(%s, %s, %s, %s, %s)',
+      isolated_hash, storage, cache, outdir, require_command)
   # Hash algorithm to use, defined by namespace |storage| is using.
   algo = storage.hash_algo
   with cache:
@@ -1999,7 +2002,13 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
     with tools.Profiler('GetIsolateds'):
       # Optionally support local files by manually adding them to cache.
       if not is_valid_hash(isolated_hash, algo):
-        isolated_hash = fetch_queue.inject_local_file(isolated_hash, algo)
+        logging.debug('%s is not a valid hash, assuming a file', isolated_hash)
+        try:
+          isolated_hash = fetch_queue.inject_local_file(isolated_hash, algo)
+        except IOError:
+          raise MappingError(
+              '%s doesn\'t seem to be a valid file. Did you intent to pass a '
+              'valid hash?' % isolated_hash)
 
       # Load all *.isolated and start loading rest of the files.
       settings.load(fetch_queue, isolated_hash, algo)
