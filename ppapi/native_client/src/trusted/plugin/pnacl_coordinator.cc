@@ -107,7 +107,6 @@ PnaclCoordinator::PnaclCoordinator(
     pnacl_options_(pnacl_options),
     architecture_attributes_(GetArchitectureAttributes(plugin)),
     split_module_count_(1),
-    num_object_files_opened_(0),
     is_cache_hit_(PP_FALSE),
     error_already_reported_(false),
     pnacl_init_time_(0),
@@ -128,9 +127,8 @@ PnaclCoordinator::~PnaclCoordinator() {
   // running from the main thread, and by the time it exits, callback_factory_
   // will have been destroyed.  This will result in the cancellation of
   // translation_complete_callback_, so no notification will be delivered.
-  if (translate_thread_.get() != NULL) {
+  if (translate_thread_.get() != NULL)
     translate_thread_->AbortSubprocesses();
-  }
   if (!translation_finished_reported_) {
     plugin_->nacl_interface()->ReportTranslationFinished(
         plugin_->pp_instance(),
@@ -141,10 +139,8 @@ PnaclCoordinator::~PnaclCoordinator() {
   // since the thread may be accessing those fields.
   // It will also be accessing obj_files_.
   translate_thread_.reset(NULL);
-  // TODO(jvoung): use base/memory/scoped_vector.h to hold obj_files_.
-  for (int i = 0; i < num_object_files_opened_; i++) {
+  for (size_t i = 0; i < obj_files_.size(); i++)
     delete obj_files_[i];
-  }
 }
 
 PP_FileHandle PnaclCoordinator::TakeTranslatedFileHandle() {
@@ -403,14 +399,15 @@ void PnaclCoordinator::NexeFdDidOpen(int32_t pp_error) {
     // Open an object file first so the translator can start writing to it
     // during streaming translation.
     for (int i = 0; i < split_module_count_; i++) {
-      obj_files_.push_back(new TempFile(plugin_));
-      int32_t pp_error = obj_files_[i]->Open(true);
+      nacl::scoped_ptr<TempFile> temp_file(new TempFile(plugin_));
+      int32_t pp_error = temp_file->Open(true);
       if (pp_error != PP_OK) {
         ReportPpapiError(PP_NACL_ERROR_PNACL_CREATE_TEMP,
                          pp_error,
                          "Failed to open scratch object file.");
+        return;
       } else {
-        num_object_files_opened_++;
+        obj_files_.push_back(temp_file.release());
       }
     }
     invalid_desc_wrapper_.reset(plugin_->wrapper_factory()->MakeInvalid());
@@ -423,11 +420,9 @@ void PnaclCoordinator::NexeFdDidOpen(int32_t pp_error) {
         &PnaclCoordinator::BitcodeStreamDidFinish);
     streaming_downloader_->BeginStreaming(finish_cb);
 
-    if (num_object_files_opened_ == split_module_count_) {
-      // Open the nexe file for connecting ld and sel_ldr.
-      // Start translation when done with this last step of setup!
-      RunTranslate(temp_nexe_file_->Open(true));
-    }
+    // Open the nexe file for connecting ld and sel_ldr.
+    // Start translation when done with this last step of setup!
+    RunTranslate(temp_nexe_file_->Open(true));
   }
 }
 

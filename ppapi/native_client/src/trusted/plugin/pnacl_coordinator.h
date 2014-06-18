@@ -182,7 +182,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   nacl::scoped_ptr<nacl::DescWrapper> invalid_desc_wrapper_;
   // Number of split modules (threads) for llc
   int split_module_count_;
-  int num_object_files_opened_;
 
   // Translated nexe file, produced by the linker.
   nacl::scoped_ptr<TempFile> temp_nexe_file_;
