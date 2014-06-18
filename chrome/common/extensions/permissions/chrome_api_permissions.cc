@@ -9,7 +9,6 @@
 #include "extensions/common/permissions/media_galleries_permission.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_info.h"
-#include "extensions/common/permissions/usb_device_permission.h"
 #include "grit/extensions_strings.h"
 #include "grit/generated_resources.h"
 
@@ -321,8 +320,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        &CreateAPIPermission<MediaGalleriesPermission>},
       {APIPermission::kPushMessaging, "pushMessaging",
        APIPermissionInfo::kFlagCannotBeOptional},
-      {APIPermission::kUsbDevice, "usbDevices", APIPermissionInfo::kFlagNone, 0,
-       PermissionMessage::kNone, &CreateAPIPermission<UsbDevicePermission>},
       {APIPermission::kSystemCpu, "system.cpu"},
       {APIPermission::kSystemMemory, "system.memory"},
       {APIPermission::kSystemNetwork, "system.network"},

@@ -7,6 +7,7 @@
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/socket_permission.h"
+#include "extensions/common/permissions/usb_device_permission.h"
 #include "grit/extensions_strings.h"
 
 namespace extensions {
@@ -34,6 +35,8 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
       {APIPermission::kStorage, "storage"},
       {APIPermission::kUsb, "usb", APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_USB, PermissionMessage::kUsb},
+      {APIPermission::kUsbDevice, "usbDevices", APIPermissionInfo::kFlagNone, 0,
+       PermissionMessage::kNone, &CreateAPIPermission<UsbDevicePermission>},
   };
 
   std::vector<APIPermissionInfo*> permissions;
