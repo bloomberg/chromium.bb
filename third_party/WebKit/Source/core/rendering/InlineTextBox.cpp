@@ -27,6 +27,8 @@
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/RenderedDocumentMarker.h"
 #include "core/dom/Text.h"
+#include "core/editing/CompositionUnderline.h"
+#include "core/editing/CompositionUnderlineRangeFilter.h"
 #include "core/editing/Editor.h"
 #include "core/editing/InputMethodController.h"
 #include "core/frame/LocalFrame.h"
@@ -51,6 +53,8 @@
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
+
+#include <algorithm>
 
 using namespace std;
 
@@ -635,13 +639,10 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         combinedText->adjustTextOrigin(textOrigin, boxRect);
 
     // 1. Paint backgrounds behind text if needed. Examples of such backgrounds include selection
-    // and composition underlines.
+    // and composition highlights.
     if (paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseTextClip && !isPrinting) {
-
-        if (containsComposition && !useCustomUnderlines) {
-            paintCompositionBackground(context, boxOrigin, styleToUse, font,
-                renderer().frame()->inputMethodController().compositionStart(),
-                renderer().frame()->inputMethodController().compositionEnd());
+        if (containsComposition) {
+            paintCompositionBackgrounds(context, boxOrigin, styleToUse, font, useCustomUnderlines);
         }
 
         paintDocumentMarkers(context, boxOrigin, styleToUse, font, true);
@@ -767,28 +768,14 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
     if (paintInfo.phase == PaintPhaseForeground) {
         paintDocumentMarkers(context, boxOrigin, styleToUse, font, false);
 
+        // Paint custom underlines for compositions.
         if (useCustomUnderlines) {
             const Vector<CompositionUnderline>& underlines = renderer().frame()->inputMethodController().customCompositionUnderlines();
-            size_t numUnderlines = underlines.size();
-
-            for (size_t index = 0; index < numUnderlines; ++index) {
-                const CompositionUnderline& underline = underlines[index];
-
-                if (underline.endOffset <= start())
-                    // underline is completely before this run.  This might be an underline that sits
-                    // before the first run we draw, or underlines that were within runs we skipped
-                    // due to truncation.
+            CompositionUnderlineRangeFilter filter(underlines, start(), end());
+            for (CompositionUnderlineRangeFilter::ConstIterator it = filter.begin(); it != filter.end(); ++it) {
+                if (it->color == Color::transparent)
                     continue;
-
-                if (underline.startOffset <= end()) {
-                    // underline intersects this run.  Paint it.
-                    paintCompositionUnderline(context, boxOrigin, underline);
-                    if (underline.endOffset > end() + 1)
-                        // underline also runs into the next run. Bail now, no more marker advancement.
-                        break;
-                } else
-                    // underline is completely after this run, bail.  A later run will paint it.
-                    break;
+                paintCompositionUnderline(context, boxOrigin, *it);
             }
         }
     }
@@ -874,25 +861,34 @@ void InlineTextBox::paintSelection(GraphicsContext* context, const FloatPoint& b
     context->drawHighlightForText(font, textRun, localOrigin, selHeight, c, sPos, ePos);
 }
 
-void InlineTextBox::paintCompositionBackground(GraphicsContext* context, const FloatPoint& boxOrigin, RenderStyle* style, const Font& font, int startPos, int endPos)
+unsigned InlineTextBox::underlinePaintStart(const CompositionUnderline& underline)
 {
-    int offset = m_start;
-    int sPos = max(startPos - offset, 0);
-    int ePos = min(endPos - offset, (int)m_len);
+    return std::max(static_cast<unsigned>(m_start), underline.startOffset);
+}
 
+unsigned InlineTextBox::underlinePaintEnd(const CompositionUnderline& underline)
+{
+    unsigned paintEnd = std::min(end() + 1, underline.endOffset); // end() points at the last char, not past it.
+    if (m_truncation != cNoTruncation)
+        paintEnd = std::min(paintEnd, static_cast<unsigned>(m_start + m_truncation));
+    return paintEnd;
+}
+
+void InlineTextBox::paintSingleCompositionBackgroundRun(GraphicsContext* context, const FloatPoint& boxOrigin, RenderStyle* style, const Font& font, Color backgroundColor, int startPos, int endPos)
+{
+    int sPos = std::max(startPos - m_start, 0);
+    int ePos = std::min(endPos - m_start, static_cast<int>(m_len));
     if (sPos >= ePos)
         return;
 
     GraphicsContextStateSaver stateSaver(*context);
 
-    Color c = Color(225, 221, 85);
-
-    updateGraphicsContext(context, c, c, 0); // Don't draw text at all!
+    updateGraphicsContext(context, backgroundColor, backgroundColor, 0); // Don't draw text at all!
 
     int deltaY = renderer().style()->isFlippedLinesWritingMode() ? selectionBottom() - logicalBottom() : logicalTop() - selectionTop();
     int selHeight = selectionHeight();
     FloatPoint localOrigin(boxOrigin.x(), boxOrigin.y() - deltaY);
-    context->drawHighlightForText(font, constructTextRun(style, font), localOrigin, selHeight, c, sPos, ePos);
+    context->drawHighlightForText(font, constructTextRun(style, font), localOrigin, selHeight, backgroundColor, sPos, ePos);
 }
 
 static StrokeStyle textDecorationStyleToStrokeStyle(TextDecorationStyle decorationStyle)
@@ -1311,6 +1307,25 @@ void InlineTextBox::paintTextMatchMarker(GraphicsContext* pt, const FloatPoint& 
     }
 }
 
+void InlineTextBox::paintCompositionBackgrounds(GraphicsContext* pt, const FloatPoint& boxOrigin, RenderStyle* style, const Font& font, bool useCustomUnderlines)
+{
+    if (useCustomUnderlines) {
+        // Paint custom background highlights for compositions.
+        const Vector<CompositionUnderline>& underlines = renderer().frame()->inputMethodController().customCompositionUnderlines();
+        CompositionUnderlineRangeFilter filter(underlines, start(), end());
+        for (CompositionUnderlineRangeFilter::ConstIterator it = filter.begin(); it != filter.end(); ++it) {
+            if (it->backgroundColor == Color::transparent)
+                continue;
+            paintSingleCompositionBackgroundRun(pt, boxOrigin, style, font, it->backgroundColor, underlinePaintStart(*it), underlinePaintEnd(*it));
+        }
+
+    } else {
+        paintSingleCompositionBackgroundRun(pt, boxOrigin, style, font, RenderTheme::theme().platformDefaultCompositionBackgroundColor(),
+            renderer().frame()->inputMethodController().compositionStart(),
+            renderer().frame()->inputMethodController().compositionEnd());
+    }
+}
+
 void InlineTextBox::paintDocumentMarkers(GraphicsContext* pt, const FloatPoint& boxOrigin, RenderStyle* style, const Font& font, bool background)
 {
     if (!renderer().node())
@@ -1371,27 +1386,15 @@ void InlineTextBox::paintCompositionUnderline(GraphicsContext* ctx, const FloatP
     if (m_truncation == cFullTruncation)
         return;
 
-    float start = 0; // start of line to draw, relative to tx
-    float width = m_logicalWidth; // how much line to draw
-    bool useWholeWidth = true;
-    unsigned paintStart = m_start;
-    unsigned paintEnd = end() + 1; // end points at the last char, not past it
-    if (paintStart <= underline.startOffset) {
-        paintStart = underline.startOffset;
-        useWholeWidth = false;
-        start = toRenderText(renderer()).width(m_start, paintStart - m_start, textPos(), isLeftToRightDirection() ? LTR : RTL, isFirstLineStyle());
-    }
-    if (paintEnd != underline.endOffset) {      // end points at the last char, not past it
-        paintEnd = min(paintEnd, (unsigned)underline.endOffset);
-        useWholeWidth = false;
-    }
-    if (m_truncation != cNoTruncation) {
-        paintEnd = min(paintEnd, (unsigned)m_start + m_truncation);
-        useWholeWidth = false;
-    }
-    if (!useWholeWidth) {
-        width = toRenderText(renderer()).width(paintStart, paintEnd - paintStart, textPos() + start, isLeftToRightDirection() ? LTR : RTL, isFirstLineStyle());
-    }
+    unsigned paintStart = underlinePaintStart(underline);
+    unsigned paintEnd = underlinePaintEnd(underline);
+
+    // start of line to draw, relative to paintOffset.
+    float start = paintStart == static_cast<unsigned>(m_start) ? 0 :
+        toRenderText(renderer()).width(m_start, paintStart - m_start, textPos(), isLeftToRightDirection() ? LTR : RTL, isFirstLineStyle());
+    // how much line to draw
+    float width = (paintStart == static_cast<unsigned>(m_start) && paintEnd == static_cast<unsigned>(end()) + 1) ? m_logicalWidth :
+        toRenderText(renderer()).width(paintStart, paintEnd - paintStart, textPos() + start, isLeftToRightDirection() ? LTR : RTL, isFirstLineStyle());
 
     // Thick marked text underlines are 2px thick as long as there is room for the 2px line under the baseline.
     // All other marked text underlines are 1px thick.

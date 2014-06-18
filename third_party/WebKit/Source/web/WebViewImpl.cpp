@@ -2343,7 +2343,7 @@ WebVector<WebCompositionUnderline> WebViewImpl::compositionUnderlines() const
     WebVector<WebCompositionUnderline> results(underlines.size());
     for (size_t index = 0; index < underlines.size(); ++index) {
         CompositionUnderline underline = underlines[index];
-        results[index] = WebCompositionUnderline(underline.startOffset, underline.endOffset, static_cast<WebColor>(underline.color.rgb()), underline.thick);
+        results[index] = WebCompositionUnderline(underline.startOffset, underline.endOffset, static_cast<WebColor>(underline.color.rgb()), underline.thick, static_cast<WebColor>(underline.backgroundColor.rgb()));
     }
     return results;
 }

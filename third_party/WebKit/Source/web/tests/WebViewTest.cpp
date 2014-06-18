@@ -642,7 +642,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingText)
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_populated.html");
     webView->setInitialFocus(false);
     WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
-    underlines[0] = blink::WebCompositionUnderline(0, 4, 0, false);
+    underlines[0] = blink::WebCompositionUnderline(0, 4, 0, false, 0);
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     frame->setEditableSelectionOffsets(4, 10);
     frame->setCompositionFromExistingText(8, 12, underlines);
@@ -669,7 +669,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea)
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "text_area_populated.html");
     webView->setInitialFocus(false);
     WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
-    underlines[0] = blink::WebCompositionUnderline(0, 4, 0, false);
+    underlines[0] = blink::WebCompositionUnderline(0, 4, 0, false, 0);
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     frame->setEditableSelectionOffsets(27, 27);
     std::string newLineText("\n");

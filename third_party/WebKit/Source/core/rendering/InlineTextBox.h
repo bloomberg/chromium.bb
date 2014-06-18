@@ -175,8 +175,12 @@ private:
     unsigned short m_truncation; // Where to truncate when text overflow is applied.  We use special constants to
                       // denote no truncation (the whole run paints) and full truncation (nothing paints at all).
 
+    unsigned underlinePaintStart(const CompositionUnderline&);
+    unsigned underlinePaintEnd(const CompositionUnderline&);
+
 protected:
-    void paintCompositionBackground(GraphicsContext*, const FloatPoint& boxOrigin, RenderStyle*, const Font&, int startPos, int endPos);
+    void paintSingleCompositionBackgroundRun(GraphicsContext*, const FloatPoint& boxOrigin, RenderStyle*, const Font&, Color backgroundColor, int startPos, int endPos);
+    void paintCompositionBackgrounds(GraphicsContext*, const FloatPoint& boxOrigin, RenderStyle*, const Font&, bool useCustomUnderlines);
     void paintDocumentMarkers(GraphicsContext*, const FloatPoint& boxOrigin, RenderStyle*, const Font&, bool background);
     void paintCompositionUnderline(GraphicsContext*, const FloatPoint& boxOrigin, const CompositionUnderline&);
 

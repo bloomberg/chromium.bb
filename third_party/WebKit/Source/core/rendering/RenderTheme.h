@@ -141,6 +141,7 @@ public:
     void setCustomFocusRingColor(const Color&);
     static Color tapHighlightColor();
     virtual Color platformTapHighlightColor() const { return RenderTheme::defaultTapHighlightColor; }
+    virtual Color platformDefaultCompositionBackgroundColor() const { return defaultCompositionBackgroundColor; }
     virtual void platformColorsDidChange();
 
     virtual double caretBlinkInterval() const { return 0.5; }
@@ -305,6 +306,8 @@ private:
     // This color is expected to be drawn on a semi-transparent overlay,
     // making it more transparent than its alpha value indicates.
     static const RGBA32 defaultTapHighlightColor = 0x66000000;
+
+    static const RGBA32 defaultCompositionBackgroundColor = 0xFFFFDD55;
 
 #if USE(NEW_THEME)
     Theme* m_platformTheme; // The platform-specific theme.
