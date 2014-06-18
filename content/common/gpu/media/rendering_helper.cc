@@ -154,7 +154,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
 #endif
   gl_display_ = eglGetDisplay(native_display);
   CHECK(gl_display_);
-  CHECK(eglInitialize(gl_display_, NULL, NULL)) << glGetError();
+  CHECK(eglInitialize(gl_display_, NULL, NULL)) << eglGetError();
 
   static EGLint rgba8888[] = {
     EGL_RED_SIZE, 8,
@@ -385,6 +385,9 @@ void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
 
   glXDestroyContext(x_display_, gl_context_);
 #else // EGL
+  CHECK(eglMakeCurrent(
+      gl_display_, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT))
+      << eglGetError();
   CHECK(eglDestroyContext(gl_display_, gl_context_));
   CHECK(eglDestroySurface(gl_display_, gl_surface_));
   CHECK(eglTerminate(gl_display_));
