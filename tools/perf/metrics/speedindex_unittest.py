@@ -10,8 +10,8 @@ import os
 import unittest
 
 from telemetry.core import bitmap
-from telemetry.core.backends.chrome import inspector_timeline_data
-from telemetry.core.timeline import model
+from telemetry.timeline import inspector_timeline_data
+from telemetry.timeline import model
 from metrics import speedindex
 
 # Sample timeline data in the json format provided by devtools.

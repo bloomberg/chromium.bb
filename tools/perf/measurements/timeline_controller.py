@@ -4,7 +4,7 @@
 from measurements import smooth_gesture_util
 
 from telemetry.core.backends.chrome import tracing_backend
-from telemetry.core.timeline.model import TimelineModel
+from telemetry.timeline.model import TimelineModel
 from telemetry.page.actions import action_runner
 from telemetry.web_perf import timeline_interaction_record as tir_module
 

@@ -6,8 +6,8 @@ import page_sets
 
 from telemetry import test
 from telemetry.page import page_test
-from telemetry.core.timeline import counter
-from telemetry.core.timeline import model
+from telemetry.timeline import counter
+from telemetry.timeline import model
 
 MEMORY_LIMIT_MB = 192
 SINGLE_TAB_LIMIT_MB = 192

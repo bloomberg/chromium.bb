@@ -7,7 +7,7 @@ import unittest
 
 from metrics import test_page_measurement_results
 from metrics import network
-from telemetry.core.timeline import event
+from telemetry.timeline import event
 
 
 HTML_BODY = """<!DOCTYPE HTML>

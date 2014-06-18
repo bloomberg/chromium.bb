@@ -6,7 +6,7 @@ import unittest
 
 from metrics import test_page_measurement_results
 from metrics import timeline
-from telemetry.core.timeline import model as model_module
+from telemetry.timeline import model as model_module
 from telemetry.web_perf import timeline_interaction_record as tir_module
 
 def _GetInteractionRecord(start, end):

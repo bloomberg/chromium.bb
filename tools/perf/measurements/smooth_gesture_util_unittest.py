@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import unittest
 
-from telemetry.core.timeline import model as model_module
+from telemetry.timeline import model as model_module
 from telemetry.web_perf import timeline_interaction_record as tir_module
 from measurements import smooth_gesture_util as sg_util
 

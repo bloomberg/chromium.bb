@@ -13,7 +13,7 @@ from metrics import Metric
 from telemetry.page import page_measurement
 # All network metrics are Chrome only for now.
 from telemetry.core.backends.chrome import inspector_network
-from telemetry.core.timeline import recording_options
+from telemetry.timeline import recording_options
 
 
 class NetworkMetricException(page_measurement.MeasurementFailure):

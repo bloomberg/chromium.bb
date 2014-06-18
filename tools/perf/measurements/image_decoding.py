@@ -4,7 +4,7 @@
 
 from metrics import power
 from telemetry.page import page_measurement
-from telemetry.core.timeline import model
+from telemetry.timeline import model
 
 
 class ImageDecoding(page_measurement.PageMeasurement):
