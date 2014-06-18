@@ -44,6 +44,7 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
+        '../apps/app_shim/app_shim_interactive_uitest_mac.mm',
         '../apps/app_shim/app_shim_quit_interactive_uitest_mac.mm',
         '../apps/app_window_interactive_uitest.cc',
         '../ui/base/clipboard/clipboard_unittest.cc',
