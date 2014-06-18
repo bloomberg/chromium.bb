@@ -23,23 +23,6 @@ namespace proxy {
 
 namespace {
 
-class Scoped2DTextureBinder {
- public:
-  Scoped2DTextureBinder(GLES2Implementation* gl, uint32_t id)
-      : gl_(gl), old_id_(-1) {
-    gl_->GetIntegerv(GL_TEXTURE_BINDING_2D, &old_id_);
-    gl_->BindTexture(GL_TEXTURE_2D, id);
-  }
-
-  ~Scoped2DTextureBinder() {
-    gl_->BindTexture(GL_TEXTURE_2D, old_id_);
-  }
-
- private:
-  GLES2Implementation* gl_;
-  int32_t old_id_;
-};
-
 float clamp(float value) {
   return std::min(std::max(value, 0.0f), 1.0f);
 }
@@ -153,13 +136,12 @@ int32_t CompositorLayerResource::SetTexture(
       static_cast<PPB_Graphics3D_Shared*>(enter.object());
 
   GLES2Implementation* gl = graphics->gles2_impl();
-  Scoped2DTextureBinder scoped_2d_texture_binder(gl, texture);
 
   // Generate a Mailbox for the texture.
   gl->GenMailboxCHROMIUM(
       reinterpret_cast<GLbyte*>(data_.texture->mailbox.name));
-  gl->ProduceTextureCHROMIUM(
-      GL_TEXTURE_2D,
+  gl->ProduceTextureDirectCHROMIUM(
+      texture, GL_TEXTURE_2D,
       reinterpret_cast<const GLbyte*>(data_.texture->mailbox.name));
 
   // Set the source size to (1, 1). It will be used to verify the source_rect
