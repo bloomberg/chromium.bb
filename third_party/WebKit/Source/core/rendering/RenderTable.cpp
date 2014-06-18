@@ -553,7 +553,7 @@ void RenderTable::layout()
         // FIXME: Only pass true if width or height changed.
         layoutPositionedObjects(true);
 
-        updateLayerTransform();
+        updateLayerTransformAfterLayout();
 
         // Layout was changed, so probably borders too.
         invalidateCollapsedBorders();

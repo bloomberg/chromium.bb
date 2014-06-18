@@ -470,7 +470,7 @@ void RenderFrameSet::layout()
 
     computeEdgeInfo();
 
-    updateLayerTransform();
+    updateLayerTransformAfterLayout();
 
     if (doFullRepaint) {
         invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds), InvalidationSelfLayout);

@@ -200,7 +200,7 @@ void RenderSVGRoot::layout()
         addVisualOverflow(enclosingLayoutRect(contentRepaintRect));
     }
 
-    updateLayerTransform();
+    updateLayerTransformAfterLayout();
     m_hasBoxDecorations = isDocumentElement() ? calculateHasBoxDecorations() : hasBoxDecorations();
     invalidateBackgroundObscurationStatus();
 

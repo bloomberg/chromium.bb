@@ -232,7 +232,7 @@ public:
     void clearLayoutOverflow();
     void clearAllOverflows() { m_overflow.clear(); }
 
-    void updateLayerTransform();
+    void updateLayerTransformAfterLayout();
 
     LayoutUnit contentWidth() const { return clientWidth() - paddingLeft() - paddingRight(); }
     LayoutUnit contentHeight() const { return clientHeight() - paddingTop() - paddingBottom(); }

@@ -198,7 +198,7 @@ void RenderEmbeddedObject::layout()
     m_overflow.clear();
     addVisualEffectOverflow();
 
-    updateLayerTransform();
+    updateLayerTransformAfterLayout();
 
     if (!widget() && frameView())
         frameView()->addWidgetToUpdate(*this);

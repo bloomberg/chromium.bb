@@ -90,7 +90,7 @@ void RenderReplaced::layout()
 
     m_overflow.clear();
     addVisualEffectOverflow();
-    updateLayerTransform();
+    updateLayerTransformAfterLayout();
     invalidateBackgroundObscurationStatus();
 
     repainter.repaintAfterLayout();

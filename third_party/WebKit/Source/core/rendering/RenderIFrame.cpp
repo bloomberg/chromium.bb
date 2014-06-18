@@ -68,7 +68,7 @@ void RenderIFrame::layout()
 
     m_overflow.clear();
     addVisualEffectOverflow();
-    updateLayerTransform();
+    updateLayerTransformAfterLayout();
 
     clearNeedsLayout();
 }

@@ -269,7 +269,7 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren)
         computeOverflow(clientLogicalBottomAfterRepositioning());
     }
 
-    updateLayerTransform();
+    updateLayerTransformAfterLayout();
 
     // Update our scroll information if we're overflow:auto/scroll/hidden now that we know if
     // we overflow or not.

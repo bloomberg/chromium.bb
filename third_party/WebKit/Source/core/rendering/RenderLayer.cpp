@@ -459,11 +459,25 @@ void RenderLayer::updateLayerPositionsAfterScroll(UpdateLayerPositionsAfterScrol
     // updated above.
 }
 
-void RenderLayer::updateTransform()
+void RenderLayer::updateTransformationMatrix()
 {
+    if (m_transform) {
+        RenderBox* box = renderBox();
+        ASSERT(box);
+        m_transform->makeIdentity();
+        box->style()->applyTransform(*m_transform, box->pixelSnappedBorderBoxRect().size(), RenderStyle::IncludeTransformOrigin);
+        makeMatrixRenderable(*m_transform, compositor()->hasAcceleratedCompositing());
+    }
+}
+
+void RenderLayer::updateTransform(const RenderStyle* oldStyle, RenderStyle* newStyle)
+{
+    if (oldStyle && newStyle->transformDataEquivalent(*oldStyle))
+        return;
+
     // hasTransform() on the renderer is also true when there is transform-style: preserve-3d or perspective set,
     // so check style too.
-    bool hasTransform = renderer()->hasTransform() && renderer()->style()->hasTransform();
+    bool hasTransform = renderer()->hasTransform() && newStyle->hasTransform();
     bool had3DTransform = has3DTransform();
 
     bool hadTransform = m_transform;
@@ -475,15 +489,11 @@ void RenderLayer::updateTransform()
 
         // Layers with transforms act as clip rects roots, so clear the cached clip rects here.
         m_clipper.clearClipRectsIncludingDescendants();
+    } else if (hasTransform) {
+        m_clipper.clearClipRectsIncludingDescendants(AbsoluteClipRects);
     }
 
-    if (hasTransform) {
-        RenderBox* box = renderBox();
-        ASSERT(box);
-        m_transform->makeIdentity();
-        box->style()->applyTransform(*m_transform, box->pixelSnappedBorderBoxRect().size(), RenderStyle::IncludeTransformOrigin);
-        makeMatrixRenderable(*m_transform, compositor()->hasAcceleratedCompositing());
-    }
+    updateTransformationMatrix();
 
     if (had3DTransform != has3DTransform())
         dirty3DTransformedDescendantStatus();
@@ -3689,8 +3699,7 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
 
     updateDescendantDependentFlags();
 
-    if (!oldStyle || !renderer()->style()->transformDataEquivalent(*oldStyle))
-        updateTransform();
+    updateTransform(oldStyle, renderer()->style());
 
     {
         // https://code.google.com/p/chromium/issues/detail?id=343759

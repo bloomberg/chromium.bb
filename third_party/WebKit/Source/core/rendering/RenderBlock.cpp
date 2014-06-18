@@ -1605,7 +1605,7 @@ bool RenderBlock::simplifiedLayout()
         computeOverflow(oldClientAfterEdge, true);
     }
 
-    updateLayerTransform();
+    updateLayerTransformAfterLayout();
 
     updateScrollInfoAfterLayout();
 

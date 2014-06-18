@@ -318,7 +318,7 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
     if (renderView->layoutState()->pageLogicalHeight())
         setPageLogicalOffset(renderView->layoutState()->pageLogicalOffset(*this, logicalTop()));
 
-    updateLayerTransform();
+    updateLayerTransformAfterLayout();
 
     // Update our scroll information if we're overflow:auto/scroll/hidden now that we know if
     // we overflow or not.

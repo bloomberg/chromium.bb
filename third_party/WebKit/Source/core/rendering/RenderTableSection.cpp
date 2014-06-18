@@ -896,7 +896,7 @@ void RenderTableSection::layoutRows()
             rowRenderer->setLocation(LayoutPoint(0, m_rowPos[r]));
             rowRenderer->setLogicalWidth(logicalWidth());
             rowRenderer->setLogicalHeight(m_rowPos[r + 1] - m_rowPos[r] - vspacing);
-            rowRenderer->updateLayerTransform();
+            rowRenderer->updateLayerTransformAfterLayout();
             rowRenderer->clearAllOverflows();
             rowRenderer->addVisualEffectOverflow();
         }

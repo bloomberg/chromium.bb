@@ -300,7 +300,7 @@ void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren)
         computeOverflow(oldClientAfterEdge);
     }
 
-    updateLayerTransform();
+    updateLayerTransformAfterLayout();
 
     if (view()->layoutState()->pageLogicalHeight())
         setPageLogicalOffset(view()->layoutState()->pageLogicalOffset(*this, logicalTop()));

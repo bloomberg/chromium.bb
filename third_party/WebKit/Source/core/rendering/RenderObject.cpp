@@ -2146,8 +2146,6 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
     if (contextSensitiveProperties & ContextSensitivePropertyTransform && !needsLayout()) {
         if (RenderBlock* container = containingBlock())
             container->setNeedsOverflowRecalcAfterStyleChange();
-        if (isBox())
-            toRenderBox(this)->updateLayerTransform();
     }
 
     if (updatedDiff.needsRepaint()) {

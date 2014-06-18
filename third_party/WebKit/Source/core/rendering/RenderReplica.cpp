@@ -59,7 +59,7 @@ void RenderReplica::layout()
 {
     setFrameRect(parentBox()->borderBoxRect());
     addVisualOverflow(parentBox()->visualOverflowRect());
-    updateLayerTransform();
+    updateLayerTransformAfterLayout();
     clearNeedsLayout();
 }
 
