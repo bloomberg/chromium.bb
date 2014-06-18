@@ -32,6 +32,7 @@ ways:
 
 import optparse
 import os
+import re
 import shutil
 import sys
 
@@ -171,6 +172,22 @@ def ReadSources(roots=[], source_files=[], need_source_text=False,
   return sources
 
 
+def _GetBase(sources):
+  '''Gets the closure base.js file if present among the sources.
+
+  Args:
+    sources: Dictionary with input path names as keys and SourceWithPaths
+      as values.
+  Returns:
+    SourceWithPath: The source file providing the goog namespace.
+  '''
+  for source in sources.itervalues():
+    if (os.path.basename(source.GetInPath()) == 'base.js' and
+        'goog' in source.provides):
+      return source
+  Die('goog.base not provided by any file.')
+
+
 def CalcDeps(bundle, sources, top_level):
   '''Calculates dependencies for a set of top-level files.
 
@@ -180,22 +197,35 @@ def CalcDeps(bundle, sources, top_level):
     top_level, list: List of top-level input paths to calculate dependencies
       for.
   '''
-  def GetBase(sources):
-    for source in sources.itervalues():
-      if (os.path.basename(source.GetInPath()) == 'base.js' and
-          'goog' in source.provides):
-        return source
-    Die('goog.base not provided by any file')
-
   providers = [s for s in sources.itervalues() if len(s.provides) > 0]
   deps = depstree.DepsTree(providers)
   namespaces = []
   for path in top_level:
     namespaces.extend(sources[path].requires)
   # base.js is an implicit dependency that always goes first.
-  bundle.Add(GetBase(sources))
+  bundle.Add(_GetBase(sources))
   bundle.Add(deps.GetDependencies(namespaces))
 
+
+def _MarkAsCompiled(sources):
+  '''Sets COMPILED to true in the Closure base.js source.
+
+  Args:
+    sources: Dictionary with input paths names as keys and SourcWithPaths
+      objects as values.
+  '''
+  base = _GetBase(sources)
+  new_content, count = re.subn('^var COMPILED = false;$',
+                               'var COMPILED = true;',
+                               base.GetSource(),
+                               count=1,
+                               flags=re.MULTILINE)
+  if count != 1:
+    Die('COMPILED var assignment not found in %s' % base.GetInPath())
+  sources[base.GetInPath()] = SourceWithPaths(
+      new_content,
+      base.GetInPath(),
+      base.GetOutPath())
 
 def LinkOrCopyFiles(sources, dest_dir):
   '''Copies a list of sources to a destination directory.'''
@@ -278,11 +308,12 @@ def main():
   options, args = CreateOptionParser().parse_args()
   if len(args) < 1:
     Die('At least one top-level source file must be specified.')
+  will_output_source_text = options.mode in ('bundle', 'compressed_bundle')
   path_rewriter = PathRewriter(options.prefix_map)
-  sources = ReadSources(options.roots,
-                        args,
-                        options.mode in ('bundle', 'compressed_bundle'),
+  sources = ReadSources(options.roots, args, will_output_source_text,
                         path_rewriter)
+  if will_output_source_text:
+    _MarkAsCompiled(sources)
   bundle = Bundle()
   if len(options.roots) > 0:
     CalcDeps(bundle, sources, args)
