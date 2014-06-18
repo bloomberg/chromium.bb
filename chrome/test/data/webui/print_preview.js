@@ -313,9 +313,7 @@ TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
 
 // When the source is 'PDF' and 'Save as PDF' option is selected, we hide the
 // fit to page option.
-TEST_F('PrintPreviewWebUITest',
-       'PrintToPDFSelectedHideFitToPageOption',
-       function() {
+TEST_F('PrintPreviewWebUITest', 'PrintToPDFSelectedCapabilities', function() {
   // Add PDF printer.
   this.initialSettings_.isDocumentModifiable_ = false;
   this.initialSettings_.systemDefaultDestinationId_ = 'Save as PDF';
@@ -359,6 +357,7 @@ TEST_F('PrintPreviewWebUITest',
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkSectionVisible($('other-options-settings'), false);
+  checkSectionVisible($('media-size-settings'), false);
 });
 
 // When the source is 'HTML', we always hide the fit to page option and show
@@ -411,7 +410,7 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsPDFCapabilities', function() {
   expectTrue(
       $('other-options-settings').querySelector('.fit-to-page-checkbox').
           checked);
-  checkSectionVisible($('media-size-settings'), false);
+  checkSectionVisible($('media-size-settings'), true);
 });
 
 // When the print scaling is disabled for the source "PDF", we show the fit

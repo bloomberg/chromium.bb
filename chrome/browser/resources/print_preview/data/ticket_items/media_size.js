@@ -60,8 +60,12 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      return this.getDocumentInfoInternal().isModifiable &&
-             !!this.capability;
+      var pdfToSaveAsPdf =
+          !this.getDocumentInfoInternal().isModifiable &&
+          this.getSelectedDestInternal() &&
+          this.getSelectedDestInternal().id ==
+              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
+      return !pdfToSaveAsPdf && !!this.capability;
     },
 
     /** @override */
