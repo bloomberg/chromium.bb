@@ -39,7 +39,7 @@ struct SameSizeAsElementRareData : NodeRareData {
     short indices[2];
     LayoutSize sizeForResizing;
     IntSize scrollOffset;
-    void* pointers[12];
+    void* pointers[13];
 };
 
 CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(Element* ownerElement)
@@ -49,12 +49,22 @@ CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(Element* o
     return *m_cssomWrapper;
 }
 
+WillBeHeapVector<RefPtrWillBeMember<Attr> >& ElementRareData::ensureAttrNodeList()
+{
+    if (!m_attrNodeList)
+        m_attrNodeList = adoptPtrWillBeNoop(new WillBeHeapVector<RefPtrWillBeMember<Attr> >());
+    return *m_attrNodeList;
+}
+
 void ElementRareData::traceAfterDispatch(Visitor* visitor)
 {
     visitor->trace(m_dataset);
     visitor->trace(m_classList);
     visitor->trace(m_shadow);
     visitor->trace(m_attributeMap);
+#if ENABLE(OILPAN)
+    visitor->trace(m_attrNodeList);
+#endif
     visitor->trace(m_inputMethodContext);
     visitor->trace(m_activeAnimations);
     visitor->trace(m_cssomWrapper);

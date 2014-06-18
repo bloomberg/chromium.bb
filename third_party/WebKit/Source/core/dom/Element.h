@@ -231,7 +231,7 @@ public:
     PassRefPtrWillBeRawPtr<Attr> attrIfExists(const QualifiedName&);
     PassRefPtrWillBeRawPtr<Attr> ensureAttr(const QualifiedName&);
 
-    const WillBeHeapVector<RefPtrWillBeMember<Attr> >& attrNodeList();
+    WillBeHeapVector<RefPtrWillBeMember<Attr> >* attrNodeList();
 
     CSSStyleDeclaration* style();
 
@@ -644,6 +644,8 @@ private:
     ElementRareData* elementRareData() const;
     ElementRareData& ensureElementRareData();
 
+    WillBeHeapVector<RefPtrWillBeMember<Attr> >& ensureAttrNodeList();
+    void removeAttrNodeList();
     void detachAllAttrNodesFromElement();
     void detachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
     void detachAttrNodeAtIndex(Attr*, size_t index);

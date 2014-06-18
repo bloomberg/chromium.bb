@@ -23,6 +23,7 @@
 #define ElementRareData_h
 
 #include "core/animation/ActiveAnimations.h"
+#include "core/dom/Attr.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/NodeRareData.h"
@@ -123,6 +124,10 @@ public:
     void setCustomElementDefinition(PassRefPtr<CustomElementDefinition> definition) { m_customElementDefinition = definition; }
     CustomElementDefinition* customElementDefinition() const { return m_customElementDefinition.get(); }
 
+    WillBeHeapVector<RefPtrWillBeMember<Attr> >& ensureAttrNodeList();
+    WillBeHeapVector<RefPtrWillBeMember<Attr> >* attrNodeList() { return m_attrNodeList.get(); }
+    void removeAttrNodeList() { m_attrNodeList.clear(); }
+
     void traceAfterDispatch(Visitor*);
 
 private:
@@ -135,6 +140,7 @@ private:
     OwnPtrWillBeMember<ClassList> m_classList;
     OwnPtrWillBeMember<ElementShadow> m_shadow;
     OwnPtrWillBeMember<NamedNodeMap> m_attributeMap;
+    OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<Attr> > > m_attrNodeList;
     OwnPtrWillBeMember<InputMethodContext> m_inputMethodContext;
     OwnPtrWillBeMember<ActiveAnimations> m_activeAnimations;
     OwnPtrWillBeMember<InlineCSSStyleDeclaration> m_cssomWrapper;

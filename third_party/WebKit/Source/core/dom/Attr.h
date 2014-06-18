@@ -64,7 +64,6 @@ public:
     const AtomicString& prefix() const { return m_name.prefix(); }
 
     virtual void trace(Visitor*) OVERRIDE;
-    void clearWeakMembers(Visitor*);
 
 private:
     Attr(Element&, const QualifiedName&);
@@ -90,13 +89,7 @@ private:
 
     // Attr wraps either an element/name, or a name/value pair (when it's a standalone Node.)
     // Note that m_name is always set, but m_element/m_standaloneValue may be null.
-    //
-    // FIXME: Oilpan: m_element should be a Member. However, because of the
-    // current semantics of weak maps, we have to make it a WeakMember in order
-    // to not leak through the attrNodeListMap in Element.cpp. Once the semantics
-    // of weak maps has changed we should make this a Member and remove the custom
-    // weak processing.
-    RawPtrWillBeWeakMember<Element> m_element;
+    RawPtrWillBeMember<Element> m_element;
     QualifiedName m_name;
     // Holds the value if it is a standalone Node, or the local name of the
     // attribute it is attached to on an Element. The latter may (letter case)

@@ -114,41 +114,6 @@ using namespace HTMLNames;
 using namespace XMLNames;
 
 typedef WillBeHeapVector<RefPtrWillBeMember<Attr> > AttrNodeList;
-typedef WillBePersistentHeapHashMap<RawPtrWillBeWeakMember<Element>, OwnPtrWillBeMember<AttrNodeList> > AttrNodeListMap;
-
-static AttrNodeListMap& attrNodeListMap()
-{
-    DEFINE_STATIC_LOCAL(AttrNodeListMap, map, ());
-    return map;
-}
-
-static AttrNodeList* attrNodeListForElement(Element* element)
-{
-    if (!element->hasSyntheticAttrChildNodes())
-        return 0;
-    ASSERT(attrNodeListMap().contains(element));
-    return attrNodeListMap().get(element);
-}
-
-static AttrNodeList& ensureAttrNodeListForElement(Element* element)
-{
-    if (element->hasSyntheticAttrChildNodes()) {
-        ASSERT(attrNodeListMap().contains(element));
-        return *attrNodeListMap().get(element);
-    }
-    ASSERT(!attrNodeListMap().contains(element));
-    element->setHasSyntheticAttrChildNodes(true);
-    AttrNodeListMap::AddResult result = attrNodeListMap().add(element, adoptPtrWillBeNoop(new AttrNodeList));
-    return *result.storedValue->value;
-}
-
-static void removeAttrNodeListForElement(Element* element)
-{
-    ASSERT(element->hasSyntheticAttrChildNodes());
-    ASSERT(attrNodeListMap().contains(element));
-    attrNodeListMap().remove(element);
-    element->setHasSyntheticAttrChildNodes(false);
-}
 
 static Attr* findAttrNodeInList(const AttrNodeList& attrNodeList, const QualifiedName& name)
 {
@@ -1870,10 +1835,23 @@ void Element::formatForDebugger(char* buffer, unsigned length) const
 }
 #endif
 
-const WillBeHeapVector<RefPtrWillBeMember<Attr> >& Element::attrNodeList()
+WillBeHeapVector<RefPtrWillBeMember<Attr> >* Element::attrNodeList()
+{
+    return hasRareData() ? elementRareData()->attrNodeList() : 0;
+}
+
+WillBeHeapVector<RefPtrWillBeMember<Attr> >& Element::ensureAttrNodeList()
+{
+    setHasSyntheticAttrChildNodes(true);
+    return ensureElementRareData().ensureAttrNodeList();
+}
+
+void Element::removeAttrNodeList()
 {
     ASSERT(hasSyntheticAttrChildNodes());
-    return *attrNodeListForElement(this);
+    if (hasRareData())
+        elementRareData()->removeAttrNodeList();
+    setHasSyntheticAttrChildNodes(false);
 }
 
 PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& exceptionState)
@@ -1924,7 +1902,7 @@ PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNode(Attr* attrNode, Exception
 
     attrNode->attachToElement(this, localName);
     treeScope().adoptIfNeeded(*attrNode);
-    ensureAttrNodeListForElement(this).append(attrNode);
+    ensureAttrNodeList().append(attrNode);
 
     return oldAttrNode.release();
 }
@@ -2990,14 +2968,14 @@ void Element::setSavedLayerScrollOffset(const IntSize& size)
 
 PassRefPtrWillBeRawPtr<Attr> Element::attrIfExists(const QualifiedName& name)
 {
-    if (AttrNodeList* attrNodeList = attrNodeListForElement(this))
+    if (AttrNodeList* attrNodeList = this->attrNodeList())
         return findAttrNodeInList(*attrNodeList, name);
     return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<Attr> Element::ensureAttr(const QualifiedName& name)
 {
-    AttrNodeList& attrNodeList = ensureAttrNodeListForElement(this);
+    AttrNodeList& attrNodeList = ensureAttrNodeList();
     RefPtrWillBeRawPtr<Attr> attrNode = findAttrNodeInList(attrNodeList, name);
     if (!attrNode) {
         attrNode = Attr::create(*this, name);
@@ -3012,12 +2990,12 @@ void Element::detachAttrNodeFromElementWithValue(Attr* attrNode, const AtomicStr
     ASSERT(hasSyntheticAttrChildNodes());
     attrNode->detachFromElementWithValue(value);
 
-    AttrNodeList* attrNodeList = attrNodeListForElement(this);
-    for (unsigned i = 0; i < attrNodeList->size(); ++i) {
-        if (attrNodeList->at(i)->qualifiedName() == attrNode->qualifiedName()) {
-            attrNodeList->remove(i);
-            if (attrNodeList->isEmpty())
-                removeAttrNodeListForElement(this);
+    AttrNodeList* list = attrNodeList();
+    for (unsigned i = 0; i < list->size(); ++i) {
+        if (list->at(i)->qualifiedName() == attrNode->qualifiedName()) {
+            list->remove(i);
+            if (list->isEmpty())
+                removeAttrNodeList();
             return;
         }
     }
@@ -3026,17 +3004,17 @@ void Element::detachAttrNodeFromElementWithValue(Attr* attrNode, const AtomicStr
 
 void Element::detachAllAttrNodesFromElement()
 {
-    AttrNodeList* attrNodeList = attrNodeListForElement(this);
-    ASSERT(attrNodeList);
+    AttrNodeList* list = this->attrNodeList();
+    ASSERT(list);
 
     AttributeIteratorAccessor attributes = attributesIterator();
     AttributeConstIterator end = attributes.end();
     for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
-        if (RefPtrWillBeRawPtr<Attr> attrNode = findAttrNodeInList(*attrNodeList, it->name()))
+        if (RefPtrWillBeRawPtr<Attr> attrNode = findAttrNodeInList(*list, it->name()))
             attrNode->detachFromElementWithValue(it->value());
     }
 
-    removeAttrNodeListForElement(this);
+    removeAttrNodeList();
 }
 
 void Element::willRecalcStyle(StyleRecalcChange)

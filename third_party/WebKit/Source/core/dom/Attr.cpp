@@ -220,15 +220,9 @@ void Attr::attachToElement(Element* element, const AtomicString& attachedLocalNa
     m_standaloneValueOrAttachedLocalName = attachedLocalName;
 }
 
-void Attr::clearWeakMembers(Visitor* visitor)
-{
-    if (m_element && !visitor->isAlive(m_element))
-        detachFromElementWithValue(value());
-}
-
 void Attr::trace(Visitor* visitor)
 {
-    visitor->registerWeakMembers<Attr, &Attr::clearWeakMembers>(this);
+    visitor->trace(m_element);
     ContainerNode::trace(visitor);
 }
 
