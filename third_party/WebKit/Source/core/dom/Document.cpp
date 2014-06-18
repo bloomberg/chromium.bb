@@ -680,6 +680,7 @@ MediaQueryMatcher& Document::mediaQueryMatcher()
 
 void Document::mediaQueryAffectingValueChanged()
 {
+    m_evaluateMediaQueriesOnStyleRecalc = true;
     styleEngine()->clearMediaQueryRuleSetStyleSheets();
 }
 
@@ -3456,8 +3457,6 @@ void Document::styleResolverChanged(StyleResolverUpdateMode updateMode)
         m_pendingSheetLayout = IgnoreLayoutWithPendingSheets;
         renderView()->repaintViewAndCompositedLayers();
     }
-
-    m_evaluateMediaQueriesOnStyleRecalc = true;
 }
 
 void Document::styleResolverMayHaveChanged()
