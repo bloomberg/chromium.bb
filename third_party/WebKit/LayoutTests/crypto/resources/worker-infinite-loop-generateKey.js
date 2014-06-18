@@ -3,9 +3,9 @@ importScripts('common.js');
 function continuouslyGenerateRsaKey()
 {
     var extractable = false;
-    var usages = ['encrypt', 'decrypt'];
+    var usages = ['sign', 'verify'];
     // Note that the modulus length is small.
-    var algorithm = {name: "RSAES-PKCS1-v1_5", modulusLength: 512, publicExponent: hexStringToUint8Array("010001")};
+    var algorithm = {name: "RSASSA-PKCS1-v1_5", modulusLength: 512, publicExponent: hexStringToUint8Array("010001"), hash: {name: 'sha-1'}};
 
     return crypto.subtle.generateKey(algorithm, extractable, usages).then(function(result) {
         // Infinite recursion intentional!
