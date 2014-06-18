@@ -35,13 +35,13 @@ inline bool DoLowerCaseEqualsASCII(Iter a_begin, Iter a_end, const char* b) {
 
 const int kNumStandardURLSchemes = 8;
 const char* kStandardURLSchemes[kNumStandardURLSchemes] = {
-  "http",
-  "https",
+  kHttpScheme,
+  kHttpsScheme,
   kFileScheme,  // Yes, file urls can have a hostname!
-  "ftp",
-  "gopher",
-  "ws",  // WebSocket.
-  "wss",  // WebSocket secure.
+  kFtpScheme,
+  kGopherScheme,
+  kWsScheme,    // WebSocket.
+  kWssScheme,   // WebSocket secure.
   kFileSystemScheme,
 };
 

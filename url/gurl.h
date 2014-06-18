@@ -222,12 +222,12 @@ class URL_EXPORT GURL {
   // We often need to know if this is a file URL. File URLs are "standard", but
   // are often treated separately by some programs.
   bool SchemeIsFile() const {
-    return SchemeIs("file");
+    return SchemeIs(url::kFileScheme);
   }
 
   // FileSystem URLs need to be treated differently in some cases.
   bool SchemeIsFileSystem() const {
-    return SchemeIs("filesystem");
+    return SchemeIs(url::kFileSystemScheme);
   }
 
   // If the scheme indicates a secure connection

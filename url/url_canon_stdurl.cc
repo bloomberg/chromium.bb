@@ -7,6 +7,7 @@
 
 #include "url/url_canon.h"
 #include "url/url_canon_internal.h"
+#include "url/url_constants.h"
 
 namespace url {
 
@@ -98,25 +99,25 @@ int DefaultPortForScheme(const char* scheme, int scheme_len) {
   int default_port = PORT_UNSPECIFIED;
   switch (scheme_len) {
     case 4:
-      if (!strncmp(scheme, "http", scheme_len))
+      if (!strncmp(scheme, kHttpScheme, scheme_len))
         default_port = 80;
       break;
     case 5:
-      if (!strncmp(scheme, "https", scheme_len))
+      if (!strncmp(scheme, kHttpsScheme, scheme_len))
         default_port = 443;
       break;
     case 3:
-      if (!strncmp(scheme, "ftp", scheme_len))
+      if (!strncmp(scheme, kFtpScheme, scheme_len))
         default_port = 21;
-      else if (!strncmp(scheme, "wss", scheme_len))
+      else if (!strncmp(scheme, kWssScheme, scheme_len))
         default_port = 443;
       break;
     case 6:
-      if (!strncmp(scheme, "gopher", scheme_len))
+      if (!strncmp(scheme, kGopherScheme, scheme_len))
         default_port = 70;
       break;
     case 2:
-      if (!strncmp(scheme, "ws", scheme_len))
+      if (!strncmp(scheme, kWsScheme, scheme_len))
         default_port = 80;
       break;
   }

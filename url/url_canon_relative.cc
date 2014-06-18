@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "url/url_canon.h"
 #include "url/url_canon_internal.h"
+#include "url/url_constants.h"
 #include "url/url_file.h"
 #include "url/url_parse_internal.h"
 #include "url/url_util_internal.h"
@@ -145,7 +146,7 @@ bool DoIsRelativeURL(const char* base,
 
   // If it's a filesystem URL, the only valid way to make it relative is not to
   // supply a scheme.  There's no equivalent to e.g. http:index.html.
-  if (CompareSchemeComponent(url, scheme, "filesystem"))
+  if (CompareSchemeComponent(url, scheme, kFileSystemScheme))
     return true;
 
   // ExtractScheme guarantees that the colon immediately follows what it
