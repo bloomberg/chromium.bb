@@ -72,6 +72,7 @@ enum SharedOption {
 enum GuestMode {
   NOT_IN_GUEST_MODE,
   IN_GUEST_MODE,
+  IN_INCOGNITO
 };
 
 // This global operator is used from Google Test to format error messages.
@@ -586,7 +587,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
     const GURL share_url_base(embedded_test_server()->GetURL(
         "/chromeos/file_manager/share_dialog_mock/index.html"));
-    drive_volume_ = drive_volumes_[profile()];
+    drive_volume_ = drive_volumes_[profile()->GetOriginalProfile()];
     drive_volume_->ConfigureShareUrlBase(share_url_base);
     test_util::WaitUntilDriveMountPointIsAdded(profile());
   }
@@ -596,6 +597,9 @@ void FileManagerBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
   if (GetGuestModeParam() == IN_GUEST_MODE) {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "");
+    command_line->AppendSwitch(switches::kIncognito);
+  }
+  if (GetGuestModeParam() == IN_INCOGNITO) {
     command_line->AppendSwitch(switches::kIncognito);
   }
   ExtensionApiTest::SetUpCommandLine(command_line);
@@ -660,7 +664,7 @@ std::string FileManagerBrowserTestBase::OnMessage(const std::string& name,
     return jsonString;
   } else if (name == "isInGuestMode") {
     // Obtain whether the test is in guest mode or not.
-    return GetGuestModeParam() ? "true" : "false";
+    return GetGuestModeParam() != NOT_IN_GUEST_MODE ? "true" : "false";
   } else if (name == "getCwsWidgetContainerMockUrl") {
     // Obtain whether the test is in guest mode or not.
     const GURL url = embedded_test_server()->GetURL(
@@ -722,8 +726,9 @@ std::string FileManagerBrowserTestBase::OnMessage(const std::string& name,
 
 drive::DriveIntegrationService*
 FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
-  drive_volumes_[profile].reset(new DriveTestVolume());
-  return drive_volumes_[profile]->CreateDriveIntegrationService(profile);
+  drive_volumes_[profile->GetOriginalProfile()].reset(new DriveTestVolume());
+  return drive_volumes_[profile->GetOriginalProfile()]->
+      CreateDriveIntegrationService(profile);
 }
 
 // Parameter of FileManagerBrowserTest.
@@ -1039,6 +1044,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(IN_GUEST_MODE,
                                     "openFileDialogOnDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE,
+                                    "openFileDialogOnDrive"),
+                      TestParameter(IN_INCOGNITO,
+                                    "openFileDialogOnDownloads"),
+                      TestParameter(IN_INCOGNITO,
                                     "openFileDialogOnDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
