@@ -14,10 +14,6 @@
 #include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 
-namespace blink {
-class WebScreenOrientationListener;
-}
-
 namespace content {
 
 class RenderFrame;
