@@ -17,7 +17,7 @@
 
 {
   "about_page": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["shared_module"]
   },
   "app": {
