@@ -81,8 +81,18 @@ function test()
             InspectorTest.addResult("Captured call stacks in no particular order:");
             callStacksOutput.sort();
             InspectorTest.addResults(callStacksOutput);
-            InspectorTest.completeDebuggerTest();
+            completeTest();
         }
+    }
+
+    function completeTest()
+    {
+        pane._removeBreakpoint("listener:load");
+        pane._removeBreakpoint("listener:error");
+        pane._removeBreakpoint("listener:loadend", xhrTargetNames);
+        pane._removeBreakpoint("listener:progress", xhrTargetNames);
+        pane._removeBreakpoint("listener:readystatechange", xhrTargetNames);
+        InspectorTest.runAfterPendingDispatches(InspectorTest.completeDebuggerTest.bind(InspectorTest));
     }
 }
 
