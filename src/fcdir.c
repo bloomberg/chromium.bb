@@ -153,19 +153,21 @@ FcFileScanConfig (FcFontSet	*set,
     if (FcFileIsDir (file))
     {
 	const FcChar8 *sysroot = FcConfigGetSysRoot (config);
-	const FcChar8 *d;
-	size_t len = strlen ((const char *)sysroot);
+	const FcChar8 *d = file;
+	size_t len;
 
-	if (sysroot && strncmp ((const char *)file, (const char *)sysroot, len) == 0)
+	if (sysroot)
 	{
-	    if (file[len] != '/')
-		len--;
-	    else if (file[len+1] == '/')
-		len++;
-	    d = &file[len];
+		len = strlen ((const char *)sysroot);
+		if (strncmp ((const char *)file, (const char *)sysroot, len) == 0)
+		{
+			if (file[len] != '/')
+				len--;
+			else if (file[len+1] == '/')
+				len++;
+			d = &file[len];
+		}
 	}
-	else
-	    d = file;
 	return FcStrSetAdd (dirs, d);
     }
     else
