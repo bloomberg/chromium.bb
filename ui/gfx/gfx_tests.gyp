@@ -34,6 +34,7 @@
         'animation/tween_unittest.cc',
         'blit_unittest.cc',
         'break_list_unittest.cc',
+        'canvas_unittest.cc',
         'codec/jpeg_codec_unittest.cc',
         'codec/png_codec_unittest.cc',
         'color_analysis_unittest.cc',
@@ -110,6 +111,7 @@
         }],
         ['use_ozone==1 and use_pango==0', {
           'sources!': [
+            'canvas_unittest.cc',
             'font_list_unittest.cc',
             'font_unittest.cc',
             'text_elider_unittest.cc',

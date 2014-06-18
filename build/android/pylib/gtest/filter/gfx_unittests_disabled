@@ -1,3 +1,5 @@
+CanvasTest.StringSizeEmptyString
+CanvasTest.StringWidth
 FontListTest.FontDescString_Derive
 FontListTest.FontDescString_FromFont
 FontListTest.FontDescString_FromFontNamesStyleAndSize
