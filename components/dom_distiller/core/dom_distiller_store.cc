@@ -11,6 +11,7 @@
 #include "sync/protocol/article_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 
+using leveldb_proto::ProtoDatabase;
 using sync_pb::ArticleSpecifics;
 using sync_pb::EntitySpecifics;
 using syncer::ModelType;
@@ -24,27 +25,25 @@ using syncer::SyncMergeResult;
 namespace dom_distiller {
 
 DomDistillerStore::DomDistillerStore(
-    scoped_ptr<DomDistillerDatabaseInterface> database,
+    scoped_ptr<ProtoDatabase<ArticleEntry> > database,
     const base::FilePath& database_dir)
     : database_(database.Pass()),
       database_loaded_(false),
       weak_ptr_factory_(this) {
-  database_->Init(database_dir,
-                  base::Bind(&DomDistillerStore::OnDatabaseInit,
-                             weak_ptr_factory_.GetWeakPtr()));
+  database_->Init(database_dir, base::Bind(&DomDistillerStore::OnDatabaseInit,
+                                           weak_ptr_factory_.GetWeakPtr()));
 }
 
 DomDistillerStore::DomDistillerStore(
-    scoped_ptr<DomDistillerDatabaseInterface> database,
+    scoped_ptr<ProtoDatabase<ArticleEntry> > database,
     const std::vector<ArticleEntry>& initial_data,
     const base::FilePath& database_dir)
     : database_(database.Pass()),
       database_loaded_(false),
       model_(initial_data),
       weak_ptr_factory_(this) {
-  database_->Init(database_dir,
-                  base::Bind(&DomDistillerStore::OnDatabaseInit,
-                             weak_ptr_factory_.GetWeakPtr()));
+  database_->Init(database_dir, base::Bind(&DomDistillerStore::OnDatabaseInit,
+                                           weak_ptr_factory_.GetWeakPtr()));
 }
 
 DomDistillerStore::~DomDistillerStore() {}
@@ -59,11 +58,9 @@ bool DomDistillerStore::GetEntryById(const std::string& entry_id,
   return model_.GetEntryById(entry_id, entry);
 }
 
-bool DomDistillerStore::GetEntryByUrl(const GURL& url,
-                                     ArticleEntry* entry) {
+bool DomDistillerStore::GetEntryByUrl(const GURL& url, ArticleEntry* entry) {
   return model_.GetEntryByUrl(url, entry);
 }
-
 
 bool DomDistillerStore::AddEntry(const ArticleEntry& entry) {
   if (!database_loaded_) {
@@ -165,8 +162,7 @@ std::vector<ArticleEntry> DomDistillerStore::GetEntries() const {
 
 // syncer::SyncableService implementation.
 SyncMergeResult DomDistillerStore::MergeDataAndStartSyncing(
-    ModelType type,
-    const SyncDataList& initial_sync_data,
+    ModelType type, const SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> error_handler) {
   DCHECK_EQ(syncer::ARTICLES, type);
@@ -210,8 +206,7 @@ void DomDistillerStore::NotifyObservers(const syncer::SyncChangeList& changes) {
   if (observers_.might_have_observers() && changes.size() > 0) {
     std::vector<DomDistillerObserver::ArticleUpdate> article_changes;
     for (SyncChangeList::const_iterator it = changes.begin();
-         it != changes.end();
-         ++it) {
+         it != changes.end(); ++it) {
       DomDistillerObserver::ArticleUpdate article_update;
       switch (it->change_type()) {
         case SyncChange::ACTION_ADD:
@@ -233,16 +228,14 @@ void DomDistillerStore::NotifyObservers(const syncer::SyncChangeList& changes) {
       article_update.entry_id = entry.entry_id();
       article_changes.push_back(article_update);
     }
-    FOR_EACH_OBSERVER(DomDistillerObserver,
-                      observers_,
+    FOR_EACH_OBSERVER(DomDistillerObserver, observers_,
                       ArticleEntriesUpdated(article_changes));
   }
 }
 
-void DomDistillerStore::ApplyChangesToModel(
-    const SyncChangeList& changes,
-    SyncChangeList* changes_applied,
-    SyncChangeList* changes_missing) {
+void DomDistillerStore::ApplyChangesToModel(const SyncChangeList& changes,
+                                            SyncChangeList* changes_applied,
+                                            SyncChangeList* changes_missing) {
   model_.ApplyChangesToModel(changes, changes_applied, changes_missing);
   NotifyObservers(*changes_applied);
 }
@@ -313,27 +306,29 @@ bool DomDistillerStore::ApplyChangesToDatabase(
   if (change_list.empty()) {
     return true;
   }
-  scoped_ptr<EntryVector> entries_to_save(new EntryVector());
-  scoped_ptr<EntryVector> entries_to_remove(new EntryVector());
+  scoped_ptr<ProtoDatabase<ArticleEntry>::KeyEntryVector> entries_to_save(
+      new ProtoDatabase<ArticleEntry>::KeyEntryVector());
+  scoped_ptr<std::vector<std::string> > keys_to_remove(
+      new std::vector<std::string>());
 
   for (SyncChangeList::const_iterator it = change_list.begin();
-       it != change_list.end();
-       ++it) {
-    if (it->change_type() == SyncChange::ACTION_DELETE)
-      entries_to_remove->push_back(GetEntryFromChange(*it));
-    else
-      entries_to_save->push_back(GetEntryFromChange(*it));
+       it != change_list.end(); ++it) {
+    if (it->change_type() == SyncChange::ACTION_DELETE) {
+      ArticleEntry entry = GetEntryFromChange(*it);
+      keys_to_remove->push_back(entry.entry_id());
+    } else {
+      ArticleEntry entry = GetEntryFromChange(*it);
+      entries_to_save->push_back(std::make_pair(entry.entry_id(), entry));
+    }
   }
-  database_->UpdateEntries(entries_to_save.Pass(),
-                           entries_to_remove.Pass(),
+  database_->UpdateEntries(entries_to_save.Pass(), keys_to_remove.Pass(),
                            base::Bind(&DomDistillerStore::OnDatabaseSave,
                                       weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 
 SyncMergeResult DomDistillerStore::MergeDataWithModel(
-    const SyncDataList& data,
-    SyncChangeList* changes_applied,
+    const SyncDataList& data, SyncChangeList* changes_applied,
     SyncChangeList* changes_missing) {
   DCHECK(changes_applied);
   DCHECK(changes_missing);
@@ -349,8 +344,7 @@ SyncMergeResult DomDistillerStore::MergeDataWithModel(
   int num_added = 0;
   int num_modified = 0;
   for (SyncChangeList::const_iterator it = changes_applied->begin();
-       it != changes_applied->end();
-       ++it) {
+       it != changes_applied->end(); ++it) {
     DCHECK(it->IsValid());
     switch (it->change_type()) {
       case SyncChange::ACTION_ADD:

@@ -12,13 +12,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "components/dom_distiller/content/distiller_page_web_contents.h"
+#include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distiller.h"
-#include "components/dom_distiller/core/dom_distiller_database.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
 #include "components/dom_distiller/core/task_tracker.h"
+#include "components/leveldb_proto/proto_database.h"
+#include "components/leveldb_proto/proto_database_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/content_browser_test.h"
@@ -69,10 +71,11 @@ scoped_ptr<DomDistillerService> CreateDomDistillerService(
 
   // TODO(cjhopman): use an in-memory database instead of an on-disk one with
   // temporary directory.
-  scoped_ptr<DomDistillerDatabase> db(
-      new DomDistillerDatabase(background_task_runner));
+  scoped_ptr<leveldb_proto::ProtoDatabaseImpl<ArticleEntry> > db(
+      new leveldb_proto::ProtoDatabaseImpl<ArticleEntry>(
+          background_task_runner));
   scoped_ptr<DomDistillerStore> dom_distiller_store(new DomDistillerStore(
-      db.PassAs<DomDistillerDatabaseInterface>(), db_path));
+      db.PassAs<leveldb_proto::ProtoDatabase<ArticleEntry> >(), db_path));
 
   scoped_ptr<DistillerPageFactory> distiller_page_factory(
       new DistillerPageWebContentsFactory(context));

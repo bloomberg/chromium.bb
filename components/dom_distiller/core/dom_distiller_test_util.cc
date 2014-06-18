@@ -7,17 +7,19 @@
 #include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/dom_distiller/core/fake_distiller.h"
 
+using leveldb_proto::test::FakeDB;
+
 namespace dom_distiller {
 namespace test {
 namespace util {
 
 namespace {
 
-std::vector<ArticleEntry> EntryMapToList(const FakeDB::EntryMap& entries) {
+std::vector<ArticleEntry> EntryMapToList(
+    const FakeDB<ArticleEntry>::EntryMap& entries) {
   std::vector<ArticleEntry> entry_list;
-  for (FakeDB::EntryMap::const_iterator it = entries.begin();
-       it != entries.end();
-       ++it) {
+  for (FakeDB<ArticleEntry>::EntryMap::const_iterator it = entries.begin();
+       it != entries.end(); ++it) {
     entry_list.push_back(it->second);
   }
   return entry_list;
@@ -39,8 +41,7 @@ bool ObserverUpdatesMatcher::MatchAndExplain(
   std::vector<DomDistillerObserver::ArticleUpdate>::const_iterator expected,
       actual;
   for (expected = expected_updates_.begin(), actual = actual_updates.begin();
-       expected != expected_updates_.end();
-       ++expected, ++actual) {
+       expected != expected_updates_.end(); ++expected, ++actual) {
     if (expected->entry_id != actual->entry_id) {
       *listener << " Mismatched entry id. Expected: " << expected->entry_id
                 << " actual: " << actual->entry_id;
@@ -60,8 +61,7 @@ void ObserverUpdatesMatcher::DescribeUpdates(std::ostream* os) const {
   bool start = true;
   for (std::vector<DomDistillerObserver::ArticleUpdate>::const_iterator i =
            expected_updates_.begin();
-       i != expected_updates_.end();
-       ++i) {
+       i != expected_updates_.end(); ++i) {
     if (start) {
       start = false;
     } else {
@@ -90,12 +90,12 @@ HasExpectedUpdates(
 }
 
 // static
-DomDistillerStore* CreateStoreWithFakeDB(FakeDB* fake_db,
-                                         const FakeDB::EntryMap& store_model) {
+DomDistillerStore* CreateStoreWithFakeDB(
+    FakeDB<ArticleEntry>* fake_db,
+    const FakeDB<ArticleEntry>::EntryMap& store_model) {
   return new DomDistillerStore(
-      scoped_ptr<DomDistillerDatabaseInterface>(fake_db),
-      EntryMapToList(store_model),
-      FakeDB::DirectoryForTestDB());
+      scoped_ptr<leveldb_proto::ProtoDatabase<ArticleEntry> >(fake_db),
+      EntryMapToList(store_model), FakeDB<ArticleEntry>::DirectoryForTestDB());
 }
 
 }  // namespace util

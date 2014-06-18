@@ -17,16 +17,17 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/dom_distiller/content/dom_distiller_viewer_source.h"
+#include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/dom_distiller/core/dom_distiller_test_util.h"
-#include "components/dom_distiller/core/fake_db.h"
 #include "components/dom_distiller/core/fake_distiller.h"
 #include "components/dom_distiller/core/fake_distiller_page.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
+#include "components/leveldb_proto/testing/fake_db.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -37,7 +38,7 @@
 
 namespace dom_distiller {
 
-using test::FakeDB;
+using leveldb_proto::test::FakeDB;
 using test::FakeDistiller;
 using test::MockDistillerPage;
 using test::MockDistillerFactory;
@@ -56,7 +57,7 @@ const char kGetContent[] =
     "window.domAutomationController.send("
         "document.getElementById('content').innerHTML)";
 
-void AddEntry(const ArticleEntry& e, FakeDB::EntryMap* map) {
+void AddEntry(const ArticleEntry& e, FakeDB<ArticleEntry>::EntryMap* map) {
   (*map)[e.entry_id()] = e;
 }
 
@@ -78,7 +79,7 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
   virtual ~DomDistillerViewerSourceBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    database_model_ = new FakeDB::EntryMap;
+    database_model_ = new FakeDB<ArticleEntry>::EntryMap;
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE { delete database_model_; }
@@ -88,14 +89,15 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
   }
 
   static KeyedService* Build(content::BrowserContext* context) {
-    FakeDB* fake_db = new FakeDB(database_model_);
+    FakeDB<ArticleEntry>* fake_db = new FakeDB<ArticleEntry>(database_model_);
     distiller_factory_ = new MockDistillerFactory();
     MockDistillerPageFactory* distiller_page_factory_ =
         new MockDistillerPageFactory();
     DomDistillerContextKeyedService* service =
         new DomDistillerContextKeyedService(
             scoped_ptr<DomDistillerStoreInterface>(
-                CreateStoreWithFakeDB(fake_db, FakeDB::EntryMap())),
+                CreateStoreWithFakeDB(fake_db,
+                                      FakeDB<ArticleEntry>::EntryMap())),
             scoped_ptr<DistillerFactory>(distiller_factory_),
             scoped_ptr<DistillerPageFactory>(distiller_page_factory_));
     fake_db->InitCallback(true);
@@ -118,13 +120,14 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
   void ViewSingleDistilledPage(const GURL& url,
                                const std::string& expected_mime_type);
   // Database entries.
-  static FakeDB::EntryMap* database_model_;
+  static FakeDB<ArticleEntry>::EntryMap* database_model_;
   static bool expect_distillation_;
   static bool expect_distiller_page_;
   static MockDistillerFactory* distiller_factory_;
 };
 
-FakeDB::EntryMap* DomDistillerViewerSourceBrowserTest::database_model_;
+FakeDB<ArticleEntry>::EntryMap*
+    DomDistillerViewerSourceBrowserTest::database_model_;
 bool DomDistillerViewerSourceBrowserTest::expect_distillation_ = false;
 bool DomDistillerViewerSourceBrowserTest::expect_distiller_page_ = false;
 MockDistillerFactory* DomDistillerViewerSourceBrowserTest::distiller_factory_ =

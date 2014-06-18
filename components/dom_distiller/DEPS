@@ -1,11 +1,11 @@
 include_rules = [
+  "+components/leveldb_proto",
   "+google", # For third_party/protobuf.
   "+grit",  # For generated headers.
   "+jni",
   "+sync/api",
   "+sync/protocol",
   "+third_party/dom_distiller_js",
-  "+third_party/leveldatabase/src/include",
   "+net/base",
   "+net/http",
   "+net/url_request",

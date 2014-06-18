@@ -1,4 +1,4 @@
-# Copyright 2012 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -84,7 +84,6 @@
             'dom_distiller/core/distilled_content_store_unittest.cc',
             'dom_distiller/core/distiller_unittest.cc',
             'dom_distiller/core/distiller_url_fetcher_unittest.cc',
-            'dom_distiller/core/dom_distiller_database_unittest.cc',
             'dom_distiller/core/dom_distiller_model_unittest.cc',
             'dom_distiller/core/dom_distiller_service_unittest.cc',
             'dom_distiller/core/dom_distiller_store_unittest.cc',
@@ -115,6 +114,7 @@
             'keyed_service/content/browser_context_dependency_manager_unittest.cc',
             'keyed_service/core/dependency_graph_unittest.cc',
             'language_usage_metrics/language_usage_metrics_unittest.cc',
+            'leveldb_proto/proto_database_impl_unittest.cc',
             'metrics/compression_utils_unittest.cc',
             'metrics/machine_id_provider_win_unittest.cc',
             'metrics/metrics_hashes_unittest.cc',
@@ -286,6 +286,11 @@
             # Dependencies of language_usage_metrics
             'components.gyp:language_usage_metrics',
 
+            # Dependencies of leveldb_proto
+            '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+            'components.gyp:leveldb_proto',
+            'components.gyp:leveldb_proto_test_support',
+
             # Dependencies of metrics
             'components.gyp:metrics',
             'components.gyp:metrics_net',
@@ -408,6 +413,7 @@
                 ['include', '^json_schema/'],
                 ['include', '^keyed_service/core/'],
                 ['include', '^language_usage_metrics/'],
+                ['include', '^leveldb_proto/'],
                 ['include', '^metrics/'],
                 ['include', '^network_time/'],
                 ['include', '^password_manager/'],

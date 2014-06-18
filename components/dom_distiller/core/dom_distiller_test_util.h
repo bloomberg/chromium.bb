@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "components/dom_distiller/core/dom_distiller_observer.h"
-#include "components/dom_distiller/core/fake_db.h"
+#include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace dom_distiller {
@@ -42,8 +42,9 @@ testing::Matcher<const std::vector<DomDistillerObserver::ArticleUpdate>&>
 
 // Creates a simple DomDistillerStore backed by |fake_db| and initialized
 // with |store_model|.
-DomDistillerStore* CreateStoreWithFakeDB(FakeDB* fake_db,
-                                         const FakeDB::EntryMap& store_model);
+DomDistillerStore* CreateStoreWithFakeDB(
+    leveldb_proto::test::FakeDB<ArticleEntry>* fake_db,
+    const leveldb_proto::test::FakeDB<ArticleEntry>::EntryMap& store_model);
 
 }  // namespace util
 }  // namespace test

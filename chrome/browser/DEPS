@@ -31,6 +31,7 @@ include_rules = [
   "+components/invalidation",
   "+components/keyed_service",
   "+components/language_usage_metrics",
+  "+components/leveldb_proto",
   "+components/nacl/browser",
   "+components/nacl/common",
   "+components/navigation_interception",

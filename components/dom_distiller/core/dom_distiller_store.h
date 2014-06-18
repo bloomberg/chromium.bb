@@ -12,9 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/dom_distiller/core/article_entry.h"
-#include "components/dom_distiller/core/dom_distiller_database.h"
 #include "components/dom_distiller/core/dom_distiller_model.h"
 #include "components/dom_distiller/core/dom_distiller_observer.h"
+#include "components/leveldb_proto/proto_database.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error.h"
@@ -76,17 +76,21 @@ class DomDistillerStoreInterface {
 class DomDistillerStore : public syncer::SyncableService,
                           public DomDistillerStoreInterface {
  public:
+  typedef std::vector<ArticleEntry> EntryVector;
+
   // Creates storage using the given database for local storage. Initializes the
   // database with |database_dir|.
-  DomDistillerStore(scoped_ptr<DomDistillerDatabaseInterface> database,
-                    const base::FilePath& database_dir);
+  DomDistillerStore(
+      scoped_ptr<leveldb_proto::ProtoDatabase<ArticleEntry> > database,
+      const base::FilePath& database_dir);
 
   // Creates storage using the given database for local storage. Initializes the
   // database with |database_dir|.  Also initializes the internal model to
   // |initial_model|.
-  DomDistillerStore(scoped_ptr<DomDistillerDatabaseInterface> database,
-                    const std::vector<ArticleEntry>& initial_data,
-                    const base::FilePath& database_dir);
+  DomDistillerStore(
+      scoped_ptr<leveldb_proto::ProtoDatabase<ArticleEntry> > database,
+      const std::vector<ArticleEntry>& initial_data,
+      const base::FilePath& database_dir);
 
   virtual ~DomDistillerStore();
 
@@ -104,24 +108,23 @@ class DomDistillerStore : public syncer::SyncableService,
 
   // syncer::SyncableService implementation.
   virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
-      syncer::ModelType type,
-      const syncer::SyncDataList& initial_sync_data,
+      syncer::ModelType type, const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> error_handler) OVERRIDE;
   virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      OVERRIDE;
+  virtual syncer::SyncDataList GetAllSyncData(
+      syncer::ModelType type) const OVERRIDE;
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
+
  private:
   void OnDatabaseInit(bool success);
   void OnDatabaseLoad(bool success, scoped_ptr<EntryVector> entries);
   void OnDatabaseSave(bool success);
 
   syncer::SyncMergeResult MergeDataWithModel(
-      const syncer::SyncDataList& data,
-      syncer::SyncChangeList* changes_applied,
+      const syncer::SyncDataList& data, syncer::SyncChangeList* changes_applied,
       syncer::SyncChangeList* changes_missing);
 
   // Convert a SyncDataList to a SyncChangeList of add or update changes based
@@ -145,7 +148,7 @@ class DomDistillerStore : public syncer::SyncableService,
 
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
   scoped_ptr<syncer::SyncErrorFactory> error_factory_;
-  scoped_ptr<DomDistillerDatabaseInterface> database_;
+  scoped_ptr<leveldb_proto::ProtoDatabase<ArticleEntry> > database_;
   bool database_loaded_;
   ObserverList<DomDistillerObserver> observers_;
 

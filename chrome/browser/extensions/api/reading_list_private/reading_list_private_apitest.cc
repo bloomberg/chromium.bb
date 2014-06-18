@@ -6,14 +6,15 @@
 #include "chrome/browser/extensions/api/reading_list_private/reading_list_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/dom_distiller/core/dom_distiller_test_util.h"
-#include "components/dom_distiller/core/fake_db.h"
 #include "components/dom_distiller/core/fake_distiller.h"
 #include "components/dom_distiller/core/fake_distiller_page.h"
+#include "components/leveldb_proto/testing/fake_db.h"
 
-using dom_distiller::test::FakeDB;
+using dom_distiller::ArticleEntry;
 using dom_distiller::test::FakeDistiller;
 using dom_distiller::test::util::CreateStoreWithFakeDB;
 using dom_distiller::DomDistillerContextKeyedService;
@@ -24,11 +25,13 @@ using dom_distiller::DomDistillerStoreInterface;
 using dom_distiller::test::MockDistillerFactory;
 using dom_distiller::test::MockDistillerPage;
 using dom_distiller::test::MockDistillerPageFactory;
+using leveldb_proto::test::FakeDB;
 
 class ReadingListPrivateApiTest : public ExtensionApiTest {
  public:
   static KeyedService* Build(content::BrowserContext* context) {
-    FakeDB* fake_db = new FakeDB(new FakeDB::EntryMap);
+    FakeDB<ArticleEntry>* fake_db =
+        new FakeDB<ArticleEntry>(new FakeDB<ArticleEntry>::EntryMap);
     FakeDistiller* distiller = new FakeDistiller(true);
     MockDistillerPage* distiller_page = new MockDistillerPage();
     MockDistillerFactory* distiller_factory = new MockDistillerFactory();
@@ -37,7 +40,8 @@ class ReadingListPrivateApiTest : public ExtensionApiTest {
     DomDistillerContextKeyedService* service =
         new DomDistillerContextKeyedService(
             scoped_ptr<DomDistillerStoreInterface>(
-                CreateStoreWithFakeDB(fake_db, FakeDB::EntryMap())),
+                CreateStoreWithFakeDB(fake_db,
+                                      FakeDB<ArticleEntry>::EntryMap())),
             scoped_ptr<DistillerFactory>(distiller_factory),
             scoped_ptr<DistillerPageFactory>(distiller_page_factory));
     fake_db->InitCallback(true);

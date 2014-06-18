@@ -6,9 +6,12 @@
 
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/dom_distiller/content/distiller_page_web_contents.h"
+#include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/leveldb_proto/proto_database.h"
+#include "components/leveldb_proto/proto_database_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -18,10 +21,8 @@ DomDistillerContextKeyedService::DomDistillerContextKeyedService(
     scoped_ptr<DomDistillerStoreInterface> store,
     scoped_ptr<DistillerFactory> distiller_factory,
     scoped_ptr<DistillerPageFactory> distiller_page_factory)
-    : DomDistillerService(store.Pass(),
-                          distiller_factory.Pass(),
-                          distiller_page_factory.Pass()) {
-}
+    : DomDistillerService(store.Pass(), distiller_factory.Pass(),
+                          distiller_page_factory.Pass()) {}
 
 // static
 DomDistillerServiceFactory* DomDistillerServiceFactory::GetInstance() {
@@ -49,14 +50,15 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
           content::BrowserThread::GetBlockingPool()->GetSequenceToken());
 
-  scoped_ptr<DomDistillerDatabase> db(
-      new DomDistillerDatabase(background_task_runner));
+  scoped_ptr<leveldb_proto::ProtoDatabaseImpl<ArticleEntry> > db(
+      new leveldb_proto::ProtoDatabaseImpl<ArticleEntry>(
+          background_task_runner));
 
   base::FilePath database_dir(
       profile->GetPath().Append(FILE_PATH_LITERAL("Articles")));
 
   scoped_ptr<DomDistillerStore> dom_distiller_store(new DomDistillerStore(
-      db.PassAs<DomDistillerDatabaseInterface>(), database_dir));
+      db.PassAs<leveldb_proto::ProtoDatabase<ArticleEntry> >(), database_dir));
 
   scoped_ptr<DistillerPageFactory> distiller_page_factory(
       new DistillerPageWebContentsFactory(profile));
@@ -65,9 +67,8 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
 
   dom_distiller::proto::DomDistillerOptions options;
   if (VLOG_IS_ON(1)) {
-    options.set_debug_level(
-        logging::GetVlogLevelHelper(FROM_HERE.file_name(),
-                                    ::strlen(FROM_HERE.file_name())));
+    options.set_debug_level(logging::GetVlogLevelHelper(
+        FROM_HERE.file_name(), ::strlen(FROM_HERE.file_name())));
   }
   scoped_ptr<DistillerFactory> distiller_factory(
       new DistillerFactoryImpl(distiller_url_fetcher_factory.Pass(), options));
@@ -75,8 +76,7 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
   DomDistillerContextKeyedService* service =
       new DomDistillerContextKeyedService(
           dom_distiller_store.PassAs<DomDistillerStoreInterface>(),
-          distiller_factory.Pass(),
-          distiller_page_factory.Pass());
+          distiller_factory.Pass(), distiller_page_factory.Pass());
 
   return service;
 }
