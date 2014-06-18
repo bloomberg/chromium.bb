@@ -8,7 +8,9 @@
 #include <cmath>
 #include <limits>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "base/rand_util.h"
 
 namespace net {
@@ -132,22 +134,39 @@ base::TimeTicks BackoffEntry::CalculateReleaseTime() const {
   // The delay is calculated with this formula:
   // delay = initial_backoff * multiply_factor^(
   //     effective_failure_count - 1) * Uniform(1 - jitter_factor, 1]
-  double delay = policy_->initial_delay_ms;
-  delay *= pow(policy_->multiply_factor, effective_failure_count - 1);
-  delay -= base::RandDouble() * policy_->jitter_factor * delay;
+  // Note: if the failure count is too high, |delay_ms| will become infinity
+  // after the exponential calculation, and then NaN after the jitter is
+  // accounted for. Both cases are handled by using CheckedNumeric<int64> to
+  // perform the conversion to integers.
+  double delay_ms = policy_->initial_delay_ms;
+  delay_ms *= pow(policy_->multiply_factor, effective_failure_count - 1);
+  delay_ms -= base::RandDouble() * policy_->jitter_factor * delay_ms;
 
-  const int64 kMaxInt64 = std::numeric_limits<int64>::max();
-  int64 delay_int = (delay > kMaxInt64) ?
-      kMaxInt64 : static_cast<int64>(delay + 0.5);
+  // Do overflow checking in microseconds, the internal unit of TimeTicks.
+  const int64 kTimeTicksNowUs =
+      (ImplGetTimeNow() - base::TimeTicks()).InMicroseconds();
+  base::internal::CheckedNumeric<int64> calculated_release_time_us =
+      delay_ms + 0.5;
+  calculated_release_time_us *= base::Time::kMicrosecondsPerMillisecond;
+  calculated_release_time_us += kTimeTicksNowUs;
 
-  // Ensure that we do not exceed maximum delay.
-  if (policy_->maximum_backoff_ms >= 0)
-    delay_int = std::min(delay_int, policy_->maximum_backoff_ms);
+  base::internal::CheckedNumeric<int64> maximum_release_time_us = kint64max;
+  if (policy_->maximum_backoff_ms >= 0) {
+    maximum_release_time_us = policy_->maximum_backoff_ms;
+    maximum_release_time_us *= base::Time::kMicrosecondsPerMillisecond;
+    maximum_release_time_us += kTimeTicksNowUs;
+  }
+
+  // Decide between maximum release time and calculated release time, accounting
+  // for overflow with both.
+  int64 release_time_us = std::min(
+      calculated_release_time_us.ValueOrDefault(kint64max),
+      maximum_release_time_us.ValueOrDefault(kint64max));
 
   // Never reduce previously set release horizon, e.g. due to Retry-After
   // header.
   return std::max(
-      ImplGetTimeNow() + base::TimeDelta::FromMilliseconds(delay_int),
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(release_time_us),
       exponential_backoff_release_time_);
 }
 

@@ -293,4 +293,22 @@ TEST(BackoffEntryTest, RetainCustomHorizonWhenInitialErrorsIgnored) {
   EXPECT_EQ(custom_horizon, custom.GetReleaseTime());
 }
 
+TEST(BackoffEntryTest, OverflowProtection) {
+  BackoffEntry::Policy large_multiply_policy = base_policy;
+  large_multiply_policy.multiply_factor = 256;
+  TestBackoffEntry custom(&large_multiply_policy);
+
+  // Trigger enough failures such that more than 11 bits of exponent are used
+  // to represent the exponential backoff intermediate values. Given a multiply
+  // factor of 256 (2^8), 129 iterations is enough: 2^(8*(129-1)) = 2^1024.
+  for (int i = 0; i < 129; ++i) {
+     custom.set_now(custom.ImplGetTimeNow() + custom.GetTimeUntilRelease());
+     custom.InformOfRequest(false);
+     ASSERT_TRUE(custom.ShouldRejectRequest());
+  }
+
+  // Max delay should still be respected.
+  EXPECT_EQ(20000, custom.GetTimeUntilRelease().InMilliseconds());
+}
+
 }  // namespace
