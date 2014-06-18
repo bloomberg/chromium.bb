@@ -102,3 +102,8 @@ static_library("gtest") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
+
+source_set("gtest_main") {
+  sources = [ "src/gtest_main.cc" ]
+  deps = [ ":gtest" ]
+}

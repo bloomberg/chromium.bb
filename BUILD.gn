@@ -101,6 +101,10 @@ group("root") {
     "//webkit/child",
   ]
 
+  if (!is_win) {
+    deps += [ "//breakpad:symupload" ]
+  }
+
   if (is_linux) {
     deps += [
       "//dbus",
