@@ -88,7 +88,7 @@
             'remoting_native_messaging_manifests',
           ],
           'variables': {
-            'host_name': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_FILE_NAME@")',
+            'host_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_HOST_PACKAGE_NAME@")',
             'host_service_name': '<!(python <(version_py_path) -f <(branding_path) -t "@DAEMON_FILE_NAME@")',
             'host_uninstaller_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_UNINSTALLER_NAME@")',
             'bundle_prefix': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_UNINSTALLER_BUNDLE_PREFIX@")',

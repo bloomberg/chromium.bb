@@ -29,7 +29,7 @@ VS_VERSION_INFO VERSIONINFO
  FILEFLAGS 0x0L
 #endif
  FILEOS 0x4L
-#if (BINARY == BINARY_CORE) || (BINARY == BINARY_HOST_PLUGIN)
+#if (BINARY == BINARY_CORE)
  FILETYPE VFT_DLL
 #else
  FILETYPE VFT_APP
@@ -59,11 +59,6 @@ BEGIN
       VALUE "FileDescription", "{% trans %}REMOTING_HOST_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remoting_host.exe"
       VALUE "OriginalFilename", "remoting_host.exe"
-#elif (BINARY == BINARY_HOST_PLUGIN)
-      VALUE "FileDescription", "{% trans %}REMOTING_HOST_PLUGIN_DESCRIPTION{% endtrans %}"
-      VALUE "InternalName", "remoting_host_plugin.dll"
-      VALUE "OriginalFilename", "remoting_host_plugin.dll"
-      VALUE "MIMEType", STRINGIZE(HOST_PLUGIN_MIME_TYPE)
 #elif (BINARY == BINARY_NATIVE_MESSAGING_HOST)
       VALUE "FileDescription", "{% trans %}REMOTING_NATIVE_MESSAGING_HOST_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remoting_native_messaging_host.exe"

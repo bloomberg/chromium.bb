@@ -75,20 +75,18 @@ def processJinjaTemplate(input_file, output_file, context):
 
 
 
-def buildWebApp(buildtype, version, mimetype, destination, zip_path,
-                manifest_template, webapp_type, plugin, files, locales):
+def buildWebApp(buildtype, version, destination, zip_path,
+                manifest_template, webapp_type, files, locales):
   """Does the main work of building the webapp directory and zipfile.
 
   Args:
     buildtype: the type of build ("Official" or "Dev").
-    mimetype: A string with mimetype of plugin.
     destination: A string with path to directory where the webapp will be
                  written.
     zipfile: A string with path to the zipfile to create containing the
              contents of |destination|.
     manifest_template: jinja2 template file for manifest.
     webapp_type: webapp type ("v1", "v2" or "v2_pnacl").
-    plugin: A string with path to the binary plugin for this webapp.
     files: An array of strings listing the paths for resources to include
            in this webapp.
     locales: An array of strings listing locales, which are copied, along
@@ -150,44 +148,6 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path,
       shutil.copy2(current_locale, destination_file)
     else:
       raise Exception("Unknown extension: " + current_locale);
-
-  # Create fake plugin files to appease the manifest checker.
-  # It requires that if there is a plugin listed in the manifest that
-  # there be a file in the plugin with that name.
-  names = [
-    'remoting_host_plugin.dll',  # Windows
-    'remoting_host_plugin.plugin',  # Mac
-    'libremoting_host_plugin.ia32.so',  # Linux 32
-    'libremoting_host_plugin.x64.so'  # Linux 64
-  ]
-  pluginName = os.path.basename(plugin)
-
-  for name in names:
-    if name != pluginName:
-      path = os.path.join(destination, name)
-      f = open(path, 'w')
-      f.write("placeholder for %s" % (name))
-      f.close()
-
-  # Copy the plugin. On some platforms (e.g. ChromeOS) plugin compilation may be
-  # disabled, in which case we don't need to copy anything.
-  if plugin:
-    newPluginPath = os.path.join(destination, pluginName)
-    if os.path.isdir(plugin):
-      # On Mac we have a directory.
-      shutil.copytree(plugin, newPluginPath)
-    else:
-      shutil.copy2(plugin, newPluginPath)
-
-    # Strip the linux build.
-    if ((platform.system() == 'Linux') and (buildtype == 'Official')):
-      subprocess.call(["strip", newPluginPath])
-
-  # Set the correct mimetype.
-  hostPluginMimeType = os.environ.get(
-      'HOST_PLUGIN_MIMETYPE', 'application/vnd.chromium.remoting-host')
-  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                 'HOST_PLUGIN_MIMETYPE', hostPluginMimeType)
 
   # Set client plugin type.
   client_plugin = 'pnacl' if webapp_type == 'v2_pnacl' else 'native'
@@ -304,29 +264,24 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path,
 def main():
   if len(sys.argv) < 6:
     print ('Usage: build-webapp.py '
-           '<build-type> <version> <mime-type> <dst> <zip-path> '
-           '<manifest_template> <webapp_type> <other files...> '
-           '[--plugin <plugin>] [--locales <locales...>]')
+           '<build-type> <version> <dst> <zip-path> <manifest_template> '
+           '<webapp_type> <other files...> '
+           '[--locales <locales...>]')
     return 1
 
   arg_type = ''
   files = []
   locales = []
-  plugin = ""
   for arg in sys.argv[8:]:
-    if arg in ['--locales', '--plugin']:
+    if arg in ['--locales']:
       arg_type = arg
     elif arg_type == '--locales':
       locales.append(arg)
-    elif arg_type == '--plugin':
-      plugin = arg
-      arg_type = ''
     else:
       files.append(arg)
 
   return buildWebApp(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
-                     sys.argv[5], sys.argv[6], sys.argv[7], plugin,
-                     files, locales)
+                     sys.argv[5], sys.argv[6], files, locales)
 
 
 if __name__ == '__main__':

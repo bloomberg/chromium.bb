@@ -451,106 +451,6 @@
         },  # end of target 'remoting_host_setup_base'
 
         {
-          'target_name': 'remoting_host_plugin',
-          'type': 'loadable_module',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'product_extension': '<(host_plugin_extension)',
-          'product_prefix': '<(host_plugin_prefix)',
-          'defines': [
-            'HOST_PLUGIN_MIME_TYPE=<(host_plugin_mime_type)',
-          ],
-          'dependencies': [
-            '../base/base.gyp:base_i18n',
-            '../net/net.gyp:net',
-            '../third_party/npapi/npapi.gyp:npapi',
-            'remoting_base',
-            'remoting_host',
-            'remoting_host_setup_base',
-            'remoting_infoplist_strings',
-            'remoting_it2me_host_static',
-            'remoting_protocol',
-            'remoting_resources',
-          ],
-          'sources': [
-            'base/dispatch_win.h',
-            'host/plugin/host_log_handler.cc',
-            'host/plugin/host_log_handler.h',
-            'host/plugin/host_plugin.cc',
-            'host/plugin/host_plugin_utils.cc',
-            'host/plugin/host_plugin_utils.h',
-            'host/plugin/host_script_object.cc',
-            'host/plugin/host_script_object.h',
-            'host/win/core_resource.h',
-          ],
-          'conditions': [
-            ['OS=="mac"', {
-              'mac_bundle': 1,
-              'xcode_settings': {
-                'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
-                'INFOPLIST_FILE': 'host/plugin/host_plugin-Info.plist',
-                'INFOPLIST_PREPROCESS': 'YES',
-                # TODO(maruel): Use INFOPLIST_PREFIX_HEADER to remove the need to
-                # duplicate string once
-                # http://code.google.com/p/gyp/issues/detail?id=243 is fixed.
-                'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'HOST_PLUGIN_MIME_TYPE="<(host_plugin_mime_type)" VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)"',
-              },
-              # TODO(mark): Come up with a fancier way to do this.  It should
-              # only be necessary to list host_plugin-Info.plist once, not the
-              # three times it is listed here.
-              'mac_bundle_resources': [
-                'host/disconnect_window.xib',
-                'host/plugin/host_plugin-Info.plist',
-                'resources/chromoting16.png',
-                'resources/chromoting48.png',
-                'resources/chromoting128.png',
-                '<!@pymod_do_main(remoting_copy_locales -o -p <(OS) -x <(PRODUCT_DIR) <(remoting_locales))',
-
-                # Localized strings for 'Info.plist'
-                '<!@pymod_do_main(remoting_localize --locale_output '
-                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/host_plugin-InfoPlist.strings/@{json_suffix}.lproj/InfoPlist.strings" '
-                    '--print_only <(remoting_locales))',
-              ],
-              'mac_bundle_resources!': [
-                'host/plugin/host_plugin-Info.plist',
-              ],
-              'conditions': [
-                ['mac_breakpad==1', {
-                  'variables': {
-                    # A real .dSYM is needed for dump_syms to operate on.
-                    'mac_real_dsym': 1,
-                  },
-                }],
-              ],  # conditions
-            }],  # OS=="mac"
-            [ 'OS=="win"', {
-              'defines': [
-                'BINARY=BINARY_HOST_PLUGIN',
-                'ISOLATION_AWARE_ENABLED=1',
-              ],
-              'dependencies': [
-                'remoting_lib_idl',
-                'remoting_windows_resources',
-              ],
-              'include_dirs': [
-                '<(INTERMEDIATE_DIR)',
-              ],
-              'sources': [
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/core.rc',
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
-                'host/plugin/host_plugin.def',
-              ],
-              'msvs_settings': {
-                'VCManifestTool': {
-                  'EmbedManifest': 'true',
-                  'AdditionalManifestFiles': [
-                    'host/win/common-controls.manifest',
-                  ],
-                },
-              },
-            }],
-          ],
-        },  # end of target 'remoting_host_plugin'
-        {
           'target_name': 'remoting_it2me_host_static',
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -638,7 +538,6 @@
             'remoting_resources',
           ],
           'sources': [
-            'host/plugin/host_plugin-InfoPlist.strings.jinja2',
             'host/remoting_me2me_host-InfoPlist.strings.jinja2',
             'host/mac/me2me_preference_pane-InfoPlist.strings.jinja2',
             'host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2',

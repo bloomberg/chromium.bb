@@ -33,25 +33,13 @@ remoting.tryShare = function() {
   var hostInstallDialog = null;
 
   var tryInitializeDispatcher = function() {
-    hostDispatcher.initialize(createPluginForIt2Me,
-                              onDispatcherInitialized,
+    hostDispatcher.initialize(onDispatcherInitialized,
                               onDispatcherInitializationFailed);
   }
 
-  /** @return {remoting.HostPlugin} */
-  var createPluginForIt2Me = function() {
-    return remoting.createNpapiPlugin(
-        document.getElementById('host-plugin-container'));
-  }
-
   var onDispatcherInitialized = function () {
-    if (hostDispatcher.usingNpapi()) {
-      hostInstallDialog = new remoting.HostInstallDialog();
-      hostInstallDialog.show(tryInitializeDispatcher, onInstallError);
-    } else {
-      // Host alrady installed.
-      remoting.startHostUsingDispatcher_(hostDispatcher);
-    }
+    // Host already installed.
+    remoting.startHostUsingDispatcher_(hostDispatcher);
   };
 
   /** @param {remoting.Error} error */
@@ -181,8 +169,6 @@ function onHostStateChanged_(state) {
         remoting.setMode(remoting.AppMode.HOST_SHARE_FINISHED);
       }
     }
-    remoting.hostSession.cleanup();
-
   } else if (state == remoting.HostSession.State.ERROR) {
     console.error('Host state: ERROR');
     showShareError_(remoting.Error.UNEXPECTED);

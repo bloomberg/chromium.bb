@@ -179,28 +179,6 @@ function isIT2MeSupported_() {
 }
 
 /**
- * Create an instance of the NPAPI plugin.
- * @param {Element} container The element to add the plugin to.
- * @return {remoting.HostPlugin} The new plugin instance or null if it failed to
- *     load.
- */
-remoting.createNpapiPlugin = function(container) {
-  var plugin = document.createElement('embed');
-  plugin.type = remoting.settings.PLUGIN_MIMETYPE;
-  // Hiding the plugin means it doesn't load, so make it size zero instead.
-  plugin.width = 0;
-  plugin.height = 0;
-
-  // Verify if the plugin was loaded successfully.
-  if (plugin.hasOwnProperty('REQUESTED_ACCESS_CODE')) {
-    container.appendChild(plugin);
-    return /** @type {remoting.HostPlugin} */ (plugin);
-  }
-
-  return null;
-};
-
-/**
  * Returns true if the current platform is fully supported. It's only used when
  * we detect that host native messaging components are not installed. In that
  * case the result of this function determines if the webapp should show the

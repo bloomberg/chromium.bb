@@ -19,8 +19,6 @@ remoting.Settings = function() {};
 // The settings on this file are automatically substituted by build-webapp.py.
 // Do not override them manually, except for running local tests.
 
-/** @type {string} MIME type for the host plugin.*/
-remoting.Settings.prototype.PLUGIN_MIMETYPE = 'HOST_PLUGIN_MIMETYPE';
 /** @type {string} API client ID.*/
 remoting.Settings.prototype.OAUTH2_CLIENT_ID = 'API_CLIENT_ID';
 /** @type {string} API client secret.*/

@@ -108,7 +108,6 @@
       'type': 'none',
       'variables': {
         'webapp_type': 'v1',
-        'include_host_plugin': '<(enable_remoting_host)',
         'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp',
         'zip_path': '<(PRODUCT_DIR)/remoting-webapp.zip',
       },

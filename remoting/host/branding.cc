@@ -12,7 +12,7 @@ namespace {
 // TODO(lambroslambrou): The default locations should depend on whether Chrome
 // branding is enabled - this means also modifying the Python daemon script.
 // The actual location of the files is ultimately determined by the service
-// daemon and NPAPI implementation - these defaults are only used in case the
+// daemon and native messaging host - these defaults are only used in case the
 // command-line switches are absent.
 #if defined(OS_WIN)
 #ifdef OFFICIAL_BUILD

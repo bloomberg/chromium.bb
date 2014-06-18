@@ -1,12 +1,12 @@
 APK_FILE_NAME=ChromeRemoteDesktop
 APK_PACKAGE_NAME=com.google.chromeremotedesktop
 DAEMON_FILE_NAME=Chrome Remote Desktop Host Service
-HOST_PLUGIN_FILE_NAME=Chrome Remote Desktop Host
 IT2ME_HOST_DESCRIPTION=Remote Assistance Host for Chrome Remote Desktop
 MAC_BUNDLE_ID=com.google.Chrome
 MAC_CREATOR=rimZ
 MAC_HOST_BUNDLE_ID=com.google.chromeremotedesktop.me2me-host
 MAC_HOST_BUNDLE_NAME=ChromeRemoteDesktopHost.bundle
+MAC_HOST_PACKAGE_NAME=Chrome Remote Desktop Host
 MAC_NATIVE_MESSAGING_HOST_BUNDLE_ID=com.google.chrome.remote_desktop.native-messaging-host
 MAC_NATIVE_MESSAGING_HOST_BUNDLE_NAME=NativeMessagingHost.bundle
 MAC_PREFPANE_BUNDLE_ID=com.google.chromeremotedesktop.preferences

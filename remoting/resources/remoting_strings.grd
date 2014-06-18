@@ -214,7 +214,7 @@
         <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDS_ERROR_AUTHENTICATION_FAILED" formatter_data="android_java">
           Authentication failed. Please sign in to Chrome Remote Desktop again.
         </message>
-        <message desc="Error displayed if the host or client plugin are missing or if they could not be loaded." name="IDS_ERROR_BAD_PLUGIN_VERSION">
+        <message desc="Error displayed if the client plugin are missing or if they could not be loaded." name="IDS_ERROR_BAD_PLUGIN_VERSION">
           Some components required for Chrome Remote Desktop are missing. Please make sure you have installed the latest version and try again.
         </message>
         <message desc="Error that is shown on the client side when incompatible Chrome Remote Desktop versions are installed on host and client." name="IDS_ERROR_INCOMPATIBLE_PROTOCOL" formatter_data="android_java">
@@ -280,9 +280,6 @@
         <message name="IDS_VERIFY_PIN_DIALOG_MESSAGE" desc="The message displayed by the PIN verification dialog.">
           Please confirm your account and PIN below to allow access by Chrome Remote Desktop.
         </message>
-        <message name="IDS_REMOTING_HOST_PLUGIN_NAME" desc="Name of Chrome Remote Desktop Host plugin displayed by Chrome at about:plugins.">
-          Chrome Remote Desktop Host
-        </message>
         <message name="IDS_MAC_PREFPANE_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Preferences bundle on MacOS.">
           Chrome Remote Desktop Host Preferences
         </message>
@@ -319,7 +316,7 @@
         <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDS_ERROR_AUTHENTICATION_FAILED" formatter_data="android_java">
           Authentication failed. Please sign in to Chromoting again.
         </message>
-        <message desc="Error displayed if the host or client plugin are missing or if they could not be loaded." name="IDS_ERROR_BAD_PLUGIN_VERSION">
+        <message desc="Error displayed if the client plugin are missing or if they could not be loaded." name="IDS_ERROR_BAD_PLUGIN_VERSION">
           Some components required for Chromoting are missing. Please make sure you have installed the latest version and try again.
         </message>
         <message desc="Error that is shown on the client side when incompatible Chromoting versions are installed on host and client." name="IDS_ERROR_INCOMPATIBLE_PROTOCOL" formatter_data="android_java">
@@ -384,9 +381,6 @@
         </message>
         <message name="IDS_VERIFY_PIN_DIALOG_MESSAGE" desc="The message displayed by the PIN verification dialog.">
           Please confirm your account and PIN below to allow access by Chromoting.
-        </message>
-        <message name="IDS_REMOTING_HOST_PLUGIN_NAME" desc="Name of Chromoting Host plugin displayed by Chrome at about:plugins.">
-          Chromoting Host
         </message>
         <message name="IDS_MAC_PREFPANE_BUNDLE_NAME" desc="The bundle name specified in the property list of Chromoting Host Preferences bundle on MacOS.">
           Chromoting Host Preferences
@@ -778,9 +772,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       </message>
       <message name="IDS_REMOTING_HOST_DESCRIPTION" desc="The file description specified in the version information of remoting_host.exe.">
         Host Process
-      </message>
-      <message name="IDS_REMOTING_HOST_PLUGIN_DESCRIPTION" desc="The file description specified in the version information of remoting_host_plugin.dll.">
-        Allow another user to access your computer securely over the Internet.
       </message>
       <message name="IDS_REMOTING_NATIVE_MESSAGING_HOST_DESCRIPTION" desc="The file description specified in the version information of remoting_native_messaging_host.exe.">
         Native messaging host for remoting host management

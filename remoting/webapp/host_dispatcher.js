@@ -5,15 +5,7 @@
 /**
  * @fileoverview
  * This class provides an interface between the HostController and either the
- * NativeMessaging Host or the Host NPAPI plugin, depending on whether or not
- * NativeMessaging is supported. Since the test for NativeMessaging support is
- * asynchronous, this class stores any requests on a queue, pending the result
- * of the test.
- * Once the test is complete, the pending requests are performed on either the
- * NativeMessaging host, or the NPAPI plugin.
- *
- * If necessary, the HostController is instructed (via a callback) to
- * instantiate the NPAPI plugin, and return a reference to it here.
+ * NativeMessaging Host.
  */
 
 'use strict';
@@ -23,25 +15,16 @@ var remoting = remoting || {};
 
 /**
  * @constructor
- * @param {function():remoting.HostPlugin} createPluginCallback Callback to
- *     instantiate the NPAPI plugin when NativeMessaging is determined to be
- *     unsupported.
  */
-remoting.HostDispatcher = function(createPluginCallback) {
+remoting.HostDispatcher = function() {
   /** @type {remoting.HostNativeMessaging} @private */
   this.nativeMessagingHost_ = new remoting.HostNativeMessaging();
-
-  /** @type {remoting.HostPlugin} @private */
-  this.npapiHost_ = null;
 
   /** @type {remoting.HostDispatcher.State} @private */
   this.state_ = remoting.HostDispatcher.State.UNKNOWN;
 
   /** @type {Array.<function()>} @private */
   this.pendingRequests_ = [];
-
-  /** @type {function():remoting.HostPlugin} @private */
-  this.createPluginCallback_ = createPluginCallback;
 
   this.tryToInitialize_();
 }
@@ -50,8 +33,7 @@ remoting.HostDispatcher = function(createPluginCallback) {
 remoting.HostDispatcher.State = {
   UNKNOWN: 0,
   NATIVE_MESSAGING: 1,
-  NPAPI: 2,
-  NOT_INSTALLED: 3
+  NOT_INSTALLED: 2
 };
 
 remoting.HostDispatcher.prototype.tryToInitialize_ = function() {
@@ -75,23 +57,13 @@ remoting.HostDispatcher.prototype.tryToInitialize_ = function() {
   }
 
   function onNativeMessagingFailed(error) {
-    that.npapiHost_ = that.createPluginCallback_();
-
-    that.state_ = that.npapiHost_ ? remoting.HostDispatcher.State.NPAPI
-                                  : remoting.HostDispatcher.State.NOT_INSTALLED;
+    that.state_ = remoting.HostDispatcher.State.NOT_INSTALLED;
     sendPendingRequests();
   }
 
   this.nativeMessagingHost_.initialize(onNativeMessagingInit,
                                        onNativeMessagingFailed);
 };
-
-/**
- * @return {remoting.HostPlugin}
- */
-remoting.HostDispatcher.prototype.getNpapiHost = function() {
-  return this.npapiHost_;
-}
 
 /**
  * @param {remoting.HostController.Feature} feature The feature to test for.
@@ -107,15 +79,6 @@ remoting.HostDispatcher.prototype.hasFeature = function(
       break;
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       onDone(this.nativeMessagingHost_.hasFeature(feature));
-      break;
-    case remoting.HostDispatcher.State.NPAPI:
-      // If this is an old NPAPI plugin that doesn't list supportedFeatures,
-      // assume it is an old plugin that doesn't support any new feature.
-      var supportedFeatures = [];
-      if (typeof(this.npapiHost_.supportedFeatures) == 'string') {
-        supportedFeatures = this.npapiHost_.supportedFeatures.split(' ');
-      }
-      onDone(supportedFeatures.indexOf(feature) >= 0);
       break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onDone(false);
@@ -136,13 +99,6 @@ remoting.HostDispatcher.prototype.getHostName = function(onDone, onError) {
       break;
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       this.nativeMessagingHost_.getHostName(onDone, onError);
-      break;
-    case remoting.HostDispatcher.State.NPAPI:
-      try {
-        this.npapiHost_.getHostName(onDone);
-      } catch (err) {
-        onError(remoting.Error.MISSING_PLUGIN);
-      }
       break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onError(remoting.Error.MISSING_PLUGIN);
@@ -167,13 +123,6 @@ remoting.HostDispatcher.prototype.getPinHash =
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       this.nativeMessagingHost_.getPinHash(hostId, pin, onDone, onError);
       break;
-    case remoting.HostDispatcher.State.NPAPI:
-      try {
-        this.npapiHost_.getPinHash(hostId, pin, onDone);
-      } catch (err) {
-        onError(remoting.Error.MISSING_PLUGIN);
-      }
-      break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onError(remoting.Error.MISSING_PLUGIN);
       break;
@@ -193,13 +142,6 @@ remoting.HostDispatcher.prototype.generateKeyPair = function(onDone, onError) {
       break;
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       this.nativeMessagingHost_.generateKeyPair(onDone, onError);
-      break;
-    case remoting.HostDispatcher.State.NPAPI:
-      try {
-        this.npapiHost_.generateKeyPair(onDone);
-      } catch (err) {
-        onError(remoting.Error.MISSING_PLUGIN);
-      }
       break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onError(remoting.Error.MISSING_PLUGIN);
@@ -223,13 +165,6 @@ remoting.HostDispatcher.prototype.updateDaemonConfig =
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       this.nativeMessagingHost_.updateDaemonConfig(config, onDone, onError);
       break;
-    case remoting.HostDispatcher.State.NPAPI:
-      try {
-        this.npapiHost_.updateDaemonConfig(JSON.stringify(config), onDone);
-      } catch (err) {
-        onError(remoting.Error.MISSING_PLUGIN);
-      }
-      break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onError(remoting.Error.MISSING_PLUGIN);
       break;
@@ -242,21 +177,6 @@ remoting.HostDispatcher.prototype.updateDaemonConfig =
  * @return {void}
  */
 remoting.HostDispatcher.prototype.getDaemonConfig = function(onDone, onError) {
-  /**
-   * Converts the config string from the NPAPI plugin to an Object, to pass to
-   * |onDone|.
-   * @param {string} configStr
-   * @return {void}
-   */
-  function callbackForNpapi(configStr) {
-    var config = jsonParseSafe(configStr);
-    if (typeof(config) != 'object') {
-      onError(remoting.Error.UNEXPECTED);
-    } else {
-      onDone(/** @type {Object} */ (config));
-    }
-  }
-
   switch (this.state_) {
     case remoting.HostDispatcher.State.UNKNOWN:
       this.pendingRequests_.push(
@@ -264,13 +184,6 @@ remoting.HostDispatcher.prototype.getDaemonConfig = function(onDone, onError) {
       break;
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       this.nativeMessagingHost_.getDaemonConfig(onDone, onError);
-      break;
-    case remoting.HostDispatcher.State.NPAPI:
-      try {
-        this.npapiHost_.getDaemonConfig(callbackForNpapi);
-      } catch (err) {
-        onError(remoting.Error.MISSING_PLUGIN);
-      }
       break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onDone({});
@@ -292,13 +205,6 @@ remoting.HostDispatcher.prototype.getDaemonVersion = function(onDone, onError) {
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       onDone(this.nativeMessagingHost_.getDaemonVersion());
       break;
-    case remoting.HostDispatcher.State.NPAPI:
-      try {
-        this.npapiHost_.getDaemonVersion(onDone);
-      } catch (err) {
-        onError(remoting.Error.MISSING_PLUGIN);
-      }
-      break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onError(remoting.Error.MISSING_PLUGIN);
       break;
@@ -319,43 +225,6 @@ remoting.HostDispatcher.prototype.getUsageStatsConsent =
       break;
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       this.nativeMessagingHost_.getUsageStatsConsent(onDone, onError);
-      break;
-    case remoting.HostDispatcher.State.NPAPI:
-      try {
-        this.npapiHost_.getUsageStatsConsent(onDone);
-      } catch (err) {
-        onError(remoting.Error.MISSING_PLUGIN);
-      }
-      break;
-    case remoting.HostDispatcher.State.NOT_INSTALLED:
-      onError(remoting.Error.MISSING_PLUGIN);
-      break;
-  }
-};
-
-/**
- * This function installs the host using the NPAPI plugin and should only be
- * called on Windows.
- *
- * @param {function(remoting.HostController.AsyncResult):void} onDone
- * @param {function(remoting.Error):void} onError
- * @return {void}
- */
-remoting.HostDispatcher.prototype.installHost = function(onDone, onError) {
-  switch (this.state_) {
-    case remoting.HostDispatcher.State.UNKNOWN:
-      this.pendingRequests_.push(this.installHost.bind(this, onDone, onError));
-      break;
-    case remoting.HostDispatcher.State.NATIVE_MESSAGING:
-      // Host already installed, no action needed.
-      onDone(remoting.HostController.AsyncResult.OK);
-      break;
-    case remoting.HostDispatcher.State.NPAPI:
-      try {
-        this.npapiHost_.installHost(onDone);
-      } catch (err) {
-        onError(remoting.Error.MISSING_PLUGIN);
-      }
       break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onError(remoting.Error.MISSING_PLUGIN);
@@ -380,13 +249,6 @@ remoting.HostDispatcher.prototype.startDaemon =
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       this.nativeMessagingHost_.startDaemon(config, consent, onDone, onError);
       break;
-    case remoting.HostDispatcher.State.NPAPI:
-      try {
-        this.npapiHost_.startDaemon(JSON.stringify(config), consent, onDone);
-      } catch (err) {
-        onError(remoting.Error.MISSING_PLUGIN);
-      }
-      break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onError(remoting.Error.MISSING_PLUGIN);
       break;
@@ -405,13 +267,6 @@ remoting.HostDispatcher.prototype.stopDaemon = function(onDone, onError) {
       break;
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       this.nativeMessagingHost_.stopDaemon(onDone, onError);
-      break;
-    case remoting.HostDispatcher.State.NPAPI:
-      try {
-        this.npapiHost_.stopDaemon(onDone);
-      } catch (err) {
-        onError(remoting.Error.MISSING_PLUGIN);
-      }
       break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onError(remoting.Error.MISSING_PLUGIN);
@@ -450,16 +305,6 @@ remoting.HostDispatcher.prototype.getDaemonStateInternal_ =
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       this.nativeMessagingHost_.getDaemonState(onDone, onError);
       break;
-    case remoting.HostDispatcher.State.NPAPI:
-      // Call the callback directly, since NPAPI exposes the state directly as
-      // a field member, rather than an asynchronous method.
-      var state = this.npapiHost_.daemonState;
-      if (state === undefined) {
-        onError(remoting.Error.MISSING_PLUGIN);
-      } else {
-        onDone(state);
-      }
-      break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onDone(remoting.HostController.State.NOT_INSTALLED);
       break;
@@ -472,22 +317,6 @@ remoting.HostDispatcher.prototype.getDaemonStateInternal_ =
  * @return {void}
  */
 remoting.HostDispatcher.prototype.getPairedClients = function(onDone, onError) {
-  /**
-   * Converts the JSON string from the NPAPI plugin to Array.<PairedClient>, to
-   * pass to |onDone|.
-   * @param {string} pairedClientsJson
-   * @return {void}
-   */
-  function callbackForNpapi(pairedClientsJson) {
-    var pairedClients = remoting.PairedClient.convertToPairedClientArray(
-        jsonParseSafe(pairedClientsJson));
-    if (pairedClients != null) {
-      onDone(pairedClients);
-    } else {
-      onError(remoting.Error.UNEXPECTED);
-    }
-  }
-
   switch (this.state_) {
     case remoting.HostDispatcher.State.UNKNOWN:
       this.pendingRequests_.push(
@@ -495,13 +324,6 @@ remoting.HostDispatcher.prototype.getPairedClients = function(onDone, onError) {
       break;
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       this.nativeMessagingHost_.getPairedClients(onDone, onError);
-      break;
-    case remoting.HostDispatcher.State.NPAPI:
-      try {
-        this.npapiHost_.getPairedClients(callbackForNpapi);
-      } catch (err) {
-        onError(remoting.Error.MISSING_PLUGIN);
-      }
       break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onError(remoting.Error.MISSING_PLUGIN);
@@ -544,13 +366,6 @@ remoting.HostDispatcher.prototype.clearPairedClients =
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       this.nativeMessagingHost_.clearPairedClients(callback, onError);
       break;
-    case remoting.HostDispatcher.State.NPAPI:
-      try {
-        this.npapiHost_.clearPairedClients(callback);
-      } catch (err) {
-        onError(remoting.Error.MISSING_PLUGIN);
-      }
-      break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onError(remoting.Error.MISSING_PLUGIN);
       break;
@@ -575,13 +390,6 @@ remoting.HostDispatcher.prototype.deletePairedClient =
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       this.nativeMessagingHost_.deletePairedClient(client, callback, onError);
       break;
-    case remoting.HostDispatcher.State.NPAPI:
-      try {
-        this.npapiHost_.deletePairedClient(client, callback);
-      } catch (err) {
-        onError(remoting.Error.MISSING_PLUGIN);
-      }
-      break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onError(remoting.Error.MISSING_PLUGIN);
       break;
@@ -602,11 +410,6 @@ remoting.HostDispatcher.prototype.getHostClientId =
       break;
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       this.nativeMessagingHost_.getHostClientId(onDone, onError);
-      break;
-    case remoting.HostDispatcher.State.NPAPI:
-      // The NPAPI plugin is packaged with the webapp, not the host, so it
-      // doesn't have access to the API keys baked into the installed host.
-      onError(remoting.Error.UNEXPECTED);
       break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onError(remoting.Error.MISSING_PLUGIN);
@@ -632,21 +435,8 @@ remoting.HostDispatcher.prototype.getCredentialsFromAuthCode =
       this.nativeMessagingHost_.getCredentialsFromAuthCode(
           authorizationCode, onDone, onError);
       break;
-    case remoting.HostDispatcher.State.NPAPI:
-      // The NPAPI plugin is packaged with the webapp, not the host, so it
-      // doesn't have access to the API keys baked into the installed host.
-      onError(remoting.Error.UNEXPECTED);
-      break;
     case remoting.HostDispatcher.State.NOT_INSTALLED:
       onError(remoting.Error.MISSING_PLUGIN);
       break;
   }
 };
-
-/**
- * Returns true if the NPAPI plugin is being used.
- * @return {boolean}
- */
-remoting.HostDispatcher.prototype.usingNpapiPlugin = function() {
-  return this.state_ == remoting.HostDispatcher.State.NPAPI;
-}

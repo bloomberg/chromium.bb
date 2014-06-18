@@ -115,11 +115,3 @@ remoting.HostSession.prototype.getClient = function() {
 remoting.HostSession.prototype.disconnect = function() {
   this.hostDispatcher_.disconnect();
 };
-
-
-/**
- * @return {void} Nothing.
- */
-remoting.HostSession.prototype.cleanup = function() {
-  this.hostDispatcher_.cleanup();
-};

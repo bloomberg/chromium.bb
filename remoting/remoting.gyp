@@ -29,41 +29,12 @@
 
     'webapp_locale_dir': '<(SHARED_INTERMEDIATE_DIR)/remoting/webapp/_locales',
 
-    'host_plugin_mime_type': 'application/vnd.chromium.remoting-host',
-
     'conditions': [
       ['OS=="mac"', {
         'mac_bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_BUNDLE_ID@")',
         'mac_creator': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_CREATOR@")',
-        'host_plugin_extension': 'plugin',
-        'host_plugin_prefix': '',
-      }],
-      ['os_posix == 1 and OS != "mac" and target_arch == "ia32"', {
-        # linux 32 bit
-        'host_plugin_extension': 'ia32.so',
-        'host_plugin_prefix': 'lib',
-      }],
-      ['os_posix == 1 and OS != "mac" and target_arch == "x64"', {
-        # linux 64 bit
-        'host_plugin_extension': 'x64.so',
-        'host_plugin_prefix': 'lib',
-      }],
-      ['os_posix == 1 and OS != "mac" and target_arch == "arm"', {
-        'host_plugin_extension': 'arm.so',
-        'host_plugin_prefix': 'lib',
-      }],
-      ['os_posix == 1 and OS != "mac" and target_arch == "arm64"', {
-        'host_plugin_extension': 'arm64.so',
-        'host_plugin_prefix': 'lib',
-      }],
-      ['os_posix == 1 and OS != "mac" and target_arch == "mipsel"', {
-        'host_plugin_extension': 'mipsel.so',
-        'host_plugin_prefix': 'lib',
       }],
       ['OS=="win"', {
-        'host_plugin_extension': 'dll',
-        'host_plugin_prefix': '',
-
         # Each CLSID is a hash of the current version string salted with an
         # arbitrary GUID. This ensures that the newly installed COM classes will
         # be used during/after upgrade even if there are old instances running
@@ -112,9 +83,8 @@
       'BINARY_CORE=1',
       'BINARY_DESKTOP=2',
       'BINARY_HOST_ME2ME=3',
-      'BINARY_HOST_PLUGIN=4',
-      'BINARY_NATIVE_MESSAGING_HOST=5',
-      'BINARY_REMOTE_ASSISTANCE_HOST=6',
+      'BINARY_NATIVE_MESSAGING_HOST=4',
+      'BINARY_REMOTE_ASSISTANCE_HOST=5',
     ],
     'include_dirs': [
       '..',  # Root of Chrome checkout
@@ -191,7 +161,6 @@
           'host/disconnect_window_mac.mm',
           'host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2',
           'host/mac/me2me_preference_pane-InfoPlist.strings.jinja2',
-          'host/plugin/host_plugin-InfoPlist.strings.jinja2',
           'host/win/core.rc.jinja2',
           'host/win/host_messages.mc.jinja2',
           'host/win/version.rc.jinja2',

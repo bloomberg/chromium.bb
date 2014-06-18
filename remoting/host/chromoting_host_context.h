@@ -49,8 +49,7 @@ class ChromotingHostContext {
   // libjingle code may be run.
   scoped_refptr<AutoThreadTaskRunner> network_task_runner();
 
-  // Task runner for the thread that is used for the UI. In the NPAPI
-  // plugin this corresponds to the main plugin thread.
+  // Task runner for the thread that is used for the UI.
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner();
 
   // Task runner for the thread used by the ScreenRecorder to capture
