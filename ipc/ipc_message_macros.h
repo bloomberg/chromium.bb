@@ -113,8 +113,8 @@
 //      class_some_other_class;  // Another incomplete class declaration
 //      #endif  // SOME_GUARD_MACRO
 //      #ifdef IPC_MESSAGE_IMPL
-//      #inlcude "path/to/some_class.h"        // Full class declaration
-//      #inlcude "path/to/some_other_class.h"  // Full class declaration
+//      #include "path/to/some_class.h"        // Full class declaration
+//      #include "path/to/some_other_class.h"  // Full class declaration
 //      #endif  // IPC_MESSAGE_IMPL
 //        (.. IPC macros using some_class and some_other_class ...)
 //
