@@ -6,31 +6,35 @@
 
 #include "url/gurl.h"
 
+DevToolsNetworkConditions::DevToolsNetworkConditions()
+    : offline_(false),
+      latency_(0),
+      download_throughput_(0),
+      upload_throughput_(0) {
+}
+
+DevToolsNetworkConditions::DevToolsNetworkConditions(bool offline)
+    : offline_(offline),
+      latency_(0),
+      download_throughput_(0),
+      upload_throughput_(0) {
+}
+
 DevToolsNetworkConditions::DevToolsNetworkConditions(
-    const std::vector<std::string>& domains,
-    double maximal_throughput)
-    : domains_(domains),
-      maximal_throughput_(maximal_throughput) {
+    bool offline,
+    double latency,
+    double download_throughput,
+    double upload_throughput)
+    : offline_(offline),
+      latency_(latency),
+      download_throughput_(download_throughput),
+      upload_throughput_(upload_throughput) {
 }
 
 DevToolsNetworkConditions::~DevToolsNetworkConditions() {
 }
 
-bool DevToolsNetworkConditions::HasMatchingDomain(const GURL& url) const {
-  Domains::const_iterator domain = domains_.begin();
-  if (domain == domains_.end())
-    return true;
-  for (; domain != domains_.end(); ++domain) {
-    if (url.DomainIs(domain->data()))
-      return true;
-  }
-  return false;
-}
-
-bool DevToolsNetworkConditions::IsOffline() const {
-  return maximal_throughput_ == 0.0;
-}
-
 bool DevToolsNetworkConditions::IsThrottling() const {
-  return maximal_throughput_ != 0.0;
+  return (latency_ != 0) || (download_throughput_ != 0.0) ||
+      (upload_throughput_ != 0);
 }

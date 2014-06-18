@@ -68,6 +68,8 @@
         'browser/devtools/devtools_network_conditions.h',
         'browser/devtools/devtools_network_controller.cc',
         'browser/devtools/devtools_network_controller.h',
+        'browser/devtools/devtools_network_interceptor.cc',
+        'browser/devtools/devtools_network_interceptor.h',
         'browser/devtools/devtools_network_transaction.cc',
         'browser/devtools/devtools_network_transaction.h',
         'browser/devtools/devtools_network_transaction_factory.cc',

@@ -5,10 +5,19 @@
 #include "chrome/browser/devtools/devtools_network_transaction.h"
 
 #include "chrome/browser/devtools/devtools_network_controller.h"
+#include "chrome/browser/devtools/devtools_network_interceptor.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_progress.h"
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_request_info.h"
+
+namespace {
+
+const char kDevToolsRequestInitiator[] = "X-DevTools-Request-Initiator";
+const char kDevToolsEmulateNetworkConditionsClientId[] =
+    "X-DevTools-Emulate-Network-Conditions-Client-Id";
+
+}  // namespace
 
 DevToolsNetworkTransaction::DevToolsNetworkTransaction(
     DevToolsNetworkController* controller,
@@ -22,11 +31,11 @@ DevToolsNetworkTransaction::DevToolsNetworkTransaction(
       proxy_callback_(base::Bind(&DevToolsNetworkTransaction::OnCallback,
                                  base::Unretained(this))) {
   DCHECK(controller);
-  controller->AddTransaction(this);
 }
 
 DevToolsNetworkTransaction::~DevToolsNetworkTransaction() {
-  controller_->RemoveTransaction(this);
+  if (interceptor_)
+    interceptor_->RemoveTransaction(this);
 }
 
 void DevToolsNetworkTransaction::Throttle(int result) {
@@ -37,7 +46,8 @@ void DevToolsNetworkTransaction::Throttle(int result) {
   if (result > 0)
     throttled_byte_count_ += result;
 
-  controller_->ThrottleTransaction(this);
+  if (interceptor_)
+    interceptor_->ThrottleTransaction(this);
 }
 
 void DevToolsNetworkTransaction::OnCallback(int rv) {
@@ -45,7 +55,7 @@ void DevToolsNetworkTransaction::OnCallback(int rv) {
     return;
   DCHECK(!callback_.is_null());
   if (callback_type_ == START || callback_type_ == READ) {
-    if (controller_->ShouldThrottle(request_)) {
+    if (interceptor_ && interceptor_->ShouldThrottle(this)) {
       Throttle(rv);
       return;
     }
@@ -68,7 +78,7 @@ int DevToolsNetworkTransaction::SetupCallback(
     return result;
   }
 
-  if (!controller_->ShouldThrottle(request_))
+  if (!interceptor_ || !interceptor_->ShouldThrottle(this))
     return result;
 
   // Only START and READ operation throttling is supported.
@@ -109,15 +119,44 @@ int DevToolsNetworkTransaction::Start(
     const net::BoundNetLog& net_log) {
   DCHECK(request);
   request_ = request;
+  interceptor_ = controller_->GetInterceptor(this);
+  interceptor_->AddTransaction(this);
 
-  if (controller_->ShouldFail(request_)) {
+  if (interceptor_->ShouldFail(this)) {
     failed_ = true;
     network_transaction_->SetBeforeNetworkStartCallback(
         BeforeNetworkStartCallback());
     return net::ERR_INTERNET_DISCONNECTED;
   }
-  int rv = network_transaction_->Start(request, proxy_callback_, net_log);
+  int rv = network_transaction_->Start(request_, proxy_callback_, net_log);
   return SetupCallback(callback, rv, START);
+}
+
+void DevToolsNetworkTransaction::ProcessRequest() {
+  DCHECK(request_);
+  bool has_devtools_client_id = request_->extra_headers.HasHeader(
+      kDevToolsEmulateNetworkConditionsClientId);
+  bool has_devtools_request_initiator = request_->extra_headers.HasHeader(
+      kDevToolsRequestInitiator);
+  if (!has_devtools_client_id && !has_devtools_request_initiator)
+    return;
+
+  custom_request_.reset(new net::HttpRequestInfo(*request_));
+
+  if (has_devtools_client_id) {
+    custom_request_->extra_headers.GetHeader(
+        kDevToolsEmulateNetworkConditionsClientId, &client_id_);
+    custom_request_->extra_headers.RemoveHeader(
+        kDevToolsEmulateNetworkConditionsClientId);
+  }
+
+  if (has_devtools_request_initiator) {
+    custom_request_->extra_headers.GetHeader(
+        kDevToolsRequestInitiator, &request_initiator_);
+    custom_request_->extra_headers.RemoveHeader(kDevToolsRequestInitiator);
+  }
+
+  request_ = custom_request_.get();
 }
 
 int DevToolsNetworkTransaction::RestartIgnoringLastError(

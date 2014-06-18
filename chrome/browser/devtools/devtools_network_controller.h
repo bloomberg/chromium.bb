@@ -5,34 +5,18 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_CONTROLLER_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_CONTROLLER_H_
 
-#include <set>
 #include <string>
-#include <vector>
 
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "base/timer/timer.h"
 
 class DevToolsNetworkConditions;
+class DevToolsNetworkInterceptor;
 class DevToolsNetworkTransaction;
-class GURL;
-class Profile;
-
-namespace base {
-class TimeDelta;
-class TimeTicks;
-}
-
-namespace content {
-class ResourceContext;
-}
-
-namespace net {
-struct HttpRequestInfo;
-}
 
 namespace test {
 class DevToolsNetworkControllerHelper;
@@ -45,17 +29,13 @@ class DevToolsNetworkController {
   DevToolsNetworkController();
   virtual ~DevToolsNetworkController();
 
-  void AddTransaction(DevToolsNetworkTransaction* transaction);
-
-  void RemoveTransaction(DevToolsNetworkTransaction* transaction);
-
   // Applies network emulation configuration.
   void SetNetworkState(
+      const std::string& client_id,
       const scoped_refptr<DevToolsNetworkConditions> conditions);
 
-  bool ShouldFail(const net::HttpRequestInfo* request);
-  bool ShouldThrottle(const net::HttpRequestInfo* request);
-  void ThrottleTransaction(DevToolsNetworkTransaction* transaction);
+  base::WeakPtr<DevToolsNetworkInterceptor> GetInterceptor(
+      DevToolsNetworkTransaction* transaction);
 
  protected:
   friend class test::DevToolsNetworkControllerHelper;
@@ -64,24 +44,16 @@ class DevToolsNetworkController {
   // Controller must be constructed on IO thread.
   base::ThreadChecker thread_checker_;
 
-  typedef scoped_refptr<DevToolsNetworkConditions> Conditions;
+  void SetNetworkStateOnIO(
+      const std::string& client_id,
+      const scoped_refptr<DevToolsNetworkConditions> conditions);
 
-  void SetNetworkStateOnIO(const Conditions conditions);
-
-  typedef std::set<DevToolsNetworkTransaction*> Transactions;
-  Transactions transactions_;
-
-  Conditions conditions_;
-
-  void UpdateThrottles();
-  void ArmTimer();
-  void OnTimer();
-
-  std::vector<DevToolsNetworkTransaction*> throttled_transactions_;
-  base::OneShotTimer<DevToolsNetworkController> timer_;
-  base::TimeTicks offset_;
-  base::TimeDelta tick_length_;
-  uint64_t last_tick_;
+  typedef scoped_ptr<DevToolsNetworkInterceptor> Interceptor;
+  Interceptor default_interceptor_;
+  Interceptor appcache_interceptor_;
+  typedef base::ScopedPtrHashMap<std::string, DevToolsNetworkInterceptor>
+      Interceptors;
+  Interceptors interceptors_;
 
   base::WeakPtrFactory<DevToolsNetworkController> weak_ptr_factory_;
 

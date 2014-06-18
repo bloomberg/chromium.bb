@@ -61,9 +61,15 @@ base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
        DevToolsProtocol::ParseCommand(command_dict));
   if (!command)
     return NULL;
+
   const std::string method = command->method();
+  scoped_ptr<DevToolsProtocol::Response> response;
+
   if (method == chrome::devtools::Network::emulateNetworkConditions::kName)
-    return EmulateNetworkConditions(agent_host, command.get())->Serialize();
+    response = EmulateNetworkConditions(agent_host, command.get());
+
+  if (response)
+    return response->Serialize();
   return NULL;
 }
 
@@ -81,41 +87,35 @@ ChromeDevToolsManagerDelegate::EmulateNetworkConditions(
     content::DevToolsAgentHost* agent_host,
     DevToolsProtocol::Command* command) {
   base::DictionaryValue* params = command->params();
-
-  std::vector<std::string> domains;
-  base::ListValue* domain_list = NULL;
-  const char* domains_param =
-      chrome::devtools::Network::emulateNetworkConditions::kParamDomains;
-  if (!params || !params->GetList(domains_param, &domain_list))
-    return command->InvalidParamResponse(domains_param);
-  size_t size = domain_list->GetSize();
-  for (size_t i = 0; i < size; ++i) {
-    std::string domain;
-    if (!domain_list->GetString(i, &domain))
-      return command->InvalidParamResponse(domains_param);
-    domains.push_back(domain);
-  }
+  namespace names = ::chrome::devtools::Network::emulateNetworkConditions;
 
   bool offline = false;
-  const char* offline_param =
-      chrome::devtools::Network::emulateNetworkConditions::kParamOffline;
-  if (!params->GetBoolean(offline_param, &offline))
-    return command->InvalidParamResponse(offline_param);
+  if (!params || !params->GetBoolean(names::kParamOffline, &offline))
+    return command->InvalidParamResponse(names::kParamOffline);
 
-  double maximal_throughput = 0.0;
-  const char* maximal_throughput_param =
-chrome::devtools::Network::emulateNetworkConditions::kParamMaximalThroughput;
-  if (!params->GetDouble(maximal_throughput_param, &maximal_throughput))
-    return command->InvalidParamResponse(maximal_throughput_param);
-  if (maximal_throughput < 0.0)
-    maximal_throughput = 0.0;
+  double latency = 0.0;
+  if (!params->GetDouble(names::kParamLatency, &latency))
+    return command->InvalidParamResponse(names::kParamLatency);
+  if (latency < 0.0)
+    latency = 0.0;
+
+  double download_throughput = 0.0;
+  if (!params->GetDouble(names::kParamDownloadThroughput, &download_throughput))
+    return command->InvalidParamResponse(names::kParamDownloadThroughput);
+  if (download_throughput < 0.0)
+    download_throughput = 0.0;
+
+  double upload_throughput = 0.0;
+  if (!params->GetDouble(names::kParamUploadThroughput, &upload_throughput))
+    return command->InvalidParamResponse(names::kParamUploadThroughput);
+  if (upload_throughput < 0.0)
+    upload_throughput = 0.0;
 
   EnsureDevtoolsCallbackRegistered();
-  scoped_refptr<DevToolsNetworkConditions> conditions;
-  if (offline || maximal_throughput)
-    conditions = new DevToolsNetworkConditions(domains, maximal_throughput);
+  scoped_refptr<DevToolsNetworkConditions> conditions(
+      new DevToolsNetworkConditions(
+          offline, latency, download_throughput, upload_throughput));
 
-  emulate_network_conditions_client_id_ = agent_host->GetId();
   UpdateNetworkState(agent_host, conditions);
   return command->SuccessResponse(NULL);
 }
@@ -126,14 +126,15 @@ void ChromeDevToolsManagerDelegate::UpdateNetworkState(
   Profile* profile = GetProfile(agent_host);
   if (!profile)
     return;
-  profile->GetDevToolsNetworkController()->SetNetworkState(conditions);
+  profile->GetDevToolsNetworkController()->SetNetworkState(
+      agent_host->GetId(), conditions);
 }
 
 void ChromeDevToolsManagerDelegate::OnDevToolsStateChanged(
     content::DevToolsAgentHost* agent_host,
     bool attached) {
-  if (agent_host->GetId() == emulate_network_conditions_client_id_) {
-    emulate_network_conditions_client_id_ = std::string();
-    UpdateNetworkState(agent_host, scoped_refptr<DevToolsNetworkConditions>());
-  }
+  scoped_refptr<DevToolsNetworkConditions> conditions;
+  if (attached)
+    conditions = new DevToolsNetworkConditions();
+  UpdateNetworkState(agent_host, conditions);
 }

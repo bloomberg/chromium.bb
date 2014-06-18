@@ -16,24 +16,29 @@ class GURL;
 class DevToolsNetworkConditions
     : public base::RefCounted<DevToolsNetworkConditions> {
  public:
-  DevToolsNetworkConditions(const std::vector<std::string>& domains,
-                            double maximal_throughput);
+  DevToolsNetworkConditions();
+  explicit DevToolsNetworkConditions(bool offline);
+  DevToolsNetworkConditions(bool offline,
+                            double latency,
+                            double download_throughput,
+                            double upload_throughput);
 
-  bool HasMatchingDomain(const GURL& url) const;
-  bool IsOffline() const;
   bool IsThrottling() const;
 
-  double maximal_throughput() const { return maximal_throughput_; }
+  bool offline() const { return offline_; }
+  double latency() const { return latency_; }
+  double download_throughput() const { return download_throughput_; }
+  double upload_throughput() const { return upload_throughput_; }
 
  private:
   friend class base::RefCounted<DevToolsNetworkConditions>;
 
   virtual ~DevToolsNetworkConditions();
 
-  // List of domains that will be affected by network conditions.
-  typedef std::vector<std::string> Domains;
-  const Domains domains_;
-  const double maximal_throughput_;
+  const bool offline_;
+  const double latency_;
+  const double download_throughput_;
+  const double upload_throughput_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsNetworkConditions);
 };
