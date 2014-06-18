@@ -14,22 +14,15 @@
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/network_delegate.h"
-#include "net/cert/cert_verifier.h"
-#include "net/cert/mock_cert_verifier.h"
-#include "net/dns/mock_host_resolver.h"
-#include "net/http/http_network_layer.h"
 #include "net/http/http_response_headers.h"
-#include "net/http/http_server_properties_impl.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/socket/socket_test_util.h"
-#include "net/ssl/ssl_config_service.h"
+#include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using net::HttpNetworkLayer;
-using net::HttpNetworkSession;
 using net::HttpResponseHeaders;
 using net::HostPortPair;
 using net::MockRead;
@@ -38,9 +31,8 @@ using net::ProxyRetryInfoMap;
 using net::ProxyService;
 using net::StaticSocketDataProvider;
 using net::TestDelegate;
-using net::TransportSecurityState;
 using net::URLRequest;
-using net::URLRequestContext;
+using net::TestURLRequestContext;
 
 
 namespace {
@@ -119,43 +111,30 @@ class TestDataReductionProxyNetworkDelegate : public net::NetworkDelegate {
   TestDataReductionProxyParams* test_data_reduction_proxy_params_;
 };
 
-// Constructs a |URLRequestContext| that uses a |MockSocketFactory| to simulate
-// requests and responses.
+// Constructs a |TestURLRequestContext| that uses a |MockSocketFactory| to
+// simulate requests and responses.
 class DataReductionProxyProtocolTest : public testing::Test {
  public:
-  DataReductionProxyProtocolTest()
-      : ssl_config_service_(new net::SSLConfigServiceDefaults) {}
+  DataReductionProxyProtocolTest() : http_user_agent_settings_("", "") {}
 
-  // Sets up the |URLRequestContext| with the provided |ProxyService|.
+  // Sets up the |TestURLRequestContext| with the provided |ProxyService|.
   void ConfigureTestDependencies(ProxyService* proxy_service) {
-    cert_verifier_.reset(new net::MockCertVerifier);
-    transport_security_state_.reset(new TransportSecurityState);
-    proxy_service_.reset(proxy_service);
-    HttpNetworkSession::Params session_params;
-    session_params.client_socket_factory = &mock_socket_factory_;
-    session_params.host_resolver = &host_resolver_;
-    session_params.cert_verifier = cert_verifier_.get();
-    session_params.transport_security_state = transport_security_state_.get();
-    session_params.proxy_service = proxy_service_.get();
-    session_params.ssl_config_service = ssl_config_service_.get();
-    session_params.http_server_properties =
-        http_server_properties_.GetWeakPtr();
-    network_session_ = new HttpNetworkSession(session_params);
-    factory_.reset(new HttpNetworkLayer(network_session_.get()));
+    // Create a context with delayed initialization.
+    context_.reset(new TestURLRequestContext(true));
 
+    proxy_service_.reset(proxy_service);
     proxy_params_.reset(new TestDataReductionProxyParams());
     network_delegate_.reset(new TestDataReductionProxyNetworkDelegate(
         proxy_params_.get()));
 
-    context_.reset(new URLRequestContext());
-    context_->set_host_resolver(&host_resolver_);
-    context_->set_cert_verifier(cert_verifier_.get());
+    context_->set_client_socket_factory(&mock_socket_factory_);
     context_->set_proxy_service(proxy_service_.get());
-    context_->set_ssl_config_service(ssl_config_service_.get());
-    context_->set_http_transaction_factory(factory_.get());
-    context_->set_http_server_properties(http_server_properties_.GetWeakPtr());
-    context_->set_transport_security_state(transport_security_state_.get());
     context_->set_network_delegate(network_delegate_.get());
+    // This is needed to prevent the test context from adding language headers
+    // to requests.
+    context_->set_http_user_agent_settings(&http_user_agent_settings_);
+
+    context_->Init();
   }
 
   // Simulates a request to a data reduction proxy that may result in bypassing
@@ -312,18 +291,12 @@ class DataReductionProxyProtocolTest : public testing::Test {
   base::MessageLoopForIO loop_;
 
   net::MockClientSocketFactory mock_socket_factory_;
-  net::MockHostResolver host_resolver_;
-  scoped_ptr<net::CertVerifier> cert_verifier_;
-  scoped_ptr<TransportSecurityState> transport_security_state_;
   scoped_ptr<ProxyService> proxy_service_;
-  const scoped_refptr<net::SSLConfigService> ssl_config_service_;
-  scoped_refptr<HttpNetworkSession> network_session_;
-  scoped_ptr<HttpNetworkLayer> factory_;
-  net::HttpServerPropertiesImpl http_server_properties_;
   scoped_ptr<TestDataReductionProxyParams> proxy_params_;
   scoped_ptr<TestDataReductionProxyNetworkDelegate> network_delegate_;
+  net::StaticHttpUserAgentSettings http_user_agent_settings_;
 
-  scoped_ptr<URLRequestContext> context_;
+  scoped_ptr<TestURLRequestContext> context_;
 };
 
 // Tests that request are deemed idempotent or not according to the method used.

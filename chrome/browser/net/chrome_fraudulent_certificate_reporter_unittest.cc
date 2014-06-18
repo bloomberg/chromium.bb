@@ -12,7 +12,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_data_directory.h"
@@ -22,6 +21,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/url_request/fraudulent_certificate_reporter.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -156,21 +156,21 @@ class MockReporter : public ChromeFraudulentCertificateReporter {
 };
 
 static void DoReportIsSent() {
-  ChromeURLRequestContext context;
+  net::TestURLRequestContext context;
   SendingTestReporter reporter(&context);
   SSLInfo info = GetGoodSSLInfo();
   reporter.SendReport("mail.google.com", info, true);
 }
 
 static void DoReportIsNotSent() {
-  ChromeURLRequestContext context;
+  net::TestURLRequestContext context;
   NotSendingTestReporter reporter(&context);
   SSLInfo info = GetBadSSLInfo();
   reporter.SendReport("www.example.com", info, true);
 }
 
 static void DoMockReportIsSent() {
-  ChromeURLRequestContext context;
+  net::TestURLRequestContext context;
   MockReporter reporter(&context);
   SSLInfo info = GetGoodSSLInfo();
   reporter.SendReport("mail.google.com", info, true);

@@ -614,6 +614,9 @@ void URLRequest::set_delegate(Delegate* delegate) {
 }
 
 void URLRequest::Start() {
+  // Some values can be NULL, but the job factory must not be.
+  DCHECK(context_->job_factory());
+
   DCHECK_EQ(network_delegate_, context_->network_delegate());
   // Anything that sets |blocked_by_| before start should have cleaned up after
   // itself.

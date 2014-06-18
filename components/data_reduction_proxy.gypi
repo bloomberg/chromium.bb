@@ -62,6 +62,7 @@
       'dependencies' : [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
+        '../net/net.gyp:net_test_support',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'data_reduction_proxy_browser',

@@ -57,12 +57,7 @@ URLRequestJob* URLRequestJobManager::CreateJob(
   job_factory = request->context()->job_factory();
 
   const std::string& scheme = request->url().scheme();  // already lowercase
-  if (job_factory) {
-    if (!job_factory->IsHandledProtocol(scheme)) {
-      return new URLRequestErrorJob(
-          request, network_delegate, ERR_UNKNOWN_URL_SCHEME);
-    }
-  } else if (!SupportsScheme(scheme)) {
+  if (!job_factory->IsHandledProtocol(scheme)) {
     return new URLRequestErrorJob(
         request, network_delegate, ERR_UNKNOWN_URL_SCHEME);
   }
@@ -85,12 +80,10 @@ URLRequestJob* URLRequestJobManager::CreateJob(
     }
   }
 
-  if (job_factory) {
-    URLRequestJob* job = job_factory->MaybeCreateJobWithProtocolHandler(
-        scheme, request, network_delegate);
-    if (job)
-      return job;
-  }
+  URLRequestJob* job = job_factory->MaybeCreateJobWithProtocolHandler(
+      scheme, request, network_delegate);
+  if (job)
+    return job;
 
   // See if the request should be handled by a built-in protocol factory.
   for (size_t i = 0; i < arraysize(kBuiltinFactories); ++i) {
@@ -124,13 +117,8 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptRedirect(
   job_factory = request->context()->job_factory();
 
   const std::string& scheme = request->url().scheme();  // already lowercase
-  if (job_factory) {
-    if (!job_factory->IsHandledProtocol(scheme)) {
-      return NULL;
-    }
-  } else if (!SupportsScheme(scheme)) {
+  if (!job_factory->IsHandledProtocol(scheme))
     return NULL;
-  }
 
   InterceptorList::const_iterator i;
   for (i = interceptors_.begin(); i != interceptors_.end(); ++i) {
@@ -156,13 +144,8 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptResponse(
   job_factory = request->context()->job_factory();
 
   const std::string& scheme = request->url().scheme();  // already lowercase
-  if (job_factory) {
-    if (!job_factory->IsHandledProtocol(scheme)) {
-      return NULL;
-    }
-  } else if (!SupportsScheme(scheme)) {
+  if (!job_factory->IsHandledProtocol(scheme))
     return NULL;
-  }
 
   InterceptorList::const_iterator i;
   for (i = interceptors_.begin(); i != interceptors_.end(); ++i) {
