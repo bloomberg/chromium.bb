@@ -21,13 +21,14 @@ BUILD_TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
 sys.path.append(BUILD_TOOLS_DIR)
 import manifest_util
 import update_nacl_manifest
-from update_nacl_manifest import CANARY_BUNDLE_NAME
+from update_nacl_manifest import CANARY_BUNDLE_NAME, BIONIC_CANARY_BUNDLE_NAME
 
 
 HTTPS_BASE_URL = 'https://storage.googleapis.com' \
     '/nativeclient_mirror/nacl/nacl_sdk/'
 
 OS_CR = ('cros',)
+OS_L = ('linux',)
 OS_M = ('mac',)
 OS_ML = ('mac', 'linux')
 OS_MW = ('mac', 'win')
@@ -47,6 +48,11 @@ def GetArchiveURL(basename, version):
 
 def GetPlatformArchiveUrl(host_os, version):
   basename = 'naclsdk_%s.tar.bz2' % (host_os,)
+  return GetArchiveURL(basename, version)
+
+
+def GetBionicArchiveUrl(version):
+  basename = 'naclsdk_bionic.tar.bz2'
   return GetArchiveURL(basename, version)
 
 
@@ -78,6 +84,10 @@ def MakePlatformArchive(host_os, version):
   return MakeArchive(GetPlatformArchiveUrl(host_os, version), host_os)
 
 
+def MakeBionicArchive(host_os, version):
+  return MakeArchive(GetBionicArchiveUrl(version), host_os)
+
+
 def MakeNonPlatformArchive(basename, version):
   return MakeArchive(GetArchiveURL(basename, version), 'all')
 
@@ -100,20 +110,19 @@ def MakeNonPepperBundle(name, with_archives=False):
   return bundle
 
 
-def MakePepperBundle(major_version, revision=0, version=None, stability='dev'):
+def MakePepperBundle(major_version, revision=0, version=None, stability='dev',
+                     bundle_name=None):
   assert (version is None or
           version.split('.')[0] == 'trunk' or
           version.split('.')[0] == str(major_version))
-  if stability == CANARY:
-    bundle_name = CANARY_BUNDLE_NAME
-  else:
+  if not bundle_name:
     bundle_name = 'pepper_' + str(major_version)
 
   bundle = manifest_util.Bundle(bundle_name)
   bundle.version = major_version
   bundle.revision = revision
   bundle.description = 'Chrome %s bundle, revision %s' % (major_version,
-      revision)
+                                                          revision)
   bundle.repath = 'pepper_' + str(major_version)
   bundle.recommended = 'no'
   bundle.stability = stability
@@ -122,12 +131,22 @@ def MakePepperBundle(major_version, revision=0, version=None, stability='dev'):
 
 
 def MakePlatformBundle(major_version, revision=0, version=None, host_oses=None,
-    stability='dev'):
+                       stability='dev'):
   bundle = MakePepperBundle(major_version, revision, version, stability)
 
   if host_oses:
     for host_os in host_oses:
       bundle.AddArchive(MakePlatformArchive(host_os, version))
+
+  return bundle
+
+
+def MakeBionicBundle(major_version, revision=0, version=None, host_oses=None):
+  bundle = MakePepperBundle(major_version, revision, version, 'dev')
+
+  if host_oses:
+    for host_os in host_oses:
+      bundle.AddArchive(MakeBionicArchive(host_os, version))
 
   return bundle
 
@@ -240,20 +259,26 @@ V21_0_1145_0 = '21.0.1145.0'
 V21_0_1166_0 = '21.0.1166.0'
 V26_0_1386_0 = '26.0.1386.0'
 V26_0_1386_1 = '26.0.1386.1'
+V37_0_2054_0 = '37.0.2054.0'
 VTRUNK_140819 = 'trunk.140819'
+VTRUNK_277776 = 'trunk.277776'
 B18_0_1025_163_MLW = MakePlatformBundle(18, 132135, V18_0_1025_163, OS_MLW)
 B18_0_1025_184_MLW = MakePlatformBundle(18, 134900, V18_0_1025_184, OS_MLW)
 B18_NONE = MakePlatformBundle(18)
 B19_0_1084_41_MLW = MakePlatformBundle(19, 134854, V19_0_1084_41, OS_MLW)
 B19_0_1084_67_MLW = MakePlatformBundle(19, 142000, V19_0_1084_67, OS_MLW)
 B19_NONE = MakePlatformBundle(19)
-BCANARY_NONE = MakePlatformBundle(0, stability=CANARY)
+BCANARY_NONE = MakePepperBundle(0, stability=CANARY,
+                                bundle_name=CANARY_BUNDLE_NAME)
 B21_0_1145_0_MLW = MakePlatformBundle(21, 138079, V21_0_1145_0, OS_MLW)
 B21_0_1166_0_MW = MakePlatformBundle(21, 140819, V21_0_1166_0, OS_MW)
 B26_NONE = MakePlatformBundle(26)
 B26_0_1386_0_MLW = MakePlatformBundle(26, 177362, V26_0_1386_0, OS_MLW)
 B26_0_1386_1_MLW = MakePlatformBundle(26, 177439, V26_0_1386_1, OS_MLW)
 BTRUNK_140819_MLW = MakePlatformBundle(21, 140819, VTRUNK_140819, OS_MLW)
+BBIONIC_NONE = MakePepperBundle(0, stability=CANARY,
+                                bundle_name=BIONIC_CANARY_BUNDLE_NAME)
+BBIONIC_TRUNK_277776 = MakeBionicBundle(37, 277776, VTRUNK_277776, OS_L)
 NON_PEPPER_BUNDLE_NOARCHIVES = MakeNonPepperBundle('foo')
 NON_PEPPER_BUNDLE_ARCHIVES = MakeNonPepperBundle('bar', with_archives=True)
 
@@ -267,7 +292,7 @@ class TestUpdateManifest(unittest.TestCase):
     self.uploaded_manifest = None
     self.manifest = None
     # Ignore logging warnings, etc.
-    logging.getLogger('update_nacl_manifest').setLevel(logging.CRITICAL)
+    logging.getLogger('update_nacl_manifest').setLevel(logging.INFO)
 
   def _MakeDelegate(self):
     self.delegate = TestDelegate(self.manifest, self.history.history,
@@ -285,10 +310,9 @@ class TestUpdateManifest(unittest.TestCase):
     self.uploaded_manifest.LoadDataFromString(
         self.files['naclsdk_manifest2.json'])
 
-  def _AssertUploadedManifestHasBundle(self, bundle, stability):
-    if stability == CANARY:
-      bundle_name = CANARY_BUNDLE_NAME
-    else:
+  def _AssertUploadedManifestHasBundle(self, bundle, stability,
+                                       bundle_name=None):
+    if not bundle_name:
       bundle_name = bundle.name
 
     uploaded_manifest_bundle = self.uploaded_manifest.GetBundle(bundle_name)
@@ -297,8 +321,8 @@ class TestUpdateManifest(unittest.TestCase):
     # So we have to force the stability of |bundle| so they compare equal.
     test_bundle = copy.copy(bundle)
     test_bundle.stability = stability
-    if stability == CANARY:
-      test_bundle.name = CANARY_BUNDLE_NAME
+    if bundle_name:
+      test_bundle.name = bundle_name
     self.assertEqual(uploaded_manifest_bundle, test_bundle)
 
   def _AddCsvHistory(self, history):
@@ -465,7 +489,8 @@ class TestUpdateManifest(unittest.TestCase):
     self._MakeDelegate()
     self._Run(OS_MLW)
     self._ReadUploadedManifest()
-    self._AssertUploadedManifestHasBundle(B21_0_1145_0_MLW, CANARY)
+    self._AssertUploadedManifestHasBundle(B21_0_1145_0_MLW, CANARY,
+                                          bundle_name=CANARY_BUNDLE_NAME)
 
   def testUpdateCanaryUseTrunkArchives(self):
     canary_bundle = copy.deepcopy(BCANARY_NONE)
@@ -480,7 +505,8 @@ class TestUpdateManifest(unittest.TestCase):
 
     test_bundle = copy.deepcopy(B21_0_1166_0_MW)
     test_bundle.AddArchive(BTRUNK_140819_MLW.GetArchive('linux'))
-    self._AssertUploadedManifestHasBundle(test_bundle, CANARY)
+    self._AssertUploadedManifestHasBundle(test_bundle, CANARY,
+                                          bundle_name=CANARY_BUNDLE_NAME)
 
   def testCanaryUseOnlyTrunkArchives(self):
     self.manifest = MakeManifest(copy.deepcopy(BCANARY_NONE))
@@ -493,7 +519,8 @@ mac,canary,21.0.1163.0,2012-06-04 11:54:09.433166"""
     self._MakeDelegate()
     self._Run(OS_MLW)
     self._ReadUploadedManifest()
-    self._AssertUploadedManifestHasBundle(my_bundle, CANARY)
+    self._AssertUploadedManifestHasBundle(my_bundle, CANARY,
+                                          bundle_name=CANARY_BUNDLE_NAME)
 
   def testCanaryShouldOnlyUseCanaryVersions(self):
     canary_bundle = copy.deepcopy(BCANARY_NONE)
@@ -538,7 +565,8 @@ mac,canary,21.0.1156.0,2012-05-30 12:14:21.305090"""
     self._MakeDelegate()
     self._Run(OS_MLW)
     self._ReadUploadedManifest()
-    self._AssertUploadedManifestHasBundle(my_bundle, CANARY)
+    self._AssertUploadedManifestHasBundle(my_bundle, CANARY,
+                                          bundle_name=CANARY_BUNDLE_NAME)
 
   def testExtensionWorksAsBz2(self):
     # Allow old bundles with just .bz2 extension to work
@@ -727,7 +755,8 @@ mac,canary,31.0.1608.0,2013-08-22 07:18:09.762600"""
     self._MakeDelegate()
     self._Run(OS_MLW)
     self._ReadUploadedManifest()
-    self._AssertUploadedManifestHasBundle(my_bundle, CANARY)
+    self._AssertUploadedManifestHasBundle(my_bundle, CANARY,
+                                          bundle_name=CANARY_BUNDLE_NAME)
 
   def testDontIgnoreLastDigitForNonCanary(self):
     self.manifest = MakeManifest(B26_NONE)
@@ -744,6 +773,18 @@ mac,canary,31.0.1608.0,2013-08-22 07:18:09.762600"""
     # true if it were canary.
     self.assertRaises(update_nacl_manifest.UnknownLockedBundleException,
                       self._Run, OS_MLW)
+
+  def testUpdateBionic(self):
+    bionic_bundle = copy.deepcopy(BBIONIC_NONE)
+    self.manifest = MakeManifest(bionic_bundle)
+    self.history.Add(OS_MW, CANARY, V37_0_2054_0)
+    self.files.Add(BBIONIC_TRUNK_277776)
+    self.version_mapping[V37_0_2054_0] = VTRUNK_277776
+    self._MakeDelegate()
+    self._Run(OS_MLW)
+    self._ReadUploadedManifest()
+    self._AssertUploadedManifestHasBundle(BBIONIC_TRUNK_277776, CANARY,
+                                          bundle_name=BIONIC_CANARY_BUNDLE_NAME)
 
 
 class TestUpdateVitals(unittest.TestCase):
@@ -800,4 +841,5 @@ class TestRealDelegate(unittest.TestCase):
 
 
 if __name__ == '__main__':
+  logging.basicConfig(level=logging.INFO)
   sys.exit(unittest.main())
