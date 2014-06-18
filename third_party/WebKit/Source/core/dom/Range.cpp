@@ -1544,6 +1544,19 @@ void Range::didMergeTextNodes(const NodeWithIndex& oldNode, unsigned offset)
     boundaryTextNodesMerged(m_end, oldNode, offset);
 }
 
+void Range::updateOwnerDocumentIfNeeded()
+{
+    ASSERT(m_start.container());
+    ASSERT(m_end.container());
+    Document& newDocument = m_start.container()->document();
+    ASSERT(newDocument == m_end.container()->document());
+    if (newDocument == m_ownerDocument)
+        return;
+    m_ownerDocument->detachRange(this);
+    m_ownerDocument = &newDocument;
+    m_ownerDocument->attachRange(this);
+}
+
 static inline void boundaryTextNodeSplit(RangeBoundaryPoint& boundary, Text& oldNode)
 {
     Node* boundaryContainer = boundary.container();

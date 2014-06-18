@@ -3768,6 +3768,17 @@ void Document::updateRangesAfterChildrenChanged(ContainerNode* container)
     }
 }
 
+void Document::updateRangesAfterNodeMovedToAnotherDocument(const Node& node)
+{
+    ASSERT(node.document() != this);
+    if (m_ranges.isEmpty())
+        return;
+    AttachedRangeSet ranges = m_ranges;
+    AttachedRangeSet::const_iterator end = ranges.end();
+    for (AttachedRangeSet::const_iterator it = ranges.begin(); it != end; ++it)
+        (*it)->updateOwnerDocumentIfNeeded();
+}
+
 void Document::nodeChildrenWillBeRemoved(ContainerNode& container)
 {
     NoEventDispatchAssertion assertNoEventDispatch;

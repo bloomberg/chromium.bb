@@ -1939,7 +1939,7 @@ void Node::didMoveToNewDocument(Document& oldDocument)
     }
 
     oldDocument.markers().removeMarkers(this);
-
+    oldDocument.updateRangesAfterNodeMovedToAnotherDocument(*this);
 
     if (const TouchEventTargetSet* touchHandlers = oldDocument.touchEventTargets()) {
         while (touchHandlers->contains(this)) {
