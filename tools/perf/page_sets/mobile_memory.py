@@ -32,7 +32,7 @@ class GmailPage(MobileMemoryPage):
   def ReloadAndGc(self, action_runner):
     action_runner.RunAction(ReloadAction())
     action_runner.Wait(15)
-    action_runner.RunAction(JsCollectGarbageAction())
+    action_runner.ForceGarbageCollection()
 
   def RunStressMemory(self, action_runner):
     for _ in xrange(3):
