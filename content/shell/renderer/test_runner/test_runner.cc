@@ -10,10 +10,10 @@
 #include "content/shell/common/test_runner/test_preferences.h"
 #include "content/shell/renderer/test_runner/MockWebSpeechRecognizer.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
-#include "content/shell/renderer/test_runner/WebPermissions.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/mock_web_push_client.h"
 #include "content/shell/renderer/test_runner/notification_presenter.h"
+#include "content/shell/renderer/test_runner/web_permissions.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "gin/arguments.h"
 #include "gin/array_buffer.h"
@@ -1503,7 +1503,7 @@ void TestRunner::Install(WebFrame* frame) {
 
 void TestRunner::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
-  web_permissions_->setDelegate(delegate);
+  web_permissions_->SetDelegate(delegate);
   notification_presenter_->set_delegate(delegate);
 }
 
@@ -1601,7 +1601,7 @@ void TestRunner::Reset() {
   web_history_item_count_ = 0;
   intercept_post_message_ = false;
 
-  web_permissions_->reset();
+  web_permissions_->Reset();
 
   notification_presenter_->Reset();
   use_mock_theme_ = true;
@@ -2553,35 +2553,35 @@ void TestRunner::DumpResourceResponseMIMETypes() {
 }
 
 void TestRunner::SetImagesAllowed(bool allowed) {
-  web_permissions_->setImagesAllowed(allowed);
+  web_permissions_->SetImagesAllowed(allowed);
 }
 
 void TestRunner::SetMediaAllowed(bool allowed) {
-  web_permissions_->setMediaAllowed(allowed);
+  web_permissions_->SetMediaAllowed(allowed);
 }
 
 void TestRunner::SetScriptsAllowed(bool allowed) {
-  web_permissions_->setScriptsAllowed(allowed);
+  web_permissions_->SetScriptsAllowed(allowed);
 }
 
 void TestRunner::SetStorageAllowed(bool allowed) {
-  web_permissions_->setStorageAllowed(allowed);
+  web_permissions_->SetStorageAllowed(allowed);
 }
 
 void TestRunner::SetPluginsAllowed(bool allowed) {
-  web_permissions_->setPluginsAllowed(allowed);
+  web_permissions_->SetPluginsAllowed(allowed);
 }
 
 void TestRunner::SetAllowDisplayOfInsecureContent(bool allowed) {
-  web_permissions_->setDisplayingInsecureContentAllowed(allowed);
+  web_permissions_->SetDisplayingInsecureContentAllowed(allowed);
 }
 
 void TestRunner::SetAllowRunningOfInsecureContent(bool allowed) {
-  web_permissions_->setRunningInsecureContentAllowed(allowed);
+  web_permissions_->SetRunningInsecureContentAllowed(allowed);
 }
 
 void TestRunner::DumpPermissionClientCallbacks() {
-  web_permissions_->setDumpCallbacks(true);
+  web_permissions_->SetDumpCallbacks(true);
 }
 
 void TestRunner::DumpWindowStatusChanges() {
