@@ -1856,22 +1856,6 @@ public class ContentViewCore
         return mLastTapY;
     }
 
-    /**
-     * TODO(dtrainor): Remove this once it is no longer used.
-     * See {@link #getLastTapX}.
-     */
-    public int getSingleTapX() {
-        return mLastTapX;
-    }
-
-    /**
-     * TODO(dtrainor): Remove this once it is no longer used.
-     * See {@link #getLastTapY}.
-     */
-    public int getSingleTapY() {
-        return mLastTapY;
-    }
-
     public void setZoomControlsDelegate(ZoomControlsDelegate zoomControlsDelegate) {
         mZoomControlsDelegate = zoomControlsDelegate;
     }
