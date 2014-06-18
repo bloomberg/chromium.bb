@@ -517,6 +517,56 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
   return true;
 }
 
+void AutofillProfile::OverwriteOrAppendNames(
+    const std::vector<NameInfo>& names) {
+  std::vector<NameInfo> results(name_);
+  for (std::vector<NameInfo>::const_iterator it = names.begin();
+       it != names.end();
+       ++it) {
+    NameInfo imported_name = *it;
+    bool should_append_imported_name = true;
+
+    for (size_t index = 0; index < name_.size(); ++index) {
+      NameInfo current_name = name_[index];
+      if (current_name.EqualsIgnoreCase(imported_name)) {
+        should_append_imported_name = false;
+        break;
+      }
+
+      base::string16 full_name = current_name.GetRawInfo(NAME_FULL);
+      if (StringToLowerASCII(full_name) ==
+          StringToLowerASCII(imported_name.GetRawInfo(NAME_FULL))) {
+        // The imported name has the same full name string as one of the
+        // existing names for this profile.  Because full names are
+        // _heuristically_ parsed into {first, middle, last} name components,
+        // it's possible that either the existing name or the imported name
+        // was misparsed.  Prefer to keep the name whose {first, middle,
+        // last} components do not match those computed by the heuristic
+        // parse, as this more likely represents the correct, user-input parse
+        // of the name.
+        NameInfo heuristically_parsed_name;
+        heuristically_parsed_name.SetRawInfo(NAME_FULL, full_name);
+        if (imported_name.EqualsIgnoreCase(heuristically_parsed_name)) {
+          should_append_imported_name = false;
+          break;
+        }
+
+        if (current_name.EqualsIgnoreCase(heuristically_parsed_name)) {
+          results[index] = imported_name;
+          should_append_imported_name = false;
+          break;
+        }
+      }
+    }
+
+    // Append unique names to the list.
+    if (should_append_imported_name)
+      results.push_back(imported_name);
+  }
+
+  name_.swap(results);
+}
+
 void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
                                            const std::string& app_locale) {
   // Verified profiles should never be overwritten with unverified data.
@@ -566,7 +616,10 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
             existing_values.insert(existing_values.end(), *value_iter);
         }
       }
-      SetRawMultiInfo(*iter, existing_values);
+      if (group == NAME)
+        OverwriteOrAppendNames(profile.name_);
+      else
+        SetRawMultiInfo(*iter, existing_values);
     } else {
       base::string16 new_value = profile.GetRawInfo(*iter);
       if (StringToLowerASCII(GetRawInfo(*iter)) !=

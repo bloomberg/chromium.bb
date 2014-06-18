@@ -5,7 +5,9 @@
 #include "components/autofill/core/browser/contact_info.h"
 
 #include "base/basictypes.h"
+#include "base/format_macros.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -102,6 +104,79 @@ TEST(NameInfoTest, GetFullName) {
   EXPECT_EQ(name.GetRawInfo(NAME_MIDDLE), ASCIIToUTF16("Middle"));
   EXPECT_EQ(name.GetRawInfo(NAME_LAST), ASCIIToUTF16("Last"));
   EXPECT_EQ(name.GetRawInfo(NAME_FULL), ASCIIToUTF16("First Middle Last"));
+}
+
+TEST(NameInfoTest, EqualsIgnoreCase) {
+  struct TestCase {
+    std::string starting_names[3];
+    std::string additional_names[3];
+    bool expected_result;
+  };
+
+  struct TestCase test_cases[] = {
+      // Identical name comparison.
+      {{"Marion", "Mitchell", "Morrison"},
+       {"Marion", "Mitchell", "Morrison"},
+       true},
+
+      // Case-insensative comparisons.
+      {{"Marion", "Mitchell", "Morrison"},
+       {"Marion", "Mitchell", "MORRISON"},
+       true},
+      {{"Marion", "Mitchell", "Morrison"},
+       {"MARION", "Mitchell", "MORRISON"},
+       true},
+      {{"Marion", "Mitchell", "Morrison"},
+       {"MARION", "MITCHELL", "MORRISON"},
+       true},
+      {{"Marion", "", "Mitchell Morrison"},
+       {"MARION", "", "MITCHELL MORRISON"},
+       true},
+      {{"Marion Mitchell", "", "Morrison"},
+       {"MARION MITCHELL", "", "MORRISON"},
+       true},
+
+      // Identical full names but different canonical forms.
+      {{"Marion", "Mitchell", "Morrison"},
+       {"Marion", "", "Mitchell Morrison"},
+       false},
+      {{"Marion", "Mitchell", "Morrison"},
+       {"Marion Mitchell", "", "MORRISON"},
+       false},
+
+      // Different names.
+      {{"Marion", "Mitchell", "Morrison"}, {"Marion", "M.", "Morrison"}, false},
+      {{"Marion", "Mitchell", "Morrison"}, {"MARION", "M.", "MORRISON"}, false},
+      {{"Marion", "Mitchell", "Morrison"},
+       {"David", "Mitchell", "Morrison"},
+       false},
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf("i: %" PRIuS, i));
+
+    // Construct the starting_profile.
+    NameInfo starting_profile;
+    starting_profile.SetRawInfo(NAME_FIRST,
+                                ASCIIToUTF16(test_cases[i].starting_names[0]));
+    starting_profile.SetRawInfo(NAME_MIDDLE,
+                                ASCIIToUTF16(test_cases[i].starting_names[1]));
+    starting_profile.SetRawInfo(NAME_LAST,
+                                ASCIIToUTF16(test_cases[i].starting_names[2]));
+
+    // Construct the additional_profile.
+    NameInfo additional_profile;
+    additional_profile.SetRawInfo(
+        NAME_FIRST, ASCIIToUTF16(test_cases[i].additional_names[0]));
+    additional_profile.SetRawInfo(
+        NAME_MIDDLE, ASCIIToUTF16(test_cases[i].additional_names[1]));
+    additional_profile.SetRawInfo(
+        NAME_LAST, ASCIIToUTF16(test_cases[i].additional_names[2]));
+
+    // Verify the test expectations.
+    EXPECT_EQ(test_cases[i].expected_result,
+              starting_profile.EqualsIgnoreCase(additional_profile));
+  }
 }
 
 }  // namespace autofill

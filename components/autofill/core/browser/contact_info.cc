@@ -34,6 +34,12 @@ NameInfo& NameInfo::operator=(const NameInfo& info) {
   return *this;
 }
 
+bool NameInfo::EqualsIgnoreCase(const NameInfo& info) {
+  return (StringToLowerASCII(first_) == StringToLowerASCII(info.first_) &&
+          StringToLowerASCII(middle_) == StringToLowerASCII(info.middle_) &&
+          StringToLowerASCII(last_) == StringToLowerASCII(info.last_));
+}
+
 void NameInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   supported_types->insert(NAME_FIRST);
   supported_types->insert(NAME_MIDDLE);

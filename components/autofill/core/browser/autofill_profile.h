@@ -191,6 +191,12 @@ class AutofillProfile : public AutofillDataModel {
   const FormGroup* FormGroupForType(const AutofillType& type) const;
   FormGroup* MutableFormGroupForType(const AutofillType& type);
 
+  // Appends unique names from |names| onto the |name_| list, dropping
+  // duplicates. If a name in |names| has the same full name representation
+  // as a name in |name_|, keeps the variant that has more information (i.e.
+  // is not reconstructible via a heuristic parse of the full name string).
+  void OverwriteOrAppendNames(const std::vector<NameInfo>& names);
+
   // Personal information for this profile.
   std::vector<NameInfo> name_;
   std::vector<EmailInfo> email_;

@@ -23,6 +23,10 @@ class NameInfo : public FormGroup {
 
   NameInfo& operator=(const NameInfo& info);
 
+  // Compares |NameInfo| objects for |first_|, |middle_| and |last_| names,
+  // ignoring their case differences.
+  bool EqualsIgnoreCase(const NameInfo& info);
+
   // FormGroup:
   virtual base::string16 GetRawInfo(ServerFieldType type) const OVERRIDE;
   virtual void SetRawInfo(ServerFieldType type,

@@ -3,15 +3,18 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,6 +31,53 @@ base::string16 GetLabel(AutofillProfile* profile) {
   std::vector<base::string16> labels;
   AutofillProfile::CreateDifferentiatingLabels(profiles, &labels);
   return labels[0];
+}
+
+// Holds the autofill profile |first|, |middle| and |last| names.
+struct NameParts {
+  NameParts(const std::string& first,
+            const std::string& middle,
+            const std::string& last)
+      : first(first), middle(middle), last(last) {}
+
+  std::string first;
+  std::string middle;
+  std::string last;
+};
+
+// Test case to be executed to validate OverwriteOrAppendNames.
+struct TestCase {
+  TestCase(const NameParts& starting_name,
+           const NameParts& additional_name,
+           const NameParts& expected_result)
+      : starting_names(std::vector<NameParts>(1, starting_name)),
+        additional_names(std::vector<NameParts>(1, additional_name)),
+        expected_result(std::vector<NameParts>(1, expected_result)) {}
+
+  TestCase(const std::vector<NameParts>& starting_names,
+           const std::vector<NameParts>& additional_names,
+           const std::vector<NameParts>& expected_result)
+      : starting_names(starting_names),
+        additional_names(additional_names),
+        expected_result(expected_result) {}
+
+  std::vector<NameParts> starting_names;
+  std::vector<NameParts> additional_names;
+  std::vector<NameParts> expected_result;
+};
+
+// Populates |first_names|, |middle_names| and |last_names| from the list of
+// NameParts from |starting_names|, |additional_names| or |expected_result|
+// from the testcase to create and verify the autofill profile.
+void GetNamePartsList(const std::vector<NameParts>& names,
+                      std::vector<base::string16>& first_names,
+                      std::vector<base::string16>& middle_names,
+                      std::vector<base::string16>& last_names) {
+  for (size_t i = 0; i < names.size(); ++i) {
+    first_names.push_back(ASCIIToUTF16(names[i].first));
+    middle_names.push_back(ASCIIToUTF16(names[i].middle));
+    last_names.push_back(ASCIIToUTF16(names[i].last));
+  }
 }
 
 }  // namespace
@@ -908,6 +958,158 @@ TEST(AutofillProfileTest, FullAddress) {
                                base::string16(),
                                "en-US");
   EXPECT_TRUE(profile.GetInfo(full_address, "en-US").empty());
+}
+
+TEST(AutofillProfileTest, OverwriteOrAppendNames) {
+  std::vector<TestCase> test_cases;
+
+  // Identical name.
+  test_cases.push_back(TestCase(NameParts("Marion", "Mitchell", "Morrison"),
+                                NameParts("Marion", "Mitchell", "Morrison"),
+                                NameParts("Marion", "Mitchell", "Morrison")));
+  test_cases.push_back(TestCase(NameParts("Marion", "Mitchell", "Morrison"),
+                                NameParts("MARION", "MITCHELL", "MORRISON"),
+                                NameParts("Marion", "Mitchell", "Morrison")));
+
+  // A parse that has a two-word last name should take precedence over a
+  // parse that assumes the two names are a middle and a last name.
+  test_cases.push_back(TestCase(NameParts("Marion", "Mitchell", "Morrison"),
+                                NameParts("Marion", "", "Mitchell Morrison"),
+                                NameParts("Marion", "", "Mitchell Morrison")));
+  test_cases.push_back(TestCase(NameParts("Marion", "", "Mitchell Morrison"),
+                                NameParts("Marion", "Mitchell", "Morrison"),
+                                NameParts("Marion", "", "Mitchell Morrison")));
+
+  // A parse that has a two-word first name should take precedence over a
+  // parse that assumes the two names are a first and a middle name.
+  test_cases.push_back(TestCase(NameParts("Marion", "Mitchell", "Morrison"),
+                                NameParts("Marion Mitchell", "", "Morrison"),
+                                NameParts("Marion Mitchell", "", "Morrison")));
+  test_cases.push_back(TestCase(NameParts("Marion Mitchell", "", "Morrison"),
+                                NameParts("Marion", "Mitchell", "Morrison"),
+                                NameParts("Marion Mitchell", "", "Morrison")));
+
+  // A parse that has a two-word first name and two-word last name should
+  // take precedence over a parse that assumes the two middle names and
+  // one last name.
+  test_cases.push_back(
+      TestCase(NameParts("Arthur", "Ignatius Conan", "Doyle"),
+               NameParts("Arthur Ignatius", "", "Conan Doyle"),
+               NameParts("Arthur Ignatius", "", "Conan Doyle")));
+  test_cases.push_back(
+      TestCase(NameParts("Arthur Ignatius", "", "Conan Doyle"),
+               NameParts("Arthur", "Ignatius Conan", "Doyle"),
+               NameParts("Arthur Ignatius", "", "Conan Doyle")));
+
+  // A parse that has a many-word first name and/or last name should take
+  // precedence over a heuristically parsed name into {first, middle1
+  // middle2.. middlen, name}.
+  test_cases.push_back(
+      TestCase(NameParts("Arthur Ignatius Conan", "", "Doyle"),
+               NameParts("Arthur", "Ignatius Conan", "Doyle"),
+               NameParts("Arthur Ignatius Conan", "", "Doyle")));
+  test_cases.push_back(
+      TestCase(NameParts("Roberto", "Carlos da Silva", "Rocha"),
+               NameParts("Roberto Carlos da Silva", "", "Rocha"),
+               NameParts("Roberto Carlos da Silva", "", "Rocha")));
+  test_cases.push_back(
+      TestCase(NameParts("Antonio", "Augusto", "Ribeiro Reis Jr."),
+               NameParts("Antonio", "Augusto Ribeiro Reis", "Jr."),
+               NameParts("Antonio", "Augusto", "Ribeiro Reis Jr.")));
+
+  // Cases where merging 2 profiles with same full names but
+  // different canonical forms appends instead of overwrites,
+  // provided they dont form heuristically parsed names.
+  {
+    NameParts name1("Marion Mitchell", "", "Morrison");
+    NameParts name2("Marion", "", "Mitchell Morrison");
+    std::vector<NameParts> starting_names(1, name1);
+    std::vector<NameParts> additional_names(1, name2);
+    std::vector<NameParts> expected_result;
+    expected_result.push_back(name1);
+    expected_result.push_back(name2);
+    test_cases.push_back(
+        TestCase(starting_names, additional_names, expected_result));
+  }
+
+  // Cases where the names do not have the same full name strings,
+  // i.e. the list of merged names is longer than either of the incoming
+  // lists.
+  {
+    NameParts name1("Antonio", "Augusto Ribeiro", "Reis Jr.");
+    NameParts name2("Juninho", "", "Pernambucano");
+    NameParts name3("Marion", "Mitchell", "Morrison");
+    NameParts name4("Marion", "M.", "Morrison");
+    std::vector<NameParts> starting_names;
+    std::vector<NameParts> additional_names;
+    std::vector<NameParts> expected_result;
+    starting_names.push_back(name1);
+    starting_names.push_back(name2);
+    additional_names.push_back(name3);
+    additional_names.push_back(name4);
+    expected_result.push_back(name1);
+    expected_result.push_back(name2);
+    expected_result.push_back(name3);
+    expected_result.push_back(name4);
+    test_cases.push_back(
+        TestCase(starting_names, additional_names, expected_result));
+  }
+
+  for (std::vector<TestCase>::iterator it = test_cases.begin();
+       it != test_cases.end();
+       ++it) {
+    TestCase current_case = *it;
+
+    std::vector<base::string16> first_names, middle_names, last_names;
+    GetNamePartsList(
+        current_case.starting_names, first_names, middle_names, last_names);
+
+    // Construct the starting_profile.
+    AutofillProfile starting_profile(base::GenerateGUID(),
+                                     "https://www.example.com/");
+
+    starting_profile.SetRawMultiInfo(NAME_FIRST, first_names);
+    starting_profile.SetRawMultiInfo(NAME_MIDDLE, middle_names);
+    starting_profile.SetRawMultiInfo(NAME_LAST, last_names);
+
+    first_names.clear();
+    middle_names.clear();
+    last_names.clear();
+    GetNamePartsList(
+        current_case.additional_names, first_names, middle_names, last_names);
+
+    // Construct the additional_profile.
+    AutofillProfile additional_profile(base::GenerateGUID(),
+                                       "https://www.example.com/");
+    additional_profile.SetRawMultiInfo(NAME_FIRST, first_names);
+    additional_profile.SetRawMultiInfo(NAME_MIDDLE, middle_names);
+    additional_profile.SetRawMultiInfo(NAME_LAST, last_names);
+
+    // Merge the names from the |additional_profile| into the |starting_profile|
+    starting_profile.OverwriteWithOrAddTo(additional_profile, "en-US");
+
+    // Verify the test expectations.
+    first_names.clear();
+    middle_names.clear();
+    last_names.clear();
+    GetNamePartsList(
+        current_case.expected_result, first_names, middle_names, last_names);
+
+    std::vector<base::string16> merged_first_names, merged_middle_names,
+        merged_last_names;
+    starting_profile.GetRawMultiInfo(NAME_FIRST, &merged_first_names);
+    starting_profile.GetRawMultiInfo(NAME_MIDDLE, &merged_middle_names);
+    starting_profile.GetRawMultiInfo(NAME_LAST, &merged_last_names);
+    ASSERT_EQ(current_case.expected_result.size(), merged_first_names.size());
+    ASSERT_EQ(current_case.expected_result.size(), merged_middle_names.size());
+    ASSERT_EQ(current_case.expected_result.size(), merged_last_names.size());
+
+    for (size_t i = 0; i < current_case.expected_result.size(); ++i) {
+      EXPECT_EQ(first_names[i], merged_first_names[i]);
+      EXPECT_EQ(middle_names[i], merged_middle_names[i]);
+      EXPECT_EQ(last_names[i], merged_last_names[i]);
+    }
+  }
 }
 
 }  // namespace autofill
