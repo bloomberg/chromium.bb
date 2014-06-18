@@ -556,8 +556,8 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
 
     // The totalSquashBounds is positioned with respect to referenceLayer of this CompositedLayerMapping.
     // But the squashingLayer needs to be positioned with respect to the ancestor CompositedLayerMapping.
-    // The conversion between referenceLayer and the ancestor CLM is already computed in the caller as
-    // offsetFromReferenceLayerToCompositedAncestor.
+    // The conversion between referenceLayer and the ancestor CLM is already computed as
+    // offsetFromReferenceLayerToParentGraphicsLayer.
     totalSquashBounds.moveBy(offsetFromReferenceLayerToParentGraphicsLayer);
     IntRect squashLayerBounds = enclosingIntRect(totalSquashBounds);
     IntPoint squashLayerOrigin = squashLayerBounds.location();
@@ -581,15 +581,14 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
         LayoutSize offsetFromSquashLayerOrigin = (offsetFromTransformedAncestorForSquashedLayer - referenceOffsetFromTransformedAncestor) - squashLayerOriginInOwningLayerSpace;
 
         // It is ok to repaint here, because all of the geometry needed to correctly repaint is computed by this point.
-        IntSize newOffsetFromRenderer = -flooredIntSize(offsetFromSquashLayerOrigin);
+        IntSize newOffsetFromRenderer = -IntSize(offsetFromSquashLayerOrigin.width().round(), offsetFromSquashLayerOrigin.height().round());
+        LayoutSize subpixelAccumulation = offsetFromSquashLayerOrigin + newOffsetFromRenderer;
         if (layers[i].offsetFromRendererSet && layers[i].offsetFromRenderer != newOffsetFromRenderer)
             layers[i].renderLayer->repainter().repaintIncludingNonCompositingDescendants();
         layers[i].offsetFromRenderer = newOffsetFromRenderer;
         layers[i].offsetFromRendererSet = true;
 
-        layers[i].renderLayer->setSubpixelAccumulation(offsetFromSquashLayerOrigin.fraction());
-        ASSERT(layers[i].renderLayer->subpixelAccumulation() ==
-            toLayoutSize(computeOffsetFromCompositedAncestor(layers[i].renderLayer, layers[i].renderLayer->ancestorCompositingLayer())).fraction());
+        layers[i].renderLayer->setSubpixelAccumulation(subpixelAccumulation);
 
         // FIXME: find a better design to avoid this redundant value - most likely it will make
         // sense to move the paint task info into RenderLayer's m_compositingProperties.
