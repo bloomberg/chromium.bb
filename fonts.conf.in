@@ -141,6 +141,10 @@
 			<int>0x3164</int>	<!-- HANGUL FILLER -->
 			<int>0xFEFF</int>	<!-- ZERO WIDTH NO-BREAK SPACE -->
 			<int>0xFFA0</int>	<!-- HALFWIDTH HANGUL FILLER -->
+			<int>0x1BCA0</int>	<!-- SHORTHAND FORMAT LETTER OVERLAP -->
+			<int>0x1BCA1</int>	<!-- SHORTHAND FORMAT CONTINUING OVERLAP -->
+			<int>0x1BCA2</int>	<!-- SHORTHAND FORMAT DOWN STEP -->
+			<int>0x1BCA3</int>	<!-- SHORTHAND FORMAT UP STEP -->
 		</blank>
 <!--
   Rescan configuration every 30 seconds when FcFontSetList is called
