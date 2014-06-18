@@ -35,8 +35,6 @@ PDFViewer.MIN_TOOLBAR_OFFSET = 15;
  * document.
  */
 function PDFViewer() {
-  this.loaded = false;
-
   // The sizer element is placed behind the plugin element to cause scrollbars
   // to be displayed in the window. It is sized according to the document size
   // of the pdf and zoom level.
@@ -258,7 +256,6 @@ PDFViewer.prototype = {
       }
     } else if (progress == 100) {
       // Document load complete.
-      this.loaded = true;
       var loadEvent = new Event('pdfload');
       window.dispatchEvent(loadEvent);
       this.sendScriptingMessage_({

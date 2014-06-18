@@ -10,10 +10,9 @@ var tests = [
    * Test that the page is sized to the size of the document.
    */
   function testPageSize() {
-    // Verify that the initial zoom is less than or equal to 100%.
-    chrome.test.assertTrue(viewer.viewport.zoom <= 1);
+    // Verify that the initial zoom is 100%.
+    chrome.test.assertEq(1, viewer.viewport.zoom);
 
-    viewer.viewport.zoom = 1;
     var sizer = document.getElementById('sizer');
     chrome.test.assertEq(826, sizer.offsetWidth);
     chrome.test.assertEq(1066, sizer.offsetHeight);
@@ -24,10 +23,8 @@ var tests = [
     var client = new PDFScriptingAPI(window, window.location.origin);
     client.setDestinationWindow(window);
     client.getAccessibilityJSON(chrome.test.callbackPass(function(json) {
-      var dict = JSON.parse(json);
-      chrome.test.assertEq(true, dict.copyable);
-      chrome.test.assertEq(true, dict.loaded);
-      chrome.test.assertEq(1, dict.numberOfPages);
+      chrome.test.assertEq('{"copyable":true,"loaded":true,"numberOfPages":1}',
+                           json);
     }));
   },
 
@@ -50,10 +47,6 @@ var tests = [
   }
 ];
 
-if (viewer.loaded) {
+window.addEventListener('pdfload', function() {
   chrome.test.runTests(tests);
-} else {
-  window.addEventListener('pdfload', function() {
-    chrome.test.runTests(tests);
-  });
-}
+});
