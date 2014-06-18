@@ -26,6 +26,7 @@ class AppListItem;
 class AppListModel;
 class AppListViewDelegate;
 class ApplicationDragAndDropHost;
+class ContentsSwitcherView;
 class ContentsView;
 class PaginationModel;
 class SearchBoxView;
@@ -65,6 +66,9 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
       ApplicationDragAndDropHost* drag_and_drop_host);
 
   ContentsView* contents_view() const { return contents_view_; }
+  ContentsSwitcherView* contents_switcher_view() const {
+    return contents_switcher_view_;
+  }
   AppListModel* model() { return model_; }
 
   // Returns true if the app list should be centered and in landscape mode.
@@ -73,7 +77,8 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
  private:
   class IconLoader;
 
-  void AddContentsView();
+  // Adds the ContentsView and the ContentsSwitcherView.
+  void AddContentsViews();
 
   // Gets the PaginationModel owned by the AppsGridView.
   PaginationModel* GetAppsPaginationModel();
@@ -109,6 +114,9 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   SearchBoxView* search_box_view_;  // Owned by views hierarchy.
   ContentsView* contents_view_;  // Owned by views hierarchy.
+
+  // Owned by views hierarchy. NULL in the non-experimental app list.
+  ContentsSwitcherView* contents_switcher_view_;
 
   // A timer that fires when maximum allowed time to wait for icon loading has
   // passed.

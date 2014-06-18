@@ -16,6 +16,7 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
+#include "ui/app_list/views/contents_switcher_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
@@ -339,10 +340,16 @@ void AppListViewTestContext::RunProfileChangeTest() {
 
   StartPageView* start_page_view =
       view_->app_list_main_view()->contents_view()->start_page_view();
+  ContentsSwitcherView* contents_switcher_view =
+      view_->app_list_main_view()->contents_switcher_view();
   if (test_type_ == EXPERIMENTAL) {
+    EXPECT_NO_FATAL_FAILURE(CheckView(contents_switcher_view));
+    EXPECT_EQ(view_->app_list_main_view()->contents_view(),
+              contents_switcher_view->contents_view());
     EXPECT_NO_FATAL_FAILURE(CheckView(start_page_view));
     EXPECT_EQ(1u, GetVisibleTileItemViews(start_page_view->tile_views()));
   } else {
+    EXPECT_EQ(NULL, contents_switcher_view);
     EXPECT_EQ(NULL, start_page_view);
   }
 

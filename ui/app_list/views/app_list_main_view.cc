@@ -39,8 +39,6 @@ const int kInnerPadding = 1;
 // The maximum allowed time to wait for icon loading in milliseconds.
 const int kMaxIconLoadingWaitTimeInMs = 50;
 
-const int kContentsViewIndex = 1;
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,6 +88,7 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
       model_(delegate->GetModel()),
       search_box_view_(NULL),
       contents_view_(NULL),
+      contents_switcher_view_(NULL),
       weak_ptr_factory_(this) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
                                         kInnerPadding,
@@ -98,9 +97,7 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
 
   search_box_view_ = new SearchBoxView(this, delegate);
   AddChildView(search_box_view_);
-  AddContentsView();
-  if (app_list::switches::IsExperimentalAppListEnabled())
-    AddChildView(new ContentsSwitcherView(contents_view_));
+  AddContentsViews();
 
   // Switch the apps grid view to the specified page.
   app_list::PaginationModel* pagination_model = GetAppsPaginationModel();
@@ -111,9 +108,13 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
   PreloadIcons(parent);
 }
 
-void AppListMainView::AddContentsView() {
+void AppListMainView::AddContentsViews() {
   contents_view_ = new ContentsView(this, model_, delegate_);
-  AddChildViewAt(contents_view_, kContentsViewIndex);
+  AddChildView(contents_view_);
+  if (app_list::switches::IsExperimentalAppListEnabled()) {
+    contents_switcher_view_ = new ContentsSwitcherView(contents_view_);
+    AddChildView(contents_switcher_view_);
+  }
 
   search_box_view_->set_contents_view(contents_view_);
 
@@ -164,7 +165,11 @@ void AppListMainView::ModelChanged() {
   search_box_view_->ModelChanged();
   delete contents_view_;
   contents_view_ = NULL;
-  AddContentsView();
+  if (contents_switcher_view_) {
+    delete contents_switcher_view_;
+    contents_switcher_view_ = NULL;
+  }
+  AddContentsViews();
   Layout();
 }
 

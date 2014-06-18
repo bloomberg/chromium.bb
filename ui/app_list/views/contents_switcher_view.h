@@ -20,6 +20,8 @@ class ContentsSwitcherView : public views::View, public views::ButtonListener {
   explicit ContentsSwitcherView(ContentsView* contents_view);
   virtual ~ContentsSwitcherView();
 
+  ContentsView* contents_view() const { return contents_view_; }
+
  private:
   // Adds a switcher button using |resource_id| as the button's image and |tag|
   // as the button's id.
