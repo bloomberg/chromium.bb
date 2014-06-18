@@ -521,17 +521,6 @@ LogMessage::SaveLastError::~SaveLastError() {
 }
 #endif  // defined(OS_WIN)
 
-LogMessage::LogMessage(const char* file, int line, LogSeverity severity,
-                       int ctr)
-    : severity_(severity), file_(file), line_(line) {
-  Init(file, line);
-}
-
-LogMessage::LogMessage(const char* file, int line)
-    : severity_(LOG_INFO), file_(file), line_(line) {
-  Init(file, line);
-}
-
 LogMessage::LogMessage(const char* file, int line, LogSeverity severity)
     : severity_(severity), file_(file), line_(line) {
   Init(file, line);

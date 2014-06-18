@@ -684,32 +684,14 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
 // above.
 class BASE_EXPORT LogMessage {
  public:
-  LogMessage(const char* file, int line, LogSeverity severity, int ctr);
-
-  // Two special constructors that generate reduced amounts of code at
-  // LOG call sites for common cases.
-  //
-  // Used for LOG(INFO): Implied are:
-  // severity = LOG_INFO, ctr = 0
-  //
-  // Using this constructor instead of the more complex constructor above
-  // saves a couple of bytes per call site.
-  LogMessage(const char* file, int line);
-
-  // Used for LOG(severity) where severity != INFO.  Implied
-  // are: ctr = 0
-  //
-  // Using this constructor instead of the more complex constructor above
-  // saves a couple of bytes per call site.
+  // Used for LOG(severity).
   LogMessage(const char* file, int line, LogSeverity severity);
 
-  // A special constructor used for check failures.  Takes ownership
-  // of the given string.
-  // Implied severity = LOG_FATAL
+  // Used for CHECK_EQ(), etc. Takes ownership of the given string.
+  // Implied severity = LOG_FATAL.
   LogMessage(const char* file, int line, std::string* result);
 
-  // A special constructor used for check failures, with the option to
-  // specify severity.  Takes ownership of the given string.
+  // Used for DCHECK_EQ(), etc. Takes ownership of the given string.
   LogMessage(const char* file, int line, LogSeverity severity,
              std::string* result);
 
