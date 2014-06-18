@@ -54,7 +54,7 @@
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/<(generate_stubs_output_stem).cc',
-            '<(INTERMEDIATE_DIR)/<(generate_stubs_project)/<(generate_stubs_output_stem).h',
+            '<(SHARED_INTERMEDIATE_DIR)/<(generate_stubs_project)/<(generate_stubs_output_stem).h',
           ],
           'action': [
             'python',
