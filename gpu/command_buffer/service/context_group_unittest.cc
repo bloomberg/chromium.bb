@@ -6,12 +6,12 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
+#include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 
-using ::gfx::MockGLInterface;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::HasSubstr;
@@ -23,12 +23,11 @@ using ::testing::Return;
 using ::testing::SetArrayArgument;
 using ::testing::SetArgumentPointee;
 using ::testing::StrEq;
-using ::testing::StrictMock;
 
 namespace gpu {
 namespace gles2 {
 
-class ContextGroupTest : public testing::Test {
+class ContextGroupTest : public GpuServiceTest {
  public:
   static const bool kBindGeneratesResource = false;
 
@@ -36,19 +35,12 @@ class ContextGroupTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
+    GpuServiceTest::SetUp();
     decoder_.reset(new MockGLES2Decoder());
     group_ = scoped_refptr<ContextGroup>(
         new ContextGroup(NULL, NULL, NULL, NULL, NULL, kBindGeneratesResource));
   }
 
-  virtual void TearDown() {
-    ::gfx::MockGLInterface::SetGLInterface(NULL);
-    gl_.reset();
-  }
-
-  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_ptr<MockGLES2Decoder> decoder_;
   scoped_refptr<ContextGroup> group_;
 };

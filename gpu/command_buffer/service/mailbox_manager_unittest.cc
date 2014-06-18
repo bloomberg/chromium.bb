@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mailbox_synchronizer.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,16 +18,30 @@ namespace gles2 {
 
 using namespace ::testing;
 
-class MailboxManagerTest : public testing::Test {
+class MailboxManagerTest : public GpuServiceTest {
  public:
-  MailboxManagerTest() {}
+  MailboxManagerTest() : initialized_synchronizer_(false) {}
   virtual ~MailboxManagerTest() {}
 
  protected:
   virtual void SetUp() {
-    testing::Test::SetUp();
+    GpuServiceTest::SetUp();
     feature_info_ = new FeatureInfo;
     manager_ = new MailboxManager;
+  }
+
+  virtual void SetUpWithSynchronizer() {
+    GpuServiceTest::SetUp();
+    MailboxSynchronizer::Initialize();
+    initialized_synchronizer_ = true;
+    feature_info_ = new FeatureInfo;
+    manager_ = new MailboxManager;
+  }
+
+  virtual void TearDown() {
+    if (initialized_synchronizer_)
+      MailboxSynchronizer::Terminate();
+    GpuServiceTest::TearDown();
   }
 
   Texture* CreateTexture() {
@@ -73,6 +88,7 @@ class MailboxManagerTest : public testing::Test {
   scoped_refptr<MailboxManager> manager_;
 
  private:
+  bool initialized_synchronizer_;
   scoped_refptr<FeatureInfo> feature_info_;
 
   DISALLOW_COPY_AND_ASSIGN(MailboxManagerTest);
@@ -185,11 +201,8 @@ class MailboxManagerSyncTest : public MailboxManagerTest {
 
  protected:
   virtual void SetUp() {
-    MailboxSynchronizer::Initialize();
-    MailboxManagerTest::SetUp();
+    MailboxManagerTest::SetUpWithSynchronizer();
     manager2_ = new MailboxManager;
-    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
     context_ = new gfx::GLContextStub();
     surface_ = new gfx::GLSurfaceStub();
     context_->MakeCurrent(surface_);
@@ -252,14 +265,10 @@ class MailboxManagerSyncTest : public MailboxManagerTest {
   }
 
   virtual void TearDown() {
-    MailboxManagerTest::TearDown();
-    MailboxSynchronizer::Terminate();
     context_->ReleaseCurrent(NULL);
-    ::gfx::MockGLInterface::SetGLInterface(NULL);
-    gl_.reset();
+    MailboxManagerTest::TearDown();
   }
 
-  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_refptr<MailboxManager> manager2_;
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;

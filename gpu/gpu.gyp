@@ -248,6 +248,8 @@
         'command_buffer/service/gl_surface_mock.cc',
         'command_buffer/service/gl_surface_mock.h',
         'command_buffer/service/gpu_scheduler_unittest.cc',
+        'command_buffer/service/gpu_service_test.cc',
+        'command_buffer/service/gpu_service_test.h',
         'command_buffer/service/id_manager_unittest.cc',
         'command_buffer/service/mailbox_manager_unittest.cc',
         'command_buffer/service/memory_program_cache_unittest.cc',

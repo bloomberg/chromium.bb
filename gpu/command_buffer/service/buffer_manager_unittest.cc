@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,14 +18,13 @@ using ::testing::StrictMock;
 namespace gpu {
 namespace gles2 {
 
-class BufferManagerTestBase : public testing::Test {
+class BufferManagerTestBase : public GpuServiceTest {
  protected:
   void SetUpBase(
       MemoryTracker* memory_tracker,
       FeatureInfo* feature_info,
       const char* extensions) {
-    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
+    GpuServiceTest::SetUp();
     if (feature_info) {
       TestHelper::SetupFeatureInfoInitExpectations(gl_.get(), extensions);
       feature_info->Initialize();
@@ -36,9 +36,8 @@ class BufferManagerTestBase : public testing::Test {
   virtual void TearDown() {
     manager_->Destroy(false);
     manager_.reset();
-    ::gfx::MockGLInterface::SetGLInterface(NULL);
     error_state_.reset();
-    gl_.reset();
+    GpuServiceTest::TearDown();
   }
 
   GLenum GetTarget(const Buffer* buffer) const {
@@ -73,8 +72,6 @@ class BufferManagerTestBase : public testing::Test {
     return success;
   }
 
-  // Use StrictMock to make 100% sure we know how GL will be called.
-  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_ptr<BufferManager> manager_;
   scoped_ptr<MockErrorState> error_state_;
 };

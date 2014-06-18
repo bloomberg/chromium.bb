@@ -6,9 +6,10 @@
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
-#include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
@@ -21,7 +22,7 @@ using ::testing::SetArgumentPointee;
 namespace gpu {
 namespace gles2 {
 
-class QueryManagerTest : public testing::Test {
+class QueryManagerTest : public GpuServiceTest {
  public:
   static const int32 kSharedMemoryId = 401;
   static const size_t kSharedBufferSize = 2048;
@@ -38,8 +39,7 @@ class QueryManagerTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
+    GpuServiceTest::SetUp();
     engine_.reset(new MockCommandBufferEngine());
     decoder_.reset(new MockGLES2Decoder());
     decoder_->set_engine(engine_.get());
@@ -56,8 +56,7 @@ class QueryManagerTest : public testing::Test {
     manager_->Destroy(false);
     manager_.reset();
     engine_.reset();
-    ::gfx::MockGLInterface::SetGLInterface(NULL);
-    gl_.reset();
+    GpuServiceTest::TearDown();
   }
 
   QueryManager::Query* CreateQuery(
@@ -82,8 +81,6 @@ class QueryManagerTest : public testing::Test {
     EXPECT_TRUE(manager_->EndQuery(query, submit_count));
   }
 
-  // Use StrictMock to make 100% sure we know how GL will be called.
-  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_ptr<MockGLES2Decoder> decoder_;
   scoped_ptr<QueryManager> manager_;
 

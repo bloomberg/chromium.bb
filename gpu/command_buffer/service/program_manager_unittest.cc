@@ -13,13 +13,13 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 
-using ::gfx::MockGLInterface;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::InSequence;
@@ -30,7 +30,6 @@ using ::testing::ReturnRef;
 using ::testing::SetArrayArgument;
 using ::testing::SetArgumentPointee;
 using ::testing::StrEq;
-using ::testing::StrictMock;
 
 namespace gpu {
 namespace gles2 {
@@ -41,7 +40,7 @@ const uint32 kMaxVaryingVectors = 8;
 void ShaderCacheCb(const std::string& key, const std::string& shader) {}
 }  // namespace anonymous
 
-class ProgramManagerTest : public testing::Test {
+class ProgramManagerTest : public GpuServiceTest {
  public:
   ProgramManagerTest() : manager_(NULL, kMaxVaryingVectors) { }
   virtual ~ProgramManagerTest() {
@@ -49,18 +48,6 @@ class ProgramManagerTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
-    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
-  }
-
-  virtual void TearDown() {
-    ::gfx::MockGLInterface::SetGLInterface(NULL);
-    gl_.reset();
-  }
-
-  // Use StrictMock to make 100% sure we know how GL will be called.
-  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   ProgramManager manager_;
 };
 
@@ -138,7 +125,7 @@ TEST_F(ProgramManagerTest, Program) {
   EXPECT_TRUE(program1->log_info() == NULL);
 }
 
-class ProgramManagerWithShaderTest : public testing::Test {
+class ProgramManagerWithShaderTest : public GpuServiceTest {
  public:
   ProgramManagerWithShaderTest()
       :  manager_(NULL, kMaxVaryingVectors), program_(NULL) {
@@ -228,8 +215,7 @@ class ProgramManagerWithShaderTest : public testing::Test {
   } VarInfo;
 
   virtual void SetUp() {
-    gl_.reset(new StrictMock<gfx::MockGLInterface>());
-    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
+    GpuServiceTest::SetUp();
 
     SetupDefaultShaderExpectations();
 
@@ -270,10 +256,6 @@ class ProgramManagerWithShaderTest : public testing::Test {
       UniformInfo* uniforms, size_t num_uniforms) {
     TestHelper::SetupExpectationsForClearingUniforms(
         gl_.get(), uniforms, num_uniforms);
-  }
-
-  virtual void TearDown() {
-    ::gfx::MockGLInterface::SetGLInterface(NULL);
   }
 
   // Return true if link status matches expected_link_status
@@ -397,8 +379,6 @@ class ProgramManagerWithShaderTest : public testing::Test {
 
   static AttribInfo kAttribs[];
   static UniformInfo kUniforms[];
-
-  scoped_ptr<StrictMock<gfx::MockGLInterface> > gl_;
 
   ProgramManager manager_;
   Program* program_;
@@ -1569,7 +1549,7 @@ TEST_F(ProgramManagerWithShaderTest, BindUniformLocation) {
             program->GetUniformFakeLocation(kUniform3GoodName));
 }
 
-class ProgramManagerWithCacheTest : public testing::Test {
+class ProgramManagerWithCacheTest : public GpuServiceTest {
  public:
   static const GLuint kClientProgramId = 1;
   static const GLuint kServiceProgramId = 10;
@@ -1592,8 +1572,7 @@ class ProgramManagerWithCacheTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    gl_.reset(new StrictMock<gfx::MockGLInterface>());
-    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
+    GpuServiceTest::SetUp();
 
     vertex_shader_ = shader_manager_.CreateShader(
        kVertexShaderClientId, kVertexShaderServiceId, GL_VERTEX_SHADER);
@@ -1610,10 +1589,6 @@ class ProgramManagerWithCacheTest : public testing::Test {
 
     program_->AttachShader(&shader_manager_, vertex_shader_);
     program_->AttachShader(&shader_manager_, fragment_shader_);
-  }
-
-  virtual void TearDown() {
-    ::gfx::MockGLInterface::SetGLInterface(NULL);
   }
 
   void SetShadersCompiled() {
@@ -1756,8 +1731,6 @@ class ProgramManagerWithCacheTest : public testing::Test {
     EXPECT_CALL(*gl_.get(), GetShaderInfoLog(shader_id, 0, _, _))
       .Times(1);
   }
-
-  scoped_ptr<StrictMock<gfx::MockGLInterface> > gl_;
 
   scoped_ptr<MockProgramCache> cache_;
   ProgramManager manager_;

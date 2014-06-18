@@ -5,6 +5,7 @@
 #include <map>
 #include <set>
 
+#include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
@@ -12,7 +13,6 @@
 namespace gpu {
 namespace gles2 {
 
-using ::gfx::MockGLInterface;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -109,7 +109,7 @@ class GlFakeQueries {
   std::map<GLuint, GLint64> query_timestamp_;
 };
 
-class GpuTracerTest : public testing::Test {
+class GpuTracerTest : public GpuServiceTest {
  public:
   GpuTracerTest() {}
 
@@ -117,15 +117,14 @@ class GpuTracerTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
+    GpuServiceTest::SetUp();
     gl_fake_queries_.Reset();
   }
 
   virtual void TearDown() {
-    ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
     gl_fake_queries_.Reset();
+    GpuServiceTest::TearDown();
   }
 
   void SetupTimerQueryMocks() {
@@ -154,7 +153,6 @@ class GpuTracerTest : public testing::Test {
              Invoke(&gl_fake_queries_, &GlFakeQueries::DeleteQueries));
   }
 
-  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   GlFakeQueries gl_fake_queries_;
 };
 
