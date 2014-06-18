@@ -30,7 +30,6 @@
 
 namespace WebCore {
 
-class HTMLMediaElement;
 class HTMLVideoElement;
 
 class RenderVideo FINAL : public RenderMedia {

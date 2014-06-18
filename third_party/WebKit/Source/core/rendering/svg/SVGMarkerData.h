@@ -26,8 +26,6 @@
 
 namespace WebCore {
 
-class RenderSVGResourceMarker;
-
 enum SVGMarkerType {
     StartMarker,
     MidMarker,

@@ -29,8 +29,6 @@
  */
 namespace WebCore {
 
-class Position;
-
 class RenderBR FINAL : public RenderText {
 public:
     explicit RenderBR(Node*);

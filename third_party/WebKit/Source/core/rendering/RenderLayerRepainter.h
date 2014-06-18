@@ -56,7 +56,6 @@ enum RepaintStatus {
     NeedsFullRepaintForPositionedMovementLayout = NeedsFullRepaint | 1 << 1
 };
 
-class RenderGeometryMap;
 class RenderLayer;
 class RenderLayerModelObject;
 

@@ -32,9 +32,7 @@ namespace WebCore {
 class RenderObject;
 class RenderStyle;
 class RenderSVGInlineText;
-class SVGElement;
 class SVGInlineTextBox;
-class SVGRenderStyle;
 
 // SVGTextLayoutEngine performs the second layout phase for SVG text.
 //

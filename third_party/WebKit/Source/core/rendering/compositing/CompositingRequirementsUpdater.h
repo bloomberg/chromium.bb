@@ -36,7 +36,6 @@ namespace WebCore {
 class CompositingReasonFinder;
 class RenderLayer;
 class RenderObject;
-class RenderPart;
 class RenderView;
 
 class CompositingRequirementsUpdater {

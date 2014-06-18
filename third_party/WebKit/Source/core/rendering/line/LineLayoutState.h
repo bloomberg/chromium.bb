@@ -29,8 +29,6 @@
 
 namespace WebCore {
 
-class RenderBlockFlow;
-
 // Like LayoutState for layout(), LineLayoutState keeps track of global information
 // during an entire linebox tree layout pass (aka layoutInlineChildren).
 class LineLayoutState {

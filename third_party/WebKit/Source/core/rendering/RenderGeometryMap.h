@@ -38,7 +38,6 @@ namespace WebCore {
 
 class RenderLayer;
 class RenderLayerModelObject;
-class RenderView;
 class TransformState;
 
 // Stores data about how to map from one renderer to its container.

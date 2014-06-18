@@ -28,7 +28,6 @@
 
 namespace WebCore {
 
-class AffineTransform;
 class SVGElement;
 
 class RenderSVGRoot FINAL : public RenderReplaced {

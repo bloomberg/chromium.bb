@@ -25,8 +25,6 @@
 
 namespace WebCore {
 
-class RenderSVGInlineText;
-
 class SVGInlineFlowBox FINAL : public InlineFlowBox {
 public:
     SVGInlineFlowBox(RenderObject& obj)

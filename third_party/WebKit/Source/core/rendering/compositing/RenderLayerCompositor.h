@@ -34,14 +34,9 @@
 
 namespace WebCore {
 
-class FixedPositionViewportConstraints;
 class GraphicsLayer;
-class RenderEmbeddedObject;
-class RenderLayerStackingNode;
 class RenderPart;
-class RenderVideo;
 class ScrollingCoordinator;
-class StickyPositionViewportConstraints;
 
 enum CompositingUpdateType {
     CompositingUpdateNone,

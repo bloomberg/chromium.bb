@@ -30,7 +30,6 @@ namespace WebCore {
 class HTMLDimension;
 class HTMLFrameSetElement;
 class MouseEvent;
-class RenderFrame;
 
 enum FrameEdge { LeftFrameEdge, RightFrameEdge, TopFrameEdge, BottomFrameEdge };
 

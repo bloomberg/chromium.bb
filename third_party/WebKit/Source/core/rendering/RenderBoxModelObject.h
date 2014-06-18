@@ -50,7 +50,6 @@ enum ContentChangeType {
     CanvasContextChanged
 };
 
-class KeyframeList;
 class RenderTextFragment;
 class StickyPositionViewportConstraints;
 

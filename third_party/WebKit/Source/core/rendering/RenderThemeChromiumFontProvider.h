@@ -28,10 +28,6 @@
 
 #include "core/CSSValueKeywords.h"
 
-namespace WTF {
-class String;
-}
-
 namespace WebCore {
 
 class FontDescription;

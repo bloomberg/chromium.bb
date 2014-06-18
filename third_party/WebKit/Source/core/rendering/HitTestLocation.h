@@ -33,13 +33,6 @@
 
 namespace WebCore {
 
-class Element;
-class LocalFrame;
-class Image;
-class KURL;
-class Node;
-class Scrollbar;
-
 class HitTestLocation {
 public:
 

@@ -52,8 +52,6 @@
 
 namespace WebCore {
 
-class RenderLayer;
-
 // This class handles the auto-scrolling for <marquee>
 class RenderMarquee FINAL : public RenderBlockFlow {
 public:

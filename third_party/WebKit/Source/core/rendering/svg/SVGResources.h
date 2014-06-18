@@ -28,7 +28,6 @@
 
 namespace WebCore {
 
-class Document;
 class RenderObject;
 class RenderSVGResourceClipper;
 class RenderSVGResourceContainer;

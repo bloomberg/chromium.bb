@@ -29,7 +29,6 @@
 namespace WebCore {
 
 class RenderSVGResource;
-class SVGRootInlineBox;
 
 class SVGInlineTextBox FINAL : public InlineTextBox {
 public:

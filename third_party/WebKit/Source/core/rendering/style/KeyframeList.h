@@ -36,8 +36,6 @@ namespace WebCore {
 
 class RenderObject;
 class RenderStyle;
-class StylePropertySet;
-class TimingFunction;
 
 class KeyframeValue {
 public:

@@ -27,7 +27,6 @@
 
 namespace WebCore {
 
-class MouseEvent;
 class TextRun;
 
 // Renderer for embeds and objects, often, but not always, rendered via plug-ins.

@@ -42,7 +42,6 @@ enum ChildrenIteration {
     AllChildren = NegativeZOrderChildren | NormalFlowChildren | PositiveZOrderChildren
 };
 
-class RenderLayer;
 class RenderLayerStackingNode;
 
 // This iterator walks the RenderLayerStackingNode lists in the following order:

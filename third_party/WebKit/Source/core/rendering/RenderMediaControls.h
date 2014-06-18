@@ -34,7 +34,6 @@ namespace WebCore {
 
 struct PaintInfo;
 
-class HTMLMediaElement;
 class IntRect;
 class RenderObject;
 

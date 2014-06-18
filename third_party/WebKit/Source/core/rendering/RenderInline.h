@@ -30,8 +30,6 @@
 
 namespace WebCore {
 
-class Position;
-
 class RenderInline : public RenderBoxModelObject {
 public:
     explicit RenderInline(Element*);

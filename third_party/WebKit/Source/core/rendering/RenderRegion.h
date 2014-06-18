@@ -37,7 +37,6 @@ namespace WebCore {
 
 struct LayerFragment;
 typedef Vector<LayerFragment, 1> LayerFragments;
-class RenderBox;
 class RenderFlowThread;
 
 class RenderRegion : public RenderBlockFlow {

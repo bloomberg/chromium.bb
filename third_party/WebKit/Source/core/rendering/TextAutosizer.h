@@ -38,7 +38,6 @@ namespace WebCore {
 class Document;
 class RenderBlock;
 class RenderObject;
-class RenderText;
 struct TextAutosizingWindowInfo;
 
 // Represents cluster related data. Instances should not persist between calls to processSubtree.

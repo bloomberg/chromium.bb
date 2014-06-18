@@ -104,10 +104,6 @@ namespace WebCore {
     typedef unsigned EPaintOrder;
     const unsigned PO_NORMAL = PT_FILL | PT_STROKE << 2 | PT_MARKERS << 4;
 
-    class CSSValue;
-    class CSSValueList;
-    class SVGPaint;
-
     // Inherited/Non-Inherited Style Datastructures
     class StyleFillData : public RefCounted<StyleFillData> {
     public:

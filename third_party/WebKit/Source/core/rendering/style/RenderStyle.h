@@ -104,8 +104,6 @@ class BorderData;
 class CounterContent;
 class Font;
 class FontMetrics;
-class IntRect;
-class Pair;
 class ShadowList;
 class StyleImage;
 class StyleInheritedData;

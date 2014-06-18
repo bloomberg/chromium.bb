@@ -37,12 +37,9 @@
 
 namespace WebCore {
 
-class CSSStyleSheet;
 class Element;
 class FileList;
 class HTMLInputElement;
-class PopupMenu;
-class RenderMenuList;
 class RenderMeter;
 class RenderProgress;
 

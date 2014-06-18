@@ -25,8 +25,6 @@
 namespace WebCore {
 
 class Font;
-class SVGRenderStyle;
-class SVGElement;
 
 // Helper class used by SVGTextLayoutEngine to handle 'letter-spacing' and 'word-spacing'.
 class SVGTextLayoutEngineSpacing {

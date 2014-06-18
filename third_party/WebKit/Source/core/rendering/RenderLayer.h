@@ -66,11 +66,8 @@ class FilterOperations;
 class HitTestRequest;
 class HitTestResult;
 class HitTestingTransformState;
-class RenderFlowThread;
-class RenderGeometryMap;
 class CompositedLayerMapping;
 class RenderLayerCompositor;
-class RenderReplica;
 class RenderStyle;
 class TransformationMatrix;
 

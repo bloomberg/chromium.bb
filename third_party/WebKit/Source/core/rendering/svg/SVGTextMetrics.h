@@ -27,7 +27,6 @@
 namespace WebCore {
 
 class RenderSVGInlineText;
-class SVGTextLayoutAttributes;
 class TextRun;
 
 class SVGTextMetrics {

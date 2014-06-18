@@ -41,7 +41,6 @@ namespace WebCore {
 struct LayerFragment;
 typedef Vector<LayerFragment, 1> LayerFragments;
 class RenderFlowThread;
-class RenderStyle;
 class RenderRegion;
 
 typedef ListHashSet<RenderRegion*> RenderRegionList;

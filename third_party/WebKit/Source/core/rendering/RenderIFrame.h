@@ -30,8 +30,6 @@
 
 namespace WebCore {
 
-class RenderView;
-
 class RenderIFrame FINAL : public RenderPart {
 public:
     explicit RenderIFrame(Element*);

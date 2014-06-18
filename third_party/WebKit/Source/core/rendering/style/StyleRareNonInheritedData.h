@@ -56,7 +56,6 @@ class StyleGridItemData;
 class StyleMarqueeData;
 class StyleMultiColData;
 class StyleReflection;
-class StyleResolver;
 class StyleTransformData;
 class StyleWillChangeData;
 

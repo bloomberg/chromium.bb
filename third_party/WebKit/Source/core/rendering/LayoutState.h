@@ -34,10 +34,8 @@
 namespace WebCore {
 
 class ForceHorriblySlowRectMapping;
-class RenderBlockFlow;
 class RenderBox;
 class RenderObject;
-class RenderFlowThread;
 class RenderView;
 
 class LayoutState {

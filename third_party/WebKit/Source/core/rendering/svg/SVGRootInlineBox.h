@@ -29,8 +29,6 @@
 
 namespace WebCore {
 
-class SVGInlineTextBox;
-
 class SVGRootInlineBox FINAL : public RootInlineBox {
 public:
     SVGRootInlineBox(RenderBlockFlow& block)

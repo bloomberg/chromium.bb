@@ -37,17 +37,14 @@
 
 namespace WebCore {
 
-class BasicShape;
-class BidiContext;
 class LineLayoutState;
 class RenderInline;
-class RenderText;
 
-struct BidiRun;
 struct PaintInfo;
+class WordMeasurement;
+
 class LineInfo;
 class RenderRubyRun;
-class WordMeasurement;
 
 template <class Run> class BidiRunList;
 typedef WTF::ListHashSet<RenderBox*, 16> TrackedRendererListHashSet;

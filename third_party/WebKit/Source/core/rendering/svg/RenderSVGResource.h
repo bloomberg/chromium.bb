@@ -45,8 +45,6 @@ enum RenderSVGResourceMode {
 };
 typedef unsigned RenderSVGResourceModeFlags;
 
-class Color;
-class FloatRect;
 class GraphicsContext;
 class Path;
 class RenderObject;

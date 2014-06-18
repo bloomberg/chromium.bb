@@ -41,7 +41,6 @@
 
 namespace WebCore {
 
-class Document;
 class GraphicsContext;
 class RenderLayer;
 class RenderObject;
