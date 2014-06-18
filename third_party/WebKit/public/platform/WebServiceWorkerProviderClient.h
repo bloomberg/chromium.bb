@@ -37,17 +37,16 @@ namespace blink {
 class WebServiceWorker;
 class WebString;
 
-// This class provides interface for embedders to talk to
+// This class is the interface for embedders to talk to
 // ServiceWorkerContainer.
 class WebServiceWorkerProviderClient {
 public:
     virtual ~WebServiceWorkerProviderClient() { }
 
-    virtual void setWaiting(WebServiceWorker*) = 0;
+    virtual void setActive(WebServiceWorker*) = 0;
     virtual void setController(WebServiceWorker*) = 0;
-
-    // FIXME: Remove when the embedder switches to setController.
-    virtual void setCurrentServiceWorker(WebServiceWorker*) = 0;
+    virtual void setInstalling(WebServiceWorker*) = 0;
+    virtual void setWaiting(WebServiceWorker*) = 0;
 
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) = 0;
 };

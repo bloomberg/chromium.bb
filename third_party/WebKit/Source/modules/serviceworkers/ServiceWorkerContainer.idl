@@ -31,9 +31,10 @@
 [
     RuntimeEnabled=ServiceWorker
 ] interface ServiceWorkerContainer {
+    [Unforgeable] readonly attribute ServiceWorker active;
+    [Unforgeable] readonly attribute ServiceWorker controller;
+    [Unforgeable] readonly attribute ServiceWorker installing;
     [Unforgeable] readonly attribute ServiceWorker waiting;
-    // FIXME: controller should be unforgeable
-    readonly attribute ServiceWorker controller;
 
     [CallWith=ScriptState] readonly attribute Promise ready;
 

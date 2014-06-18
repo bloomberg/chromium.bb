@@ -62,27 +62,30 @@ public:
 
     void detachClient();
 
-    PassRefPtrWillBeRawPtr<ServiceWorker> waiting() { return m_waiting.get(); }
+    PassRefPtrWillBeRawPtr<ServiceWorker> active() { return m_active.get(); }
     PassRefPtrWillBeRawPtr<ServiceWorker> controller() { return m_controller.get(); }
+    PassRefPtrWillBeRawPtr<ServiceWorker> installing() { return m_installing.get(); }
+    PassRefPtrWillBeRawPtr<ServiceWorker> waiting() { return m_waiting.get(); }
     ScriptPromise ready(ScriptState*);
 
     ScriptPromise registerServiceWorker(ScriptState*, const String& pattern, const Dictionary&);
     ScriptPromise unregisterServiceWorker(ScriptState*, const String& scope = String());
 
     // WebServiceWorkerProviderClient overrides.
-    virtual void setWaiting(blink::WebServiceWorker*) OVERRIDE;
+    virtual void setActive(blink::WebServiceWorker*) OVERRIDE;
     virtual void setController(blink::WebServiceWorker*) OVERRIDE;
+    virtual void setInstalling(blink::WebServiceWorker*) OVERRIDE;
+    virtual void setWaiting(blink::WebServiceWorker*) OVERRIDE;
     virtual void dispatchMessageEvent(const blink::WebString& message, const blink::WebMessagePortChannelArray&) OVERRIDE;
-
-    // FIXME: Delete this when the embedder switches to setController.
-    virtual void setCurrentServiceWorker(blink::WebServiceWorker*) OVERRIDE;
 
 private:
     explicit ServiceWorkerContainer(ExecutionContext*);
 
     blink::WebServiceWorkerProvider* m_provider;
-    RefPtr<ServiceWorker> m_waiting;
+    RefPtr<ServiceWorker> m_active;
     RefPtr<ServiceWorker> m_controller;
+    RefPtr<ServiceWorker> m_installing;
+    RefPtr<ServiceWorker> m_waiting;
 };
 
 } // namespace WebCore

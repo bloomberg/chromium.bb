@@ -17,8 +17,10 @@ test(function() {
   assert_throws(null, function() { ServiceWorkerContainer(); },
                 'the constructor should not be callable');
 
-  var descriptor = getPropertyDescriptor('waiting');
-  assert_false(descriptor.configurable,
-               'the waiting property should be Unforgeable');
+  ['active', 'waiting', 'installing', 'controller'].forEach(function(property) {
+    var descriptor = getPropertyDescriptor(property);
+    assert_false(descriptor.configurable,
+                 'the ' + property + ' property should be Unforgeable');
+  });
 }, 'ServiceWorkerContainer interface');
 </script>
