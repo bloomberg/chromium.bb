@@ -1,3 +1,9 @@
 # Flaky, see http://crbug.com/227278
 WebContentsVideoCaptureDeviceTest.WebContentsDestroyed
 CompositingIOSurfaceTransformerTest.*
+
+# False positive, according to crbug.com/386080
+WebLayerImplFixedBoundsTest.CompareToWebLayerImplComplex
+WebLayerImplFixedBoundsTest.CompareToWebLayerImplSimple
+
+
