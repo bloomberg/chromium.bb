@@ -149,7 +149,12 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
   #if defined(OS_WIN)
       ole_initializer_.reset(NULL);
   #endif
-
+  #if defined(OS_ANDROID)
+      // Forcefully terminates the RunLoop inside MessagePumpForUI, ensuring
+      // proper shutdown for content_browsertests. Shutdown() is not used by
+      // the actual browser.
+      base::MessageLoop::current()->QuitNow();
+  #endif
       main_loop_.reset(NULL);
 
       notification_service_.reset(NULL);

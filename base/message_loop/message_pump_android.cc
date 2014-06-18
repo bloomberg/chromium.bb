@@ -117,7 +117,7 @@ void MessagePumpForUI::Quit() {
     JNIEnv* env = base::android::AttachCurrentThread();
     DCHECK(env);
 
-    Java_SystemMessageHandler_removeScheduledWork(env,
+    Java_SystemMessageHandler_removeAllPendingMessages(env,
         system_message_handler_obj_.obj());
     system_message_handler_obj_.Reset();
   }

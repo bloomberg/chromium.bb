@@ -239,14 +239,7 @@ void BrowserTestBase::SetUp() {
   MainFunctionParams params(*command_line);
   params.ui_task = ui_task;
   // TODO(phajdan.jr): Check return code, http://crbug.com/374738 .
-  BrowserMainRunner::Create()->Initialize(params);
-  // We are done running the test by now. During teardown we
-  // need to be able to perform IO.
-  base::ThreadRestrictions::SetIOAllowed(true);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
-                 true));
+  BrowserMain(params);
 #else
   GetContentMainParams()->ui_task = ui_task;
   EXPECT_EQ(expected_exit_code_, ContentMain(*GetContentMainParams()));

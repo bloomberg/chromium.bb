@@ -46,8 +46,9 @@ class SystemMessageHandler extends Handler {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void removeScheduledWork() {
+    private void removeAllPendingMessages() {
         removeMessages(SCHEDULED_WORK);
+        removeMessages(DELAYED_SCHEDULED_WORK);
     }
 
     @CalledByNative

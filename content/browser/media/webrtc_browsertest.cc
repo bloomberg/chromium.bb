@@ -47,19 +47,7 @@ class WebRtcBrowserTest : public WebRtcContentBrowserTest,
       command_line->AppendSwitch(switches::kDisableAudioTrackProcessing);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
-#if defined(OS_ANDROID)
-    // TODO(phoglund): this is a ugly workaround to let the IO thread
-    // finish its work. The reason we need this on Android is that
-    // content_browsertests tearDown logic is broken with respect
-    // to threading, which causes the IO thread to compete with the
-    // teardown. See http://crbug.com/362852. I also tried with 2
-    // seconds, but that isn't enough.
-    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(5));
-#endif
-  }
-
-  // Convenience method since most peerconnection-call.html tests just load
+  // Convenience function since most peerconnection-call.html tests just load
   // the page, kick off some javascript and wait for the title to change to OK.
   void MakeTypicalPeerConnectionCall(const std::string& javascript) {
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
