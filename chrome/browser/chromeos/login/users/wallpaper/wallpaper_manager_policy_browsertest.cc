@@ -323,14 +323,14 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
-                       PRE_PRE_PRE_WallpaperOnLoginScreen) {
+                       DISABLED_PRE_PRE_PRE_WallpaperOnLoginScreen) {
   RegisterUser(kTestUsers[0]);
   RegisterUser(kTestUsers[1]);
   StartupUtils::MarkOobeCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
-                       PRE_PRE_WallpaperOnLoginScreen) {
+                       DISABLED_PRE_PRE_WallpaperOnLoginScreen) {
   LoginUser(kTestUsers[0]);
 
   // Wait until default wallpaper has been loaded.
@@ -344,7 +344,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
   ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
 }
 
-IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_WallpaperOnLoginScreen) {
+IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
+                       DISABLED_PRE_WallpaperOnLoginScreen) {
   LoginUser(kTestUsers[1]);
 
   // Wait until default wallpaper has been loaded.
@@ -358,7 +359,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_WallpaperOnLoginScreen) {
   ASSERT_EQ(kGreenImageColor, GetAverageBackgroundColor());
 }
 
-IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, WallpaperOnLoginScreen) {
+// Disabled due to flakiness: http://crbug.com/385648.
+IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
+                       DISABLED_WallpaperOnLoginScreen) {
   // Wait for active pod's wallpaper to be loaded.
   RunUntilWallpaperChangeCount(1);
   ASSERT_EQ(kGreenImageColor, GetAverageBackgroundColor());
