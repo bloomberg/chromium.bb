@@ -100,7 +100,7 @@ String ScriptDebugServer::setBreakpoint(const String& sourceID, const ScriptBrea
 
     v8::Handle<v8::Function> setBreakpointFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "setBreakpoint")));
     v8::Handle<v8::Value> breakpointId = v8::Debug::Call(setBreakpointFunction, info);
-    if (!breakpointId->IsString())
+    if (breakpointId.IsEmpty() || !breakpointId->IsString())
         return "";
     *actualLineNumber = info->Get(v8AtomicString(m_isolate, "lineNumber"))->Int32Value();
     *actualColumnNumber = info->Get(v8AtomicString(m_isolate, "columnNumber"))->Int32Value();
