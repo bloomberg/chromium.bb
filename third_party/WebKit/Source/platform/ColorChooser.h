@@ -38,6 +38,7 @@ class Color;
 
 class PLATFORM_EXPORT ColorChooser {
 public:
+    ColorChooser();
     virtual ~ColorChooser();
 
     virtual void setSelectedColor(const Color&) { }

@@ -33,6 +33,10 @@
 
 namespace WebCore {
 
+ColorChooser::ColorChooser()
+{
+}
+
 ColorChooser::~ColorChooser()
 {
 }

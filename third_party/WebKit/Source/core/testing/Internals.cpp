@@ -116,7 +116,6 @@
 #include "core/testing/MockPagePopupDriver.h"
 #include "core/testing/TypeConversions.h"
 #include "core/workers/WorkerThread.h"
-#include "platform/ColorChooser.h"
 #include "platform/Cursor.h"
 #include "platform/Language.h"
 #include "platform/RuntimeEnabledFeatures.h"

@@ -43,6 +43,7 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/page/Chrome.h"
 #include "core/rendering/RenderView.h"
+#include "platform/ColorChooser.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/graphics/Color.h"

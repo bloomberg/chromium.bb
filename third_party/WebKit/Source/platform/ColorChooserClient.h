@@ -31,7 +31,6 @@
 #ifndef ColorChooserClient_h
 #define ColorChooserClient_h
 
-#include "platform/ColorChooser.h"
 #include "platform/ColorSuggestion.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"

@@ -32,7 +32,6 @@
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorController.h"
 #include "core/page/Page.h"
-#include "platform/ColorChooser.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Supplementable.h"
 #include "platform/text/LocaleToScriptMapping.h"

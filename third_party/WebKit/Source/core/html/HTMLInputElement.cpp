@@ -69,6 +69,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderTheme.h"
+#include "platform/ColorChooser.h"
 #include "platform/DateTimeChooser.h"
 #include "platform/Language.h"
 #include "platform/PlatformMouseEvent.h"
