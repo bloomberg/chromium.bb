@@ -11,6 +11,8 @@
 
 #include "base/macros.h"
 
+@class IOBluetoothDevice;
+
 namespace device {
 
 class BluetoothSocketMac;
@@ -28,7 +30,10 @@ class BluetoothChannelMac {
 
   // Returns the Bluetooth address for the device associated with |this|
   // channel.
-  virtual std::string GetDeviceAddress() = 0;
+  std::string GetDeviceAddress();
+
+  // Returns the Bluetooth device associated with |this| channel.
+  virtual IOBluetoothDevice* GetDevice() = 0;
 
   // Returns the outgoing MTU (maximum transmission unit) for the channel.
   virtual uint16_t GetOutgoingMTU() = 0;

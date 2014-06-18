@@ -115,8 +115,8 @@ void BluetoothL2capChannelMac::SetSocket(BluetoothSocketMac* socket) {
   [channel_ setDelegate:delegate_];
 }
 
-std::string BluetoothL2capChannelMac::GetDeviceAddress() {
-  return BluetoothDeviceMac::GetDeviceAddress([channel_ getDevice]);
+IOBluetoothDevice* BluetoothL2capChannelMac::GetDevice() {
+  return [channel_ getDevice];
 }
 
 uint16_t BluetoothL2capChannelMac::GetOutgoingMTU() {

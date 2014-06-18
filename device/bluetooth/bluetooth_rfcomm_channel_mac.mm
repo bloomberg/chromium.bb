@@ -110,8 +110,8 @@ void BluetoothRfcommChannelMac::SetSocket(BluetoothSocketMac* socket) {
   [channel_ setDelegate:delegate_];
 }
 
-std::string BluetoothRfcommChannelMac::GetDeviceAddress() {
-  return BluetoothDeviceMac::GetDeviceAddress([channel_ getDevice]);
+IOBluetoothDevice* BluetoothRfcommChannelMac::GetDevice() {
+  return [channel_ getDevice];
 }
 
 uint16_t BluetoothRfcommChannelMac::GetOutgoingMTU() {

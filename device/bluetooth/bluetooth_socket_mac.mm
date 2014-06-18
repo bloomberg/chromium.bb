@@ -22,6 +22,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_adapter_mac.h"
 #include "device/bluetooth/bluetooth_channel_mac.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
@@ -466,7 +467,7 @@ void BluetoothSocketMac::Connect(
 }
 
 void BluetoothSocketMac::ListenUsingRfcomm(
-    scoped_refptr<BluetoothAdapter> adapter,
+    scoped_refptr<BluetoothAdapterMac> adapter,
     const BluetoothUUID& uuid,
     int channel_id,
     const base::Closure& success_callback,
@@ -494,7 +495,7 @@ void BluetoothSocketMac::ListenUsingRfcomm(
 }
 
 void BluetoothSocketMac::ListenUsingL2cap(
-    scoped_refptr<BluetoothAdapter> adapter,
+    scoped_refptr<BluetoothAdapterMac> adapter,
     const BluetoothUUID& uuid,
     int psm,
     const base::Closure& success_callback,
@@ -575,7 +576,7 @@ void BluetoothSocketMac::OnSDPQueryComplete(
   }
 
   // Note: It's important to set the connect callbacks *prior* to opening the
-  // channel as the delegate is passed in and can synchronously call into
+  // channel, as opening the channel can synchronously call into
   // OnChannelOpenComplete().
   connect_callbacks_.reset(new ConnectCallbacks());
   connect_callbacks_->success_callback = success_callback;
@@ -590,6 +591,7 @@ void BluetoothSocketMac::OnSDPQueryComplete(
         BluetoothL2capChannelMac::OpenAsync(this, device, l2cap_psm, &status);
   }
   if (status != kIOReturnSuccess) {
+    ReleaseChannel();
     std::stringstream error;
     error << "Failed to connect bluetooth socket ("
           << BluetoothDeviceMac::GetDeviceAddress(device) << "): (" << status
@@ -854,8 +856,7 @@ void BluetoothSocketMac::AcceptConnectionRequest() {
   linked_ptr<BluetoothChannelMac> channel = accept_queue_.front();
   accept_queue_.pop();
 
-  // TODO(isherman): It isn't guaranteed that the adapter knows about the device
-  // at this point. Fix this logic.
+  adapter_->DeviceConnected(channel->GetDevice());
   BluetoothDevice* device = adapter_->GetDevice(channel->GetDeviceAddress());
   DCHECK(device);
 

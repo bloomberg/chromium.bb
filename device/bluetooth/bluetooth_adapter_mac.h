@@ -75,6 +75,9 @@ class BluetoothAdapterMac : public BluetoothAdapter,
   virtual void DiscoveryStopped(BluetoothDiscoveryManagerMac* manager,
                                 bool unexpected) OVERRIDE;
 
+  // Registers that a new |device| has connected to the local host.
+  void DeviceConnected(IOBluetoothDevice* device);
+
  protected:
   // BluetoothAdapter:
   virtual void RemovePairingDelegateInternal(
@@ -98,8 +101,10 @@ class BluetoothAdapterMac : public BluetoothAdapter,
   void InitForTest(scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
   void PollAdapter();
 
-  // Updates |devices_| to be consistent with |devices|.
-  void UpdateDevices(NSArray* devices);
+  // Updates |devices_| to include the currently paired devices, as well as any
+  // connected, but unpaired, devices. Notifies observers if any previously
+  // paired or connected devices are no longer present.
+  void UpdateDevices();
 
   std::string address_;
   std::string name_;

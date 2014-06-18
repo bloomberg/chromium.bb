@@ -38,7 +38,7 @@ class BluetoothL2capChannelMac : public BluetoothChannelMac {
 
   // BluetoothChannelMac:
   virtual void SetSocket(BluetoothSocketMac* socket) OVERRIDE;
-  virtual std::string GetDeviceAddress() OVERRIDE;
+  virtual IOBluetoothDevice* GetDevice() OVERRIDE;
   virtual uint16_t GetOutgoingMTU() OVERRIDE;
   virtual IOReturn WriteAsync(void* data,
                               uint16_t length,

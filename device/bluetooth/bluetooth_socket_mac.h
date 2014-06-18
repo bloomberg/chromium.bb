@@ -29,7 +29,7 @@ class IOBufferWithSize;
 
 namespace device {
 
-class BluetoothAdapter;
+class BluetoothAdapterMac;
 class BluetoothChannelMac;
 
 // Implements the BluetoothSocket class for the Mac OS X platform.
@@ -52,7 +52,7 @@ class BluetoothSocketMac : public BluetoothSocket {
   // |success_callback| will be called if the service is successfully
   // registered, |error_callback| on failure with a message explaining the
   // cause.
-  void ListenUsingRfcomm(scoped_refptr<BluetoothAdapter> adapter,
+  void ListenUsingRfcomm(scoped_refptr<BluetoothAdapterMac> adapter,
                          const BluetoothUUID& uuid,
                          int channel_id,
                          const base::Closure& success_callback,
@@ -63,7 +63,7 @@ class BluetoothSocketMac : public BluetoothSocket {
   // |success_callback| will be called if the service is successfully
   // registered, |error_callback| on failure with a message explaining the
   // cause.
-  void ListenUsingL2cap(scoped_refptr<BluetoothAdapter> adapter,
+  void ListenUsingL2cap(scoped_refptr<BluetoothAdapterMac> adapter,
                         const BluetoothUUID& uuid,
                         int psm,
                         const base::Closure& success_callback,
@@ -155,7 +155,7 @@ class BluetoothSocketMac : public BluetoothSocket {
 
   // Adapter the socket is registered against. This is only present when the
   // socket is listening.
-  scoped_refptr<BluetoothAdapter> adapter_;
+  scoped_refptr<BluetoothAdapterMac> adapter_;
 
   // UUID of the profile being connected to, or that the socket is listening on.
   device::BluetoothUUID uuid_;

@@ -138,6 +138,10 @@ void BluetoothAdapterMac::CreateL2capService(
 
 void BluetoothAdapterMac::DeviceFound(BluetoothDiscoveryManagerMac* manager,
                                       IOBluetoothDevice* device) {
+  // TODO(isherman): The list of discovered devices is never reset. This should
+  // probably key off of |devices_| instead. Currently, if a device is paired,
+  // then unpaired, then paired again, the app would never hear about the second
+  // pairing.
   std::string device_address = BluetoothDeviceMac::GetDeviceAddress(device);
   if (discovered_devices_.find(device_address) == discovered_devices_.end()) {
     BluetoothDeviceMac device_mac(device);
@@ -159,6 +163,25 @@ void BluetoothAdapterMac::DiscoveryStopped(
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
                     observers_,
                     AdapterDiscoveringChanged(this, false));
+}
+
+void BluetoothAdapterMac::DeviceConnected(IOBluetoothDevice* device) {
+  // TODO(isherman): Call -registerForDisconnectNotification:selector:, and
+  // investigate whether this method can be replaced with a call to
+  // +registerForConnectNotifications:selector:.
+  std::string device_address = BluetoothDeviceMac::GetDeviceAddress(device);
+  DVLOG(1) << "Adapter registered a new connection from device with address: "
+           << device_address;
+
+  // Only notify once per device.
+  if (devices_.count(device_address))
+    return;
+
+  scoped_ptr<BluetoothDeviceMac> device_mac(new BluetoothDeviceMac(device));
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
+                    observers_,
+                    DeviceAdded(this, device_mac.get()));
+  devices_[device_address] = device_mac.release();
 }
 
 void BluetoothAdapterMac::AddDiscoverySession(
@@ -262,6 +285,7 @@ void BluetoothAdapterMac::PollAdapter() {
                       AdapterPoweredChanged(this, powered_));
   }
 
+  // TODO(isherman): This doesn't detect when a device is unpaired.
   IOBluetoothDevice* recent_device =
       [[IOBluetoothDevice recentDevices:1] lastObject];
   NSDate* access_timestamp = [recent_device recentAccessDate];
@@ -269,7 +293,7 @@ void BluetoothAdapterMac::PollAdapter() {
       access_timestamp == nil ||
       [recently_accessed_device_timestamp_ compare:access_timestamp] ==
           NSOrderedAscending) {
-    UpdateDevices([IOBluetoothDevice pairedDevices]);
+    UpdateDevices();
     recently_accessed_device_timestamp_.reset([access_timestamp copy]);
   }
 
@@ -280,15 +304,39 @@ void BluetoothAdapterMac::PollAdapter() {
       base::TimeDelta::FromMilliseconds(kPollIntervalMs));
 }
 
-void BluetoothAdapterMac::UpdateDevices(NSArray* devices) {
-  // TODO(armansito): This code never calls
-  // BluetoothAdapter::Observer::DeviceRemoved. It should, if a device
-  // no longer exists.
-  STLDeleteValues(&devices_);
-  for (IOBluetoothDevice* device in devices) {
+void BluetoothAdapterMac::UpdateDevices() {
+  // Snapshot the devices observers were previously notified of.
+  // Note that the code below is careful to take ownership of any values that
+  // are erased from the map, since the map owns the memory for all its mapped
+  // devices.
+  DevicesMap old_devices = devices_;
+
+  // Add all the paired devices.
+  devices_.clear();
+  for (IOBluetoothDevice* device in [IOBluetoothDevice pairedDevices]) {
     std::string device_address = BluetoothDeviceMac::GetDeviceAddress(device);
-    devices_[device_address] = new BluetoothDeviceMac(device);
+    scoped_ptr<BluetoothDevice> device_mac(old_devices[device_address]);
+    if (!device_mac)
+      device_mac.reset(new BluetoothDeviceMac(device));
+    devices_[device_address] = device_mac.release();
+    old_devices.erase(device_address);
   }
+
+  // Add any unpaired connected devices.
+  for (const auto& old_device : old_devices) {
+    if (!old_device.second->IsConnected())
+      continue;
+
+    const std::string& device_address = old_device.first;
+    DCHECK(!devices_.count(device_address));
+    devices_[device_address] = old_device.second;
+    old_devices.erase(device_address);
+  }
+
+  // TODO(isherman): Notify observers of any devices that are no longer in
+  // range. Note that it's possible for a device to be neither paired nor
+  // connected, but to still be in range.
+  STLDeleteValues(&old_devices);
 }
 
 }  // namespace device
