@@ -44,6 +44,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebIDBCursor.h"
+#include "public/platform/WebIDBTypes.h"
 
 namespace WebCore {
 
@@ -88,7 +89,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(success);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-    void setCursorDetails(IndexedDB::CursorType, blink::WebIDBCursor::Direction);
+    void setCursorDetails(IndexedDB::CursorType, blink::WebIDBCursorDirection);
     void setPendingCursor(IDBCursor*);
     void abort();
 
@@ -153,7 +154,7 @@ private:
 
     // Only used if the result type will be a cursor.
     IndexedDB::CursorType m_cursorType;
-    blink::WebIDBCursor::Direction m_cursorDirection;
+    blink::WebIDBCursorDirection m_cursorDirection;
     // When a cursor is continued/advanced, m_result is cleared and m_pendingCursor holds it.
     Member<IDBCursor> m_pendingCursor;
     // New state is not applied to the cursor object until the event is dispatched.

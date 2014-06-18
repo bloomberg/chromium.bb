@@ -32,6 +32,7 @@
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IndexedDB.h"
 #include "public/platform/WebIDBCursor.h"
+#include "public/platform/WebIDBTypes.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -56,10 +57,10 @@ public:
     static const AtomicString& directionPrev();
     static const AtomicString& directionPrevUnique();
 
-    static blink::WebIDBCursor::Direction stringToDirection(const String& modeString, ExceptionState&);
+    static blink::WebIDBCursorDirection stringToDirection(const String& modeString, ExceptionState&);
     static const AtomicString& directionToString(unsigned short mode);
 
-    static IDBCursor* create(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursor::Direction, IDBRequest*, IDBAny* source, IDBTransaction*);
+    static IDBCursor* create(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursor();
     void trace(Visitor*);
     void contextWillBeDestroyed() { m_backend.clear(); }
@@ -92,7 +93,7 @@ public:
     virtual bool isCursorWithValue() const { return false; }
 
 protected:
-    IDBCursor(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursor::Direction, IDBRequest*, IDBAny* source, IDBTransaction*);
+    IDBCursor(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
 
 private:
     IDBObjectStore* effectiveObjectStore() const;
@@ -100,7 +101,7 @@ private:
 
     OwnPtr<blink::WebIDBCursor> m_backend;
     Member<IDBRequest> m_request;
-    const blink::WebIDBCursor::Direction m_direction;
+    const blink::WebIDBCursorDirection m_direction;
     Member<IDBAny> m_source;
     Member<IDBTransaction> m_transaction;
     bool m_gotValue;

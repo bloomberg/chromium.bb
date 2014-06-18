@@ -34,6 +34,7 @@
 #include "modules/indexeddb/IDBRequest.h"
 #include "public/platform/WebIDBCursor.h"
 #include "public/platform/WebIDBDatabase.h"
+#include "public/platform/WebIDBTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
@@ -68,7 +69,7 @@ public:
     bool isDeleted() const;
 
     // Used internally and by InspectorIndexedDBAgent:
-    IDBRequest* openCursor(ScriptState*, IDBKeyRange*, blink::WebIDBCursor::Direction);
+    IDBRequest* openCursor(ScriptState*, IDBKeyRange*, blink::WebIDBCursorDirection);
 
     blink::WebIDBDatabase* backendDB() const;
 

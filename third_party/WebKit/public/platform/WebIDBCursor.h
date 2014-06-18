@@ -29,6 +29,7 @@
 #include "WebCommon.h"
 #include "WebIDBCallbacks.h"
 #include "WebIDBKey.h"
+#include "WebIDBTypes.h"
 #include "WebString.h"
 
 namespace blink {
@@ -38,13 +39,13 @@ class WebIDBCursor {
 public:
     virtual ~WebIDBCursor() { }
 
-    enum Direction {
-        Next = 0,
-        NextNoDuplicate = 1,
-        Prev = 2,
-        PrevNoDuplicate = 3,
-        DirectionLast = PrevNoDuplicate
-    };
+    // FIXME: Remove once Chromium is updated to use the new enums.
+    typedef WebIDBCursorDirection Direction;
+    static const WebIDBCursorDirection Next = WebIDBCursorDirectionNext;
+    static const WebIDBCursorDirection NextNoDuplicate =WebIDBCursorDirectionNextNoDuplicate;
+    static const WebIDBCursorDirection Prev = WebIDBCursorDirectionPrev;
+    static const WebIDBCursorDirection PrevNoDuplicate =WebIDBCursorDirectionPrevNoDuplicate;
+    static const WebIDBCursorDirection DirectionLast =WebIDBCursorDirectionLast;
 
     virtual void advance(unsigned long, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void continueFunction(const WebIDBKey&, const WebIDBKey& primaryKey, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }

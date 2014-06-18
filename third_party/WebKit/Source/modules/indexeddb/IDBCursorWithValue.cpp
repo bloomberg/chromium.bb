@@ -32,12 +32,12 @@ using blink::WebIDBCursor;
 
 namespace WebCore {
 
-IDBCursorWithValue* IDBCursorWithValue::create(PassOwnPtr<blink::WebIDBCursor> backend, WebIDBCursor::Direction direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+IDBCursorWithValue* IDBCursorWithValue::create(PassOwnPtr<blink::WebIDBCursor> backend, blink::WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
     return new IDBCursorWithValue(backend, direction, request, source, transaction);
 }
 
-IDBCursorWithValue::IDBCursorWithValue(PassOwnPtr<blink::WebIDBCursor> backend, WebIDBCursor::Direction direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+IDBCursorWithValue::IDBCursorWithValue(PassOwnPtr<blink::WebIDBCursor> backend, blink::WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
     : IDBCursor(backend, direction, request, source, transaction)
 {
     ScriptWrappable::init(this);

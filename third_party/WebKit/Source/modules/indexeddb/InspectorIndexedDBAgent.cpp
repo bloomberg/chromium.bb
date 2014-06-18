@@ -60,6 +60,7 @@
 #include "platform/JSONValues.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebIDBCursor.h"
+#include "public/platform/WebIDBTypes.h"
 #include "wtf/Vector.h"
 
 using WebCore::TypeBuilder::Array;
@@ -510,9 +511,9 @@ public:
                 return;
             }
 
-            idbRequest = idbIndex->openCursor(scriptState(), m_idbKeyRange.get(), blink::WebIDBCursor::Next);
+            idbRequest = idbIndex->openCursor(scriptState(), m_idbKeyRange.get(), blink::WebIDBCursorDirectionNext);
         } else {
-            idbRequest = idbObjectStore->openCursor(scriptState(), m_idbKeyRange.get(), blink::WebIDBCursor::Next);
+            idbRequest = idbObjectStore->openCursor(scriptState(), m_idbKeyRange.get(), blink::WebIDBCursorDirectionNext);
         }
         idbRequest->addEventListener(EventTypeNames::success, openCursorCallback, false);
     }

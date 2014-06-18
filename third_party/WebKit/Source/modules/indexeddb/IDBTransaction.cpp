@@ -43,7 +43,7 @@ using blink::WebIDBDatabase;
 
 namespace WebCore {
 
-IDBTransaction* IDBTransaction::create(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, WebIDBDatabase::TransactionMode mode, IDBDatabase* db)
+IDBTransaction* IDBTransaction::create(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, blink::WebIDBTransactionMode mode, IDBDatabase* db)
 {
     IDBOpenDBRequest* openDBRequest = 0;
     IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(context, id, objectStoreNames, mode, db, openDBRequest, IDBDatabaseMetadata()));
@@ -53,7 +53,7 @@ IDBTransaction* IDBTransaction::create(ExecutionContext* context, int64_t id, co
 
 IDBTransaction* IDBTransaction::create(ExecutionContext* context, int64_t id, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
 {
-    IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(context, id, Vector<String>(), WebIDBDatabase::TransactionVersionChange, db, openDBRequest, previousMetadata));
+    IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(context, id, Vector<String>(), blink::WebIDBTransactionModeVersionChange, db, openDBRequest, previousMetadata));
     transaction->suspendIfNeeded();
     return transaction;
 }
@@ -76,7 +76,7 @@ const AtomicString& IDBTransaction::modeVersionChange()
     return versionchange;
 }
 
-IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, WebIDBDatabase::TransactionMode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
+IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, blink::WebIDBTransactionMode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
     : ActiveDOMObject(context)
     , m_id(id)
     , m_database(db)
@@ -89,7 +89,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vect
     , m_previousMetadata(previousMetadata)
 {
     ScriptWrappable::init(this);
-    if (mode == WebIDBDatabase::TransactionVersionChange) {
+    if (mode == blink::WebIDBTransactionModeVersionChange) {
         // Not active until the callback.
         m_state = Inactive;
     }
@@ -299,30 +299,30 @@ bool IDBTransaction::hasPendingActivity() const
     return m_hasPendingActivity && !m_contextStopped;
 }
 
-WebIDBDatabase::TransactionMode IDBTransaction::stringToMode(const String& modeString, ExceptionState& exceptionState)
+blink::WebIDBTransactionMode IDBTransaction::stringToMode(const String& modeString, ExceptionState& exceptionState)
 {
     if (modeString.isNull()
         || modeString == IDBTransaction::modeReadOnly())
-        return WebIDBDatabase::TransactionReadOnly;
+        return blink::WebIDBTransactionModeReadOnly;
     if (modeString == IDBTransaction::modeReadWrite())
-        return WebIDBDatabase::TransactionReadWrite;
+        return blink::WebIDBTransactionModeReadWrite;
 
     exceptionState.throwTypeError("The mode provided ('" + modeString + "') is not one of 'readonly' or 'readwrite'.");
-    return WebIDBDatabase::TransactionReadOnly;
+    return blink::WebIDBTransactionModeReadOnly;
 }
 
-const AtomicString& IDBTransaction::modeToString(WebIDBDatabase::TransactionMode mode)
+const AtomicString& IDBTransaction::modeToString(blink::WebIDBTransactionMode mode)
 {
     switch (mode) {
-    case WebIDBDatabase::TransactionReadOnly:
+    case blink::WebIDBTransactionModeReadOnly:
         return IDBTransaction::modeReadOnly();
         break;
 
-    case WebIDBDatabase::TransactionReadWrite:
+    case blink::WebIDBTransactionModeReadWrite:
         return IDBTransaction::modeReadWrite();
         break;
 
-    case WebIDBDatabase::TransactionVersionChange:
+    case blink::WebIDBTransactionModeVersionChange:
         return IDBTransaction::modeVersionChange();
         break;
     }

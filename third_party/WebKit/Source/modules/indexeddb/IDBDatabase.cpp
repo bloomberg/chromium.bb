@@ -44,6 +44,7 @@
 #include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebIDBKeyPath.h"
+#include "public/platform/WebIDBTypes.h"
 #include "wtf/Atomics.h"
 #include <limits>
 
@@ -304,7 +305,7 @@ IDBTransaction* IDBDatabase::transaction(ExecutionContext* context, const Vector
         return 0;
     }
 
-    blink::WebIDBDatabase::TransactionMode mode = IDBTransaction::stringToMode(modeString, exceptionState);
+    blink::WebIDBTransactionMode mode = IDBTransaction::stringToMode(modeString, exceptionState);
     if (exceptionState.hadException())
         return 0;
 

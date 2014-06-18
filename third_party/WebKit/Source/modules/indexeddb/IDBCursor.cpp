@@ -48,7 +48,7 @@ using blink::WebIDBDatabase;
 
 namespace WebCore {
 
-IDBCursor* IDBCursor::create(PassOwnPtr<blink::WebIDBCursor> backend, WebIDBCursor::Direction direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+IDBCursor* IDBCursor::create(PassOwnPtr<blink::WebIDBCursor> backend, blink::WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
     return new IDBCursor(backend, direction, request, source, transaction);
 }
@@ -77,7 +77,7 @@ const AtomicString& IDBCursor::directionPrevUnique()
     return prevunique;
 }
 
-IDBCursor::IDBCursor(PassOwnPtr<blink::WebIDBCursor> backend, WebIDBCursor::Direction direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+IDBCursor::IDBCursor(PassOwnPtr<blink::WebIDBCursor> backend, blink::WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
     : m_backend(backend)
     , m_request(request)
     , m_direction(direction)
@@ -149,7 +149,7 @@ IDBRequest* IDBCursor::update(ScriptState* scriptState, ScriptValue& value, Exce
         }
     }
 
-    return objectStore->put(scriptState, WebIDBDatabase::CursorUpdate, IDBAny::create(this), value, m_primaryKey, exceptionState);
+    return objectStore->put(scriptState, blink::WebIDBPutModeCursorUpdate, IDBAny::create(this), value, m_primaryKey, exceptionState);
 }
 
 void IDBCursor::advance(unsigned long count, ExceptionState& exceptionState)
@@ -230,7 +230,7 @@ void IDBCursor::continueFunction(IDBKey* key, IDBKey* primaryKey, ExceptionState
 
     if (key) {
         ASSERT(m_key);
-        if (m_direction == WebIDBCursor::Next || m_direction == WebIDBCursor::NextNoDuplicate) {
+        if (m_direction == blink::WebIDBCursorDirectionNext || m_direction == blink::WebIDBCursorDirectionNextNoDuplicate) {
             const bool ok = m_key->isLessThan(key)
                 || (primaryKey && m_key->isEqual(key) && m_primaryKey->isLessThan(primaryKey));
             if (!ok) {
@@ -390,34 +390,34 @@ void IDBCursor::handleBlobAcks()
     }
 }
 
-WebIDBCursor::Direction IDBCursor::stringToDirection(const String& directionString, ExceptionState& exceptionState)
+blink::WebIDBCursorDirection IDBCursor::stringToDirection(const String& directionString, ExceptionState& exceptionState)
 {
     if (directionString.isNull() || directionString == IDBCursor::directionNext())
-        return WebIDBCursor::Next;
+        return blink::WebIDBCursorDirectionNext;
     if (directionString == IDBCursor::directionNextUnique())
-        return WebIDBCursor::NextNoDuplicate;
+        return blink::WebIDBCursorDirectionNextNoDuplicate;
     if (directionString == IDBCursor::directionPrev())
-        return WebIDBCursor::Prev;
+        return blink::WebIDBCursorDirectionPrev;
     if (directionString == IDBCursor::directionPrevUnique())
-        return WebIDBCursor::PrevNoDuplicate;
+        return blink::WebIDBCursorDirectionPrevNoDuplicate;
 
     exceptionState.throwTypeError("The direction provided ('" + directionString + "') is not one of 'next', 'nextunique', 'prev', or 'prevunique'.");
-    return WebIDBCursor::Next;
+    return blink::WebIDBCursorDirectionNext;
 }
 
 const AtomicString& IDBCursor::directionToString(unsigned short direction)
 {
     switch (direction) {
-    case WebIDBCursor::Next:
+    case blink::WebIDBCursorDirectionNext:
         return IDBCursor::directionNext();
 
-    case WebIDBCursor::NextNoDuplicate:
+    case blink::WebIDBCursorDirectionNextNoDuplicate:
         return IDBCursor::directionNextUnique();
 
-    case WebIDBCursor::Prev:
+    case blink::WebIDBCursorDirectionPrev:
         return IDBCursor::directionPrev();
 
-    case WebIDBCursor::PrevNoDuplicate:
+    case blink::WebIDBCursorDirectionPrevNoDuplicate:
         return IDBCursor::directionPrevUnique();
 
     default:

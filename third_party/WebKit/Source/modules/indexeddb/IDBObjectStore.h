@@ -38,6 +38,7 @@
 #include "modules/indexeddb/IDBTransaction.h"
 #include "public/platform/WebIDBCursor.h"
 #include "public/platform/WebIDBDatabase.h"
+#include "public/platform/WebIDBTypes.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -87,10 +88,10 @@ public:
     IDBRequest* count(ScriptState*, const ScriptValue& range, ExceptionState&);
 
     // Used by IDBCursor::update():
-    IDBRequest* put(ScriptState*, blink::WebIDBDatabase::PutMode, IDBAny* source, ScriptValue&, IDBKey*, ExceptionState&);
+    IDBRequest* put(ScriptState*, blink::WebIDBPutMode, IDBAny* source, ScriptValue&, IDBKey*, ExceptionState&);
 
     // Used internally and by InspectorIndexedDBAgent:
-    IDBRequest* openCursor(ScriptState*, IDBKeyRange*, blink::WebIDBCursor::Direction, blink::WebIDBDatabase::TaskType = blink::WebIDBDatabase::NormalTask);
+    IDBRequest* openCursor(ScriptState*, IDBKeyRange*, blink::WebIDBCursorDirection, blink::WebIDBTaskType = blink::WebIDBTaskTypeNormal);
 
     void markDeleted() { m_deleted = true; }
     bool isDeleted() const { return m_deleted; }
@@ -108,7 +109,7 @@ private:
 
     IDBIndex* createIndex(ScriptState*, const String& name, const IDBKeyPath&, const Dictionary&, ExceptionState&);
     IDBIndex* createIndex(ScriptState*, const String& name, const IDBKeyPath&, bool unique, bool multiEntry, ExceptionState&);
-    IDBRequest* put(ScriptState*, blink::WebIDBDatabase::PutMode, IDBAny* source, ScriptValue&, const ScriptValue& key, ExceptionState&);
+    IDBRequest* put(ScriptState*, blink::WebIDBPutMode, IDBAny* source, ScriptValue&, const ScriptValue& key, ExceptionState&);
 
     int64_t findIndexId(const String& name) const;
     bool containsIndex(const String& name) const

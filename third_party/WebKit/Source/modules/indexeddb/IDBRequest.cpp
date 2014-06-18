@@ -65,7 +65,7 @@ IDBRequest::IDBRequest(ScriptState* scriptState, IDBAny* source, IDBTransaction*
     , m_source(source)
     , m_hasPendingActivity(true)
     , m_cursorType(IndexedDB::CursorKeyAndValue)
-    , m_cursorDirection(blink::WebIDBCursor::Next)
+    , m_cursorDirection(blink::WebIDBCursorDirectionNext)
     , m_pendingCursor(nullptr)
     , m_didFireUpgradeNeededEvent(false)
     , m_preventPropagation(false)
@@ -160,7 +160,7 @@ void IDBRequest::abort()
     m_requestAborted = true;
 }
 
-void IDBRequest::setCursorDetails(IndexedDB::CursorType cursorType, WebIDBCursor::Direction direction)
+void IDBRequest::setCursorDetails(IndexedDB::CursorType cursorType, blink::WebIDBCursorDirection direction)
 {
     ASSERT(m_readyState == PENDING);
     ASSERT(!m_pendingCursor);

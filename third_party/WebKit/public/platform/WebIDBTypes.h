@@ -50,6 +50,34 @@ enum WebIDBDataLoss {
     WebIDBDataLossTotal,
 };
 
+enum WebIDBCursorDirection {
+    WebIDBCursorDirectionNext = 0,
+    WebIDBCursorDirectionNextNoDuplicate = 1,
+    WebIDBCursorDirectionPrev = 2,
+    WebIDBCursorDirectionPrevNoDuplicate = 3,
+    WebIDBCursorDirectionLast = WebIDBCursorDirectionPrevNoDuplicate
+};
+
+enum WebIDBTaskType {
+    WebIDBTaskTypeNormal = 0,
+    WebIDBTaskTypePreemptive,
+    WebIDBTaskTypeLast = WebIDBTaskTypePreemptive
+};
+
+enum WebIDBPutMode {
+    WebIDBPutModeAddOrUpdate,
+    WebIDBPutModeAddOnly,
+    WebIDBPutModeCursorUpdate,
+    WebIDBPutModeLast = WebIDBPutModeCursorUpdate
+};
+
+enum WebIDBTransactionMode {
+    WebIDBTransactionModeReadOnly = 0,
+    WebIDBTransactionModeReadWrite,
+    WebIDBTransactionModeVersionChange,
+    WebIDBTransactionModeLast = WebIDBTransactionModeVersionChange
+};
+
 } // namespace blink
 
 #endif // WebIDBTypes_h
