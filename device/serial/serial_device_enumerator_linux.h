@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "device/serial/serial_device_enumerator.h"
-#include "device/serial/serial_device_info.h"
 
 namespace device {
 
@@ -20,7 +19,7 @@ class SerialDeviceEnumeratorLinux : public SerialDeviceEnumerator {
   virtual ~SerialDeviceEnumeratorLinux();
 
   // Implementation for SerialDeviceEnumerator.
-  virtual void GetDevices(SerialDeviceInfoList* devices) OVERRIDE;
+  virtual mojo::Array<SerialDeviceInfoPtr> GetDevices() OVERRIDE;
 
  private:
   struct UdevDeleter {
@@ -34,4 +33,4 @@ class SerialDeviceEnumeratorLinux : public SerialDeviceEnumerator {
 
 }  // namespace device
 
-#endif  // DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_H_
+#endif  // DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_LINUX_H_

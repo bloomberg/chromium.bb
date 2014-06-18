@@ -5,10 +5,9 @@
 #ifndef DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_H_
 #define DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_H_
 
-#include <vector>
-
 #include "base/memory/scoped_ptr.h"
-#include "device/serial/serial_device_info.h"
+#include "device/serial/serial.mojom.h"
+#include "mojo/public/cpp/bindings/array.h"
 
 namespace device {
 
@@ -20,7 +19,7 @@ class SerialDeviceEnumerator {
   SerialDeviceEnumerator();
   virtual ~SerialDeviceEnumerator();
 
-  virtual void GetDevices(SerialDeviceInfoList* devices) = 0;
+  virtual mojo::Array<SerialDeviceInfoPtr> GetDevices() = 0;
 };
 
 }  // namespace device

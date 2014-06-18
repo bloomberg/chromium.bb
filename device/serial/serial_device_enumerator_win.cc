@@ -6,7 +6,6 @@
 
 #include <windows.h>
 
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -27,17 +26,16 @@ SerialDeviceEnumeratorWin::~SerialDeviceEnumeratorWin() {}
 // TODO(rockot): Query the system for more information than just device paths.
 // This may or may not require using a different strategy than scanning the
 // registry location below.
-void SerialDeviceEnumeratorWin::GetDevices(SerialDeviceInfoList* devices) {
-  devices->clear();
-
+mojo::Array<SerialDeviceInfoPtr> SerialDeviceEnumeratorWin::GetDevices() {
   base::win::RegistryValueIterator iter_key(
       HKEY_LOCAL_MACHINE, L"HARDWARE\\DEVICEMAP\\SERIALCOMM\\");
+  mojo::Array<SerialDeviceInfoPtr> devices;
   for (; iter_key.Valid(); ++iter_key) {
-    base::string16 value(iter_key.Value());
-    linked_ptr<SerialDeviceInfo> info(new SerialDeviceInfo);
-    info->path = base::UTF16ToASCII(value);
-    devices->push_back(info);
+    SerialDeviceInfoPtr info(SerialDeviceInfo::New());
+    info->path = base::UTF16ToASCII(iter_key.Value());
+    devices.push_back(info.Pass());
   }
+  return devices.Pass();
 }
 
 }  // namespace device

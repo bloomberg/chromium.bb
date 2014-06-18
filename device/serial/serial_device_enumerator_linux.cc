@@ -5,7 +5,6 @@
 #include "device/serial/serial_device_enumerator_linux.h"
 
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
 #include "base/strings/string_number_conversions.h"
 
 namespace device {
@@ -45,21 +44,20 @@ SerialDeviceEnumeratorLinux::SerialDeviceEnumeratorLinux() {
 
 SerialDeviceEnumeratorLinux::~SerialDeviceEnumeratorLinux() {}
 
-void SerialDeviceEnumeratorLinux::GetDevices(SerialDeviceInfoList* devices) {
-  devices->clear();
-
+mojo::Array<SerialDeviceInfoPtr> SerialDeviceEnumeratorLinux::GetDevices() {
+  mojo::Array<SerialDeviceInfoPtr> devices;
   ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_.get()));
   if (!enumerate) {
     LOG(ERROR) << "Serial device enumeration failed.";
-    return;
+    return devices.Pass();
   }
   if (udev_enumerate_add_match_subsystem(enumerate.get(), kSerialSubsystem)) {
     LOG(ERROR) << "Serial device enumeration failed.";
-    return;
+    return devices.Pass();
   }
   if (udev_enumerate_scan_devices(enumerate.get())) {
     LOG(ERROR) << "Serial device enumeration failed.";
-    return;
+    return devices.Pass();
   }
 
   udev_list_entry* entry = udev_enumerate_get_list_entry(enumerate.get());
@@ -75,8 +73,8 @@ void SerialDeviceEnumeratorLinux::GetDevices(SerialDeviceInfoList* devices) {
         udev_device_get_property_value(device.get(), kHostPathKey);
     const char* bus = udev_device_get_property_value(device.get(), kHostBusKey);
     if (path != NULL && bus != NULL) {
-      linked_ptr<SerialDeviceInfo> info(new SerialDeviceInfo());
-      info->path = std::string(path);
+      SerialDeviceInfoPtr info(SerialDeviceInfo::New());
+      info->path = path;
 
       const char* vendor_id =
           udev_device_get_property_value(device.get(), kVendorIDKey);
@@ -86,16 +84,20 @@ void SerialDeviceEnumeratorLinux::GetDevices(SerialDeviceInfoList* devices) {
           udev_device_get_property_value(device.get(), kProductNameKey);
 
       uint32 int_value;
-      if (vendor_id && base::HexStringToUInt(vendor_id, &int_value))
-        info->vendor_id.reset(new uint16(int_value));
-      if (product_id && base::HexStringToUInt(product_id, &int_value))
-        info->product_id.reset(new uint16(int_value));
+      if (vendor_id && base::HexStringToUInt(vendor_id, &int_value)) {
+        info->vendor_id = int_value;
+        info->has_vendor_id = true;
+      }
+      if (product_id && base::HexStringToUInt(product_id, &int_value)) {
+        info->product_id = int_value;
+        info->has_product_id = true;
+      }
       if (product_name)
-        info->display_name.reset(new std::string(product_name));
-
-      devices->push_back(info);
+        info->display_name = product_name;
+      devices.push_back(info.Pass());
     }
   }
+  return devices.Pass();
 }
 
 void SerialDeviceEnumeratorLinux::UdevDeleter::operator()(udev* handle) {

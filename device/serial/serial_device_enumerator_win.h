@@ -6,7 +6,6 @@
 #define DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_WIN_H_
 
 #include "device/serial/serial_device_enumerator.h"
-#include "device/serial/serial_device_info.h"
 
 namespace device {
 
@@ -17,7 +16,7 @@ class SerialDeviceEnumeratorWin : public SerialDeviceEnumerator {
   virtual ~SerialDeviceEnumeratorWin();
 
   // Implementation for SerialDeviceEnumerator.
-  virtual void GetDevices(SerialDeviceInfoList* devices) OVERRIDE;
+  virtual mojo::Array<SerialDeviceInfoPtr> GetDevices() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SerialDeviceEnumeratorWin);

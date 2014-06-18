@@ -7,7 +7,6 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 
@@ -23,7 +22,7 @@ SerialDeviceEnumeratorMac::SerialDeviceEnumeratorMac() {}
 SerialDeviceEnumeratorMac::~SerialDeviceEnumeratorMac() {}
 
 // TODO(rockot): Use IOKit to enumerate serial interfaces.
-void SerialDeviceEnumeratorMac::GetDevices(SerialDeviceInfoList* devices) {
+mojo::Array<SerialDeviceInfoPtr> SerialDeviceEnumeratorMac::GetDevices() {
   const base::FilePath kDevRoot("/dev");
   const int kFilesAndSymLinks =
       base::FileEnumerator::FILES | base::FileEnumerator::SHOW_SYM_LINKS;
@@ -37,7 +36,7 @@ void SerialDeviceEnumeratorMac::GetDevices(SerialDeviceInfoList* devices) {
   valid_patterns.insert("/dev/tty.*");
   valid_patterns.insert("/dev/cu.*");
 
-  devices->clear();
+  mojo::Array<SerialDeviceInfoPtr> devices;
   base::FileEnumerator enumerator(kDevRoot, false, kFilesAndSymLinks);
   do {
     const base::FilePath next_device_path(enumerator.Next());
@@ -48,13 +47,14 @@ void SerialDeviceEnumeratorMac::GetDevices(SerialDeviceInfoList* devices) {
     std::set<std::string>::const_iterator i = valid_patterns.begin();
     for (; i != valid_patterns.end(); ++i) {
       if (MatchPattern(next_device, *i)) {
-        linked_ptr<SerialDeviceInfo> info(new SerialDeviceInfo);
+        SerialDeviceInfoPtr info(SerialDeviceInfo::New());
         info->path = next_device;
-        devices->push_back(info);
+        devices.push_back(info.Pass());
         break;
       }
     }
   } while (true);
+  return devices.Pass();
 }
 
 }  // namespace device

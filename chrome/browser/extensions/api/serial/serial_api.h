@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/common/extensions/api/serial.h"
+#include "device/serial/serial.mojom.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
 
@@ -242,5 +243,17 @@ class SerialSetControlSignalsFunction : public SerialAsyncApiFunction {
 }  // namespace api
 
 }  // namespace extensions
+
+namespace mojo {
+
+template <>
+class TypeConverter<device::SerialDeviceInfoPtr,
+                    linked_ptr<extensions::api::serial::DeviceInfo> > {
+ public:
+  static linked_ptr<extensions::api::serial::DeviceInfo> ConvertTo(
+      const device::SerialDeviceInfoPtr& input);
+};
+
+}  // namespace mojo
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_API_H_
