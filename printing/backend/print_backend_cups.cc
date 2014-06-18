@@ -165,8 +165,7 @@ bool PrintBackendCUPS::GetPrinterCapsAndDefaults(
   base::FilePath ppd_path(GetPPD(printer_name.c_str()));
   // In some cases CUPS failed to get ppd file.
   if (ppd_path.empty()) {
-    LOG(ERROR) << "CUPS: Failed to get PPD"
-               << ", printer name: " << printer_name;
+    LOG(ERROR) << "CUPS: Failed to get PPD, printer name: " << printer_name;
     return false;
   }
 
@@ -241,6 +240,12 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
 
 int PrintBackendCUPS::GetDests(cups_dest_t** dests) {
   if (print_server_url_.is_empty()) {  // Use default (local) print server.
+    // GnuTLS has a genuine small memory leak that is easier to annotate
+    // than suppress. See http://crbug.com/176888#c7
+    // In theory any CUPS function can trigger this leak, but in
+    // PrintBackendCUPS, this is the most likely spot.
+    // TODO(earthdok): remove this once the leak is fixed.
+    ANNOTATE_SCOPED_MEMORY_LEAK;
     return cupsGetDests(dests);
   } else {
     HttpConnectionCUPS http(print_server_url_, cups_encryption_);

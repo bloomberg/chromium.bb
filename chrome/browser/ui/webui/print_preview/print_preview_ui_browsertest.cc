@@ -21,6 +21,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "url/url_constants.h"
 
 #if defined(OS_WIN)
 #include "ui/aura/window.h"
@@ -47,10 +48,6 @@ class PrintPreviewTest : public InProcessBrowserTest {
     nav_observer.StopWatchingNewWebContents();
   }
 };
-
-// The two tests below are failing on Linux LSAN
-// crbug.com/382523
-#if !defined(ADDRESS_SANITIZER)
 
 IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
   // We start off at about:blank page.
@@ -101,16 +98,12 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, MAYBE_TaskManagerNewPrintPreview) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyPrint()));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchPrint("about:blank")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchPrint(url::kAboutBlankURL)));
 }
-
-#endif
 
 // Disable the test for mac as it started being flaky, see http://crbug/367665.
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-#define MAYBE_TaskManagerExistingPrintPreview DISABLED_TaskManagerExistingPrintPreview
-// Disable the test for Linux LSAN, see http://crbug.com/382764.
-#elif defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
 #define MAYBE_TaskManagerExistingPrintPreview DISABLED_TaskManagerExistingPrintPreview
 #else
 #define MAYBE_TaskManagerExistingPrintPreview TaskManagerExistingPrintPreview
@@ -125,11 +118,11 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest,
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyPrint()));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchPrint("about:blank")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchPrint(url::kAboutBlankURL)));
 }
 
 #if defined(OS_WIN)
-
 BOOL CALLBACK EnumerateChildren(HWND hwnd, LPARAM l_param) {
   HWND* child = reinterpret_cast<HWND*>(l_param);
   *child = hwnd;
@@ -205,6 +198,6 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, NoCrashOnCloseWithOtherTabs) {
 
   browser()->tab_strip_model()->ActivateTabAt(1, true);
 }
-#endif
+#endif  // defined(OS_WIN)
 
 }  // namespace
