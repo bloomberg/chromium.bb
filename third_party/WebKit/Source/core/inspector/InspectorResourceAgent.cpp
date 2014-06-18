@@ -82,6 +82,7 @@ namespace {
 
 // Keep in sync with kDevToolsRequestInitiator defined in devtools_network_controller.cc
 const char kDevToolsRequestInitiator[] = "X-DevTools-Request-Initiator";
+const char kDevToolsEmulateNetworkConditionsClientId[] = "X-DevTools-Emulate-Network-Conditions-Client-Id";
 
 static PassRefPtr<JSONObject> buildObjectForHeaders(const HTTPHeaderMap& headers)
 {
@@ -298,6 +299,10 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
     // Ignore the request initiated internally.
     if (initiatorInfo.name == FetchInitiatorTypeNames::internal)
         return;
+
+    if (!m_hostId.isEmpty())
+        request.addHTTPHeaderField(kDevToolsEmulateNetworkConditionsClientId, AtomicString(m_hostId));
+
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->resourceCreated(requestId, m_pageAgent->loaderId(loader));
 
