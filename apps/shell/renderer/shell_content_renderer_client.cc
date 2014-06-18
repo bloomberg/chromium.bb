@@ -7,6 +7,7 @@
 #include "apps/shell/common/shell_extensions_client.h"
 #include "apps/shell/renderer/shell_dispatcher_delegate.h"
 #include "apps/shell/renderer/shell_extensions_renderer_client.h"
+#include "apps/shell/renderer/shell_renderer_main_delegate.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
@@ -58,7 +59,10 @@ void ShellFrameHelper::WillReleaseScriptContext(v8::Handle<v8::Context> context,
 
 }  // namespace
 
-ShellContentRendererClient::ShellContentRendererClient() {}
+ShellContentRendererClient::ShellContentRendererClient(
+    scoped_ptr<ShellRendererMainDelegate> delegate)
+    : delegate_(delegate.Pass()) {
+}
 
 ShellContentRendererClient::~ShellContentRendererClient() {}
 
@@ -80,6 +84,8 @@ void ShellContentRendererClient::RenderThreadStarted() {
 
   // TODO(jamescook): Init WebSecurityPolicy for chrome-extension: schemes.
   // See ChromeContentRendererClient for details.
+  if (delegate_)
+    delegate_->OnThreadStarted(thread);
 }
 
 void ShellContentRendererClient::RenderFrameCreated(
@@ -91,6 +97,8 @@ void ShellContentRendererClient::RenderFrameCreated(
 void ShellContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   new extensions::ExtensionHelper(render_view, extension_dispatcher_.get());
+  if (delegate_)
+    delegate_->OnViewCreated(render_view);
 }
 
 bool ShellContentRendererClient::WillSendRequest(

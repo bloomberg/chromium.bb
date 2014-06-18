@@ -20,6 +20,7 @@ specific_include_rules = {
   "athena_main\.cc": [
     "+apps/shell/app",
     "+apps/shell/browser",
+    "+apps/shell/renderer",
     "+content/public/app",
   ],
   "athena_app_window_controller\.*": [

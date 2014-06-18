@@ -146,6 +146,7 @@
         'renderer/shell_dispatcher_delegate.h',
         'renderer/shell_extensions_renderer_client.cc',
         'renderer/shell_extensions_renderer_client.h',
+        'renderer/shell_renderer_main_delegate.h',
       ],
       'conditions': [
         ['chromeos==1', {

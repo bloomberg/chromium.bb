@@ -18,6 +18,7 @@ class ContentRendererClient;
 
 namespace apps {
 class ShellBrowserMainDelegate;
+class ShellRendererMainDelegate;
 
 class ShellMainDelegate : public content::ContentMainDelegate {
  public:
@@ -34,6 +35,10 @@ class ShellMainDelegate : public content::ContentMainDelegate {
  protected:
   // The created object is owned by ShellBrowserMainParts.
   virtual ShellBrowserMainDelegate* CreateShellBrowserMainDelegate();
+
+  // The returned object is owned by ShellContentRendererClient.
+  virtual scoped_ptr<ShellRendererMainDelegate>
+      CreateShellRendererMainDelegate();
 
  private:
   // |process_type| is zygote, renderer, utility, etc. Returns true if the

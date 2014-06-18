@@ -6,6 +6,7 @@
 #include "apps/shell/browser/shell_browser_main_delegate.h"
 #include "apps/shell/browser/shell_desktop_controller.h"
 #include "apps/shell/browser/shell_extension_system.h"
+#include "apps/shell/renderer/shell_renderer_main_delegate.h"
 #include "athena/content/public/content_activity_factory.h"
 #include "athena/content/public/content_app_model_builder.h"
 #include "athena/home/public/home_card.h"
@@ -63,6 +64,20 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
   DISALLOW_COPY_AND_ASSIGN(AthenaBrowserMainDelegate);
 };
 
+class AthenaRendererMainDelegate : public apps::ShellRendererMainDelegate {
+ public:
+  AthenaRendererMainDelegate() {}
+  virtual ~AthenaRendererMainDelegate() {}
+
+ private:
+  // apps::ShellRendererMainDelegate:
+  virtual void OnThreadStarted(content::RenderThread* thread) OVERRIDE {}
+
+  virtual void OnViewCreated(content::RenderView* render_view) OVERRIDE {}
+
+  DISALLOW_COPY_AND_ASSIGN(AthenaRendererMainDelegate);
+};
+
 class AthenaMainDelegate : public apps::ShellMainDelegate {
  public:
   AthenaMainDelegate() {}
@@ -73,6 +88,12 @@ class AthenaMainDelegate : public apps::ShellMainDelegate {
   virtual apps::ShellBrowserMainDelegate* CreateShellBrowserMainDelegate()
       OVERRIDE {
     return new AthenaBrowserMainDelegate();
+  }
+
+  virtual scoped_ptr<apps::ShellRendererMainDelegate>
+  CreateShellRendererMainDelegate() OVERRIDE {
+    return scoped_ptr<apps::ShellRendererMainDelegate>(
+        new AthenaRendererMainDelegate());
   }
 
   DISALLOW_COPY_AND_ASSIGN(AthenaMainDelegate);
