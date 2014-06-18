@@ -25576,6 +25576,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Signin" enum="SigninHelperFlow">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Tracks user interactions as they sign in through a flow. The suffix of the
+    histogram indicates what UI widget or application flow triggered the signin
+    flow.
+  </summary>
+</histogram>
+
 <histogram name="Signin.AddAccount" enum="BooleanSuccess">
   <owner>mlerman@chromium.org</owner>
   <summary>
@@ -43690,6 +43699,35 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="13" label="Learn more undo"/>
 </enum>
 
+<enum name="SigninHelperFlow" type="int">
+  <int value="0" label="Shown">The signin flow was shown to the user.</int>
+  <int value="1" label="Accepted">The user pressed accept to sign in.</int>
+  <int value="2" label="Rejected">The user pressed the reject to sign in.</int>
+  <int value="3" label="Dismissed">
+    The user pressed the X button to dismiss the signin promo.
+  </int>
+  <int value="4" label="Ignored">
+    The user completely ignored the signin promo. Either they navigated away, or
+    they used the page as is.
+  </int>
+  <int value="5" label="Learn More">
+    The user clicked on the learn more link in the signin promo.
+  </int>
+  <int value="6" label="Accept with Defaults">
+    The sync was started with default settings.
+  </int>
+  <int value="7" label="Accept with Advanced">
+    The sync was started with advanced settings.
+  </int>
+  <int value="8" label="Auto-Accept with Defaults">
+    The sync was started through auto-accept with default settings.
+  </int>
+  <int value="9" label="Auto-Accept with Advanced">
+    The sync was started through auto-accept with advanced settings.
+  </int>
+  <int value="10" label="Undo">The sync was aborted with an undo button.</int>
+</enum>
+
 <enum name="SimpleCache.EntryCreatedAndStream2Omitted" type="int">
   <int value="0" label="Stream 2 file was present"/>
   <int value="1" label="Empty stream 2 file was omitted"/>
@@ -48543,6 +48581,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="Extensions.ExternalExtensionEvent"/>
   <affected-histogram name="Extensions.InstallSource"/>
   <affected-histogram name="Extensions.UpdateSource"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Signin.Actions" separator=".">
+  <suffix name="AllAccessPointActions"/>
+  <suffix name="AndroidAccountConsistencyFirstRunActions"
+      label="Signin Flow shown on android after Account Consistency flag was
+             enabled."/>
+  <suffix name="AppLauncherActions"/>
+  <suffix name="ExtensionInstallBubbleActions"/>
+  <suffix name="MenuActions"/>
+  <suffix name="NTPLinkActions"/>
+  <suffix name="OneClickActions"/>
+  <suffix name="SettingsActions"/>
+  <suffix name="StartPageActions"/>
+  <suffix name="UnknownActions"/>
+  <suffix name="WebstoreInstallActions"/>
+  <affected-histogram name="Signin"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Signin.Reconciler" separator=".">
