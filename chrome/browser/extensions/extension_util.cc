@@ -256,22 +256,10 @@ bool SiteHasIsolatedStorage(const GURL& extension_site_url,
                             content::BrowserContext* context) {
   const Extension* extension = ExtensionRegistry::Get(context)->
       enabled_extensions().GetExtensionOrAppByURL(extension_site_url);
-  if (extension)
-    return AppIsolationInfo::HasIsolatedStorage(extension);
+  if (!extension)
+    return false;
 
-  if (extension_site_url.SchemeIs(kExtensionScheme)) {
-    // The site URL may also be from an evicted ephemeral app. We do not
-    // immediately delete their data when they are removed from extension
-    // system.
-    ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
-    DCHECK(prefs);
-    scoped_ptr<ExtensionInfo> info = prefs->GetEvictedEphemeralAppInfo(
-        extension_site_url.host());
-    if (info.get())
-      return HasIsolatedStorage(*info);
-  }
-
-  return false;
+  return AppIsolationInfo::HasIsolatedStorage(extension);
 }
 
 const gfx::ImageSkia& GetDefaultAppIcon() {

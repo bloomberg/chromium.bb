@@ -481,17 +481,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // information.
   scoped_ptr<ExtensionsInfo> GetAllDelayedInstallInfo() const;
 
-  // Returns information about evicted ephemeral apps.
-  scoped_ptr<ExtensionsInfo> GetEvictedEphemeralAppsInfo() const;
-
-  // Return information about a specific evicted ephemeral app. Can return NULL
-  // if no such evicted app exists or is currently installed.
-  scoped_ptr<ExtensionInfo> GetEvictedEphemeralAppInfo(
-      const std::string& extension_id) const;
-
-  // Permanently remove the preferences for an evicted ephemeral app.
-  void RemoveEvictedEphemeralApp(const std::string& extension_id);
-
   // Returns true if the extension is an ephemeral app.
   bool IsEphemeralApp(const std::string& extension_id) const;
 

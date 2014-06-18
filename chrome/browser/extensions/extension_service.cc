@@ -768,10 +768,7 @@ bool ExtensionService::UninstallExtension(
       NOTREACHED();
   }
 
-  // Do not remove the data of ephemeral apps. They will be garbage collected by
-  // EphemeralAppService.
-  if (!extension_prefs_->IsEphemeralApp(extension->id()))
-    extensions::DataDeleter::StartDeleting(profile_, extension.get());
+  extensions::DataDeleter::StartDeleting(profile_, extension.get());
 
   UntrackTerminatedExtension(extension->id());
 

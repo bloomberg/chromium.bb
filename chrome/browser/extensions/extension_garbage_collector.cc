@@ -227,20 +227,6 @@ void ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded() {
     }
   }
 
-  // The data of ephemeral apps can outlive their cache lifetime. Ensure
-  // they are not garbage collected.
-  scoped_ptr<ExtensionPrefs::ExtensionsInfo> evicted_apps_info(
-      extension_prefs->GetEvictedEphemeralAppsInfo());
-  for (size_t i = 0; i < evicted_apps_info->size(); ++i) {
-    ExtensionInfo* info = evicted_apps_info->at(i).get();
-    if (util::HasIsolatedStorage(*info)) {
-      active_paths->insert(content::BrowserContext::GetStoragePartitionForSite(
-                               context_,
-                               util::GetSiteForExtensionId(
-                                   info->extension_id, context_))->GetPath());
-    }
-  }
-
   ExtensionService* service =
       ExtensionSystem::Get(context_)->extension_service();
   service->OnGarbageCollectIsolatedStorageStart();
