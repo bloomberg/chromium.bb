@@ -21,6 +21,7 @@
 #include "config.h"
 #include "core/dom/StyleElement.h"
 
+#include "bindings/v8/ScriptController.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleSheetContents.h"
@@ -28,6 +29,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/StyleEngine.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLStyleElement.h"
 #include "platform/TraceEvent.h"
@@ -147,9 +149,14 @@ void StyleElement::createSheet(Element* e, const String& text)
     if (m_sheet)
         clearSheet(e);
 
+    // Inline style added from an isolated world should bypass the main world's
+    // CSP just as an inline script would.
+    LocalFrame* frame = document.frame();
+    bool shouldBypassMainWorldContentSecurityPolicy = frame && frame->script().shouldBypassMainWorldContentSecurityPolicy();
+
     // If type is empty or CSS, this is a CSS style sheet.
     const AtomicString& type = this->type();
-    bool passesContentSecurityPolicyChecks = document.contentSecurityPolicy()->allowStyleHash(text) || document.contentSecurityPolicy()->allowStyleNonce(e->fastGetAttribute(HTMLNames::nonceAttr)) || document.contentSecurityPolicy()->allowInlineStyle(e->document().url(), m_startPosition.m_line);
+    bool passesContentSecurityPolicyChecks = shouldBypassMainWorldContentSecurityPolicy || document.contentSecurityPolicy()->allowStyleHash(text) || document.contentSecurityPolicy()->allowStyleNonce(e->fastGetAttribute(HTMLNames::nonceAttr)) || document.contentSecurityPolicy()->allowInlineStyle(e->document().url(), m_startPosition.m_line);
     if (isCSS(e, type) && passesContentSecurityPolicyChecks) {
         RefPtrWillBeRawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(media());
 
