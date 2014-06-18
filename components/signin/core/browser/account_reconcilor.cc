@@ -657,10 +657,12 @@ void AccountReconcilor::FinishReconcile() {
   }
 
   // For each account in the gaia cookie not known to chrome,
-  // PerformAddToChromeAction.
+  // PerformAddToChromeAction. Make a copy of |add_to_chrome| since calls to
+  // PerformAddToChromeAction() may modify this array.
+  std::vector<std::pair<std::string, int> > add_to_chrome_copy = add_to_chrome_;
   for (std::vector<std::pair<std::string, int> >::const_iterator i =
-           add_to_chrome_.begin();
-       i != add_to_chrome_.end();
+           add_to_chrome_copy.begin();
+       i != add_to_chrome_copy.end();
        ++i) {
     PerformAddToChromeAction(i->first, i->second);
   }
