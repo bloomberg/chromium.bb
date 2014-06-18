@@ -505,7 +505,6 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
       browse_filename_,
       base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                  base::Unretained(this)));
-  DVLOG(1) << "Init browse store: " << browse_filename_.value();
 
   {
     // NOTE: There is no need to grab the lock in this function, since
@@ -523,7 +522,6 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
         download_filename_,
         base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                    base::Unretained(this)));
-    DVLOG(1) << "Init download store: " << download_filename_.value();
   }
 
   if (csd_whitelist_store_.get()) {
@@ -532,7 +530,7 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
         csd_whitelist_filename_,
         base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                    base::Unretained(this)));
-    DVLOG(1) << "Init csd whitelist store: " << csd_whitelist_filename_.value();
+
     std::vector<SBAddFullHash> full_hashes;
     if (csd_whitelist_store_->GetAddFullHashes(&full_hashes)) {
       LoadWhitelist(full_hashes, &csd_whitelist_);
@@ -549,8 +547,7 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
         download_whitelist_filename_,
         base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                    base::Unretained(this)));
-    DVLOG(1) << "Init download whitelist store: "
-             << download_whitelist_filename_.value();
+
     std::vector<SBAddFullHash> full_hashes;
     if (download_whitelist_store_->GetAddFullHashes(&full_hashes)) {
       LoadWhitelist(full_hashes, &download_whitelist_);
@@ -567,8 +564,6 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
         extension_blacklist_filename_,
         base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                    base::Unretained(this)));
-    DVLOG(1) << "Init extension blacklist store: "
-             << extension_blacklist_filename_.value();
   }
 
   if (side_effect_free_whitelist_store_.get()) {
@@ -580,8 +575,6 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
         side_effect_free_whitelist_filename_,
         base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                    base::Unretained(this)));
-    DVLOG(1) << "Init side-effect free whitelist store: "
-             << side_effect_free_whitelist_filename_.value();
 
     // If there is no database, the filter cannot be used.
     base::File::Info db_info;
@@ -591,9 +584,6 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
       side_effect_free_whitelist_prefix_set_ =
           safe_browsing::PrefixSet::LoadFile(
               side_effect_free_whitelist_prefix_set_filename_);
-      DVLOG(1) << "SafeBrowsingDatabaseNew read side-effect free whitelist "
-               << "prefix set in "
-               << (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
       UMA_HISTOGRAM_TIMES("SB2.SideEffectFreeWhitelistPrefixSetLoad",
                           base::TimeTicks::Now() - before);
       if (!side_effect_free_whitelist_prefix_set_.get())
@@ -612,13 +602,11 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
         ip_blacklist_filename_,
         base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
                    base::Unretained(this)));
-    DVLOG(1) << "SafeBrowsingDatabaseNew read ip blacklist: "
-             << ip_blacklist_filename_.value();
+
     std::vector<SBAddFullHash> full_hashes;
     if (ip_blacklist_store_->GetAddFullHashes(&full_hashes)) {
       LoadIpBlacklist(full_hashes);
     } else {
-      DVLOG(1) << "Unable to load full hashes from the IP blacklist.";
       LoadIpBlacklist(std::vector<SBAddFullHash>());  // Clear the list.
     }
   }
@@ -762,18 +750,13 @@ bool SafeBrowsingDatabaseNew::ContainsSideEffectFreeWhitelistUrl(
 
 bool SafeBrowsingDatabaseNew::ContainsMalwareIP(const std::string& ip_address) {
   net::IPAddressNumber ip_number;
-  if (!net::ParseIPLiteralToNumber(ip_address, &ip_number)) {
-    DVLOG(2) << "Unable to parse IP address: '" << ip_address << "'";
+  if (!net::ParseIPLiteralToNumber(ip_address, &ip_number))
     return false;
-  }
-  if (ip_number.size() == net::kIPv4AddressSize) {
+  if (ip_number.size() == net::kIPv4AddressSize)
     ip_number = net::ConvertIPv4NumberToIPv6Number(ip_number);
-  }
-  if (ip_number.size() != net::kIPv6AddressSize) {
-    DVLOG(2) << "Unable to convert IPv4 address to IPv6: '"
-             << ip_address << "'";
+  if (ip_number.size() != net::kIPv6AddressSize)
     return false;  // better safe than sorry.
-  }
+
   // This function can be called from any thread.
   base::AutoLock locked(lookup_lock_);
   for (IPBlacklist::const_iterator it = ip_blacklist_.begin();
@@ -902,7 +885,6 @@ void SafeBrowsingDatabaseNew::InsertChunks(
   // TODO(shess): The caller should just pass list_id.
   const safe_browsing_util::ListType list_id =
       safe_browsing_util::GetListId(list_name);
-  DVLOG(2) << list_name << ": " << list_id;
 
   SafeBrowsingStore* store = GetStore(list_id);
   if (!store) return;
@@ -1268,9 +1250,6 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
     browse_prefix_set_.swap(prefix_set);
   }
 
-  DVLOG(1) << "SafeBrowsingDatabaseImpl built prefix set in "
-           << (base::TimeTicks::Now() - before).InMilliseconds()
-           << " ms total.";
   UMA_HISTOGRAM_LONG_TIMES("SB2.BuildFilter", base::TimeTicks::Now() - before);
 
   // Persist the prefix set to disk.  Since only this thread changes
@@ -1326,9 +1305,6 @@ void SafeBrowsingDatabaseNew::UpdateSideEffectFreeWhitelistStore() {
   const base::TimeTicks before = base::TimeTicks::Now();
   const bool write_ok = side_effect_free_whitelist_prefix_set_->WriteFile(
       side_effect_free_whitelist_prefix_set_filename_);
-  DVLOG(1) << "SafeBrowsingDatabaseNew wrote side-effect free whitelist prefix "
-           << "set in " << (base::TimeTicks::Now() - before).InMilliseconds()
-           << " ms";
   UMA_HISTOGRAM_TIMES("SB2.SideEffectFreePrefixSetWrite",
                       base::TimeTicks::Now() - before);
 
@@ -1384,6 +1360,11 @@ void SafeBrowsingDatabaseNew::OnHandleCorruptDatabase() {
   RecordFailure(FAILURE_DATABASE_CORRUPT_HANDLER);
   corruption_detected_ = true;  // Stop updating the database.
   ResetDatabase();
+
+  // NOTE(shess): ResetDatabase() should remove the corruption, so this should
+  // only happen once.  If you are here because you are hitting this after a
+  // restart, then I would be very interested in working with you to figure out
+  // what is happening, since it may affect real users.
   DLOG(FATAL) << "SafeBrowsing database was corrupt and reset";
 }
 
@@ -1407,8 +1388,6 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet() {
   const base::TimeTicks before = base::TimeTicks::Now();
   browse_prefix_set_ = safe_browsing::PrefixSet::LoadFile(
       browse_prefix_set_filename_);
-  DVLOG(1) << "SafeBrowsingDatabaseNew read prefix set in "
-           << (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
   UMA_HISTOGRAM_TIMES("SB2.PrefixSetLoad", base::TimeTicks::Now() - before);
 
   if (!browse_prefix_set_.get())
@@ -1477,8 +1456,6 @@ void SafeBrowsingDatabaseNew::WritePrefixSet() {
   const base::TimeTicks before = base::TimeTicks::Now();
   const bool write_ok = browse_prefix_set_->WriteFile(
       browse_prefix_set_filename_);
-  DVLOG(1) << "SafeBrowsingDatabaseNew wrote prefix set in "
-           << (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
   UMA_HISTOGRAM_TIMES("SB2.PrefixSetWrite", base::TimeTicks::Now() - before);
 
   if (!write_ok)
@@ -1528,7 +1505,6 @@ void SafeBrowsingDatabaseNew::LoadIpBlacklist(
     const std::vector<SBAddFullHash>& full_hashes) {
   DCHECK_EQ(creation_loop_, base::MessageLoop::current());
   IPBlacklist new_blacklist;
-  DVLOG(2) << "Writing IP blacklist of size: " << full_hashes.size();
   for (std::vector<SBAddFullHash>::const_iterator it = full_hashes.begin();
        it != full_hashes.end();
        ++it) {
@@ -1539,7 +1515,6 @@ void SafeBrowsingDatabaseNew::LoadIpBlacklist(
     std::string hashed_ip_prefix(full_hash, base::kSHA1Length);
     size_t prefix_size = static_cast<uint8>(full_hash[base::kSHA1Length]);
     if (prefix_size > kMaxIpPrefixSize || prefix_size < kMinIpPrefixSize) {
-      DVLOG(2) << "Invalid IP prefix size in IP blacklist: " << prefix_size;
       RecordFailure(FAILURE_IP_BLACKLIST_UPDATE_INVALID);
       new_blacklist.clear();  // Load empty blacklist.
       break;
