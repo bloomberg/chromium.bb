@@ -654,6 +654,18 @@ TEST(AutofillProfileTest, Compare) {
       NULL, NULL, NULL, NULL, NULL, NULL, NULL, "408.555.4321");
   EXPECT_GT(0, a.Compare(b));
   EXPECT_LT(0, b.Compare(a));
+
+  // Addresses are compared in full. Regression test for http://crbug.com/375545
+  test::SetProfileInfo(&a, "John", NULL, NULL, NULL,
+      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  a.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
+               ASCIIToUTF16("line one\nline two"));
+  test::SetProfileInfo(&b, "John", NULL, NULL, NULL,
+      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  b.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
+               ASCIIToUTF16("line one\nline two\nline three"));
+  EXPECT_GT(0, a.Compare(b));
+  EXPECT_LT(0, b.Compare(a));
 }
 
 TEST(AutofillProfileTest, MultiValueNames) {

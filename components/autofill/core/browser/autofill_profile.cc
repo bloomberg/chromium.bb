@@ -418,8 +418,7 @@ bool AutofillProfile::IsPresentButInvalid(ServerFieldType type) const {
 int AutofillProfile::Compare(const AutofillProfile& profile) const {
   const ServerFieldType single_value_types[] = {
     COMPANY_NAME,
-    ADDRESS_HOME_LINE1,
-    ADDRESS_HOME_LINE2,
+    ADDRESS_HOME_STREET_ADDRESS,
     ADDRESS_HOME_DEPENDENT_LOCALITY,
     ADDRESS_HOME_CITY,
     ADDRESS_HOME_STATE,
