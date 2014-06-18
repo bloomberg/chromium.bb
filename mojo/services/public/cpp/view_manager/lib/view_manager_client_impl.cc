@@ -816,10 +816,8 @@ void ViewManagerClientImpl::AddRoot(Node* root) {
 void ViewManagerClientImpl::RemoveRoot(Node* root) {
   std::vector<Node*>::iterator it =
       std::find(roots_.begin(), roots_.end(), root);
-  if (it != roots_.end()) {
+  if (it != roots_.end())
     roots_.erase(it);
-    delegate_->OnRootRemoved(this, root);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -88,13 +88,6 @@ class EmbeddedApp : public Application,
     roots_[root->id()] = root;
     ProcessPendingNodeColor(root->id());
   }
-  virtual void OnRootRemoved(ViewManager* view_manager, Node* root) OVERRIDE {
-    roots_.erase(root->id());
-
-    std::map<Node*, View*>::const_iterator it = views_to_reap_.find(root);
-    if (it != views_to_reap_.end())
-      it->second->Destroy();
-  }
 
   // Overridden from ViewObserver:
   virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
@@ -111,6 +104,17 @@ class EmbeddedApp : public Application,
     if (new_view == 0)
       views_to_reap_[node] = old_view;
   }
+  virtual void OnNodeDestroy(
+      Node* node,
+      NodeObserver::DispositionChangePhase phase) OVERRIDE {
+    if (phase != NodeObserver::DISPOSITION_CHANGED)
+      return;
+    DCHECK(roots_.find(node->id()) != roots_.end());
+    roots_.erase(node->id());
+    std::map<Node*, View*>::const_iterator it = views_to_reap_.find(node);
+    if (it != views_to_reap_.end())
+      it->second->Destroy();
+  }
 
   void ProcessPendingNodeColor(uint32 node_id) {
     RootMap::iterator root = roots_.find(node_id);
@@ -125,12 +129,11 @@ class EmbeddedApp : public Application,
     pending_node_colors_.erase(color);
   }
 
-
   view_manager::ViewManager* view_manager_;
   IWindowManagerPtr window_manager_;
   std::map<Node*, View*> views_to_reap_;
 
-  typedef std::map<uint32, Node*> RootMap;
+  typedef std::map<view_manager::Id, Node*> RootMap;
   RootMap roots_;
 
   // We can receive navigations for nodes we don't have yet.

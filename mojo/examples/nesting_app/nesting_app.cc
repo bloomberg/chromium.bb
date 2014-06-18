@@ -34,7 +34,8 @@ const char kEmbeddedAppURL[] = "mojo:mojo_embedded_app";
 // An app that embeds another app.
 class NestingApp : public Application,
                    public ViewManagerDelegate,
-                   public ViewObserver {
+                   public ViewObserver,
+                   public NodeObserver {
  public:
   NestingApp() : nested_(NULL) {}
   virtual ~NestingApp() {}
@@ -67,6 +68,8 @@ class NestingApp : public Application,
 
   // Overridden from ViewManagerDelegate:
   virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
+    root->AddObserver(this);
+
     View* view = View::Create(view_manager);
     root->SetActiveView(view);
     view->SetColor(SK_ColorCYAN);
@@ -83,15 +86,20 @@ class NestingApp : public Application,
     NavigateChild();
   }
 
-  virtual void OnRootRemoved(ViewManager* view_manager, Node* root) OVERRIDE {
-    // TODO(beng): reap views & child nodes.
-    nested_ = NULL;
-  }
-
   // Overridden from ViewObserver:
   virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
     if (event->action == ui::ET_MOUSE_RELEASED)
       window_manager_->CloseWindow(view->node()->id());
+  }
+
+  // Overridden from NodeObserver:
+  virtual void OnNodeDestroy(
+      Node* node,
+      NodeObserver::DispositionChangePhase phase) OVERRIDE {
+    if (phase != NodeObserver::DISPOSITION_CHANGED)
+      return;
+    // TODO(beng): reap views & child nodes.
+    nested_ = NULL;
   }
 
   void NavigateChild() {

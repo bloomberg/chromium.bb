@@ -127,9 +127,6 @@ class Browser : public Application,
 
     CreateWidget(root->bounds().size());
   }
-  virtual void OnRootRemoved(view_manager::ViewManager* view_manager,
-                             view_manager::Node* root) OVERRIDE {
-  }
 
   // views::TextfieldController:
   virtual bool HandleKeyEvent(views::Textfield* sender,
