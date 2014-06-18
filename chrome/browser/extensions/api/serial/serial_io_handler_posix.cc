@@ -37,12 +37,14 @@ void SerialIoHandlerPosix::CancelReadImpl() {
   DCHECK(CalledOnValidThread());
   is_watching_reads_ = false;
   file_read_watcher_.StopWatchingFileDescriptor();
+  QueueReadCompleted(0, read_cancel_reason());
 }
 
 void SerialIoHandlerPosix::CancelWriteImpl() {
   DCHECK(CalledOnValidThread());
   is_watching_writes_ = false;
   file_write_watcher_.StopWatchingFileDescriptor();
+  QueueWriteCompleted(0, write_cancel_reason());
 }
 
 SerialIoHandlerPosix::SerialIoHandlerPosix()
