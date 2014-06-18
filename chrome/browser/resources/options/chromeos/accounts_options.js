@@ -117,6 +117,8 @@ cr.define('options', function() {
      */
     handleAddUser_: function(e) {
       chrome.send('whitelistUser', [e.user.email, e.user.name]);
+      chrome.send('coreOptionsUserMetricsAction',
+                  ['Options_WhitelistedUser_Add']);
     },
 
     /**
@@ -126,6 +128,8 @@ cr.define('options', function() {
      */
     handleRemoveUser_: function(e) {
       chrome.send('unwhitelistUser', [e.user.username]);
+      chrome.send('coreOptionsUserMetricsAction',
+                  ['Options_WhitelistedUser_Remove']);
     }
   };
 

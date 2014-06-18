@@ -116,6 +116,8 @@ cr.define('options', function() {
     onEncryptionRadioChanged_: function() {
       var visible = $('full-encryption-option').checked;
       $('sync-custom-passphrase').hidden = !visible;
+      chrome.send('coreOptionsUserMetricsAction',
+                  ['Options_SyncSetEncryption']);
     },
 
     /**
@@ -380,6 +382,8 @@ cr.define('options', function() {
      */
     handleDataTypeClick_: function() {
       dataTypeBoxes_[this.id] = this.checked;
+      chrome.send('coreOptionsUserMetricsAction',
+                  ['Options_SyncToggleDataType']);
     },
 
     setEncryptionRadios_: function(args) {
@@ -474,6 +478,9 @@ cr.define('options', function() {
     },
 
     showSyncEverythingPage_: function() {
+      chrome.send('coreOptionsUserMetricsAction',
+                  ['Options_SyncSetDefault']);
+
       // Determine whether to bring the OK button into focus.
       var wasConfirmPageHidden = !this.confirmPageVisible_;
       this.confirmPageVisible_ = true;
@@ -728,6 +735,7 @@ cr.define('options', function() {
      */
     showSetupUI_: function() {
       chrome.send('SyncSetupShowSetupUI');
+      chrome.send('coreOptionsUserMetricsAction', ['Options_SyncShowAdvanced']);
     },
 
     /**

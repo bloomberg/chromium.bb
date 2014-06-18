@@ -12,8 +12,9 @@
         <td class="option-name">
           <div class="checkbox">
             <label>
-              <input id="allowBwsiCheck" pref="cros.accounts.allowBWSI"
-                  type="checkbox">
+              <input id="allowBwsiCheck" type="checkbox"
+                     metric="Options_GuestBrowsing"
+                     pref="cros.accounts.allowBWSI">
               <span i18n-content="allow_BWSI"></span>
             </label>
           </div>
@@ -23,8 +24,9 @@
         <td class="option-name">
           <div class="checkbox">
              <label>
-              <input id="allowSupervisedCheck"
-                  pref="cros.accounts.supervisedUsersEnabled" type="checkbox">
+              <input id="allowSupervisedCheck" type="checkbox"
+                     metric="Options_SupervisedUsers"
+                     pref="cros.accounts.supervisedUsersEnabled">
               <span i18n-content="allow_supervised_users"></span>
             </label>
           </div>
@@ -34,8 +36,9 @@
         <td class="option-name">
           <div class="checkbox">
             <label>
-              <input id="showUserNamesCheck"
-                  pref="cros.accounts.showUserNamesOnSignIn" type="checkbox">
+              <input id="showUserNamesCheck" type="checkbox"
+                     metric="Options_ShowUserNamesOnSignin"
+                     pref="cros.accounts.showUserNamesOnSignIn">
               <span i18n-content="show_user_on_signin"></span>
             </label>
           </div>
@@ -45,8 +48,10 @@
         <td class="option-name">
           <div class="checkbox">
             <label>
-              <input id="useWhitelistCheck" pref="cros.accounts.allowGuest"
-                  type="checkbox" inverted_pref>
+              <input id="useWhitelistCheck" type="checkbox"
+                     metric="Options_AllowAllUsers"
+                     pref="cros.accounts.allowGuest"
+                     inverted_pref>
               <span i18n-content="use_whitelist"></span>
             </label>
           </div>

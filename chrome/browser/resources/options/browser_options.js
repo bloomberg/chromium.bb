@@ -86,6 +86,12 @@ cr.define('options', function() {
 
       if (loadTimeData.getBoolean('allowAdvancedSettings')) {
         $('advanced-settings-expander').onclick = function() {
+          var showAdvanced =
+              BrowserOptions.shouldShowSection_($('advanced-settings'));
+          if (showAdvanced) {
+            chrome.send('coreOptionsUserMetricsAction',
+                        ['Options_ShowAdvancedSettings']);
+          }
           self.toggleSectionWithAnimation_(
               $('advanced-settings'),
               $('advanced-settings-container'));
@@ -94,7 +100,7 @@ cr.define('options', function() {
           // and it was used to show the section (rather than hiding it), focus
           // the first element in the container.
           if (document.activeElement === $('advanced-settings-expander') &&
-                  $('advanced-settings').style.height === '') {
+              showAdvanced) {
             var focusElement = $('advanced-settings-container').querySelector(
                 'button, input, list, select, a[href]');
             if (focusElement)

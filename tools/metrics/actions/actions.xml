@@ -8077,6 +8077,18 @@ should be able to be added at any place in this file.
   <description>Settings: Accessibility: Enable tap dragging</description>
 </action>
 
+<action name="Options_AllowAllUsers_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Users: Disable allowing all users (whitelisted users only)
+  </description>
+</action>
+
+<action name="Options_AllowAllUsers_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Users: Enable allowing all users</description>
+</action>
+
 <action name="Options_AppLanguage">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -8384,6 +8396,16 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_GuestBrowsing_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Users: Disable guest browsing</description>
+</action>
+
+<action name="Options_GuestBrowsing_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Users: Enable guest browsing</description>
+</action>
+
 <action name="Options_Homepage_HideHomeButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -8562,6 +8584,11 @@ should be able to be added at any place in this file.
 <action name="Options_LinkDoctorCheckbox_Enable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_ManageAccounts">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Users: Manage other users</description>
 </action>
 
 <action name="Options_ManageCloudPrinters">
@@ -8851,6 +8878,20 @@ should be able to be added at any place in this file.
   <description>Safe Browsing Extended Reporting enabled</description>
 </action>
 
+<action name="Options_ScreenLock_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Users: Do not require a password to wake from sleep
+  </description>
+</action>
+
+<action name="Options_ScreenLock_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Users: Require a password to wake from sleep
+  </description>
+</action>
+
 <action name="Options_SearchEngineChanged">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -8884,6 +8925,11 @@ should be able to be added at any place in this file.
 <action name="Options_SetTimeDialog_Show">
   <owner>michaelpg@chromium.org</owner>
   <description>Set system time dialog was launched.</description>
+</action>
+
+<action name="Options_ShowAdvancedSettings">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Show advanced settings</description>
 </action>
 
 <action name="Options_ShowAutoFillSettings">
@@ -8926,9 +8972,24 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_ShowSyncAdvanced">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Show advanced sync settings</description>
+</action>
+
 <action name="Options_ShowTouchpadSettings">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Touchpad settings</description>
+</action>
+
+<action name="Options_ShowUserNamesOnSignin_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Users: Disable usernames on signin</description>
+</action>
+
+<action name="Options_ShowUserNamesOnSignin_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Users: Enable usernames on signin</description>
 </action>
 
 <action name="Options_SpeedFactorSlider_Changed">
@@ -8974,6 +9035,38 @@ should be able to be added at any place in this file.
 <action name="Options_Startup_NewTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_SupervisedUsers_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Users: Disable supervised users</description>
+</action>
+
+<action name="Options_SupervisedUsers_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Users: Enable supervised users</description>
+</action>
+
+<action name="Options_SyncSelectDataTypes">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Users: Sync: Enable selectively syncing data types
+  </description>
+</action>
+
+<action name="Options_SyncSetDefault">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Users: Sync: Use default settings</description>
+</action>
+
+<action name="Options_SyncSetEncryption">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Users: Sync: Encrypt sync data</description>
+</action>
+
+<action name="Options_SyncToggleDataType">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Users: Toggle a sync data type</description>
 </action>
 
 <action name="Options_TLS1_Disable">
@@ -9074,6 +9167,16 @@ should be able to be added at any place in this file.
 <action name="Options_VertEdgeScrollCheckbox_Enable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_WhitelistedUser_Add">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Users: Add a whitelisted user</description>
+</action>
+
+<action name="Options_WhitelistedUser_Remove">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Users: Remove a whitelisted user</description>
 </action>
 
 <action name="OriginChipPress">
