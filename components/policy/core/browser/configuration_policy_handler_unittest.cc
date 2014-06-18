@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,10 +18,13 @@ namespace policy {
 
 namespace {
 
-StringToIntEnumListPolicyHandler::MappingEntry kTestTypeMap[] = {
-  { "one", 1 },
-  { "two", 2 },
-};
+void GetIntegerTypeMap(
+    ScopedVector<StringMappingListPolicyHandler::MappingEntry>* result) {
+  result->push_back(new StringMappingListPolicyHandler::MappingEntry(
+      "one", scoped_ptr<base::Value>(new base::FundamentalValue(1))));
+  result->push_back(new StringMappingListPolicyHandler::MappingEntry(
+      "two", scoped_ptr<base::Value>(new base::FundamentalValue(2))));
+}
 
 const char kTestPolicy[] = "unit_test.test_policy";
 const char kTestPref[] = "unit_test.test_pref";
@@ -49,11 +53,10 @@ TEST(StringToIntEnumListPolicyHandlerTest, CheckPolicySettings) {
   base::ListValue list;
   PolicyMap policy_map;
   PolicyErrorMap errors;
-  StringToIntEnumListPolicyHandler handler(
+  StringMappingListPolicyHandler handler(
       kTestPolicy,
       kTestPref,
-      kTestTypeMap,
-      kTestTypeMap + arraysize(kTestTypeMap));
+      base::Bind(GetIntegerTypeMap));
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, list.DeepCopy(), NULL);
@@ -85,17 +88,16 @@ TEST(StringToIntEnumListPolicyHandlerTest, CheckPolicySettings) {
   EXPECT_FALSE(errors.GetErrors(kTestPolicy).empty());
 }
 
-TEST(StringToIntEnumListPolicyHandlerTest, ApplyPolicySettings) {
+TEST(StringMappingListPolicyHandlerTest, ApplyPolicySettings) {
   base::ListValue list;
   base::ListValue expected;
   PolicyMap policy_map;
   PrefValueMap prefs;
   base::Value* value;
-  StringToIntEnumListPolicyHandler handler(
+  StringMappingListPolicyHandler handler(
       kTestPolicy,
       kTestPref,
-      kTestTypeMap,
-      kTestTypeMap + arraysize(kTestTypeMap));
+      base::Bind(GetIntegerTypeMap));
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, list.DeepCopy(), NULL);

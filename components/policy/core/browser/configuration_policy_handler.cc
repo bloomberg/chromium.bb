@@ -151,19 +151,25 @@ bool IntRangePolicyHandlerBase::EnsureInRange(const base::Value* input,
 }
 
 
-// StringToIntEnumListPolicyHandler implementation -----------------------------
+// StringMappingListPolicyHandler implementation -----------------------------
 
-StringToIntEnumListPolicyHandler::StringToIntEnumListPolicyHandler(
+StringMappingListPolicyHandler::MappingEntry::MappingEntry(
+    const char* policy_value, scoped_ptr<base::Value> map)
+    : enum_value(policy_value), mapped_value(map.Pass()) {}
+
+StringMappingListPolicyHandler::MappingEntry::~MappingEntry() {}
+
+StringMappingListPolicyHandler::StringMappingListPolicyHandler(
     const char* policy_name,
     const char* pref_path,
-    const MappingEntry* mapping_begin,
-    const MappingEntry* mapping_end)
+    const GenerateMapCallback& callback)
     : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_LIST),
       pref_path_(pref_path),
-      mapping_begin_(mapping_begin),
-      mapping_end_(mapping_end) {}
+      map_getter_(callback) {}
 
-bool StringToIntEnumListPolicyHandler::CheckPolicySettings(
+StringMappingListPolicyHandler::~StringMappingListPolicyHandler() {}
+
+bool StringMappingListPolicyHandler::CheckPolicySettings(
     const PolicyMap& policies,
     PolicyErrorMap* errors) {
   const base::Value* value;
@@ -171,7 +177,7 @@ bool StringToIntEnumListPolicyHandler::CheckPolicySettings(
       Convert(value, NULL, errors);
 }
 
-void StringToIntEnumListPolicyHandler::ApplyPolicySettings(
+void StringMappingListPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
   if (!pref_path_)
@@ -182,9 +188,9 @@ void StringToIntEnumListPolicyHandler::ApplyPolicySettings(
     prefs->SetValue(pref_path_, list.release());
 }
 
-bool StringToIntEnumListPolicyHandler::Convert(const base::Value* input,
-                                               base::ListValue* output,
-                                               PolicyErrorMap* errors) {
+bool StringMappingListPolicyHandler::Convert(const base::Value* input,
+                                             base::ListValue* output,
+                                             PolicyErrorMap* errors) {
   if (!input)
     return true;
 
@@ -206,17 +212,12 @@ bool StringToIntEnumListPolicyHandler::Convert(const base::Value* input,
       }
       continue;
     }
-    bool found = false;
-    for (const MappingEntry* mapping_entry(mapping_begin_);
-         mapping_entry != mapping_end_; ++mapping_entry) {
-      if (mapping_entry->enum_value == entry_value) {
-        found = true;
-        if (output)
-          output->AppendInteger(mapping_entry->int_value);
-        break;
-      }
-    }
-    if (!found) {
+
+    scoped_ptr<base::Value> mapped_value = Map(entry_value);
+    if (mapped_value) {
+      if (output)
+        output->Append(mapped_value.release());
+    } else {
       if (errors) {
         errors->AddError(policy_name(),
                          entry - list_value->begin(),
@@ -228,6 +229,23 @@ bool StringToIntEnumListPolicyHandler::Convert(const base::Value* input,
   return true;
 }
 
+scoped_ptr<base::Value> StringMappingListPolicyHandler::Map(
+    const std::string& entry_value) {
+  // Lazily generate the map of policy strings to mapped values.
+  if (map_.empty())
+    map_getter_.Run(&map_);
+
+  scoped_ptr<base::Value> return_value;
+  for (ScopedVector<MappingEntry>::const_iterator it = map_.begin();
+       it != map_.end(); ++it) {
+    const MappingEntry* mapping_entry = *it;
+    if (mapping_entry->enum_value == entry_value) {
+      return_value = make_scoped_ptr(mapping_entry->mapped_value->DeepCopy());
+      break;
+    }
+  }
+  return return_value.Pass();
+}
 
 // IntRangePolicyHandler implementation ----------------------------------------
 
@@ -251,7 +269,7 @@ void IntRangePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   int value_in_range;
   if (value && EnsureInRange(value, &value_in_range, NULL)) {
     prefs->SetValue(pref_path_,
-                    base::Value::CreateIntegerValue(value_in_range));
+                    new base::FundamentalValue(value_in_range));
   }
 }
 

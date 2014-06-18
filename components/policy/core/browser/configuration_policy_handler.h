@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -159,20 +160,29 @@ class POLICY_EXPORT SimplePolicyHandler : public TypeCheckingPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(SimplePolicyHandler);
 };
 
-// A policy handler implementation that maps a string enum list to an int enum
-// list as specified by a mapping table.
-class POLICY_EXPORT StringToIntEnumListPolicyHandler
+// Base class that encapsulates logic for mapping from a string enum list
+// to a separate matching type value.
+class POLICY_EXPORT StringMappingListPolicyHandler
     : public TypeCheckingPolicyHandler {
  public:
-  struct POLICY_EXPORT MappingEntry {
+  // Data structure representing the map between policy strings and
+  // matching pref values.
+  class POLICY_EXPORT MappingEntry {
+   public:
+    MappingEntry(const char* policy_value, scoped_ptr<base::Value> map);
+    ~MappingEntry();
+
     const char* enum_value;
-    int int_value;
+    scoped_ptr<base::Value> mapped_value;
   };
 
-  StringToIntEnumListPolicyHandler(const char* policy_name,
-                                   const char* pref_path,
-                                   const MappingEntry* mapping_begin,
-                                   const MappingEntry* mapping_end);
+  // Callback that generates the map for this instance.
+  typedef base::Callback<void(ScopedVector<MappingEntry>*)> GenerateMapCallback;
+
+  StringMappingListPolicyHandler(const char* policy_name,
+                                 const char* pref_path,
+                                 const GenerateMapCallback& map_generator);
+  virtual ~StringMappingListPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
   virtual bool CheckPolicySettings(const PolicyMap& policies,
@@ -187,14 +197,21 @@ class POLICY_EXPORT StringToIntEnumListPolicyHandler
                base::ListValue* output,
                PolicyErrorMap* errors);
 
+  // Helper method that converts from a policy value string to the associated
+  // pref value.
+  scoped_ptr<base::Value> Map(const std::string& entry_value);
+
   // Name of the pref to write.
   const char* pref_path_;
 
-  // The mapping table.
-  const MappingEntry* mapping_begin_;
-  const MappingEntry* mapping_end_;
+  // The callback invoked to generate the map for this instance.
+  GenerateMapCallback map_getter_;
 
-  DISALLOW_COPY_AND_ASSIGN(StringToIntEnumListPolicyHandler);
+  // Map of string policy values to local pref values. This is generated lazily
+  // so the generation does not have to happen if no policy is present.
+  ScopedVector<MappingEntry> map_;
+
+  DISALLOW_COPY_AND_ASSIGN(StringMappingListPolicyHandler);
 };
 
 // A policy handler implementation that ensures an int policy's value lies in an
