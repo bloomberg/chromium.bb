@@ -12,6 +12,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/udp/udp_server_socket.h"
+#include "remoting/jingle_glue/socket_util.h"
 #include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 #include "third_party/libjingle/source/talk/base/nethelpers.h"
 
@@ -27,13 +28,6 @@ const int kReceiveBufferSize = 65536;
 // Pepper's UDP API can handle it. This maximum should never be
 // reached under normal conditions.
 const int kMaxSendBufferSize = 256 * 1024;
-
-// Defines set of transient errors. These errors are ignored when we get them
-// from sendto() calls.
-bool IsTransientError(int error) {
-  return error == net::ERR_ADDRESS_UNREACHABLE ||
-      error == net::ERR_ADDRESS_INVALID;
-}
 
 class UdpPacketSocket : public talk_base::AsyncPacketSocket {
  public:
@@ -66,6 +60,7 @@ class UdpPacketSocket : public talk_base::AsyncPacketSocket {
 
     scoped_refptr<net::IOBufferWithSize> data;
     net::IPEndPoint address;
+    bool retried;
   };
 
   void OnBindCompleted(int error);
@@ -100,7 +95,8 @@ UdpPacketSocket::PendingPacket::PendingPacket(
     int buffer_size,
     const net::IPEndPoint& address)
     : data(new net::IOBufferWithSize(buffer_size)),
-      address(address) {
+      address(address),
+      retried(false) {
   memcpy(data->data(), buffer, buffer_size);
 }
 
@@ -285,10 +281,24 @@ void UdpPacketSocket::OnSendCompleted(int result) {
   send_pending_ = false;
 
   if (result < 0) {
-    if (!IsTransientError(result)) {
-      LOG(ERROR) << "Send failed on a UDP socket: " << result;
-      error_ = EINVAL;
-      return;
+    SocketErrorAction action = GetSocketErrorAction(result);
+    switch (action) {
+      case SOCKET_ERROR_ACTION_FAIL:
+        LOG(ERROR) << "Send failed on a UDP socket: " << result;
+        error_ = EINVAL;
+        return;
+
+      case SOCKET_ERROR_ACTION_RETRY:
+        // Retry resending only once.
+        if (!send_queue_.front().retried) {
+          send_queue_.front().retried = true;
+          DoSend();
+          return;
+        }
+        break;
+
+      case SOCKET_ERROR_ACTION_IGNORE:
+        break;
     }
   }
 

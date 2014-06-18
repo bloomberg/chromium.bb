@@ -78,6 +78,8 @@
       'jingle_glue/server_log_entry.cc',
       'jingle_glue/server_log_entry.h',
       'jingle_glue/signal_strategy.h',
+      'jingle_glue/socket_util.cc',
+      'jingle_glue/socket_util.h',
       'jingle_glue/xmpp_signal_strategy.cc',
       'jingle_glue/xmpp_signal_strategy.h',
       'protocol/audio_reader.cc',

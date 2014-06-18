@@ -7,10 +7,12 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 #include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/udp_socket.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "remoting/client/plugin/pepper_util.h"
+#include "remoting/jingle_glue/socket_util.h"
 #include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 
 namespace remoting {
@@ -26,41 +28,56 @@ const int kReceiveBufferSize = 65536;
 // reached under normal conditions.
 const int kMaxSendBufferSize = 256 * 1024;
 
-// Enum for different actions that can be taken after sendto() returns an error.
-enum ErrorAction {
-  ERROR_ACTION_FAIL,
-  ERROR_ACTION_IGNORE,
-  ERROR_ACTION_RETRY,
-};
-
-// Returns ErrorAction to perform if sendto() fails with |error|.
-ErrorAction GetErrorAction(int error) {
+int PepperErrorToNetError(int error) {
   switch (error) {
-    // UDP is connectionless, so we may receive ICMP unreachable or reset errors
-    // for previous sends to different addresses.
-    case PP_ERROR_ADDRESS_UNREACHABLE:
-    case PP_ERROR_CONNECTION_RESET:
-      return ERROR_ACTION_RETRY;
-
-    // Target address is invalid. The socket is still usable for different
-    // target addresses and the error can be ignored.
-    case PP_ERROR_ADDRESS_INVALID:
-      return ERROR_ACTION_IGNORE;
-
-    // May be returned when the packet is blocked by local firewall (see
-    // https://code.google.com/p/webrtc/issues/detail?id=1207). The firewall may
-    // still allow us to send to other addresses, so ignore the error for this
-    // particular send.
-    case PP_ERROR_NOACCESS:
-      return ERROR_ACTION_IGNORE;
-
-    // Indicates that the buffer in the network adapter is full, so drop this
-    // packet and assume the socket is still usable.
+    case PP_OK:
+      return net::OK;
+    case PP_OK_COMPLETIONPENDING:
+      return net::ERR_IO_PENDING;
+    case PP_ERROR_ABORTED:
+      return net::ERR_ABORTED;
+    case PP_ERROR_BADARGUMENT:
+      return net::ERR_INVALID_ARGUMENT;
+    case PP_ERROR_FILENOTFOUND:
+      return net::ERR_FILE_NOT_FOUND;
+    case PP_ERROR_TIMEDOUT:
+      return net::ERR_TIMED_OUT;
+    case PP_ERROR_FILETOOBIG:
+      return net::ERR_FILE_TOO_BIG;
+    case PP_ERROR_NOTSUPPORTED:
+      return net::ERR_NOT_IMPLEMENTED;
     case PP_ERROR_NOMEMORY:
-      return ERROR_ACTION_IGNORE;
-
+      return net::ERR_OUT_OF_MEMORY;
+    case PP_ERROR_FILEEXISTS:
+      return net::ERR_FILE_EXISTS;
+    case PP_ERROR_NOSPACE:
+      return net::ERR_FILE_NO_SPACE;
+    case PP_ERROR_CONNECTION_CLOSED:
+      return net::ERR_CONNECTION_CLOSED;
+    case PP_ERROR_CONNECTION_RESET:
+      return net::ERR_CONNECTION_RESET;
+    case PP_ERROR_CONNECTION_REFUSED:
+      return net::ERR_CONNECTION_REFUSED;
+    case PP_ERROR_CONNECTION_ABORTED:
+      return net::ERR_CONNECTION_ABORTED;
+    case PP_ERROR_CONNECTION_FAILED:
+      return net::ERR_CONNECTION_FAILED;
+    case PP_ERROR_NAME_NOT_RESOLVED:
+      return net::ERR_NAME_NOT_RESOLVED;
+    case PP_ERROR_ADDRESS_INVALID:
+      return net::ERR_ADDRESS_INVALID;
+    case PP_ERROR_ADDRESS_UNREACHABLE:
+      return net::ERR_ADDRESS_UNREACHABLE;
+    case PP_ERROR_CONNECTION_TIMEDOUT:
+      return net::ERR_CONNECTION_TIMED_OUT;
+    case PP_ERROR_NOACCESS:
+      return net::ERR_NETWORK_ACCESS_DENIED;
+    case PP_ERROR_MESSAGE_TOO_BIG:
+      return net::ERR_MSG_TOO_BIG;
+    case PP_ERROR_ADDRESS_IN_USE:
+      return net::ERR_ADDRESS_IN_USE;
     default:
-      return ERROR_ACTION_FAIL;
+      return net::ERR_FAILED;
   }
 }
 
@@ -322,14 +339,15 @@ void UdpPacketSocket::OnSendCompleted(int result) {
   send_pending_ = false;
 
   if (result < 0) {
-    ErrorAction action = GetErrorAction(result);
+    int net_error = PepperErrorToNetError(result);
+    SocketErrorAction action = GetSocketErrorAction(net_error);
     switch (action) {
-      case ERROR_ACTION_FAIL:
+      case SOCKET_ERROR_ACTION_FAIL:
         LOG(ERROR) << "Send failed on a UDP socket: " << result;
         error_ = EINVAL;
         return;
 
-      case ERROR_ACTION_RETRY:
+      case SOCKET_ERROR_ACTION_RETRY:
         // Retry resending only once.
         if (!send_queue_.front().retried) {
           send_queue_.front().retried = true;
@@ -338,7 +356,7 @@ void UdpPacketSocket::OnSendCompleted(int result) {
         }
         break;
 
-      case ERROR_ACTION_IGNORE:
+      case SOCKET_ERROR_ACTION_IGNORE:
         break;
     }
   }
@@ -365,7 +383,7 @@ void UdpPacketSocket::OnReadCompleted(int result, pp::NetAddress address) {
   }
 }
 
-  void UdpPacketSocket::HandleReadResult(int result, pp::NetAddress address) {
+void UdpPacketSocket::HandleReadResult(int result, pp::NetAddress address) {
   if (result > 0) {
     talk_base::SocketAddress socket_address;
     PpNetAddressToSocketAddress(address, &socket_address);

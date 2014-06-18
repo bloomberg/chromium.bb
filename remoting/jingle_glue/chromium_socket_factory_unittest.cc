@@ -37,6 +37,24 @@ class ChromiumSocketFactoryTest : public testing::Test,
     run_loop_.Quit();
   }
 
+  void VerifyCanSendAndReceive(talk_base::AsyncPacketSocket* sender) {
+    // UDP packets may be lost, so we have to retry sending it more than once.
+    const int kMaxAttempts = 3;
+    const base::TimeDelta kAttemptPeriod = base::TimeDelta::FromSeconds(1);
+    std::string test_packet("TEST PACKET");
+    int attempts = 0;
+    talk_base::PacketOptions options;
+    while (last_packet_.empty() && attempts++ < kMaxAttempts) {
+      sender->SendTo(test_packet.data(), test_packet.size(),
+                     socket_->GetLocalAddress(), options);
+      message_loop_.PostDelayedTask(FROM_HERE, run_loop_.QuitClosure(),
+                                    kAttemptPeriod);
+      run_loop_.Run();
+    }
+    EXPECT_EQ(test_packet, last_packet_);
+    EXPECT_EQ(sender->GetLocalAddress(), last_address_);
+  }
+
  protected:
   base::MessageLoopForIO message_loop_;
   base::RunLoop run_loop_;
@@ -49,32 +67,14 @@ class ChromiumSocketFactoryTest : public testing::Test,
 };
 
 TEST_F(ChromiumSocketFactoryTest, SendAndReceive) {
-  // UDP packets may be lost, so we have to retry sending it more than once.
-  const int kMaxAttempts = 3;
-  const base::TimeDelta kAttemptPeriod = base::TimeDelta::FromSeconds(1);
-
-  scoped_ptr<talk_base::AsyncPacketSocket> sending_socket;
-  talk_base::SocketAddress address;
-
-  sending_socket.reset(socket_factory_->CreateUdpSocket(
-      talk_base::SocketAddress("127.0.0.1", 0), 0, 0));
+  scoped_ptr<talk_base::AsyncPacketSocket> sending_socket(
+      socket_factory_->CreateUdpSocket(
+          talk_base::SocketAddress("127.0.0.1", 0), 0, 0));
   ASSERT_TRUE(sending_socket.get() != NULL);
   EXPECT_EQ(sending_socket->GetState(),
             talk_base::AsyncPacketSocket::STATE_BOUND);
-  address = sending_socket->GetLocalAddress();
 
-  std::string test_packet("TEST PACKET");
-  int attempts = 0;
-  talk_base::PacketOptions options;
-  while (last_packet_.empty() && attempts++ < kMaxAttempts) {
-    sending_socket->SendTo(test_packet.data(), test_packet.size(),
-                           socket_->GetLocalAddress(), options);
-    message_loop_.PostDelayedTask(FROM_HERE, run_loop_.QuitClosure(),
-                                  kAttemptPeriod);
-    run_loop_.Run();
-  }
-  EXPECT_EQ(test_packet, last_packet_);
-  EXPECT_EQ(address, last_address_);
+  VerifyCanSendAndReceive(sending_socket.get());
 }
 
 TEST_F(ChromiumSocketFactoryTest, SetOptions) {
@@ -91,6 +91,23 @@ TEST_F(ChromiumSocketFactoryTest, PortRange) {
   EXPECT_EQ(socket_->GetState(), talk_base::AsyncPacketSocket::STATE_BOUND);
   EXPECT_GE(socket_->GetLocalAddress().port(), kMinPort);
   EXPECT_LE(socket_->GetLocalAddress().port(), kMaxPort);
+}
+
+TEST_F(ChromiumSocketFactoryTest, TransientError) {
+  scoped_ptr<talk_base::AsyncPacketSocket> sending_socket(
+      socket_factory_->CreateUdpSocket(
+          talk_base::SocketAddress("127.0.0.1", 0), 0, 0));
+  std::string test_packet("TEST");
+
+  // Try sending a packet to an IPv6 address from a socket that's bound to an
+  // IPv4 address. This send is expected to fail, but the socket should still be
+  // functional.
+  sending_socket->SendTo(test_packet.data(), test_packet.size(),
+                         talk_base::SocketAddress("::1", 0),
+                         talk_base::PacketOptions());
+
+  // Verify that socket is still usable.
+  VerifyCanSendAndReceive(sending_socket.get());
 }
 
 }  // namespace remoting
