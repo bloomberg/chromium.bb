@@ -637,7 +637,7 @@ def CheckRunGit(command, cwd=None):
   return output
 
 
-def SetBuildSystemDefault(build_system):
+def SetBuildSystemDefault(build_system, use_goma):
   """Sets up any environment variables needed to build with the specified build
   system.
 
@@ -657,10 +657,15 @@ def SetBuildSystemDefault(build_system):
         os.environ['GYP_DEFINES'] = 'component=shared_library '\
             'incremental_chrome_dll=1 disable_nacl=1 fastbuild=1 '\
             'chromium_win_pch=0'
+
   elif build_system == 'make':
     os.environ['GYP_GENERATORS'] = 'make'
   else:
     raise RuntimeError('%s build not supported.' % build_system)
+
+  if use_goma:
+    os.environ['GYP_DEFINES'] = '%s %s' % (os.getenv('GYP_DEFINES', ''),
+                                              'use_goma=1')
 
 
 def BuildWithMake(threads, targets, build_type='Release'):
@@ -749,7 +754,7 @@ class Builder(object):
           raise RuntimeError(
               'Path to visual studio could not be determined.')
       else:
-        SetBuildSystemDefault(opts.build_preference)
+        SetBuildSystemDefault(opts.build_preference, opts.use_goma)
     else:
       if not opts.build_preference:
         if 'ninja' in os.getenv('GYP_GENERATORS'):
@@ -757,7 +762,7 @@ class Builder(object):
         else:
           opts.build_preference = 'make'
 
-      SetBuildSystemDefault(opts.build_preference)
+      SetBuildSystemDefault(opts.build_preference, opts.use_goma)
 
     if not bisect_utils.SetupPlatformBuildEnvironment(opts):
       raise RuntimeError('Failed to set platform environment.')
@@ -2372,16 +2377,21 @@ class BisectPerformanceMetrics(object):
     Returns:
       True if successful.
     """
-    if depot == 'chromium':
+    if depot == 'chromium' or depot == 'android-chrome':
       # Removes third_party/libjingle. At some point, libjingle was causing
       # issues syncing when using the git workflow (crbug.com/266324).
+      os.chdir(self.src_cwd)
       if not bisect_utils.RemoveThirdPartyDirectory('libjingle'):
         return False
       # Removes third_party/skia. At some point, skia was causing
       #  issues syncing when using the git workflow (crbug.com/377951).
       if not bisect_utils.RemoveThirdPartyDirectory('skia'):
         return False
-      return self.PerformWebkitDirectoryCleanup(revision)
+      if depot == 'chromium':
+        # The fast webkit cleanup doesn't work for android_chrome
+        # The switch from Webkit to Blink that this deals with now happened
+        # quite a long time ago so this is unlikely to be a problem.
+        return self.PerformWebkitDirectoryCleanup(revision)
     elif depot == 'cros':
       return self.PerformCrosChrootCleanup()
     return True
@@ -3769,7 +3779,8 @@ class BisectOptions(object):
                      help='The remote machine to image to.')
     group.add_option('--use_goma',
                      action="store_true",
-                     help='Add a bunch of extra threads for goma.')
+                     help='Add a bunch of extra threads for goma, and enable '
+                     'goma')
     group.add_option('--output_buildbot_annotations',
                      action="store_true",
                      help='Add extra annotation output for buildbot.')

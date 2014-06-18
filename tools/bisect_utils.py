@@ -458,6 +458,9 @@ def SetupAndroidBuildEnvironment(opts, path_to_src=None):
   except KeyError:
     os.environ['GYP_DEFINES'] = 'OS=android'
 
+  if opts.use_goma:
+    os.environ['GYP_DEFINES'] = '%s %s' % (os.environ['GYP_DEFINES'],
+                                           'use_goma=1')
   return not proc.returncode
 
 

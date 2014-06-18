@@ -48,10 +48,12 @@ def _RunBisectionScript(options):
          '-m', 'manual_test/manual_test',
          '-r', '1',
          '--working_directory', options.working_directory,
-         '--target_build_type', options.browser_type.title(),
          '--build_preference', 'ninja',
          '--use_goma',
          '--no_custom_deps']
+
+  if options.extra_src:
+    cmd.extend(['--extra_src', options.extra_src])
 
   if 'cros' in options.browser_type:
     cmd.extend(['--target_platform', 'cros'])
@@ -64,8 +66,16 @@ def _RunBisectionScript(options):
             'BISECT_CROS_BOARD undefined.'
       print
       return 1
+  elif 'android-chrome' in options.browser_type:
+    cmd.extend(['--target_platform', 'android-chrome'])
   elif 'android' in options.browser_type:
     cmd.extend(['--target_platform', 'android'])
+  elif not options.target_build_type:
+    cmd.extend(['--target_build_type', options.browser_type.title()])
+
+  if options.target_build_type:
+    cmd.extend(['--target_build_type', options.target_build_type])
+
 
   cmd = [str(c) for c in cmd]
 
@@ -102,7 +112,15 @@ def main():
                     help='A working directory to supply to the bisection '
                     'script, which will use it as the location to checkout '
                     'a copy of the chromium depot.')
-
+  parser.add_option('--extra_src',
+                    type='str',
+                    help='Path to extra source file. If this is supplied, '
+                    'bisect script will use this to override default behavior.')
+  parser.add_option('--target_build_type',
+                     type='choice',
+                     choices=['Release', 'Debug'],
+                     help='The target build type. Choices are "Release" '
+                     'or "Debug".')
   options, args = parser.parse_args()
   error_msg = ''
   if not options.good_revision:
