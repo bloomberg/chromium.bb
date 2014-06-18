@@ -14,6 +14,7 @@ class Extension;
 }
 
 // View the information about a particular chrome application.
+
 class AppInfoDialog : public views::View {
  public:
   AppInfoDialog(Profile* profile, const extensions::Extension* app);

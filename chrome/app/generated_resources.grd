@@ -2160,58 +2160,58 @@ Even if you have downloaded files from this website before, the website might ha
 
       <!-- "Application Information" dialog -->
       <if expr="not use_titlecase">
-        <message name="IDS_APPLICATION_INFO_SUMMARY_TAB_TITLE" desc="Title of the first tab in the dialog, which displays general summary information about the app. ">
+        <message name="IDS_APPLICATION_INFO_WEB_STORE_LINK" desc="Text for the link that opens the app in the Web Store..">
+          View in store
+        </message>
+        <message name="IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT" desc="Text for the button that removes (uninstalls) the app.">
+          Remove
+        </message>
+        <message name="IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT" desc="Text for the button that displays the licenses for the app.">
+          Licenses
+        </message>
+        <message name="IDS_APPLICATION_INFO_DESCRIPTION_TITLE" desc="Title of the first section in the dialog, which displays a general summary of the app (the app's description).">
           Summary
         </message>
-        <message name="IDS_APPLICATION_INFO_PERMISSIONS_TAB_TITLE" desc="Title of the second tab in the dialog, which lists the specific permissions that the app has.">
-          Permissions
+        <message name="IDS_APPLICATION_INFO_ACTIVE_PERMISSIONS_TEXT" desc="Heading above the current permissions for the app (the permissions that the user has granted the app upon installation).">
+          It can:
         </message>
-        <message name="IDS_APPLICATION_INFO_WEB_STORE_LINK" desc="Text for the link that opens the app in the Web Store.">
-          View in Web Store
+        <message name="IDS_APPLICATION_INFO_RETAINED_FILE_PERMISSIONS_TEXT" desc="Heading above the current retained files for the app, which are files the app has permanent access to (the app can read and write to these files).">
+          Files
+        </message>
+        <message name="IDS_APPLICATION_INFO_REVOKE_RETAINED_FILE_PERMISSIONS_BUTTON_TEXT" desc="Text displayed in the button to remove the app's file permissions. After pressing this button, the app no longer has access to the files.">
+          Revoke file access
         </message>
         <message name="IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT" desc="Text for the button that opens the dialog to create shortcuts for the app.">
           Create shortcuts
         </message>
-        <message name="IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT" desc="Text for the button that uninstalls the app.">
-          Uninstall
-        </message>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_APPLICATION_INFO_SUMMARY_TAB_TITLE" desc="In Title Case: Title of the first tab in the dialog, which displays general summary information about the app. ">
+        <message name="IDS_APPLICATION_INFO_WEB_STORE_LINK" desc="In Title Case: Text for the link that opens the app in the Web Store..">
+          View in Store
+        </message>
+        <message name="IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT" desc="In Title Case: Text for the button that removes (uninstalls) the app.">
+          Remove
+        </message>
+        <message name="IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT" desc="In Title Case: Text for the button that displays the licenses for the app.">
+          Licenses
+        </message>
+        <message name="IDS_APPLICATION_INFO_DESCRIPTION_TITLE" desc="In Title Case: Title of the first section in the dialog, which displays a general summary of the app (the app's description).">
           Summary
         </message>
-        <message name="IDS_APPLICATION_INFO_PERMISSIONS_TAB_TITLE" desc="In Title Case: Title of the second tab in the dialog, which lists the specific permissions that the app has.">
-          Permissions
+        <message name="IDS_APPLICATION_INFO_ACTIVE_PERMISSIONS_TEXT" desc="In Title Case: Heading above the current permissions for the app (the permissions that the user has granted the app upon installation).">
+          It Can:
         </message>
-        <message name="IDS_APPLICATION_INFO_WEB_STORE_LINK" desc="In Title Case: Text for the link that opens the app in the Web Store..">
-          View in Web Store
+        <message name="IDS_APPLICATION_INFO_RETAINED_FILE_PERMISSIONS_TEXT" desc="In Title Case: Heading above the current retained files for the app, which are files the app has permanent access to (the app can read and write to these files).">
+          Files
+        </message>
+        <message name="IDS_APPLICATION_INFO_REVOKE_RETAINED_FILE_PERMISSIONS_BUTTON_TEXT" desc="In Title Case: Text displayed in the button to remove the app's file permissions. After pressing this button, the app no longer has access to the files.">
+          Revoke File Access
         </message>
         <message name="IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT" desc="In Title Case: Text for the button that opens the dialog to create shortcuts for the app.">
           Create Shortcuts
         </message>
-        <message name="IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT" desc="In Title Case: Text for the button that uninstalls the app.">
-          Uninstall
-        </message>
       </if>
-      <message name="IDS_APPLICATION_INFO_IMPORTED_MODULES_TITLE_TEXT" desc="Text for the title above the imported modules for the app. Imported modules are like shared libraries that an app has used when it was built (but are not directly accessible by a user).">
-        This app imports the following modules:
-      </message>
-      <message name="IDS_APPLICATION_INFO_IMPORTED_MODULES_ABOUT_LINK_TEXT" desc="Text for the link next to each imported module that goes to the About page for that module. The About page may include things such as open-source and copyright licenses for the app.">
-        About
-      </message>
-      <message name="IDS_APPLICATION_INFO_REQUIRED_PERMISSIONS_TEXT" desc="Heading for the required permissions for the app (the permissions that the user must grant the app upon installation).">
-        Required
-      </message>
-      <message name="IDS_APPLICATION_INFO_OPTIONAL_PERMISSIONS_TEXT" desc="Heading for the optional permissions for the app (the permissions that the user may choose to grant the app, but are not required for the basic app's functionality).">
-        Optional
-      </message>
-      <message name="IDS_APPLICATION_INFO_RETAINED_FILE_PERMISSIONS_TEXT" desc="Heading for the retained files for the app, which are files the app has permanent access to (the app can read and write to these files).">
-        Files
-      </message>
-      <message name="IDS_APPLICATION_INFO_REVOKE_RETAINED_FILE_PERMISSIONS_BUTTON_TEXT" desc="Text displayed in the button to remove the app's file permissions. After pressing this button, the app no longer has access to the files.">
-        Revoke file access
-      </message>
-      <message name="IDS_APPLICATION_INFO_NO_PERMISSIONS_TEXT" desc="Text displayed in the Permissions area of the App Info dialog if the app has no permissions of any kind.">
+      <message name="IDS_APPLICATION_INFO_NO_PERMISSIONS_TEXT" desc="Text displayed in the Permissions area of the dialog if the app has no permissions.">
         This app requires no special permissions.
       </message>
 

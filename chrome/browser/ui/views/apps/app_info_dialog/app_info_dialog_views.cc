@@ -4,20 +4,19 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_views.h"
 
-#include "chrome/browser/profiles/profile.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/views/app_list/app_list_dialog_contents_view.h"
-#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_tab.h"
-#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_tab.h"
-#include "extensions/common/extension.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_header_panel.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_panel.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/native_widget_types.h"
-#include "ui/views/controls/tabbed_pane/tabbed_pane.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/views/border.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 void ShowAppInfoDialog(AppListControllerDelegate* app_list_controller_delegate,
@@ -39,21 +38,40 @@ void ShowAppInfoDialog(AppListControllerDelegate* app_list_controller_delegate,
 
 AppInfoDialog::AppInfoDialog(Profile* profile,
                              const extensions::Extension* app) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-                                        views::kButtonHEdgeMarginNew,
-                                        views::kButtonVEdgeMarginNew,
-                                        0));
+  // The width of this margin determines the spacing either side of the
+  // horizontal separator underneath the summary panel.
+  const int kHorizontalBorderSpacing = 1;
+  const int kHorizontalSeparatorHeight = 2;
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, kHorizontalBorderSpacing, 0, 0));
+  AppInfoHeaderPanel* dialog_header = new AppInfoHeaderPanel(profile, app);
+  dialog_header->SetBorder(views::Border::CreateSolidSidedBorder(
+      0, 0, kHorizontalSeparatorHeight, 0, SK_ColorLTGRAY));
 
-  views::TabbedPane* tabbed_pane = new views::TabbedPane();
-  AddChildView(tabbed_pane);
+  // Make a vertically stacked view of all the panels we want to display in the
+  // dialog.
+  views::View* dialog_body = new views::View();
+  dialog_body->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           views::kButtonHEdgeMarginNew,
+                           views::kPanelVertMargin,
+                           views::kUnrelatedControlVerticalSpacing));
+  dialog_body->AddChildView(new AppInfoSummaryPanel(profile, app));
+  dialog_body->AddChildView(new AppInfoPermissionsPanel(profile, app));
 
-  tabbed_pane->AddTab(
-      l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SUMMARY_TAB_TITLE),
-      new AppInfoSummaryTab(profile, app));
-  tabbed_pane->AddTab(
-      l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_PERMISSIONS_TAB_TITLE),
-      new AppInfoPermissionsTab(profile, app));
-  // TODO(sashab): Add the manage tab back once there is content for it.
+  // Clip the scrollable view so that the scrollbar appears. As long as this
+  // is larger than the height of the dialog, it will be resized to the dialog's
+  // actual height.
+  // TODO(sashab): Add ClipHeight() as a parameter-less method to
+  // views::ScrollView(), which mimics this behaviour.
+  const int kMaxDialogHeight = 1000;
+  views::ScrollView* dialog_body_scrollview = new views::ScrollView();
+  dialog_body_scrollview->ClipHeightTo(kMaxDialogHeight, kMaxDialogHeight);
+  dialog_body_scrollview->SetContents(dialog_body);
+
+  AddChildView(dialog_header);
+  AddChildView(dialog_body_scrollview);
 }
 
-AppInfoDialog::~AppInfoDialog() {}
+AppInfoDialog::~AppInfoDialog() {
+}
