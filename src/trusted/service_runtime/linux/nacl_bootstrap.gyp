@@ -43,6 +43,22 @@
       'libraries': [
         '-lelf',
       ],
+      # This is an ugly kludge because gyp doesn't actually treat
+      # host_arch=x64 target_arch=ia32 as proper cross compilation.
+      # It still wants to compile the "host" program with -m32 et
+      # al.  Though a program built that way can indeed run on the
+      # x86-64 host, we cannot reliably build this program on such a
+      # host because Ubuntu does not provide the full suite of
+      # x86-32 libraries in packages that can be installed on an
+      # x86-64 host; in particular, libelf is missing.  So here we
+      # use the hack of eliding all the -m* flags from the
+      # compilation lines, getting the command close to what they
+      # would be if gyp were to really build properly for the host.
+      # TODO(bradnelson): Clean up with proper cross support.
+      'cflags/': [['exclude', '^-m.*'],
+                  ['exclude', '^--sysroot=.*']],
+      'ldflags/': [['exclude', '^-m.*'],
+                   ['exclude', '^--sysroot=.*']],
       'cflags!': [
         # MemorySanitizer reports an error in this binary unless instrumented
         # libelf is supplied. Because libelf source code uses gcc extensions,
