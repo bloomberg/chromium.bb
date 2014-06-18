@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.chromoting.Chromoting;
 import org.chromium.chromoting.R;
 
 import java.nio.ByteBuffer;
@@ -434,16 +435,19 @@ public class JniInterface {
     /** Returns the current cursor shape. Called on the graphics thread. */
     public static Bitmap getCursorBitmap() { return sCursorBitmap; }
 
-    /**
-     * Third Party Authentication
-     */
-    /** Pops up a third party login page to fetch the token required for authentication.*/
+    //
+    // Third Party Authentication
+    //
+
+    /** Pops up a third party login page to fetch the token required for authentication. */
     @CalledByNative
     public static void fetchThirdPartyToken(String tokenUrl, String clientId, String scope) {
-        // TODO(kelvinp): Create a intent to fetch the token from the browser
-        // (Android Third Party Auth - Part III)
+        Chromoting app = (Chromoting) sContext;
+        app.fetchThirdPartyToken(tokenUrl, clientId, scope);
     }
 
-    /* Notify the native code to continue authentication with the |token| and the |sharedSecret| */
+    /**
+     * Notify the native code to continue authentication with the |token| and the |sharedSecret|.
+     */
     public static native void nativeOnThirdPartyTokenFetched(String token, String sharedSecret);
 }
