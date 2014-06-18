@@ -82,8 +82,6 @@
 #include "wtf/text/TextEncoding.h"
 #include <limits.h>
 
-using namespace std;
-
 namespace WebCore {
 
 static const double MAX_SCALE = 1000000;
@@ -5292,7 +5290,7 @@ bool CSSPropertyParser::parseColorParameters(CSSParserValue* value, int* colorAr
         const double value = parsedDouble(v, ReleaseParsedCalcValue);
         // Convert the floating pointer number of alpha to an integer in the range [0, 256),
         // with an equal distribution across all 256 values.
-        colorArray[3] = static_cast<int>(max(0.0, min(1.0, value)) * nextafter(256.0, 0.0));
+        colorArray[3] = static_cast<int>(std::max(0.0, std::min(1.0, value)) * nextafter(256.0, 0.0));
     }
     return true;
 }
@@ -5318,7 +5316,7 @@ bool CSSPropertyParser::parseHSLParameters(CSSParserValue* value, double* colorA
         v = args->next();
         if (!validUnit(v, FPercent, HTMLStandardMode))
             return false;
-        colorArray[i] = max(0.0, min(100.0, parsedDouble(v, ReleaseParsedCalcValue))) / 100.0; // needs to be value between 0 and 1.0
+        colorArray[i] = std::max(0.0, std::min(100.0, parsedDouble(v, ReleaseParsedCalcValue))) / 100.0; // needs to be value between 0 and 1.0
     }
     if (parseAlpha) {
         v = args->next();
@@ -5327,7 +5325,7 @@ bool CSSPropertyParser::parseHSLParameters(CSSParserValue* value, double* colorA
         v = args->next();
         if (!validUnit(v, FNumber, HTMLStandardMode))
             return false;
-        colorArray[3] = max(0.0, min(1.0, parsedDouble(v, ReleaseParsedCalcValue)));
+        colorArray[3] = std::max(0.0, std::min(1.0, parsedDouble(v, ReleaseParsedCalcValue)));
     }
     return true;
 }

@@ -41,8 +41,6 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "wtf/text/AtomicString.h"
 
-using namespace std;
-
 namespace WebCore {
 
 CSSFontSelector::CSSFontSelector(Document* document)

@@ -38,8 +38,6 @@
 #include <stdio.h>
 #endif
 
-using namespace std;
-
 namespace WebCore {
 
 static size_t sizeForImmutableStylePropertySetWithPropertyCount(unsigned count)

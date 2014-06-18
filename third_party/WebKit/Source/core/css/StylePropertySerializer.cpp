@@ -29,8 +29,6 @@
 #include "wtf/BitArray.h"
 #include "wtf/text/StringBuilder.h"
 
-using namespace std;
-
 namespace WebCore {
 
 static bool isInitialOrInherit(const String& value)
@@ -483,9 +481,10 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
         if (values[i]) {
             if (values[i]->isBaseValueList()) {
                 CSSValueList* valueList = toCSSValueList(values[i].get());
-                numLayers = max(valueList->length(), numLayers);
-            } else
-                numLayers = max<size_t>(1U, numLayers);
+                numLayers = std::max(valueList->length(), numLayers);
+            } else {
+                numLayers = std::max<size_t>(1U, numLayers);
+            }
         }
     }
 

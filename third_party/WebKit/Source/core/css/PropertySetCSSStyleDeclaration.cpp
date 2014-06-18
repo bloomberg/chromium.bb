@@ -33,8 +33,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-using namespace std;
-
 namespace WebCore {
 
 namespace {

@@ -85,8 +85,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/StdLibExtras.h"
 
-using namespace std;
-
 namespace {
 
 using namespace WebCore;

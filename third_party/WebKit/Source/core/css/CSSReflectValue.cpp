@@ -28,8 +28,6 @@
 
 #include "core/css/CSSPrimitiveValue.h"
 
-using namespace std;
-
 namespace WebCore {
 
 String CSSReflectValue::customCSSText() const
