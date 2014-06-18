@@ -861,7 +861,7 @@
     "extension_types": ["platform_app"]
   },
   "sessions": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
   "signedInDevices": {
