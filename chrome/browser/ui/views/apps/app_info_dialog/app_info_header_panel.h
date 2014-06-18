@@ -5,14 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_APP_INFO_DIALOG_APP_INFO_HEADER_PANEL_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_APP_INFO_DIALOG_APP_INFO_HEADER_PANEL_H_
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_panel.h"
 #include "ui/views/controls/link_listener.h"
 
 class Profile;
-
 namespace extensions {
 class Extension;
 }
@@ -25,15 +22,14 @@ namespace views {
 class ImageView;
 class Label;
 class Link;
+class View;
 }
 
 // A small summary panel with the app's name, icon, version, and various links
 // that is displayed at the top of the app info dialog.
-class AppInfoHeaderPanel
-    : public AppInfoPanel,
-      public views::LinkListener,
-      public extensions::ExtensionUninstallDialog::Delegate,
-      public base::SupportsWeakPtr<AppInfoHeaderPanel> {
+class AppInfoHeaderPanel : public AppInfoPanel,
+                           public views::LinkListener,
+                           public base::SupportsWeakPtr<AppInfoHeaderPanel> {
  public:
   AppInfoHeaderPanel(Profile* profile, const extensions::Extension* app);
   virtual ~AppInfoHeaderPanel();
@@ -46,10 +42,6 @@ class AppInfoHeaderPanel
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-  // Overridden from ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionUninstallAccepted() OVERRIDE;
-  virtual void ExtensionUninstallCanceled() OVERRIDE;
-
   // Load the app icon asynchronously. For the response, check OnAppImageLoaded.
   void LoadAppImageAsync();
   // Called when the app's icon is loaded.
@@ -59,10 +51,6 @@ class AppInfoHeaderPanel
   // CanShowAppInWebStore() returns true.
   void ShowAppInWebStore() const;
   bool CanShowAppInWebStore() const;
-
-  // Uninstall the app. Must only be called if CanUninstallApp() returns true.
-  void UninstallApp();
-  bool CanUninstallApp() const;
 
   // Displays the licenses for the app. Must only be called if
   // CanDisplayLicenses() returns true.
@@ -74,10 +62,7 @@ class AppInfoHeaderPanel
   views::Label* app_name_label_;
   views::Label* app_version_label_;
   views::Link* view_in_store_link_;
-  views::Link* remove_link_;
   views::Link* licenses_link_;
-
-  scoped_ptr<extensions::ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   base::WeakPtrFactory<AppInfoHeaderPanel> weak_ptr_factory_;
 

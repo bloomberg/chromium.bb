@@ -13,6 +13,10 @@ namespace extensions {
 class Extension;
 }
 
+namespace views {
+class ScrollView;
+}
+
 // View the information about a particular chrome application.
 
 class AppInfoDialog : public views::View {
@@ -21,6 +25,11 @@ class AppInfoDialog : public views::View {
   virtual ~AppInfoDialog();
 
  private:
+  // UI elements of the dialog.
+  views::View* dialog_header_;
+  views::ScrollView* dialog_body_;
+  views::View* dialog_footer_;
+
   DISALLOW_COPY_AND_ASSIGN(AppInfoDialog);
 };
 

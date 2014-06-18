@@ -1475,6 +1475,8 @@
         'browser/ui/views/app_list/win/app_list_win.h',
         'browser/ui/views/apps/app_info_dialog/app_info_dialog_views.cc',
         'browser/ui/views/apps/app_info_dialog/app_info_dialog_views.h',
+        'browser/ui/views/apps/app_info_dialog/app_info_footer_panel.cc',
+        'browser/ui/views/apps/app_info_dialog/app_info_footer_panel.h',
         'browser/ui/views/apps/app_info_dialog/app_info_header_panel.cc',
         'browser/ui/views/apps/app_info_dialog/app_info_header_panel.h',
         'browser/ui/views/apps/app_info_dialog/app_info_panel.cc',

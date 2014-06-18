@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -21,8 +20,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -133,7 +130,6 @@ AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
   // Create UI elements.
   CreateDescriptionControl();
   CreateLaunchOptionControl();
-  CreateShortcutsButton();
 
   // Layout elements.
   SetLayoutManager(
@@ -146,8 +142,6 @@ AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
 
   if (launch_options_combobox_)
     AddChildView(launch_options_combobox_);
-
-  LayoutShortcutsButton();
 }
 
 AppInfoSummaryPanel::~AppInfoSummaryPanel() {
@@ -185,16 +179,6 @@ void AppInfoSummaryPanel::CreateLaunchOptionControl() {
   }
 }
 
-void AppInfoSummaryPanel::CreateShortcutsButton() {
-  if (CanCreateShortcuts()) {
-    create_shortcuts_button_ = new views::LabelButton(
-        this,
-        l10n_util::GetStringUTF16(
-            IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT));
-    create_shortcuts_button_->SetStyle(views::Button::STYLE_BUTTON);
-  }
-}
-
 void AppInfoSummaryPanel::LayoutDescriptionControl() {
   if (description_label_) {
     DCHECK(description_heading_);
@@ -205,31 +189,10 @@ void AppInfoSummaryPanel::LayoutDescriptionControl() {
   }
 }
 
-void AppInfoSummaryPanel::LayoutShortcutsButton() {
-  if (create_shortcuts_button_) {
-    // Add a sub-view so the shortcuts button is left-aligned.
-    views::View* left_aligned_button = new views::View();
-    left_aligned_button->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-    left_aligned_button->AddChildView(create_shortcuts_button_);
-
-    AddChildView(left_aligned_button);
-  }
-}
-
 void AppInfoSummaryPanel::OnPerformAction(views::Combobox* combobox) {
   if (combobox == launch_options_combobox_) {
     SetLaunchType(launch_options_combobox_model_->GetLaunchTypeAtIndex(
         launch_options_combobox_->selected_index()));
-  } else {
-    NOTREACHED();
-  }
-}
-
-void AppInfoSummaryPanel::ButtonPressed(views::Button* sender,
-                                        const ui::Event& event) {
-  if (sender == create_shortcuts_button_) {
-    CreateShortcuts();
   } else {
     NOTREACHED();
   }
@@ -251,21 +214,4 @@ void AppInfoSummaryPanel::SetLaunchType(
 bool AppInfoSummaryPanel::CanSetLaunchType() const {
   // V2 apps don't have a launch type.
   return !app_->is_platform_app();
-}
-
-void AppInfoSummaryPanel::CreateShortcuts() {
-  DCHECK(CanCreateShortcuts());
-  chrome::ShowCreateChromeAppShortcutsDialog(GetWidget()->GetNativeWindow(),
-                                             profile_,
-                                             app_,
-                                             base::Callback<void(bool)>());
-}
-
-bool AppInfoSummaryPanel::CanCreateShortcuts() const {
-// ChromeOS can pin apps to the app launcher, but can't create shortcuts.
-#if defined(OS_CHROMEOS)
-  return false;
-#else
-  return true;
-#endif
 }

@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_panel.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 
 class LaunchOptionsComboboxModel;
@@ -18,21 +17,15 @@ namespace extensions {
 class Extension;
 }
 
-namespace ui {
-class Event;
-}
-
 namespace views {
 class Combobox;
 class Label;
-class LabelButton;
 }
 
 // The summary panel of the app info dialog, which provides basic information
 // and controls related to the app.
 class AppInfoSummaryPanel : public AppInfoPanel,
-                            public views::ComboboxListener,
-                            public views::ButtonListener {
+                            public views::ComboboxListener {
  public:
   AppInfoSummaryPanel(Profile* profile, const extensions::Extension* app);
 
@@ -42,17 +35,10 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   // Internal initialisation methods.
   void CreateDescriptionControl();
   void CreateLaunchOptionControl();
-  void CreateShortcutsButton();
-
   void LayoutDescriptionControl();
-  void LayoutShortcutsButton();
 
   // Overridden from views::ComboboxListener:
   virtual void OnPerformAction(views::Combobox* combobox) OVERRIDE;
-
-  // Overridden from views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
 
   // Returns the launch type of the app (e.g. pinned tab, fullscreen, etc).
   extensions::LaunchType GetLaunchType() const;
@@ -62,16 +48,9 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   void SetLaunchType(extensions::LaunchType) const;
   bool CanSetLaunchType() const;
 
-  // Create Shortcuts for the app. Must only be called if CanCreateShortcuts()
-  // returns true.
-  void CreateShortcuts();
-  bool CanCreateShortcuts() const;
-
   // UI elements on the dialog.
   views::Label* description_heading_;
   views::Label* description_label_;
-
-  views::LabelButton* create_shortcuts_button_;
 
   scoped_ptr<LaunchOptionsComboboxModel> launch_options_combobox_model_;
   views::Combobox* launch_options_combobox_;

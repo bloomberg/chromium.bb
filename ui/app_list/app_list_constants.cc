@@ -12,6 +12,9 @@ const SkColor kSearchBoxBackground = SK_ColorWHITE;
 const SkColor kTopSeparatorColor = SkColorSetRGB(0xE5, 0xE5, 0xE5);
 const SkColor kBottomSeparatorColor = SkColorSetRGB(0xE5, 0xE5, 0xE5);
 
+// The color of the separator used inside dialogs in the app list.
+const SkColor kDialogSeparatorColor = SkColorSetRGB(0xD1, 0xD1, 0xD1);
+
 // 6% black over kContentsBackgroundColor
 const SkColor kHighlightedColor = SkColorSetRGB(0xE6, 0xE6, 0xE6);
 // 10% black over kContentsBackgroundColor

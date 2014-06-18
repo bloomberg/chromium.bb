@@ -4,12 +4,9 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_header_panel.h"
 
-#include <vector>
-
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,7 +14,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/management_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -41,7 +37,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/widget/widget.h"
+#include "ui/views/view.h"
 #include "url/gurl.h"
 
 // Size of extension icon in top left of dialog.
@@ -54,7 +50,6 @@ AppInfoHeaderPanel::AppInfoHeaderPanel(Profile* profile,
       app_name_label_(NULL),
       app_version_label_(NULL),
       view_in_store_link_(NULL),
-      remove_link_(NULL),
       licenses_link_(NULL),
       weak_ptr_factory_(this) {
   CreateControls();
@@ -94,13 +89,6 @@ void AppInfoHeaderPanel::CreateControls() {
         l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_WEB_STORE_LINK));
     view_in_store_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     view_in_store_link_->set_listener(this);
-  }
-
-  if (CanUninstallApp()) {
-    remove_link_ = new views::Link(
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT));
-    remove_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    remove_link_->set_listener(this);
   }
 
   if (CanDisplayLicenses()) {
@@ -168,8 +156,6 @@ void AppInfoHeaderPanel::LayoutControls() {
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 3));
     if (view_in_store_link_)
       horizontal_links_container->AddChildView(view_in_store_link_);
-    if (remove_link_)
-      horizontal_links_container->AddChildView(remove_link_);
     if (licenses_link_)
       horizontal_links_container->AddChildView(licenses_link_);
     // First line: title and (possibly) version. Second line: links (if any).
@@ -186,8 +172,6 @@ void AppInfoHeaderPanel::LayoutControls() {
 void AppInfoHeaderPanel::LinkClicked(views::Link* source, int event_flags) {
   if (source == view_in_store_link_) {
     ShowAppInWebStore();
-  } else if (source == remove_link_) {
-    UninstallApp();
   } else if (source == licenses_link_) {
     DisplayLicenses();
   } else {
@@ -195,16 +179,6 @@ void AppInfoHeaderPanel::LinkClicked(views::Link* source, int event_flags) {
   }
 }
 
-void AppInfoHeaderPanel::ExtensionUninstallAccepted() {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  service->UninstallExtension(app_->id(), false, NULL);
-  // Close the App Info dialog as well (which will free the dialog too).
-  GetWidget()->Close();
-}
-void AppInfoHeaderPanel::ExtensionUninstallCanceled() {
-  extension_uninstall_dialog_.reset();
-}
 void AppInfoHeaderPanel::LoadAppImageAsync() {
   extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
       app_,
@@ -247,19 +221,6 @@ void AppInfoHeaderPanel::ShowAppInWebStore() const {
 
 bool AppInfoHeaderPanel::CanShowAppInWebStore() const {
   return app_->from_webstore();
-}
-
-void AppInfoHeaderPanel::UninstallApp() {
-  DCHECK(CanUninstallApp());
-  extension_uninstall_dialog_.reset(
-      extensions::ExtensionUninstallDialog::Create(profile_, NULL, this));
-  extension_uninstall_dialog_->ConfirmUninstall(app_);
-}
-
-bool AppInfoHeaderPanel::CanUninstallApp() const {
-  return extensions::ExtensionSystem::Get(profile_)
-      ->management_policy()
-      ->UserMayModifySettings(app_, NULL);
 }
 
 void AppInfoHeaderPanel::DisplayLicenses() {
