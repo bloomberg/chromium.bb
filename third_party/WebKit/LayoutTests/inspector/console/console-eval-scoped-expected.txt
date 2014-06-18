@@ -41,7 +41,7 @@ Running: testConsoleEvalObject
     name : "setter"
     set : {
         className : "Object"
-        description : "function setter() { }"
+        description : "function setter(_) { }"
         objectId : <string>
         type : "function"
     }

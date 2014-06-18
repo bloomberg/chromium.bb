@@ -91,7 +91,7 @@ function test()
     function callbackStartNotOwn()
     {
         // Create an wrapper object with additional property.
-        var expression = "({ a: 2, set b() {}, get b() {return 5;}, __proto__: { a: 3, c: 4, get d() {return 6;} }})";
+        var expression = "({ a: 2, set b(_) {}, get b() {return 5;}, __proto__: { a: 3, c: 4, get d() {return 6;} }})";
         
         return { command: "Runtime.evaluate", params: {expression: expression}, callback: callbackEvalNotOwn };
     }
@@ -116,7 +116,7 @@ function test()
     function callbackStartAccessorsOnly()
     {
         // Create an wrapper object with additional property.
-        var expression = "({ a: 2, set b() {}, get b() {return 5;}, c: 'c', set d(){} })";
+        var expression = "({ a: 2, set b(_) {}, get b() {return 5;}, c: 'c', set d(_){} })";
         
         return { command: "Runtime.evaluate", params: {expression: expression}, callback: callbackEvalAccessorsOnly };
     }

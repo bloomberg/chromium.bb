@@ -9,7 +9,7 @@ var arrayLikeWithAccessors = {
     length: 10,
     get 0() { foo.bar = 1; },
     get 1() { throw new Error("arrayLikeWithAccessors"); },
-    set 3() {},
+    set 3(_) {},
     4: {foo: 1, bar: 2},
     get 5() { return {afoo: 3, abar: 4}; },
     6: [1, 2],
@@ -21,7 +21,7 @@ var arrayLikeWithAccessors = {
 var objectWithAccessors = {
     get 0() { baz.baz = 3; },
     get 1() { throw new Error("objectWithAccessors"); },
-    set 3() {},
+    set 3(_) {},
     4: {foo: 1, bar: 2},
     get 5() { return {afoo: 3, abar: 4}; },
     6: [1, 2],
