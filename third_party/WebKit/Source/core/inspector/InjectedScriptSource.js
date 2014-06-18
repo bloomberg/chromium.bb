@@ -788,7 +788,7 @@ InjectedScript.prototype = {
      */
     restartFrame: function(topCallFrame, callFrameId)
     {
-        var callFrame = this.callFrameForId(topCallFrame, callFrameId);
+        var callFrame = this._callFrameForId(topCallFrame, callFrameId);
         if (!callFrame)
             return "Could not find call frame with given id";
         var result = callFrame.restart();
@@ -804,7 +804,7 @@ InjectedScript.prototype = {
      */
     getStepInPositions: function(topCallFrame, callFrameId)
     {
-        var callFrame = this.callFrameForId(topCallFrame, callFrameId);
+        var callFrame = this._callFrameForId(topCallFrame, callFrameId);
         if (!callFrame)
             return "Could not find call frame with given id";
         var stepInPositionsUnpacked = JSON.parse(callFrame.stepInPositions);
@@ -827,7 +827,7 @@ InjectedScript.prototype = {
     {
         var setter;
         if (typeof callFrameId === "string") {
-            var callFrame = this.callFrameForId(topCallFrame, callFrameId);
+            var callFrame = this._callFrameForId(topCallFrame, callFrameId);
             if (!callFrame)
                 return "Could not find call frame with given id";
             setter = bind(callFrame.setVariableValue, callFrame);
@@ -863,7 +863,7 @@ InjectedScript.prototype = {
      * @param {string} callFrameId
      * @return {?Object}
      */
-    callFrameForId: function(topCallFrame, callFrameId)
+    _callFrameForId: function(topCallFrame, callFrameId)
     {
         var parsedCallFrameId = nullifyObjectProto(InjectedScriptHost.evaluate("(" + callFrameId + ")"));
         return this._callFrameForParsedId(topCallFrame, parsedCallFrameId, []);

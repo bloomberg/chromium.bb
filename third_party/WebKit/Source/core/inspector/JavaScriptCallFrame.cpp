@@ -163,11 +163,6 @@ v8::Handle<v8::Value> JavaScriptCallFrame::restart()
     return result;
 }
 
-v8::Handle<v8::Object> JavaScriptCallFrame::innerCallFrame()
-{
-    return m_callFrame.newLocal(m_isolate);
-}
-
 ScriptValue JavaScriptCallFrame::setVariableValue(ScriptState* scriptState, int scopeNumber, const String& variableName, const ScriptValue& newValue)
 {
     ScriptState::Scope scriptScope(scriptState);

@@ -119,9 +119,9 @@ public:
     virtual void getFunctionDetails(ErrorString*, const String& functionId, RefPtr<TypeBuilder::Debugger::FunctionDetails>&) OVERRIDE FINAL;
     virtual void pause(ErrorString*) OVERRIDE FINAL;
     virtual void resume(ErrorString*) OVERRIDE FINAL;
-    virtual void stepOver(ErrorString*, const String* callFrameId) OVERRIDE FINAL;
+    virtual void stepOver(ErrorString*) OVERRIDE FINAL;
     virtual void stepInto(ErrorString*) OVERRIDE FINAL;
-    virtual void stepOut(ErrorString*, const String* callFrameId) OVERRIDE FINAL;
+    virtual void stepOut(ErrorString*) OVERRIDE FINAL;
     virtual void setPauseOnExceptions(ErrorString*, const String& pauseState) OVERRIDE FINAL;
     virtual void evaluateOnCallFrame(ErrorString*,
         const String& callFrameId,
@@ -220,8 +220,6 @@ private:
     String sourceMapURLForScript(const Script&);
 
     String scriptURL(JavaScriptCallFrame*);
-
-    ScriptValue resolveCallFrame(ErrorString*, const String* callFrameId);
 
     typedef HashMap<String, Script> ScriptsMap;
     typedef HashMap<String, Vector<String> > BreakpointIdToDebugServerBreakpointIdsMap;

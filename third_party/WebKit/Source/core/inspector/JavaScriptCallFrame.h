@@ -69,7 +69,6 @@ public:
     v8::Handle<v8::Value> evaluate(const String& expression);
     v8::Handle<v8::Value> restart();
     ScriptValue setVariableValue(ScriptState*, int scopeNumber, const String& variableName, const ScriptValue& newValue);
-    v8::Handle<v8::Object> innerCallFrame();
 
 private:
     JavaScriptCallFrame(v8::Handle<v8::Context> debuggerContext, v8::Handle<v8::Object> callFrame);

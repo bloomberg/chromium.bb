@@ -217,32 +217,24 @@ void ScriptDebugServer::stepIntoStatement()
     continueProgram();
 }
 
-void ScriptDebugServer::stepCommandWithFrame(const char* functionName, const ScriptValue& frame)
+void ScriptDebugServer::stepOverStatement()
 {
     ASSERT(isPaused());
     ASSERT(!m_executionState.IsEmpty());
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Value> callFrame;
-    if (frame.isEmpty()) {
-        callFrame = v8::Undefined(m_isolate);
-    } else {
-        JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(v8::Handle<v8::Object>::Cast(frame.v8Value()));
-        callFrame = impl->innerCallFrame();
-    }
-
-    v8::Handle<v8::Value> argv[] = { m_executionState, callFrame };
-    callDebuggerMethod(functionName, 2, argv);
+    v8::Handle<v8::Value> argv[] = { m_executionState };
+    callDebuggerMethod("stepOverStatement", 1, argv);
     continueProgram();
 }
 
-void ScriptDebugServer::stepOverStatement(const ScriptValue& frame)
+void ScriptDebugServer::stepOutOfFunction()
 {
-    stepCommandWithFrame("stepOverStatement", frame);
-}
-
-void ScriptDebugServer::stepOutOfFunction(const ScriptValue& frame)
-{
-    stepCommandWithFrame(stepOutV8MethodName, frame);
+    ASSERT(isPaused());
+    ASSERT(!m_executionState.IsEmpty());
+    v8::HandleScope handleScope(m_isolate);
+    v8::Handle<v8::Value> argv[] = { m_executionState };
+    callDebuggerMethod(stepOutV8MethodName, 1, argv);
+    continueProgram();
 }
 
 bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, ScriptValue* newCallFrames, RefPtr<JSONObject>* result)

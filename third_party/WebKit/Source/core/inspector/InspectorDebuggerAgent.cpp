@@ -787,32 +787,13 @@ void InspectorDebuggerAgent::resume(ErrorString* errorString)
     scriptDebugServer().continueProgram();
 }
 
-ScriptValue InspectorDebuggerAgent::resolveCallFrame(ErrorString* errorString, const String* callFrameId)
-{
-    if (!callFrameId)
-        return ScriptValue();
-    if (!isPaused() || m_currentCallStack.isEmpty()) {
-        *errorString = "Attempt to access callframe when debugger is not on pause";
-        return ScriptValue();
-    }
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(*callFrameId);
-    if (injectedScript.isEmpty()) {
-        *errorString = "Inspected frame has gone";
-        return ScriptValue();
-    }
-    return injectedScript.findCallFrameById(errorString, m_currentCallStack, *callFrameId);
-}
-
-void InspectorDebuggerAgent::stepOver(ErrorString* errorString, const String* callFrameId)
+void InspectorDebuggerAgent::stepOver(ErrorString* errorString)
 {
     if (!assertPaused(errorString))
         return;
-    ScriptValue frame = resolveCallFrame(errorString, callFrameId);
-    if (!errorString->isEmpty())
-        return;
     m_debuggerStepScheduled = true;
     m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
-    scriptDebugServer().stepOverStatement(frame);
+    scriptDebugServer().stepOverStatement();
 }
 
 void InspectorDebuggerAgent::stepInto(ErrorString* errorString)
@@ -826,16 +807,13 @@ void InspectorDebuggerAgent::stepInto(ErrorString* errorString)
         m_listener->stepInto();
 }
 
-void InspectorDebuggerAgent::stepOut(ErrorString* errorString, const String* callFrameId)
+void InspectorDebuggerAgent::stepOut(ErrorString* errorString)
 {
     if (!assertPaused(errorString))
         return;
-    ScriptValue frame = resolveCallFrame(errorString, callFrameId);
-    if (!errorString->isEmpty())
-        return;
     m_debuggerStepScheduled = true;
     m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
-    scriptDebugServer().stepOutOfFunction(frame);
+    scriptDebugServer().stepOutOfFunction();
 }
 
 void InspectorDebuggerAgent::setPauseOnExceptions(ErrorString* errorString, const String& stringPauseState)
