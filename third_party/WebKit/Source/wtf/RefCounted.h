@@ -79,15 +79,6 @@ public:
         return m_refCount;
     }
 
-    void relaxAdoptionRequirement()
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
-#if CHECK_REF_COUNTED_LIFECYCLE
-        ASSERT(m_adoptionIsRequired);
-        m_adoptionIsRequired = false;
-#endif
-    }
-
 protected:
     RefCountedBase()
         : m_refCount(1)
