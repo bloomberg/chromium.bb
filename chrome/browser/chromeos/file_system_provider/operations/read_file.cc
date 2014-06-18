@@ -84,7 +84,9 @@ void ReadFile::OnSuccess(int /* request_id */,
   callback_.Run(copy_result, has_more, base::File::FILE_OK);
 }
 
-void ReadFile::OnError(int /* request_id */, base::File::Error error) {
+void ReadFile::OnError(int /* request_id */,
+                       scoped_ptr<RequestValue> /* result */,
+                       base::File::Error error) {
   callback_.Run(0 /* chunk_length */, false /* has_more */, error);
 }
 

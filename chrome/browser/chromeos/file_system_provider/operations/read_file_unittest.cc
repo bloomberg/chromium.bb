@@ -231,9 +231,6 @@ TEST_F(FileSystemProviderOperationsReadFileTest, OnSuccess) {
 }
 
 TEST_F(FileSystemProviderOperationsReadFileTest, OnError) {
-  using extensions::api::file_system_provider_internal::ReadFileRequestedError::
-      Params;
-
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
@@ -251,7 +248,9 @@ TEST_F(FileSystemProviderOperationsReadFileTest, OnError) {
 
   EXPECT_TRUE(read_file.Execute(kRequestId));
 
-  read_file.OnError(kRequestId, base::File::FILE_ERROR_TOO_MANY_OPENED);
+  read_file.OnError(kRequestId,
+                    scoped_ptr<RequestValue>(new RequestValue()),
+                    base::File::FILE_ERROR_TOO_MANY_OPENED);
 
   ASSERT_EQ(1u, callback_logger.events().size());
   CallbackLogger::Event* event = callback_logger.events()[0];

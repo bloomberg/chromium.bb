@@ -59,7 +59,9 @@ class RequestManager {
     // Error callback invoked by the providing extension in response to
     // Execute(). It can be called at most once. It can be also called if the
     // request is aborted due to a timeout.
-    virtual void OnError(int request_id, base::File::Error error) = 0;
+    virtual void OnError(int request_id,
+                         scoped_ptr<RequestValue> result,
+                         base::File::Error error) = 0;
   };
 
   // Observes activities in the request manager.
@@ -103,7 +105,9 @@ class RequestManager {
 
   // Handles error response for the |request_id|. If handling the error fails,
   // returns false. Always disposes the request.
-  bool RejectRequest(int request_id, base::File::Error error);
+  bool RejectRequest(int request_id,
+                     scoped_ptr<RequestValue> response,
+                     base::File::Error error);
 
   // Sets a custom timeout for tests. The new timeout value will be applied to
   // new requests

@@ -83,8 +83,9 @@ FileSystemProviderInternalFunction::FileSystemProviderInternalFunction()
 }
 
 void FileSystemProviderInternalFunction::RejectRequest(
+    scoped_ptr<chromeos::file_system_provider::RequestValue> value,
     base::File::Error error) {
-  if (!request_manager_->RejectRequest(request_id_, error))
+  if (!request_manager_->RejectRequest(request_id_, value.Pass(), error))
     SetErrorResponse(kSecurityErrorName, kResponseFailedErrorMessage);
 }
 

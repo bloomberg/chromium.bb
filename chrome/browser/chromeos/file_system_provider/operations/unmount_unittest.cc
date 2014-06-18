@@ -162,9 +162,6 @@ TEST_F(FileSystemProviderOperationsUnmountTest, OnSuccess) {
 }
 
 TEST_F(FileSystemProviderOperationsUnmountTest, OnError) {
-  using extensions::api::file_system_provider_internal::UnmountRequestedError::
-      Params;
-
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
@@ -178,7 +175,9 @@ TEST_F(FileSystemProviderOperationsUnmountTest, OnError) {
 
   EXPECT_TRUE(unmount.Execute(kRequestId));
 
-  unmount.OnError(kRequestId, base::File::FILE_ERROR_NOT_FOUND);
+  unmount.OnError(kRequestId,
+                  scoped_ptr<RequestValue>(new RequestValue()),
+                  base::File::FILE_ERROR_NOT_FOUND);
   ASSERT_EQ(1u, callback_logger.events().size());
   base::File::Error event_result = callback_logger.events()[0];
   EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, event_result);

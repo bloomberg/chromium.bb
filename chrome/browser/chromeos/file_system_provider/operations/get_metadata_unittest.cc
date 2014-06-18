@@ -164,7 +164,6 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute_NoListener) {
 }
 
 TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
-  using extensions::api::file_system_provider::EntryMetadata;
   using extensions::api::file_system_provider_internal::
       GetMetadataRequestedSuccess::Params;
 
@@ -230,10 +229,6 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
 }
 
 TEST_F(FileSystemProviderOperationsGetMetadataTest, OnError) {
-  using extensions::api::file_system_provider::EntryMetadata;
-  using extensions::api::file_system_provider_internal::
-      GetMetadataRequestedError::Params;
-
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
@@ -248,7 +243,9 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnError) {
 
   EXPECT_TRUE(get_metadata.Execute(kRequestId));
 
-  get_metadata.OnError(kRequestId, base::File::FILE_ERROR_TOO_MANY_OPENED);
+  get_metadata.OnError(kRequestId,
+                       scoped_ptr<RequestValue>(new RequestValue()),
+                       base::File::FILE_ERROR_TOO_MANY_OPENED);
 
   ASSERT_EQ(1u, callback_logger.events().size());
   CallbackLogger::Event* event = callback_logger.events()[0];
