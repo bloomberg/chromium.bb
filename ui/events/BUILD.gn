@@ -268,7 +268,7 @@ source_set("events_test_support") {
 
 test("events_unittests") {
   sources = [
-    "cocoa/cocoa_event_utils_unittest.mm",
+    "cocoa/events_mac_unittest.mm",
     "event_dispatcher_unittest.cc",
     "event_processor_unittest.cc",
     "event_rewriter_unittest.cc",

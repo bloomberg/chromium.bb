@@ -67,5 +67,8 @@ source_set("config") {
   } else {
     sources -= [ "gpu_info_collector_x11.cc" ]
   }
+  if (!use_ozone) {
+    sources -= [ "gpu_info_collector_ozone.cc" ]
+  }
 }
 

@@ -103,7 +103,6 @@ yasm_assemble("simd_asm") {
     ]
     include_dirs = [ "linux" ]
   }
-
 }
 
 }

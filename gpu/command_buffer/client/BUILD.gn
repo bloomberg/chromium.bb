@@ -157,7 +157,6 @@ component("gles2_c_lib") {
 
   deps = [
     ":client",
-    ":gles2_implementation",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//gpu/command_buffer/common",

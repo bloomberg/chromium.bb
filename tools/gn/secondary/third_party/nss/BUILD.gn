@@ -1110,6 +1110,8 @@ if (is_linux) {
           "MP_ASSEMBLY_DIV_2DX1D",
           "MP_USE_UINT_DIGIT",
           "MP_NO_MP_WORD",
+          "USE_HW_AES",
+          "INTEL_GCM",
         ]
       } else if (cpu_arch == "x64") {
         sources -= [ "nss/lib/freebl/mpi/mpi_x86_asm.c" ]

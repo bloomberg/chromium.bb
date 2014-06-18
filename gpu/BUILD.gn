@@ -63,8 +63,6 @@ source_set("gpu_unittest_utils") {
   ]
 }
 
-# TODO(GYP) This doesn't link yet.
-if (false) {
 test("gl_tests") {
   sources = [
     "command_buffer/tests/compressed_texture_test.cc",
@@ -94,7 +92,6 @@ test("gl_tests") {
   ]
 
   defines = [
-    "GLES2_C_LIB_IMPLEMENTATION",
     "GL_GLEXT_PROTOTYPES",
   ]
 
@@ -105,8 +102,7 @@ test("gl_tests") {
     "//base/third_party/dynamic_annotations",
     "//testing/gmock",
     "//testing/gtest",
-    # TODO(GYP)
-    #"<(angle_path)/src/build_angle.gyp:translator",
+    "//third_party/angle:translator",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
@@ -131,8 +127,110 @@ test("gl_tests") {
   #       ],
   #     }],
 }
-}  # if (false)
 
-# TODO(GYP)
-#  gl_tests_apk
-#  gpu_unittests_apk
+test("gpu_unittests") {
+  sources = [
+    "command_buffer/client/buffer_tracker_unittest.cc",
+    "command_buffer/client/client_test_helper.cc",
+    "command_buffer/client/client_test_helper.h",
+    "command_buffer/client/cmd_buffer_helper_test.cc",
+    "command_buffer/client/fenced_allocator_test.cc",
+    "command_buffer/client/gles2_implementation_unittest.cc",
+    "command_buffer/client/mapped_memory_unittest.cc",
+    "command_buffer/client/query_tracker_unittest.cc",
+    "command_buffer/client/program_info_manager_unittest.cc",
+    "command_buffer/client/ring_buffer_test.cc",
+    "command_buffer/client/transfer_buffer_unittest.cc",
+    "command_buffer/client/vertex_array_object_manager_unittest.cc",
+    "command_buffer/common/bitfield_helpers_test.cc",
+    "command_buffer/common/command_buffer_mock.cc",
+    "command_buffer/common/command_buffer_mock.h",
+    "command_buffer/common/command_buffer_shared_test.cc",
+    "command_buffer/common/debug_marker_manager_unittest.cc",
+    "command_buffer/common/gles2_cmd_format_test.cc",
+    "command_buffer/common/gles2_cmd_format_test_autogen.h",
+    "command_buffer/common/gles2_cmd_utils_unittest.cc",
+    "command_buffer/common/id_allocator_test.cc",
+    "command_buffer/common/trace_event.h",
+    "command_buffer/common/unittest_main.cc",
+    "command_buffer/service/async_pixel_transfer_delegate_mock.h",
+    "command_buffer/service/async_pixel_transfer_delegate_mock.cc",
+    "command_buffer/service/async_pixel_transfer_manager_mock.h",
+    "command_buffer/service/async_pixel_transfer_manager_mock.cc",
+    "command_buffer/service/buffer_manager_unittest.cc",
+    "command_buffer/service/cmd_parser_test.cc",
+    "command_buffer/service/command_buffer_service_unittest.cc",
+    "command_buffer/service/common_decoder_unittest.cc",
+    "command_buffer/service/context_group_unittest.cc",
+    "command_buffer/service/feature_info_unittest.cc",
+    "command_buffer/service/framebuffer_manager_unittest.cc",
+    "command_buffer/service/gles2_cmd_decoder_unittest.cc",
+    "command_buffer/service/gles2_cmd_decoder_unittest.h",
+    "command_buffer/service/gles2_cmd_decoder_unittest_0_autogen.h",
+    "command_buffer/service/gles2_cmd_decoder_unittest_1.cc",
+    "command_buffer/service/gles2_cmd_decoder_unittest_1_autogen.h",
+    "command_buffer/service/gles2_cmd_decoder_unittest_2.cc",
+    "command_buffer/service/gles2_cmd_decoder_unittest_2_autogen.h",
+    "command_buffer/service/gles2_cmd_decoder_unittest_3.cc",
+    "command_buffer/service/gles2_cmd_decoder_unittest_3_autogen.h",
+    "command_buffer/service/gles2_cmd_decoder_unittest_async_pixel.cc",
+    "command_buffer/service/gles2_cmd_decoder_unittest_base.cc",
+    "command_buffer/service/gles2_cmd_decoder_unittest_base.h",
+    "command_buffer/service/gles2_cmd_decoder_unittest_context_state.cc",
+    "command_buffer/service/gles2_cmd_decoder_unittest_drawing.cc",
+    "command_buffer/service/gles2_cmd_decoder_unittest_framebuffers.cc",
+    "command_buffer/service/gles2_cmd_decoder_unittest_programs.cc",
+    "command_buffer/service/gles2_cmd_decoder_unittest_textures.cc",
+    "command_buffer/service/gles2_cmd_decoder_unittest_attribs.cc",
+    "command_buffer/service/gl_surface_mock.cc",
+    "command_buffer/service/gl_surface_mock.h",
+    "command_buffer/service/gpu_scheduler_unittest.cc",
+    "command_buffer/service/id_manager_unittest.cc",
+    "command_buffer/service/mailbox_manager_unittest.cc",
+    "command_buffer/service/memory_program_cache_unittest.cc",
+    "command_buffer/service/mocks.cc",
+    "command_buffer/service/mocks.h",
+    "command_buffer/service/program_manager_unittest.cc",
+    "command_buffer/service/query_manager_unittest.cc",
+    "command_buffer/service/renderbuffer_manager_unittest.cc",
+    "command_buffer/service/program_cache_unittest.cc",
+    "command_buffer/service/shader_manager_unittest.cc",
+    "command_buffer/service/shader_translator_unittest.cc",
+    "command_buffer/service/test_helper.cc",
+    "command_buffer/service/test_helper.h",
+    "command_buffer/service/texture_manager_unittest.cc",
+    "command_buffer/service/transfer_buffer_manager_unittest.cc",
+    "command_buffer/service/vertex_attrib_manager_unittest.cc",
+    "command_buffer/service/vertex_array_manager_unittest.cc",
+    "command_buffer/service/gpu_tracer_unittest.cc",
+    "config/gpu_blacklist_unittest.cc",
+    "config/gpu_control_list_entry_unittest.cc",
+    "config/gpu_control_list_number_info_unittest.cc",
+    "config/gpu_control_list_os_info_unittest.cc",
+    "config/gpu_control_list_string_info_unittest.cc",
+    "config/gpu_control_list_unittest.cc",
+    "config/gpu_control_list_version_info_unittest.cc",
+    "config/gpu_driver_bug_list_unittest.cc",
+    "config/gpu_info_collector_unittest.cc",
+    "config/gpu_info_unittest.cc",
+    "config/gpu_test_config_unittest.cc",
+    "config/gpu_test_expectations_parser_unittest.cc",
+    "config/gpu_util_unittest.cc",
+  ]
+
+  deps = [
+    ":gpu",
+    ":gpu_unittest_utils",
+    "//base",
+    "//base/test:test_support",
+    "//base/third_party/dynamic_annotations",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/angle:translator",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//gpu/command_buffer/client:gles2_c_lib",
+    "//gpu/command_buffer/client:gles2_implementation_client_side_arrays",
+  ]
+}
