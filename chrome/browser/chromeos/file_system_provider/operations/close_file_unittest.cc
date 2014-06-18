@@ -144,6 +144,9 @@ TEST_F(FileSystemProviderOperationsCloseFileTest, Execute_NoListener) {
 }
 
 TEST_F(FileSystemProviderOperationsCloseFileTest, OnSuccess) {
+  using extensions::api::file_system_provider_internal::
+      CloseFileRequestedSuccess::Params;
+
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
@@ -166,6 +169,9 @@ TEST_F(FileSystemProviderOperationsCloseFileTest, OnSuccess) {
 }
 
 TEST_F(FileSystemProviderOperationsCloseFileTest, OnError) {
+  using extensions::api::file_system_provider_internal::
+      CloseFileRequestedError::Params;
+
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
@@ -180,9 +186,7 @@ TEST_F(FileSystemProviderOperationsCloseFileTest, OnError) {
 
   EXPECT_TRUE(close_file.Execute(kRequestId));
 
-  close_file.OnError(kRequestId,
-                     scoped_ptr<RequestValue>(new RequestValue()),
-                     base::File::FILE_ERROR_TOO_MANY_OPENED);
+  close_file.OnError(kRequestId, base::File::FILE_ERROR_TOO_MANY_OPENED);
   ASSERT_EQ(1u, callback_logger.events().size());
   EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED,
             callback_logger.events()[0]);

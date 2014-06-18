@@ -97,6 +97,15 @@ bool FileSystemProviderInternalUnmountRequestedSuccessFunction::RunWhenValid() {
   return true;
 }
 
+bool FileSystemProviderInternalUnmountRequestedErrorFunction::RunWhenValid() {
+  using api::file_system_provider_internal::UnmountRequestedError::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  RejectRequest(ProviderErrorToFileError(params->error));
+  return true;
+}
+
 bool
 FileSystemProviderInternalGetMetadataRequestedSuccessFunction::RunWhenValid() {
   using api::file_system_provider_internal::GetMetadataRequestedSuccess::Params;
@@ -105,6 +114,16 @@ FileSystemProviderInternalGetMetadataRequestedSuccessFunction::RunWhenValid() {
 
   FulfillRequest(RequestValue::CreateForGetMetadataSuccess(params.Pass()),
                  false /* has_more */);
+  return true;
+}
+
+bool
+FileSystemProviderInternalGetMetadataRequestedErrorFunction::RunWhenValid() {
+  using api::file_system_provider_internal::GetMetadataRequestedError::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  RejectRequest(ProviderErrorToFileError(params->error));
   return true;
 }
 
@@ -122,6 +141,16 @@ bool FileSystemProviderInternalReadDirectoryRequestedSuccessFunction::
 }
 
 bool
+FileSystemProviderInternalReadDirectoryRequestedErrorFunction::RunWhenValid() {
+  using api::file_system_provider_internal::ReadDirectoryRequestedError::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  RejectRequest(ProviderErrorToFileError(params->error));
+  return true;
+}
+
+bool
 FileSystemProviderInternalOpenFileRequestedSuccessFunction::RunWhenValid() {
   using api::file_system_provider_internal::OpenFileRequestedSuccess::Params;
   scoped_ptr<Params> params(Params::Create(*args_));
@@ -129,6 +158,15 @@ FileSystemProviderInternalOpenFileRequestedSuccessFunction::RunWhenValid() {
 
   FulfillRequest(scoped_ptr<RequestValue>(new RequestValue()),
                  false /* has_more */);
+  return true;
+}
+
+bool FileSystemProviderInternalOpenFileRequestedErrorFunction::RunWhenValid() {
+  using api::file_system_provider_internal::OpenFileRequestedError::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  RejectRequest(ProviderErrorToFileError(params->error));
   return true;
 }
 
@@ -140,6 +178,15 @@ FileSystemProviderInternalCloseFileRequestedSuccessFunction::RunWhenValid() {
 
   FulfillRequest(scoped_ptr<RequestValue>(new RequestValue()),
                  false /* has_more */);
+  return true;
+}
+
+bool FileSystemProviderInternalCloseFileRequestedErrorFunction::RunWhenValid() {
+  using api::file_system_provider_internal::CloseFileRequestedError::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  RejectRequest(ProviderErrorToFileError(params->error));
   return true;
 }
 
@@ -155,12 +202,12 @@ FileSystemProviderInternalReadFileRequestedSuccessFunction::RunWhenValid() {
   return true;
 }
 
-bool FileSystemProviderInternalOperationRequestedErrorFunction::RunWhenValid() {
-  using api::file_system_provider_internal::OperationRequestedError::Params;
-  scoped_ptr<Params> params(Params::Create(*args_));
+bool FileSystemProviderInternalReadFileRequestedErrorFunction::RunWhenValid() {
+  using api::file_system_provider_internal::ReadFileRequestedError::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  RejectRequest(RequestValue::CreateForOperationError(params.Pass()),
-                ProviderErrorToFileError(params->error));
+
+  RejectRequest(ProviderErrorToFileError(params->error));
   return true;
 }
 

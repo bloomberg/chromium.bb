@@ -56,19 +56,15 @@ class EventLogger {
 
   class ErrorEvent {
    public:
-    ErrorEvent(int request_id,
-               scoped_ptr<RequestValue> result,
-               base::File::Error error)
-        : request_id_(request_id), result_(result.Pass()), error_(error) {}
+    ErrorEvent(int request_id, base::File::Error error)
+        : request_id_(request_id), error_(error) {}
     virtual ~ErrorEvent() {}
 
     int request_id() { return request_id_; }
-    RequestValue* result() { return result_.get(); }
     base::File::Error error() { return error_; }
 
    private:
     int request_id_;
-    scoped_ptr<RequestValue> result_;
     base::File::Error error_;
   };
 
@@ -86,10 +82,8 @@ class EventLogger {
         new SuccessEvent(request_id, result.Pass(), has_more));
   }
 
-  void OnError(int request_id,
-               scoped_ptr<RequestValue> result,
-               base::File::Error error) {
-    error_events_.push_back(new ErrorEvent(request_id, result.Pass(), error));
+  void OnError(int request_id, base::File::Error error) {
+    error_events_.push_back(new ErrorEvent(request_id, error));
   }
 
   ScopedVector<ExecuteEvent>& execute_events() { return execute_events_; }
@@ -135,11 +129,9 @@ class FakeHandler : public RequestManager::HandlerInterface {
   }
 
   // RequestManager::Handler overrides.
-  virtual void OnError(int request_id,
-                       scoped_ptr<RequestValue> result,
-                       base::File::Error error) OVERRIDE {
+  virtual void OnError(int request_id, base::File::Error error) OVERRIDE {
     if (logger_.get())
-      logger_->OnError(request_id, result.Pass(), error);
+      logger_->OnError(request_id, error);
   }
 
   virtual ~FakeHandler() {}
@@ -343,10 +335,8 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
 
   // Rejecting should also fail.
   {
-    bool retry = request_manager_->RejectRequest(
-        request_id,
-        scoped_ptr<RequestValue>(new RequestValue()),
-        base::File::FILE_ERROR_FAILED);
+    bool retry = request_manager_->RejectRequest(request_id,
+                                                 base::File::FILE_ERROR_FAILED);
     EXPECT_FALSE(retry);
     EXPECT_EQ(0u, observer.rejected().size());
   }
@@ -449,8 +439,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
   EXPECT_EQ(request_id, observer.executed()[0].request_id());
 
   base::File::Error error = base::File::FILE_ERROR_NO_MEMORY;
-  bool result = request_manager_->RejectRequest(
-      request_id, scoped_ptr<RequestValue>(new RequestValue()), error);
+  bool result = request_manager_->RejectRequest(request_id, error);
   EXPECT_TRUE(result);
 
   // Validate if the callback has correct arguments.
@@ -476,8 +465,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
 
   // Rejecting should also fail.
   {
-    bool retry = request_manager_->RejectRequest(
-        request_id, scoped_ptr<RequestValue>(new RequestValue()), error);
+    bool retry = request_manager_->RejectRequest(request_id, error);
     EXPECT_FALSE(retry);
     EXPECT_EQ(1u, observer.rejected().size());
   }
@@ -559,8 +547,7 @@ TEST_F(FileSystemProviderRequestManagerTest,
   EXPECT_EQ(request_id, observer.executed()[0].request_id());
 
   base::File::Error error = base::File::FILE_ERROR_NO_MEMORY;
-  bool result = request_manager_->RejectRequest(
-      request_id + 1, scoped_ptr<RequestValue>(new RequestValue()), error);
+  bool result = request_manager_->RejectRequest(request_id + 1, error);
   EXPECT_FALSE(result);
 
   // Callbacks should not be called.
@@ -571,8 +558,7 @@ TEST_F(FileSystemProviderRequestManagerTest,
 
   // Confirm, that the request hasn't been removed, by rejecting it correctly.
   {
-    bool retry = request_manager_->RejectRequest(
-        request_id, scoped_ptr<RequestValue>(new RequestValue()), error);
+    bool retry = request_manager_->RejectRequest(request_id, error);
     EXPECT_TRUE(retry);
     EXPECT_EQ(1u, observer.rejected().size());
   }

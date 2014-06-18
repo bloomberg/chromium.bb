@@ -64,9 +64,7 @@ void OpenFile::OnSuccess(int request_id,
   callback_.Run(request_id, base::File::FILE_OK);
 }
 
-void OpenFile::OnError(int /* request_id */,
-                       scoped_ptr<RequestValue> /* result */,
-                       base::File::Error error) {
+void OpenFile::OnError(int /* request_id */, base::File::Error error) {
   callback_.Run(0 /* file_handle */, error);
 }
 
