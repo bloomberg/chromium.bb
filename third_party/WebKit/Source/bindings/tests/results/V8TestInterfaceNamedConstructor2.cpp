@@ -60,12 +60,13 @@ static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::Functi
         return;
     }
 
-    Document* document = currentDOMWindow(isolate)->document();
-    ASSERT(document);
+    Document* documentPtr = currentDOMWindow(isolate)->document();
+    ASSERT(documentPtr);
+    Document& document = *documentPtr;
 
     // Make sure the document is added to the DOM Node map. Otherwise, the TestInterfaceNamedConstructor2 instance
     // may end up being the only node in the map and get garbage-collected prematurely.
-    toV8(document, info.Holder(), isolate);
+    toV8(documentPtr, info.Holder(), isolate);
 
     if (UNLIKELY(info.Length() < 1)) {
         throwMinimumArityTypeErrorForConstructor("TestInterfaceNamedConstructor2", 1, info.Length(), info.GetIsolate());
@@ -75,7 +76,7 @@ static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::Functi
     {
         TOSTRING_VOID_INTERNAL(stringArg, info[0]);
     }
-    RefPtr<TestInterfaceNamedConstructor2> impl = TestInterfaceNamedConstructor2::createForJSConstructor(*document, stringArg);
+    RefPtr<TestInterfaceNamedConstructor2> impl = TestInterfaceNamedConstructor2::createForJSConstructor(stringArg);
 
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNamedConstructor2>(impl.release(), &V8TestInterfaceNamedConstructor2Constructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);

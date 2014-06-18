@@ -235,7 +235,7 @@ if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
 ScriptState* scriptState = ScriptState::current(info.GetIsolate());
 {% endif %}
 {% if method.is_call_with_execution_context %}
-ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
+ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
 {% endif %}
 {% if method.is_call_with_script_arguments %}
 RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, {{method.number_of_arguments}}));
@@ -494,12 +494,12 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
     {{generate_arguments(constructor) | indent}}
     {% endif %}
     {% if is_constructor_call_with_execution_context %}
-    ExecutionContext* context = currentExecutionContext(isolate);
+    ExecutionContext* executionContext = currentExecutionContext(isolate);
     {% endif %}
     {% if is_constructor_call_with_document %}
     Document& document = *toDocument(currentExecutionContext(isolate));
     {% endif %}
-    {{constructor.cpp_type}} impl = {{cpp_class}}::create({{constructor.argument_list | join(', ')}});
+    {{constructor.cpp_type}} impl = {{constructor.cpp_value}};
     {% if is_constructor_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -540,12 +540,13 @@ static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::V
         return;
     }
 
-    Document* document = currentDOMWindow(isolate)->document();
-    ASSERT(document);
+    Document* documentPtr = currentDOMWindow(isolate)->document();
+    ASSERT(documentPtr);
+    Document& document = *documentPtr;
 
     // Make sure the document is added to the DOM Node map. Otherwise, the {{cpp_class}} instance
     // may end up being the only node in the map and get garbage-collected prematurely.
-    toV8(document, info.Holder(), isolate);
+    toV8(documentPtr, info.Holder(), isolate);
 
     {% if constructor.has_exception_state %}
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), isolate);
@@ -559,7 +560,7 @@ static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::V
     {% if constructor.arguments %}
     {{generate_arguments(constructor) | indent}}
     {% endif %}
-    {{constructor.cpp_type}} impl = {{cpp_class}}::createForJSConstructor({{constructor.argument_list | join(', ')}});
+    {{constructor.cpp_type}} impl = {{constructor.cpp_value}};
     {% if is_constructor_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;

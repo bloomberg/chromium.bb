@@ -641,8 +641,8 @@ static void partialCallWithExecutionContextLongAttributeAttributeGetter(const v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    v8SetReturnValueInt(info, TestPartialInterface::partialCallWithExecutionContextLongAttribute(scriptContext, *impl));
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    v8SetReturnValueInt(info, TestPartialInterface::partialCallWithExecutionContextLongAttribute(executionContext, *impl));
 }
 #endif // ENABLE(PARTIAL_CONDITION)
 
@@ -662,8 +662,8 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Loca
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialCallWithExecutionContextLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    TestPartialInterface::setPartialCallWithExecutionContextLongAttribute(scriptContext, *impl, cppValue);
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    TestPartialInterface::setPartialCallWithExecutionContextLongAttribute(executionContext, *impl, cppValue);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
 
@@ -938,8 +938,8 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
         }
         TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     }
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    RefPtr<TestInterfaceEmpty> result = impl->implementsComplexMethod(scriptContext, strArg, testInterfaceEmptyArg, exceptionState);
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    RefPtr<TestInterfaceEmpty> result = impl->implementsComplexMethod(executionContext, strArg, testInterfaceEmptyArg, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -1077,8 +1077,8 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(const
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "partialCallWithExecutionContextRaisesExceptionVoidMethod", "TestInterface", info.Holder(), info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    TestPartialInterface::partialCallWithExecutionContextRaisesExceptionVoidMethod(scriptContext, *impl, exceptionState);
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    TestPartialInterface::partialCallWithExecutionContextRaisesExceptionVoidMethod(executionContext, *impl, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;

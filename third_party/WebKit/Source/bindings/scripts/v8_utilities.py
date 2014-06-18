@@ -175,10 +175,11 @@ def activity_logging_world_check(member):
 # [CallWith]
 CALL_WITH_ARGUMENTS = {
     'ScriptState': 'scriptState',
-    'ExecutionContext': 'scriptContext',
+    'ExecutionContext': 'executionContext',
     'ScriptArguments': 'scriptArguments.release()',
     'ActiveWindow': 'callingDOMWindow(info.GetIsolate())',
     'FirstWindow': 'enteredDOMWindow(info.GetIsolate())',
+    'Document': 'document',
 }
 # List because key order matters, as we want arguments in deterministic order
 CALL_WITH_VALUES = [
@@ -187,12 +188,11 @@ CALL_WITH_VALUES = [
     'ScriptArguments',
     'ActiveWindow',
     'FirstWindow',
+    'Document',
 ]
 
 
-def call_with_arguments(member, call_with_values=None):
-    # Optional parameter so setter can override with [SetterCallWith]
-    call_with_values = call_with_values or member.extended_attributes.get('CallWith')
+def call_with_arguments(call_with_values):
     if not call_with_values:
         return []
     return [CALL_WITH_ARGUMENTS[value]

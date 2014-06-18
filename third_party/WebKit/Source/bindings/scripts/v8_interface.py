@@ -837,13 +837,14 @@ def generate_constructor(interface, constructor):
                                    for argument in constructor.arguments)
 
     return {
-        'argument_list': constructor_argument_list(interface, constructor),
         'arguments': [v8_methods.generate_argument(interface, constructor, argument, index)
                       for index, argument in enumerate(constructor.arguments)],
         'arguments_need_try_catch': arguments_need_try_catch,
         'cpp_type': cpp_template_type(
             cpp_ptr_type('RefPtr', 'RawPtr', gc_type(interface)),
             cpp_name(interface)),
+        'cpp_value': v8_methods.cpp_value(
+            interface, constructor, len(constructor.arguments)),
         'has_exception_state':
             # [RaisesException=Constructor]
             interface.extended_attributes.get('RaisesException') == 'Constructor' or
@@ -857,24 +858,6 @@ def generate_constructor(interface, constructor):
     }
 
 
-def constructor_argument_list(interface, constructor):
-    arguments = []
-    # [ConstructorCallWith=ExecutionContext]
-    if has_extended_attribute_value(interface, 'ConstructorCallWith', 'ExecutionContext'):
-        arguments.append('context')
-    # [ConstructorCallWith=Document]
-    if has_extended_attribute_value(interface, 'ConstructorCallWith', 'Document'):
-        arguments.append('document')
-
-    arguments.extend([argument.name for argument in constructor.arguments])
-
-    # [RaisesException=Constructor]
-    if interface.extended_attributes.get('RaisesException') == 'Constructor':
-        arguments.append('exceptionState')
-
-    return arguments
-
-
 # [NamedConstructor]
 def generate_named_constructor(interface):
     extended_attributes = interface.extended_attributes
@@ -883,9 +866,9 @@ def generate_named_constructor(interface):
     # FIXME: parser should return named constructor separately;
     # included in constructors (and only name stored in extended attribute)
     # for Perl compatibility
-    idl_constructor = interface.constructors[0]
+    idl_constructor = interface.constructors[-1]
+    assert idl_constructor.name == 'NamedConstructor'
     constructor = generate_constructor(interface, idl_constructor)
-    constructor['argument_list'].insert(0, '*document')
     constructor.update({
         'name': extended_attributes['NamedConstructor'],
         'is_named_constructor': True,

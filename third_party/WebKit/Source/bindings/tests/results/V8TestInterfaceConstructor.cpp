@@ -50,9 +50,9 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), isolate);
-    ExecutionContext* context = currentExecutionContext(isolate);
+    ExecutionContext* executionContext = currentExecutionContext(isolate);
     Document& document = *toDocument(currentExecutionContext(isolate));
-    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, exceptionState);
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(executionContext, document, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
 
@@ -95,9 +95,9 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         }
         TONATIVE_VOID_INTERNAL(optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[7]));
     }
-    ExecutionContext* context = currentExecutionContext(isolate);
+    ExecutionContext* executionContext = currentExecutionContext(isolate);
     Document& document = *toDocument(currentExecutionContext(isolate));
-    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(executionContext, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
 

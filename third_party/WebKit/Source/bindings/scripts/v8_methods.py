@@ -237,7 +237,12 @@ def cpp_value(interface, method, number_of_arguments):
 
     # Truncate omitted optional arguments
     arguments = method.arguments[:number_of_arguments]
-    cpp_arguments = v8_utilities.call_with_arguments(method)
+    cpp_arguments = []
+    if method.is_constructor:
+        call_with_values = interface.extended_attributes.get('ConstructorCallWith')
+    else:
+        call_with_values = method.extended_attributes.get('CallWith')
+    cpp_arguments.extend(v8_utilities.call_with_arguments(call_with_values))
     # Members of IDL partial interface definitions are implemented in C++ as
     # static member functions, which for instance members (non-static members)
     # take *impl as their first argument
@@ -249,7 +254,9 @@ def cpp_value(interface, method, number_of_arguments):
     if this_union_arguments:
         cpp_arguments.extend(this_union_arguments)
 
-    if 'RaisesException' in method.extended_attributes:
+    if ('RaisesException' in method.extended_attributes or
+        (method.is_constructor and
+         has_extended_attribute_value(interface, 'RaisesException', 'Constructor'))):
         cpp_arguments.append('exceptionState')
 
     if method.name == 'Constructor':

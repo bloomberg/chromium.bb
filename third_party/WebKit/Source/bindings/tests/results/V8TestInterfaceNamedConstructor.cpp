@@ -85,12 +85,13 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
         return;
     }
 
-    Document* document = currentDOMWindow(isolate)->document();
-    ASSERT(document);
+    Document* documentPtr = currentDOMWindow(isolate)->document();
+    ASSERT(documentPtr);
+    Document& document = *documentPtr;
 
     // Make sure the document is added to the DOM Node map. Otherwise, the TestInterfaceNamedConstructor instance
     // may end up being the only node in the map and get garbage-collected prematurely.
-    toV8(document, info.Holder(), isolate);
+    toV8(documentPtr, info.Holder(), isolate);
 
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceNamedConstructor", info.Holder(), isolate);
     if (UNLIKELY(info.Length() < 1)) {
@@ -112,7 +113,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
         TOSTRING_VOID_INTERNAL(defaultUndefinedOptionalStringArg, info[3]);
         TOSTRING_VOID_INTERNAL(defaultNullStringOptionalstringArg, argumentOrNull(info, 4));
         if (UNLIKELY(info.Length() <= 5)) {
-            RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg);
+            RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, exceptionState);
             v8::Handle<v8::Object> wrapper = info.Holder();
             V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNamedConstructor>(impl.release(), &V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
             v8SetReturnValue(info, wrapper);
@@ -120,7 +121,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
         }
         TOSTRING_VOID_INTERNAL(optionalStringArg, info[5]);
     }
-    RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(*document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, optionalStringArg, exceptionState);
+    RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, optionalStringArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
 

@@ -1865,8 +1865,8 @@ static void callWithExecutionContextAnyAttributeAttributeGetter(const v8::Proper
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    v8SetReturnValue(info, impl->callWithExecutionContextAnyAttribute(scriptContext).v8Value());
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    v8SetReturnValue(info, impl->callWithExecutionContextAnyAttribute(executionContext).v8Value());
 }
 
 static void callWithExecutionContextAnyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1881,8 +1881,8 @@ static void callWithExecutionContextAnyAttributeAttributeSetter(v8::Local<v8::Va
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    impl->setCallWithExecutionContextAnyAttribute(scriptContext, cppValue);
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    impl->setCallWithExecutionContextAnyAttribute(executionContext, cppValue);
 }
 
 static void callWithExecutionContextAnyAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -1926,9 +1926,9 @@ static void callWithExecutionContextAndScriptStateAnyAttributeAttributeGetter(co
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    v8SetReturnValue(info, impl->callWithExecutionContextAndScriptStateAnyAttribute(scriptState, scriptContext).v8Value());
+    v8SetReturnValue(info, impl->callWithExecutionContextAndScriptStateAnyAttribute(scriptState, executionContext).v8Value());
 }
 
 static void callWithExecutionContextAndScriptStateAnyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1943,8 +1943,8 @@ static void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetter(v8
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    impl->setCallWithExecutionContextAndScriptStateAnyAttribute(scriptState, scriptContext, cppValue);
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    impl->setCallWithExecutionContextAndScriptStateAnyAttribute(scriptState, executionContext, cppValue);
 }
 
 static void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -4027,8 +4027,8 @@ static void setterCallWithExecutionContextStringAttributeAttributeSetter(v8::Loc
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    impl->setSetterCallWithExecutionContextStringAttribute(scriptContext, cppValue);
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    impl->setSetterCallWithExecutionContextStringAttribute(executionContext, cppValue);
 }
 
 static void setterCallWithExecutionContextStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -7951,8 +7951,8 @@ static void activityLoggingAccessForAllWorldsMethodMethodCallback(const v8::Func
 static void callWithExecutionContextVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    impl->callWithExecutionContextVoidMethod(scriptContext);
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    impl->callWithExecutionContextVoidMethod(executionContext);
 }
 
 static void callWithExecutionContextVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7995,8 +7995,8 @@ static void callWithScriptStateExecutionContextVoidMethodMethod(const v8::Functi
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    impl->callWithScriptStateExecutionContextVoidMethod(scriptState, scriptContext);
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    impl->callWithScriptStateExecutionContextVoidMethod(scriptState, executionContext);
 }
 
 static void callWithScriptStateExecutionContextVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8934,8 +8934,8 @@ static void callWithExecutionContextRaisesExceptionVoidMethodLongArgMethod(const
         V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
     }
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    impl->callWithExecutionContextRaisesExceptionVoidMethodLongArg(scriptContext, longArg, exceptionState);
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    impl->callWithExecutionContextRaisesExceptionVoidMethodLongArg(executionContext, longArg, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;

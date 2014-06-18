@@ -139,12 +139,13 @@ static void V8TestInterfaceWillBeGarbageCollectedConstructorCallback(const v8::F
         return;
     }
 
-    Document* document = currentDOMWindow(isolate)->document();
-    ASSERT(document);
+    Document* documentPtr = currentDOMWindow(isolate)->document();
+    ASSERT(documentPtr);
+    Document& document = *documentPtr;
 
     // Make sure the document is added to the DOM Node map. Otherwise, the TestInterfaceWillBeGarbageCollected instance
     // may end up being the only node in the map and get garbage-collected prematurely.
-    toV8(document, info.Holder(), isolate);
+    toV8(documentPtr, info.Holder(), isolate);
 
     if (UNLIKELY(info.Length() < 1)) {
         throwMinimumArityTypeErrorForConstructor("TestInterfaceWillBeGarbageCollected", 1, info.Length(), info.GetIsolate());
@@ -154,7 +155,7 @@ static void V8TestInterfaceWillBeGarbageCollectedConstructorCallback(const v8::F
     {
         TOSTRING_VOID_INTERNAL(str, info[0]);
     }
-    RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> impl = TestInterfaceWillBeGarbageCollected::createForJSConstructor(*document, str);
+    RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> impl = TestInterfaceWillBeGarbageCollected::createForJSConstructor(str);
 
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceWillBeGarbageCollected>(impl.release(), &V8TestInterfaceWillBeGarbageCollectedConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);

@@ -213,7 +213,8 @@ def getter_expression(interface, attribute, contents):
     this_getter_base_name = getter_base_name(interface, attribute, arguments)
     getter_name = scoped_name(interface, attribute, this_getter_base_name)
 
-    arguments.extend(v8_utilities.call_with_arguments(attribute))
+    arguments.extend(v8_utilities.call_with_arguments(
+        attribute.extended_attributes.get('CallWith')))
     # Members of IDL partial interface definitions are implemented in C++ as
     # static member functions, which for instance members (non-static members)
     # take *impl as their first argument
@@ -308,7 +309,9 @@ def generate_setter(interface, attribute, contents):
 
 def setter_expression(interface, attribute, contents):
     extended_attributes = attribute.extended_attributes
-    arguments = v8_utilities.call_with_arguments(attribute, extended_attributes.get('SetterCallWith'))
+    arguments = v8_utilities.call_with_arguments(
+        extended_attributes.get('SetterCallWith') or
+        extended_attributes.get('CallWith'))
 
     this_setter_base_name = setter_base_name(interface, attribute, arguments)
     setter_name = scoped_name(interface, attribute, this_setter_base_name)

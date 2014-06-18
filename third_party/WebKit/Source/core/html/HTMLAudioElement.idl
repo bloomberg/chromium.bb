@@ -25,6 +25,7 @@
 
 [
     RuntimeEnabled=Media,
-    NamedConstructor=Audio(optional DOMString src = null)
+    NamedConstructor=Audio(optional DOMString src = null),
+    ConstructorCallWith=Document
 ] interface HTMLAudioElement : HTMLMediaElement {
 };

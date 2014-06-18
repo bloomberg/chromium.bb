@@ -23,6 +23,7 @@
                             optional DOMString value = null,
                             [Default=Undefined] optional boolean defaultSelected,
                             [Default=Undefined] optional boolean selected),
+    ConstructorCallWith=Document,
     RaisesException=Constructor
 ] interface HTMLOptionElement : HTMLElement {
     [Reflect] attribute boolean disabled;

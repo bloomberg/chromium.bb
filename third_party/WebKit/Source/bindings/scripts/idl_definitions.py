@@ -455,6 +455,7 @@ class IdlOperation(TypedObject):
         self.arguments = []
         self.extended_attributes = {}
         self.specials = []
+        self.is_constructor = False
 
         if not node:
             self.is_static = False
@@ -509,6 +510,7 @@ class IdlOperation(TypedObject):
         constructor = cls()
         constructor.name = name
         constructor.arguments = arguments_node_to_arguments(arguments_node)
+        constructor.is_constructor = True
         return constructor
 
     def resolve_typedefs(self, typedefs):

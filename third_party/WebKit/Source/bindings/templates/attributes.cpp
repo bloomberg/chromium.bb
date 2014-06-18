@@ -42,7 +42,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% endif %}
     {# Local variables #}
     {% if attribute.is_call_with_execution_context %}
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     {% endif %}
     {% if attribute.is_call_with_script_state %}
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
@@ -281,7 +281,7 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {% endif %}
     {% if attribute.is_call_with_execution_context or
           attribute.is_setter_call_with_execution_context %}
-    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     {% endif %}
     {# Set #}
     {{attribute.cpp_setter}};
