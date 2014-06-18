@@ -100,6 +100,9 @@ public:
     {
         return adoptPtr(new InspectorCSSAgent(domAgent, pageAgent, resourceAgent));
     }
+
+    static void collectAllDocumentStyleSheets(Document*, Vector<CSSStyleSheet*>&);
+
     virtual ~InspectorCSSAgent();
 
     bool forcePseudoState(Element*, CSSSelector::PseudoType);
@@ -147,7 +150,9 @@ private:
     class SetPropertyTextAction;
     class SetRuleSelectorAction;
     class AddRuleAction;
-    class EnableResourceClient;
+    class InspectorResourceContentLoaderCallback;
+
+    static void collectStyleSheets(CSSStyleSheet*, Vector<CSSStyleSheet*>&);
 
     InspectorCSSAgent(InspectorDOMAgent*, InspectorPageAgent*, InspectorResourceAgent*);
 
@@ -156,13 +161,10 @@ private:
     typedef HashMap<Node*, RefPtr<InspectorStyleSheetForInlineStyle> > NodeToInspectorStyleSheet; // bogus "stylesheets" with elements' inline styles
     typedef HashMap<int, unsigned> NodeIdToForcedPseudoState;
 
-    void wasEnabled(PassRefPtr<EnableCallback>);
+    void wasEnabled();
     void resetNonPersistentData();
     InspectorStyleSheetForInlineStyle* asInspectorStyleSheet(Element* element);
     Element* elementForId(ErrorString*, int nodeId);
-    void collectAllStyleSheets(Vector<InspectorStyleSheet*>&);
-    void collectAllDocumentStyleSheets(Document*, Vector<CSSStyleSheet*>&);
-    void collectStyleSheets(CSSStyleSheet*, Vector<CSSStyleSheet*>&);
 
     void updateActiveStyleSheets(Document*, StyleSheetsUpdateType);
     void setActiveStyleSheets(Document*, const Vector<CSSStyleSheet*>&, StyleSheetsUpdateType);
@@ -217,7 +219,7 @@ private:
     bool m_creatingViaInspectorStyleSheet;
     bool m_isSettingStyleSheetText;
 
-    friend class EnableResourceClient;
+    friend class InspectorResourceContentLoaderCallback;
     friend class StyleSheetBinder;
 };
 

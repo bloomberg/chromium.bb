@@ -34,6 +34,7 @@
 
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/InspectorResourceContentLoader.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 
@@ -49,6 +50,7 @@ class GraphicsLayer;
 class InjectedScriptManager;
 class InspectorClient;
 class InspectorOverlay;
+class InspectorResourceContentLoader;
 class InstrumentingAgents;
 class IntSize;
 class KURL;
@@ -82,6 +84,7 @@ public:
     void setTextAutosizingEnabled(bool);
     void setDeviceScaleAdjustment(float);
 
+    static Vector<Document*> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
     static bool sharedBufferContent(PassRefPtr<SharedBuffer>, const String& textEncodingName, bool withBase64Encode, String* result);
 
@@ -160,6 +163,7 @@ public:
     const AtomicString& resourceSourceMapURL(const String& url);
     bool deviceMetricsOverrideEnabled();
     static DocumentLoader* assertDocumentLoader(ErrorString*, LocalFrame*);
+    InspectorResourceContentLoader* resourceContentLoader() { return m_inspectorResourceContentLoader.get(); }
 
 private:
     static void resourceContent(ErrorString*, LocalFrame*, const KURL&, String* result, bool* base64Encoded);
@@ -200,6 +204,8 @@ private:
 
     bool m_embedderTextAutosizingEnabled;
     double m_embedderFontScaleFactor;
+
+    OwnPtr<InspectorResourceContentLoader> m_inspectorResourceContentLoader;
 };
 
 
