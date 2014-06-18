@@ -561,6 +561,7 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
       DownloadFeedbackDialogView::Show(
           shelf_->get_parent()->GetNativeWindow(),
           shelf_->browser()->profile(),
+          shelf_->GetNavigator(),
           base::Bind(
               &DownloadItemView::PossiblySubmitDownloadToFeedbackService,
               weak_ptr_factory_.GetWeakPtr()));

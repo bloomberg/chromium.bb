@@ -8,10 +8,15 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/common/pref_names.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
 class MessageBoxView;
+}
+
+namespace content {
+class PageNavigator;
 }
 
 class Profile;
@@ -19,7 +24,8 @@ class Profile;
 // Asks the user whether s/he wants to participate in the Safe Browsing
 // download feedback program. Shown only for downloads marked DANGEROUS_HOST
 // or UNCOMMON_DOWNLOAD. The user should only see this dialog once.
-class DownloadFeedbackDialogView : public views::DialogDelegate {
+class DownloadFeedbackDialogView : public views::DialogDelegate,
+                                   public views::LinkListener {
  public:
   // Callback with the user's decision. |accepted| is true if the user clicked
   // Accept(). Otherwise, assume the user cancelled.
@@ -28,11 +34,13 @@ class DownloadFeedbackDialogView : public views::DialogDelegate {
   static void Show(
       gfx::NativeWindow parent_window,
       Profile* profile,
+      content::PageNavigator* navigator,
       const UserDecisionCallback& callback);
 
  private:
   DownloadFeedbackDialogView(
       Profile* profile,
+      content::PageNavigator* navigator,
       const UserDecisionCallback& callback);
   virtual ~DownloadFeedbackDialogView();
 
@@ -51,10 +59,16 @@ class DownloadFeedbackDialogView : public views::DialogDelegate {
       ui::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
+  virtual views::View* CreateExtraView() OVERRIDE;
+
+  // views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   Profile* profile_;
+  content::PageNavigator* navigator_;
   const UserDecisionCallback callback_;
   views::MessageBoxView* explanation_box_view_;
+  views::Link* link_view_;
   base::string16 title_text_;
   base::string16 ok_button_text_;
   base::string16 cancel_button_text_;

@@ -11420,7 +11420,7 @@ Chrome ran out of memory.
         Privacy policy
       </message>
       <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_URL" translateable="false">
-        http://www.google.com/chrome/intl/[GRITLANGCODE]/privacy.html
+        http://www.google.com/chrome/intl/[GRITLANGCODE]/chrome/browser/privacy/whitepaper.html#malware
       </message>
       <message name="IDS_SAFE_BROWSING_MALWARE_V2_REPORTING_AGREE" desc="SafeBrowsing Malware v2 Details label next to checkbox">
         Automatically report details of possible security incidents to Google. <ph name="PRIVACY_PAGE_LINK">$1</ph>

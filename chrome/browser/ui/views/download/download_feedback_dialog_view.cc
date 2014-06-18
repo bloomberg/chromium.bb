@@ -7,13 +7,18 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/supports_user_data.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "content/public/browser/page_navigator.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
+
+using content::OpenURLParams;
 
 namespace {
 
@@ -35,6 +40,7 @@ class DialogStatusData : public base::SupportsUserData::Data {
 void DownloadFeedbackDialogView::Show(
     gfx::NativeWindow parent_window,
     Profile* profile,
+    content::PageNavigator* navigator,
     const UserDecisionCallback& callback) {
   // This dialog should only be shown if it hasn't been shown before.
   DCHECK(!profile->GetPrefs()->HasPrefPath(
@@ -52,7 +58,7 @@ void DownloadFeedbackDialogView::Show(
   if (data->currently_shown() == false) {
     data->set_currently_shown(true);
     DownloadFeedbackDialogView* window =
-        new DownloadFeedbackDialogView(profile, callback);
+        new DownloadFeedbackDialogView(profile, navigator, callback);
     CreateBrowserModalDialogViews(window, parent_window)->Show();
   } else {
     callback.Run(false);
@@ -61,17 +67,22 @@ void DownloadFeedbackDialogView::Show(
 
 DownloadFeedbackDialogView::DownloadFeedbackDialogView(
     Profile* profile,
+    content::PageNavigator* navigator,
     const UserDecisionCallback& callback)
     : profile_(profile),
+      navigator_(navigator),
       callback_(callback),
       explanation_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(l10n_util::GetStringUTF16(
               IDS_FEEDBACK_SERVICE_DIALOG_EXPLANATION)))),
+      link_view_(new views::Link(l10n_util::GetStringUTF16(
+          IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE_V2))),
       title_text_(l10n_util::GetStringUTF16(IDS_FEEDBACK_SERVICE_DIALOG_TITLE)),
       ok_button_text_(l10n_util::GetStringUTF16(
           IDS_FEEDBACK_SERVICE_DIALOG_OK_BUTTON_LABEL)),
       cancel_button_text_(l10n_util::GetStringUTF16(
           IDS_FEEDBACK_SERVICE_DIALOG_CANCEL_BUTTON_LABEL)) {
+  link_view_->set_listener(this);
 }
 
 DownloadFeedbackDialogView::~DownloadFeedbackDialogView() {}
@@ -130,4 +141,20 @@ const views::Widget* DownloadFeedbackDialogView::GetWidget() const {
 
 views::View* DownloadFeedbackDialogView::GetContentsView() {
   return explanation_box_view_;
+}
+
+views::View* DownloadFeedbackDialogView::CreateExtraView() {
+  return link_view_;
+}
+
+void DownloadFeedbackDialogView::LinkClicked(
+    views::Link* source, int event_flags) {
+  WindowOpenDisposition disposition =
+      ui::DispositionFromEventFlags(event_flags);
+  content::OpenURLParams params(
+      GURL(l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_URL)),
+      content::Referrer(),
+      disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition,
+      content::PAGE_TRANSITION_LINK, false);
+  navigator_->OpenURL(params);
 }
