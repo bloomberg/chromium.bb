@@ -50,6 +50,7 @@ DesktopCaptureDeviceTest.Capture
 GamepadProviderTest.PollingAccess
 GamepadProviderTest.UserGesture
 
-# Flaky. http://crbug.com/365715
+# 'impossible' happend. http://crbug.com/365715, crbug.com/51716
 AppCacheRequestHandlerTest.*
 AppCacheResponseTest.*
+AppCacheStorageImplTest.*
