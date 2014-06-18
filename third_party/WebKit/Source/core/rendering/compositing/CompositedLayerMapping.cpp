@@ -551,9 +551,6 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
         totalSquashBounds.unite(squashedBounds);
     }
 
-    *offsetFromTransformedAncestor = referenceOffsetFromTransformedAncestor;
-    offsetFromTransformedAncestor->moveBy(totalSquashBounds.location());
-
     // The totalSquashBounds is positioned with respect to referenceLayer of this CompositedLayerMapping.
     // But the squashingLayer needs to be positioned with respect to the ancestor CompositedLayerMapping.
     // The conversion between referenceLayer and the ancestor CLM is already computed as
@@ -565,6 +562,9 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
 
     squashingLayer->setPosition(squashLayerBounds.location());
     squashingLayer->setSize(squashLayerBounds.size());
+
+    *offsetFromTransformedAncestor = referenceOffsetFromTransformedAncestor;
+    offsetFromTransformedAncestor->move(squashLayerOriginInOwningLayerSpace);
 
     // Now that the squashing bounds are known, we can convert the RenderLayer painting offsets
     // from CLM owning layer space to the squashing layer space.
