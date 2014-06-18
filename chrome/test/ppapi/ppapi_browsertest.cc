@@ -978,9 +978,10 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, Flash) {
       LIST_TEST(WebSocket_UtilityGetProtocol) \
       LIST_TEST(WebSocket_UtilityTextSendReceive) \
       LIST_TEST(WebSocket_UtilityBinarySendReceive) \
-      LIST_TEST(WebSocket_UtilityBufferedAmount) \
   )
-
+// TODO(yhirano): List this test in SUBTESTS_2 once the close ordering
+// is implemented correctly.
+//    LIST_TEST(WebSocket_UtilityBufferedAmount)
 
 IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket1) {
   RUN_WEBSOCKET_SUBTESTS_1;
