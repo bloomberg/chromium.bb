@@ -121,16 +121,22 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
     // the full page content must always be provided in the picture layer.
     visible_layer_rect = gfx::Rect(bounds());
   }
+
+  // UpdateAndExpandInvalidation will give us an invalidation that covers
+  // anything not explicitly recorded in this frame. We give this region
+  // to the impl side so that it drops tiles that may not have a recording
+  // for them.
   DCHECK(client_);
-  updated |= pile_->Update(client_,
-                           SafeOpaqueBackgroundColor(),
-                           contents_opaque(),
-                           client_->FillsBoundsCompletely(),
-                           pile_invalidation_,
-                           visible_layer_rect,
-                           update_source_frame_number_,
-                           RecordingMode(),
-                           rendering_stats_instrumentation());
+  updated |=
+      pile_->UpdateAndExpandInvalidation(client_,
+                                         &pile_invalidation_,
+                                         SafeOpaqueBackgroundColor(),
+                                         contents_opaque(),
+                                         client_->FillsBoundsCompletely(),
+                                         visible_layer_rect,
+                                         update_source_frame_number_,
+                                         RecordingMode(),
+                                         rendering_stats_instrumentation());
   last_updated_visible_content_rect_ = visible_content_rect();
 
   if (updated) {

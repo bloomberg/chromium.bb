@@ -51,20 +51,26 @@ class PicturePileTest : public testing::Test {
 
   gfx::Rect tiling_rect() const { return pile_->tiling_rect(); }
 
-  bool Update(const Region& invalidation, const gfx::Rect& visible_layer_rect) {
+  bool UpdateAndExpandInvalidation(Region* invalidation,
+                                   const gfx::Rect& visible_layer_rect) {
     frame_number_++;
-    return pile_->Update(&client_,
-                         background_color_,
-                         contents_opaque_,
-                         false,
-                         invalidation,
-                         visible_layer_rect,
-                         frame_number_,
-                         Picture::RECORD_NORMALLY,
-                         &stats_instrumentation_);
+    return pile_->UpdateAndExpandInvalidation(&client_,
+                                              invalidation,
+                                              background_color_,
+                                              contents_opaque_,
+                                              false,
+                                              visible_layer_rect,
+                                              frame_number_,
+                                              Picture::RECORD_NORMALLY,
+                                              &stats_instrumentation_);
   }
 
-  bool UpdateWholePile() { return Update(tiling_rect(), tiling_rect()); }
+  bool UpdateWholePile() {
+    Region invalidation = tiling_rect();
+    bool result = UpdateAndExpandInvalidation(&invalidation, tiling_rect());
+    EXPECT_EQ(tiling_rect().ToString(), invalidation.ToString());
+    return result;
+  }
 
   FakeContentLayerClient client_;
   FakeRenderingStatsInstrumentation stats_instrumentation_;
@@ -79,8 +85,9 @@ TEST_F(PicturePileTest, SmallInvalidateInflated) {
   UpdateWholePile();
 
   // Invalidate something inside a tile.
-  gfx::Rect invalidate_rect(50, 50, 1, 1);
-  Update(invalidate_rect, tiling_rect());
+  Region invalidate_rect(gfx::Rect(50, 50, 1, 1));
+  UpdateAndExpandInvalidation(&invalidate_rect, tiling_rect());
+  EXPECT_EQ(gfx::Rect(50, 50, 1, 1).ToString(), invalidate_rect.ToString());
 
   EXPECT_EQ(1, pile_->tiling().num_tiles_x());
   EXPECT_EQ(1, pile_->tiling().num_tiles_y());
@@ -102,8 +109,9 @@ TEST_F(PicturePileTest, LargeInvalidateInflated) {
   UpdateWholePile();
 
   // Invalidate something inside a tile.
-  gfx::Rect invalidate_rect(50, 50, 100, 100);
-  Update(invalidate_rect, tiling_rect());
+  Region invalidate_rect(gfx::Rect(50, 50, 100, 100));
+  UpdateAndExpandInvalidation(&invalidate_rect, tiling_rect());
+  EXPECT_EQ(gfx::Rect(50, 50, 100, 100).ToString(), invalidate_rect.ToString());
 
   EXPECT_EQ(1, pile_->tiling().num_tiles_x());
   EXPECT_EQ(1, pile_->tiling().num_tiles_y());
@@ -143,12 +151,14 @@ TEST_F(PicturePileTest, InvalidateOnTileBoundaryInflated) {
 
   // Invalidate something just over a tile boundary by a single pixel.
   // This will invalidate the tile (1, 1), as well as 1 row of pixels in (1, 0).
-  gfx::Rect invalidate_rect(
-      pile_->tiling().TileBoundsWithBorder(0, 0).right(),
-      pile_->tiling().TileBoundsWithBorder(0, 0).bottom() - 1,
-      50,
-      50);
-  Update(invalidate_rect, tiling_rect());
+  Region invalidate_rect(
+      gfx::Rect(pile_->tiling().TileBoundsWithBorder(0, 0).right(),
+                pile_->tiling().TileBoundsWithBorder(0, 0).bottom() - 1,
+                50,
+                50));
+  Region expected_invalidation = invalidate_rect;
+  UpdateAndExpandInvalidation(&invalidate_rect, tiling_rect());
+  EXPECT_EQ(expected_invalidation.ToString(), invalidate_rect.ToString());
 
   for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
     for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
@@ -197,9 +207,10 @@ TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
     }
   }
 
-  // Update once more with a small viewport tiilng_rect.x(), tiilng_rect.y(),
-  // tiling_rect.width() by 1
-  Update(tiling_rect(), viewport);
+  // Update once more with a small viewport.
+  Region invalidation = tiling_rect();
+  UpdateAndExpandInvalidation(&invalidation, viewport);
+  EXPECT_EQ(tiling_rect().ToString(), invalidation.ToString());
 
   for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
     for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
@@ -218,8 +229,22 @@ TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
     }
   }
 
+  // Update a partial tile that doesn't get recorded. We should expand the
+  // invalidation to the entire tiles that overlap it.
+  Region small_invalidation =
+      gfx::Rect(pile_->tiling().TileBounds(3, 4).x(),
+                pile_->tiling().TileBounds(3, 4).y() + 10,
+                1,
+                1);
+  UpdateAndExpandInvalidation(&small_invalidation, viewport);
+  EXPECT_TRUE(small_invalidation.Contains(gfx::UnionRects(
+      pile_->tiling().TileBounds(2, 4), pile_->tiling().TileBounds(3, 4))))
+      << small_invalidation.ToString();
+
   // Now update with no invalidation and full viewport
-  Update(gfx::Rect(), tiling_rect());
+  Region empty_invalidation;
+  UpdateAndExpandInvalidation(&empty_invalidation, tiling_rect());
+  EXPECT_EQ(Region().ToString(), empty_invalidation.ToString());
 
   for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
     for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
@@ -229,12 +254,7 @@ TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
               ->second;
       // Expect the invalidation frequency to be less than 1, since we just
       // updated with no invalidations.
-      float expected_frequency =
-          1.0f -
-          1.0f / TestPicturePile::PictureInfo::INVALIDATION_FRAMES_TRACKED;
-
-      EXPECT_FLOAT_EQ(expected_frequency,
-                      picture_info.GetInvalidationFrequencyForTesting());
+      EXPECT_LT(picture_info.GetInvalidationFrequencyForTesting(), 1.f);
 
       // We expect that there are pictures everywhere now.
       EXPECT_TRUE(picture_info.GetPicture()) << "i " << i << " j " << j;
@@ -291,7 +311,9 @@ TEST_F(PicturePileTest, FrequentInvalidationCanRaster) {
 
   // Update once more with a small viewport.
   gfx::Rect viewport(0, 0, tiling_rect().width(), 1);
-  Update(tiling_rect(), viewport);
+  Region invalidation(tiling_rect());
+  UpdateAndExpandInvalidation(&invalidation, viewport);
+  EXPECT_EQ(tiling_rect().ToString(), invalidation.ToString());
 
   // Sanity check some pictures exist and others don't.
   EXPECT_TRUE(pile_->picture_map()
@@ -315,16 +337,48 @@ TEST_F(PicturePileTest, NoInvalidationValidViewport) {
   EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
 
   // No invalidation, same viewport.
-  Update(gfx::Rect(), tiling_rect());
+  Region invalidation;
+  UpdateAndExpandInvalidation(&invalidation, tiling_rect());
   EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
+  EXPECT_EQ(Region().ToString(), invalidation.ToString());
 
   // Partial invalidation, same viewport.
-  Update(gfx::Rect(gfx::Rect(0, 0, 1, 1)), tiling_rect());
+  invalidation = gfx::Rect(0, 0, 1, 1);
+  UpdateAndExpandInvalidation(&invalidation, tiling_rect());
   EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
+  EXPECT_EQ(gfx::Rect(0, 0, 1, 1).ToString(), invalidation.ToString());
 
   // No invalidation, changing viewport.
-  Update(gfx::Rect(), gfx::Rect(5, 5, 5, 5));
+  invalidation = Region();
+  UpdateAndExpandInvalidation(&invalidation, gfx::Rect(5, 5, 5, 5));
   EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
+  EXPECT_EQ(Region().ToString(), invalidation.ToString());
+}
+
+TEST_F(PicturePileTest, InvalidationOutsideRecordingRect) {
+  gfx::Rect huge_layer_rect(10000000, 20000000);
+  gfx::Rect viewport(300000, 400000, 5000, 6000);
+
+  pile_->SetTilingRect(huge_layer_rect);
+
+  // Invalidation inside the recording rect does not need to be expanded.
+  Region invalidation = viewport;
+  UpdateAndExpandInvalidation(&invalidation, viewport);
+  EXPECT_EQ(viewport.ToString(), invalidation.ToString());
+
+  // Invalidation outside the recording rect should expand to the tiles it
+  // covers.
+  gfx::Rect recorded_over_tiles =
+      pile_->tiling().ExpandRectToTileBounds(pile_->recorded_viewport());
+  gfx::Rect invalidation_outside(
+      recorded_over_tiles.right(), recorded_over_tiles.y(), 30, 30);
+  invalidation = invalidation_outside;
+  UpdateAndExpandInvalidation(&invalidation, viewport);
+  gfx::Rect expanded_recorded_viewport =
+      pile_->tiling().ExpandRectToTileBounds(pile_->recorded_viewport());
+  Region expected_invalidation =
+      pile_->tiling().ExpandRectToTileBounds(invalidation_outside);
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
 }
 
 }  // namespace
