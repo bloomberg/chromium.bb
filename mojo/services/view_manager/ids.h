@@ -16,6 +16,10 @@ namespace service {
 // Connection id reserved for the root.
 const ConnectionSpecificId kRootConnection = 0;
 
+// TODO(sky): remove this, temporary while window manager API is in existing
+// api.
+const ConnectionSpecificId kWindowManagerConnection = 1;
+
 // Adds a bit of type safety to node ids.
 struct MOJO_VIEW_MANAGER_EXPORT NodeId {
   NodeId(ConnectionSpecificId connection_id, ConnectionSpecificId node_id)

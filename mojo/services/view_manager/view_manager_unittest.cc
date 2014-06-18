@@ -64,6 +64,8 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     return instance;
   }
 
+  ViewManagerService* view_manager() { return view_manager_; }
+
   // Runs the main loop until |count| changes have been received.
   std::vector<Change> DoRunLoopUntilChangesCount(size_t count) {
     DCHECK_EQ(0u, quit_count_);
@@ -292,7 +294,7 @@ class TestViewManagerClientConnection
     connection_.set_view_manager(client());
   }
 
-  // IViewMangerClient:
+  // ViewMangerClient:
   virtual void OnViewManagerConnectionEstablished(
       ConnectionSpecificId connection_id,
       const String& creator_url,
@@ -343,6 +345,9 @@ class TestViewManagerClientConnection
                                 EventPtr event,
                                 const Callback<void()>& callback) OVERRIDE {
     tracker_.OnViewInputEvent(view_id, event.Pass());
+  }
+  virtual void DispatchOnViewInputEvent(Id view_id,
+                                        mojo::EventPtr event) OVERRIDE {
   }
 
  private:
@@ -1327,6 +1332,27 @@ TEST_F(ViewManagerTest, ConnectTwice) {
     EXPECT_EQ("OnRootsAdded", changes[0]);
     EXPECT_EQ("[node=1,2 parent=1,1 view=null]",
               ChangeNodeDescription(connection2_->changes()));
+  }
+}
+
+TEST_F(ViewManagerTest, OnViewInput) {
+  // Create node 1 and assign a view from connection 2 to it.
+  ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
+  ASSERT_TRUE(connection2_->CreateView(BuildViewId(2, 11)));
+  ASSERT_TRUE(connection2_->SetView(BuildNodeId(1, 1), BuildViewId(2, 11)));
+
+  // Dispatch an event to the view and verify its received.
+  {
+    EventPtr event(Event::New());
+    event->action = 1;
+    connection_->view_manager()->DispatchOnViewInputEvent(
+        BuildViewId(2, 11),
+        event.Pass());
+    connection2_->DoRunLoopUntilChangesCount(1);
+    const Changes changes(ChangesToDescription1(connection2_->changes()));
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ("InputEvent view=2,11 event_action=1", changes[0]);
   }
 }
 

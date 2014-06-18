@@ -129,6 +129,9 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
       ConnectionSpecificId creator_id,
       const std::string& url) const;
 
+  void DispatchViewInputEventToWindowManager(const View* view,
+                                             const ui::Event* event);
+
   // These functions trivially delegate to all ViewManagerServiceImpls, which in
   // term notify their clients.
   void ProcessNodeBoundsChanged(const Node* node,

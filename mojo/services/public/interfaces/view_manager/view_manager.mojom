@@ -118,6 +118,11 @@ interface ViewManagerService {
   // the connection is reused. When this happens the ViewManagerClient is
   // notified of the additional roots by way of OnRootsAdded().
   Embed(string url, uint32[] nodes) => (bool success);
+
+  // TODO(sky): move these to a separate interface when FIFO works.
+
+  // Sends OnViewInputEvent() to the owner of the specified view.
+  DispatchOnViewInputEvent(uint32 view_id, mojo.Event event);
 };
 
 // Changes to nodes/views are not sent to the connection that originated the
@@ -179,6 +184,10 @@ interface ViewManagerClient {
 
   // Invoked when an event is targeted at the specified view.
   OnViewInputEvent(uint32 view, mojo.Event event) => ();
+
+  // TODO(sky): move to separate interface when FIFO sorted out.
+
+  DispatchOnViewInputEvent(uint32 view, mojo.Event event);
 };
 
 }

@@ -233,15 +233,6 @@ void ViewManagerServiceImpl::ProcessViewDeleted(const ViewId& view,
   client()->OnViewDeleted(ViewIdToTransportId(view));
 }
 
-void ViewManagerServiceImpl::ProcessViewInputEvent(const View* view,
-                                                   const ui::Event* event) {
-  DCHECK_EQ(id_, view->id().connection_id);
-  client()->OnViewInputEvent(
-      ViewIdToTransportId(view->id()),
-      TypeConverter<EventPtr, ui::Event>::ConvertFrom(*event),
-      base::Bind(&base::DoNothing));
-}
-
 void ViewManagerServiceImpl::OnConnectionError() {
   if (delete_on_connection_error_)
     delete this;
@@ -755,6 +746,23 @@ void ViewManagerServiceImpl::Embed(const String& url,
   callback.Run(success);
 }
 
+void ViewManagerServiceImpl::DispatchOnViewInputEvent(Id transport_view_id,
+                                                      EventPtr event) {
+  // We only allow the WM to dispatch events. At some point this function will
+  // move to a separate interface and the check can go away.
+  if (id_ != kWindowManagerConnection)
+    return;
+
+  const ViewId view_id(ViewIdFromTransportId(transport_view_id));
+  ViewManagerServiceImpl* connection = root_node_manager_->GetConnection(
+      view_id.connection_id);
+  if (connection)
+    connection->client()->OnViewInputEvent(
+        transport_view_id,
+        event.Pass(),
+        base::Bind(&base::DoNothing));
+}
+
 void ViewManagerServiceImpl::OnNodeHierarchyChanged(const Node* node,
                                                     const Node* new_parent,
                                                     const Node* old_parent) {
@@ -769,10 +777,7 @@ void ViewManagerServiceImpl::OnNodeViewReplaced(const Node* node,
 
 void ViewManagerServiceImpl::OnViewInputEvent(const View* view,
                                               const ui::Event* event) {
-  ViewManagerServiceImpl* connection = root_node_manager_->GetConnection(
-      view->id().connection_id);
-  DCHECK(connection);
-  connection->ProcessViewInputEvent(view, event);
+  root_node_manager_->DispatchViewInputEventToWindowManager(view, event);
 }
 
 void ViewManagerServiceImpl::OnConnectionEstablished() {

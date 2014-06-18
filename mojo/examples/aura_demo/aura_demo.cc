@@ -187,6 +187,9 @@ class ViewManagerClientImpl
                                 EventPtr event,
                                 const Callback<void()>& callback) OVERRIDE {
   }
+  virtual void DispatchOnViewInputEvent(uint32_t view_id,
+                                        EventPtr event) OVERRIDE {
+  }
 
   AuraDemo* aura_demo_;
 

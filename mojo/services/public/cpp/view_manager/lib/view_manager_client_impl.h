@@ -120,6 +120,7 @@ class ViewManagerClientImpl : public ViewManager,
   virtual void OnViewInputEvent(Id view,
                                 EventPtr event,
                                 const Callback<void()>& callback) OVERRIDE;
+  virtual void DispatchOnViewInputEvent(Id view_id, EventPtr event) OVERRIDE;
 
   // Sync the client model with the service by enumerating the pending
   // transaction queue and applying them in order.

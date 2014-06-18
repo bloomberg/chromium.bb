@@ -242,6 +242,7 @@ void TestChangeTracker::OnViewInputEvent(Id view_id, EventPtr event) {
   change.type = CHANGE_TYPE_INPUT_EVENT;
   change.view_id = view_id;
   change.event_action = event->action;
+  AddChange(change);
 }
 
 void TestChangeTracker::AddChange(const Change& change) {

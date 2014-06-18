@@ -776,6 +776,14 @@ void ViewManagerClientImpl::OnViewInputEvent(
   ack_callback.Run();
 }
 
+void ViewManagerClientImpl::DispatchOnViewInputEvent(Id view_id,
+                                                     EventPtr event) {
+  // For now blindly bounce the message back to the server. Doing this means the
+  // event is sent to the correct target (|view_id|).
+  // Note: This function is only invoked on the window manager.
+  service_->DispatchOnViewInputEvent(view_id, event.Pass());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, private:
 

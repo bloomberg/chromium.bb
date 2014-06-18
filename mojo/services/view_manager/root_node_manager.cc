@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/view_manager/view.h"
 #include "mojo/services/view_manager/view_manager_service_impl.h"
 #include "ui/aura/env.h"
@@ -130,6 +131,19 @@ ViewManagerServiceImpl* RootNodeManager::GetConnectionByCreator(
   return NULL;
 }
 
+void RootNodeManager::DispatchViewInputEventToWindowManager(
+    const View* view,
+    const ui::Event* event) {
+  // Input events are forwarded to the WindowManager. The WindowManager
+  // eventually calls back to us with DispatchOnViewInputEvent().
+  ViewManagerServiceImpl* connection = GetConnection(kWindowManagerConnection);
+  if (!connection)
+    return;
+  connection->client()->DispatchOnViewInputEvent(
+      ViewIdToTransportId(view->id()),
+      TypeConverter<EventPtr, ui::Event>::ConvertFrom(*event));
+}
+
 void RootNodeManager::ProcessNodeBoundsChanged(const Node* node,
                                                const gfx::Rect& old_bounds,
                                                const gfx::Rect& new_bounds) {
@@ -243,7 +257,7 @@ void RootNodeManager::OnNodeViewReplaced(const Node* node,
 
 void RootNodeManager::OnViewInputEvent(const View* view,
                                        const ui::Event* event) {
-  GetConnection(view->id().connection_id)->ProcessViewInputEvent(view, event);
+  DispatchViewInputEventToWindowManager(view, event);
 }
 
 }  // namespace service

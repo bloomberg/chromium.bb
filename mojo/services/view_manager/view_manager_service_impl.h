@@ -99,7 +99,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
                           Id server_change_id,
                           bool originated_change);
   void ProcessViewDeleted(const ViewId& view, bool originated_change);
-  void ProcessViewInputEvent(const View* view, const ui::Event* event);
 
   // TODO(sky): move this to private section (currently can't because of
   // bindings).
@@ -207,6 +206,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   virtual void Embed(const mojo::String& url,
                      mojo::Array<uint32_t> node_ids,
                      const mojo::Callback<void(bool)>& callback) OVERRIDE;
+  virtual void DispatchOnViewInputEvent(Id transport_view_id,
+                                        EventPtr event) OVERRIDE;
 
   // Overridden from NodeDelegate:
   virtual void OnNodeHierarchyChanged(const Node* node,
