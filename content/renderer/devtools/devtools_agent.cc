@@ -125,6 +125,10 @@ int DevToolsAgent::hostIdentifier() {
   return routing_id();
 }
 
+int DevToolsAgent::debuggerId() {
+  return routing_id();
+}
+
 void DevToolsAgent::saveAgentRuntimeState(
     const blink::WebString& state) {
   Send(new DevToolsHostMsg_SaveAgentRuntimeState(routing_id(), state.utf8()));
@@ -273,26 +277,28 @@ void DevToolsAgent::visitAllocatedObjects(AllocatedObjectVisitor* visitor) {
 }
 
 // static
-DevToolsAgent* DevToolsAgent::FromHostId(int host_id) {
-  IdToAgentMap::iterator it = g_agent_for_routing_id.Get().find(host_id);
+DevToolsAgent* DevToolsAgent::FromRoutingId(int routing_id) {
+  IdToAgentMap::iterator it = g_agent_for_routing_id.Get().find(routing_id);
   if (it != g_agent_for_routing_id.Get().end()) {
     return it->second;
   }
   return NULL;
 }
 
-void DevToolsAgent::OnAttach() {
+void DevToolsAgent::OnAttach(const std::string& host_id) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->attach();
+    web_agent->attach(WebString::fromUTF8(host_id));
     is_attached_ = true;
   }
 }
 
-void DevToolsAgent::OnReattach(const std::string& agent_state) {
+void DevToolsAgent::OnReattach(const std::string& host_id,
+                               const std::string& agent_state) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->reattach(WebString::fromUTF8(agent_state));
+    web_agent->reattach(WebString::fromUTF8(host_id),
+                        WebString::fromUTF8(agent_state));
     is_attached_ = true;
   }
 }
@@ -312,11 +318,13 @@ void DevToolsAgent::OnDispatchOnInspectorBackend(const std::string& message) {
     web_agent->dispatchOnInspectorBackend(WebString::fromUTF8(message));
 }
 
-void DevToolsAgent::OnInspectElement(int x, int y) {
+void DevToolsAgent::OnInspectElement(
+    const std::string& host_id, int x, int y) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->attach();
+    web_agent->attach(WebString::fromUTF8(host_id));
     web_agent->inspectElementAt(WebPoint(x, y));
+    is_attached_ = true;
   }
 }
 

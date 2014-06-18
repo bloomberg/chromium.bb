@@ -30,8 +30,8 @@ class EmbeddedWorkerDevToolsAgent : public IPC::Listener {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
-  void OnAttach();
-  void OnReattach(const std::string&);
+  void OnAttach(const std::string& host_id);
+  void OnReattach(const std::string& host_id, const std::string& state);
   void OnDetach();
   void OnDispatchOnInspectorBackend(const std::string& message);
   void OnResumeWorkerContext();

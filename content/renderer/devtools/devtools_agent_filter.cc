@@ -21,21 +21,21 @@ namespace {
 
 class MessageImpl : public WebDevToolsAgent::MessageDescriptor {
  public:
-  MessageImpl(const std::string& message, int host_id)
-      : msg(message),
-        host_id(host_id) {
+  MessageImpl(const std::string& message, int routing_id)
+      : msg_(message),
+        routing_id_(routing_id) {
   }
   virtual ~MessageImpl() {}
   virtual WebDevToolsAgent* agent() {
-    DevToolsAgent* agent = DevToolsAgent::FromHostId(host_id);
+    DevToolsAgent* agent = DevToolsAgent::FromRoutingId(routing_id_);
     if (!agent)
       return 0;
     return agent->GetWebAgent();
   }
-  virtual WebString message() { return WebString::fromUTF8(msg); }
+  virtual WebString message() { return WebString::fromUTF8(msg_); }
  private:
-  std::string msg;
-  int host_id;
+  std::string msg_;
+  int routing_id_;
 };
 
 }  // namespace

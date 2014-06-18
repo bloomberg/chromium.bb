@@ -36,8 +36,8 @@ class DevToolsAgent : public RenderViewObserver,
   explicit DevToolsAgent(RenderViewImpl* render_view);
   virtual ~DevToolsAgent();
 
-  // Returns agent instance for its host id.
-  static DevToolsAgent* FromHostId(int host_id);
+  // Returns agent instance for its routing id.
+  static DevToolsAgent* FromRoutingId(int routing_id);
 
   blink::WebDevToolsAgent* GetWebAgent();
 
@@ -51,6 +51,7 @@ class DevToolsAgent : public RenderViewObserver,
   virtual void sendMessageToInspectorFrontend(const blink::WebString& data);
 
   virtual int hostIdentifier() OVERRIDE;
+  virtual int debuggerId() OVERRIDE;
   virtual void saveAgentRuntimeState(const blink::WebString& state) OVERRIDE;
   virtual blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
       createClientMessageLoop() OVERRIDE;
@@ -77,11 +78,12 @@ class DevToolsAgent : public RenderViewObserver,
   virtual void setTouchEventEmulationEnabled(bool enabled,
                                              bool allow_pinch) OVERRIDE;
 
-  void OnAttach();
-  void OnReattach(const std::string& agent_state);
+  void OnAttach(const std::string& host_id);
+  void OnReattach(const std::string& host_id,
+                  const std::string& agent_state);
   void OnDetach();
   void OnDispatchOnInspectorBackend(const std::string& message);
-  void OnInspectElement(int x, int y);
+  void OnInspectElement(const std::string& host_id, int x, int y);
   void OnAddMessageToConsole(ConsoleMessageLevel level,
                              const std::string& message);
   void OnGpuTasksChunk(const std::vector<GpuTaskInfo>& tasks);

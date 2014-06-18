@@ -9,7 +9,7 @@
 namespace content {
 
 void IPCDevToolsAgentHost::Attach() {
-  SendMessageToAgent(new DevToolsAgentMsg_Attach(MSG_ROUTING_NONE));
+  SendMessageToAgent(new DevToolsAgentMsg_Attach(MSG_ROUTING_NONE, GetId()));
   OnClientAttached();
 }
 
@@ -26,7 +26,7 @@ void IPCDevToolsAgentHost::DispatchOnInspectorBackend(
 
 void IPCDevToolsAgentHost::InspectElement(int x, int y) {
   SendMessageToAgent(new DevToolsAgentMsg_InspectElement(MSG_ROUTING_NONE,
-                                                         x, y));
+                                                         GetId(), x, y));
 }
 
 IPCDevToolsAgentHost::~IPCDevToolsAgentHost() {
@@ -34,8 +34,7 @@ IPCDevToolsAgentHost::~IPCDevToolsAgentHost() {
 
 void IPCDevToolsAgentHost::Reattach(const std::string& saved_agent_state) {
   SendMessageToAgent(new DevToolsAgentMsg_Reattach(
-      MSG_ROUTING_NONE,
-      saved_agent_state));
+      MSG_ROUTING_NONE, GetId(), saved_agent_state));
   OnClientAttached();
 }
 

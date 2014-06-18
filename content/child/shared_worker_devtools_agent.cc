@@ -54,11 +54,12 @@ void SharedWorkerDevToolsAgent::SaveDevToolsAgentState(
                                                  state.utf8()));
 }
 
-void SharedWorkerDevToolsAgent::OnAttach() {
+void SharedWorkerDevToolsAgent::OnAttach(const std::string& host_id) {
   webworker_->attachDevTools();
 }
 
-void SharedWorkerDevToolsAgent::OnReattach(const std::string& state) {
+void SharedWorkerDevToolsAgent::OnReattach(const std::string& host_id,
+                                           const std::string& state) {
   webworker_->reattachDevTools(WebString::fromUTF8(state));
 }
 
