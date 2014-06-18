@@ -399,6 +399,8 @@ class Mirror(object):
   @staticmethod
   def DeleteTmpPackFiles(path):
     pack_dir = os.path.join(path, 'objects', 'pack')
+    if not os.path.isdir(pack_dir):
+      return
     pack_files = [f for f in os.listdir(pack_dir) if
                   f.startswith('.tmp-') or f.startswith('tmp_pack_')]
     for f in pack_files:
