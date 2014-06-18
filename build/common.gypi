@@ -271,11 +271,11 @@
       # on compile-only bots).
       'fastbuild%': 0,
 
-      # Set to 1 to force deterministic builds (this isn't working yet but this
-      # flag will help us to get there). See http://crbug.com/314403.
-      # TODO(sebmarchand): Update this comment once this flag guarantee a
-      #     deterministic build.
-      'force_deterministic_build%': 0,
+      # Set to 1 to not store any build metadata (this isn't working yet but
+      # this flag will help us to get there). See http://crbug.com/314403.
+      # TODO(sebmarchand): Update this comment once this flag guarantee that
+      #     there's no build metadata in the build artifacts.
+      'dont_embed_build_metadata%': 0,
 
       # Set to 1 to force Visual C++ to use legacy debug information format /Z7.
       # This is useful for parallel compilation tools which can't support /Zi.
@@ -1026,7 +1026,7 @@
     'use_xi2_mt%':'<(use_xi2_mt)',
     'image_loader_extension%': '<(image_loader_extension)',
     'fastbuild%': '<(fastbuild)',
-    'force_deterministic_build%': '<(force_deterministic_build)',
+    'dont_embed_build_metadata%': '<(dont_embed_build_metadata)',
     'win_z7%': '<(win_z7)',
     'dcheck_always_on%': '<(dcheck_always_on)',
     'tracing_like_official_build%': '<(tracing_like_official_build)',
@@ -2579,11 +2579,11 @@
           }], # clang!=1
         ],
       }],  # fastbuild!=0
-      ['force_deterministic_build==1', {
+      ['dont_embed_build_metadata==1', {
         'defines': [
-          'FORCE_DETERMINISTIC_BUILD',
+          'DONT_EMBED_BUILD_METADATA',
         ],
-      }],  # force_deterministic_build==1
+      }],  # dont_embed_build_metadata==1
       ['dcheck_always_on!=0', {
         'defines': ['DCHECK_ALWAYS_ON=1'],
       }],  # dcheck_always_on!=0
