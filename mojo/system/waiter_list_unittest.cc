@@ -11,8 +11,8 @@
 
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "base/time/time.h"
+#include "mojo/system/handle_signals_state.h"
 #include "mojo/system/test_utils.h"
-#include "mojo/system/wait_flags_state.h"
 #include "mojo/system/waiter.h"
 #include "mojo/system/waiter_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,9 +72,9 @@ TEST(WaiterListTest, BasicAwakeSatisfied) {
     waiter_list.AddWaiter(thread.waiter(), MOJO_HANDLE_SIGNAL_READABLE, 1);
     thread.Start();
     waiter_list.AwakeWaitersForStateChange(
-        WaitFlagsState(MOJO_HANDLE_SIGNAL_READABLE,
-                       MOJO_HANDLE_SIGNAL_READABLE |
-                           MOJO_HANDLE_SIGNAL_WRITABLE));
+        HandleSignalsState(MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_HANDLE_SIGNAL_READABLE |
+                               MOJO_HANDLE_SIGNAL_WRITABLE));
     waiter_list.RemoveWaiter(thread.waiter());
   }  // Join |thread|.
   EXPECT_EQ(MOJO_RESULT_OK, result);
@@ -86,9 +86,9 @@ TEST(WaiterListTest, BasicAwakeSatisfied) {
     test::SimpleWaiterThread thread(&result, &context);
     waiter_list.AddWaiter(thread.waiter(), MOJO_HANDLE_SIGNAL_WRITABLE, 2);
     waiter_list.AwakeWaitersForStateChange(
-        WaitFlagsState(MOJO_HANDLE_SIGNAL_WRITABLE,
-                       MOJO_HANDLE_SIGNAL_READABLE |
-                           MOJO_HANDLE_SIGNAL_WRITABLE));
+        HandleSignalsState(MOJO_HANDLE_SIGNAL_WRITABLE,
+                           MOJO_HANDLE_SIGNAL_READABLE |
+                               MOJO_HANDLE_SIGNAL_WRITABLE));
     waiter_list.RemoveWaiter(thread.waiter());
     waiter_list.RemoveWaiter(thread.waiter());  // Double-remove okay.
     thread.Start();
@@ -104,9 +104,9 @@ TEST(WaiterListTest, BasicAwakeSatisfied) {
     thread.Start();
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.AwakeWaitersForStateChange(
-        WaitFlagsState(MOJO_HANDLE_SIGNAL_READABLE,
-                       MOJO_HANDLE_SIGNAL_READABLE |
-                           MOJO_HANDLE_SIGNAL_WRITABLE));
+        HandleSignalsState(MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_HANDLE_SIGNAL_READABLE |
+                               MOJO_HANDLE_SIGNAL_WRITABLE));
     waiter_list.RemoveWaiter(thread.waiter());
   }  // Join |thread|.
   EXPECT_EQ(MOJO_RESULT_OK, result);
@@ -124,7 +124,8 @@ TEST(WaiterListTest, BasicAwakeUnsatisfiable) {
     waiter_list.AddWaiter(thread.waiter(), MOJO_HANDLE_SIGNAL_READABLE, 1);
     thread.Start();
     waiter_list.AwakeWaitersForStateChange(
-        WaitFlagsState(MOJO_HANDLE_SIGNAL_NONE, MOJO_HANDLE_SIGNAL_WRITABLE));
+        HandleSignalsState(MOJO_HANDLE_SIGNAL_NONE,
+                           MOJO_HANDLE_SIGNAL_WRITABLE));
     waiter_list.RemoveWaiter(thread.waiter());
   }  // Join |thread|.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
@@ -136,8 +137,8 @@ TEST(WaiterListTest, BasicAwakeUnsatisfiable) {
     test::SimpleWaiterThread thread(&result, &context);
     waiter_list.AddWaiter(thread.waiter(), MOJO_HANDLE_SIGNAL_WRITABLE, 2);
     waiter_list.AwakeWaitersForStateChange(
-        WaitFlagsState(MOJO_HANDLE_SIGNAL_READABLE,
-                       MOJO_HANDLE_SIGNAL_READABLE));
+        HandleSignalsState(MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_HANDLE_SIGNAL_READABLE));
     waiter_list.RemoveWaiter(thread.waiter());
     thread.Start();
   }  // Join |thread|.
@@ -152,7 +153,8 @@ TEST(WaiterListTest, BasicAwakeUnsatisfiable) {
     thread.Start();
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.AwakeWaitersForStateChange(
-        WaitFlagsState(MOJO_HANDLE_SIGNAL_NONE, MOJO_HANDLE_SIGNAL_WRITABLE));
+        HandleSignalsState(MOJO_HANDLE_SIGNAL_NONE,
+                           MOJO_HANDLE_SIGNAL_WRITABLE));
     waiter_list.RemoveWaiter(thread.waiter());
     waiter_list.RemoveWaiter(thread.waiter());  // Double-remove okay.
   }  // Join |thread|.
@@ -198,9 +200,9 @@ TEST(WaiterListTest, MultipleWaiters) {
     thread2.Start();
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.AwakeWaitersForStateChange(
-        WaitFlagsState(MOJO_HANDLE_SIGNAL_READABLE,
-                       MOJO_HANDLE_SIGNAL_READABLE |
-                           MOJO_HANDLE_SIGNAL_WRITABLE));
+        HandleSignalsState(MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_HANDLE_SIGNAL_READABLE |
+                               MOJO_HANDLE_SIGNAL_WRITABLE));
     waiter_list.RemoveWaiter(thread1.waiter());
     waiter_list.CancelAllWaiters();
   }  // Join threads.
@@ -220,7 +222,8 @@ TEST(WaiterListTest, MultipleWaiters) {
     thread2.Start();
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.AwakeWaitersForStateChange(
-        WaitFlagsState(MOJO_HANDLE_SIGNAL_NONE, MOJO_HANDLE_SIGNAL_READABLE));
+        HandleSignalsState(MOJO_HANDLE_SIGNAL_NONE,
+                           MOJO_HANDLE_SIGNAL_READABLE));
     waiter_list.RemoveWaiter(thread2.waiter());
     waiter_list.CancelAllWaiters();
   }  // Join threads.
@@ -240,9 +243,9 @@ TEST(WaiterListTest, MultipleWaiters) {
 
     // Should do nothing.
     waiter_list.AwakeWaitersForStateChange(
-        WaitFlagsState(MOJO_HANDLE_SIGNAL_NONE,
-                       MOJO_HANDLE_SIGNAL_READABLE |
-                           MOJO_HANDLE_SIGNAL_WRITABLE));
+        HandleSignalsState(MOJO_HANDLE_SIGNAL_NONE,
+                           MOJO_HANDLE_SIGNAL_READABLE |
+                               MOJO_HANDLE_SIGNAL_WRITABLE));
 
     test::SimpleWaiterThread thread2(&result2, &context2);
     waiter_list.AddWaiter(thread2.waiter(), MOJO_HANDLE_SIGNAL_WRITABLE, 8);
@@ -252,9 +255,9 @@ TEST(WaiterListTest, MultipleWaiters) {
 
     // Awake #1.
     waiter_list.AwakeWaitersForStateChange(
-        WaitFlagsState(MOJO_HANDLE_SIGNAL_READABLE,
-                       MOJO_HANDLE_SIGNAL_READABLE |
-                           MOJO_HANDLE_SIGNAL_WRITABLE));
+        HandleSignalsState(MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_HANDLE_SIGNAL_READABLE |
+                               MOJO_HANDLE_SIGNAL_WRITABLE));
     waiter_list.RemoveWaiter(thread1.waiter());
 
     base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
@@ -271,7 +274,8 @@ TEST(WaiterListTest, MultipleWaiters) {
 
     // Awake #2 and #3 for unsatisfiability.
     waiter_list.AwakeWaitersForStateChange(
-        WaitFlagsState(MOJO_HANDLE_SIGNAL_NONE, MOJO_HANDLE_SIGNAL_READABLE));
+        HandleSignalsState(MOJO_HANDLE_SIGNAL_NONE,
+                           MOJO_HANDLE_SIGNAL_READABLE));
     waiter_list.RemoveWaiter(thread2.waiter());
     waiter_list.RemoveWaiter(thread3.waiter());
 

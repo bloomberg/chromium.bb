@@ -85,7 +85,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
       embedder::PlatformHandleVector* platform_handles) OVERRIDE;
 
   // |SimpleDispatcher| method:
-  virtual WaitFlagsState GetWaitFlagsStateNoLock() const OVERRIDE;
+  virtual HandleSignalsState GetHandleSignalsStateNoLock() const OVERRIDE;
 
   scoped_refptr<RawSharedBuffer> shared_buffer_;
 

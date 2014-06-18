@@ -17,7 +17,7 @@ namespace mojo {
 namespace system {
 
 class Waiter;
-struct WaitFlagsState;
+struct HandleSignalsState;
 
 // |WaiterList| tracks all the |Waiter|s that are waiting on a given
 // handle/|Dispatcher|. There should be a |WaiterList| for each handle that can
@@ -31,7 +31,7 @@ class MOJO_SYSTEM_IMPL_EXPORT WaiterList {
   WaiterList();
   ~WaiterList();
 
-  void AwakeWaitersForStateChange(const WaitFlagsState& state);
+  void AwakeWaitersForStateChange(const HandleSignalsState& state);
   void CancelAllWaiters();
   void AddWaiter(Waiter* waiter, MojoHandleSignals signals, uint32_t context);
   void RemoveWaiter(Waiter* waiter);

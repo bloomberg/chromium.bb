@@ -114,8 +114,9 @@ bool PlatformHandleDispatcher::EndSerializeAndCloseImplNoLock(
   return true;
 }
 
-WaitFlagsState PlatformHandleDispatcher::GetWaitFlagsStateNoLock() const {
-  return WaitFlagsState();
+HandleSignalsState
+    PlatformHandleDispatcher::GetHandleSignalsStateNoLock() const {
+  return HandleSignalsState();
 }
 
 }  // namespace system

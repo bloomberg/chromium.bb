@@ -43,7 +43,7 @@ class MockSimpleDispatcher : public SimpleDispatcher {
       return;
 
     state_.satisfied_signals = new_satisfied_signals;
-    WaitFlagsStateChangedNoLock();
+    HandleSignalsStateChangedNoLock();
   }
 
   void SetSatisfiableSignals(MojoHandleSignals new_satisfiable_signals) {
@@ -57,7 +57,7 @@ class MockSimpleDispatcher : public SimpleDispatcher {
       return;
 
     state_.satisfiable_signals = new_satisfiable_signals;
-    WaitFlagsStateChangedNoLock();
+    HandleSignalsStateChangedNoLock();
   }
 
   virtual Type GetType() const OVERRIDE {
@@ -76,13 +76,13 @@ class MockSimpleDispatcher : public SimpleDispatcher {
   }
 
   // |SimpleDispatcher| implementation:
-  virtual WaitFlagsState GetWaitFlagsStateNoLock() const OVERRIDE {
+  virtual HandleSignalsState GetHandleSignalsStateNoLock() const OVERRIDE {
     lock().AssertAcquired();
     return state_;
   }
 
   // Protected by |lock()|:
-  WaitFlagsState state_;
+  HandleSignalsState state_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSimpleDispatcher);
 };

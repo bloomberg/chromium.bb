@@ -10,7 +10,7 @@
 while (1);
 
 /*
- * Waits on the given handle until the state indicated by |waitFlags| is
+ * Waits on the given handle until the state indicated by |signals| is
  * satisfied.
  *
  * @param {MojoHandle} handle The handle to wait on.
@@ -21,7 +21,7 @@ while (1);
  * @return {MojoWaitId} A waitId that can be passed to cancelWait to cancel the
  * wait.
  */
-function asyncWait(handle, waitFlags, callback) { [native code] }
+function asyncWait(handle, signals, callback) { [native code] }
 
 /*
  * Cancels the asyncWait operation specified by the given |waitId|.

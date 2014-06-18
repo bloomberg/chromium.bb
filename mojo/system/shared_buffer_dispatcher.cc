@@ -263,9 +263,9 @@ bool SharedBufferDispatcher::EndSerializeAndCloseImplNoLock(
   return true;
 }
 
-WaitFlagsState SharedBufferDispatcher::GetWaitFlagsStateNoLock() const {
+HandleSignalsState SharedBufferDispatcher::GetHandleSignalsStateNoLock() const {
   // TODO(vtl): Add transferrable flag.
-  return WaitFlagsState();
+  return HandleSignalsState();
 }
 
 }  // namespace system

@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "mojo/system/dispatcher.h"
+#include "mojo/system/handle_signals_state.h"
 #include "mojo/system/system_impl_export.h"
-#include "mojo/system/wait_flags_state.h"
 #include "mojo/system/waiter_list.h"
 
 namespace mojo {
@@ -26,12 +26,12 @@ class MOJO_SYSTEM_IMPL_EXPORT SimpleDispatcher : public Dispatcher {
   virtual ~SimpleDispatcher();
 
   // To be called by subclasses when the state changes (so
-  // |GetWaitFlagsStateNoLock()| should be checked again). Must be called under
-  // lock.
-  void WaitFlagsStateChangedNoLock();
+  // |GetHandleSignalsStateNoLock()| should be checked again). Must be called
+  // under lock.
+  void HandleSignalsStateChangedNoLock();
 
   // Never called after the dispatcher has been closed; called under |lock_|.
-  virtual WaitFlagsState GetWaitFlagsStateNoLock() const = 0;
+  virtual HandleSignalsState GetHandleSignalsStateNoLock() const = 0;
 
   // |Dispatcher| protected methods:
   virtual void CancelAllWaitersNoLock() OVERRIDE;

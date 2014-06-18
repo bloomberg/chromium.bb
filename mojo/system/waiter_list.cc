@@ -5,7 +5,7 @@
 #include "mojo/system/waiter_list.h"
 
 #include "base/logging.h"
-#include "mojo/system/wait_flags_state.h"
+#include "mojo/system/handle_signals_state.h"
 #include "mojo/system/waiter.h"
 
 namespace mojo {
@@ -18,7 +18,7 @@ WaiterList::~WaiterList() {
   DCHECK(waiters_.empty());
 }
 
-void WaiterList::AwakeWaitersForStateChange(const WaitFlagsState& state) {
+void WaiterList::AwakeWaitersForStateChange(const HandleSignalsState& state) {
   for (WaiterInfoList::iterator it = waiters_.begin(); it != waiters_.end();
        ++it) {
     if (state.satisfies(it->signals))

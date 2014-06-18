@@ -31,9 +31,9 @@ bool LocalMessagePipeEndpoint::OnPeerClose() {
   DCHECK(is_open_);
   DCHECK(is_peer_open_);
 
-  WaitFlagsState old_state = GetWaitFlagsState();
+  HandleSignalsState old_state = GetHandleSignalsState();
   is_peer_open_ = false;
-  WaitFlagsState new_state = GetWaitFlagsState();
+  HandleSignalsState new_state = GetHandleSignalsState();
 
   if (!new_state.equals(old_state))
     waiter_list_.AwakeWaitersForStateChange(new_state);
@@ -49,7 +49,7 @@ void LocalMessagePipeEndpoint::EnqueueMessage(
   bool was_empty = message_queue_.IsEmpty();
   message_queue_.AddMessage(message.Pass());
   if (was_empty)
-    waiter_list_.AwakeWaitersForStateChange(GetWaitFlagsState());
+    waiter_list_.AwakeWaitersForStateChange(GetHandleSignalsState());
 }
 
 void LocalMessagePipeEndpoint::Close() {
@@ -117,7 +117,7 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(void* bytes,
     if (message_queue_.IsEmpty()) {
       // It's currently not possible to wait for non-readability, but we should
       // do the state change anyway.
-      waiter_list_.AwakeWaitersForStateChange(GetWaitFlagsState());
+      waiter_list_.AwakeWaitersForStateChange(GetHandleSignalsState());
     }
   }
 
@@ -132,7 +132,7 @@ MojoResult LocalMessagePipeEndpoint::AddWaiter(Waiter* waiter,
                                                uint32_t context) {
   DCHECK(is_open_);
 
-  WaitFlagsState state = GetWaitFlagsState();
+  HandleSignalsState state = GetHandleSignalsState();
   if (state.satisfies(signals))
     return MOJO_RESULT_ALREADY_EXISTS;
   if (!state.can_satisfy(signals))
@@ -147,8 +147,8 @@ void LocalMessagePipeEndpoint::RemoveWaiter(Waiter* waiter) {
   waiter_list_.RemoveWaiter(waiter);
 }
 
-WaitFlagsState LocalMessagePipeEndpoint::GetWaitFlagsState() {
-  WaitFlagsState rv;
+HandleSignalsState LocalMessagePipeEndpoint::GetHandleSignalsState() {
+  HandleSignalsState rv;
   if (!message_queue_.IsEmpty()) {
     rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_READABLE;
     rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_READABLE;
