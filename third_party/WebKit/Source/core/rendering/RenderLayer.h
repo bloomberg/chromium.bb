@@ -466,9 +466,6 @@ public:
 
     const CompositingInputs& compositingInputs() const { ASSERT(!m_needsCompositingInputsUpdate); return m_compositingInputs; }
 
-    // FIXME: Remove this function.
-    bool potentiallyStaleIsUnclippedDescendant() const { return m_compositingInputs.isUnclippedDescendant; }
-
     bool lostGroupedMapping() const { ASSERT(isAllowedToQueryCompositingState()); return m_lostGroupedMapping; }
     void setLostGroupedMapping(bool b) { m_lostGroupedMapping = b; }
 

@@ -491,7 +491,7 @@ void RenderLayerCompositor::applyUpdateLayerCompositingStateChickenEggHacks(Rend
 
 void RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer, UpdateLayerCompositingStateOptions options)
 {
-    updateDirectCompositingReasons(layer);
+    layer->setCompositingReasons(layer->styleDeterminedCompositingReasons(), CompositingReasonComboAllStyleDeterminedReasons);
     CompositingStateTransitionType compositedLayerUpdate = CompositingLayerAssigner(this).computeCompositedLayerUpdate(layer);
 
     if (compositedLayerUpdate != NoCompositingStateChange)
