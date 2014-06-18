@@ -10,10 +10,11 @@
 namespace base {
 namespace {
 
-// This is admittedly pretty magical. It's approximately enough memory for eight
+// This is admittedly pretty magical. It's approximately enough memory for four
 // 2560x1600 images.
-const size_t kEmulatedMemoryLimit = 128 * 1024 * 1024;
-const size_t kEmulatedBytesToKeepUnderModeratePressure = 12 * 1024 * 1024;
+const size_t kEmulatedMemoryLimit = 64 * 1024 * 1024;
+const size_t kEmulatedBytesToKeepUnderModeratePressure =
+    kEmulatedMemoryLimit / 4;
 
 struct SharedState {
   SharedState()
