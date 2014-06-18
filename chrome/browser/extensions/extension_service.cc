@@ -2026,20 +2026,10 @@ void ExtensionService::PromoteEphemeralApp(
           extension->id(), syncer::StringOrdinal());
     }
 
-    if (extension_prefs_->IsExtensionDisabled(extension->id()) &&
-        !extension_prefs_->IsExtensionBlacklisted(extension->id())) {
-      // If the extension is not blacklisted and was disabled due to permission
-      // increase or user action only, we can enable it because the user was
-      // prompted.
-      extension_prefs_->RemoveDisableReason(
-          extension->id(),
-          Extension::DISABLE_PERMISSIONS_INCREASE);
-      extension_prefs_->RemoveDisableReason(
-          extension->id(),
-          Extension::DISABLE_USER_ACTION);
-      if (!extension_prefs_->GetDisableReasons(extension->id()))
-        EnableExtension(extension->id());
-    }
+    // Cached ephemeral apps may be updated and disabled due to permissions
+    // increase. The app can be enabled as the install was user-acknowledged.
+    if (extension_prefs_->DidExtensionEscalatePermissions(extension->id()))
+      GrantPermissionsAndEnableExtension(extension);
   }
 
   // Remove the ephemeral flags from the preferences.

@@ -554,7 +554,10 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, PromoteEphemeralAppAndEnable) {
   const Extension* app = InstallEphemeralApp(kNotificationsTestApp);
   ASSERT_TRUE(app);
 
-  // Disable the ephemeral app.
+  // Disable the ephemeral app due to a permissions increase. This also involves
+  // setting the DidExtensionEscalatePermissions flag.
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  prefs->SetDidExtensionEscalatePermissions(app, true);
   ExtensionService* service =
       ExtensionSystem::Get(profile())->extension_service();
   service->DisableExtension(app->id(), Extension::DISABLE_PERMISSIONS_INCREASE);
@@ -564,6 +567,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, PromoteEphemeralAppAndEnable) {
   // Promote to a regular installed app. It should be enabled.
   PromoteEphemeralApp(app);
   VerifyPromotedApp(app->id(), ExtensionRegistry::ENABLED);
+  EXPECT_FALSE(prefs->DidExtensionEscalatePermissions(app->id()));
 
   scoped_ptr<AppSyncData> sync_change = GetFirstSyncChangeForApp(app->id());
   VerifySyncChange(sync_change.get(), true);
