@@ -678,6 +678,12 @@ def generate(env):
     version = int(SCons.Script.ARGUMENTS['toolchain_feature_version'])
   else:
     version_file = os.path.join(root, 'FEATURE_VERSION')
+    # There is no pnacl_newlib toolchain on ARM, only a pnacl_translator, so
+    # use that if necessary. Otherwise use it if we are doing sandboxed
+    # translation.
+    if not os.path.exists(version_file) or env.Bit('use_sandboxed_translator'):
+      version_file = os.path.join(os.path.dirname(root), 'pnacl_translator',
+                                  'FEATURE_VERSION')
     if os.path.exists(version_file):
       with open(version_file, 'r') as fh:
         version = int(fh.read())
