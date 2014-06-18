@@ -1776,7 +1776,9 @@ void HTMLMediaElement::setReadyState(ReadyState state)
 
         selectInitialTracksIfNecessary();
 
+        m_duration = duration();
         scheduleEvent(EventTypeNames::durationchange);
+
         if (isHTMLVideoElement(*this))
             scheduleEvent(EventTypeNames::resize);
         scheduleEvent(EventTypeNames::loadedmetadata);
@@ -3063,17 +3065,22 @@ void HTMLMediaElement::mediaPlayerTimeChanged()
 void HTMLMediaElement::mediaPlayerDurationChanged()
 {
     WTF_LOG(Media, "HTMLMediaElement::mediaPlayerDurationChanged");
-    durationChanged(duration());
+    // FIXME: Change MediaPlayerClient & WebMediaPlayer to convey
+    // the currentTime when the duration change occured. The current
+    // WebMediaPlayer implementations always clamp currentTime() to
+    // duration() so the requestSeek condition here is always false.
+    durationChanged(duration(), currentTime() > duration());
 }
 
-void HTMLMediaElement::durationChanged(double duration)
+void HTMLMediaElement::durationChanged(double duration, bool requestSeek)
 {
-    WTF_LOG(Media, "HTMLMediaElement::durationChanged(%f)", duration);
+    WTF_LOG(Media, "HTMLMediaElement::durationChanged(%f, %d)", duration, requestSeek);
 
     // Abort if duration unchanged.
     if (m_duration == duration)
         return;
 
+    WTF_LOG(Media, "HTMLMediaElement::durationChanged : %f -> %f", m_duration, duration);
     m_duration = duration;
     scheduleEvent(EventTypeNames::durationchange);
 
@@ -3082,7 +3089,7 @@ void HTMLMediaElement::durationChanged(double duration)
     if (renderer())
         renderer()->updateFromElement();
 
-    if (currentTime() > duration)
+    if (requestSeek)
         seek(duration, IGNORE_EXCEPTION);
 }
 

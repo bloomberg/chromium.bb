@@ -155,7 +155,7 @@ public:
 
     // media source extensions
     void closeMediaSource();
-    void durationChanged(double duration);
+    void durationChanged(double duration, bool requestSeek);
 
     // controls
     bool controls() const;

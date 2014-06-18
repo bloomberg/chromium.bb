@@ -12,16 +12,32 @@
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               test.failOnEvent(mediaElement, 'error');
-              test.endOnEvent(mediaElement, 'ended');
 
-              sourceBuffer.addEventListener('updateend', test.step_func(function()
-              {
-                  mediaSource.duration = 1;
-                  mediaSource.endOfStream();
-                  mediaElement.play();
-              }));
+              assert_false(sourceBuffer.updating, "sourceBuffer.updating");
 
               sourceBuffer.appendBuffer(mediaData);
+
+              assert_true(sourceBuffer.updating, "sourceBuffer.updating");
+              test.expectEvent(sourceBuffer, "updateend");
+
+              test.waitForExpectedEvents(function()
+              {
+                  assert_false(sourceBuffer.updating, "sourceBuffer.updating");
+
+                  mediaSource.duration = 1;
+
+                  assert_true(sourceBuffer.updating, "sourceBuffer.updating");
+                  test.expectEvent(sourceBuffer, "updateend");
+              });
+
+              test.waitForExpectedEvents(function()
+              {
+                  mediaSource.endOfStream();
+                  mediaElement.play();
+
+                  test.endOnEvent(mediaElement, 'ended');
+              });
+
           }, "Test normal playback case with MediaSource API", {timeout: 5000});
         </script>
     </body>

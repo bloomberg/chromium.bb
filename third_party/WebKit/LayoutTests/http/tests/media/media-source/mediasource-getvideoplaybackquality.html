@@ -33,21 +33,42 @@
                   timeUpdateCount++;
               }));
 
-              mediaElement.addEventListener("ended", test.step_func(function(e)
+              test.failOnEvent(mediaElement, 'error');
+
+              test.expectEvent(sourceBuffer, "updatestart");
+              test.expectEvent(sourceBuffer, "update");
+              test.expectEvent(sourceBuffer, "updateend");
+              sourceBuffer.appendBuffer(mediaData);
+              assert_true(sourceBuffer.updating, "sourceBuffer.updating");
+
+              test.waitForExpectedEvents(function()
+              {
+                  assert_false(sourceBuffer.updating, "sourceBuffer.updating");
+
+                  test.expectEvent(sourceBuffer, "updatestart");
+                  test.expectEvent(sourceBuffer, "update");
+                  test.expectEvent(sourceBuffer, "updateend");
+
+                  mediaSource.duration = 1;
+
+                  assert_true(sourceBuffer.updating, "sourceBuffer.updating");
+              });
+
+              test.waitForExpectedEvents(function()
+              {
+                  assert_false(sourceBuffer.updating, "sourceBuffer.updating");
+
+                  mediaSource.endOfStream();
+                  mediaElement.play();
+
+                  test.expectEvent(mediaElement, "ended");
+              });
+
+              test.waitForExpectedEvents(function()
               {
                   assert_greater_than(timeUpdateCount, 2, "timeUpdateCount");
                   test.done();
-              }));
-
-              test.failOnEvent(mediaElement, 'error');
-
-               sourceBuffer.addEventListener('updateend', test.step_func(function()
-               {
-                   mediaSource.duration = 1;
-                   mediaSource.endOfStream();
-                   mediaElement.play();
-               }));
-               sourceBuffer.appendBuffer(mediaData);
+              });
           }, "Test HTMLVideoElement.getVideoPlaybackQuality() with MediaSource API", {timeout: 5000});
         </script>
     </body>

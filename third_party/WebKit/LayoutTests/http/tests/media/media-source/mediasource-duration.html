@@ -143,6 +143,15 @@
               var fullDuration = segmentInfo.duration;
               var newDuration = 0.5;
 
+              var durationchangeEventCounter = 0;
+              var expectedDurationChangeEventCount = 1;
+              var durationchangeEventHandler = test.step_func(function(event)
+              {
+                  assert_equals(mediaElement.duration, newDuration, 'mediaElement newDuration');
+                  assert_equals(mediaSource.duration, newDuration, 'mediaSource newDuration');
+                  durationchangeEventCounter++;
+              });
+
               mediaElement.play();
 
               // Append all the segments
@@ -156,24 +165,22 @@
                   assert_equals(mediaSource.duration, fullDuration, 'mediaSource fullDuration');
                   assert_less_than(mediaElement.currentTime, newDuration / 2, 'mediaElement currentTime');
 
-                  var durationchangeEventCounter = 0;
-                  var expectedDurationChangeEventCount = 1;
-                  var durationchangeEventHandler = test.step_func(function(event)
-                  {
-                      assert_equals(mediaSource.readyState, 'ended', 'mediaSource ended');
-                      assert_equals(mediaElement.duration, newDuration, 'mediaElement newDuration');
-                      assert_equals(mediaSource.duration, newDuration, 'mediaSource newDuration');
-                      durationchangeEventCounter++;
-                  });
-
                   // Media load also fires 'durationchange' event, so only start counting them now.
                   mediaElement.addEventListener('durationchange', durationchangeEventHandler);
 
                   // Truncate duration. This should result in one 'durationchange' fired.
                   mediaSource.duration = newDuration;
 
+                  assert_true(sourceBuffer.updating, "sourceBuffer.updating");
+                  test.expectEvent(sourceBuffer, "updateend");
+              });
+
+              test.waitForExpectedEvents(function()
+              {
                   // Set duration again to make sure it does not trigger another 'durationchange' event.
                   mediaSource.duration = newDuration;
+
+                  assert_false(sourceBuffer.updating, "sourceBuffer.updating");
 
                   // Mark endOfStream so that playback can reach 'ended' at the new duration.
                   test.expectEvent(mediaSource, 'sourceended', 'endOfStream acknowledged');

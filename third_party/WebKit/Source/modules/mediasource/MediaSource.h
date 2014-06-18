@@ -122,6 +122,10 @@ private:
     void scheduleEvent(const AtomicString& eventName);
     void endOfStreamInternal(const blink::WebMediaSource::EndOfStreamStatus, ExceptionState&);
 
+    // Implements the duration change algorithm.
+    // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#duration-change-algorithm
+    void durationChangeAlgorithm(double newDuration);
+
     OwnPtr<blink::WebMediaSource> m_webMediaSource;
     AtomicString m_readyState;
     OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;

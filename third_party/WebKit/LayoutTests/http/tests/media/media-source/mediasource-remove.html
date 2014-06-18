@@ -129,6 +129,34 @@
               });
           }, "Test aborting a remove operation.");
 
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          {
+              sourceBuffer.appendBuffer(mediaData);
+
+              test.expectEvent(sourceBuffer, "updatestart");
+              test.expectEvent(sourceBuffer, "update");
+              test.expectEvent(sourceBuffer, "updateend");
+
+              test.waitForExpectedEvents(function()
+              {
+                  assert_less_than(mediaSource.duration, 10)
+
+                  mediaSource.duration = 10;
+
+                  sourceBuffer.remove(mediaSource.duration, mediaSource.duration + 2);
+
+                  assert_true(sourceBuffer.updating, "updating");
+                  test.expectEvent(sourceBuffer, "updatestart");
+                  test.expectEvent(sourceBuffer, "update");
+                  test.expectEvent(sourceBuffer, "updateend");
+              });
+
+              test.waitForExpectedEvents(function()
+              {
+                  test.done();
+              });
+
+          }, "Test remove with a start at the duration.");
 
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
