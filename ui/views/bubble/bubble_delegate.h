@@ -12,6 +12,7 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace gfx {
+class FontList;
 class Rect;
 }
 
@@ -116,6 +117,10 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
  protected:
   // Get bubble bounds from the anchor rect and client view's preferred size.
   virtual gfx::Rect GetBubbleBounds();
+
+  // Return a FontList to use for the title of the bubble.
+  // (The default is MediumFont).
+  virtual const gfx::FontList& GetTitleFontList() const;
 
   // View overrides:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;

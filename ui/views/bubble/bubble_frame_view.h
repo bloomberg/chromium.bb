@@ -12,6 +12,10 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
+namespace gfx {
+class FontList;
+}
+
 namespace views {
 
 class Label;
@@ -42,6 +46,10 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
+
+  // Set the FontList to be used for the title of the bubble.
+  // Caller must arrange to update the layout to have the call take effect.
+  void SetTitleFontList(const gfx::FontList& font_list);
 
   // View overrides:
   virtual gfx::Insets GetInsets() const OVERRIDE;

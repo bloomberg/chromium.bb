@@ -163,6 +163,10 @@ void BubbleFrameView::UpdateWindowTitle() {
   ResetWindowControls();
 }
 
+void BubbleFrameView::SetTitleFontList(const gfx::FontList& font_list) {
+  title_->SetFontList(font_list);
+}
+
 gfx::Insets BubbleFrameView::GetInsets() const {
   gfx::Insets insets = content_margins_;
   const int title_height = title_->text().empty() ? 0 :

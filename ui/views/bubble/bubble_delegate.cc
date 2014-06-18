@@ -5,6 +5,7 @@
 #include "ui/views/bubble/bubble_delegate.h"
 
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/rect.h"
 #include "ui/native_theme/native_theme.h"
@@ -131,6 +132,9 @@ View* BubbleDelegateView::GetContentsView() {
 NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
     Widget* widget) {
   BubbleFrameView* frame = new BubbleFrameView(margins());
+  // Note: In CreateBubble, the call to SizeToContents() will cause
+  // the relayout that this call requires.
+  frame->SetTitleFontList(GetTitleFontList());
   BubbleBorder::Arrow adjusted_arrow = arrow();
   if (base::i18n::IsRTL())
     adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
@@ -276,6 +280,12 @@ gfx::Rect BubbleDelegateView::GetBubbleBounds() {
   return GetBubbleFrameView()->GetUpdatedWindowBounds(GetAnchorRect(),
       GetPreferredSize(), adjust_if_offscreen_ && !anchor_minimized);
 }
+
+const gfx::FontList& BubbleDelegateView::GetTitleFontList() const {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetFontList(ui::ResourceBundle::MediumFont);
+}
+
 
 void BubbleDelegateView::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
   if (!color_explicitly_set_)
