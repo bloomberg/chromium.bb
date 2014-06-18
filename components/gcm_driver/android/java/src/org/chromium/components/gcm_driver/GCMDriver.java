@@ -229,9 +229,6 @@ public class GCMDriver {
         try {
             final int MAX_RENDERERS = 1;
             BrowserStartupController.get(context).startBrowserProcessesSync(MAX_RENDERERS);
-            // TODO(johnme): Explicitly call a JNI method that starts up GCMDriver,
-            // rather than relying on it being started automatically by
-            // ProfileSyncServiceFactory::BuildServiceInstanceFor.
             if (sInstance != null) {
                 task.run();
             } else {

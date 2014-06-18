@@ -404,6 +404,7 @@ extern const char kPreferenceResetTime[];
 extern const char kProfileResetPromptMemento[];
 
 extern const char kGCMChannelEnabled[];
+extern const char kPushMessagingRegistrationCount[];
 
 extern const char kEasyUnlockEnabled[];
 extern const char kEasyUnlockShowTutorial[];

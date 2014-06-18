@@ -81,6 +81,9 @@ class GCMDriver {
   // Remove the handler for a given app.
   virtual void RemoveAppHandler(const std::string& app_id);
 
+  // Returns the handler for the given app.
+  GCMAppHandler* GetAppHandler(const std::string& app_id);
+
   // Enables/disables GCM service.
   virtual void Enable() = 0;
   virtual void Disable() = 0;
@@ -140,9 +143,6 @@ class GCMDriver {
   bool HasRegisterCallback(const std::string& app_id);
 
   void ClearCallbacks();
-
-  // Returns the handler for the given app.
-  GCMAppHandler* GetAppHandler(const std::string& app_id);
 
  private:
   // Should be called when an app with |app_id| is trying to un/register.

@@ -29,6 +29,10 @@ public class GCMListener extends MultiplexingGcmListener.AbstractListener {
 
     private static final String TAG = "GCMListener";
 
+    // Used as a fallback since GCM doesn't yet give us the app ID.
+    // TODO(johnme): Get real app IDs from GCM, and remove this.
+    private static final String UNKNOWN_APP_ID = "https://example.com 0";
+
     public GCMListener() {
         super(TAG);
     }
@@ -37,8 +41,7 @@ public class GCMListener extends MultiplexingGcmListener.AbstractListener {
     protected void onRegistered(final String registrationId) {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override public void run() {
-                // TODO(johnme): Get app ID.
-                GCMDriver.onRegisterFinished("unknown-app-id", registrationId);
+                GCMDriver.onRegisterFinished(UNKNOWN_APP_ID, registrationId);
             }
         });
     }
@@ -47,8 +50,7 @@ public class GCMListener extends MultiplexingGcmListener.AbstractListener {
     protected void onUnregistered(String registrationId) {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override public void run() {
-                // TODO(johnme): Get app ID.
-                GCMDriver.onUnregisterFinished("unknown-app-id");
+                GCMDriver.onUnregisterFinished(UNKNOWN_APP_ID);
             }
         });
     }
@@ -57,8 +59,7 @@ public class GCMListener extends MultiplexingGcmListener.AbstractListener {
     protected void onMessage(final Intent intent) {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override public void run() {
-                // TODO(johnme): Get app ID.
-                GCMDriver.onMessageReceived(getApplicationContext(), "unknown-app-id",
+                GCMDriver.onMessageReceived(getApplicationContext(), UNKNOWN_APP_ID,
                     intent.getExtras());
             }
         });
@@ -68,8 +69,7 @@ public class GCMListener extends MultiplexingGcmListener.AbstractListener {
     protected void onDeletedMessages(int total) {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override public void run() {
-                // TODO(johnme): Get app ID.
-                GCMDriver.onMessagesDeleted(getApplicationContext(), "unknown-app-id");
+                GCMDriver.onMessagesDeleted(getApplicationContext(), UNKNOWN_APP_ID);
             }
         });
     }

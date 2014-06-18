@@ -98,12 +98,13 @@ void GCMProfileService::RegisterProfilePrefs(
       prefs::kGCMChannelEnabled,
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  PushMessagingServiceImpl::RegisterProfilePrefs(registry);
 }
 
 #if defined(OS_ANDROID)
 GCMProfileService::GCMProfileService(Profile* profile)
     : profile_(profile),
-      push_messaging_service_(this) {
+      push_messaging_service_(this, profile) {
   DCHECK(!profile->IsOffTheRecord());
 
   driver_.reset(new GCMDriverAndroid);
@@ -113,7 +114,7 @@ GCMProfileService::GCMProfileService(
     Profile* profile,
     scoped_ptr<GCMClientFactory> gcm_client_factory)
     : profile_(profile),
-      push_messaging_service_(this) {
+      push_messaging_service_(this, profile) {
   DCHECK(!profile->IsOffTheRecord());
 
   driver_ = CreateGCMDriverDesktop(
@@ -127,7 +128,7 @@ GCMProfileService::GCMProfileService(
 
 GCMProfileService::GCMProfileService()
     : profile_(NULL),
-      push_messaging_service_(this) {
+      push_messaging_service_(this, NULL) {
 }
 
 GCMProfileService::~GCMProfileService() {

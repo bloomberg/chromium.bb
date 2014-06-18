@@ -1297,6 +1297,10 @@ const char kProfileResetPromptMemento[] = "profile.reset_prompt_memento";
 // The GCM channel's enabled state.
 const char kGCMChannelEnabled[] = "gcm.channel_enabled";
 
+// How many Service Workers are registered with the Push API (could be zero).
+const char kPushMessagingRegistrationCount[] =
+    "gcm.push_messaging_registration_count";
+
 // Whether Easy Unlock is enabled.
 extern const char kEasyUnlockEnabled[] = "easy_unlock.enabled";
 

@@ -7,17 +7,42 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "content/public/browser/push_messaging_service.h"
+
+class Profile;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 namespace gcm {
 
 class GCMProfileService;
 
-class PushMessagingServiceImpl : public content::PushMessagingService {
+class PushMessagingServiceImpl : public content::PushMessagingService,
+                                 public GCMAppHandler {
  public:
-  explicit PushMessagingServiceImpl(GCMProfileService* gcm_profile_service);
+  // Register profile-specific prefs for GCM.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // If any Service Workers are using push, starts GCM and adds an app handler.
+  static void InitializeForProfile(Profile* profile);
+
+  PushMessagingServiceImpl(GCMProfileService* gcm_profile_service,
+                           Profile* profile);
   virtual ~PushMessagingServiceImpl();
+
+  // GCMAppHandler implementation.
+  virtual void ShutdownHandler() OVERRIDE;
+  virtual void OnMessage(const std::string& app_id,
+                         const GCMClient::IncomingMessage& message) OVERRIDE;
+  virtual void OnMessagesDeleted(const std::string& app_id) OVERRIDE;
+  virtual void OnSendError(
+      const std::string& app_id,
+      const GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
+  virtual bool CanHandle(const std::string& app_id) const OVERRIDE;
 
   // content::PushMessagingService implementation:
   virtual void Register(
@@ -27,11 +52,14 @@ class PushMessagingServiceImpl : public content::PushMessagingService {
 
  private:
   void DidRegister(
+      const std::string& app_id,
       const content::PushMessagingService::RegisterCallback& callback,
       const std::string& registration_id,
       GCMClient::Result result);
 
   GCMProfileService* gcm_profile_service_;  // It owns us.
+
+  Profile* profile_;  // It owns our owner.
 
   base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_;
 

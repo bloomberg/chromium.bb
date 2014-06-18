@@ -57,8 +57,8 @@ void PushMessagingMessageFilter::DoRegister(int routing_id,
     DidRegister(routing_id, callbacks_id, GURL(), "", false);
     return;
   }
-  // TODO(mvanouwerkerk): Pass in app ID based on Service Worker ID.
-  std::string app_id = "unknown-app-id";
+  // TODO(mvanouwerkerk): Pass in a real app ID based on Service Worker ID.
+  std::string app_id = "https://example.com 0";
   service_->Register(app_id,
                      sender_id,
                      base::Bind(&PushMessagingMessageFilter::DidRegister,

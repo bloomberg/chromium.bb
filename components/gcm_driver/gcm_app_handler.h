@@ -45,6 +45,11 @@ class GCMAppHandler {
   // Called when the connection is interrupted.
   // Default implementation does nothing.
   virtual void OnDisconnected();
+
+  // If no app handler has been added with the exact app_id of an incoming
+  // event, all handlers will be asked (in arbitrary order) whether they can
+  // handle the app_id, and the first to return true will receive the event.
+  virtual bool CanHandle(const std::string& app_id) const;
 };
 
 }  // namespace gcm

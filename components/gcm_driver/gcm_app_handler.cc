@@ -15,4 +15,8 @@ void GCMAppHandler::OnConnected(const net::IPEndPoint& ip_endpoint) {
 void GCMAppHandler::OnDisconnected() {
 }
 
+bool GCMAppHandler::CanHandle(const std::string& app_id) const {
+  return false;
+}
+
 }  // namespace gcm

@@ -68,6 +68,7 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
+#include "chrome/browser/services/gcm/push_messaging_service_impl.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -643,6 +644,8 @@ void ProfileImpl::DoFinalInit() {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(this);
   model->AddObserver(new BookmarkModelLoadedObserver(this));
 #endif
+
+  gcm::PushMessagingServiceImpl::InitializeForProfile(this);
 }
 
 void ProfileImpl::InitHostZoomMap() {
