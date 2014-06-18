@@ -6,10 +6,12 @@ mediaRule #0
         mediaExpression #0
             feature: max-width
             value: 100px
+            computed length: 100
     mediaQuery #1
         mediaExpression #0
             feature: max-width
             value: 72em
+            computed length: 1152
 mediaRule #1
     text: (max-width: 200px) and (min-width: 100px)
     source: mediaRule
@@ -18,9 +20,11 @@ mediaRule #1
         mediaExpression #0
             feature: max-width
             value: 200px
+            computed length: 200
         mediaExpression #1
             feature: min-width
             value: 100px
+            computed length: 100
 mediaRule #2
     text: (min-monochrome: 8)
     source: mediaRule
@@ -42,10 +46,12 @@ mediaRule #4
         mediaExpression #0
             feature: min-width
             value: 20em
+            computed length: 320
     mediaQuery #1
         mediaExpression #0
             feature: min-width
             value: 20em
+            computed length: 320
 mediaRule #5
     text: not all
     source: mediaRule
@@ -59,6 +65,7 @@ mediaRule #6
         mediaExpression #0
             feature: min-width
             value: 8.5in
+            computed length: 816
 mediaRule #7
     text: screen and (device-aspect-ratio: 16/9), screen and (device-aspect-ratio: 16/10)
     source: mediaRule

@@ -40,6 +40,8 @@ function test()
                     InspectorTest.log("        mediaExpression #" + k);
                     InspectorTest.log("            feature: " + expression.feature);
                     InspectorTest.log("            value: " + expression.value + expression.unit);
+                    if (expression.computedLength)
+                        InspectorTest.log("            computed length: " + expression.computedLength);
                 }
             }
         }

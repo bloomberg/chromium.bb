@@ -40,6 +40,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
+#include "core/css/MediaValues.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheet.h"
@@ -978,6 +979,11 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
                 .setValue(expValue.value)
                 .setUnit(String(valueName))
                 .setFeature(mediaQueryExp->mediaFeature());
+            RefPtr<MediaValues> mediaValues = MediaValues::createDynamicIfFrameExists(parentStyleSheet->ownerDocument()->frame());
+            int computedLength;
+            if (mediaValues->computeLength(expValue.value, expValue.unit, computedLength))
+                mediaQueryExpression->setComputedLength(computedLength);
+
             expressionArray->addItem(mediaQueryExpression);
             hasExpressionItems = true;
         }
