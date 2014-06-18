@@ -18,7 +18,7 @@ namespace {
 std::string MakeSharedLibraryName(const std::string& host_name) {
 #if defined(OS_WIN)
   return host_name + ".dll";
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_ANDROID)
   return "lib" + host_name + ".so";
 #elif defined(OS_MACOSX)
   return "lib" + host_name + ".dylib";
@@ -57,10 +57,15 @@ GURL MojoURLResolver::Resolve(const GURL& mojo_url) const {
   if (local_file_set_.find(mojo_url) != local_file_set_.end()) {
     // Resolve to a local file URL.
     base::FilePath path;
+#if defined(OS_ANDROID)
+    // On Android, additional lib are bundled.
+    PathService::Get(base::DIR_MODULE, &path);
+#else
     PathService::Get(base::DIR_EXE, &path);
 #if !defined(OS_WIN)
     path = path.Append(FILE_PATH_LITERAL("lib"));
-#endif
+#endif  // !defined(OS_WIN)
+#endif  // defined(OS_ANDROID)
     path = path.Append(base::FilePath::FromUTF8Unsafe(lib));
     return net::FilePathToFileURL(path);
   }

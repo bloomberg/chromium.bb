@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "build/build_config.h"
 #include "mojo/shell/context.h"
 #include "net/base/filename_util.h"
@@ -37,10 +38,14 @@ void ShellTestBase::LaunchServiceInProcess(
   DCHECK(message_loop_);
   DCHECK(shell_context_);
 
-  base::FilePath base_dir = base::MakeAbsoluteFilePath(
-      base::CommandLine::ForCurrentProcess()->GetProgram().DirName());
+  base::FilePath base_dir;
+  CHECK(PathService::Get(base::DIR_EXE, &base_dir));
+  // On android, the library is bundled with the app.
+#if defined(OS_ANDROID)
+  base::FilePath service_dir;
+  CHECK(PathService::Get(base::DIR_MODULE, &service_dir));
   // On Mac and Windows, libraries are dumped beside the executables.
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#elif defined(OS_MACOSX) || defined(OS_WIN)
   base::FilePath service_dir(base_dir);
 #else
   // On Linux, they're under lib/.

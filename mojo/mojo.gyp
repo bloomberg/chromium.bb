@@ -590,7 +590,7 @@
     },
     {
       'target_name': 'mojo_shell_tests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
@@ -611,6 +611,13 @@
         'shell/shell_test_base.h',
         'shell/shell_test_base_unittest.cc',
         'shell/shell_test_main.cc',
+      ],
+      'conditions': [
+        ['OS == "android"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
       ],
     },
     {
