@@ -755,15 +755,6 @@ hooks = [
                 "-s", "src/build/linux/bin/eu-strip.sha1",
     ],
   },
-  # Pull libaddressinput strings to work better with translation tools.
-  {
-    "name": "libaddressinput-strings",
-    "pattern": ".",
-    "action": [
-        "python",
-        "src/third_party/libaddressinput/chromium/tools/update-strings.py",
-    ],
-  },
   {
     "name": "drmemory",
     "pattern": ".",

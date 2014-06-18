@@ -41,27 +41,6 @@
         '../../build/grit_target.gypi',
       ],
     },
-    {
-      'target_name': 'libaddressinput_updated_strings',
-      'type': 'none',
-      'variables': {
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/grit/libaddressinput/',
-      },
-      'actions': [
-        {
-          'action_name': 'libaddressinput_updated_strings',
-          'variables': {
-            'grit_grd_file': '../../chrome/app/address_input_strings.grd',
-          },
-          'includes': [
-            '../../build/grit_action.gypi',
-          ],
-        },
-      ],
-      'includes': [
-        '../../build/grit_target.gypi',
-      ],
-    },
     # This target provides basic functionality which is cooked into the build.
     { 'target_name': 'libaddressinput_util',
       'type': 'static_library',
@@ -150,7 +129,6 @@
       ],
       'dependencies': [
         'libaddressinput_strings',
-        'libaddressinput_updated_strings',
         'libaddressinput_util',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_i18n',
