@@ -107,7 +107,10 @@ class ScopedHandleBase {
   // Move-only constructor and operator=.
   ScopedHandleBase(RValue other) : handle_(other.object->release()) {}
   ScopedHandleBase& operator=(RValue other) {
-    handle_ = other.object->release();
+    if (other.object != this) {
+      CloseIfNecessary();
+      handle_ = other.object->release();
+    }
     return *this;
   }
 

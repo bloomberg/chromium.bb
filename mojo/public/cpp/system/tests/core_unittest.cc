@@ -386,6 +386,33 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
   }
 }
 
+TEST(CoreCppTest, ScopedHandleMoveCtor) {
+  ScopedSharedBufferHandle buffer1;
+  EXPECT_EQ(MOJO_RESULT_OK, CreateSharedBuffer(NULL, 1024, &buffer1));
+  EXPECT_TRUE(buffer1.is_valid());
+
+  ScopedSharedBufferHandle buffer2;
+  EXPECT_EQ(MOJO_RESULT_OK, CreateSharedBuffer(NULL, 1024, &buffer2));
+  EXPECT_TRUE(buffer2.is_valid());
+
+  // If this fails to close buffer1, ScopedHandleBase::CloseIfNecessary() will
+  // assert.
+  buffer1 = buffer2.Pass();
+
+  EXPECT_TRUE(buffer1.is_valid());
+  EXPECT_FALSE(buffer2.is_valid());
+}
+
+TEST(CoreCppTest, ScopedHandleMoveCtorSelf) {
+  ScopedSharedBufferHandle buffer1;
+  EXPECT_EQ(MOJO_RESULT_OK, CreateSharedBuffer(NULL, 1024, &buffer1));
+  EXPECT_TRUE(buffer1.is_valid());
+
+  buffer1 = buffer1.Pass();
+
+  EXPECT_TRUE(buffer1.is_valid());
+}
+
 // TODO(vtl): Write data pipe tests.
 
 }  // namespace
