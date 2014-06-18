@@ -5,6 +5,8 @@
 // Must be packed to ../enterprise_platform_keys.crx using the private key
 // ../enterprise_platform_keys.pem .
 
+'use strict';
+
 var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
 var assertThrows = chrome.test.assertThrows;
@@ -250,9 +252,9 @@ function beforeTests(callback) {
 
   getUserToken(function(userToken) {
     if (!userToken)
-      chrome.test.fail('no user token');
+      fail('no user token');
     if (userToken.id != 'user')
-      chrome.test.fail('token is not named "user".');
+      fail('token is not named "user".');
 
     callback(userToken);
   });
@@ -278,12 +280,19 @@ function runTests(userToken) {
         name: "RSASSA-PKCS1-v1_5",
         // RsaHashedKeyGenParams
         modulusLength: 512,
-        publicExponent:
-            new Uint8Array([0x01, 0x00, 0x01]),  // Equivalent to 65537
+        // Equivalent to 65537
+        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
         hash: {
           name: "SHA-1",
         }
       };
+      // Ensure that this algorithm object is not modified, so that later
+      // comparisons really do the right thing.
+      Object.freeze(algorithm.hash);
+      Object.freeze(algorithm);
+
+      var signParams = {name: 'RSASSA-PKCS1-v1_5'};
+
       // Some random data to sign.
       var data = new Uint8Array([0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6]);
       var cachedKeyPair;
@@ -296,18 +305,23 @@ function runTests(userToken) {
                   return userToken.subtleCrypto.exportKey('spki',
                                                           keyPair.publicKey);
                 }),
-                function(error) {
-            assertTrue(false, "GenerateKey failed: " + error);
-          })
+                function(error) { fail("GenerateKey failed: " + error); })
           .then(callbackPass(function(publicKeySpki) {
+                  // Ensure that the returned key pair has the expected format.
+                  // Checks depending on the generateKey arguments:
+                  var privateKey = cachedKeyPair.privateKey;
+                  assertEq(['sign'], privateKey.usages);
+                  assertEq(algorithm, privateKey.algorithm);
+
+                  var publicKey = cachedKeyPair.publicKey;
+                  assertEq([], publicKey.usages);
+                  assertEq(algorithm, publicKey.algorithm);
+
                   cachedSpki = publicKeySpki;
-                  var signParams = {name: 'RSASSA-PKCS1-v1_5'};
                   return userToken.subtleCrypto.sign(
-                      signParams, cachedKeyPair.privateKey, data);
+                      signParams, privateKey, data);
                 }),
-                function(error) {
-            assertTrue(false, "Export failed: " + error);
-          })
+                function(error) { fail("Export failed: " + error); })
           .then(callbackPass(function(signature) {
                   var importParams = {
                     name: algorithm.name,
@@ -322,7 +336,7 @@ function runTests(userToken) {
                   return window.crypto.subtle.importKey(
                       "spki", cachedSpki, importParams, false, ["verify"]);
                 }),
-                function(error) { assertTrue(false, "Sign failed: " + error); })
+                function(error) { fail("Sign failed: " + error); })
           .then(callbackPass(function(webCryptoPublicKey) {
                   assertTrue(!!webCryptoPublicKey);
                   assertEq(algorithm.modulusLength,
@@ -332,21 +346,17 @@ function runTests(userToken) {
                   return window.crypto.subtle.verify(
                       algorithm, webCryptoPublicKey, cachedSignature, data);
                 }),
-                function(error) {
-            assertTrue(false, "Import failed: " + error);
-          })
+                function(error) { fail("Import failed: " + error); })
           .then(callbackPass(function(success) {
                   assertEq(true, success, "Signature invalid.");
                   // Try to sign data with the same key a second time, which
                   // must fail.
                   return userToken.subtleCrypto.sign(
-                      {}, cachedKeyPair.privateKey, data);
+                      signParams, cachedKeyPair.privateKey, data);
                 }),
-                function(error) {
-            assertTrue(false, "Verification failed: " + error);
-          })
+                function(error) { fail("Verification failed: " + error); })
           .then(function(signature) {
-                  assertTrue(false, "Second sign call was expected to fail.");
+                  fail("Second sign call was expected to fail.");
                 }, callbackPass(function(error) {
                   assertTrue(error instanceof Error);
                   assertEq(
@@ -392,9 +402,7 @@ function runTests(userToken) {
         }
       };
       userToken.subtleCrypto.generateKey(algorithm, false, ['sign']).then(
-          function(keyPair) {
-            assertTrue(false, 'generateKey was expected to fail');
-          },
+          function(keyPair) { fail('generateKey was expected to fail'); },
           callbackPass(function(error) {
       assertTrue(error instanceof Error);
       assertEq('A required parameter was missing or out-of-range',
@@ -411,9 +419,7 @@ function runTests(userToken) {
         publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
       };
       userToken.subtleCrypto.generateKey(algorithm, false, ['sign']).then(
-          function(keyPair) {
-            assertTrue(false, 'generateKey was expected to fail');
-          },
+          function(keyPair) { fail('generateKey was expected to fail'); },
           callbackPass(function(error) {
       assertEq(
           new Error('Error: A required parameter was missing our out-of-range'),
@@ -431,9 +437,7 @@ function runTests(userToken) {
         publicExponent: new Uint8Array([0x01, 0x01]),
       };
       userToken.subtleCrypto.generateKey(algorithm, false, ['sign']).then(
-          function(keyPair) {
-            assertTrue(false, 'generateKey was expected to fail');
-          },
+          function(keyPair) { fail('generateKey was expected to fail'); },
           callbackPass(function(error) {
       assertTrue(error instanceof Error);
       assertEq('A required parameter was missing or out-of-range',
