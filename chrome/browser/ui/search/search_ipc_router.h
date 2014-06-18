@@ -77,6 +77,10 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // Called when the SearchBox wants to verify the signed-in Chrome identity
     // against the provided |identity|. Will make a round-trip to the browser
     // and eventually return the result through SendChromeIdentityCheckResult.
+    // Calls SendChromeIdentityCheckResult with true if both the identity
+    // matches and the user syncs their history.
+    // TODO(beaudoin): Change this function name and related APIs now that it's
+    // checking both the identity and the user's sync state.
     virtual void OnChromeIdentityCheck(const base::string16& identity) = 0;
   };
 

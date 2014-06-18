@@ -17,6 +17,8 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -118,6 +120,16 @@ void RecordNewTabLoadTime(content::WebContents* contents) {
       base::TimeTicks::Now() - core_tab_helper->new_tab_start_time();
   UMA_HISTOGRAM_TIMES("Tab.NewTabOnload", duration);
   core_tab_helper->set_new_tab_start_time(base::TimeTicks());
+}
+
+// Returns true if the user is signed in and full history sync is enabled,
+// and false otherwise.
+bool IsHistorySyncEnabled(Profile* profile) {
+  ProfileSyncService* sync =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  return sync &&
+      sync->sync_initialized() &&
+      sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
 }
 
 }  // namespace
@@ -526,8 +538,11 @@ void SearchTabHelper::OnChromeIdentityCheck(const base::string16& identity) {
   if (manager) {
     const base::string16 username =
         base::UTF8ToUTF16(manager->GetAuthenticatedUsername());
-    ipc_router_.SendChromeIdentityCheckResult(identity,
-                                              identity == username);
+    // The identity check only passes if the user is syncing their history.
+    // TODO(beaudoin): Change this function name and related APIs now that it's
+    // checking both the identity and the user's sync state.
+    bool matches = IsHistorySyncEnabled(profile()) && identity == username;
+    ipc_router_.SendChromeIdentityCheckResult(identity, matches);
   }
 }
 

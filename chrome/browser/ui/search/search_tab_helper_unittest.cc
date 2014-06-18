@@ -12,6 +12,9 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -35,6 +38,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+using testing::Return;
 
 namespace {
 
@@ -71,12 +76,16 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
                               FakeSigninManagerBase::Build);
+    builder.AddTestingFactory(
+        ProfileSyncServiceFactory::GetInstance(),
+        ProfileSyncServiceMock::BuildMockProfileSyncService);
     return builder.Build().release();
   }
 
   // Creates a sign-in manager for tests.  If |username| is not empty, the
   // testing profile of the WebContents will be connected to the given account.
-  void CreateSigninManager(const std::string& username) {
+  // The account can be configured to |sync_history| or not.
+  void CreateSigninManager(const std::string& username, bool sync_history) {
     SigninManagerBase* signin_manager = static_cast<SigninManagerBase*>(
         SigninManagerFactory::GetForProfile(profile()));
 
@@ -84,6 +93,17 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
       ASSERT_TRUE(signin_manager);
       signin_manager->SetAuthenticatedUsername(username);
     }
+
+    ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile()));
+
+    EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(true));
+    syncer::ModelTypeSet result;
+    if (sync_history) {
+      result.Put(syncer::HISTORY_DELETE_DIRECTIVES);
+    }
+    EXPECT_CALL(*sync_service, GetActiveDataTypes())
+        .WillRepeatedly(Return(result));
   }
 
   bool MessageWasSent(uint32 id) {
@@ -146,7 +166,7 @@ TEST_F(SearchTabHelperTest, PageURLDoesntBelongToInstantRenderer) {
 
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatch) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
-  CreateSigninManager(std::string("foo@bar.com"));
+  CreateSigninManager(std::string("foo@bar.com"), true);
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
@@ -166,7 +186,7 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatch) {
 
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMismatch) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
-  CreateSigninManager(std::string("foo@bar.com"));
+  CreateSigninManager(std::string("foo@bar.com"), true);
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
@@ -187,6 +207,9 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMismatch) {
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMatch) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   // This test does not sign in.
+  ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile()));
+  EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(false));
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
@@ -201,17 +224,40 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMatch) {
   ChromeViewMsg_ChromeIdentityCheckResult::Param params;
   ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
   EXPECT_EQ(test_identity, params.a);
-  ASSERT_TRUE(params.b);
+  ASSERT_FALSE(params.b);
 }
 
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMismatch) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   // This test does not sign in.
+  ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile()));
+  EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(false));
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
   const base::string16 test_identity = base::ASCIIToUTF16("bar@foo.com");
+  search_tab_helper->OnChromeIdentityCheck(test_identity);
+
+  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
+      ChromeViewMsg_ChromeIdentityCheckResult::ID);
+  ASSERT_TRUE(message != NULL);
+
+  ChromeViewMsg_ChromeIdentityCheckResult::Param params;
+  ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
+  EXPECT_EQ(test_identity, params.a);
+  ASSERT_FALSE(params.b);
+}
+
+TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchNotSyncing) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  CreateSigninManager(std::string("foo@bar.com"), false);
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents());
+  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+
+  const base::string16 test_identity = base::ASCIIToUTF16("foo@bar.com");
   search_tab_helper->OnChromeIdentityCheck(test_identity);
 
   const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
