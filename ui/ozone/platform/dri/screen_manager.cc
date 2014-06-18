@@ -21,6 +21,8 @@ ScreenManager::ScreenManager(
 }
 
 ScreenManager::~ScreenManager() {
+  STLDeleteContainerPairSecondPointers(
+      controllers_.begin(), controllers_.end());
 }
 
 void ScreenManager::RemoveDisplayController(uint32_t crtc, uint32_t connector) {
