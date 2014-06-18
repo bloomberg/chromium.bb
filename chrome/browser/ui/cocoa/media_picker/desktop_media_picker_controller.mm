@@ -85,6 +85,7 @@ const int kExcessButtonPadding = 6;
   [cancelButton_ setTarget:nil];
   [sourceBrowser_ setDelegate:nil];
   [sourceBrowser_ setDataSource:nil];
+  [[self window] close];
   [super dealloc];
 }
 
