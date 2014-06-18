@@ -192,6 +192,7 @@ InspectorTest.applyEmulationAndReload = function(enabled, width, height, deviceS
         WebInspector.overridesSupport.emulateDevice(new WebInspector.OverridesSupport.Device(width + "x" + height + "x" + deviceScaleFactor + "x1x1", ""));
     else
         WebInspector.overridesSupport.reset();
+    WebInspector.overridesSupport.settings.emulationEnabled.set(enabled);
 
     function emulateCallback()
     {
