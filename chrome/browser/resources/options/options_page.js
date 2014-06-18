@@ -536,9 +536,9 @@ cr.define('options', function() {
       }
     }
 
-    // Reverse the button strip for views. See the documentation of
+    // Reverse the button strip for Windows and CrOS. See the documentation of
     // reverseButtonStripIfNecessary_() for an explanation of why this is done.
-    if (cr.isViews)
+    if (cr.isWindows || cr.isChromeOS)
       this.reverseButtonStripIfNecessary_(overlay);
 
     overlay.tab = undefined;
