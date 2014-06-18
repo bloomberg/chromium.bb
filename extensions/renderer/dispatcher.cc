@@ -506,9 +506,10 @@ void Dispatcher::WebKitInitialized() {
 }
 
 void Dispatcher::IdleNotification() {
-  if (is_extension_process_) {
+  if (is_extension_process_ && forced_idle_timer_) {
     // Dampen the forced delay as well if the extension stays idle for long
-    // periods of time.
+    // periods of time. (forced_idle_timer_ can be NULL after
+    // OnRenderProcessShutdown has been called.)
     int64 forced_delay_ms =
         std::max(RenderThread::Get()->GetIdleNotificationDelayInMs(),
                  kMaxExtensionIdleHandlerDelayMs);
