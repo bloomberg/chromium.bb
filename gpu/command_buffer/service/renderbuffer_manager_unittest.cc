@@ -6,6 +6,7 @@
 
 #include <set>
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
@@ -16,15 +17,14 @@ using ::testing::StrictMock;
 namespace gpu {
 namespace gles2 {
 
-class RenderbufferManagerTestBase : public testing::Test {
+class RenderbufferManagerTestBase : public GpuServiceTest {
  public:
   static const GLint kMaxSize = 128;
   static const GLint kMaxSamples = 4;
 
  protected:
   void SetUpBase(MemoryTracker* memory_tracker, bool depth24_supported) {
-    gl_.reset(new ::testing::StrictMock<gfx::MockGLInterface>());
-    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
+    GpuServiceTest::SetUp();
     manager_.reset(new RenderbufferManager(
         memory_tracker, kMaxSize, kMaxSamples, depth24_supported));
   }
@@ -32,12 +32,9 @@ class RenderbufferManagerTestBase : public testing::Test {
   virtual void TearDown() {
     manager_->Destroy(true);
     manager_.reset();
-    ::gfx::MockGLInterface::SetGLInterface(NULL);
-    gl_.reset();
+    GpuServiceTest::TearDown();
   }
 
-  // Use StrictMock to make 100% sure we know how GL will be called.
-  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_ptr<RenderbufferManager> manager_;
 };
 

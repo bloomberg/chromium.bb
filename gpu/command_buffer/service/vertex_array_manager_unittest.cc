@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
@@ -17,7 +18,7 @@ using ::testing::_;
 namespace gpu {
 namespace gles2 {
 
-class VertexArrayManagerTest : public testing::Test {
+class VertexArrayManagerTest : public GpuServiceTest {
  public:
   static const uint32 kNumVertexAttribs = 8;
 
@@ -29,21 +30,16 @@ class VertexArrayManagerTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
-
-    manager_ = new VertexArrayManager();
+    GpuServiceTest::SetUp();
+    manager_.reset(new VertexArrayManager());
   }
 
   virtual void TearDown() {
-    delete manager_;
-    ::gfx::MockGLInterface::SetGLInterface(NULL);
-    gl_.reset();
+    manager_.reset();
+    GpuServiceTest::TearDown();
   }
 
-  // Use StrictMock to make 100% sure we know how GL will be called.
-  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
-  VertexArrayManager* manager_;
+  scoped_ptr<VertexArrayManager> manager_;
 };
 
 // GCC requires these declarations, but MSVC requires they not be present
