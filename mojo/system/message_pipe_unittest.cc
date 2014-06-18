@@ -366,18 +366,19 @@ TEST(MessagePipeTest, BasicWaiting) {
   // Always writable (until the other port is closed).
   waiter.Init();
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-            mp->AddWaiter(0, &waiter, MOJO_WAIT_FLAG_WRITABLE, 0));
+            mp->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_WRITABLE, 0));
   waiter.Init();
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
             mp->AddWaiter(0,
                           &waiter,
-                          MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE,
+                          MOJO_HANDLE_SIGNAL_READABLE |
+                              MOJO_HANDLE_SIGNAL_WRITABLE,
                           0));
 
   // Not yet readable.
   waiter.Init();
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp->AddWaiter(0, &waiter, MOJO_WAIT_FLAG_READABLE, 1));
+            mp->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 1));
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0, NULL));
   mp->RemoveWaiter(0, &waiter);
 
@@ -392,17 +393,18 @@ TEST(MessagePipeTest, BasicWaiting) {
   // Port 1 should already be readable now.
   waiter.Init();
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-            mp->AddWaiter(1, &waiter, MOJO_WAIT_FLAG_READABLE, 2));
+            mp->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 2));
   waiter.Init();
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
             mp->AddWaiter(1,
                           &waiter,
-                          MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE,
+                          MOJO_HANDLE_SIGNAL_READABLE |
+                              MOJO_HANDLE_SIGNAL_WRITABLE,
                           0));
   // ... and still writable.
   waiter.Init();
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-            mp->AddWaiter(1, &waiter, MOJO_WAIT_FLAG_WRITABLE, 3));
+            mp->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_WRITABLE, 3));
 
   // Close port 0.
   mp->Close(0);
@@ -410,12 +412,12 @@ TEST(MessagePipeTest, BasicWaiting) {
   // Now port 1 should not be writable.
   waiter.Init();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            mp->AddWaiter(1, &waiter, MOJO_WAIT_FLAG_WRITABLE, 4));
+            mp->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_WRITABLE, 4));
 
   // But it should still be readable.
   waiter.Init();
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-            mp->AddWaiter(1, &waiter, MOJO_WAIT_FLAG_READABLE, 5));
+            mp->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 5));
 
   // Read from port 1.
   buffer[0] = 0;
@@ -430,7 +432,7 @@ TEST(MessagePipeTest, BasicWaiting) {
   // Now port 1 should no longer be readable.
   waiter.Init();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            mp->AddWaiter(1, &waiter, MOJO_WAIT_FLAG_READABLE, 6));
+            mp->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 6));
 
   mp->Close(1);
 }
@@ -449,7 +451,8 @@ TEST(MessagePipeTest, ThreadedWaiting) {
 
     thread.waiter()->Init();
     EXPECT_EQ(MOJO_RESULT_OK,
-              mp->AddWaiter(1, thread.waiter(), MOJO_WAIT_FLAG_READABLE, 1));
+              mp->AddWaiter(1, thread.waiter(), MOJO_HANDLE_SIGNAL_READABLE,
+                            1));
     thread.Start();
 
     buffer[0] = 123456789;
@@ -476,7 +479,8 @@ TEST(MessagePipeTest, ThreadedWaiting) {
 
     thread.waiter()->Init();
     EXPECT_EQ(MOJO_RESULT_OK,
-              mp->AddWaiter(1, thread.waiter(), MOJO_WAIT_FLAG_READABLE, 2));
+              mp->AddWaiter(1, thread.waiter(), MOJO_HANDLE_SIGNAL_READABLE,
+                            2));
     thread.Start();
 
     // Close port 1 first -- this should result in the waiter being cancelled.
@@ -498,7 +502,8 @@ TEST(MessagePipeTest, ThreadedWaiting) {
 
     thread.waiter()->Init();
     EXPECT_EQ(MOJO_RESULT_OK,
-              mp->AddWaiter(1, thread.waiter(), MOJO_WAIT_FLAG_READABLE, 3));
+              mp->AddWaiter(1, thread.waiter(), MOJO_HANDLE_SIGNAL_READABLE,
+                            3));
     thread.Start();
 
     // Close port 0 first -- this should wake the waiter up, since port 1 will

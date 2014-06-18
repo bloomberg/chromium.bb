@@ -78,8 +78,8 @@ class CallbackHelper {
   void StartWithCallback(HandleWatcher* watcher,
                          const MessagePipeHandle& handle,
                          const base::Callback<void(MojoResult)>& callback) {
-    watcher->Start(handle, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE,
-                   callback);
+    watcher->Start(handle, MOJO_HANDLE_SIGNAL_READABLE,
+                   MOJO_DEADLINE_INDEFINITE, callback);
   }
 
  private:
@@ -279,7 +279,7 @@ TEST_F(HandleWatcherTest, Deadline) {
 
   // Add another watcher wth a timeout of 500 microseconds.
   HandleWatcher watcher2;
-  watcher2.Start(test_pipe2.handle0.get(), MOJO_WAIT_FLAG_READABLE, 500,
+  watcher2.Start(test_pipe2.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE, 500,
                  callback_helper2.GetCallback());
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
@@ -325,7 +325,7 @@ TEST(HandleWatcherCleanEnvironmentTest, AbortedOnMessageLoopDestruction) {
     base::MessageLoop loop;
 
     watcher.Start(pipe.handle0.get(),
-                  MOJO_WAIT_FLAG_READABLE,
+                  MOJO_HANDLE_SIGNAL_READABLE,
                   MOJO_DEADLINE_INDEFINITE,
                   base::Bind(&ObserveCallback, &was_signaled, &result));
 

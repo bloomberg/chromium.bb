@@ -159,7 +159,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
   int rv = 0;
   for (;; rv = (rv + 1) % 100) {
     // Wait for our end of the message pipe to be readable.
-    MojoResult result = WaitIfNecessary(mp, MOJO_WAIT_FLAG_READABLE);
+    MojoResult result = WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE);
     if (result != MOJO_RESULT_OK) {
       // It was closed, probably.
       CHECK_EQ(result, MOJO_RESULT_FAILED_PRECONDITION);
@@ -210,7 +210,7 @@ TEST_F(MultiprocessMessagePipeTest, Basic) {
                              NULL,
                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-  EXPECT_EQ(MOJO_RESULT_OK, WaitIfNecessary(mp, MOJO_WAIT_FLAG_READABLE));
+  EXPECT_EQ(MOJO_RESULT_OK, WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE));
 
   std::string read_buffer(1000, '\0');
   uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());
@@ -259,7 +259,7 @@ TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   for (size_t i = 0; i < kNumMessages; i++) {
-    EXPECT_EQ(MOJO_RESULT_OK, WaitIfNecessary(mp, MOJO_WAIT_FLAG_READABLE));
+    EXPECT_EQ(MOJO_RESULT_OK, WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE));
 
     std::string read_buffer(kNumMessages * 2, '\0');
     uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());
@@ -276,7 +276,7 @@ TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
   // Wait for it to become readable, which should fail (since we sent
   // "quitquitquit").
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            WaitIfNecessary(mp, MOJO_WAIT_FLAG_READABLE));
+            WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE));
 
   mp->Close(0);
 
@@ -295,7 +295,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
   channel_thread.Start(client_platform_handle.Pass(), mp);
 
   // Wait for the first message from our parent.
-  CHECK_EQ(WaitIfNecessary(mp, MOJO_WAIT_FLAG_READABLE), MOJO_RESULT_OK);
+  CHECK_EQ(WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE), MOJO_RESULT_OK);
 
   // It should have a shared buffer.
   std::string read_buffer(100, '\0');
@@ -341,7 +341,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
            MOJO_RESULT_OK);
 
   // Now wait for our parent to send us a message.
-  CHECK_EQ(WaitIfNecessary(mp, MOJO_WAIT_FLAG_READABLE), MOJO_RESULT_OK);
+  CHECK_EQ(WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE), MOJO_RESULT_OK);
 
   read_buffer = std::string(100, '\0');
   num_bytes = static_cast<uint32_t>(read_buffer.size());
@@ -413,7 +413,7 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
   dispatcher = NULL;
 
   // Wait for a message from the child.
-  EXPECT_EQ(MOJO_RESULT_OK, WaitIfNecessary(mp, MOJO_WAIT_FLAG_READABLE));
+  EXPECT_EQ(MOJO_RESULT_OK, WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE));
 
   std::string read_buffer(100, '\0');
   uint32_t num_bytes = static_cast<uint32_t>(read_buffer.size());
@@ -445,7 +445,7 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
 
   // Wait for |mp| to become readable, which should fail.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            WaitIfNecessary(mp, MOJO_WAIT_FLAG_READABLE));
+            WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE));
 
   mp->Close(0);
 
@@ -462,7 +462,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckPlatformHandleFile) {
       scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
   channel_thread.Start(client_platform_handle.Pass(), mp);
 
-  CHECK_EQ(WaitIfNecessary(mp, MOJO_WAIT_FLAG_READABLE), MOJO_RESULT_OK);
+  CHECK_EQ(WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE), MOJO_RESULT_OK);
 
   std::string read_buffer(100, '\0');
   uint32_t num_bytes = static_cast<uint32_t>(read_buffer.size());
@@ -543,7 +543,7 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_PlatformHandlePassing) {
 
   // Wait for it to become readable, which should fail.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            WaitIfNecessary(mp, MOJO_WAIT_FLAG_READABLE));
+            WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE));
 
   mp->Close(0);
 

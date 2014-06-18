@@ -145,25 +145,21 @@ const MojoDeadline MOJO_DEADLINE_INDEFINITE = static_cast<MojoDeadline>(-1);
 // |MojoHandleSignals|: Used to specify signals that can be waited on for a
 // handle (and which can be triggered), e.g., the ability to read or write to
 // the handle.
-//   |MOJO_WAIT_FLAG_NONE| - No flags. |MojoWait()|, etc. will return
+//   |MOJO_HANDLE_SIGNAL_NONE| - No flags. |MojoWait()|, etc. will return
 //       |MOJO_RESULT_FAILED_PRECONDITION| if you attempt to wait on this.
-//   |MOJO_WAIT_FLAG_READABLE| - Can read (e.g., a message) from the handle.
-//   |MOJO_WAIT_FLAG_WRITABLE| - Can write (e.g., a message) to the handle.
-//   |MOJO_WAIT_FLAG_EVERYTHING| - All flags.
+//   |MOJO_HANDLE_SIGNAL_READABLE| - Can read (e.g., a message) from the handle.
+//   |MOJO_HANDLE_SIGNAL_WRITABLE| - Can write (e.g., a message) to the handle.
 
 typedef uint32_t MojoHandleSignals;
 
-// TODO(vtl): Rename these to MOJO_HANDLE_SIGNAL_....
 #ifdef __cplusplus
-const MojoHandleSignals MOJO_WAIT_FLAG_NONE = 0;
-const MojoHandleSignals MOJO_WAIT_FLAG_READABLE = 1 << 0;
-const MojoHandleSignals MOJO_WAIT_FLAG_WRITABLE = 1 << 1;
-const MojoHandleSignals MOJO_WAIT_FLAG_EVERYTHING = ~0;
+const MojoHandleSignals MOJO_HANDLE_SIGNAL_NONE = 0;
+const MojoHandleSignals MOJO_HANDLE_SIGNAL_READABLE = 1 << 0;
+const MojoHandleSignals MOJO_HANDLE_SIGNAL_WRITABLE = 1 << 1;
 #else
-#define MOJO_WAIT_FLAG_NONE ((MojoHandleSignals) 0)
-#define MOJO_WAIT_FLAG_READABLE ((MojoHandleSignals) 1 << 0)
-#define MOJO_WAIT_FLAG_WRITABLE ((MojoHandleSignals) 1 << 1)
-#define MOJO_WAIT_FLAG_EVERYTHING (~((MojoHandleSignals) 0))
+#define MOJO_HANDLE_SIGNAL_NONE ((MojoHandleSignals) 0)
+#define MOJO_HANDLE_SIGNAL_READABLE ((MojoHandleSignals) 1 << 0)
+#define MOJO_HANDLE_SIGNAL_WRITABLE ((MojoHandleSignals) 1 << 1)
 #endif
 
 // TODO(vtl): Add out parameters with this to MojoWait/MojoWaitMany.

@@ -52,10 +52,10 @@ var DEADLINE_INDEFINITE;
  * the handle.
  * See core.h for more information.
  */
-var WAIT_FLAG_NONE;
-var WAIT_FLAG_READABLE;
-var WAIT_FLAG_WRITABLE;
-var WAIT_FLAG_EVERYTHING;
+var HANDLE_SIGNAL_NONE;
+var HANDLE_SIGNAL_READABLE;
+var HANDLE_SIGNAL_WRITABLE;
+var HANDLE_SIGNAL_EVERYTHING;
 
 /*
  * MojoWriteMessageFlags: Used to specify different modes to |writeMessage()|.

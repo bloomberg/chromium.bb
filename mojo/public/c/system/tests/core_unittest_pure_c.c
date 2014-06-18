@@ -54,13 +54,13 @@ const char* MinimalCTest(void) {
   EXPECT_NE(MOJO_RESULT_OK, MojoClose(handle0));
 
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoWait(handle0, MOJO_WAIT_FLAG_EVERYTHING,
+            MojoWait(handle0, ~MOJO_HANDLE_SIGNAL_NONE,
                      MOJO_DEADLINE_INDEFINITE));
 
   handle1 = MOJO_HANDLE_INVALID;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(NULL, &handle0, &handle1));
 
-  signals = MOJO_WAIT_FLAG_READABLE;
+  signals = MOJO_HANDLE_SIGNAL_READABLE;
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
             MojoWaitMany(&handle0, &signals, 1, 1));
 
@@ -69,7 +69,7 @@ const char* MinimalCTest(void) {
                              0u, MOJO_WRITE_DATA_FLAG_NONE));
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWait(handle1, MOJO_WAIT_FLAG_READABLE,
+            MojoWait(handle1, MOJO_HANDLE_SIGNAL_READABLE,
                      MOJO_DEADLINE_INDEFINITE));
 
   num_bytes = (uint32_t) sizeof(buffer);

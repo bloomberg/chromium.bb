@@ -38,7 +38,7 @@ class LaunchableConnection : public InterfaceImpl<launcher::Launchable> {
           MOJO_READ_DATA_FLAG_NONE);
       if (result == MOJO_RESULT_SHOULD_WAIT) {
         Wait(response_body_stream.get(),
-             MOJO_WAIT_FLAG_READABLE,
+             MOJO_HANDLE_SIGNAL_READABLE,
              MOJO_DEADLINE_INDEFINITE);
       } else if (result == MOJO_RESULT_OK) {
         fwrite(buf, num_bytes, 1, stdout);

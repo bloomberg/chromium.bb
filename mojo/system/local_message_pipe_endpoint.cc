@@ -150,12 +150,13 @@ void LocalMessagePipeEndpoint::RemoveWaiter(Waiter* waiter) {
 WaitFlagsState LocalMessagePipeEndpoint::GetWaitFlagsState() {
   WaitFlagsState rv;
   if (!message_queue_.IsEmpty()) {
-    rv.satisfied_signals |= MOJO_WAIT_FLAG_READABLE;
-    rv.satisfiable_signals |= MOJO_WAIT_FLAG_READABLE;
+    rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_READABLE;
+    rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_READABLE;
   }
   if (is_peer_open_) {
-    rv.satisfied_signals |= MOJO_WAIT_FLAG_WRITABLE;
-    rv.satisfiable_signals |= MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE;
+    rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_WRITABLE;
+    rv.satisfiable_signals |=
+        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE;
   }
   return rv;
 }

@@ -94,16 +94,16 @@ TEST_F(CoreTest, Basic) {
 
   EXPECT_EQ(0u, info.GetAddWaiterCallCount());
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(h, MOJO_WAIT_FLAG_EVERYTHING,
+            core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE,
                          MOJO_DEADLINE_INDEFINITE));
   EXPECT_EQ(1u, info.GetAddWaiterCallCount());
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(h, MOJO_WAIT_FLAG_EVERYTHING, 0));
+            core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE, 0));
   EXPECT_EQ(2u, info.GetAddWaiterCallCount());
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(h, MOJO_WAIT_FLAG_EVERYTHING, 10 * 1000));
+            core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE, 10 * 1000));
   EXPECT_EQ(3u, info.GetAddWaiterCallCount());
-  MojoHandleSignals handle_signals = MOJO_WAIT_FLAG_EVERYTHING;
+  MojoHandleSignals handle_signals = ~MOJO_HANDLE_SIGNAL_NONE;
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             core()->WaitMany(&h, &handle_signals, 1, MOJO_DEADLINE_INDEFINITE));
   EXPECT_EQ(4u, info.GetAddWaiterCallCount());
@@ -139,18 +139,18 @@ TEST_F(CoreTest, InvalidArguments) {
   // |Wait()|:
   {
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->Wait(MOJO_HANDLE_INVALID, MOJO_WAIT_FLAG_EVERYTHING,
+              core()->Wait(MOJO_HANDLE_INVALID, ~MOJO_HANDLE_SIGNAL_NONE,
                            MOJO_DEADLINE_INDEFINITE));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->Wait(10, MOJO_WAIT_FLAG_EVERYTHING,
+              core()->Wait(10, ~MOJO_HANDLE_SIGNAL_NONE,
                            MOJO_DEADLINE_INDEFINITE));
   }
 
   // |WaitMany()|:
   {
     MojoHandle handles[2] = {MOJO_HANDLE_INVALID, MOJO_HANDLE_INVALID};
-    MojoHandleSignals signals[2] = {MOJO_WAIT_FLAG_EVERYTHING,
-                                    MOJO_WAIT_FLAG_EVERYTHING};
+    MojoHandleSignals signals[2] = {~MOJO_HANDLE_SIGNAL_NONE,
+                                    ~MOJO_HANDLE_SIGNAL_NONE};
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               core()->WaitMany(handles, signals, 0, MOJO_DEADLINE_INDEFINITE));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
@@ -204,7 +204,7 @@ TEST_F(CoreTest, InvalidArguments) {
 
     MockHandleInfo info;
     MojoHandle h = CreateMockHandle(&info);
-    MojoHandle handles[2] = { MOJO_HANDLE_INVALID, MOJO_HANDLE_INVALID };
+    MojoHandle handles[2] = {MOJO_HANDLE_INVALID, MOJO_HANDLE_INVALID};
 
     // Null |handles| with nonzero |num_handles|.
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
@@ -332,13 +332,13 @@ TEST_F(CoreTest, MessagePipe) {
   EXPECT_NE(h[0], h[1]);
 
   // Neither should be readable.
-  MojoHandleSignals signals[2] = {MOJO_WAIT_FLAG_READABLE,
-                                  MOJO_WAIT_FLAG_READABLE};
+  MojoHandleSignals signals[2] = {MOJO_HANDLE_SIGNAL_READABLE,
+                                  MOJO_HANDLE_SIGNAL_READABLE};
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
             core()->WaitMany(h, signals, 2, 0));
 
   // Try to read anyway.
-  char buffer[1] = { 'a' };
+  char buffer[1] = {'a'};
   uint32_t buffer_size = 1;
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             core()->ReadMessage(h[0], buffer, &buffer_size, NULL, NULL,
@@ -349,13 +349,13 @@ TEST_F(CoreTest, MessagePipe) {
 
   // Both should be writable.
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h[0], MOJO_WAIT_FLAG_WRITABLE, 1000000000));
+            core()->Wait(h[0], MOJO_HANDLE_SIGNAL_WRITABLE, 1000000000));
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h[1], MOJO_WAIT_FLAG_WRITABLE, 1000000000));
+            core()->Wait(h[1], MOJO_HANDLE_SIGNAL_WRITABLE, 1000000000));
 
   // Also check that |h[1]| is writable using |WaitMany()|.
-  signals[0] = MOJO_WAIT_FLAG_READABLE;
-  signals[1] = MOJO_WAIT_FLAG_WRITABLE;
+  signals[0] = MOJO_HANDLE_SIGNAL_READABLE;
+  signals[1] = MOJO_HANDLE_SIGNAL_WRITABLE;
   EXPECT_EQ(1, core()->WaitMany(h, signals, 2, MOJO_DEADLINE_INDEFINITE));
 
   // Write to |h[1]|.
@@ -365,8 +365,8 @@ TEST_F(CoreTest, MessagePipe) {
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Check that |h[0]| is now readable.
-  signals[0] = MOJO_WAIT_FLAG_READABLE;
-  signals[1] = MOJO_WAIT_FLAG_READABLE;
+  signals[0] = MOJO_HANDLE_SIGNAL_READABLE;
+  signals[1] = MOJO_HANDLE_SIGNAL_READABLE;
   EXPECT_EQ(0, core()->WaitMany(h, signals, 2, MOJO_DEADLINE_INDEFINITE));
 
   // Read from |h[0]|.
@@ -387,7 +387,7 @@ TEST_F(CoreTest, MessagePipe) {
 
   // |h[0]| should no longer be readable.
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            core()->Wait(h[0], MOJO_WAIT_FLAG_READABLE, 0));
+            core()->Wait(h[0], MOJO_HANDLE_SIGNAL_READABLE, 0));
 
   // Write to |h[0]|.
   buffer[0] = 'd';
@@ -400,11 +400,11 @@ TEST_F(CoreTest, MessagePipe) {
 
   // Check that |h[1]| is no longer writable (and will never be).
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(h[1], MOJO_WAIT_FLAG_WRITABLE, 1000000000));
+            core()->Wait(h[1], MOJO_HANDLE_SIGNAL_WRITABLE, 1000000000));
 
   // Check that |h[1]| is still readable (for the moment).
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+            core()->Wait(h[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
 
   // Discard a message from |h[1]|.
   EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
@@ -413,7 +413,7 @@ TEST_F(CoreTest, MessagePipe) {
 
   // |h[1]| is no longer readable (and will never be).
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(h[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+            core()->Wait(h[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
 
   // Try writing to |h[1]|.
   buffer[0] = 'e';
@@ -448,7 +448,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
                                  NULL, 0,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE,
+                         1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -484,7 +485,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
                                  NULL, 0,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passed[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+            core()->Wait(h_passed[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -503,7 +504,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
                                  &h_passed[1], 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE,
+                         1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -534,7 +536,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
                                  NULL, 0,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_received, MOJO_WAIT_FLAG_READABLE, 1000000000));
+            core()->Wait(h_received, MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -563,18 +565,18 @@ TEST_F(CoreTest, DataPipe) {
 
   // Producer should be never-readable, but already writable.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(ph, MOJO_WAIT_FLAG_READABLE, 0));
+            core()->Wait(ph, MOJO_HANDLE_SIGNAL_READABLE, 0));
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(ph, MOJO_WAIT_FLAG_WRITABLE, 0));
+            core()->Wait(ph, MOJO_HANDLE_SIGNAL_WRITABLE, 0));
 
   // Consumer should be never-writable, and not yet readable.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(ch, MOJO_WAIT_FLAG_WRITABLE, 0));
+            core()->Wait(ch, MOJO_HANDLE_SIGNAL_WRITABLE, 0));
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            core()->Wait(ch, MOJO_WAIT_FLAG_READABLE, 0));
+            core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 0));
 
   // Write.
-  char elements[2] = { 'A', 'B' };
+  char elements[2] = {'A', 'B'};
   uint32_t num_bytes = 2u;
   EXPECT_EQ(MOJO_RESULT_OK,
             core()->WriteData(ph, elements, &num_bytes,
@@ -583,7 +585,7 @@ TEST_F(CoreTest, DataPipe) {
 
   // Consumer should now be readable.
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(ch, MOJO_WAIT_FLAG_READABLE, 0));
+            core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 0));
 
   // Read one character.
   elements[0] = -1;
@@ -659,7 +661,7 @@ TEST_F(CoreTest, DataPipe) {
 
   // Consumer should now be no longer readable.
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            core()->Wait(ch, MOJO_WAIT_FLAG_READABLE, 0));
+            core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 0));
 
   // TODO(vtl): More.
 
@@ -668,7 +670,7 @@ TEST_F(CoreTest, DataPipe) {
 
   // The consumer should now be never-readable.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(ch, MOJO_WAIT_FLAG_READABLE, 0));
+            core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 0));
 
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(ch));
 }
@@ -700,7 +702,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
                                  &ch, 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE,
+                         1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -730,7 +733,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
             core()->WriteData(ph, kWorld, &num_bytes,
                               MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(ch_received, MOJO_WAIT_FLAG_READABLE, 1000000000));
+            core()->Wait(ch_received, MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
   num_bytes = kBufferSize;
   EXPECT_EQ(MOJO_RESULT_OK,
             core()->ReadData(ch_received, buffer, &num_bytes,
@@ -745,7 +748,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
                                  &ph, 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE,
+                         1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -775,7 +779,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
             core()->WriteData(ph_received, kHello, &num_bytes,
                               MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(ch_received, MOJO_WAIT_FLAG_READABLE, 1000000000));
+            core()->Wait(ch_received, MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
   num_bytes = kBufferSize;
   EXPECT_EQ(MOJO_RESULT_OK,
             core()->ReadData(ch_received, buffer, &num_bytes,
@@ -809,7 +813,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   ch = MOJO_HANDLE_INVALID;
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE,
+                         1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -829,7 +834,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
 
   // Wait for |ch| to be readable.
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(ch, MOJO_WAIT_FLAG_READABLE, 1000000000));
+            core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
 
   // Make sure that |ch| can't be sent if it's in a two-phase read.
   const void* read_ptr = NULL;
@@ -851,7 +856,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   ph = MOJO_HANDLE_INVALID;
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE,
+                         1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,

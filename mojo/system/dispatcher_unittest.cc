@@ -64,7 +64,7 @@ TEST(DispatcherTest, Basic) {
   Waiter w;
   w.Init();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            d->AddWaiter(&w, MOJO_WAIT_FLAG_EVERYTHING, 0));
+            d->AddWaiter(&w, ~MOJO_HANDLE_SIGNAL_NONE, 0));
   // Okay to remove even if it wasn't added (or was already removed).
   d->RemoveWaiter(&w);
   d->RemoveWaiter(&w);
@@ -89,7 +89,7 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->EndReadData(0));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->AddWaiter(&w, MOJO_WAIT_FLAG_EVERYTHING, 0));
+            d->AddWaiter(&w, ~MOJO_HANDLE_SIGNAL_NONE, 0));
   d->RemoveWaiter(&w);
 }
 
@@ -192,7 +192,7 @@ class ThreadSafetyStressThread : public base::SimpleThread {
       }
       case ADD_WAITER: {
         MojoResult r = dispatcher_->AddWaiter(&waiter_,
-                                              MOJO_WAIT_FLAG_EVERYTHING, 0);
+                                              ~MOJO_HANDLE_SIGNAL_NONE, 0);
         EXPECT_TRUE(r == MOJO_RESULT_FAILED_PRECONDITION ||
                     r == MOJO_RESULT_INVALID_ARGUMENT);
         break;

@@ -133,7 +133,7 @@ TEST_F(EmbedderTest, ChannelsBasic) {
 
     // Now wait for the other side to become readable.
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWait(client_mp, MOJO_WAIT_FLAG_READABLE,
+              MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
                        MOJO_DEADLINE_INDEFINITE));
 
     char buffer[1000] = {};
@@ -200,7 +200,7 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
 
     // Wait for |client_mp| to become readable.
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWait(client_mp, MOJO_WAIT_FLAG_READABLE,
+              MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
                        MOJO_DEADLINE_INDEFINITE));
 
     // Read a message from |client_mp|.
@@ -219,7 +219,8 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
 
     // Wait for |h1| to become readable.
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWait(h1, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE));
+              MojoWait(h1, MOJO_HANDLE_SIGNAL_READABLE,
+                       MOJO_DEADLINE_INDEFINITE));
 
     // Read a message from |h1|.
     memset(buffer, 0, sizeof(buffer));
@@ -235,7 +236,8 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
 
     // Wait for |h1| to become readable (again).
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWait(h1, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE));
+              MojoWait(h1, MOJO_HANDLE_SIGNAL_READABLE,
+                       MOJO_DEADLINE_INDEFINITE));
 
     // Read the second message from |h1|.
     memset(buffer, 0, sizeof(buffer));
@@ -255,7 +257,8 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
 
     // Wait for |h0| to become readable.
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWait(h0, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE));
+              MojoWait(h0, MOJO_HANDLE_SIGNAL_READABLE,
+                       MOJO_DEADLINE_INDEFINITE));
 
     // Read a message from |h0|.
     memset(buffer, 0, sizeof(buffer));
@@ -320,7 +323,7 @@ TEST_F(EmbedderTest, MultiprocessChannels) {
 
     // 2. Read a message from |server_mp|.
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWait(server_mp, MOJO_WAIT_FLAG_READABLE,
+              MojoWait(server_mp, MOJO_HANDLE_SIGNAL_READABLE,
                        MOJO_DEADLINE_INDEFINITE));
     char buffer[1000] = {};
     uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
@@ -355,7 +358,8 @@ TEST_F(EmbedderTest, MultiprocessChannels) {
 
     // 9. Read a message from |mp0|, which should have |mp2| attached.
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWait(mp0, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE));
+              MojoWait(mp0, MOJO_HANDLE_SIGNAL_READABLE,
+                       MOJO_DEADLINE_INDEFINITE));
     memset(buffer, 0, sizeof(buffer));
     num_bytes = static_cast<uint32_t>(sizeof(buffer));
     MojoHandle mp2 = MOJO_HANDLE_INVALID;
@@ -371,7 +375,8 @@ TEST_F(EmbedderTest, MultiprocessChannels) {
 
     // 7. Read a message from |mp2|.
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWait(mp2, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE));
+              MojoWait(mp2, MOJO_HANDLE_SIGNAL_READABLE,
+                       MOJO_DEADLINE_INDEFINITE));
     memset(buffer, 0, sizeof(buffer));
     num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(MOJO_RESULT_OK,
@@ -388,7 +393,8 @@ TEST_F(EmbedderTest, MultiprocessChannels) {
 // TODO(vtl): crbug.com/351768
 #if 0
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              MojoWait(mp2, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE));
+              MojoWait(mp2, MOJO_HANDLE_SIGNAL_READABLE,
+                       MOJO_DEADLINE_INDEFINITE));
 #endif
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(mp2));
   }
@@ -416,7 +422,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
 
     // 1. Read the first message from |client_mp|.
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWait(client_mp, MOJO_WAIT_FLAG_READABLE,
+              MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
                        MOJO_DEADLINE_INDEFINITE));
     char buffer[1000] = {};
     uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
@@ -436,7 +442,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
 
     // 4. Read a message from |client_mp|, which should have |mp1| attached.
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWait(client_mp, MOJO_WAIT_FLAG_READABLE,
+              MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
                        MOJO_DEADLINE_INDEFINITE));
     // TODO(vtl): If the scope were to end here (and |client_mp| closed), we'd
     // die (again due to |Channel::HandleLocalError()|).
@@ -483,7 +489,8 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
 
     // 3. Read a message from |mp1|.
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWait(mp1, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE));
+              MojoWait(mp1, MOJO_HANDLE_SIGNAL_READABLE,
+                       MOJO_DEADLINE_INDEFINITE));
     memset(buffer, 0, sizeof(buffer));
     num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(MOJO_RESULT_OK,
@@ -495,7 +502,8 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
 
     // 11. Wait on |mp1| (which should eventually fail) and then close it.
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              MojoWait(mp1, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE));
+              MojoWait(mp1, MOJO_HANDLE_SIGNAL_READABLE,
+                       MOJO_DEADLINE_INDEFINITE));
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(mp1));
   }
 

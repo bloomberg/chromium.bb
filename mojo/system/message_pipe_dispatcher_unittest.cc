@@ -53,14 +53,14 @@ TEST(MessagePipeDispatcherTest, Basic) {
     // Try adding a writable waiter when already writable.
     w.Init();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 0));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 0));
     // Shouldn't need to remove the waiter (it was not added).
 
     // Add a readable waiter to |d0|, then make it readable (by writing to
     // |d1|), then wait.
     w.Init();
     EXPECT_EQ(MOJO_RESULT_OK,
-              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 1));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 1));
     buffer[0] = 123456789;
     EXPECT_EQ(MOJO_RESULT_OK,
               d1->WriteMessage(buffer, kBufferSize,
@@ -75,7 +75,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     // Try adding a readable waiter when already readable (from above).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 2));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 2));
     // Shouldn't need to remove the waiter (it was not added).
 
     // Make |d0| no longer readable (by reading from it).
@@ -91,7 +91,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     // Wait for zero time for readability on |d0| (will time out).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_OK,
-              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 3));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0, NULL));
     EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
@@ -100,7 +100,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     // Wait for non-zero, finite time for readability on |d0| (will time out).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_OK,
-              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 3));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
               w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), NULL));
@@ -185,7 +185,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     // Try waiting for readable on |d0|; should fail (already satisfied).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 0));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 0));
 
     // Try reading from |d1|; should fail (nothing to read).
     buffer[0] = 0;
@@ -201,7 +201,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     // Try waiting for readable on |d0|; should fail (already satisfied).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 1));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 1));
 
     // Read from |d0|.
     buffer[0] = 0;
@@ -216,7 +216,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     // Try waiting for readable on |d0|; should fail (already satisfied).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 2));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 2));
 
     // Read again from |d0|.
     buffer[0] = 0;
@@ -231,12 +231,12 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     // Try waiting for readable on |d0|; should fail (unsatisfiable).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 3));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3));
 
     // Try waiting for writable on |d0|; should fail (unsatisfiable).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              d0->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 4));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 4));
 
     // Try reading from |d0|; should fail (nothing to read and other end
     // closed).
@@ -283,7 +283,7 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
     // Wait for readable on |d1|, which will become readable after some time.
     {
       test::WaiterThread thread(d1,
-                               MOJO_WAIT_FLAG_READABLE,
+                               MOJO_HANDLE_SIGNAL_READABLE,
                                MOJO_DEADLINE_INDEFINITE,
                                1,
                                &did_wait, &result, &context);
@@ -307,7 +307,7 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
     // Now |d1| is already readable. Try waiting for it again.
     {
       test::WaiterThread thread(d1,
-                                MOJO_WAIT_FLAG_READABLE,
+                                MOJO_HANDLE_SIGNAL_READABLE,
                                 MOJO_DEADLINE_INDEFINITE,
                                 2,
                                 &did_wait, &result, &context);
@@ -332,7 +332,7 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
     // cancel that wait.
     {
       test::WaiterThread thread(d1,
-                                MOJO_WAIT_FLAG_READABLE,
+                                MOJO_HANDLE_SIGNAL_READABLE,
                                 MOJO_DEADLINE_INDEFINITE,
                                 3,
                                 &did_wait, &result, &context);
@@ -366,7 +366,7 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
     // cancel that wait.
     {
       test::WaiterThread thread(d1,
-                                MOJO_WAIT_FLAG_READABLE,
+                                MOJO_HANDLE_SIGNAL_READABLE,
                                 MOJO_DEADLINE_INDEFINITE,
                                 4,
                                 &did_wait, &result, &context);
@@ -470,7 +470,7 @@ class ReaderThread : public base::SimpleThread {
     for (;;) {
       // Wait for it to be readable.
       w.Init();
-      result = read_dispatcher_->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 0);
+      result = read_dispatcher_->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 0);
       EXPECT_TRUE(result == MOJO_RESULT_OK ||
                   result == MOJO_RESULT_ALREADY_EXISTS) << "result: " << result;
       if (result == MOJO_RESULT_OK) {

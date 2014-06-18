@@ -77,7 +77,7 @@ define("mojo/public/js/bindings/connector", [
 
   Connector.prototype.waitToReadMore_ = function() {
     this.readWaitCookie_ = support.asyncWait(this.handle_,
-                                             core.WAIT_FLAG_READABLE,
+                                             core.HANDLE_SIGNAL_READABLE,
                                              this.readMore_.bind(this));
   };
 

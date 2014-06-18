@@ -51,7 +51,7 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
 
   // Contains the data needed to track a request to AddHandler().
   struct Handler {
-    Handler() : handler(NULL), wait_signals(MOJO_WAIT_FLAG_NONE), id(0) {}
+    Handler() : handler(NULL), wait_signals(MOJO_HANDLE_SIGNAL_NONE), id(0) {}
 
     MessagePumpMojoHandler* handler;
     MojoHandleSignals wait_signals;

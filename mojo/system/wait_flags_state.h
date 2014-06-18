@@ -16,8 +16,8 @@ namespace system {
 // (for convenience). This should add no overhead.
 struct MOJO_SYSTEM_IMPL_EXPORT WaitFlagsState : public MojoWaitFlagsState {
   WaitFlagsState() {
-    satisfied_signals = MOJO_WAIT_FLAG_NONE;
-    satisfiable_signals = MOJO_WAIT_FLAG_NONE;
+    satisfied_signals = MOJO_HANDLE_SIGNAL_NONE;
+    satisfiable_signals = MOJO_HANDLE_SIGNAL_NONE;
   }
   WaitFlagsState(MojoHandleSignals satisfied, MojoHandleSignals satisfiable) {
     satisfied_signals = satisfied;

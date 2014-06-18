@@ -46,7 +46,7 @@ base::TimeTicks MojoDeadlineToTimeTicks(MojoDeadline deadline) {
 struct WatchData {
   WatchData()
       : id(0),
-        handle_signals(MOJO_WAIT_FLAG_NONE),
+        handle_signals(MOJO_HANDLE_SIGNAL_NONE),
         message_loop(NULL) {}
 
   WatcherID id;
@@ -299,7 +299,7 @@ void HandleWatcher::Start(const Handle& handle,
                           MojoDeadline deadline,
                           const base::Callback<void(MojoResult)>& callback) {
   DCHECK(handle.is_valid());
-  DCHECK_NE(MOJO_WAIT_FLAG_NONE, handle_signals);
+  DCHECK_NE(MOJO_HANDLE_SIGNAL_NONE, handle_signals);
 
   state_.reset(new State(this, handle, handle_signals, deadline, callback));
 }

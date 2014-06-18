@@ -114,7 +114,7 @@ void Connector::OnHandleReady(MojoResult result) {
 
 void Connector::WaitToReadMore() {
   async_wait_id_ = waiter_->AsyncWait(message_pipe_.get().value(),
-                                      MOJO_WAIT_FLAG_READABLE,
+                                      MOJO_HANDLE_SIGNAL_READABLE,
                                       MOJO_DEADLINE_INDEFINITE,
                                       &Connector::CallOnHandleReady,
                                       this);

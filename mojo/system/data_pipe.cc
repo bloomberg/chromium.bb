@@ -168,7 +168,7 @@ MojoResult DataPipe::ProducerEndWriteData(uint32_t num_bytes_written) {
   // If we're now writable, we *became* writable (since we weren't writable
   // during the two-phase write), so awake producer waiters.
   WaitFlagsState new_producer_state = ProducerGetWaitFlagsStateNoLock();
-  if (new_producer_state.satisfies(MOJO_WAIT_FLAG_WRITABLE))
+  if (new_producer_state.satisfies(MOJO_HANDLE_SIGNAL_WRITABLE))
     AwakeProducerWaitersForStateChangeNoLock(new_producer_state);
   WaitFlagsState new_consumer_state = ConsumerGetWaitFlagsStateNoLock();
   if (!new_consumer_state.equals(old_consumer_state))
@@ -320,7 +320,7 @@ MojoResult DataPipe::ConsumerEndReadData(uint32_t num_bytes_read) {
   // If we're now readable, we *became* readable (since we weren't readable
   // during the two-phase read), so awake consumer waiters.
   WaitFlagsState new_consumer_state = ConsumerGetWaitFlagsStateNoLock();
-  if (new_consumer_state.satisfies(MOJO_WAIT_FLAG_READABLE))
+  if (new_consumer_state.satisfies(MOJO_HANDLE_SIGNAL_READABLE))
     AwakeConsumerWaitersForStateChangeNoLock(new_consumer_state);
   WaitFlagsState new_producer_state = ProducerGetWaitFlagsStateNoLock();
   if (!new_producer_state.equals(old_producer_state))

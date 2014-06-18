@@ -215,7 +215,7 @@ MessagePumpMojo::WaitState MessagePumpMojo::GetWaitState(
     const RunState& run_state) const {
   WaitState wait_state;
   wait_state.handles.push_back(run_state.read_handle.get());
-  wait_state.wait_signals.push_back(MOJO_WAIT_FLAG_READABLE);
+  wait_state.wait_signals.push_back(MOJO_HANDLE_SIGNAL_READABLE);
 
   for (HandleToHandler::const_iterator i = handlers_.begin();
        i != handlers_.end(); ++i) {

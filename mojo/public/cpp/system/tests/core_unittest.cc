@@ -99,12 +99,12 @@ TEST(CoreCppTest, Basic) {
     EXPECT_EQ(kInvalidHandleValue, h.get().value());
 
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              Wait(h.get(), MOJO_WAIT_FLAG_EVERYTHING, 1000000));
+              Wait(h.get(), ~MOJO_HANDLE_SIGNAL_NONE, 1000000));
 
     std::vector<Handle> wh;
     wh.push_back(h.get());
     std::vector<MojoHandleSignals> sigs;
-    sigs.push_back(MOJO_WAIT_FLAG_EVERYTHING);
+    sigs.push_back(~MOJO_HANDLE_SIGNAL_NONE);
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               WaitMany(wh, sigs, MOJO_DEADLINE_INDEFINITE));
   }
@@ -163,13 +163,13 @@ TEST(CoreCppTest, Basic) {
       MojoHandle hv1 = h1.get().value();
 
       EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-                Wait(h0.get(), MOJO_WAIT_FLAG_READABLE, 0));
+                Wait(h0.get(), MOJO_HANDLE_SIGNAL_READABLE, 0));
       std::vector<Handle> wh;
       wh.push_back(h0.get());
       wh.push_back(h1.get());
       std::vector<MojoHandleSignals> sigs;
-      sigs.push_back(MOJO_WAIT_FLAG_READABLE);
-      sigs.push_back(MOJO_WAIT_FLAG_WRITABLE);
+      sigs.push_back(MOJO_HANDLE_SIGNAL_READABLE);
+      sigs.push_back(MOJO_HANDLE_SIGNAL_WRITABLE);
       EXPECT_EQ(1, WaitMany(wh, sigs, 1000));
 
       // Test closing |h1| explicitly.
@@ -178,11 +178,11 @@ TEST(CoreCppTest, Basic) {
 
       // Make sure |h1| is closed.
       EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                MojoWait(hv1, MOJO_WAIT_FLAG_EVERYTHING,
+                MojoWait(hv1, ~MOJO_HANDLE_SIGNAL_NONE,
                          MOJO_DEADLINE_INDEFINITE));
 
       EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-                Wait(h0.get(), MOJO_WAIT_FLAG_READABLE,
+                Wait(h0.get(), MOJO_HANDLE_SIGNAL_READABLE,
                      MOJO_DEADLINE_INDEFINITE));
     }
     // |hv0| should have been closed when |h0| went out of scope, so this close
@@ -203,7 +203,7 @@ TEST(CoreCppTest, Basic) {
                                 NULL, 0,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
       EXPECT_EQ(MOJO_RESULT_OK,
-                Wait(h1.get(), MOJO_WAIT_FLAG_READABLE,
+                Wait(h1.get(), MOJO_HANDLE_SIGNAL_READABLE,
                      MOJO_DEADLINE_INDEFINITE));
       char buffer[10] = { 0 };
       uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
@@ -245,7 +245,7 @@ TEST(CoreCppTest, Basic) {
 
       // Read "hello" and the sent handle.
       EXPECT_EQ(MOJO_RESULT_OK,
-                Wait(h0.get(), MOJO_WAIT_FLAG_READABLE,
+                Wait(h0.get(), MOJO_HANDLE_SIGNAL_READABLE,
                      MOJO_DEADLINE_INDEFINITE));
       memset(buffer, 0, sizeof(buffer));
       buffer_size = static_cast<uint32_t>(sizeof(buffer));
@@ -267,7 +267,7 @@ TEST(CoreCppTest, Basic) {
       // Save |handles[0]| to check that it gets properly closed.
       hv0 = handles[0];
       EXPECT_EQ(MOJO_RESULT_OK,
-                Wait(mp.handle1.get(), MOJO_WAIT_FLAG_READABLE,
+                Wait(mp.handle1.get(), MOJO_HANDLE_SIGNAL_READABLE,
                      MOJO_DEADLINE_INDEFINITE));
       memset(buffer, 0, sizeof(buffer));
       buffer_size = static_cast<uint32_t>(sizeof(buffer));

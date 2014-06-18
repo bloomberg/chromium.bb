@@ -101,7 +101,7 @@ TEST_F(RunLoopTest, HandleReady) {
   RunLoop run_loop;
   handler.set_run_loop(&run_loop);
   run_loop.AddHandler(&handler, test_pipe.handle0.get(),
-                      MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE);
+                      MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE);
   run_loop.Run();
   EXPECT_EQ(1, handler.ready_count());
   EXPECT_EQ(0, handler.error_count());
@@ -137,7 +137,7 @@ TEST_F(RunLoopTest, QuitFromReady) {
   RunLoop run_loop;
   handler.set_run_loop(&run_loop);
   run_loop.AddHandler(&handler, test_pipe.handle0.get(),
-                      MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE);
+                      MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE);
   run_loop.Run();
   EXPECT_EQ(1, handler.ready_count());
   EXPECT_EQ(0, handler.error_count());
@@ -172,7 +172,7 @@ TEST_F(RunLoopTest, QuitWhenDeadlineExpired) {
   RunLoop run_loop;
   handler.set_run_loop(&run_loop);
   run_loop.AddHandler(&handler, test_pipe.handle0.get(),
-                      MOJO_WAIT_FLAG_READABLE,
+                      MOJO_HANDLE_SIGNAL_READABLE,
                       static_cast<MojoDeadline>(10000));
   run_loop.Run();
   EXPECT_EQ(0, handler.ready_count());

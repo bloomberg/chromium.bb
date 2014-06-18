@@ -50,8 +50,8 @@ class MessageProcessor :
     pipes.push_back(client.get());
     pipes.push_back(interceptor.get());
     std::vector<MojoHandleSignals> handle_signals;
-    handle_signals.push_back(MOJO_WAIT_FLAG_READABLE);
-    handle_signals.push_back(MOJO_WAIT_FLAG_READABLE);
+    handle_signals.push_back(MOJO_HANDLE_SIGNAL_READABLE);
+    handle_signals.push_back(MOJO_HANDLE_SIGNAL_READABLE);
 
     scoped_ptr<char[]> mbuf(new char[kMessageBufSize]);
     scoped_ptr<MojoHandle[]> hbuf(new MojoHandle[kHandleBufSize]);
@@ -90,7 +90,7 @@ class MessageProcessor :
 
       mojo::MessagePipeHandle write_handle = (r == 0) ? pipes[1] : pipes[0];
       if (!CheckResult(Wait(write_handle,
-                            MOJO_WAIT_FLAG_WRITABLE,
+                            MOJO_HANDLE_SIGNAL_WRITABLE,
                             MOJO_DEADLINE_INDEFINITE)))
         break;
 

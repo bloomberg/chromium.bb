@@ -264,7 +264,7 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
   Waiter waiter;
   waiter.Init();
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp->AddWaiter(0, &waiter, MOJO_WAIT_FLAG_READABLE, 123));
+            mp->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123));
 
   // Don't wait for the shutdown to run ...
   io_thread()->PostTask(FROM_HERE,
@@ -315,7 +315,7 @@ TEST_F(ChannelTest, WaitAfterAttachRunAndShutdown) {
   Waiter waiter;
   waiter.Init();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            mp->AddWaiter(0, &waiter, MOJO_WAIT_FLAG_READABLE, 123));
+            mp->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123));
 
   mp->Close(0);
 

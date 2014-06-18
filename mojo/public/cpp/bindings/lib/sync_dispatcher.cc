@@ -18,7 +18,7 @@ bool WaitForMessageAndDispatch(MessagePipeHandle handle,
     if (rv == MOJO_RESULT_OK)
       return result;
     if (rv == MOJO_RESULT_SHOULD_WAIT)
-      rv = Wait(handle, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE);
+      rv = Wait(handle, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE);
     if (rv != MOJO_RESULT_OK)
       return false;
   }

@@ -57,7 +57,7 @@ class RunLoop {
   struct HandlerData {
     HandlerData()
         : handler(NULL),
-          handle_signals(MOJO_WAIT_FLAG_NONE),
+          handle_signals(MOJO_HANDLE_SIGNAL_NONE),
           deadline(0),
           id(0) {}
 
