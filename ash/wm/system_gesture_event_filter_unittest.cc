@@ -383,8 +383,8 @@ TEST_F(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
       toplevel->GetWindowBoundsInScreen().ToString());
 }
 
-TEST_F(SystemGestureEventFilterTest, TwoFingerDragEdge) {
-  gfx::Rect bounds(0, 0, 100, 100);
+TEST_F(SystemGestureEventFilterTest, DISABLED_TwoFingerDragEdge) {
+  gfx::Rect bounds(0, 0, 200, 100);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
       new ResizableWidgetDelegate, root_window, bounds);
@@ -397,6 +397,8 @@ TEST_F(SystemGestureEventFilterTest, TwoFingerDragEdge) {
     gfx::Point(0, 40),   // Left edge
   };
 
+  EXPECT_EQ(HTCAPTION, toplevel->GetNativeWindow()->delegate()->
+                      GetNonClientComponent(points[0]));
   EXPECT_EQ(HTLEFT, toplevel->GetNativeWindow()->delegate()->
         GetNonClientComponent(points[1]));
 

@@ -281,7 +281,11 @@ int CustomFrameView::NonClientTopBorderHeight() const {
 int CustomFrameView::CaptionButtonY() const {
   // Maximized buttons start at window top so that even if their images aren't
   // drawn flush with the screen edge, they still obey Fitts' Law.
-  return frame_->IsMaximized() ? FrameBorderThickness() : kFrameBorderThickness;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  return FrameBorderThickness();
+#else
+  return frame_->IsMaximized() ? FrameBorderThickness() : kFrameShadowThickness;
+#endif
 }
 
 int CustomFrameView::TitlebarBottomThickness() const {
