@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/view.h"
 
@@ -58,17 +59,8 @@ class VIEWS_EXPORT Label : public View {
   void SetBackgroundColor(SkColor color);
   SkColor background_color() const { return background_color_; }
 
-  // Enables a drop shadow underneath the text.
-  void SetShadowColors(SkColor enabled_color, SkColor disabled_color);
-
-  // Sets the drop shadow's offset from the text.
-  void SetShadowOffset(int x, int y);
-
-  // Sets the shadow blur. Default is zero.
-  void set_shadow_blur(double shadow_blur) { shadow_blur_ = shadow_blur; }
-
-  // Disables shadows.
-  void ClearEmbellishing();
+  // Set drop shadows underneath the text.
+  void set_shadows(const gfx::ShadowValues& shadows) { shadows_ = shadows; }
 
   // Set the color of a halo on the painted text (use transparent for none).
   void set_halo_color(SkColor halo_color) { halo_color_ = halo_color; }
@@ -241,19 +233,7 @@ class VIEWS_EXPORT Label : public View {
   // Controls whether the directionality is auto-detected based on first strong
   // directionality character or is determined by the application UI's locale.
   gfx::DirectionalityMode directionality_mode_;
-
-  // Colors for shadow.
-  SkColor enabled_shadow_color_;
-  SkColor disabled_shadow_color_;
-
-  // Space between text and shadow.
-  gfx::Point shadow_offset_;
-
-  // Should a shadow be drawn behind the text?
-  bool has_shadow_;
-
-  // Indicates the level of shadow blurring. Default is zero.
-  double shadow_blur_;
+  gfx::ShadowValues shadows_;
 
   // The halo color drawn around the text if it is not transparent.
   SkColor halo_color_;

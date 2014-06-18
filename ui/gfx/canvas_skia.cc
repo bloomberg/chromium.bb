@@ -240,7 +240,7 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
 #endif
 
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-  render_text->SetTextShadows(shadows);
+  render_text->set_shadows(shadows);
 
   if (flags & MULTI_LINE) {
     WordWrapBehavior wrap_behavior = IGNORE_LONG_WORDS;

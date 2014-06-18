@@ -89,9 +89,8 @@ views::Widget* CreateWindowLabel(aura::Window* root_window,
   views::Label* label = new views::Label;
   label->SetEnabledColor(kLabelColor);
   label->SetBackgroundColor(kLabelBackground);
-  label->SetShadowColors(kLabelShadow, kLabelShadow);
-  label->SetShadowOffset(0, kVerticalShadowOffset);
-  label->set_shadow_blur(kShadowBlur);
+  label->set_shadows(gfx::ShadowValues(1, gfx::ShadowValue(
+      gfx::Point(0, kVerticalShadowOffset), kShadowBlur, kLabelShadow)));
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   label->SetFontList(bundle.GetFontList(ui::ResourceBundle::BoldFont));
   label->SetText(title);

@@ -19,7 +19,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/insets.h"
-#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/utf16_indexing.h"
@@ -103,20 +102,6 @@ void Label::SetBackgroundColor(SkColor color) {
   background_color_ = color;
   background_color_set_ = true;
   RecalculateColors();
-}
-
-void Label::SetShadowColors(SkColor enabled_color, SkColor disabled_color) {
-  enabled_shadow_color_ = enabled_color;
-  disabled_shadow_color_ = disabled_color;
-  has_shadow_ = true;
-}
-
-void Label::SetShadowOffset(int x, int y) {
-  shadow_offset_.SetPoint(x, y);
-}
-
-void Label::ClearEmbellishing() {
-  has_shadow_ = false;
 }
 
 void Label::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
@@ -334,13 +319,8 @@ void Label::PaintText(gfx::Canvas* canvas,
   if (elide_behavior_ == gfx::FADE_TAIL) {
     canvas->DrawFadedString(text, font_list_, color, text_bounds, flags);
   } else {
-    gfx::ShadowValues shadows;
-    if (has_shadow_) {
-      shadows.push_back(gfx::ShadowValue(shadow_offset_, shadow_blur_,
-          enabled() ? enabled_shadow_color_ : disabled_shadow_color_));
-    }
     canvas->DrawStringRectWithShadows(text, font_list_, color, text_bounds,
-                                      line_height_, flags, shadows);
+                                      line_height_, flags, shadows_);
 
     if (SkColorGetA(halo_color_) != SK_AlphaTRANSPARENT) {
       canvas->DrawStringRectWithHalo(text, font_list_, color, halo_color_,
@@ -413,11 +393,6 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   elide_behavior_ = gfx::ELIDE_TAIL;
   collapse_when_hidden_ = false;
   directionality_mode_ = gfx::DIRECTIONALITY_FROM_UI;
-  enabled_shadow_color_ = 0;
-  disabled_shadow_color_ = 0;
-  shadow_offset_.SetPoint(1, 1);
-  has_shadow_ = false;
-  shadow_blur_ = 0;
   halo_color_ = SK_ColorTRANSPARENT;
   cached_heights_.resize(kCachedSizeLimit);
   ResetCachedSize();

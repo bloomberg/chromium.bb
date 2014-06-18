@@ -13,17 +13,12 @@
 namespace ash {
 
 void SetupLabelForTray(views::Label* label) {
-  // Making label_font static to avoid the time penalty of Derive for all but
-  // the first call.
-  static const gfx::FontList label_font_list(
-      gfx::FontList().Derive(1, gfx::Font::BOLD));
-  label->SetFontList(label_font_list);
+  label->SetFontList(gfx::FontList().Derive(1, gfx::Font::BOLD));
   label->SetAutoColorReadabilityEnabled(false);
   label->SetEnabledColor(SK_ColorWHITE);
   label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
-  label->SetShadowColors(SkColorSetARGB(64, 0, 0, 0),
-                         SkColorSetARGB(64, 0, 0, 0));
-  label->SetShadowOffset(0, 1);
+  label->set_shadows(gfx::ShadowValues(1,
+      gfx::ShadowValue(gfx::Point(0, 1), 0, SkColorSetARGB(64, 0, 0, 0))));
 }
 
 void SetTrayImageItemBorder(views::View* tray_view,

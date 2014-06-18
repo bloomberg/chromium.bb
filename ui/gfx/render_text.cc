@@ -762,7 +762,7 @@ void RenderText::Draw(Canvas* canvas) {
 
   if (clip_to_display_rect()) {
     Rect clip_rect(display_rect());
-    clip_rect.Inset(ShadowValue::GetMargin(text_shadows_));
+    clip_rect.Inset(ShadowValue::GetMargin(shadows_));
 
     canvas->Save();
     canvas->ClipRect(clip_rect);
@@ -871,10 +871,6 @@ SelectionModel RenderText::GetSelectionModelForSelectionStart() {
     return selection_model_;
   return SelectionModel(sel.start(),
                         sel.is_reversed() ? CURSOR_BACKWARD : CURSOR_FORWARD);
-}
-
-void RenderText::SetTextShadows(const ShadowValues& shadows) {
-  text_shadows_ = shadows;
 }
 
 RenderText::RenderText()
@@ -1110,7 +1106,7 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
 }
 
 void RenderText::ApplyTextShadows(internal::SkiaTextRenderer* renderer) {
-  skia::RefPtr<SkDrawLooper> looper = CreateShadowDrawLooper(text_shadows_);
+  skia::RefPtr<SkDrawLooper> looper = CreateShadowDrawLooper(shadows_);
   renderer->SetDrawLooper(looper.get());
 }
 

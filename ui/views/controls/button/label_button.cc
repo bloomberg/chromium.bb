@@ -320,7 +320,7 @@ void LabelButton::ResetColorsFromNativeTheme() {
     label_->SetBackgroundColor(SK_ColorBLACK);
     label_->set_background(Background::CreateSolidBackground(SK_ColorBLACK));
     label_->SetAutoColorReadabilityEnabled(true);
-    label_->ClearEmbellishing();
+    label_->set_shadows(gfx::ShadowValues());
   } else if (style() == STYLE_BUTTON) {
     // TODO(erg): This is disabled on desktop linux because of the binary asset
     // confusion. These details should either be pushed into ui::NativeThemeWin
@@ -332,8 +332,8 @@ void LabelButton::ResetColorsFromNativeTheme() {
     label_->SetBackgroundColor(theme->GetSystemColor(
         ui::NativeTheme::kColorId_ButtonBackgroundColor));
     label_->SetAutoColorReadabilityEnabled(false);
-    label_->SetShadowColors(kStyleButtonShadowColor, kStyleButtonShadowColor);
-    label_->SetShadowOffset(0, 1);
+    label_->set_shadows(gfx::ShadowValues(1,
+        gfx::ShadowValue(gfx::Point(0, 1), 0, kStyleButtonShadowColor)));
 #endif
     label_->set_background(NULL);
   } else {

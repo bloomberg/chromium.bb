@@ -343,9 +343,8 @@ class GFX_EXPORT RenderText {
   VisualCursorDirection GetVisualDirectionOfLogicalEnd();
 
   // Returns the size required to display the current string (which is the
-  // wrapped size in multiline mode). Note that this returns the raw size of the
-  // string, which does not include the cursor or the margin area of text
-  // shadows.
+  // wrapped size in multiline mode). The returned size does not include space
+  // reserved for the cursor or the offset text shadows.
   virtual Size GetStringSize() = 0;
 
   // This is same as GetStringSize except that fractional size is returned.
@@ -408,7 +407,7 @@ class GFX_EXPORT RenderText {
   SelectionModel GetSelectionModelForSelectionStart();
 
   // Sets shadows to drawn with text.
-  void SetTextShadows(const ShadowValues& shadows);
+  void set_shadows(const ShadowValues& shadows) { shadows_ = shadows; }
 
   typedef std::pair<Font, Range> FontSpan;
   // For testing purposes, returns which fonts were chosen for which parts of
@@ -694,7 +693,7 @@ class GFX_EXPORT RenderText {
   bool cached_bounds_and_offset_valid_;
 
   // Text shadows to be drawn.
-  ShadowValues text_shadows_;
+  ShadowValues shadows_;
 
   // A list of valid layout text line break positions.
   BreakList<size_t> line_breaks_;
