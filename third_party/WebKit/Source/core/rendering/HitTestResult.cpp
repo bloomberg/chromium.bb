@@ -114,6 +114,17 @@ HitTestResult& HitTestResult::operator=(const HitTestResult& other)
     return *this;
 }
 
+void HitTestResult::trace(Visitor* visitor)
+{
+    visitor->trace(m_innerNode);
+    visitor->trace(m_innerPossiblyPseudoNode);
+    visitor->trace(m_innerNonSharedNode);
+    visitor->trace(m_innerURLElement);
+#if ENABLE(OILPAN)
+    visitor->trace(m_rectBasedTestResult);
+#endif
+}
+
 RenderObject* HitTestResult::renderer() const
 {
     if (!m_innerNode)

@@ -50,9 +50,14 @@ ContextMenuController::~ContextMenuController()
 {
 }
 
-PassOwnPtr<ContextMenuController> ContextMenuController::create(Page* page, ContextMenuClient* client)
+PassOwnPtrWillBeRawPtr<ContextMenuController> ContextMenuController::create(Page* page, ContextMenuClient* client)
 {
-    return adoptPtr(new ContextMenuController(page, client));
+    return adoptPtrWillBeNoop(new ContextMenuController(page, client));
+}
+
+void ContextMenuController::trace(Visitor* visitor)
+{
+    visitor->trace(m_hitTestResult);
 }
 
 void ContextMenuController::clearContextMenu()

@@ -41,50 +41,78 @@ using namespace WebCore;
 
 namespace blink {
 
+class WebHitTestResultPrivate {
+public:
+    WebHitTestResultPrivate(const HitTestResult&);
+    WebHitTestResultPrivate(const WebHitTestResultPrivate&);
+
+    RefPtrWillBePersistent<Node> innerNode;
+    RefPtrWillBePersistent<Element> innerURLElement;
+    LayoutPoint localPoint;
+    KURL absoluteImageURL;
+    KURL absoluteLinkURL;
+    bool isContentEditable;
+};
+
+inline WebHitTestResultPrivate::WebHitTestResultPrivate(const HitTestResult& result)
+    : innerNode(result.innerNode())
+    , innerURLElement(result.URLElement())
+    , localPoint(result.localPoint())
+    , absoluteImageURL(result.absoluteImageURL())
+    , absoluteLinkURL(result.absoluteLinkURL())
+    , isContentEditable(result.isContentEditable())
+{
+}
+
+inline WebHitTestResultPrivate::WebHitTestResultPrivate(const WebHitTestResultPrivate& result)
+    : innerNode(result.innerNode)
+    , innerURLElement(result.innerURLElement)
+    , localPoint(result.localPoint)
+    , absoluteImageURL(result.absoluteImageURL)
+    , absoluteLinkURL(result.absoluteLinkURL)
+    , isContentEditable(result.isContentEditable)
+{
+}
+
 WebNode WebHitTestResult::node() const
 {
-    return WebNode(m_private->innerNode());
+    return WebNode(m_private->innerNode);
 }
 
 WebPoint WebHitTestResult::localPoint() const
 {
-    return roundedIntPoint(m_private->localPoint());
+    return roundedIntPoint(m_private->localPoint);
 }
 
 WebElement WebHitTestResult::urlElement() const
 {
-    return WebElement(m_private->URLElement());
+    return WebElement(m_private->innerURLElement);
 }
 
 WebURL WebHitTestResult::absoluteImageURL() const
 {
-    return m_private->absoluteImageURL();
+    return m_private->absoluteImageURL;
 }
 
 WebURL WebHitTestResult::absoluteLinkURL() const
 {
-    return m_private->absoluteLinkURL();
+    return m_private->absoluteLinkURL;
 }
 
 bool WebHitTestResult::isContentEditable() const
 {
-    return m_private->isContentEditable();
+    return m_private->isContentEditable;
 }
 
 WebHitTestResult::WebHitTestResult(const HitTestResult& result)
 {
-    m_private.reset(new HitTestResult(result));
+    m_private.reset(new WebHitTestResultPrivate(result));
 }
 
 WebHitTestResult& WebHitTestResult::operator=(const HitTestResult& result)
 {
-    m_private.reset(new HitTestResult(result));
+    m_private.reset(new WebHitTestResultPrivate(result));
     return *this;
-}
-
-WebHitTestResult::operator HitTestResult() const
-{
-    return *m_private.get();
 }
 
 bool WebHitTestResult::isNull() const
@@ -94,7 +122,10 @@ bool WebHitTestResult::isNull() const
 
 void WebHitTestResult::assign(const WebHitTestResult& info)
 {
-    m_private.reset(new HitTestResult(info));
+    if (info.isNull())
+        m_private.reset(0);
+    else
+        m_private.reset(new WebHitTestResultPrivate(*info.m_private.get()));
 }
 
 void WebHitTestResult::reset()
