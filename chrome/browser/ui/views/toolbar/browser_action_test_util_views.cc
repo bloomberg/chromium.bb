@@ -44,8 +44,8 @@ void BrowserActionTestUtil::InspectPopup(int index) {
 }
 
 bool BrowserActionTestUtil::HasIcon(int index) {
-  return !GetContainer(browser_)->GetBrowserActionViewAt(index)->button()->
-      GetImage(views::Button::STATE_NORMAL).isNull();
+  return GetContainer(browser_)->GetBrowserActionViewAt(index)->button()->
+      HasIcon();
 }
 
 gfx::Image BrowserActionTestUtil::GetIcon(int index) {

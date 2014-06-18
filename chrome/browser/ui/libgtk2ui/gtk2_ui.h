@@ -103,7 +103,7 @@ class Gtk2UI : public views::LinuxUI {
       const std::string& content_type, int size) const OVERRIDE;
   virtual scoped_ptr<views::Border> CreateNativeBorder(
       views::LabelButton* owning_button,
-      scoped_ptr<views::LabelButtonBorder> border) OVERRIDE;
+      scoped_ptr<views::Border> border) OVERRIDE;
   virtual void AddWindowButtonOrderObserver(
       views::WindowButtonOrderObserver* observer) OVERRIDE;
   virtual void RemoveWindowButtonOrderObserver(

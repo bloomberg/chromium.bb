@@ -28,7 +28,6 @@
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"

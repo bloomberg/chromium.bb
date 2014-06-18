@@ -17,7 +17,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/native_theme_delegate.h"
 
 using views::Button;
@@ -64,7 +63,7 @@ class ButtonImageSkiaSource : public gfx::ImageSkiaSource {
 
 Gtk2Border::Gtk2Border(Gtk2UI* gtk2_ui,
                        views::LabelButton* owning_button,
-                       scoped_ptr<views::LabelButtonBorder> border)
+                       scoped_ptr<views::Border> border)
     : gtk2_ui_(gtk2_ui),
       owning_button_(owning_button),
       border_(border.Pass()),
@@ -133,8 +132,7 @@ void Gtk2Border::PaintState(const ui::NativeTheme::State state,
   bool focused = extra.button.is_focused;
   Button::ButtonState views_state = Button::GetButtonStateFrom(state);
 
-  if (border_->GetPainter(focused, views_state) ||
-      (focused && border_->GetPainter(false, views_state))) {
+  if (ShouldDrawBorder(focused, views_state)) {
     gfx::ImageSkia* image = &button_images_[focused][views_state];
 
     if (image->isNull() || image->size() != rect.size()) {
@@ -145,6 +143,19 @@ void Gtk2Border::PaintState(const ui::NativeTheme::State state,
     }
     canvas->DrawImageInt(*image, rect.x(), rect.y());
   }
+}
+
+bool Gtk2Border::ShouldDrawBorder(bool focused,
+                                  views::Button::ButtonState state) {
+  // This logic should be kept in sync with the LabelButtonBorder constructor.
+  if (owning_button_->style() == Button::STYLE_BUTTON) {
+    return true;
+  } else if (owning_button_->style() == Button::STYLE_TEXTBUTTON) {
+    return focused == false && (state == Button::STATE_HOVERED ||
+                                state == Button::STATE_PRESSED);
+  }
+
+  return false;
 }
 
 }  // namespace libgtk2ui

@@ -28,7 +28,6 @@
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/painter.h"

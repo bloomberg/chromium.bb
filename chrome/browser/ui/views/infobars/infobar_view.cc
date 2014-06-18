@@ -23,7 +23,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -130,8 +129,8 @@ views::MenuButton* InfoBarView::CreateMenuButton(
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   menu_button->set_menu_marker(
       rb.GetImageNamed(IDR_INFOBARBUTTON_MENU_DROPARROW).ToImageSkia());
-  menu_button->SetTextColor(views::Button::STATE_NORMAL, SK_ColorBLACK);
-  menu_button->SetTextColor(views::Button::STATE_HOVERED, SK_ColorBLACK);
+  menu_button->SetEnabledColor(SK_ColorBLACK);
+  menu_button->SetHoverColor(SK_ColorBLACK);
   menu_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   menu_button->SizeToPreferredSize();
   menu_button->SetFocusable(true);

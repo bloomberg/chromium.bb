@@ -28,6 +28,9 @@ class NewAvatarButton : public views::MenuButton,
                   Browser* browser);
   virtual ~NewAvatarButton();
 
+  // views::TextButton:
+  virtual void OnPaintText(gfx::Canvas* canvas, PaintButtonMode mode) OVERRIDE;
+
  private:
   friend class NewAvatarMenuButtonTest;
   friend class ProfileChooserViewBrowserTest;

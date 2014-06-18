@@ -100,10 +100,6 @@ void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
   explicitly_set_colors_[for_state] = true;
 }
 
-void LabelButton::SetHaloColor(SkColor color) {
-  label_->set_halo_color(color);
-}
-
 bool LabelButton::GetTextMultiLine() const {
   return label_->is_multi_line();
 }
@@ -226,7 +222,7 @@ void LabelButton::Layout() {
     adjusted_alignment = (adjusted_alignment == gfx::ALIGN_LEFT) ?
         gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT;
 
-  gfx::Rect child_area(GetChildAreaBounds());
+  gfx::Rect child_area(GetLocalBounds());
   child_area.Inset(GetInsets());
 
   gfx::Size image_size(image_->GetPreferredSize());
@@ -277,10 +273,6 @@ scoped_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
 void LabelButton::SetBorder(scoped_ptr<Border> border) {
   border_is_themed_border_ = false;
   View::SetBorder(border.Pass());
-}
-
-gfx::Rect LabelButton::GetChildAreaBounds() {
-  return GetLocalBounds();
 }
 
 void LabelButton::OnPaint(gfx::Canvas* canvas) {
@@ -374,7 +366,7 @@ void LabelButton::UpdateThemedBorder() {
   views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
     SetBorder(linux_ui->CreateNativeBorder(
-        this, label_button_border.Pass()));
+        this, label_button_border.PassAs<Border>()));
   } else
 #endif
   {

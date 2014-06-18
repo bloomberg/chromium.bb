@@ -944,7 +944,7 @@ void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {
     if (is_all_selected)
       model()->GetDataForURLExport(&url, &title, &favicon);
     button_drag_utils::SetURLAndDragImage(url, title, favicon.AsImageSkia(),
-                                          NULL, data, GetWidget());
+                                          data, GetWidget());
     data->SetURL(url, title);
   }
 }

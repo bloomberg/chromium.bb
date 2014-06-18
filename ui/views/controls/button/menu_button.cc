@@ -16,7 +16,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/text_constants.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/mouse_constants.h"
@@ -47,7 +46,7 @@ MenuButton::MenuButton(ButtonListener* listener,
                        const base::string16& text,
                        MenuButtonListener* menu_button_listener,
                        bool show_menu_marker)
-    : LabelButton(listener, text),
+    : TextButton(listener, text),
       menu_visible_(false),
       menu_offset_(kDefaultMenuOffsetX, kDefaultMenuOffsetY),
       listener_(menu_button_listener),
@@ -55,7 +54,7 @@ MenuButton::MenuButton(ButtonListener* listener,
       menu_marker_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_MENU_DROPARROW).ToImageSkia()),
       destroyed_flag_(NULL) {
-  SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  set_alignment(TextButton::ALIGN_LEFT);
 }
 
 MenuButton::~MenuButton() {
@@ -134,8 +133,8 @@ bool MenuButton::Activate() {
   return true;
 }
 
-void MenuButton::OnPaint(gfx::Canvas* canvas) {
-  LabelButton::OnPaint(canvas);
+void MenuButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
+  TextButton::PaintButton(canvas, mode);
 
   if (show_menu_marker_)
     PaintMenuMarker(canvas);
@@ -148,7 +147,7 @@ void MenuButton::OnPaint(gfx::Canvas* canvas) {
 ////////////////////////////////////////////////////////////////////////////////
 
 gfx::Size MenuButton::GetPreferredSize() const {
-  gfx::Size prefsize = LabelButton::GetPreferredSize();
+  gfx::Size prefsize = TextButton::GetPreferredSize();
   if (show_menu_marker_) {
     prefsize.Enlarge(menu_marker_->width() + kMenuMarkerPaddingLeft +
                          kMenuMarkerPaddingRight,
@@ -187,7 +186,7 @@ void MenuButton::OnMouseReleased(const ui::MouseEvent& event) {
       HitTestPoint(event.location())) {
     Activate();
   } else {
-    LabelButton::OnMouseReleased(event);
+    TextButton::OnMouseReleased(event);
   }
 }
 
@@ -210,7 +209,7 @@ void MenuButton::OnGestureEvent(ui::GestureEvent* event) {
     // the gesture event here.
     return;
   }
-  LabelButton::OnGestureEvent(event);
+  TextButton::OnGestureEvent(event);
 }
 
 bool MenuButton::OnKeyPressed(const ui::KeyEvent& event) {
@@ -264,17 +263,6 @@ void MenuButton::PaintMenuMarker(gfx::Canvas* canvas) {
                          menu_marker_->height());
   arrow_bounds.set_x(GetMirroredXForRect(arrow_bounds));
   canvas->DrawImageInt(*menu_marker_, arrow_bounds.x(), arrow_bounds.y());
-}
-
-gfx::Rect MenuButton::GetChildAreaBounds() {
-  gfx::Size s = size();
-
-  if (show_menu_marker_) {
-    s.set_width(s.width() - menu_marker_->width() - kMenuMarkerPaddingLeft -
-                kMenuMarkerPaddingRight);
-  }
-
-  return gfx::Rect(s);
 }
 
 int MenuButton::GetMaximumScreenXCoordinate() {

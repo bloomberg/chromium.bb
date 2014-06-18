@@ -30,7 +30,7 @@ class VIEWS_EXPORT RadioButton : public Checkbox {
   // Overridden from Button:
   virtual void NotifyClick(const ui::Event& event) OVERRIDE;
 
-  // Overridden from LabelButton:
+  // Overridden from TextButtonBase:
   virtual ui::NativeTheme::Part GetThemePart() const OVERRIDE;
 
   // Overridden from Checkbox:

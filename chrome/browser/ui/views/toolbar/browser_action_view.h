@@ -54,6 +54,9 @@ class BrowserActionView : public views::View {
     // Called when a browser action becomes visible/hidden.
     virtual void OnBrowserActionVisibilityChanged() = 0;
 
+    virtual bool NeedToShowMultipleIconStates() const;
+    virtual bool NeedToShowTooltip() const;
+
    protected:
     virtual ~Delegate() {}
   };

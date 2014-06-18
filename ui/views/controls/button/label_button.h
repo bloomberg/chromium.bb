@@ -38,13 +38,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // Get or set the text shown on the button.
   const base::string16& GetText() const;
-  virtual void SetText(const base::string16& text);
+  void SetText(const base::string16& text);
 
   // Set the text color shown for the specified button state.
   void SetTextColor(ButtonState for_state, SkColor color);
-
-  // Sets a halo color on the label.
-  void SetHaloColor(SkColor color);
 
   // Get or set the text's multi-line property to break on '\n', etc.
   bool GetTextMultiLine() const;
@@ -75,7 +72,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void SetStyle(ButtonStyle style);
 
   void SetFocusPainter(scoped_ptr<Painter> focus_painter);
-  Painter* focus_painter() { return focus_painter_.get(); }
 
   // View:
   virtual void SetBorder(scoped_ptr<Border> border) OVERRIDE;
@@ -86,10 +82,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
  protected:
   ImageView* image() const { return image_; }
   Label* label() const { return label_; }
-
-  // Returns the available area for the label and image. Subclasses can change
-  // these bounds if they need room to do manual painting.
-  virtual gfx::Rect GetChildAreaBounds();
 
   // View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;

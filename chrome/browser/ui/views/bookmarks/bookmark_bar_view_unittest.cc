@@ -18,7 +18,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/text_button.h"
 
 class BookmarkBarViewInstantExtendedTest : public BrowserWithTestWindowTest {
  public:

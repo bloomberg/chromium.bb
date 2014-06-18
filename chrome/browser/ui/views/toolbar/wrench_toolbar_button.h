@@ -17,14 +17,13 @@ class WrenchToolbarButton : public views::MenuButton,
 
   void SetSeverity(WrenchIconPainter::Severity severity, bool animate);
 
+ private:
   // views::MenuButton:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // WrenchIconPainter::Delegate:
   virtual void ScheduleWrenchIconPaint() OVERRIDE;
 
- private:
   WrenchIconPainter::BezelType GetCurrentBezelType() const;
 
   scoped_ptr<WrenchIconPainter> wrench_icon_painter_;

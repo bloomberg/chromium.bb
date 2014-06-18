@@ -45,7 +45,6 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/linux_ui/window_button_order_observer.h"
 
 #if defined(USE_GCONF)
@@ -558,9 +557,9 @@ gfx::Image Gtk2UI::GetIconForContentType(
 
 scoped_ptr<views::Border> Gtk2UI::CreateNativeBorder(
     views::LabelButton* owning_button,
-    scoped_ptr<views::LabelButtonBorder> border) {
+    scoped_ptr<views::Border> border) {
   if (owning_button->GetNativeTheme() != NativeThemeGtk2::instance())
-    return border.PassAs<views::Border>();
+    return border.Pass();
 
   return scoped_ptr<views::Border>(
       new Gtk2Border(this, owning_button, border.Pass()));

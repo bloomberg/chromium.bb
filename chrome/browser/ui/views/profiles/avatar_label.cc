@@ -14,7 +14,6 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/views/border.h"
 #include "ui/views/painter.h"
 
 namespace {

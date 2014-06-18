@@ -7,11 +7,14 @@
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
-#include "ui/views/painter.h"
 
 WrenchToolbarButton::WrenchToolbarButton(views::MenuButtonListener* listener)
     : views::MenuButton(NULL, base::string16(), listener, false) {
   wrench_icon_painter_.reset(new WrenchIconPainter(this));
+
+  // Used for sizing only.
+  ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  SetIcon(*rb.GetImageSkiaNamed(IDR_TOOLBAR_BEZEL_HOVER));
 }
 
 WrenchToolbarButton::~WrenchToolbarButton() {
@@ -20,11 +23,6 @@ WrenchToolbarButton::~WrenchToolbarButton() {
 void WrenchToolbarButton::SetSeverity(WrenchIconPainter::Severity severity,
                                       bool animate) {
   wrench_icon_painter_->SetSeverity(severity, animate);
-}
-
-gfx::Size WrenchToolbarButton::GetPreferredSize() const {
-  return ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(IDR_TOOLBAR_BEZEL_HOVER)->size();
 }
 
 void WrenchToolbarButton::OnPaint(gfx::Canvas* canvas) {

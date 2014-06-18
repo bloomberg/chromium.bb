@@ -46,7 +46,7 @@ namespace views {
 class CustomButton;
 class MenuButton;
 class MenuItemView;
-class LabelButton;
+class TextButton;
 }
 
 // BookmarkBarView renders the BookmarkModel.  Each starred entry on the
@@ -289,7 +289,7 @@ class BookmarkBarView : public DetachableToolbarView,
   int GetBookmarkButtonCount() const;
 
   // Returns the button at the specified index.
-  views::LabelButton* GetBookmarkButton(int index);
+  views::TextButton* GetBookmarkButton(int index);
 
   // Returns BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR or
   // BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR based on detached state.
@@ -312,11 +312,11 @@ class BookmarkBarView : public DetachableToolbarView,
   views::View* CreateBookmarkButton(const BookmarkNode* node);
 
   // Creates the button for rendering the apps page shortcut.
-  views::LabelButton* CreateAppsPageShortcutButton();
+  views::TextButton* CreateAppsPageShortcutButton();
 
   // Configures the button from the specified node. This sets the text,
   // and icon.
-  void ConfigureButton(const BookmarkNode* node, views::LabelButton* button);
+  void ConfigureButton(const BookmarkNode* node, views::TextButton* button);
 
   // Implementation for BookmarkNodeAddedImpl.
   void BookmarkNodeAddedImpl(BookmarkModel* model,
@@ -412,7 +412,7 @@ class BookmarkBarView : public DetachableToolbarView,
   views::MenuButton* managed_bookmarks_button_;
 
   // Shows the Apps page shortcut.
-  views::LabelButton* apps_page_shortcut_;
+  views::TextButton* apps_page_shortcut_;
 
   // Task used to delay showing of the drop menu.
   base::WeakPtrFactory<BookmarkBarView> show_folder_method_factory_;

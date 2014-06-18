@@ -37,6 +37,14 @@ using extensions::Extension;
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionView
 
+bool BrowserActionView::Delegate::NeedToShowMultipleIconStates() const {
+  return true;
+}
+
+bool BrowserActionView::Delegate::NeedToShowTooltip() const {
+  return true;
+}
+
 BrowserActionView::BrowserActionView(const Extension* extension,
                                      Browser* browser,
                                      BrowserActionView::Delegate* delegate)
@@ -102,7 +110,7 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
       called_registered_extension_command_(false),
       icon_observer_(NULL) {
   SetBorder(views::Border::NullBorder());
-  SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  set_alignment(TextButton::ALIGN_CENTER);
   set_context_menu_controller(this);
 
   // No UpdateState() here because View hierarchy not setup yet. Our parent
@@ -203,6 +211,8 @@ void BrowserActionButton::UpdateState() {
   if (tab_id < 0)
     return;
 
+  SetShowMultipleIconStates(delegate_->NeedToShowMultipleIconStates());
+
   if (!IsEnabled(tab_id)) {
     SetState(views::CustomButton::STATE_DISABLED);
   } else {
@@ -221,23 +231,21 @@ void BrowserActionButton::UpdateState() {
         ThemeServiceFactory::GetForProfile(browser_->profile());
 
     gfx::ImageSkia bg = *theme->GetImageSkiaNamed(IDR_BROWSER_ACTION);
-    SetImage(views::Button::STATE_NORMAL,
-             gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, icon));
+    SetIcon(gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, icon));
 
     gfx::ImageSkia bg_h = *theme->GetImageSkiaNamed(IDR_BROWSER_ACTION_H);
-    SetImage(views::Button::STATE_HOVERED,
-             gfx::ImageSkiaOperations::CreateSuperimposedImage(bg_h, icon));
+    SetHoverIcon(gfx::ImageSkiaOperations::CreateSuperimposedImage(bg_h, icon));
 
     gfx::ImageSkia bg_p = *theme->GetImageSkiaNamed(IDR_BROWSER_ACTION_P);
-    SetImage(views::Button::STATE_PRESSED,
-             gfx::ImageSkiaOperations::CreateSuperimposedImage(bg_p, icon));
+    SetPushedIcon(
+        gfx::ImageSkiaOperations::CreateSuperimposedImage(bg_p, icon));
   }
 
   // If the browser action name is empty, show the extension name instead.
   std::string title = browser_action()->GetTitle(tab_id);
   base::string16 name =
       base::UTF8ToUTF16(title.empty() ? extension()->name() : title);
-  SetTooltipText(name);
+  SetTooltipText(delegate_->NeedToShowTooltip() ? name : base::string16());
   SetAccessibleName(name);
 
   parent()->SchedulePaint();
@@ -312,7 +320,7 @@ bool BrowserActionButton::Activate() {
 bool BrowserActionButton::OnMousePressed(const ui::MouseEvent& event) {
   if (!event.IsRightMouseButton()) {
     return IsPopup() ? MenuButton::OnMousePressed(event) :
-                       LabelButton::OnMousePressed(event);
+                       TextButton::OnMousePressed(event);
   }
 
   if (!views::View::ShouldShowContextMenuOnMousePress()) {
@@ -330,7 +338,7 @@ void BrowserActionButton::OnMouseReleased(const ui::MouseEvent& event) {
     // loss of focus).
     MenuButton::OnMouseReleased(event);
   } else {
-    LabelButton::OnMouseReleased(event);
+    TextButton::OnMouseReleased(event);
   }
 }
 
@@ -338,19 +346,19 @@ void BrowserActionButton::OnMouseExited(const ui::MouseEvent& event) {
   if (IsPopup() || context_menu_)
     MenuButton::OnMouseExited(event);
   else
-    LabelButton::OnMouseExited(event);
+    TextButton::OnMouseExited(event);
 }
 
 bool BrowserActionButton::OnKeyReleased(const ui::KeyEvent& event) {
   return IsPopup() ? MenuButton::OnKeyReleased(event) :
-                     LabelButton::OnKeyReleased(event);
+                     TextButton::OnKeyReleased(event);
 }
 
 void BrowserActionButton::OnGestureEvent(ui::GestureEvent* event) {
   if (IsPopup())
     MenuButton::OnGestureEvent(event);
   else
-    LabelButton::OnGestureEvent(event);
+    TextButton::OnGestureEvent(event);
 }
 
 bool BrowserActionButton::AcceleratorPressed(
@@ -383,7 +391,7 @@ gfx::ImageSkia BrowserActionButton::GetIconWithBadge() {
 }
 
 gfx::ImageSkia BrowserActionButton::GetIconForTest() {
-  return GetImage(views::Button::STATE_NORMAL);
+  return icon();
 }
 
 BrowserActionButton::~BrowserActionButton() {
