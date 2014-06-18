@@ -276,6 +276,8 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
           }
         }
       }
+    } else {
+      ResetWindowInsets();
     }
   }
 }
