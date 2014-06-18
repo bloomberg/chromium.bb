@@ -178,6 +178,11 @@
             'support/float_rfft_x86.c',
           ],
         }],
+        ['target_arch == "mipsel"', {
+          'sources': [
+            'support/float_rfft_mips.c',
+          ],
+        }],
       ],
     },
     {
@@ -188,9 +193,9 @@
         'test_fft_time.c',
       ],
       'conditions': [
-        ['target_arch == "ia32" or target_arch == "arm64"', {
+        ['target_arch == "ia32" or target_arch == "arm64" or target_arch == "mipsel"', {
           'defines': [
-            # Timing test only for float FFTs on x86 and arm64.
+            # Timing test only for float FFTs on x86 and arm64 and MIPSEL.
             'FLOAT_ONLY',
           ],
         }],

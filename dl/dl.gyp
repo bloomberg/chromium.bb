@@ -179,6 +179,26 @@
             'sp/src/arm/arm64/omxSP_FFTInv_CCSToR_F32.c',
           ],
         }],
+        ['target_arch=="mipsel"', {
+          'cflags': [
+            '-std=c99',
+          ],
+          'sources!': [
+            'sp/src/armSP_FFT_F32TwiddleTable.c',
+          ],
+          'sources': [
+            'sp/api/mipsSP.h',
+            'sp/src/mips/mips_FFTFwd_RToCCS_F32_complex.c',
+            'sp/src/mips/mips_FFTFwd_RToCCS_F32_real.c',
+            'sp/src/mips/mips_FFTInv_CCSToR_F32_complex.c',
+            'sp/src/mips/mips_FFTInv_CCSToR_F32_real.c',
+            'sp/src/mips/omxSP_FFT_F32TwiddleTable.c',
+            'sp/src/mips/omxSP_FFTFwd_RToCCS_F32_Sfs.c',
+            'sp/src/mips/omxSP_FFTGetBufSize_R_F32.c',
+            'sp/src/mips/omxSP_FFTInit_R_F32.c',
+            'sp/src/mips/omxSP_FFTInv_CCSToR_F32_Sfs.c',
+          ],
+        }],
       ],
     },
   ],
