@@ -150,6 +150,22 @@ def get_swarm_results(keys, output_collector=None):
           'http://host:9001', keys, 10., None, True, output_collector))
 
 
+def gen_trigger_response(priority=101):
+  # As seen in services/swarming/handlers_frontend.py.
+  return {
+    'priority': priority,
+    'test_case_name': 'foo',
+    'test_keys': [
+      {
+        'config_name': 'foo',
+        'instance_index': 0,
+        'num_instances': 1,
+        'test_key': '123',
+      }
+    ],
+  }
+
+
 def main(args):
   """Bypassies swarming.main()'s exception handling.
 
@@ -703,11 +719,13 @@ class TriggerTaskShardsTest(TestCase):
     self.assertEqual(expected, manifest_json)
 
   def test_trigger_task_shards_success(self):
-    self.mock(swarming.net, 'url_read', lambda url, data=None: '{}')
+    self.mock(
+        swarming.net, 'url_read',
+        lambda url, data=None: json.dumps(gen_trigger_response()))
     self.mock(swarming.isolateserver, 'get_storage',
         lambda *_: MockedStorage(warm_cache=False))
 
-    result = swarming.trigger_task_shards(
+    tasks = swarming.trigger_task_shards(
         swarming='http://localhost:8082',
         isolate_server='http://localhost:8081',
         namespace='default',
@@ -721,15 +739,42 @@ class TriggerTaskShardsTest(TestCase):
         verbose=False,
         profile=False,
         priority=101)
-    self.assertEqual(0, result)
+    self.assertEqual({'unit_tests': '123'}, tasks)
+
+  def test_trigger_task_shards_priority_override(self):
+    self.mock(
+        swarming.net, 'url_read',
+        lambda url, data=None: json.dumps(gen_trigger_response(priority=200)))
+    self.mock(swarming.isolateserver, 'get_storage',
+        lambda *_: MockedStorage(warm_cache=False))
+
+    tasks = swarming.trigger_task_shards(
+        swarming='http://localhost:8082',
+        isolate_server='http://localhost:8081',
+        namespace='default',
+        isolated_hash=FILE_HASH,
+        task_name=TEST_NAME,
+        extra_args=['--some-arg', '123'],
+        shards=2,
+        dimensions={},
+        env={},
+        deadline=60*60,
+        verbose=False,
+        profile=False,
+        priority=101)
+    expected = {u'unit_tests:2:0': u'123', u'unit_tests:2:1': u'123'}
+    self.assertEqual(expected, tasks)
+    self._check_output('', 'Priority was reset to 200\n')
 
   def test_trigger_task_shards_success_zip_already_uploaded(self):
-    self.mock(swarming.net, 'url_read', lambda url, data=None: '{}')
+    self.mock(
+        swarming.net, 'url_read',
+        lambda url, data=None: json.dumps(gen_trigger_response()))
     self.mock(swarming.isolateserver, 'get_storage',
         lambda *_: MockedStorage(warm_cache=True))
 
     dimensions = {'os': 'linux2'}
-    result = swarming.trigger_task_shards(
+    tasks = swarming.trigger_task_shards(
         swarming='http://localhost:8082',
         isolate_server='http://localhost:8081',
         namespace='default',
@@ -743,7 +788,7 @@ class TriggerTaskShardsTest(TestCase):
         verbose=False,
         profile=False,
         priority=101)
-    self.assertEqual(0, result)
+    self.assertEqual({'unit_tests': '123'}, tasks)
 
   def test_isolated_to_hash(self):
     calls = []
@@ -853,8 +898,7 @@ class MainTest(TestCase):
       (
         '/test',
         {'data': data},
-        # The actual output is ignored as long as it is valid json.
-        StringIO.StringIO('{}'),
+        StringIO.StringIO(json.dumps(gen_trigger_response())),
       ),
     ]
     ret = main([
@@ -903,8 +947,7 @@ class MainTest(TestCase):
       (
         '/test',
         {'data': data},
-        # The actual output is ignored as long as it is valid json.
-        StringIO.StringIO('{}'),
+        StringIO.StringIO(json.dumps(gen_trigger_response())),
       ),
     ]
     ret = main([
@@ -932,8 +975,8 @@ class MainTest(TestCase):
       0),
     ]
     self.assertEqual(expected, calls)
-    expected = 'Archiving: %s\nTriggered task: %s\n' % (isolated, task_name)
-    self._check_output(expected, '')
+    self._check_output(
+        'Archiving: %s\nTriggered task: %s\n' % (isolated, task_name), '')
 
   def test_query(self):
     self.requests = [
@@ -1147,8 +1190,7 @@ class MainTest(TestCase):
       (
         '/test',
         {'data': data},
-        # The actual output is ignored as long as it is valid json.
-        StringIO.StringIO('{}'),
+        StringIO.StringIO(json.dumps(gen_trigger_response())),
       ),
     ]
     ret = main([
@@ -1184,8 +1226,7 @@ class MainTest(TestCase):
       (
         '/test',
         {'data': data},
-        # The actual output is ignored as long as it is valid json.
-        StringIO.StringIO('{}'),
+        StringIO.StringIO(json.dumps(gen_trigger_response())),
       ),
     ]
     ret = main([
@@ -1202,6 +1243,53 @@ class MainTest(TestCase):
       ])
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+
+  def test_trigger_dump_json(self):
+    called = []
+    self.mock(swarming.tools, 'write_json', lambda *args: called.append(args))
+    self.mock(swarming.isolateserver, 'get_storage',
+        lambda *_: MockedStorage(warm_cache=False))
+    j = generate_expected_json(
+        shards=1,
+        shard_index=0,
+        dimensions={'foo': 'bar', 'os': 'Mac'},
+        env={},
+        isolate_server='https://host2',
+        profile=False)
+    j['data'] = [[FAKE_BUNDLE_URL, 'swarm_data.zip']]
+    data = {
+      'request': json.dumps(j, sort_keys=True, separators=(',',':')),
+    }
+    self.requests = [
+      (
+        '/test',
+        {'data': data},
+        StringIO.StringIO(json.dumps(gen_trigger_response())),
+      ),
+    ]
+    ret = main([
+        'trigger',
+        '--swarming', 'https://host1',
+        '--isolate-server', 'https://host2',
+        '--shards', '1',
+        '--priority', '101',
+        '--dimension', 'foo', 'bar',
+        '--dimension', 'os', 'Mac',
+        '--task-name', TEST_NAME,
+        '--deadline', '3600',
+        '--dump-json', 'foo.json',
+        FILE_HASH,
+      ])
+    actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+    expected = [
+      (
+        'foo.json',
+        {'base_task_name': u'unit_tests', 'tasks': {u'unit_tests': u'123'}},
+        True,
+      ),
+    ]
+    self.assertEqual(expected, called)
 
 
 def gen_run_isolated_out_hack_log(isolate_server, namespace, isolated_hash):

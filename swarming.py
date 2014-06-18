@@ -590,16 +590,16 @@ def trigger_by_manifest(swarming, manifest):
     manifest: instance of Manifest.
 
   Returns:
-    True on success, False on failure.
+    tuple(Task id, priority) on success. tuple(None, None) on failure.
   """
   logging.info('Triggering: %s', manifest.task_name)
   manifest_text = manifest.to_json()
   result = net.url_read(swarming + '/test', data={'request': manifest_text})
   if not result:
     tools.report_error('Failed to trigger task %s' % manifest.task_name)
-    return False
+    return None
   try:
-    json.loads(result)
+    data = json.loads(result)
   except (ValueError, TypeError) as e:
     msg = '\n'.join((
         'Failed to trigger task %s' % manifest.task_name,
@@ -607,11 +607,13 @@ def trigger_by_manifest(swarming, manifest):
         'Bad response: %s' % result,
         str(e)))
     tools.report_error(msg)
-    return False
-  return True
+    return None, None
+  if not data:
+    return None, None
+  return data['test_keys'][0]['test_key'], data['priority']
 
 
-def abort_by_manifest(_swarming, _manifest):
+def abort_task(_swarming, _manifest):
   """Given a task manifest that was triggered, aborts its execution."""
   # TODO(vadimsh): No supported by the server yet.
 
@@ -619,7 +621,11 @@ def abort_by_manifest(_swarming, _manifest):
 def trigger_task_shards(
     swarming, isolate_server, namespace, isolated_hash, task_name, extra_args,
     shards, dimensions, env, deadline, verbose, profile, priority):
-  """Triggers multiple subtasks of a sharded task."""
+  """Triggers multiple subtasks of a sharded task.
+
+  Returns:
+    dict(task_name: task_id). None in case of failure.
+  """
   # Collects all files that are necessary to bootstrap a task execution
   # on the bot. Usually it includes self contained run_isolated.zip and
   # a bunch of small other scripts. All heavy files are pulled
@@ -648,29 +654,33 @@ def trigger_task_shards(
   # Upload zip bundle file to get its URL.
   bundle_url = upload_zip_bundle(isolate_server, bundle)
   if not bundle_url:
-    return 1
+    return None, None
 
   # Attach that file to all manifests.
   for manifest in manifests:
     manifest.add_bundled_file('swarm_data.zip', bundle_url)
 
   # Trigger all the subtasks.
-  triggered = []
+  tasks = {}
+  priority_warning = False
   for manifest in manifests:
-    if trigger_by_manifest(swarming, manifest):
-      triggered.append(manifest)
-    else:
+    task_id, priority = trigger_by_manifest(swarming, manifest)
+    if not task_id:
       break
+    if not priority_warning and priority != manifest.priority:
+      priority_warning = True
+      print >> sys.stderr, 'Priority was reset to %s' % priority
+    tasks[manifest.task_name] = task_id
 
   # Some shards weren't triggered. Abort everything.
-  if len(triggered) != len(manifests):
-    if triggered:
+  if len(tasks) != len(manifests):
+    if tasks:
       print >> sys.stderr, 'Not all shards were triggered'
-      for manifest in triggered:
-        abort_by_manifest(swarming, manifest)
-    return 1
+      for task_id in tasks.itervalues():
+        abort_task(swarming, task_id)
+    return None
 
-  return 0
+  return tasks
 
 
 def isolated_to_hash(isolate_server, namespace, arg, algo, verbose):
@@ -706,7 +716,12 @@ def trigger(
     verbose,
     profile,
     priority):
-  """Sends off the hash swarming task requests."""
+  """Sends off the hash swarming task requests.
+
+  Returns:
+    tuple(dict(task_name: task_id), base task name). The dict of tasks is None
+    in case of failure.
+  """
   file_hash, is_file = isolated_to_hash(
       isolate_server, namespace, file_hash_or_isolated, hashlib.sha1, verbose)
   if not file_hash:
@@ -724,7 +739,7 @@ def trigger(
         file_hash,
         now() * 1000)
 
-  result = trigger_task_shards(
+  tasks = trigger_task_shards(
       swarming=swarming,
       isolate_server=isolate_server,
       namespace=namespace,
@@ -738,7 +753,7 @@ def trigger(
       verbose=verbose,
       profile=profile,
       priority=priority)
-  return result, task_name
+  return tasks, task_name
 
 
 def decorate_shard_output(shard_index, result, shard_exit_code):
@@ -1013,7 +1028,7 @@ def CMDrun(parser, args):
   process_trigger_options(parser, options, args)
 
   try:
-    result, task_name = trigger(
+    tasks, task_name = trigger(
         swarming=options.swarming,
         isolate_server=options.isolate_server or options.indir,
         namespace=options.namespace,
@@ -1032,12 +1047,13 @@ def CMDrun(parser, args):
         'Failed to trigger %s(%s): %s' %
         (options.task_name, args[0], e.args[0]))
     return 1
-  if result:
+  if not tasks:
     tools.report_error('Failed to trigger the task.')
-    return result
+    return 1
   if task_name != options.task_name:
     print('Triggered task: %s' % task_name)
   try:
+    # TODO(maruel): Use task_ids, it's much more efficient!
     return collect(
         options.swarming,
         task_name,
@@ -1067,11 +1083,15 @@ def CMDtrigger(parser, args):
   add_trigger_options(parser)
   add_sharding_options(parser)
   args, isolated_cmd_args = extract_isolated_command_extra_args(args)
+  parser.add_option(
+      '--dump-json',
+      metavar='FILE',
+      help='Dump details about the triggered task(s) to this file as json')
   options, args = parser.parse_args(args)
   process_trigger_options(parser, options, args)
 
   try:
-    result, task_name = trigger(
+    tasks, task_name = trigger(
         swarming=options.swarming,
         isolate_server=options.isolate_server or options.indir,
         namespace=options.namespace,
@@ -1085,9 +1105,16 @@ def CMDtrigger(parser, args):
         verbose=options.verbose,
         profile=options.profile,
         priority=options.priority)
-    if task_name != options.task_name and not result:
-      print('Triggered task: %s' % task_name)
-    return result
+    if tasks:
+      if task_name != options.task_name:
+        print('Triggered task: %s' % task_name)
+      if options.dump_json:
+        data = {
+          'base_task_name': task_name,
+          'tasks': tasks,
+        }
+        tools.write_json(options.dump_json, data, True)
+    return int(not tasks)
   except Failure as e:
     tools.report_error(e)
     return 1
