@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 class Profile;
 
@@ -25,8 +26,26 @@ class ExtensionSystem;
 
 class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
  public:
-  ProfileSyncComponentsFactoryImpl(Profile* profile,
-                                   base::CommandLine* command_line);
+  // Constructs a ProfileSyncComponentsFactoryImpl.
+  //
+  // |sync_service_url| is the base URL of the sync server.
+  //
+  // |account_id| is the sync user's account id.
+  //
+  // |scope_set| is the set of scopes to use for sync.
+  //
+  // |token_service| must outlive the ProfileSyncComponentsFactoryImpl.
+  //
+  // |url_request_context_getter| must outlive the
+  // ProfileSyncComponentsFactoryImpl.
+  ProfileSyncComponentsFactoryImpl(
+      Profile* profile,
+      base::CommandLine* command_line,
+      const GURL& sync_service_url,
+      const std::string& account_id,
+      const OAuth2TokenService::ScopeSet& scope_set,
+      OAuth2TokenService* token_service,
+      net::URLRequestContextGetter* url_request_context_getter);
   virtual ~ProfileSyncComponentsFactoryImpl();
 
   virtual void RegisterDataTypes(ProfileSyncService* pss) OVERRIDE;
@@ -90,6 +109,12 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   // GetSyncableServiceForType.
   extensions::ExtensionSystem* extension_system_;
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
+
+  const GURL sync_service_url_;
+  const std::string account_id_;
+  const OAuth2TokenService::ScopeSet scope_set_;
+  OAuth2TokenService* const token_service_;
+  net::URLRequestContextGetter* const url_request_context_getter_;
 
   base::WeakPtrFactory<ProfileSyncComponentsFactoryImpl> weak_factory_;
 

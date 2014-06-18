@@ -60,12 +60,14 @@
 #include "components/sync_driver/ui_data_type_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
+#include "google_apis/gaia/oauth2_token_service_request.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "sync/api/attachments/attachment_service.h"
 #include "sync/api/attachments/attachment_service_impl.h"
 #include "sync/api/syncable_service.h"
+#include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 #include "sync/internal_api/public/attachments/fake_attachment_downloader.h"
 #include "sync/internal_api/public/attachments/fake_attachment_store.h"
-#include "sync/internal_api/public/attachments/fake_attachment_uploader.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
@@ -121,6 +123,8 @@ using content::BrowserThread;
 
 namespace {
 
+const char kAttachmentsPath[] = "/attachments/";
+
 syncer::ModelTypeSet GetDisabledTypesFromCommandLine(
     const CommandLine& command_line) {
   syncer::ModelTypeSet disabled_types;
@@ -139,17 +143,34 @@ syncer::ModelTypeSet GetEnabledTypesFromCommandLine(
   return enabled_types;
 }
 
+// Returns the base URL for attachments.
+std::string GetSyncServiceAttachmentsURL(const GURL& sync_service_url) {
+  return sync_service_url.spec() + kAttachmentsPath;
+}
+
 }  // namespace
 
 ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
-    Profile* profile, CommandLine* command_line)
+    Profile* profile,
+    CommandLine* command_line,
+    const GURL& sync_service_url,
+    const std::string& account_id,
+    const OAuth2TokenService::ScopeSet& scope_set,
+    OAuth2TokenService* token_service,
+    net::URLRequestContextGetter* url_request_context_getter)
     : profile_(profile),
       command_line_(command_line),
       extension_system_(extensions::ExtensionSystem::Get(profile)),
-      web_data_service_(
-          WebDataServiceFactory::GetAutofillWebDataForProfile(
-              profile_, Profile::EXPLICIT_ACCESS)),
+      web_data_service_(WebDataServiceFactory::GetAutofillWebDataForProfile(
+          profile_, Profile::EXPLICIT_ACCESS)),
+      sync_service_url_(sync_service_url),
+      account_id_(account_id),
+      scope_set_(scope_set),
+      token_service_(token_service),
+      url_request_context_getter_(url_request_context_getter),
       weak_factory_(this) {
+  DCHECK(token_service_);
+  DCHECK(url_request_context_getter_);
 }
 
 ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {
@@ -576,14 +597,62 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
   }
 }
 
+class TokenServiceProvider
+    : public OAuth2TokenServiceRequest::TokenServiceProvider {
+ public:
+  TokenServiceProvider(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      OAuth2TokenService* token_service);
+  virtual ~TokenServiceProvider();
+
+  // OAuth2TokenServiceRequest::TokenServiceProvider implementation.
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+      GetTokenServiceTaskRunner() OVERRIDE;
+  virtual OAuth2TokenService* GetTokenService() OVERRIDE;
+
+ private:
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  OAuth2TokenService* token_service_;
+};
+
+TokenServiceProvider::TokenServiceProvider(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    OAuth2TokenService* token_service)
+    : task_runner_(task_runner), token_service_(token_service) {
+}
+
+TokenServiceProvider::~TokenServiceProvider() {
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+TokenServiceProvider::GetTokenServiceTaskRunner() {
+  return task_runner_;
+}
+
+OAuth2TokenService* TokenServiceProvider::GetTokenService() {
+  return token_service_;
+}
+
 scoped_ptr<syncer::AttachmentService>
 ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
     syncer::AttachmentService::Delegate* delegate) {
-  // TODO(maniscalco): Use a shared (one per profile) thread-safe instances of
+  std::string url_prefix = GetSyncServiceAttachmentsURL(sync_service_url_);
+  scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
+      token_service_provider(new TokenServiceProvider(
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::UI),
+          token_service_));
+
+  // TODO(maniscalco): Use shared (one per profile) thread-safe instances of
   // AttachmentUploader and AttachmentDownloader instead of creating a new one
   // per AttachmentService (bug 369536).
   scoped_ptr<syncer::AttachmentUploader> attachment_uploader(
-      new syncer::FakeAttachmentUploader);
+      new syncer::AttachmentUploaderImpl(url_prefix,
+                                         url_request_context_getter_,
+                                         account_id_,
+                                         scope_set_,
+                                         token_service_provider.Pass()));
+
   scoped_ptr<syncer::AttachmentDownloader> attachment_downloader(
       new syncer::FakeAttachmentDownloader());
 

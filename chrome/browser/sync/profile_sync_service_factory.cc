@@ -34,6 +34,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "url/gurl.h"
 
 // static
 ProfileSyncServiceFactory* ProfileSyncServiceFactory::GetInstance() {
@@ -101,6 +102,19 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   // once http://crbug.com/171406 has been fixed.
   AboutSigninInternalsFactory::GetForProfile(profile);
 
+  const GURL sync_service_url =
+      ProfileSyncService::GetSyncServiceURL(*CommandLine::ForCurrentProcess());
+
+  scoped_ptr<ManagedUserSigninManagerWrapper> signin_wrapper(
+      new ManagedUserSigninManagerWrapper(profile, signin));
+  std::string account_id = signin_wrapper->GetAccountIdToUse();
+  OAuth2TokenService::ScopeSet scope_set;
+  scope_set.insert(signin_wrapper->GetSyncScopeToUse());
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  net::URLRequestContextGetter* url_request_context_getter =
+      profile->GetRequestContext();
+
   // TODO(tim): Currently, AUTO/MANUAL settings refer to the *first* time sync
   // is set up and *not* a browser restart for a manual-start platform (where
   // sync has already been set up, and should be able to start without user
@@ -112,10 +126,15 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
                                         : browser_sync::MANUAL_START;
   ProfileSyncService* pss = new ProfileSyncService(
       new ProfileSyncComponentsFactoryImpl(profile,
-                                           CommandLine::ForCurrentProcess()),
+                                           CommandLine::ForCurrentProcess(),
+                                           sync_service_url,
+                                           account_id,
+                                           scope_set,
+                                           token_service,
+                                           url_request_context_getter),
       profile,
-      new ManagedUserSigninManagerWrapper(profile, signin),
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+      signin_wrapper.Pass(),
+      token_service,
       behavior);
 
   pss->factory()->RegisterDataTypes(pss);

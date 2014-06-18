@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/sync/profile_sync_service_mock.h"
+
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_store.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/managed_user_signin_manager_wrapper.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
@@ -18,11 +19,12 @@ ProfileSyncServiceMock::ProfileSyncServiceMock(Profile* profile)
     : ProfileSyncService(
           NULL,
           profile,
-          new ManagedUserSigninManagerWrapper(
+          make_scoped_ptr(new ManagedUserSigninManagerWrapper(
               profile,
-              SigninManagerFactory::GetForProfile(profile)),
+              SigninManagerFactory::GetForProfile(profile))),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-          browser_sync::MANUAL_START) {}
+          browser_sync::MANUAL_START) {
+}
 
 ProfileSyncServiceMock::~ProfileSyncServiceMock() {
 }

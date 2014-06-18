@@ -56,6 +56,10 @@ class ProfileOAuth2TokenService;
 class ProfileSyncComponentsFactory;
 class SyncErrorController;
 
+namespace base {
+class CommandLine;
+};
+
 namespace extensions {
 struct Event;
 }
@@ -267,7 +271,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   ProfileSyncService(
       ProfileSyncComponentsFactory* factory,
       Profile* profile,
-      ManagedUserSigninManagerWrapper* signin_wrapper,
+      scoped_ptr<ManagedUserSigninManagerWrapper> signin_wrapper,
       ProfileOAuth2TokenService* oauth2_token_service,
       browser_sync::ProfileSyncServiceStartBehavior start_behavior);
   virtual ~ProfileSyncService();
@@ -773,6 +777,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   void SetClearingBrowseringDataForTesting(
       base::Callback<void(Profile*, base::Time, base::Time)> c);
 
+  // Return the base URL of the Sync Server.
+  static GURL GetSyncServiceURL(const base::CommandLine& command_line);
+
  protected:
   // Helper to configure the priority data types.
   void ConfigurePriorityDataTypes();
@@ -960,7 +967,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // TODO(ncarter): Put this in a profile, once there is UI for it.
   // This specifies where to find the sync server.
-  GURL sync_service_url_;
+  const GURL sync_service_url_;
 
   // The last time we detected a successful transition from SYNCING state.
   // Our backend notifies us whenever we should take a new snapshot.
@@ -992,7 +999,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Encapsulates user signin - used to set/get the user's authenticated
   // email address.
-  scoped_ptr<ManagedUserSigninManagerWrapper> signin_;
+  const scoped_ptr<ManagedUserSigninManagerWrapper> signin_;
 
   // Information describing an unrecoverable error.
   UnrecoverableErrorReason unrecoverable_error_reason_;
@@ -1064,7 +1071,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   scoped_ptr<base::Thread> sync_thread_;
 
   // ProfileSyncService uses this service to get access tokens.
-  ProfileOAuth2TokenService* oauth2_token_service_;
+  ProfileOAuth2TokenService* const oauth2_token_service_;
 
   // ProfileSyncService needs to remember access token in order to invalidate it
   // with OAuth2TokenService.

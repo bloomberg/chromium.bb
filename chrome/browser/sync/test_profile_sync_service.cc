@@ -106,11 +106,12 @@ TestProfileSyncService::TestProfileSyncService(
     SigninManagerBase* signin,
     ProfileOAuth2TokenService* oauth2_token_service,
     browser_sync::ProfileSyncServiceStartBehavior behavior)
-    : ProfileSyncService(factory,
-                         profile,
-                         new ManagedUserSigninManagerWrapper(profile, signin),
-                         oauth2_token_service,
-                         behavior) {
+    : ProfileSyncService(
+          factory,
+          profile,
+          make_scoped_ptr(new ManagedUserSigninManagerWrapper(profile, signin)),
+          oauth2_token_service,
+          behavior) {
   SetSyncSetupCompleted();
 }
 

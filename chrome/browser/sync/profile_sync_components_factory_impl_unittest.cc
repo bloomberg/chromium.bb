@@ -9,29 +9,35 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/sync/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync_driver/data_type_controller.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_switches.h"
 
 using browser_sync::DataTypeController;
-using content::BrowserThread;
+
+const char kAccountId[] = "testuser@test.com";
 
 class ProfileSyncComponentsFactoryImplTest : public testing::Test {
  protected:
   ProfileSyncComponentsFactoryImplTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {}
+      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT) {}
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
     base::FilePath program_path(FILE_PATH_LITERAL("chrome.exe"));
     command_line_.reset(new CommandLine(program_path));
+    scope_set_.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   }
 
   // Returns the collection of default datatypes.
@@ -96,14 +102,23 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
   void TestSwitchDisablesType(syncer::ModelTypeSet types) {
     command_line_->AppendSwitchASCII(switches::kDisableSyncTypes,
                                      syncer::ModelTypeSetToString(types));
-    scoped_ptr<ProfileSyncService> pss(
-        new ProfileSyncService(
-            new ProfileSyncComponentsFactoryImpl(profile_.get(),
-                                                 command_line_.get()),
+    GURL sync_service_url =
+        ProfileSyncService::GetSyncServiceURL(*command_line_);
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
+    scoped_ptr<ProfileSyncService> pss(new ProfileSyncService(
+        new ProfileSyncComponentsFactoryImpl(
             profile_.get(),
-            NULL,
-            ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get()),
-            browser_sync::MANUAL_START));
+            command_line_.get(),
+            ProfileSyncService::GetSyncServiceURL(*command_line_),
+            kAccountId,
+            scope_set_,
+            token_service,
+            profile_->GetRequestContext()),
+        profile_.get(),
+        make_scoped_ptr<ManagedUserSigninManagerWrapper>(NULL),
+        token_service,
+        browser_sync::MANUAL_START));
     pss->factory()->RegisterDataTypes(pss.get());
     DataTypeController::StateMap controller_states;
     pss->GetDataTypeControllerStates(&controller_states);
@@ -111,18 +126,27 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
     CheckDefaultDatatypesInMapExcept(&controller_states, types);
   }
 
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<Profile> profile_;
   scoped_ptr<CommandLine> command_line_;
+  OAuth2TokenService::ScopeSet scope_set_;
 };
 
 TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDefault) {
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
   scoped_ptr<ProfileSyncService> pss(new ProfileSyncService(
-      new ProfileSyncComponentsFactoryImpl(profile_.get(), command_line_.get()),
+      new ProfileSyncComponentsFactoryImpl(
+          profile_.get(),
+          command_line_.get(),
+          ProfileSyncService::GetSyncServiceURL(*command_line_),
+          kAccountId,
+          scope_set_,
+          token_service,
+          profile_->GetRequestContext()),
       profile_.get(),
-      NULL,
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get()),
+      make_scoped_ptr<ManagedUserSigninManagerWrapper>(NULL),
+      token_service,
       browser_sync::MANUAL_START));
   pss->factory()->RegisterDataTypes(pss.get());
   DataTypeController::StateMap controller_states;

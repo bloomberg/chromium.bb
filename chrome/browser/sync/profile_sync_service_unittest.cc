@@ -196,7 +196,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
     service_.reset(new ProfileSyncService(
         components_factory_,
         profile_,
-        new ManagedUserSigninManagerWrapper(profile_, signin),
+        make_scoped_ptr(new ManagedUserSigninManagerWrapper(profile_, signin)),
         oauth2_token_service,
         behavior));
     service_->SetClearingBrowseringDataForTesting(
@@ -584,6 +584,22 @@ TEST_F(ProfileSyncServiceTest, RollbackThenBackup) {
   EXPECT_TRUE(delete_dir_param[2]);
 }
 #endif
+
+TEST_F(ProfileSyncServiceTest, GetSyncServiceURL) {
+  CommandLine command_line(*CommandLine::ForCurrentProcess());
+
+  // See that it defaults to a "dev" URL.
+  //
+  // Yes, we're hardcoding the URL here so this test will have to be updated
+  // when/if the URL ever changes.
+  EXPECT_EQ("https://clients4.google.com/chrome-sync/dev",
+            ProfileSyncService::GetSyncServiceURL(command_line).spec());
+
+  // See that we can override the URL with a flag.
+  command_line.AppendSwitchASCII("--sync-url", "https://foo/bar");
+  EXPECT_EQ("https://foo/bar",
+            ProfileSyncService::GetSyncServiceURL(command_line).spec());
+}
 
 }  // namespace
 }  // namespace browser_sync

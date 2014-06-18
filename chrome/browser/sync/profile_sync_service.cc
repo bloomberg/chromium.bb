@@ -186,7 +186,7 @@ bool ShouldShowActionOnUI(
 ProfileSyncService::ProfileSyncService(
     ProfileSyncComponentsFactory* factory,
     Profile* profile,
-    ManagedUserSigninManagerWrapper* signin_wrapper,
+    scoped_ptr<ManagedUserSigninManagerWrapper> signin_wrapper,
     ProfileOAuth2TokenService* oauth2_token_service,
     ProfileSyncServiceStartBehavior start_behavior)
     : OAuth2TokenService::Consumer("sync"),
@@ -195,12 +195,12 @@ ProfileSyncService::ProfileSyncService(
       factory_(factory),
       profile_(profile),
       sync_prefs_(profile_->GetPrefs()),
-      sync_service_url_(kDevServerUrl),
+      sync_service_url_(GetSyncServiceURL(*CommandLine::ForCurrentProcess())),
       is_first_time_sync_configure_(false),
       backend_initialized_(false),
       sync_disabled_by_admin_(false),
       is_auth_in_progress_(false),
-      signin_(signin_wrapper),
+      signin_(signin_wrapper.Pass()),
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       expect_sync_configuration_aborted_(false),
       encrypted_types_(syncer::SyncEncryptionHandler::SensitiveTypes()),
@@ -218,12 +218,13 @@ ProfileSyncService::ProfileSyncService(
           start_behavior,
           oauth2_token_service,
           &sync_prefs_,
-          signin_wrapper,
+          signin_.get(),
           base::Bind(&ProfileSyncService::StartUpSlowBackendComponents,
                      startup_controller_weak_factory_.GetWeakPtr(),
                      SYNC)),
       backup_rollback_controller_(
-          &sync_prefs_, signin_wrapper,
+          &sync_prefs_,
+          signin_.get(),
           base::Bind(&ProfileSyncService::StartUpSlowBackendComponents,
                      startup_controller_weak_factory_.GetWeakPtr(),
                      BACKUP),
@@ -234,19 +235,6 @@ ProfileSyncService::ProfileSyncService(
       backup_start_delay_(base::TimeDelta::FromSeconds(kBackupStartDelay)),
       clear_browsing_data_(base::Bind(&ClearBrowsingData)) {
   DCHECK(profile);
-  // By default, dev, canary, and unbranded Chromium users will go to the
-  // development servers. Development servers have more features than standard
-  // sync servers. Users with officially-branded Chrome stable and beta builds
-  // will go to the standard sync servers.
-  //
-  // GetChannel hits the registry on Windows. See http://crbug.com/70380.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-      channel == chrome::VersionInfo::CHANNEL_BETA) {
-    sync_service_url_ = GURL(kSyncServerUrl);
-  }
-
   syncer::SyncableService::StartSyncFlare flare(
       sync_start_util::GetFlareForSyncableService(profile->GetPath()));
   scoped_ptr<browser_sync::LocalSessionEventRouter> router(
@@ -279,8 +267,6 @@ bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {
 }
 
 void ProfileSyncService::Initialize() {
-  InitSettings();
-
   // We clear this here (vs Shutdown) because we want to remember that an error
   // happened on shutdown so we can display details (message, location) about it
   // in about:sync.
@@ -514,26 +500,6 @@ void ProfileSyncService::GetDataTypeControllerStates(
          iter != directory_data_type_controllers_.end();
          ++iter)
       (*state_map)[iter->first] = iter->second.get()->state();
-}
-
-void ProfileSyncService::InitSettings() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  // Override the sync server URL from the command-line, if sync server
-  // command-line argument exists.
-  if (command_line.HasSwitch(switches::kSyncServiceURL)) {
-    std::string value(command_line.GetSwitchValueASCII(
-        switches::kSyncServiceURL));
-    if (!value.empty()) {
-      GURL custom_sync_url(value);
-      if (custom_sync_url.is_valid()) {
-        sync_service_url_ = custom_sync_url;
-      } else {
-        LOG(WARNING) << "The following sync URL specified at the command-line "
-                     << "is invalid: " << value;
-      }
-    }
-  }
 }
 
 SyncCredentials ProfileSyncService::GetCredentials() {
@@ -2558,4 +2524,36 @@ void ProfileSyncService::ClearBrowsingDataSinceFirstSync() {
 void ProfileSyncService::SetClearingBrowseringDataForTesting(
     base::Callback<void(Profile*, base::Time, base::Time)> c) {
   clear_browsing_data_ = c;
+}
+
+GURL ProfileSyncService::GetSyncServiceURL(
+    const base::CommandLine& command_line) {
+  // By default, dev, canary, and unbranded Chromium users will go to the
+  // development servers. Development servers have more features than standard
+  // sync servers. Users with officially-branded Chrome stable and beta builds
+  // will go to the standard sync servers.
+  GURL result(kDevServerUrl);
+
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    result = GURL(kSyncServerUrl);
+  }
+
+  // Override the sync server URL from the command-line, if sync server
+  // command-line argument exists.
+  if (command_line.HasSwitch(switches::kSyncServiceURL)) {
+    std::string value(command_line.GetSwitchValueASCII(
+        switches::kSyncServiceURL));
+    if (!value.empty()) {
+      GURL custom_sync_url(value);
+      if (custom_sync_url.is_valid()) {
+        result = custom_sync_url;
+      } else {
+        LOG(WARNING) << "The following sync URL specified at the command-line "
+                     << "is invalid: " << value;
+      }
+    }
+  }
+  return result;
 }
