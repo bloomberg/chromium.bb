@@ -1352,18 +1352,31 @@ _x86_full_boards = _x86_release_boards | frozenset([
   'x86-pineview',
 ])
 
+_all_release_boards = (
+    _arm_release_boards |
+    _x86_release_boards
+)
+_all_full_boards = (
+    _arm_full_boards |
+    _x86_full_boards
+)
+
 def _AddFullConfigs():
   """Add x86 and arm full configs."""
-  for board in _x86_full_boards:
-    full_prebuilts.add_config('%s-%s' % (board, CONFIG_TYPE_FULL),
-      boards=[board],
-    )
+  for board in _all_full_boards:
+    if board in _x86_full_boards:
+      board_config = _config(
+          boards=(board,),
+      )
+    else:
+      board_config = _config(
+          non_testable_builder,
+          boards=(board,),
+      )
 
-  for board in _arm_full_boards:
-    full_prebuilts.add_config('%s-%s' % (board, CONFIG_TYPE_FULL),
-    non_testable_builder,
-      boards=[board],
-    )
+    config_name = '%s-%s' % (board, CONFIG_TYPE_FULL)
+    if config_name not in config:
+      full_prebuilts.add_config(config_name, board_config)
 
 _AddFullConfigs()
 
@@ -2075,15 +2088,20 @@ _arm_release.add_config('daisy-release',
 # Now generate generic release configs if we haven't created anything more
 # specific above already.
 def _AddReleaseConfigs():
-  for board in _x86_release_boards:
-    config_name = '%s-release' % board
-    if config_name not in config:
-      _release.add_config(config_name, boards=(board,))
+  for board in _all_release_boards:
+    if board in _x86_release_boards:
+      board_config = _config(
+          boards=(board,),
+      )
+    else:
+      board_config = _config(
+          non_testable_builder,
+          boards=(board,),
+      )
 
-  for board in _arm_release_boards:
-    config_name = '%s-release' % board
+    config_name = '%s-%s' % (board, CONFIG_TYPE_RELEASE)
     if config_name not in config:
-      _arm_release.add_config(config_name, boards=(board,))
+      _release.add_config(config_name, board_config)
 
 _AddReleaseConfigs()
 
