@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/TraceEvent.h"
 
 #include "wtf/Vector.h"
 
@@ -77,6 +78,8 @@ void ResourceLoadPriorityOptimizer::removeRenderObject(RenderObject* renderer)
 
 void ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities()
 {
+    TRACE_EVENT0("webkit", "ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities");
+
     m_imageResources.clear();
 
     Vector<RenderObject*> objectsToRemove;
