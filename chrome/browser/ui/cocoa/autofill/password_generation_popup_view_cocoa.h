@@ -14,15 +14,18 @@ namespace autofill {
 class AutofillPopupController;
 }  // namespace autofill
 
+@class HyperlinkTextView;
+
 // Draws the native password generation popup view on Mac.
-@interface PasswordGenerationPopupViewCocoa : AutofillPopupBaseViewCocoa {
+@interface PasswordGenerationPopupViewCocoa
+    : AutofillPopupBaseViewCocoa <NSTextViewDelegate> {
  @private
   // The cross-platform controller for this view.
   __weak autofill::PasswordGenerationPopupController* controller_;
 
   __weak NSTextField* passwordField_;
   __weak NSTextField* passwordSubtextField_;
-  __weak NSTextField* helpTextField_;
+  __weak HyperlinkTextView* helpTextView_;
 }
 
 // Designated initializer.

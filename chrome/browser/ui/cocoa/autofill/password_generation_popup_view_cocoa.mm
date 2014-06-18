@@ -9,7 +9,9 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
+#include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/autofill/password_generation_popup_view_bridge.h"
+#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "grit/ui_resources.h"
@@ -18,6 +20,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/text_constants.h"
 
@@ -42,6 +45,10 @@ NSColor* HelpTextColor() {
       PasswordGenerationPopupView::kExplanatoryTextColor);
 }
 
+NSColor* HelpLinkColor() {
+  return gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
+}
+
 }  // namespace
 
 @implementation PasswordGenerationPopupViewCocoa
@@ -58,26 +65,30 @@ NSColor* HelpTextColor() {
                    frame:(NSRect)frame {
   if (self = [super initWithDelegate:controller frame:frame]) {
     controller_ = controller;
-    NSFont* font = controller_->font_list().GetPrimaryFont().GetNativeFont();
 
     passwordField_ = [self textFieldWithText:controller_->password()
-                                    withFont:font
                                        color:[self nameColor]
                                    alignment:NSLeftTextAlignment];
     [self addSubview:passwordField_];
 
-    passwordSubtextField_ =
-        [self textFieldWithText:controller_->SuggestedText()
-                       withFont:font
-                          color:[self subtextColor]
-                      alignment:NSRightTextAlignment];
+    passwordSubtextField_ = [self textFieldWithText:controller_->SuggestedText()
+                                              color:[self subtextColor]
+                                          alignment:NSRightTextAlignment];
     [self addSubview:passwordSubtextField_];
 
-    helpTextField_ = [self textFieldWithText:controller_->HelpText()
-                                    withFont:font
-                                       color:HelpTextColor()
-                                   alignment:NSLeftTextAlignment];
-    [self addSubview:helpTextField_];
+    scoped_nsobject<HyperlinkTextView> helpTextView(
+        [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
+    [helpTextView setMessage:base::SysUTF16ToNSString(controller_->HelpText())
+                    withFont:[self textFont]
+                messageColor:HelpTextColor()];
+    [helpTextView addLinkRange:controller_->HelpTextLinkRange().ToNSRange()
+                      withName:@""
+                     linkColor:HelpLinkColor()];
+    [helpTextView setDelegate:self];
+    [[helpTextView textContainer] setLineFragmentPadding:0.0f];
+    [helpTextView setVerticallyResizable:YES];
+    [self addSubview:helpTextView];
+    helpTextView_ = helpTextView.get();
   }
 
   return self;
@@ -115,9 +126,9 @@ NSColor* HelpTextColor() {
 #pragma mark Public API:
 
 - (void)updateBoundsAndRedrawPopup {
-  [self positionTextField:passwordField_ inRect:[self passwordBounds]];
-  [self positionTextField:passwordSubtextField_ inRect:[self passwordBounds]];
-  [self positionTextField:helpTextField_ inRect:[self helpBounds]];
+  [self positionView:passwordField_ inRect:[self passwordBounds]];
+  [self positionView:passwordSubtextField_ inRect:[self passwordBounds]];
+  [self positionView:helpTextView_ inRect:[self helpBounds]];
 
   [super updateBoundsAndRedrawPopup];
 }
@@ -127,10 +138,18 @@ NSColor* HelpTextColor() {
   [super delegateDestroyed];
 }
 
+#pragma mark NSTextViewDelegate implementation:
+
+- (BOOL)textView:(NSTextView*)textView
+   clickedOnLink:(id)link
+         atIndex:(NSUInteger)charIndex {
+  controller_->OnSavedPasswordsLinkClicked();
+  return YES;
+}
+
 #pragma mark Private helpers:
 
 - (NSTextField*)textFieldWithText:(const base::string16&)text
-                         withFont:(NSFont*)font
                             color:(NSColor*)color
                         alignment:(NSTextAlignment)alignment {
   scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
@@ -138,7 +157,7 @@ NSColor* HelpTextColor() {
   [paragraphStyle setAlignment:alignment];
 
   NSDictionary* textAttributes = @{
-    NSFontAttributeName : font,
+    NSFontAttributeName : [self textFont],
     NSForegroundColorAttributeName : color,
     NSParagraphStyleAttributeName : paragraphStyle
   };
@@ -155,17 +174,16 @@ NSColor* HelpTextColor() {
   [textField setSelectable:NO];
   [textField setDrawsBackground:NO];
   [textField setBezeled:NO];
-
   return textField;
 }
 
-- (void)positionTextField:(NSTextField*)textField inRect:(NSRect)bounds {
+- (void)positionView:(NSView*)view inRect:(NSRect)bounds {
   NSRect frame = NSInsetRect(bounds, controller_->kHorizontalPadding, 0);
-  [textField setFrame:frame];
+  [view setFrame:frame];
 
   // Center the text vertically within the bounds.
-  NSSize delta = cocoa_l10n_util::WrapOrSizeToFit(textField);
-  [textField setFrameOrigin:
+  NSSize delta = cocoa_l10n_util::WrapOrSizeToFit(view);
+  [view setFrameOrigin:
       NSInsetRect(frame, 0, floor(-delta.height/2)).origin];
 }
 
@@ -179,6 +197,10 @@ NSColor* HelpTextColor() {
 
 - (NSRect)dividerBounds {
   return NSRectFromCGRect(controller_->divider_bounds().ToCGRect());
+}
+
+- (NSFont*)textFont {
+  return controller_->font_list().GetPrimaryFont().GetNativeFont();
 }
 
 @end
