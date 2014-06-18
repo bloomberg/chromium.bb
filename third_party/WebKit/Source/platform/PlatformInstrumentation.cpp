@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-const char PlatformInstrumentation::CategoryName[] = "devtools";
+const char PlatformInstrumentation::CategoryName[] = TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
 
 const char PlatformInstrumentation::ImageDecodeEvent[] = "Decode Image";
 const char PlatformInstrumentation::ImageResizeEvent[] = "Resize Image";
