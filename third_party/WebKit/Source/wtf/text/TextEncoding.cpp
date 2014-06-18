@@ -45,7 +45,6 @@ static const TextEncoding& UTF7Encoding()
 
 TextEncoding::TextEncoding(const char* name)
     : m_name(atomicCanonicalTextEncodingName(name))
-    , m_backslashAsCurrencySymbol(backslashAsCurrencySymbol())
 {
     // Aliases are valid, but not "replacement" itself.
     if (m_name && isReplacementEncoding(name))
@@ -54,7 +53,6 @@ TextEncoding::TextEncoding(const char* name)
 
 TextEncoding::TextEncoding(const String& name)
     : m_name(atomicCanonicalTextEncodingName(name))
-    , m_backslashAsCurrencySymbol(backslashAsCurrencySymbol())
 {
     // Aliases are valid, but not "replacement" itself.
     if (m_name && isReplacementEncoding(name))
@@ -132,11 +130,6 @@ bool TextEncoding::usesVisualOrdering() const
 
     static const char* const a = atomicCanonicalTextEncodingName("ISO-8859-8");
     return m_name == a;
-}
-
-UChar TextEncoding::backslashAsCurrencySymbol() const
-{
-    return shouldShowBackslashAsCurrencySymbolIn(m_name) ? 0x00A5 : '\\';
 }
 
 bool TextEncoding::isNonByteBasedEncoding() const

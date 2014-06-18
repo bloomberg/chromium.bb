@@ -116,8 +116,6 @@ static Mutex& encodingRegistryMutex()
 static TextEncodingNameMap* textEncodingNameMap;
 static TextCodecMap* textCodecMap;
 static bool didExtendTextCodecMaps;
-static HashSet<const char*>* japaneseEncodings;
-static HashSet<const char*>* nonBackslashEncodings;
 
 static const char textEncodingNameBlacklist[][6] = { "UTF-7" };
 
@@ -221,54 +219,6 @@ static void buildBaseTextCodecMaps()
     TextCodecUserDefined::registerCodecs(addToTextCodecMap);
 }
 
-static void addEncodingName(HashSet<const char*>* set, const char* name)
-{
-    // We must not use atomicCanonicalTextEncodingName() because this function is called in it.
-    const char* atomicName = textEncodingNameMap->get(name);
-    if (atomicName)
-        set->add(atomicName);
-}
-
-static void buildQuirksSets()
-{
-    // FIXME: Having isJapaneseEncoding() and shouldShowBackslashAsCurrencySymbolIn()
-    // and initializing the sets for them in TextEncodingRegistry.cpp look strange.
-
-    ASSERT(!japaneseEncodings);
-    ASSERT(!nonBackslashEncodings);
-
-    japaneseEncodings = new HashSet<const char*>;
-    addEncodingName(japaneseEncodings, "EUC-JP");
-    addEncodingName(japaneseEncodings, "ISO-2022-JP");
-    addEncodingName(japaneseEncodings, "ISO-2022-JP-1");
-    addEncodingName(japaneseEncodings, "ISO-2022-JP-2");
-    addEncodingName(japaneseEncodings, "ISO-2022-JP-3");
-    addEncodingName(japaneseEncodings, "JIS_C6226-1978");
-    addEncodingName(japaneseEncodings, "JIS_X0201");
-    addEncodingName(japaneseEncodings, "JIS_X0208-1983");
-    addEncodingName(japaneseEncodings, "JIS_X0208-1990");
-    addEncodingName(japaneseEncodings, "JIS_X0212-1990");
-    addEncodingName(japaneseEncodings, "Shift_JIS");
-    addEncodingName(japaneseEncodings, "Shift_JIS_X0213-2000");
-    addEncodingName(japaneseEncodings, "cp932");
-    addEncodingName(japaneseEncodings, "x-mac-japanese");
-
-    nonBackslashEncodings = new HashSet<const char*>;
-    // The text encodings below treat backslash as a currency symbol for IE compatibility.
-    // See http://blogs.msdn.com/michkap/archive/2005/09/17/469941.aspx for more information.
-    addEncodingName(nonBackslashEncodings, "x-mac-japanese");
-    addEncodingName(nonBackslashEncodings, "ISO-2022-JP");
-    addEncodingName(nonBackslashEncodings, "EUC-JP");
-    // Shift_JIS_X0213-2000 is not the same encoding as Shift_JIS on Mac. We need to register both of them.
-    addEncodingName(nonBackslashEncodings, "Shift_JIS");
-    addEncodingName(nonBackslashEncodings, "Shift_JIS_X0213-2000");
-}
-
-bool isJapaneseEncoding(const char* canonicalEncodingName)
-{
-    return canonicalEncodingName && japaneseEncodings && japaneseEncodings->contains(canonicalEncodingName);
-}
-
 bool isReplacementEncoding(const char* alias)
 {
     return alias && !strcasecmp(alias, "replacement");
@@ -277,11 +227,6 @@ bool isReplacementEncoding(const char* alias)
 bool isReplacementEncoding(const String& alias)
 {
     return alias == "replacement";
-}
-
-bool shouldShowBackslashAsCurrencySymbolIn(const char* canonicalEncodingName)
-{
-    return canonicalEncodingName && nonBackslashEncodings && nonBackslashEncodings->contains(canonicalEncodingName);
 }
 
 static void extendTextCodecMaps()
@@ -293,7 +238,6 @@ static void extendTextCodecMaps()
     TextCodecICU::registerCodecs(addToTextCodecMap);
 
     pruneBlacklistedCodecs();
-    buildQuirksSets();
 }
 
 PassOwnPtr<TextCodec> newTextCodec(const TextEncoding& encoding)

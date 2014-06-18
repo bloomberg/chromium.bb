@@ -58,14 +58,11 @@ public:
     // Applies Unicode NFC normalization, then encodes the normalized string.
     CString normalizeAndEncode(const String&, UnencodableHandling) const;
 
-    UChar backslashAsCurrencySymbol() const;
-
 private:
     bool isNonByteBasedEncoding() const;
     bool isUTF7Encoding() const;
 
     const char* m_name;
-    UChar m_backslashAsCurrencySymbol;
 };
 
 inline bool operator==(const TextEncoding& a, const TextEncoding& b) { return a.name() == b.name(); }
