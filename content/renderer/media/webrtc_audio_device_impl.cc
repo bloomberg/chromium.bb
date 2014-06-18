@@ -249,8 +249,6 @@ int32_t WebRtcAudioDeviceImpl::Terminate() {
   DCHECK(!renderer_.get() || !renderer_->IsStarted())
       << "The shared audio renderer shouldn't be running";
 
-  DisableAecDump();
-
   // Stop all the capturers to ensure no further OnData() and
   // RemoveAudioCapturer() callback.
   // Cache the capturers in a local list since WebRtcAudioCapturer::Stop()
@@ -477,11 +475,6 @@ void WebRtcAudioDeviceImpl::AddAudioCapturer(
         capturers_.end());
     capturers_.push_back(capturer);
   }
-
-  // Start the Aec dump if the Aec dump has been enabled and has not been
-  // started.
-  if (aec_dump_file_.IsValid())
-    MaybeStartAecDump();
 }
 
 void WebRtcAudioDeviceImpl::RemoveAudioCapturer(
@@ -531,50 +524,6 @@ bool WebRtcAudioDeviceImpl::GetAuthorizedDeviceInfoForAudioRenderer(
 
   return GetDefaultCapturer()->GetPairedOutputParameters(
       session_id, output_sample_rate, output_frames_per_buffer);
-}
-
-void WebRtcAudioDeviceImpl::EnableAecDump(base::File aec_dump_file) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(aec_dump_file.IsValid());
-
-  // Close the previous AEC dump file description if it has not been consumed.
-  // This can happen if no getUserMedia has been made yet.
-  // TODO(xians): DCHECK(!aec_dump_file_.IsValid()) after the browser
-  // guarantees it won't call EnableAecDump() more than once in a row.
-  if (aec_dump_file_.IsValid())
-    aec_dump_file_.Close();
-
-  aec_dump_file_ = aec_dump_file.Pass();
-  MaybeStartAecDump();
-}
-
-void WebRtcAudioDeviceImpl::DisableAecDump() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Simply invalidate the |aec_dump_file_| if we have not pass the ownership
-  // to WebRtc.
-  if (aec_dump_file_.IsValid()) {
-    aec_dump_file_.Close();
-    return;
-  }
-
-  // We might have call StartAecDump() on one of the capturer. Loop
-  // through all the capturers and call StopAecDump() on each of them.
-  for (CapturerList::const_iterator iter = capturers_.begin();
-       iter != capturers_.end(); ++iter) {
-    (*iter)->StopAecDump();
-  }
-}
-
-void WebRtcAudioDeviceImpl::MaybeStartAecDump() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(aec_dump_file_.IsValid());
-
-  // Start the Aec dump on the current default capturer.
-  scoped_refptr<WebRtcAudioCapturer> default_capturer(GetDefaultCapturer());
-  if (!default_capturer)
-    return;
-
-  default_capturer->StartAecDump(aec_dump_file_.Pass());
 }
 
 }  // namespace content

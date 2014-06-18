@@ -324,8 +324,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual void OnGpuSwitching() OVERRIDE;
 
 #if defined(ENABLE_WEBRTC)
+  void OnRegisterAecDumpConsumer(int id);
+  void OnUnregisterAecDumpConsumer(int id);
+  void RegisterAecDumpConsumerOnUIThread(int id);
+  void UnregisterAecDumpConsumerOnUIThread(int id);
+  void EnableAecDumpForId(const base::FilePath& file, int id);
   // Sends |file_for_transit| to the render process.
-  void SendAecDumpFileToRenderer(IPC::PlatformFileForTransit file_for_transit);
+  void SendAecDumpFileToRenderer(int id,
+                                 IPC::PlatformFileForTransit file_for_transit);
   void SendDisableAecDumpToRenderer();
 #endif
 
@@ -443,6 +449,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::Callback<void(const std::string&)> webrtc_log_message_callback_;
 
   scoped_refptr<P2PSocketDispatcherHost> p2p_socket_dispatcher_host_;
+
+  // Must be accessed on UI thread.
+  std::vector<int> aec_dump_consumers_;
 
   WebRtcStopRtpDumpCallback stop_rtp_dump_callback_;
 #endif

@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
@@ -367,6 +368,12 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, CallAndVerifyVideoMutingWorks) {
   MakeTypicalPeerConnectionCall("callAndEnsureVideoTrackMutingWorks();");
 }
 
+#if defined(OS_WIN)
+#define IntToStringType base::IntToString16
+#else
+#define IntToStringType base::IntToString
+#endif
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux bot: http://crbug.com/238490
 #define MAYBE_CallWithAecDump DISABLED_CallWithAecDump
@@ -398,6 +405,17 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CallWithAecDump) {
   DisableOpusIfOnAndroid();
   ExecuteJavascriptAndWaitForOk("call({video: true, audio: true});");
 
+  // Get the ID for the render process host. There should only be one.
+  RenderProcessHost::iterator it(
+      content::RenderProcessHost::AllHostsIterator());
+  int render_process_host_id = it.GetCurrentValue()->GetID();
+  EXPECT_GE(render_process_host_id, 0);
+
+  // Add file extensions that we expect to be added.
+  static const int kExpectedConsumerId = 0;
+  dump_file = dump_file.AddExtension(IntToStringType(render_process_host_id))
+                       .AddExtension(IntToStringType(kExpectedConsumerId));
+
   EXPECT_TRUE(base::PathExists(dump_file));
   int64 file_size = 0;
   EXPECT_TRUE(base::GetFileSize(dump_file, &file_size));
@@ -405,6 +423,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CallWithAecDump) {
 
   base::DeleteFile(dump_file, false);
 }
+
+// TODO(grunell): Add test for multiple dumps when re-use of
+// MediaStreamAudioProcessor in AudioCapturer has been removed.
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux bot: http://crbug.com/238490

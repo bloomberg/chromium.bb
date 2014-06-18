@@ -106,6 +106,7 @@ enum IPCMessageStart {
   GinJavaBridgeMsgStart,
   BatteryStatusMsgStart,
   UtilityPrintingMsgStart,
+  AecDumpMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

@@ -11,6 +11,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/aec_dump_message_filter.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
@@ -44,7 +45,8 @@ using webrtc::AudioProcessorInterface;
 // of 10 ms data chunk.
 class CONTENT_EXPORT MediaStreamAudioProcessor :
     NON_EXPORTED_BASE(public WebRtcPlayoutDataSource::Sink),
-    NON_EXPORTED_BASE(public AudioProcessorInterface) {
+    NON_EXPORTED_BASE(public AudioProcessorInterface),
+    NON_EXPORTED_BASE(public AecDumpMessageFilter::AecDumpDelegate) {
  public:
   // Returns false if |kDisableAudioTrackProcessing| is set to true, otherwise
   // returns true.
@@ -96,11 +98,12 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // Accessor to check if the audio processing is enabled or not.
   bool has_audio_processing() const { return audio_processing_ != NULL; }
 
-  // Starts/Stops the Aec dump on the |audio_processing_|.
+  // AecDumpMessageFilter::AecDumpDelegate implementation.
   // Called on the main render thread.
-  // This method takes the ownership of |aec_dump_file|.
-  void StartAecDump(base::File aec_dump_file);
-  void StopAecDump();
+  virtual void OnAecDumpFile(
+      const IPC::PlatformFileForTransit& file_handle) OVERRIDE;
+  virtual void OnDisableAecDump() OVERRIDE;
+  virtual void OnIpcClosing() OVERRIDE;
 
  protected:
   friend class base::RefCountedThreadSafe<MediaStreamAudioProcessor>;
@@ -191,6 +194,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // It can be accessed by the capture audio thread and by the libjingle thread
   // which calls GetStats().
   base::subtle::Atomic32 typing_detected_;
+
+  // Communication with browser for AEC dump.
+  scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
 };
 
 }  // namespace content

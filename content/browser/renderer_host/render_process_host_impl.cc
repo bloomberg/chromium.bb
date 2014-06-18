@@ -30,6 +30,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
 #include "base/sys_info.h"
@@ -173,6 +174,7 @@
 #include "content/browser/media/webrtc_internals.h"
 #include "content/browser/renderer_host/media/media_stream_track_metrics_host.h"
 #include "content/browser/renderer_host/media/webrtc_identity_service_host.h"
+#include "content/common/media/aec_dump_messages.h"
 #include "content/common/media/media_stream_messages.h"
 #endif
 
@@ -1368,6 +1370,12 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
           ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
           OnAllocateGpuMemoryBuffer)
       IPC_MESSAGE_HANDLER(ViewHostMsg_Close_ACK, OnCloseACK)
+#if defined(ENABLE_WEBRTC)
+      IPC_MESSAGE_HANDLER(AecDumpMsg_RegisterAecDumpConsumer,
+                          OnRegisterAecDumpConsumer)
+      IPC_MESSAGE_HANDLER(AecDumpMsg_UnregisterAecDumpConsumer,
+                          OnUnregisterAecDumpConsumer)
+#endif
       // Adding single handlers for your service here is fine, but once your
       // service needs more than one handler, please extract them into a new
       // message filter and add that filter to CreateMessageFilters().
@@ -1538,11 +1546,11 @@ void RenderProcessHostImpl::FilterURL(bool empty_allowed, GURL* url) {
 #if defined(ENABLE_WEBRTC)
 void RenderProcessHostImpl::EnableAecDump(const base::FilePath& file) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CreateAecDumpFileForProcess, file, GetHandle()),
-      base::Bind(&RenderProcessHostImpl::SendAecDumpFileToRenderer,
-                 weak_factory_.GetWeakPtr()));
+  // Enable AEC dump for each registered consumer.
+  for (std::vector<int>::iterator it = aec_dump_consumers_.begin();
+       it != aec_dump_consumers_.end(); ++it) {
+    EnableAecDumpForId(file, *it);
+  }
 }
 
 void RenderProcessHostImpl::DisableAecDump() {
@@ -2154,15 +2162,78 @@ void RenderProcessHostImpl::OnGpuSwitching() {
 }
 
 #if defined(ENABLE_WEBRTC)
+void RenderProcessHostImpl::OnRegisterAecDumpConsumer(int id) {
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(
+          &RenderProcessHostImpl::RegisterAecDumpConsumerOnUIThread,
+          weak_factory_.GetWeakPtr(),
+          id));
+}
+
+void RenderProcessHostImpl::OnUnregisterAecDumpConsumer(int id) {
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(
+          &RenderProcessHostImpl::UnregisterAecDumpConsumerOnUIThread,
+          weak_factory_.GetWeakPtr(),
+          id));
+}
+
+void RenderProcessHostImpl::RegisterAecDumpConsumerOnUIThread(int id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  aec_dump_consumers_.push_back(id);
+  if (WebRTCInternals::GetInstance()->aec_dump_enabled()) {
+    EnableAecDumpForId(WebRTCInternals::GetInstance()->aec_dump_file_path(),
+                       id);
+  }
+}
+
+void RenderProcessHostImpl::UnregisterAecDumpConsumerOnUIThread(int id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  for (std::vector<int>::iterator it = aec_dump_consumers_.begin();
+       it != aec_dump_consumers_.end(); ++it) {
+    if (*it == id) {
+      aec_dump_consumers_.erase(it);
+      break;
+    }
+  }
+}
+
+#if defined(OS_WIN)
+#define IntToStringType base::IntToString16
+#else
+#define IntToStringType base::IntToString
+#endif
+
+void RenderProcessHostImpl::EnableAecDumpForId(const base::FilePath& file,
+                                               int id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::FilePath unique_file =
+      file.AddExtension(IntToStringType(GetID()))
+          .AddExtension(IntToStringType(id));
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CreateAecDumpFileForProcess, unique_file, GetHandle()),
+      base::Bind(&RenderProcessHostImpl::SendAecDumpFileToRenderer,
+                 weak_factory_.GetWeakPtr(),
+                 id));
+}
+
+#undef IntToStringType
+
 void RenderProcessHostImpl::SendAecDumpFileToRenderer(
+    int id,
     IPC::PlatformFileForTransit file_for_transit) {
   if (file_for_transit == IPC::InvalidPlatformFileForTransit())
     return;
-  Send(new MediaStreamMsg_EnableAecDump(file_for_transit));
+  Send(new AecDumpMsg_EnableAecDump(id, file_for_transit));
 }
 
 void RenderProcessHostImpl::SendDisableAecDumpToRenderer() {
-  Send(new MediaStreamMsg_DisableAecDump());
+  Send(new AecDumpMsg_DisableAecDump());
 }
 #endif
 

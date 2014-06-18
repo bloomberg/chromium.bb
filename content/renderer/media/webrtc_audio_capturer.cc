@@ -417,9 +417,6 @@ void WebRtcAudioCapturer::Stop() {
   if (audio_device_)
     audio_device_->RemoveAudioCapturer(this);
 
-  // Stop the Aec dump.
-  StopAecDump();
-
   for (TrackList::ItemList::const_iterator it = tracks.begin();
        it != tracks.end();
        ++it) {
@@ -613,17 +610,6 @@ void WebRtcAudioCapturer::SetCapturerSourceForTesting(
   // Create a new audio stream as source which uses the new source.
   SetCapturerSource(source, params.channel_layout(),
                     static_cast<float>(params.sample_rate()));
-}
-
-void WebRtcAudioCapturer::StartAecDump(base::File aec_dump_file) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(aec_dump_file.IsValid());
-  audio_processor_->StartAecDump(aec_dump_file.Pass());
-}
-
-void WebRtcAudioCapturer::StopAecDump() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  audio_processor_->StopAecDump();
 }
 
 }  // namespace content

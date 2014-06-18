@@ -249,6 +249,8 @@
       'renderer/java/java_bridge_dispatcher.h',
       'renderer/media/active_loader.cc',
       'renderer/media/active_loader.h',
+      'renderer/media/aec_dump_message_filter.cc',
+      'renderer/media/aec_dump_message_filter.h',
       'renderer/media/android/audio_decoder_android.cc',
       'renderer/media/android/audio_decoder_android.h',
       'renderer/media/android/media_info_loader.cc',

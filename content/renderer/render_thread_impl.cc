@@ -74,6 +74,7 @@
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager.h"
+#include "content/renderer/media/aec_dump_message_filter.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
@@ -381,9 +382,13 @@ void RenderThreadImpl::Init() {
 
   webrtc_identity_service_.reset(new WebRTCIdentityService());
 
+  aec_dump_message_filter_ =
+      new AecDumpMessageFilter(GetIOMessageLoopProxy(),
+                               message_loop()->message_loop_proxy());
+  AddFilter(aec_dump_message_filter_.get());
+
   peer_connection_factory_.reset(new PeerConnectionDependencyFactory(
       p2p_socket_dispatcher_.get()));
-  AddObserver(peer_connection_factory_.get());
 #endif  // defined(ENABLE_WEBRTC)
 
   audio_input_message_filter_ =

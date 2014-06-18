@@ -31,6 +31,7 @@
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/java_bridge_messages.h"
+#include "content/common/media/aec_dump_messages.h"
 #include "content/common/media/audio_messages.h"
 // TODO(xhwang): Move this to a new ifdef block.
 #include "content/common/media/cdm_messages.h"

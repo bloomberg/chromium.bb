@@ -117,9 +117,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
       const scoped_refptr<media::AudioCapturerSource>& source,
       media::AudioParameters params);
 
-  void StartAecDump(base::File aec_dump_file);
-  void StopAecDump();
-
  protected:
   friend class base::RefCountedThreadSafe<WebRtcAudioCapturer>;
   virtual ~WebRtcAudioCapturer();

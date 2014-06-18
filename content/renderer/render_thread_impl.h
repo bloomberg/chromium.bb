@@ -74,6 +74,7 @@ class GrContextForWebGraphicsContext3D;
 namespace content {
 
 class AppCacheDispatcher;
+class AecDumpMessageFilter;
 class AudioInputMessageFilter;
 class AudioMessageFilter;
 class AudioRendererMixerManager;
@@ -488,6 +489,12 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   // Used on the render thread.
   scoped_ptr<VideoCaptureImplManager> vc_manager_;
+
+  // Used for communicating registering AEC dump consumers with the browser and
+  // receving AEC dump file handles when AEC dump is enabled. An AEC dump is
+  // diagnostic audio data for WebRTC stored locally when enabled by the user in
+  // chrome://webrtc-internals.
+  scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
 
   // The count of RenderWidgets running through this thread.
   int widget_count_;

@@ -177,10 +177,22 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
   InitializeAudioProcessingModule(constraints, effects);
+  if (IsAudioTrackProcessingEnabled()) {
+    aec_dump_message_filter_ = AecDumpMessageFilter::Get();
+    // In unit tests not creating a message filter, |aec_dump_message_filter_|
+    // will be NULL. We can just ignore that. Other unit tests and browser tests
+    // ensure that we do get the filter when we should.
+    if (aec_dump_message_filter_)
+      aec_dump_message_filter_->AddDelegate(this);
+  }
 }
 
 MediaStreamAudioProcessor::~MediaStreamAudioProcessor() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  if (aec_dump_message_filter_) {
+    aec_dump_message_filter_->RemoveDelegate(this);
+    aec_dump_message_filter_ = NULL;
+  }
   StopAudioProcessing();
 }
 
@@ -238,14 +250,28 @@ const media::AudioParameters& MediaStreamAudioProcessor::OutputFormat() const {
   return capture_converter_->sink_parameters();
 }
 
-void MediaStreamAudioProcessor::StartAecDump(base::File aec_dump_file) {
+void MediaStreamAudioProcessor::OnAecDumpFile(
+    const IPC::PlatformFileForTransit& file_handle) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+
+  base::File file = IPC::PlatformFileForTransitToFile(file_handle);
+  DCHECK(file.IsValid());
+
   if (audio_processing_)
-    StartEchoCancellationDump(audio_processing_.get(), aec_dump_file.Pass());
+    StartEchoCancellationDump(audio_processing_.get(), file.Pass());
+  else
+    file.Close();
 }
 
-void MediaStreamAudioProcessor::StopAecDump() {
+void MediaStreamAudioProcessor::OnDisableAecDump() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   if (audio_processing_)
     StopEchoCancellationDump(audio_processing_.get());
+}
+
+void MediaStreamAudioProcessor::OnIpcClosing() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  aec_dump_message_filter_ = NULL;
 }
 
 void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
@@ -494,7 +520,7 @@ void MediaStreamAudioProcessor::StopAudioProcessing() {
   if (!audio_processing_.get())
     return;
 
-  StopAecDump();
+  StopEchoCancellationDump(audio_processing_.get());
 
   if (playout_data_source_)
     playout_data_source_->RemovePlayoutSink(this);

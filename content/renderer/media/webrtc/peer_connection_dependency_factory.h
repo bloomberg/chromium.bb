@@ -12,6 +12,7 @@
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_process_observer.h"
+#include "content/renderer/media/aec_dump_message_filter.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
@@ -55,7 +56,7 @@ struct StreamDeviceInfo;
 // Object factory for RTC PeerConnections.
 class CONTENT_EXPORT PeerConnectionDependencyFactory
     : NON_EXPORTED_BASE(public base::NonThreadSafe),
-      public RenderProcessObserver {
+      NON_EXPORTED_BASE(public AecDumpMessageFilter::AecDumpDelegate) {
  public:
   PeerConnectionDependencyFactory(
       P2PSocketDispatcher* p2p_socket_dispatcher);
@@ -129,6 +130,14 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
 
   scoped_refptr<base::MessageLoopProxy> GetWebRtcWorkerThread() const;
 
+  // AecDumpMessageFilter::AecDumpDelegate implementation.
+  // TODO(xians): Remove when option to disable audio track processing is
+  // removed.
+  virtual void OnAecDumpFile(
+      const IPC::PlatformFileForTransit& file_handle) OVERRIDE;
+  virtual void OnDisableAecDump() OVERRIDE;
+  virtual void OnIpcClosing() OVERRIDE;
+
  protected:
   // Asks the PeerConnection factory to create a Local Audio Source.
   virtual scoped_refptr<webrtc::AudioSourceInterface>
@@ -177,14 +186,6 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   void DeleteIpcNetworkManager();
   void CleanupPeerConnectionFactory();
 
-  // RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  void OnAecDumpFile(IPC::PlatformFileForTransit file_handle);
-  void OnDisableAecDump();
-
-  void StartAecDump(base::File aec_dump_file);
-
   // Helper method to create a WebRtcAudioDeviceImpl.
   void EnsureWebRtcAudioDeviceImpl();
 
@@ -198,13 +199,16 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device_;
 
+  // This is only used if audio track processing is disabled.
+  // TODO(xians): Remove when option to disable audio track processing is
+  // removed.
+  scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
+
   // PeerConnection threads. signaling_thread_ is created from the
   // "current" chrome thread.
   talk_base::Thread* signaling_thread_;
   talk_base::Thread* worker_thread_;
   base::Thread chrome_worker_thread_;
-
-  base::File aec_dump_file_;
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionDependencyFactory);
 };
