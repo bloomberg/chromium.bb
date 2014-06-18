@@ -9,6 +9,6 @@ package org.chromium.net;
 // net/cronet/android/org_chromium_net_UrlRequestContext.h
 public interface UrlRequestContextConfig {
 #define DEFINE_CONTEXT_CONFIG(x) public static final String x = #x;
-#include "components/cronet/android/org_chromium_net_UrlRequestContextConfig_list.h"
+#include "components/cronet/url_request_context_config_list.h"
 #undef DEFINE_CONTEXT_CONFIG
 }
