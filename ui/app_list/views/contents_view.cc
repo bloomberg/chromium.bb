@@ -82,8 +82,7 @@ void ContentsView::SetActivePage(int page_index) {
   if (active_page_ == page_index)
     return;
 
-  active_page_ = page_index;
-  ActivePageChanged();
+  SetActivePageInternal(page_index, false);
 }
 
 bool ContentsView::IsNamedPageActive(NamedPage named_page) const {
@@ -104,7 +103,13 @@ int ContentsView::GetPageIndexForNamedPage(NamedPage named_page) const {
   return it->second;
 }
 
-void ContentsView::ActivePageChanged() {
+void ContentsView::SetActivePageInternal(int page_index,
+                                         bool show_search_results) {
+  active_page_ = page_index;
+  ActivePageChanged(show_search_results);
+}
+
+void ContentsView::ActivePageChanged(bool show_search_results) {
   // TODO(xiyuan): Highlight default match instead of the first.
   if (IsNamedPageActive(NAMED_PAGE_SEARCH_RESULTS) &&
       search_results_view_->visible()) {
@@ -113,8 +118,12 @@ void ContentsView::ActivePageChanged() {
   if (search_results_view_)
     search_results_view_->UpdateAutoLaunchState();
 
-  if (IsNamedPageActive(NAMED_PAGE_START))
-    start_page_view_->Reset();
+  if (IsNamedPageActive(NAMED_PAGE_START)) {
+    if (show_search_results)
+      start_page_view_->ShowSearchResults();
+    else
+      start_page_view_->Reset();
+  }
 
   // Notify parent AppListMainView of the page change.
   app_list_main_view_->UpdateSearchBoxVisibility();
@@ -127,15 +136,7 @@ void ContentsView::ShowSearchResults(bool show) {
   if (app_list::switches::IsExperimentalAppListEnabled())
     new_named_page = NAMED_PAGE_START;
 
-  SetActivePage(GetPageIndexForNamedPage(new_named_page));
-
-  if (app_list::switches::IsExperimentalAppListEnabled()) {
-    if (show)
-      start_page_view_->ShowSearchResults();
-    else
-      start_page_view_->Reset();
-    app_list_main_view_->UpdateSearchBoxVisibility();
-  }
+  SetActivePageInternal(GetPageIndexForNamedPage(new_named_page), show);
 }
 
 bool ContentsView::IsShowingSearchResults() const {

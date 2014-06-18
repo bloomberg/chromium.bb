@@ -88,8 +88,12 @@ class APP_LIST_EXPORT ContentsView : public views::View {
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
 
  private:
+  // Sets the active launcher page, accounting for whether the change is for
+  // search results.
+  void SetActivePageInternal(int page_index, bool show_search_results);
+
   // Invoked when active view is changed.
-  void ActivePageChanged();
+  void ActivePageChanged(bool show_search_results);
 
   void CalculateIdealBounds();
   void AnimateToIdealBounds();
