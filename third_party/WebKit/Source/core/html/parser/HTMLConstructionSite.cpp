@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/html/parser/HTMLTreeBuilder.h"
+#include "core/html/parser/HTMLConstructionSite.h"
 
 #include "core/HTMLElementFactory.h"
 #include "core/HTMLNames.h"

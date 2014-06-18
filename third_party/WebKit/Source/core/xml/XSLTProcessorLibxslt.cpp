@@ -23,10 +23,6 @@
 #include "config.h"
 #include "core/xml/XSLTProcessor.h"
 
-#include <libxslt/imports.h>
-#include <libxslt/security.h>
-#include <libxslt/variables.h>
-#include <libxslt/xsltutils.h>
 #include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/TransformSource.h"
@@ -50,6 +46,10 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/unicode/UTF8.h"
+#include <libxslt/imports.h>
+#include <libxslt/security.h>
+#include <libxslt/variables.h>
+#include <libxslt/xsltutils.h>
 
 namespace WebCore {
 
