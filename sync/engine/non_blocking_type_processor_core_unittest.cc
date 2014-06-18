@@ -4,49 +4,22 @@
 
 #include "sync/engine/non_blocking_type_processor_core.h"
 
-#include "base/basictypes.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/callback.h"
+#include "sync/engine/commit_contribution.h"
 #include "sync/engine/non_blocking_sync_common.h"
-#include "sync/engine/non_blocking_type_commit_contribution.h"
 #include "sync/engine/non_blocking_type_processor_interface.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/syncable_util.h"
-#include "sync/util/time.h"
+#include "sync/test/engine/mock_non_blocking_type_processor.h"
+#include "sync/test/engine/single_type_mock_server.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-using google::protobuf::RepeatedPtrField;
-
 static const std::string kTypeParentId = "PrefsRootNodeID";
+static const syncer::ModelType kModelType = syncer::PREFERENCES;
 
 namespace syncer {
-
-class NonBlockingTypeProcessorCoreTest;
-
-namespace {
-
-class MockNonBlockingTypeProcessor : public NonBlockingTypeProcessorInterface {
- public:
-  MockNonBlockingTypeProcessor(NonBlockingTypeProcessorCoreTest* parent);
-  virtual ~MockNonBlockingTypeProcessor();
-
-  virtual void ReceiveCommitResponse(
-      const DataTypeState& type_state,
-      const CommitResponseDataList& response_list) OVERRIDE;
-  virtual void ReceiveUpdateResponse(
-      const DataTypeState& type_state,
-      const UpdateResponseDataList& response_list) OVERRIDE;
-
- private:
-  NonBlockingTypeProcessorCoreTest* parent_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockNonBlockingTypeProcessor);
-};
-
-}  // namespace
 
 // Tests the NonBlockingTypeProcessorCore.
 //
@@ -105,15 +78,6 @@ class NonBlockingTypeProcessorCoreTest : public ::testing::Test {
                                const std::string& value);
   void TriggerTombstoneFromServer(int64 version_offset, const std::string& tag);
 
-  // Callbacks from the mock processor.  Called when the |core_| tries to send
-  // messages to its associated processor on the model thread.
-  void OnModelThreadReceivedCommitResponse(
-      const DataTypeState& type_state,
-      const CommitResponseDataList& response_list);
-  void OnModelThreadReceivedUpdateResponse(
-      const DataTypeState& type_state,
-      const UpdateResponseDataList& response_list);
-
   // By default, this harness behaves as if all tasks posted to the model
   // thread are executed immediately.  However, this is not necessarily true.
   // The model's TaskRunner has a queue, and the tasks we post to it could
@@ -169,97 +133,26 @@ class NonBlockingTypeProcessorCoreTest : public ::testing::Test {
       const std::string& tag) const;
 
   // Helpers for building various messages and structures.
-  static std::string GenerateId(const std::string& tag_hash);
   static std::string GenerateTagHash(const std::string& tag);
   static sync_pb::EntitySpecifics GenerateSpecifics(const std::string& tag,
                                                     const std::string& value);
 
  private:
-  // Get and set our emulated server state.
-  int64 GetServerVersion(const std::string& tag_hash);
-  void SetServerVersion(const std::string& tag_hash, int64 version);
-
-  // Get and set our emulated model thread state.
-  int64 GetCurrentSequenceNumber(const std::string& tag_hash) const;
-  int64 GetNextSequenceNumber(const std::string& tag_hash);
-  int64 GetModelVersion(const std::string& tag_hash) const;
-  void SetModelVersion(const std::string& tag_hash, int64 version);
-
-  // Receive a commit response in the emulated model thread.
-  //
-  // Kept in a separate Impl method so we can emulate deferred task processing.
-  // See SetModelThreadIsSynchronous() for details.
-  void ModelThreadReceiveCommitResponseImpl(
-      const DataTypeState& type_state,
-      const CommitResponseDataList& response_list);
-
-  // Receive an update response in the emulated model thread.
-  //
-  // Kept in a separate Impl method so we can emulate deferred task processing.
-  // See SetModelThreadIsSynchronous() for details.
-  void ModelThreadReceiveUpdateResponseImpl(
-      const DataTypeState& type_state,
-      const UpdateResponseDataList& response_list);
-
-  // Builds a fake progress marker for our response.
-  sync_pb::DataTypeProgressMarker GenerateResponseProgressMarker() const;
-
+  // The NonBlockingTypeProcessorCore being tested.
   scoped_ptr<NonBlockingTypeProcessorCore> core_;
+
+  // Non-owned, possibly NULL pointer.  This object belongs to the
+  // NonBlockingTypeProcessorCore under test.
   MockNonBlockingTypeProcessor* mock_processor_;
 
-  // Model thread state maps.
-  std::map<const std::string, int64> model_sequence_numbers_;
-  std::map<const std::string, int64> model_base_versions_;
-
-  // Server state maps.
-  std::map<const std::string, int64> server_versions_;
-
-  // Logs of messages sent to the server.  Used in assertions.
-  std::map<const std::string, sync_pb::SyncEntity> committed_items_;
-  std::vector<sync_pb::ClientToServerMessage> commit_messages_;
-
-  // State related to emulation of the model thread's task queue.  Used to
-  // defer model thread work to simulate a full model thread task runner queue.
-  bool model_thread_is_synchronous_;
-  std::vector<base::Closure> model_thread_tasks_;
-
-  // A cache of messages sent to the model thread.
-  std::vector<CommitResponseDataList> commit_responses_to_model_thread_;
-  std::vector<UpdateResponseDataList> updates_responses_to_model_thread_;
-  std::vector<DataTypeState> updates_states_to_model_thread_;
-  std::vector<DataTypeState> commit_states_to_model_thread_;
-
-  // A cache of the latest responses on the model thread, by client tag.
-  std::map<const std::string, CommitResponseData>
-      model_thread_commit_response_items_;
-  std::map<const std::string, UpdateResponseData>
-      model_thread_update_response_items_;
+  // A mock that emulates enough of the sync server that it can be used
+  // a single UpdateHandler and CommitContributor pair.  In this test
+  // harness, the |core_| is both of them.
+  SingleTypeMockServer mock_server_;
 };
 
-// These had to wait until the class definition of
-// NonBlockingTypeProcessorCoreTest
-MockNonBlockingTypeProcessor::MockNonBlockingTypeProcessor(
-    NonBlockingTypeProcessorCoreTest* parent)
-    : parent_(parent) {
-}
-
-MockNonBlockingTypeProcessor::~MockNonBlockingTypeProcessor() {
-}
-
-void MockNonBlockingTypeProcessor::ReceiveCommitResponse(
-    const DataTypeState& type_state,
-    const CommitResponseDataList& response_list) {
-  parent_->OnModelThreadReceivedCommitResponse(type_state, response_list);
-}
-
-void MockNonBlockingTypeProcessor::ReceiveUpdateResponse(
-    const DataTypeState& type_state,
-    const UpdateResponseDataList& response_list) {
-  parent_->OnModelThreadReceivedUpdateResponse(type_state, response_list);
-}
-
 NonBlockingTypeProcessorCoreTest::NonBlockingTypeProcessorCoreTest()
-    : model_thread_is_synchronous_(true) {
+    : mock_processor_(NULL), mock_server_(kModelType) {
 }
 
 NonBlockingTypeProcessorCoreTest::~NonBlockingTypeProcessorCoreTest() {
@@ -268,7 +161,7 @@ NonBlockingTypeProcessorCoreTest::~NonBlockingTypeProcessorCoreTest() {
 void NonBlockingTypeProcessorCoreTest::FirstInitialize() {
   DataTypeState initial_state;
   initial_state.progress_marker.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(PREFERENCES));
+      GetSpecificsFieldNumberFromModelType(kModelType));
   initial_state.next_client_id = 0;
 
   InitializeWithState(initial_state);
@@ -277,7 +170,7 @@ void NonBlockingTypeProcessorCoreTest::FirstInitialize() {
 void NonBlockingTypeProcessorCoreTest::NormalInitialize() {
   DataTypeState initial_state;
   initial_state.progress_marker.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(PREFERENCES));
+      GetSpecificsFieldNumberFromModelType(kModelType));
   initial_state.progress_marker.set_token("some_saved_progress_token");
 
   initial_state.next_client_id = 10;
@@ -292,91 +185,42 @@ void NonBlockingTypeProcessorCoreTest::InitializeWithState(
   DCHECK(!core_);
 
   // We don't get to own this interace.  The |core_| keeps a scoped_ptr to it.
-  mock_processor_ = new MockNonBlockingTypeProcessor(this);
+  mock_processor_ = new MockNonBlockingTypeProcessor();
   scoped_ptr<NonBlockingTypeProcessorInterface> interface(mock_processor_);
 
   core_.reset(
-      new NonBlockingTypeProcessorCore(PREFERENCES, state, interface.Pass()));
+      new NonBlockingTypeProcessorCore(kModelType, state, interface.Pass()));
 }
 
-void NonBlockingTypeProcessorCoreTest::CommitRequest(const std::string& tag,
+void NonBlockingTypeProcessorCoreTest::CommitRequest(const std::string& name,
                                                      const std::string& value) {
-  const std::string tag_hash = GenerateTagHash(tag);
-  const int64 base_version = GetModelVersion(tag_hash);
-
-  CommitRequestData data;
-
-  // Initial commits don't have IDs.  Everything else does.
-  if (base_version > kUncommittedVersion) {
-    data.id = GenerateId(tag_hash);
-  }
-
-  data.client_tag_hash = tag_hash;
-  data.sequence_number = GetNextSequenceNumber(tag_hash);
-
-  data.base_version = base_version;
-  data.ctime = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
-  data.mtime = data.ctime + base::TimeDelta::FromSeconds(base_version);
-  data.non_unique_name = tag;
-
-  data.deleted = false;
-  data.specifics = GenerateSpecifics(tag, value);
-
+  const std::string tag_hash = GenerateTagHash(name);
+  CommitRequestData data =
+      mock_processor_->CommitRequest(tag_hash, GenerateSpecifics(name, value));
   CommitRequestDataList list;
   list.push_back(data);
-
   core_->EnqueueForCommit(list);
 }
 
 void NonBlockingTypeProcessorCoreTest::DeleteRequest(const std::string& tag) {
   const std::string tag_hash = GenerateTagHash(tag);
-  const int64 base_version = GetModelVersion(tag_hash);
-  CommitRequestData data;
-
-  // Requests to commit server-unknown items don't have IDs.
-  // We'll never send a deletion for a server-unknown item, but the model is
-  // allowed to request that we do.
-  if (base_version > kUncommittedVersion) {
-    data.id = GenerateId(tag_hash);
-  }
-
-  data.client_tag_hash = tag_hash;
-  data.sequence_number = GetNextSequenceNumber(tag_hash);
-
-  data.base_version = base_version;
-  data.ctime = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
-  data.client_tag_hash = tag_hash;
-  data.mtime = data.ctime + base::TimeDelta::FromSeconds(base_version);
-  data.deleted = true;
-
+  CommitRequestData data = mock_processor_->DeleteRequest(tag_hash);
   CommitRequestDataList list;
   list.push_back(data);
-
   core_->EnqueueForCommit(list);
 }
 
 void NonBlockingTypeProcessorCoreTest::TriggerTypeRootUpdateFromServer() {
-  sync_pb::SyncEntity entity;
-
-  entity.set_id_string(kTypeParentId);
-  entity.set_parent_id_string("r");
-  entity.set_version(1000);
-  entity.set_ctime(TimeToProtoTime(base::Time::UnixEpoch()));
-  entity.set_mtime(TimeToProtoTime(base::Time::UnixEpoch()));
-  entity.set_server_defined_unique_tag(ModelTypeToRootTag(PREFERENCES));
-  entity.set_deleted(false);
-  AddDefaultFieldValue(PREFERENCES, entity.mutable_specifics());
-
-  const sync_pb::DataTypeProgressMarker& progress =
-      GenerateResponseProgressMarker();
-  const sync_pb::DataTypeContext blank_context;
-  sessions::StatusController dummy_status;
-
+  sync_pb::SyncEntity entity = mock_server_.TypeRootUpdate();
   SyncEntityList entity_list;
   entity_list.push_back(&entity);
 
-  core_->ProcessGetUpdatesResponse(
-      progress, blank_context, entity_list, &dummy_status);
+  sessions::StatusController dummy_status;
+
+  core_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
+                                   mock_server_.GetContext(),
+                                   entity_list,
+                                   &dummy_status);
   core_->ApplyUpdates(&dummy_status);
 }
 
@@ -384,102 +228,44 @@ void NonBlockingTypeProcessorCoreTest::TriggerUpdateFromServer(
     int64 version_offset,
     const std::string& tag,
     const std::string& value) {
-  const std::string tag_hash = GenerateTagHash(tag);
-
-  int64 old_version = GetServerVersion(tag_hash);
-  int64 version = old_version + version_offset;
-  if (version > old_version) {
-    SetServerVersion(tag_hash, version);
-  }
-
-  sync_pb::SyncEntity entity;
-
-  entity.set_id_string(GenerateId(tag_hash));
-  entity.set_parent_id_string(kTypeParentId);
-  entity.set_version(version);
-
-  base::Time ctime = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
-  base::Time mtime = ctime + base::TimeDelta::FromSeconds(version);
-  entity.set_ctime(TimeToProtoTime(ctime));
-  entity.set_mtime(TimeToProtoTime(mtime));
-
-  entity.set_name(tag);
-  entity.set_client_defined_unique_tag(GenerateTagHash(tag));
-  entity.set_deleted(false);
-  entity.mutable_specifics()->CopyFrom(GenerateSpecifics(tag, value));
-
+  sync_pb::SyncEntity entity = mock_server_.UpdateFromServer(
+      version_offset, GenerateTagHash(tag), GenerateSpecifics(tag, value));
   SyncEntityList entity_list;
   entity_list.push_back(&entity);
 
-  const sync_pb::DataTypeProgressMarker& progress =
-      GenerateResponseProgressMarker();
-  const sync_pb::DataTypeContext blank_context;
   sessions::StatusController dummy_status;
 
-  core_->ProcessGetUpdatesResponse(
-      progress, blank_context, entity_list, &dummy_status);
+  core_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
+                                   mock_server_.GetContext(),
+                                   entity_list,
+                                   &dummy_status);
   core_->ApplyUpdates(&dummy_status);
 }
 
 void NonBlockingTypeProcessorCoreTest::TriggerTombstoneFromServer(
     int64 version_offset,
     const std::string& tag) {
-  const std::string tag_hash = GenerateTagHash(tag);
-  int64 old_version = GetServerVersion(tag_hash);
-  int64 version = old_version + version_offset;
-  if (version > old_version) {
-    SetServerVersion(tag_hash, version);
-  }
+  sync_pb::SyncEntity entity =
+      mock_server_.TombstoneFromServer(version_offset, GenerateTagHash(tag));
+  SyncEntityList entity_list;
+  entity_list.push_back(&entity);
 
-  UpdateResponseData data;
+  sessions::StatusController dummy_status;
 
-  data.id = GenerateId(tag_hash);
-  data.client_tag_hash = tag_hash;
-  data.response_version = version;
-  data.ctime = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
-  data.mtime = data.ctime + base::TimeDelta::FromSeconds(version);
-  data.non_unique_name = tag;
-  data.deleted = true;
-}
-
-void NonBlockingTypeProcessorCoreTest::OnModelThreadReceivedCommitResponse(
-    const DataTypeState& type_state,
-    const CommitResponseDataList& response_list) {
-  base::Closure task = base::Bind(
-      &NonBlockingTypeProcessorCoreTest::ModelThreadReceiveCommitResponseImpl,
-      base::Unretained(this),
-      type_state,
-      response_list);
-  model_thread_tasks_.push_back(task);
-  if (model_thread_is_synchronous_)
-    PumpModelThread();
-}
-
-void NonBlockingTypeProcessorCoreTest::OnModelThreadReceivedUpdateResponse(
-    const DataTypeState& type_state,
-    const UpdateResponseDataList& response_list) {
-  base::Closure task = base::Bind(
-      &NonBlockingTypeProcessorCoreTest::ModelThreadReceiveUpdateResponseImpl,
-      base::Unretained(this),
-      type_state,
-      response_list);
-  model_thread_tasks_.push_back(task);
-  if (model_thread_is_synchronous_)
-    PumpModelThread();
+  core_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
+                                   mock_server_.GetContext(),
+                                   entity_list,
+                                   &dummy_status);
+  core_->ApplyUpdates(&dummy_status);
 }
 
 void NonBlockingTypeProcessorCoreTest::SetModelThreadIsSynchronous(
     bool is_synchronous) {
-  model_thread_is_synchronous_ = is_synchronous;
+  mock_processor_->SetSynchronousExecution(is_synchronous);
 }
 
 void NonBlockingTypeProcessorCoreTest::PumpModelThread() {
-  for (std::vector<base::Closure>::iterator it = model_thread_tasks_.begin();
-       it != model_thread_tasks_.end();
-       ++it) {
-    it->Run();
-  }
-  model_thread_tasks_.clear();
+  mock_processor_->RunQueuedTasks();
 }
 
 bool NonBlockingTypeProcessorCoreTest::WillCommit() {
@@ -503,35 +289,9 @@ void NonBlockingTypeProcessorCoreTest::DoSuccessfulCommit() {
 
   sync_pb::ClientToServerMessage message;
   contribution->AddToCommitMessage(&message);
-  commit_messages_.push_back(message);
 
-  sync_pb::ClientToServerResponse response;
-  sync_pb::CommitResponse* commit_response = response.mutable_commit();
-
-  const RepeatedPtrField<sync_pb::SyncEntity>& entries =
-      message.commit().entries();
-  for (RepeatedPtrField<sync_pb::SyncEntity>::const_iterator it =
-           entries.begin();
-       it != entries.end();
-       ++it) {
-    const std::string tag_hash = it->client_defined_unique_tag();
-
-    committed_items_[tag_hash] = *it;
-
-    // Every commit increments the version number.
-    int64 version = GetServerVersion(tag_hash);
-    version++;
-    SetServerVersion(tag_hash, version);
-
-    sync_pb::CommitResponse_EntryResponse* entryresponse =
-        commit_response->add_entryresponse();
-    entryresponse->set_response_type(sync_pb::CommitResponse::SUCCESS);
-    entryresponse->set_id_string(GenerateId(tag_hash));
-    entryresponse->set_parent_id_string(it->parent_id_string());
-    entryresponse->set_version(version);
-    entryresponse->set_name(it->name());
-    entryresponse->set_mtime(it->mtime());
-  }
+  sync_pb::ClientToServerResponse response =
+      mock_server_.DoSuccessfulCommit(message);
 
   sessions::StatusController dummy_status;
   contribution->ProcessCommitResponse(response, &dummy_status);
@@ -539,21 +299,19 @@ void NonBlockingTypeProcessorCoreTest::DoSuccessfulCommit() {
 }
 
 size_t NonBlockingTypeProcessorCoreTest::GetNumCommitMessagesOnServer() const {
-  return commit_messages_.size();
+  return mock_server_.GetNumCommitMessages();
 }
 
 sync_pb::ClientToServerMessage
 NonBlockingTypeProcessorCoreTest::GetNthCommitMessageOnServer(size_t n) const {
   DCHECK_LT(n, GetNumCommitMessagesOnServer());
-  return commit_messages_[n];
+  return mock_server_.GetNthCommitMessage(n);
 }
 
 bool NonBlockingTypeProcessorCoreTest::HasCommitEntityOnServer(
     const std::string& tag) const {
   const std::string tag_hash = GenerateTagHash(tag);
-  std::map<const std::string, sync_pb::SyncEntity>::const_iterator it =
-      committed_items_.find(tag_hash);
-  return it != committed_items_.end();
+  return mock_server_.HasCommitEntity(tag_hash);
 }
 
 sync_pb::SyncEntity
@@ -561,71 +319,62 @@ NonBlockingTypeProcessorCoreTest::GetLatestCommitEntityOnServer(
     const std::string& tag) const {
   DCHECK(HasCommitEntityOnServer(tag));
   const std::string tag_hash = GenerateTagHash(tag);
-  std::map<const std::string, sync_pb::SyncEntity>::const_iterator it =
-      committed_items_.find(tag_hash);
-  return it->second;
+  return mock_server_.GetLastCommittedEntity(tag_hash);
 }
 
 size_t NonBlockingTypeProcessorCoreTest::GetNumModelThreadUpdateResponses()
     const {
-  return updates_responses_to_model_thread_.size();
+  return mock_processor_->GetNumUpdateResponses();
 }
 
 UpdateResponseDataList
 NonBlockingTypeProcessorCoreTest::GetNthModelThreadUpdateResponse(
     size_t n) const {
-  DCHECK(GetNumModelThreadUpdateResponses());
-  return updates_responses_to_model_thread_[n];
+  DCHECK_LT(n, GetNumModelThreadUpdateResponses());
+  return mock_processor_->GetNthUpdateResponse(n);
 }
 
 DataTypeState NonBlockingTypeProcessorCoreTest::GetNthModelThreadUpdateState(
     size_t n) const {
-  DCHECK(GetNumModelThreadUpdateResponses());
-  return updates_states_to_model_thread_[n];
+  DCHECK_LT(n, GetNumModelThreadUpdateResponses());
+  return mock_processor_->GetNthTypeStateReceivedInUpdateResponse(n);
 }
 
 bool NonBlockingTypeProcessorCoreTest::HasUpdateResponseOnModelThread(
     const std::string& tag) const {
   const std::string tag_hash = GenerateTagHash(tag);
-  std::map<const std::string, UpdateResponseData>::const_iterator it =
-      model_thread_update_response_items_.find(tag_hash);
-  return it != model_thread_update_response_items_.end();
+  return mock_processor_->HasUpdateResponse(tag_hash);
 }
 
 UpdateResponseData
 NonBlockingTypeProcessorCoreTest::GetUpdateResponseOnModelThread(
     const std::string& tag) const {
   const std::string tag_hash = GenerateTagHash(tag);
-  DCHECK(HasUpdateResponseOnModelThread(tag));
-  std::map<const std::string, UpdateResponseData>::const_iterator it =
-      model_thread_update_response_items_.find(tag_hash);
-  return it->second;
+  return mock_processor_->GetUpdateResponse(tag_hash);
 }
 
 size_t NonBlockingTypeProcessorCoreTest::GetNumModelThreadCommitResponses()
     const {
-  return commit_responses_to_model_thread_.size();
+  return mock_processor_->GetNumCommitResponses();
 }
 
 CommitResponseDataList
 NonBlockingTypeProcessorCoreTest::GetNthModelThreadCommitResponse(
     size_t n) const {
-  DCHECK(GetNumModelThreadCommitResponses());
-  return commit_responses_to_model_thread_[n];
+  DCHECK_LT(n, GetNumModelThreadCommitResponses());
+  return mock_processor_->GetNthCommitResponse(n);
 }
 
 DataTypeState NonBlockingTypeProcessorCoreTest::GetNthModelThreadCommitState(
     size_t n) const {
-  DCHECK(GetNumModelThreadCommitResponses());
-  return commit_states_to_model_thread_[n];
+  DCHECK_LT(n, GetNumModelThreadCommitResponses());
+  return mock_processor_->GetNthTypeStateReceivedInCommitResponse(n);
 }
 
 bool NonBlockingTypeProcessorCoreTest::HasCommitResponseOnModelThread(
     const std::string& tag) const {
   const std::string tag_hash = GenerateTagHash(tag);
-  std::map<const std::string, CommitResponseData>::const_iterator it =
-      model_thread_commit_response_items_.find(tag_hash);
-  return it != model_thread_commit_response_items_.end();
+  return mock_processor_->HasCommitResponse(tag_hash);
 }
 
 CommitResponseData
@@ -633,21 +382,13 @@ NonBlockingTypeProcessorCoreTest::GetCommitResponseOnModelThread(
     const std::string& tag) const {
   DCHECK(HasCommitResponseOnModelThread(tag));
   const std::string tag_hash = GenerateTagHash(tag);
-  std::map<const std::string, CommitResponseData>::const_iterator it =
-      model_thread_commit_response_items_.find(tag_hash);
-  return it->second;
-}
-
-std::string NonBlockingTypeProcessorCoreTest::GenerateId(
-    const std::string& tag_hash) {
-  return "FakeId:" + tag_hash;
+  return mock_processor_->GetCommitResponse(tag_hash);
 }
 
 std::string NonBlockingTypeProcessorCoreTest::GenerateTagHash(
     const std::string& tag) {
   const std::string& client_tag_hash =
-      syncable::GenerateSyncableHash(PREFERENCES, tag);
-
+      syncable::GenerateSyncableHash(kModelType, tag);
   return client_tag_hash;
 }
 
@@ -658,104 +399,6 @@ sync_pb::EntitySpecifics NonBlockingTypeProcessorCoreTest::GenerateSpecifics(
   specifics.mutable_preference()->set_name(tag);
   specifics.mutable_preference()->set_value(value);
   return specifics;
-}
-
-int64 NonBlockingTypeProcessorCoreTest::GetServerVersion(
-    const std::string& tag_hash) {
-  std::map<const std::string, int64>::const_iterator it;
-  it = server_versions_.find(tag_hash);
-  // Server versions do not necessarily start at 1 or 0.
-  if (it == server_versions_.end()) {
-    return 2048;
-  } else {
-    return it->second;
-  }
-}
-
-void NonBlockingTypeProcessorCoreTest::SetServerVersion(
-    const std::string& tag_hash,
-    int64 version) {
-  server_versions_[tag_hash] = version;
-}
-
-// Fetches the sequence number as of the most recent update request.
-int64 NonBlockingTypeProcessorCoreTest::GetCurrentSequenceNumber(
-    const std::string& tag_hash) const {
-  std::map<const std::string, int64>::const_iterator it =
-      model_sequence_numbers_.find(tag_hash);
-  if (it == model_sequence_numbers_.end()) {
-    return 0;
-  } else {
-    return it->second;
-  }
-}
-
-// The model thread should be sending us items with strictly increasing
-// sequence numbers.  Here's where we emulate that behavior.
-int64 NonBlockingTypeProcessorCoreTest::GetNextSequenceNumber(
-    const std::string& tag_hash) {
-  int64 sequence_number = GetCurrentSequenceNumber(tag_hash);
-  sequence_number++;
-  model_sequence_numbers_[tag_hash] = sequence_number;
-  return sequence_number;
-}
-
-// Fetches the model's base version.
-int64 NonBlockingTypeProcessorCoreTest::GetModelVersion(
-    const std::string& tag_hash) const {
-  std::map<const std::string, int64>::const_iterator it =
-      model_base_versions_.find(tag_hash);
-  if (it == model_base_versions_.end()) {
-    return kUncommittedVersion;
-  } else {
-    return it->second;
-  }
-}
-
-void NonBlockingTypeProcessorCoreTest::SetModelVersion(
-    const std::string& tag_hash,
-    int64 version) {
-  model_base_versions_[tag_hash] = version;
-}
-
-void NonBlockingTypeProcessorCoreTest::ModelThreadReceiveCommitResponseImpl(
-    const DataTypeState& type_state,
-    const CommitResponseDataList& response_list) {
-  commit_responses_to_model_thread_.push_back(response_list);
-  commit_states_to_model_thread_.push_back(type_state);
-  for (CommitResponseDataList::const_iterator it = response_list.begin();
-       it != response_list.end();
-       ++it) {
-    model_thread_commit_response_items_.insert(
-        std::make_pair(it->client_tag_hash, *it));
-
-    // Server wins.  Set the model's base version.
-    SetModelVersion(it->client_tag_hash, it->response_version);
-  }
-}
-
-void NonBlockingTypeProcessorCoreTest::ModelThreadReceiveUpdateResponseImpl(
-    const DataTypeState& type_state,
-    const UpdateResponseDataList& response_list) {
-  updates_responses_to_model_thread_.push_back(response_list);
-  updates_states_to_model_thread_.push_back(type_state);
-  for (UpdateResponseDataList::const_iterator it = response_list.begin();
-       it != response_list.end();
-       ++it) {
-    model_thread_update_response_items_.insert(
-        std::make_pair(it->client_tag_hash, *it));
-
-    // Server wins.  Set the model's base version.
-    SetModelVersion(it->client_tag_hash, it->response_version);
-  }
-}
-
-sync_pb::DataTypeProgressMarker
-NonBlockingTypeProcessorCoreTest::GenerateResponseProgressMarker() const {
-  sync_pb::DataTypeProgressMarker progress;
-  progress.set_data_type_id(PREFERENCES);
-  progress.set_token("non_null_progress_token");
-  return progress;
 }
 
 // Requests a commit and verifies the messages sent to the client and server as
@@ -790,7 +433,7 @@ TEST_F(NonBlockingTypeProcessorCoreTest, SimpleCommit) {
   EXPECT_EQ(kUncommittedVersion, entity.version());
   EXPECT_NE(0, entity.mtime());
   EXPECT_NE(0, entity.ctime());
-  EXPECT_EQ("tag1", entity.name());
+  EXPECT_FALSE(entity.name().empty());
   EXPECT_EQ(client_tag_hash, entity.client_defined_unique_tag());
   EXPECT_EQ("tag1", entity.specifics().preference().name());
   EXPECT_FALSE(entity.deleted());
@@ -842,7 +485,7 @@ TEST_F(NonBlockingTypeProcessorCoreTest, SimpleDelete) {
 
   // Deletions should contain enough specifics to identify the type.
   EXPECT_TRUE(entity.has_specifics());
-  EXPECT_EQ(PREFERENCES, GetModelTypeFromSpecifics(entity.specifics()));
+  EXPECT_EQ(kModelType, GetModelTypeFromSpecifics(entity.specifics()));
 
   // Verify the commit response returned to the model thread.
   ASSERT_EQ(2U, GetNumModelThreadCommitResponses());
@@ -952,7 +595,7 @@ TEST_F(NonBlockingTypeProcessorCoreTest, ReceiveUpdates) {
   EXPECT_LT(0, update.response_version);
   EXPECT_FALSE(update.ctime.is_null());
   EXPECT_FALSE(update.mtime.is_null());
-  EXPECT_EQ("tag1", update.non_unique_name);
+  EXPECT_FALSE(update.non_unique_name.empty());
   EXPECT_FALSE(update.deleted);
   EXPECT_EQ("tag1", update.specifics.preference().name());
   EXPECT_EQ("value1", update.specifics.preference().value());

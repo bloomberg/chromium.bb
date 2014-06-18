@@ -6,10 +6,7 @@
 #define SYNC_ENGINE_NON_BLOCKING_TYPE_PROCESSOR_INTERFACE_H_
 
 #include "sync/base/sync_export.h"
-
-struct CommitResponseDataList;
-struct DataTypeState;
-struct UpdateResponseDataList;
+#include "sync/engine/non_blocking_sync_common.h"
 
 namespace syncer {
 
