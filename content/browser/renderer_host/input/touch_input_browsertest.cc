@@ -183,14 +183,8 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchNoHandler) {
   GetWidgetHost()->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
   filter()->WaitForAck(WebInputEvent::TouchStart);
 
-  if (content::IsThreadedCompositingEnabled()) {
-    EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
-              filter()->last_ack_state());
-  } else {
-    // http://crbug.com/326232: This should be NO_CONSUMER_EXISTS once
-    // WebViewImpl::hasTouchEventHandlersAt() is implemented.
-    EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, filter()->last_ack_state());
-  }
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+            filter()->last_ack_state());
 
   // If a touch-press is acked with NO_CONSUMER_EXISTS, then subsequent
   // touch-points don't need to be dispatched until the touch point is released.
@@ -247,14 +241,8 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_MultiPointTouchPress) {
   touch.PressPoint(25, 25);
   GetWidgetHost()->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
   filter()->WaitForAck(WebInputEvent::TouchStart);
-  if (content::IsThreadedCompositingEnabled()) {
-    EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
-              filter()->last_ack_state());
-  } else {
-    // http://crbug.com/326232: This should be NO_CONSUMER_EXISTS once
-    // WebViewImpl::hasTouchEventHandlersAt() is implemented.
-    EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, filter()->last_ack_state());
-  }
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+            filter()->last_ack_state());
 
   touch.PressPoint(25, 125);
   GetWidgetHost()->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());

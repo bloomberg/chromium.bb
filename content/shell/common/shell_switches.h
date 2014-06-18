@@ -18,6 +18,7 @@ extern const char kDumpRenderTree[];
 extern const char kEnableAccelerated2DCanvas[];
 extern const char kEnableFontAntialiasing[];
 extern const char kEnableLeakDetection[];
+extern const char kEnableThreadedCompositing[];
 extern const char kEncodeBinary[];
 extern const char kExposeInternalsForTesting[];
 extern const char kRegisterFontFiles[];

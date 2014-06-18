@@ -17,9 +17,6 @@ namespace content {
 // flags, or platform default).
 CONTENT_EXPORT bool IsPinchVirtualViewportEnabled();
 
-// Returns true if the threaded compositor is on (via flags or field trial).
-CONTENT_EXPORT bool IsThreadedCompositingEnabled();
-
 // Returns true if delegated-renderer is on (via flags, or platform default).
 CONTENT_EXPORT bool IsDelegatedRendererEnabled();
 
