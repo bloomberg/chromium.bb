@@ -134,7 +134,8 @@ void MediaStreamDispatcher::EnumerateDevices(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     MediaStreamType type,
-    const GURL& security_origin) {
+    const GURL& security_origin,
+    bool hide_labels_if_no_access) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
          type == MEDIA_DEVICE_VIDEO_CAPTURE ||
@@ -151,7 +152,8 @@ void MediaStreamDispatcher::EnumerateDevices(
   Send(new MediaStreamHostMsg_EnumerateDevices(routing_id(),
                                                next_ipc_id_++,
                                                type,
-                                               security_origin));
+                                               security_origin,
+                                               hide_labels_if_no_access));
 }
 
 void MediaStreamDispatcher::StopEnumerateDevices(

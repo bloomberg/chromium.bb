@@ -79,7 +79,8 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
   void OnEnumerateDevices(int render_view_id,
                           int page_request_id,
                           MediaStreamType type,
-                          const GURL& security_origin);
+                          const GURL& security_origin,
+                          bool hide_labels_if_no_access);
 
   void OnCancelEnumerateDevices(int render_view_id,
                                 int page_request_id);
@@ -95,7 +96,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
 
   void StoreRequest(int render_view_id,
                     int page_request_id,
-                    const std::string& label);;
+                    const std::string& label);
 
   bool IsURLAllowed(const GURL& url);
 

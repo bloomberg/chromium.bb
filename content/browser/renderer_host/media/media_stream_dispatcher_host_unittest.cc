@@ -99,10 +99,12 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                           int page_request_id,
                           MediaStreamType type,
                           const GURL& security_origin,
+                          bool hide_labels_if_no_access,
                           const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
     MediaStreamDispatcherHost::OnEnumerateDevices(
-        render_view_id, page_request_id, type, security_origin);
+        render_view_id, page_request_id, type, security_origin,
+        hide_labels_if_no_access);
   }
 
   std::string label_;
@@ -327,10 +329,11 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
   void EnumerateDevicesAndWaitForResult(int render_view_id,
                                         int page_request_id,
-                                        MediaStreamType type) {
+                                        MediaStreamType type,
+                                        bool hide_labels_if_no_access) {
     base::RunLoop run_loop;
     host_->OnEnumerateDevices(render_view_id, page_request_id, type, origin_,
-                              run_loop.QuitClosure());
+                              hide_labels_if_no_access, run_loop.QuitClosure());
     run_loop.Run();
     ASSERT_FALSE(host_->enumerated_devices_.empty());
     EXPECT_FALSE(DoesContainRawIds(host_->enumerated_devices_));
@@ -878,32 +881,52 @@ TEST_F(MediaStreamDispatcherHostTest, VideoDeviceUnplugged) {
 
 TEST_F(MediaStreamDispatcherHostTest, EnumerateAudioDevices) {
   EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
-                                   MEDIA_DEVICE_AUDIO_CAPTURE);
+                                   MEDIA_DEVICE_AUDIO_CAPTURE, true);
   EXPECT_TRUE(DoesContainLabels(host_->enumerated_devices_));
 }
 
 TEST_F(MediaStreamDispatcherHostTest, EnumerateVideoDevices) {
   EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
-                                   MEDIA_DEVICE_VIDEO_CAPTURE);
+                                   MEDIA_DEVICE_VIDEO_CAPTURE, true);
   EXPECT_TRUE(DoesContainLabels(host_->enumerated_devices_));
 }
 
-TEST_F(MediaStreamDispatcherHostTest, EnumerateAudioDevicesNoAccess) {
+TEST_F(MediaStreamDispatcherHostTest, EnumerateAudioDevicesNoAccessHideLabels) {
   MockResourceContext* mock_resource_context =
       static_cast<MockResourceContext*>(browser_context_.GetResourceContext());
   mock_resource_context->set_mic_access(false);
   EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
-                                   MEDIA_DEVICE_AUDIO_CAPTURE);
+                                   MEDIA_DEVICE_AUDIO_CAPTURE, true);
   EXPECT_TRUE(DoesNotContainLabels(host_->enumerated_devices_));
 }
 
-TEST_F(MediaStreamDispatcherHostTest, EnumerateVideoDevicesNoAccess) {
+TEST_F(MediaStreamDispatcherHostTest, EnumerateVideoDevicesNoAccessHideLabels) {
   MockResourceContext* mock_resource_context =
       static_cast<MockResourceContext*>(browser_context_.GetResourceContext());
   mock_resource_context->set_camera_access(false);
   EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
-                                   MEDIA_DEVICE_VIDEO_CAPTURE);
+                                   MEDIA_DEVICE_VIDEO_CAPTURE, true);
   EXPECT_TRUE(DoesNotContainLabels(host_->enumerated_devices_));
+}
+
+TEST_F(MediaStreamDispatcherHostTest,
+       EnumerateAudioDevicesNoAccessNoHideLabels) {
+  MockResourceContext* mock_resource_context =
+      static_cast<MockResourceContext*>(browser_context_.GetResourceContext());
+  mock_resource_context->set_mic_access(false);
+  EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
+                                   MEDIA_DEVICE_AUDIO_CAPTURE, false);
+  EXPECT_TRUE(DoesContainLabels(host_->enumerated_devices_));
+}
+
+TEST_F(MediaStreamDispatcherHostTest,
+       EnumerateVideoDevicesNoAccessNoHideLabels) {
+  MockResourceContext* mock_resource_context =
+      static_cast<MockResourceContext*>(browser_context_.GetResourceContext());
+  mock_resource_context->set_camera_access(false);
+  EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
+                                   MEDIA_DEVICE_VIDEO_CAPTURE, false);
+  EXPECT_TRUE(DoesContainLabels(host_->enumerated_devices_));
 }
 
 };  // namespace content
