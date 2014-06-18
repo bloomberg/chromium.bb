@@ -21,6 +21,9 @@ import subprocess
 
 import elf
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SDK_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+
 NeededMatcher = re.compile('^ *NEEDED *([^ ]+)\n$')
 FormatMatcher = re.compile('^(.+):\\s*file format (.+)\n$')
 
@@ -211,7 +214,8 @@ def _FindLibsInPath(name, lib_path):
     # TODO(noelallen): Remove this once the SONAME in bionic is made to be
     # unique in the same it is under glibc:
     # https://code.google.com/p/nativeclient/issues/detail?id=3833
-    if name == 'libc.so' and 'bionic' not in dirname:
+    rel_dirname = os.path.relpath(dirname, SDK_DIR)
+    if name == 'libc.so' and 'bionic' not in rel_dirname:
       continue
     filename = os.path.join(dirname, name)
     if os.path.exists(filename):

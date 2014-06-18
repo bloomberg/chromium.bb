@@ -13,10 +13,13 @@ import unittest
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LIB_DIR = os.path.dirname(SCRIPT_DIR)
 TOOLS_DIR = os.path.dirname(LIB_DIR)
+SDK_DIR = os.path.dirname(TOOLS_DIR)
 DATA_DIR = os.path.join(SCRIPT_DIR, 'data')
+BUILD_TOOLS_DIR = os.path.join(SDK_DIR, 'build_tools')
 
 sys.path.append(LIB_DIR)
 sys.path.append(TOOLS_DIR)
+sys.path.append(BUILD_TOOLS_DIR)
 
 import build_paths
 import get_shared_deps
