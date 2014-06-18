@@ -316,11 +316,6 @@ void RenderFlexibleBox::repositionLogicalHeightDependentFlexItems(Vector<LineCon
     LayoutUnit crossAxisStartEdge = lineContexts.isEmpty() ? LayoutUnit() : lineContexts[0].crossAxisOffset;
     alignFlexLines(lineContexts);
 
-    // If we have a single line flexbox or a multiline line flexbox with only one flex line,
-    // the line height is all the available space.
-    // For flex-direction: row, this means we need to use the height, so we do this after calling updateLogicalHeight.
-    if (lineContexts.size() == 1)
-        lineContexts[0].crossAxisExtent = crossAxisContentExtent();
     alignChildren(lineContexts);
 
     if (style()->flexWrap() == FlexWrapReverse)
@@ -1240,7 +1235,15 @@ static LayoutUnit alignContentSpaceBetweenChildren(LayoutUnit availableFreeSpace
 
 void RenderFlexibleBox::alignFlexLines(Vector<LineContext>& lineContexts)
 {
-    if (!isMultiline() || style()->alignContent() == AlignContentFlexStart)
+    // If we have a single line flexbox or a multiline line flexbox with only one flex line,
+    // the line height is all the available space.
+    // For flex-direction: row, this means we need to use the height, so we do this after calling updateLogicalHeight.
+    if (lineContexts.size() == 1) {
+        lineContexts[0].crossAxisExtent = crossAxisContentExtent();
+        return;
+    }
+
+    if (style()->alignContent() == AlignContentFlexStart)
         return;
 
     LayoutUnit availableCrossAxisSpace = crossAxisContentExtent();
