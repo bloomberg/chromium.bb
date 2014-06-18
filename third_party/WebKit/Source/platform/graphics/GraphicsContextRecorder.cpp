@@ -164,22 +164,9 @@ private:
     Vector<double>* m_currentTimings;
 };
 
-class LoggingSnapshotPlayer : public SnapshotPlayer {
-public:
-    LoggingSnapshotPlayer(PassRefPtr<SkPicture> picture, SkCanvas* canvas)
-        : SnapshotPlayer(picture, canvas)
-    {
-    }
-
-    virtual bool abortDrawing() OVERRIDE
-    {
-        return false;
-    }
-};
-
 class LoggingCanvas : public SkCanvas {
 public:
-    LoggingCanvas()
+    LoggingCanvas(int width, int height) : SkCanvas(width, height)
     {
         m_log = JSONArray::create();
     }
@@ -428,7 +415,8 @@ public:
     SaveLayerStrategy willSaveLayer(const SkRect* bounds, const SkPaint* paint, SaveFlags flags) OVERRIDE
     {
         RefPtr<JSONObject> params = addItemWithParams("saveLayer");
-        params->setObject("bounds", objectForSkRect(*bounds));
+        if (bounds)
+            params->setObject("bounds", objectForSkRect(*bounds));
         params->setObject("paint", objectForSkPaint(*paint));
         params->setString("saveFlags", saveFlagsToString(flags));
         this->SkCanvas::willSaveLayer(bounds, paint, flags);
@@ -1035,7 +1023,7 @@ PassOwnPtr<ImageBuffer> GraphicsContextSnapshot::createImageBuffer() const
 
 PassRefPtr<JSONArray> GraphicsContextSnapshot::snapshotCommandLog() const
 {
-    LoggingCanvas canvas;
+    LoggingCanvas canvas(m_picture->width(), m_picture->height());
     FragmentSnapshotPlayer player(m_picture, &canvas);
     player.play(0, 0);
     return canvas.log();

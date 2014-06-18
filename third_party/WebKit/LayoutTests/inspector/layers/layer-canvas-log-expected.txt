@@ -34,6 +34,45 @@ Canvas log:
             }
         }
     }
+    10 : {
+        method : "drawRect"
+        params : {
+            paint : {
+                color : "#FF000000"
+                filterLevel : "Low"
+                flags : "AntiAlias"
+                hinting : "Normal"
+                strokeCap : "Butt"
+                strokeJoin : "Miter"
+                strokeMiter : 4
+                strokeWidth : 0
+                styleName : "Fill"
+                textAlign : "Left"
+                textEncoding : "UTF-8"
+                textScaleX : 1
+                textSize : 12
+                textSkewX : 0
+            }
+            rect : {
+                bottom : 10
+                left : 0
+                right : 10
+                top : 0
+            }
+        }
+    }
+    11 : {
+        method : "restore"
+    }
+    12 : {
+        method : "restore"
+    }
+    13 : {
+        method : "restore"
+    }
+    14 : {
+        method : "restore"
+    }
     2 : {
         method : "drawRect"
         params : {
@@ -108,7 +147,71 @@ Canvas log:
         }
     }
     4 : {
-        method : "restore"
+        method : "save"
+        params : {
+            saveFlags : "kMatrix_SaveFlag kClip_SaveFlag "
+        }
+    }
+    5 : {
+        method : "clipRect"
+        params : {
+            SkRegion::Op : "kIntersect_Op"
+            rect : {
+                bottom : 221
+                left : 0
+                right : 300
+                top : 71
+            }
+            softClipEdgeStyle : false
+        }
+    }
+    6 : {
+        method : "translate"
+        params : {
+            dx : 0
+            dy : 71
+        }
+    }
+    7 : {
+        method : "save"
+        params : {
+            saveFlags : "kMatrix_SaveFlag kClip_SaveFlag "
+        }
+    }
+    8 : {
+        method : "clipRect"
+        params : {
+            SkRegion::Op : "kIntersect_Op"
+            rect : {
+                bottom : 10
+                left : 0
+                right : 10
+                top : 0
+            }
+            softClipEdgeStyle : false
+        }
+    }
+    9 : {
+        method : "saveLayer"
+        params : {
+            paint : {
+                color : "#7F000000"
+                filterLevel : "None"
+                flags : "none"
+                hinting : "Normal"
+                strokeCap : "Butt"
+                strokeJoin : "Miter"
+                strokeMiter : 4
+                strokeWidth : 0
+                styleName : "Fill"
+                textAlign : "Left"
+                textEncoding : "UTF-8"
+                textScaleX : 1
+                textSize : 12
+                textSkewX : 0
+            }
+            saveFlags : "kMatrix_SaveFlag kClip_SaveFlag kHasAlphaLayer_SaveFlag kFullColorLayer_SaveFlag kClipToLayer_SaveFlag "
+        }
     }
 }
 
