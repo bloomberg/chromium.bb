@@ -26,7 +26,6 @@
 
 namespace WebCore {
 
-class Attribute;
 class Element;
 
 class SVGURIReference {

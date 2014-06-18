@@ -29,8 +29,6 @@
 
 namespace WebCore {
 
-class FEDiffuseLighting;
-
 class SVGFEDiffuseLightingElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
     DECLARE_NODE_FACTORY(SVGFEDiffuseLightingElement);

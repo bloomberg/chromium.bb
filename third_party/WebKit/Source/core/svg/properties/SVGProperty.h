@@ -41,7 +41,6 @@
 namespace WebCore {
 
 class ExceptionState;
-class QualifiedName;
 class SVGElement;
 class SVGAnimationElement;
 

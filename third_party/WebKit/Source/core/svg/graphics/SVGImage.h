@@ -33,9 +33,7 @@
 
 namespace WebCore {
 
-class Element;
 class FrameView;
-class ImageBuffer;
 class Page;
 class RenderBox;
 class SVGImageChromeClient;

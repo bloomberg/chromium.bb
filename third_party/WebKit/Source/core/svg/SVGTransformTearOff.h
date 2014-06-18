@@ -38,8 +38,6 @@
 
 namespace WebCore {
 
-class SVGMatrix;
-
 class SVGTransformTearOff FINAL : public SVGPropertyTearOff<SVGTransform>, public ScriptWrappable {
 public:
     enum SVGTransformType {

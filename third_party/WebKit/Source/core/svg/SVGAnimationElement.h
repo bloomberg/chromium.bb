@@ -57,10 +57,6 @@ enum CalcMode {
     CalcModeSpline
 };
 
-class ConditionEventListener;
-class TimeContainer;
-class SVGAnimatedType;
-
 class SVGAnimationElement : public SVGSMILElement,
                             public SVGTests {
 public:

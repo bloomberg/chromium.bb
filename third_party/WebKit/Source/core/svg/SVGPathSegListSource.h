@@ -29,8 +29,6 @@
 
 namespace WebCore {
 
-class SVGPathSegList;
-
 class SVGPathSegListSource FINAL : public SVGPathSource {
 public:
     SVGPathSegListSource(SVGPathSegList::ConstIterator, SVGPathSegList::ConstIterator);

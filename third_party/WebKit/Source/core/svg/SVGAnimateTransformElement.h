@@ -28,8 +28,6 @@
 
 namespace WebCore {
 
-class AffineTransform;
-
 class SVGAnimateTransformElement FINAL : public SVGAnimateElement {
 public:
     DECLARE_NODE_FACTORY(SVGAnimateTransformElement);

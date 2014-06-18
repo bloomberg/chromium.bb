@@ -30,8 +30,6 @@
 
 namespace WebCore {
 
-class ExceptionState;
-
 class SVGPaint : public CSSValue {
 public:
     enum SVGPaintType {

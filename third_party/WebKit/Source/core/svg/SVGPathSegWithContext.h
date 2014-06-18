@@ -24,8 +24,6 @@
 
 namespace WebCore {
 
-class SVGElement;
-
 // FIXME: This should be deprecated.
 class SVGPathSegWithContext : public SVGPathSeg {
 public:

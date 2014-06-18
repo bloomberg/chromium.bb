@@ -29,9 +29,7 @@
 
 namespace WebCore {
 
-class ImageResource;
 class ImageResourceClient;
-class ImageBuffer;
 class SVGImage;
 class SVGImageForContainer;
 class RenderObject;

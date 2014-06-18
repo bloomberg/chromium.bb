@@ -37,8 +37,6 @@
 
 namespace WebCore {
 
-class SVGIntegerTearOff;
-
 class SVGInteger : public SVGPropertyBase {
 public:
     typedef void TearOffType;

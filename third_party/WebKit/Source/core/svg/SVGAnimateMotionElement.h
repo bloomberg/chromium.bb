@@ -26,8 +26,6 @@
 
 namespace WebCore {
 
-class AffineTransform;
-
 class SVGAnimateMotionElement FINAL : public SVGAnimationElement {
 public:
     virtual ~SVGAnimateMotionElement();

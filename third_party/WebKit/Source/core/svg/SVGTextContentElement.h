@@ -38,8 +38,6 @@ enum SVGLengthAdjustType {
 };
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGLengthAdjustType>();
 
-class SVGAnimatedTextLength;
-
 class SVGTextContentElement : public SVGGraphicsElement {
 public:
     // Forward declare enumerations in the W3C naming scheme, for IDL generation.

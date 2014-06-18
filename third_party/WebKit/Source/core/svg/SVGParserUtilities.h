@@ -33,8 +33,6 @@ typedef Vector<UnicodeRange> UnicodeRanges;
 namespace WebCore {
 
 class FloatPoint;
-class FloatRect;
-class SVGPointList;
 
 enum WhitespaceMode {
     DisallowWhitespace = 0,

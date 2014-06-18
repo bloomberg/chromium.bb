@@ -51,8 +51,6 @@ typedef unsigned KerningPairKey;
 typedef Vector<SVGKerningPair> KerningPairVector;
 typedef HashMap<KerningPairKey, float> KerningTable;
 
-class SVGMissingGlyphElement;
-
 class SVGFontElement FINAL : public SVGElement {
 public:
     DECLARE_NODE_FACTORY(SVGFontElement);

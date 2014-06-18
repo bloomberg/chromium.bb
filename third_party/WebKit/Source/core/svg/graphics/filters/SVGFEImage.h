@@ -30,7 +30,6 @@
 
 namespace WebCore {
 
-class Document;
 class Image;
 class RenderObject;
 

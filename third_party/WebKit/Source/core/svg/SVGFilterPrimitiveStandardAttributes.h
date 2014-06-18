@@ -32,7 +32,6 @@ namespace WebCore {
 
 class Filter;
 class FilterEffect;
-class RenderSVGResourceFilterPrimitive;
 class SVGFilterBuilder;
 
 class SVGFilterPrimitiveStandardAttributes : public SVGElement {

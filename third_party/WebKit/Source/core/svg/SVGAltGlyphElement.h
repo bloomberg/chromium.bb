@@ -31,7 +31,6 @@
 namespace WebCore {
 
 class ExceptionState;
-class SVGGlyphElement;
 
 class SVGAltGlyphElement FINAL : public SVGTextPositioningElement,
                                  public SVGURIReference {

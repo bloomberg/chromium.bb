@@ -29,7 +29,6 @@ namespace WebCore {
 
 class Path;
 class SVGPathByteStream;
-class SVGPathElement;
 class SVGPathSeg;
 class SVGPathSegList;
 

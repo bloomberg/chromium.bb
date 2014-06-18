@@ -31,7 +31,6 @@
 namespace WebCore {
 
 struct GlyphMapNode;
-class SVGFontData;
 
 typedef HashMap<UChar32, RefPtr<GlyphMapNode> > GlyphMapLayer;
 

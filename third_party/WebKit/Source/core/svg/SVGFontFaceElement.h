@@ -30,7 +30,6 @@
 namespace WebCore {
 
 class SVGFontElement;
-class SVGFontData;
 class StyleRuleFontFace;
 
 class SVGFontFaceElement FINAL : public SVGElement {

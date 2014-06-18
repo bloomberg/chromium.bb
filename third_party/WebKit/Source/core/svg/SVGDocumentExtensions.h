@@ -38,7 +38,6 @@ class SVGElement;
 class SVGFontFaceElement;
 #endif
 class SVGResourcesCache;
-class SVGSMILElement;
 class SVGSVGElement;
 class Element;
 
