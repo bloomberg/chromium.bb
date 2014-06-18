@@ -38,7 +38,7 @@ function test()
         if (recordTypes.indexOf(record.type()) === -1)
             return;
 
-        var details = WebInspector.TimelineUIUtils.buildDetailsNode(record, linkifier, false);
+        var details = WebInspector.TimelineUIUtilsImpl.buildDetailsNode(record, linkifier, false);
         if (details)
             InspectorTest.addResult("details.textContent for " + record.type() + " event: '" + details.textContent + "'");
     }
