@@ -521,7 +521,8 @@ TEST_P(QuicSessionTest, OnCanWriteLimitsNumWritesIfFlowControlBlocked) {
     return;
   }
 
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
+                              true);
   // Ensure connection level flow control blockage.
   QuicFlowControllerPeer::SetSendWindowOffset(session_.flow_controller(), 0);
   EXPECT_TRUE(session_.flow_controller()->IsBlocked());
@@ -670,7 +671,8 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstOutOfOrder) {
   }
 
   ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
+                              true);
   // Test that when we receive an out of order stream RST we correctly adjust
   // our connection level flow control receive window.
   // On close, the stream should mark as consumed all bytes between the highest
@@ -698,7 +700,8 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingFinAndLocalReset) {
   }
 
   ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
+                              true);
   // Test the situation where we receive a FIN on a stream, and before we fully
   // consume all the data from the sequencer buffer we locally RST the stream.
   // The bytes between highest consumed byte, and the final byte offset that we
@@ -739,7 +742,8 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingFinAfterRst) {
   }
 
   ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
+                              true);
   // Connection starts with some non-zero highest received byte offset,
   // due to other active streams.
   const uint64 kInitialConnectionBytesConsumed = 567;
@@ -783,7 +787,8 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstAfterRst) {
   }
 
   ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
+                              true);
   // Connection starts with some non-zero highest received byte offset,
   // due to other active streams.
   const uint64 kInitialConnectionBytesConsumed = 567;
@@ -819,7 +824,8 @@ TEST_P(QuicSessionTest, FlowControlWithInvalidFinalOffset) {
     return;
   }
   ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
+                              true);
 
   const uint64 kLargeOffset = kInitialFlowControlWindowForTest + 1;
   EXPECT_CALL(*connection_,
@@ -846,7 +852,8 @@ TEST_P(QuicSessionTest, VersionNegotiationDisablesFlowControl) {
   }
 
   ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
+                              true);
   // Test that after successful version negotiation, flow control is disabled
   // appropriately at both the connection and stream level.
 

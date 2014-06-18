@@ -23,15 +23,14 @@ bool FLAGS_enable_quic_pacing = true;
 // If true, turns on stream flow control in QUIC.
 // If this is disabled, all in flight QUIC connections talking QUIC_VERSION_17
 // or higher will timeout. New connections will be fine.
-// If disabling this flag, also disable enable_quic_connection_flow_control.
+// If disabling this flag, also disable enable_quic_connection_flow_control_2.
 bool FLAGS_enable_quic_stream_flow_control_2 = true;
 
 // Do not remove this flag until b/11792453 is marked as Fixed.
 // If true, turns on connection level flow control in QUIC.
 // If this is disabled, all in flight QUIC connections talking QUIC_VERSION_19
 // or higher will timeout. New connections will be fine.
-// Disabled due to b/15084203.
-bool FLAGS_enable_quic_connection_flow_control = false;
+bool FLAGS_enable_quic_connection_flow_control_2 = true;
 
 bool FLAGS_quic_allow_oversized_packets_for_test = false;
 

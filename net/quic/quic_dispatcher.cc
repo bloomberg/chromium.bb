@@ -379,14 +379,14 @@ QuicConnection* QuicDispatcher::CreateQuicConnection(
     const IPEndPoint& server_address,
     const IPEndPoint& client_address) {
   if (FLAGS_enable_quic_stream_flow_control_2 &&
-      FLAGS_enable_quic_connection_flow_control) {
+      FLAGS_enable_quic_connection_flow_control_2) {
     DVLOG(1) << "Creating QuicDispatcher with all versions.";
     return new QuicConnection(connection_id, client_address, helper_,
                               writer_.get(), true, supported_versions_);
   }
 
   if (FLAGS_enable_quic_stream_flow_control_2 &&
-      !FLAGS_enable_quic_connection_flow_control) {
+      !FLAGS_enable_quic_connection_flow_control_2) {
     DVLOG(1) << "Connection flow control disabled, creating QuicDispatcher "
              << "WITHOUT version 19 or higher.";
     return new QuicConnection(connection_id, client_address, helper_,

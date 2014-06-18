@@ -222,7 +222,7 @@ class QuicDispatcher : public QuicServerSessionVisitor {
   // This is used to construct new QuicConnections when connection flow control
   // is disabled via flag.
   // TODO(rjshade): Remove this when
-  // FLAGS_enable_quic_connection_flow_control is removed.
+  // FLAGS_enable_quic_connection_flow_control_2 is removed.
   QuicVersionVector supported_versions_no_connection_flow_control_;
 
   // Information about the packet currently being handled.

@@ -422,7 +422,8 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlWindowUpdate) {
     return;
   }
   ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
+                              true);
 
   Initialize(kShouldProcessData);
 
@@ -510,7 +511,8 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlViolation) {
     return;
   }
   ValueRestore<bool> old_flag2(&FLAGS_enable_quic_stream_flow_control_2, true);
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
+                              true);
 
   // Stream should not process data, so that data gets buffered in the
   // sequencer, triggering flow control limits.

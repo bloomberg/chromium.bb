@@ -471,7 +471,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
 
   // Set a large flow control send window so this doesn't interfere with test.
   stream_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
-  if (FLAGS_enable_quic_connection_flow_control) {
+  if (FLAGS_enable_quic_connection_flow_control_2) {
     session_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
   }
 
@@ -526,7 +526,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
 
   // Set a large flow control send window so this doesn't interfere with test.
   stream_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
-  if (FLAGS_enable_quic_connection_flow_control) {
+  if (FLAGS_enable_quic_connection_flow_control_2) {
     session_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
   }
 
@@ -637,7 +637,7 @@ TEST_F(ReliableQuicStreamTest,
   ValueRestore<bool> old_stream_flag(
       &FLAGS_enable_quic_stream_flow_control_2, true);
   ValueRestore<bool> old_connection_flag(
-      &FLAGS_enable_quic_connection_flow_control, true);
+      &FLAGS_enable_quic_connection_flow_control_2, true);
 
   Initialize(kShouldProcessData);
 

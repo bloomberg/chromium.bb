@@ -173,7 +173,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
       FLAGS_enable_quic_stream_flow_control_2 = true;
     }
     if (negotiated_version_ >= QUIC_VERSION_19) {
-      FLAGS_enable_quic_connection_flow_control = true;
+      FLAGS_enable_quic_connection_flow_control_2 = true;
     }
     VLOG(1) << "Using Configuration: " << GetParam();
 

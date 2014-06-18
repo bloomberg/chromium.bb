@@ -181,7 +181,7 @@ void QuicFlowController::Disable() {
 bool QuicFlowController::IsEnabled() const {
   bool connection_flow_control_enabled =
       (id_ == kConnectionLevelId &&
-       FLAGS_enable_quic_connection_flow_control);
+       FLAGS_enable_quic_connection_flow_control_2);
   bool stream_flow_control_enabled =
       (id_ != kConnectionLevelId &&
        FLAGS_enable_quic_stream_flow_control_2);

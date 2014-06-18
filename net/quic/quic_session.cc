@@ -253,7 +253,7 @@ void QuicSession::OnWindowUpdateFrames(
       DVLOG(1) << ENDPOINT
                << "Received connection level flow control window update with "
                   "byte offset: " << frames[i].byte_offset;
-      if (FLAGS_enable_quic_connection_flow_control &&
+      if (FLAGS_enable_quic_connection_flow_control_2 &&
           flow_controller_->UpdateSendWindowOffset(frames[i].byte_offset)) {
         connection_window_updated = true;
       }
@@ -413,7 +413,7 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id,
   // received, for accurate connection level flow control accounting.
   if (!stream->HasFinalReceivedByteOffset() &&
       stream->flow_controller()->IsEnabled() &&
-      FLAGS_enable_quic_connection_flow_control) {
+      FLAGS_enable_quic_connection_flow_control_2) {
     locally_closed_streams_highest_offset_[stream_id] =
         stream->flow_controller()->highest_received_byte_offset();
   }
@@ -424,7 +424,7 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id,
 
 void QuicSession::UpdateFlowControlOnFinalReceivedByteOffset(
     QuicStreamId stream_id, QuicStreamOffset final_byte_offset) {
-  if (!FLAGS_enable_quic_connection_flow_control) {
+  if (!FLAGS_enable_quic_connection_flow_control_2) {
     return;
   }
 
