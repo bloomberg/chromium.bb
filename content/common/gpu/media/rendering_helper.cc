@@ -457,21 +457,16 @@ void RenderingHelper::RenderThumbnail(uint32 texture_target,
 }
 
 void RenderingHelper::RenderTexture(uint32 texture_target, uint32 texture_id) {
-  // Unbound texture samplers default to (0, 0, 0, 1).  Use this fact to switch
-  // between GL_TEXTURE_2D and GL_TEXTURE_EXTERNAL_OES as appopriate.
+  // The ExternalOES sampler is bound to GL_TEXTURE1 and the Texture2D sampler
+  // is bound to GL_TEXTURE0.
   if (texture_target == GL_TEXTURE_2D) {
     glActiveTexture(GL_TEXTURE0 + 0);
-    glBindTexture(GL_TEXTURE_2D, texture_id);
-    glActiveTexture(GL_TEXTURE0 + 1);
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
   } else if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
-    glActiveTexture(GL_TEXTURE0 + 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
     glActiveTexture(GL_TEXTURE0 + 1);
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
   }
-
+  glBindTexture(texture_target, texture_id);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glBindTexture(texture_target, 0);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
