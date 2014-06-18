@@ -1317,15 +1317,18 @@ int TabDragController::GetInsertionIndexForDraggedBounds(
     index = (dragged_bounds.right() > last_tab_right) ? tab_count : 0;
   }
 
-  if (!drag_data_[0].attached_tab) {
-    // If 'attached_tab' is NULL, it means we're in the process of attaching and
-    // don't need to constrain the index.
-    return index;
+  const Tab* last_visible_tab = attached_tabstrip_->GetLastVisibleTab();
+  int last_insertion_point = last_visible_tab ?
+      (attached_tabstrip_->GetModelIndexOfTab(last_visible_tab) + 1) : 0;
+  if (drag_data_[0].attached_tab) {
+    // We're not in the process of attaching, so clamp the insertion point to
+    // keep it within the visible region.
+    last_insertion_point = std::max(
+        0, last_insertion_point - static_cast<int>(drag_data_.size()));
   }
 
-  int max_index = GetModel(attached_tabstrip_)->count() -
-      static_cast<int>(drag_data_.size());
-  return std::max(0, std::min(max_index, index));
+  // Ensure the first dragged tab always stays in the visible index range.
+  return std::min(index, last_insertion_point);
 }
 
 bool TabDragController::ShouldDragToNextStackedTab(

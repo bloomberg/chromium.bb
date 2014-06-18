@@ -127,23 +127,56 @@ base::string16 GetClipboardText() {
   return clipboard_text;
 }
 
+// Animation delegate used for any automatic tab movement.  Hides the tab if it
+// is not fully visible within the tabstrip area, to prevent overflow clipping.
+class TabAnimationDelegate : public gfx::AnimationDelegate {
+ public:
+  TabAnimationDelegate(TabStrip* tab_strip, Tab* tab);
+  virtual ~TabAnimationDelegate();
+
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+
+ protected:
+  TabStrip* tab_strip() { return tab_strip_; }
+  Tab* tab() { return tab_; }
+
+ private:
+  TabStrip* const tab_strip_;
+  Tab* const tab_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabAnimationDelegate);
+};
+
+TabAnimationDelegate::TabAnimationDelegate(TabStrip* tab_strip, Tab* tab)
+    : tab_strip_(tab_strip),
+      tab_(tab) {
+}
+
+TabAnimationDelegate::~TabAnimationDelegate() {
+}
+
+void TabAnimationDelegate::AnimationProgressed(
+    const gfx::Animation* animation) {
+  tab_->SetVisible(tab_strip_->ShouldTabBeVisible(tab_));
+}
+
 // Animation delegate used when a dragged tab is released. When done sets the
 // dragging state to false.
-class ResetDraggingStateDelegate : public gfx::AnimationDelegate {
+class ResetDraggingStateDelegate : public TabAnimationDelegate {
  public:
-  explicit ResetDraggingStateDelegate(Tab* tab);
+  ResetDraggingStateDelegate(TabStrip* tab_strip, Tab* tab);
   virtual ~ResetDraggingStateDelegate();
 
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
   virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
 
  private:
-  Tab* tab_;
-
   DISALLOW_COPY_AND_ASSIGN(ResetDraggingStateDelegate);
 };
 
-ResetDraggingStateDelegate::ResetDraggingStateDelegate(Tab* tab) : tab_(tab) {
+ResetDraggingStateDelegate::ResetDraggingStateDelegate(TabStrip* tab_strip,
+                                                       Tab* tab)
+    : TabAnimationDelegate(tab_strip, tab) {
 }
 
 ResetDraggingStateDelegate::~ResetDraggingStateDelegate() {
@@ -151,7 +184,8 @@ ResetDraggingStateDelegate::~ResetDraggingStateDelegate() {
 
 void ResetDraggingStateDelegate::AnimationEnded(
     const gfx::Animation* animation) {
-  tab_->set_dragging(false);
+  tab()->set_dragging(false);
+  AnimationProgressed(animation);  // Forces tab visibility to update.
 }
 
 void ResetDraggingStateDelegate::AnimationCanceled(
@@ -456,7 +490,7 @@ class NewTabButtonTargeter : public views::MaskedViewTargeter {
 //
 // AnimationDelegate used when removing a tab. Does the necessary cleanup when
 // done.
-class TabStrip::RemoveTabDelegate : public gfx::AnimationDelegate {
+class TabStrip::RemoveTabDelegate : public TabAnimationDelegate {
  public:
   RemoveTabDelegate(TabStrip* tab_strip, Tab* tab);
 
@@ -464,55 +498,36 @@ class TabStrip::RemoveTabDelegate : public gfx::AnimationDelegate {
   virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
 
  private:
-  void CompleteRemove();
-
-  // When the animation completes, we send the Container a message to simulate
-  // a mouse moved event at the current mouse position. This tickles the Tab
-  // the mouse is currently over to show the "hot" state of the close button.
-  void HighlightCloseButton();
-
-  TabStrip* tabstrip_;
-  Tab* tab_;
-
   DISALLOW_COPY_AND_ASSIGN(RemoveTabDelegate);
 };
 
 TabStrip::RemoveTabDelegate::RemoveTabDelegate(TabStrip* tab_strip,
                                                Tab* tab)
-    : tabstrip_(tab_strip),
-      tab_(tab) {
+    : TabAnimationDelegate(tab_strip, tab) {
 }
 
 void TabStrip::RemoveTabDelegate::AnimationEnded(
     const gfx::Animation* animation) {
-  CompleteRemove();
+  DCHECK(tab()->closing());
+  tab_strip()->RemoveAndDeleteTab(tab());
+
+  // Send the Container a message to simulate a mouse moved event at the current
+  // mouse position. This tickles the Tab the mouse is currently over to show
+  // the "hot" state of the close button.  Note that this is not required (and
+  // indeed may crash!) for removes spawned by non-mouse closes and
+  // drag-detaches.
+  if (!tab_strip()->IsDragSessionActive() &&
+      tab_strip()->ShouldHighlightCloseButtonAfterRemove()) {
+    // The widget can apparently be null during shutdown.
+    views::Widget* widget = tab_strip()->GetWidget();
+    if (widget)
+      widget->SynthesizeMouseMoveEvent();
+  }
 }
 
 void TabStrip::RemoveTabDelegate::AnimationCanceled(
     const gfx::Animation* animation) {
   AnimationEnded(animation);
-}
-
-void TabStrip::RemoveTabDelegate::CompleteRemove() {
-  DCHECK(tab_->closing());
-  tabstrip_->RemoveAndDeleteTab(tab_);
-  HighlightCloseButton();
-}
-
-void TabStrip::RemoveTabDelegate::HighlightCloseButton() {
-  if (tabstrip_->IsDragSessionActive() ||
-      !tabstrip_->ShouldHighlightCloseButtonAfterRemove()) {
-    // This function is not required (and indeed may crash!) for removes
-    // spawned by non-mouse closes and drag-detaches.
-    return;
-  }
-
-  views::Widget* widget = tabstrip_->GetWidget();
-  // This can be null during shutdown. See http://crbug.com/42737.
-  if (!widget)
-    return;
-
-  widget->SynthesizeMouseMoveEvent();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -718,6 +733,54 @@ void TabStrip::SetTabData(int model_index, const TabRendererData& data) {
       DoLayout();
   }
   SwapLayoutIfNecessary();
+}
+
+bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
+  // When stacking tabs, all tabs should always be visible.
+  if (stacked_layout_)
+    return true;
+
+  // If the tab is currently clipped, it shouldn't be visible.  Note that we
+  // allow dragged tabs to draw over the "New Tab button" region as well,
+  // because either the New Tab button will be hidden, or the dragged tabs will
+  // be animating back to their normal positions and we don't want to hide them
+  // in the New Tab button region in case they re-appear after leaving it.
+  // (This prevents flickeriness.)  We never draw non-dragged tabs in New Tab
+  // button area, even when the button is invisible, so that they don't appear
+  // to "pop in" when the button disappears.
+  // TODO: Probably doesn't work for RTL
+  int right_edge = tab->bounds().right();
+  const int visible_width = tab->dragging() ? width() : tab_area_width();
+  if (right_edge > visible_width)
+    return false;
+
+  // Non-clipped dragging tabs should always be visible.
+  if (tab->dragging())
+    return true;
+
+  // Let all non-clipped closing tabs be visible.  These will probably finish
+  // closing before the user changes the active tab, so there's little reason to
+  // try and make the more complex logic below apply.
+  if (tab->closing())
+    return true;
+
+  // Now we need to check whether the tab isn't currently clipped, but could
+  // become clipped if we changed the active tab, widening either this tab or
+  // the tabstrip portion before it.
+
+  // Mini tabs don't change size when activated, so any tab in the mini tab
+  // region is safe.
+  if (tab->data().mini)
+    return true;
+
+  // If the active tab is on or before this tab, we're safe.
+  if (controller_->GetActiveIndex() <= GetModelIndexOfTab(tab))
+    return true;
+
+  // We need to check what would happen if the active tab were to move to this
+  // tab or before.
+  return (right_edge + current_selected_width_ - current_unselected_width_) <=
+      tab_area_width();
 }
 
 void TabStrip::PrepareForCloseAt(int model_index, CloseTabSource source) {
@@ -1492,8 +1555,13 @@ void TabStrip::ScheduleRemoveTabAnimation(Tab* tab) {
 void TabStrip::AnimateToIdealBounds() {
   for (int i = 0; i < tab_count(); ++i) {
     Tab* tab = tab_at(i);
-    if (!tab->dragging())
+    if (!tab->dragging()) {
       bounds_animator_.AnimateViewTo(tab, ideal_bounds(i));
+      bounds_animator_.SetAnimationDelegate(
+          tab,
+          scoped_ptr<gfx::AnimationDelegate>(
+              new TabAnimationDelegate(this, tab)));
+    }
   }
 
   bounds_animator_.AnimateViewTo(newtab_button_, newtab_button_bounds_);
@@ -1516,11 +1584,31 @@ void TabStrip::DoLayout() {
   GenerateIdealBounds();
 
   views::ViewModelUtils::SetViewBoundsToIdealBounds(tabs_);
+  SetTabVisibility();
 
   SchedulePaint();
 
   bounds_animator_.StopAnimatingView(newtab_button_);
   newtab_button_->SetBoundsRect(newtab_button_bounds_);
+}
+
+void TabStrip::SetTabVisibility() {
+  // We could probably be more efficient here by making use of the fact that the
+  // tabstrip will always have any visible tabs, and then any invisible tabs, so
+  // we could e.g. binary-search for the changeover point.  But since we have to
+  // iterate through all the tabs to call SetVisible() anyway, it doesn't seem
+  // worth it.
+  for (int i = 0; i < tab_count(); ++i) {
+    Tab* tab = tab_at(i);
+    tab->SetVisible(ShouldTabBeVisible(tab));
+  }
+  for (TabsClosingMap::const_iterator i(tabs_closing_map_.begin());
+       i != tabs_closing_map_.end(); ++i) {
+    for (Tabs::const_iterator j(i->second.begin()); j != i->second.end(); ++j) {
+      Tab* tab = *j;
+      tab->SetVisible(ShouldTabBeVisible(tab));
+    }
+  }
 }
 
 void TabStrip::DragActiveTab(const std::vector<int>& initial_positions,
@@ -1628,7 +1716,8 @@ void TabStrip::LayoutDraggedTabsAt(const Tabs& tabs,
                                    const gfx::Point& location,
                                    bool initial_drag) {
   // Immediately hide the new tab button if the last tab is being dragged.
-  if (GetLastVisibleTab()->dragging())
+  const Tab* last_visible_tab = GetLastVisibleTab();
+  if (last_visible_tab && last_visible_tab->dragging())
     newtab_button_->SetVisible(false);
   std::vector<gfx::Rect> bounds;
   CalculateBoundsForDraggedTabs(tabs, &bounds);
@@ -1653,6 +1742,7 @@ void TabStrip::LayoutDraggedTabsAt(const Tabs& tabs,
       tab->SetBoundsRect(new_bounds);
     }
   }
+  SetTabVisibility();
 }
 
 void TabStrip::CalculateBoundsForDraggedTabs(const Tabs& tabs,
@@ -1690,7 +1780,14 @@ int TabStrip::GetMiniTabCount() const {
 }
 
 const Tab* TabStrip::GetLastVisibleTab() const {
-  return tab_at(tab_count() - 1);
+  for (int i = tab_count() - 1; i >= 0; --i) {
+    const Tab* tab = tab_at(i);
+    if (tab->visible())
+      return tab;
+  }
+  // While in normal use the tabstrip should always be wide enough to have at
+  // least one visible tab, it can be zero-width in tests, meaning we get here.
+  return NULL;
 }
 
 void TabStrip::RemoveTabFromViewModel(int index) {
@@ -1761,6 +1858,7 @@ void TabStrip::StartedDraggingTabs(const Tabs& tabs) {
     DCHECK_NE(-1, tab_data_index);
     tabs[i]->SetBoundsRect(ideal_bounds(tab_data_index));
   }
+  SetTabVisibility();
   SchedulePaint();
 }
 
@@ -1810,7 +1908,8 @@ void TabStrip::StoppedDraggingTab(Tab* tab, bool* is_first_tab) {
   // dragging true for the tab otherwise it'll draw beneath the new tab button.
   bounds_animator_.SetAnimationDelegate(
       tab,
-      scoped_ptr<gfx::AnimationDelegate>(new ResetDraggingStateDelegate(tab)));
+      scoped_ptr<gfx::AnimationDelegate>(
+          new ResetDraggingStateDelegate(this, tab)));
 }
 
 void TabStrip::OwnDragController(TabDragController* controller) {
@@ -1958,22 +2057,8 @@ void TabStrip::GetDesiredTabWidths(int tab_count,
   }
 
   // Determine how much space we can actually allocate to tabs.
-  int available_width;
-  if (available_width_for_tabs_ < 0) {
-    available_width = width() - new_tab_button_width();
-  } else {
-    // Interesting corner case: if |available_width_for_tabs_| > the result
-    // of the calculation in the conditional arm above, the strip is in
-    // overflow.  We can either use the specified width or the true available
-    // width here; the first preserves the consistent "leave the last tab under
-    // the user's mouse so they can close many tabs" behavior at the cost of
-    // prolonging the glitchy appearance of the overflow state, while the second
-    // gets us out of overflow as soon as possible but forces the user to move
-    // their mouse for a few tabs' worth of closing.  We choose visual
-    // imperfection over behavioral imperfection and select the first option.
-    available_width = available_width_for_tabs_;
-  }
-
+  int available_width = (available_width_for_tabs_ < 0) ?
+      tab_area_width() : available_width_for_tabs_;
   if (mini_tab_count > 0) {
     available_width -=
         mini_tab_count * (Tab::GetMiniWidth() + kTabHorizontalOffset);
@@ -2460,6 +2545,7 @@ void TabStrip::SwapLayoutIfNecessary() {
   }
   PrepareForAnimation();
   GenerateIdealBounds();
+  SetTabVisibility();
   AnimateToIdealBounds();
 }
 

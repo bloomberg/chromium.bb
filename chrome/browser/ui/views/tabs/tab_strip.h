@@ -113,6 +113,13 @@ class TabStrip : public views::View,
   // Sets the tab data at the specified model index.
   void SetTabData(int model_index, const TabRendererData& data);
 
+  // Returns true if the tab is not partly or fully clipped (due to overflow),
+  // and the tab couldn't become partly clipped due to changing the selected tab
+  // (for example, if currently the strip has the last tab selected, and
+  // changing that to the first tab would cause |tab| to be pushed over enough
+  // to clip).
+  bool ShouldTabBeVisible(const Tab* tab) const;
+
   // Invoked from the controller when the close initiates from the TabController
   // (the user clicked the tab close button or middle clicked the tab). This is
   // invoked from Close. Because of unload handlers Close is not always
@@ -337,6 +344,9 @@ class TabStrip : public views::View,
   // Invoked from Layout if the size changes or layout is really needed.
   void DoLayout();
 
+  // Sets the visibility state of all tabs based on ShouldTabBeVisible().
+  void SetTabVisibility();
+
   // Drags the active tab by |delta|. |initial_positions| is the x-coordinates
   // of the tabs when the drag started.
   void DragActiveTab(const std::vector<int>& initial_positions, int delta);
@@ -372,7 +382,8 @@ class TabStrip : public views::View,
   // Returns the number of mini-tabs.
   int GetMiniTabCount() const;
 
-  // Returns the last tab in the strip.
+  // Returns the last tab in the strip that's actually visible.  This will be
+  // the actual last tab unless the strip is in the overflow state.
   const Tab* GetLastVisibleTab() const;
 
   // Adds the tab at |index| to |tabs_closing_map_| and removes the tab from

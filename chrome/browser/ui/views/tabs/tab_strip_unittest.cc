@@ -205,6 +205,62 @@ TEST_F(TabStripTest, RemoveTab) {
   EXPECT_EQ(0, observer.last_tab_removed());
 }
 
+TEST_F(TabStripTest, VisibilityInOverflow) {
+  tab_strip_->SetBounds(0, 0, 200, 20);
+
+  // The first tab added to a reasonable-width strip should be visible.  If we
+  // add enough additional tabs, eventually one should be invisible due to
+  // overflow.
+  int invisible_tab_index = 0;
+  for (; invisible_tab_index < 100; ++invisible_tab_index) {
+    controller_->AddTab(invisible_tab_index, false);
+    if (!tab_strip_->tab_at(invisible_tab_index)->visible())
+      break;
+  }
+  EXPECT_GT(invisible_tab_index, 0);
+  EXPECT_LT(invisible_tab_index, 100);
+
+  // The tabs before the invisible tab should still be visible.
+  for (int i = 0; i < invisible_tab_index; ++i)
+    EXPECT_TRUE(tab_strip_->tab_at(i)->visible());
+
+  // Enlarging the strip should result in the last tab becoming visible.
+  tab_strip_->SetBounds(0, 0, 400, 20);
+  EXPECT_TRUE(tab_strip_->tab_at(invisible_tab_index)->visible());
+
+  // Shrinking it again should re-hide the last tab.
+  tab_strip_->SetBounds(0, 0, 200, 20);
+  EXPECT_FALSE(tab_strip_->tab_at(invisible_tab_index)->visible());
+
+  // Shrinking it still more should make more tabs invisible, though not all.
+  // All the invisible tabs should be at the end of the strip.
+  tab_strip_->SetBounds(0, 0, 100, 20);
+  int i = 0;
+  for (; i < invisible_tab_index; ++i) {
+    if (!tab_strip_->tab_at(i)->visible())
+      break;
+  }
+  ASSERT_GT(i, 0);
+  EXPECT_LT(i, invisible_tab_index);
+  invisible_tab_index = i;
+  for (int i = invisible_tab_index + 1; i < tab_strip_->tab_count(); ++i)
+    EXPECT_FALSE(tab_strip_->tab_at(i)->visible());
+
+  // When we're already in overflow, adding tabs at the beginning or end of
+  // the strip should not change how many tabs are visible.
+  controller_->AddTab(tab_strip_->tab_count(), false);
+  EXPECT_TRUE(tab_strip_->tab_at(invisible_tab_index - 1)->visible());
+  EXPECT_FALSE(tab_strip_->tab_at(invisible_tab_index)->visible());
+  controller_->AddTab(0, false);
+  EXPECT_TRUE(tab_strip_->tab_at(invisible_tab_index - 1)->visible());
+  EXPECT_FALSE(tab_strip_->tab_at(invisible_tab_index)->visible());
+
+  // If we remove enough tabs, all the tabs should be visible.
+  for (int i = tab_strip_->tab_count() - 1; i >= invisible_tab_index; --i)
+    controller_->RemoveTab(i);
+  EXPECT_TRUE(tab_strip_->tab_at(tab_strip_->tab_count() - 1)->visible());
+}
+
 TEST_F(TabStripTest, ImmersiveMode) {
   // Immersive mode defaults to off.
   EXPECT_FALSE(tab_strip_->IsImmersiveStyle());
