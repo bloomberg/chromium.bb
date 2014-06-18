@@ -115,6 +115,24 @@ public:
         delete this;
     }
 
+    void completeWithJson(const char* utf8Data, unsigned length)
+    {
+        ScriptState* scriptState = m_promiseResolver->scriptState();
+        ScriptState::Scope scope(scriptState);
+
+        v8::Handle<v8::String> jsonString = v8::String::NewFromUtf8(scriptState->isolate(), utf8Data, v8::String::kInternalizedString, length);
+
+        v8::TryCatch exceptionCatcher;
+        v8::Handle<v8::Value> jsonDictionary = v8::JSON::Parse(jsonString);
+        if (exceptionCatcher.HasCaught() || jsonDictionary.IsEmpty()) {
+            ASSERT_NOT_REACHED();
+            m_promiseResolver->reject(DOMException::create(OperationError, "Failed inflating JWK JSON to object"));
+        } else {
+            m_promiseResolver->resolve(jsonDictionary);
+        }
+        delete this;
+    }
+
     void completeWithBoolean(bool b)
     {
         m_promiseResolver->resolve(b);
@@ -190,6 +208,12 @@ void CryptoResultImpl::completeWithBuffer(const blink::WebArrayBuffer& buffer)
 {
     if (m_promiseState)
         m_promiseState->completeWithBuffer(buffer);
+}
+
+void CryptoResultImpl::completeWithJson(const char* utf8Data, unsigned length)
+{
+    if (m_promiseState)
+        m_promiseState->completeWithJson(utf8Data, length);
 }
 
 void CryptoResultImpl::completeWithBoolean(bool b)

@@ -44,6 +44,9 @@ namespace WebCore { class CryptoResult; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
+// FIXME: Remove once chromium side rolls.
+#define WEBCRYPTO_RESULT_ACCEPTS_JSON 1
+
 namespace blink {
 
 class WebArrayBuffer;
@@ -90,6 +93,7 @@ public:
     BLINK_PLATFORM_EXPORT void completeWithBuffer(const WebArrayBuffer&);
     // Makes a copy of the input data given as a pointer and byte length.
     BLINK_PLATFORM_EXPORT void completeWithBuffer(const void*, unsigned);
+    BLINK_PLATFORM_EXPORT void completeWithJson(const char* utf8Data, unsigned length);
     BLINK_PLATFORM_EXPORT void completeWithBoolean(bool);
     BLINK_PLATFORM_EXPORT void completeWithKey(const WebCryptoKey&);
     BLINK_PLATFORM_EXPORT void completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey);

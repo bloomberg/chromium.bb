@@ -23,7 +23,7 @@ function testWithAESCBC(usages, expectedKeyOps)
    return crypto.subtle.importKey("raw", aesKeyAsArrayBuffer, {name: "AES-CBC"}, extractable, usages).then(function(result) {
         return crypto.subtle.exportKey("jwk", result);
     }).then(function(result) {
-        jwk = JSON.parse(bytesToASCIIString(result));
+        jwk = result;
         debug(usages + ":");
         shouldBe("jwk.use", "undefined");
         shouldBe("jwk.key_ops", JSON.stringify(expectedKeyOps));
@@ -36,7 +36,7 @@ function testWithHMAC(usages, expectedKeyOps)
     return crypto.subtle.importKey("raw", hmacKeyAsArrayBuffer, {name: 'hmac', hash: {name: 'sha-256'}}, extractable, usages).then(function(result) {
         return crypto.subtle.exportKey("jwk", result);
     }).then(function(result) {
-        jwk = JSON.parse(bytesToASCIIString(result));
+        jwk = result;
         debug(usages + ":");
         shouldBe("jwk.use", "undefined");
         shouldBe("jwk.key_ops", JSON.stringify(expectedKeyOps));

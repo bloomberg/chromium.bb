@@ -50,7 +50,7 @@ crypto.subtle.importKey("jwk", jwkKey, { name: "HMAC", hash: {name: "SHA-256"} }
     debug("Exporting the key as JWK...");
     return crypto.subtle.exportKey("jwk", key);
 }).then(function(result) {
-    exportedJWK = JSON.parse(bytesToASCIIString(result));
+    exportedJWK = result;
     shouldBe("exportedJWK.kty", "'oct'");
     shouldBe("exportedJWK.k", "'ahjkn-_387fgnsibf23qsvahjkn-_387fgnsibf23qs'");
     shouldBe("exportedJWK.alg", "'HS256'");

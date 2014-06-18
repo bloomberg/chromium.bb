@@ -61,8 +61,7 @@ crypto.subtle.generateKey(algorithmKeyGen, extractable, ["encrypt", "decrypt", "
     debug("\nExporting public key to JWK...");
     return crypto.subtle.exportKey("jwk", keyPair.publicKey);
 }).then(function(result) {
-    jwkPublicKeyArray = result;
-    jwkPublicKey = JSON.parse(bytesToASCIIString(jwkPublicKeyArray));
+    jwkPublicKey = result;
     shouldBe("jwkPublicKey.alg", "'RSA-OAEP'");
     shouldBe("jwkPublicKey.ext", "true");
     shouldBe("jwkPublicKey.key_ops", "['encrypt', 'wrapKey']");

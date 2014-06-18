@@ -38,7 +38,7 @@ crypto.subtle.importKey("jwk", privateKeyJSON, {name: "RSASSA-PKCS1-v1_5", hash:
     debug("\nExporting the key as JWK...");
     return crypto.subtle.exportKey("jwk", key);
 }).then(function(result) {
-    exportedJWK = JSON.parse(bytesToASCIIString(result));
+    exportedJWK = result;
 
     shouldBe("exportedJWK.kty", "'RSA'");
     shouldBe("exportedJWK.n", "privateKeyJSON.n");

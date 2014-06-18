@@ -43,6 +43,7 @@ public:
 
     virtual void completeWithError(blink::WebCryptoErrorType, const blink::WebString&) = 0;
     virtual void completeWithBuffer(const blink::WebArrayBuffer&) = 0;
+    virtual void completeWithJson(const char* utf8Data, unsigned length) = 0;
     virtual void completeWithBoolean(bool) = 0;
     virtual void completeWithKey(const blink::WebCryptoKey&) = 0;
     virtual void completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey) = 0;

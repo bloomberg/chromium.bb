@@ -59,6 +59,12 @@ void WebCryptoResult::completeWithBuffer(const void* bytes, unsigned bytesSize)
     completeWithBuffer(buffer);
 }
 
+void WebCryptoResult::completeWithJson(const char* utf8Data, unsigned length)
+{
+    m_impl->completeWithJson(utf8Data, length);
+    reset();
+}
+
 void WebCryptoResult::completeWithBoolean(bool b)
 {
     m_impl->completeWithBoolean(b);

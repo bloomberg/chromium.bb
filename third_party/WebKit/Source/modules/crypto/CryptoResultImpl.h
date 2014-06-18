@@ -60,6 +60,7 @@ public:
 
     virtual void completeWithError(blink::WebCryptoErrorType, const blink::WebString&) OVERRIDE;
     virtual void completeWithBuffer(const blink::WebArrayBuffer&) OVERRIDE;
+    virtual void completeWithJson(const char* utf8Data, unsigned length) OVERRIDE;
     virtual void completeWithBoolean(bool) OVERRIDE;
     virtual void completeWithKey(const blink::WebCryptoKey&) OVERRIDE;
     virtual void completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey) OVERRIDE;
