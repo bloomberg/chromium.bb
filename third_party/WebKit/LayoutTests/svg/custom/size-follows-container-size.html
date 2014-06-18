@@ -1,0 +1,30 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+  svg { background-color: lightblue }
+  div { width: 500px; background-color: blue; padding: 1em }
+</style>
+<div>
+  <svg viewBox="0 0 100 100"></svg>
+</div>
+<script>
+    var dec_test = async_test("Test SVG dimensions after container width has shrunk");
+    var inc_test = async_test("Test SVG dimensions after container width has grown");
+    onload = function() {
+        requestAnimationFrame(function() {
+            document.querySelector('div').style.width = "1000px";
+            inc_test.step(function() {
+                assert_equals(document.querySelector('svg').offsetWidth, 1000);
+                assert_equals(document.querySelector('svg').offsetHeight, 1000);
+            });
+            inc_test.done();
+            document.querySelector('div').style.width = "100px";
+            dec_test.step(function() {
+                assert_equals(document.querySelector('svg').offsetWidth, 100);
+                assert_equals(document.querySelector('svg').offsetHeight, 100);
+            });
+            dec_test.done();
+        });
+    };
+</script>
