@@ -21,8 +21,21 @@ group("trusted") {
   ]
 }
 
+#
+# TODO(noelallen) : BUG# 386243
+# Remove the need for a target to prep all toolchains once a Cooked toolchain
+# can depend on the correct prep steps.
+#
+group("prep_toolchains") {
+  deps = [
+    "//native_client/build/toolchain:prep_x86_newlib",
+    "//native_client/build/toolchain:prep_arm_newlib",
+  ]
+}
 
+#
 # This is the root untrusted target which will build all trusted components
+#
 group("untrusted") {
   deps = []
   if (use_newlib) {
