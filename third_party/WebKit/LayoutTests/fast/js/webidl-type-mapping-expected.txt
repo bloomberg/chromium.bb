@@ -1058,6 +1058,39 @@ PASS converter.testByteStringTreatReturnedNullStringAsNullAttribute is null
 PASS converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute is undefined.
 PASS converter.getTestByteStringTreatReturnedNullStringAsNullMethod() is null
 PASS converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod() is undefined.
+converter.testScalarValueString = '!@#123ABCabc\x00\x80\xFF\r\n\t'
+PASS converter.testScalarValueString is "!@#123ABCabc\u0000¬Ä√ø\r\n\t"
+converter.testScalarValueString = '\u0100'
+PASS converter.testScalarValueString is "ƒÄ"
+PASS converter.testScalarValueString = {toString: function() { throw Error(); }} threw exception Error.
+PASS converter.testScalarValueString is "ƒÄ"
+converter.testScalarValueString = "Ì†Ä"
+PASS converter.testScalarValueString is "ÔøΩ"
+converter.testScalarValueString = "Ì∞Ä"
+PASS converter.testScalarValueString is "ÔøΩ"
+converter.testScalarValueString = "Ì†Ä\u0000"
+PASS converter.testScalarValueString is "ÔøΩ\u0000"
+converter.testScalarValueString = "Ì∞Ä\u0000"
+PASS converter.testScalarValueString is "ÔøΩ\u0000"
+converter.testScalarValueString = "Ì∞ÄÌ†Ä"
+PASS converter.testScalarValueString is "ÔøΩÔøΩ"
+converter.testScalarValueString = "ùÑû"
+PASS converter.testScalarValueString is "ùÑû"
+converter.testScalarValueString = true
+PASS converter.testScalarValueString is "true"
+converter.testScalarValueString = 123
+PASS converter.testScalarValueString is "123"
+converter.testScalarValueString = null
+PASS converter.testScalarValueString is "null"
+converter.testScalarValueString = undefined
+PASS converter.testScalarValueString is "undefined"
+PASS converter.setTestScalarValueString('abc') did not throw exception.
+PASS converter.setTestScalarValueStringDefaultNull('abc') did not throw exception.
+PASS converter.setTestScalarValueString('\u0100') did not throw exception.
+PASS converter.setTestScalarValueStringDefaultNull('\u0100') did not throw exception.
+PASS converter.setTestScalarValueString() threw exception TypeError: Failed to execute 'setTestScalarValueString' on 'TypeConversions': 1 argument required, but only 0 present..
+PASS converter.setTestScalarValueStringDefaultNull() did not throw exception.
+PASS converter.testScalarValueString is ""
 PASS successfullyParsed is true
 
 TEST COMPLETE

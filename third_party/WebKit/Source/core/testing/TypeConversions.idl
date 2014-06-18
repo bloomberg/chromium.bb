@@ -53,4 +53,8 @@
     [ImplementedAs=testByteString, TreatReturnedNullStringAs=Undefined] ByteString getTestByteStringTreatReturnedNullStringAsUndefinedMethod();
     void setTestByteString(ByteString byteString);
     [ImplementedAs=setTestByteString] void setTestByteStringDefaultNull(optional ByteString byteString = null);
+
+    attribute ScalarValueString testScalarValueString;
+    void setTestScalarValueString(ScalarValueString scalarValueString);
+    [ImplementedAs=setTestScalarValueString] void setTestScalarValueStringDefaultNull(optional ScalarValueString scalarValueString = null);
 };

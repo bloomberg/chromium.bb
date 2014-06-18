@@ -88,6 +88,7 @@ interface TestObject {
     attribute Date dateAttribute;
     attribute DOMString stringAttribute;
     attribute ByteString byteStringAttribute;
+    attribute ScalarValueString scalarValueStringAttribute;
     attribute DOMTimeStamp domTimeStampAttribute;
     attribute boolean booleanAttribute;
     attribute byte byteAttribute;
@@ -265,6 +266,7 @@ interface TestObject {
     Date dateMethod();
     DOMString stringMethod();
     ByteString byteStringMethod();
+    ScalarValueString scalarValueStringMethod();
     DOMTimeStamp readonlyDOMTimeStampMethod();
     boolean booleanMethod();
     byte byteMethod();
@@ -281,6 +283,7 @@ interface TestObject {
     void voidMethodDateArg(Date dateArg);
     void voidMethodStringArg(DOMString stringArg);
     void voidMethodByteStringArg(ByteString stringArg);
+    void voidMethodScalarValueStringArg(ScalarValueString scalarValueStringArg);
     void voidMethodDOMTimeStampArg(DOMTimeStamp domTimeStampArg);
     void voidMethodBooleanArg(boolean booleanArg);
     void voidMethodByteArg(byte byteArg);

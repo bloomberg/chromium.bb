@@ -528,6 +528,9 @@ inline float toFloat(v8::Local<v8::Value> value)
 // Converts a value to a String, throwing if any code unit is outside 0-255.
 String toByteString(v8::Handle<v8::Value>, ExceptionState&);
 
+// Converts a value to a String, replacing unmatched UTF-16 surrogates with replacement characters.
+String toScalarValueString(v8::Handle<v8::Value>, ExceptionState&);
+
 inline v8::Handle<v8::Boolean> v8Boolean(bool value, v8::Isolate* isolate)
 {
     return value ? v8::True(isolate) : v8::False(isolate);

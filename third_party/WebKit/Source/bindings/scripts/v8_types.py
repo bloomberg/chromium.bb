@@ -167,7 +167,7 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False, used_as
 
     if base_idl_type in NON_WRAPPER_TYPES:
         return 'RefPtr<%s>' % base_idl_type
-    if base_idl_type in ('DOMString', 'ByteString'):
+    if base_idl_type in ('DOMString', 'ByteString', 'ScalarValueString'):
         if not used_as_argument:
             return 'String'
         return 'V8StringResource<%s>' % string_mode()
@@ -376,6 +376,7 @@ V8_VALUE_TO_CPP_VALUE = {
     'Date': 'toCoreDate({v8_value})',
     'DOMString': '{v8_value}',
     'ByteString': 'toByteString({arguments})',
+    'ScalarValueString': 'toScalarValueString({arguments})',
     'boolean': '{v8_value}->BooleanValue()',
     'float': 'static_cast<float>({v8_value}->NumberValue())',
     'unrestricted float': 'static_cast<float>({v8_value}->NumberValue())',
@@ -416,7 +417,8 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index):
 
     if 'EnforceRange' in extended_attributes:
         arguments = ', '.join([v8_value, 'EnforceRange', 'exceptionState'])
-    elif idl_type.is_integer_type or idl_type.name == 'ByteString':  # NormalConversion
+    elif (idl_type.is_integer_type or  # NormalConversion
+          idl_type.name in ('ByteString', 'ScalarValueString')):
         arguments = ', '.join([v8_value, 'exceptionState'])
     else:
         arguments = v8_value
@@ -464,7 +466,8 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     args = [variable_name, cpp_value]
     if idl_type.base_type == 'DOMString' and not idl_type.array_or_sequence_type:
         macro = 'TOSTRING_VOID'
-    elif idl_type.is_integer_type or idl_type.name == 'ByteString':
+    elif (idl_type.is_integer_type or
+          idl_type.name in ('ByteString', 'ScalarValueString')):
         macro = 'TONATIVE_VOID_EXCEPTIONSTATE'
         args.append('exceptionState')
     else:
@@ -576,6 +579,7 @@ V8_SET_RETURN_VALUE = {
     'unsigned': 'v8SetReturnValueUnsigned(info, {cpp_value})',
     'DOMString': 'v8SetReturnValueString(info, {cpp_value}, info.GetIsolate())',
     'ByteString': 'v8SetReturnValueString(info, {cpp_value}, info.GetIsolate())',
+    'ScalarValueString': 'v8SetReturnValueString(info, {cpp_value}, info.GetIsolate())',
     # [TreatNullReturnValueAs]
     'StringOrNull': 'v8SetReturnValueStringOrNull(info, {cpp_value}, info.GetIsolate())',
     'StringOrUndefined': 'v8SetReturnValueStringOrUndefined(info, {cpp_value}, info.GetIsolate())',
@@ -656,6 +660,7 @@ CPP_VALUE_TO_V8_VALUE = {
     'Date': 'v8DateOrNaN({cpp_value}, {isolate})',
     'DOMString': 'v8String({isolate}, {cpp_value})',
     'ByteString': 'v8String({isolate}, {cpp_value})',
+    'ScalarValueString': 'v8String({isolate}, {cpp_value})',
     'boolean': 'v8Boolean({cpp_value}, {isolate})',
     'int': 'v8::Integer::New({isolate}, {cpp_value})',
     'unsigned': 'v8::Integer::NewFromUnsigned({isolate}, {cpp_value})',

@@ -131,7 +131,9 @@ def generate_method(interface, method):
             is_raises_exception or
             is_check_security_for_frame or
             any(argument for argument in arguments
-                if argument.idl_type.name in ('ByteString', 'SerializedScriptValue') or
+                if argument.idl_type.name in ('ByteString',
+                                              'ScalarValueString',
+                                              'SerializedScriptValue') or
                    argument.idl_type.is_integer_type),
         'idl_type': idl_type.base_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
@@ -310,7 +312,8 @@ def v8_value_to_local_cpp_value(argument, index):
         return v8_value_to_local_cpp_variadic_value(argument, index)
     # FIXME: This special way of handling string arguments with null defaults
     # can go away once we fully support default values.
-    if (argument.is_optional and idl_type.name in ('String', 'ByteString') and
+    if (argument.is_optional and
+        idl_type.name in ('String', 'ByteString', 'ScalarValueString') and
         argument.default_value and argument.default_value.is_null):
         v8_value = 'argumentOrNull(info, %s)' % index
     else:

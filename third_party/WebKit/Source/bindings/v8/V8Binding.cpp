@@ -67,6 +67,8 @@
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
+#include "wtf/unicode/CharacterNames.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 
@@ -499,6 +501,8 @@ String toByteString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
         return String();
 
     // From the Web IDL spec: http://heycam.github.io/webidl/#es-ByteString
+    if (value.IsEmpty())
+        return String();
 
     // 1. Let x be ToString(v)
     TONATIVE_DEFAULT_EXCEPTIONSTATE(v8::Local<v8::String>, stringObject, value->ToString(), exceptionState, String());
@@ -515,6 +519,123 @@ String toByteString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
     // Blink: A ByteString is simply a String with a range constrained per the above, so
     // this is the identity operation.
     return x;
+}
+
+static bool hasUnmatchedSurrogates(const String& string)
+{
+    // By definition, 8-bit strings are confined to the Latin-1 code page and
+    // have no surrogates, matched or otherwise.
+    if (string.is8Bit())
+        return false;
+
+    const UChar* characters = string.characters16();
+    const unsigned length = string.length();
+
+    for (unsigned i = 0; i < length; ++i) {
+        UChar c = characters[i];
+        if (U16_IS_SINGLE(c))
+            continue;
+        if (U16_IS_TRAIL(c))
+            return true;
+        ASSERT(U16_IS_LEAD(c));
+        if (i == length - 1)
+            return true;
+        UChar d = characters[i + 1];
+        if (!U16_IS_TRAIL(d))
+            return true;
+        ++i;
+    }
+    return false;
+}
+
+// Replace unmatched surrogates with REPLACEMENT CHARACTER U+FFFD.
+static String replaceUnmatchedSurrogates(const String& string)
+{
+    // This roughly implements http://heycam.github.io/webidl/#dfn-obtain-unicode
+    // but since Blink strings are 16-bits internally, the output is simply
+    // re-encoded to UTF-16.
+
+    // The concept of surrogate pairs is explained at:
+    // http://www.unicode.org/versions/Unicode6.2.0/ch03.pdf#G2630
+
+    // Blink-specific optimization to avoid making an unnecessary copy.
+    if (!hasUnmatchedSurrogates(string))
+        return string;
+    ASSERT(!string.is8Bit());
+
+    // 1. Let S be the DOMString value.
+    const UChar* s = string.characters16();
+
+    // 2. Let n be the length of S.
+    const unsigned n = string.length();
+
+    // 3. Initialize i to 0.
+    unsigned i = 0;
+
+    // 4. Initialize U to be an empty sequence of Unicode characters.
+    StringBuilder u;
+    u.reserveCapacity(n);
+
+    // 5. While i < n:
+    while (i < n) {
+        // 1. Let c be the code unit in S at index i.
+        UChar c = s[i];
+        // 2. Depending on the value of c:
+        if (U16_IS_SINGLE(c)) {
+            // c < 0xD800 or c > 0xDFFF
+            // Append to U the Unicode character with code point c.
+            u.append(c);
+        } else if (U16_IS_TRAIL(c)) {
+            // 0xDC00 <= c <= 0xDFFF
+            // Append to U a U+FFFD REPLACEMENT CHARACTER.
+            u.append(WTF::Unicode::replacementCharacter);
+        } else {
+            // 0xD800 <= c <= 0xDBFF
+            ASSERT(U16_IS_LEAD(c));
+            if (i == n - 1) {
+                // 1. If i = n−1, then append to U a U+FFFD REPLACEMENT CHARACTER.
+                u.append(WTF::Unicode::replacementCharacter);
+            } else {
+                // 2. Otherwise, i < n−1:
+                ASSERT(i < n - 1);
+                // ....1. Let d be the code unit in S at index i+1.
+                UChar d = s[i + 1];
+                if (U16_IS_TRAIL(d)) {
+                    // 2. If 0xDC00 <= d <= 0xDFFF, then:
+                    // ..1. Let a be c & 0x3FF.
+                    // ..2. Let b be d & 0x3FF.
+                    // ..3. Append to U the Unicode character with code point 2^16+2^10*a+b.
+                    u.append(U16_GET_SUPPLEMENTARY(c, d));
+                    // Blink: This is equivalent to u.append(c); u.append(d);
+                    ++i;
+                } else {
+                    // 3. Otherwise, d < 0xDC00 or d > 0xDFFF. Append to U a U+FFFD REPLACEMENT CHARACTER.
+                    u.append(WTF::Unicode::replacementCharacter);
+                }
+            }
+        }
+        // 3. Set i to i+1.
+        ++i;
+    }
+
+    // 6. Return U.
+    ASSERT(u.length() == string.length());
+    return u.toString();
+}
+
+String toScalarValueString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+{
+    // From the Encoding standard (with a TODO to move to Web IDL):
+    // http://encoding.spec.whatwg.org/#type-scalarvaluestring
+    if (value.IsEmpty())
+        return String();
+    TONATIVE_DEFAULT_EXCEPTIONSTATE(v8::Local<v8::String>, stringObject, value->ToString(), exceptionState, String());
+
+    // ScalarValueString is identical to DOMString except that "convert a
+    // DOMString to a sequence of Unicode characters" is used subsequently
+    // when converting to an IDL value
+    String x = toCoreString(stringObject);
+    return replaceUnmatchedSurrogates(x);
 }
 
 PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value> value, v8::Isolate* isolate)
