@@ -1322,6 +1322,30 @@ void SafeBrowsingBlockingPageV3::PopulateMalwareLoadTimeData(
   load_time_data->SetString(
       "finalParagraph",
       l10n_util::GetStringUTF16(IDS_MALWARE_V3_PROCEED_PARAGRAPH));
+
+  load_time_data->SetBoolean(kDisplayCheckBox, CanShowMalwareDetailsOption());
+  if (CanShowMalwareDetailsOption()) {
+    std::string privacy_link = base::StringPrintf(
+        kPrivacyLinkHtml,
+        l10n_util::GetStringUTF8(
+            IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE_V2).c_str());
+    load_time_data->SetString(
+        "optInLink",
+        l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_MALWARE_V2_REPORTING_AGREE,
+                                   base::UTF8ToUTF16(privacy_link)));
+    Profile* profile = Profile::FromBrowserContext(
+       web_contents_->GetBrowserContext());
+    if (profile->GetPrefs()->HasPrefPath(
+            prefs::kSafeBrowsingExtendedReportingEnabled)) {
+      reporting_checkbox_checked_ =
+          IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled);
+    } else if (IsPrefEnabled(prefs::kSafeBrowsingReportingEnabled) ||
+         IsPrefEnabled(prefs::kSafeBrowsingDownloadFeedbackEnabled)) {
+      reporting_checkbox_checked_ = true;
+    }
+    load_time_data->SetBoolean(
+        kBoxChecked, reporting_checkbox_checked_);
+  }
 }
 
 void SafeBrowsingBlockingPageV3::PopulatePhishingLoadTimeData(

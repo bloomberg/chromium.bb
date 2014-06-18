@@ -65,6 +65,7 @@ function setupEvents() {
   });
 
   preventDefaultOnPoundLinkClicks();
+  setupCheckbox();
 }
 
 document.addEventListener('DOMContentLoaded', setupEvents);

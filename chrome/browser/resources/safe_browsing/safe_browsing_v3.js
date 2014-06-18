@@ -16,3 +16,20 @@ var SB_CMD_TAKE_ME_BACK = 'takeMeBack';
 // Other constants defined in safe_browsing_blocking_page.cc.
 var SB_BOX_CHECKED = 'boxchecked';
 var SB_DISPLAY_CHECK_BOX = 'displaycheckbox';
+
+// This sets up the Extended Safe Browsing Reporting opt-in.
+function setupCheckbox() {
+  if (loadTimeData.getBoolean('ssl') || loadTimeData.getBoolean('phishing') ||
+      !loadTimeData.getBoolean(SB_DISPLAY_CHECK_BOX)) {
+    return;
+  }
+
+  $('opt-in-label').innerHTML = loadTimeData.getString('optInLink');
+  $('opt-in-checkbox').checked = loadTimeData.getBoolean(SB_BOX_CHECKED);
+  $('malware-opt-in').classList.remove('hidden');
+
+  $('opt-in-checkbox').addEventListener('click', function() {
+    sendCommand(
+        $('opt-in-checkbox').checked ? SB_CMD_DO_REPORT : SB_CMD_DONT_REPORT);
+  });
+}

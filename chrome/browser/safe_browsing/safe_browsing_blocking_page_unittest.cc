@@ -710,8 +710,7 @@ TYPED_TEST(SafeBrowsingBlockingPageTest, MalwareReportsToggling) {
 }
 
 // Test that the transition from old to new preference works.
-TYPED_TEST(SafeBrowsingBlockingPageTest,
-    DISABLED_MalwareReportsTransitionEnabled) {
+TYPED_TEST(SafeBrowsingBlockingPageTest, MalwareReportsTransitionEnabled) {
   // The old pref is enabled.
   Profile* profile = Profile::FromBrowserContext(
       this->web_contents()->GetBrowserContext());
