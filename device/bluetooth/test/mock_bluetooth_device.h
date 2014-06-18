@@ -66,6 +66,9 @@ class MockBluetoothDevice : public BluetoothDevice {
                void(const BluetoothUUID& uuid,
                     const ConnectToServiceCallback& callback,
                     const ConnectToServiceErrorCallback& error_callback));
+  MOCK_METHOD2(CreateGattConnection,
+               void(const GattConnectionCallback& callback,
+                    const ConnectErrorCallback& error_callback));
 
   MOCK_METHOD2(StartConnectionMonitor,
                void(const base::Closure& callback,

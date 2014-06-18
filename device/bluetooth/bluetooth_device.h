@@ -18,6 +18,7 @@
 
 namespace device {
 
+class BluetoothGattConnection;
 class BluetoothGattService;
 class BluetoothSocket;
 class BluetoothUUID;
@@ -380,6 +381,21 @@ class BluetoothDevice {
       const BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) = 0;
+
+  // Opens a new GATT connection to this device. On success, a new
+  // BluetoothGattConnection will be handed to the caller via |callback|. On
+  // error, |error_callback| will be called. The connection will be kept alive,
+  // as long as there is at least one active GATT connection. In the case that
+  // the underlying connection gets terminated, either due to a call to
+  // BluetoothDevice::Disconnect or other unexpected circumstances, the
+  // returned BluetoothGattConnection will be automatically marked as inactive.
+  // To monitor the state of the connection, observe the
+  // BluetoothAdapter::Observer::DeviceChanged method.
+  typedef base::Callback<void(scoped_ptr<BluetoothGattConnection>)>
+      GattConnectionCallback;
+  virtual void CreateGattConnection(
+      const GattConnectionCallback& callback,
+      const ConnectErrorCallback& error_callback) = 0;
 
   // Starts monitoring the connection properties, RSSI and TX power. These
   // properties will be tracked, and updated when their values change. Exactly

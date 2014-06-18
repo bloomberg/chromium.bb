@@ -450,6 +450,13 @@ void BluetoothDeviceChromeOS::ConnectToService(
                   error_callback);
 }
 
+void BluetoothDeviceChromeOS::CreateGattConnection(
+      const GattConnectionCallback& callback,
+      const ConnectErrorCallback& error_callback) {
+  // TODO(armansito): Implement.
+  error_callback.Run(ERROR_UNSUPPORTED_DEVICE);
+}
+
 void BluetoothDeviceChromeOS::StartConnectionMonitor(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {

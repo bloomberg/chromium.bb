@@ -219,6 +219,13 @@ void BluetoothDeviceMac::ConnectToService(
       device_.get(), uuid, base::Bind(callback, socket), error_callback);
 }
 
+void BluetoothDeviceMac::CreateGattConnection(
+      const GattConnectionCallback& callback,
+      const ConnectErrorCallback& error_callback) {
+  // TODO(armansito): Implement.
+  error_callback.Run(ERROR_UNSUPPORTED_DEVICE);
+}
+
 void BluetoothDeviceMac::StartConnectionMonitor(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {

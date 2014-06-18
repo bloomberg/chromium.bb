@@ -207,6 +207,13 @@ void BluetoothDeviceWin::ConnectToService(
   socket->Connect(this, uuid, base::Bind(callback, socket), error_callback);
 }
 
+void BluetoothDeviceWin::CreateGattConnection(
+      const GattConnectionCallback& callback,
+      const ConnectErrorCallback& error_callback) {
+  // TODO(armansito): Implement.
+  error_callback.Run(ERROR_UNSUPPORTED_DEVICE);
+}
+
 void BluetoothDeviceWin::StartConnectionMonitor(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {

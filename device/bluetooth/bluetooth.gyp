@@ -47,6 +47,8 @@
         'bluetooth_discovery_session.h',
         'bluetooth_gatt_characteristic.cc',
         'bluetooth_gatt_characteristic.h',
+        'bluetooth_gatt_connection.cc',
+        'bluetooth_gatt_connection.h',
         'bluetooth_gatt_descriptor.cc',
         'bluetooth_gatt_descriptor.h',
         'bluetooth_gatt_service.cc',
