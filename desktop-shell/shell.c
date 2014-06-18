@@ -1849,7 +1849,8 @@ common_surface_resize(struct wl_resource *resource,
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_surface *surface;
 
-	if (seat->pointer->button_count == 0 ||
+	if (seat->pointer == NULL ||
+	    seat->pointer->button_count == 0 ||
 	    seat->pointer->grab_serial != serial ||
 	    seat->pointer->focus == NULL)
 		return;
