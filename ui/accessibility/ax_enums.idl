@@ -5,6 +5,9 @@
 // These should be kept in sync with third_party/WebKit/public/web/WebAXEnums.h
 // until the Chromium and Blink trees are merged.
 [camel_case_enum_to_string=true] namespace ui {
+
+  // For new entries to the following three enums, also add to
+  // chrome/common/extensions/apis/automation.idl.
   enum AXEvent {
     activedescendantchanged,
     alert,

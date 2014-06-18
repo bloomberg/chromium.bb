@@ -3,11 +3,204 @@
 // found in the LICENSE file.
 
 // The <code>chrome.automation</code> API allows developers to access the
-// automation (accessibility) tree for the browser. This is a tree
-// representation, analogous to the DOM tree, which represents the
-// <em>semantic</em> structure of a page, and can be used to programmatically
-// interact with a page.
+// automation (accessibility) tree for the browser. The tree resembles the DOM
+// tree, but only exposes the <em>semantic</em> structure of a page. It can be
+// used to programmatically interact with a page by examining names, roles, and
+// states, listening for events, and performing actions on nodes.
 [nocompile] namespace automation {
+  // Keep the following enums in sync with 'ui/accessibility/ax_enums.idl'.
+  // They are kept here purely for extension docs generation.
+
+  // Possible events fired on an $(ref:automation.AutomationNode).
+  enum EventType {
+    activedescendantchanged,
+    alert,
+    ariaAttributeChanged,
+    autocorrectionOccured,
+    blur,
+    checkedStateChanged,
+    childrenChanged,
+    focus,
+    hide,
+    hover,
+    invalidStatusChanged,
+    layoutComplete,
+    liveRegionChanged,
+    loadComplete,
+    locationChanged,
+    menuEnd,
+    menuListItemSelected,
+    menuListValueChanged,
+    menuPopupEnd,
+    menuPopupStart,
+    menuStart,
+    rowCollapsed,
+    rowCountChanged,
+    rowExpanded,
+    scrollPositionChanged,
+    scrolledToAnchor,
+    selectedChildrenChanged,
+    selectedTextChanged,
+    selectionChanged,
+    show,
+    textChanged,
+    textInserted,
+    textRemoved,
+    valueChanged
+  };
+
+  // Describes the purpose of an $(ref:automation.AutomationNode).
+  enum RoleType {
+    alertDialog,
+    alert,
+    annotation,
+    application,
+    article,
+    banner,
+    browser,
+    busyIndicator,
+    button,
+    buttonDropDown,
+    canvas,
+    cell,
+    checkBox,
+    client,
+    colorWell,
+    columnHeader,
+    column,
+    comboBox,
+    complementary,
+    contentInfo,
+    definition,
+    descriptionListDetail,
+    descriptionListTerm,
+    desktop,
+    dialog,
+    directory,
+    disclosureTriangle,
+    div,
+    document,
+    drawer,
+    editableText,
+    embeddedObject,
+    footer,
+    form,
+    grid,
+    group,
+    growArea,
+    heading,
+    helpTag,
+    horizontalRule,
+    iframe,
+    ignored,
+    imageMapLink,
+    imageMap,
+    image,
+    incrementor,
+    inlineTextBox,
+    labelText,
+    legend,
+    link,
+    listBoxOption,
+    listBox,
+    listItem,
+    listMarker,
+    list,
+    locationBar,
+    log,
+    main,
+    marquee,
+    mathElement,
+    math,
+    matte,
+    menuBar,
+    menuButton,
+    menuItem,
+    menuListOption,
+    menuListPopup,
+    menu,
+    navigation,
+    note,
+    outline,
+    pane,
+    paragraph,
+    popUpButton,
+    presentational,
+    progressIndicator,
+    radioButton,
+    radioGroup,
+    region,
+    rootWebArea,
+    rowHeader,
+    row,
+    rulerMarker,
+    ruler,
+    svgRoot,
+    scrollArea,
+    scrollBar,
+    seamlessWebArea,
+    search,
+    sheet,
+    slider,
+    sliderThumb,
+    spinButtonPart,
+    spinButton,
+    splitGroup,
+    splitter,
+    staticText,
+    status,
+    systemWide,
+    tabGroup,
+    tabList,
+    tabPanel,
+    tab,
+    tableHeaderContainer,
+    table,
+    textArea,
+    textField,
+    timer,
+    titleBar,
+    toggleButton,
+    toolbar,
+    treeGrid,
+    treeItem,
+    tree,
+    unknown,
+    tooltip,
+    valueIndicator,
+    webArea,
+    window
+  };
+
+  // Describes characteristics of an $(ref:automation.AutomationNode).
+  enum StateType {
+    busy,
+    checked,
+    collapsed,
+    default,
+    disabled,  // ui/views only
+    editable,  // ui/views only
+    enabled,   // content only
+    expanded,
+    focusable,
+    focused,
+    haspopup,
+    hovered,
+    indeterminate,
+    invisible,
+    linked,
+    multiselectable,
+    offscreen,
+    pressed,
+    protected,
+    readOnly,
+    required,
+    selectable,
+    selected,
+    vertical,
+    visited
+  };
+
   dictionary Rect {
     long left;
     long top;
@@ -16,15 +209,15 @@
   };
 
   // An event in the Automation tree.
-  [nocompile] dictionary AutomationEvent {
+  [nocompile, noinline_doc] dictionary AutomationEvent {
     // The $(ref:automation.AutomationNode) to which the event was targeted.
     AutomationNode target;
 
     // The type of the event.
-    DOMString type;
+    EventType type;
 
-    // Prevents all other event listeners from being triggered for this event
-    // dispatch.
+    // Stops this event from further processing except for any remaining
+    // listeners on $(ref:AutomationEvent.target).
     static void stopPropagation();
   };
 
@@ -32,54 +225,65 @@
   callback AutomationListener = void(AutomationEvent event);
 
   // A single node in an Automation tree.
-  [nocompile] dictionary AutomationNode {
+  [nocompile, noinline_doc] dictionary AutomationNode {
     // The root node of the tree containing this AutomationNode.
     AutomationRootNode root;
 
     // Whether this AutomationNode is an AutomationRootNode.
-    bool isRootNode;
+    boolean isRootNode;
 
     // Unique ID to identify this node.
     long id;
 
-    // The role of this node, e.g. button, static text etc.
-    DOMString role;
+    // The role of this node.
+    automation.RoleType role;
 
-    // The state of this node, e.g. {pressed": true, "inactive": true} etc.
+    // The $(ref:automation.StateType)s describing this node.
     object state;
 
     // The rendered location (as a bounding box) of this node within the frame.
-    Rect location;
+    automation.Rect location;
 
     // A collection of this node's other attributes.
-    // TODO(aboxhall): Create and use combined list of attributes from
-    // AXStringAttribute, AXIntAttribute etc.
     object? attributes;
 
     // The index of this node in its parent node's list of children. If this is
     // the root node, this will be undefined.
     long? indexInParent;
 
-    // Traversal.
-    static object[] children();
-    static object parent();
-    static object firstChild();
-    static object lastChild();
-    static object previousSibling();
-    static object nextSibling();
+    static AutomationNode[] children();
+    static AutomationNode parent();
+    static AutomationNode firstChild();
+    static AutomationNode lastChild();
+    static AutomationNode previousSibling();
+    static AutomationNode nextSibling();
 
-    // Actions.
+    // Does the default action based on this node's role. This is generally
+    // the same action that would result from clicking the node such as
+    // expanding a treeitem, toggling a checkbox, selecting a radiobutton,
+    // or activating a button.
     static void doDefault();
+
+    // Places focus on this node.
     static void focus();
+
+    // Scrolls this node to make it visible.
     static void makeVisible();
+
+    // Sets selection within a text field.
     static void setSelection(long startIndex, long endIndex);
 
-    // Events.
+    // Adds a listener for the given event type and event phase.
     static void addEventListener(
-        DOMString eventType, AutomationListener listener, bool capture);
+        EventType eventType, AutomationListener listener, boolean capture);
+
+    // Removes a listener for the given event type and event phase.
     static void removeEventListener(
-        DOMString eventType, AutomationListener listener, bool capture);
+        EventType eventType, AutomationListener listener, boolean capture);
   };
+
+  // Called when the <code>AutomationRootNode</code> for the page is available.
+  callback RootCallback = void(AutomationRootNode rootNode);
 
   // The root node of the automation tree for a single frame or desktop.
   // This may be:
@@ -96,19 +300,20 @@
   // if this is the top-level <code>AutomationRootNode</code>.
   //
   // Extends $(ref:automation.AutomationNode).
-  [nocompile] dictionary AutomationRootNode {
+  [nocompile, noinline_doc] dictionary AutomationRootNode {
+    // TODO(aboxhall/dtseng): implement loading. Kept separate to not include
+    // in generated docs.
+
+    // TODO(dtseng/aboxhall): Implement non-trivial |load| function before going
+    // to dev.
+
     // Whether this AutomationRootNode is loaded or not. If false, call load()
     // to get the contents.
-    // TODO(aboxhall/dtseng): implement.
-    bool loaded;
+    boolean loaded;
 
     // Load the accessibility tree for this AutomationRootNode.
-    // TODO(aboxhall/dtseng): implement.
     static void load(RootCallback callback);
   };
-
-  // Called when the <code>AutomationRootNode</code> for the page is available.
-  callback RootCallback = void(AutomationRootNode rootNode);
 
   interface Functions {
     // Get the automation tree for the tab with the given tabId, or the current
@@ -118,7 +323,8 @@
     // reference will stop working at or before this point).
     [nocompile] static void getTree(optional long tabId, RootCallback callback);
 
-    // Get the automation tree for the desktop.
+    // Get the automation tree for the whole desktop which consists of all on
+    // screen views. Note this API is currently only supported on Chrome OS.
     [nocompile] static void getDesktop(RootCallback callback);
   };
 };
