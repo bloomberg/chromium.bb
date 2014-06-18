@@ -189,7 +189,7 @@ InspectorTest.applyEmulationAndReload = function(enabled, width, height, deviceS
 {
     InspectorTest.addSniffer(WebInspector.overridesSupport, "_deviceMetricsOverrideAppliedForTest", emulateCallback);
     if (enabled)
-        WebInspector.overridesSupport.emulateDevice(width + "x" + height + "x" + deviceScaleFactor + "x0x0", "");
+        WebInspector.overridesSupport.emulateDevice(new WebInspector.OverridesSupport.Device(width + "x" + height + "x" + deviceScaleFactor + "x1x1", ""));
     else
         WebInspector.overridesSupport.reset();
 
