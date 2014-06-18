@@ -1234,7 +1234,15 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ClosePanels) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, FocusNextPanelOnPanelClose) {
+// Skip the test since active state might not be fully supported for some window
+// managers.
+#if defined(OS_MACOSX)
+#define MAYBE_FocusNextPanelOnPanelClose DISABLED_FocusNextPanelOnPanelClose
+#else
+#define MAYBE_FocusNextPanelOnPanelClose FocusNextPanelOnPanelClose
+#endif
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       MAYBE_FocusNextPanelOnPanelClose) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create 3 stacked panels.
