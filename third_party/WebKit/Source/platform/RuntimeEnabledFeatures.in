@@ -32,7 +32,7 @@ BleedingEdgeFastPaths
 BrandColor status=experimental
 
 ClientHintsDpr status=experimental
-Crypto status=experimental
+Crypto status=stable
 CSSAnimationUnprefixed status=experimental
 CSSCompositing status=experimental
 CSSExclusions status=experimental
