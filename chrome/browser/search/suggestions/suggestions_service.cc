@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -49,7 +50,8 @@ void LogResponseState(SuggestionsResponseState state) {
                             RESPONSE_STATE_SIZE);
 }
 
-// Obtains the experiment parameter under the supplied |key|.
+// Obtains the experiment parameter under the supplied |key|, or empty string
+// if the parameter does not exist.
 std::string GetExperimentParam(const std::string& key) {
   return chrome_variations::GetVariationParamValue(kSuggestionsFieldTrialName,
                                                    key);
@@ -67,10 +69,7 @@ void DispatchRequestsAndClear(
   std::vector<SuggestionsService::ResponseCallback>().swap(*requestors);
 }
 
-// Timeout before serving requestors after a fetch suggestions request has been
-// issued.
-// TODO(manzagop): make this a Variations parameter to enable tweaking.
-const unsigned int kRequestTimeoutMs = 200;
+const int kDefaultRequestTimeoutMs = 200;
 
 }  // namespace
 
@@ -81,20 +80,27 @@ const char kSuggestionsFieldTrialSuggestionsSuffixParam[] =
 const char kSuggestionsFieldTrialBlacklistSuffixParam[] = "blacklist_suffix";
 const char kSuggestionsFieldTrialStateParam[] = "state";
 const char kSuggestionsFieldTrialStateEnabled[] = "enabled";
+const char kSuggestionsFieldTrialTimeoutMs[] = "timeout_ms";
 
 SuggestionsService::SuggestionsService(
     Profile* profile, scoped_ptr<SuggestionsStore> suggestions_store)
     : suggestions_store_(suggestions_store.Pass()),
       thumbnail_manager_(new ThumbnailManager(profile)),
       profile_(profile),
-      weak_ptr_factory_(this) {
-  // Obtain the URL to use to fetch suggestions data from the Variations param.
+      weak_ptr_factory_(this),
+      request_timeout_ms_(kDefaultRequestTimeoutMs) {
+  // Obtain various parameters from Variations.
   suggestions_url_ =
       GURL(GetExperimentParam(kSuggestionsFieldTrialURLParam) +
            GetExperimentParam(kSuggestionsFieldTrialSuggestionsSuffixParam));
   blacklist_url_prefix_ =
       GetExperimentParam(kSuggestionsFieldTrialURLParam) +
       GetExperimentParam(kSuggestionsFieldTrialBlacklistSuffixParam);
+  std::string timeout = GetExperimentParam(kSuggestionsFieldTrialTimeoutMs);
+  int temp_timeout;
+  if (!timeout.empty() && base::StringToInt(timeout, &temp_timeout)) {
+    request_timeout_ms_ = temp_timeout;
+  }
 }
 
 SuggestionsService::~SuggestionsService() {}
@@ -117,7 +123,7 @@ void SuggestionsService::FetchSuggestionsData(
       &SuggestionsService::OnRequestTimeout, weak_ptr_factory_.GetWeakPtr())));
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE, pending_timeout_closure_->callback(),
-      base::TimeDelta::FromMilliseconds(kRequestTimeoutMs));
+      base::TimeDelta::FromMilliseconds(request_timeout_ms_));
 }
 
 void SuggestionsService::FetchSuggestionsDataNoTimeout(

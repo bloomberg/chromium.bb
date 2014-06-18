@@ -131,6 +131,10 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<SuggestionsService> weak_ptr_factory_;
 
+  // Timeout (in ms) before serving requestors after a fetch suggestions request
+  // has been issued.
+  int request_timeout_ms_;
+
   DISALLOW_COPY_AND_ASSIGN(SuggestionsService);
 };
 
