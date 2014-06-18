@@ -796,15 +796,20 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
       "/var/log",
   };
 
-  // The actual location of "/home/chronos/user/Downloads" is the Downloads
-  // directory under the profile path ("/home/chronos/user' is a hard link to
-  // current primary logged in profile.) For the support of multi-profile
-  // sessions, we are switching to use explicit "$PROFILE_PATH/Downloads" path
-  // and here whitelist such access.
+  // The actual location of "/home/chronos/user/Xyz" is the Xyz directory under
+  // the profile path ("/home/chronos/user' is a hard link to current primary
+  // logged in profile.) For the support of multi-profile sessions, we are
+  // switching to use explicit "$PROFILE_PATH/Xyz" path and here whitelist such
+  // access.
   if (!profile_path_.empty()) {
     const base::FilePath downloads = profile_path_.AppendASCII("Downloads");
     if (downloads == path.StripTrailingSeparators() || downloads.IsParent(path))
       return true;
+    const base::FilePath webrtc_logs = profile_path_.AppendASCII("WebRTC Logs");
+    if (webrtc_logs == path.StripTrailingSeparators() ||
+        webrtc_logs.IsParent(path)) {
+      return true;
+    }
   }
 #elif defined(OS_ANDROID)
   // Access to files in external storage is allowed.
