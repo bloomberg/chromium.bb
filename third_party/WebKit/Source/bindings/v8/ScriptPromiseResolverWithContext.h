@@ -38,6 +38,8 @@ public:
         return resolver.release();
     }
 
+    virtual ~ScriptPromiseResolverWithContext();
+
     // Anything that can be passed to toV8Value can be passed to this function.
     template <typename T>
     void resolve(T value)
@@ -68,7 +70,13 @@ public:
     virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
 
+    // Once this function is called this resolver stays alive while the
+    // promise is pending and the associated ExecutionContext isn't stopped.
+    void keepAliveWhilePending();
+
 protected:
+    // You need to call suspendIfNeeded after the construction because
+    // this is an ActiveDOMObject.
     explicit ScriptPromiseResolverWithContext(ScriptState*);
 
 private:
@@ -77,6 +85,10 @@ private:
         Resolving,
         Rejecting,
         ResolvedOrRejected,
+    };
+    enum LifetimeMode {
+        Default,
+        KeepAliveWhilePending,
     };
 
     template<typename T>
@@ -90,6 +102,7 @@ private:
     {
         if (m_state != Pending || !executionContext() || executionContext()->activeDOMObjectsAreStopped())
             return;
+        ASSERT(newState == Resolving || newState == Rejecting);
         m_state = newState;
         // Retain this object until it is actually resolved or rejected.
         // |deref| will be called in |clear|.
@@ -107,6 +120,7 @@ private:
 
     ResolutionState m_state;
     const RefPtr<ScriptState> m_scriptState;
+    LifetimeMode m_mode;
     Timer<ScriptPromiseResolverWithContext> m_timer;
     RefPtr<ScriptPromiseResolver> m_resolver;
     ScopedPersistent<v8::Value> m_value;

@@ -35,29 +35,32 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
+#include "modules/webmidi/MIDIAccessInitializer.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "modules/webmidi/MIDIAccessorClient.h"
 #include "modules/webmidi/MIDIInput.h"
 #include "modules/webmidi/MIDIOutput.h"
-#include "platform/AsyncMethodRunner.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
-#include "wtf/WeakPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
 class ExecutionContext;
-class MIDIAccessInitializer;
 struct MIDIOptions;
 
 class MIDIAccess FINAL : public RefCountedWillBeRefCountedGarbageCollected<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
     REFCOUNTED_EVENT_TARGET(MIDIAccess);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
 public:
+    static PassRefPtrWillBeRawPtr<MIDIAccess> create(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
+    {
+        RefPtrWillBeRawPtr<MIDIAccess> access = adoptRefWillBeRefCountedGarbageCollected(new MIDIAccess(accessor, sysexEnabled, ports, executionContext));
+        access->suspendIfNeeded();
+        return access;
+    }
     virtual ~MIDIAccess();
-    // Returns a promise object that will be resolved with this MIDIAccess.
-    static ScriptPromise request(const MIDIOptions&, ScriptState*);
 
     MIDIInputVector inputs() const { return m_inputs; }
     MIDIOutputVector outputs() const { return m_outputs; }
@@ -73,7 +76,6 @@ public:
 
     // ActiveDOMObject
     virtual void stop() OVERRIDE;
-    virtual bool hasPendingActivity() const OVERRIDE;
 
     // MIDIAccessorClient
     virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) OVERRIDE;
@@ -89,21 +91,15 @@ public:
     // |timeStampInMilliseconds| is in the same time coordinate system as performance.now().
     void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStampInMilliseconds);
 
-    // Initialize this object before exposing it to JavaScript.
-    void initialize(PassOwnPtr<MIDIAccessor>, bool sysexEnabled);
-
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    MIDIAccess(const MIDIOptions&, ExecutionContext*);
+    MIDIAccess(PassOwnPtr<MIDIAccessor>, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>&, ExecutionContext*);
 
-    MIDIInputVector m_inputs;
-    MIDIOutputVector m_outputs;
     OwnPtr<MIDIAccessor> m_accessor;
     bool m_sysexEnabled;
-
-    // FIXME: Stop owning initializer in this class.
-    OwnPtr<MIDIAccessInitializer> m_initializer;
+    MIDIInputVector m_inputs;
+    MIDIOutputVector m_outputs;
 };
 
 } // namespace WebCore

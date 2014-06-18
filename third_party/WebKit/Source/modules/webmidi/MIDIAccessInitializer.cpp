@@ -5,113 +5,39 @@
 #include "config.h"
 #include "modules/webmidi/MIDIAccessInitializer.h"
 
-#include "bindings/v8/ScriptFunction.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
+#include "core/frame/Navigator.h"
 #include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIController.h"
 #include "modules/webmidi/MIDIOptions.h"
+#include "modules/webmidi/MIDIPort.h"
 
 namespace WebCore {
 
-class MIDIAccessInitializer::PostAction : public ScriptFunction {
-public:
-    static PassOwnPtr<MIDIAccessInitializer::PostAction> create(v8::Isolate* isolate, WeakPtr<MIDIAccessInitializer> owner, State state) { return adoptPtr(new PostAction(isolate, owner, state)); }
-
-private:
-    PostAction(v8::Isolate* isolate, WeakPtr<MIDIAccessInitializer> owner, State state): ScriptFunction(isolate), m_owner(owner), m_state(state) { }
-    virtual ScriptValue call(ScriptValue value) OVERRIDE
-    {
-        if (!m_owner.get())
-            return value;
-        m_owner->doPostAction(m_state);
-        return value;
-    }
-
-    WeakPtr<MIDIAccessInitializer> m_owner;
-    State m_state;
-};
+MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MIDIOptions& options)
+    : ScriptPromiseResolverWithContext(scriptState)
+    , m_options(options)
+    , m_sysexEnabled(false)
+{
+}
 
 MIDIAccessInitializer::~MIDIAccessInitializer()
 {
-    ASSERT(m_state != Requesting);
-}
-
-MIDIAccessInitializer::MIDIAccessInitializer(const MIDIOptions& options, MIDIAccess* access)
-    : m_state(Requesting)
-    , m_weakPtrFactory(this)
-    , m_options(options)
-    , m_sysexEnabled(false)
-    , m_access(access)
-{
-    m_accessor = MIDIAccessor::create(this);
-}
-
-void MIDIAccessInitializer::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version)
-{
-    m_access->didAddInputPort(id, manufacturer, name, version);
-}
-
-void MIDIAccessInitializer::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version)
-{
-    m_access->didAddOutputPort(id, manufacturer, name, version);
-}
-
-void MIDIAccessInitializer::didStartSession(bool success, const String& error, const String& message)
-{
-    if (success)
-        m_resolver->resolve(m_access);
-    else
-        m_resolver->reject(DOMError::create(error, message));
-}
-
-void MIDIAccessInitializer::setSysexEnabled(bool enable)
-{
-    m_sysexEnabled = enable;
-    if (enable)
-        m_accessor->startSession();
-    else
-        m_resolver->reject(DOMError::create("SecurityError"));
-}
-
-SecurityOrigin* MIDIAccessInitializer::securityOrigin() const
-{
-    return m_access->executionContext()->securityOrigin();
-}
-
-void MIDIAccessInitializer::cancel()
-{
-    if (m_state != Requesting)
-        return;
-    m_accessor.clear();
-    m_weakPtrFactory.revokeAll();
+    // It is safe to cancel a request which is already finished or canceld.
     Document* document = toDocument(executionContext());
     ASSERT(document);
     MIDIController* controller = MIDIController::from(document->frame());
-    ASSERT(controller);
-    controller->cancelSysexPermissionRequest(this);
-    m_state = Stopped;
+    if (controller)
+        controller->cancelSysexPermissionRequest(this);
 }
 
-ExecutionContext* MIDIAccessInitializer::executionContext() const
+ScriptPromise MIDIAccessInitializer::start()
 {
-    return m_access->executionContext();
-}
-
-void MIDIAccessInitializer::permissionDenied()
-{
-    ASSERT(isMainThread());
-    m_resolver->reject(DOMError::create("SecurityError"));
-}
-
-ScriptPromise MIDIAccessInitializer::initialize(ScriptState* scriptState)
-{
-    m_resolver = ScriptPromiseResolverWithContext::create(scriptState);
-    ScriptPromise promise = m_resolver->promise();
-    promise.then(PostAction::create(scriptState->isolate(), m_weakPtrFactory.createWeakPtr(), Resolved),
-        PostAction::create(scriptState->isolate(), m_weakPtrFactory.createWeakPtr(), Stopped));
+    ScriptPromise promise = this->promise();
+    m_accessor = MIDIAccessor::create(this);
 
     if (!m_options.sysex) {
         m_accessor->startSession();
@@ -123,21 +49,50 @@ ScriptPromise MIDIAccessInitializer::initialize(ScriptState* scriptState)
     if (controller) {
         controller->requestSysexPermission(this);
     } else {
-        m_resolver->reject(DOMError::create("SecurityError"));
+        reject(DOMError::create("SecurityError"));
     }
     return promise;
 }
 
-void MIDIAccessInitializer::doPostAction(State state)
+void MIDIAccessInitializer::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version)
 {
-    ASSERT(m_state == Requesting);
-    ASSERT(state == Resolved || state == Stopped);
-    if (state == Resolved) {
-        m_access->initialize(m_accessor.release(), m_sysexEnabled);
+    ASSERT(m_accessor);
+    m_portDescriptors.append(PortDescriptor(id, manufacturer, name, MIDIPort::MIDIPortTypeInput, version));
+}
+
+void MIDIAccessInitializer::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version)
+{
+    ASSERT(m_accessor);
+    m_portDescriptors.append(PortDescriptor(id, manufacturer, name, MIDIPort::MIDIPortTypeOutput, version));
+}
+
+void MIDIAccessInitializer::didStartSession(bool success, const String& error, const String& message)
+{
+    ASSERT(m_accessor);
+    if (success) {
+        resolve(MIDIAccess::create(m_accessor.release(), m_sysexEnabled, m_portDescriptors, executionContext()));
+    } else {
+        reject(DOMError::create(error, message));
     }
-    m_accessor.clear();
-    m_weakPtrFactory.revokeAll();
-    m_state = state;
+}
+
+void MIDIAccessInitializer::setSysexEnabled(bool enable)
+{
+    m_sysexEnabled = enable;
+    if (enable)
+        m_accessor->startSession();
+    else
+        reject(DOMError::create("SecurityError"));
+}
+
+SecurityOrigin* MIDIAccessInitializer::securityOrigin() const
+{
+    return executionContext()->securityOrigin();
+}
+
+ExecutionContext* MIDIAccessInitializer::executionContext() const
+{
+    return scriptState()->executionContext();
 }
 
 } // namespace WebCore

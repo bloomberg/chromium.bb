@@ -13,9 +13,21 @@ ScriptPromiseResolverWithContext::ScriptPromiseResolverWithContext(ScriptState* 
     : ActiveDOMObject(scriptState->executionContext())
     , m_state(Pending)
     , m_scriptState(scriptState)
+    , m_mode(Default)
     , m_timer(this, &ScriptPromiseResolverWithContext::onTimerFired)
     , m_resolver(ScriptPromiseResolver::create(m_scriptState.get()))
 {
+    if (executionContext()->activeDOMObjectsAreStopped())
+        m_state = ResolvedOrRejected;
+}
+
+ScriptPromiseResolverWithContext::~ScriptPromiseResolverWithContext()
+{
+    if (m_state != ResolvedOrRejected) {
+        ScriptState::Scope scope(m_scriptState.get());
+        reject(v8::Exception::Error(v8::String::NewFromUtf8(m_scriptState->isolate(),
+            "ScriptPromiseResolverWithContext is destructed without resolve / reject")));
+    }
 }
 
 void ScriptPromiseResolverWithContext::suspend()
@@ -35,9 +47,19 @@ void ScriptPromiseResolverWithContext::stop()
     clear();
 }
 
+void ScriptPromiseResolverWithContext::keepAliveWhilePending()
+{
+    if (m_state == ResolvedOrRejected || m_mode == KeepAliveWhilePending)
+        return;
+
+    // Keep |this| while the promise is Pending.
+    // deref() will be called in clear().
+    m_mode = KeepAliveWhilePending;
+    ref();
+}
+
 void ScriptPromiseResolverWithContext::onTimerFired(Timer<ScriptPromiseResolverWithContext>*)
 {
-    RefPtr<ScriptPromiseResolverWithContext> protect(this);
     ScriptState::Scope scope(m_scriptState.get());
     resolveOrRejectImmediately();
 }
@@ -63,15 +85,23 @@ void ScriptPromiseResolverWithContext::resolveOrRejectImmediately()
 
 void ScriptPromiseResolverWithContext::clear()
 {
+    if (m_state == ResolvedOrRejected)
+        return;
     ResolutionState state = m_state;
     m_state = ResolvedOrRejected;
     m_resolver.clear();
     m_value.clear();
+    if (m_mode == KeepAliveWhilePending) {
+        // |ref| was called in the constructor.
+        deref();
+    }
+    // |this| may be deleted here, but it is safe to check |state| because
+    // it doesn't depend on |this|. When |this| is deleted, |state| can't be
+    // |Resolving| nor |Rejecting| and hence |this->deref()| can't be executed.
     if (state == Resolving || state == Rejecting) {
         // |ref| was called in |resolveOrReject|.
         deref();
     }
-    // |this| may be deleted here.
 }
 
 } // namespace WebCore
