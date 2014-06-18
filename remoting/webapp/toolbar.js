@@ -48,7 +48,11 @@ remoting.Toolbar = function(toolbar) {
 
   registerEventListener('new-connection', 'click',
       function() {
-        chrome.app.window.create('main.html', { 'width': 800, 'height': 600 });
+        chrome.app.window.create('main.html', {
+          'width': 800,
+          'height': 600,
+          'frame': "none"
+        });
       });
   registerEventListener('send-ctrl-alt-del', 'click', remoting.sendCtrlAltDel);
   registerEventListener('send-print-screen', 'click', remoting.sendPrintScreen);
