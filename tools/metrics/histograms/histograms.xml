@@ -19395,6 +19395,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Chrome OS stateful partition usage level.</summary>
 </histogram>
 
+<histogram name="Platform.Storage.Flash.BadBlocks">
+  <owner>dehrenberg@chromium.org</owner>
+  <summary>
+    The number of blocks marked bad in an MTD partition. This is relevant for
+    devices with raw NAND flash, such as Chromecast. Sampled once daily, if the
+    Chromecast is on for any significant length of time in the day.
+  </summary>
+</histogram>
+
 <histogram name="Platform.SwapInLong" units="pages/second">
   <owner>sonnyrao@chromium.org</owner>
   <summary>
@@ -45800,6 +45809,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="Autofill.Quality.PredictedType.ByFieldType"/>
   <affected-histogram name="Autofill.Quality.ServerType"/>
   <affected-histogram name="Autofill.Quality.ServerType.ByFieldType"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="BadBlockCounts" separator=".">
+  <suffix name="Backupsys" label="backupsys partition"/>
+  <suffix name="Bbt" label="bbt partition"/>
+  <suffix name="Block0" label="block0 partition"/>
+  <suffix name="Bootloader" label="bootloader partition"/>
+  <suffix name="Cache" label="cache partition"/>
+  <suffix name="Factory_store" label="factory_store partition"/>
+  <suffix name="Fts" label="fts partition"/>
+  <suffix name="Kernel" label="kernel partition"/>
+  <suffix name="Postbootloader" label="postbootloader partition"/>
+  <suffix name="Postbootloader-B" label="postbootloader-B partition"/>
+  <suffix name="Prebootloader" label="prebootloader partition"/>
+  <suffix name="Recovery" label="recovery partition"/>
+  <suffix name="Rootfs" label="rootfs partition"/>
+  <suffix name="Total" label="total partition"/>
+  <suffix name="TZ" label="TZ partition"/>
+  <suffix name="TZ-B" label="TZ-B partition"/>
+  <suffix name="Userdata" label="userdata partition"/>
+  <affected-histogram name="Platform.Storage.Flash.BadBlocks"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CacheListSize">
