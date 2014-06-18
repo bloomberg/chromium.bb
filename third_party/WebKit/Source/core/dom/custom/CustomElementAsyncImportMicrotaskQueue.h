@@ -31,7 +31,7 @@
 #ifndef CustomElementAsyncImportMicrotaskQueue_h
 #define CustomElementAsyncImportMicrotaskQueue_h
 
-#include "core/dom/custom/CustomElementMicrotaskQueue.h"
+#include "core/dom/custom/CustomElementMicrotaskQueueBase.h"
 
 namespace WebCore {
 

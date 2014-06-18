@@ -33,7 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
-#include "core/dom/custom/CustomElementMicrotaskQueue.h"
+#include "core/dom/custom/CustomElementSyncMicrotaskQueue.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportsController.h"
@@ -46,7 +46,7 @@ namespace WebCore {
 HTMLImportLoader::HTMLImportLoader(HTMLImportsController* controller)
     : m_controller(controller)
     , m_state(StateLoading)
-    , m_microtaskQueue(CustomElementMicrotaskQueue::create())
+    , m_microtaskQueue(CustomElementSyncMicrotaskQueue::create())
 {
 }
 
@@ -210,7 +210,7 @@ bool HTMLImportLoader::shouldBlockScriptExecution() const
     return firstImport()->state().shouldBlockScriptExecution();
 }
 
-PassRefPtrWillBeRawPtr<CustomElementMicrotaskQueue> HTMLImportLoader::microtaskQueue() const
+PassRefPtrWillBeRawPtr<CustomElementSyncMicrotaskQueue> HTMLImportLoader::microtaskQueue() const
 {
     return m_microtaskQueue;
 }

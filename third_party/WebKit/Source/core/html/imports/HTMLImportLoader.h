@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-class CustomElementMicrotaskQueue;
+class CustomElementSyncMicrotaskQueue;
 class Document;
 class DocumentWriter;
 class HTMLImportChild;
@@ -96,7 +96,7 @@ public:
     // Called by Document::didRemoveAllPendingStylesheet.
     void didRemoveAllPendingStylesheet();
 
-    PassRefPtrWillBeRawPtr<CustomElementMicrotaskQueue> microtaskQueue() const;
+    PassRefPtrWillBeRawPtr<CustomElementSyncMicrotaskQueue> microtaskQueue() const;
 
     virtual void trace(Visitor*);
 
@@ -125,7 +125,7 @@ private:
     State m_state;
     RefPtrWillBeMember<Document> m_document;
     RefPtrWillBeMember<DocumentWriter> m_writer;
-    RefPtrWillBeMember<CustomElementMicrotaskQueue> m_microtaskQueue;
+    RefPtrWillBeMember<CustomElementSyncMicrotaskQueue> m_microtaskQueue;
 };
 
 } // namespace WebCore

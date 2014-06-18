@@ -38,7 +38,6 @@
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
 #include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
-#include "core/dom/custom/CustomElementMicrotaskQueue.h"
 #include "core/dom/custom/CustomElementMicrotaskResolutionStep.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/html/imports/HTMLImportChild.h"

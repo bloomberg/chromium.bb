@@ -41,7 +41,7 @@
 
 namespace WebCore {
 
-class CustomElementMicrotaskQueue;
+class CustomElementSyncMicrotaskQueue;
 class HTMLImportChild;
 
 // Processes the Custom Elements in an HTML Import. This is a
@@ -81,7 +81,7 @@ private:
 #if !ENABLE(OILPAN)
     WeakPtrFactory<CustomElementMicrotaskImportStep> m_weakFactory;
 #endif
-    RefPtrWillBeMember<CustomElementMicrotaskQueue> m_queue;
+    RefPtrWillBeMember<CustomElementSyncMicrotaskQueue> m_queue;
 };
 
 }

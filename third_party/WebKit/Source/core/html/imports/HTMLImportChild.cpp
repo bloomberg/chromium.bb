@@ -35,7 +35,7 @@
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
-#include "core/dom/custom/CustomElementMicrotaskQueue.h"
+#include "core/dom/custom/CustomElementSyncMicrotaskQueue.h"
 #include "core/html/imports/HTMLImportChildClient.h"
 #include "core/html/imports/HTMLImportLoader.h"
 #include "core/html/imports/HTMLImportTreeRoot.h"

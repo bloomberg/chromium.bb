@@ -32,7 +32,7 @@
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 
 #include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
-#include "core/dom/custom/CustomElementMicrotaskQueue.h"
+#include "core/dom/custom/CustomElementSyncMicrotaskQueue.h"
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportLoader.h"
 #include <stdio.h>
@@ -61,7 +61,7 @@ CustomElementMicrotaskImportStep::~CustomElementMicrotaskImportStep()
 
 void CustomElementMicrotaskImportStep::parentWasChanged()
 {
-    m_queue = CustomElementMicrotaskQueue::create();
+    m_queue = CustomElementSyncMicrotaskQueue::create();
     m_import.clear();
 }
 

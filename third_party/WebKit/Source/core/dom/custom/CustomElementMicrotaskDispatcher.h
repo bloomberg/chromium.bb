@@ -12,11 +12,10 @@
 
 namespace WebCore {
 
-class CustomElementAsyncImportMicrotaskQueue;
 class CustomElementCallbackQueue;
 class CustomElementMicrotaskImportStep;
-class CustomElementMicrotaskQueue;
 class CustomElementMicrotaskStep;
+class CustomElementMicrotaskStepDispatcher;
 class HTMLImportLoader;
 
 class CustomElementMicrotaskDispatcher FINAL : public NoBaseWillBeGarbageCollected<CustomElementMicrotaskDispatcher> {
@@ -58,8 +57,7 @@ private:
         DispatchingCallbacks
     } m_phase;
 
-    RefPtrWillBeMember<CustomElementMicrotaskQueue> m_resolutionAndImports;
-    RefPtrWillBeMember<CustomElementAsyncImportMicrotaskQueue> m_asyncImports;
+    RefPtrWillBeMember<CustomElementMicrotaskStepDispatcher> m_steps;
     WillBeHeapVector<RawPtrWillBeMember<CustomElementCallbackQueue> > m_elements;
 };
 
