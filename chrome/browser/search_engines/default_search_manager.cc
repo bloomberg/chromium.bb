@@ -21,11 +21,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
-#include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/util.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/search_engines/template_url_data.h"
+
+namespace {
+
+bool g_fallback_search_engines_disabled = false;
+
+}  // namespace
 
 // A dictionary to hold all data related to the Default Search Engine.
 // Eventually, this should replace all the data stored in the
@@ -107,6 +111,12 @@ void DefaultSearchManager::AddPrefValueToMap(base::DictionaryValue* value,
   pref_value_map->SetValue(kDefaultSearchProviderDataPrefName, value);
 }
 
+// static
+void DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(
+    bool disabled) {
+  g_fallback_search_engines_disabled = disabled;
+}
+
 TemplateURLData* DefaultSearchManager::GetDefaultSearchEngine(
     Source* source) const {
   if (default_search_controlled_by_policy_) {
@@ -127,7 +137,7 @@ TemplateURLData* DefaultSearchManager::GetDefaultSearchEngine(
 
   if (source)
     *source = FROM_FALLBACK;
-  return TemplateURLService::fallback_search_engines_disabled() ?
+  return g_fallback_search_engines_disabled ?
       NULL : fallback_default_search_.get();
 }
 

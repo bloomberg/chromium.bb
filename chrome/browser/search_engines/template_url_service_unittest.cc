@@ -203,13 +203,13 @@ class TemplateURLServiceWithoutFallbackTest : public TemplateURLServiceTest {
   TemplateURLServiceWithoutFallbackTest() : TemplateURLServiceTest() {}
 
   virtual void SetUp() OVERRIDE {
-    TemplateURLService::set_fallback_search_engines_disabled(true);
+    DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(true);
     TemplateURLServiceTest::SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
     TemplateURLServiceTest::TearDown();
-    TemplateURLService::set_fallback_search_engines_disabled(false);
+    DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(false);
   }
 };
 

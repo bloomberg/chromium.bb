@@ -228,7 +228,7 @@ TemplateURLServiceSyncTest::TemplateURLServiceSyncTest()
           sync_processor_.get())) {}
 
 void TemplateURLServiceSyncTest::SetUp() {
-  TemplateURLService::set_fallback_search_engines_disabled(true);
+  DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(true);
   test_util_a_.SetUp();
   // Use ChangeToLoadState() instead of VerifyLoad() so we don't actually pull
   // in the prepopulate data, which the sync tests don't care about (and would
@@ -243,7 +243,7 @@ void TemplateURLServiceSyncTest::SetUp() {
 
 void TemplateURLServiceSyncTest::TearDown() {
   test_util_a_.TearDown();
-  TemplateURLService::set_fallback_search_engines_disabled(false);
+  DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(false);
 }
 
 scoped_ptr<syncer::SyncChangeProcessor>

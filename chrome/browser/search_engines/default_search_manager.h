@@ -80,6 +80,11 @@ class DefaultSearchManager {
   static void AddPrefValueToMap(base::DictionaryValue* value,
                                 PrefValueMap* pref_value_map);
 
+  // Testing code can call this with |disabled| set to true to cause
+  // GetDefaultSearchEngine() to return NULL instead of
+  // |fallback_default_search_| in cases where the DSE source is FROM_FALLBACK.
+  static void SetFallbackSearchEnginesDisabledForTesting(bool disabled);
+
   // Gets a pointer to the current Default Search Engine. If NULL, indicates
   // that Default Search is explicitly disabled. |source|, if not NULL, will be
   // filled in with the source of the result.

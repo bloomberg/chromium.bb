@@ -230,9 +230,6 @@ class TemplateURLService::LessWithPrefix {
 
 // TemplateURLService ---------------------------------------------------------
 
-// static
-bool TemplateURLService::g_fallback_search_engines_disabled = false;
-
 TemplateURLService::TemplateURLService(Profile* profile)
     : provider_map_(new SearchHostToURLsMap),
       profile_(profile),

@@ -387,18 +387,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   static SyncDataMap CreateGUIDToSyncDataMap(
       const syncer::SyncDataList& sync_data);
 
-  // Indicates whether the pre-populated TemplateURLs should be disabled. May
-  // only be true in tests.
-  static bool fallback_search_engines_disabled() {
-    return g_fallback_search_engines_disabled;
-  }
-
 #if defined(UNIT_TEST)
-  // Disables the pre-populated TemplateURLs for testing purposes.
-  static void set_fallback_search_engines_disabled(bool disabled) {
-    g_fallback_search_engines_disabled = disabled;
-  }
-
   // Sets a different time provider function, such as
   // base::MockTimeProvider::StaticNow, for testing calls to base::Time::Now.
   void set_time_provider(TimeProvider* time_provider) {
@@ -784,9 +773,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   DefaultSearchManager default_search_manager_;
 
   scoped_ptr<GoogleURLTracker::Subscription> google_url_updated_subscription_;
-
-  // Used to disable the prepopulated search engines in tests.
-  static bool g_fallback_search_engines_disabled;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };
