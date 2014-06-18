@@ -26,6 +26,7 @@
             'remoting_jni_headers',
             'remoting_protocol',
             '../google_apis/google_apis.gyp:google_apis',
+            '../ui/gfx/gfx.gyp:gfx',
           ],
           'sources': [
             'client/jni/android_keymap.cc',
