@@ -85,6 +85,10 @@
 #include "ui/events/x/touch_factory_x11.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/web_applications/web_app_mac.h"
+#endif
+
 #if defined(ENABLE_FULL_PRINTING)
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -556,6 +560,11 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 
 #if defined(TOOLKIT_VIEWS) && defined(USE_X11)
   ui::TouchFactory::SetTouchDeviceListFromCommandLine();
+#endif
+
+#if defined(OS_MACOSX)
+  if (web_app::MaybeRebuildShortcut(command_line))
+    return true;
 #endif
 
   if (!process_startup &&

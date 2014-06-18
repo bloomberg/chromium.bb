@@ -22,12 +22,14 @@ namespace app_mode {
 bool FindBundleById(NSString* bundle_id, base::FilePath* out_bundle);
 
 // Given the path to the Chrome bundle, read the following information:
+// |executable_path| - Path to the Chrome executable.
 // |raw_version_str| - Chrome version.
 // |version_path| - |chrome_bundle|/Contents/Versions/|raw_version_str|/
 // |framework_shlib_path| - Path to the chrome framework's shared library (not
 //                          the framework directory).
 // Returns true if all information read succesfuly, false otherwise.
 bool GetChromeBundleInfo(const base::FilePath& chrome_bundle,
+                         base::FilePath* executable_path,
                          base::string16* raw_version_str,
                          base::FilePath* version_path,
                          base::FilePath* framework_shlib_path);

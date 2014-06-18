@@ -43,11 +43,12 @@ TEST(ChromeLocatorTest, GetNonExistentBundleInfo) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
+  base::FilePath executable_path;
   base::string16 raw_version;
   base::FilePath version_path;
   base::FilePath framework_path;
   EXPECT_FALSE(app_mode::GetChromeBundleInfo(temp_dir.path(),
-      &raw_version, &version_path, &framework_path));
+      &executable_path, &raw_version, &version_path, &framework_path));
 }
 
 TEST(ChromeLocatorTest, GetChromeBundleInfo) {
@@ -57,11 +58,13 @@ TEST(ChromeLocatorTest, GetChromeBundleInfo) {
   GetChromeBundlePath(&chrome_bundle_path);
   ASSERT_TRUE(base::DirectoryExists(chrome_bundle_path));
 
+  base::FilePath executable_path;
   base::string16 raw_version;
   base::FilePath version_path;
   base::FilePath framework_path;
   EXPECT_TRUE(GetChromeBundleInfo(chrome_bundle_path,
-      &raw_version, &version_path, &framework_path));
+      &executable_path, &raw_version, &version_path, &framework_path));
+  EXPECT_TRUE(base::PathExists(executable_path));
   EXPECT_GT(raw_version.size(), 0U);
   EXPECT_TRUE(base::DirectoryExists(version_path));
   EXPECT_TRUE(base::PathExists(framework_path));

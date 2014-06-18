@@ -19,7 +19,7 @@ class AppListServiceLinux : public AppListServiceViews,
 
   static AppListServiceLinux* GetInstance();
 
-  // AppListServiceImpl overrides:
+  // AppListService overrides:
   virtual void CreateShortcut() OVERRIDE;
 
   // app_list::AppListViewObserver overrides:

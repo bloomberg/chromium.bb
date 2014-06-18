@@ -62,8 +62,6 @@ class AppListServiceMac : public AppListServiceImpl,
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE;
   virtual Profile* GetCurrentAppListProfile() OVERRIDE;
-
-  // AppListServiceImpl overrides:
   virtual void CreateShortcut() OVERRIDE;
 
   // AppShimHandler overrides:

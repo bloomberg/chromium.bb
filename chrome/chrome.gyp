@@ -286,7 +286,10 @@
           'target_name': 'app_mode_app',
           'type': 'executable',
           'mac_bundle' : 1,
-          'variables': { 'enable_wexit_time_destructors': 1, },
+          'variables': {
+            'enable_wexit_time_destructors': 1,
+            'mac_real_dsym': 1,
+          },
           'product_name': 'app_mode_loader',
           'dependencies': [
             'app_mode_app_support',

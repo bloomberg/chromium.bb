@@ -44,9 +44,6 @@ using content::BrowserThread;
 
 namespace {
 
-typedef base::Callback<void(const web_app::ShortcutInfo&,
-                            const extensions::FileHandlersInfo&)> InfoCallback;
-
 #if defined(OS_MACOSX)
 const int kDesiredSizes[] = {16, 32, 128, 256, 512};
 const size_t kNumDesiredSizes = arraysize(kDesiredSizes);
@@ -107,7 +104,7 @@ void UpdateAllShortcutsForShortcutInfo(
 
 void OnImageLoaded(web_app::ShortcutInfo shortcut_info,
                    extensions::FileHandlersInfo file_handlers_info,
-                   InfoCallback callback,
+                   web_app::InfoCallback callback,
                    const gfx::ImageFamily& image_family) {
   // If the image failed to load (e.g. if the resource being loaded was empty)
   // use the standard application icon.
@@ -129,6 +126,27 @@ void OnImageLoaded(web_app::ShortcutInfo shortcut_info,
 
   callback.Run(shortcut_info, file_handlers_info);
 }
+
+void IgnoreFileHandlersInfo(
+    const web_app::ShortcutInfoCallback& shortcut_info_callback,
+    const web_app::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info) {
+  shortcut_info_callback.Run(shortcut_info);
+}
+
+}  // namespace
+
+namespace web_app {
+
+// The following string is used to build the directory name for
+// shortcuts to chrome applications (the kind which are installed
+// from a CRX).  Application shortcuts to URLs use the {host}_{path}
+// for the name of this directory.  Hosts can't include an underscore.
+// By starting this string with an underscore, we ensure that there
+// are no naming conflicts.
+static const char kCrxAppPrefix[] = "_crx_";
+
+namespace internals {
 
 void GetInfoForApp(const extensions::Extension* extension,
                    Profile* profile,
@@ -184,27 +202,6 @@ void GetInfoForApp(const extensions::Extension* extension,
       info_list,
       base::Bind(&OnImageLoaded, shortcut_info, file_handlers_info, callback));
 }
-
-void IgnoreFileHandlersInfo(
-    const web_app::ShortcutInfoCallback& shortcut_info_callback,
-    const web_app::ShortcutInfo& shortcut_info,
-    const extensions::FileHandlersInfo& file_handlers_info) {
-  shortcut_info_callback.Run(shortcut_info);
-}
-
-}  // namespace
-
-namespace web_app {
-
-// The following string is used to build the directory name for
-// shortcuts to chrome applications (the kind which are installed
-// from a CRX).  Application shortcuts to URLs use the {host}_{path}
-// for the name of this directory.  Hosts can't include an underscore.
-// By starting this string with an underscore, we ensure that there
-// are no naming conflicts.
-static const char* kCrxAppPrefix = "_crx_";
-
-namespace internals {
 
 base::FilePath GetSanitizedFileName(const base::string16& name) {
 #if defined(OS_WIN)
@@ -286,9 +283,8 @@ ShortcutInfo ShortcutInfoForExtensionAndProfile(
 void UpdateShortcutInfoAndIconForApp(const extensions::Extension* extension,
                                      Profile* profile,
                                      const ShortcutInfoCallback& callback) {
-  GetInfoForApp(extension,
-                profile,
-                base::Bind(&IgnoreFileHandlersInfo, callback));
+  web_app::internals::GetInfoForApp(
+      extension, profile, base::Bind(&IgnoreFileHandlersInfo, callback));
 }
 
 bool ShouldCreateShortcutFor(Profile* profile,
@@ -383,9 +379,8 @@ void CreateShortcuts(ShortcutCreationReason reason,
   if (!ShouldCreateShortcutFor(profile, app))
     return;
 
-  GetInfoForApp(app,
-                profile,
-                base::Bind(&CreateShortcutsWithInfo, reason, locations));
+  internals::GetInfoForApp(
+      app, profile, base::Bind(&CreateShortcutsWithInfo, reason, locations));
 }
 
 void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app) {
@@ -405,9 +400,10 @@ void UpdateAllShortcuts(const base::string16& old_app_title,
                         const extensions::Extension* app) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GetInfoForApp(app,
-                profile,
-                base::Bind(&UpdateAllShortcutsForShortcutInfo, old_app_title));
+  internals::GetInfoForApp(
+      app,
+      profile,
+      base::Bind(&UpdateAllShortcutsForShortcutInfo, old_app_title));
 }
 
 bool IsValidUrl(const GURL& url) {

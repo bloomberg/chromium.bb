@@ -48,6 +48,7 @@ class AppListServiceImpl : public AppListService,
   virtual void AutoShowForProfile(Profile* requested_profile) OVERRIDE;
   virtual void EnableAppList(Profile* initial_profile,
                              AppListEnableSource enable_source) OVERRIDE;
+  virtual void CreateShortcut() OVERRIDE;
 
  protected:
   AppListServiceImpl();
@@ -60,9 +61,6 @@ class AppListServiceImpl : public AppListService,
   // list. Currently this checks command line flags to enable or disable the app
   // list, and records UMA stats delayed from a previous Chrome process.
   void PerformStartupChecks(Profile* initial_profile);
-
-  // Create a platform-specific shortcut for the app list.
-  virtual void CreateShortcut();
 
  private:
   static void SendAppListStats();

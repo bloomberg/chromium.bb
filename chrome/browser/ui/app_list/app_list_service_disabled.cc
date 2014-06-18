@@ -45,6 +45,8 @@ class AppListServiceDisabled : public AppListService {
     return NULL;
   }
 
+  virtual void CreateShortcut() OVERRIDE {}
+
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE {
     return NULL;
   }

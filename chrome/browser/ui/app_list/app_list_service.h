@@ -103,6 +103,9 @@ class AppListService {
   // Returns a pointer to the platform specific AppListControllerDelegate.
   virtual AppListControllerDelegate* GetControllerDelegate() = 0;
 
+  // Create a platform-specific shortcut for the app list.
+  virtual void CreateShortcut() = 0;
+
  protected:
   AppListService() {}
   virtual ~AppListService() {}

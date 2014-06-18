@@ -20,7 +20,9 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/launch_services_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/process/launch.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/common/chrome_switches.h"
 #import "chrome/common/mac/app_mode_chrome_locator.h"
 #include "chrome/common/mac/app_mode_common.h"
 
@@ -67,11 +69,15 @@ int LoadFrameworkAndStart(app_mode::ChromeAppModeInfo* info) {
   }
 
   // ** 2: Read information from the Chrome bundle.
+  base::FilePath executable_path;
   base::string16 raw_version_str;
   base::FilePath version_path;
   base::FilePath framework_shlib_path;
-  if (!app_mode::GetChromeBundleInfo(cr_bundle_path, &raw_version_str,
-          &version_path, &framework_shlib_path)) {
+  if (!app_mode::GetChromeBundleInfo(cr_bundle_path,
+                                     &executable_path,
+                                     &raw_version_str,
+                                     &version_path,
+                                     &framework_shlib_path)) {
     LOG(FATAL) << "Couldn't ready Chrome bundle info";
   }
   base::FilePath app_mode_bundle_path =
@@ -115,28 +121,53 @@ int LoadFrameworkAndStart(app_mode::ChromeAppModeInfo* info) {
     LOG(ERROR) << "Couldn't load framework: " << dlerror();
   }
 
-  if (ChromeAppModeStart) {
+  if (ChromeAppModeStart)
     return ChromeAppModeStart(info);
-  } else {
-    LOG(ERROR) << "Loading Chrome failed, launching with command line.";
-    // Launch Chrome instead and have it update this app_mode_loader bundle.
-    CommandLine command_line(CommandLine::NO_PROGRAM);
-    command_line.AppendSwitchPath(app_mode::kAppShimError,
-                                  app_mode_bundle_path);
-    if (!base::mac::OpenApplicationWithPath(
-            cr_bundle_path, command_line, kLSLaunchDefaults, NULL)) {
-      LOG(ERROR) << "Could not launch Chrome from: " << cr_bundle_path.value();
-      return 1;
-    }
 
-    return 0;
+  LOG(ERROR) << "Loading Chrome failed, launching Chrome with command line";
+  CommandLine command_line(executable_path);
+  // The user_data_dir from the plist is actually the app data dir.
+  command_line.AppendSwitchPath(
+      switches::kUserDataDir,
+      info->user_data_dir.DirName().DirName().DirName());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          app_mode::kLaunchedByChromeProcessId) ||
+      info->app_mode_id == app_mode::kAppListModeId) {
+    // Pass --app-shim-error to have Chrome rebuild this shim.
+    // If Chrome has rebuilt this shim once already, then rebuilding doesn't fix
+    // the problem, so don't try again.
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            app_mode::kLaunchedAfterRebuild)) {
+      command_line.AppendSwitchPath(app_mode::kAppShimError,
+                                    app_mode_bundle_path);
+    }
+  } else {
+    // If the shim was launched directly (instead of by Chrome), first ask
+    // Chrome to launch the app. Chrome will launch the shim again, the same
+    // error will occur and be handled above. This approach allows the app to be
+    // started without blocking on fixing the shim and guarantees that the
+    // profile is loaded when Chrome receives --app-shim-error.
+    command_line.AppendSwitchPath(switches::kProfileDirectory,
+                                  info->profile_dir);
+    command_line.AppendSwitchASCII(switches::kAppId, info->app_mode_id);
   }
+  // Launch the executable directly since base::mac::OpenApplicationWithPath
+  // uses LSOpenApplication which doesn't pass command line arguments if the
+  // application is already running.
+  if (!base::LaunchProcess(command_line, base::LaunchOptions(), NULL)) {
+    LOG(ERROR) << "Could not launch Chrome: "
+               << command_line.GetCommandLineString();
+    return 1;
+  }
+
+  return 0;
 }
 
 } // namespace
 
 __attribute__((visibility("default")))
 int main(int argc, char** argv) {
+  CommandLine::Init(argc, argv);
   app_mode::ChromeAppModeInfo info;
 
   // Hard coded info parameters.

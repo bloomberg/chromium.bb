@@ -15,6 +15,7 @@ const char kAppListModeId[] = "app_list";
 
 const char kLaunchedByChromeProcessId[] = "launched-by-chrome-process-id";
 const char kLaunchedForTest[] = "launched-for-test";
+const char kLaunchedAfterRebuild[] = "launched-after-rebuild";
 
 const char kAppShimError[] = "app-shim-error";
 

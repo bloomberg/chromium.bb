@@ -24,8 +24,6 @@ class AppListServiceWin : public AppListServiceViews {
   virtual void HandleFirstRun() OVERRIDE;
   virtual void Init(Profile* initial_profile) OVERRIDE;
   virtual void ShowForProfile(Profile* requested_profile) OVERRIDE;
-
-  // AppListServiceImpl overrides:
   virtual void CreateShortcut() OVERRIDE;
 
  private:
