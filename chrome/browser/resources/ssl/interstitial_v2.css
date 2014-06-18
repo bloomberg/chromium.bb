@@ -7,14 +7,14 @@ a {
 }
 
 body {
-  background: rgb(247, 247, 247);
+  background-color: #f7f7f7;
   color: #585858;
   font-size: 125%;
 }
 
 body.safe-browsing {
-  background: rgb(217, 69, 61);
-  color: rgb(255, 255, 255);
+  background-color: rgb(206, 52, 38);
+  color: white;
 }
 
 button {
@@ -28,6 +28,7 @@ button {
   font-size: .875em;
   height: 36px;
   margin: -6px 0 0;
+  outline: 0;
   padding: 8px 24px;
   transition: box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -112,11 +113,21 @@ h1 {
 .safe-browsing #details,
 .safe-browsing #details-button,
 .safe-browsing h1 {
-  color: rgb(255, 255, 255);
+  color: white;
 }
 
 .safe-browsing button {
-  background: rgba(255, 255, 255, 0.15);
+  background-color: rgb(206, 52, 38);
+  border: 1px solid white;
+}
+
+.safe-browsing button:active {
+  background-color: rgb(206, 52, 38);
+  border-color: rgba(255, 255, 255, .6);
+}
+
+.safe-browsing button:hover {
+  box-shadow: 0 2px 3px rgba(0, 0, 0, .5);
 }
 
 .safe-browsing .icon {
