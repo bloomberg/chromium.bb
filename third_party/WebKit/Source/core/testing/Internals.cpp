@@ -2348,6 +2348,16 @@ void Internals::setFocused(bool focused)
     frame()->page()->focusController().setFocused(focused);
 }
 
+bool Internals::ignoreLayoutWithPendingStylesheets(Document* document, ExceptionState& exceptionState)
+{
+    if (!document) {
+        exceptionState.throwDOMException(InvalidAccessError, "No context document is available.");
+        return false;
+    }
+
+    return document->ignoreLayoutWithPendingStylesheets();
+}
+
 void Internals::setNetworkStateNotifierTestOnly(bool testOnly)
 {
     networkStateNotifier().setTestUpdatesOnly(testOnly);

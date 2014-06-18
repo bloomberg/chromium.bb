@@ -3450,7 +3450,7 @@ void Document::styleResolverChanged(StyleResolverUpdateMode updateMode)
 
     m_styleEngine->resolverChanged(updateMode);
 
-    if (didLayoutWithPendingStylesheets() && haveStylesheetsLoaded()) {
+    if (didLayoutWithPendingStylesheets() && !m_styleEngine->hasPendingSheets()) {
         // We need to manually repaint because we avoid doing all repaints in layout or style
         // recalc while sheets are still loading to avoid FOUC.
         m_pendingSheetLayout = IgnoreLayoutWithPendingSheets;
