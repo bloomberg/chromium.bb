@@ -9,7 +9,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PrefServiceHashStoreContentsTest : public testing::Test {
@@ -44,7 +43,8 @@ TEST_F(PrefServiceHashStoreContentsTest, IsInitialized) {
 }
 
 TEST_F(PrefServiceHashStoreContentsTest, Reset) {
-  ASSERT_FALSE(local_state_.GetUserPrefValue(prefs::kProfilePreferenceHashes));
+  ASSERT_FALSE(local_state_.GetUserPrefValue(
+      PrefServiceHashStoreContents::kProfilePreferenceHashes));
 
   {
     PrefServiceHashStoreContents contents("store_id", &local_state_);
@@ -57,7 +57,8 @@ TEST_F(PrefServiceHashStoreContentsTest, Reset) {
         ->Set("foo", new base::StringValue("bar"));
   }
 
-  ASSERT_TRUE(local_state_.GetUserPrefValue(prefs::kProfilePreferenceHashes));
+  ASSERT_TRUE(local_state_.GetUserPrefValue(
+      PrefServiceHashStoreContents::kProfilePreferenceHashes));
 
   {
     PrefServiceHashStoreContents contents("store_id", &local_state_);
@@ -66,7 +67,8 @@ TEST_F(PrefServiceHashStoreContentsTest, Reset) {
     ASSERT_FALSE(contents.IsInitialized());
   }
 
-  ASSERT_TRUE(local_state_.GetUserPrefValue(prefs::kProfilePreferenceHashes));
+  ASSERT_TRUE(local_state_.GetUserPrefValue(
+      PrefServiceHashStoreContents::kProfilePreferenceHashes));
 
   {
     PrefServiceHashStoreContents contents("store_id", &local_state_);
@@ -82,7 +84,8 @@ TEST_F(PrefServiceHashStoreContentsTest, Reset) {
     other_contents.Reset();
   }
 
-  ASSERT_FALSE(local_state_.GetUserPrefValue(prefs::kProfilePreferenceHashes));
+  ASSERT_FALSE(local_state_.GetUserPrefValue(
+      PrefServiceHashStoreContents::kProfilePreferenceHashes));
 }
 
 TEST_F(PrefServiceHashStoreContentsTest, GetAndSetContents) {

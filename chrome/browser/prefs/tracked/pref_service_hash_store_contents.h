@@ -17,6 +17,9 @@ class PrefService;
 // Implements HashStoreContents by storing hashes in a PrefService. Multiple
 // separate hash stores may coexist in the PrefService by using distinct hash
 // store IDs.
+// TODO(erikwright): This class is only used to recreate preference state as in
+// M35, to test migration behaviour. Remove this class when
+// ProfilePrefStoreManagerTest no longer depends on it.
 class PrefServiceHashStoreContents : public HashStoreContents {
  public:
   // Constructs a HashStoreContents that stores hashes in |pref_service|.
@@ -26,6 +29,11 @@ class PrefServiceHashStoreContents : public HashStoreContents {
   // |pref_service| must have previously been configured using |RegisterPrefs|.
   PrefServiceHashStoreContents(const std::string& hash_store_id,
                                PrefService* pref_service);
+
+  // A dictionary pref which maps profile names to dictionary values which hold
+  // hashes of profile prefs that we track to detect changes that happen outside
+  // of Chrome.
+  static const char kProfilePreferenceHashes[];
 
   // The name of a dict that is stored as a child of
   // |prefs::kProfilePreferenceHashes|. Each child node is a string whose name
@@ -53,7 +61,6 @@ class PrefServiceHashStoreContents : public HashStoreContents {
   virtual scoped_ptr<MutableDictionary> GetMutableContents() OVERRIDE;
   virtual std::string GetSuperMac() const OVERRIDE;
   virtual void SetSuperMac(const std::string& super_mac) OVERRIDE;
-  virtual void CommitPendingWrite() OVERRIDE;
 
  private:
   const std::string hash_store_id_;

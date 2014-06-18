@@ -40,7 +40,7 @@ class InterceptingPrefFilter : public PrefFilter {
       scoped_ptr<base::DictionaryValue> pref_store_contents) OVERRIDE;
   virtual void FilterUpdate(const std::string& path) OVERRIDE {}
   virtual void FilterSerializeData(
-      const base::DictionaryValue* pref_store_contents) OVERRIDE {}
+      base::DictionaryValue* pref_store_contents) OVERRIDE {}
 
   bool has_intercepted_prefs() const { return intercepted_prefs_ != NULL; }
 

@@ -67,6 +67,32 @@ class PrefHashStoreTransaction {
   virtual void StoreSplitHash(
       const std::string& path,
       const base::DictionaryValue* split_value) = 0;
+
+  // Indicates whether the store contains a hash for the preference at |path|.
+  virtual bool HasHash(const std::string& path) const = 0;
+
+  // Sets the hash for the preference at |path|.
+  // If |path| is a split preference |hash| must be a DictionaryValue whose
+  // keys are keys in the split preference and whose values are MACs of the
+  // corresponding values in the split preference.
+  // If |path| is an atomic preference |hash| must be a StringValue
+  // containing a MAC of the preference value.
+  // |hash| should originate from a PrefHashStore sharing the same MAC
+  // parameters as this transaction's store.
+  // The (in)validity of the super MAC will be maintained by this call.
+  virtual void ImportHash(const std::string& path, const base::Value* hash) = 0;
+
+  // Removes the hash stored at |path|. The (in)validity of the super MAC will
+  // be maintained by this call.
+  virtual void ClearHash(const std::string& path) = 0;
+
+  // Indicates whether the super MAC was successfully verified at the beginning
+  // of this transaction.
+  virtual bool IsSuperMACValid() const = 0;
+
+  // Forces a valid super MAC to be stored when this transaction terminates.
+  // Returns true if this results in a change to the store contents.
+  virtual bool StampSuperMac() = 0;
 };
 
 #endif  // CHROME_BROWSER_PREFS_PREF_HASH_STORE_TRANSACTION_H_

@@ -45,9 +45,11 @@ class BASE_PREFS_EXPORT PrefFilter {
   virtual void FilterUpdate(const std::string& path) = 0;
 
   // Receives notification when the pref store is about to serialize data
-  // contained in |pref_store_contents| to a string.
+  // contained in |pref_store_contents| to a string. Modifications to
+  // |pref_store_contents| will be persisted to disk and also affect the
+  // in-memory state.
   virtual void FilterSerializeData(
-      const base::DictionaryValue* pref_store_contents) = 0;
+      base::DictionaryValue* pref_store_contents) = 0;
 };
 
 #endif  // BASE_PREFS_PREF_FILTER_H_

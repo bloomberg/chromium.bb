@@ -13,7 +13,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/pref_hash_store.h"
 #include "chrome/browser/prefs/pref_hash_store_transaction.h"
+#include "chrome/browser/prefs/tracked/dictionary_hash_store_contents.h"
 #include "chrome/browser/prefs/tracked/tracked_atomic_preference.h"
 #include "chrome/browser/prefs/tracked/tracked_split_preference.h"
 #include "chrome/common/pref_names.h"
@@ -23,8 +25,10 @@ PrefHashFilter::PrefHashFilter(
     scoped_ptr<PrefHashStore> pref_hash_store,
     const std::vector<TrackedPreferenceMetadata>& tracked_preferences,
     TrackedPreferenceValidationDelegate* delegate,
-    size_t reporting_ids_count)
-    : pref_hash_store_(pref_hash_store.Pass()) {
+    size_t reporting_ids_count,
+    bool report_super_mac_validity)
+    : pref_hash_store_(pref_hash_store.Pass()),
+      report_super_mac_validity_(report_super_mac_validity) {
   DCHECK(pref_hash_store_);
   DCHECK_GE(reporting_ids_count, tracked_preferences.size());
 
@@ -96,15 +100,16 @@ void PrefHashFilter::ClearResetTime(PrefService* user_prefs) {
   user_prefs->ClearPref(prefs::kPreferenceResetTime);
 }
 
-void PrefHashFilter::Initialize(const PrefStore& pref_store) {
+void PrefHashFilter::Initialize(base::DictionaryValue* pref_store_contents) {
   scoped_ptr<PrefHashStoreTransaction> hash_store_transaction(
-      pref_hash_store_->BeginTransaction());
+      pref_hash_store_->BeginTransaction(scoped_ptr<HashStoreContents>(
+          new DictionaryHashStoreContents(pref_store_contents))));
   for (TrackedPreferencesMap::const_iterator it = tracked_paths_.begin();
        it != tracked_paths_.end(); ++it) {
     const std::string& initialized_path = it->first;
     const TrackedPreference* initialized_preference = it->second;
     const base::Value* value = NULL;
-    pref_store.GetValue(initialized_path, &value);
+    pref_store_contents->Get(initialized_path, &value);
     initialized_preference->OnNewValue(value, hash_store_transaction.get());
   }
 }
@@ -121,12 +126,13 @@ void PrefHashFilter::FilterUpdate(const std::string& path) {
 // disk. This is required as storing the hash everytime a pref's value changes
 // is too expensive (see perf regression @ http://crbug.com/331273).
 void PrefHashFilter::FilterSerializeData(
-    const base::DictionaryValue* pref_store_contents) {
+    base::DictionaryValue* pref_store_contents) {
   if (!changed_paths_.empty()) {
     base::TimeTicks checkpoint = base::TimeTicks::Now();
     {
       scoped_ptr<PrefHashStoreTransaction> hash_store_transaction(
-          pref_hash_store_->BeginTransaction());
+          pref_hash_store_->BeginTransaction(scoped_ptr<HashStoreContents>(
+              new DictionaryHashStoreContents(pref_store_contents))));
       for (ChangedPathsMap::const_iterator it = changed_paths_.begin();
            it != changed_paths_.end(); ++it) {
         const std::string& changed_path = it->first;
@@ -143,21 +149,6 @@ void PrefHashFilter::FilterSerializeData(
     UMA_HISTOGRAM_TIMES("Settings.FilterSerializeDataTime",
                         base::TimeTicks::Now() - checkpoint);
   }
-
-  // Flush the |pref_hash_store_| to disk if it has pending writes. This is done
-  // here in an effort to flush the hash store to disk as close as possible to
-  // its matching value store (currently being flushed) to reduce the likelihood
-  // of MAC corruption in race condition scenarios where a crash occurs in the
-  // 10 seconds window where it would typically be possible that only one
-  // of the two stores has been flushed to disk (this now explicitly makes this
-  // race window as small as possible).
-  // Note that, if the |pref_hash_store_| has pending writes, this call will
-  // force serialization of its store to disk. As FilterSerializeData is already
-  // intercepting the serialization of its value store this would result in an
-  // infinite loop should the hash store also be the value store -- thus this
-  // should be removed when we move to such a model (where it will no longer be
-  // necessary anyways).
-  pref_hash_store_->CommitPendingWrite();
 }
 
 void PrefHashFilter::FinalizeFilterOnLoad(
@@ -170,7 +161,13 @@ void PrefHashFilter::FinalizeFilterOnLoad(
   bool did_reset = false;
   {
     scoped_ptr<PrefHashStoreTransaction> hash_store_transaction(
-        pref_hash_store_->BeginTransaction());
+        pref_hash_store_->BeginTransaction(scoped_ptr<HashStoreContents>(
+            new DictionaryHashStoreContents(pref_store_contents.get()))));
+    if (report_super_mac_validity_) {
+      UMA_HISTOGRAM_BOOLEAN("Settings.HashesDictionaryTrusted",
+                            hash_store_transaction->IsSuperMACValid());
+    }
+
     for (TrackedPreferencesMap::const_iterator it = tracked_paths_.begin();
          it != tracked_paths_.end(); ++it) {
       if (it->second->EnforceAndReport(pref_store_contents.get(),
@@ -179,6 +176,8 @@ void PrefHashFilter::FinalizeFilterOnLoad(
         prefs_altered = true;
       }
     }
+    if (hash_store_transaction->StampSuperMac())
+      prefs_altered = true;
   }
 
   if (did_reset) {

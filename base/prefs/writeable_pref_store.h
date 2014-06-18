@@ -26,6 +26,17 @@ class BASE_PREFS_EXPORT WriteablePrefStore : public PrefStore {
   // Removes the value for |key|.
   virtual void RemoveValue(const std::string& key) = 0;
 
+  // Equivalent to PrefStore::GetValue but returns a mutable value.
+  virtual bool GetMutableValue(const std::string& key,
+                               base::Value** result) = 0;
+
+  // Triggers a value changed notification. This function needs to be called
+  // if one retrieves a list or dictionary with GetMutableValue and change its
+  // value. SetValue takes care of notifications itself. Note that
+  // ReportValueChanged will trigger notifications even if nothing has changed.
+  virtual void ReportValueChanged(const std::string& key) = 0;
+
+
  protected:
   virtual ~WriteablePrefStore() {}
 

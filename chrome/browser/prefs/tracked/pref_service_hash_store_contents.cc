@@ -8,7 +8,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
 
 namespace {
 
@@ -18,7 +17,7 @@ class PrefServiceMutableDictionary
     : public HashStoreContents::MutableDictionary {
  public:
   // Creates an instance that provides mutable access to a dictionary value
-  // named |key| that is a child of |prefs::kProfilePreferenceHashes| in
+  // named |key| that is a child of |kProfilePreferenceHashes| in
   // |prefs|.
   PrefServiceMutableDictionary(const std::string& key,
                                PrefService* pref_service);
@@ -34,7 +33,9 @@ class PrefServiceMutableDictionary
 PrefServiceMutableDictionary::PrefServiceMutableDictionary(
     const std::string& key,
     PrefService* pref_service)
-    : key_(key), update_(pref_service, prefs::kProfilePreferenceHashes) {
+    : key_(key),
+      update_(pref_service,
+              PrefServiceHashStoreContents::kProfilePreferenceHashes) {
   DCHECK(!key_.empty());
 }
 
@@ -50,6 +51,10 @@ base::DictionaryValue* PrefServiceMutableDictionary::operator->() {
 }  // namespace
 
 // static
+const char PrefServiceHashStoreContents::kProfilePreferenceHashes[] =
+    "profile.preference_hashes";
+
+// static
 const char PrefServiceHashStoreContents::kHashOfHashesDict[] = "hash_of_hashes";
 
 // static
@@ -61,7 +66,7 @@ PrefServiceHashStoreContents::PrefServiceHashStoreContents(
     PrefService* pref_service)
     : hash_store_id_(hash_store_id), pref_service_(pref_service) {
   // TODO(erikwright): Remove in M40+.
-  DictionaryPrefUpdate update(pref_service_, prefs::kProfilePreferenceHashes);
+  DictionaryPrefUpdate update(pref_service_, kProfilePreferenceHashes);
   update->RemovePath(kStoreVersionsDict, NULL);
 }
 
@@ -69,13 +74,13 @@ PrefServiceHashStoreContents::PrefServiceHashStoreContents(
 void PrefServiceHashStoreContents::RegisterPrefs(PrefRegistrySimple* registry) {
   // Register the top level dictionary to map profile names to dictionaries of
   // tracked preferences.
-  registry->RegisterDictionaryPref(prefs::kProfilePreferenceHashes);
+  registry->RegisterDictionaryPref(kProfilePreferenceHashes);
 }
 
 // static
 void PrefServiceHashStoreContents::ResetAllPrefHashStores(
     PrefService* pref_service) {
-  pref_service->ClearPref(prefs::kProfilePreferenceHashes);
+  pref_service->ClearPref(kProfilePreferenceHashes);
 }
 
 std::string PrefServiceHashStoreContents::hash_store_id() const {
@@ -83,7 +88,7 @@ std::string PrefServiceHashStoreContents::hash_store_id() const {
 }
 
 void PrefServiceHashStoreContents::Reset() {
-  DictionaryPrefUpdate update(pref_service_, prefs::kProfilePreferenceHashes);
+  DictionaryPrefUpdate update(pref_service_, kProfilePreferenceHashes);
 
   update->RemoveWithoutPathExpansion(hash_store_id_, NULL);
 
@@ -97,19 +102,19 @@ void PrefServiceHashStoreContents::Reset() {
   }
 
   if (update->empty())
-    pref_service_->ClearPref(prefs::kProfilePreferenceHashes);
+    pref_service_->ClearPref(kProfilePreferenceHashes);
 }
 
 bool PrefServiceHashStoreContents::IsInitialized() const {
   const base::DictionaryValue* pref_hash_dicts =
-      pref_service_->GetDictionary(prefs::kProfilePreferenceHashes);
+      pref_service_->GetDictionary(kProfilePreferenceHashes);
   return pref_hash_dicts->GetDictionaryWithoutPathExpansion(hash_store_id_,
                                                             NULL);
 }
 
 const base::DictionaryValue* PrefServiceHashStoreContents::GetContents() const {
   const base::DictionaryValue* pref_hash_dicts =
-      pref_service_->GetDictionary(prefs::kProfilePreferenceHashes);
+      pref_service_->GetDictionary(kProfilePreferenceHashes);
   const base::DictionaryValue* hashes_dict = NULL;
   pref_hash_dicts->GetDictionaryWithoutPathExpansion(hash_store_id_,
                                                      &hashes_dict);
@@ -124,7 +129,7 @@ PrefServiceHashStoreContents::GetMutableContents() {
 
 std::string PrefServiceHashStoreContents::GetSuperMac() const {
   const base::DictionaryValue* pref_hash_dicts =
-      pref_service_->GetDictionary(prefs::kProfilePreferenceHashes);
+      pref_service_->GetDictionary(kProfilePreferenceHashes);
   const base::DictionaryValue* hash_of_hashes_dict = NULL;
   std::string hash_of_hashes;
   if (pref_hash_dicts->GetDictionaryWithoutPathExpansion(
@@ -138,8 +143,4 @@ std::string PrefServiceHashStoreContents::GetSuperMac() const {
 void PrefServiceHashStoreContents::SetSuperMac(const std::string& super_mac) {
   PrefServiceMutableDictionary(kHashOfHashesDict, pref_service_)
       ->SetStringWithoutPathExpansion(hash_store_id_, super_mac);
-}
-
-void PrefServiceHashStoreContents::CommitPendingWrite() {
-  pref_service_->CommitPendingWrite();
 }

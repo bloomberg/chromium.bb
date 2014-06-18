@@ -1544,6 +1544,8 @@
         'browser/prefs/synced_pref_change_registrar.cc',
         'browser/prefs/synced_pref_change_registrar.h',
         'browser/prefs/synced_pref_observer.h',
+        'browser/prefs/tracked/dictionary_hash_store_contents.cc',
+        'browser/prefs/tracked/dictionary_hash_store_contents.h',
         'browser/prefs/tracked/hash_store_contents.h',
         'browser/prefs/tracked/pref_hash_calculator_helper.h',
         'browser/prefs/tracked/pref_hash_calculator_helper_stub.cc',

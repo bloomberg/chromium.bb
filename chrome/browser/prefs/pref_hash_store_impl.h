@@ -16,11 +16,6 @@
 class HashStoreContents;
 class PrefHashStoreTransaction;
 
-namespace base {
-class DictionaryValue;
-class Value;
-}
-
 // Implements PrefHashStoreImpl by storing preference hashes in a
 // HashStoreContents.
 class PrefHashStoreImpl : public PrefHashStore {
@@ -42,30 +37,29 @@ class PrefHashStoreImpl : public PrefHashStore {
   // previously stored hashes in |contents|.
   PrefHashStoreImpl(const std::string& seed,
                     const std::string& device_id,
-                    scoped_ptr<HashStoreContents> contents,
                     bool use_super_mac);
 
   virtual ~PrefHashStoreImpl();
+
+  // Provides an external HashStoreContents implementation to be used.
+  // BeginTransaction() will ignore |storage| if this is provided.
+  void set_legacy_hash_store_contents(
+      scoped_ptr<HashStoreContents> legacy_hash_store_contents);
 
   // Clears the contents of this PrefHashStore. |IsInitialized()| will return
   // false after this call.
   void Reset();
 
   // PrefHashStore implementation.
-  virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction() OVERRIDE;
-  virtual void CommitPendingWrite() OVERRIDE;
+  virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction(
+      scoped_ptr<HashStoreContents> storage) OVERRIDE;
 
  private:
   class PrefHashStoreTransactionImpl;
 
   const PrefHashCalculator pref_hash_calculator_;
-  scoped_ptr<HashStoreContents> contents_;
-  const bool initial_hashes_dictionary_trusted_;
+  scoped_ptr<HashStoreContents> legacy_hash_store_contents_;
   bool use_super_mac_;
-
-  // True if hashes have been modified since the last call to
-  // CommitPendingWriteIfRequired().
-  bool has_pending_write_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashStoreImpl);
 };

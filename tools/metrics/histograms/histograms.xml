@@ -25295,6 +25295,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Settings.MigratedHashesFromLocalState" enum="BooleanMigrated">
+  <owner>csharp@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Whether, while loading a profile, any preference hashes were migrated from
+    Local State to either Preferences or Protected Preferences.
+  </summary>
+</histogram>
+
 <histogram name="Settings.PinnedTabEngineTypes" enum="OmniboxSearchEngineType">
   <owner>mpearson@chromium.org</owner>
   <summary>

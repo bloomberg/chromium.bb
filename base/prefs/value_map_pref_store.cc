@@ -38,6 +38,15 @@ void ValueMapPrefStore::RemoveValue(const std::string& key) {
     FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
 }
 
+bool ValueMapPrefStore::GetMutableValue(const std::string& key,
+                                        base::Value** value) {
+  return prefs_.GetValue(key, value);
+}
+
+void ValueMapPrefStore::ReportValueChanged(const std::string& key) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
+}
+
 ValueMapPrefStore::~ValueMapPrefStore() {}
 
 void ValueMapPrefStore::NotifyInitializationCompleted() {

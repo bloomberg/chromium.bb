@@ -2374,11 +2374,6 @@ const char kWatchdogExtensionActive[] =
 const char kWatchdogExtensionActiveOld[] =
     "profile.extensions.activity_log.watchdog_extension_active";
 
-// A dictionary pref which maps profile names to dictionary values which hold
-// hashes of profile prefs that we track to detect changes that happen outside
-// of Chrome.
-const char kProfilePreferenceHashes[] = "profile.preference_hashes";
-
 #if defined(OS_ANDROID)
 // A list of partner bookmark rename/remove mappings.
 // Each list item is a dictionary containing a "url", a "provider_title" and

@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/mock_validation_delegate.h"
 #include "chrome/browser/prefs/pref_hash_filter.h"
+#include "chrome/browser/prefs/tracked/pref_service_hash_store_contents.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -151,6 +152,16 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     return !ProfilePrefStoreManager::GetResetTime(pref_service.get()).is_null();
   }
 
+  void ClearResetRecorded() {
+    base::PrefServiceFactory pref_service_factory;
+    pref_service_factory.set_user_prefs(pref_store_);
+
+    scoped_ptr<PrefService> pref_service(
+        pref_service_factory.Create(profile_pref_registry_));
+
+    ProfilePrefStoreManager::ClearResetTime(pref_service.get());
+  }
+
   void InitializePrefs() {
     // According to the implementation of ProfilePrefStoreManager, this is
     // actually a SegregatedPrefStore backed by two underlying pref stores.
@@ -165,6 +176,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
 
   void DestroyPrefStore() {
     if (pref_store_) {
+      ClearResetRecorded();
       // Force everything to be written to disk, triggering the PrefHashFilter
       // while our RegistryVerifier is watching.
       pref_store_->CommitPendingWrite();
@@ -307,10 +319,77 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectValues) {
 TEST_F(ProfilePrefStoreManagerTest, MigrateFromOneFile) {
   InitializeDeprecatedCombinedProfilePrefStore();
 
+  // The deprecated model stores hashes in local state (on supported
+  // platforms)..
+  ASSERT_EQ(
+      ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
+      local_state_.GetUserPrefValue(
+          PrefServiceHashStoreContents::kProfilePreferenceHashes) != NULL);
+
   LoadExistingPrefs();
+
+  // After a first migration, the hashes were copied to the two user preference
+  // files but were not cleaned.
+  ASSERT_EQ(
+      ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
+      local_state_.GetUserPrefValue(
+          PrefServiceHashStoreContents::kProfilePreferenceHashes) != NULL);
 
   ExpectStringValueEquals(kTrackedAtomic, kFoobar);
   ExpectStringValueEquals(kProtectedAtomic, kHelloWorld);
+  EXPECT_FALSE(WasResetRecorded());
+
+  LoadExistingPrefs();
+
+  // In a subsequent launch, the local state hash store should be reset.
+  ASSERT_FALSE(local_state_.GetUserPrefValue(
+      PrefServiceHashStoreContents::kProfilePreferenceHashes));
+
+  ExpectStringValueEquals(kTrackedAtomic, kFoobar);
+  ExpectStringValueEquals(kProtectedAtomic, kHelloWorld);
+  EXPECT_FALSE(WasResetRecorded());
+}
+
+TEST_F(ProfilePrefStoreManagerTest, MigrateWithTampering) {
+  InitializeDeprecatedCombinedProfilePrefStore();
+
+  ReplaceStringInPrefs(kFoobar, kBarfoo);
+  ReplaceStringInPrefs(kHelloWorld, kGoodbyeWorld);
+
+  // The deprecated model stores hashes in local state (on supported
+  // platforms)..
+  ASSERT_EQ(
+      ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
+      local_state_.GetUserPrefValue(
+          PrefServiceHashStoreContents::kProfilePreferenceHashes) != NULL);
+
+  LoadExistingPrefs();
+
+  // After a first migration, the hashes were copied to the two user preference
+  // files but were not cleaned.
+  ASSERT_EQ(
+      ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
+      local_state_.GetUserPrefValue(
+          PrefServiceHashStoreContents::kProfilePreferenceHashes) != NULL);
+
+  // kTrackedAtomic is unprotected and thus will be loaded as it appears on
+  // disk.
+  ExpectStringValueEquals(kTrackedAtomic, kBarfoo);
+
+  // If preference tracking is supported, the tampered value of kProtectedAtomic
+  // will be discarded at load time, leaving this preference undefined.
+  EXPECT_NE(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
+            pref_store_->GetValue(kProtectedAtomic, NULL));
+  EXPECT_EQ(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
+            WasResetRecorded());
+
+  LoadExistingPrefs();
+
+  // In a subsequent launch, the local state hash store would be reset.
+  ASSERT_FALSE(local_state_.GetUserPrefValue(
+      PrefServiceHashStoreContents::kProfilePreferenceHashes));
+
+  ExpectStringValueEquals(kTrackedAtomic, kBarfoo);
   EXPECT_FALSE(WasResetRecorded());
 }
 
@@ -373,6 +452,45 @@ TEST_F(ProfilePrefStoreManagerTest, UnprotectedToProtected) {
             pref_store_->GetValue(kUnprotectedPref, NULL));
   EXPECT_EQ(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
             WasResetRecorded());
+}
+
+TEST_F(ProfilePrefStoreManagerTest, NewPrefWhenFirstProtecting) {
+  std::vector<PrefHashFilter::TrackedPreferenceMetadata>
+      original_configuration = configuration_;
+  for (std::vector<PrefHashFilter::TrackedPreferenceMetadata>::iterator it =
+           configuration_.begin();
+       it != configuration_.end();
+       ++it) {
+    it->enforcement_level = PrefHashFilter::NO_ENFORCEMENT;
+  }
+  ReloadConfiguration();
+
+  InitializePrefs();
+
+  ExpectValidationObserved(kTrackedAtomic);
+  ExpectValidationObserved(kProtectedAtomic);
+
+  LoadExistingPrefs();
+  ExpectStringValueEquals(kUnprotectedPref, kFoobar);
+
+  // Ensure everything is written out to disk.
+  DestroyPrefStore();
+
+  // Now introduce protection, including the never-before tracked "new_pref".
+  configuration_ = original_configuration;
+  PrefHashFilter::TrackedPreferenceMetadata new_protected = {
+      kExtraReportingId, kUnprotectedPref, PrefHashFilter::ENFORCE_ON_LOAD,
+      PrefHashFilter::TRACKING_STRATEGY_ATOMIC};
+  configuration_.push_back(new_protected);
+  ReloadConfiguration();
+
+  // And try loading with the new configuration.
+  LoadExistingPrefs();
+
+  // Since there was a valid super MAC we were able to extend the existing trust
+  // to the newly tracked & protected preference.
+  ExpectStringValueEquals(kUnprotectedPref, kFoobar);
+  EXPECT_FALSE(WasResetRecorded());
 }
 
 TEST_F(ProfilePrefStoreManagerTest, UnprotectedToProtectedWithoutTrust) {

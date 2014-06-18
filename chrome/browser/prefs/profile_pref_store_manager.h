@@ -15,7 +15,7 @@
 #include "chrome/browser/prefs/pref_hash_filter.h"
 
 class PersistentPrefStore;
-class PrefHashStoreImpl;
+class PrefHashStore;
 class PrefService;
 class TrackedPreferenceValidationDelegate;
 
@@ -97,9 +97,12 @@ class ProfilePrefStoreManager {
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
 
  private:
-  // Returns a PrefHashStoreImpl for the managed profile. Should only be called
-  // if |kPlatformSupportsPreferenceTracking|.
-  scoped_ptr<PrefHashStoreImpl> GetPrefHashStoreImpl();
+  // Returns a PrefHashStore for the managed profile. Should only be called
+  // if |kPlatformSupportsPreferenceTracking|. |use_super_mac| determines
+  // whether the returned object will calculate, store, and validate super MACs
+  // (and, by extension, accept non-null newly protected preferences as
+  // TrustedInitialized).
+  scoped_ptr<PrefHashStore> GetPrefHashStore(bool use_super_mac);
 
   const base::FilePath profile_path_;
   const std::vector<PrefHashFilter::TrackedPreferenceMetadata>
