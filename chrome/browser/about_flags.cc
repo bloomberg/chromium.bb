@@ -523,15 +523,6 @@ const Experiment kExperiments[] = {
                                switches::kDisableAcceleratedOverflowScroll)
   },
   {
-    "force-universal-accelerated-composited-scrolling",
-     IDS_FLAGS_FORCE_UNIVERSAL_ACCELERATED_OVERFLOW_SCROLL_MODE_NAME,
-     IDS_FLAGS_FORCE_UNIVERSAL_ACCELERATED_OVERFLOW_SCROLL_MODE_DESCRIPTION,
-     kOsAll,
-     ENABLE_DISABLE_VALUE_TYPE(
-         switches::kEnableUniversalAcceleratedOverflowScroll,
-         switches::kDisableUniversalAcceleratedOverflowScroll)
-  },
-  {
     "disable_layer_squashing",
     IDS_FLAGS_DISABLE_LAYER_SQUASHING_NAME,
     IDS_FLAGS_DISABLE_LAYER_SQUASHING_DESCRIPTION,

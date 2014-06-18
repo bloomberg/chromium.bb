@@ -276,11 +276,6 @@ const char kDisableSSLFalseStart[]          = "disable-ssl-false-start";
 // Disable multithreaded GPU compositing of web content.
 const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
 
-// Disable accelerated overflow scrolling in corner cases (that would not be
-// handled by enable-accelerated-overflow-scroll).
-const char kDisableUniversalAcceleratedOverflowScroll[] =
-    "disable-universal-accelerated-overflow-scroll";
-
 // Don't enforce the same-origin policy. (Used by people testing their sites.)
 const char kDisableWebSecurity[]            = "disable-web-security";
 
@@ -505,10 +500,6 @@ const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 
 // Enable multithreaded GPU compositing of web content.
 const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
-
-// Enable accelerated overflow scrolling in all cases.
-const char kEnableUniversalAcceleratedOverflowScroll[] =
-    "enable-universal-accelerated-overflow-scroll";
 
 // Enable screen capturing support for MediaStream API.
 const char kEnableUserMediaScreenCapturing[] =
