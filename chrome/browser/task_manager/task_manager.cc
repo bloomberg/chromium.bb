@@ -994,6 +994,8 @@ void TaskManagerModel::RemoveResource(Resource* resource) {
   // Find the associated group.
   GroupMap::iterator group_iter = group_map_.find(process);
   DCHECK(group_iter != group_map_.end());
+  if (group_iter == group_map_.end())
+    return;
   ResourceList& group_entries = group_iter->second;
 
   // Remove the entry from the group map.
@@ -1001,7 +1003,8 @@ void TaskManagerModel::RemoveResource(Resource* resource) {
                                           group_entries.end(),
                                           resource);
   DCHECK(iter != group_entries.end());
-  group_entries.erase(iter);
+  if (iter != group_entries.end())
+    group_entries.erase(iter);
 
   // If there are no more entries for that process, do the clean-up.
   if (group_entries.empty()) {
@@ -1016,27 +1019,26 @@ void TaskManagerModel::RemoveResource(Resource* resource) {
     }
   }
 
-  // Prepare to remove the entry from the model list.
+  // Remove the entry from the model list.
   iter = std::find(resources_.begin(), resources_.end(), resource);
   DCHECK(iter != resources_.end());
-  int index = static_cast<int>(iter - resources_.begin());
-
-  // Notify the observers that the contents will change.
-  FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
-                    OnItemsToBeRemoved(index, 1));
-
-  // Now actually remove the entry from the model list.
-  resources_.erase(iter);
+  if (iter != resources_.end()) {
+    int index = static_cast<int>(iter - resources_.begin());
+    // Notify the observers that the contents will change.
+    FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
+                      OnItemsToBeRemoved(index, 1));
+    // Now actually remove the entry from the model list.
+    resources_.erase(iter);
+    // Notify the table that the contents have changed.
+    FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
+                      OnItemsRemoved(index, 1));
+  }
 
   // Remove the entry from the network maps.
   ResourceValueMap::iterator net_iter =
       current_byte_count_map_.find(resource);
   if (net_iter != current_byte_count_map_.end())
     current_byte_count_map_.erase(net_iter);
-
-  // Notify the table that the contents have changed.
-  FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
-                    OnItemsRemoved(index, 1));
 }
 
 void TaskManagerModel::StartUpdating() {
