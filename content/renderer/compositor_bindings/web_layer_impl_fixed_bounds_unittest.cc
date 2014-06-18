@@ -142,15 +142,28 @@ void CompareFixedBoundsLayerAndNormalLayer(const WebFloatPoint& anchor_point,
   }
 }
 
+// TODO(perkj): CompareToWebLayerImplSimple disabled on LSAN due to crbug/386080
+#if defined(LEAK_SANITIZER)
+#define MAYBE_CompareToWebLayerImplSimple DISABLED_CompareToWebLayerImplSimple
+#else
+#define MAYBE_CompareToWebLayerImplSimple CompareToWebLayerImplSimple
+#endif
 // A black box test that ensures WebLayerImplFixedBounds won't change target
 // geometries. Simple case: identity transforms and zero anchor point.
-TEST(WebLayerImplFixedBoundsTest, CompareToWebLayerImplSimple) {
+TEST(WebLayerImplFixedBoundsTest, MAYBE_CompareToWebLayerImplSimple) {
   CompareFixedBoundsLayerAndNormalLayer(WebFloatPoint(0, 0), gfx::Transform());
 }
 
+// TODO(perkj): CompareToWebLayerImplComplex disabled on LSAN due to
+// crbug/386080
+#if defined(LEAK_SANITIZER)
+#define MAYBE_CompareToWebLayerImplComplex DISABLED_CompareToWebLayerImplComplex
+#else
+#define MAYBE_CompareToWebLayerImplComplex CompareToWebLayerImplComplex
+#endif
 // A black box test that ensures WebLayerImplFixedBounds won't change target
 // geometries. Complex case: complex transforms and non-zero anchor point.
-TEST(WebLayerImplFixedBoundsTest, CompareToWebLayerImplComplex) {
+TEST(WebLayerImplFixedBoundsTest, MAYBE_CompareToWebLayerImplComplex) {
   gfx::Transform transform;
   // These are arbitrary values that should not affect the results.
   transform.Translate3d(50, 60, 70);
