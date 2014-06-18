@@ -381,14 +381,19 @@ class Builder(object):
         self.RunStages()
 
     except Exception as ex:
-      # If the build is marked as successful, but threw exceptions, that's a
-      # problem.
       exception_thrown = True
       if results_lib.Results.BuildSucceededSoFar():
+        # If the build is marked as successful, but threw exceptions, that's a
+        # problem. Print the traceback for debugging.
+        if isinstance(ex, failures_lib.CompoundFailure):
+          print ex.ToFullMessage()
+
         traceback.print_exc(file=sys.stdout)
         raise
 
       if not (print_report and isinstance(ex, failures_lib.StepFailure)):
+        # If the failed build threw a non-StepFailure exception, we
+        # should raise it.
         raise
 
     finally:
