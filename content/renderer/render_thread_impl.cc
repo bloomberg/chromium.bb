@@ -742,7 +742,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  bool enable = !command_line.HasSwitch(switches::kDisableThreadedCompositing);
+  bool enable = command_line.HasSwitch(switches::kEnableThreadedCompositing);
   if (enable) {
 #if defined(OS_ANDROID)
     if (SynchronousCompositorFactory* factory =

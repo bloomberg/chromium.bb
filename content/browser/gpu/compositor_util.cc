@@ -168,6 +168,24 @@ bool IsPinchVirtualViewportEnabled() {
 #endif
 }
 
+bool IsThreadedCompositingEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  // Command line switches take precedence over blacklist.
+  if (command_line.HasSwitch(switches::kDisableThreadedCompositing))
+    return false;
+  if (command_line.HasSwitch(switches::kEnableThreadedCompositing))
+    return true;
+
+#if defined(USE_AURA) || defined(OS_MACOSX)
+  // We always want threaded compositing on Aura and Mac (the fallback is a
+  // threaded software compositor).
+  return true;
+#else
+  return false;
+#endif
+}
+
 bool IsDelegatedRendererEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool enabled = false;
@@ -182,6 +200,12 @@ bool IsDelegatedRendererEnabled() {
   enabled &= !command_line.HasSwitch(switches::kDisableDelegatedRenderer);
 
   // Needs compositing, and thread.
+  if (enabled && !IsThreadedCompositingEnabled()) {
+    enabled = false;
+    LOG(ERROR) << "Disabling delegated-rendering because it needs "
+               << "force-compositing-mode and threaded-compositing.";
+  }
+
   return enabled;
 }
 
@@ -199,7 +223,7 @@ bool IsImplSidePaintingEnabled() {
 #if defined(OS_MACOSX) || defined(OS_WIN)
   return false;
 #else
-  return true;
+  return IsThreadedCompositingEnabled();
 #endif
 }
 
@@ -273,6 +297,10 @@ base::Value* GetFeatureStatus() {
         if (IsForceGpuRasterizationEnabled())
           status += "_force";
       }
+    }
+    if (gpu_feature_info.name == kGpuCompositingFeatureName) {
+      if (IsThreadedCompositingEnabled())
+        status += "_threaded";
     }
     feature_status_dict->SetString(
         gpu_feature_info.name.c_str(), status.c_str());

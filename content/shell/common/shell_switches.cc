@@ -34,9 +34,6 @@ const char kEnableFontAntialiasing[] = "enable-font-antialiasing";
 // whether or not reloading a webpage releases web-related objects correctly.
 const char kEnableLeakDetection[] = "enable-leak-detection";
 
-// Enabled threaded compositing for layout tests.
-const char kEnableThreadedCompositing[] = "enable-threaded-compositing";
-
 // Encode binary layout test results (images, audio) using base64.
 const char kEncodeBinary[] = "encode-binary";
 

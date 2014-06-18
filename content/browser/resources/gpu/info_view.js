@@ -105,10 +105,14 @@ cr.define('gpu', function() {
         'unavailable_off': 'Unavailable. Hardware acceleration unavailable',
         'unavailable_software':
             'Software only, hardware acceleration unavailable',
+        'unavailable_software_threaded':
+            'Software only and threaded. Hardware acceleration unavailable.',
         'enabled_readback': 'Hardware accelerated, but at reduced performance',
         'enabled_force': 'Hardware accelerated',
+        'enabled_threaded': 'Hardware accelerated and threaded.',
         'enabled': 'Hardware accelerated',
         'accelerated': 'Accelerated',
+        'accelerated_threaded': 'Accelerated and threaded',
         // GPU Switching
         'gpu_switching_automatic': 'Automatic switching',
         'gpu_switching_force_discrete': 'Always on discrete GPU',
@@ -123,10 +127,13 @@ cr.define('gpu', function() {
         'software': 'feature-yellow',
         'unavailable_off': 'feature-red',
         'unavailable_software': 'feature-yellow',
+        'unavailable_software_threaded': 'feature-yellow',
         'enabled_force': 'feature-green',
         'enabled_readback': 'feature-yellow',
+        'enabled_threaded': 'feature-green',
         'enabled': 'feature-green',
         'accelerated': 'feature-green',
+        'accelerated_threaded': 'feature-green',
         // GPU Switching
         'gpu_switching_automatic': 'feature-green',
         'gpu_switching_force_discrete': 'feature-red',

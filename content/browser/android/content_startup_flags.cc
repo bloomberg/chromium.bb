@@ -56,6 +56,7 @@ void SetContentCommandLineFlags(int max_render_process_count,
       RenderProcessHost::SetMaxRendererProcessCount(max_render_process_count);
   }
 
+  parsed_command_line->AppendSwitch(switches::kEnableThreadedCompositing);
   parsed_command_line->AppendSwitch(
       switches::kEnableCompositingForFixedPosition);
   parsed_command_line->AppendSwitch(switches::kEnableAcceleratedOverflowScroll);
