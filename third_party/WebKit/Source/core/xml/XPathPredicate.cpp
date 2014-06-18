@@ -28,12 +28,13 @@
 #include "config.h"
 #include "core/xml/XPathPredicate.h"
 
-#include <math.h>
 #include "core/xml/XPathFunctions.h"
 #include "core/xml/XPathUtil.h"
 #include "wtf/MathExtras.h"
+#include <math.h>
 
 namespace WebCore {
+
 namespace XPath {
 
 Number::Number(double value)
@@ -90,16 +91,16 @@ Value NumericOp::evaluate() const
     double rightVal = rhs.toNumber();
 
     switch (m_opcode) {
-        case OP_Add:
-            return leftVal + rightVal;
-        case OP_Sub:
-            return leftVal - rightVal;
-        case OP_Mul:
-            return leftVal * rightVal;
-        case OP_Div:
-            return leftVal / rightVal;
-        case OP_Mod:
-            return fmod(leftVal, rightVal);
+    case OP_Add:
+        return leftVal + rightVal;
+    case OP_Sub:
+        return leftVal - rightVal;
+    case OP_Mul:
+        return leftVal * rightVal;
+    case OP_Div:
+        return leftVal / rightVal;
+    case OP_Mod:
+        return fmod(leftVal, rightVal);
     }
     ASSERT_NOT_REACHED();
     return 0.0;
@@ -117,38 +118,51 @@ bool EqTestOp::compare(const Value& lhs, const Value& rhs) const
     if (lhs.isNodeSet()) {
         const NodeSet& lhsSet = lhs.toNodeSet();
         if (rhs.isNodeSet()) {
-            // If both objects to be compared are node-sets, then the comparison will be true if and only if
-            // there is a node in the first node-set and a node in the second node-set such that the result of
-            // performing the comparison on the string-values of the two nodes is true.
+            // If both objects to be compared are node-sets, then the comparison
+            // will be true if and only if there is a node in the first node-set
+            // and a node in the second node-set such that the result of
+            // performing the comparison on the string-values of the two nodes
+            // is true.
             const NodeSet& rhsSet = rhs.toNodeSet();
-            for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex)
-                for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex)
+            for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
+                for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
                     if (compare(stringValue(lhsSet[lindex]), stringValue(rhsSet[rindex])))
                         return true;
+                }
+            }
             return false;
         }
         if (rhs.isNumber()) {
-            // If one object to be compared is a node-set and the other is a number, then the comparison will be true
-            // if and only if there is a node in the node-set such that the result of performing the comparison on the number
-            // to be compared and on the result of converting the string-value of that node to a number using the number function is true.
-            for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex)
+            // If one object to be compared is a node-set and the other is a
+            // number, then the comparison will be true if and only if there is
+            // a node in the node-set such that the result of performing the
+            // comparison on the number to be compared and on the result of
+            // converting the string-value of that node to a number using the
+            // number function is true.
+            for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
                 if (compare(Value(stringValue(lhsSet[lindex])).toNumber(), rhs))
                     return true;
+            }
             return false;
         }
         if (rhs.isString()) {
-            // If one object to be compared is a node-set and the other is a string, then the comparison will be true
-            // if and only if there is a node in the node-set such that the result of performing the comparison on
-            // the string-value of the node and the other string is true.
-            for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex)
+            // If one object to be compared is a node-set and the other is a
+            // string, then the comparison will be true if and only if there is
+            // a node in the node-set such that the result of performing the
+            // comparison on the string-value of the node and the other string
+            // is true.
+            for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
                 if (compare(stringValue(lhsSet[lindex]), rhs))
                     return true;
+            }
             return false;
         }
         if (rhs.isBoolean()) {
-            // If one object to be compared is a node-set and the other is a boolean, then the comparison will be true
-            // if and only if the result of performing the comparison on the boolean and on the result of converting
-            // the node-set to a boolean using the boolean function is true.
+            // If one object to be compared is a node-set and the other is a
+            // boolean, then the comparison will be true if and only if the
+            // result of performing the comparison on the boolean and on the
+            // result of converting the node-set to a boolean using the boolean
+            // function is true.
             return compare(lhs.toBoolean(), rhs);
         }
         ASSERT(0);
@@ -156,15 +170,17 @@ bool EqTestOp::compare(const Value& lhs, const Value& rhs) const
     if (rhs.isNodeSet()) {
         const NodeSet& rhsSet = rhs.toNodeSet();
         if (lhs.isNumber()) {
-            for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex)
+            for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
                 if (compare(lhs, Value(stringValue(rhsSet[rindex])).toNumber()))
                     return true;
+            }
             return false;
         }
         if (lhs.isString()) {
-            for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex)
+            for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
                 if (compare(lhs, stringValue(rhsSet[rindex])))
                     return true;
+            }
             return false;
         }
         if (lhs.isBoolean())
@@ -174,27 +190,27 @@ bool EqTestOp::compare(const Value& lhs, const Value& rhs) const
 
     // Neither side is a NodeSet.
     switch (m_opcode) {
-        case OP_EQ:
-        case OP_NE:
-            bool equal;
-            if (lhs.isBoolean() || rhs.isBoolean())
-                equal = lhs.toBoolean() == rhs.toBoolean();
-            else if (lhs.isNumber() || rhs.isNumber())
-                equal = lhs.toNumber() == rhs.toNumber();
-            else
-                equal = lhs.toString() == rhs.toString();
+    case OpcodeEqual:
+    case OpcodeNotEqual:
+        bool equal;
+        if (lhs.isBoolean() || rhs.isBoolean())
+            equal = lhs.toBoolean() == rhs.toBoolean();
+        else if (lhs.isNumber() || rhs.isNumber())
+            equal = lhs.toNumber() == rhs.toNumber();
+        else
+            equal = lhs.toString() == rhs.toString();
 
-            if (m_opcode == OP_EQ)
-                return equal;
-            return !equal;
-        case OP_GT:
-            return lhs.toNumber() > rhs.toNumber();
-        case OP_GE:
-            return lhs.toNumber() >= rhs.toNumber();
-        case OP_LT:
-            return lhs.toNumber() < rhs.toNumber();
-        case OP_LE:
-            return lhs.toNumber() <= rhs.toNumber();
+        if (m_opcode == OpcodeEqual)
+            return equal;
+        return !equal;
+    case OpcodeGreaterThan:
+        return lhs.toNumber() > rhs.toNumber();
+    case OpcodeGreaterOrEqual:
+        return lhs.toNumber() >= rhs.toNumber();
+    case OpcodeLessThan:
+        return lhs.toNumber() < rhs.toNumber();
+    case OpcodeLessOrEqual:
+        return lhs.toNumber() <= rhs.toNumber();
     }
     ASSERT(0);
     return false;
@@ -217,10 +233,7 @@ LogicalOp::LogicalOp(Opcode opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, Pass
 
 bool LogicalOp::shortCircuitOn() const
 {
-    if (m_opcode == OP_And)
-        return false; //false and foo
-
-    return true;  //true or bar
+    return m_opcode != OP_And;
 }
 
 Value LogicalOp::evaluate() const
@@ -254,8 +267,9 @@ Value Union::evaluate() const
             resultSet.append(node);
     }
 
-    // It is also possible to use merge sort to avoid making the result unsorted;
-    // but this would waste the time in cases when order is not important.
+    // It is also possible to use merge sort to avoid making the result
+    // unsorted; but this would waste the time in cases when order is not
+    // important.
     resultSet.markSorted(false);
     return lhsResult;
 }
@@ -280,7 +294,7 @@ bool Predicate::evaluate() const
 
     // foo[3] means foo[position()=3]
     if (result.isNumber())
-        return EqTestOp(EqTestOp::OP_EQ, adoptPtrWillBeNoop(createFunction("position")), adoptPtrWillBeNoop(new Number(result.toNumber()))).evaluate().toBoolean();
+        return EqTestOp(EqTestOp::OpcodeEqual, adoptPtrWillBeNoop(createFunction("position")), adoptPtrWillBeNoop(new Number(result.toNumber()))).evaluate().toBoolean();
 
     return result.toBoolean();
 }

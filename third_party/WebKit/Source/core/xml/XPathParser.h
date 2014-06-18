@@ -31,13 +31,6 @@
 #include "core/xml/XPathStep.h"
 
 namespace WebCore {
-namespace XPath {
-class Parser;
-}
-}
-int xpathyyparse(WebCore::XPath::Parser*);
-
-namespace WebCore {
 
 class ExceptionState;
 class XPathNSResolver;
@@ -45,7 +38,9 @@ class XPathNSResolver;
 namespace XPath {
 
 class Expression;
+class LocationPath;
 class ParseNode;
+class Parser;
 class Predicate;
 
 struct Token {
@@ -132,8 +127,9 @@ private:
     HashSet<OwnPtr<String> > m_strings;
 };
 
-} // XPath
+} // namespace XPath
 
-} // WebCore
+} // namespace WebCore
 
+int xpathyyparse(WebCore::XPath::Parser*);
 #endif

@@ -29,6 +29,7 @@
 #include "core/xml/XPathParser.h"
 
 #include "bindings/v8/ExceptionState.h"
+#include "core/XPathGrammar.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathNSResolver.h"
@@ -41,8 +42,6 @@ using namespace WTF;
 using namespace Unicode;
 using namespace XPath;
 
-#include "core/XPathGrammar.h"
-
 Parser* Parser::currentParser = 0;
 
 enum XMLCat { NameStart, NameCont, NotPartOfName };
@@ -51,7 +50,7 @@ typedef HashMap<String, Step::Axis> AxisNamesMap;
 
 static XMLCat charCat(UChar aChar)
 {
-    //### might need to add some special cases from the XML spec.
+    // might need to add some special cases from the XML spec.
 
     if (aChar == '_')
         return NameStart;
@@ -207,7 +206,8 @@ Token Parser::lexNumber()
     // Go until end or a non-digits character.
     for (; m_nextPos < m_data.length(); ++m_nextPos) {
         UChar aChar = m_data[m_nextPos];
-        if (aChar >= 0xff) break;
+        if (aChar >= 0xff)
+            break;
 
         if (aChar < '0' || aChar > '9') {
             if (aChar == '.' && !seenDot)
@@ -230,9 +230,10 @@ bool Parser::lexNCName(String& name)
         return false;
 
     // Keep going until we get a character that's not good for names.
-    for (; m_nextPos < m_data.length(); ++m_nextPos)
+    for (; m_nextPos < m_data.length(); ++m_nextPos) {
         if (charCat(m_data[m_nextPos]) == NotPartOfName)
             break;
+    }
 
     name = m_data.substring(startPos, m_nextPos - startPos);
     return true;
@@ -296,19 +297,19 @@ Token Parser::nextTokenInternal()
     case '-':
         return makeTokenAndAdvance(MINUS);
     case '=':
-        return makeTokenAndAdvance(EQOP, EqTestOp::OP_EQ);
+        return makeTokenAndAdvance(EQOP, EqTestOp::OpcodeEqual);
     case '!':
         if (peekAheadHelper() == '=')
-            return makeTokenAndAdvance(EQOP, EqTestOp::OP_NE, 2);
+            return makeTokenAndAdvance(EQOP, EqTestOp::OpcodeNotEqual, 2);
         return Token(XPATH_ERROR);
     case '<':
         if (peekAheadHelper() == '=')
-            return makeTokenAndAdvance(RELOP, EqTestOp::OP_LE, 2);
-        return makeTokenAndAdvance(RELOP, EqTestOp::OP_LT);
+            return makeTokenAndAdvance(RELOP, EqTestOp::OpcodeLessOrEqual, 2);
+        return makeTokenAndAdvance(RELOP, EqTestOp::OpcodeLessThan);
     case '>':
         if (peekAheadHelper() == '=')
-            return makeTokenAndAdvance(RELOP, EqTestOp::OP_GE, 2);
-        return makeTokenAndAdvance(RELOP, EqTestOp::OP_GT);
+            return makeTokenAndAdvance(RELOP, EqTestOp::OpcodeGreaterOrEqual, 2);
+        return makeTokenAndAdvance(RELOP, EqTestOp::OpcodeGreaterThan);
     case '*':
         if (isBinaryOperatorContext())
             return makeTokenAndAdvance(MULOP, NumericOp::OP_Mul);
@@ -330,7 +331,7 @@ Token Parser::nextTokenInternal()
     skipWS();
     // If we're in an operator context, check for any operator names
     if (isBinaryOperatorContext()) {
-        if (name == "and") //### hash?
+        if (name == "and") // ### hash?
             return Token(AND);
         if (name == "or")
             return Token(OR);
@@ -347,7 +348,7 @@ Token Parser::nextTokenInternal()
         if (peekCurHelper() == ':') {
             m_nextPos++;
 
-            //It might be an axis name.
+            // It might be an axis name.
             Step::Axis axis;
             if (isAxisName(name, axis))
                 return Token(AXISNAME, axis);
@@ -355,7 +356,8 @@ Token Parser::nextTokenInternal()
             return Token(XPATH_ERROR);
         }
 
-        // Seems like this is a fully qualified qname, or perhaps the * modified one from NameTest
+        // Seems like this is a fully qualified qname, or perhaps the * modified
+        // one from NameTest
         skipWS();
         if (peekCurHelper() == '*') {
             m_nextPos++;
@@ -372,16 +374,16 @@ Token Parser::nextTokenInternal()
 
     skipWS();
     if (peekCurHelper() == '(') {
-        //note: we don't swallow the (here!
+        // Note: we don't swallow the ( here!
 
-        //either node type of function name
+        // Either node type of function name
         if (isNodeTypeName(name)) {
             if (name == "processing-instruction")
                 return Token(PI, name);
 
             return Token(NODETYPE, name);
         }
-        //must be a function name.
+        // Must be a function name.
         return Token(FUNCTIONNAME, name);
     }
 

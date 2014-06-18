@@ -32,78 +32,80 @@
 
 namespace WebCore {
 
-    namespace XPath {
+namespace XPath {
 
-        class ValueData : public RefCountedWillBeGarbageCollectedFinalized<ValueData> {
-        public:
-            static PassRefPtrWillBeRawPtr<ValueData> create() { return adoptRefWillBeNoop(new ValueData); }
-            static PassRefPtrWillBeRawPtr<ValueData> create(const NodeSet& nodeSet) { return adoptRefWillBeNoop(new ValueData(nodeSet)); }
-            static PassRefPtrWillBeRawPtr<ValueData> create(PassOwnPtrWillBeRawPtr<NodeSet> nodeSet) { return adoptRefWillBeNoop(new ValueData(nodeSet)); }
-            static PassRefPtrWillBeRawPtr<ValueData> create(const String& string) { return adoptRefWillBeNoop(new ValueData(string)); }
-            void trace(Visitor*);
-            NodeSet& nodeSet() { return *m_nodeSet; }
+class ValueData : public RefCountedWillBeGarbageCollectedFinalized<ValueData> {
+public:
+    static PassRefPtrWillBeRawPtr<ValueData> create() { return adoptRefWillBeNoop(new ValueData); }
+    static PassRefPtrWillBeRawPtr<ValueData> create(const NodeSet& nodeSet) { return adoptRefWillBeNoop(new ValueData(nodeSet)); }
+    static PassRefPtrWillBeRawPtr<ValueData> create(PassOwnPtrWillBeRawPtr<NodeSet> nodeSet) { return adoptRefWillBeNoop(new ValueData(nodeSet)); }
+    static PassRefPtrWillBeRawPtr<ValueData> create(const String& string) { return adoptRefWillBeNoop(new ValueData(string)); }
+    void trace(Visitor*);
+    NodeSet& nodeSet() { return *m_nodeSet; }
 
-            String m_string;
+    String m_string;
 
-        private:
-            ValueData() : m_nodeSet(NodeSet::create()) { }
-            explicit ValueData(const NodeSet& nodeSet) : m_nodeSet(NodeSet::create(nodeSet)) { }
-            explicit ValueData(PassOwnPtrWillBeRawPtr<NodeSet> nodeSet) : m_nodeSet(nodeSet) { }
-            explicit ValueData(const String& string) : m_string(string), m_nodeSet(NodeSet::create()) { }
+private:
+    ValueData() : m_nodeSet(NodeSet::create()) { }
+    explicit ValueData(const NodeSet& nodeSet) : m_nodeSet(NodeSet::create(nodeSet)) { }
+    explicit ValueData(PassOwnPtrWillBeRawPtr<NodeSet> nodeSet) : m_nodeSet(nodeSet) { }
+    explicit ValueData(const String& string) : m_string(string), m_nodeSet(NodeSet::create()) { }
 
-            OwnPtrWillBeMember<NodeSet> m_nodeSet;
-        };
+    OwnPtrWillBeMember<NodeSet> m_nodeSet;
+};
 
-        // Copying Value objects makes their data partially shared, so care has to be taken when dealing with copies.
-        class Value {
-            DISALLOW_ALLOCATION();
-        public:
-            enum Type { NodeSetValue, BooleanValue, NumberValue, StringValue };
+// Copying Value objects makes their data partially shared, so care has to be taken when dealing with copies.
+class Value {
+    DISALLOW_ALLOCATION();
+public:
+    enum Type { NodeSetValue, BooleanValue, NumberValue, StringValue };
 
-            Value(unsigned value) : m_type(NumberValue), m_bool(false), m_number(value) {}
-            Value(unsigned long value) : m_type(NumberValue), m_bool(false), m_number(value) {}
-            Value(double value) : m_type(NumberValue), m_bool(false), m_number(value) {}
+    Value(unsigned value) : m_type(NumberValue), m_bool(false), m_number(value) { }
+    Value(unsigned long value) : m_type(NumberValue), m_bool(false), m_number(value) { }
+    Value(double value) : m_type(NumberValue), m_bool(false), m_number(value) { }
 
-            Value(const char* value) : m_type(StringValue), m_bool(false), m_number(0), m_data(ValueData::create(value)) {}
-            Value(const String& value) : m_type(StringValue), m_bool(false), m_number(0), m_data(ValueData::create(value)) {}
-            Value(const NodeSet& value) : m_type(NodeSetValue), m_bool(false), m_number(0), m_data(ValueData::create(value)) {}
-            Value(Node* value) : m_type(NodeSetValue), m_bool(false), m_number(0), m_data(ValueData::create()) { m_data->nodeSet().append(value); }
-            void trace(Visitor*);
+    Value(const char* value) : m_type(StringValue), m_bool(false), m_number(0), m_data(ValueData::create(value)) { }
+    Value(const String& value) : m_type(StringValue), m_bool(false), m_number(0), m_data(ValueData::create(value)) { }
+    Value(const NodeSet& value) : m_type(NodeSetValue), m_bool(false), m_number(0), m_data(ValueData::create(value)) { }
+    Value(Node* value) : m_type(NodeSetValue), m_bool(false), m_number(0), m_data(ValueData::create()) { m_data->nodeSet().append(value); }
+    void trace(Visitor*);
 
-            // This is needed to safely implement constructing from bool - with normal function overloading, any pointer type would match.
-            template<typename T> Value(T);
+    // This is needed to safely implement constructing from bool - with normal
+    // function overloading, any pointer type would match.
+    template<typename T> Value(T);
 
-            static const struct AdoptTag {} adopt;
-            Value(PassOwnPtrWillBeRawPtr<NodeSet> value, const AdoptTag&) : m_type(NodeSetValue), m_bool(false), m_number(0),  m_data(ValueData::create(value)) { }
+    static const struct AdoptTag { } adopt;
+    Value(PassOwnPtrWillBeRawPtr<NodeSet> value, const AdoptTag&) : m_type(NodeSetValue), m_bool(false), m_number(0),  m_data(ValueData::create(value)) { }
 
-            Type type() const { return m_type; }
+    Type type() const { return m_type; }
 
-            bool isNodeSet() const { return m_type == NodeSetValue; }
-            bool isBoolean() const { return m_type == BooleanValue; }
-            bool isNumber() const { return m_type == NumberValue; }
-            bool isString() const { return m_type == StringValue; }
+    bool isNodeSet() const { return m_type == NodeSetValue; }
+    bool isBoolean() const { return m_type == BooleanValue; }
+    bool isNumber() const { return m_type == NumberValue; }
+    bool isString() const { return m_type == StringValue; }
 
-            const NodeSet& toNodeSet() const;
-            NodeSet& modifiableNodeSet();
-            bool toBoolean() const;
-            double toNumber() const;
-            String toString() const;
+    const NodeSet& toNodeSet() const;
+    NodeSet& modifiableNodeSet();
+    bool toBoolean() const;
+    double toNumber() const;
+    String toString() const;
 
-        private:
-            Type m_type;
-            bool m_bool;
-            double m_number;
-            RefPtrWillBeMember<ValueData> m_data;
-        };
+private:
+    Type m_type;
+    bool m_bool;
+    double m_number;
+    RefPtrWillBeMember<ValueData> m_data;
+};
 
-        template<>
-        inline Value::Value(bool value)
-            : m_type(BooleanValue)
-            , m_bool(value)
-            , m_number(0)
-        {
-        }
-    }
+template<>
+inline Value::Value(bool value)
+    : m_type(BooleanValue)
+    , m_bool(value)
+    , m_number(0)
+{
 }
 
-#endif // XPath_Value_H
+}
+
+}
+#endif // XPathValue_h

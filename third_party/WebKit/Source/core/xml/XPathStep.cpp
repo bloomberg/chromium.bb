@@ -65,9 +65,13 @@ void Step::trace(Visitor* visitor)
 
 void Step::optimize()
 {
-    // Evaluate predicates as part of node test if possible to avoid building unnecessary NodeSets.
-    // E.g., there is no need to build a set of all "foo" nodes to evaluate "foo[@bar]", we can check the predicate while enumerating.
-    // This optimization can be applied to predicates that are not context node list sensitive, or to first predicate that is only context position sensitive, e.g. foo[position() mod 2 = 0].
+    // Evaluate predicates as part of node test if possible to avoid building
+    // unnecessary NodeSets.
+    // E.g., there is no need to build a set of all "foo" nodes to evaluate
+    // "foo[@bar]", we can check the predicate while enumerating.
+    // This optimization can be applied to predicates that are not context node
+    // list sensitive, or to first predicate that is only context position
+    // sensitive, e.g. foo[position() mod 2 = 0].
     WillBeHeapVector<OwnPtrWillBeMember<Predicate> > remainingPredicates;
     for (size_t i = 0; i < m_predicates.size(); ++i) {
         OwnPtrWillBeRawPtr<Predicate> predicate(m_predicates[i].release());
@@ -92,7 +96,8 @@ void optimizeStepPair(Step* first, Step* second, bool& dropSecondStep)
         ASSERT(first->nodeTest().data().isEmpty());
         ASSERT(first->nodeTest().namespaceURI().isEmpty());
 
-        // Optimize the common case of "//" AKA /descendant-or-self::node()/child::NodeTest to /descendant::NodeTest.
+        // Optimize the common case of "//" AKA
+        // /descendant-or-self::node()/child::NodeTest to /descendant::NodeTest.
         if (second->m_axis == Step::ChildAxis && second->predicatesAreContextListInsensitive()) {
             first->m_axis = Step::DescendantAxis;
             first->nodeTest() = Step::NodeTest(second->nodeTest().kind(), second->nodeTest().data(), second->nodeTest().namespaceURI());
@@ -154,10 +159,10 @@ void Step::evaluate(Node* context, NodeSet& nodes) const
 static inline Node::NodeType primaryNodeType(Step::Axis axis)
 {
     switch (axis) {
-        case Step::AttributeAxis:
-            return Node::ATTRIBUTE_NODE;
-        default:
-            return Node::ELEMENT_NODE;
+    case Step::AttributeAxis:
+        return Node::ATTRIBUTE_NODE;
+    default:
+        return Node::ELEMENT_NODE;
     }
 }
 #endif
@@ -166,57 +171,62 @@ static inline Node::NodeType primaryNodeType(Step::Axis axis)
 static inline bool nodeMatchesBasicTest(Node* node, Step::Axis axis, const Step::NodeTest& nodeTest)
 {
     switch (nodeTest.kind()) {
-        case Step::NodeTest::TextNodeTest: {
-            Node::NodeType type = node->nodeType();
-            return type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE;
-        }
-        case Step::NodeTest::CommentNodeTest:
-            return node->nodeType() == Node::COMMENT_NODE;
-        case Step::NodeTest::ProcessingInstructionNodeTest: {
-            const AtomicString& name = nodeTest.data();
-            return node->nodeType() == Node::PROCESSING_INSTRUCTION_NODE && (name.isEmpty() || node->nodeName() == name);
-        }
-        case Step::NodeTest::AnyNodeTest:
-            return true;
-        case Step::NodeTest::NameTest: {
-            const AtomicString& name = nodeTest.data();
-            const AtomicString& namespaceURI = nodeTest.namespaceURI();
+    case Step::NodeTest::TextNodeTest: {
+        Node::NodeType type = node->nodeType();
+        return type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE;
+    }
+    case Step::NodeTest::CommentNodeTest:
+        return node->nodeType() == Node::COMMENT_NODE;
+    case Step::NodeTest::ProcessingInstructionNodeTest: {
+        const AtomicString& name = nodeTest.data();
+        return node->nodeType() == Node::PROCESSING_INSTRUCTION_NODE && (name.isEmpty() || node->nodeName() == name);
+    }
+    case Step::NodeTest::AnyNodeTest:
+        return true;
+    case Step::NodeTest::NameTest: {
+        const AtomicString& name = nodeTest.data();
+        const AtomicString& namespaceURI = nodeTest.namespaceURI();
 
-            if (axis == Step::AttributeAxis) {
-                ASSERT(node->isAttributeNode());
+        if (axis == Step::AttributeAxis) {
+            ASSERT(node->isAttributeNode());
 
-                // In XPath land, namespace nodes are not accessible on the attribute axis.
-                if (node->namespaceURI() == XMLNSNames::xmlnsNamespaceURI)
-                    return false;
-
-                if (name == starAtom)
-                    return namespaceURI.isEmpty() || node->namespaceURI() == namespaceURI;
-
-                return node->localName() == name && node->namespaceURI() == namespaceURI;
-            }
-
-            // Node test on the namespace axis is not implemented yet, the caller has a check for it.
-            ASSERT(axis != Step::NamespaceAxis);
-
-            // For other axes, the principal node type is element.
-            ASSERT(primaryNodeType(axis) == Node::ELEMENT_NODE);
-            if (!node->isElementNode())
+            // In XPath land, namespace nodes are not accessible on the
+            // attribute axis.
+            if (node->namespaceURI() == XMLNSNames::xmlnsNamespaceURI)
                 return false;
-            Element& element = toElement(*node);
 
             if (name == starAtom)
-                return namespaceURI.isEmpty() || namespaceURI == element.namespaceURI();
+                return namespaceURI.isEmpty() || node->namespaceURI() == namespaceURI;
 
-            if (element.document().isHTMLDocument()) {
-                if (element.isHTMLElement()) {
-                    // Paths without namespaces should match HTML elements in HTML documents despite those having an XHTML namespace. Names are compared case-insensitively.
-                    return equalIgnoringCase(element.localName(), name) && (namespaceURI.isNull() || namespaceURI == element.namespaceURI());
-                }
-                // An expression without any prefix shouldn't match no-namespace nodes (because HTML5 says so).
-                return element.hasLocalName(name) && namespaceURI == element.namespaceURI() && !namespaceURI.isNull();
-            }
-            return element.hasLocalName(name) && namespaceURI == element.namespaceURI();
+            return node->localName() == name && node->namespaceURI() == namespaceURI;
         }
+
+        // Node test on the namespace axis is not implemented yet, the caller
+        // has a check for it.
+        ASSERT(axis != Step::NamespaceAxis);
+
+        // For other axes, the principal node type is element.
+        ASSERT(primaryNodeType(axis) == Node::ELEMENT_NODE);
+        if (!node->isElementNode())
+            return false;
+        Element& element = toElement(*node);
+
+        if (name == starAtom)
+            return namespaceURI.isEmpty() || namespaceURI == element.namespaceURI();
+
+        if (element.document().isHTMLDocument()) {
+            if (element.isHTMLElement()) {
+                // Paths without namespaces should match HTML elements in HTML
+                // documents despite those having an XHTML namespace. Names are
+                // compared case-insensitively.
+                return equalIgnoringCase(element.localName(), name) && (namespaceURI.isNull() || namespaceURI == element.namespaceURI());
+            }
+            // An expression without any prefix shouldn't match no-namespace
+            // nodes (because HTML5 says so).
+            return element.hasLocalName(name) && namespaceURI == element.namespaceURI() && !namespaceURI.isNull();
+        }
+        return element.hasLocalName(name) && namespaceURI == element.namespaceURI();
+    }
     }
     ASSERT_NOT_REACHED();
     return false;
@@ -237,7 +247,8 @@ static inline bool nodeMatches(Node* node, Step::Axis axis, const Step::NodeTest
         Predicate* predicate = mergedPredicates[i].get();
 
         evaluationContext.node = node;
-        // No need to set context size - we only get here when evaluating predicates that do not depend on it.
+        // No need to set context size - we only get here when evaluating
+        // predicates that do not depend on it.
         if (!predicate->evaluate())
             return false;
     }
@@ -245,168 +256,192 @@ static inline bool nodeMatches(Node* node, Step::Axis axis, const Step::NodeTest
     return true;
 }
 
-// Result nodes are ordered in axis order. Node test (including merged predicates) is applied.
+// Result nodes are ordered in axis order. Node test (including merged
+// predicates) is applied.
 void Step::nodesInAxis(Node* context, NodeSet& nodes) const
 {
     ASSERT(nodes.isEmpty());
     switch (m_axis) {
-        case ChildAxis:
-            if (context->isAttributeNode()) // In XPath model, attribute nodes do not have children.
-                return;
+    case ChildAxis:
+        // In XPath model, attribute nodes do not have children.
+        if (context->isAttributeNode())
+            return;
 
-            for (Node* n = context->firstChild(); n; n = n->nextSibling())
-                if (nodeMatches(n, ChildAxis, nodeTest()))
-                    nodes.append(n);
-            return;
-        case DescendantAxis:
-            if (context->isAttributeNode()) // In XPath model, attribute nodes do not have children.
-                return;
-
-            for (Node* n = context->firstChild(); n; n = NodeTraversal::next(*n, context))
-                if (nodeMatches(n, DescendantAxis, nodeTest()))
-                    nodes.append(n);
-            return;
-        case ParentAxis:
-            if (context->isAttributeNode()) {
-                Element* n = toAttr(context)->ownerElement();
-                if (nodeMatches(n, ParentAxis, nodeTest()))
-                    nodes.append(n);
-            } else {
-                ContainerNode* n = context->parentNode();
-                if (n && nodeMatches(n, ParentAxis, nodeTest()))
-                    nodes.append(n);
-            }
-            return;
-        case AncestorAxis: {
-            Node* n = context;
-            if (context->isAttributeNode()) {
-                n = toAttr(context)->ownerElement();
-                if (nodeMatches(n, AncestorAxis, nodeTest()))
-                    nodes.append(n);
-            }
-            for (n = n->parentNode(); n; n = n->parentNode())
-                if (nodeMatches(n, AncestorAxis, nodeTest()))
-                    nodes.append(n);
-            nodes.markSorted(false);
-            return;
+        for (Node* n = context->firstChild(); n; n = n->nextSibling()) {
+            if (nodeMatches(n, ChildAxis, nodeTest()))
+                nodes.append(n);
         }
-        case FollowingSiblingAxis:
-            if (context->nodeType() == Node::ATTRIBUTE_NODE)
-                return;
+        return;
 
-            for (Node* n = context->nextSibling(); n; n = n->nextSibling())
-                if (nodeMatches(n, FollowingSiblingAxis, nodeTest()))
-                    nodes.append(n);
+    case DescendantAxis:
+        // In XPath model, attribute nodes do not have children.
+        if (context->isAttributeNode())
             return;
-        case PrecedingSiblingAxis:
-            if (context->nodeType() == Node::ATTRIBUTE_NODE)
-                return;
 
-            for (Node* n = context->previousSibling(); n; n = n->previousSibling())
-                if (nodeMatches(n, PrecedingSiblingAxis, nodeTest()))
-                    nodes.append(n);
+        for (Node* n = context->firstChild(); n; n = NodeTraversal::next(*n, context)) {
+            if (nodeMatches(n, DescendantAxis, nodeTest()))
+                nodes.append(n);
+        }
+        return;
 
-            nodes.markSorted(false);
+    case ParentAxis:
+        if (context->isAttributeNode()) {
+            Element* n = toAttr(context)->ownerElement();
+            if (nodeMatches(n, ParentAxis, nodeTest()))
+                nodes.append(n);
+        } else {
+            ContainerNode* n = context->parentNode();
+            if (n && nodeMatches(n, ParentAxis, nodeTest()))
+                nodes.append(n);
+        }
+        return;
+
+    case AncestorAxis: {
+        Node* n = context;
+        if (context->isAttributeNode()) {
+            n = toAttr(context)->ownerElement();
+            if (nodeMatches(n, AncestorAxis, nodeTest()))
+                nodes.append(n);
+        }
+        for (n = n->parentNode(); n; n = n->parentNode()) {
+            if (nodeMatches(n, AncestorAxis, nodeTest()))
+                nodes.append(n);
+        }
+        nodes.markSorted(false);
+        return;
+    }
+
+    case FollowingSiblingAxis:
+        if (context->nodeType() == Node::ATTRIBUTE_NODE)
             return;
-        case FollowingAxis:
-            if (context->isAttributeNode()) {
-                Node* p = toAttr(context)->ownerElement();
-                while ((p = NodeTraversal::next(*p))) {
-                    if (nodeMatches(p, FollowingAxis, nodeTest()))
-                        nodes.append(p);
-                }
-            } else {
-                for (Node* p = context; !isRootDomNode(p); p = p->parentNode()) {
-                    for (Node* n = p->nextSibling(); n; n = n->nextSibling()) {
-                        if (nodeMatches(n, FollowingAxis, nodeTest()))
-                            nodes.append(n);
-                        for (Node* c = n->firstChild(); c; c = NodeTraversal::next(*c, n))
-                            if (nodeMatches(c, FollowingAxis, nodeTest()))
-                                nodes.append(c);
+
+        for (Node* n = context->nextSibling(); n; n = n->nextSibling()) {
+            if (nodeMatches(n, FollowingSiblingAxis, nodeTest()))
+                nodes.append(n);
+        }
+        return;
+
+    case PrecedingSiblingAxis:
+        if (context->nodeType() == Node::ATTRIBUTE_NODE)
+            return;
+
+        for (Node* n = context->previousSibling(); n; n = n->previousSibling()) {
+            if (nodeMatches(n, PrecedingSiblingAxis, nodeTest()))
+                nodes.append(n);
+        }
+        nodes.markSorted(false);
+        return;
+
+    case FollowingAxis:
+        if (context->isAttributeNode()) {
+            Node* p = toAttr(context)->ownerElement();
+            while ((p = NodeTraversal::next(*p))) {
+                if (nodeMatches(p, FollowingAxis, nodeTest()))
+                    nodes.append(p);
+            }
+        } else {
+            for (Node* p = context; !isRootDomNode(p); p = p->parentNode()) {
+                for (Node* n = p->nextSibling(); n; n = n->nextSibling()) {
+                    if (nodeMatches(n, FollowingAxis, nodeTest()))
+                        nodes.append(n);
+                    for (Node* c = n->firstChild(); c; c = NodeTraversal::next(*c, n)) {
+                        if (nodeMatches(c, FollowingAxis, nodeTest()))
+                            nodes.append(c);
                     }
                 }
             }
-            return;
-        case PrecedingAxis: {
-            if (context->isAttributeNode())
-                context = toAttr(context)->ownerElement();
-
-            Node* n = context;
-            while (ContainerNode* parent = n->parentNode()) {
-                for (n = NodeTraversal::previous(*n); n != parent; n = NodeTraversal::previous(*n))
-                    if (nodeMatches(n, PrecedingAxis, nodeTest()))
-                        nodes.append(n);
-                n = parent;
-            }
-            nodes.markSorted(false);
-            return;
         }
-        case AttributeAxis: {
-            if (!context->isElementNode())
-                return;
+        return;
 
-            Element* contextElement = toElement(context);
+    case PrecedingAxis: {
+        if (context->isAttributeNode())
+            context = toAttr(context)->ownerElement();
 
-            // Avoid lazily creating attribute nodes for attributes that we do not need anyway.
-            if (nodeTest().kind() == NodeTest::NameTest && nodeTest().data() != starAtom) {
-                RefPtrWillBeRawPtr<Node> n = contextElement->getAttributeNodeNS(nodeTest().namespaceURI(), nodeTest().data());
-                if (n && n->namespaceURI() != XMLNSNames::xmlnsNamespaceURI) { // In XPath land, namespace nodes are not accessible on the attribute axis.
-                    if (nodeMatches(n.get(), AttributeAxis, nodeTest())) // Still need to check merged predicates.
-                        nodes.append(n.release());
-                }
-                return;
+        Node* n = context;
+        while (ContainerNode* parent = n->parentNode()) {
+            for (n = NodeTraversal::previous(*n); n != parent; n = NodeTraversal::previous(*n)) {
+                if (nodeMatches(n, PrecedingAxis, nodeTest()))
+                    nodes.append(n);
             }
+            n = parent;
+        }
+        nodes.markSorted(false);
+        return;
+    }
 
-            if (!contextElement->hasAttributes())
-                return;
+    case AttributeAxis: {
+        if (!context->isElementNode())
+            return;
 
-            AttributeIteratorAccessor attributes = contextElement->attributesIterator();
-            AttributeConstIterator end = attributes.end();
-            for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
-                RefPtrWillBeRawPtr<Attr> attr = contextElement->ensureAttr(it->name());
-                if (nodeMatches(attr.get(), AttributeAxis, nodeTest()))
-                    nodes.append(attr.release());
+        Element* contextElement = toElement(context);
+        // Avoid lazily creating attribute nodes for attributes that we do not
+        // need anyway.
+        if (nodeTest().kind() == NodeTest::NameTest && nodeTest().data() != starAtom) {
+            RefPtrWillBeRawPtr<Node> n = contextElement->getAttributeNodeNS(nodeTest().namespaceURI(), nodeTest().data());
+            // In XPath land, namespace nodes are not accessible on the attribute axis.
+            if (n && n->namespaceURI() != XMLNSNames::xmlnsNamespaceURI) {
+                // Still need to check merged predicates.
+                if (nodeMatches(n.get(), AttributeAxis, nodeTest()))
+                    nodes.append(n.release());
             }
             return;
         }
-        case NamespaceAxis:
-            // XPath namespace nodes are not implemented.
-            return;
-        case SelfAxis:
-            if (nodeMatches(context, SelfAxis, nodeTest()))
-                nodes.append(context);
-            return;
-        case DescendantOrSelfAxis:
-            if (nodeMatches(context, DescendantOrSelfAxis, nodeTest()))
-                nodes.append(context);
-            if (context->isAttributeNode()) // In XPath model, attribute nodes do not have children.
-                return;
 
-            for (Node* n = context->firstChild(); n; n = NodeTraversal::next(*n, context)) {
-                if (nodeMatches(n, DescendantOrSelfAxis, nodeTest()))
-                    nodes.append(n);
-            }
+        if (!contextElement->hasAttributes())
             return;
-        case AncestorOrSelfAxis: {
-            if (nodeMatches(context, AncestorOrSelfAxis, nodeTest()))
-                nodes.append(context);
-            Node* n = context;
-            if (context->isAttributeNode()) {
-                n = toAttr(context)->ownerElement();
-                if (nodeMatches(n, AncestorOrSelfAxis, nodeTest()))
-                    nodes.append(n);
-            }
-            for (n = n->parentNode(); n; n = n->parentNode())
-                if (nodeMatches(n, AncestorOrSelfAxis, nodeTest()))
-                    nodes.append(n);
 
-            nodes.markSorted(false);
-            return;
+        AttributeIteratorAccessor attributes = contextElement->attributesIterator();
+        AttributeConstIterator end = attributes.end();
+        for (AttributeConstIterator it = attributes.begin(); it != end; ++it) {
+            RefPtrWillBeRawPtr<Attr> attr = contextElement->ensureAttr(it->name());
+            if (nodeMatches(attr.get(), AttributeAxis, nodeTest()))
+                nodes.append(attr.release());
         }
+        return;
+    }
+
+    case NamespaceAxis:
+        // XPath namespace nodes are not implemented.
+        return;
+
+    case SelfAxis:
+        if (nodeMatches(context, SelfAxis, nodeTest()))
+            nodes.append(context);
+        return;
+
+    case DescendantOrSelfAxis:
+        if (nodeMatches(context, DescendantOrSelfAxis, nodeTest()))
+            nodes.append(context);
+        // In XPath model, attribute nodes do not have children.
+        if (context->isAttributeNode())
+            return;
+
+        for (Node* n = context->firstChild(); n; n = NodeTraversal::next(*n, context)) {
+            if (nodeMatches(n, DescendantOrSelfAxis, nodeTest()))
+                nodes.append(n);
+        }
+        return;
+
+    case AncestorOrSelfAxis: {
+        if (nodeMatches(context, AncestorOrSelfAxis, nodeTest()))
+            nodes.append(context);
+        Node* n = context;
+        if (context->isAttributeNode()) {
+            n = toAttr(context)->ownerElement();
+            if (nodeMatches(n, AncestorOrSelfAxis, nodeTest()))
+                nodes.append(n);
+        }
+        for (n = n->parentNode(); n; n = n->parentNode()) {
+            if (nodeMatches(n, AncestorOrSelfAxis, nodeTest()))
+                nodes.append(n);
+        }
+        nodes.markSorted(false);
+        return;
+    }
     }
     ASSERT_NOT_REACHED();
 }
 
-
 }
+
 }

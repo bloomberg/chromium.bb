@@ -32,62 +32,61 @@
 
 namespace WebCore {
 
-    namespace XPath {
+namespace XPath {
 
-        class Predicate;
-        class Step;
+class Predicate;
+class Step;
 
-        class Filter FINAL : public Expression {
-        public:
-            Filter(PassOwnPtrWillBeRawPtr<Expression>, WillBeHeapVector<OwnPtrWillBeMember<Predicate> >&);
-            virtual ~Filter();
-            virtual void trace(Visitor*) OVERRIDE;
+class Filter FINAL : public Expression {
+public:
+    Filter(PassOwnPtrWillBeRawPtr<Expression>, WillBeHeapVector<OwnPtrWillBeMember<Predicate> >&);
+    virtual ~Filter();
+    virtual void trace(Visitor*) OVERRIDE;
 
-            virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate() const OVERRIDE;
 
-        private:
-            virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
+private:
+    virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
 
-            OwnPtrWillBeMember<Expression> m_expr;
-            WillBeHeapVector<OwnPtrWillBeMember<Predicate> > m_predicates;
-        };
+    OwnPtrWillBeMember<Expression> m_expr;
+    WillBeHeapVector<OwnPtrWillBeMember<Predicate> > m_predicates;
+};
 
-        class LocationPath FINAL : public Expression {
-        public:
-            LocationPath();
-            virtual ~LocationPath();
-            virtual void trace(Visitor*) OVERRIDE;
-            void setAbsolute(bool value) { m_absolute = value; setIsContextNodeSensitive(!m_absolute); }
+class LocationPath FINAL : public Expression {
+public:
+    LocationPath();
+    virtual ~LocationPath();
+    virtual void trace(Visitor*) OVERRIDE;
 
-            virtual Value evaluate() const OVERRIDE;
-            void evaluate(NodeSet& nodes) const; // nodes is an input/output parameter
+    virtual Value evaluate() const OVERRIDE;
+    void setAbsolute(bool value) { m_absolute = value; setIsContextNodeSensitive(!m_absolute); }
+    void evaluate(NodeSet&) const; // nodes is an input/output parameter
+    void appendStep(Step*);
+    void insertFirstStep(Step*);
 
-            void appendStep(Step* step);
-            void insertFirstStep(Step* step);
+private:
+    virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
 
-        private:
-            virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
+    WillBeHeapVector<RawPtrWillBeMember<Step> > m_steps;
+    bool m_absolute;
+};
 
-            WillBeHeapVector<RawPtrWillBeMember<Step> > m_steps;
-            bool m_absolute;
-        };
+class Path FINAL : public Expression {
+public:
+    Path(Expression*, LocationPath*);
+    virtual ~Path();
+    virtual void trace(Visitor*) OVERRIDE;
 
-        class Path FINAL : public Expression {
-        public:
-            Path(Expression*, LocationPath*);
-            virtual ~Path();
-            virtual void trace(Visitor*) OVERRIDE;
+    virtual Value evaluate() const OVERRIDE;
 
-            virtual Value evaluate() const OVERRIDE;
+private:
+    virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
 
-        private:
-            virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
+    OwnPtrWillBeMember<Expression> m_filter;
+    OwnPtrWillBeMember<LocationPath> m_path;
+};
 
-            OwnPtrWillBeMember<Expression> m_filter;
-            OwnPtrWillBeMember<LocationPath> m_path;
-        };
-
-    }
 }
 
-#endif // XPath_Path_H
+}
+#endif // XPathPath_h

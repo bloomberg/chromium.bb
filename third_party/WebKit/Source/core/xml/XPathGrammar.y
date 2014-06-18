@@ -56,16 +56,16 @@ using namespace XPath;
 
 %union
 {
-    Step::Axis axis;
-    Step::NodeTest* nodeTest;
-    NumericOp::Opcode numop;
-    EqTestOp::Opcode eqop;
+    WebCore::XPath::Step::Axis axis;
+    WebCore::XPath::Step::NodeTest* nodeTest;
+    WebCore::XPath::NumericOp::Opcode numop;
+    WebCore::XPath::EqTestOp::Opcode eqop;
     String* str;
-    Expression* expr;
-    WillBeHeapVector<OwnPtrWillBeMember<Predicate> >* predList;
-    WillBeHeapVector<OwnPtrWillBeMember<Expression> >* argList;
-    Step* step;
-    LocationPath* locationPath;
+    WebCore::XPath::Expression* expr;
+    WillBeHeapVector<OwnPtrWillBeMember<WebCore::XPath::Predicate> >* predList;
+    WillBeHeapVector<OwnPtrWillBeMember<WebCore::XPath::Expression> >* argList;
+    WebCore::XPath::Step* step;
+    WebCore::XPath::LocationPath* locationPath;
 }
 
 %{

@@ -42,26 +42,26 @@ bool isRootDomNode(Node* node)
 String stringValue(Node* node)
 {
     switch (node->nodeType()) {
-        case Node::ATTRIBUTE_NODE:
-        case Node::PROCESSING_INSTRUCTION_NODE:
-        case Node::COMMENT_NODE:
-        case Node::TEXT_NODE:
-        case Node::CDATA_SECTION_NODE:
-            return node->nodeValue();
-        default:
-            if (isRootDomNode(node) || node->isElementNode()) {
-                StringBuilder result;
-                result.reserveCapacity(1024);
+    case Node::ATTRIBUTE_NODE:
+    case Node::PROCESSING_INSTRUCTION_NODE:
+    case Node::COMMENT_NODE:
+    case Node::TEXT_NODE:
+    case Node::CDATA_SECTION_NODE:
+        return node->nodeValue();
+    default:
+        if (isRootDomNode(node) || node->isElementNode()) {
+            StringBuilder result;
+            result.reserveCapacity(1024);
 
-                for (Node* n = node->firstChild(); n; n = NodeTraversal::next(*n, node)) {
-                    if (n->isTextNode()) {
-                        const String& nodeValue = n->nodeValue();
-                        result.append(nodeValue);
-                    }
+            for (Node* n = node->firstChild(); n; n = NodeTraversal::next(*n, node)) {
+                if (n->isTextNode()) {
+                    const String& nodeValue = n->nodeValue();
+                    result.append(nodeValue);
                 }
-
-                return result.toString();
             }
+
+            return result.toString();
+        }
     }
 
     return String();
@@ -72,18 +72,18 @@ bool isValidContextNode(Node* node)
     if (!node)
         return false;
     switch (node->nodeType()) {
-        case Node::ATTRIBUTE_NODE:
-        case Node::CDATA_SECTION_NODE:
-        case Node::COMMENT_NODE:
-        case Node::DOCUMENT_NODE:
-        case Node::ELEMENT_NODE:
-        case Node::PROCESSING_INSTRUCTION_NODE:
-            return true;
-        case Node::DOCUMENT_FRAGMENT_NODE:
-        case Node::DOCUMENT_TYPE_NODE:
-            return false;
-        case Node::TEXT_NODE:
-            return !(node->parentNode() && node->parentNode()->isAttributeNode());
+    case Node::ATTRIBUTE_NODE:
+    case Node::CDATA_SECTION_NODE:
+    case Node::COMMENT_NODE:
+    case Node::DOCUMENT_NODE:
+    case Node::ELEMENT_NODE:
+    case Node::PROCESSING_INSTRUCTION_NODE:
+        return true;
+    case Node::DOCUMENT_FRAGMENT_NODE:
+    case Node::DOCUMENT_TYPE_NODE:
+        return false;
+    case Node::TEXT_NODE:
+        return !(node->parentNode() && node->parentNode()->isAttributeNode());
     }
     ASSERT_NOT_REACHED();
     return false;

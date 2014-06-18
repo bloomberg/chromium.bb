@@ -31,26 +31,27 @@
 
 namespace WebCore {
 
-    namespace XPath {
+namespace XPath {
 
-        class Function : public Expression {
-        public:
-            void setArguments(WillBeHeapVector<OwnPtrWillBeMember<Expression> >&);
-            void setName(const String& name) { m_name = name; }
-        protected:
-            Expression* arg(int pos) { return subExpr(pos); }
-            const Expression* arg(int pos) const { return subExpr(pos); }
-            unsigned argCount() const { return subExprCount(); }
-            String name() const { return m_name; }
+class Function : public Expression {
+public:
+    void setArguments(WillBeHeapVector<OwnPtrWillBeMember<Expression> >&);
+    void setName(const String& name) { m_name = name; }
 
-        private:
-            String m_name;
-        };
+protected:
+    Expression* arg(int pos) { return subExpr(pos); }
+    const Expression* arg(int pos) const { return subExpr(pos); }
+    unsigned argCount() const { return subExprCount(); }
+    String name() const { return m_name; }
 
-        Function* createFunction(const String& name);
-        Function* createFunction(const String& name, WillBeHeapVector<OwnPtrWillBeMember<Expression> >&);
+private:
+    String m_name;
+};
 
-    } // namespace XPath
+Function* createFunction(const String& name);
+Function* createFunction(const String& name, WillBeHeapVector<OwnPtrWillBeMember<Expression> >&);
+
+} // namespace XPath
 
 } // namespace WebCore
 
