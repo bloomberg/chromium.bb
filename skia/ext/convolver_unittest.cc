@@ -237,15 +237,9 @@ void VerifySIMD(unsigned int source_width,
 
   // Allocate input and output skia bitmap.
   SkBitmap source, result_c, result_sse;
-  source.setConfig(SkBitmap::kARGB_8888_Config,
-                   source_width, source_height);
-  source.allocPixels();
-  result_c.setConfig(SkBitmap::kARGB_8888_Config,
-                     dest_width, dest_height);
-  result_c.allocPixels();
-  result_sse.setConfig(SkBitmap::kARGB_8888_Config,
-                       dest_width, dest_height);
-  result_sse.allocPixels();
+  source.allocN32Pixels(source_width, source_height);
+  result_c.allocN32Pixels(dest_width, dest_height);
+  result_sse.allocN32Pixels(dest_width, dest_height);
 
   // Randomize source bitmap for testing.
   unsigned char* src_ptr = static_cast<unsigned char*>(source.getPixels());

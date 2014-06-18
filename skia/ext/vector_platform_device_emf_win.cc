@@ -81,20 +81,16 @@ SkBaseDevice* VectorPlatformDeviceEmf::create(HDC dc, int width, int height) {
       // VectorPlatformDeviceEmf has no way to detect this, so the HBITMAP
       // could be released while SkBitmap still has a reference to it. Be
       // cautious.
-      if (width == bitmap_data.bmWidth &&
-          height == bitmap_data.bmHeight) {
-        bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                         bitmap_data.bmWidth,
-                         bitmap_data.bmHeight,
-                         bitmap_data.bmWidthBytes);
-        bitmap.setPixels(bitmap_data.bmBits);
-        succeeded = true;
+      if (width == bitmap_data.bmWidth && height == bitmap_data.bmHeight) {
+        SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
+        succeeded = bitmap.installPixels(info, bitmap_data.bmBits,
+                                         bitmap_data.bmWidthBytes);
       }
     }
   }
 
   if (!succeeded)
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+    bitmap.setInfo(SkImageInfo::MakeUnknown(width, height));
 
   return new VectorPlatformDeviceEmf(dc, bitmap);
 }

@@ -103,8 +103,7 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(CGContextRef context,
   SkBitmap bitmap;
   // TODO: verify that the CG Context's pixels will have tight rowbytes or pass in the correct
   // rowbytes for the case when context != NULL.
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height, 0,
-                   is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
+  bitmap.setInfo(SkImageInfo::MakeN32(width, height, is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType));
 
   void* data;
   if (context) {
@@ -272,10 +271,8 @@ bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
   if (RasterDeviceTooBigToAllocate(width, height))
     return false;
     
-  bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height, width * 4,
-                    is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
-  if (!bitmap_.allocPixels())
-      return false;
+  if (!bitmap_.allocN32Pixels(width, height, is_opaque))
+    return false;
 
   if (!is_opaque)
     bitmap_.eraseColor(0);

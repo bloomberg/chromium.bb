@@ -277,7 +277,7 @@ void AnalysisCanvas::drawVertices(SkCanvas::VertexMode,
 // by any pixels
 static SkBitmap MakeEmptyBitmap(int width, int height) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kNo_Config, width, height);
+  bitmap.setInfo(SkImageInfo::MakeUnknown(width, height));
   return bitmap;
 }
 

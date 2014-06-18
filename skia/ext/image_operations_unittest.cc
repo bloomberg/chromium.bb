@@ -111,8 +111,7 @@ bool ColorsClose(uint32_t a, uint32_t b) {
 }
 
 void FillDataToBitmap(int w, int h, SkBitmap* bmp) {
-  bmp->setConfig(SkBitmap::kARGB_8888_Config, w, h);
-  bmp->allocPixels();
+  bmp->allocN32Pixels(w, h);
 
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
@@ -140,8 +139,7 @@ void DrawGridToBitmap(int w, int h,
   ASSERT_GT(grid_width, 0);
   ASSERT_NE(background_color, grid_color);
 
-  bmp->setConfig(SkBitmap::kARGB_8888_Config, w, h);
-  bmp->allocPixels();
+  bmp->allocN32Pixels(w, h);
 
   for (int y = 0; y < h; ++y) {
     bool y_on_grid = ((y % grid_pitch) < grid_width);
@@ -166,8 +164,7 @@ void DrawCheckerToBitmap(int w, int h,
   ASSERT_GT(rect_h, 0);
   ASSERT_NE(color1, color2);
 
-  bmp->setConfig(SkBitmap::kARGB_8888_Config, w, h);
-  bmp->allocPixels();
+  bmp->allocN32Pixels(w, h);
 
   for (int y = 0; y < h; ++y) {
     bool y_bit = (((y / rect_h) & 0x1) == 0);
@@ -464,8 +461,7 @@ TEST(ImageOperations, HalveSubset) {
 TEST(ImageOperations, InvalidParams) {
   // Make our source bitmap.
   SkBitmap src;
-  src.setConfig(SkBitmap::kA8_Config, 16, 34);
-  src.allocPixels();
+  src.allocPixels(SkImageInfo::MakeA8(16, 34));
 
   // Scale it, don't die.
   SkBitmap full_results = skia::ImageOperations::Resize(
@@ -667,8 +663,7 @@ TEST(ImageOperations, ScaleUp) {
   const int dst_w = 9;
   const int dst_h = 9;
   SkBitmap src;
-  src.setConfig(SkBitmap::kARGB_8888_Config, src_w, src_h);
-  src.allocPixels();
+  src.allocN32Pixels(src_w, src_h);
 
   for (int src_y = 0; src_y < src_h; ++src_y) {
     for (int src_x = 0; src_x < src_w; ++src_x) {

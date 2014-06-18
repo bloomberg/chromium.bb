@@ -15,7 +15,7 @@ namespace skia {
 
 static inline SkBitmap makeABitmap(int width, int height) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kNo_Config, width, height);
+  bitmap.setInfo(SkImageInfo::MakeUnknown(width, height));
   return bitmap;
 }
 

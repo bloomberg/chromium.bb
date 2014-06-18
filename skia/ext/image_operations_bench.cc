@@ -229,9 +229,7 @@ bool Benchmark::ParseArgs(const base::CommandLine* command_line) {
 // actual benchmark.
 bool Benchmark::Run() const {
   SkBitmap source;
-  source.setConfig(SkBitmap::kARGB_8888_Config,
-                   source_.width(), source_.height());
-  source.allocPixels();
+  source.allocN32Pixels(source_.width(), source_.height());
   source.eraseARGB(0, 0, 0, 0);
 
   SkBitmap dest;

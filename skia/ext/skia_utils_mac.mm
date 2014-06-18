@@ -27,13 +27,7 @@ SkBitmap NSImageOrNSImageRepToSkBitmapWithColorSpace(
   DCHECK((image != 0) ^ (image_rep != 0));
 
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                   size.width,
-                   size.height,
-                   0,
-                   is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
-
-  if (!bitmap.allocPixels())
+  if (!bitmap.allocN32Pixels(size.width, size.height, is_opaque))
     return bitmap;  // Return |bitmap| which should respond true to isNull().
 
 
@@ -381,9 +375,8 @@ CGContextRef SkiaBitLocker::cgContext() {
     bitmap_ = deviceBits;
     bitmap_.lockPixels();
   } else {
-    bitmap_.setConfig(
-        SkBitmap::kARGB_8888_Config, deviceBits.width(), deviceBits.height());
-    bitmap_.allocPixels();
+    if (!bitmap_.allocN32Pixels(deviceBits.width(), deviceBits.height()))
+      return 0;
     bitmap_.eraseColor(0);
   }
   base::ScopedCFTypeRef<CGColorSpaceRef> colorSpace(

@@ -101,8 +101,7 @@ TEST(AnalysisCanvasTest, ComplexActions) {
   // Draw bitmap test.
   SolidColorFill(canvas);
   SkBitmap secondBitmap;
-  secondBitmap.setConfig(SkBitmap::kARGB_8888_Config, 255, 255);
-  secondBitmap.allocPixels();
+  secondBitmap.allocN32Pixels(255, 255);
   canvas.drawBitmap(secondBitmap, 0, 0);
 
   EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
