@@ -12,13 +12,13 @@
 namespace WebCore {
 
 #ifndef NDEBUG
-static unsigned checkConnectedSubrameCountIsConsistent(Node&);
+static unsigned checkConnectedSubframeCountIsConsistent(Node&);
 #endif
 
 void ChildFrameDisconnector::disconnect(DisconnectPolicy policy)
 {
 #ifndef NDEBUG
-    checkConnectedSubrameCountIsConsistent(m_root);
+    checkConnectedSubframeCountIsConsistent(m_root);
 #endif
 
     if (!m_root.connectedSubframeCount())
@@ -72,7 +72,7 @@ void ChildFrameDisconnector::collectFrameOwners(ElementShadow& shadow)
 }
 
 #ifndef NDEBUG
-static unsigned checkConnectedSubrameCountIsConsistent(Node& node)
+static unsigned checkConnectedSubframeCountIsConsistent(Node& node)
 {
     unsigned count = 0;
 
@@ -82,12 +82,12 @@ static unsigned checkConnectedSubrameCountIsConsistent(Node& node)
 
         if (ElementShadow* shadow = toElement(node).shadow()) {
             for (ShadowRoot* root = shadow->youngestShadowRoot(); root; root = root->olderShadowRoot())
-                count += checkConnectedSubrameCountIsConsistent(*root);
+                count += checkConnectedSubframeCountIsConsistent(*root);
         }
     }
 
     for (Node* child = node.firstChild(); child; child = child->nextSibling())
-        count += checkConnectedSubrameCountIsConsistent(*child);
+        count += checkConnectedSubframeCountIsConsistent(*child);
 
     // If we undercount there's possibly a security bug since we'd leave frames
     // in subtrees outside the document.
