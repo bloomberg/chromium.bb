@@ -70,15 +70,19 @@ void RemoteFontFaceSource::fontLoaded(FontResource*)
     m_histograms.recordRemoteFont(m_font.get());
 
     pruneTable();
-    if (m_face)
+    if (m_face) {
+        m_fontLoader->fontFaceInvalidated();
         m_face->fontLoaded(this);
+    }
 }
 
 void RemoteFontFaceSource::fontLoadWaitLimitExceeded(FontResource*)
 {
     pruneTable();
-    if (m_face)
+    if (m_face) {
+        m_fontLoader->fontFaceInvalidated();
         m_face->fontLoadWaitLimitExceeded(this);
+    }
 
     m_histograms.recordFallbackTime(m_font.get());
 }

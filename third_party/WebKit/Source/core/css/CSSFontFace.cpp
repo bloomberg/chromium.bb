@@ -58,9 +58,6 @@ void CSSFontFace::didBeginLoad()
 
 void CSSFontFace::fontLoaded(RemoteFontFaceSource* source)
 {
-    if (m_segmentedFontFace)
-        m_segmentedFontFace->fontSelector()->fontFaceInvalidated();
-
     if (!isValid() || source != m_sources.first())
         return;
 

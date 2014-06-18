@@ -13,33 +13,36 @@
 
 namespace WebCore {
 
+class CSSFontSelector;
 class FontResource;
 
 class FontLoader : public RefCountedWillBeGarbageCollectedFinalized<FontLoader> {
 public:
-    static PassRefPtrWillBeRawPtr<FontLoader> create(ResourceFetcher* fetcher)
+    static PassRefPtrWillBeRawPtr<FontLoader> create(CSSFontSelector* fontSelector, ResourceFetcher* fetcher)
     {
-        return adoptRefWillBeNoop(new FontLoader(fetcher));
+        return adoptRefWillBeNoop(new FontLoader(fontSelector, fetcher));
     }
     ~FontLoader();
 
     void addFontToBeginLoading(FontResource*);
     void loadPendingFonts();
+    void fontFaceInvalidated();
 
 #if !ENABLE(OILPAN)
-    void clearResourceFetcher();
+    void clearResourceFetcherAndFontSelector();
 #endif
 
     void trace(Visitor*);
 
 private:
-    explicit FontLoader(ResourceFetcher*);
+    FontLoader(CSSFontSelector*, ResourceFetcher*);
     void beginLoadTimerFired(Timer<FontLoader>*);
 
     Timer<FontLoader> m_beginLoadingTimer;
 
     typedef Vector<std::pair<ResourcePtr<FontResource>, ResourceLoader::RequestCountTracker> > FontsToLoadVector;
     FontsToLoadVector m_fontsToBeginLoading;
+    RawPtrWillBeMember<CSSFontSelector> m_fontSelector;
     RawPtrWillBeMember<ResourceFetcher> m_resourceFetcher;
 };
 

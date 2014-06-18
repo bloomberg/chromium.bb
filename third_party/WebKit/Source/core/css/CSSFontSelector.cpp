@@ -45,7 +45,7 @@ namespace WebCore {
 
 CSSFontSelector::CSSFontSelector(Document* document)
     : m_document(document)
-    , m_fontLoader(FontLoader::create(document->fetcher()))
+    , m_fontLoader(FontLoader::create(this, document->fetcher()))
     , m_genericFontFamilySettings(document->frame()->settings()->genericFontFamilySettings())
 {
     // FIXME: An old comment used to say there was no need to hold a reference to m_document
@@ -158,7 +158,7 @@ bool CSSFontSelector::isPlatformFontAvailable(const FontDescription& fontDescrip
 #if !ENABLE(OILPAN)
 void CSSFontSelector::clearDocument()
 {
-    m_fontLoader->clearResourceFetcher();
+    m_fontLoader->clearResourceFetcherAndFontSelector();
     m_document = nullptr;
 }
 #endif

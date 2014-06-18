@@ -5,13 +5,15 @@
 #include "config.h"
 #include "core/css/FontLoader.h"
 
+#include "core/css/CSSFontSelector.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceFetcher.h"
 
 namespace WebCore {
 
-FontLoader::FontLoader(ResourceFetcher* resourceFetcher)
+FontLoader::FontLoader(CSSFontSelector* fontSelector, ResourceFetcher* resourceFetcher)
     : m_beginLoadingTimer(this, &FontLoader::beginLoadTimerFired)
+    , m_fontSelector(fontSelector)
     , m_resourceFetcher(resourceFetcher)
 {
 }
@@ -63,8 +65,14 @@ void FontLoader::loadPendingFonts()
     // that were just loaded.
 }
 
+void FontLoader::fontFaceInvalidated()
+{
+    if (m_fontSelector)
+        m_fontSelector->fontFaceInvalidated();
+}
+
 #if !ENABLE(OILPAN)
-void FontLoader::clearResourceFetcher()
+void FontLoader::clearResourceFetcherAndFontSelector()
 {
     if (!m_resourceFetcher) {
         ASSERT(m_fontsToBeginLoading.isEmpty());
@@ -74,12 +82,14 @@ void FontLoader::clearResourceFetcher()
     m_beginLoadingTimer.stop();
     m_fontsToBeginLoading.clear();
     m_resourceFetcher = nullptr;
+    m_fontSelector = nullptr;
 }
 #endif
 
 void FontLoader::trace(Visitor* visitor)
 {
     visitor->trace(m_resourceFetcher);
+    visitor->trace(m_fontSelector);
 }
 
 } // namespace WebCore
