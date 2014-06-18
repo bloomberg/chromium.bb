@@ -214,6 +214,7 @@ class SafeBrowsingDatabaseManager
   friend class SafeBrowsingServiceTest;
   friend class SafeBrowsingServiceTestHelper;
   friend class SafeBrowsingDatabaseManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest, GetUrlThreatType);
 
   typedef std::set<SafeBrowsingCheck*> CurrentChecks;
   typedef std::vector<SafeBrowsingCheck*> GetHashRequestors;
@@ -233,6 +234,19 @@ class SafeBrowsingDatabaseManager
     std::vector<SBThreatType> expected_threats;
     base::TimeTicks start;  // When check was queued.
   };
+
+  // Return the threat type from the first result in |full_hashes| which matches
+  // |hash|, or SAFE if none match.
+  static SBThreatType GetHashThreatType(
+      const SBFullHash& hash,
+      const std::vector<SBFullHashResult>& full_hashes);
+
+  // Given a URL, compare all the possible host + path full hashes to the set of
+  // provided full hashes.  Returns the threat type of the matching result from
+  // |full_hashes|, or SAFE if none match.
+  static SBThreatType GetUrlThreatType(
+      const GURL& url,
+      const std::vector<SBFullHashResult>& full_hashes);
 
   // Called to stop operations on the io_thread. This may be called multiple
   // times during the life of the DatabaseManager. Should be called on IO

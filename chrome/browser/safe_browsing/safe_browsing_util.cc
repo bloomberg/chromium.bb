@@ -465,32 +465,6 @@ void GeneratePatternsToCheck(const GURL& url, std::vector<std::string>* urls) {
   }
 }
 
-int GetHashIndex(const SBFullHash& hash,
-                 const std::vector<SBFullHashResult>& full_hashes) {
-  for (size_t i = 0; i < full_hashes.size(); ++i) {
-    if (SBFullHashEqual(hash, full_hashes[i].hash))
-      return static_cast<int>(i);
-  }
-  return -1;
-}
-
-int GetUrlHashIndex(const GURL& url,
-                    const std::vector<SBFullHashResult>& full_hashes) {
-  if (full_hashes.empty())
-    return -1;
-
-  std::vector<std::string> patterns;
-  GeneratePatternsToCheck(url, &patterns);
-
-  for (size_t i = 0; i < patterns.size(); ++i) {
-    SBFullHash key = SBFullHashForString(patterns[i]);
-    int index = GetHashIndex(key, full_hashes);
-    if (index != -1)
-      return index;
-  }
-  return -1;
-}
-
 GURL GeneratePhishingReportUrl(const std::string& report_page,
                                const std::string& url_to_report,
                                bool is_client_side_detection) {

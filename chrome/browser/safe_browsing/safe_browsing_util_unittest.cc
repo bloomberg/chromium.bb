@@ -277,19 +277,6 @@ TEST(SafeBrowsingUtilTest, CanonicalizeUrl) {
   }
 }
 
-TEST(SafeBrowsingUtilTest, GetUrlHashIndex) {
-  GURL url("http://www.evil.com/phish.html");
-  SBFullHashResult full_hash;
-  full_hash.hash = SBFullHashForString(url.host() + url.path());
-  std::vector<SBFullHashResult> full_hashes;
-  full_hashes.push_back(full_hash);
-
-  EXPECT_EQ(safe_browsing_util::GetUrlHashIndex(url, full_hashes), 0);
-
-  url = GURL("http://www.evil.com/okay_path.html");
-  EXPECT_EQ(safe_browsing_util::GetUrlHashIndex(url, full_hashes), -1);
-}
-
 TEST(SafeBrowsingUtilTest, ListIdListNameConversion) {
   std::string list_name;
   EXPECT_FALSE(safe_browsing_util::GetListName(safe_browsing_util::INVALID,

@@ -202,15 +202,6 @@ void GeneratePathsToCheck(const GURL& url, std::vector<std::string>* paths);
 // Given a URL, returns all the patterns we need to check.
 void GeneratePatternsToCheck(const GURL& url, std::vector<std::string>* urls);
 
-int GetHashIndex(const SBFullHash& hash,
-                 const std::vector<SBFullHashResult>& full_hashes);
-
-// Given a URL, compare all the possible host + path full hashes to the set of
-// provided full hashes.  Returns the index of the match if one is found, or -1
-// otherwise.
-int GetUrlHashIndex(const GURL& url,
-                    const std::vector<SBFullHashResult>& full_hashes);
-
 GURL GeneratePhishingReportUrl(const std::string& report_page,
                                const std::string& url_to_report,
                                bool is_client_side_detection);

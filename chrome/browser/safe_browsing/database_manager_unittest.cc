@@ -78,3 +78,53 @@ TEST_F(SafeBrowsingDatabaseManagerTest, CheckCorrespondsListType) {
                             multiple_threats,
                             safe_browsing_util::kMalwareList));
 }
+
+TEST_F(SafeBrowsingDatabaseManagerTest, GetUrlThreatType) {
+  std::vector<SBFullHashResult> full_hashes;
+
+  const GURL kMalwareUrl("http://www.malware.com/page.html");
+  const GURL kPhishingUrl("http://www.phishing.com/page.html");
+  const GURL kSafeUrl("http://www.safe.com/page.html");
+
+  const SBFullHash kMalwareHostHash = SBFullHashForString("malware.com/");
+  const SBFullHash kPhishingHostHash = SBFullHashForString("phishing.com/");
+  const SBFullHash kSafeHostHash = SBFullHashForString("www.safe.com/");
+
+  {
+    SBFullHashResult full_hash;
+    full_hash.hash = kMalwareHostHash;
+    full_hash.list_id = static_cast<int>(safe_browsing_util::MALWARE);
+    full_hashes.push_back(full_hash);
+  }
+
+  {
+    SBFullHashResult full_hash;
+    full_hash.hash = kPhishingHostHash;
+    full_hash.list_id = static_cast<int>(safe_browsing_util::PHISH);
+    full_hashes.push_back(full_hash);
+  }
+
+  EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
+            SafeBrowsingDatabaseManager::GetHashThreatType(
+                kMalwareHostHash, full_hashes));
+
+  EXPECT_EQ(SB_THREAT_TYPE_URL_PHISHING,
+            SafeBrowsingDatabaseManager::GetHashThreatType(
+                kPhishingHostHash, full_hashes));
+
+  EXPECT_EQ(SB_THREAT_TYPE_SAFE,
+            SafeBrowsingDatabaseManager::GetHashThreatType(
+                kSafeHostHash, full_hashes));
+
+  EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
+            SafeBrowsingDatabaseManager::GetUrlThreatType(
+                kMalwareUrl, full_hashes));
+
+  EXPECT_EQ(SB_THREAT_TYPE_URL_PHISHING,
+            SafeBrowsingDatabaseManager::GetUrlThreatType(
+                kPhishingUrl, full_hashes));
+
+  EXPECT_EQ(SB_THREAT_TYPE_SAFE,
+            SafeBrowsingDatabaseManager::GetUrlThreatType(
+                kSafeUrl, full_hashes));
+}
