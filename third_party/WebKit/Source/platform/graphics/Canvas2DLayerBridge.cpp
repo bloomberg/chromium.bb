@@ -116,6 +116,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<blink::WebGraphicsContext3DP
 Canvas2DLayerBridge::~Canvas2DLayerBridge()
 {
     ASSERT(m_destructionInProgress);
+    ASSERT(!Canvas2DLayerManager::get().isInList(this));
     m_layer.clear();
     freeReleasedMailbox();
 #if ASSERT_ENABLED

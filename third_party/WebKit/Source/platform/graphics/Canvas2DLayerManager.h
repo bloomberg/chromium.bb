@@ -42,12 +42,12 @@ public:
     void layerTransientResourceAllocationChanged(Canvas2DLayerBridge*, intptr_t deltaBytes = 0);
     void layerDidDraw(Canvas2DLayerBridge*);
 
+    bool isInList(Canvas2DLayerBridge*) const;
 private:
     Canvas2DLayerManager();
 
     // internal methods
     void freeMemoryIfNecessary();
-    bool isInList(Canvas2DLayerBridge*) const;
     void addLayerToList(Canvas2DLayerBridge*);
     void removeLayerFromList(Canvas2DLayerBridge*);
     virtual void willProcessTask() OVERRIDE;
