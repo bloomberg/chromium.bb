@@ -25,7 +25,10 @@ class ImageDecoding(page_measurement.PageMeasurement):
         }
     """)
     self._power_metric.Start(page, tab)
-    tab.browser.StartTracing('devtools,webkit.console')
+    # FIXME: bare 'devtools' is for compatibility with older reference versions
+    # only and may eventually be removed.
+    tab.browser.StartTracing(
+        'disabled-by-default-devtools.timeline*,devtools,webkit.console')
 
   def StopBrowserAfterPage(self, browser, page):
     return not browser.tabs[0].ExecuteJavaScript("""
