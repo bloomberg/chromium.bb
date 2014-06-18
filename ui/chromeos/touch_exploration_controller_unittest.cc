@@ -124,6 +124,13 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     }
   }
 
+  void EnterTouchExplorationModeAtLocation(gfx::Point tap_location) {
+    ui::TouchEvent touch_press(ui::ET_TOUCH_PRESSED, tap_location, 0, Now());
+    generator_->Dispatch(&touch_press);
+    AdvanceSimulatedTimePastTapDelay();
+    EXPECT_TRUE(IsInTouchToMouseMode());
+  }
+
   bool IsInTouchToMouseMode() {
     aura::client::CursorClient* cursor_client =
         aura::client::GetCursorClient(root_window());
@@ -685,7 +692,7 @@ TEST_F(TouchExplorationTest, DoubleTapLongPress) {
   gfx::Point second_tap_location(23, 24);
   generator_->set_current_location(second_tap_location);
   generator_->PressTouch();
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(8000));
+  simulated_clock_->Advance(gesture_detector_config_.longpress_timeout);
   generator_->ReleaseTouch();
 
   const ScopedVector<ui::LocatedEvent>& captured_events = GetCapturedEvents();
@@ -696,9 +703,201 @@ TEST_F(TouchExplorationTest, DoubleTapLongPress) {
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
   EXPECT_EQ(tap_location, captured_events[1]->location());
   base::TimeDelta released_time = captured_events[1]->time_stamp();
-  EXPECT_EQ(
-      base::TimeDelta::FromMilliseconds(8000),
-      released_time - pressed_time);
+  EXPECT_EQ(gesture_detector_config_.longpress_timeout,
+            released_time - pressed_time);
 }
+
+// Double-tapping without coming from touch exploration (no previous touch
+// exploration event) should not generate any events.
+TEST_F(TouchExplorationTest, DoubleTapNoTouchExplore) {
+  SwitchTouchExplorationMode(true);
+
+  // Double-tap without any previous touch.
+  // Touch exploration mode has not been entered, so there is no previous
+  // touch exploration event. The double-tap should be discarded, and no events
+  // should be generated at all.
+  gfx::Point double_tap_location(33, 34);
+  generator_->set_current_location(double_tap_location);
+  generator_->PressTouch();
+  generator_->ReleaseTouch();
+  generator_->PressTouch();
+  generator_->ReleaseTouch();
+
+  const ScopedVector<ui::LocatedEvent>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(0U, captured_events.size());
+}
+
+// Tapping and releasing with a second finger when in touch exploration mode
+// should send a touch press and released to the location of the last
+// successful touch exploration and return to touch explore.
+TEST_F(TouchExplorationTest, SplitTap) {
+  SwitchTouchExplorationMode(true);
+  gfx::Point initial_touch_location(11, 12);
+  gfx::Point second_touch_location(33, 34);
+
+  // Tap and hold at one location, and get a mouse move event in touch explore.
+  EnterTouchExplorationModeAtLocation(initial_touch_location);
+  std::vector<ui::LocatedEvent*> events =
+      GetCapturedEventsOfType(ui::ET_MOUSE_MOVED);
+  ASSERT_EQ(1U, events.size());
+
+  EXPECT_EQ(initial_touch_location, events[0]->location());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_IS_SYNTHESIZED);
+  EXPECT_TRUE(events[0]->flags() & ui::EF_TOUCH_ACCESSIBILITY);
+  ClearCapturedEvents();
+
+  // Now tap and release at a different location. This should result in a
+  // single touch and release at the location of the first (held) tap,
+  // not at the location of the second tap and release.
+  // After the release, there is still a finger in touch explore mode.
+  ui::TouchEvent split_tap_press(
+      ui::ET_TOUCH_PRESSED, second_touch_location, 1, Now());
+  generator_->Dispatch(&split_tap_press);
+  ui::TouchEvent split_tap_release(
+      ui::ET_TOUCH_RELEASED, second_touch_location, 1, Now());
+  generator_->Dispatch(&split_tap_release);
+  EXPECT_FALSE(IsInNoFingersDownState());
+
+  const ScopedVector<ui::LocatedEvent>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(2U, captured_events.size());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
+  EXPECT_EQ(initial_touch_location, captured_events[0]->location());
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
+  EXPECT_EQ(initial_touch_location, captured_events[1]->location());
+}
+
+// If split tap is started but the touch explore finger is released first,
+// there should still be a touch press and release sent to the location of
+// the last successful touch exploration.
+// Both fingers should be released after the click goes through.
+TEST_F(TouchExplorationTest, SplitTapRelease) {
+  SwitchTouchExplorationMode(true);
+
+  gfx::Point initial_touch_location(11, 12);
+  gfx::Point second_touch_location(33, 34);
+
+  // Tap and hold at one location, and get a mouse move event in touch explore.
+  EnterTouchExplorationModeAtLocation(initial_touch_location);
+
+  std::vector<ui::LocatedEvent*> events =
+      GetCapturedEventsOfType(ui::ET_MOUSE_MOVED);
+  ASSERT_EQ(1U, events.size());
+
+  ClearCapturedEvents();
+
+  // Now tap at a different location. Release at the first location,
+  // then release at the second. This should result in a
+  // single touch and release at the location of the first (held) tap,
+  // not at the location of the second tap and release.
+  ui::TouchEvent split_tap_press(
+      ui::ET_TOUCH_PRESSED, second_touch_location, 1, Now());
+  generator_->Dispatch(&split_tap_press);
+  ui::TouchEvent touch_explore_release(
+      ui::ET_TOUCH_RELEASED, initial_touch_location, 0, Now());
+  generator_->Dispatch(&touch_explore_release);
+  ui::TouchEvent split_tap_release(
+      ui::ET_TOUCH_RELEASED, second_touch_location , 1, Now());
+  generator_->Dispatch(&split_tap_release);
+  EXPECT_TRUE(IsInNoFingersDownState());
+
+  const ScopedVector<ui::LocatedEvent>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(2U, captured_events.size());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
+  EXPECT_EQ(initial_touch_location, captured_events[0]->location());
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
+  EXPECT_EQ(initial_touch_location, captured_events[1]->location());
+}
+
+// When in touch exploration mode, making a long press with a second finger
+// should send a touch press and released to the location of the last
+// successful touch exploration. There should be a delay between the
+// touch and release events (right click).
+TEST_F(TouchExplorationTest, SplitTapLongPress) {
+  SwitchTouchExplorationMode(true);
+  gfx::Point initial_touch_location(11, 12);
+  gfx::Point second_touch_location(33, 34);
+
+  // Tap and hold at one location, and get a mouse move event in touch explore.
+  EnterTouchExplorationModeAtLocation(initial_touch_location);
+
+  std::vector<ui::LocatedEvent*> events =
+      GetCapturedEventsOfType(ui::ET_MOUSE_MOVED);
+  ASSERT_EQ(1U, events.size());
+
+  ClearCapturedEvents();
+
+  // Now tap and release at a different location. This should result in a
+  // single touch and release at the location of the first (held) tap,
+  // not at the location of the second tap and release.
+  // After the release, there is still a finger in touch explore mode.
+  ui::TouchEvent split_tap_press(
+      ui::ET_TOUCH_PRESSED, second_touch_location, 1, Now());
+  generator_->Dispatch(&split_tap_press);
+  simulated_clock_->Advance(gesture_detector_config_.longpress_timeout);
+  ui::TouchEvent split_tap_release(
+      ui::ET_TOUCH_RELEASED, second_touch_location, 1, Now());
+  generator_->Dispatch(&split_tap_release);
+  EXPECT_FALSE(IsInNoFingersDownState());
+
+  const ScopedVector<ui::LocatedEvent>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(2U, captured_events.size());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
+  EXPECT_EQ(initial_touch_location, captured_events[0]->location());
+  base::TimeDelta pressed_time = captured_events[0]->time_stamp();
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
+  EXPECT_EQ(initial_touch_location, captured_events[1]->location());
+  base::TimeDelta released_time = captured_events[1]->time_stamp();
+  EXPECT_EQ(gesture_detector_config_.longpress_timeout,
+            released_time - pressed_time);
+}
+
+// If split tap is started but the touch explore finger is released first,
+// there should still be a touch press and release sent to the location of
+// the last successful touch exploration. If the remaining finger is held
+// as a longpress, there should be a delay between the sent touch and release
+// events (right click).All fingers should be released after the click
+// goes through.
+TEST_F(TouchExplorationTest, SplitTapReleaseLongPress) {
+  SwitchTouchExplorationMode(true);
+  gfx::Point initial_touch_location(11, 12);
+  gfx::Point second_touch_location(33, 34);
+
+  // Tap and hold at one location, and get a mouse move event in touch explore.
+  EnterTouchExplorationModeAtLocation(initial_touch_location);
+
+  std::vector<ui::LocatedEvent*> events =
+      GetCapturedEventsOfType(ui::ET_MOUSE_MOVED);
+  ASSERT_EQ(1U, events.size());
+  ClearCapturedEvents();
+
+  // Now tap at a different location. Release at the first location,
+  // then release at the second. This should result in a
+  // single touch and release at the location of the first (held) tap,
+  // not at the location of the second tap and release.
+  // After the release, TouchToMouseMode should still be on.
+  ui::TouchEvent split_tap_press(
+      ui::ET_TOUCH_PRESSED, second_touch_location, 1, Now());
+  generator_->Dispatch(&split_tap_press);
+  ui::TouchEvent touch_explore_release(
+      ui::ET_TOUCH_RELEASED, initial_touch_location, 0, Now());
+  generator_->Dispatch(&touch_explore_release);
+  simulated_clock_->Advance(gesture_detector_config_.longpress_timeout);
+  ui::TouchEvent split_tap_release(
+      ui::ET_TOUCH_RELEASED, second_touch_location, 1, Now());
+  generator_->Dispatch(&split_tap_release);
+  EXPECT_TRUE(IsInTouchToMouseMode());
+
+  const ScopedVector<ui::LocatedEvent>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(2U, captured_events.size());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
+  EXPECT_EQ(initial_touch_location, captured_events[0]->location());
+  base::TimeDelta pressed_time = captured_events[0]->time_stamp();
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
+  EXPECT_EQ(initial_touch_location, captured_events[1]->location());
+  base::TimeDelta released_time = captured_events[1]->time_stamp();
+  EXPECT_EQ(gesture_detector_config_.longpress_timeout,
+            released_time - pressed_time);
+ }
+
 
 }  // namespace ui

@@ -60,6 +60,10 @@ class TouchEvent;
 // anywhere on the screen, hear its description, then double-tap anywhere
 // to activate it.
 //
+// If the user enters touch exploration mode, they can click without lifting
+// their touch exploration finger by tapping anywhere else on the screen with
+// a second finger, while the touch exploration finger is still pressed.
+//
 // If the user adds a second finger during the grace period, they enter
 // passthrough mode. In this mode, the first finger is ignored but all
 // additional touch events are mostly passed through unmodified. So a
@@ -105,7 +109,8 @@ class UI_CHROMEOS_EXPORT TouchExplorationController :
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InPassthroughMinusOne(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
-
+  ui::EventRewriteStatus InTouchExploreSecondPress(
+      const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   // This timer is started every time we get the first press event, and
   // it fires after the double-click timeout elapses (300 ms by default).
   // If the user taps and releases within 300 ms and doesn't press again,
@@ -159,6 +164,13 @@ class UI_CHROMEOS_EXPORT TouchExplorationController :
     // the user starts a scroll with 2 fingers, they can release either one
     // and continue the scrolling.
     PASSTHROUGH_MINUS_ONE,
+
+    // The user was in touch exploration, but has placed down another finger.
+    // If the user releases the second finger, a touch press and release
+    // will go through at the last touch explore location. If the user
+    // releases the touch explore finger, the other finger will continue with
+    // touch explore. Any fingers pressed past the first two are ignored.
+    TOUCH_EXPLORE_SECOND_PRESS,
   };
 
   void VlogState(const char* function_name);
@@ -190,9 +202,9 @@ class UI_CHROMEOS_EXPORT TouchExplorationController :
   // A copy of the event from the initial touch press.
   scoped_ptr<ui::TouchEvent> initial_press_;
 
-  // The last location where we synthesized a mouse move event.
-  // When the user double-taps, we send the passed-through tap here.
-  gfx::PointF last_touch_exploration_location_;
+  // The last synthesized mouse move event. When the user double-taps,
+  // we send the passed-through tap to the location of this event.
+  scoped_ptr<ui::TouchEvent> last_touch_exploration_;
 
   // A timer to fire the mouse move event after the double-tap delay.
   base::OneShotTimer<TouchExplorationController> tap_timer_;
