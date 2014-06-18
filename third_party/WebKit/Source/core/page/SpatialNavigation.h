@@ -22,7 +22,6 @@
 #define SpatialNavigation_h
 
 #include "core/dom/Node.h"
-#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/FocusType.h"
 #include "platform/geometry/LayoutRect.h"
 
@@ -33,6 +32,7 @@ namespace WebCore {
 class Element;
 class LocalFrame;
 class HTMLAreaElement;
+class HTMLFrameOwnerElement;
 class IntRect;
 class RenderObject;
 

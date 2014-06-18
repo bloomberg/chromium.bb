@@ -193,4 +193,9 @@ void Frame::disconnectOwnerElement()
     m_owner = 0;
 }
 
+HTMLFrameOwnerElement* Frame::deprecatedLocalOwner() const
+{
+    return m_owner && m_owner->isLocal() ? toHTMLFrameOwnerElement(m_owner) : 0;
+}
+
 } // namespace WebCore

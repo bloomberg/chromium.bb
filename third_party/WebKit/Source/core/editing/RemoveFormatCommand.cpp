@@ -30,6 +30,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/editing/EditingStyle.h"

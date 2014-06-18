@@ -7,6 +7,7 @@
 
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {

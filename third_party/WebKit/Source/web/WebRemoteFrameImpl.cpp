@@ -5,6 +5,7 @@
 #include "config.h"
 #include "web/WebRemoteFrameImpl.h"
 
+#include "core/frame/FrameOwner.h"
 #include "core/frame/RemoteFrame.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"

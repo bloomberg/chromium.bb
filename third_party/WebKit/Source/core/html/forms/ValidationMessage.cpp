@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/html/forms/ValidationMessage.h"
 
+#include "core/dom/Document.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/page/Page.h"
 #include "core/page/ValidationMessageClient.h"

@@ -5,11 +5,13 @@
 #ifndef ChildFrameDisconnector_h
 #define ChildFrameDisconnector_h
 
-#include "core/dom/Node.h"
-#include "core/html/HTMLFrameOwnerElement.h"
 #include "platform/heap/Handle.h"
 
 namespace WebCore {
+
+class ElementShadow;
+class HTMLFrameOwnerElement;
+class Node;
 
 class ChildFrameDisconnector {
     STACK_ALLOCATED();

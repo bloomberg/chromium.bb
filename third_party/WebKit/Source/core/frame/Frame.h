@@ -28,7 +28,6 @@
 #ifndef Frame_h
 #define Frame_h
 
-#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/FrameTree.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -41,12 +40,13 @@ class WebLayer;
 
 namespace WebCore {
 
-class DOMWindow;
 class ChromeClient;
+class DOMWindow;
 class FrameClient;
 class FrameDestructionObserver;
 class FrameHost;
 class FrameOwner;
+class HTMLFrameOwnerElement;
 class Page;
 class RenderPart;
 class Settings;
@@ -137,11 +137,6 @@ inline DOMWindow* Frame::domWindow() const
 inline FrameOwner* Frame::owner() const
 {
     return m_owner;
-}
-
-inline HTMLFrameOwnerElement* Frame::deprecatedLocalOwner() const
-{
-    return m_owner && m_owner->isLocal() ? toHTMLFrameOwnerElement(m_owner) : 0;
 }
 
 inline FrameTree& Frame::tree() const

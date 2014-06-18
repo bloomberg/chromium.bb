@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptController.h"
 #include "core/HTMLNames.h"
+#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 
 namespace WebCore {
