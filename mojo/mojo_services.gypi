@@ -360,6 +360,23 @@
       ],
     },
     {
+      'target_name': 'mojo_surfaces_bindings',
+      'type': 'static_library',
+      'sources': [
+        'services/public/interfaces/surfaces/surfaces.mojom',
+        'services/public/interfaces/surfaces/surface_id.mojom',
+        'services/public/interfaces/surfaces/quads.mojom',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_cpp_bindings',
+        'mojo_geometry_bindings',
+      ],
+    },
+    {
       'target_name': 'mojo_test_service_bindings',
       'type': 'static_library',
       'sources': [

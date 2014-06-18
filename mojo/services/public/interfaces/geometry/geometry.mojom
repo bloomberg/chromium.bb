@@ -9,6 +9,11 @@ struct Point {
   int32 y;
 };
 
+struct PointF {
+  float x;
+  float y;
+};
+
 struct Size {
   int32 width;
   int32 height;
@@ -19,6 +24,11 @@ struct Rect {
   int32 y;
   int32 width;
   int32 height;
+};
+
+struct Transform {
+  // Should have exactly 16 entries.
+  float[] matrix;
 };
 
 }
