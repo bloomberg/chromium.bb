@@ -453,7 +453,7 @@ void FrameLoaderClientImpl::dispatchDidFirstVisuallyNonEmptyLayout()
 void FrameLoaderClientImpl::dispatchDidChangeBrandColor()
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didChangeBrandColor(m_webFrame);
+        m_webFrame->client()->didChangeBrandColor();
 }
 
 NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const ResourceRequest& request, DocumentLoader* loader, NavigationPolicy policy)

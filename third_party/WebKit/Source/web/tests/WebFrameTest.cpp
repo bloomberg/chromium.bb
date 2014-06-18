@@ -5548,7 +5548,6 @@ class BrandColorTestWebFrameClient : public FrameTestHelpers::TestWebFrameClient
 public:
     BrandColorTestWebFrameClient()
         : m_didNotify(false)
-        , m_brandColor(0)
     {
     }
 
@@ -5557,20 +5556,13 @@ public:
         return m_didNotify;
     }
 
-    WebColor brandColor() const
-    {
-        return m_brandColor;
-    }
-
 private:
-    virtual void didChangeBrandColor(WebLocalFrame* webLocalFrame)
+    virtual void didChangeBrandColor()
     {
         m_didNotify = true;
-        m_brandColor = webLocalFrame->document().brandColor();
     }
 
     bool m_didNotify;
-    WebColor m_brandColor;
 };
 
 TEST_F(WebFrameTest, BrandColor)
@@ -5580,7 +5572,7 @@ TEST_F(WebFrameTest, BrandColor)
     BrandColorTestWebFrameClient client;
     webViewHelper.initializeAndLoad(m_baseURL + "brand_color_test.html", false, &client);
     EXPECT_TRUE(client.didNotify());
-    EXPECT_EQ(0xff0000ff, client.brandColor());
+    EXPECT_EQ(0xff0000ff, webViewHelper.webViewImpl()->mainFrameImpl()->document().brandColor());
 }
 
 } // namespace
