@@ -684,4 +684,18 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     return false;
 }
 
+bool CSSProperty::isAffectedByAllProperty(CSSPropertyID propertyID)
+{
+    if (propertyID == CSSPropertyAll)
+        return false;
+
+    // all shorthand spec says:
+    // The all property is a shorthand that resets all CSS properties except
+    // direction and unicode-bidi. It only accepts the CSS-wide keywords.
+    // c.f. http://dev.w3.org/csswg/css-cascade/#all-shorthand
+    // So CSSPropertyUnicodeBidi and CSSPropertyDirection are not
+    // affected by all property.
+    return propertyID != CSSPropertyUnicodeBidi && propertyID != CSSPropertyDirection;
+}
+
 } // namespace WebCore

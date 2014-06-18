@@ -1,40 +1,38 @@
 <!DOCTYPE html>
 <style>
-#target1 { color: red; background-color: currentColor; }
-#target1 { color: green; }
+#target1 { display: initial; color: green; background: initial; }
 
 #parent { color: green; }
-#target2 { color: red; background-color: currentColor; }
+#target2 { display: inherit; color: inherit; background: inherit; }
 
-#target3 { color: green !important; }
+#target3 { display: initial; color: green; background: initial; }
 
-#target4 { color: red !important; }
-#target4 { background-color: red; }
+#target4 { display: initial; color: initial; background: initial; }
 
-#target5 { background-color: red; }
-#target5 { color: green !important; }
+#target5 { display: initial; color: green; background: initial; }
 
-#target6 { color: red !important; }
+#target6 { display: initial; color: initial; background: initial; }
 
-#target7 { direction: rtl; }
+#target7 { display: initial; direction: rtl; }
 
-#target8 { direction: rtl !important; }
+#target8 { display: initial; direction: rtl; }
 
 #parent9 { color: green; }
+#target9 { display: initial; color: inherit; }
 </style>
-<div id='target1'>green color, green background-color</div>
+<div id='target1'>green color, no background-color</div>
 
 <div id='parent'>
-  <div id='target2'>red color, red background-color</div>
+  <div id='target2'>green color, no background-color</div>
 </div>
 
 <div id='target3'>green color</div>
 
-<div id='target4'>red color, red background-color</div>
+<div id='target4'>not red color, no background-color</div>
 
-<div id='target5'>green color, red background-color</div>
+<div id='target5'>green color, no background-color</div>
 
-<div id='target6'>red color</div>
+<div id='target6'>not red color</div>
 
 <div id='target7'>direction is rtl</div>
 

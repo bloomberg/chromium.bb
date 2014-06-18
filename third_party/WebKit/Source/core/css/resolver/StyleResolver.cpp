@@ -49,6 +49,7 @@
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/CSSValuePool.h"
 #include "core/css/ElementRuleCollector.h"
 #include "core/css/FontFace.h"
 #include "core/css/MediaQueryEvaluator.h"
@@ -1230,27 +1231,111 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
     }
 }
 
+// FIXME: Consider refactoring to create a new class which owns the following
+// first/last/range properties.
+// This method returns the first CSSPropertyId of properties which generate
+// animations. All animation properties are obtained by using
+// firstCSSPropertyId<AnimationProperties> and
+// lastCSSPropertyId<AnimationProperties>.
+// c.f. //src/third_party/WebKit/Source/core/css/CSSPropertyNames.in.
+template<> CSSPropertyID StyleResolver::firstCSSPropertyId<StyleResolver::AnimationProperties>()
+{
+    COMPILE_ASSERT(firstCSSProperty == CSSPropertyDisplay, CSS_first_animation_property_should_be_first_property);
+    return CSSPropertyDisplay;
+}
+
+// This method returns the first CSSPropertyId of properties which generate
+// animations.
+template<> CSSPropertyID StyleResolver::lastCSSPropertyId<StyleResolver::AnimationProperties>()
+{
+    COMPILE_ASSERT(CSSPropertyTransitionTimingFunction == CSSPropertyColor - 1, CSS_transition_timing_is_last_animation_property);
+    return CSSPropertyTransitionTimingFunction;
+}
+
+// This method returns the first CSSPropertyId of high priority properties.
+// Other properties can depend on high priority properties. For example,
+// border-color property with currentColor value depends on color property.
+// All high priority properties are obtained by using
+// firstCSSPropertyId<HighPriorityProperties> and
+// lastCSSPropertyId<HighPriorityProperties>.
+template<> CSSPropertyID StyleResolver::firstCSSPropertyId<StyleResolver::HighPriorityProperties>()
+{
+    COMPILE_ASSERT(CSSPropertyTransitionTimingFunction + 1 == CSSPropertyColor, CSS_color_is_first_high_priority_property);
+    return CSSPropertyColor;
+}
+
+// This method returns the last CSSPropertyId of high priority properties.
+template<> CSSPropertyID StyleResolver::lastCSSPropertyId<StyleResolver::HighPriorityProperties>()
+{
+    COMPILE_ASSERT(CSSPropertyLineHeight == CSSPropertyColor + 17, CSS_line_height_is_end_of_high_prioity_property_range);
+    COMPILE_ASSERT(CSSPropertyZoom == CSSPropertyLineHeight - 1, CSS_zoom_is_before_line_height);
+    return CSSPropertyLineHeight;
+}
+
+// This method returns the first CSSPropertyId of remaining properties,
+// i.e. low priority properties. No properties depend on low priority
+// properties. So we don't need to resolve such properties quickly.
+// All low priority properties are obtained by using
+// firstCSSPropertyId<LowPriorityProperties> and
+// lastCSSPropertyId<LowPriorityProperties>.
+template<> CSSPropertyID StyleResolver::firstCSSPropertyId<StyleResolver::LowPriorityProperties>()
+{
+    COMPILE_ASSERT(CSSPropertyBackground == CSSPropertyLineHeight + 1, CSS_background_is_first_low_priority_property);
+    return CSSPropertyBackground;
+}
+
+// This method returns the last CSSPropertyId of low priority properties.
+template<> CSSPropertyID StyleResolver::lastCSSPropertyId<StyleResolver::LowPriorityProperties>()
+{
+    return static_cast<CSSPropertyID>(lastCSSProperty);
+}
+
 template <StyleResolver::StyleApplicationPass pass>
 bool StyleResolver::isPropertyForPass(CSSPropertyID property)
 {
-    const CSSPropertyID firstAnimationProperty = CSSPropertyDisplay;
-    const CSSPropertyID lastAnimationProperty = CSSPropertyTransitionTimingFunction;
-    COMPILE_ASSERT(firstCSSProperty == firstAnimationProperty, CSS_first_animation_property_should_be_first_property);
-    const CSSPropertyID firstHighPriorityProperty = CSSPropertyColor;
-    const CSSPropertyID lastHighPriorityProperty = CSSPropertyLineHeight;
-    COMPILE_ASSERT(lastAnimationProperty + 1 == firstHighPriorityProperty, CSS_color_is_first_high_priority_property);
-    COMPILE_ASSERT(CSSPropertyLineHeight == firstHighPriorityProperty + 17, CSS_line_height_is_end_of_high_prioity_property_range);
-    COMPILE_ASSERT(CSSPropertyZoom == lastHighPriorityProperty - 1, CSS_zoom_is_before_line_height);
-    switch (pass) {
-    case AnimationProperties:
-        return property >= firstAnimationProperty && property <= lastAnimationProperty;
-    case HighPriorityProperties:
-        return property >= firstHighPriorityProperty && property <= lastHighPriorityProperty;
-    case LowPriorityProperties:
-        return property > lastHighPriorityProperty;
+    return firstCSSPropertyId<pass>() <= property && property <= lastCSSPropertyId<pass>();
+}
+
+// This method expands all shorthand property to longhand properties
+// considering StyleApplicationPass, and apply each expanded longhand property.
+// For example, if StyleApplicationPass is AnimationProperties, all shorthand
+// is expaneded to display, -webkit-animation, -webkit-animation-delay, ...,
+// transition-timing-function. So each property's value will be applied
+// according to all's value (initial, inherit or unset).
+template <StyleResolver::StyleApplicationPass pass>
+void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allValue)
+{
+    bool isUnsetValue = !allValue->isInitialValue() && !allValue->isInheritedValue();
+    unsigned startCSSProperty = firstCSSPropertyId<pass>();
+    unsigned endCSSProperty = lastCSSPropertyId<pass>();
+
+    for (unsigned i = startCSSProperty; i <= endCSSProperty; ++i) {
+        CSSPropertyID propertyId = static_cast<CSSPropertyID>(i);
+
+        // StyleBuilder does not allow any expanded shorthands.
+        if (isExpandedShorthandForAll(propertyId))
+            continue;
+
+        // all shorthand spec says:
+        // The all property is a shorthand that resets all CSS properties
+        // except direction and unicode-bidi.
+        // c.f. http://dev.w3.org/csswg/css-cascade/#all-shorthand
+        // We skip applyProperty when a given property is unicode-bidi or
+        // direction.
+        if (!CSSProperty::isAffectedByAllProperty(propertyId))
+            continue;
+
+        CSSValue* value;
+        if (!isUnsetValue) {
+            value = allValue;
+        } else {
+            if (CSSProperty::isInheritedProperty(propertyId))
+                value = cssValuePool().createInheritedValue().get();
+            else
+                value = cssValuePool().createExplicitInitialValue().get();
+        }
+        StyleBuilder::applyProperty(propertyId, state, value);
     }
-    ASSERT_NOT_REACHED();
-    return false;
 }
 
 template <StyleResolver::StyleApplicationPass pass>
@@ -1263,6 +1348,13 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
         StylePropertySet::PropertyReference current = properties->propertyAt(i);
         if (isImportant != current.isImportant())
             continue;
+
+        CSSPropertyID property = current.id();
+        if (property == CSSPropertyAll) {
+            applyAllProperty<pass>(state, current.value());
+            continue;
+        }
+
         if (inheritedOnly && !current.isInherited()) {
             // If the property value is explicitly inherited, we need to apply further non-inherited properties
             // as they might override the value inherited here. For this reason we don't allow declarations with
@@ -1270,7 +1362,6 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
             ASSERT(!current.value()->isInheritedValue());
             continue;
         }
-        CSSPropertyID property = current.id();
 
         if (propertyWhitelistType == PropertyWhitelistCue && !isValidCueStyleProperty(property))
             continue;

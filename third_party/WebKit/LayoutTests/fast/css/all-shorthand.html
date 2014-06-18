@@ -34,21 +34,19 @@
 #target9 { all: unset; }
 </style>
 <!-- Test for crbug.com/172051: all shorthand property -->
-<!-- The following tests describes current behavior, -->
-<!-- i.e. before implementing all. -->
-<div id='target1'>green color, green background-color</div>
+<div id='target1'>green color, no background-color</div>
 
 <div id='parent'>
-  <div id='target2'>red color, red background-color</div>
+  <div id='target2'>green color, no background-color</div>
 </div>
 
 <div id='target3'>green color</div>
 
-<div id='target4'>red color, red background-color</div>
+<div id='target4'>not red color, no background-color</div>
 
-<div id='target5'>green color, red background-color</div>
+<div id='target5'>green color, no background-color</div>
 
-<div id='target6'>red color</div>
+<div id='target6'>not red color</div>
 
 <div id='target7'>direction is rtl</div>
 
