@@ -33,6 +33,11 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   gfx::Rect tiling_rect() const { return tiling_.tiling_rect(); }
   void SetMinContentsScale(float min_contents_scale);
 
+  // If non-empty, all pictures tiles inside this rect are recorded. There may
+  // be recordings outside this rect, but everything inside the rect is
+  // recorded.
+  gfx::Rect recorded_viewport() const { return recorded_viewport_; }
+
   int num_tiles_x() const { return tiling_.num_tiles_x(); }
   int num_tiles_y() const { return tiling_.num_tiles_y(); }
   gfx::Rect tile_bounds(int x, int y) const { return tiling_.TileBounds(x, y); }
@@ -98,7 +103,6 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   // indices to picture infos.
   PictureMap picture_map_;
   TilingData tiling_;
-  // If non-empty, all pictures tiles inside this rect are recorded.
   gfx::Rect recorded_viewport_;
   float min_contents_scale_;
   SkTileGridFactory::TileGridInfo tile_grid_info_;

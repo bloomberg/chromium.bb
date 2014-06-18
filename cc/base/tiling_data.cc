@@ -139,20 +139,32 @@ int TilingData::LastBorderTileYIndexFromSrcCoord(int src_position) const {
 }
 
 gfx::Rect TilingData::ExpandRectToTileBoundsWithBorders(
-    const gfx::Rect rect) const {
+    const gfx::Rect& rect) const {
   if (!rect.Intersects(tiling_rect_) || has_empty_bounds())
     return gfx::Rect();
   int index_x = FirstBorderTileXIndexFromSrcCoord(rect.x());
   int index_y = FirstBorderTileYIndexFromSrcCoord(rect.y());
-  int index_right = LastBorderTileXIndexFromSrcCoord(rect.right());
-  int index_bottom = LastBorderTileYIndexFromSrcCoord(rect.bottom());
+  int index_right = LastBorderTileXIndexFromSrcCoord(rect.right() - 1);
+  int index_bottom = LastBorderTileYIndexFromSrcCoord(rect.bottom() - 1);
 
   gfx::Rect rect_top_left(TileBoundsWithBorder(index_x, index_y));
   gfx::Rect rect_bottom_right(TileBoundsWithBorder(index_right, index_bottom));
 
-  gfx::Rect expanded(rect_top_left);
-  expanded.Union(rect_bottom_right);
-  return expanded;
+  return gfx::UnionRects(rect_top_left, rect_bottom_right);
+}
+
+gfx::Rect TilingData::ExpandRectToTileBounds(const gfx::Rect& rect) const {
+  if (!rect.Intersects(tiling_rect_) || has_empty_bounds())
+    return gfx::Rect();
+  int index_x = FirstBorderTileXIndexFromSrcCoord(rect.x());
+  int index_y = FirstBorderTileYIndexFromSrcCoord(rect.y());
+  int index_right = LastBorderTileXIndexFromSrcCoord(rect.right() - 1);
+  int index_bottom = LastBorderTileYIndexFromSrcCoord(rect.bottom() - 1);
+
+  gfx::Rect rect_top_left(TileBounds(index_x, index_y));
+  gfx::Rect rect_bottom_right(TileBounds(index_right, index_bottom));
+
+  return gfx::UnionRects(rect_top_left, rect_bottom_right);
 }
 
 gfx::Rect TilingData::TileBounds(int i, int j) const {

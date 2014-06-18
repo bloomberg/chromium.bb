@@ -626,6 +626,7 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
 }
 
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
+  TRACE_EVENT0("cc", "SyncFromActiveLayer");
   DCHECK(!other->needs_post_commit_initialization_);
   DCHECK(other->tilings_);
 
@@ -639,23 +640,6 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   raster_source_scale_ = other->raster_source_scale_;
   raster_contents_scale_ = other->raster_contents_scale_;
   low_res_raster_contents_scale_ = other->low_res_raster_contents_scale_;
-
-  // Add synthetic invalidations for any recordings that were dropped.  As
-  // tiles are updated to point to this new pile, this will force the dropping
-  // of tiles that can no longer be rastered.  This is not ideal, but is a
-  // trade-off for memory (use the same pile as much as possible, by switching
-  // during DidBecomeActive) and for time (don't bother checking every tile
-  // during activation to see if the new pile can still raster it).
-  for (int x = 0; x < pile_->num_tiles_x(); ++x) {
-    for (int y = 0; y < pile_->num_tiles_y(); ++y) {
-      bool previously_had = other->pile_->HasRecordingAt(x, y);
-      bool now_has = pile_->HasRecordingAt(x, y);
-      if (now_has || !previously_had)
-        continue;
-      gfx::Rect layer_rect = pile_->tile_bounds(x, y);
-      invalidation_.Union(layer_rect);
-    }
-  }
 
   // Union in the other newly exposed regions as invalid.
   Region difference_region = Region(gfx::Rect(bounds()));

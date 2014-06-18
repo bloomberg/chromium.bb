@@ -146,15 +146,16 @@ PicturePile::PicturePile() : is_suitable_for_gpu_rasterization_(true) {}
 PicturePile::~PicturePile() {
 }
 
-bool PicturePile::Update(ContentLayerClient* painter,
-                         SkColor background_color,
-                         bool contents_opaque,
-                         bool contents_fill_bounds_completely,
-                         const Region& invalidation,
-                         const gfx::Rect& visible_layer_rect,
-                         int frame_number,
-                         Picture::RecordingMode recording_mode,
-                         RenderingStatsInstrumentation* stats_instrumentation) {
+bool PicturePile::UpdateAndExpandInvalidation(
+    ContentLayerClient* painter,
+    Region* invalidation,
+    SkColor background_color,
+    bool contents_opaque,
+    bool contents_fill_bounds_completely,
+    const gfx::Rect& visible_layer_rect,
+    int frame_number,
+    Picture::RecordingMode recording_mode,
+    RenderingStatsInstrumentation* stats_instrumentation) {
   background_color_ = background_color;
   contents_opaque_ = contents_opaque;
   contents_fill_bounds_completely_ = contents_fill_bounds_completely;
@@ -168,13 +169,18 @@ bool PicturePile::Update(ContentLayerClient* painter,
   recorded_viewport_ = interest_rect;
   recorded_viewport_.Intersect(tiling_rect());
 
+  gfx::Rect interest_rect_over_tiles =
+      tiling_.ExpandRectToTileBounds(interest_rect);
+
+  Region invalidation_expanded_to_full_tiles;
+
   bool invalidated = false;
-  for (Region::Iterator i(invalidation); i.has_rect(); i.next()) {
-    gfx::Rect invalidation = i.rect();
+  for (Region::Iterator i(*invalidation); i.has_rect(); i.next()) {
+    gfx::Rect invalid_rect = i.rect();
     // Split this inflated invalidation across tile boundaries and apply it
     // to all tiles that it touches.
     bool include_borders = true;
-    for (TilingData::Iterator iter(&tiling_, invalidation, include_borders);
+    for (TilingData::Iterator iter(&tiling_, invalid_rect, include_borders);
          iter;
          ++iter) {
       const PictureMapKey& key = iter.index();
@@ -186,7 +192,21 @@ bool PicturePile::Update(ContentLayerClient* painter,
       // Inform the grid cell that it has been invalidated in this frame.
       invalidated = picture_it->second.Invalidate(frame_number) || invalidated;
     }
+
+    // Expand invalidation that is outside tiles that intersect the interest
+    // rect. These tiles are no longer valid and should be considerered fully
+    // invalid, so we can know to not keep around raster tiles that intersect
+    // with these recording tiles.
+    gfx::Rect invalid_rect_outside_interest_rect_tiles = invalid_rect;
+    // TODO(danakj): We should have a Rect-subtract-Rect-to-2-rects operator
+    // instead of using Rect::Subtract which gives you the bounding box of the
+    // subtraction.
+    invalid_rect_outside_interest_rect_tiles.Subtract(interest_rect_over_tiles);
+    invalidation_expanded_to_full_tiles.Union(tiling_.ExpandRectToTileBounds(
+        invalid_rect_outside_interest_rect_tiles));
   }
+
+  invalidation->Union(invalidation_expanded_to_full_tiles);
 
   // Make a list of all invalid tiles; we will attempt to
   // cluster these into multiple invalidation regions.
@@ -204,12 +224,19 @@ bool PicturePile::Update(ContentLayerClient* painter,
     if (info.NeedsRecording(frame_number, distance_to_visible)) {
       gfx::Rect tile = tiling_.TileBounds(key.first, key.second);
       invalid_tiles.push_back(tile);
-    } else if (!info.GetPicture() && recorded_viewport_.Intersects(rect)) {
-      // Recorded viewport is just an optimization for a fully recorded
-      // interest rect.  In this case, a tile in that rect has declined
-      // to be recorded (probably due to frequent invalidations).
-      // TODO(enne): Shrink the recorded_viewport_ rather than clearing.
-      recorded_viewport_ = gfx::Rect();
+    } else if (!info.GetPicture()) {
+      if (recorded_viewport_.Intersects(rect)) {
+        // Recorded viewport is just an optimization for a fully recorded
+        // interest rect.  In this case, a tile in that rect has declined
+        // to be recorded (probably due to frequent invalidations).
+        // TODO(enne): Shrink the recorded_viewport_ rather than clearing.
+        recorded_viewport_ = gfx::Rect();
+      }
+
+      // If a tile in the interest rect is not recorded, the entire tile needs
+      // to be considered invalid, so that we know not to keep around raster
+      // tiles that intersect this recording tile.
+      invalidation->Union(tiling_.TileBounds(it.index_x(), it.index_y()));
     }
   }
 

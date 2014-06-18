@@ -2202,6 +2202,66 @@ TEST_P(TilingDataTest, ExpandRectToTileBoundsWithBorders) {
   EXPECT_FALSE(non_intersect.Intersects(data.tiling_rect()));
   EXPECT_RECT_EQ(gfx::Rect(),
                  data.ExpandRectToTileBoundsWithBorders(non_intersect));
+
+  TilingData data2(gfx::Size(8, 8), gfx::Rect(origin, gfx::Size(32, 64)), true);
+
+  // Inside other tile border texels doesn't include other tiles.
+  gfx::Rect inner_rect_src(data2.TileBounds(1, 1));
+  inner_rect_src.Inset(data2.border_texels(), data.border_texels());
+  gfx::Rect inner_rect_result(data2.TileBoundsWithBorder(1, 1));
+  gfx::Rect expanded = data2.ExpandRectToTileBoundsWithBorders(inner_rect_src);
+  EXPECT_EQ(inner_rect_result.ToString(), expanded.ToString());
+}
+
+TEST_P(TilingDataTest, ExpandRectToTileBounds) {
+  gfx::Point origin = GetParam();
+  TilingData data(gfx::Size(4, 4), gfx::Rect(origin, gfx::Size(16, 32)), true);
+
+  // Small rect at origin rounds up to tile 0, 0.
+  gfx::Rect at_origin_src(origin, gfx::Size(1, 1));
+  gfx::Rect at_origin_result(data.TileBounds(0, 0));
+  EXPECT_NE(at_origin_src, at_origin_result);
+  EXPECT_RECT_EQ(at_origin_result, data.ExpandRectToTileBounds(at_origin_src));
+
+  // Arbitrary internal rect.
+  gfx::Rect rect_src(origin.x() + 6, origin.y() + 6, 1, 3);
+  // Tile 2, 2 => gfx::Rect(4, 4, 4, 4)
+  // Tile 3, 4 => gfx::Rect(6, 8, 4, 4)
+  gfx::Rect rect_result(
+      gfx::UnionRects(data.TileBounds(2, 2), data.TileBounds(3, 4)));
+  EXPECT_NE(rect_src, rect_result);
+  EXPECT_RECT_EQ(rect_result, data.ExpandRectToTileBounds(rect_src));
+
+  // On tile bounds rounds up to next tile (since border overlaps).
+  gfx::Rect border_rect_src(
+      gfx::UnionRects(data.TileBounds(1, 2), data.TileBounds(3, 4)));
+  gfx::Rect border_rect_result(
+      gfx::UnionRects(data.TileBounds(0, 1), data.TileBounds(4, 5)));
+  EXPECT_RECT_EQ(border_rect_result,
+                 data.ExpandRectToTileBounds(border_rect_src));
+
+  // Equal to tiling rect.
+  EXPECT_RECT_EQ(data.tiling_rect(),
+                 data.ExpandRectToTileBounds(data.tiling_rect()));
+
+  // Containing, but larger than tiling rect.
+  EXPECT_RECT_EQ(
+      data.tiling_rect(),
+      data.ExpandRectToTileBounds(gfx::Rect(origin, gfx::Size(100, 100))));
+
+  // Non-intersecting with tiling rect.
+  gfx::Rect non_intersect(origin.x() + 200, origin.y() + 200, 100, 100);
+  EXPECT_FALSE(non_intersect.Intersects(data.tiling_rect()));
+  EXPECT_RECT_EQ(gfx::Rect(), data.ExpandRectToTileBounds(non_intersect));
+
+  TilingData data2(gfx::Size(8, 8), gfx::Rect(origin, gfx::Size(32, 64)), true);
+
+  // Inside other tile border texels doesn't include other tiles.
+  gfx::Rect inner_rect_src(data2.TileBounds(1, 1));
+  inner_rect_src.Inset(data2.border_texels(), data.border_texels());
+  gfx::Rect inner_rect_result(data2.TileBounds(1, 1));
+  gfx::Rect expanded = data2.ExpandRectToTileBounds(inner_rect_src);
+  EXPECT_EQ(inner_rect_result.ToString(), expanded.ToString());
 }
 
 TEST_P(TilingDataTest, Assignment) {
