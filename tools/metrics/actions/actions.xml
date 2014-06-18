@@ -7985,6 +7985,98 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_AccessibilityHighContrastMode">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Toggle high contrast mode</description>
+</action>
+
+<action name="Options_AccessibilityHighContrastMode_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Disable high contrast mode</description>
+</action>
+
+<action name="Options_AccessibilityHighContrastMode_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Enable high contrast mode</description>
+</action>
+
+<action name="Options_AccessibilityLargeMouseCursor_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Disable large mouse cursor</description>
+</action>
+
+<action name="Options_AccessibilityLargeMouseCursor_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Enable large mouse cursor</description>
+</action>
+
+<action name="Options_AccessibilityLearnMore">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Learn More</description>
+</action>
+
+<action name="Options_AccessibilityOnScreenKeyboard_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Disable on-screen keyboard</description>
+</action>
+
+<action name="Options_AccessibilityOnScreenKeyboard_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Enable on-screen keyboard</description>
+</action>
+
+<action name="Options_AccessibilityScreenMagnifier_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Disable screen magnifier</description>
+</action>
+
+<action name="Options_AccessibilityScreenMagnifier_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Enable screen magnifier</description>
+</action>
+
+<action name="Options_AccessibilitySpokenFeedback_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Disable ChromeVox</description>
+</action>
+
+<action name="Options_AccessibilitySpokenFeedback_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Enable ChromeVox</description>
+</action>
+
+<action name="Options_AccessibilityStickyKeys_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Disable sticky keys</description>
+</action>
+
+<action name="Options_AccessibilityStickyKeys_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Enable sticky keys</description>
+</action>
+
+<action name="Options_AccessibilitySystemMenu_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Accessibility: Disable show in system menu
+  </description>
+</action>
+
+<action name="Options_AccessibilitySystemMenu_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Enable show in system menu</description>
+</action>
+
+<action name="Options_AccessibilityTapDragging_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Disable tap dragging</description>
+</action>
+
+<action name="Options_AccessibilityTapDragging_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Accessibility: Enable tap dragging</description>
+</action>
+
 <action name="Options_AppLanguage">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

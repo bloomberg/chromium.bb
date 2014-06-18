@@ -496,17 +496,24 @@ cr.define('options', function() {
         Preferences.getInstance().addEventListener(
             'settings.accessibility',
             updateAccessibilitySettingsButton);
-        $('accessibility-settings-button').onclick = function(event) {
+        $('accessibility-learn-more').onclick = function(unused_event) {
+          window.open(loadTimeData.getString('accessibilityLearnMoreURL'));
+          chrome.send('coreOptionsUserMetricsAction',
+                      ['Options_AccessibilityLearnMore']);
+        };
+        $('accessibility-settings-button').onclick = function(unused_event) {
           window.open(loadTimeData.getString('accessibilitySettingsURL'));
         };
-        $('accessibility-spoken-feedback-check').onchange = function(event) {
+        $('accessibility-spoken-feedback-check').onchange = function(
+            unused_event) {
           chrome.send('spokenFeedbackChange',
                       [$('accessibility-spoken-feedback-check').checked]);
           updateAccessibilitySettingsButton();
         };
         updateAccessibilitySettingsButton();
 
-        $('accessibility-high-contrast-check').onchange = function(event) {
+        $('accessibility-high-contrast-check').onchange = function(
+            unused_event) {
           chrome.send('highContrastChange',
                       [$('accessibility-high-contrast-check').checked]);
         };
