@@ -35,7 +35,6 @@ public:
     virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const OVERRIDE;
     virtual LayoutUnit computeReplacedLogicalHeight() const OVERRIDE;
 
-    bool hasReplacedLogicalWidth() const;
     bool hasReplacedLogicalHeight() const;
     LayoutRect replacedContentRect(const LayoutSize* overriddenIntrinsicSize = 0) const;
 

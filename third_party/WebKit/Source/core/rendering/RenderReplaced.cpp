@@ -230,17 +230,6 @@ static inline RenderBlock* firstContainingBlockWithLogicalWidth(const RenderRepl
     return 0;
 }
 
-bool RenderReplaced::hasReplacedLogicalWidth() const
-{
-    if (style()->logicalWidth().isSpecified())
-        return true;
-
-    if (style()->logicalWidth().isAuto())
-        return false;
-
-    return firstContainingBlockWithLogicalWidth(this);
-}
-
 bool RenderReplaced::hasReplacedLogicalHeight() const
 {
     if (style()->logicalHeight().isAuto())
