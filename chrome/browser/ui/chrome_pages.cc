@@ -288,6 +288,11 @@ void ShowImportDialog(Browser* browser) {
 
 void ShowAboutChrome(Browser* browser) {
   content::RecordAction(UserMetricsAction("AboutChrome"));
+  if (::switches::SettingsWindowEnabled()) {
+    SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
+        browser->profile(), GURL(kChromeUIUberURL));
+    return;
+  }
   NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIUberURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;

@@ -194,6 +194,10 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenChromePages) {
   chrome::ShowSettings(browser());
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 
+  // About should reuse the existing Settings window.
+  chrome::ShowAboutChrome(browser());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+
   // Extensions should open in an existing browser window.
   CloseNonDefaultBrowsers();
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -204,4 +208,8 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenChromePages) {
   // Downloads should open in an existing browser window.
   chrome::ShowDownloads(browser());
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // About should open a new browser window.
+  chrome::ShowAboutChrome(browser());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 }
