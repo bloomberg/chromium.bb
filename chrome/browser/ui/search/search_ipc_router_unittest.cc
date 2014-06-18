@@ -111,7 +111,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
     data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
     data.search_terms_replacement_key = "espv";
 
-    TemplateURL* template_url = new TemplateURL(profile(), data);
+    TemplateURL* template_url = new TemplateURL(data);
     // Takes ownership of |template_url|.
     template_url_service->Add(template_url);
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);

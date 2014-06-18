@@ -178,7 +178,7 @@ TemplateURL* SearchProviderInstallDataTest::AddNewTemplateURL(
   data.short_name = keyword;
   data.SetKeyword(keyword);
   data.SetURL(url);
-  TemplateURL* t_url = new TemplateURL(util_.profile(), data);
+  TemplateURL* t_url = new TemplateURL(data);
   util_.model()->Add(t_url);
   return t_url;
 }

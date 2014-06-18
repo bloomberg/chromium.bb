@@ -31,7 +31,7 @@ scoped_ptr<TemplateURL> CreatePrepopulateTemplateURL(int prepopulate_id,
                                                      const std::string& keyword,
                                                      TemplateURLID id) {
   return make_scoped_ptr(new TemplateURL(
-      NULL, *CreatePrepopulateTemplateURLData(prepopulate_id, keyword, id)));
+      *CreatePrepopulateTemplateURLData(prepopulate_id, keyword, id)));
 }
 
 };  // namespace

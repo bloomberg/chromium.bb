@@ -62,7 +62,7 @@ scoped_ptr<TemplateURL> DefaultSearchPrefMigrationTest::CreateKeyword(
   data.short_name = base::ASCIIToUTF16(short_name);
   data.SetKeyword(base::ASCIIToUTF16(keyword));
   data.SetURL(url);
-  scoped_ptr<TemplateURL> t_url(new TemplateURL(profile(), data));
+  scoped_ptr<TemplateURL> t_url(new TemplateURL(data));
   return t_url.Pass();
 }
 
@@ -150,7 +150,7 @@ TEST_F(DefaultSearchPrefMigrationTest,
       *default_search_manager()->GetDefaultSearchEngine(&source));
   EXPECT_EQ(DefaultSearchManager::FROM_FALLBACK, source);
 
-  TemplateURL prepopulated_turl(profile(), prepopulated_default);
+  TemplateURL prepopulated_turl(prepopulated_default);
 
   // Store a value in the legacy location.
   TemplateURLService::SaveDefaultSearchProviderToPrefs(&prepopulated_turl,

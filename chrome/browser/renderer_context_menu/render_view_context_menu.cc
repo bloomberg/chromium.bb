@@ -1847,7 +1847,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
             TemplateURL::GenerateFaviconURL(params_.page_url.GetOrigin());
         // Takes ownership of the TemplateURL.
         search_engine_tab_helper->delegate()->
-            ConfirmAddSearchProvider(new TemplateURL(profile_, data), profile_);
+            ConfirmAddSearchProvider(new TemplateURL(data), profile_);
       }
       break;
     }

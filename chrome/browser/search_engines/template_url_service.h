@@ -124,17 +124,8 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Returns the search url for t_url.  Returns an empty GURL if t_url has no
   // url().
-  // NOTE: |t_url| is non-const in this version because of the need to access
-  // t_url->profile().
-  static GURL GenerateSearchURL(TemplateURL* t_url);
-
-  // Just like GenerateSearchURL except that it takes SearchTermsData to supply
-  // the data for some search terms, e.g. so this can be used on threads other
-  // than the UI thread.  See the various TemplateURLRef::XXXUsingTermsData()
-  // functions.
-  static GURL GenerateSearchURLUsingTermsData(
-      const TemplateURL* t_url,
-      const SearchTermsData& search_terms_data);
+  static GURL GenerateSearchURL(const TemplateURL* t_url,
+                                const SearchTermsData& search_terms_data);
 
   // Saves enough of url to |prefs| so that it can be loaded from preferences on
   // start up.
@@ -181,7 +172,6 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Like Add(), but overwrites the |template_url|'s values with the provided
   // ones.
-  void AddAndSetProfile(TemplateURL* template_url, Profile* profile);
   void AddWithOverrides(TemplateURL* template_url,
                         const base::string16& short_name,
                         const base::string16& keyword,

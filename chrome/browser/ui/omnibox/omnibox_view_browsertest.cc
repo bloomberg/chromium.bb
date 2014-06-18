@@ -248,12 +248,12 @@ class OmniboxViewTest : public InProcessBrowserTest,
     data.short_name = ASCIIToUTF16(kSearchShortName);
     data.SetKeyword(ASCIIToUTF16(kSearchKeyword));
     data.SetURL(kSearchURL);
-    TemplateURL* template_url = new TemplateURL(profile, data);
+    TemplateURL* template_url = new TemplateURL(data);
     model->Add(template_url);
     model->SetUserSelectedDefaultSearchProvider(template_url);
 
     data.SetKeyword(ASCIIToUTF16(kSearchKeyword2));
-    model->Add(new TemplateURL(profile, data));
+    model->Add(new TemplateURL(data));
 
     // Remove built-in template urls, like google.com, bing.com etc., as they
     // may appear as autocomplete suggests and interfere with our tests.
@@ -597,7 +597,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DesiredTLDWithTemporaryText) {
   data.short_name = ASCIIToUTF16("abc");
   data.SetKeyword(ASCIIToUTF16(kSearchText));
   data.SetURL("http://abc.com/");
-  template_url_service->Add(new TemplateURL(profile, data));
+  template_url_service->Add(new TemplateURL(data));
 
   // Send "ab", so that an "abc" entry appears in the popup.
   const wchar_t kSearchTextPrefixKeys[] = { ui::VKEY_A, ui::VKEY_B, 0 };
@@ -1019,7 +1019,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_NonSubstitutingKeywordTest) {
   data.short_name = ASCIIToUTF16("Search abc");
   data.SetKeyword(ASCIIToUTF16(kSearchText));
   data.SetURL("http://abc.com/{searchTerms}");
-  TemplateURL* template_url = new TemplateURL(profile, data);
+  TemplateURL* template_url = new TemplateURL(data);
   template_url_service->Add(template_url);
 
   omnibox_view->SetUserText(base::string16());
@@ -1043,7 +1043,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_NonSubstitutingKeywordTest) {
   template_url_service->Remove(template_url);
   data.short_name = ASCIIToUTF16("abc");
   data.SetURL("http://abc.com/");
-  template_url_service->Add(new TemplateURL(profile, data));
+  template_url_service->Add(new TemplateURL(data));
 
   // We always allow exact matches for non-substituting keywords.
   ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));

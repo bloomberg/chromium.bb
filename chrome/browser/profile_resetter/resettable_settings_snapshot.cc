@@ -313,7 +313,8 @@ scoped_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
   if (dse) {
     AddPair(list.get(),
             l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_DSE),
-            TemplateURLService::GenerateSearchURL(dse).host());
+            TemplateURLService::GenerateSearchURL(
+                dse, service->search_terms_data()).host());
   }
 
   if (snapshot.shortcuts_determined()) {

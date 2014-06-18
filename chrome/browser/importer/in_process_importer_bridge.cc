@@ -107,7 +107,7 @@ TemplateURL* CreateTemplateURL(const base::string16& title,
   data.short_name = title.empty() ? keyword : title;
   data.SetURL(
       TemplateURLRef::DisplayURLToURLRef(base::UTF8ToUTF16(url.spec())));
-  return new TemplateURL(NULL, data);
+  return new TemplateURL(data);
 }
 
 // Parses the OpenSearch XML files in |xml_files| and populates |search_engines|

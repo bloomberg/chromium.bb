@@ -19,7 +19,6 @@
 #include "url/gurl.h"
 #include "url/url_parse.h"
 
-class Profile;
 class SearchTermsData;
 class TemplateURL;
 
@@ -464,8 +463,7 @@ struct AssociatedExtensionInfo {
 // different capabilities (e.g. doing searches or getting suggestions), as well
 // as a TemplateURLData containing other details like the name, keyword, etc.
 //
-// TemplateURLs are intended to be read-only for most users; the only public
-// non-const method is the Profile getter, which returns a non-const Profile*.
+// TemplateURLs are intended to be read-only for most users.
 // The TemplateURLService, which handles storing and manipulating TemplateURLs,
 // is made a friend so that it can be the exception to this pattern.
 class TemplateURL {
@@ -478,9 +476,7 @@ class TemplateURL {
     // The keyword associated with an extension that uses the Omnibox API.
     OMNIBOX_API_EXTENSION,
   };
-  // |profile| may be NULL.  This will affect the results of e.g. calling
-  // ReplaceSearchTerms() on the member TemplateURLRefs.
-  TemplateURL(Profile* profile, const TemplateURLData& data);
+  explicit TemplateURL(const TemplateURLData& data);
   ~TemplateURL();
 
   // Generates a favicon URL from the specified url.
@@ -492,7 +488,6 @@ class TemplateURL {
                           const TemplateURLData* data,
                           const SearchTermsData& search_terms_data);
 
-  Profile* profile() { return profile_; }
   const TemplateURLData& data() const { return data_; }
 
   const base::string16& short_name() const { return data_.short_name; }
@@ -681,7 +676,6 @@ class TemplateURL {
                             url::Parsed::ComponentType* search_terms_component,
                             url::Component* search_terms_position);
 
-  Profile* profile_;
   TemplateURLData data_;
   TemplateURLRef url_ref_;
   TemplateURLRef suggestions_url_ref_;

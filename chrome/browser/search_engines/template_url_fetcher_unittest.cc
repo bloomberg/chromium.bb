@@ -296,7 +296,7 @@ TEST_F(TemplateURLFetcherTest, DuplicateKeywordsTest) {
   data.short_name = keyword;
   data.SetKeyword(keyword);
   data.SetURL("http://example.com/");
-  test_util_.model()->Add(new TemplateURL(test_util_.profile(), data));
+  test_util_.model()->Add(new TemplateURL(data));
   test_util_.ChangeModelToLoadState();
 
   ASSERT_TRUE(test_util_.model()->GetTemplateURLForKeyword(keyword));

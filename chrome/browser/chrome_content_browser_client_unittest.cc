@@ -109,7 +109,7 @@ class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
     TemplateURLData data;
     data.SetURL("http://foo.com/url?bar={searchTerms}");
     data.new_tab_url = new_tab_page_url.spec();
-    TemplateURL* template_url = new TemplateURL(browser()->profile(), data);
+    TemplateURL* template_url = new TemplateURL(data);
     // Takes ownership.
     template_url_service->Add(template_url);
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);

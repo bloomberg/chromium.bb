@@ -1128,9 +1128,8 @@ std::string TemplateURLRef::HandleReplacements(
 
 // TemplateURL ----------------------------------------------------------------
 
-TemplateURL::TemplateURL(Profile* profile, const TemplateURLData& data)
-    : profile_(profile),
-      data_(data),
+TemplateURL::TemplateURL(const TemplateURLData& data)
+    : data_(data),
       url_ref_(this, TemplateURLRef::SEARCH),
       suggestions_url_ref_(this,
                            TemplateURLRef::SUGGEST),
@@ -1233,7 +1232,7 @@ bool TemplateURL::HasSameKeywordAs(
     const SearchTermsData& search_terms_data) const {
   return (data_.keyword() == other.keyword()) ||
       (IsGoogleSearchURLWithReplaceableKeyword(search_terms_data) &&
-       TemplateURL(NULL, other).IsGoogleSearchURLWithReplaceableKeyword(
+       TemplateURL(other).IsGoogleSearchURLWithReplaceableKeyword(
            search_terms_data));
 }
 
@@ -1359,7 +1358,6 @@ void TemplateURL::CopyFrom(const TemplateURL& other) {
   if (this == &other)
     return;
 
-  profile_ = other.profile_;
   data_ = other.data_;
   url_ref_.InvalidateCachedValues();
   suggestions_url_ref_.InvalidateCachedValues();
@@ -1385,7 +1383,7 @@ void TemplateURL::ResetKeywordIfNecessary(
     bool force) {
   if (IsGoogleSearchURLWithReplaceableKeyword(search_terms_data) || force) {
     DCHECK(GetType() != OMNIBOX_API_EXTENSION);
-    GURL url(TemplateURLService::GenerateSearchURL(this));
+    GURL url(TemplateURLService::GenerateSearchURL(this, search_terms_data));
     if (url.is_valid())
       data_.SetKeyword(TemplateURLService::GenerateKeyword(url));
   }

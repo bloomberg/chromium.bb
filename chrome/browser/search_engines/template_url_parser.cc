@@ -303,7 +303,7 @@ TemplateURL* TemplateURLParsingContext::GetTemplateURL(
   data_.show_in_default_list = show_in_default_list;
 
   // Bail if the search URL is empty or if either TemplateURLRef is invalid.
-  scoped_ptr<TemplateURL> template_url(new TemplateURL(profile, data_));
+  scoped_ptr<TemplateURL> template_url(new TemplateURL(data_));
   scoped_ptr<SearchTermsData> search_terms_data(profile ?
       new UIThreadSearchTermsData(profile) : new SearchTermsData());
   if (template_url->url().empty() ||

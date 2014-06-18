@@ -31,9 +31,9 @@ void SearchHostToURLsMapTest::SetUp() {
   host_ = "www.unittest.com";
   TemplateURLData data;
   data.SetURL("http://" + host_ + "/path1");
-  t_urls_[0].reset(new TemplateURL(NULL, data));
+  t_urls_[0].reset(new TemplateURL(data));
   data.SetURL("http://" + host_ + "/path2");
-  t_urls_[1].reset(new TemplateURL(NULL, data));
+  t_urls_[1].reset(new TemplateURL(data));
   std::vector<TemplateURL*> template_urls;
   template_urls.push_back(t_urls_[0].get());
   template_urls.push_back(t_urls_[1].get());
@@ -47,7 +47,7 @@ TEST_F(SearchHostToURLsMapTest, Add) {
   std::string new_host = "example.com";
   TemplateURLData data;
   data.SetURL("http://" + new_host + "/");
-  TemplateURL new_t_url(NULL, data);
+  TemplateURL new_t_url(data);
   UIThreadSearchTermsData search_terms_data(NULL);
   provider_map_->Add(&new_t_url, search_terms_data);
 

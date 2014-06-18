@@ -319,7 +319,7 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
   url_data.short_name = base::ASCIIToUTF16("unittest");
   url_data.SetKeyword(base::ASCIIToUTF16("foo"));
   url_data.SetURL("http://www.foo.com/s?q={searchTerms}");
-  test_util_.model()->Add(new TemplateURL(test_util_.profile(), url_data));
+  test_util_.model()->Add(new TemplateURL(url_data));
 
   TestData data[] = {
     { 0, 0, 1300 },
@@ -364,7 +364,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
   url_data.short_name = base::ASCIIToUTF16("unittest");
   url_data.SetKeyword(base::ASCIIToUTF16("foo"));
   url_data.SetURL("http://www.foo.com/s?q={searchTerms}");
-  test_util_.model()->Add(new TemplateURL(test_util_.profile(), url_data));
+  test_util_.model()->Add(new TemplateURL(url_data));
 
   AutocompleteMatch dup_match;
   dup_match.destination_url = GURL("http://www.foo.com/s?q=foo&oq=dup");

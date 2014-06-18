@@ -204,7 +204,7 @@ TemplateURL* CreateTestTemplateURL(Profile* profile,
   data.last_modified = base::Time::FromTimeT(100);
   data.prepopulate_id = 999999;
   data.sync_guid = sync_guid;
-  return new TemplateURL(profile, data);
+  return new TemplateURL(data);
 }
 
 void AddSearchEngine(int profile_index, int seed) {

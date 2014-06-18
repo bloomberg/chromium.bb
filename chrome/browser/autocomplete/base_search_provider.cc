@@ -467,7 +467,8 @@ void BaseSearchProvider::SetDeletionURL(const std::string& deletion_url,
   if (!template_service)
     return;
   GURL url = TemplateURLService::GenerateSearchURL(
-      template_service->GetDefaultSearchProvider());
+      template_service->GetDefaultSearchProvider(),
+      template_service->search_terms_data());
   url = url.GetOrigin().Resolve(deletion_url);
   if (url.is_valid()) {
     match->RecordAdditionalInfo(BaseSearchProvider::kDeletionUrlKey,

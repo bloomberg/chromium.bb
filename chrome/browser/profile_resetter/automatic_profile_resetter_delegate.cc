@@ -258,7 +258,7 @@ scoped_ptr<base::ListValue> AutomaticProfileResetterDelegateImpl::
   scoped_ptr<base::ListValue> engines_details_list(new base::ListValue);
   for (ScopedVector<TemplateURLData>::const_iterator it = engines.begin();
        it != engines.end(); ++it) {
-    TemplateURL template_url(profile_, **it);
+    TemplateURL template_url(**it);
     engines_details_list->Append(
         BuildSubTreeFromTemplateURL(&template_url).release());
   }

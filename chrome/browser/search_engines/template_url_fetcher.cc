@@ -196,7 +196,7 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
     case AUTODETECTED_PROVIDER:
       // Mark the keyword as replaceable so it can be removed if necessary.
       data.safe_for_autoreplace = true;
-      model->Add(new TemplateURL(profile, data));
+      model->Add(new TemplateURL(data));
       break;
 
     case EXPLICIT_PROVIDER:
@@ -206,8 +206,7 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
       // The source WebContents' delegate takes care of adding the URL to the
       // model, which takes ownership, or of deleting it if the add is
       // cancelled.
-      callbacks_->ConfirmAddSearchProvider(new TemplateURL(profile, data),
-                                           profile);
+      callbacks_->ConfirmAddSearchProvider(new TemplateURL(data), profile);
       break;
 
     default:

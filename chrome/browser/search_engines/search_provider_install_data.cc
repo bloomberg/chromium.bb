@@ -45,7 +45,7 @@ void LoadDataOnUIThread(TemplateURLService* template_url_service,
            original_template_urls.begin();
        it != original_template_urls.end();
        ++it) {
-    template_url_copies.push_back(new TemplateURL(NULL, (*it)->data()));
+    template_url_copies.push_back(new TemplateURL((*it)->data()));
     if (*it == original_default_provider)
       default_provider_copy = template_url_copies.back();
   }
@@ -179,7 +179,7 @@ static bool IsSameOrigin(const GURL& requested_origin,
   DCHECK(requested_origin == requested_origin.GetOrigin());
   DCHECK(template_url->GetType() != TemplateURL::OMNIBOX_API_EXTENSION);
   return requested_origin ==
-      TemplateURLService::GenerateSearchURLUsingTermsData(template_url,
+      TemplateURLService::GenerateSearchURL(template_url,
           search_terms_data).GetOrigin();
 }
 
@@ -284,7 +284,7 @@ void SearchProviderInstallData::SetDefault(const TemplateURL* template_url) {
   DCHECK(template_url->GetType() != TemplateURL::OMNIBOX_API_EXTENSION);
 
   IOThreadSearchTermsData search_terms_data(google_base_url_);
-  const GURL url(TemplateURLService::GenerateSearchURLUsingTermsData(
+  const GURL url(TemplateURLService::GenerateSearchURL(
       template_url, search_terms_data));
   if (!url.is_valid() || !url.has_host()) {
     default_search_origin_.clear();

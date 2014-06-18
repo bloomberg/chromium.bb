@@ -792,7 +792,7 @@ TEST_F(HistoryURLProviderTest, CullSearchResults) {
   data.SetURL("http://testsearch.com/?q={searchTerms}");
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_.get());
-  TemplateURL* template_url = new TemplateURL(profile_.get(), data);
+  TemplateURL* template_url = new TemplateURL(data);
   template_url_service->Add(template_url);
   template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   template_url_service->Load();

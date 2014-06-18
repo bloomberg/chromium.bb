@@ -183,7 +183,7 @@ class SearchTest : public BrowserWithTestWindowTest {
     data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
     data.search_terms_replacement_key = "strk";
 
-    TemplateURL* template_url = new TemplateURL(profile(), data);
+    TemplateURL* template_url = new TemplateURL(data);
     // Takes ownership of |template_url|.
     template_url_service->Add(template_url);
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
@@ -207,7 +207,7 @@ class SearchTest : public BrowserWithTestWindowTest {
         kInstantURLWithStrk : kInstantURLNoStrk);
     data.search_terms_replacement_key = "strk";
 
-    TemplateURL* template_url = new TemplateURL(profile(), data);
+    TemplateURL* template_url = new TemplateURL(data);
     // Takes ownership of |template_url|.
     template_url_service->Add(template_url);
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
@@ -625,7 +625,7 @@ TEST_F(SearchTest, CommandLineOverrides) {
   data.SetURL("{google:baseURL}search?q={searchTerms}");
   data.instant_url = "{google:baseURL}webhp?strk";
   data.search_terms_replacement_key = "strk";
-  TemplateURL* template_url = new TemplateURL(profile(), data);
+  TemplateURL* template_url = new TemplateURL(data);
   // Takes ownership of |template_url|.
   template_url_service->Add(template_url);
   template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
@@ -899,7 +899,7 @@ class SearchURLTest : public SearchTest {
     data.SetURL("{google:baseURL}search?"
                 "{google:instantExtendedEnabledParameter}q={searchTerms}");
     data.search_terms_replacement_key = "espv";
-    template_url_ = new TemplateURL(profile(), data);
+    template_url_ = new TemplateURL(data);
     // |template_url_service| takes ownership of |template_url_|.
     template_url_service->Add(template_url_);
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url_);

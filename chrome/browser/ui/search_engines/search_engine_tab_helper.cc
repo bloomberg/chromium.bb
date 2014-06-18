@@ -201,5 +201,5 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
       current_favicon : TemplateURL::GenerateFaviconURL(params.referrer.url);
   data.safe_for_autoreplace = true;
   data.input_encodings.push_back(params.searchable_form_encoding);
-  url_service->Add(new TemplateURL(profile, data));
+  url_service->Add(new TemplateURL(data));
 }

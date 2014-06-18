@@ -318,7 +318,7 @@ void ProfileWriter::AddKeywords(ScopedVector<TemplateURL> template_urls,
 
     // Only add valid TemplateURLs to the model.
     if ((*i)->url_ref().IsValid(model->search_terms_data())) {
-      model->AddAndSetProfile(*i, profile_);  // Takes ownership.
+      model->Add(*i);  // Takes ownership.
       *i = NULL;  // Prevent the vector from deleting *i later.
     }
   }

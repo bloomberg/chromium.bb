@@ -77,7 +77,7 @@ void ZeroSuggestProviderTest::SetUp() {
   data.suggestions_url = "https://www.google.com/complete/?q={searchTerms}";
   data.instant_url = "https://does/not/exist?strk=1";
   data.search_terms_replacement_key = "strk";
-  default_t_url_ = new TemplateURL(&profile_, data);
+  default_t_url_ = new TemplateURL(data);
   turl_model->Add(default_t_url_);
   turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
 

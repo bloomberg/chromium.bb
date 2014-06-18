@@ -270,8 +270,7 @@ void SettingsOverridesAPI::RegisterSearchProvider(
   TemplateURLData data = ConvertSearchProvider(
       profile_->GetPrefs(), *settings->search_engine, install_parameter);
   data.show_in_default_list = info->wants_to_be_default_engine;
-  url_service_->AddExtensionControlledTURL(new TemplateURL(profile_, data),
-                                           info.Pass());
+  url_service_->AddExtensionControlledTURL(new TemplateURL(data), info.Pass());
 }
 
 template <>

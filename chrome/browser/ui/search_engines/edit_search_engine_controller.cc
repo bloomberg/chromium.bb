@@ -43,7 +43,7 @@ bool EditSearchEngineController::IsURLValid(
   // TemplateURLRef::IsValid() when its owner is NULL.
   TemplateURLData data;
   data.SetURL(url);
-  TemplateURL t_url(profile_, data);
+  TemplateURL t_url(data);
   const TemplateURLRef& template_ref = t_url.url_ref();
   TemplateURLService* service =
       TemplateURLServiceFactory::GetForProfile(profile_);
@@ -137,7 +137,7 @@ std::string EditSearchEngineController::GetFixedUpURL(
   // we need to replace the search terms before testing for the scheme.
   TemplateURLData data;
   data.SetURL(url);
-  TemplateURL t_url(profile_, data);
+  TemplateURL t_url(data);
   std::string expanded_url(t_url.url_ref().ReplaceSearchTerms(
       TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("x")),
       TemplateURLServiceFactory::GetForProfile(profile_)->search_terms_data()));

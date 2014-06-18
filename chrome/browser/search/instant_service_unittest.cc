@@ -131,7 +131,7 @@ TEST_F(InstantServiceEnabledTest,
   // Set a default search provider that doesn't support Instant.
   TemplateURLData data;
   data.SetURL("https://foobar.com/url?bar={searchTerms}");
-  TemplateURL* template_url = new TemplateURL(profile(), data);
+  TemplateURL* template_url = new TemplateURL(data);
   // Takes ownership of |template_url|.
   template_url_service_->Add(template_url);
   template_url_service_->SetUserSelectedDefaultSearchProvider(template_url);

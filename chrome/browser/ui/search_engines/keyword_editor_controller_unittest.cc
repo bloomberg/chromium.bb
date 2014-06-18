@@ -249,7 +249,7 @@ TEST_F(KeywordEditorControllerTest, MutateTemplateURLService) {
   TemplateURLData data;
   data.short_name = ASCIIToUTF16("b");
   data.SetKeyword(ASCIIToUTF16("a"));
-  TemplateURL* turl = new TemplateURL(util()->profile(), data);
+  TemplateURL* turl = new TemplateURL(data);
   util()->model()->Add(turl);
 
   // Table model should have updated.

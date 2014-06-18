@@ -276,7 +276,7 @@ TemplateURL* TemplateURLServiceSyncTest::CreateTestTemplateURL(
   data.prepopulate_id = 999999;
   if (!guid.empty())
     data.sync_guid = guid;
-  return new TemplateURL(NULL, data);
+  return new TemplateURL(data);
 }
 
 void TemplateURLServiceSyncTest::AssertEquals(const TemplateURL& expected,
@@ -355,7 +355,7 @@ TemplateURL* TemplateURLServiceSyncTest::CopyTemplateURL(
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);
   data.sync_guid = guid;
-  return new TemplateURL(NULL, data);
+  return new TemplateURL(data);
 }
 
 // Actual tests ---------------------------------------------------------------
@@ -1251,7 +1251,7 @@ TEST_F(TemplateURLServiceSyncTest, DuplicateEncodingsRemoved) {
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);
   data.sync_guid = "keyword";
-  scoped_ptr<TemplateURL> turl(new TemplateURL(NULL, data));
+  scoped_ptr<TemplateURL> turl(new TemplateURL(data));
   initial_data.push_back(
       TemplateURLService::CreateSyncDataFromTemplateURL(*turl));
 
@@ -1412,8 +1412,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
   // Keep a copy of it so we can compare it after we re-merge.
   TemplateURL* key1_url = model()->GetTemplateURLForGUID("key1");
   ASSERT_TRUE(key1_url);
-  scoped_ptr<TemplateURL> updated_turl(new TemplateURL(key1_url->profile(),
-                                                       key1_url->data()));
+  scoped_ptr<TemplateURL> updated_turl(new TemplateURL(key1_url->data()));
   EXPECT_EQ(Time::FromTimeT(90), updated_turl->last_modified());
 
   // Modify a single field of the initial data. This should not be updated in
@@ -1421,7 +1420,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
   scoped_ptr<TemplateURL> temp_turl(Deserialize(initial_data[0]));
   TemplateURLData data(temp_turl->data());
   data.short_name = ASCIIToUTF16("SomethingDifferent");
-  temp_turl.reset(new TemplateURL(temp_turl->profile(), data));
+  temp_turl.reset(new TemplateURL(data));
   initial_data.clear();
   initial_data.push_back(
       TemplateURLService::CreateSyncDataFromTemplateURL(*temp_turl));
@@ -1509,7 +1508,7 @@ TEST_F(TemplateURLServiceSyncTest, DefaultGuidDeletedBeforeNewDSPArrives) {
   data.prepopulate_id = 999999;
   data.sync_guid = "key2";
   data.show_in_default_list = true;
-  scoped_ptr<TemplateURL> turl2(new TemplateURL(NULL, data));
+  scoped_ptr<TemplateURL> turl2(new TemplateURL(data));
   initial_data.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(
       *turl1));
   initial_data.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(
@@ -1835,7 +1834,7 @@ TEST_F(TemplateURLServiceSyncTest, PreSyncUpdates) {
   data_copy.SetKeyword(ASCIIToUTF16(kNewKeyword));
   // Set safe_for_autoreplace to false so our keyword survives.
   data_copy.safe_for_autoreplace = false;
-  model()->Add(new TemplateURL(profile_a(), data_copy));
+  model()->Add(new TemplateURL(data_copy));
 
   // Merge the prepopulate search engines.
   base::Time pre_merge_time = base::Time::Now();
@@ -1858,7 +1857,7 @@ TEST_F(TemplateURLServiceSyncTest, PreSyncUpdates) {
   syncer::SyncDataList initial_data;
   data_copy.SetKeyword(original_keyword);
   data_copy.sync_guid = sync_guid;
-  scoped_ptr<TemplateURL> sync_turl(new TemplateURL(profile_a(), data_copy));
+  scoped_ptr<TemplateURL> sync_turl(new TemplateURL(data_copy));
   initial_data.push_back(
       TemplateURLService::CreateSyncDataFromTemplateURL(*sync_turl));
 
@@ -2132,7 +2131,7 @@ TEST_F(TemplateURLServiceSyncTest, UpdatePrepopulatedEngine) {
   TemplateURLData data = *default_turl;
   data.SetURL("http://old.wrong.url.com?q={searchTerms}");
   data.sync_guid = "default";
-  model()->Add(new TemplateURL(NULL, data));
+  model()->Add(new TemplateURL(data));
 
   syncer::SyncMergeResult merge_result = model()->MergeDataAndStartSyncing(
       syncer::SEARCH_ENGINES, syncer::SyncDataList(), PassProcessor(),
@@ -2167,11 +2166,11 @@ TEST_F(TemplateURLServiceSyncTest, MergeEditedPrepopulatedEngine) {
   data.date_created = Time::FromTimeT(50);
   data.last_modified = Time::FromTimeT(50);
   data.sync_guid = "default";
-  model()->Add(new TemplateURL(NULL, data));
+  model()->Add(new TemplateURL(data));
 
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);
-  scoped_ptr<TemplateURL> sync_turl(new TemplateURL(NULL, data));
+  scoped_ptr<TemplateURL> sync_turl(new TemplateURL(data));
   syncer::SyncDataList list;
   list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*sync_turl));
   syncer::SyncMergeResult merge_result = model()->MergeDataAndStartSyncing(
@@ -2197,11 +2196,11 @@ TEST_F(TemplateURLServiceSyncTest, MergeNonEditedPrepopulatedEngine) {
   data.date_created = Time::FromTimeT(50);
   data.last_modified = Time::FromTimeT(50);
   data.sync_guid = "default";
-  model()->Add(new TemplateURL(NULL, data));
+  model()->Add(new TemplateURL(data));
 
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);
-  scoped_ptr<TemplateURL> sync_turl(new TemplateURL(NULL, data));
+  scoped_ptr<TemplateURL> sync_turl(new TemplateURL(data));
   syncer::SyncDataList list;
   list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*sync_turl));
   syncer::SyncMergeResult merge_result = model()->MergeDataAndStartSyncing(

@@ -27,12 +27,12 @@ namespace {
 SearchEngineType GetEngineType(const std::string& url) {
   TemplateURLData data;
   data.SetURL(url);
-  return TemplateURLPrepopulateData::GetEngineType(TemplateURL(NULL, data),
+  return TemplateURLPrepopulateData::GetEngineType(TemplateURL(data),
                                                    SearchTermsData());
 }
 
 std::string GetHostFromTemplateURLData(const TemplateURLData& data) {
-  return TemplateURL(NULL, data).url_ref().GetHost(SearchTermsData());
+  return TemplateURL(data).url_ref().GetHost(SearchTermsData());
 }
 
 }  // namespace
@@ -244,7 +244,7 @@ TEST(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
   EXPECT_FALSE(t_urls[default_index]->image_url_post_params.empty());
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
             TemplateURLPrepopulateData::GetEngineType(
-                TemplateURL(NULL, *t_urls[default_index]),
+                TemplateURL(*t_urls[default_index]),
                 SearchTermsData()));
 }
 
@@ -284,7 +284,7 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrepopulated) {
     EXPECT_FALSE(t_urls[default_index]->alternate_urls[i].empty());
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
             TemplateURLPrepopulateData::GetEngineType(
-                TemplateURL(NULL, *t_urls[default_index]),
+                TemplateURL(*t_urls[default_index]),
                 SearchTermsData()));
   EXPECT_FALSE(t_urls[default_index]->search_terms_replacement_key.empty());
 }

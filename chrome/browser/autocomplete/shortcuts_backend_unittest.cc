@@ -103,7 +103,7 @@ void ShortcutsBackendTest::SetSearchProvider() {
   data.SetURL("http://foo.com/search?bar={searchTerms}");
   data.SetKeyword(base::UTF8ToUTF16("foo"));
 
-  TemplateURL* template_url = new TemplateURL(&profile_, data);
+  TemplateURL* template_url = new TemplateURL(data);
   // Takes ownership of |template_url|.
   template_url_service->Add(template_url);
   template_url_service->SetUserSelectedDefaultSearchProvider(template_url);

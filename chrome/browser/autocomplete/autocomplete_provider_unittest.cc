@@ -218,7 +218,7 @@ void AutocompleteProviderTest::RegisterTemplateURL(
   TemplateURLData data;
   data.SetURL(template_url);
   data.SetKeyword(keyword);
-  TemplateURL* default_t_url = new TemplateURL(&profile_, data);
+  TemplateURL* default_t_url = new TemplateURL(data);
   TemplateURLService* turl_model =
       TemplateURLServiceFactory::GetForProfile(&profile_);
   turl_model->Add(default_t_url);
@@ -294,7 +294,7 @@ void AutocompleteProviderTest::
   // Reset the default TemplateURL.
   TemplateURLData data;
   data.SetURL("http://defaultturl/{searchTerms}");
-  TemplateURL* default_t_url = new TemplateURL(&profile_, data);
+  TemplateURL* default_t_url = new TemplateURL(data);
   TemplateURLService* turl_model =
       TemplateURLServiceFactory::GetForProfile(&profile_);
   turl_model->Add(default_t_url);
@@ -307,7 +307,7 @@ void AutocompleteProviderTest::
   data2.short_name = base::ASCIIToUTF16("k");
   data2.SetKeyword(base::ASCIIToUTF16("k"));
   data2.SetURL("http://keyword/{searchTerms}");
-  TemplateURL* keyword_t_url = new TemplateURL(&profile_, data2);
+  TemplateURL* keyword_t_url = new TemplateURL(data2);
   turl_model->Add(keyword_t_url);
   ASSERT_NE(0, keyword_t_url->id());
 
@@ -328,7 +328,7 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
   data.short_name = base::ASCIIToUTF16("foo.com");
   data.SetKeyword(base::ASCIIToUTF16("foo.com"));
   data.SetURL("http://foo.com/{searchTerms}");
-  TemplateURL* keyword_t_url = new TemplateURL(&profile_, data);
+  TemplateURL* keyword_t_url = new TemplateURL(data);
   turl_model->Add(keyword_t_url);
   ASSERT_NE(0, keyword_t_url->id());
 
@@ -336,7 +336,7 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
   data.short_name = base::ASCIIToUTF16("bar.com");
   data.SetKeyword(base::ASCIIToUTF16("bar.com"));
   data.SetURL("http://bar.com/{searchTerms}");
-  keyword_t_url = new TemplateURL(&profile_, data);
+  keyword_t_url = new TemplateURL(data);
   turl_model->Add(keyword_t_url);
   ASSERT_NE(0, keyword_t_url->id());
 

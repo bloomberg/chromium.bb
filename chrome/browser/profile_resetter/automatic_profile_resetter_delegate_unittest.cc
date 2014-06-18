@@ -206,7 +206,7 @@ class AutomaticProfileResetterDelegateTest
     data.input_encodings.push_back("UTF-8");
     data.safe_for_autoreplace = true;
 
-    return scoped_ptr<TemplateURL>(new TemplateURL(profile(), data));
+    return scoped_ptr<TemplateURL>(new TemplateURL(data));
   }
 
   void ExpectNoPendingBrandcodedConfigFetch() {

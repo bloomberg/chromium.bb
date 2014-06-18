@@ -253,7 +253,7 @@ void SearchProviderTest::SetUp() {
   data.suggestions_url = "http://defaultturl2/{searchTerms}";
   data.instant_url = "http://does/not/exist?strk=1";
   data.search_terms_replacement_key = "strk";
-  default_t_url_ = new TemplateURL(&profile_, data);
+  default_t_url_ = new TemplateURL(data);
   turl_model->Add(default_t_url_);
   turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
   TemplateURLID default_provider_id = default_t_url_->id();
@@ -267,7 +267,7 @@ void SearchProviderTest::SetUp() {
   data.SetKeyword(ASCIIToUTF16("k"));
   data.SetURL("http://keyword/{searchTerms}");
   data.suggestions_url = "http://suggest_keyword/{searchTerms}";
-  keyword_t_url_ = new TemplateURL(&profile_, data);
+  keyword_t_url_ = new TemplateURL(data);
   turl_model->Add(keyword_t_url_);
   ASSERT_NE(0, keyword_t_url_->id());
 
@@ -1033,7 +1033,7 @@ TEST_F(SearchProviderTest, CommandLineOverrides) {
   data.short_name = ASCIIToUTF16("default");
   data.SetKeyword(data.short_name);
   data.SetURL("{google:baseURL}{searchTerms}");
-  default_t_url_ = new TemplateURL(&profile_, data);
+  default_t_url_ = new TemplateURL(data);
   turl_model->Add(default_t_url_);
   turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
 
@@ -2896,7 +2896,7 @@ TEST_F(SearchProviderTest, CanSendURL) {
   template_url_data.instant_url = "http://does/not/exist?strk=1";
   template_url_data.search_terms_replacement_key = "strk";
   template_url_data.id = SEARCH_ENGINE_GOOGLE;
-  TemplateURL google_template_url(&profile_, template_url_data);
+  TemplateURL google_template_url(template_url_data);
 
   // Create field trial.
   base::FieldTrial* field_trial = base::FieldTrialList::CreateFieldTrial(
@@ -3131,7 +3131,7 @@ TEST_F(SearchProviderTest, SuggestQueryUsesToken) {
   data.SetURL("http://example/{searchTerms}{google:sessionToken}");
   data.suggestions_url =
       "http://suggest/?q={searchTerms}&{google:sessionToken}";
-  default_t_url_ = new TemplateURL(&profile_, data);
+  default_t_url_ = new TemplateURL(data);
   turl_model->Add(default_t_url_);
   turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
 

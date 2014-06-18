@@ -420,8 +420,7 @@ HistoryURLProviderParams::HistoryURLProviderParams(
       languages(languages),
       dont_suggest_exact_input(false),
       default_search_provider(default_search_provider ?
-          new TemplateURL(default_search_provider->profile(),
-                          default_search_provider->data()) : NULL),
+          new TemplateURL(default_search_provider->data()) : NULL),
       search_terms_data(new SearchTermsDataSnapshot(search_terms_data)) {
 }
 

@@ -240,7 +240,7 @@ void MergeEnginesFromPrepopulateData(
     // Replace the entry in |template_urls| with the updated one.
     TemplateURLService::TemplateURLVector::iterator j = std::find(
         template_urls->begin(), template_urls->end(), existing_url.get());
-    *j = new TemplateURL(profile, data);
+    *j = new TemplateURL(data);
   }
 
   // Add items.
@@ -248,7 +248,7 @@ void MergeEnginesFromPrepopulateData(
            actions.added_engines.begin();
        it != actions.added_engines.end();
        ++it) {
-    template_urls->push_back(new TemplateURL(profile, *it));
+    template_urls->push_back(new TemplateURL(*it));
   }
 }
 
@@ -350,7 +350,7 @@ void GetSearchProvidersUsingKeywordResult(
     // search engine sync, since in that case that code will never be reached.
     if (DeDupeEncodings(&i->input_encodings) && service)
       service->UpdateKeyword(*i);
-    template_urls->push_back(new TemplateURL(profile, *i));
+    template_urls->push_back(new TemplateURL(*i));
   }
 
   *new_resource_keyword_version = keyword_result.builtin_keyword_version;
