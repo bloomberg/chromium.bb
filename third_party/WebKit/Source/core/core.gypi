@@ -3419,6 +3419,7 @@
             'frame/ImageBitmapTest.cpp',
             'html/HTMLDimensionTest.cpp',
             'html/HTMLLinkElementSizesAttributeTest.cpp',
+            'html/HTMLTextFormControlElementTest.cpp',
             'html/LinkRelAttributeTest.cpp',
             'html/TimeRangesTest.cpp',
             'html/parser/HTMLParserThreadTest.cpp',
