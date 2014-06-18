@@ -41,6 +41,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_MACOSX)
@@ -52,7 +53,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "content/common/plugin_constants_win.h"
-#include "ui/gfx/switches.h"
 #endif
 
 namespace content {
@@ -207,6 +207,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
     switches::kPluginStartupDialog,
     switches::kTraceStartup,
     switches::kUseGL,
+    switches::kForceDeviceScaleFactor,
 #if defined(OS_MACOSX)
     switches::kDisableCoreAnimationPlugins,
     switches::kEnableSandboxLogging,
