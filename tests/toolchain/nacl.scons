@@ -394,6 +394,16 @@ node = env.CommandSelLdrTestNacl('getpagesize_test.out', getpagesize_test_nexe)
 env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
                        'run_getpagesize_test')
 
+getid_test_nexe = env.ComponentProgram(
+    'getid_test', 'getid_test.c',
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl('getid_test.out', getid_test_nexe)
+env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                       'run_getid_test',
+# See https://code.google.com/p/nativeclient/issues/detail?id=3667
+                       is_broken=(env.Bit('nacl_glibc') and
+                                  env.Bit('target_x86_32')))
+
 
 # Test that local variable dwarf info is preserved with linking and LTO.
 # Force '-g' on in case it was not turned on for some reason, and lower
