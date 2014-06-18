@@ -8,7 +8,6 @@
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
@@ -19,7 +18,7 @@ using ::testing::_;
 namespace gpu {
 namespace gles2 {
 
-class VertexAttribManagerTest : public GpuServiceTest {
+class VertexAttribManagerTest : public testing::Test {
  public:
   static const uint32 kNumVertexAttribs = 8;
 
@@ -31,7 +30,8 @@ class VertexAttribManagerTest : public GpuServiceTest {
 
  protected:
   virtual void SetUp() {
-    GpuServiceTest::SetUp();
+    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 
     for (uint32 ii = 0; ii < kNumVertexAttribs; ++ii) {
       EXPECT_CALL(*gl_, VertexAttrib4f(ii, 0.0f, 0.0f, 0.0f, 1.0f))
@@ -43,6 +43,14 @@ class VertexAttribManagerTest : public GpuServiceTest {
     manager_->Initialize(kNumVertexAttribs, true);
   }
 
+  virtual void TearDown() {
+    manager_ = NULL;
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
+    gl_.reset();
+  }
+
+  // Use StrictMock to make 100% sure we know how GL will be called.
+  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_refptr<VertexAttribManager> manager_;
 };
 

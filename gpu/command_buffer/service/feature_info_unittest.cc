@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
-#include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -16,6 +15,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
 
+using ::gfx::MockGLInterface;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::HasSubstr;
@@ -27,6 +27,7 @@ using ::testing::Return;
 using ::testing::SetArrayArgument;
 using ::testing::SetArgumentPointee;
 using ::testing::StrEq;
+using ::testing::StrictMock;
 
 namespace gpu {
 namespace gles2 {
@@ -35,7 +36,7 @@ namespace {
 const char kGLRendererStringANGLE[] = "ANGLE (some renderer)";
 }  // anonymous namespace
 
-class FeatureInfoTest : public GpuServiceTest {
+class FeatureInfoTest : public testing::Test {
  public:
   FeatureInfoTest() {
   }
@@ -69,11 +70,18 @@ class FeatureInfoTest : public GpuServiceTest {
   }
 
  protected:
-  virtual void TearDown() {
-    info_ = NULL;
-    GpuServiceTest::TearDown();
+  virtual void SetUp() {
+    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
   }
 
+  virtual void TearDown() {
+    info_ = NULL;
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
+    gl_.reset();
+  }
+
+  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_refptr<FeatureInfo> info_;
 };
 

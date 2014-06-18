@@ -5,7 +5,6 @@
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -30,7 +29,7 @@ const bool kUseDefaultTextures = false;
 
 }  // namespace
 
-class FramebufferManagerTest : public GpuServiceTest {
+class FramebufferManagerTest : public testing::Test {
  public:
   FramebufferManagerTest()
       : manager_(1, 1),
@@ -50,7 +49,18 @@ class FramebufferManagerTest : public GpuServiceTest {
   }
 
  protected:
+  virtual void SetUp() {
+    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
+  }
 
+  virtual void TearDown() {
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
+    gl_.reset();
+  }
+
+  // Use StrictMock to make 100% sure we know how GL will be called.
+  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   FramebufferManager manager_;
   TextureManager texture_manager_;
   RenderbufferManager renderbuffer_manager_;
@@ -100,7 +110,7 @@ TEST_F(FramebufferManagerTest, Destroy) {
   ASSERT_TRUE(framebuffer1 == NULL);
 }
 
-class FramebufferInfoTest : public GpuServiceTest {
+class FramebufferInfoTest : public testing::Test {
  public:
   static const GLuint kClient1Id = 1;
   static const GLuint kService1Id = 11;
@@ -128,7 +138,8 @@ class FramebufferInfoTest : public GpuServiceTest {
   }
 
   void InitializeContext(const char* gl_version, const char* extensions) {
-    GpuServiceTest::SetUp();
+    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(gl_.get(),
         extensions, "", gl_version);
     feature_info_->Initialize();
@@ -138,6 +149,13 @@ class FramebufferInfoTest : public GpuServiceTest {
     ASSERT_TRUE(framebuffer_ != NULL);
   }
 
+  virtual void TearDown() {
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
+    gl_.reset();
+  }
+
+  // Use StrictMock to make 100% sure we know how GL will be called.
+  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   FramebufferManager manager_;
   Framebuffer* framebuffer_;
   scoped_refptr<FeatureInfo> feature_info_;

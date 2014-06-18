@@ -5,7 +5,6 @@
 #include "gpu/command_buffer/service/shader_manager.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
@@ -16,7 +15,7 @@ using ::testing::ReturnRef;
 namespace gpu {
 namespace gles2 {
 
-class ShaderManagerTest : public GpuServiceTest {
+class ShaderManagerTest : public testing::Test {
  public:
   ShaderManagerTest() {
   }
@@ -26,6 +25,18 @@ class ShaderManagerTest : public GpuServiceTest {
   }
 
  protected:
+  virtual void SetUp() {
+    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
+  }
+
+  virtual void TearDown() {
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
+    gl_.reset();
+  }
+
+  // Use StrictMock to make 100% sure we know how GL will be called.
+  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   ShaderManager manager_;
 };
 

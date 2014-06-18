@@ -9,7 +9,6 @@
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
-#include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/mocks.h"
@@ -40,7 +39,7 @@ class TextureTestHelper {
   }
 };
 
-class TextureManagerTest : public GpuServiceTest {
+class TextureManagerTest : public testing::Test {
  public:
   static const GLint kMaxTextureSize = 16;
   static const GLint kMaxCubeMapTextureSize = 8;
@@ -57,7 +56,9 @@ class TextureManagerTest : public GpuServiceTest {
 
  protected:
   virtual void SetUp() {
-    GpuServiceTest::SetUp();
+    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
+
     manager_.reset(new TextureManager(NULL,
                                       feature_info_.get(),
                                       kMaxTextureSize,
@@ -72,7 +73,8 @@ class TextureManagerTest : public GpuServiceTest {
   virtual void TearDown() {
     manager_->Destroy(false);
     manager_.reset();
-    GpuServiceTest::TearDown();
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
+    gl_.reset();
   }
 
   void SetParameter(
@@ -82,6 +84,8 @@ class TextureManagerTest : public GpuServiceTest {
         texture_ref, pname, value, error);
   }
 
+  // Use StrictMock to make 100% sure we know how GL will be called.
+  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_refptr<FeatureInfo> feature_info_;
   scoped_ptr<TextureManager> manager_;
   scoped_ptr<MockErrorState> error_state_;
@@ -381,7 +385,7 @@ TEST_F(TextureManagerTest, ValidForTargetNPOT) {
   manager.Destroy(false);
 }
 
-class TextureTestBase : public GpuServiceTest {
+class TextureTestBase : public testing::Test {
  public:
   static const GLint kMaxTextureSize = 16;
   static const GLint kMaxCubeMapTextureSize = 8;
@@ -400,7 +404,9 @@ class TextureTestBase : public GpuServiceTest {
 
  protected:
   void SetUpBase(MemoryTracker* memory_tracker, std::string extensions) {
-    GpuServiceTest::SetUp();
+    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
+
     if (!extensions.empty()) {
       TestHelper::SetupFeatureInfoInitExpectations(gl_.get(),
                                                    extensions.c_str());
@@ -434,7 +440,8 @@ class TextureTestBase : public GpuServiceTest {
     }
     manager_->Destroy(false);
     manager_.reset();
-    GpuServiceTest::TearDown();
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
+    gl_.reset();
   }
 
   void SetParameter(
@@ -446,6 +453,8 @@ class TextureTestBase : public GpuServiceTest {
 
   scoped_ptr<MockGLES2Decoder> decoder_;
   scoped_ptr<MockErrorState> error_state_;
+  // Use StrictMock to make 100% sure we know how GL will be called.
+  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_refptr<FeatureInfo> feature_info_;
   scoped_ptr<TextureManager> manager_;
   scoped_refptr<TextureRef> texture_ref_;
@@ -2192,7 +2201,7 @@ class CountingMemoryTracker : public MemoryTracker {
   DISALLOW_COPY_AND_ASSIGN(CountingMemoryTracker);
 };
 
-class SharedTextureTest : public GpuServiceTest {
+class SharedTextureTest : public testing::Test {
  public:
   static const bool kUseDefaultTextures = false;
 
@@ -2202,7 +2211,9 @@ class SharedTextureTest : public GpuServiceTest {
   }
 
   virtual void SetUp() {
-    GpuServiceTest::SetUp();
+    gl_.reset(new ::gfx::MockGLInterface());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
+
     memory_tracker1_ = new CountingMemoryTracker;
     texture_manager1_.reset(
         new TextureManager(memory_tracker1_.get(),
@@ -2230,10 +2241,12 @@ class SharedTextureTest : public GpuServiceTest {
     texture_manager2_.reset();
     texture_manager1_->Destroy(false);
     texture_manager1_.reset();
-    GpuServiceTest::TearDown();
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
+    gl_.reset();
   }
 
  protected:
+  scoped_ptr< ::gfx::MockGLInterface > gl_;
   scoped_refptr<FeatureInfo> feature_info_;
   scoped_refptr<CountingMemoryTracker> memory_tracker1_;
   scoped_ptr<TextureManager> texture_manager1_;
