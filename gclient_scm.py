@@ -356,8 +356,6 @@ class GitWrapper(SCMWrapper):
       verbose = ['--verbose']
       printed_path = True
 
-    url = self._CreateOrUpdateCache(url, options)
-
     if revision.startswith('refs/'):
       rev_type = "branch"
     elif revision.startswith(self.remote + '/'):
@@ -368,9 +366,15 @@ class GitWrapper(SCMWrapper):
       # hash is also a tag, only make a distinction at checkout
       rev_type = "hash"
 
+    mirror = self._GetMirror(url, options)
+    if mirror:
+      url = mirror.mirror_path
+
     if (not os.path.exists(self.checkout_path) or
         (os.path.isdir(self.checkout_path) and
          not os.path.exists(os.path.join(self.checkout_path, '.git')))):
+      if mirror:
+        self._UpdateMirror(mirror, options)
       try:
         self._Clone(revision, url, options)
       except subprocess2.CalledProcessError:
@@ -393,6 +397,9 @@ class GitWrapper(SCMWrapper):
       self._UpdateBranchHeads(options, fetch=False)
       self.Print('________ unmanaged solution; skipping %s' % self.relpath)
       return self._Capture(['rev-parse', '--verify', 'HEAD'])
+
+    if mirror:
+      self._UpdateMirror(mirror, options)
 
     # See if the url has changed (the unittests use git://foo for the url, let
     # that through).
@@ -745,14 +752,10 @@ class GitWrapper(SCMWrapper):
     base_url = self.url
     return base_url[:base_url.rfind('/')] + url
 
-  def _CreateOrUpdateCache(self, url, options):
-    """Make a new git mirror or update existing mirror for |url|, and return the
-    mirror URI to clone from.
-
-    If no cache-dir is specified, just return |url| unchanged.
-    """
-    if not self.cache_dir:
-      return url
+  def _GetMirror(self, url, options):
+    """Get a git_cache.Mirror object for the argument url."""
+    if not git_cache.Mirror.GetCachePath():
+      return None
     mirror_kwargs = {
         'print_func': self.filter,
         'refs': []
@@ -765,10 +768,14 @@ class GitWrapper(SCMWrapper):
     #  mirror_kwargs['refs'].extend(['refs/tags/lkgr', 'refs/tags/lkcr'])
     if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
       mirror_kwargs['refs'].append('refs/branch-heads/*')
-    mirror = git_cache.Mirror(url, **mirror_kwargs)
+    return git_cache.Mirror(url, **mirror_kwargs)
+
+  @staticmethod
+  def _UpdateMirror(mirror, options):
+    """Update a git mirror by fetching the latest commits from the remote."""
     if options.shallow:
       # HACK(hinoka): These repositories should be super shallow.
-      if 'flash' in url:
+      if 'flash' in mirror.url:
         depth = 10
       else:
         depth = 10000
@@ -776,7 +783,6 @@ class GitWrapper(SCMWrapper):
       depth = None
     mirror.populate(verbose=options.verbose, bootstrap=True, depth=depth)
     mirror.unlock()
-    return mirror.mirror_path if mirror.exists() else None
 
   def _Clone(self, revision, url, options):
     """Clone a git repository from the given URL.

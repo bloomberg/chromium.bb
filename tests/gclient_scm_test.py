@@ -24,7 +24,11 @@ from testing_support.super_mox import mox, StdoutCheck, SuperMoxTestBase
 from testing_support.super_mox import TestCaseUtils
 
 import gclient_scm
+import git_cache
 import subprocess2
+
+# Disable global git cache
+git_cache.Mirror.SetCachePath(None)
 
 # Shortcut since this function is used often
 join = gclient_scm.os.path.join
@@ -1571,11 +1575,11 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
 
 
 if __name__ == '__main__':
-  if '-v' in sys.argv:
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime).19s %(levelname)s %(filename)s:'
-               '%(lineno)s %(message)s')
+  level = logging.DEBUG if '-v' in sys.argv else logging.FATAL
+  logging.basicConfig(
+      level=level,
+      format='%(asctime).19s %(levelname)s %(filename)s:'
+             '%(lineno)s %(message)s')
   unittest.main()
 
 # vim: ts=2:sw=2:tw=80:et:

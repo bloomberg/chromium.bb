@@ -318,6 +318,7 @@ class Mirror(object):
 
   def populate(self, depth=None, shallow=False, bootstrap=False,
                verbose=False):
+    assert self.GetCachePath()
     if shallow and not depth:
       depth = 10000
     gclient_utils.safe_makedirs(self.GetCachePath())
@@ -429,6 +430,8 @@ class Mirror(object):
   @classmethod
   def UnlockAll(cls):
     cachepath = cls.GetCachePath()
+    if not cachepath:
+      return
     dirlist = os.listdir(cachepath)
     repo_dirs = set([os.path.join(cachepath, path) for path in dirlist
                      if os.path.isdir(os.path.join(cachepath, path))])
