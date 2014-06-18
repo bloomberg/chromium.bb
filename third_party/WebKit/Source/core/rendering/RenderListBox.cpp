@@ -227,9 +227,7 @@ void RenderListBox::scrollToRevealSelection()
 
 void RenderListBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
-    maxLogicalWidth = m_optionsWidth + 2 * optionsSpacingHorizontal;
-    if (m_vBar)
-        maxLogicalWidth += verticalScrollbarWidth();
+    maxLogicalWidth = m_optionsWidth + 2 * optionsSpacingHorizontal + verticalScrollbarWidth();
     if (!style()->width().isPercent())
         minLogicalWidth = maxLogicalWidth;
 }
@@ -389,7 +387,7 @@ int RenderListBox::scrollbarLeft() const
     if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
         scrollbarLeft = borderLeft();
     else
-        scrollbarLeft = width() - borderRight() - verticalScrollbarWidth();
+        scrollbarLeft = width() - borderRight() - (m_vBar ? m_vBar->width() : 0);
     return scrollbarLeft;
 }
 
@@ -398,7 +396,7 @@ void RenderListBox::paintScrollbar(PaintInfo& paintInfo, const LayoutPoint& pain
     if (m_vBar) {
         IntRect scrollRect = pixelSnappedIntRect(paintOffset.x() + scrollbarLeft(),
             paintOffset.y() + borderTop(),
-            verticalScrollbarWidth(),
+            m_vBar->width(),
             height() - (borderTop() + borderBottom()));
         m_vBar->setFrameRect(scrollRect);
         m_vBar->paint(paintInfo.context, paintInfo.rect);

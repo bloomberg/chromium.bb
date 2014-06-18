@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+}
+.container {
+    width: 100px;
+    height: 100px;
+    background-color: lime;
+    position: relative;
+}
+.scrollbar {
+    background-color: #808080;
+    position: absolute;
+}
+.vertical {
+    width: 3px;
+    height: 92px;
+}
+</style>
+<script>
+</script>
+</head>
+<body>
+<p>You should see 2 green boxes with overlay scrollbar. The second box
+should have a scrollbar on the left.</p>
+
+<div class="container">
+<div class="scrollbar vertical" style="right: 4px; top: 4px;"></div>
+</div>
+<div dir="rtl" class="container">
+<div class="scrollbar vertical" style="left: 0px; top: 4px;"></div>
+</div>
+</body>
+</html>
