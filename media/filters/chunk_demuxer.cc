@@ -1102,10 +1102,6 @@ DemuxerStream* ChunkDemuxer::GetStream(DemuxerStream::Type type) {
   return NULL;
 }
 
-TimeDelta ChunkDemuxer::GetStartTime() const {
-  return TimeDelta();
-}
-
 base::Time ChunkDemuxer::GetTimelineOffset() const {
   return timeline_offset_;
 }
@@ -1607,7 +1603,7 @@ void ChunkDemuxer::OnSourceInitDone(
     return;
   }
 
-  SeekAllSources(GetStartTime());
+  SeekAllSources(base::TimeDelta());
   StartReturningData();
 
   if (duration_ == kNoTimestamp())

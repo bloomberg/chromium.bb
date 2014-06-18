@@ -82,9 +82,6 @@ class MEDIA_EXPORT Demuxer {
   // to be DemuxerStream::TEXT), or NULL if that type of stream is not present.
   virtual DemuxerStream* GetStream(DemuxerStream::Type type) = 0;
 
-  // Returns the starting time for the media file.
-  virtual base::TimeDelta GetStartTime() const = 0;
-
   // Returns Time represented by presentation timestamp 0.
   // If the timstamps are not associated with a Time, then
   // a null Time is returned.

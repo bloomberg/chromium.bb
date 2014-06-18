@@ -92,11 +92,17 @@ class FFmpegDemuxerTest : public testing::Test {
 
   MOCK_METHOD1(CheckPoint, void(int v));
 
-  void InitializeDemuxerText(bool enable_text) {
+  void InitializeDemuxerWithTimelineOffset(bool enable_text,
+                                           base::Time timeline_offset) {
     EXPECT_CALL(host_, SetDuration(_));
     WaitableMessageLoopEvent event;
     demuxer_->Initialize(&host_, event.GetPipelineStatusCB(), enable_text);
+    demuxer_->timeline_offset_ = timeline_offset;
     event.RunAndWaitForStatus(PIPELINE_OK);
+  }
+
+  void InitializeDemuxerText(bool enable_text) {
+    InitializeDemuxerWithTimelineOffset(enable_text, base::Time());
   }
 
   void InitializeDemuxer() {
@@ -109,7 +115,9 @@ class FFmpegDemuxerTest : public testing::Test {
   // |location| simply indicates where the call to this function was made.
   // This makes it easier to track down where test failures occur.
   void OnReadDone(const tracked_objects::Location& location,
-                  int size, int64 timestampInMicroseconds,
+                  int size,
+                  int64 timestamp_us,
+                  base::TimeDelta discard_front_padding,
                   DemuxerStream::Status status,
                   const scoped_refptr<DecoderBuffer>& buffer) {
     std::string location_str;
@@ -117,21 +125,39 @@ class FFmpegDemuxerTest : public testing::Test {
     location_str += "\n";
     SCOPED_TRACE(location_str);
     EXPECT_EQ(status, DemuxerStream::kOk);
-    OnReadDoneCalled(size, timestampInMicroseconds);
+    OnReadDoneCalled(size, timestamp_us);
     EXPECT_TRUE(buffer.get() != NULL);
     EXPECT_EQ(size, buffer->data_size());
-    EXPECT_EQ(base::TimeDelta::FromMicroseconds(timestampInMicroseconds),
-              buffer->timestamp());
-
+    EXPECT_EQ(timestamp_us, buffer->timestamp().InMicroseconds());
+    EXPECT_EQ(discard_front_padding, buffer->discard_padding().first);
     DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
   DemuxerStream::ReadCB NewReadCB(const tracked_objects::Location& location,
-                                  int size, int64 timestampInMicroseconds) {
-    EXPECT_CALL(*this, OnReadDoneCalled(size, timestampInMicroseconds));
-    return base::Bind(&FFmpegDemuxerTest::OnReadDone, base::Unretained(this),
-                      location, size, timestampInMicroseconds);
+                                  int size,
+                                  int64 timestamp_us) {
+    EXPECT_CALL(*this, OnReadDoneCalled(size, timestamp_us));
+    return base::Bind(&FFmpegDemuxerTest::OnReadDone,
+                      base::Unretained(this),
+                      location,
+                      size,
+                      timestamp_us,
+                      base::TimeDelta());
+  }
+
+  DemuxerStream::ReadCB NewReadCBWithCheckedDiscard(
+      const tracked_objects::Location& location,
+      int size,
+      int64 timestamp_us,
+      base::TimeDelta discard_front_padding) {
+    EXPECT_CALL(*this, OnReadDoneCalled(size, timestamp_us));
+    return base::Bind(&FFmpegDemuxerTest::OnReadDone,
+                      base::Unretained(this),
+                      location,
+                      size,
+                      timestamp_us,
+                      discard_front_padding);
   }
 
   // TODO(xhwang): This is a workaround of the issue that move-only parameters
@@ -386,25 +412,102 @@ TEST_F(FFmpegDemuxerTest, Read_Text) {
   message_loop_.Run();
 }
 
-TEST_F(FFmpegDemuxerTest, Read_VideoNonZeroStart) {
+TEST_F(FFmpegDemuxerTest, Read_VideoPositiveStartTime) {
+  const int64 kTimelineOffsetMs = 1352550896000LL;
+
   // Test the start time is the first timestamp of the video and audio stream.
   CreateDemuxer("nonzero-start-time.webm");
-  InitializeDemuxer();
+  InitializeDemuxerWithTimelineOffset(
+      false, base::Time::FromJsTime(kTimelineOffsetMs));
 
   // Attempt a read from the video stream and run the message loop until done.
   DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
   DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
 
-  // Check first buffer in video stream.
-  video->Read(NewReadCB(FROM_HERE, 5636, 400000));
-  message_loop_.Run();
+  const base::TimeDelta video_start_time =
+      base::TimeDelta::FromMicroseconds(400000);
+  const base::TimeDelta audio_start_time =
+      base::TimeDelta::FromMicroseconds(396000);
 
-  // Check first buffer in audio stream.
-  audio->Read(NewReadCB(FROM_HERE, 165, 396000));
-  message_loop_.Run();
+  // Run the test twice with a seek in between.
+  for (int i = 0; i < 2; ++i) {
+    // Check first buffer in video stream.  It should have been adjusted such
+    // that it starts 400ms after the first audio buffer.
+    video->Read(
+        NewReadCB(FROM_HERE,
+                  5636,
+                  (video_start_time - audio_start_time).InMicroseconds()));
+    message_loop_.Run();
 
-  // Verify that the start time is equal to the lowest timestamp (ie the audio).
-  EXPECT_EQ(demuxer_->GetStartTime().InMicroseconds(), 396000);
+    // Since the audio buffer has a lower first timestamp, it should become
+    // zero.
+    audio->Read(NewReadCB(FROM_HERE, 165, 0));
+    message_loop_.Run();
+
+    // Verify that the start time is equal to the lowest timestamp (ie the
+    // audio).
+    EXPECT_EQ(audio_start_time, demuxer_->start_time());
+
+    // Verify that the timeline offset has been adjusted by the start time.
+    EXPECT_EQ(kTimelineOffsetMs + audio_start_time.InMilliseconds(),
+              demuxer_->GetTimelineOffset().ToJavaTime());
+
+    // Seek back to the beginning and repeat the test.
+    WaitableMessageLoopEvent event;
+    demuxer_->Seek(base::TimeDelta(), event.GetPipelineStatusCB());
+    event.RunAndWaitForStatus(PIPELINE_OK);
+  }
+}
+
+TEST_F(FFmpegDemuxerTest, Read_AudioNoStartTime) {
+  // FFmpeg does not set timestamps when demuxing wave files.  Ensure that the
+  // demuxer sets a start time of zero in this case.
+  CreateDemuxer("sfx_s24le.wav");
+  InitializeDemuxer();
+
+  // Run the test twice with a seek in between.
+  for (int i = 0; i < 2; ++i) {
+    demuxer_->GetStream(DemuxerStream::AUDIO)
+        ->Read(NewReadCB(FROM_HERE, 4095, 0));
+    message_loop_.Run();
+    EXPECT_EQ(base::TimeDelta(), demuxer_->start_time());
+
+    // Seek back to the beginning and repeat the test.
+    WaitableMessageLoopEvent event;
+    demuxer_->Seek(base::TimeDelta(), event.GetPipelineStatusCB());
+    event.RunAndWaitForStatus(PIPELINE_OK);
+  }
+}
+
+TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOggDiscard) {
+  // Many ogg files have negative starting timestamps, so ensure demuxing and
+  // seeking work correctly with a negative start time.
+  CreateDemuxer("bear.ogv");
+  InitializeDemuxer();
+
+  // Run the test twice with a seek in between.
+  for (int i = 0; i < 2; ++i) {
+    demuxer_->GetStream(DemuxerStream::AUDIO)->Read(
+        NewReadCBWithCheckedDiscard(FROM_HERE, 40, 0, kInfiniteDuration()));
+    message_loop_.Run();
+    demuxer_->GetStream(DemuxerStream::AUDIO)->Read(
+        NewReadCBWithCheckedDiscard(FROM_HERE, 41, 2903, kInfiniteDuration()));
+    message_loop_.Run();
+    demuxer_->GetStream(DemuxerStream::AUDIO)->Read(NewReadCBWithCheckedDiscard(
+        FROM_HERE, 173, 5805, base::TimeDelta::FromMicroseconds(10159)));
+    message_loop_.Run();
+
+    demuxer_->GetStream(DemuxerStream::AUDIO)
+        ->Read(NewReadCB(FROM_HERE, 148, 18866));
+    message_loop_.Run();
+    EXPECT_EQ(base::TimeDelta::FromMicroseconds(-15964),
+              demuxer_->start_time());
+
+    // Seek back to the beginning and repeat the test.
+    WaitableMessageLoopEvent event;
+    demuxer_->Seek(base::TimeDelta(), event.GetPipelineStatusCB());
+    event.RunAndWaitForStatus(PIPELINE_OK);
+  }
 }
 
 TEST_F(FFmpegDemuxerTest, Read_EndOfStream) {
