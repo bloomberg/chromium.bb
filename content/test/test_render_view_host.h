@@ -109,7 +109,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 #endif
   virtual void RenderProcessGone(base::TerminationStatus status,
                                  int error_code) OVERRIDE;
-  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) { }
   virtual void Destroy() OVERRIDE;
   virtual void SetTooltipText(const base::string16& tooltip_text) OVERRIDE {}
   virtual void SelectionBoundsChanged(
