@@ -20,7 +20,7 @@ namespace common {
 // corresponds to that of the control pipe.
 struct MessagePumpMojo::WaitState {
   std::vector<Handle> handles;
-  std::vector<MojoWaitFlags> wait_flags;
+  std::vector<MojoHandleSignals> wait_signals;
 };
 
 struct MessagePumpMojo::RunState {
@@ -50,7 +50,7 @@ scoped_ptr<base::MessagePump> MessagePumpMojo::Create() {
 
 void MessagePumpMojo::AddHandler(MessagePumpMojoHandler* handler,
                                  const Handle& handle,
-                                 MojoWaitFlags wait_flags,
+                                 MojoHandleSignals wait_signals,
                                  base::TimeTicks deadline) {
   DCHECK(handler);
   DCHECK(handle.is_valid());
@@ -58,7 +58,7 @@ void MessagePumpMojo::AddHandler(MessagePumpMojoHandler* handler,
   DCHECK_EQ(0u, handlers_.count(handle));
   Handler handler_data;
   handler_data.handler = handler;
-  handler_data.wait_flags = wait_flags;
+  handler_data.wait_signals = wait_signals;
   handler_data.deadline = deadline;
   handler_data.id = next_handler_id_++;
   handlers_[handle] = handler_data;
@@ -142,7 +142,7 @@ void MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
   const MojoDeadline deadline = block ? GetDeadlineForWait(run_state) : 0;
   const WaitState wait_state = GetWaitState(run_state);
   const MojoResult result =
-      WaitMany(wait_state.handles, wait_state.wait_flags, deadline);
+      WaitMany(wait_state.handles, wait_state.wait_signals, deadline);
   if (result == 0) {
     // Control pipe was written to.
     uint32_t num_bytes = 0;
@@ -189,7 +189,7 @@ void MessagePumpMojo::RemoveFirstInvalidHandle(const WaitState& wait_state) {
   // TODO(sky): deal with control pipe going bad.
   for (size_t i = 1; i < wait_state.handles.size(); ++i) {
     const MojoResult result =
-        Wait(wait_state.handles[i], wait_state.wait_flags[i], 0);
+        Wait(wait_state.handles[i], wait_state.wait_signals[i], 0);
     if (result == MOJO_RESULT_INVALID_ARGUMENT ||
         result == MOJO_RESULT_FAILED_PRECONDITION ||
         result == MOJO_RESULT_CANCELLED) {
@@ -215,12 +215,12 @@ MessagePumpMojo::WaitState MessagePumpMojo::GetWaitState(
     const RunState& run_state) const {
   WaitState wait_state;
   wait_state.handles.push_back(run_state.read_handle.get());
-  wait_state.wait_flags.push_back(MOJO_WAIT_FLAG_READABLE);
+  wait_state.wait_signals.push_back(MOJO_WAIT_FLAG_READABLE);
 
   for (HandleToHandler::const_iterator i = handlers_.begin();
        i != handlers_.end(); ++i) {
     wait_state.handles.push_back(i->first);
-    wait_state.wait_flags.push_back(i->second.wait_flags);
+    wait_state.wait_signals.push_back(i->second.wait_signals);
   }
   return wait_state;
 }

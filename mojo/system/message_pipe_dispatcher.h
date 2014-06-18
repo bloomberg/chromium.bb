@@ -89,7 +89,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
                                            uint32_t* num_dispatchers,
                                            MojoReadMessageFlags flags) OVERRIDE;
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
-                                         MojoWaitFlags flags,
+                                         MojoHandleSignals signals,
                                          uint32_t context) OVERRIDE;
   virtual void RemoveWaiterImplNoLock(Waiter* waiter) OVERRIDE;
   virtual void StartSerializeImplNoLock(Channel* channel,

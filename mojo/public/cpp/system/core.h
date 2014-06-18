@@ -199,21 +199,21 @@ MOJO_COMPILE_ASSERT(sizeof(ScopedHandle) == sizeof(Handle),
                     bad_size_for_cpp_ScopedHandle);
 
 inline MojoResult Wait(const Handle& handle,
-                       MojoWaitFlags flags,
+                       MojoHandleSignals signals,
                        MojoDeadline deadline) {
-  return MojoWait(handle.value(), flags, deadline);
+  return MojoWait(handle.value(), signals, deadline);
 }
 
 // |HandleVectorType| and |FlagsVectorType| should be similar enough to
-// |std::vector<Handle>| and |std::vector<MojoWaitFlags>|, respectively:
+// |std::vector<Handle>| and |std::vector<MojoHandleSignals>|, respectively:
 //  - They should have a (const) |size()| method that returns an unsigned type.
 //  - They must provide contiguous storage, with access via (const) reference to
 //    that storage provided by a (const) |operator[]()| (by reference).
 template <class HandleVectorType, class FlagsVectorType>
 inline MojoResult WaitMany(const HandleVectorType& handles,
-                           const FlagsVectorType& flags,
+                           const FlagsVectorType& signals,
                            MojoDeadline deadline) {
-  if (flags.size() != handles.size())
+  if (signals.size() != handles.size())
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (handles.size() > std::numeric_limits<uint32_t>::max())
     return MOJO_RESULT_OUT_OF_RANGE;
@@ -222,11 +222,12 @@ inline MojoResult WaitMany(const HandleVectorType& handles,
     return MojoWaitMany(NULL, NULL, 0, deadline);
 
   const Handle& first_handle = handles[0];
-  const MojoWaitFlags& first_flag = flags[0];
-  return MojoWaitMany(reinterpret_cast<const MojoHandle*>(&first_handle),
-                      reinterpret_cast<const MojoWaitFlags*>(&first_flag),
-                      static_cast<uint32_t>(handles.size()),
-                      deadline);
+  const MojoHandleSignals& first_signals = signals[0];
+  return MojoWaitMany(
+      reinterpret_cast<const MojoHandle*>(&first_handle),
+      reinterpret_cast<const MojoHandleSignals*>(&first_signals),
+      static_cast<uint32_t>(handles.size()),
+      deadline);
 }
 
 // |Close()| takes ownership of the handle, since it'll invalidate it.

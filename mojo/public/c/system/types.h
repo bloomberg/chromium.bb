@@ -142,35 +142,38 @@ const MojoDeadline MOJO_DEADLINE_INDEFINITE = static_cast<MojoDeadline>(-1);
 #define MOJO_DEADLINE_INDEFINITE ((MojoDeadline) -1)
 #endif
 
-// |MojoWaitFlags|: Used to specify the state of a handle to wait on (e.g., the
-// ability to read or write to it).
+// |MojoHandleSignals|: Used to specify signals that can be waited on for a
+// handle (and which can be triggered), e.g., the ability to read or write to
+// the handle.
 //   |MOJO_WAIT_FLAG_NONE| - No flags. |MojoWait()|, etc. will return
 //       |MOJO_RESULT_FAILED_PRECONDITION| if you attempt to wait on this.
 //   |MOJO_WAIT_FLAG_READABLE| - Can read (e.g., a message) from the handle.
 //   |MOJO_WAIT_FLAG_WRITABLE| - Can write (e.g., a message) to the handle.
 //   |MOJO_WAIT_FLAG_EVERYTHING| - All flags.
 
-typedef uint32_t MojoWaitFlags;
+typedef uint32_t MojoHandleSignals;
 
+// TODO(vtl): Rename these to MOJO_HANDLE_SIGNAL_....
 #ifdef __cplusplus
-const MojoWaitFlags MOJO_WAIT_FLAG_NONE = 0;
-const MojoWaitFlags MOJO_WAIT_FLAG_READABLE = 1 << 0;
-const MojoWaitFlags MOJO_WAIT_FLAG_WRITABLE = 1 << 1;
-const MojoWaitFlags MOJO_WAIT_FLAG_EVERYTHING = ~0;
+const MojoHandleSignals MOJO_WAIT_FLAG_NONE = 0;
+const MojoHandleSignals MOJO_WAIT_FLAG_READABLE = 1 << 0;
+const MojoHandleSignals MOJO_WAIT_FLAG_WRITABLE = 1 << 1;
+const MojoHandleSignals MOJO_WAIT_FLAG_EVERYTHING = ~0;
 #else
-#define MOJO_WAIT_FLAG_NONE ((MojoWaitFlags) 0)
-#define MOJO_WAIT_FLAG_READABLE ((MojoWaitFlags) 1 << 0)
-#define MOJO_WAIT_FLAG_WRITABLE ((MojoWaitFlags) 1 << 1)
-#define MOJO_WAIT_FLAG_EVERYTHING (~((MojoWaitFlags) 0))
+#define MOJO_WAIT_FLAG_NONE ((MojoHandleSignals) 0)
+#define MOJO_WAIT_FLAG_READABLE ((MojoHandleSignals) 1 << 0)
+#define MOJO_WAIT_FLAG_WRITABLE ((MojoHandleSignals) 1 << 1)
+#define MOJO_WAIT_FLAG_EVERYTHING (~((MojoHandleSignals) 0))
 #endif
 
 // TODO(vtl): Add out parameters with this to MojoWait/MojoWaitMany.
 // Note: This struct is not extensible (and only has 32-bit quantities), so it's
 // 32-bit-aligned.
+// TODO(vtl): Rename this to MojoHandleSignalsState.
 MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int32_t) == 4, int32_t_has_weird_alignment);
 struct MOJO_ALIGNAS(4) MojoWaitFlagsState {
-  MojoWaitFlags satisfied_flags;
-  MojoWaitFlags satisfiable_flags;
+  MojoHandleSignals satisfied_signals;
+  MojoHandleSignals satisfiable_signals;
 };
 MOJO_COMPILE_ASSERT(sizeof(MojoWaitFlagsState) == 8,
                     MojoWaitFlagsState_has_wrong_size);

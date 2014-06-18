@@ -26,7 +26,7 @@ struct RunLoop::WaitState {
   WaitState() : deadline(MOJO_DEADLINE_INDEFINITE) {}
 
   std::vector<Handle> handles;
-  std::vector<MojoWaitFlags> wait_flags;
+  std::vector<MojoHandleSignals> handle_signals;
   MojoDeadline deadline;
 };
 
@@ -64,7 +64,7 @@ RunLoop* RunLoop::current() {
 
 void RunLoop::AddHandler(RunLoopHandler* handler,
                          const Handle& handle,
-                         MojoWaitFlags wait_flags,
+                         MojoHandleSignals handle_signals,
                          MojoDeadline deadline) {
   assert(current() == this);
   assert(handler);
@@ -73,7 +73,7 @@ void RunLoop::AddHandler(RunLoopHandler* handler,
   assert(0u == handler_data_.count(handle));
   HandlerData handler_data;
   handler_data.handler = handler;
-  handler_data.wait_flags = wait_flags;
+  handler_data.handle_signals = handle_signals;
   handler_data.deadline = (deadline == MOJO_DEADLINE_INDEFINITE) ?
       kInvalidTimeTicks :
       GetTimeTicksNow() + static_cast<MojoTimeTicks>(deadline);
@@ -125,8 +125,9 @@ bool RunLoop::Wait(bool non_blocking) {
     return false;
   }
 
-  const MojoResult result =
-      WaitMany(wait_state.handles, wait_state.wait_flags, wait_state.deadline);
+  const MojoResult result = WaitMany(wait_state.handles,
+                                     wait_state.handle_signals,
+                                     wait_state.deadline);
   if (result >= 0) {
     const size_t index = static_cast<size_t>(result);
     assert(handler_data_.find(wait_state.handles[index]) !=
@@ -175,7 +176,7 @@ bool RunLoop::NotifyDeadlineExceeded() {
 bool RunLoop::RemoveFirstInvalidHandle(const WaitState& wait_state) {
   for (size_t i = 0; i < wait_state.handles.size(); ++i) {
     const MojoResult result =
-        mojo::Wait(wait_state.handles[i], wait_state.wait_flags[i],
+        mojo::Wait(wait_state.handles[i], wait_state.handle_signals[i],
                    static_cast<MojoDeadline>(0));
     if (result == MOJO_RESULT_INVALID_ARGUMENT ||
         result == MOJO_RESULT_FAILED_PRECONDITION) {
@@ -199,7 +200,7 @@ RunLoop::WaitState RunLoop::GetWaitState(bool non_blocking) const {
   for (HandleToHandlerData::const_iterator i = handler_data_.begin();
        i != handler_data_.end(); ++i) {
     wait_state.handles.push_back(i->first);
-    wait_state.wait_flags.push_back(i->second.wait_flags);
+    wait_state.handle_signals.push_back(i->second.handle_signals);
     if (!non_blocking && i->second.deadline != kInvalidTimeTicks &&
         (min_time == kInvalidTimeTicks || i->second.deadline < min_time)) {
       min_time = i->second.deadline;

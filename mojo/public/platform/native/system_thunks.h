@@ -37,10 +37,10 @@ struct MojoSystemThunks {
   MojoTimeTicks (*GetTimeTicksNow)();
   MojoResult (*Close)(MojoHandle handle);
   MojoResult (*Wait)(MojoHandle handle,
-                     MojoWaitFlags flags,
+                     MojoHandleSignals signals,
                      MojoDeadline deadline);
   MojoResult (*WaitMany)(const MojoHandle* handles,
-                         const MojoWaitFlags* flags,
+                         const MojoHandleSignals* signals,
                          uint32_t num_handles,
                          MojoDeadline deadline);
   MojoResult (*CreateMessagePipe)(const MojoCreateMessagePipeOptions* options,

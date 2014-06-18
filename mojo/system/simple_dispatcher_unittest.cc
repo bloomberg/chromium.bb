@@ -31,32 +31,32 @@ class MockSimpleDispatcher : public SimpleDispatcher {
       : state_(MOJO_WAIT_FLAG_NONE,
                MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE) {}
 
-  void SetSatisfiedFlags(MojoWaitFlags new_satisfied_flags) {
+  void SetSatisfiedSignals(MojoHandleSignals new_satisfied_signals) {
     base::AutoLock locker(lock());
 
-    // Any new flags that are set should be satisfiable.
-    CHECK_EQ(new_satisfied_flags & ~state_.satisfied_flags,
-             new_satisfied_flags & ~state_.satisfied_flags &
-                 state_.satisfiable_flags);
+    // Any new signals that are set should be satisfiable.
+    CHECK_EQ(new_satisfied_signals & ~state_.satisfied_signals,
+             new_satisfied_signals & ~state_.satisfied_signals &
+                 state_.satisfiable_signals);
 
-    if (new_satisfied_flags == state_.satisfied_flags)
+    if (new_satisfied_signals == state_.satisfied_signals)
       return;
 
-    state_.satisfied_flags = new_satisfied_flags;
+    state_.satisfied_signals = new_satisfied_signals;
     WaitFlagsStateChangedNoLock();
   }
 
-  void SetSatisfiableFlags(MojoWaitFlags new_satisfiable_flags) {
+  void SetSatisfiableSignals(MojoHandleSignals new_satisfiable_signals) {
     base::AutoLock locker(lock());
 
     // Satisfied implies satisfiable.
-    CHECK_EQ(new_satisfiable_flags & state_.satisfied_flags,
-             state_.satisfied_flags);
+    CHECK_EQ(new_satisfiable_signals & state_.satisfied_signals,
+             state_.satisfied_signals);
 
-    if (new_satisfiable_flags == state_.satisfiable_flags)
+    if (new_satisfiable_signals == state_.satisfiable_signals)
       return;
 
-    state_.satisfiable_flags = new_satisfiable_flags;
+    state_.satisfiable_signals = new_satisfiable_signals;
     WaitFlagsStateChangedNoLock();
   }
 
@@ -96,16 +96,16 @@ TEST(SimpleDispatcherTest, Basic) {
 
   // Try adding a readable waiter when already readable.
   w.Init();
-  d->SetSatisfiedFlags(MOJO_WAIT_FLAG_READABLE);
+  d->SetSatisfiedSignals(MOJO_WAIT_FLAG_READABLE);
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
             d->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 0));
   // Shouldn't need to remove the waiter (it was not added).
 
   // Wait (forever) for writable when already writable.
   w.Init();
-  d->SetSatisfiedFlags(MOJO_WAIT_FLAG_READABLE);
+  d->SetSatisfiedSignals(MOJO_WAIT_FLAG_READABLE);
   EXPECT_EQ(MOJO_RESULT_OK, d->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 1));
-  d->SetSatisfiedFlags(MOJO_WAIT_FLAG_WRITABLE);
+  d->SetSatisfiedSignals(MOJO_WAIT_FLAG_WRITABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
@@ -114,9 +114,9 @@ TEST(SimpleDispatcherTest, Basic) {
 
   // Wait for zero time for writable when already writable.
   w.Init();
-  d->SetSatisfiedFlags(MOJO_WAIT_FLAG_READABLE);
+  d->SetSatisfiedSignals(MOJO_WAIT_FLAG_READABLE);
   EXPECT_EQ(MOJO_RESULT_OK, d->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 2));
-  d->SetSatisfiedFlags(MOJO_WAIT_FLAG_WRITABLE);
+  d->SetSatisfiedSignals(MOJO_WAIT_FLAG_WRITABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_OK, w.Wait(0, &context));
   EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
@@ -125,9 +125,9 @@ TEST(SimpleDispatcherTest, Basic) {
 
   // Wait for non-zero, finite time for writable when already writable.
   w.Init();
-  d->SetSatisfiedFlags(MOJO_WAIT_FLAG_READABLE);
+  d->SetSatisfiedSignals(MOJO_WAIT_FLAG_READABLE);
   EXPECT_EQ(MOJO_RESULT_OK, d->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 3));
-  d->SetSatisfiedFlags(MOJO_WAIT_FLAG_WRITABLE);
+  d->SetSatisfiedSignals(MOJO_WAIT_FLAG_WRITABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_OK,
             w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), &context));
@@ -137,7 +137,7 @@ TEST(SimpleDispatcherTest, Basic) {
 
   // Wait for zero time for writable when not writable (will time out).
   w.Init();
-  d->SetSatisfiedFlags(MOJO_WAIT_FLAG_READABLE);
+  d->SetSatisfiedSignals(MOJO_WAIT_FLAG_READABLE);
   EXPECT_EQ(MOJO_RESULT_OK, d->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 4));
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0, NULL));
@@ -147,7 +147,7 @@ TEST(SimpleDispatcherTest, Basic) {
   // Wait for non-zero, finite time for writable when not writable (will time
   // out).
   w.Init();
-  d->SetSatisfiedFlags(MOJO_WAIT_FLAG_READABLE);
+  d->SetSatisfiedSignals(MOJO_WAIT_FLAG_READABLE);
   EXPECT_EQ(MOJO_RESULT_OK, d->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 5));
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
@@ -169,17 +169,17 @@ TEST(SimpleDispatcherTest, BasicUnsatisfiable) {
 
   // Try adding a writable waiter when it can never be writable.
   w.Init();
-  d->SetSatisfiableFlags(MOJO_WAIT_FLAG_READABLE);
-  d->SetSatisfiedFlags(0);
+  d->SetSatisfiableSignals(MOJO_WAIT_FLAG_READABLE);
+  d->SetSatisfiedSignals(0);
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             d->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 1));
   // Shouldn't need to remove the waiter (it was not added).
 
   // Wait (forever) for writable and then it becomes never writable.
   w.Init();
-  d->SetSatisfiableFlags(MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE);
+  d->SetSatisfiableSignals(MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE);
   EXPECT_EQ(MOJO_RESULT_OK, d->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 2));
-  d->SetSatisfiableFlags(MOJO_WAIT_FLAG_READABLE);
+  d->SetSatisfiableSignals(MOJO_WAIT_FLAG_READABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             w.Wait(MOJO_DEADLINE_INDEFINITE, &context));
@@ -189,9 +189,9 @@ TEST(SimpleDispatcherTest, BasicUnsatisfiable) {
 
   // Wait for zero time for writable and then it becomes never writable.
   w.Init();
-  d->SetSatisfiableFlags(MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE);
+  d->SetSatisfiableSignals(MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE);
   EXPECT_EQ(MOJO_RESULT_OK, d->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 3));
-  d->SetSatisfiableFlags(MOJO_WAIT_FLAG_READABLE);
+  d->SetSatisfiableSignals(MOJO_WAIT_FLAG_READABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, w.Wait(0, &context));
   EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
@@ -201,9 +201,9 @@ TEST(SimpleDispatcherTest, BasicUnsatisfiable) {
   // Wait for non-zero, finite time for writable and then it becomes never
   // writable.
   w.Init();
-  d->SetSatisfiableFlags(MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE);
+  d->SetSatisfiableSignals(MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE);
   EXPECT_EQ(MOJO_RESULT_OK, d->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 4));
-  d->SetSatisfiableFlags(MOJO_WAIT_FLAG_READABLE);
+  d->SetSatisfiableSignals(MOJO_WAIT_FLAG_READABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), &context));
@@ -275,7 +275,7 @@ TEST(SimpleDispatcherTest, BasicThreaded) {
   {
     scoped_refptr<MockSimpleDispatcher> d(new MockSimpleDispatcher());
     {
-      d->SetSatisfiedFlags(MOJO_WAIT_FLAG_READABLE);
+      d->SetSatisfiedSignals(MOJO_WAIT_FLAG_READABLE);
       test::WaiterThread thread(d,
                                 MOJO_WAIT_FLAG_READABLE,
                                 MOJO_DEADLINE_INDEFINITE,
@@ -302,7 +302,7 @@ TEST(SimpleDispatcherTest, BasicThreaded) {
     stopwatch.Start();
     thread.Start();
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
-    d->SetSatisfiedFlags(MOJO_WAIT_FLAG_READABLE);
+    d->SetSatisfiedSignals(MOJO_WAIT_FLAG_READABLE);
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   }  // Joins the thread.
   base::TimeDelta elapsed = stopwatch.Elapsed();
@@ -323,7 +323,7 @@ TEST(SimpleDispatcherTest, BasicThreaded) {
     stopwatch.Start();
     thread.Start();
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
-    d->SetSatisfiableFlags(MOJO_WAIT_FLAG_NONE);
+    d->SetSatisfiableSignals(MOJO_WAIT_FLAG_NONE);
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   }  // Joins the thread.
   elapsed = stopwatch.Elapsed();
@@ -366,7 +366,7 @@ TEST(SimpleDispatcherTest, BasicThreaded) {
       thread.Start();
       base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
       // Not what we're waiting for.
-      d->SetSatisfiedFlags(MOJO_WAIT_FLAG_WRITABLE);
+      d->SetSatisfiedSignals(MOJO_WAIT_FLAG_WRITABLE);
     }  // Joins the thread (after its wait times out).
     // If we closed earlier, then probably we'd get a |MOJO_RESULT_CANCELLED|.
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
@@ -400,7 +400,7 @@ TEST(SimpleDispatcherTest, MultipleWaiters) {
       threads.back()->Start();
     }
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
-    d->SetSatisfiedFlags(MOJO_WAIT_FLAG_READABLE);
+    d->SetSatisfiedSignals(MOJO_WAIT_FLAG_READABLE);
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   }  // Joins the threads.
   for (uint32_t i = 0; i < kNumWaiters; i++) {
@@ -435,7 +435,7 @@ TEST(SimpleDispatcherTest, MultipleWaiters) {
       threads.back()->Start();
     }
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
-    d->SetSatisfiedFlags(MOJO_WAIT_FLAG_READABLE);
+    d->SetSatisfiedSignals(MOJO_WAIT_FLAG_READABLE);
     // This will wake up the ones waiting to write.
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   }  // Joins the threads.
@@ -476,9 +476,9 @@ TEST(SimpleDispatcherTest, MultipleWaiters) {
       threads.back()->Start();
     }
     base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
-    d->SetSatisfiableFlags(MOJO_WAIT_FLAG_READABLE);
+    d->SetSatisfiableSignals(MOJO_WAIT_FLAG_READABLE);
     base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
-    d->SetSatisfiedFlags(MOJO_WAIT_FLAG_READABLE);
+    d->SetSatisfiedSignals(MOJO_WAIT_FLAG_READABLE);
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   }  // Joins the threads.
   for (uint32_t i = 0; i < kNumWaiters / 2; i++) {
@@ -516,7 +516,7 @@ TEST(SimpleDispatcherTest, MultipleWaiters) {
       threads.back()->Start();
     }
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
-    d->SetSatisfiedFlags(MOJO_WAIT_FLAG_READABLE);
+    d->SetSatisfiedSignals(MOJO_WAIT_FLAG_READABLE);
     // All those waiting for writable should have timed out.
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   }  // Joins the threads.

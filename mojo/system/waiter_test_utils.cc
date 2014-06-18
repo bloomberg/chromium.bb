@@ -26,7 +26,7 @@ void SimpleWaiterThread::Run() {
 }
 
 WaiterThread::WaiterThread(scoped_refptr<Dispatcher> dispatcher,
-                           MojoWaitFlags wait_flags,
+                           MojoHandleSignals handle_signals,
                            MojoDeadline deadline,
                            uint32_t context,
                            bool* did_wait_out,
@@ -34,7 +34,7 @@ WaiterThread::WaiterThread(scoped_refptr<Dispatcher> dispatcher,
                            uint32_t* context_out)
     : base::SimpleThread("waiter_thread"),
       dispatcher_(dispatcher),
-      wait_flags_(wait_flags),
+      handle_signals_(handle_signals),
       deadline_(deadline),
       context_(context),
       did_wait_out_(did_wait_out),
@@ -52,7 +52,7 @@ WaiterThread::~WaiterThread() {
 void WaiterThread::Run() {
   waiter_.Init();
 
-  *result_out_ = dispatcher_->AddWaiter(&waiter_, wait_flags_, context_);
+  *result_out_ = dispatcher_->AddWaiter(&waiter_, handle_signals_, context_);
   if (*result_out_ != MOJO_RESULT_OK)
     return;
 

@@ -37,7 +37,7 @@ class MOJO_COMMON_EXPORT HandleWatcher {
   // before the handle is ready, then |callback| is invoked with a result of
   // MOJO_RESULT_ABORTED.
   void Start(const Handle& handle,
-             MojoWaitFlags wait_flags,
+             MojoHandleSignals handle_signals,
              MojoDeadline deadline,
              const base::Callback<void(MojoResult)>& callback);
 

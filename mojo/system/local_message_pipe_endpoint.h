@@ -37,7 +37,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
                                  uint32_t* num_dispatchers,
                                  MojoReadMessageFlags flags) OVERRIDE;
   virtual MojoResult AddWaiter(Waiter* waiter,
-                               MojoWaitFlags flags,
+                               MojoHandleSignals signals,
                                uint32_t context) OVERRIDE;
   virtual void RemoveWaiter(Waiter* waiter) OVERRIDE;
 

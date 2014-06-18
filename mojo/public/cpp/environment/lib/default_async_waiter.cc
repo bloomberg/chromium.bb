@@ -59,7 +59,7 @@ class RunLoopHandlerImpl : public RunLoopHandler {
 };
 
 MojoAsyncWaitID AsyncWait(MojoHandle handle,
-                          MojoWaitFlags flags,
+                          MojoHandleSignals signals,
                           MojoDeadline deadline,
                           MojoAsyncWaitCallback callback,
                           void* closure) {
@@ -70,7 +70,7 @@ MojoAsyncWaitID AsyncWait(MojoHandle handle,
   // CancelWait is invoked.
   RunLoopHandlerImpl* run_loop_handler =
       new RunLoopHandlerImpl(Handle(handle), callback, closure);
-  run_loop->AddHandler(run_loop_handler, Handle(handle), flags, deadline);
+  run_loop->AddHandler(run_loop_handler, Handle(handle), signals, deadline);
   return reinterpret_cast<MojoAsyncWaitID>(run_loop_handler);
 }
 

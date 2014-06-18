@@ -42,41 +42,41 @@ MOJO_SYSTEM_EXPORT MojoTimeTicks MojoGetTimeTicksNow(void);
 // fail with |MOJO_RESULT_INVALID_ARGUMENT| if they happen after.
 MOJO_SYSTEM_EXPORT MojoResult MojoClose(MojoHandle handle);
 
-// Waits on the given handle until the state indicated by |flags| is satisfied
+// Waits on the given handle until a signal indicated by |signals| is satisfied
 // or until |deadline| has passed.
 //
 // Returns:
-//   |MOJO_RESULT_OK| if some flag in |flags| was satisfied (or is already
+//   |MOJO_RESULT_OK| if some signal in |signals| was satisfied (or is already
 //        satisfied).
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |handle| is not a valid handle (e.g., if
 //       it has already been closed).
 //   |MOJO_RESULT_DEADLINE_EXCEEDED| if the deadline has passed without any of
-//       the flags being satisfied.
+//       the signals being satisfied.
 //   |MOJO_RESULT_FAILED_PRECONDITION| if it is or becomes impossible that any
-//       flag in |flags| will ever be satisfied.
+//       signal in |signals| will ever be satisfied.
 //
 // If there are multiple waiters (on different threads, obviously) waiting on
-// the same handle and flag and that flag becomes set, all waiters will be
-// awoken.
+// the same handle and signal, and that signal becomes is satisfied, all waiters
+// will be awoken.
 MOJO_SYSTEM_EXPORT MojoResult MojoWait(MojoHandle handle,
-                                       MojoWaitFlags flags,
+                                       MojoHandleSignals signals,
                                        MojoDeadline deadline);
 
 // Waits on |handles[0]|, ..., |handles[num_handles-1]| for at least one of them
-// to satisfy the state indicated by |flags[0]|, ..., |flags[num_handles-1]|,
+// to satisfy a signal indicated by |signals[0]|, ..., |signals[num_handles-1]|,
 // respectively, or until |deadline| has passed.
 //
 // Returns:
-//   The index |i| (from 0 to |num_handles-1|) if |handle[i]| satisfies
-//       |flags[i]|.
+//   The index |i| (from 0 to |num_handles-1|) if |handle[i]| satisfies a signal
+//       from |signals[i]|.
 //   |MOJO_RESULT_INVALID_ARGUMENT| if some |handle[i]| is not a valid handle
 //       (e.g., if it has already been closed).
 //   |MOJO_RESULT_DEADLINE_EXCEEDED| if the deadline has passed without any of
-//       handles satisfying any of its flags.
+//       handles satisfying any of its signals.
 //   |MOJO_RESULT_FAILED_PRECONDITION| if it is or becomes impossible that SOME
-//       |handle[i]| will ever satisfy any of its flags |flags[i]|.
+//       |handle[i]| will ever satisfy any of the signals in |signals[i]|.
 MOJO_SYSTEM_EXPORT MojoResult MojoWaitMany(const MojoHandle* handles,
-                                           const MojoWaitFlags* flags,
+                                           const MojoHandleSignals* signals,
                                            uint32_t num_handles,
                                            MojoDeadline deadline);
 

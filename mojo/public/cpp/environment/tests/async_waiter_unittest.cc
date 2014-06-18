@@ -40,11 +40,11 @@ class TestAsyncWaitCallback {
 };
 
 MojoAsyncWaitID CallAsyncWait(const Handle& handle,
-                              MojoWaitFlags flags,
+                              MojoHandleSignals signals,
                               TestAsyncWaitCallback* callback) {
   return GetDefaultAsyncWaiter()->AsyncWait(
       handle.value(),
-      flags,
+      signals,
       MOJO_DEADLINE_INDEFINITE,
       &TestAsyncWaitCallback::OnHandleReady,
       callback);

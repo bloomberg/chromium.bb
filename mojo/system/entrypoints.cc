@@ -40,16 +40,16 @@ MojoResult MojoClose(MojoHandle handle) {
 }
 
 MojoResult MojoWait(MojoHandle handle,
-                    MojoWaitFlags flags,
+                    MojoHandleSignals signals,
                     MojoDeadline deadline) {
-  return g_core->Wait(handle, flags, deadline);
+  return g_core->Wait(handle, signals, deadline);
 }
 
 MojoResult MojoWaitMany(const MojoHandle* handles,
-                        const MojoWaitFlags* flags,
+                        const MojoHandleSignals* signals,
                         uint32_t num_handles,
                         MojoDeadline deadline) {
-  return g_core->WaitMany(handles, flags, num_handles, deadline);
+  return g_core->WaitMany(handles, signals, num_handles, deadline);
 }
 
 MojoResult MojoCreateMessagePipe(const MojoCreateMessagePipeOptions* options,

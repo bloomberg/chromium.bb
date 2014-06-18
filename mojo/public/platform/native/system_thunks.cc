@@ -21,18 +21,18 @@ MojoResult MojoClose(MojoHandle handle) {
 }
 
 MojoResult MojoWait(MojoHandle handle,
-                    MojoWaitFlags flags,
+                    MojoHandleSignals signals,
                     MojoDeadline deadline) {
   assert(g_thunks.Wait);
-  return g_thunks.Wait(handle, flags, deadline);
+  return g_thunks.Wait(handle, signals, deadline);
 }
 
 MojoResult MojoWaitMany(const MojoHandle* handles,
-                        const MojoWaitFlags* flags,
+                        const MojoHandleSignals* signals,
                         uint32_t num_handles,
                         MojoDeadline deadline) {
   assert(g_thunks.WaitMany);
-  return g_thunks.WaitMany(handles, flags, num_handles, deadline);
+  return g_thunks.WaitMany(handles, signals, num_handles, deadline);
 }
 
 MojoResult MojoCreateMessagePipe(const MojoCreateMessagePipeOptions* options,

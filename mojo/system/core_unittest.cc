@@ -103,9 +103,9 @@ TEST_F(CoreTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             core()->Wait(h, MOJO_WAIT_FLAG_EVERYTHING, 10 * 1000));
   EXPECT_EQ(3u, info.GetAddWaiterCallCount());
-  MojoWaitFlags wait_flags = MOJO_WAIT_FLAG_EVERYTHING;
+  MojoHandleSignals handle_signals = MOJO_WAIT_FLAG_EVERYTHING;
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->WaitMany(&h, &wait_flags, 1, MOJO_DEADLINE_INDEFINITE));
+            core()->WaitMany(&h, &handle_signals, 1, MOJO_DEADLINE_INDEFINITE));
   EXPECT_EQ(4u, info.GetAddWaiterCallCount());
 
   EXPECT_EQ(0u, info.GetDtorCallCount());
@@ -148,36 +148,36 @@ TEST_F(CoreTest, InvalidArguments) {
 
   // |WaitMany()|:
   {
-    MojoHandle handles[2] = { MOJO_HANDLE_INVALID, MOJO_HANDLE_INVALID };
-    MojoWaitFlags flags[2] = { MOJO_WAIT_FLAG_EVERYTHING,
-                               MOJO_WAIT_FLAG_EVERYTHING };
+    MojoHandle handles[2] = {MOJO_HANDLE_INVALID, MOJO_HANDLE_INVALID};
+    MojoHandleSignals signals[2] = {MOJO_WAIT_FLAG_EVERYTHING,
+                                    MOJO_WAIT_FLAG_EVERYTHING};
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WaitMany(handles, flags, 0, MOJO_DEADLINE_INDEFINITE));
+              core()->WaitMany(handles, signals, 0, MOJO_DEADLINE_INDEFINITE));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WaitMany(NULL, flags, 0, MOJO_DEADLINE_INDEFINITE));
+              core()->WaitMany(NULL, signals, 0, MOJO_DEADLINE_INDEFINITE));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               core()->WaitMany(handles, NULL, 0, MOJO_DEADLINE_INDEFINITE));
 
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WaitMany(NULL, flags, 1, MOJO_DEADLINE_INDEFINITE));
+              core()->WaitMany(NULL, signals, 1, MOJO_DEADLINE_INDEFINITE));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               core()->WaitMany(handles, NULL, 1, MOJO_DEADLINE_INDEFINITE));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WaitMany(handles, flags, 1, MOJO_DEADLINE_INDEFINITE));
+              core()->WaitMany(handles, signals, 1, MOJO_DEADLINE_INDEFINITE));
 
     MockHandleInfo info[2];
     handles[0] = CreateMockHandle(&info[0]);
 
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              core()->WaitMany(handles, flags, 1, MOJO_DEADLINE_INDEFINITE));
+              core()->WaitMany(handles, signals, 1, MOJO_DEADLINE_INDEFINITE));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WaitMany(handles, flags, 2, MOJO_DEADLINE_INDEFINITE));
+              core()->WaitMany(handles, signals, 2, MOJO_DEADLINE_INDEFINITE));
     handles[1] = handles[0] + 1;  // Invalid handle.
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WaitMany(handles, flags, 2, MOJO_DEADLINE_INDEFINITE));
+              core()->WaitMany(handles, signals, 2, MOJO_DEADLINE_INDEFINITE));
     handles[1] = CreateMockHandle(&info[1]);
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              core()->WaitMany(handles, flags, 2, MOJO_DEADLINE_INDEFINITE));
+              core()->WaitMany(handles, signals, 2, MOJO_DEADLINE_INDEFINITE));
 
     EXPECT_EQ(MOJO_RESULT_OK, core()->Close(handles[0]));
     EXPECT_EQ(MOJO_RESULT_OK, core()->Close(handles[1]));
@@ -320,7 +320,7 @@ TEST_F(CoreTest, InvalidArguments) {
 
 // TODO(vtl): test |Wait()| and |WaitMany()| properly
 //  - including |WaitMany()| with the same handle more than once (with
-//    same/different flags)
+//    same/different signals)
 
 TEST_F(CoreTest, MessagePipe) {
   MojoHandle h[2];
@@ -332,9 +332,10 @@ TEST_F(CoreTest, MessagePipe) {
   EXPECT_NE(h[0], h[1]);
 
   // Neither should be readable.
-  MojoWaitFlags flags[2] = { MOJO_WAIT_FLAG_READABLE, MOJO_WAIT_FLAG_READABLE };
+  MojoHandleSignals signals[2] = {MOJO_WAIT_FLAG_READABLE,
+                                  MOJO_WAIT_FLAG_READABLE};
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            core()->WaitMany(h, flags, 2, 0));
+            core()->WaitMany(h, signals, 2, 0));
 
   // Try to read anyway.
   char buffer[1] = { 'a' };
@@ -353,9 +354,9 @@ TEST_F(CoreTest, MessagePipe) {
             core()->Wait(h[1], MOJO_WAIT_FLAG_WRITABLE, 1000000000));
 
   // Also check that |h[1]| is writable using |WaitMany()|.
-  flags[0] = MOJO_WAIT_FLAG_READABLE;
-  flags[1] = MOJO_WAIT_FLAG_WRITABLE;
-  EXPECT_EQ(1, core()->WaitMany(h, flags, 2, MOJO_DEADLINE_INDEFINITE));
+  signals[0] = MOJO_WAIT_FLAG_READABLE;
+  signals[1] = MOJO_WAIT_FLAG_WRITABLE;
+  EXPECT_EQ(1, core()->WaitMany(h, signals, 2, MOJO_DEADLINE_INDEFINITE));
 
   // Write to |h[1]|.
   buffer[0] = 'b';
@@ -364,9 +365,9 @@ TEST_F(CoreTest, MessagePipe) {
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Check that |h[0]| is now readable.
-  flags[0] = MOJO_WAIT_FLAG_READABLE;
-  flags[1] = MOJO_WAIT_FLAG_READABLE;
-  EXPECT_EQ(0, core()->WaitMany(h, flags, 2, MOJO_DEADLINE_INDEFINITE));
+  signals[0] = MOJO_WAIT_FLAG_READABLE;
+  signals[1] = MOJO_WAIT_FLAG_READABLE;
+  EXPECT_EQ(0, core()->WaitMany(h, signals, 2, MOJO_DEADLINE_INDEFINITE));
 
   // Read from |h[0]|.
   // First, get only the size.

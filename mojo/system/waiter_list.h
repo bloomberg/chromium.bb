@@ -33,16 +33,16 @@ class MOJO_SYSTEM_IMPL_EXPORT WaiterList {
 
   void AwakeWaitersForStateChange(const WaitFlagsState& state);
   void CancelAllWaiters();
-  void AddWaiter(Waiter* waiter, MojoWaitFlags flags, uint32_t context);
+  void AddWaiter(Waiter* waiter, MojoHandleSignals signals, uint32_t context);
   void RemoveWaiter(Waiter* waiter);
 
  private:
   struct WaiterInfo {
-    WaiterInfo(Waiter* waiter, MojoWaitFlags flags, uint32_t context)
-        : waiter(waiter), flags(flags), context(context) {}
+    WaiterInfo(Waiter* waiter, MojoHandleSignals signals, uint32_t context)
+        : waiter(waiter), signals(signals), context(context) {}
 
     Waiter* waiter;
-    MojoWaitFlags flags;
+    MojoHandleSignals signals;
     uint32_t context;
   };
   typedef std::list<WaiterInfo> WaiterInfoList;

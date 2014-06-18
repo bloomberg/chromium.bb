@@ -217,10 +217,10 @@ MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
 }
 
 MojoResult MessagePipeDispatcher::AddWaiterImplNoLock(Waiter* waiter,
-                                                      MojoWaitFlags flags,
+                                                      MojoHandleSignals signals,
                                                       uint32_t context) {
   lock().AssertAcquired();
-  return message_pipe_->AddWaiter(port_, waiter, flags, context);
+  return message_pipe_->AddWaiter(port_, waiter, signals, context);
 }
 
 void MessagePipeDispatcher::RemoveWaiterImplNoLock(Waiter* waiter) {

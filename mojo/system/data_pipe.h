@@ -60,7 +60,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
                                     bool all_or_none);
   MojoResult ProducerEndWriteData(uint32_t num_bytes_written);
   MojoResult ProducerAddWaiter(Waiter* waiter,
-                               MojoWaitFlags flags,
+                               MojoHandleSignals signals,
                                uint32_t context);
   void ProducerRemoveWaiter(Waiter* waiter);
   bool ProducerIsBusy() const;
@@ -83,7 +83,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
                                    bool all_or_none);
   MojoResult ConsumerEndReadData(uint32_t num_bytes_read);
   MojoResult ConsumerAddWaiter(Waiter* waiter,
-                               MojoWaitFlags flags,
+                               MojoHandleSignals signals,
                                uint32_t context);
   void ConsumerRemoveWaiter(Waiter* waiter);
   bool ConsumerIsBusy() const;

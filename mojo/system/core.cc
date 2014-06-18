@@ -118,24 +118,24 @@ MojoResult Core::Close(MojoHandle handle) {
 }
 
 MojoResult Core::Wait(MojoHandle handle,
-                      MojoWaitFlags flags,
+                      MojoHandleSignals signals,
                       MojoDeadline deadline) {
-  return WaitManyInternal(&handle, &flags, 1, deadline);
+  return WaitManyInternal(&handle, &signals, 1, deadline);
 }
 
 MojoResult Core::WaitMany(const MojoHandle* handles,
-                          const MojoWaitFlags* flags,
+                          const MojoHandleSignals* signals,
                           uint32_t num_handles,
                           MojoDeadline deadline) {
   if (!VerifyUserPointerWithCount<MojoHandle>(handles, num_handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointerWithCount<MojoWaitFlags>(flags, num_handles))
+  if (!VerifyUserPointerWithCount<MojoHandleSignals>(signals, num_handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_handles < 1)
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_handles > kMaxWaitManyNumHandles)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
-  return WaitManyInternal(handles, flags, num_handles, deadline);
+  return WaitManyInternal(handles, signals, num_handles, deadline);
 }
 
 MojoResult Core::CreateMessagePipe(const MojoCreateMessagePipeOptions* options,
@@ -512,7 +512,7 @@ MojoResult Core::UnmapBuffer(void* buffer) {
 // TODO(vtl): This incurs a performance cost in |RemoveWaiter()|. Analyze this
 // more carefully and address it if necessary.
 MojoResult Core::WaitManyInternal(const MojoHandle* handles,
-                                  const MojoWaitFlags* flags,
+                                  const MojoHandleSignals* signals,
                                   uint32_t num_handles,
                                   MojoDeadline deadline) {
   DCHECK_GT(num_handles, 0u);
@@ -533,7 +533,7 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
   uint32_t i;
   MojoResult rv = MOJO_RESULT_OK;
   for (i = 0; i < num_handles; i++) {
-    rv = dispatchers[i]->AddWaiter(&waiter, flags[i], i);
+    rv = dispatchers[i]->AddWaiter(&waiter, signals[i], i);
     if (rv != MOJO_RESULT_OK)
       break;
   }

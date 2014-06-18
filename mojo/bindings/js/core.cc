@@ -31,16 +31,16 @@ MojoResult CloseHandle(gin::Handle<gin::HandleWrapper> handle) {
 }
 
 MojoResult WaitHandle(mojo::Handle handle,
-                      MojoWaitFlags flags,
+                      MojoHandleSignals signals,
                       MojoDeadline deadline) {
-  return MojoWait(handle.value(), flags, deadline);
+  return MojoWait(handle.value(), signals, deadline);
 }
 
 MojoResult WaitMany(
     const std::vector<mojo::Handle>& handles,
-    const std::vector<MojoWaitFlags>& flags,
+    const std::vector<MojoHandleSignals>& signals,
     MojoDeadline deadline) {
-  return mojo::WaitMany(handles, flags, deadline);
+  return mojo::WaitMany(handles, signals, deadline);
 }
 
 gin::Dictionary CreateMessagePipe(const gin::Arguments& args) {

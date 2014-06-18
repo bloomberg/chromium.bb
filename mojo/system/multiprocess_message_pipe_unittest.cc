@@ -125,11 +125,12 @@ class MultiprocessMessagePipeTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MultiprocessMessagePipeTest);
 };
 
-MojoResult WaitIfNecessary(scoped_refptr<MessagePipe> mp, MojoWaitFlags flags) {
+MojoResult WaitIfNecessary(scoped_refptr<MessagePipe> mp,
+                           MojoHandleSignals signals) {
   Waiter waiter;
   waiter.Init();
 
-  MojoResult add_result = mp->AddWaiter(0, &waiter, flags, 0);
+  MojoResult add_result = mp->AddWaiter(0, &waiter, signals, 0);
   if (add_result != MOJO_RESULT_OK) {
     return (add_result == MOJO_RESULT_ALREADY_EXISTS) ? MOJO_RESULT_OK :
                                                         add_result;

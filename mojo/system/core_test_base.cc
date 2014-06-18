@@ -130,7 +130,7 @@ class MockDispatcher : public Dispatcher {
   }
 
   virtual MojoResult AddWaiterImplNoLock(Waiter* /*waiter*/,
-                                         MojoWaitFlags /*flags*/,
+                                         MojoHandleSignals /*signals*/,
                                          uint32_t /*context*/) OVERRIDE {
     info_->IncrementAddWaiterCallCount();
     lock().AssertAcquired();

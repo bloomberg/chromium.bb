@@ -14,7 +14,7 @@ while (1);
  * satisfied.
  *
  * @param {MojoHandle} handle The handle to wait on.
- * @param {MojoWaitFlags} waitFlags Flags.
+ * @param {MojoHandleSignals} signals Specifies the condition to wait for.
  * @param {function (mojoResult)} callback Called with the result the wait is
  * complete. See MojoWait for possible result codes.
  *

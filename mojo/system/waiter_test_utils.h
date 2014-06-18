@@ -70,7 +70,7 @@ class WaiterThread : public base::SimpleThread {
   // Note: |*did_wait_out|, |*result_out|, and |*context_out| "belong" to this
   // object (i.e., may be modified by, on some other thread) while it's alive.
   WaiterThread(scoped_refptr<Dispatcher> dispatcher,
-               MojoWaitFlags wait_flags,
+               MojoHandleSignals handle_signals,
                MojoDeadline deadline,
                uint32_t context,
                bool* did_wait_out,
@@ -82,7 +82,7 @@ class WaiterThread : public base::SimpleThread {
   virtual void Run() OVERRIDE;
 
   const scoped_refptr<Dispatcher> dispatcher_;
-  const MojoWaitFlags wait_flags_;
+  const MojoHandleSignals handle_signals_;
   const MojoDeadline deadline_;
   const uint32_t context_;
   bool* const did_wait_out_;

@@ -33,7 +33,7 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
   // handler can be registered for a specified handle.
   void AddHandler(MessagePumpMojoHandler* handler,
                   const Handle& handle,
-                  MojoWaitFlags wait_flags,
+                  MojoHandleSignals wait_signals,
                   base::TimeTicks deadline);
 
   void RemoveHandler(const Handle& handle);
@@ -51,10 +51,10 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
 
   // Contains the data needed to track a request to AddHandler().
   struct Handler {
-    Handler() : handler(NULL), wait_flags(MOJO_WAIT_FLAG_NONE), id(0) {}
+    Handler() : handler(NULL), wait_signals(MOJO_WAIT_FLAG_NONE), id(0) {}
 
     MessagePumpMojoHandler* handler;
-    MojoWaitFlags wait_flags;
+    MojoHandleSignals wait_signals;
     base::TimeTicks deadline;
     // See description of |MessagePumpMojo::next_handler_id_| for details.
     int id;

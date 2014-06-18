@@ -23,7 +23,7 @@ class WaitingCallback : public gin::Wrappable<WaitingCallback> {
       v8::Isolate* isolate,
       v8::Handle<v8::Function> callback,
       mojo::Handle handle,
-      MojoWaitFlags flags);
+      MojoHandleSignals signals);
 
   // Cancels the callback. Does nothing if a callback is not pending. This is
   // implicitly invoked from the destructor but can be explicitly invoked as

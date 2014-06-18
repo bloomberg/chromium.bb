@@ -46,12 +46,12 @@ base::TimeTicks MojoDeadlineToTimeTicks(MojoDeadline deadline) {
 struct WatchData {
   WatchData()
       : id(0),
-        wait_flags(MOJO_WAIT_FLAG_NONE),
+        handle_signals(MOJO_WAIT_FLAG_NONE),
         message_loop(NULL) {}
 
   WatcherID id;
   Handle handle;
-  MojoWaitFlags wait_flags;
+  MojoHandleSignals handle_signals;
   base::TimeTicks deadline;
   base::Callback<void(MojoResult)> callback;
   scoped_refptr<base::MessageLoopProxy> message_loop;
@@ -103,7 +103,7 @@ void WatcherBackend::StartWatching(const WatchData& data) {
 
   handle_to_data_[data.handle] = data;
   message_pump_mojo->AddHandler(this, data.handle,
-                                data.wait_flags,
+                                data.handle_signals,
                                 data.deadline);
 }
 
@@ -165,7 +165,7 @@ class WatcherThreadManager {
   // on the thread StartWatching() was invoked on.
   // This may be invoked on any thread.
   WatcherID StartWatching(const Handle& handle,
-                          MojoWaitFlags wait_flags,
+                          MojoHandleSignals handle_signals,
                           base::TimeTicks deadline,
                           const base::Callback<void(MojoResult)>& callback);
 
@@ -196,14 +196,14 @@ WatcherThreadManager* WatcherThreadManager::GetInstance() {
 
 WatcherID WatcherThreadManager::StartWatching(
     const Handle& handle,
-    MojoWaitFlags wait_flags,
+    MojoHandleSignals handle_signals,
     base::TimeTicks deadline,
     const base::Callback<void(MojoResult)>& callback) {
   WatchData data;
   data.id = watcher_id_generator_.GetNext();
   data.handle = handle;
   data.callback = callback;
-  data.wait_flags = wait_flags;
+  data.handle_signals = handle_signals;
   data.deadline = deadline;
   data.message_loop = base::MessageLoopProxy::current();
   DCHECK_NE(static_cast<base::MessageLoopProxy*>(NULL),
@@ -244,7 +244,7 @@ class HandleWatcher::State : public base::MessageLoop::DestructionObserver {
  public:
   State(HandleWatcher* watcher,
         const Handle& handle,
-        MojoWaitFlags wait_flags,
+        MojoHandleSignals handle_signals,
         MojoDeadline deadline,
         const base::Callback<void(MojoResult)>& callback)
       : watcher_(watcher),
@@ -254,7 +254,7 @@ class HandleWatcher::State : public base::MessageLoop::DestructionObserver {
 
     watcher_id_ = WatcherThreadManager::GetInstance()->StartWatching(
         handle,
-        wait_flags,
+        handle_signals,
         MojoDeadlineToTimeTicks(deadline),
         base::Bind(&State::OnHandleReady, weak_factory_.GetWeakPtr()));
   }
@@ -295,13 +295,13 @@ HandleWatcher::~HandleWatcher() {
 }
 
 void HandleWatcher::Start(const Handle& handle,
-                          MojoWaitFlags wait_flags,
+                          MojoHandleSignals handle_signals,
                           MojoDeadline deadline,
                           const base::Callback<void(MojoResult)>& callback) {
   DCHECK(handle.is_valid());
-  DCHECK_NE(MOJO_WAIT_FLAG_NONE, wait_flags);
+  DCHECK_NE(MOJO_WAIT_FLAG_NONE, handle_signals);
 
-  state_.reset(new State(this, handle, wait_flags, deadline, callback));
+  state_.reset(new State(this, handle, handle_signals, deadline, callback));
 }
 
 void HandleWatcher::Stop() {

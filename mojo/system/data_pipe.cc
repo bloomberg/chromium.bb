@@ -177,18 +177,18 @@ MojoResult DataPipe::ProducerEndWriteData(uint32_t num_bytes_written) {
 }
 
 MojoResult DataPipe::ProducerAddWaiter(Waiter* waiter,
-                                       MojoWaitFlags flags,
+                                       MojoHandleSignals signals,
                                        uint32_t context) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_producer_no_lock());
 
   WaitFlagsState producer_state = ProducerGetWaitFlagsStateNoLock();
-  if (producer_state.satisfies(flags))
+  if (producer_state.satisfies(signals))
     return MOJO_RESULT_ALREADY_EXISTS;
-  if (!producer_state.can_satisfy(flags))
+  if (!producer_state.can_satisfy(signals))
     return MOJO_RESULT_FAILED_PRECONDITION;
 
-  producer_waiter_list_->AddWaiter(waiter, flags, context);
+  producer_waiter_list_->AddWaiter(waiter, signals, context);
   return MOJO_RESULT_OK;
 }
 
@@ -329,18 +329,18 @@ MojoResult DataPipe::ConsumerEndReadData(uint32_t num_bytes_read) {
 }
 
 MojoResult DataPipe::ConsumerAddWaiter(Waiter* waiter,
-                                       MojoWaitFlags flags,
+                                       MojoHandleSignals signals,
                                        uint32_t context) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
 
   WaitFlagsState consumer_state = ConsumerGetWaitFlagsStateNoLock();
-  if (consumer_state.satisfies(flags))
+  if (consumer_state.satisfies(signals))
     return MOJO_RESULT_ALREADY_EXISTS;
-  if (!consumer_state.can_satisfy(flags))
+  if (!consumer_state.can_satisfy(signals))
     return MOJO_RESULT_FAILED_PRECONDITION;
 
-  consumer_waiter_list_->AddWaiter(waiter, flags, context);
+  consumer_waiter_list_->AddWaiter(waiter, signals, context);
   return MOJO_RESULT_OK;
 }
 

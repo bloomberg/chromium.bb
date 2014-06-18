@@ -21,9 +21,9 @@ WaiterList::~WaiterList() {
 void WaiterList::AwakeWaitersForStateChange(const WaitFlagsState& state) {
   for (WaiterInfoList::iterator it = waiters_.begin(); it != waiters_.end();
        ++it) {
-    if (state.satisfies(it->flags))
+    if (state.satisfies(it->signals))
       it->waiter->Awake(MOJO_RESULT_OK, it->context);
-    else if (!state.can_satisfy(it->flags))
+    else if (!state.can_satisfy(it->signals))
       it->waiter->Awake(MOJO_RESULT_FAILED_PRECONDITION, it->context);
   }
 }
@@ -37,9 +37,9 @@ void WaiterList::CancelAllWaiters() {
 }
 
 void WaiterList::AddWaiter(Waiter* waiter,
-                           MojoWaitFlags flags,
+                           MojoHandleSignals signals,
                            uint32_t context) {
-  waiters_.push_back(WaiterInfo(waiter, flags, context));
+  waiters_.push_back(WaiterInfo(waiter, signals, context));
 }
 
 void WaiterList::RemoveWaiter(Waiter* waiter) {

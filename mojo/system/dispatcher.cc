@@ -215,13 +215,13 @@ MojoResult Dispatcher::MapBuffer(
 }
 
 MojoResult Dispatcher::AddWaiter(Waiter* waiter,
-                                 MojoWaitFlags flags,
+                                 MojoHandleSignals signals,
                                  uint32_t context) {
   base::AutoLock locker(lock_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return AddWaiterImplNoLock(waiter, flags, context);
+  return AddWaiterImplNoLock(waiter, signals, context);
 }
 
 void Dispatcher::RemoveWaiter(Waiter* waiter) {
@@ -347,7 +347,7 @@ MojoResult Dispatcher::MapBufferImplNoLock(
 }
 
 MojoResult Dispatcher::AddWaiterImplNoLock(Waiter* /*waiter*/,
-                                           MojoWaitFlags /*flags*/,
+                                           MojoHandleSignals /*signals*/,
                                            uint32_t /*context*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);

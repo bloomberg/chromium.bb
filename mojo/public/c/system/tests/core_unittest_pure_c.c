@@ -42,7 +42,7 @@ const char* MinimalCTest(void) {
   // at the top. (MSVS 2013 is more reasonable.)
   MojoTimeTicks ticks;
   MojoHandle handle0, handle1;
-  MojoWaitFlags wait_flags;
+  MojoHandleSignals signals;
   const char kHello[] = "hello";
   char buffer[200] = { 0 };
   uint32_t num_bytes;
@@ -60,9 +60,9 @@ const char* MinimalCTest(void) {
   handle1 = MOJO_HANDLE_INVALID;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(NULL, &handle0, &handle1));
 
-  wait_flags = MOJO_WAIT_FLAG_READABLE;
+  signals = MOJO_WAIT_FLAG_READABLE;
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            MojoWaitMany(&handle0, &wait_flags, 1, 1));
+            MojoWaitMany(&handle0, &signals, 1, 1));
 
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoWriteMessage(handle0, kHello, (uint32_t) sizeof(kHello), NULL,

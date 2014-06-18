@@ -103,10 +103,10 @@ TEST(CoreCppTest, Basic) {
 
     std::vector<Handle> wh;
     wh.push_back(h.get());
-    std::vector<MojoWaitFlags> wf;
-    wf.push_back(MOJO_WAIT_FLAG_EVERYTHING);
+    std::vector<MojoHandleSignals> sigs;
+    sigs.push_back(MOJO_WAIT_FLAG_EVERYTHING);
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              WaitMany(wh, wf, MOJO_DEADLINE_INDEFINITE));
+              WaitMany(wh, sigs, MOJO_DEADLINE_INDEFINITE));
   }
 
   // |MakeScopedHandle| (just compilation tests):
@@ -167,10 +167,10 @@ TEST(CoreCppTest, Basic) {
       std::vector<Handle> wh;
       wh.push_back(h0.get());
       wh.push_back(h1.get());
-      std::vector<MojoWaitFlags> wf;
-      wf.push_back(MOJO_WAIT_FLAG_READABLE);
-      wf.push_back(MOJO_WAIT_FLAG_WRITABLE);
-      EXPECT_EQ(1, WaitMany(wh, wf, 1000));
+      std::vector<MojoHandleSignals> sigs;
+      sigs.push_back(MOJO_WAIT_FLAG_READABLE);
+      sigs.push_back(MOJO_WAIT_FLAG_WRITABLE);
+      EXPECT_EQ(1, WaitMany(wh, sigs, 1000));
 
       // Test closing |h1| explicitly.
       Close(h1.Pass());

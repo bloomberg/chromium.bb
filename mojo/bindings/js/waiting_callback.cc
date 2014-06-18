@@ -25,12 +25,12 @@ gin::Handle<WaitingCallback> WaitingCallback::Create(
     v8::Isolate* isolate,
     v8::Handle<v8::Function> callback,
     mojo::Handle handle,
-    MojoWaitFlags flags) {
+    MojoHandleSignals signals) {
   gin::Handle<WaitingCallback> waiting_callback =
       gin::CreateHandle(isolate, new WaitingCallback(isolate, callback));
   waiting_callback->wait_id_ = GetDefaultAsyncWaiter()->AsyncWait(
       handle.value(),
-      flags,
+      signals,
       MOJO_DEADLINE_INDEFINITE,
       &WaitingCallback::CallOnHandleReady,
       waiting_callback.get());

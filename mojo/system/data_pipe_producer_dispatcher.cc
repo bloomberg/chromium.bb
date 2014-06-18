@@ -87,11 +87,12 @@ MojoResult DataPipeProducerDispatcher::EndWriteDataImplNoLock(
   return data_pipe_->ProducerEndWriteData(num_bytes_written);
 }
 
-MojoResult DataPipeProducerDispatcher::AddWaiterImplNoLock(Waiter* waiter,
-                                                           MojoWaitFlags flags,
-                                                           uint32_t context) {
+MojoResult DataPipeProducerDispatcher::AddWaiterImplNoLock(
+    Waiter* waiter,
+    MojoHandleSignals signals,
+    uint32_t context) {
   lock().AssertAcquired();
-  return data_pipe_->ProducerAddWaiter(waiter, flags, context);
+  return data_pipe_->ProducerAddWaiter(waiter, signals, context);
 }
 
 void DataPipeProducerDispatcher::RemoveWaiterImplNoLock(Waiter* waiter) {

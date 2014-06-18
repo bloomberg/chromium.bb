@@ -67,7 +67,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
                                  uint32_t* num_dispatchers,
                                  MojoReadMessageFlags flags);
   virtual MojoResult AddWaiter(Waiter* waiter,
-                               MojoWaitFlags flags,
+                               MojoHandleSignals signals,
                                uint32_t context);
   virtual void RemoveWaiter(Waiter* waiter);
 

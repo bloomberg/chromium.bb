@@ -47,8 +47,9 @@ var RESULT_SHOULD_WAIT;
 var DEADLINE_INDEFINITE;
 
 /**
- * MojoWaitFlags: Used to specify the state of a handle to wait on (e.g., the
- * ability to read or write to it).
+ * MojoHandleSignals: Used to specify signals that can be waited on for a handle
+ *(and which can be triggered), e.g., the ability to read or write to
+ * the handle.
  * See core.h for more information.
  */
 var WAIT_FLAG_NONE;
@@ -108,15 +109,15 @@ var READ_DATA_FLAG_QUERY;
 function close(handle) { [native code] }
 
 /**
- * Waits on the given handle until the state indicated by |waitFlags| is
+ * Waits on the given handle until a signal indicated by |signals| is
  * satisfied or until |deadline| is passed. See MojoWait for more information.
  *
  * @param {MojoHandle} handle Handle to wait on.
- * @param {MojoWaitFlags} waitFlags Specifies the condition to wait for.
+ * @param {MojoHandleSignals} signals Specifies the condition to wait for.
  * @param {MojoDeadline} deadline Stops waiting if this is reached.
  * @return {MojoResult} Result code.
  */
-function wait(handle, waitFlags, deadline) { [native code] }
+function wait(handle, signals, deadline) { [native code] }
 
 /**
  * Waits on |handles[0]|, ..., |handles[handles.length-1]| for at least one of
@@ -125,12 +126,12 @@ function wait(handle, waitFlags, deadline) { [native code] }
  * See MojoWaitMany for more information.
  *
  * @param {Array.MojoHandle} handles Handles to wait on.
- * @param {Array.MojoWaitFlags} waitFlags Specifies the condition to wait for,
+ * @param {Array.MojoHandleSignals} signals Specifies the condition to wait for,
  *   for each corresponding handle. Must be the same length as |handles|.
  * @param {MojoDeadline} deadline Stops waiting if this is reached.
  * @return {MojoResult} Result code.
  */
-function waitMany(handles, waitFlags, deadline) { [native code] }
+function waitMany(handles, signals, deadline) { [native code] }
 
 /**
  * Creates a message pipe. This function always succeeds.

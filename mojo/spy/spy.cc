@@ -49,9 +49,9 @@ class MessageProcessor :
     std::vector<mojo::MessagePipeHandle> pipes;
     pipes.push_back(client.get());
     pipes.push_back(interceptor.get());
-    std::vector<MojoWaitFlags> wait_flags;
-    wait_flags.push_back(MOJO_WAIT_FLAG_READABLE);
-    wait_flags.push_back(MOJO_WAIT_FLAG_READABLE);
+    std::vector<MojoHandleSignals> handle_signals;
+    handle_signals.push_back(MOJO_WAIT_FLAG_READABLE);
+    handle_signals.push_back(MOJO_WAIT_FLAG_READABLE);
 
     scoped_ptr<char[]> mbuf(new char[kMessageBufSize]);
     scoped_ptr<MojoHandle[]> hbuf(new MojoHandle[kHandleBufSize]);
@@ -64,7 +64,7 @@ class MessageProcessor :
     // 4- Write the message to opposite port.
 
     for (;;) {
-      int r = WaitMany(pipes, wait_flags, MOJO_DEADLINE_INDEFINITE);
+      int r = WaitMany(pipes, handle_signals, MOJO_DEADLINE_INDEFINITE);
       if ((r < 0) || (r > 1)) {
         last_result_ = r;
         break;

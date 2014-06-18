@@ -33,7 +33,7 @@ class RunLoop {
   // be registered for a specified handle.
   void AddHandler(RunLoopHandler* handler,
                   const Handle& handle,
-                  MojoWaitFlags wait_flags,
+                  MojoHandleSignals handle_signals,
                   MojoDeadline deadline);
   void RemoveHandler(const Handle& handle);
   bool HasHandler(const Handle& handle) const;
@@ -57,12 +57,12 @@ class RunLoop {
   struct HandlerData {
     HandlerData()
         : handler(NULL),
-          wait_flags(MOJO_WAIT_FLAG_NONE),
+          handle_signals(MOJO_WAIT_FLAG_NONE),
           deadline(0),
           id(0) {}
 
     RunLoopHandler* handler;
-    MojoWaitFlags wait_flags;
+    MojoHandleSignals handle_signals;
     MojoTimeTicks deadline;
     // See description of |RunLoop::next_handler_id_| for details.
     int id;

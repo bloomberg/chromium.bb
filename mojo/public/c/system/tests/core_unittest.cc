@@ -23,7 +23,7 @@ TEST(CoreTest, GetTimeTicksNow) {
 // Tests that everything that takes a handle properly recognizes it.
 TEST(CoreTest, InvalidHandle) {
   MojoHandle h0, h1;
-  MojoWaitFlags wf;
+  MojoHandleSignals sig;
   char buffer[10] = { 0 };
   uint32_t buffer_size;
   void* write_pointer;
@@ -36,9 +36,9 @@ TEST(CoreTest, InvalidHandle) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             MojoWait(MOJO_HANDLE_INVALID, MOJO_WAIT_FLAG_EVERYTHING, 1000000));
   h0 = MOJO_HANDLE_INVALID;
-  wf = MOJO_WAIT_FLAG_EVERYTHING;
+  sig = MOJO_WAIT_FLAG_EVERYTHING;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoWaitMany(&h0, &wf, 1, MOJO_DEADLINE_INDEFINITE));
+            MojoWaitMany(&h0, &sig, 1, MOJO_DEADLINE_INDEFINITE));
 
   // Message pipe:
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
@@ -77,7 +77,7 @@ TEST(CoreTest, InvalidHandle) {
 
 TEST(CoreTest, BasicMessagePipe) {
   MojoHandle h0, h1;
-  MojoWaitFlags wf;
+  MojoHandleSignals sig;
   char buffer[10] = { 0 };
   uint32_t buffer_size;
 
@@ -108,9 +108,9 @@ TEST(CoreTest, BasicMessagePipe) {
                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // |h0| should be readable.
-  wf = MOJO_WAIT_FLAG_READABLE;
+  sig = MOJO_WAIT_FLAG_READABLE;
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWaitMany(&h0, &wf, 1, MOJO_DEADLINE_INDEFINITE));
+            MojoWaitMany(&h0, &sig, 1, MOJO_DEADLINE_INDEFINITE));
 
   // Read from |h0|.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
@@ -137,7 +137,7 @@ TEST(CoreTest, BasicMessagePipe) {
 
 TEST(CoreTest, BasicDataPipe) {
   MojoHandle hp, hc;
-  MojoWaitFlags wf;
+  MojoHandleSignals sig;
   char buffer[20] = { 0 };
   uint32_t buffer_size;
   void* write_pointer;
@@ -176,9 +176,9 @@ TEST(CoreTest, BasicDataPipe) {
                           MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // |hc| should be(come) readable.
-  wf = MOJO_WAIT_FLAG_READABLE;
+  sig = MOJO_WAIT_FLAG_READABLE;
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWaitMany(&hc, &wf, 1, MOJO_DEADLINE_INDEFINITE));
+            MojoWaitMany(&hc, &sig, 1, MOJO_DEADLINE_INDEFINITE));
 
   // Do a two-phase write to |hp|.
   EXPECT_EQ(MOJO_RESULT_OK,

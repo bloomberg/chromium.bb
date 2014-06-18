@@ -16,25 +16,25 @@ namespace system {
 // (for convenience). This should add no overhead.
 struct MOJO_SYSTEM_IMPL_EXPORT WaitFlagsState : public MojoWaitFlagsState {
   WaitFlagsState() {
-    satisfied_flags = MOJO_WAIT_FLAG_NONE;
-    satisfiable_flags = MOJO_WAIT_FLAG_NONE;
+    satisfied_signals = MOJO_WAIT_FLAG_NONE;
+    satisfiable_signals = MOJO_WAIT_FLAG_NONE;
   }
-  WaitFlagsState(MojoWaitFlags satisfied, MojoWaitFlags satisfiable) {
-    satisfied_flags = satisfied;
-    satisfiable_flags = satisfiable;
+  WaitFlagsState(MojoHandleSignals satisfied, MojoHandleSignals satisfiable) {
+    satisfied_signals = satisfied;
+    satisfiable_signals = satisfiable;
   }
 
   bool equals(const WaitFlagsState& other) const {
-    return satisfied_flags == other.satisfied_flags &&
-           satisfiable_flags == other.satisfiable_flags;
+    return satisfied_signals == other.satisfied_signals &&
+           satisfiable_signals == other.satisfiable_signals;
   }
 
-  bool satisfies(MojoWaitFlags flags) const {
-    return !!(satisfied_flags & flags);
+  bool satisfies(MojoHandleSignals signals) const {
+    return !!(satisfied_signals & signals);
   }
 
-  bool can_satisfy(MojoWaitFlags flags) const {
-    return !!(satisfiable_flags & flags);
+  bool can_satisfy(MojoHandleSignals signals) const {
+    return !!(satisfiable_signals & signals);
   }
 
   // (Copy and assignment allowed.)

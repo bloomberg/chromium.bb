@@ -45,7 +45,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher : public Dispatcher {
                                              MojoReadDataFlags flags) OVERRIDE;
   virtual MojoResult EndReadDataImplNoLock(uint32_t num_bytes_read) OVERRIDE;
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
-                                         MojoWaitFlags flags,
+                                         MojoHandleSignals signals,
                                          uint32_t context) OVERRIDE;
   virtual void RemoveWaiterImplNoLock(Waiter* waiter) OVERRIDE;
   virtual bool IsBusyNoLock() const OVERRIDE;

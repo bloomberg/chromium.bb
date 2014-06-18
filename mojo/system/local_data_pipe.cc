@@ -156,8 +156,8 @@ WaitFlagsState LocalDataPipe::ProducerGetWaitFlagsStateNoLock() const {
   if (consumer_open_no_lock()) {
     if ((may_discard() || current_num_bytes_ < capacity_num_bytes()) &&
         !producer_in_two_phase_write_no_lock())
-      rv.satisfied_flags |= MOJO_WAIT_FLAG_WRITABLE;
-    rv.satisfiable_flags |= MOJO_WAIT_FLAG_WRITABLE;
+      rv.satisfied_signals |= MOJO_WAIT_FLAG_WRITABLE;
+    rv.satisfiable_signals |= MOJO_WAIT_FLAG_WRITABLE;
   }
   return rv;
 }
@@ -277,10 +277,10 @@ WaitFlagsState LocalDataPipe::ConsumerGetWaitFlagsStateNoLock() const {
   WaitFlagsState rv;
   if (current_num_bytes_ > 0) {
     if (!consumer_in_two_phase_read_no_lock())
-      rv.satisfied_flags |= MOJO_WAIT_FLAG_READABLE;
-    rv.satisfiable_flags |= MOJO_WAIT_FLAG_READABLE;
+      rv.satisfied_signals |= MOJO_WAIT_FLAG_READABLE;
+    rv.satisfiable_signals |= MOJO_WAIT_FLAG_READABLE;
   } else if (producer_open_no_lock()) {
-    rv.satisfiable_flags |= MOJO_WAIT_FLAG_READABLE;
+    rv.satisfiable_signals |= MOJO_WAIT_FLAG_READABLE;
   }
   return rv;
 }
