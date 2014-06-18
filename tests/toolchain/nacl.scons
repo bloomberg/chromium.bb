@@ -404,6 +404,16 @@ env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
                        is_broken=(env.Bit('nacl_glibc') and
                                   env.Bit('target_x86_32')))
 
+# The compile currently causes arm-nacl-gcc to crash.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3582
+if env.Bit('bitcode') or not env.Bit('target_arm'):
+  prefetch_test_nexe = env.ComponentProgram(
+      'prefetch_test', 'prefetch_test.c',
+      EXTRA_LIBS=['${NONIRT_LIBS}'])
+  node = env.CommandSelLdrTestNacl('prefetch_test.out', prefetch_test_nexe)
+  env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                         'run_prefetch_test')
+
 
 # Test that local variable dwarf info is preserved with linking and LTO.
 # Force '-g' on in case it was not turned on for some reason, and lower
