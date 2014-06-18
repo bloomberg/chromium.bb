@@ -150,12 +150,19 @@ void RecordDetailedUserAction(DetailedDecision decision) {
                             MAX_DETAILED_ACTION);
 }
 
+// These are the constants for the M37 Finch trial.
+const char kV3StudyName[] = "MalwareInterstitialVersion";
+const char kCondUseV2[] = "V2";
+
+// Default to V3 unless a flag or field trial says otherwise.
 bool Version3Enabled() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kMalwareInterstitialVersionV3)) {
-    return true;
+      switches::kMalwareInterstitialVersionV2)) {
+    return false;
   }
-  return false;
+  if (base::FieldTrialList::FindFullName(kV3StudyName) == kCondUseV2)
+    return false;
+  return true;
 }
 
 }  // namespace
