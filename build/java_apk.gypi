@@ -162,7 +162,7 @@
     'conditions': [
       ['proguard_enabled == "true"', {
         'variables': {
-          #'proguard_enabled': 'true',
+          'proguard_enabled': 'true',
         }
       }],
     ],
@@ -713,7 +713,7 @@
         ['is_test_apk == 1 and tested_apk_dex_path != "/"', {
           'variables': {
             'dex_additional_options': [
-              #'--excluded-paths-file', '>(tested_apk_dex_path).inputs'
+              '--excluded-paths-file', '>(tested_apk_dex_path).inputs'
             ],
           },
           'inputs': [
