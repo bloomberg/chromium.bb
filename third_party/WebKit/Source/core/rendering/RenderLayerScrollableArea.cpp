@@ -49,7 +49,6 @@
 #include "core/editing/FrameSelection.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -477,20 +476,6 @@ IntSize RenderLayerScrollableArea::overhangAmount() const
 IntPoint RenderLayerScrollableArea::lastKnownMousePosition() const
 {
     return box().frame() ? box().frame()->eventHandler().lastKnownMousePosition() : IntPoint();
-}
-
-bool RenderLayerScrollableArea::scrollAnimatorEnabled() const
-{
-    return box().frame()->settings() && box().frame()->settings()->scrollAnimatorEnabled();
-}
-
-bool RenderLayerScrollableArea::scheduleAnimation()
-{
-    if (HostWindow* window = box().frameView()->hostWindow()) {
-        window->scheduleAnimation();
-        return true;
-    }
-    return false;
 }
 
 bool RenderLayerScrollableArea::shouldSuspendScrollAnimations() const

@@ -98,8 +98,6 @@ public:
     virtual IntSize contentsSize() const OVERRIDE;
     virtual IntSize overhangAmount() const OVERRIDE;
     virtual IntPoint lastKnownMousePosition() const OVERRIDE;
-    virtual bool scrollAnimatorEnabled() const OVERRIDE;
-    virtual bool scheduleAnimation() OVERRIDE;
     virtual bool shouldSuspendScrollAnimations() const OVERRIDE;
     virtual bool scrollbarsCanBeActive() const OVERRIDE;
     virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;

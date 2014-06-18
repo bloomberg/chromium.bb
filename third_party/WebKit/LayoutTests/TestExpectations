@@ -671,9 +671,6 @@ crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ Failure P
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure Pass ]
 crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 
-# Mac sets NSUserDefault setting to turn off smooth scrolling, and it cannot be turned on for a single test.
-crbug.com/364614 [ Mac ] fast/scroll-behavior/sub-frame-scroll.html [ Failure ]
-
 # Complex text failures on XP (likely caused by r158845).
 crbug.com/305290 [ XP ] fast/text/international/plane2.html [ Failure ]
 

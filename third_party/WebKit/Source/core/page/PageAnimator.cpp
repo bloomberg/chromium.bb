@@ -29,26 +29,20 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
     m_animationFramePending = false;
     TemporaryChange<bool> servicing(m_servicingAnimations, true);
 
-    WillBeHeapVector<RefPtrWillBeMember<Document> > documents;
     for (RefPtr<Frame> frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (frame->isLocalFrame())
-            documents.append(toLocalFrame(frame.get())->document());
-    }
+        if (frame->isLocalFrame()) {
+            RefPtr<LocalFrame> localFrame = toLocalFrame(frame.get());
+            localFrame->view()->serviceScrollAnimations();
 
-    for (size_t i = 0; i < documents.size(); ++i) {
-        if (documents[i]->frame()) {
-            documents[i]->view()->serviceScrollAnimations();
-
-            if (const FrameView::ScrollableAreaSet* scrollableAreas = documents[i]->view()->scrollableAreas()) {
-                for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
-                    (*it)->serviceScrollAnimations();
-            }
+            DocumentAnimations::updateAnimationTimingForAnimationFrame(*localFrame->document(), monotonicAnimationStartTime);
+            SVGDocumentExtensions::serviceOnAnimationFrame(*localFrame->document(), monotonicAnimationStartTime);
         }
     }
 
-    for (size_t i = 0; i < documents.size(); ++i) {
-        DocumentAnimations::updateAnimationTimingForAnimationFrame(*documents[i], monotonicAnimationStartTime);
-        SVGDocumentExtensions::serviceOnAnimationFrame(*documents[i], monotonicAnimationStartTime);
+    Vector<RefPtr<Document> > documents;
+    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (frame->isLocalFrame())
+            documents.append(toLocalFrame(frame)->document());
     }
 
     for (size_t i = 0; i < documents.size(); ++i)
