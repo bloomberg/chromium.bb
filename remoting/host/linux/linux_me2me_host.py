@@ -42,7 +42,7 @@ DEFAULT_SIZES_ENV_VAR = "CHROME_REMOTE_DESKTOP_DEFAULT_DESKTOP_SIZES"
 # with large or multiple monitors. This is a comma-separated list of
 # resolutions that will be made available if the X server supports RANDR. These
 # defaults can be overridden in ~/.profile.
-DEFAULT_SIZES = "1600x1200,3840x1600"
+DEFAULT_SIZES = "1600x1200,3840x2560"
 
 # If RANDR is not available, use a smaller default size. Only a single
 # resolution is supported in this case.
