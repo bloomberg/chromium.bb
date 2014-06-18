@@ -536,9 +536,9 @@ def v8_conversion_type(idl_type, extended_attributes):
         return 'int'
     if base_idl_type in CPP_UNSIGNED_TYPES:
         return 'unsigned'
-    if base_idl_type == 'DOMString':
+    if base_idl_type in ('DOMString', 'ByteString'):
         if 'TreatReturnedNullStringAs' not in extended_attributes:
-            return 'DOMString'
+            return base_idl_type
         treat_returned_null_string_as = extended_attributes['TreatReturnedNullStringAs']
         if treat_returned_null_string_as == 'Null':
             return 'StringOrNull'

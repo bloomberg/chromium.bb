@@ -1025,12 +1025,28 @@ PASS converter.testByteString = {toString: function() { throw Error(); }} threw 
 PASS converter.testByteString is "!@#123ABCabc\u0000ÿ\r\n\t"
 converter.testByteString = true
 PASS converter.testByteString is "true"
+PASS converter.testByteStringTreatReturnedNullStringAsNullAttribute is "true"
+PASS converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute is "true"
+PASS converter.getTestByteStringTreatReturnedNullStringAsNullMethod() is "true"
+PASS converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod() is "true"
 converter.testByteString = 123
 PASS converter.testByteString is "123"
+PASS converter.testByteStringTreatReturnedNullStringAsNullAttribute is "123"
+PASS converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute is "123"
+PASS converter.getTestByteStringTreatReturnedNullStringAsNullMethod() is "123"
+PASS converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod() is "123"
 converter.testByteString = null
 PASS converter.testByteString is "null"
+PASS converter.testByteStringTreatReturnedNullStringAsNullAttribute is "null"
+PASS converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute is "null"
+PASS converter.getTestByteStringTreatReturnedNullStringAsNullMethod() is "null"
+PASS converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod() is "null"
 converter.testByteString = undefined
 PASS converter.testByteString is "undefined"
+PASS converter.testByteStringTreatReturnedNullStringAsNullAttribute is "undefined"
+PASS converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute is "undefined"
+PASS converter.getTestByteStringTreatReturnedNullStringAsNullMethod() is "undefined"
+PASS converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod() is "undefined"
 PASS converter.setTestByteString('abc') did not throw exception.
 PASS converter.setTestByteStringDefaultNull('abc') did not throw exception.
 PASS converter.setTestByteString('\u0100') threw exception TypeError: Failed to execute 'setTestByteString' on 'TypeConversions': Value is not a valid ByteString..
@@ -1038,6 +1054,10 @@ PASS converter.setTestByteStringDefaultNull('\u0100') threw exception TypeError:
 PASS converter.setTestByteString() threw exception TypeError: Failed to execute 'setTestByteString' on 'TypeConversions': 1 argument required, but only 0 present..
 PASS converter.setTestByteStringDefaultNull() did not throw exception.
 PASS converter.testByteString is ""
+PASS converter.testByteStringTreatReturnedNullStringAsNullAttribute is null
+PASS converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute is undefined.
+PASS converter.getTestByteStringTreatReturnedNullStringAsNullMethod() is null
+PASS converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod() is undefined.
 PASS successfullyParsed is true
 
 TEST COMPLETE

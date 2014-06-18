@@ -589,6 +589,10 @@ shouldBeEqualToString("converter.testByteString", "!@#123ABCabc\x00\x80\xFF\r\n\
 ["true", "123", "null", "undefined"].forEach(function(value) {
     evalAndLog("converter.testByteString = " + value);
     shouldBeEqualToString("converter.testByteString", value);
+    shouldBeEqualToString("converter.testByteStringTreatReturnedNullStringAsNullAttribute", value);
+    shouldBeEqualToString("converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute", value);
+    shouldBeEqualToString("converter.getTestByteStringTreatReturnedNullStringAsNullMethod()", value);
+    shouldBeEqualToString("converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod()", value);
 });
 shouldNotThrow("converter.setTestByteString('abc')");
 shouldNotThrow("converter.setTestByteStringDefaultNull('abc')");
@@ -597,5 +601,9 @@ shouldThrow("converter.setTestByteStringDefaultNull('\\u0100')");
 shouldThrow("converter.setTestByteString()");
 shouldNotThrow("converter.setTestByteStringDefaultNull()");
 shouldBeEqualToString("converter.testByteString", "");
+shouldBeNull("converter.testByteStringTreatReturnedNullStringAsNullAttribute");
+shouldBeUndefined("converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute");
+shouldBeNull("converter.getTestByteStringTreatReturnedNullStringAsNullMethod()");
+shouldBeUndefined("converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod()");
 
 </script>

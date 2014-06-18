@@ -238,6 +238,8 @@ interface TestObject {
     [TreatNullAs=NullString] attribute DOMString treatNullAsNullStringStringAttribute;
     [TreatReturnedNullStringAs=Null] attribute DOMString treatReturnedNullStringAsNullStringAttribute;
     [TreatReturnedNullStringAs=Undefined] attribute DOMString treatReturnedNullStringAsUndefinedStringAttribute;
+    [TreatReturnedNullStringAs=Null] attribute ByteString treatReturnedNullStringAsNullByteStringAttribute;
+    [TreatReturnedNullStringAs=Undefined] attribute ByteString treatReturnedNullStringAsUndefinedByteStringAttribute;
     [TypeChecking=Interface|Nullable] attribute float typeCheckingInterfaceNullableStringFloatAttribute; // nop for non-interface types
     [TypeChecking=Interface] attribute TestInterface typeCheckingInterfaceTestInterfaceAttribute;
     [TypeChecking=Nullable] attribute TestInterface? typeCheckingNullableTestInterfaceOrNullAttribute;
@@ -497,6 +499,8 @@ interface TestObject {
     void partiallyRuntimeEnabledOverloadedVoidMethod(long longArg);
     [TreatReturnedNullStringAs=Null] DOMString treatReturnedNullStringAsNullStringMethod();
     [TreatReturnedNullStringAs=Undefined] DOMString treatReturnedNullStringAsUndefinedStringMethod();
+    [TreatReturnedNullStringAs=Null] ByteString treatReturnedNullStringAsNullByteStringMethod();
+    [TreatReturnedNullStringAs=Undefined] ByteString treatReturnedNullStringAsUndefinedByteStringMethod();
     [TypeChecking=Interface] void typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     [TypeChecking=Nullable] void typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
     [TypeChecking=Interface|Nullable] void typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
