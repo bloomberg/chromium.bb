@@ -56,7 +56,6 @@ class NetworkDelegate;
 class ServerBoundCertService;
 class ProxyConfigService;
 class ProxyService;
-class SdchManager;
 class SSLConfigService;
 class TransportSecurityState;
 class URLRequestContext;
@@ -367,8 +366,6 @@ class IOThread : public content::BrowserThreadDelegate {
 
   scoped_refptr<net::URLRequestContextGetter>
       system_url_request_context_getter_;
-
-  net::SdchManager* sdch_manager_;
 
   // True if SPDY is disabled by policy.
   bool is_spdy_disabled_by_policy_;

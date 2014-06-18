@@ -48,7 +48,6 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_util.h"
-#include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/ct_known_logs.h"
@@ -421,7 +420,6 @@ IOThread::IOThread(
     : net_log_(net_log),
       extension_event_router_forwarder_(extension_event_router_forwarder),
       globals_(NULL),
-      sdch_manager_(NULL),
       is_spdy_disabled_by_policy_(false),
       weak_factory_(this),
       creation_time_(base::TimeTicks::Now()) {
@@ -701,8 +699,6 @@ void IOThread::InitAsync() {
   globals_->proxy_script_fetcher_context.reset(
       ConstructProxyScriptFetcherContext(globals_, net_log_));
 
-  sdch_manager_ = new net::SdchManager();
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Start observing Keychain events. This needs to be done on the UI thread,
   // as Keychain services requires a CFRunLoop.
@@ -729,9 +725,6 @@ void IOThread::InitAsync() {
 
 void IOThread::CleanUp() {
   base::debug::LeakTracker<SafeBrowsingURLRequestContext>::CheckForLeaks();
-
-  delete sdch_manager_;
-  sdch_manager_ = NULL;
 
 #if defined(USE_NSS) || defined(OS_IOS)
   net::ShutdownNSSHttpIO();
@@ -1060,10 +1053,6 @@ void IOThread::InitSystemRequestContextOnIOThread() {
       new net::URLRequestJobFactoryImpl());
   globals_->system_request_context.reset(
       ConstructSystemRequestContext(globals_, net_log_));
-
-  sdch_manager_->set_sdch_fetcher(
-      new SdchDictionaryFetcher(
-          sdch_manager_, system_url_request_context_getter_.get()));
 }
 
 void IOThread::UpdateDnsClientEnabled() {
