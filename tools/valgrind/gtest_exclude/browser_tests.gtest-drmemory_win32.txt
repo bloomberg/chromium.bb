@@ -8,7 +8,12 @@
 
 # it takes too long to run all browser_tests with Dr.Memory,
 # and we only select subset to run
-# A*
+# A*: ~120 tests
+Acti*
+Ad*
+All*
+App*
+Auto*
 B*
 C*
 D*
