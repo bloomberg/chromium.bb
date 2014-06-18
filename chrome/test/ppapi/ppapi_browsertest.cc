@@ -76,10 +76,6 @@ using content::RenderViewHost;
     IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(test_name)) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, \
-                           MAYBE_PNACL_NONSFI(test_name)) { \
-      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-    }
 
 // NaCl based PPAPI tests
 #define TEST_PPAPI_NACL(test_name) \
