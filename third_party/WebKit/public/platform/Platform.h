@@ -44,8 +44,6 @@
 #include "WebGraphicsContext3D.h"
 #include "WebLocalizedString.h"
 #include "WebLockOrientationCallback.h"
-#include "WebScreenOrientationLockType.h"
-#include "WebScreenOrientationType.h"
 #include "WebSpeechSynthesizer.h"
 #include "WebStorageQuotaCallbacks.h"
 #include "WebStorageQuotaType.h"
@@ -91,7 +89,6 @@ class WebPublicSuffixList;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
-class WebScreenOrientationListener;
 class WebScrollbarBehavior;
 class WebSocketHandle;
 class WebSocketStreamHandle;
@@ -630,24 +627,6 @@ public:
     // Sets a Listener to listen for device light data updates.
     // If null, the platform stops providing device light data to the current listener.
     virtual void setDeviceLightListener(blink::WebDeviceLightListener*) { }
-
-
-    // Screen Orientation -------------------------------------------------
-    // FIXME: this is meant to be removed when the content layer will be updated.
-
-    virtual void lockOrientation(WebScreenOrientationLockType) { }
-    // Request a screen orientation lock and pass a |callback| object to be used
-    // to notify of success/failure. The |callback| parameter is expected to be
-    // owned by the implementation.
-    virtual void lockOrientation(WebScreenOrientationLockType orientation, WebLockOrientationCallback* callback)
-    {
-        // FIXME: remove this when
-        // lockOrientation(orientation, callback) will be handled in Chromium.
-        lockOrientation(orientation);
-
-        delete callback; // prevents memory leak if there is no implementation.
-    }
-    virtual void unlockOrientation() { }
 
 
     // Quota -----------------------------------------------------------
