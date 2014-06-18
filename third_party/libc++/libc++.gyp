@@ -19,7 +19,7 @@
         # Don't add this target to the dependencies of targets with type=none.
         'link_dependency': 1,
       },
-      'direct_dependent_settings': {
+      'all_dependent_settings': {
         'target_conditions': [
           ['_type!="none"', {
             'include_dirs': [
