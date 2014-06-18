@@ -20,7 +20,9 @@
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/computed_hashes.h"
+#include "extensions/browser/content_hash_tree.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/verified_contents.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
@@ -47,9 +49,11 @@ class ContentHashFetcherJob
  public:
   typedef base::Callback<void(ContentHashFetcherJob*)> CompletionCallback;
   ContentHashFetcherJob(net::URLRequestContextGetter* request_context,
+                        ContentVerifierKey key,
                         const std::string& extension_id,
                         const base::FilePath& extension_path,
                         const GURL& fetch_url,
+                        bool force,
                         const CompletionCallback& callback);
 
   void Start();
@@ -58,19 +62,27 @@ class ContentHashFetcherJob
   // just waiting for the entire job to complete. Safe to call from any thread.
   void Cancel();
 
-  // Returns whether this job was completely successful (we have both verified
-  // contents and computed hashes).
+  // Checks whether this job has been cancelled. Safe to call from any thread.
+  bool IsCancelled();
+
+  // Returns whether this job was successful (we have both verified contents
+  // and computed hashes). Even if the job was a success, there might have been
+  // files that were found to have contents not matching expectations; these
+  // are available by calling hash_mismatch_paths().
   bool success() { return success_; }
 
-  // Do we have a verified_contents.json file?
-  bool have_verified_contents() { return have_verified_contents_; }
+  bool force() { return force_; }
+
+  const std::string& extension_id() { return extension_id_; }
+
+  // Returns the set of paths that had a hash mismatch.
+  const std::set<base::FilePath>& hash_mismatch_paths() {
+    return hash_mismatch_paths_;
+  }
 
  private:
   friend class base::RefCountedThreadSafe<ContentHashFetcherJob>;
   virtual ~ContentHashFetcherJob();
-
-  // Checks whether this job has been cancelled. Safe to call from any thread.
-  bool IsCancelled();
 
   // Callback for when we're done doing file I/O to see if we already have
   // a verified contents file. If we don't, this will kick off a network
@@ -110,18 +122,22 @@ class ContentHashFetcherJob
   // The url we'll need to use to fetch a verified_contents.json file.
   GURL fetch_url_;
 
+  bool force_;
+
   CompletionCallback callback_;
   content::BrowserThread::ID creation_thread_;
 
   // Used for fetching content signatures.
   scoped_ptr<net::URLFetcher> url_fetcher_;
 
+  // The key used to validate verified_contents.json.
+  ContentVerifierKey key_;
+
   // Whether this job succeeded.
   bool success_;
 
-  // Whether we either found a verified contents file, or were successful in
-  // fetching one and saving it to disk.
-  bool have_verified_contents_;
+  // Paths that were found to have a mismatching hash.
+  std::set<base::FilePath> hash_mismatch_paths_;
 
   // The block size to use for hashing.
   int block_size_;
@@ -132,21 +148,26 @@ class ContentHashFetcherJob
 
   // A lock for synchronizing access to |cancelled_|.
   base::Lock cancelled_lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentHashFetcherJob);
 };
 
 ContentHashFetcherJob::ContentHashFetcherJob(
     net::URLRequestContextGetter* request_context,
+    ContentVerifierKey key,
     const std::string& extension_id,
     const base::FilePath& extension_path,
     const GURL& fetch_url,
+    bool force,
     const CompletionCallback& callback)
     : request_context_(request_context),
       extension_id_(extension_id),
       extension_path_(extension_path),
       fetch_url_(fetch_url),
+      force_(force),
       callback_(callback),
+      key_(key),
       success_(false),
-      have_verified_contents_(false),
       // TODO(asargent) - use the value from verified_contents.json for each
       // file, instead of using a constant.
       block_size_(4096),
@@ -172,21 +193,24 @@ void ContentHashFetcherJob::Cancel() {
   cancelled_ = true;
 }
 
-ContentHashFetcherJob::~ContentHashFetcherJob() {
-}
-
 bool ContentHashFetcherJob::IsCancelled() {
   base::AutoLock autolock(cancelled_lock_);
   bool result = cancelled_;
   return result;
 }
 
+ContentHashFetcherJob::~ContentHashFetcherJob() {
+}
+
 void ContentHashFetcherJob::DoneCheckingForVerifiedContents(bool found) {
   if (IsCancelled())
     return;
   if (found) {
+    VLOG(1) << "Found verified contents for " << extension_id_;
     DoneFetchingVerifiedContents(true);
   } else {
+    VLOG(1) << "Missing verified contents for " << extension_id_
+            << ", fetching...";
     url_fetcher_.reset(
         net::URLFetcher::Create(fetch_url_, net::URLFetcher::GET, this));
     url_fetcher_->SetRequestContext(request_context_);
@@ -209,6 +233,9 @@ static int WriteFileHelper(const base::FilePath& path,
 }
 
 void ContentHashFetcherJob::OnURLFetchComplete(const net::URLFetcher* source) {
+  VLOG(1) << "URLFetchComplete for " << extension_id_
+          << " is_success:" << url_fetcher_->GetStatus().is_success() << " "
+          << fetch_url_.possibly_invalid_spec();
   if (IsCancelled())
     return;
   scoped_ptr<std::string> response(new std::string);
@@ -224,6 +251,8 @@ void ContentHashFetcherJob::OnURLFetchComplete(const net::URLFetcher* source) {
   // move to parsing this in a sandboxed helper (crbug.com/372878).
   scoped_ptr<base::Value> parsed(base::JSONReader::Read(*response));
   if (parsed) {
+    VLOG(1) << "JSON parsed ok for " << extension_id_;
+
     parsed.reset();  // no longer needed
     base::FilePath destination =
         file_util::GetVerifiedContentsPath(extension_path_);
@@ -247,14 +276,13 @@ void ContentHashFetcherJob::OnVerifiedContentsWritten(size_t expected_size,
 }
 
 void ContentHashFetcherJob::DoneFetchingVerifiedContents(bool success) {
-  have_verified_contents_ = success;
-
   if (IsCancelled())
     return;
 
-  // TODO(asargent) - eventually we should abort here on !success, but for
-  // testing purposes it's actually still helpful to continue on to create the
-  // computed hashes.
+  if (!success) {
+    DispatchCallback();
+    return;
+  }
 
   content::BrowserThread::PostBlockingPoolSequencedTask(
       "ContentHashFetcher",
@@ -268,10 +296,13 @@ void ContentHashFetcherJob::MaybeCreateHashes() {
   base::FilePath hashes_file =
       file_util::GetComputedHashesPath(extension_path_);
 
-  if (base::PathExists(hashes_file))
+  if (!force_ && base::PathExists(hashes_file)) {
     success_ = true;
-  else
+  } else {
+    if (force_)
+      base::DeleteFile(hashes_file, false /* recursive */);
     success_ = CreateHashes(hashes_file);
+  }
 
   content::BrowserThread::PostTask(
       creation_thread_,
@@ -284,6 +315,12 @@ bool ContentHashFetcherJob::CreateHashes(const base::FilePath& hashes_file) {
     return false;
   // Make sure the directory exists.
   if (!base::CreateDirectoryAndGetError(hashes_file.DirName(), NULL))
+    return false;
+
+  base::FilePath verified_contents_path =
+      file_util::GetVerifiedContentsPath(extension_path_);
+  VerifiedContents verified_contents(key_.data, key_.size);
+  if (!verified_contents.InitFrom(verified_contents_path, false))
     return false;
 
   base::FileEnumerator enumerator(extension_path_,
@@ -310,6 +347,12 @@ bool ContentHashFetcherJob::CreateHashes(const base::FilePath& hashes_file) {
     const base::FilePath& full_path = *i;
     base::FilePath relative_path;
     extension_path_.AppendRelativePath(full_path, &relative_path);
+
+    const std::string* expected_root =
+        verified_contents.GetTreeHashRoot(relative_path);
+    if (!expected_root)
+      continue;
+
     std::string contents;
     if (!base::ReadFileToString(full_path, &contents)) {
       LOG(ERROR) << "Could not read " << full_path.MaybeAsASCII();
@@ -339,6 +382,14 @@ bool ContentHashFetcherJob::CreateHashes(const base::FilePath& hashes_file) {
       // Get ready for next iteration.
       offset += bytes_to_read;
     }
+    std::string root =
+        ComputeTreeHashRoot(hashes, block_size_ / crypto::kSHA256Length);
+    if (expected_root && *expected_root != root) {
+      VLOG(1) << "content mismatch for " << relative_path.AsUTF8Unsafe();
+      hash_mismatch_paths_.insert(relative_path);
+      continue;
+    }
+
     writer.AddHashes(relative_path, block_size_, hashes);
   }
   return writer.WriteToFile(hashes_file);
@@ -356,9 +407,11 @@ void ContentHashFetcherJob::DispatchCallback() {
 // ----
 
 ContentHashFetcher::ContentHashFetcher(content::BrowserContext* context,
-                                       ContentVerifierDelegate* delegate)
+                                       ContentVerifierDelegate* delegate,
+                                       const FetchCallback& callback)
     : context_(context),
       delegate_(delegate),
+      fetch_callback_(callback),
       observer_(this),
       weak_ptr_factory_(this) {
 }
@@ -374,13 +427,22 @@ void ContentHashFetcher::Start() {
   observer_.Add(registry);
 }
 
-void ContentHashFetcher::DoFetch(const Extension* extension) {
+void ContentHashFetcher::DoFetch(const Extension* extension, bool force) {
   if (!extension || !delegate_->ShouldBeVerified(*extension))
     return;
 
   IdAndVersion key(extension->id(), extension->version()->GetString());
-  if (ContainsKey(jobs_, key))
-    return;
+  JobMap::iterator found = jobs_.find(key);
+  if (found != jobs_.end()) {
+    if (!force || found->second->force()) {
+      // Just let the existing job keep running.
+      return;
+    } else {
+      // Kill the existing non-force job, so we can start a new one below.
+      found->second->Cancel();
+      jobs_.erase(found);
+    }
+  }
 
   // TODO(asargent) - we should do something here to remember recent attempts
   // to fetch signatures by extension id, and use exponential backoff to avoid
@@ -392,9 +454,11 @@ void ContentHashFetcher::DoFetch(const Extension* extension) {
       delegate_->GetSignatureFetchUrl(extension->id(), *extension->version());
   ContentHashFetcherJob* job =
       new ContentHashFetcherJob(context_->GetRequestContext(),
+                                delegate_->PublicKey(),
                                 extension->id(),
                                 extension->path(),
                                 url,
+                                force,
                                 base::Bind(&ContentHashFetcher::JobFinished,
                                            weak_ptr_factory_.GetWeakPtr()));
   jobs_.insert(std::make_pair(key, job));
@@ -405,7 +469,7 @@ void ContentHashFetcher::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
   CHECK(extension);
-  DoFetch(extension);
+  DoFetch(extension, false);
 }
 
 void ContentHashFetcher::OnExtensionUnloaded(
@@ -415,11 +479,20 @@ void ContentHashFetcher::OnExtensionUnloaded(
   CHECK(extension);
   IdAndVersion key(extension->id(), extension->version()->GetString());
   JobMap::iterator found = jobs_.find(key);
-  if (found != jobs_.end())
+  if (found != jobs_.end()) {
+    found->second->Cancel();
     jobs_.erase(found);
+  }
 }
 
 void ContentHashFetcher::JobFinished(ContentHashFetcherJob* job) {
+  if (!job->IsCancelled()) {
+    fetch_callback_.Run(job->extension_id(),
+                        job->success(),
+                        job->force(),
+                        job->hash_mismatch_paths());
+  }
+
   for (JobMap::iterator i = jobs_.begin(); i != jobs_.end(); ++i) {
     if (i->second.get() == job) {
       jobs_.erase(i);

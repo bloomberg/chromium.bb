@@ -5,6 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_CONTENT_HASH_FETCHER_H_
 #define EXTENSIONS_BROWSER_CONTENT_HASH_FETCHER_H_
 
+#include <set>
+#include <string>
+
+#include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "extensions/browser/content_verifier_delegate.h"
@@ -28,18 +33,31 @@ class ContentHashFetcherJob;
 // sure they match the signed treehash root hash).
 class ContentHashFetcher : public ExtensionRegistryObserver {
  public:
+  // A callback for when a fetch is complete. This reports back:
+  // -extension id
+  // -whether we were successful or not (have verified_contents.json and
+  // -computed_hashes.json files)
+  // -was it a forced check?
+  // -a set of paths whose contents didn't match expected values
+  typedef base::Callback<
+      void(const std::string&, bool, bool, const std::set<base::FilePath>&)>
+      FetchCallback;
+
   // The consumer of this class needs to ensure that context and delegate
   // outlive this object.
   ContentHashFetcher(content::BrowserContext* context,
-                     ContentVerifierDelegate* delegate);
+                     ContentVerifierDelegate* delegate,
+                     const FetchCallback& callback);
   virtual ~ContentHashFetcher();
 
   // Begins the process of trying to fetch any needed verified contents, and
   // listening for extension load/unload.
   void Start();
 
-  // Explicitly ask to fetch hashes for |extension|.
-  void DoFetch(const Extension* extension);
+  // Explicitly ask to fetch hashes for |extension|. If |force| is true,
+  // we will always check the validity of the verified_contents.json and
+  // re-check the contents of the files in the filesystem.
+  void DoFetch(const Extension* extension, bool force);
 
   // ExtensionRegistryObserver interface
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -55,6 +73,7 @@ class ContentHashFetcher : public ExtensionRegistryObserver {
 
   content::BrowserContext* context_;
   ContentVerifierDelegate* delegate_;
+  FetchCallback fetch_callback_;
 
   // We keep around pointers to in-progress jobs, both so we can avoid
   // scheduling duplicate work if fetching is already in progress, and so that

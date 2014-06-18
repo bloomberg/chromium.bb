@@ -5,6 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_CONTENT_VERIFIER_H_
 #define EXTENSIONS_BROWSER_CONTENT_VERIFIER_H_
 
+#include <set>
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -46,11 +49,23 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier> {
   void VerifyFailed(const std::string& extension_id,
                     ContentVerifyJob::FailureReason reason);
 
+  void OnFetchComplete(const std::string& extension_id,
+                       bool success,
+                       bool was_force_check,
+                       const std::set<base::FilePath>& hash_mismatch_paths);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentVerifier);
 
   friend class base::RefCountedThreadSafe<ContentVerifier>;
   virtual ~ContentVerifier();
+
+  // Returns true if any of the paths in |relative_paths| *should* have their
+  // contents verified. (Some files get transcoded during the install process,
+  // so we don't want to verify their contents because they are expected not
+  // to match).
+  bool ShouldVerifyAnyPaths(const Extension* extension,
+                            const std::set<base::FilePath>& relative_paths);
 
   // Note that it is important for these to appear in increasing "severity"
   // order, because we use this to let command line flags increase, but not

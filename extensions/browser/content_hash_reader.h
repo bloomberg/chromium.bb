@@ -40,6 +40,12 @@ class ContentHashReader : public base::RefCountedThreadSafe<ContentHashReader> {
   // should likely be discarded.
   bool Init();
 
+  // These return whether we found valid verified_contents.json /
+  // computed_hashes.json files respectively. Note that both of these can be
+  // true but we still didn't find an entry for |relative_path_| in them.
+  bool have_verified_contents() { return have_verified_contents_; }
+  bool have_computed_hashes() { return have_computed_hashes_; }
+
   // Return the number of blocks and block size, respectively. Only valid after
   // calling Init().
   int block_count() const;
@@ -62,6 +68,9 @@ class ContentHashReader : public base::RefCountedThreadSafe<ContentHashReader> {
   ContentVerifierKey key_;
 
   InitStatus status_;
+
+  bool have_verified_contents_;
+  bool have_computed_hashes_;
 
   // The blocksize used for generating the hashes.
   int block_size_;

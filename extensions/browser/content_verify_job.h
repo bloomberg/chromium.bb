@@ -34,8 +34,12 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
     // No failure.
     NONE,
 
-    // Failed because there were no expected hashes.
-    NO_HASHES,
+    // Failed because there were no expected hashes at all (eg they haven't
+    // been fetched yet).
+    MISSING_ALL_HASHES,
+
+    // Failed because this file wasn't found in the list of expected hashes.
+    NO_HASHES_FOR_FILE,
 
     // Some of the content read did not match the expected hash.
     HASH_MISMATCH
@@ -81,9 +85,10 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   friend class base::RefCountedThreadSafe<ContentVerifyJob>;
 
   // Called each time we're done adding bytes for the current block, and are
-  // ready to finish the hash operation for those bytes and make sure it matches
-  // what was expected for that block.
-  void FinishBlock();
+  // ready to finish the hash operation for those bytes and make sure it
+  // matches what was expected for that block. Returns true if everything is
+  // still ok so far, or false if a mismatch was detected.
+  bool FinishBlock();
 
   // Dispatches the failure callback with the given reason.
   void DispatchFailureCallback(FailureReason reason);
@@ -117,6 +122,9 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
 
   // Called once if verification fails.
   FailureCallback failure_callback_;
+
+  // Set to true if we detected a mismatch and called the failure callback.
+  bool failed_;
 
   // For ensuring methods on called on the right thread.
   base::ThreadChecker thread_checker_;

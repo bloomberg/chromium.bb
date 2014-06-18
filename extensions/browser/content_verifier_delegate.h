@@ -23,6 +23,8 @@ struct ContentVerifierKey {
   const uint8* data;
   int size;
 
+  ContentVerifierKey() : data(NULL), size(0) {}
+
   ContentVerifierKey(const uint8* data, int size) {
     this->data = data;
     this->size = size;
