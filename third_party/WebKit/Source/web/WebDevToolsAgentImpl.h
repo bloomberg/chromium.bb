@@ -86,6 +86,8 @@ public:
     // WebDevToolsAgent implementation.
     virtual void attach() OVERRIDE;
     virtual void reattach(const WebString& savedState) OVERRIDE;
+    virtual void attach(const WebString& hostId) OVERRIDE;
+    virtual void reattach(const WebString& hostId, const WebString& savedState) OVERRIDE;
     virtual void detach() OVERRIDE;
     virtual void didNavigate() OVERRIDE;
     virtual void didBeginFrame(int frameId) OVERRIDE;
@@ -140,7 +142,7 @@ private:
     WebCore::InspectorController* inspectorController();
     WebCore::LocalFrame* mainFrame();
 
-    int m_hostId;
+    int m_debuggerId;
     int m_layerTreeId;
     WebDevToolsAgentClient* m_client;
     WebViewImpl* m_webViewImpl;

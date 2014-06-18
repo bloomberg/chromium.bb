@@ -200,7 +200,7 @@ private:
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebViewImpl* webViewImpl,
     WebDevToolsAgentClient* client)
-    : m_hostId(client->hostIdentifier())
+    : m_debuggerId(client->debuggerId())
     , m_layerTreeId(0)
     , m_client(client)
     , m_webViewImpl(webViewImpl)
@@ -215,7 +215,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_pageScaleLimitsOverriden(false)
     , m_touchEventEmulationEnabled(false)
 {
-    ASSERT(m_hostId > 0);
+    ASSERT(m_debuggerId > 0);
     ClientMessageLoopAdapter::ensureClientMessageLoopCreated(m_client);
 }
 
@@ -228,20 +228,30 @@ WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
 
 void WebDevToolsAgentImpl::attach()
 {
-    if (m_attached)
-        return;
-
-    inspectorController()->connectFrontend(this);
-    blink::Platform::current()->currentThread()->addTaskObserver(this);
-    m_attached = true;
+    attach("");
 }
 
 void WebDevToolsAgentImpl::reattach(const WebString& savedState)
 {
+    reattach("", savedState);
+}
+
+void WebDevToolsAgentImpl::attach(const WebString& hostId)
+{
     if (m_attached)
         return;
 
-    inspectorController()->reuseFrontend(this, savedState);
+    inspectorController()->connectFrontend(hostId, this);
+    blink::Platform::current()->currentThread()->addTaskObserver(this);
+    m_attached = true;
+}
+
+void WebDevToolsAgentImpl::reattach(const WebString& hostId, const WebString& savedState)
+{
+    if (m_attached)
+        return;
+
+    inspectorController()->reuseFrontend(hostId, this, savedState);
     blink::Platform::current()->currentThread()->addTaskObserver(this);
     m_attached = true;
 }
@@ -294,7 +304,7 @@ void WebDevToolsAgentImpl::didCreateScriptContext(WebLocalFrameImpl* webframe, i
     if (worldId)
         return;
     if (WebCore::LocalFrame* frame = webframe->frame())
-        frame->script().setContextDebugId(m_hostId);
+        frame->script().setContextDebugId(m_debuggerId);
 }
 
 bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputEvent& inputEvent)

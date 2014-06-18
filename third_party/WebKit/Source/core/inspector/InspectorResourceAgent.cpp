@@ -793,6 +793,11 @@ void InspectorResourceAgent::frameClearedScheduledNavigation(LocalFrame* frame)
     m_frameNavigationInitiatorMap.remove(m_pageAgent->frameId(frame));
 }
 
+void InspectorResourceAgent::setHostId(const String& hostId)
+{
+    m_hostId = hostId;
+}
+
 bool InspectorResourceAgent::fetchResourceContent(LocalFrame* frame, const KURL& url, String* content, bool* base64Encoded)
 {
     // First try to fetch content from the cached resource.
