@@ -41,7 +41,7 @@ using namespace WTF;
 using namespace Unicode;
 using namespace XPath;
 
-#include "XPathGrammar.h"
+#include "core/XPathGrammar.h"
 
 Parser* Parser::currentParser = 0;
 

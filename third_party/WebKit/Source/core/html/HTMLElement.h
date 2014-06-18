@@ -156,6 +156,6 @@ inline HTMLElement::HTMLElement(const QualifiedName& tagName, Document& document
 
 } // namespace WebCore
 
-#include "HTMLElementTypeHelpers.h"
+#include "core/HTMLElementTypeHelpers.h"
 
 #endif // HTMLElement_h

@@ -190,11 +190,10 @@ InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope*);
 
 } // namespace WebCore
 
-// This file will soon be generated
-#include "InspectorInstrumentationInl.h"
+#include "core/InspectorInstrumentationInl.h"
 
-#include "InspectorInstrumentationCustomInl.h"
+#include "core/inspector/InspectorInstrumentationCustomInl.h"
 
-#include "InspectorOverridesInl.h"
+#include "core/InspectorOverridesInl.h"
 
 #endif // !defined(InspectorInstrumentation_h)

@@ -27,7 +27,7 @@
 #include <libxslt/security.h>
 #include <libxslt/variables.h>
 #include <libxslt/xsltutils.h>
-#include "FetchInitiatorTypeNames.h"
+#include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/TransformSource.h"
 #include "core/editing/markup.h"

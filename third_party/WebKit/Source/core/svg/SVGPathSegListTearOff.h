@@ -31,7 +31,7 @@
 #ifndef SVGPathSegListTearOff_h
 #define SVGPathSegListTearOff_h
 
-#include "SVGNames.h"
+#include "core/SVGNames.h"
 #include "core/svg/SVGPathSegList.h"
 #include "core/svg/properties/SVGListPropertyTearOffHelper.h"
 

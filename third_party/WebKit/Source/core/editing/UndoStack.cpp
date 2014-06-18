@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "UndoStack.h"
+#include "core/editing/UndoStack.h"
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/NoEventDispatchAssertion.h"
