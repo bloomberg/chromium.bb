@@ -2168,3 +2168,10 @@ name=bug_377728
 *!HunspellEngine::FillSuggestionList
 *!SpellcheckLanguage::SpellCheckWord
 *!SpellCheck::SpellCheckWord
+
+UNINITIALIZED READ
+name=bug_382921
+...
+*!LocationBarView::OnChanged
+*!OmniboxEditModel::OnChanged
+*!OmniboxViewViews::SetWindowTextAndCaretPos
