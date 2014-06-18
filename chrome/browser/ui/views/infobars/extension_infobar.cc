@@ -208,7 +208,7 @@ void ExtensionInfoBar::OnImageLoaded(const gfx::Image& image) {
 
     gfx::CanvasImageSource* source = new MenuImageSource(*icon, *drop_image);
     gfx::ImageSkia menu_image = gfx::ImageSkia(source, source->size());
-    icon_as_menu_->SetIcon(menu_image);
+    icon_as_menu_->SetImage(views::Button::STATE_NORMAL, menu_image);
   } else {
     icon_as_image_->SetImage(*icon);
   }

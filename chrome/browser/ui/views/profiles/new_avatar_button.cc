@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/profiles/new_avatar_button.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -18,28 +19,33 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
 
 namespace {
 
 // Text padding within the button border.
-const int kInset = 10;
+const int kLeftRightInset = 7;
+const int kTopBottomInset = 2;
 
 scoped_ptr<views::Border> CreateBorder(const int normal_image_set[],
                                        const int hot_image_set[],
                                        const int pushed_image_set[]) {
-  scoped_ptr<views::TextButtonDefaultBorder> border(
-      new views::TextButtonDefaultBorder());
+  scoped_ptr<views::LabelButtonBorder> border(
+      new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON));
 
-  border->SetInsets(gfx::Insets(kInset, kInset, kInset, kInset));
-  border->set_normal_painter(
+  border->SetPainter(false, views::Button::STATE_NORMAL,
       views::Painter::CreateImageGridPainter(normal_image_set));
-  border->set_hot_painter(
+  border->SetPainter(false, views::Button::STATE_HOVERED,
       views::Painter::CreateImageGridPainter(hot_image_set));
-  border->set_pushed_painter(
+  border->SetPainter(false, views::Button::STATE_PRESSED,
       views::Painter::CreateImageGridPainter(pushed_image_set));
+
+  border->set_insets(gfx::Insets(kTopBottomInset, kLeftRightInset,
+                                 kTopBottomInset, kLeftRightInset));
 
   return border.PassAs<views::Border>();
 }
@@ -71,7 +77,11 @@ NewAvatarButton::NewAvatarButton(
     : MenuButton(listener, GetButtonText(browser->profile()), NULL, true),
       browser_(browser) {
   set_animate_on_state_change(false);
-  set_icon_placement(ICON_ON_RIGHT);
+  SetTextColor(views::Button::STATE_NORMAL, SK_ColorWHITE);
+  SetTextColor(views::Button::STATE_HOVERED, SK_ColorWHITE);
+  SetTextColor(views::Button::STATE_PRESSED, SK_ColorWHITE);
+  SetHaloColor(SK_ColorDKGRAY);
+  SetHorizontalAlignment(gfx::ALIGN_RIGHT);
 
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
 
@@ -130,22 +140,6 @@ NewAvatarButton::~NewAvatarButton() {
     error->RemoveObserver(this);
 }
 
-void NewAvatarButton::OnPaintText(gfx::Canvas* canvas, PaintButtonMode mode) {
-  // Get text bounds, and then adjust for the top and RTL languages.
-  gfx::Rect rect = GetTextBounds();
-  rect.Offset(0, -rect.y());
-  if (rect.width() > 0)
-    rect.set_x(GetMirroredXForRect(rect));
-
-  canvas->DrawStringRectWithHalo(
-      text(),
-      gfx::FontList(),
-      SK_ColorWHITE,
-      SK_ColorDKGRAY,
-      rect,
-      gfx::Canvas::NO_SUBPIXEL_RENDERING);
-}
-
 void NewAvatarButton::OnProfileAdded(const base::FilePath& profile_path) {
   UpdateAvatarButtonAndRelayoutParent();
 }
@@ -173,14 +167,15 @@ void NewAvatarButton::OnErrorChanged() {
     icon = *rb->GetImageNamed(IDR_WARNING).ToImageSkia();
   }
 
-  SetIcon(icon);
+  SetImage(views::Button::STATE_NORMAL, icon);
   UpdateAvatarButtonAndRelayoutParent();
 }
 
 void NewAvatarButton::UpdateAvatarButtonAndRelayoutParent() {
   // We want the button to resize if the new text is shorter.
   SetText(GetButtonText(browser_->profile()));
-  ClearMaxTextSize();
+  set_min_size(gfx::Size());
+  InvalidateLayout();
 
   // Because the width of the button might have changed, the parent browser
   // frame needs to recalculate the button bounds and redraw it.

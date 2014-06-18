@@ -40,6 +40,7 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/resize_area.h"
 #include "ui/views/metrics.h"
 #include "ui/views/painter.h"
@@ -55,6 +56,35 @@ const int kItemSpacing = ToolbarView::kStandardSpacing;
 
 // Horizontal spacing before the chevron (if visible).
 const int kChevronSpacing = kItemSpacing - 2;
+
+// A version of MenuButton with almost empty insets to fit properly on the
+// toolbar.
+class ChevronMenuButton : public views::MenuButton {
+ public:
+  ChevronMenuButton(views::ButtonListener* listener,
+                    const base::string16& text,
+                    views::MenuButtonListener* menu_button_listener,
+                    bool show_menu_marker)
+      : views::MenuButton(listener,
+                          text,
+                          menu_button_listener,
+                          show_menu_marker) {
+  }
+
+  virtual ~ChevronMenuButton() {}
+
+  virtual scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const
+      OVERRIDE {
+    // The chevron resource was designed to not have any insets.
+    scoped_ptr<views::LabelButtonBorder> border =
+        views::MenuButton::CreateDefaultBorder();
+    border->set_insets(gfx::Insets());
+    return border.Pass();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChevronMenuButton);
+};
 
 }  // namespace
 
@@ -97,8 +127,7 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
   resize_area_ = new views::ResizeArea(this);
   AddChildView(resize_area_);
 
-  chevron_ = new views::MenuButton(NULL, base::string16(), this, false);
-  chevron_->SetBorder(views::Border::NullBorder());
+  chevron_ = new ChevronMenuButton(NULL, base::string16(), this, false);
   chevron_->EnableCanvasFlippingForRTLUI(true);
   chevron_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS_CHEVRON));
@@ -782,11 +811,8 @@ void BrowserActionsContainer::HighlightModeChanged(bool is_highlighting) {
 
 void BrowserActionsContainer::LoadImages() {
   ui::ThemeProvider* tp = GetThemeProvider();
-  chevron_->SetIcon(*tp->GetImageSkiaNamed(IDR_BROWSER_ACTIONS_OVERFLOW));
-  chevron_->SetHoverIcon(*tp->GetImageSkiaNamed(
-      IDR_BROWSER_ACTIONS_OVERFLOW_H));
-  chevron_->SetPushedIcon(*tp->GetImageSkiaNamed(
-      IDR_BROWSER_ACTIONS_OVERFLOW_P));
+  chevron_->SetImage(views::Button::STATE_NORMAL,
+                     *tp->GetImageSkiaNamed(IDR_BROWSER_ACTIONS_OVERFLOW));
 
   const int kImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
   highlight_painter_.reset(views::Painter::CreateImageGridPainter(kImages));

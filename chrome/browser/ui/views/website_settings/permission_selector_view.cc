@@ -45,9 +45,6 @@ class PermissionMenuButton : public views::MenuButton,
                        bool show_menu_marker);
   virtual ~PermissionMenuButton();
 
-  // Overridden from views::MenuButton.
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-
   // Overridden from views::TextButton.
   virtual void SetText(const base::string16& text) OVERRIDE;
 
@@ -75,26 +72,9 @@ PermissionMenuButton::PermissionMenuButton(const base::string16& text,
                                            bool show_menu_marker)
     : MenuButton(NULL, text, this, show_menu_marker),
       menu_model_(model) {
-
 }
 
 PermissionMenuButton::~PermissionMenuButton() {
-}
-
-gfx::Size PermissionMenuButton::GetPreferredSize() const {
-  gfx::Insets insets = GetInsets();
-  // Scale the button to the current text size.
-  gfx::Size prefsize(text_size_.width() + insets.width(),
-                     text_size_.height() + insets.height());
-  if (max_width_ > 0)
-    prefsize.set_width(std::min(max_width_, prefsize.width()));
-  if (show_menu_marker()) {
-    prefsize.Enlarge(menu_marker()->width() +
-                         views::MenuButton::kMenuMarkerPaddingLeft +
-                         views::MenuButton::kMenuMarkerPaddingRight,
-                     0);
-  }
-  return prefsize;
 }
 
 void PermissionMenuButton::SetText(const base::string16& text) {
@@ -104,15 +84,15 @@ void PermissionMenuButton::SetText(const base::string16& text) {
 
 void PermissionMenuButton::GetAccessibleState(ui::AXViewState* state) {
   MenuButton::GetAccessibleState(state);
-  state->value = text();
+  state->value = GetText();
 }
 
 void PermissionMenuButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  SetEnabledColor(theme->GetSystemColor(
+  SetTextColor(views::Button::STATE_NORMAL, GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LabelEnabledColor));
-  SetHoverColor(theme->GetSystemColor(
+  SetTextColor(views::Button::STATE_HOVERED, GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LabelEnabledColor));
-  SetDisabledColor(theme->GetSystemColor(
+  SetTextColor(views::Button::STATE_DISABLED, GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LabelDisabledColor));
 }
 

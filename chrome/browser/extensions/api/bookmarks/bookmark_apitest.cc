@@ -15,8 +15,8 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 
-// Flaky on Win only. http://crbug.com/383452
-#if defined(OS_WIN)
+// Flaky on Windows and Linux. http://crbug.com/383452
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_Bookmarks DISABLED_Bookmarks
 #else
 #define MAYBE_Bookmarks Bookmarks

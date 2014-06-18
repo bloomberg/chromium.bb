@@ -121,11 +121,8 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
     if (avatar_button_ && !AvatarMenu::ShouldShowAvatarMenu())
       avatar_button_->SetEnabled(false);
   }
-  if (avatar_button_) {
+  if (avatar_button_)
     avatar_button_->SetAvatarIcon(avatar, is_rectangle);
-    if (!text.empty())
-      avatar_button_->SetText(text);
-  }
 
   // For popups and panels which don't have the avatar button, we still
   // need to draw the taskbar decoration. Even though we have an icon on the

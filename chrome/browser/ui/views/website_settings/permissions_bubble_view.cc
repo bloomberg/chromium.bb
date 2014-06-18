@@ -99,7 +99,7 @@ PermissionCombobox::~PermissionCombobox() {}
 
 void PermissionCombobox::GetAccessibleState(ui::AXViewState* state) {
   MenuButton::GetAccessibleState(state);
-  state->value = text();
+  state->value = GetText();
 }
 
 void PermissionCombobox::OnMenuButtonClicked(View* source,

@@ -10,6 +10,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/drag_utils.h"
@@ -18,17 +19,25 @@
 namespace button_drag_utils {
 
 // Maximum width of the link drag image in pixels.
-static const int kLinkDragImageMaxWidth = 200;
+static const int kLinkDragImageMaxWidth = 150;
 
 void SetURLAndDragImage(const GURL& url,
                         const base::string16& title,
                         const gfx::ImageSkia& icon,
+                        const gfx::Point* press_pt,
                         ui::OSExchangeData* data,
                         views::Widget* widget) {
   DCHECK(url.is_valid() && data);
-
   data->SetURL(url, title);
+  SetDragImage(url, title, icon, press_pt, data, widget);
+}
 
+void SetDragImage(const GURL& url,
+                  const base::string16& title,
+                  const gfx::ImageSkia& icon,
+                  const gfx::Point* press_pt,
+                  ui::OSExchangeData* data,
+                  views::Widget* widget) {
   // Create a button to render the drag image for us.
   views::TextButton button(NULL,
                            title.empty() ? base::UTF8ToUTF16(url.spec())
@@ -43,14 +52,17 @@ void SetURLAndDragImage(const GURL& url,
   gfx::Size prefsize = button.GetPreferredSize();
   button.SetBounds(0, 0, prefsize.width(), prefsize.height());
 
+  gfx::Vector2d press_point;
+  if (press_pt)
+    press_point = press_pt->OffsetFromOrigin();
+  else
+    press_point = gfx::Vector2d(prefsize.width() / 2, prefsize.height() / 2);
+
   // Render the image.
   scoped_ptr<gfx::Canvas> canvas(
       views::GetCanvasForDragImage(widget, prefsize));
   button.PaintButton(canvas.get(), views::TextButton::PB_FOR_DRAG);
-  drag_utils::SetDragImageOnDataObject(
-      *canvas,
-      gfx::Vector2d(prefsize.width() / 2, prefsize.height() / 2),
-      data);
+  drag_utils::SetDragImageOnDataObject(*canvas, press_point, data);
 }
 
 }  // namespace button_drag_utils
