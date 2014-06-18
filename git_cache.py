@@ -381,7 +381,7 @@ class Mirror(object):
       if tempdir:
         os.rename(tempdir, self.mirror_path)
 
-  def update_bootstrap(self):
+  def update_bootstrap(self, prune=False):
     # The files are named <git number>.zip
     gen_number = subprocess.check_output(
         [self.git_exe, 'number', 'master'], cwd=self.mirror_path).strip()
@@ -391,10 +391,18 @@ class Mirror(object):
     os.remove(tmp_zipfile)
     subprocess.call(['zip', '-r', tmp_zipfile, '.'], cwd=self.mirror_path)
     gsutil = Gsutil(path=self.gsutil_exe, boto_path=None)
-    dest_name = 'gs://%s/%s/%s.zip' % (
-        self.bootstrap_bucket, self.basedir, gen_number)
+    gs_folder = 'gs://%s/%s' % (self.bootstrap_bucket, self.basedir)
+    dest_name = '%s/%s.zip' % (gs_folder, gen_number)
     gsutil.call('cp', tmp_zipfile, dest_name)
     os.remove(tmp_zipfile)
+
+    # Remove all other files in the same directory.
+    if prune:
+      _, ls_out, _ = gsutil.check_call('ls', gs_folder)
+      for filename in ls_out.splitlines():
+        if filename == dest_name:
+          continue
+        gsutil.call('rm', filename)
 
   @staticmethod
   def DeleteTmpPackFiles(path):
@@ -473,16 +481,19 @@ def CMDupdate_bootstrap(parser, args):
     print('Sorry, update bootstrap will not work on Windows.', file=sys.stderr)
     return 1
 
+  parser.add_option('--prune', action='store_true',
+                    help='Prune all other cached zipballs of the same repo.')
+
   # First, we need to ensure the cache is populated.
   populate_args = args[:]
   populate_args.append('--no_bootstrap')
   CMDpopulate(parser, populate_args)
 
   # Get the repo directory.
-  _, args = parser.parse_args(args)
+  options, args = parser.parse_args(args)
   url = args[0]
   mirror = Mirror(url)
-  mirror.update_bootstrap()
+  mirror.update_bootstrap(options.prune)
   return 0
 
 
