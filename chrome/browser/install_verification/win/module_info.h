@@ -15,7 +15,7 @@ struct ModuleInfo {
 
   ModuleInfo(const base::char16* const module_name,
              uintptr_t module_base_address,
-             size_t module_size)
+             uint32_t module_size)
       : base_address(module_base_address),
         size(module_size),
         name(module_name) {
@@ -32,8 +32,8 @@ struct ModuleInfo {
   }
 
   base::string16 name;
-  uintptr_t  base_address;
-  size_t size;
+  uintptr_t base_address;
+  uint32_t size;
 };
 
 #endif  // CHROME_BROWSER_INSTALL_VERIFICATION_WIN_MODULE_INFO_H_
