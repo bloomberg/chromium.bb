@@ -36,7 +36,7 @@ scrolled2 does not scroll with respect to scrolled3
 scrolled2 scrolls with respect to fixed-descendant
 scrolled2 scrolls with respect to successor
 scrolled2 scrolls with respect to root
-scrolled2 scrolls with respect to descendant
+scrolled2 does not scroll with respect to descendant
 scrolled3 scrolls with respect to predecessor
 scrolled3 scrolls with respect to container
 scrolled3 does not scroll with respect to scrolled1
@@ -45,7 +45,7 @@ scrolled3 does not scroll with respect to scrolled3
 scrolled3 scrolls with respect to fixed-descendant
 scrolled3 scrolls with respect to successor
 scrolled3 scrolls with respect to root
-scrolled3 scrolls with respect to descendant
+scrolled3 does not scroll with respect to descendant
 fixed-descendant does not scroll with respect to predecessor
 fixed-descendant scrolls with respect to container
 fixed-descendant scrolls with respect to scrolled1
@@ -76,8 +76,8 @@ root scrolls with respect to descendant
 descendant scrolls with respect to predecessor
 descendant scrolls with respect to container
 descendant does not scroll with respect to scrolled1
-descendant scrolls with respect to scrolled2
-descendant scrolls with respect to scrolled3
+descendant does not scroll with respect to scrolled2
+descendant does not scroll with respect to scrolled3
 descendant scrolls with respect to fixed-descendant
 descendant scrolls with respect to successor
 descendant scrolls with respect to root

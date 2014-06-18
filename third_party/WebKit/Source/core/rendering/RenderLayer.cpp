@@ -368,35 +368,31 @@ bool RenderLayer::scrollsWithRespectTo(const RenderLayer* other) const
     if (isRootFixedPos || otherIsRootFixedPos)
         return true;
 
-    if (containingBlock == otherContainingBlock)
+    if (containingBlock->enclosingLayer() == otherContainingBlock->enclosingLayer())
         return false;
 
     // Maintain a set of containing blocks between the first layer and its
     // closest scrollable ancestor.
-    HashSet<const RenderObject*> containingBlocks;
+    HashSet<const RenderLayer*> containingBlocks;
     while (containingBlock) {
-        if (containingBlock->enclosingLayer()->scrollsOverflow()) {
+        containingBlocks.add(containingBlock->enclosingLayer());
+        if (containingBlock->enclosingLayer()->scrollsOverflow())
             break;
-        }
+
         if (containingBlock->enclosingLayer() == other) {
             // This layer does not scroll with respect to the other layer if the other one does not scroll and this one is a child.
             return false;
         }
-        containingBlocks.add(containingBlock);
+
         containingBlock = containingBlock->containingBlock();
     }
 
     // Do the same for the 2nd layer, but if we find a common containing block,
     // it means both layers are contained within a single non-scrolling subtree.
     // Hence, they will not scroll with respect to each other.
-    bool thisLayerScrollsOverflow = scrollsOverflow();
     while (otherContainingBlock) {
-        if (containingBlocks.contains(otherContainingBlock))
+        if (containingBlocks.contains(otherContainingBlock->enclosingLayer()))
             return false;
-        // The other layer scrolls with respect to this one if this one scrolls and it's a child.
-        if (!thisLayerScrollsOverflow && otherContainingBlock->enclosingLayer() == this)
-            return false;
-        // The other layer does not scroll with respect to this one if this one does not scroll and it's a child.
         if (otherContainingBlock->enclosingLayer()->scrollsOverflow())
             break;
         otherContainingBlock = otherContainingBlock->containingBlock();
