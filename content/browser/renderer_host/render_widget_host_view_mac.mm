@@ -1324,7 +1324,7 @@ void RenderWidgetHostViewMac::PluginImeCompositionCompleted(
 }
 
 void RenderWidgetHostViewMac::CompositorSwapBuffers(
-    uint64 surface_handle,
+    IOSurfaceID surface_handle,
     const gfx::Size& size,
     float surface_scale_factor,
     const std::vector<ui::LatencyInfo>& latency_info) {
@@ -1662,11 +1662,13 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
       "RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped");
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  IOSurfaceID io_surface_handle =
+      static_cast<IOSurfaceID>(params.surface_handle);
   AddPendingSwapAck(params.route_id,
                     gpu_host_id,
                     compositing_iosurface_ ?
                         compositing_iosurface_->GetRendererID() : 0);
-  CompositorSwapBuffers(params.surface_handle,
+  CompositorSwapBuffers(io_surface_handle,
                         params.size,
                         params.scale_factor,
                         params.latency_info);
@@ -1679,11 +1681,13 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
       "RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer");
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  IOSurfaceID io_surface_handle =
+      static_cast<IOSurfaceID>(params.surface_handle);
   AddPendingSwapAck(params.route_id,
                     gpu_host_id,
                     compositing_iosurface_ ?
                         compositing_iosurface_->GetRendererID() : 0);
-  CompositorSwapBuffers(params.surface_handle,
+  CompositorSwapBuffers(io_surface_handle,
                         params.surface_size,
                         params.surface_scale_factor,
                         params.latency_info);

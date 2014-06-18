@@ -52,7 +52,7 @@ class CompositingIOSurfaceMac
   // Set IOSurface that will be drawn on the next NSView drawRect.
   bool SetIOSurfaceWithContextCurrent(
       scoped_refptr<CompositingIOSurfaceContext> current_context,
-      uint64 io_surface_handle,
+      IOSurfaceID io_surface_handle,
       const gfx::Size& size,
       float scale_factor) WARN_UNUSED_RESULT;
 
@@ -217,7 +217,7 @@ class CompositingIOSurfaceMac
       const scoped_refptr<CompositingIOSurfaceContext>& current_context,
       const gfx::Size pixel_size,
       float scale_factor,
-      uint64 io_surface_handle) WARN_UNUSED_RESULT;
+      IOSurfaceID io_surface_handle) WARN_UNUSED_RESULT;
 
   void UnrefIOSurfaceWithContextCurrent();
 
@@ -277,7 +277,7 @@ class CompositingIOSurfaceMac
   scoped_refptr<CompositingIOSurfaceContext> offscreen_context_;
 
   // IOSurface data.
-  uint64 io_surface_handle_;
+  IOSurfaceID io_surface_handle_;
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
 
   // The width and height of the io surface.

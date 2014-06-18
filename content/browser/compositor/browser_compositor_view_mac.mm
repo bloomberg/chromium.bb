@@ -48,7 +48,7 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
 // compositing should never be called. Log an error if they are.
 @implementation NSView (BrowserCompositorView)
 
-- (void)gotAcceleratedIOSurfaceFrame:(uint64)surface_handle
+- (void)gotAcceleratedIOSurfaceFrame:(IOSurfaceID)surface_handle
                  withOutputSurfaceID:(int)surface_id
                        withPixelSize:(gfx::Size)pixel_size
                      withScaleFactor:(float)scale_factor {
@@ -148,7 +148,7 @@ class BrowserCompositorViewMacHelper : public CompositingIOSurfaceLayerClient {
   return compositor_.get();
 }
 
-- (void)gotAcceleratedIOSurfaceFrame:(uint64)surface_handle
+- (void)gotAcceleratedIOSurfaceFrame:(IOSurfaceID)surface_handle
                  withOutputSurfaceID:(int)surface_id
                        withPixelSize:(gfx::Size)pixel_size
                      withScaleFactor:(float)scale_factor {

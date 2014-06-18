@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_VIEW_MAC_H_
 
 #import <Cocoa/Cocoa.h>
+#include <IOSurface/IOSurfaceAPI.h>
 
 #include "base/mac/scoped_nsobject.h"
 #include "cc/output/software_frame_data.h"
@@ -21,7 +22,7 @@ class BrowserCompositorViewMacHelper;
 
 // Additions to the NSView interface for compositor frames.
 @interface NSView (BrowserCompositorView)
-- (void)gotAcceleratedIOSurfaceFrame:(uint64)surface_handle
+- (void)gotAcceleratedIOSurfaceFrame:(IOSurfaceID)surface_handle
                  withOutputSurfaceID:(int)surface_id
                        withPixelSize:(gfx::Size)pixel_size
                      withScaleFactor:(float)scale_factor;

@@ -21,7 +21,9 @@ void OnNativeSurfaceBuffersSwappedOnUIThread(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   gfx::AcceleratedWidget native_widget =
       content::GpuSurfaceTracker::Get()->AcquireNativeWidget(params.surface_id);
-  [native_widget gotAcceleratedIOSurfaceFrame:params.surface_handle
+  IOSurfaceID io_surface_handle = static_cast<IOSurfaceID>(
+      params.surface_handle);
+  [native_widget gotAcceleratedIOSurfaceFrame:io_surface_handle
                           withOutputSurfaceID:params.surface_id
                                 withPixelSize:params.size
                               withScaleFactor:params.scale_factor];

@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_surface_cgl.h"
+#include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_switching_manager.h"
 
 namespace gfx {

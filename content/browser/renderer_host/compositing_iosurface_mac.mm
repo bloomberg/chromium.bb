@@ -262,7 +262,7 @@ CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
 
 bool CompositingIOSurfaceMac::SetIOSurfaceWithContextCurrent(
     scoped_refptr<CompositingIOSurfaceContext> current_context,
-    uint64 io_surface_handle,
+    IOSurfaceID io_surface_handle,
     const gfx::Size& size,
     float scale_factor) {
   bool result = MapIOSurfaceToTextureWithContextCurrent(
@@ -453,7 +453,7 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTextureWithContextCurrent(
     const scoped_refptr<CompositingIOSurfaceContext>& current_context,
     const gfx::Size pixel_size,
     float scale_factor,
-    uint64 io_surface_handle) {
+    IOSurfaceID io_surface_handle) {
   TRACE_EVENT0("browser", "CompositingIOSurfaceMac::MapIOSurfaceToTexture");
 
   if (!io_surface_ || io_surface_handle != io_surface_handle_)
@@ -470,7 +470,7 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTextureWithContextCurrent(
   if (io_surface_ && io_surface_handle == io_surface_handle_)
     return true;
 
-  io_surface_.reset(IOSurfaceLookup(static_cast<uint32>(io_surface_handle)));
+  io_surface_.reset(IOSurfaceLookup(io_surface_handle));
   // Can fail if IOSurface with that ID was already released by the gpu
   // process.
   if (!io_surface_) {

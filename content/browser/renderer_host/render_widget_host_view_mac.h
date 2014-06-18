@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_H_
 
 #import <Cocoa/Cocoa.h>
+#include <IOSurface/IOSurfaceAPI.h>
 #include <list>
 #include <map>
 #include <string>
@@ -360,7 +361,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Update the IOSurface to be drawn and call setNeedsDisplay on
   // |cocoa_view_|.
-  void CompositorSwapBuffers(uint64 surface_handle,
+  void CompositorSwapBuffers(IOSurfaceID surface_handle,
                              const gfx::Size& size,
                              float scale_factor,
                              const std::vector<ui::LatencyInfo>& latency_info);
