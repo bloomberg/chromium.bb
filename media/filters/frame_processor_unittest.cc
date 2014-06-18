@@ -633,6 +633,25 @@ TEST_P(FrameProcessorTest, AllowNegativeFramePTSAndDTSBeforeOffsetAdjustment) {
   }
 }
 
+TEST_P(FrameProcessorTest, PartialAppendWindowFilterNoDiscontinuity) {
+  // Tests that spurious discontinuity is not introduced by a partially
+  // trimmed frame.
+  InSequence s;
+  AddTestTracks(HAS_AUDIO);
+  new_media_segment_ = true;
+  if (GetParam())
+    frame_processor_->SetSequenceMode(true);
+  EXPECT_CALL(callbacks_,
+              PossibleDurationIncrease(base::TimeDelta::FromMilliseconds(29)));
+
+  append_window_start_ = base::TimeDelta::FromMilliseconds(7);
+  ProcessFrames("0K 19K", "");
+
+  EXPECT_EQ(base::TimeDelta(), timestamp_offset_);
+  CheckExpectedRangesByTimestamp(audio_.get(), "{ [7,29) }");
+  CheckReadsThenReadStalls(audio_.get(), "7:0 19");
+}
+
 INSTANTIATE_TEST_CASE_P(SequenceMode, FrameProcessorTest, Values(true));
 INSTANTIATE_TEST_CASE_P(SegmentsMode, FrameProcessorTest, Values(false));
 

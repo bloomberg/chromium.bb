@@ -261,13 +261,15 @@ bool FrameProcessor::ProcessFrame(
       if (frame->timestamp() != presentation_timestamp && !sequence_mode_)
         *new_media_segment = true;
 
-      // |frame| has been partially trimmed or had preroll added.
+      // |frame| has been partially trimmed or had preroll added.  Though
+      // |frame|'s duration may have changed, do not update |frame_duration|
+      // here, so |track_buffer|'s last frame duration update uses original
+      // frame duration and reduces spurious discontinuity detection.
       decode_timestamp = frame->GetDecodeTimestamp();
       presentation_timestamp = frame->timestamp();
-      frame_duration = frame->duration();
 
       // The end timestamp of the frame should be unchanged.
-      DCHECK(frame_end_timestamp == presentation_timestamp + frame_duration);
+      DCHECK(frame_end_timestamp == presentation_timestamp + frame->duration());
     }
 
     if (presentation_timestamp < append_window_start ||
