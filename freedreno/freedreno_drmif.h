@@ -49,6 +49,7 @@ enum fd_param_id {
 	FD_DEVICE_ID,
 	FD_GMEM_SIZE,
 	FD_GPU_ID,
+	FD_CHIP_ID,
 };
 
 /* bo flags: */
