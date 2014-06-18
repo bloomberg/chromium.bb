@@ -131,6 +131,8 @@ remoting.WindowFrame.prototype.maximizeOrRestoreWindow_ = function() {
     // being maximized, then the second restore has no effect.
     chrome.app.window.current().restore();
     chrome.app.window.current().restore();
+  } else if (this.isConnected_) {
+    chrome.app.window.current().fullscreen();
   } else {
     chrome.app.window.current().maximize();
   }
