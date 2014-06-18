@@ -8256,9 +8256,6 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
         break;
 
     case CSSPropertyPaintOrder:
-        if (!RuntimeEnabledFeatures::svgPaintOrderEnabled())
-            return false;
-
         if (m_valueList->size() == 1 && id == CSSValueNormal)
             validPrimitive = true;
         else if ((parsedValue = parsePaintOrder()))

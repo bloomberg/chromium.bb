@@ -1,5 +1,4 @@
 description("Test paint-order.")
-if (internals.runtimeFlags.svgPaintOrderEnabled) {
 
 if (window.testRunner)
     testRunner.dumpAsText();
@@ -96,10 +95,6 @@ test_attr("stroke foo", "fill stroke markers");
 test_attr("markers foo", "fill stroke markers");
 test_attr("normal foo", "fill stroke markers");
 test_attr("fill markers stroke foo", "fill stroke markers");
-
-} else {
-debug("paint-order is disabled, skipping test.");
-}
 
 var successfullyParsed = true;
 

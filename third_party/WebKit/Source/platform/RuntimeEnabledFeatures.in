@@ -128,7 +128,6 @@ SpeechSynthesis status=stable
 Stream status=experimental
 SubpixelFontScaling status=stable
 SubresourceIntegrity status=test
-SVGPaintOrder status=stable
 
 // Enable optimizations to recalculate style on the fewest possible number of
 // elements when updating classes, ids or attributes of DOM elements.
