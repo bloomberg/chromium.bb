@@ -8,7 +8,6 @@
 #include "V8TestObject.h"
 
 #include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/tests/v8/V8Attr.h"
 #include "bindings/tests/v8/V8Document.h"
@@ -60,6 +59,7 @@
 #include "core/html/HTMLFormControlsCollection.h"
 #include "core/html/HTMLTableRowsCollection.h"
 #include "core/inspector/ScriptArguments.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"

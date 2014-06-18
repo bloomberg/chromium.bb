@@ -8,7 +8,6 @@
 #include "V8TestInterfaceNode.h"
 
 #include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/tests/v8/V8TestInterfaceEmpty.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8AbstractEventListener.h"
@@ -19,6 +18,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"

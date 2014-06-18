@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebRuntimeFeatures.h"
 
-#include "RuntimeEnabledFeatures.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "web/WebMediaPlayerClientImpl.h"
 
 using namespace WebCore;

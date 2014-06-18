@@ -26,7 +26,6 @@
 #include "config.h"
 #include "modules/gamepad/NavigatorGamepad.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -36,6 +35,7 @@
 #include "modules/gamepad/GamepadEvent.h"
 #include "modules/gamepad/GamepadList.h"
 #include "modules/gamepad/WebKitGamepadList.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

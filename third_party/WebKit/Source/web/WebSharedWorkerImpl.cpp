@@ -31,7 +31,6 @@
 #include "config.h"
 #include "web/WebSharedWorkerImpl.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/events/MessageEvent.h"
@@ -49,6 +48,7 @@
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/webdatabase/DatabaseTask.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ResourceResponse.h"

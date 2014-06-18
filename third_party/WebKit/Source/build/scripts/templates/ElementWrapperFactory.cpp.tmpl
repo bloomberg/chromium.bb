@@ -4,7 +4,6 @@
 #include "config.h"
 #include "V8{{namespace}}ElementWrapperFactory.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "{{namespace}}Names.h"
 #include "bindings/v8/CustomElementWrapper.h"
 {% for tag in tags|sort if tag.has_js_interface %}
@@ -17,6 +16,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WebCore {

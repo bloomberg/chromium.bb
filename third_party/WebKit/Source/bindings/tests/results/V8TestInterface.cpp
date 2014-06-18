@@ -8,7 +8,6 @@
 #if ENABLE(CONDITION)
 #include "V8TestInterface.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/tests/idls/TestImplements2.h"
 #include "bindings/tests/idls/TestImplements3Implementation.h"
 #include "bindings/tests/idls/TestPartialInterface.h"
@@ -25,6 +24,7 @@
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"

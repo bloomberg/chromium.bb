@@ -32,7 +32,6 @@
 
 #include "modules/websockets/WebSocketChannel.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
@@ -45,6 +44,7 @@
 #include "modules/websockets/ThreadableWebSocketChannelClientWrapper.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WorkerThreadableWebSocketChannel.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

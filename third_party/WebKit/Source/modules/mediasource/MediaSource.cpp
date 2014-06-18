@@ -43,6 +43,7 @@
 #include "platform/ContentType.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeRegistry.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/WebMediaSource.h"
 #include "public/platform/WebSourceBuffer.h"

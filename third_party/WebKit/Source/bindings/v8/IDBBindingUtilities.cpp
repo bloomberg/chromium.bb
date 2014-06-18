@@ -26,7 +26,6 @@
 #include "config.h"
 #include "bindings/v8/IDBBindingUtilities.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/core/v8/V8DOMStringList.h"
 #include "bindings/modules/v8/V8IDBCursor.h"
 #include "bindings/modules/v8/V8IDBCursorWithValue.h"
@@ -45,6 +44,7 @@
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBTracing.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/MathExtras.h"

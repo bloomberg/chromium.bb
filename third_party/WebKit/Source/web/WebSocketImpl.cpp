@@ -31,12 +31,12 @@
 #include "config.h"
 #include "web/WebSocketImpl.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/frame/ConsoleTypes.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 #include "modules/websockets/NewWebSocketChannelImpl.h"
 #include "modules/websockets/WebSocketChannel.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebArrayBuffer.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"

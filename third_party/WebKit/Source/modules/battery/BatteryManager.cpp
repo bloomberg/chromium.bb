@@ -5,9 +5,9 @@
 #include "config.h"
 #include "modules/battery/BatteryManager.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "modules/battery/BatteryDispatcher.h"
 #include "modules/battery/BatteryStatus.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

@@ -5,7 +5,6 @@
 #include "config.h"
 #include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaElement.h"
@@ -14,6 +13,7 @@
 #include "modules/encryptedmedia/MediaKeyNeededEvent.h"
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "platform/Logging.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

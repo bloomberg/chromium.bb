@@ -4,7 +4,6 @@
 #include "config.h"
 #include "{{namespace}}ElementFactory.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "{{namespace}}Names.h"
 {% for tag in tags|sort %}
 #include "core/{{namespace|lower}}/{{tag.interface}}.h"
@@ -17,6 +16,7 @@
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/HashMap.h"
 
 namespace WebCore {

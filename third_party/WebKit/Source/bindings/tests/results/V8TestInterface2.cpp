@@ -7,7 +7,6 @@
 #include "config.h"
 #include "V8TestInterface2.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/tests/v8/V8TestInterface.h"
 #include "bindings/tests/v8/V8TestInterfaceEmpty.h"
 #include "bindings/v8/ExceptionState.h"
@@ -19,6 +18,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/DOMWindow.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"

@@ -32,7 +32,6 @@
 
 #include "modules/websockets/WorkerThreadableWebSocketChannel.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
@@ -46,6 +45,7 @@
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 #include "modules/websockets/NewWebSocketChannelImpl.h"
 #include "modules/websockets/ThreadableWebSocketChannelClientWrapper.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebWaitableEvent.h"
 #include "wtf/ArrayBuffer.h"

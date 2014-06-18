@@ -5,12 +5,12 @@
 #include "config.h"
 #include "modules/device_light/DeviceLightController.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/frame/DOMWindow.h"
 #include "core/page/Page.h"
 #include "modules/device_light/DeviceLightDispatcher.h"
 #include "modules/device_light/DeviceLightEvent.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

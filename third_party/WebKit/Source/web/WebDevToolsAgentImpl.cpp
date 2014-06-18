@@ -33,7 +33,6 @@
 
 #include "InspectorBackendDispatcher.h"
 #include "InspectorFrontend.h"
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/PageScriptDebugServer.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
@@ -48,6 +47,7 @@
 #include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
 #include "platform/JSONValues.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/network/ResourceError.h"

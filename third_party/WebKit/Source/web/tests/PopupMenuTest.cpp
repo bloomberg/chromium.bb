@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Element.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
@@ -40,6 +39,7 @@
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PopupMenu.h"
 #include "platform/PopupMenuClient.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"

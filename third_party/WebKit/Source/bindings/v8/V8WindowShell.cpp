@@ -31,7 +31,6 @@
 #include "config.h"
 #include "bindings/v8/V8WindowShell.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8HTMLDocument.h"
@@ -53,6 +52,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/SecurityOrigin.h"

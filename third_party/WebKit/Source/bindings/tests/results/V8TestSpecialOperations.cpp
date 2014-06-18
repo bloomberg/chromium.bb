@@ -7,7 +7,6 @@
 #include "config.h"
 #include "V8TestSpecialOperations.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/core/v8/V8NodeList.h"
 #include "bindings/tests/v8/V8Node.h"
 #include "bindings/v8/ExceptionState.h"
@@ -20,6 +19,7 @@
 #include "core/dom/NodeList.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/html/LabelsNodeList.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"

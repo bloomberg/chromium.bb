@@ -31,7 +31,6 @@
 #include "config.h"
 #include "public/web/WebKit.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8Initializer.h"
@@ -45,6 +44,7 @@
 #include "modules/InitModules.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/Logging.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/graphics/media/MediaPlayer.h"
 #include "platform/heap/Heap.h"

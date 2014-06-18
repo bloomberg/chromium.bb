@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
 #include "core/dom/Document.h"
@@ -42,6 +41,7 @@
 #include "core/page/EventHandler.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderTreeAsText.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebDocument.h"

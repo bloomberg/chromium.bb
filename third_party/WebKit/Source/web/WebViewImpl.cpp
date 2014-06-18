@@ -33,7 +33,6 @@
 
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
@@ -96,6 +95,7 @@
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PlatformWheelEvent.h"
 #include "platform/PopupMenuClient.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/exported/WebActiveGestureAnimation.h"

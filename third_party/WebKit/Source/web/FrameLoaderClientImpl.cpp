@@ -33,7 +33,6 @@
 #include "web/FrameLoaderClientImpl.h"
 
 #include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFullscreen.h"
@@ -57,6 +56,7 @@
 #include "modules/gamepad/NavigatorGamepad.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "platform/MIMETypeRegistry.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"

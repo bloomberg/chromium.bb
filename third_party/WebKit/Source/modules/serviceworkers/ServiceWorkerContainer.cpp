@@ -30,7 +30,6 @@
 #include "config.h"
 #include "modules/serviceworkers/ServiceWorkerContainer.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/CallbackPromiseAdapter.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
@@ -46,6 +45,7 @@
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebServiceWorker.h"
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebString.h"

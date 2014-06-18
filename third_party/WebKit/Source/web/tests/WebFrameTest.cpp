@@ -32,7 +32,6 @@
 
 #include "public/web/WebFrame.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "UserAgentStyleSheets.h"
@@ -58,6 +57,7 @@
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/DragImage.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/network/ResourceError.h"
