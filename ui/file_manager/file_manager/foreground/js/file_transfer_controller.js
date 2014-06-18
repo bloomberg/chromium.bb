@@ -47,12 +47,12 @@ function FileTransferController(doc,
       this.onSelectionChanged_.bind(this));
 
   /**
-   * DOM element to represent selected file in drag operation. Used if only
-   * one element is selected.
-   * @type {HTMLElement}
+   * Promise to be fulfilled with the thumbnail image of selected file in drag
+   * operation. Used if only one element is selected.
+   * @type {Promise}
    * @private
    */
-  this.preloadedThumbnailImageNode_ = null;
+  this.preloadedThumbnailImagePromise_ = null;
 
   /**
    * File objects for selected files.
@@ -76,6 +76,15 @@ function FileTransferController(doc,
    */
   this.touching_ = false;
 }
+
+/**
+ * Size of drag thumbnail for image files.
+ *
+ * @type {number}
+ * @const
+ * @private
+ */
+FileTransferController.DRAG_THUMBNAIL_SIZE_ = 64;
 
 FileTransferController.prototype = {
   __proto__: cr.EventTarget.prototype,
@@ -399,20 +408,36 @@ FileTransferController.prototype = {
    * @param {Entry} entry Entry to preload a thumbnail for.
    */
   preloadThumbnailImage_: function(entry) {
-    var metadataTypes = 'thumbnail|filesystem';
-    var thumbnailContainer = this.document_.createElement('div');
-    this.preloadedThumbnailImageNode_ = thumbnailContainer;
-    this.preloadedThumbnailImageNode_.className = 'img-container';
-    this.metadataCache_.getOne(
-        entry,
-        metadataTypes,
-        function(metadata) {
-          new ThumbnailLoader(entry,
-                              ThumbnailLoader.LoaderType.IMAGE,
-                              metadata).
-              load(thumbnailContainer,
-                   ThumbnailLoader.FillMode.FILL);
-        }.bind(this));
+    var metadataPromise = new Promise(function(fulfill, reject) {
+      this.metadataCache_.getOne(entry,
+                                 'thumbnail|filesystem',
+                                 function(metadata) {
+        if (metadata)
+          fulfill(metadata);
+        else
+          reject('Failed to fetch metadata.');
+      });
+    }.bind(this));
+
+    var imagePromise = metadataPromise.then(function(metadata) {
+      return new Promise(function(fulfill, reject) {
+        var loader = new ThumbnailLoader(
+            entry, ThumbnailLoader.LoaderType.Image, metadata);
+        loader.loadDetachedImage(function(result) {
+          if (result)
+            fulfill(loader.getImage());
+        });
+      });
+    });
+
+    imagePromise.then(function(image) {
+      // Store the image so that we can obtain the image synchronously.
+      imagePromise.value = image;
+    }, function(error) {
+      console.error(error.stack || error);
+    });
+
+    this.preloadedThumbnailImagePromise_ = imagePromise;
   },
 
   /**
@@ -429,10 +454,6 @@ FileTransferController.prototype = {
     contents.className = 'drag-contents';
     container.appendChild(contents);
 
-    var thumbnailImage;
-    if (this.preloadedThumbnailImageNode_)
-      thumbnailImage = this.preloadedThumbnailImageNode_.querySelector('img');
-
     // Option 1. Multiple selection, render only a label.
     if (length > 1) {
       var label = this.document_.createElement('div');
@@ -444,10 +465,33 @@ FileTransferController.prototype = {
 
     // Option 2. Thumbnail image available, then render it without
     // a label.
-    if (thumbnailImage) {
-      thumbnailImage.classList.add('drag-thumbnail');
+    if (this.preloadedThumbnailImagePromise_ &&
+        this.preloadedThumbnailImagePromise_.value) {
+      var thumbnailImage = this.preloadedThumbnailImagePromise_.value;
+
+      // Resize the image to canvas.
+      var canvas = document.createElement('canvas');
+      canvas.width = FileTransferController.DRAG_THUMBNAIL_SIZE_;
+      canvas.height = FileTransferController.DRAG_THUMBNAIL_SIZE_;
+
+      var minScale = Math.min(
+          thumbnailImage.width / canvas.width,
+          thumbnailImage.height / canvas.height);
+      var srcWidth = Math.min(canvas.width * minScale, thumbnailImage.width);
+      var srcHeight = Math.min(canvas.height * minScale, thumbnailImage.height);
+
+      var context = canvas.getContext('2d');
+      context.drawImage(thumbnailImage,
+                        (thumbnailImage.width - srcWidth) / 2,
+                        (thumbnailImage.height - srcHeight) / 2,
+                        srcWidth,
+                        srcHeight,
+                        0,
+                        0,
+                        canvas.width,
+                        canvas.height);
       contents.classList.add('for-image');
-      contents.appendChild(this.preloadedThumbnailImageNode_);
+      contents.appendChild(canvas);
       return container;
     }
 
@@ -502,7 +546,7 @@ FileTransferController.prototype = {
     }
 
     var dragThumbnail = this.renderThumbnail_();
-    dt.setDragImage(dragThumbnail, 1000, 1000);
+    dt.setDragImage(dragThumbnail, 0, 0);
 
     window[DRAG_AND_DROP_GLOBAL_DATA] = {
       sourceRootURL: dt.getData('fs/sourceRootURL'),
@@ -924,7 +968,7 @@ FileTransferController.prototype = {
   onSelectionChanged_: function(event) {
     var entries = this.selectedEntries_;
     var files = this.selectedFileObjects_ = [];
-    this.preloadedThumbnailImageNode_ = null;
+    this.preloadedThumbnailImagePromise_ = null;
 
     var fileEntries = [];
     for (var i = 0; i < entries.length; i++) {

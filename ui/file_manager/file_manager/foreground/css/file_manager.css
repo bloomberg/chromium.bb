@@ -1317,8 +1317,6 @@ body[overlay-visible] > :not(.overlay-pane) {
 /* Invisible container for elements representing files while dragging. */
 #drag-container {
   left: 0;
-  /* Hack for extra margins caused by setDragImage(). */
-  padding: 1000px 0 0 1000px;
   position: fixed;
   top: 0;
   z-index: -1;  /* below .dialog-container */
@@ -1331,6 +1329,7 @@ body[overlay-visible] > :not(.overlay-pane) {
   border-radius: 3px;
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .2);
   display: -webkit-box;
+  line-height: 0;
   margin-bottom: 5px;
   padding: 6px;
   transition: opacity 200ms ease-in;
@@ -1343,18 +1342,6 @@ body[overlay-visible] > :not(.overlay-pane) {
 #drag-container .thumbnail-item {
   -webkit-box-orient: horizontal;
   display: -webkit-box;
-}
-
-/* When changing these properties please preserve these conditions:
-   1. width == height (so that the rotated thumbnail does not look off-center)
-   2. width % 8 == 0 (to minimize rounding errors in the centering code) */
-#drag-container .img-container {
-  -webkit-box-flex: 0;
-  display: -webkit-box;
-  height: 64px;
-  overflow: hidden;
-  position: relative;
-  width: 64px;
 }
 
 #drag-container .label {
