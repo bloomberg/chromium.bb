@@ -104,15 +104,10 @@ void RenderTreeBuilder::createRendererForElementIfNeeded()
 {
     ASSERT(!m_node->renderer());
 
-    // If we're out of composition then we can't render since there's no parent to inherit from.
-    if (!m_renderingParent)
-        return;
-
-    Element* element = toElement(m_node);
-
     if (!shouldCreateRenderer())
         return;
 
+    Element* element = toElement(m_node);
     RenderStyle& style = this->style();
 
     if (!element->rendererIsNeeded(style))
@@ -150,10 +145,6 @@ void RenderTreeBuilder::createRendererForElementIfNeeded()
 void RenderTreeBuilder::createRendererForTextIfNeeded()
 {
     ASSERT(!m_node->renderer());
-
-    // If we're out of composition then we can't render since there's no parent to inherit from.
-    if (!m_renderingParent)
-        return;
 
     if (!shouldCreateRenderer())
         return;
