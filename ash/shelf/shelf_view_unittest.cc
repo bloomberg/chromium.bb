@@ -120,6 +120,32 @@ class ShelfViewIconObserverTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(ShelfViewIconObserverTest);
 };
 
+// TestShelfItemDelegate which tracks whether it gets selected.
+class ShelfItemSelectionTracker : public TestShelfItemDelegate {
+ public:
+  ShelfItemSelectionTracker() : TestShelfItemDelegate(NULL), selected_(false) {
+  }
+
+  virtual ~ShelfItemSelectionTracker() {
+  }
+
+  // Returns true if the delegate was selected.
+  bool WasSelected() {
+    return selected_;
+  }
+
+  // TestShelfItemDelegate:
+  virtual bool ItemSelected(const ui::Event& event) OVERRIDE {
+    selected_ = true;
+    return false;
+  }
+
+ private:
+  bool selected_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShelfItemSelectionTracker);
+};
+
 TEST_F(ShelfViewIconObserverTest, AddRemove) {
   TestShelfDelegate* shelf_delegate = TestShelfDelegate::instance();
   ASSERT_TRUE(shelf_delegate);
@@ -398,7 +424,7 @@ class ShelfViewTest : public AshTestBase {
     ShelfButtonHost* button_host = shelf_view_;
     views::View* button = test_api_->GetButton(button_index);
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED,
-                               button->bounds().origin(),
+                               gfx::Point(),
                                button->GetBoundsInScreen().origin(), 0, 0);
     button_host->PointerPressedOnButton(button, pointer, click_event);
     return button;
@@ -421,7 +447,8 @@ class ShelfViewTest : public AshTestBase {
     // Drag.
     views::View* destination = test_api_->GetButton(destination_index);
     ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
-                              destination->bounds().origin(),
+                              gfx::Point(destination->x() - button->x(),
+                                         destination->y() - button->y()),
                               destination->GetBoundsInScreen().origin(), 0, 0);
     button_host->PointerDraggedOnButton(button, pointer, drag_event);
     return button;
@@ -1028,6 +1055,54 @@ TEST_F(ShelfViewTest, ClickOneDragAnother) {
   button_host->PointerReleasedOnButton(
       dragged_button, ShelfButtonHost::MOUSE, false);
   EXPECT_TRUE(model_->items()[3].type == TYPE_BROWSER_SHORTCUT);
+}
+
+// Check that clicking an item and jittering the mouse a bit still selects the
+// item.
+TEST_F(ShelfViewTest, ClickAndMoveSlightly) {
+  std::vector<std::pair<ShelfID, views::View*> > id_map;
+  SetupForDragTest(&id_map);
+
+  ShelfID shelf_id = (id_map.begin() + 1)->first;
+  views::View* button = (id_map.begin() + 1)->second;
+
+  // Replace the ShelfItemDelegate for |shelf_id| with one which tracks whether
+  // the shelf item gets selected.
+  ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
+  item_manager_->SetShelfItemDelegate(
+      shelf_id,
+      scoped_ptr<ShelfItemDelegate>(selection_tracker).Pass());
+
+  gfx::Vector2d press_offset(5, 30);
+  gfx::Point press_location = gfx::Point() + press_offset;
+  gfx::Point press_location_in_screen =
+      button->GetBoundsInScreen().origin() + press_offset;
+
+  ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED,
+                             press_location,
+                             press_location_in_screen,
+                             ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMousePressed(click_event);
+
+  ui::MouseEvent drag_event1(ui::ET_MOUSE_DRAGGED,
+                             press_location + gfx::Vector2d(0, 1),
+                             press_location_in_screen + gfx::Vector2d(0, 1),
+                             ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMouseDragged(drag_event1);
+
+  ui::MouseEvent drag_event2(ui::ET_MOUSE_DRAGGED,
+                             press_location + gfx::Vector2d(-1, 0),
+                             press_location_in_screen + gfx::Vector2d(-1, 0),
+                             ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMouseDragged(drag_event2);
+
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED,
+                               press_location + gfx::Vector2d(-1, 0),
+                               press_location_in_screen + gfx::Vector2d(-1, 0),
+                               ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button->OnMouseReleased(release_event);
+
+  EXPECT_TRUE(selection_tracker->WasSelected());
 }
 
 // Confirm that item status changes are reflected in the buttons.

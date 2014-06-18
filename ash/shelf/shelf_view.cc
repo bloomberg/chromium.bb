@@ -376,7 +376,6 @@ ShelfView::ShelfView(ShelfModel* model,
       owner_overflow_bubble_(NULL),
       drag_pointer_(NONE),
       drag_view_(NULL),
-      drag_offset_(0),
       start_drag_index_(-1),
       context_menu_id_(0),
       leading_inset_(kDefaultLeadingInset),
@@ -968,7 +967,7 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
   int x = 0, y = 0;
   if (layout_manager_->IsHorizontalAlignment()) {
     x = std::max(view_model_->ideal_bounds(indices.first).x(),
-                     drag_point.x() - drag_offset_);
+                     drag_point.x() - drag_origin_.x());
     x = std::min(view_model_->ideal_bounds(last_drag_index).right() -
                  view_model_->ideal_bounds(current_index).width(),
                  x);
@@ -977,7 +976,7 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
     drag_view_->SetX(x);
   } else {
     y = std::max(view_model_->ideal_bounds(indices.first).y(),
-                     drag_point.y() - drag_offset_);
+                     drag_point.y() - drag_origin_.y());
     y = std::min(view_model_->ideal_bounds(last_drag_index).bottom() -
                  view_model_->ideal_bounds(current_index).height(),
                  y);
@@ -1576,7 +1575,7 @@ void ShelfView::PointerPressedOnButton(views::View* view,
     return;  // View is being deleted or not draggable, ignore request.
 
   drag_view_ = view;
-  drag_offset_ = layout_manager_->PrimaryAxisValue(event.x(), event.y());
+  drag_origin_ = gfx::Point(event.x(), event.y());
   UMA_HISTOGRAM_ENUMERATION("Ash.ShelfAlignmentUsage",
       layout_manager_->SelectValueForShelfAlignment(
           SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
@@ -1592,8 +1591,8 @@ void ShelfView::PointerDraggedOnButton(views::View* view,
   // To prepare all drag types (moving an item in the shelf and dragging off),
   // we should check the x-axis and y-axis offset.
   if (!dragging() && drag_view_ &&
-      ((std::abs(event.x() - drag_offset_) >= kMinimumDragDistance) ||
-       (std::abs(event.y() - drag_offset_) >= kMinimumDragDistance))) {
+      ((std::abs(event.x() - drag_origin_.x()) >= kMinimumDragDistance) ||
+       (std::abs(event.y() - drag_origin_.y()) >= kMinimumDragDistance))) {
     PrepareForDrag(pointer, event);
   }
   if (drag_pointer_ == pointer)

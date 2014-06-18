@@ -358,8 +358,8 @@ class ASH_EXPORT ShelfView : public views::View,
   // |dragging_| is set only if the mouse is dragged far enough.
   views::View* drag_view_;
 
-  // X coordinate of the mouse down event in |drag_view_|s coordinates.
-  int drag_offset_;
+  // Position of the mouse down event in |drag_view_|'s coordinates.
+  gfx::Point drag_origin_;
 
   // Index |drag_view_| was initially at.
   int start_drag_index_;
