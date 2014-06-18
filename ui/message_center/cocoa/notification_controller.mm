@@ -218,9 +218,23 @@
 @interface AccessibilityIgnoredBox : NSBox
 @end
 
+// Ignore this element, but expose its children to accessibility.
 @implementation AccessibilityIgnoredBox
 - (BOOL)accessibilityIsIgnored {
   return YES;
+}
+
+// Pretend this element has no children.
+// TODO(petewil): Until we have alt text available, we will hide the children of
+//  the box also.  Remove this override once alt text is set (by using
+// NSAccessibilityDescriptionAttribute).
+- (id)accessibilityAttributeValue:(NSString*)attribute {
+  // If we get a request for NSAccessibilityChildrenAttribute, return an empty
+  // array to pretend we have no children.
+  if ([attribute isEqualToString:NSAccessibilityChildrenAttribute])
+    return @[];
+  else
+    return [super accessibilityAttributeValue:attribute];
 }
 @end
 
@@ -312,8 +326,7 @@
   [rootView addSubview:closeButton_];
 
   // Create the small image.
-  [self configureSmallImageInFrame:rootFrame];
-  [[self view] addSubview:smallImage_];
+  [rootView addSubview:[self createSmallImageInFrame:rootFrame]];
 
   NSRect contentFrame = [self currentContentRect];
 
@@ -747,17 +760,33 @@
                        forAttribute:NSAccessibilityTitleAttribute];
 }
 
-- (void)configureSmallImageInFrame:(NSRect)rootFrame {
+- (NSView*)createSmallImageInFrame:(NSRect)rootFrame {
   int smallImageXOffset =
       message_center::kSmallImagePadding + message_center::kSmallImageSize;
-  NSRect smallImageFrame =
+  NSRect boxFrame =
       NSMakeRect(NSMaxX(rootFrame) - smallImageXOffset,
                  NSMinY(rootFrame) + message_center::kSmallImagePadding,
                  message_center::kSmallImageSize,
                  message_center::kSmallImageSize);
+
+  // Put the smallImage inside another box which can hide it from accessibility
+  // until we have some alt text to go with it.  Once we have alt text, remove
+  // the box, and set NSAccessibilityDescriptionAttribute with it.
+  base::scoped_nsobject<NSBox> imageBox(
+      [[AccessibilityIgnoredBox alloc] initWithFrame:boxFrame]);
+  [self configureCustomBox:imageBox];
+  [imageBox setAutoresizingMask:NSViewMinYMargin];
+
+  NSRect smallImageFrame =
+      NSMakeRect(0,0,
+                 message_center::kSmallImageSize,
+                 message_center::kSmallImageSize);
+
   smallImage_.reset([[NSImageView alloc] initWithFrame:smallImageFrame]);
   [smallImage_ setImageScaling:NSImageScaleProportionallyUpOrDown];
-  [smallImage_ setAutoresizingMask:NSViewMinYMargin];
+  [imageBox setContentView:smallImage_];
+
+  return imageBox.autorelease();
 }
 
 - (void)configureTitleInFrame:(NSRect)contentFrame {
