@@ -43,10 +43,11 @@ NPObject* WrapperClass_Allocate(NPP npp, NPClass* unused) {
 
 void WrapperClass_Deallocate(NPObject* np_object) {
   PluginObject* plugin_object = PluginObject::FromNPObject(np_object);
-  if (!plugin_object)
-    return;
-  plugin_object->ppp_class()->Deallocate(plugin_object->ppp_class_data());
-  delete plugin_object;
+  if (plugin_object) {
+    plugin_object->ppp_class()->Deallocate(plugin_object->ppp_class_data());
+    delete plugin_object;
+  }
+  delete np_object;
 }
 
 void WrapperClass_Invalidate(NPObject* object) {}
