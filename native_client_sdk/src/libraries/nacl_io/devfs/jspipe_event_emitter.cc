@@ -150,7 +150,7 @@ Error JSPipeEventEmitter::SendMessageToJS(PP_Var operation, PP_Var payload) {
   // Create dict object which will be sent to JavaScript.
   PP_Var dict = dict_iface_->Create();
 
-  // Set try keys in the dictionaty: 'pipe', 'operation', and 'payload'
+  // Set three keys in the dictionary: 'pipe', 'operation', and 'payload'
   dict_iface_->Set(dict, pipe_key_, pipe_name_var_);
   dict_iface_->Set(dict, operation_key_, operation);
   dict_iface_->Set(dict, payload_key_, payload);

@@ -290,7 +290,7 @@ bool PSInstance::ProcessProperties() {
 
   exit_message_ = getenv("PS_EXIT_MESSAGE");
 
-  // If PS_EXIT_MESSAGE is set in the envionment then we perform a handshake
+  // If PS_EXIT_MESSAGE is set in the environment then we perform a handshake
   // with JavaScript when program exits.
   if (exit_message_ != NULL)
     nacl_io_register_exit_handler(HandleExitStatic, this);
@@ -409,27 +409,6 @@ void PSInstance::MessageHandlerInput(const pp::Var& key,
                                      const pp::Var& message) {
   std::string key_string = key.AsString();
 
-  if (message.is_string() && key_string == tty_prefix_) {
-    std::string buffer = message.AsString();
-
-    // Since our message may contain null characters, we can't send it as a
-    // naked C string, so we package it up in this struct before sending it
-    // to the ioctl.
-    struct tioc_nacl_input_string ioctl_message;
-    ioctl_message.length = buffer.size();
-    ioctl_message.buffer = buffer.c_str();
-    int ret = ioctl(tty_fd_, TIOCNACLINPUT, &ioctl_message);
-    if (ret != 0 && errno != ENOTTY) {
-      Error("ioctl returned unexpected error: %d.\n", ret);
-    }
-    return;
-  }
-
-  if (!message.is_array_buffer()) {
-    Error("Expected ArrayBuffer object but got: %d", message.pp_var().type);
-    return;
-  }
-
   const char* filename = NULL;
   if (key_string == tty_prefix_) {
     filename = "/dev/tty";
@@ -453,12 +432,15 @@ void PSInstance::MessageHandlerInput(const pp::Var& key,
   int ret = ioctl(fd, NACL_IOC_HANDLEMESSAGE, &message.pp_var());
   if (ret != 0) {
     Error("ioctl on %s failed: %d.\n", filename, ret);
+    close(fd);
     return;
   }
+
+  close(fd);
 }
 
 void PSInstance::HandleExitStatic(int status, void* user_data) {
-  PSInstance* instance = reinterpret_cast<PSInstance*>(user_data);
+  PSInstance* instance = static_cast<PSInstance*>(user_data);
   instance->ExitHandshake(status);
 }
 
@@ -483,28 +465,28 @@ void PSInstance::MessageHandlerResize(const pp::Var& message) {
 ssize_t PSInstance::TtyOutputHandlerStatic(const char* buf,
                                            size_t count,
                                            void* user_data) {
-  PSInstance* instance = reinterpret_cast<PSInstance*>(user_data);
+  PSInstance* instance = static_cast<PSInstance*>(user_data);
   return instance->TtyOutputHandler(buf, count);
 }
 
 void PSInstance::MessageHandlerExitStatic(const pp::Var& key,
                                           const pp::Var& value,
                                           void* user_data) {
-  PSInstance* instance = reinterpret_cast<PSInstance*>(user_data);
+  PSInstance* instance = static_cast<PSInstance*>(user_data);
   instance->MessageHandlerExit(value);
 }
 
 void PSInstance::MessageHandlerInputStatic(const pp::Var& key,
                                            const pp::Var& value,
                                            void* user_data) {
-  PSInstance* instance = reinterpret_cast<PSInstance*>(user_data);
+  PSInstance* instance = static_cast<PSInstance*>(user_data);
   instance->MessageHandlerInput(key, value);
 }
 
 void PSInstance::MessageHandlerResizeStatic(const pp::Var& key,
                                             const pp::Var& value,
                                             void* user_data) {
-  PSInstance* instance = reinterpret_cast<PSInstance*>(user_data);
+  PSInstance* instance = static_cast<PSInstance*>(user_data);
   instance->MessageHandlerResize(value);
 }
 
@@ -525,21 +507,6 @@ void PSInstance::PostEvent(PSEventType type, const PP_Var& var) {
   assert(PSE_INSTANCE_HANDLEMESSAGE == type);
 
   pp::Var event(var);
-  // Legacy support for passing TTY input as a string <prefix>:<payload>
-  // TODO(sbc): remove this in a future release.
-  if (tty_fd_ >= 0 && event.is_string()) {
-    std::string message = event.AsString();
-    size_t prefix_len = strlen(tty_prefix_);
-    if (message.size() > prefix_len) {
-      if (!strncmp(message.c_str(), tty_prefix_, prefix_len)) {
-        LOG_WARN("Passing TTY data using a string prefix is deprecated. "
-                 "Use a JavaScript dictionary instead.");
-        MessageHandlerInput(pp::Var(message.substr(0, prefix_len)),
-                            pp::Var(message.substr(prefix_len)));
-        return;
-      }
-    }
-  }
 
   // If the message is a dictionary then see if it matches one
   // of the specific handlers, then call that handler rather than
@@ -550,8 +517,7 @@ void PSInstance::PostEvent(PSEventType type, const PP_Var& var) {
     if (keys.GetLength() == 1) {
       pp::Var key = keys.Get(0);
       Trace("calling handler for: %s", key.AsString().c_str());
-      MessageHandlerMap::iterator iter =
-          message_handlers_.find(key.AsString());
+      MessageHandlerMap::iterator iter = message_handlers_.find(key.AsString());
       if (iter != message_handlers_.end()) {
         MessageHandler_t handler = iter->second.handler;
         void* user_data = iter->second.user_data;

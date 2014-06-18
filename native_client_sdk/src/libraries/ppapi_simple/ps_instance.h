@@ -109,7 +109,6 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
                               MessageHandler_t handler,
                               void* user_data);
 
-
   // Perform exit handshake with JavaScript.
   // This is called by _exit before the process is terminated to ensure
   // that all messages sent prior to _exit arrive at the JavaScript side.

@@ -155,7 +155,11 @@ class JSPipeNodeTest : public ::testing::Test {
   }
 
   // Verify the contents of the jspipe mesage, which should be
-  // {'<pipe_name>' : ['<command_name>', payload] }
+  // {
+  //   "pipe": '<pipe_name>',
+  //   "operation": '<command_name>',
+  //   "payload": payload
+  // }
   void VerifyPipeMessage(PP_Var message,
                          const char* pipe_name,
                          const char* operation,

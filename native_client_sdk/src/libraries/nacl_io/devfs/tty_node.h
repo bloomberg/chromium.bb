@@ -10,6 +10,8 @@
 
 #include <deque>
 
+#include <ppapi/c/pp_var.h>
+
 #include "nacl_io/char_node.h"
 #include "nacl_io/ioctl.h"
 #include "nacl_io/ostermios.h"
@@ -43,7 +45,8 @@ class TtyNode : public CharNode {
  private:
   ScopedEventEmitter emitter_;
 
-  Error ProcessInput(struct tioc_nacl_input_string* message);
+  Error ProcessInput(PP_Var var);
+  Error ProcessInput(const char* buffer, size_t num_bytes);
   Error Echo(const char* string, int count);
   void InitTermios();
 
