@@ -299,6 +299,15 @@
               'RuntimeTypeInfo': 'true',
             },
           },
+          'all_dependent_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'AdditionalDependencies': [
+                  'advapi32.lib',
+                ],
+              },
+            },
+          },
           'conditions': [
             [ 'use_system_icu==1 and want_separate_host_toolset==1', {
               'toolsets': ['host'],
