@@ -47,6 +47,26 @@
 
 namespace WebCore {
 
+namespace {
+
+class WeakResolver : public ScriptPromiseResolverWithContext {
+public:
+    static WeakPtr<ScriptPromiseResolverWithContext> create(ScriptState* scriptState)
+    {
+        RefPtr<WeakResolver> p = adoptRef(new WeakResolver(scriptState));
+        p->suspendIfNeeded();
+        return p->m_weakPtrFactory.createWeakPtr();
+    }
+
+private:
+    explicit WeakResolver(ScriptState* scriptState)
+        : ScriptPromiseResolverWithContext(scriptState, ScriptPromiseResolverWithContext::KeepAliveWhilePending)
+        , m_weakPtrFactory(this) { }
+    WeakPtrFactory<ScriptPromiseResolverWithContext> m_weakPtrFactory;
+};
+
+} // namespace
+
 ExceptionCode webCryptoErrorToExceptionCode(blink::WebCryptoErrorType errorType)
 {
     switch (errorType) {
@@ -75,120 +95,6 @@ ExceptionCode webCryptoErrorToExceptionCode(blink::WebCryptoErrorType errorType)
     return 0;
 }
 
-// The PromiseState class contains all the state which is tied to an
-// ExecutionContext. Whereas CryptoResultImpl can be deleted from any thread,
-// PromiseState is not thread safe and must only be accessed and deleted from
-// the blink thread.
-//
-// This is achieved by making CryptoResultImpl hold a WeakPtr to the PromiseState.
-// The PromiseState deletes itself after being notified of completion.
-// Additionally the PromiseState is deleted when the ExecutionContext is
-// destroyed (necessary to avoid leaks when dealing with WebWorker threads,
-// which may die before the operation is completed).
-class CryptoResultImpl::PromiseState FINAL {
-public:
-    static WeakPtr<PromiseState> create(ScriptState* scriptState)
-    {
-        PromiseState* promiseState = new PromiseState(scriptState);
-        return promiseState->m_weakFactory.createWeakPtr();
-    }
-
-    void contextDestroyed()
-    {
-        delete this;
-    }
-
-    ScriptPromise promise()
-    {
-        return m_promiseResolver->promise();
-    }
-
-    void completeWithError(blink::WebCryptoErrorType errorType, const blink::WebString& errorDetails)
-    {
-        m_promiseResolver->reject(DOMException::create(webCryptoErrorToExceptionCode(errorType), errorDetails));
-        delete this;
-    }
-
-    void completeWithBuffer(const blink::WebArrayBuffer& buffer)
-    {
-        m_promiseResolver->resolve(PassRefPtr<ArrayBuffer>(buffer));
-        delete this;
-    }
-
-    void completeWithJson(const char* utf8Data, unsigned length)
-    {
-        ScriptState* scriptState = m_promiseResolver->scriptState();
-        ScriptState::Scope scope(scriptState);
-
-        v8::Handle<v8::String> jsonString = v8::String::NewFromUtf8(scriptState->isolate(), utf8Data, v8::String::kInternalizedString, length);
-
-        v8::TryCatch exceptionCatcher;
-        v8::Handle<v8::Value> jsonDictionary = v8::JSON::Parse(jsonString);
-        if (exceptionCatcher.HasCaught() || jsonDictionary.IsEmpty()) {
-            ASSERT_NOT_REACHED();
-            m_promiseResolver->reject(DOMException::create(OperationError, "Failed inflating JWK JSON to object"));
-        } else {
-            m_promiseResolver->resolve(jsonDictionary);
-        }
-        delete this;
-    }
-
-    void completeWithBoolean(bool b)
-    {
-        m_promiseResolver->resolve(b);
-        delete this;
-    }
-
-    void completeWithKey(const blink::WebCryptoKey& key)
-    {
-        m_promiseResolver->resolve(Key::create(key));
-        delete this;
-    }
-
-    void completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey)
-    {
-        m_promiseResolver->resolve(KeyPair::create(publicKey, privateKey));
-        delete this;
-    }
-
-private:
-    // This subclass of ScriptPromiseResolverWithContext is to be notified
-    // when the context was destroyed.
-    class PromiseResolver FINAL : public ScriptPromiseResolverWithContext {
-    public:
-        static PassRefPtr<PromiseResolver> create(ScriptState* scriptState, PromiseState* promiseState)
-        {
-            RefPtr<PromiseResolver> resolver = adoptRef(new PromiseResolver(scriptState, promiseState));
-            resolver->suspendIfNeeded();
-            return resolver.release();
-        }
-
-        virtual void contextDestroyed() OVERRIDE
-        {
-            ScriptPromiseResolverWithContext::contextDestroyed();
-            m_promiseState->contextDestroyed();
-        }
-
-    private:
-        explicit PromiseResolver(ScriptState* scriptState, PromiseState* promiseState)
-            : ScriptPromiseResolverWithContext(scriptState)
-            , m_promiseState(promiseState)
-        {
-        }
-
-        PromiseState* m_promiseState;
-    };
-
-    explicit PromiseState(ScriptState* scriptState)
-        : m_weakFactory(this)
-        , m_promiseResolver(PromiseResolver::create(scriptState, this))
-    {
-    }
-
-    WeakPtrFactory<PromiseState> m_weakFactory;
-    RefPtr<PromiseResolver> m_promiseResolver;
-};
-
 CryptoResultImpl::~CryptoResultImpl()
 {
 }
@@ -200,48 +106,62 @@ PassRefPtr<CryptoResultImpl> CryptoResultImpl::create(ScriptState* scriptState)
 
 void CryptoResultImpl::completeWithError(blink::WebCryptoErrorType errorType, const blink::WebString& errorDetails)
 {
-    if (m_promiseState)
-        m_promiseState->completeWithError(errorType, errorDetails);
+    if (m_resolver)
+        m_resolver->reject(DOMException::create(webCryptoErrorToExceptionCode(errorType), errorDetails));
 }
 
 void CryptoResultImpl::completeWithBuffer(const blink::WebArrayBuffer& buffer)
 {
-    if (m_promiseState)
-        m_promiseState->completeWithBuffer(buffer);
+    if (m_resolver)
+        m_resolver->resolve(PassRefPtr<ArrayBuffer>(buffer));
 }
 
 void CryptoResultImpl::completeWithJson(const char* utf8Data, unsigned length)
 {
-    if (m_promiseState)
-        m_promiseState->completeWithJson(utf8Data, length);
+    if (m_resolver) {
+        ScriptPromiseResolverWithContext* resolver = m_resolver.get();
+        ScriptState* scriptState = resolver->scriptState();
+        ScriptState::Scope scope(scriptState);
+
+        v8::Handle<v8::String> jsonString = v8::String::NewFromUtf8(scriptState->isolate(), utf8Data, v8::String::kInternalizedString, length);
+
+        v8::TryCatch exceptionCatcher;
+        v8::Handle<v8::Value> jsonDictionary = v8::JSON::Parse(jsonString);
+        if (exceptionCatcher.HasCaught() || jsonDictionary.IsEmpty()) {
+            ASSERT_NOT_REACHED();
+            resolver->reject(DOMException::create(OperationError, "Failed inflating JWK JSON to object"));
+        } else {
+            resolver->resolve(jsonDictionary);
+        }
+    }
 }
 
 void CryptoResultImpl::completeWithBoolean(bool b)
 {
-    if (m_promiseState)
-        m_promiseState->completeWithBoolean(b);
+    if (m_resolver)
+        m_resolver->resolve(b);
 }
 
 void CryptoResultImpl::completeWithKey(const blink::WebCryptoKey& key)
 {
-    if (m_promiseState)
-        m_promiseState->completeWithKey(key);
+    if (m_resolver)
+        m_resolver->resolve(Key::create(key));
 }
 
 void CryptoResultImpl::completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey)
 {
-    if (m_promiseState)
-        m_promiseState->completeWithKeyPair(publicKey, privateKey);
+    if (m_resolver)
+        m_resolver->resolve(KeyPair::create(publicKey, privateKey));
 }
 
 CryptoResultImpl::CryptoResultImpl(ScriptState* scriptState)
-    : m_promiseState(PromiseState::create(scriptState))
+    : m_resolver(WeakResolver::create(scriptState))
 {
 }
 
 ScriptPromise CryptoResultImpl::promise()
 {
-    return m_promiseState->promise();
+    return m_resolver->promise();
 }
 
 } // namespace WebCore
