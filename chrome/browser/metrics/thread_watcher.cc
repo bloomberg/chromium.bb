@@ -657,6 +657,12 @@ void ThreadWatcherList::InitializeAndStartWatching(
     const CrashOnHangThreadMap& crash_on_hang_threads) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
+  // Disarm the startup timebomb, even if stop has been called.
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&StartupTimeBomb::DisarmStartupTimeBomb));
+
   // This method is deferred in relationship to its StopWatchingAll()
   // counterpart. If a previous initialization has already happened, or if
   // stop has been called, there's nothing left to do here.
@@ -665,11 +671,6 @@ void ThreadWatcherList::InitializeAndStartWatching(
 
   ThreadWatcherList* thread_watcher_list = new ThreadWatcherList();
   CHECK(thread_watcher_list);
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&StartupTimeBomb::DisarmStartupTimeBomb));
 
   const base::TimeDelta kSleepTime =
       base::TimeDelta::FromSeconds(kSleepSeconds);
