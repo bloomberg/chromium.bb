@@ -18,8 +18,8 @@ class FilePath;
 namespace image_writer {
 
 // A handler for messages related to writing images.  This class is added as a
-// handler in chrome::ChromeContentUtilityClient.
-class ImageWriterHandler : public chrome::UtilityMessageHandler {
+// handler in ChromeContentUtilityClient.
+class ImageWriterHandler : public UtilityMessageHandler {
  public:
   ImageWriterHandler();
   virtual ~ImageWriterHandler();

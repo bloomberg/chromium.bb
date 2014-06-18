@@ -117,7 +117,7 @@ base::LazyInstance<chrome::ChromeContentBrowserClient>
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
 base::LazyInstance<ChromeContentRendererClient>
     g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<chrome::ChromeContentUtilityClient>
+base::LazyInstance<ChromeContentUtilityClient>
     g_chrome_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentPluginClient>
     g_chrome_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
@@ -761,7 +761,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
     if (process_type == switches::kUtilityProcess ||
         process_type == switches::kZygoteProcess) {
-      chrome::ChromeContentUtilityClient::PreSandboxStartup();
+      ChromeContentUtilityClient::PreSandboxStartup();
     }
 #endif
   }

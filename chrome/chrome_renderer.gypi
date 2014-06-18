@@ -349,7 +349,7 @@
             ['exclude', '^renderer/printing/']
           ]
         }],
-        ['win_pdf_metafile_for_printing', {
+        ['win_pdf_metafile_for_printing==1', {
           'sources': [
             'renderer/printing/print_web_view_helper_pdf_win.cc',
           ],

@@ -33,7 +33,7 @@ namespace local_discovery {
 class ServiceDiscoveryClient;
 
 // Handles messages related to local discovery inside utility process.
-class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
+class ServiceDiscoveryMessageHandler : public UtilityMessageHandler {
  public:
   ServiceDiscoveryMessageHandler();
   virtual ~ServiceDiscoveryMessageHandler();

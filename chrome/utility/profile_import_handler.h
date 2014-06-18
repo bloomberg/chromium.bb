@@ -23,8 +23,6 @@ namespace importer {
 struct SourceProfile;
 }
 
-namespace chrome {
-
 // Dispatches IPCs for out of process profile import.
 class ProfileImportHandler : public UtilityMessageHandler {
  public:
@@ -45,8 +43,6 @@ class ProfileImportHandler : public UtilityMessageHandler {
   // The following are used with out of process profile import:
   void ImporterCleanup();
 
-  static bool Send(IPC::Message* message);
-
   // Thread that importer runs on, while ProfileImportThread handles messages
   // from the browser process.
   scoped_ptr<base::Thread> import_thread_;
@@ -61,7 +57,5 @@ class ProfileImportHandler : public UtilityMessageHandler {
   // Importer of the appropriate type (Firefox, Safari, IE, etc.)
   scoped_refptr<Importer> importer_;
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_UTILITY_PROFILE_IMPORT_HANDLER_H_

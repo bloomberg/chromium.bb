@@ -9,8 +9,6 @@ namespace IPC {
 class Message;
 }
 
-namespace chrome {
-
 class UtilityMessageHandler {
  public:
   virtual ~UtilityMessageHandler() {}
@@ -19,8 +17,6 @@ class UtilityMessageHandler {
   // handled.
   virtual bool OnMessageReceived(const IPC::Message& message) = 0;
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_UTILITY_UTILITY_MESSAGE_HANDLER_H_
 

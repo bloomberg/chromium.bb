@@ -20,6 +20,10 @@
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #endif
 
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/common/chrome_utility_printing_messages.h"
+#endif
+
 #if defined(ENABLE_PRINTING)
 #include "chrome/common/print_messages.h"
 #endif

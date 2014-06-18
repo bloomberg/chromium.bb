@@ -24,7 +24,7 @@ namespace metadata {
 // as a DataSource on a different thread. The utility thread must not be blocked
 // for read operations to succeed.
 class IPCDataSource: public media::DataSource,
-                     public chrome::UtilityMessageHandler {
+                     public UtilityMessageHandler {
  public:
   // May only be called on the utility thread.
   explicit IPCDataSource(int64 total_size);

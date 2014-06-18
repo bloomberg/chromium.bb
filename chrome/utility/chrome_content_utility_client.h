@@ -6,8 +6,6 @@
 #define CHROME_UTILITY_CHROME_CONTENT_UTILITY_CLIENT_H_
 
 #include "base/compiler_specific.h"
-#include "base/files/file.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "content/public/utility/content_utility_client.h"
@@ -18,21 +16,9 @@ class FilePath;
 struct FileDescriptor;
 }
 
-namespace gfx {
-class Rect;
-}
-
 namespace metadata {
 class MediaMetadataParser;
 }
-
-namespace printing {
-class PdfRenderSettings;
-struct PwgRasterSettings;
-struct PageRange;
-}
-
-namespace chrome {
 
 class UtilityMessageHandler;
 
@@ -55,16 +41,6 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   void OnParseUpdateManifest(const std::string& xml);
   void OnDecodeImage(const std::vector<unsigned char>& encoded_data);
   void OnDecodeImageBase64(const std::string& encoded_data);
-  void OnRenderPDFPagesToMetafile(
-      IPC::PlatformFileForTransit pdf_transit,
-      const base::FilePath& metafile_path,
-      const printing::PdfRenderSettings& settings,
-      const std::vector<printing::PageRange>& page_ranges);
-  void OnRenderPDFPagesToPWGRaster(
-      IPC::PlatformFileForTransit pdf_transit,
-      const printing::PdfRenderSettings& settings,
-      const printing::PwgRasterSettings& bitmap_settings,
-      IPC::PlatformFileForTransit bitmap_transit);
   void OnRobustJPEGDecodeImage(
       const std::vector<unsigned char>& encoded_data);
   void OnParseJSON(const std::string& json);
@@ -75,29 +51,6 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
                        const base::FileDescriptor& dest_fd);
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN)
-  // Helper method for Windows.
-  // |highest_rendered_page_number| is set to -1 on failure to render any page.
-  // |page_ranges| is both input and output. If supplied as input, only the
-  // specified pages will be rendered. If an empty vector is supplied it will
-  // be filled with a range of all pages that were rendered.
-  bool RenderPDFToWinMetafile(
-      base::File pdf_file,
-      const base::FilePath& metafile_path,
-      const printing::PdfRenderSettings& settings,
-      std::vector<printing::PageRange>* page_ranges,
-      int* highest_rendered_page_number,
-      double* scale_factor);
-#endif   // defined(OS_WIN)
-
-  bool RenderPDFPagesToPWGRaster(
-      base::File pdf_file,
-      const printing::PdfRenderSettings& settings,
-      const printing::PwgRasterSettings& bitmap_settings,
-      base::File bitmap_file);
-
-  void OnGetPrinterCapsAndDefaults(const std::string& printer_name);
-  void OnGetPrinterSemanticCapsAndDefaults(const std::string& printer_name);
   void OnPatchFileBsdiff(const base::FilePath& input_file,
                          const base::FilePath& patch_file,
                          const base::FilePath& output_file);
@@ -150,7 +103,5 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentUtilityClient);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_UTILITY_CHROME_CONTENT_UTILITY_CLIENT_H_

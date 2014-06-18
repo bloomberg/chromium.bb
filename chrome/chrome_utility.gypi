@@ -72,6 +72,8 @@
         'utility/importer/nss_decryptor_win.h',
         'utility/importer/safari_importer.h',
         'utility/importer/safari_importer.mm',
+        'utility/local_discovery/service_discovery_message_handler.cc',
+        'utility/local_discovery/service_discovery_message_handler.h',
         'utility/media_galleries/image_metadata_extractor.cc',
         'utility/media_galleries/image_metadata_extractor.h',
         'utility/media_galleries/ipc_data_source.cc',
@@ -80,6 +82,8 @@
         'utility/media_galleries/itunes_pref_parser_win.h',
         'utility/media_galleries/media_metadata_parser.cc',
         'utility/media_galleries/media_metadata_parser.h',
+        'utility/printing_handler.cc',
+        'utility/printing_handler.h',
         'utility/profile_import_handler.cc',
         'utility/profile_import_handler.h',
         'utility/utility_message_handler.h',
@@ -134,15 +138,21 @@
             ['exclude', '^utility/profile_import_handler\.cc'],
           ],
         }],
-        ['enable_mdns == 1', {
-          'sources': [
-            'utility/local_discovery/service_discovery_message_handler.cc',
-            'utility/local_discovery/service_discovery_message_handler.h',
-          ]
-        }],
         ['OS!="win"', {
           'sources': [
             'utility/image_writer/image_writer_stub.cc',
+          ]
+        }],
+        ['enable_printing!=1', {
+          'sources!': [
+            'utility/printing_handler.cc',
+            'utility/printing_handler.h',
+          ]
+        }],
+        ['enable_mdns==0', {
+          'sources!': [
+            'utility/local_discovery/service_discovery_message_handler.cc',
+            'utility/local_discovery/service_discovery_message_handler.h',
           ]
         }],
       ],

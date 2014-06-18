@@ -2286,6 +2286,9 @@
             ['exclude', '^browser/ui/webui/print_preview/'],
             ['exclude', '^service/'],
           ],
+          'sources!': [
+            'browser/local_discovery/privet_http_unittest.cc',
+          ],
         }],
         ['enable_captive_portal_detection!=1', {
           'sources/': [

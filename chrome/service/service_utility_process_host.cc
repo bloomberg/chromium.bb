@@ -15,7 +15,7 @@
 #include "base/process/kill.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_utility_messages.h"
+#include "chrome/common/chrome_utility_printing_messages.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandbox_init.h"
@@ -230,11 +230,13 @@ void ServiceUtilityProcessHost::OnChildDisconnected() {
 bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceUtilityProcessHost, message)
+#if defined(WIN_PDF_METAFILE_FOR_PRINTING)
     IPC_MESSAGE_HANDLER(
         ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_Succeeded,
         OnRenderPDFPagesToMetafilesSucceeded)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Failed,
                         OnRenderPDFPagesToMetafileFailed)
+#endif
     IPC_MESSAGE_HANDLER(
         ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded,
         OnGetPrinterCapsAndDefaultsSucceeded)
@@ -255,6 +257,7 @@ base::ProcessHandle ServiceUtilityProcessHost::GetHandle() const {
   return handle_;
 }
 
+#if defined(WIN_PDF_METAFILE_FOR_PRINTING)
 void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesSucceeded(
     const std::vector<printing::PageRange>& page_ranges,
     double scale_factor) {
@@ -298,6 +301,7 @@ void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileFailed() {
       FROM_HERE,
       base::Bind(&Client::OnRenderPDFPagesToMetafileFailed, client_.get()));
 }
+#endif  // defined(WIN_PDF_METAFILE_FOR_PRINTING)
 
 void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsSucceeded(
     const std::string& printer_name,

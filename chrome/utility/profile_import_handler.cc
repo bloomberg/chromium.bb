@@ -14,7 +14,13 @@
 #include "chrome/utility/importer/importer_creator.h"
 #include "content/public/utility/utility_thread.h"
 
-namespace chrome {
+namespace {
+
+bool Send(IPC::Message* message) {
+  return content::UtilityThread::Get()->Send(message);
+}
+
+}  // namespace
 
 ProfileImportHandler::ProfileImportHandler() : items_to_import_(0) {}
 
@@ -83,10 +89,3 @@ void ProfileImportHandler::ImporterCleanup() {
   import_thread_.reset();
   content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
-
-// static
-bool ProfileImportHandler::Send(IPC::Message* message) {
-  return content::UtilityThread::Get()->Send(message);
-}
-
-}  // namespace chrome

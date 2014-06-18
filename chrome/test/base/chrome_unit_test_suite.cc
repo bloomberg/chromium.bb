@@ -49,7 +49,7 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
 #if !defined(OS_IOS)
     browser_content_client_.reset(new chrome::ChromeContentBrowserClient());
     content::SetBrowserClientForTesting(browser_content_client_.get());
-    utility_content_client_.reset(new chrome::ChromeContentUtilityClient());
+    utility_content_client_.reset(new ChromeContentUtilityClient());
     content::SetUtilityClientForTesting(utility_content_client_.get());
 #endif
 
@@ -74,7 +74,7 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
   // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
 #if !defined(OS_IOS)
   scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
-  scoped_ptr<chrome::ChromeContentUtilityClient> utility_content_client_;
+  scoped_ptr<ChromeContentUtilityClient> utility_content_client_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeUnitTestSuiteInitializer);

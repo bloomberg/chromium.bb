@@ -11,10 +11,13 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "chrome/common/chrome_utility_printing_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
+#include "printing/pdf_render_settings.h"
+#include "printing/pwg_raster_settings.h"
 
 namespace local_discovery {
 

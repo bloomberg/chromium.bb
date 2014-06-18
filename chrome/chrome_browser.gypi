@@ -76,6 +76,7 @@
         '../crypto/crypto.gyp:crypto',
         '../google_apis/google_apis.gyp:google_apis',
         '../jingle/jingle.gyp:notifier',
+        '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../sql/sql.gyp:sql',
         '../sync/sync.gyp:sync',
@@ -2687,11 +2688,6 @@
             'xcode_settings': {'OTHER_LDFLAGS': ['-weak_framework CoreImage']},
           },
         }],
-        ['enable_printing!=0', {
-          'dependencies': [
-            '../printing/printing.gyp:printing',
-          ],
-        }],
         ['OS=="win" or OS=="mac"', {
           'sources': [
             'browser/media_galleries/fileapi/iapps_data_provider.cc',
@@ -3135,28 +3131,51 @@
           ],
         }],
         ['enable_printing==0', {
+          'dependencies!': [
+            '../printing/printing.gyp:printing',
+          ],
           'sources/': [
             ['exclude', '^browser/printing/'],
             ['exclude', '^browser/task_manager/printing_information.cc'],
           ],
         }],
         ['enable_printing==1', {
-          'sources/': [
-            ['exclude', '^browser/printing/print_view_manager_basic.*'],
+          'sources!': [
+            'browser/printing/print_view_manager_basic.cc',
+            'browser/printing/print_view_manager_basic.h',
+          ],
+        }, {
+          'sources!': [
+            'browser/local_discovery/privet_http_impl.cc',
+            'browser/local_discovery/privet_http_impl.h',
+            'browser/local_discovery/pwg_raster_converter.cc',
+            'browser/local_discovery/pwg_raster_converter.h',
           ],
         }],
         ['enable_printing==2', {
           'sources/': [
-            ['exclude', '^browser/printing/background_printing_manager.*'],
             ['exclude', '^browser/printing/cloud_print/'],
-            ['exclude', '^browser/printing/print_view_manager.cc'],
-            ['exclude', '^browser/printing/print_error_dialog.*'],
-            ['exclude', '^browser/printing/print_preview.*'],
-            ['exclude', '^browser/printing/print_view_manager.cc'],
-            ['exclude', '^browser/printing/print_view_manager.h'],
-            ['exclude', '^browser/printing/printer_manager_dialog.*'],
             ['exclude', '^browser/service_process/'],
-            ['exclude', '^browser/task_manager/printing_information.cc'],
+          ],
+          'sources!': [
+            'browser/printing/background_printing_manager.cc',
+            'browser/printing/background_printing_manager.h',
+            'browser/printing/print_view_manager.cc',
+            'browser/printing/print_error_dialog.cc',
+            'browser/printing/print_error_dialog.h',
+            'browser/printing/print_preview.cc',
+            'browser/printing/print_preview.h',
+            'browser/printing/print_view_manager.cc',
+            'browser/printing/print_view_manager.h',
+            'browser/printing/printer_manager_dialog.cc',
+            'browser/printing/printer_manager_dialog.h',
+            'browser/task_manager/printing_information.cc',
+          ],
+        }],
+        ['OS!="win" or win_pdf_metafile_for_printing!=1', {
+          'sources!': [
+            'browser/printing/pdf_to_emf_converter.cc',
+            'browser/printing/pdf_to_emf_converter.h',
           ],
         }],
         ['enable_captive_portal_detection!=1', {
