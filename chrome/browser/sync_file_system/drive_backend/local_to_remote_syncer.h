@@ -84,13 +84,13 @@ class LocalToRemoteSyncer : public SyncTask {
                             google_apis::GDataErrorCode error,
                             scoped_ptr<google_apis::FileResource> entry);
 
-  void DidDeleteForUploadNewFile(const SyncStatusCallback& callback,
+  void DidDeleteForUploadNewFile(scoped_ptr<SyncTaskToken> token,
                                  SyncStatusCode status);
   void DidDeleteForCreateFolder(scoped_ptr<SyncTaskToken> token,
                                 SyncStatusCode status);
 
-  void UploadNewFile(const SyncStatusCallback& callback);
-  void DidUploadNewFile(const SyncStatusCallback& callback,
+  void UploadNewFile(scoped_ptr<SyncTaskToken> token);
+  void DidUploadNewFile(scoped_ptr<SyncTaskToken> token,
                         google_apis::GDataErrorCode error,
                         const GURL& upload_location,
                         scoped_ptr<google_apis::FileResource> entry);
@@ -99,7 +99,7 @@ class LocalToRemoteSyncer : public SyncTask {
   void DidCreateRemoteFolder(scoped_ptr<SyncTaskToken> token,
                              const std::string& file_id,
                              SyncStatusCode status);
-  void DidDetachResourceForCreationConflict(const SyncStatusCallback& callback,
+  void DidDetachResourceForCreationConflict(scoped_ptr<SyncTaskToken> token,
                                             google_apis::GDataErrorCode error);
 
   bool IsContextReady();

@@ -223,9 +223,7 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
   DCHECK(target_path_ == active_ancestor_path.Append(missing_components[0]));
   if (local_change_.file_type() == SYNC_FILE_TYPE_FILE) {
     token->RecordLog("Detected a new file.");
-    UploadNewFile(base::Bind(
-        &LocalToRemoteSyncer::SyncCompleted,
-        weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+    UploadNewFile(token.Pass());
     return;
   }
 
@@ -263,9 +261,7 @@ void LocalToRemoteSyncer::HandleConflict(scoped_ptr<SyncTaskToken> token) {
   }
 
   if (local_change_.IsFile()) {
-    UploadNewFile(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             base::Passed(&token)));
+    UploadNewFile(token.Pass());
     return;
   }
 
@@ -331,9 +327,7 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     // the remote folder and upload the file.
     DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::DidDeleteForUploadNewFile,
                                 weak_ptr_factory_.GetWeakPtr(),
-                                base::Bind(&LocalToRemoteSyncer::SyncCompleted,
-                                           weak_ptr_factory_.GetWeakPtr(),
-                                           base::Passed(&token))));
+                                base::Passed(&token)));
     return;
   }
 
@@ -550,20 +544,24 @@ void LocalToRemoteSyncer::DidGetRemoteMetadata(
 }
 
 void LocalToRemoteSyncer::DidDeleteForUploadNewFile(
-    const SyncStatusCallback& callback,
+    scoped_ptr<SyncTaskToken> token,
     SyncStatusCode status) {
   if (status == SYNC_STATUS_HAS_CONFLICT) {
-    UpdateRemoteMetadata(remote_file_tracker_->file_id(),
-                         base::Bind(&ReturnRetryOnSuccess, callback));
+    UpdateRemoteMetadata(
+        remote_file_tracker_->file_id(),
+        base::Bind(&ReturnRetryOnSuccess,
+                   base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              base::Passed(&token))));
     return;
   }
 
   if (status != SYNC_STATUS_OK) {
-    callback.Run(status);
+    SyncCompleted(token.Pass(), status);
     return;
   }
 
-  UploadNewFile(callback);
+  UploadNewFile(token.Pass());
 }
 
 void LocalToRemoteSyncer::DidDeleteForCreateFolder(
@@ -587,7 +585,7 @@ void LocalToRemoteSyncer::DidDeleteForCreateFolder(
   CreateRemoteFolder(token.Pass());
 }
 
-void LocalToRemoteSyncer::UploadNewFile(const SyncStatusCallback& callback) {
+void LocalToRemoteSyncer::UploadNewFile(scoped_ptr<SyncTaskToken> token) {
   DCHECK(remote_parent_folder_tracker_);
 
   sync_action_ = SYNC_ACTION_ADDED;
@@ -600,12 +598,12 @@ void LocalToRemoteSyncer::UploadNewFile(const SyncStatusCallback& callback) {
       drive::DriveUploader::UploadNewFileOptions(),
       base::Bind(&LocalToRemoteSyncer::DidUploadNewFile,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback),
+                 base::Passed(&token)),
       google_apis::ProgressCallback());
 }
 
 void LocalToRemoteSyncer::DidUploadNewFile(
-    const SyncStatusCallback& callback,
+    scoped_ptr<SyncTaskToken> token,
     google_apis::GDataErrorCode error,
     const GURL& upload_location,
     scoped_ptr<google_apis::FileResource> entry) {
@@ -614,18 +612,21 @@ void LocalToRemoteSyncer::DidUploadNewFile(
 
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
-    callback.Run(status);
+    SyncCompleted(token.Pass(), status);
     return;
   }
 
   if (!entry) {
     NOTREACHED();
-    callback.Run(SYNC_STATUS_FAILED);
+    SyncCompleted(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
 
   metadata_database()->ReplaceActiveTrackerWithNewResource(
-      remote_parent_folder_tracker_->tracker_id(), *entry, callback);
+      remote_parent_folder_tracker_->tracker_id(), *entry,
+      base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&token)));
 }
 
 void LocalToRemoteSyncer::CreateRemoteFolder(
@@ -678,10 +679,7 @@ void LocalToRemoteSyncer::DidCreateRemoteFolder(
       drive_service()->RemoveResourceFromDirectory(
           remote_parent_folder_tracker_->file_id(), file_id,
           base::Bind(&LocalToRemoteSyncer::DidDetachResourceForCreationConflict,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Bind(&LocalToRemoteSyncer::SyncCompleted,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::Passed(&token))));
+                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
       return;
   }
 
@@ -691,15 +689,15 @@ void LocalToRemoteSyncer::DidCreateRemoteFolder(
 }
 
 void LocalToRemoteSyncer::DidDetachResourceForCreationConflict(
-    const SyncStatusCallback& callback,
+    scoped_ptr<SyncTaskToken> token,
     google_apis::GDataErrorCode error) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
-    callback.Run(status);
+    SyncCompleted(token.Pass(), status);
     return;
   }
 
-  callback.Run(SYNC_STATUS_RETRY);
+  SyncCompleted(token.Pass(), SYNC_STATUS_RETRY);
 }
 
 bool LocalToRemoteSyncer::IsContextReady() {
