@@ -4631,7 +4631,8 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
   scoped_ptr<FakeScopedUIResource> ui_resource_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestHighResRequiredAfterEvictingUIResources);
+// This test is flaky, see http://crbug.com/386199
+//MULTI_THREAD_TEST_F(LayerTreeHostTestHighResRequiredAfterEvictingUIResources);
 
 class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
  protected:
