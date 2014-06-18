@@ -446,6 +446,8 @@
       'tests/test_media_stream_video_track.h',
       'tests/test_memory.cc',
       'tests/test_memory.h',
+      'tests/test_message_handler.cc',
+      'tests/test_message_handler.h',
       'tests/test_message_loop.cc',
       'tests/test_message_loop.h',
       'tests/test_mouse_cursor.cc',

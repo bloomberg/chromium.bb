@@ -37,7 +37,7 @@ interface PPP_MessageHandler {
    * postMessage().
    */
   void HandleMessage([in] PP_Instance instance,
-                     [in] mem_t user_data,
+                     [inout] mem_t user_data,
                      [in] PP_Var message);
   /**
    * Invoked as a result of JavaScript invoking postMessageAndAwaitResponse()

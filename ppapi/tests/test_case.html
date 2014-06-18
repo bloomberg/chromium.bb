@@ -3,6 +3,42 @@
 <meta http-equiv="Expires" content="-1" />
 <link rel="stylesheet" href="test_page.css">
 <script>
+// Do a deep comparison of two values. Return true if their values are
+// identical, false otherwise.
+function deepCompare(left, right) {
+  if (typeof(left) !== typeof(right))
+    return false;
+  // If their identity is the same or they're basic types with the same value,
+  // they are equal.
+  if (left === right)
+    return true;
+  // If it's a basic type and we got here, we know they're not equal.
+  if (["undefined", "boolean", "number", "string", "function"].indexOf(
+          typeof(left)) > -1) {
+    return false;
+  }
+  // Use right_keys as a set containing all keys from |right| which we haven't
+  // yet compared.
+  var right_keys = {};
+  for (var key in right)
+    right_keys[key] = true;
+  for (var key in left) {
+    if (key in right_keys) {
+       if (!deepCompare(left[key], right[key]))
+        return false;
+    } else {
+      // |left| had a key that |right| didn't.
+      return false;
+    }
+    delete right_keys[key];
+  }
+  // If there are keys left in |right_keys|, it means they didn't exist in
+  // |left|, so the objects aren't equal.
+  if (Object.keys(right_keys).length > 0)
+    return false;
+  return true;
+}
+
 function AdjustHeight(frameWin) {
   var div = frameWin.document.getElementsByTagName("div")[0];
   var height = frameWin.getComputedStyle(div).height;

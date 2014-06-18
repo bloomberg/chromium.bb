@@ -303,6 +303,12 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // Send the message on to the plugin.
   void HandleMessage(ppapi::ScopedPPVar message);
 
+  // Send the message synchronously to the plugin, and get a result. Returns
+  // true if the plugin handled the message, false if it didn't. The plugin
+  // won't handle the message if it has not registered a PPP_MessageHandler.
+  bool HandleBlockingMessage(ppapi::ScopedPPVar message,
+                             ppapi::ScopedPPVar* result);
+
   // Returns true if the plugin is processing a user gesture.
   bool IsProcessingUserGesture();
 

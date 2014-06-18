@@ -44,6 +44,10 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
     return is_main_thread_loop_;
   }
 
+  const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy() {
+    return loop_proxy_;
+  }
+
  private:
   struct TaskInfo {
     tracked_objects::Location from_here;

@@ -1168,8 +1168,8 @@ void PepperPluginInstanceImpl::HandleMessage(ScopedPPVar message) {
   ppapi::proxy::HostDispatcher* dispatcher =
       ppapi::proxy::HostDispatcher::GetForInstance(pp_instance());
   if (!dispatcher || (message.get().type == PP_VARTYPE_OBJECT)) {
-    // The dispatcher should always be valid, and the browser should never send
-    // an 'object' var over PPP_Messaging.
+    // The dispatcher should always be valid, and MessageChannel should never
+    // send an 'object' var over PPP_Messaging.
     NOTREACHED();
     return;
   }
@@ -1178,6 +1178,32 @@ void PepperPluginInstanceImpl::HandleMessage(ScopedPPVar message) {
       pp_instance(),
       ppapi::proxy::SerializedVarSendInputShmem(dispatcher, message.get(),
                                                 pp_instance())));
+}
+
+bool PepperPluginInstanceImpl::HandleBlockingMessage(ScopedPPVar message,
+                                                     ScopedPPVar* result) {
+  TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleBlockingMessage");
+  ppapi::proxy::HostDispatcher* dispatcher =
+      ppapi::proxy::HostDispatcher::GetForInstance(pp_instance());
+  if (!dispatcher || (message.get().type == PP_VARTYPE_OBJECT)) {
+    // The dispatcher should always be valid, and MessageChannel should never
+    // send an 'object' var over PPP_Messaging.
+    NOTREACHED();
+    return false;
+  }
+  ppapi::proxy::ReceiveSerializedVarReturnValue msg_reply;
+  bool was_handled = false;
+  dispatcher->Send(new PpapiMsg_PPPMessageHandler_HandleBlockingMessage(
+      ppapi::API_ID_PPP_MESSAGING,
+      pp_instance(),
+      ppapi::proxy::SerializedVarSendInputShmem(dispatcher, message.get(),
+                                                pp_instance()),
+      &msg_reply,
+      &was_handled));
+  *result = ScopedPPVar(ScopedPPVar::PassRef(), msg_reply.Return(dispatcher));
+  TRACE_EVENT0("ppapi",
+               "PepperPluginInstanceImpl::HandleBlockingMessage return.");
+  return was_handled;
 }
 
 PP_Var PepperPluginInstanceImpl::GetInstanceObject() {

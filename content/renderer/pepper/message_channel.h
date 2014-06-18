@@ -60,6 +60,10 @@ class MessageChannel {
   // Post a message to the plugin's HandleMessage function for this channel's
   // instance.
   void PostMessageToNative(const NPVariant* message_data);
+  // Post a message to the plugin's HandleBlocking Message function for this
+  // channel's instance synchronously, and return a result.
+  void PostBlockingMessageToNative(const NPVariant* message_data,
+                                   NPVariant* np_result);
 
   // Return the NPObject* to which we should forward any calls which aren't
   // related to postMessage.  Note that this can be NULL;  it only gets set if

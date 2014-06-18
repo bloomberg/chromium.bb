@@ -94,6 +94,8 @@
           'proxy/media_stream_track_resource_base.h',
           'proxy/media_stream_video_track_resource.cc',
           'proxy/media_stream_video_track_resource.h',
+          'proxy/message_handler.cc',
+          'proxy/message_handler.h',
           'proxy/net_address_resource.cc',
           'proxy/net_address_resource.h',
           'proxy/network_list_resource.cc',

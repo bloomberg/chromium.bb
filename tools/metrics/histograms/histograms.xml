@@ -41970,6 +41970,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1981643755" label="PPB_FileMapping;0.1"/>
   <int value="1994108724" label="PPB_Flash_File_FileRef;2"/>
   <int value="1998274350" label="PPB_Font(Dev);0.6"/>
+  <int value="2001322203" label="PPB_Messaging;1.1"/>
   <int value="2003778556" label="PPB_MouseInputEvent;1.1"/>
   <int value="2005291722" label="PPB_NetAddress_Private;1.1"/>
   <int value="2012645499" label="PPB_Find(Dev);0.3"/>

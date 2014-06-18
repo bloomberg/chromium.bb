@@ -411,6 +411,18 @@ V8VarConverter::VarResult V8VarConverter::FromV8Value(
   return result;
 }
 
+bool V8VarConverter::FromV8ValueSync(
+    v8::Handle<v8::Value> val,
+    v8::Handle<v8::Context> context,
+    ppapi::ScopedPPVar* result_var) {
+  bool success = FromV8ValueInternal(val, context, result_var);
+  if (!success || resource_converter_->NeedsFlush()) {
+    resource_converter_->Reset();
+    return false;
+  }
+  return true;
+}
+
 bool V8VarConverter::FromV8ValueInternal(
     v8::Handle<v8::Value> val,
     v8::Handle<v8::Context> context,

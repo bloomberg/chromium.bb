@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_messaging.idl modified Mon Jun  2 11:00:28 2014. */
+/* From ppb_messaging.idl modified Fri Jun 13 15:28:26 2014. */
 
 #ifndef PPAPI_C_PPB_MESSAGING_H_
 #define PPAPI_C_PPB_MESSAGING_H_
@@ -100,9 +100,6 @@ struct PPB_Messaging_1_1 { /* dev */
    */
   void (*PostMessage)(PP_Instance instance, struct PP_Var message);
   /**
-   * <strong>Note:</strong> This function is not yet implemented. Please use
-   * PPB_Messaging_1_0.
-   *
    * Registers a handler for receiving messages from JavaScript. If a handler
    * is registered this way, it will replace PPP_Messaging, and all messages
    * sent from JavaScript via postMessage and postMessageAndAwaitResponse will
@@ -113,6 +110,12 @@ struct PPB_Messaging_1_1 { /* dev */
    * <code>message_loop</code> is attached, when <code>message_loop</code> is
    * run. It is illegal to pass the main thread message loop;
    * RegisterMessageHandler will return PP_ERROR_WRONG_THREAD in that case.
+   * If you quit <code>message_loop</code> before calling Unregister(),
+   * the browser will not be able to call functions in the plugin's message
+   * handler any more. That could mean missing some messages or could cause a
+   * leak if you depend on Destroy() to free hander data. So you should,
+   * whenever possible, Unregister() the handler prior to quitting its event
+   * loop.
    *
    * Attempting to register a message handler when one is already registered
    * will cause the current MessageHandler to be unregistered and replaced. In
@@ -137,9 +140,6 @@ struct PPB_Messaging_1_1 { /* dev */
       const struct PPP_MessageHandler_0_1* handler,
       PP_Resource message_loop);
   /**
-   * <strong>Note:</strong> This function is not yet implemented. Please use
-   * PPB_Messaging_1_0.
-   *
    * Unregisters the current message handler for <code>instance</code> if one
    * is registered. After this call, the message handler (if one was
    * registered) will have "Destroy" called on it and will receive no further

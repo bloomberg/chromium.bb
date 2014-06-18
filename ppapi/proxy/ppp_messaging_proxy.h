@@ -27,6 +27,9 @@ class PPP_Messaging_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgHandleMessage(PP_Instance instance,
                           SerializedVarReceiveInput data);
+  void OnMsgHandleBlockingMessage(PP_Instance instance,
+                                  SerializedVarReceiveInput data,
+                                  IPC::Message* reply);
 
   // When this proxy is in the plugin side, this value caches the interface
   // pointer so we don't have to retrieve it from the dispatcher each time.

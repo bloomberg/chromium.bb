@@ -45,6 +45,7 @@ namespace content {
 namespace {
 
 const char kPostMessage[] = "postMessage";
+const char kPostMessageAndAwaitResponse[] = "postMessageAndAwaitResponse";
 const char kV8ToVarConversionError[] =
     "Failed to convert a PostMessage "
     "argument from a JavaScript value to a PP_Var. It may have cycles or be of "
@@ -71,6 +72,14 @@ bool IdentifierIs(NPIdentifier identifier, const char string[]) {
   return WebBindings::getStringIdentifier(string) == identifier;
 }
 
+bool HasDevChannelPermission(NPObject* channel_object) {
+  MessageChannel* channel = ToMessageChannel(channel_object);
+  if (!channel)
+    return false;
+  return channel->instance()->module()->permissions().HasPermission(
+      ppapi::PERMISSION_DEV_CHANNEL);
+}
+
 //------------------------------------------------------------------------------
 // Implementations of NPClass functions.  These are here to:
 // - Implement postMessage behavior.
@@ -93,7 +102,10 @@ bool MessageChannelHasMethod(NPObject* np_obj, NPIdentifier name) {
 
   if (IdentifierIs(name, kPostMessage))
     return true;
-
+  if (IdentifierIs(name, kPostMessageAndAwaitResponse) &&
+      HasDevChannelPermission(np_obj)) {
+    return true;
+  }
   // Other method names we will pass to the passthrough object, if we have one.
   NPObject* passthrough = ToPassThroughObject(np_obj);
   if (passthrough)
@@ -113,12 +125,17 @@ bool MessageChannelInvoke(NPObject* np_obj,
   if (!message_channel)
     return false;
 
-  // Check to see if we should handle this function ourselves. We only handle
-  // kPostMessage.
+  // Check to see if we should handle this function ourselves.
   if (IdentifierIs(name, kPostMessage) && (arg_count == 1)) {
     message_channel->PostMessageToNative(&args[0]);
     return true;
+  } else if (IdentifierIs(name, kPostMessageAndAwaitResponse) &&
+             (arg_count == 1) &&
+             HasDevChannelPermission(np_obj)) {
+    message_channel->PostBlockingMessageToNative(&args[0], result);
+    return true;
   }
+
   // Other method calls we will pass to the passthrough object, if we have one.
   NPObject* passthrough = ToPassThroughObject(np_obj);
   if (passthrough) {
@@ -167,10 +184,13 @@ bool MessageChannelGetProperty(NPObject* np_obj,
   if (!np_obj)
     return false;
 
-  // Don't allow getting the postMessage function.
+  // Don't allow getting the postMessage functions.
   if (IdentifierIs(name, kPostMessage))
     return false;
-
+  if (IdentifierIs(name, kPostMessageAndAwaitResponse) &&
+      HasDevChannelPermission(np_obj)) {
+     return false;
+  }
   MessageChannel* message_channel = ToMessageChannel(np_obj);
   if (message_channel) {
     if (message_channel->GetReadOnlyProperty(name, result))
@@ -190,10 +210,13 @@ bool MessageChannelSetProperty(NPObject* np_obj,
   if (!np_obj)
     return false;
 
-  // Don't allow setting the postMessage function.
+  // Don't allow setting the postMessage functions.
   if (IdentifierIs(name, kPostMessage))
     return false;
-
+  if (IdentifierIs(name, kPostMessageAndAwaitResponse) &&
+      HasDevChannelPermission(np_obj)) {
+    return false;
+  }
   // Invoke on the passthrough object, if we have one.
   NPObject* passthrough = ToPassThroughObject(np_obj);
   if (passthrough)
@@ -445,6 +468,80 @@ void MessageChannel::PostMessageToJavaScriptImpl(
 void MessageChannel::PostMessageToNative(const NPVariant* message_data) {
   EnqueuePluginMessage(message_data);
   DrainCompletedPluginMessages();
+}
+
+void MessageChannel::PostBlockingMessageToNative(const NPVariant* message_data,
+                                                 NPVariant* np_result) {
+  if (early_message_queue_state_ == QUEUE_MESSAGES) {
+    WebBindings::setException(
+        np_object_,
+        "Attempted to call a synchronous method on a plugin that was not "
+        "yet loaded.");
+    return;
+  }
+
+  // If the queue of messages to the plugin is non-empty, we're still waiting on
+  // pending Var conversions. This means at some point in the past, JavaScript
+  // called postMessage (the async one) and passed us something with a browser-
+  // side host (e.g., FileSystem) and we haven't gotten a response from the
+  // browser yet. We can't currently support sending a sync message if the
+  // plugin does this, because it will break the ordering of the messages
+  // arriving at the plugin.
+  // TODO(dmichael): Fix this.
+  // See https://code.google.com/p/chromium/issues/detail?id=367896#c4
+  if (!plugin_message_queue_.empty()) {
+    WebBindings::setException(
+        np_object_,
+        "Failed to convert parameter synchronously, because a prior "
+        "call to postMessage contained a type which required asynchronous "
+        "transfer which has not completed. Not all types are supported yet by "
+        "postMessageAndAwaitResponse. See crbug.com/367896.");
+    return;
+  }
+  ScopedPPVar param;
+  if (message_data->type == NPVariantType_Object) {
+    // Convert NPVariantType_Object in to an appropriate PP_Var like Dictionary,
+    // Array, etc. Note NPVariantToVar would convert to an "Object" PP_Var,
+    // which we don't support for Messaging.
+    v8::Handle<v8::Value> v8_value = WebBindings::toV8Value(message_data);
+    V8VarConverter v8_var_converter(instance_->pp_instance());
+    bool success = v8_var_converter.FromV8ValueSync(
+        v8_value,
+        v8::Isolate::GetCurrent()->GetCurrentContext(),
+        &param);
+    if (!success) {
+      WebBindings::setException(
+          np_object_,
+          "Failed to convert the given parameter to a PP_Var to send to "
+          "the plugin.");
+      return;
+    }
+  } else {
+    param = ScopedPPVar(ScopedPPVar::PassRef(),
+                        NPVariantToPPVar(instance(), message_data));
+  }
+  ScopedPPVar pp_result;
+  bool was_handled = instance_->HandleBlockingMessage(param, &pp_result);
+  if (!was_handled) {
+    WebBindings::setException(
+        np_object_,
+        "The plugin has not registered a handler for synchronous messages. "
+        "See the documentation for PPB_Messaging::RegisterMessageHandler "
+        "and PPP_MessageHandler.");
+    return;
+  }
+  v8::Handle<v8::Value> v8_val;
+  if (!V8VarConverter(instance_->pp_instance()).ToV8Value(
+          pp_result.get(),
+          v8::Isolate::GetCurrent()->GetCurrentContext(),
+          &v8_val)) {
+    WebBindings::setException(
+        np_object_,
+        "Failed to convert the plugin's result to a JavaScript type.");
+    return;
+  }
+  // Success! Convert the result to an NPVariant.
+  WebBindings::toNPVariant(v8_val, NULL, np_result);
 }
 
 MessageChannel::~MessageChannel() {

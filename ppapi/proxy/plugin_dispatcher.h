@@ -20,6 +20,7 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/proxy/dispatcher.h"
+#include "ppapi/proxy/message_handler.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/shared_impl/singleton_resource_id.h"
@@ -62,6 +63,10 @@ struct InstanceData {
   // calling when we shouldn't).
   bool is_request_surrounding_text_pending;
   bool should_do_request_surrounding_text;
+
+  // The message handler which should handle JavaScript->Plugin messages, if
+  // one has been registered, otherwise NULL.
+  scoped_ptr<MessageHandler> message_handler;
 };
 
 class PPAPI_PROXY_EXPORT PluginDispatcher

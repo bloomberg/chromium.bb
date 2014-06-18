@@ -676,10 +676,15 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPPInstance_HandleDocumentLoad,
     int /* pending_loader_host_id */,
     ppapi::URLResponseInfoData /* response */)
 
-// PPP_Messaging.
+// PPP_Messaging and PPP_MessageHandler.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPMessaging_HandleMessage,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* message */)
+IPC_SYNC_MESSAGE_ROUTED2_2(PpapiMsg_PPPMessageHandler_HandleBlockingMessage,
+                           PP_Instance /* instance */,
+                           ppapi::proxy::SerializedVar /* message */,
+                           ppapi::proxy::SerializedVar /* result */,
+                           bool /* was_handled */);
 
 // PPP_MouseLock.
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPPMouseLock_MouseLockLost,

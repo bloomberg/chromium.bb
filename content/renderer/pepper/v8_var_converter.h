@@ -62,6 +62,9 @@ class CONTENT_EXPORT V8VarConverter {
       v8::Handle<v8::Value> val,
       v8::Handle<v8::Context> context,
       const base::Callback<void(const ppapi::ScopedPPVar&, bool)>& callback);
+  bool FromV8ValueSync(v8::Handle<v8::Value> val,
+                       v8::Handle<v8::Context> context,
+                       ppapi::ScopedPPVar* result_var);
  private:
   // Returns true on success, false on failure.
   bool FromV8ValueInternal(v8::Handle<v8::Value> val,

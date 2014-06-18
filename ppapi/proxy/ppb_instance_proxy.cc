@@ -26,6 +26,7 @@
 #include "ppapi/proxy/gamepad_resource.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/isolated_file_system_private_resource.h"
+#include "ppapi/proxy/message_handler.h"
 #include "ppapi/proxy/network_proxy_resource.h"
 #include "ppapi/proxy/pdf_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -773,17 +774,31 @@ void PPB_Instance_Proxy::PostMessage(PP_Instance instance,
       instance, SerializedVarSendInputShmem(dispatcher(), message,
                                             instance)));
 }
+
 int32_t PPB_Instance_Proxy::RegisterMessageHandler(
     PP_Instance instance,
     void* user_data,
     const PPP_MessageHandler_0_1* handler,
     PP_Resource message_loop) {
-  // Not yet implemented. See crbug.com/367896
-  return PP_ERROR_NOTSUPPORTED;
+  InstanceData* data =
+      static_cast<PluginDispatcher*>(dispatcher())->GetInstanceData(instance);
+  if (!data)
+    return PP_ERROR_BADARGUMENT;
+
+  int32_t result = PP_ERROR_FAILED;
+  scoped_ptr<MessageHandler> message_handler = MessageHandler::Create(
+      instance, handler, user_data, message_loop, &result);
+  if (message_handler)
+    data->message_handler = message_handler.Pass();
+  return result;
 }
 
 void PPB_Instance_Proxy::UnregisterMessageHandler(PP_Instance instance) {
-  // Not yet implemented. See crbug.com/367896
+  InstanceData* data =
+      static_cast<PluginDispatcher*>(dispatcher())->GetInstanceData(instance);
+  if (!data)
+    return;
+  data->message_handler.reset();
 }
 
 PP_Bool PPB_Instance_Proxy::SetCursor(PP_Instance instance,

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_message_handler.idl modified Fri May 30 15:49:17 2014. */
+/* From ppp_message_handler.idl modified Tue Jun  3 16:50:26 2014. */
 
 #ifndef PPAPI_C_PPP_MESSAGE_HANDLER_H_
 #define PPAPI_C_PPP_MESSAGE_HANDLER_H_
@@ -49,7 +49,7 @@ struct PPP_MessageHandler_0_1 {
    * postMessage().
    */
   void (*HandleMessage)(PP_Instance instance,
-                        const void* user_data,
+                        void* user_data,
                         struct PP_Var message);
   /**
    * Invoked as a result of JavaScript invoking postMessageAndAwaitResponse()
