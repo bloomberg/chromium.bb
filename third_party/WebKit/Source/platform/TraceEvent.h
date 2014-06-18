@@ -738,7 +738,7 @@ union TraceValueUnion {
 class TraceStringWithCopy {
 public:
     explicit TraceStringWithCopy(const char* str) : m_str(str) { }
-    operator const char* () const { return m_str; }
+    const char* str() const { return m_str; }
 private:
     const char* m_str;
 };
@@ -746,24 +746,19 @@ private:
 // Define setTraceValue for each allowed type. It stores the type and
 // value in the return arguments. This allows this API to avoid declaring any
 // structures so that it is portable to third_party libraries.
-#define INTERNAL_DECLARE_SET_TRACE_VALUE(actual_type, \
-                                         union_member, \
-                                         value_type_id) \
-    static inline void setTraceValue(actual_type arg, \
-                                     unsigned char* type, \
-                                     unsigned long long* value) { \
+#define INTERNAL_DECLARE_SET_TRACE_VALUE(actualType, argExpression, unionMember, valueTypeId) \
+    static inline void setTraceValue(actualType arg, unsigned char* type, unsigned long long* value) { \
         TraceValueUnion typeValue; \
-        typeValue.union_member = arg; \
-        *type = value_type_id; \
+        typeValue.unionMember = argExpression; \
+        *type = valueTypeId; \
         *value = typeValue.m_uint; \
     }
 // Simpler form for int types that can be safely casted.
-#define INTERNAL_DECLARE_SET_TRACE_VALUE_INT(actual_type, \
-                                             value_type_id) \
-    static inline void setTraceValue(actual_type arg, \
+#define INTERNAL_DECLARE_SET_TRACE_VALUE_INT(actualType, valueTypeId) \
+    static inline void setTraceValue(actualType arg, \
                                      unsigned char* type, \
                                      unsigned long long* value) { \
-        *type = value_type_id; \
+        *type = valueTypeId; \
         *value = static_cast<unsigned long long>(arg); \
     }
 
@@ -775,14 +770,11 @@ INTERNAL_DECLARE_SET_TRACE_VALUE_INT(long long, TRACE_VALUE_TYPE_INT)
 INTERNAL_DECLARE_SET_TRACE_VALUE_INT(int, TRACE_VALUE_TYPE_INT)
 INTERNAL_DECLARE_SET_TRACE_VALUE_INT(short, TRACE_VALUE_TYPE_INT)
 INTERNAL_DECLARE_SET_TRACE_VALUE_INT(signed char, TRACE_VALUE_TYPE_INT)
-INTERNAL_DECLARE_SET_TRACE_VALUE(bool, m_bool, TRACE_VALUE_TYPE_BOOL)
-INTERNAL_DECLARE_SET_TRACE_VALUE(double, m_double, TRACE_VALUE_TYPE_DOUBLE)
-INTERNAL_DECLARE_SET_TRACE_VALUE(const void*, m_pointer,
-                                 TRACE_VALUE_TYPE_POINTER)
-INTERNAL_DECLARE_SET_TRACE_VALUE(const char*, m_string,
-                                 TRACE_VALUE_TYPE_STRING)
-INTERNAL_DECLARE_SET_TRACE_VALUE(const TraceStringWithCopy&, m_string,
-                                 TRACE_VALUE_TYPE_COPY_STRING)
+INTERNAL_DECLARE_SET_TRACE_VALUE(bool, arg, m_bool, TRACE_VALUE_TYPE_BOOL)
+INTERNAL_DECLARE_SET_TRACE_VALUE(double, arg, m_double, TRACE_VALUE_TYPE_DOUBLE)
+INTERNAL_DECLARE_SET_TRACE_VALUE(const void*, arg, m_pointer, TRACE_VALUE_TYPE_POINTER)
+INTERNAL_DECLARE_SET_TRACE_VALUE(const char*, arg, m_string, TRACE_VALUE_TYPE_STRING)
+INTERNAL_DECLARE_SET_TRACE_VALUE(const TraceStringWithCopy&, arg.str(), m_string, TRACE_VALUE_TYPE_COPY_STRING)
 
 #undef INTERNAL_DECLARE_SET_TRACE_VALUE
 #undef INTERNAL_DECLARE_SET_TRACE_VALUE_INT

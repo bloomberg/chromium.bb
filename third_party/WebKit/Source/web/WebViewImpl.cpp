@@ -1862,7 +1862,7 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
     }
 
     const AtomicString* inputEventName = inputTypeToName(inputEvent.type);
-    TRACE_EVENT1("input", "WebViewImpl::handleInputEvent", "type", inputEventName ? TRACE_STR_COPY(inputEventName->ascii().data()) : "unknown");
+    TRACE_EVENT1("input", "WebViewImpl::handleInputEvent", "type", inputEventName ? inputEventName->ascii() : "unknown");
     // If we've started a drag and drop operation, ignore input events until
     // we're done.
     if (m_doingDragAndDrop)

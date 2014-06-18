@@ -89,7 +89,7 @@ private:
 
 inline void PlatformInstrumentation::willDecodeImage(const String& imageType)
 {
-    TRACE_EVENT_BEGIN1(CategoryName, ImageDecodeEvent, ImageTypeArgument, TRACE_STR_COPY(imageType.ascii().data()));
+    TRACE_EVENT_BEGIN1(CategoryName, ImageDecodeEvent, ImageTypeArgument, imageType.ascii());
     FAST_RETURN_IF_NO_CLIENT_OR_NOT_MAIN_THREAD();
     m_client->willDecodeImage(imageType);
 }

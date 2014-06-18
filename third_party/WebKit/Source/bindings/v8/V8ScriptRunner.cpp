@@ -51,7 +51,7 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
     // Very small scripts are not worth the effort to store cached data.
     static const int minLengthForCachedData = 1024;
 
-    TRACE_EVENT1("v8", "v8.compile", "fileName", TRACE_STR_COPY(fileName.utf8().data()));
+    TRACE_EVENT1("v8", "v8.compile", "fileName", fileName.utf8());
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Compile");
 
     // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
