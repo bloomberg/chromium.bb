@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/utility/image_writer/image_writer.h"
+
 #include "base/memory/aligned_memory.h"
 #include "chrome/utility/image_writer/error_messages.h"
-#include "chrome/utility/image_writer/image_writer.h"
 #include "chrome/utility/image_writer/image_writer_handler.h"
 #include "content/public/utility/utility_thread.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/utility/image_writer/disk_unmounter_mac.h"
+#endif
 
 namespace image_writer {
 
@@ -90,24 +95,7 @@ bool ImageWriter::InitializeFiles() {
   }
 
   if (!device_file_.IsValid()) {
-#if defined(OS_WIN)
-    // Windows requires that device files be opened with FILE_FLAG_NO_BUFFERING
-    // and FILE_FLAG_WRITE_THROUGH.  These two flags are not part of base::File.
-    device_file_ =
-        base::File(CreateFile(device_path_.value().c_str(),
-                              GENERIC_READ | GENERIC_WRITE,
-                              FILE_SHARE_READ | FILE_SHARE_WRITE,
-                              NULL,
-                              OPEN_EXISTING,
-                              FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH,
-                              NULL));
-#else
-    device_file_.Initialize(
-        device_path_,
-        base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE |
-            base::File::FLAG_EXCLUSIVE_READ | base::File::FLAG_EXCLUSIVE_WRITE);
-#endif
-    if (!device_file_.IsValid()) {
+    if (!OpenDevice()) {
       Error(error::kOpenDevice);
       return false;
     }

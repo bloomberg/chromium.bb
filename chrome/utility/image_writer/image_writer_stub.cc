@@ -14,9 +14,17 @@ bool ImageWriter::IsValidDevice() {
   return false;
 }
 
-bool ImageWriter::UnmountVolumes() {
+void ImageWriter::UnmountVolumes(const base::Closure& continuation) {
   NOTIMPLEMENTED();
-  return false;
+  return;
+}
+
+bool ImageWriter::OpenDevice() {
+  device_file_.Initialize(
+      device_path_,
+      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE |
+          base::File::FLAG_EXCLUSIVE_READ | base::File::FLAG_EXCLUSIVE_WRITE);
+  return device_file_.IsValid();
 }
 
 }  // namespace image_writer

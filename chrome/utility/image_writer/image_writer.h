@@ -5,11 +5,6 @@
 #ifndef CHROME_UTILITY_IMAGE_WRITER_IMAGE_WRITER_H_
 #define CHROME_UTILITY_IMAGE_WRITER_IMAGE_WRITER_H_
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
-#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -18,9 +13,16 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace image_writer {
 
 class ImageWriterHandler;
+#if defined(OS_MACOSX)
+class DiskUnmounterMac;
+#endif
 
 // Manages a write within the utility thread.  This class holds all the state
 // around the writing and communicates with the ImageWriterHandler to dispatch
@@ -47,7 +49,7 @@ class ImageWriter : public base::SupportsWeakPtr<ImageWriter> {
   bool IsValidDevice();
   // Unmounts all volumes on the target device.
   // This method has OS-specific implementations.
-  bool UnmountVolumes();
+  void UnmountVolumes(const base::Closure& continuation);
 
   // Return the current image path.
   const base::FilePath& GetImagePath();
@@ -62,6 +64,7 @@ class ImageWriter : public base::SupportsWeakPtr<ImageWriter> {
 
   // Initializes the files.
   bool InitializeFiles();
+  bool OpenDevice();
 
   // Work loops.
   void WriteChunk();
@@ -77,6 +80,11 @@ class ImageWriter : public base::SupportsWeakPtr<ImageWriter> {
 
 #if defined(OS_WIN)
   std::vector<HANDLE> volume_handles_;
+#endif
+
+#if defined(OS_MACOSX)
+  friend class DiskUnmounterMac;
+  scoped_ptr<DiskUnmounterMac> unmounter_;
 #endif
 
   ImageWriterHandler* handler_;

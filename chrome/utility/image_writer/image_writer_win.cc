@@ -55,9 +55,23 @@ bool ImageWriter::IsValidDevice() {
   return device_descriptor->RemovableMedia == TRUE;
 }
 
-bool ImageWriter::UnmountVolumes() {
+bool ImageWriter::OpenDevice() {
+  // Windows requires that device files be opened with FILE_FLAG_NO_BUFFERING
+  // and FILE_FLAG_WRITE_THROUGH.  These two flags are not part of base::File.
+  device_file_ =
+      base::File(CreateFile(device_path_.value().c_str(),
+                            GENERIC_READ | GENERIC_WRITE,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE,
+                            NULL,
+                            OPEN_EXISTING,
+                            FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH,
+                            NULL));
+  return device_file_.IsValid();
+}
+
+void ImageWriter::UnmountVolumes(const base::Closure& continuation) {
   if (!InitializeFiles()) {
-    return false;
+    return;
   }
 
   STORAGE_DEVICE_NUMBER sdn = {0};
@@ -74,7 +88,7 @@ bool ImageWriter::UnmountVolumes() {
       NULL);            // Unused overlap.
   if (!status) {
     PLOG(ERROR) << "Unable to get device number.";
-    return false;
+    return;
   }
 
   ULONG device_number = sdn.DeviceNumber;
@@ -82,7 +96,7 @@ bool ImageWriter::UnmountVolumes() {
   TCHAR volume_path[MAX_PATH + 1];
   HANDLE volume_finder = FindFirstVolume(volume_path, MAX_PATH + 1);
   if (volume_finder == INVALID_HANDLE_VALUE) {
-    return false;
+    return;
   }
 
   HANDLE volume_handle;
@@ -177,7 +191,8 @@ bool ImageWriter::UnmountVolumes() {
     FindVolumeClose(volume_finder);
   }
 
-  return success;
+  if (success)
+    continuation.Run();
 }
 
 }  // namespace image_writer

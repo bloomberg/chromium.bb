@@ -41,12 +41,15 @@
         'utility/cloud_print/pwg_encoder.h',
         'utility/extensions/unpacker.cc',
         'utility/extensions/unpacker.h',
+        'utility/image_writer/disk_unmounter_mac.cc',
+        'utility/image_writer/disk_unmounter_mac.h',
         'utility/image_writer/error_messages.cc',
         'utility/image_writer/error_messages.h',
         'utility/image_writer/image_writer.cc',
         'utility/image_writer/image_writer.h',
         'utility/image_writer/image_writer_handler.cc',
         'utility/image_writer/image_writer_handler.h',
+        'utility/image_writer/image_writer_mac.cc',
         'utility/image_writer/image_writer_win.cc',
         'utility/importer/bookmark_html_reader.cc',
         'utility/importer/bookmark_html_reader.h',
@@ -138,7 +141,7 @@
             ['exclude', '^utility/profile_import_handler\.cc'],
           ],
         }],
-        ['OS!="win"', {
+        ['OS!="win" and OS!="mac"', {
           'sources': [
             'utility/image_writer/image_writer_stub.cc',
           ]

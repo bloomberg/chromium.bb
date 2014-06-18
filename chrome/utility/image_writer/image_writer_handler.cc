@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/utility/image_writer/image_writer_handler.h"
+
 #include "base/files/file_path.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/utility/image_writer/error_messages.h"
-#include "chrome/utility/image_writer/image_writer_handler.h"
 #include "content/public/utility/utility_thread.h"
 
 namespace image_writer {
@@ -64,12 +65,8 @@ void ImageWriterHandler::OnWriteStart(const base::FilePath& image,
     return;
   }
 
-  if (!image_writer_->UnmountVolumes()) {
-    SendFailed(error::kUnmountVolumes);
-    return;
-  }
-
-  image_writer_->Write();
+  image_writer_->UnmountVolumes(
+      base::Bind(&ImageWriter::Write, image_writer_->AsWeakPtr()));
 }
 
 void ImageWriterHandler::OnVerifyStart(const base::FilePath& image,
