@@ -6,46 +6,29 @@
 #define MIDIAccessInitializer_h
 
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "modules/webmidi/MIDIAccessorClient.h"
 #include "modules/webmidi/MIDIOptions.h"
-#include "modules/webmidi/MIDIPort.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/RawPtr.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
 class MIDIAccess;
-class Navigator;
 class ScriptState;
+class ScriptPromiseResolverWithContext;
 
-class MIDIAccessInitializer : public ScriptPromiseResolverWithContext, public MIDIAccessorClient {
+class MIDIAccessInitializer : public MIDIAccessorClient {
 public:
-    struct PortDescriptor {
-        String id;
-        String manufacturer;
-        String name;
-        MIDIPort::MIDIPortTypeCode type;
-        String version;
-
-        PortDescriptor(const String& id, const String& manufacturer, const String& name, MIDIPort::MIDIPortTypeCode type, const String& version)
-            : id(id)
-            , manufacturer(manufacturer)
-            , name(name)
-            , type(type)
-            , version(version) { }
-    };
-
-    static ScriptPromise start(ScriptState* scriptState, const MIDIOptions& options)
+    static PassOwnPtr<MIDIAccessInitializer> create(const MIDIOptions& options, MIDIAccess* access)
     {
-        RefPtr<MIDIAccessInitializer> p = adoptRef(new MIDIAccessInitializer(scriptState, options));
-        p->suspendIfNeeded();
-        return p->start();
+        return adoptPtr(new MIDIAccessInitializer(options, access));
     }
-
     virtual ~MIDIAccessInitializer();
+
+    ScriptPromise initialize(ScriptState*);
+    void cancel();
+
+    bool hasPendingActivity() const { return m_state == Requesting; }
 
     // MIDIAccessorClient
     virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) OVERRIDE;
@@ -57,16 +40,27 @@ public:
     SecurityOrigin* securityOrigin() const;
 
 private:
-    ScriptPromise start();
+    class PostAction;
+    enum State {
+        Requesting,
+        Resolved,
+        Stopped,
+    };
 
-    MIDIAccessInitializer(ScriptState*, const MIDIOptions&);
+    MIDIAccessInitializer(const MIDIOptions&, MIDIAccess*);
 
     ExecutionContext* executionContext() const;
+    void permissionDenied();
+    void doPostAction(State);
 
+    State m_state;
+    WeakPtrFactory<MIDIAccessInitializer> m_weakPtrFactory;
+    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
     OwnPtr<MIDIAccessor> m_accessor;
     MIDIOptions m_options;
     bool m_sysexEnabled;
-    Vector<PortDescriptor> m_portDescriptors;
+    // m_access has this object, so it's safe to have the raw pointer.
+    MIDIAccess* m_access;
 };
 
 } // namespace WebCore

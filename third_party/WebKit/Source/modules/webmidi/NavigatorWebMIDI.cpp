@@ -37,7 +37,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
-#include "modules/webmidi/MIDIAccessInitializer.h"
+#include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIOptions.h"
 
 namespace WebCore {
@@ -81,7 +81,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, cons
         return promise;
     }
 
-    return MIDIAccessInitializer::start(scriptState, MIDIOptions(options));
+    return MIDIAccess::request(MIDIOptions(options), scriptState);
 }
 
 } // namespace WebCore

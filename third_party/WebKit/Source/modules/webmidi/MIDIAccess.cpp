@@ -31,6 +31,11 @@
 #include "config.h"
 #include "modules/webmidi/MIDIAccess.h"
 
+#include "bindings/v8/ScriptFunction.h"
+#include "bindings/v8/ScriptPromise.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
@@ -44,25 +49,26 @@
 
 namespace WebCore {
 
-MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
-    : ActiveDOMObject(executionContext)
-    , m_accessor(accessor)
-    , m_sysexEnabled(sysexEnabled)
+ScriptPromise MIDIAccess::request(const MIDIOptions& options, ScriptState* scriptState)
 {
-    ScriptWrappable::init(this);
-    m_accessor->setClient(this);
-    for (size_t i = 0; i < ports.size(); ++i) {
-        const MIDIAccessInitializer::PortDescriptor& port = ports[i];
-        if (port.type == MIDIPort::MIDIPortTypeInput) {
-            m_inputs.append(MIDIInput::create(this, port.id, port.manufacturer, port.name, port.version));
-        } else {
-            m_outputs.append(MIDIOutput::create(this, m_outputs.size(), port.id, port.manufacturer, port.name, port.version));
-        }
-    }
+    RefPtrWillBeRawPtr<MIDIAccess> midiAccess(adoptRefWillBeRefCountedGarbageCollected(new MIDIAccess(options, scriptState->executionContext())));
+    midiAccess->suspendIfNeeded();
+    // Create a wrapper to expose this object to the V8 GC so that
+    // hasPendingActivity takes effect.
+    toV8NoInline(midiAccess.get(), scriptState->context()->Global(), scriptState->isolate());
+    // Now this object is retained because hasPending returns true.
+    return midiAccess->m_initializer->initialize(scriptState);
 }
 
 MIDIAccess::~MIDIAccess()
 {
+}
+
+MIDIAccess::MIDIAccess(const MIDIOptions& options, ExecutionContext* context)
+    : ActiveDOMObject(context)
+    , m_initializer(MIDIAccessInitializer::create(options, this))
+{
+    ScriptWrappable::init(this);
 }
 
 void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version)
@@ -120,6 +126,20 @@ void MIDIAccess::sendMIDIData(unsigned portIndex, const unsigned char* data, siz
 void MIDIAccess::stop()
 {
     m_accessor.clear();
+    m_initializer->cancel();
+}
+
+bool MIDIAccess::hasPendingActivity() const
+{
+    return m_initializer->hasPendingActivity();
+}
+
+void MIDIAccess::initialize(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled)
+{
+    ASSERT(accessor);
+    m_accessor = accessor;
+    m_accessor->setClient(this);
+    m_sysexEnabled = sysexEnabled;
 }
 
 void MIDIAccess::trace(Visitor* visitor)

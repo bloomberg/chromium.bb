@@ -31,23 +31,12 @@ class ScriptPromiseResolverWithContext : public ActiveDOMObject, public RefCount
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolverWithContext);
 
 public:
-    enum Mode {
-        Default,
-        KeepAliveWhilePending,
-    };
-
-    // Create a ScriptPromiseResolverWithContext.
-    // If |mode| is KeepAliveWhilePending, the resolver refers itself in order
-    // to stay alive while the promise is pending and the associated
-    // ExecutionContext isn't stopped.
-    static PassRefPtr<ScriptPromiseResolverWithContext> create(ScriptState* scriptState, Mode mode = Default)
+    static PassRefPtr<ScriptPromiseResolverWithContext> create(ScriptState* scriptState)
     {
-        RefPtr<ScriptPromiseResolverWithContext> resolver = adoptRef(new ScriptPromiseResolverWithContext(scriptState, mode));
+        RefPtr<ScriptPromiseResolverWithContext> resolver = adoptRef(new ScriptPromiseResolverWithContext(scriptState));
         resolver->suspendIfNeeded();
         return resolver.release();
     }
-
-    virtual ~ScriptPromiseResolverWithContext();
 
     // Anything that can be passed to toV8Value can be passed to this function.
     template <typename T>
@@ -80,9 +69,7 @@ public:
     virtual void stop() OVERRIDE;
 
 protected:
-    // You need to call suspendIfNeeded after the construction because
-    // this is an ActiveDOMObject.
-    ScriptPromiseResolverWithContext(ScriptState*, Mode);
+    explicit ScriptPromiseResolverWithContext(ScriptState*);
 
 private:
     enum ResolutionState {
@@ -103,7 +90,6 @@ private:
     {
         if (m_state != Pending || !executionContext() || executionContext()->activeDOMObjectsAreStopped())
             return;
-        ASSERT(newState == Resolving || newState == Rejecting);
         m_state = newState;
         // Retain this object until it is actually resolved or rejected.
         // |deref| will be called in |clear|.
@@ -121,7 +107,6 @@ private:
 
     ResolutionState m_state;
     const RefPtr<ScriptState> m_scriptState;
-    Mode m_mode;
     Timer<ScriptPromiseResolverWithContext> m_timer;
     RefPtr<ScriptPromiseResolver> m_resolver;
     ScopedPersistent<v8::Value> m_value;
