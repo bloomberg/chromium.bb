@@ -24,6 +24,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/npapi/webplugin_delegate_proxy.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_process.h"
@@ -57,7 +58,6 @@
 #include "url/gurl.h"
 #include "url/url_util.h"
 #include "webkit/child/multipart_response_delegate.h"
-#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 using blink::WebCanvas;
 using blink::WebConsoleMessage;
@@ -852,7 +852,7 @@ void WebPluginImpl::AcceleratedPluginSwappedIOSurface() {
     if (next_io_surface_id_) {
       if (!io_surface_layer_.get()) {
         io_surface_layer_ = cc::IOSurfaceLayer::Create();
-        web_layer_.reset(new webkit::WebLayerImpl(io_surface_layer_));
+        web_layer_.reset(new WebLayerImpl(io_surface_layer_));
         container_->setWebLayer(web_layer_.get());
       }
       io_surface_layer_->SetIOSurfaceProperties(

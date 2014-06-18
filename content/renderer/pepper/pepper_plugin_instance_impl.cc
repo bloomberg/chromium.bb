@@ -24,6 +24,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/content_decryptor_delegate.h"
@@ -126,7 +127,6 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "v8/include/v8.h"
-#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/events/keycodes/keyboard_codes_posix.h"
@@ -2039,10 +2039,10 @@ void PepperPluginInstanceImpl::UpdateLayer() {
     // wmode=transparent was specified.
     opaque = opaque || fullscreen_container_;
     texture_layer_->SetContentsOpaque(opaque);
-    web_layer_.reset(new webkit::WebLayerImpl(texture_layer_));
+    web_layer_.reset(new WebLayerImpl(texture_layer_));
   } else if (want_compositor_layer) {
     compositor_layer_ = bound_compositor_->layer();
-    web_layer_.reset(new webkit::WebLayerImpl(compositor_layer_));
+    web_layer_.reset(new WebLayerImpl(compositor_layer_));
   }
 
   if (web_layer_) {

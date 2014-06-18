@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "cc/layers/video_layer.h"
 #include "content/public/renderer/render_view.h"
+#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/media/media_stream_audio_renderer.h"
 #include "content/renderer/media/media_stream_renderer_factory.h"
 #include "content/renderer/media/video_frame_provider.h"
@@ -28,7 +29,6 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 using blink::WebCanvas;
 using blink::WebMediaPlayer;
@@ -414,8 +414,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
     GetClient()->sizeChanged();
 
     if (video_frame_provider_) {
-      video_weblayer_.reset(
-          new webkit::WebLayerImpl(cc::VideoLayer::Create(this)));
+      video_weblayer_.reset(new WebLayerImpl(cc::VideoLayer::Create(this)));
       video_weblayer_->setOpaque(true);
       GetClient()->setWebLayer(video_weblayer_.get());
     }

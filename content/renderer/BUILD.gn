@@ -51,8 +51,6 @@ source_set("renderer") {
     #'../third_party/WebKit/public/blink.gyp:blink',
     #'../third_party/libjingle/libjingle.gyp:libjingle',
     #'../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
-    #'../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_bindings',
-    #'../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
   ]
 
   if (!enable_notifications) {

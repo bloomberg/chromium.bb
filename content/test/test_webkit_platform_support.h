@@ -10,10 +10,10 @@
 #include "content/child/blink_platform_impl.h"
 #include "content/child/simple_webmimeregistry_impl.h"
 #include "content/child/webfileutilities_impl.h"
+#include "content/renderer/compositor_bindings/web_compositor_support_impl.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/weburl_loader_mock_factory.h"
 #include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
-#include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 
 namespace blink {
 class WebLayerTreeView;
@@ -90,7 +90,7 @@ class TestWebKitPlatformSupport
   WebFileUtilitiesImpl file_utilities_;
   base::ScopedTempDir file_system_root_;
   scoped_ptr<WebURLLoaderMockFactory> url_loader_factory_;
-  webkit::WebCompositorSupportImpl compositor_support_;
+  WebCompositorSupportImpl compositor_support_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   blink::WebThemeEngine* active_theme_engine_;

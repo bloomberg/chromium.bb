@@ -18,6 +18,7 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
+#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "skia/ext/image_operations.h"
@@ -27,7 +28,6 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"
-#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 namespace content {
 
@@ -186,7 +186,7 @@ void ChildFrameCompositingHelper::EnableCompositing(bool enable) {
     background_layer_->SetMasksToBounds(true);
     background_layer_->SetBackgroundColor(
         SkColorSetARGBInline(255, 255, 255, 255));
-    web_layer_.reset(new webkit::WebLayerImpl(background_layer_));
+    web_layer_.reset(new WebLayerImpl(background_layer_));
   }
 
   if (GetContainer()) {

@@ -31,6 +31,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -40,7 +41,6 @@
 #include "ui/gfx/frame_time.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_switches.h"
-#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 namespace base {
 class Value;
@@ -452,7 +452,7 @@ void RenderWidgetCompositor::setSurfaceReady() {
 
 void RenderWidgetCompositor::setRootLayer(const blink::WebLayer& layer) {
   layer_tree_host_->SetRootLayer(
-      static_cast<const webkit::WebLayerImpl*>(&layer)->layer());
+      static_cast<const WebLayerImpl*>(&layer)->layer());
 }
 
 void RenderWidgetCompositor::clearRootLayer() {
@@ -545,7 +545,7 @@ void RenderWidgetCompositor::didStopFlinging() {
 }
 
 void RenderWidgetCompositor::registerForAnimations(blink::WebLayer* layer) {
-  cc::Layer* cc_layer = static_cast<webkit::WebLayerImpl*>(layer)->layer();
+  cc::Layer* cc_layer = static_cast<WebLayerImpl*>(layer)->layer();
   cc_layer->layer_animation_controller()->SetAnimationRegistrar(
       layer_tree_host_->animation_registrar());
 }
@@ -555,14 +555,13 @@ void RenderWidgetCompositor::registerViewportLayers(
     const blink::WebLayer* innerViewportScrollLayer,
     const blink::WebLayer* outerViewportScrollLayer) {
   layer_tree_host_->RegisterViewportLayers(
-      static_cast<const webkit::WebLayerImpl*>(pageScaleLayer)->layer(),
-      static_cast<const webkit::WebLayerImpl*>(innerViewportScrollLayer)
-          ->layer(),
+      static_cast<const WebLayerImpl*>(pageScaleLayer)->layer(),
+      static_cast<const WebLayerImpl*>(innerViewportScrollLayer)->layer(),
       // The outer viewport layer will only exist when using pinch virtual
       // viewports.
-      outerViewportScrollLayer ? static_cast<const webkit::WebLayerImpl*>(
-                                     outerViewportScrollLayer)->layer()
-                               : NULL);
+      outerViewportScrollLayer
+          ? static_cast<const WebLayerImpl*>(outerViewportScrollLayer)->layer()
+          : NULL);
 }
 
 void RenderWidgetCompositor::clearViewportLayers() {

@@ -13,6 +13,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/trees/layer_tree_host.h"
+#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/test/test_webkit_platform_support.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -20,13 +21,11 @@
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/gfx/frame_time.h"
-#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 using blink::WebColor;
 using blink::WebGraphicsContext3D;
 using blink::WebRect;
 using blink::WebSize;
-using webkit::WebLayerImpl;
 
 namespace content {
 

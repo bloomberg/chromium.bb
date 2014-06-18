@@ -47,15 +47,13 @@ class GpuVideoAcceleratorFactories;
 class MediaLog;
 }
 
-namespace webkit {
-class WebLayerImpl;
-}
 
 namespace content {
 class BufferedDataSource;
 class VideoFrameCompositor;
 class WebAudioSourceProviderImpl;
 class WebContentDecryptionModuleImpl;
+class WebLayerImpl;
 class WebMediaPlayerDelegate;
 class WebMediaPlayerParams;
 class WebTextTrackImpl;
@@ -337,7 +335,7 @@ class WebMediaPlayerImpl
 
   // The compositor layer for displaying the video content when using composited
   // playback.
-  scoped_ptr<webkit::WebLayerImpl> video_weblayer_;
+  scoped_ptr<WebLayerImpl> video_weblayer_;
 
   // Text track objects get a unique index value when they're created.
   int text_track_index_;

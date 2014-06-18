@@ -19,6 +19,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/crypto/key_systems.h"
@@ -51,7 +52,6 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/image/image.h"
-#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 static const uint32 kGLTextureExternalOES = 0x8D65;
 
@@ -730,8 +730,7 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
 
   // Lazily allocate compositing layer.
   if (!video_weblayer_) {
-    video_weblayer_.reset(
-        new webkit::WebLayerImpl(cc::VideoLayer::Create(this)));
+    video_weblayer_.reset(new WebLayerImpl(cc::VideoLayer::Create(this)));
     client_->setWebLayer(video_weblayer_.get());
   }
 

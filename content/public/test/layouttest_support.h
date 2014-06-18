@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "cc/layers/texture_layer.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 
 namespace blink {
@@ -17,6 +18,7 @@ class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebGamepad;
 class WebGamepads;
+class WebLayer;
 struct WebSize;
 }
 
@@ -109,6 +111,9 @@ void DisableAutoResizeMode(RenderView* render_view,
 // Provides a text dump of the contents of the given page state.
 std::string DumpBackForwardList(std::vector<PageState>& page_state,
                                 size_t current_index);
+
+// Instantiates WebLayerImpl for TestPlugin.
+blink::WebLayer* InstantiateWebLayer(scoped_refptr<cc::TextureLayer> layer);
 
 }  // namespace content
 

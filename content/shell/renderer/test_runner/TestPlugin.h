@@ -11,15 +11,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/layers/texture_layer_client.h"
+#include "content/public/test/layouttest_support.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureLayer.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureLayerClient.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureMailbox.h"
+#include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
-#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 namespace blink {
 class WebFrame;
+class WebLayer;
 }
 
 namespace content {
@@ -138,7 +140,7 @@ private:
     unsigned m_framebuffer;
     Scene m_scene;
     scoped_refptr<cc::TextureLayer> m_layer;
-    scoped_ptr<webkit::WebLayerImpl> m_webLayer;
+    scoped_ptr<blink::WebLayer> m_webLayer;
 
     blink::WebPluginContainer::TouchEventRequestType m_touchEventRequest;
     // Requests touch events from the WebPluginContainerImpl multiple times to tickle webkit.org/b/108381

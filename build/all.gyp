@@ -778,7 +778,7 @@
             '../ui/events/events.gyp:events_unittests_apk',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests_apk',
             '../ui/ui_unittests.gyp:ui_unittests_apk',
-            '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests_apk'
+            '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests_apk',
           ],
         },
         {
@@ -861,7 +861,6 @@
             '../ui/gfx/gfx_tests.gyp:gfx_unittests',
             '../ui/ui_unittests.gyp:ui_unittests',
             '../url/url.gyp:url_unittests',
-            '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
           ],
         },
         {

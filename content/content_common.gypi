@@ -32,7 +32,6 @@
   ],
   'variables': {
     'public_common_sources': [
-      'public/common/assert_matching_enums.cc',
       'public/common/bindings_policy.h',
       'public/common/child_process_host.h',
       'public/common/child_process_host_delegate.cc',

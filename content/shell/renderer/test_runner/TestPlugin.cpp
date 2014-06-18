@@ -208,7 +208,7 @@ bool TestPlugin::initialize(WebPluginContainer* container)
         return false;
 
     m_layer = cc::TextureLayer::CreateForMailbox(this);
-    m_webLayer = make_scoped_ptr(new webkit::WebLayerImpl(m_layer));
+    m_webLayer = make_scoped_ptr(InstantiateWebLayer(m_layer));
     m_container = container;
     m_container->setWebLayer(m_webLayer.get());
     if (m_reRequestTouchEvents) {

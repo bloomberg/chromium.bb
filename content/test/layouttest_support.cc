@@ -9,6 +9,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "content/public/common/page_state.h"
+#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/render_frame_impl.h"
@@ -300,6 +301,10 @@ std::string DumpBackForwardList(std::vector<PageState>& page_state,
   }
   result.append("===============================================\n");
   return result;
+}
+
+blink::WebLayer* InstantiateWebLayer(scoped_refptr<cc::TextureLayer> layer) {
+  return new WebLayerImpl(layer);
 }
 
 }  // namespace content

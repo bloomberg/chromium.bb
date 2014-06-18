@@ -32,7 +32,6 @@
 #include "third_party/WebKit/public/web/WebStorageEventDispatcher.h"
 #include "v8/include/v8.h"
 #include "webkit/browser/database/vfs_backend.h"
-#include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

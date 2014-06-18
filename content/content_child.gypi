@@ -35,6 +35,7 @@
       'child/appcache/appcache_frontend_impl.h',
       'child/appcache/web_application_cache_host_impl.cc',
       'child/appcache/web_application_cache_host_impl.h',
+      'child/assert_matching_enums.cc',
       'child/blink_glue.cc',
       'child/blink_glue.h',
       'child/blink_platform_impl.cc',
