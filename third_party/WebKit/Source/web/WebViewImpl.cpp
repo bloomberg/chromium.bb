@@ -1619,6 +1619,16 @@ void WebViewImpl::resize(const WebSize& newSize)
 
         if (pinchVirtualViewportEnabled())
             page()->frameHost().pinchViewport().setSize(m_size);
+
+        // When device emulation is enabled, device size values may change - they are
+        // usually set equal to the view size. These values are not considered viewport-dependent
+        // (see MediaQueryExp::isViewportDependent), since they are only viewport-dependent in emulation mode,
+        // and thus will not be invalidated in |FrameView::performPreLayoutTasks|.
+        // Therefore we should force explicit media queries invalidation here.
+        if (page()->inspectorController().deviceEmulationEnabled()) {
+            if (Document* document = mainFrameImpl()->frame()->document())
+                document->mediaQueryAffectingValueChanged();
+        }
     }
 
     if (settings()->viewportEnabled() && !m_fixedLayoutSizeLock) {
