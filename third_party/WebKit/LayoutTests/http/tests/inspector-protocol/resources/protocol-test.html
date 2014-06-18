@@ -31,7 +31,13 @@ InspectorFrontendAPI = {};
 InspectorTest = {};
 InspectorTest._dispatchTable = [];
 InspectorTest._requestId = -1;
+InspectorTest._dumpInspectorProtocolMessages = false;
 InspectorTest.eventHandler = {};
+
+InspectorTest.startDumpingProtocolMessages = function()
+{
+    InspectorTest._dumpInspectorProtocolMessages = true;
+}
 
 /**
  * @param {string} method
@@ -46,6 +52,8 @@ InspectorTest.sendCommand = function(method, params, handler)
                           "params": params,
                           "id": this._requestId };
 
+    if (InspectorTest._dumpInspectorProtocolMessages)
+        testRunner.logToStderr("backend: " + JSON.stringify(messageObject));
     InspectorFrontendHost.sendMessageToBackend(JSON.stringify(messageObject));
 
     return this._requestId;
@@ -132,6 +140,8 @@ InspectorTest.sendRawCommand = function(command, handler)
  */
 InspectorFrontendAPI.dispatchMessage = function(message)
 {
+    if (InspectorTest._dumpInspectorProtocolMessages)
+        testRunner.logToStderr("frontend: " + message);
     var messageObject = JSON.parse(message);
     var messageId = messageObject["id"];
     try {

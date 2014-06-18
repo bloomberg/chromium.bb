@@ -1,4 +1,5 @@
+Timeline started
 Page enabled
-Timeline.eventRecorded: FunctionCall
 Page disabled
+Timeline stopped
 

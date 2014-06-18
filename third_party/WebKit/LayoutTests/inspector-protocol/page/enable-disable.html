@@ -5,30 +5,56 @@
 
 function test()
 {
+    var log = [];
     InspectorTest.eventHandler["Timeline.eventRecorded"] = eventRecorded;
 
-    InspectorTest.sendCommand("Timeline.start", {});
-    InspectorTest.sendCommand("Page.enable", {}, pageEnabled);
+    InspectorTest.sendCommand("Timeline.start", {}, timelineStarted);
 
-    function pageEnabled()
+    function timelineStarted()
     {
-        InspectorTest.log("Page enabled");
-        InspectorTest.sendCommand("Page.disable", {});
-        InspectorTest.sendCommand("Timeline.stop", {}, pageDisabled);
+        log.push("Timeline started");
+        InspectorTest.sendCommand("Page.enable", {}, pageAgentEnabled);
     }
 
-    function pageDisabled()
+    function pageAgentEnabled()
     {
-        InspectorTest.log("Page disabled");
+        log.push("Page enabled");
+        InspectorTest.sendCommand("Page.disable", {}, pageAgentDisabled);
+    }
+
+    function pageAgentDisabled()
+    {
+        log.push("Page disabled");
+        InspectorTest.sendCommand("NotExistingCommand", {}, didRoundTripOverProtocol);
+    }
+
+    function didRoundTripOverProtocol()
+    {
+        InspectorTest.sendCommand("Timeline.stop", {}, timelineStopped);
+    }
+
+    function timelineStopped(next)
+    {
+        log.push("Timeline stopped");
+        for (var i = 0; i < log.length; ++i)
+            InspectorTest.log(log[i]);
         InspectorTest.completeTest();
     }
 
     function eventRecorded(msg)
     {
-        var type = msg.params.record.type;
-        if (type.indexOf("GC") !== -1)
+        if (msg.params.record.type === "Program") {
+            var children = msg.params.record.children;
+            for (var i = 0; i < children.length; ++i) {
+                var record = children[i];
+                if (record.type === "GCEvent")
+                    continue;
+                log.push("Timeline.eventRecorded: " + record.type);
+            }
             return;
-        InspectorTest.log("Timeline.eventRecorded: " + type);
+        }
+        InspectorTest.log("FAIL: Unexpected records arrived");
+        InspectorTest.logObject(msg);
     }
 }
 

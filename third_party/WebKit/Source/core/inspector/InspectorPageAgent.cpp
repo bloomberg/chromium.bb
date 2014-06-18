@@ -421,7 +421,8 @@ void InspectorPageAgent::disable(ErrorString*)
     setShowDebugBorders(0, false);
     setShowFPSCounter(0, false);
     setEmulatedMedia(0, String());
-    setContinuousPaintingEnabled(0, false);
+    if (m_state->getBoolean(PageAgentState::pageAgentContinuousPaintingEnabled))
+        setContinuousPaintingEnabled(0, false);
     setShowScrollBottleneckRects(0, false);
     setShowViewportSizeOnResize(0, false, 0);
 
@@ -739,13 +740,20 @@ bool InspectorPageAgent::deviceMetricsChanged(bool enabled, int width, int heigh
     // These two always fit an int.
     int currentWidth = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenWidthOverride));
     int currentHeight = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenHeightOverride));
-    double currentDeviceScaleFactor = m_state->getDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, 1);
+    double currentDeviceScaleFactor = m_state->getDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, 0);
     bool currentEmulateViewport = m_state->getBoolean(PageAgentState::pageAgentEmulateViewport);
     bool currentFitWindow = m_state->getBoolean(PageAgentState::pageAgentFitWindow);
     double currentFontScaleFactor = m_state->getDouble(PageAgentState::fontScaleFactor, 1);
     bool currentTextAutosizing = m_state->getBoolean(PageAgentState::pageAgentTextAutosizingOverride);
 
-    return enabled != currentEnabled || width != currentWidth || height != currentHeight || deviceScaleFactor != currentDeviceScaleFactor || emulateViewport != currentEmulateViewport || fitWindow != currentFitWindow || fontScaleFactor != currentFontScaleFactor || textAutosizing != currentTextAutosizing;
+    return enabled != currentEnabled
+        || width != currentWidth
+        || height != currentHeight
+        || deviceScaleFactor != currentDeviceScaleFactor
+        || emulateViewport != currentEmulateViewport
+        || fitWindow != currentFitWindow
+        || fontScaleFactor != currentFontScaleFactor
+        || textAutosizing != currentTextAutosizing;
 }
 
 void InspectorPageAgent::setShowPaintRects(ErrorString*, bool show)
