@@ -29,7 +29,7 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
         ImportCertFromFile(GetTestCertsDirectory(), cert_file);
     scoped_root_.Reset(root_cert.get());
   }
-  virtual ~TestProofVerifierChromium() { }
+  virtual ~TestProofVerifierChromium() {}
 
  private:
   ScopedTestRoot scoped_root_;

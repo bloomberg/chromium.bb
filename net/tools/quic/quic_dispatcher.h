@@ -61,8 +61,7 @@ class QuicDispatcher : public QuicServerSessionVisitor {
   QuicDispatcher(const QuicConfig& config,
                  const QuicCryptoServerConfig& crypto_config,
                  const QuicVersionVector& supported_versions,
-                 EpollServer* epoll_server,
-                 uint32 initial_flow_control_window_bytes);
+                 EpollServer* epoll_server);
 
   virtual ~QuicDispatcher();
 
@@ -166,10 +165,6 @@ class QuicDispatcher : public QuicServerSessionVisitor {
 
   QuicPacketWriter* writer() { return writer_.get(); }
 
-  const uint32 initial_flow_control_window_bytes() const {
-    return initial_flow_control_window_bytes_;
-  }
-
  private:
   class QuicFramerVisitor;
   friend class net::tools::test::QuicDispatcherPeer;
@@ -237,10 +232,6 @@ class QuicDispatcher : public QuicServerSessionVisitor {
 
   QuicFramer framer_;
   scoped_ptr<QuicFramerVisitor> framer_visitor_;
-
-  // Initial flow control window size to advertize to peer on newly created
-  // connections.
-  const uint32 initial_flow_control_window_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicDispatcher);
 };

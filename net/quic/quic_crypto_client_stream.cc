@@ -185,7 +185,6 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             server_id_,
             session()->connection()->connection_id(),
             session()->connection()->supported_versions().front(),
-            session()->max_flow_control_receive_window_bytes(),
             cached,
             session()->connection()->clock()->WallNow(),
             session()->connection()->random_generator(),

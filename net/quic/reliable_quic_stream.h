@@ -140,6 +140,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
       bool fin,
       QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
 
+  // Helper method that returns FecProtection to use for writes to the session.
+  FecProtection GetFecProtection();
+
   // Close the read side of the socket.  Further frames will not be accepted.
   virtual void CloseReadSide();
 
@@ -149,6 +152,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   bool HasBufferedData() const;
 
   bool fin_buffered() const { return fin_buffered_; }
+
+  void set_fec_policy(FecPolicy fec_policy) { fec_policy_ = fec_policy; }
 
   const QuicSession* session() const { return session_; }
   QuicSession* session() { return session_; }
@@ -217,6 +222,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   // True if this stream has received a RST stream frame.
   bool rst_received_;
+
+  // FEC policy to be used for this stream.
+  FecPolicy fec_policy_;
 
   // True if the session this stream is running under is a server session.
   bool is_server_;

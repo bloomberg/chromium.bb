@@ -26,6 +26,8 @@ class ReliableQuicStreamPeer {
 
   static uint32 SizeOfQueuedData(ReliableQuicStream* stream);
 
+  static void SetFecPolicy(ReliableQuicStream* stream, FecPolicy fec_policy);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ReliableQuicStreamPeer);
 };

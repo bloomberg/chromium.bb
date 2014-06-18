@@ -84,9 +84,8 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
 
     // New streams rely on having the peer's flow control receive window
     // negotiated in the config.
-    const uint32 kInitialWindow = 10 * kMaxPacketSize;
     session_.config()->SetInitialFlowControlWindowToSend(
-        kInitialWindow);
+        kInitialFlowControlWindowForTest);
     stream_.reset(new QuicSpdyServerStreamPeer(3, &session_));
   }
 

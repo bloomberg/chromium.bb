@@ -753,7 +753,7 @@ TransmissionInfo::TransmissionInfo()
       nack_count(0),
       transmission_type(NOT_RETRANSMISSION),
       all_transmissions(NULL),
-      in_flight(false) { }
+      in_flight(false) {}
 
 TransmissionInfo::TransmissionInfo(
     RetransmittableFrames* retransmittable_frames,

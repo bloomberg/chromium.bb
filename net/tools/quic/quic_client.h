@@ -50,13 +50,12 @@ class QuicClient : public EpollCallbackInterface,
   QuicClient(IPEndPoint server_address,
              const QuicServerId& server_id,
              const QuicVersionVector& supported_versions,
-             bool print_response,
-             uint32 initial_flow_control_window);
+             bool print_response);
   QuicClient(IPEndPoint server_address,
              const QuicServerId& server_id,
-             const QuicConfig& config,
              const QuicVersionVector& supported_versions,
-             uint32 initial_flow_control_window);
+             bool print_response,
+             const QuicConfig& config);
 
   virtual ~QuicClient();
 
@@ -244,9 +243,6 @@ class QuicClient : public EpollCallbackInterface,
   // If true, then the contents of each response will be printed to stdout
   // when the stream is closed (in OnClose).
   bool print_response_;
-
-  // Size of initial flow control receive window to advertise to server.
-  uint32 initial_flow_control_window_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClient);
 };

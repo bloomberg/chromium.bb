@@ -23,6 +23,7 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
+#include "net/tools/quic/quic_server.h"
 #include "net/tools/quic/test_tools/quic_in_memory_cache_peer.h"
 #include "net/tools/quic/test_tools/server_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,6 +31,7 @@
 
 using base::StringPiece;
 using net::tools::QuicInMemoryCache;
+using net::tools::QuicServer;
 using net::tools::test::QuicInMemoryCachePeer;
 using net::tools::test::ServerThread;
 
@@ -133,10 +135,12 @@ class QuicEndToEndTest : public PlatformTest {
     CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &ip));
     server_address_ = IPEndPoint(ip, 0);
     server_config_.SetDefaults();
-    server_thread_.reset(new ServerThread(server_address_, server_config_,
-                                          QuicSupportedVersions(),
-                                          strike_register_no_startup_period_,
-                                          kInitialFlowControlWindowForTest));
+    server_config_.SetInitialFlowControlWindowToSend(
+        kInitialFlowControlWindowForTest);
+    server_thread_.reset(new ServerThread(
+         new QuicServer(server_config_, QuicSupportedVersions()),
+         server_address_,
+         strike_register_no_startup_period_));
     server_thread_->Initialize();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());

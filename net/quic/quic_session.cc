@@ -95,9 +95,7 @@ class VisitorShim : public QuicConnectionVisitorInterface {
   QuicSession* session_;
 };
 
-QuicSession::QuicSession(QuicConnection* connection,
-                         uint32 max_flow_control_receive_window_bytes,
-                         const QuicConfig& config)
+QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
     : connection_(connection),
       visitor_shim_(new VisitorShim(this)),
       config_(config),
@@ -107,20 +105,11 @@ QuicSession::QuicSession(QuicConnection* connection,
       error_(QUIC_NO_ERROR),
       goaway_received_(false),
       goaway_sent_(false),
-      has_pending_handshake_(false),
-      max_flow_control_receive_window_bytes_(
-          max_flow_control_receive_window_bytes) {
-  if (max_flow_control_receive_window_bytes_ < kDefaultFlowControlSendWindow) {
-    LOG(ERROR) << "Initial receive window ("
-               << max_flow_control_receive_window_bytes_
-               << ") cannot be set lower than default ("
-               << kDefaultFlowControlSendWindow << ").";
-    max_flow_control_receive_window_bytes_ = kDefaultFlowControlSendWindow;
-  }
+      has_pending_handshake_(false) {
   flow_controller_.reset(new QuicFlowController(
       connection_.get(), 0, is_server(), kDefaultFlowControlSendWindow,
-      max_flow_control_receive_window_bytes_,
-      max_flow_control_receive_window_bytes_));
+      config_.GetInitialFlowControlWindowToSend(),
+      config_.GetInitialFlowControlWindowToSend()));
 
   connection_->set_visitor(visitor_shim_.get());
   connection_->SetFromConfig(config_);
@@ -477,26 +466,41 @@ void QuicSession::OnConfigNegotiated() {
       config_.HasReceivedInitialFlowControlWindowBytes()) {
     // Streams which were created before the SHLO was received (0RTT requests)
     // are now informed of the peer's initial flow control window.
-    uint32 new_flow_control_send_window =
-        config_.ReceivedInitialFlowControlWindowBytes();
-    if (new_flow_control_send_window < kDefaultFlowControlSendWindow) {
-      LOG(ERROR)
-          << "Peer sent us an invalid flow control send window: "
-          << new_flow_control_send_window
-          << ", below default: " << kDefaultFlowControlSendWindow;
-      connection_->SendConnectionClose(QUIC_FLOW_CONTROL_INVALID_WINDOW);
-      return;
-    }
-    DataStreamMap::iterator it = stream_map_.begin();
-    while (it != stream_map_.end()) {
-      it->second->flow_controller()->UpdateSendWindowOffset(
-          new_flow_control_send_window);
-      it++;
-    }
-
-    // Update connection level window.
-    flow_controller_->UpdateSendWindowOffset(new_flow_control_send_window);
+    uint32 new_window = config_.ReceivedInitialFlowControlWindowBytes();
+    OnNewStreamFlowControlWindow(new_window);
+    OnNewSessionFlowControlWindow(new_window);
   }
+}
+
+void QuicSession::OnNewStreamFlowControlWindow(uint32 new_window) {
+  if (new_window < kDefaultFlowControlSendWindow) {
+    LOG(ERROR)
+        << "Peer sent us an invalid stream flow control send window: "
+        << new_window << ", below default: " << kDefaultFlowControlSendWindow;
+    if (connection_->connected()) {
+      connection_->SendConnectionClose(QUIC_FLOW_CONTROL_INVALID_WINDOW);
+    }
+    return;
+  }
+
+  for (DataStreamMap::iterator it = stream_map_.begin();
+       it != stream_map_.end(); ++it) {
+    it->second->flow_controller()->UpdateSendWindowOffset(new_window);
+  }
+}
+
+void QuicSession::OnNewSessionFlowControlWindow(uint32 new_window) {
+  if (new_window < kDefaultFlowControlSendWindow) {
+    LOG(ERROR)
+        << "Peer sent us an invalid session flow control send window: "
+        << new_window << ", below default: " << kDefaultFlowControlSendWindow;
+    if (connection_->connected()) {
+      connection_->SendConnectionClose(QUIC_FLOW_CONTROL_INVALID_WINDOW);
+    }
+    return;
+  }
+
+  flow_controller_->UpdateSendWindowOffset(new_window);
 }
 
 void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {

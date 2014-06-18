@@ -24,15 +24,16 @@
 
 using base::StringPiece;
 using net::EpollServer;
-using net::test::MockSession;
 using net::test::ConstructEncryptedPacket;
+using net::test::MockSession;
+using net::test::ValueRestore;
 using net::tools::test::MockConnection;
 using std::make_pair;
-using testing::_;
 using testing::DoAll;
-using testing::Invoke;
 using testing::InSequence;
+using testing::Invoke;
 using testing::WithoutArgs;
+using testing::_;
 
 namespace net {
 namespace tools {
@@ -47,8 +48,7 @@ class TestDispatcher : public QuicDispatcher {
       : QuicDispatcher(config,
                        crypto_config,
                        QuicSupportedVersions(),
-                       eps,
-                       kInitialFlowControlWindowForTest) {
+                       eps) {
   }
 
   MOCK_METHOD3(CreateQuicSession, QuicSession*(
@@ -283,12 +283,11 @@ TEST(QuicDispatcherFlowControlTest, NoNewVersion17ConnectionsIfFlagDisabled) {
     kTestVersions.push_back(kTestQuicVersions[i]);
   }
 
-  QuicDispatcher dispatcher(config, server_config, kTestVersions, &eps,
-                            kInitialFlowControlWindowForTest);
+  QuicDispatcher dispatcher(config, server_config, kTestVersions, &eps);
   dispatcher.Initialize(0);
 
   // When flag is enabled, new connections should support QUIC_VERSION_17.
-  FLAGS_enable_quic_stream_flow_control_2 = true;
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
   scoped_ptr<QuicConnection> connection_1(
       QuicDispatcherPeer::CreateQuicConnection(&dispatcher, kCID, client,
                                                server));

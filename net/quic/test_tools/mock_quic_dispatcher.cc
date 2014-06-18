@@ -15,11 +15,7 @@ MockQuicDispatcher::MockQuicDispatcher(
     const QuicConfig& config,
     const QuicCryptoServerConfig& crypto_config,
     QuicConnectionHelperInterface* helper)
-    : QuicDispatcher(config,
-                     crypto_config,
-                     QuicSupportedVersions(),
-                     helper,
-                     kInitialFlowControlWindowForTest) {
+    : QuicDispatcher(config, crypto_config, QuicSupportedVersions(), helper) {
 }
 
 MockQuicDispatcher::~MockQuicDispatcher() {

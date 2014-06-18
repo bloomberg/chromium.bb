@@ -39,8 +39,6 @@ bool ReliableQuicStreamPeer::RstSent(ReliableQuicStream* stream) {
   return stream->rst_sent_;
 }
 
-
-
 // static
 uint32 ReliableQuicStreamPeer::SizeOfQueuedData(ReliableQuicStream* stream) {
   uint32 total = 0;
@@ -51,6 +49,12 @@ uint32 ReliableQuicStreamPeer::SizeOfQueuedData(ReliableQuicStream* stream) {
     ++it;
   }
   return total;
+}
+
+// static
+void ReliableQuicStreamPeer::SetFecPolicy(ReliableQuicStream* stream,
+                                          FecPolicy fec_policy) {
+  stream->set_fec_policy(fec_policy);
 }
 
 }  // namespace test

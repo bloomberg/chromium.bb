@@ -161,9 +161,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // the server's hostname in order to perform a handshake. This can be checked
   // with the |IsComplete| member of |CachedState|.
   //
-  // |initial_flow_control_window_bytes| is the size of the initial flow
-  // control window this client will use for new streams.
-  //
   // |now| and |rand| are used to generate the nonce and |out_params| is
   // filled with the results of the handshake that the server is expected to
   // accept. |preferred_version| is the version of the QUIC protocol that this
@@ -176,7 +173,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   QuicErrorCode FillClientHello(const QuicServerId& server_id,
                                 QuicConnectionId connection_id,
                                 const QuicVersion preferred_version,
-                                uint32 initial_flow_control_window_bytes,
                                 const CachedState* cached,
                                 QuicWallTime now,
                                 QuicRandom* rand,

@@ -310,6 +310,8 @@ class NET_EXPORT_PRIVATE QuicConfig {
   // Sets an initial flow control window size to transmit to the peer.
   void SetInitialFlowControlWindowToSend(uint32 window_bytes);
 
+  uint32 GetInitialFlowControlWindowToSend() const;
+
   bool HasReceivedInitialFlowControlWindowBytes() const;
 
   uint32 ReceivedInitialFlowControlWindowBytes() const;

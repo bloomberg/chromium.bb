@@ -212,8 +212,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                               make_scoped_ptr((QuicServerInfo*)NULL),
                               QuicServerId(kServerHostname, kServerPort,
                                            false, PRIVACY_MODE_DISABLED),
-                              DefaultQuicConfig(),
-                              kInitialFlowControlWindowForTest, &crypto_config_,
+                              DefaultQuicConfig(), &crypto_config_,
                               base::MessageLoop::current()->
                                   message_loop_proxy().get(),
                               NULL));

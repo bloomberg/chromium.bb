@@ -834,6 +834,7 @@ int QuicStreamFactory::CreateSession(
   config.SetInitialCongestionWindowToSend(
       server_id.is_https() ? kServerSecureInitialCongestionWindow
                            : kServerInecureInitialCongestionWindow);
+  config.SetInitialFlowControlWindowToSend(kInitialReceiveWindowSize);
   if (http_server_properties_) {
     const HttpServerProperties::NetworkStats* stats =
         http_server_properties_->GetServerNetworkStats(
@@ -846,7 +847,7 @@ int QuicStreamFactory::CreateSession(
   *session = new QuicClientSession(
       connection, socket.Pass(), writer.Pass(), this,
       quic_crypto_client_stream_factory_, server_info.Pass(), server_id,
-      config, kInitialReceiveWindowSize, &crypto_config_,
+      config, &crypto_config_,
       base::MessageLoop::current()->message_loop_proxy().get(),
       net_log.net_log());
   all_sessions_[*session] = server_id;  // owning pointer

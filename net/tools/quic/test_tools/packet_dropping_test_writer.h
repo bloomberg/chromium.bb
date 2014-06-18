@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "net/quic/quic_alarm.h"
+#include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_epoll_clock.h"
 #include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/test_tools/quic_test_client.h"
@@ -134,7 +135,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   scoped_ptr<QuicAlarm> write_unblocked_alarm_;
   scoped_ptr<QuicAlarm> delay_alarm_;
   scoped_ptr<Delegate> on_can_write_;
-  SimpleRandom simple_random_;
+  net::test::SimpleRandom simple_random_;
   // Stored packets delayed by fake packet delay or bandwidth restrictions.
   DelayedPacketList delayed_packets_;
   QuicByteCount cur_buffer_size_;

@@ -35,14 +35,12 @@ class MockableQuicClient : public QuicClient {
  public:
   MockableQuicClient(IPEndPoint server_address,
                      const QuicServerId& server_id,
-                     const QuicVersionVector& supported_versions,
-                     uint32 initial_flow_control_window);
+                     const QuicVersionVector& supported_versions);
 
   MockableQuicClient(IPEndPoint server_address,
                      const QuicServerId& server_id,
                      const QuicConfig& config,
-                     const QuicVersionVector& supported_versions,
-                     uint32 initial_flow_control_window);
+                     const QuicVersionVector& supported_versions);
 
   virtual ~MockableQuicClient() OVERRIDE;
   virtual QuicPacketWriter* CreateQuicPacketWriter() OVERRIDE;
@@ -72,8 +70,7 @@ class QuicTestClient : public SimpleClient,
                  const string& server_hostname,
                  bool secure,
                  const QuicConfig& config,
-                 const QuicVersionVector& supported_versions,
-                 uint32 client_initial_flow_control_receive_window);
+                 const QuicVersionVector& supported_versions);
 
   virtual ~QuicTestClient();
 
@@ -154,6 +151,10 @@ class QuicTestClient : public SimpleClient,
 
   void set_priority(QuicPriority priority) { priority_ = priority; }
 
+  // Sets client's FEC policy. This policy applies to the data stream(s), and
+  // also to the headers and crypto streams.
+  void SetFecPolicy(FecPolicy fec_policy);
+
   void WaitForWriteToFlush();
 
  protected:
@@ -189,7 +190,8 @@ class QuicTestClient : public SimpleClient,
   bool auto_reconnect_;
   // Should we buffer the response body? Defaults to true.
   bool buffer_body_;
-
+  // FEC policy for data sent by this client.
+  FecPolicy fec_policy_;
   // proof_verifier_ points to a RecordingProofVerifier that is owned by
   // client_.
   ProofVerifier* proof_verifier_;

@@ -19,8 +19,7 @@ MockQuicDispatcher::MockQuicDispatcher(
     : QuicDispatcher(config,
                      crypto_config,
                      QuicSupportedVersions(),
-                     eps,
-                     kInitialFlowControlWindowForTest) {}
+                     eps) {}
 
 MockQuicDispatcher::~MockQuicDispatcher() {}
 

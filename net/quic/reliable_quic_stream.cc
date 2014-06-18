@@ -124,6 +124,7 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
       fin_received_(false),
       rst_sent_(false),
       rst_received_(false),
+      fec_policy_(FEC_PROTECT_OPTIONAL),
       is_server_(session_->is_server()),
       flow_controller_(
           session_->connection(),
@@ -132,8 +133,8 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
           session_->config()->HasReceivedInitialFlowControlWindowBytes() ?
               session_->config()->ReceivedInitialFlowControlWindowBytes() :
               kDefaultFlowControlSendWindow,
-          session_->max_flow_control_receive_window_bytes(),
-          session_->max_flow_control_receive_window_bytes()),
+          session_->config()->GetInitialFlowControlWindowToSend(),
+          session_->config()->GetInitialFlowControlWindowToSend()),
       connection_flow_controller_(session_->flow_controller()) {
 }
 
@@ -360,9 +361,8 @@ QuicConsumedData ReliableQuicStream::WritevData(
   IOVector data;
   data.AppendIovecAtMostBytes(iov, iov_count, write_length);
 
-  // TODO(jri): Use the correct FecProtection based on FecPolicy on stream.
   QuicConsumedData consumed_data = session()->WritevData(
-      id(), data, stream_bytes_written_, fin, MAY_FEC_PROTECT,
+      id(), data, stream_bytes_written_, fin, GetFecProtection(),
       ack_notifier_delegate);
   stream_bytes_written_ += consumed_data.bytes_consumed;
 
@@ -382,6 +382,10 @@ QuicConsumedData ReliableQuicStream::WritevData(
     session_->MarkWriteBlocked(id(), EffectivePriority());
   }
   return consumed_data;
+}
+
+FecProtection ReliableQuicStream::GetFecProtection() {
+  return fec_policy_ == FEC_PROTECT_ALWAYS ? MUST_FEC_PROTECT : MAY_FEC_PROTECT;
 }
 
 void ReliableQuicStream::CloseReadSide() {

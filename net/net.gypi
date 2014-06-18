@@ -1404,6 +1404,8 @@
       'quic/congestion_control/leaky_bucket_test.cc',
       'quic/congestion_control/pacing_sender_test.cc',
       'quic/congestion_control/rtt_stats_test.cc',
+      'quic/congestion_control/send_algorithm_simulator.cc',
+      'quic/congestion_control/send_algorithm_simulator.h',
       'quic/congestion_control/tcp_cubic_sender_test.cc',
       'quic/congestion_control/tcp_loss_algorithm_test.cc',
       'quic/congestion_control/tcp_receiver_test.cc',

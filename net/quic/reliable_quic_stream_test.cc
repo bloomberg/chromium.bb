@@ -239,6 +239,78 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferData) {
   stream_->OnCanWrite();
 }
 
+TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithFecProtectAlways) {
+  Initialize(kShouldProcessData);
+
+  // Set FEC policy on stream.
+  ReliableQuicStreamPeer::SetFecPolicy(stream_.get(), FEC_PROTECT_ALWAYS);
+
+  EXPECT_FALSE(HasWriteBlockedStreams());
+  size_t length = 1 + QuicPacketCreator::StreamFramePacketOverhead(
+      connection_->version(), PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
+      PACKET_6BYTE_SEQUENCE_NUMBER, 0u, IN_FEC_GROUP);
+  QuicConnectionPeer::GetPacketCreator(connection_)->set_max_packet_length(
+      length);
+
+  // Write first data onto stream, which will cause one session write.
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MUST_FEC_PROTECT, _)).WillOnce(
+      Return(QuicConsumedData(kDataLen - 1, false)));
+  stream_->WriteOrBufferData(kData1, false, NULL);
+  EXPECT_TRUE(HasWriteBlockedStreams());
+
+  // Queue a bytes_consumed write.
+  stream_->WriteOrBufferData(kData2, false, NULL);
+
+  // Make sure we get the tail of the first write followed by the bytes_consumed
+  InSequence s;
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MUST_FEC_PROTECT, _)).
+      WillOnce(Return(QuicConsumedData(1, false)));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MUST_FEC_PROTECT, _)).
+      WillOnce(Return(QuicConsumedData(kDataLen - 2, false)));
+  stream_->OnCanWrite();
+
+  // And finally the end of the bytes_consumed.
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MUST_FEC_PROTECT, _)).
+      WillOnce(Return(QuicConsumedData(2, true)));
+  stream_->OnCanWrite();
+}
+
+TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithFecProtectOptional) {
+  Initialize(kShouldProcessData);
+
+  // Set FEC policy on stream.
+  ReliableQuicStreamPeer::SetFecPolicy(stream_.get(), FEC_PROTECT_OPTIONAL);
+
+  EXPECT_FALSE(HasWriteBlockedStreams());
+  size_t length = 1 + QuicPacketCreator::StreamFramePacketOverhead(
+      connection_->version(), PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
+      PACKET_6BYTE_SEQUENCE_NUMBER, 0u, NOT_IN_FEC_GROUP);
+  QuicConnectionPeer::GetPacketCreator(connection_)->set_max_packet_length(
+      length);
+
+  // Write first data onto stream, which will cause one session write.
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MAY_FEC_PROTECT, _)).WillOnce(
+      Return(QuicConsumedData(kDataLen - 1, false)));
+  stream_->WriteOrBufferData(kData1, false, NULL);
+  EXPECT_TRUE(HasWriteBlockedStreams());
+
+  // Queue a bytes_consumed write.
+  stream_->WriteOrBufferData(kData2, false, NULL);
+
+  // Make sure we get the tail of the first write followed by the bytes_consumed
+  InSequence s;
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MAY_FEC_PROTECT, _)).
+      WillOnce(Return(QuicConsumedData(1, false)));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MAY_FEC_PROTECT, _)).
+      WillOnce(Return(QuicConsumedData(kDataLen - 2, false)));
+  stream_->OnCanWrite();
+
+  // And finally the end of the bytes_consumed.
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, MAY_FEC_PROTECT, _)).
+      WillOnce(Return(QuicConsumedData(2, true)));
+  stream_->OnCanWrite();
+}
+
 TEST_F(ReliableQuicStreamTest, ConnectionCloseAfterStreamClose) {
   Initialize(kShouldProcessData);
 

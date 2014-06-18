@@ -14,7 +14,6 @@ namespace net {
 class NET_EXPORT_PRIVATE QuicClientSessionBase : public QuicSession {
  public:
   QuicClientSessionBase(QuicConnection* connection,
-                        uint32 max_flow_control_receive_window_bytes,
                         const QuicConfig& config);
 
   virtual ~QuicClientSessionBase();

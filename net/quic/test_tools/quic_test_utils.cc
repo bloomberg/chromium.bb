@@ -4,6 +4,7 @@
 
 #include "net/quic/test_tools/quic_test_utils.h"
 
+#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/crypto/crypto_framer.h"
@@ -80,6 +81,14 @@ SerializedPacket BuildUnsizedDataPacket(QuicFramer* framer,
     packet_size += frame_size;
   }
   return framer->BuildDataPacket(header, frames, packet_size);
+}
+
+uint64 SimpleRandom::RandUint64() {
+  unsigned char hash[base::kSHA1Length];
+  base::SHA1HashBytes(reinterpret_cast<unsigned char*>(&seed_), sizeof(seed_),
+                      hash);
+  memcpy(&seed_, hash, sizeof(seed_));
+  return seed_;
 }
 
 MockFramerVisitor::MockFramerVisitor() {
@@ -292,8 +301,7 @@ bool PacketSavingConnection::SendOrQueuePacket(
 }
 
 MockSession::MockSession(QuicConnection* connection)
-    : QuicSession(connection, kInitialFlowControlWindowForTest,
-                  DefaultQuicConfig()) {
+    : QuicSession(connection, DefaultQuicConfig()) {
   ON_CALL(*this, WritevData(_, _, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
@@ -302,7 +310,7 @@ MockSession::~MockSession() {
 }
 
 TestSession::TestSession(QuicConnection* connection, const QuicConfig& config)
-    : QuicSession(connection, kInitialFlowControlWindowForTest, config),
+    : QuicSession(connection, config),
       crypto_stream_(NULL) {}
 
 TestSession::~TestSession() {}
@@ -317,7 +325,7 @@ QuicCryptoStream* TestSession::GetCryptoStream() {
 
 TestClientSession::TestClientSession(QuicConnection* connection,
                                      const QuicConfig& config)
-    : QuicClientSessionBase(connection, kInitialFlowControlWindowForTest,
+    : QuicClientSessionBase(connection,
                             config),
       crypto_stream_(NULL) {
     EXPECT_CALL(*this, OnProofValid(_)).Times(AnyNumber());
@@ -562,22 +570,23 @@ size_t GetPacketLengthForOneStream(
           sequence_number_length, 0u, is_in_fec_group);
 }
 
-TestEntropyCalculator::TestEntropyCalculator() { }
+TestEntropyCalculator::TestEntropyCalculator() {}
 
-TestEntropyCalculator::~TestEntropyCalculator() { }
+TestEntropyCalculator::~TestEntropyCalculator() {}
 
 QuicPacketEntropyHash TestEntropyCalculator::EntropyHash(
     QuicPacketSequenceNumber sequence_number) const {
   return 1u;
 }
 
-MockEntropyCalculator::MockEntropyCalculator() { }
+MockEntropyCalculator::MockEntropyCalculator() {}
 
-MockEntropyCalculator::~MockEntropyCalculator() { }
+MockEntropyCalculator::~MockEntropyCalculator() {}
 
 QuicConfig DefaultQuicConfig() {
   QuicConfig config;
   config.SetDefaults();
+  config.SetInitialFlowControlWindowToSend(kInitialFlowControlWindowForTest);
   return config;
 }
 

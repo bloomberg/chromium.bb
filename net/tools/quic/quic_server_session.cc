@@ -14,9 +14,8 @@ namespace tools {
 
 QuicServerSession::QuicServerSession(const QuicConfig& config,
                                      QuicConnection* connection,
-                                     uint32 max_flow_control_window_bytes,
                                      QuicServerSessionVisitor* visitor)
-    : QuicSession(connection, max_flow_control_window_bytes, config),
+    : QuicSession(connection, config),
       visitor_(visitor) {}
 
 QuicServerSession::~QuicServerSession() {}

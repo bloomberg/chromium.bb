@@ -10,25 +10,21 @@ namespace net {
 namespace tools {
 namespace test {
 
-ServerThread::ServerThread(IPEndPoint address,
-                           const QuicConfig& config,
-                           const QuicVersionVector& supported_versions,
-                           bool strike_register_no_startup_period,
-                           uint32 server_initial_flow_control_receive_window)
+ServerThread::ServerThread(QuicServer* server,
+                           IPEndPoint address,
+                           bool strike_register_no_startup_period)
     : SimpleThread("server_thread"),
       confirmed_(true, false),
       pause_(true, false),
       paused_(true, false),
       resume_(true, false),
       quit_(true, false),
-      server_(config,
-              supported_versions,
-              server_initial_flow_control_receive_window),
+      server_(server),
       address_(address),
       port_(0),
       initialized_(false) {
   if (strike_register_no_startup_period) {
-    server_.SetStrikeRegisterNoStartupPeriod();
+    server_->SetStrikeRegisterNoStartupPeriod();
   }
 }
 
@@ -39,10 +35,10 @@ void ServerThread::Initialize() {
     return;
   }
 
-  server_.Listen(address_);
+  server_->Listen(address_);
 
   port_lock_.Acquire();
-  port_ = server_.port();
+  port_ = server_->port();
   port_lock_.Release();
 
   initialized_ = true;
@@ -58,11 +54,11 @@ void ServerThread::Run() {
       paused_.Signal();
       resume_.Wait();
     }
-    server_.WaitForEvents();
+    server_->WaitForEvents();
     MaybeNotifyOfHandshakeConfirmation();
   }
 
-  server_.Shutdown();
+  server_->Shutdown();
 }
 
 int ServerThread::GetPort() {

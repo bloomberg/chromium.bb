@@ -537,11 +537,21 @@ uint32 QuicConfig::ReceivedInitialRoundTripTimeUs() const {
 }
 
 void QuicConfig::SetInitialFlowControlWindowToSend(uint32 window_bytes) {
+  if (window_bytes < kDefaultFlowControlSendWindow) {
+    LOG(DFATAL) << "Initial flow control receive window (" << window_bytes
+                << ") cannot be set lower than default ("
+                << kDefaultFlowControlSendWindow << ").";
+    window_bytes = kDefaultFlowControlSendWindow;
+  }
   initial_flow_control_window_bytes_.SetSendValue(window_bytes);
 }
 
+uint32 QuicConfig::GetInitialFlowControlWindowToSend() const {
+  return initial_flow_control_window_bytes_.GetSendValue();
+}
+
 bool QuicConfig::HasReceivedInitialFlowControlWindowBytes() const {
-  return initial_flow_control_window_bytes_.HasReceivedValue();;
+  return initial_flow_control_window_bytes_.HasReceivedValue();
 }
 
 uint32 QuicConfig::ReceivedInitialFlowControlWindowBytes() const {
@@ -573,6 +583,8 @@ void QuicConfig::SetDefaults() {
                                   kDefaultMaxStreamsPerConnection);
   max_time_before_crypto_handshake_ = QuicTime::Delta::FromSeconds(
       kDefaultMaxTimeForCryptoHandshakeSecs);
+
+  SetInitialFlowControlWindowToSend(kDefaultFlowControlSendWindow);
 }
 
 void QuicConfig::EnablePacing(bool enable_pacing) {

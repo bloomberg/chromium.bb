@@ -19,7 +19,7 @@ namespace test {
 class WriteUnblockedAlarm : public QuicAlarm::Delegate {
  public:
   explicit WriteUnblockedAlarm(PacketDroppingTestWriter* writer)
-      : writer_(writer) { }
+      : writer_(writer) {}
 
   virtual QuicTime OnAlarm() OVERRIDE {
     DVLOG(1) << "Unblocking socket.";
@@ -36,7 +36,7 @@ class WriteUnblockedAlarm : public QuicAlarm::Delegate {
 class DelayAlarm : public QuicAlarm::Delegate {
  public:
   explicit DelayAlarm(PacketDroppingTestWriter* writer)
-      : writer_(writer) { }
+      : writer_(writer) {}
 
   virtual QuicTime OnAlarm() OVERRIDE {
     return writer_->ReleaseOldPackets();

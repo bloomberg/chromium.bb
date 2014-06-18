@@ -79,12 +79,16 @@ int main(int argc, char *argv[]) {
 
   net::IPAddressNumber addr;
   CHECK(net::ParseIPLiteralToNumber(FLAGS_address, &addr));
+
+  net::QuicConfig config;
+  config.SetInitialFlowControlWindowToSend(FLAGS_initial_flow_control_window);
+
   // TODO(rjshade): Set version on command line.
   net::tools::QuicClient client(
       net::IPEndPoint(addr, FLAGS_port),
       net::QuicServerId(FLAGS_hostname, FLAGS_port, FLAGS_secure,
                         net::PRIVACY_MODE_DISABLED),
-      net::QuicSupportedVersions(), true, FLAGS_initial_flow_control_window);
+      net::QuicSupportedVersions(), true, config);
 
   client.Initialize();
 

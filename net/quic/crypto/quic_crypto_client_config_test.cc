@@ -110,7 +110,6 @@ TEST(QuicCryptoClientConfigTest, FillClientHello) {
   QuicCryptoClientConfig config;
   QuicCryptoNegotiatedParameters params;
   QuicConnectionId kConnectionId = 1234;
-  uint32 kInitialFlowControlWindow = 5678;
   string error_details;
   MockRandom rand;
   CryptoHandshakeMessage chlo;
@@ -118,7 +117,6 @@ TEST(QuicCryptoClientConfigTest, FillClientHello) {
   config.FillClientHello(server_id,
                          kConnectionId,
                          QuicVersionMax(),
-                         kInitialFlowControlWindow,
                          &state,
                          QuicWallTime::Zero(),
                          &rand,
@@ -131,10 +129,6 @@ TEST(QuicCryptoClientConfigTest, FillClientHello) {
   QuicTag cver;
   EXPECT_EQ(QUIC_NO_ERROR, chlo.GetUint32(kVER, &cver));
   EXPECT_EQ(QuicVersionToQuicTag(QuicVersionMax()), cver);
-
-  QuicTag ifcw;
-  EXPECT_EQ(QUIC_NO_ERROR, chlo.GetUint32(kIFCW, &ifcw));
-  EXPECT_EQ(kInitialFlowControlWindow, ifcw);
 }
 
 TEST(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {

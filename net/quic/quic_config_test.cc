@@ -12,6 +12,7 @@
 #include "net/quic/quic_time.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
@@ -32,6 +33,7 @@ class QuicConfigTest : public ::testing::Test {
 TEST_F(QuicConfigTest, ToHandshakeMessage) {
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_pacing, false);
   config_.SetDefaults();
+  config_.SetInitialFlowControlWindowToSend(kInitialFlowControlWindowForTest);
   config_.set_idle_connection_state_lifetime(QuicTime::Delta::FromSeconds(5),
                                              QuicTime::Delta::FromSeconds(2));
   config_.set_max_streams_per_connection(4, 2);
@@ -46,6 +48,10 @@ TEST_F(QuicConfigTest, ToHandshakeMessage) {
   error = msg.GetUint32(kMSPC, &value);
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_EQ(4u, value);
+
+  error = msg.GetUint32(kIFCW, &value);
+  EXPECT_EQ(QUIC_NO_ERROR, error);
+  EXPECT_EQ(kInitialFlowControlWindowForTest, value);
 
   const QuicTag* out;
   size_t out_len;
@@ -82,6 +88,8 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
       2 * kDefaultMaxStreamsPerConnection, kDefaultMaxStreamsPerConnection);
   client_config.SetInitialRoundTripTimeUsToSend(
       10 * base::Time::kMicrosecondsPerMillisecond);
+  client_config.SetInitialFlowControlWindowToSend(
+      2 * kInitialFlowControlWindowForTest);
   QuicTagVector copt;
   copt.push_back(kTBBR);
   client_config.SetCongestionOptionsToSend(copt);
@@ -104,6 +112,8 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   EXPECT_TRUE(config_.HasReceivedCongestionOptions());
   EXPECT_EQ(1u, config_.ReceivedCongestionOptions().size());
   EXPECT_EQ(config_.ReceivedCongestionOptions()[0], kTBBR);
+  EXPECT_EQ(config_.ReceivedInitialFlowControlWindowBytes(),
+            2 * kInitialFlowControlWindowForTest);
 }
 
 TEST_F(QuicConfigTest, ProcessServerHello) {
@@ -120,6 +130,8 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   server_config.SetInitialCongestionWindowToSend(kDefaultInitialWindow / 2);
   server_config.SetInitialRoundTripTimeUsToSend(
       10 * base::Time::kMicrosecondsPerMillisecond);
+  server_config.SetInitialFlowControlWindowToSend(
+      2 * kInitialFlowControlWindowForTest);
   CryptoHandshakeMessage msg;
   server_config.ToHandshakeMessage(&msg);
   string error_details;
@@ -138,6 +150,8 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   EXPECT_EQ(10 * base::Time::kMicrosecondsPerMillisecond,
             config_.ReceivedInitialRoundTripTimeUs());
   EXPECT_FALSE(config_.HasReceivedLossDetection());
+  EXPECT_EQ(config_.ReceivedInitialFlowControlWindowBytes(),
+            2 * kInitialFlowControlWindowForTest);
 }
 
 TEST_F(QuicConfigTest, MissingOptionalValuesInCHLO) {
@@ -241,6 +255,18 @@ TEST_F(QuicConfigTest, NoOverLapInCGST) {
       config_.ProcessPeerHello(msg, CLIENT, &error_details);
   DVLOG(1) << QuicUtils::ErrorToString(error);
   EXPECT_EQ(QUIC_CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP, error);
+}
+
+TEST_F(QuicConfigTest, InvalidFlowControlWindow) {
+  // QuicConfig should not accept an invalid flow control window to send to the
+  // peer: the receive window must be at least the default of 16 Kb.
+  QuicConfig config;
+  const uint64 kInvalidWindow = kDefaultFlowControlSendWindow - 1;
+  EXPECT_DFATAL(config.SetInitialFlowControlWindowToSend(kInvalidWindow),
+                "Initial flow control receive window");
+
+  EXPECT_EQ(kDefaultFlowControlSendWindow,
+            config.GetInitialFlowControlWindowToSend());
 }
 
 }  // namespace

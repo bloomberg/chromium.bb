@@ -18,7 +18,7 @@ namespace net {
 // ChannelID key.
 class NET_EXPORT_PRIVATE ChannelIDKey {
  public:
-  virtual ~ChannelIDKey() { }
+  virtual ~ChannelIDKey() {}
 
   // Sign signs |signed_data| using the ChannelID private key and puts the
   // signature into |out_signature|. It returns true on success.

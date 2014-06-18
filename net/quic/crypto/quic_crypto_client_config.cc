@@ -346,7 +346,6 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     const QuicServerId& server_id,
     QuicConnectionId connection_id,
     const QuicVersion preferred_version,
-    uint32 initial_flow_control_window_bytes,
     const CachedState* cached,
     QuicWallTime now,
     QuicRandom* rand,
@@ -358,9 +357,6 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
 
   FillInchoateClientHello(server_id, preferred_version, cached,
                           out_params, out);
-
-  // Set initial receive window for flow control.
-  out->SetValue(kIFCW, initial_flow_control_window_bytes);
 
   const CryptoHandshakeMessage* scfg = cached->GetServerConfig();
   if (!scfg) {

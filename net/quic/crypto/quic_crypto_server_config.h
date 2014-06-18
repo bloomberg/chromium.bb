@@ -204,7 +204,6 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       IPEndPoint client_address,
       QuicVersion version,
       const QuicVersionVector& supported_versions,
-      uint32 initial_flow_control_window_bytes,
       const QuicClock* clock,
       QuicRandom* rand,
       QuicCryptoNegotiatedParameters* params,

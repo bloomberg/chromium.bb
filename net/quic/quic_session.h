@@ -53,9 +53,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
     HANDSHAKE_CONFIRMED,
   };
 
-  QuicSession(QuicConnection* connection,
-              uint32 max_flow_control_receive_window_bytes,
-              const QuicConfig& config);
+  QuicSession(QuicConnection* connection, const QuicConfig& config);
 
   virtual ~QuicSession();
 
@@ -205,10 +203,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   bool is_server() const { return connection_->is_server(); }
 
-  uint32 max_flow_control_receive_window_bytes() {
-    return max_flow_control_receive_window_bytes_;
-  }
-
   QuicFlowController* flow_controller() { return flow_controller_.get(); }
 
  protected:
@@ -273,6 +267,14 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   void UpdateFlowControlOnFinalReceivedByteOffset(
       QuicStreamId id, QuicStreamOffset final_byte_offset);
 
+  // Called in OnConfigNegotiated when we receive a new stream level flow
+  // control window in a negotiated config. Closes the connection if invalid.
+  void OnNewStreamFlowControlWindow(uint32 new_window);
+
+  // Called in OnConfigNegotiated when we receive a new session level flow
+  // control window in a negotiated config. Closes the connection if invalid.
+  void OnNewSessionFlowControlWindow(uint32 new_window);
+
   // Keep track of highest received byte offset of locally closed streams, while
   // waiting for a definitive final highest offset from the peer.
   std::map<QuicStreamId, QuicStreamOffset>
@@ -319,9 +321,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // Used for session level flow control.
   scoped_ptr<QuicFlowController> flow_controller_;
-
-  // Initial flow control receive window size for new streams.
-  uint32 max_flow_control_receive_window_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };

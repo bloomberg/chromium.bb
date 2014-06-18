@@ -39,7 +39,6 @@ class ToolsQuicClientSessionTest
         QuicServerId(kServerHostname, kPort, false, PRIVACY_MODE_DISABLED),
         DefaultQuicConfig(),
         connection_,
-        kInitialFlowControlWindowForTest,
         &crypto_config_));
     session_->config()->SetDefaults();
   }

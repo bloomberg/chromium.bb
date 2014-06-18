@@ -157,8 +157,7 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
 QuicDispatcher::QuicDispatcher(const QuicConfig& config,
                                const QuicCryptoServerConfig& crypto_config,
                                const QuicVersionVector& supported_versions,
-                               QuicConnectionHelperInterface* helper,
-                               uint32 initial_flow_control_window_bytes)
+                               QuicConnectionHelperInterface* helper)
     : config_(config),
       crypto_config_(crypto_config),
       helper_(helper),
@@ -169,8 +168,7 @@ QuicDispatcher::QuicDispatcher(const QuicConfig& config,
       supported_versions_no_connection_flow_control_(supported_versions),
       current_packet_(NULL),
       framer_(supported_versions, /*unused*/ QuicTime::Zero(), true),
-      framer_visitor_(new QuicFramerVisitor(this)),
-      initial_flow_control_window_bytes_(initial_flow_control_window_bytes) {
+      framer_visitor_(new QuicFramerVisitor(this)) {
   framer_.set_visitor(framer_visitor_.get());
 }
 
@@ -371,7 +369,6 @@ QuicSession* QuicDispatcher::CreateQuicSession(
   QuicServerSession* session = new QuicServerSession(
       config_,
       CreateQuicConnection(connection_id, server_address, client_address),
-      initial_flow_control_window_bytes_,
       this);
   session->InitializeSession(crypto_config_);
   return session;

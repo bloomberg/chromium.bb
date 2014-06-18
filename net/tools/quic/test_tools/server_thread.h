@@ -17,11 +17,9 @@ namespace test {
 // Simple wrapper class to run server in a thread.
 class ServerThread : public base::SimpleThread {
  public:
-  ServerThread(IPEndPoint address,
-               const QuicConfig& config,
-               const QuicVersionVector& supported_versions,
-               bool strike_register_no_startup_period,
-               uint32 server_initial_flow_control_receive_window);
+  ServerThread(QuicServer* server,
+               IPEndPoint address,
+               bool strike_register_no_startup_period);
 
   virtual ~ServerThread();
 
@@ -50,7 +48,7 @@ class ServerThread : public base::SimpleThread {
   // Returns the underlying server.  Care must be taken to avoid data races
   // when accessing the server.  It is always safe to access the server
   // after calling Pause() and before calling Resume().
-  QuicServer* server() { return &server_; }
+  QuicServer* server() { return server_.get(); }
 
   // Returns the port that the server is listening on.
   int GetPort();
@@ -65,7 +63,7 @@ class ServerThread : public base::SimpleThread {
   base::WaitableEvent resume_;     // Notified when the server should resume.
   base::WaitableEvent quit_;       // Notified when the server should quit.
 
-  tools::QuicServer server_;
+  scoped_ptr<QuicServer> server_;
   IPEndPoint address_;
   base::Lock port_lock_;
   int port_;

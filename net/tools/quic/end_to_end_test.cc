@@ -24,6 +24,7 @@
 #include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
+#include "net/quic/test_tools/quic_flow_controller_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
@@ -50,8 +51,10 @@ using base::WaitableEvent;
 using net::EpollServer;
 using net::test::GenerateBody;
 using net::test::QuicConnectionPeer;
+using net::test::QuicFlowControllerPeer;
 using net::test::QuicSessionPeer;
 using net::test::ReliableQuicStreamPeer;
+using net::test::ValueRestore;
 using net::test::kClientDataStreamId1;
 using net::tools::test::PacketDroppingTestWriter;
 using net::tools::test::QuicDispatcherPeer;
@@ -178,10 +181,10 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_config_.SetDefaults();
 
     // Use different flow control windows for client/server.
-    client_initial_flow_control_receive_window_ =
-        2 * kInitialFlowControlWindowForTest;
-    server_initial_flow_control_receive_window_ =
-        3 * kInitialFlowControlWindowForTest;
+    client_config_.SetInitialFlowControlWindowToSend(
+        2 * kInitialFlowControlWindowForTest);
+    server_config_.SetInitialFlowControlWindowToSend(
+        3 * kInitialFlowControlWindowForTest);
 
     QuicInMemoryCachePeer::ResetForTests();
     AddToCache("GET", "https://www.google.com/foo",
@@ -202,8 +205,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
         server_hostname_,
         false,  // not secure
         client_config_,
-        client_supported_versions_,
-        client_initial_flow_control_receive_window_);
+        client_supported_versions_);
     client->UseWriter(writer);
     client->Connect();
     return client;
@@ -212,13 +214,13 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   void set_client_initial_flow_control_receive_window(uint32 window) {
     CHECK(client_.get() == NULL);
     DVLOG(1) << "Setting client initial flow control window: " << window;
-    client_initial_flow_control_receive_window_ = window;
+    client_config_.SetInitialFlowControlWindowToSend(window);
   }
 
   void set_server_initial_flow_control_receive_window(uint32 window) {
     CHECK(server_thread_.get() == NULL);
     DVLOG(1) << "Setting server initial flow control window: " << window;
-    server_initial_flow_control_receive_window_ = window;
+    server_config_.SetInitialFlowControlWindowToSend(window);
   }
 
   bool Initialize() {
@@ -248,11 +250,10 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   void StartServer() {
     server_thread_.reset(
-        new ServerThread(server_address_,
-                         server_config_,
-                         server_supported_versions_,
-                         strike_register_no_startup_period_,
-                         server_initial_flow_control_receive_window_));
+        new ServerThread(
+            new QuicServer(server_config_, server_supported_versions_),
+            server_address_,
+            strike_register_no_startup_period_));
     server_thread_->Initialize();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());
@@ -351,8 +352,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   QuicVersionVector server_supported_versions_;
   QuicVersion negotiated_version_;
   bool strike_register_no_startup_period_;
-  uint32 client_initial_flow_control_receive_window_;
-  uint32 server_initial_flow_control_receive_window_;
 };
 
 // Run all end to end tests with all supported versions.
@@ -637,9 +636,6 @@ TEST_P(EndToEndTest, DISABLED_LargePostZeroRTTFailure) {
 }
 
 TEST_P(EndToEndTest, LargePostFEC) {
-  // TODO(jri): Set FecPolicy to always protect on client_->stream_.
-  // This test currently does not do any FEC protection.
-
   // Connect without packet loss to avoid issues with losing handshake packets,
   // and then up the packet loss rate (b/10126687).
   ASSERT_TRUE(Initialize());
@@ -651,7 +647,9 @@ TEST_P(EndToEndTest, LargePostFEC) {
   // Enable FEC protection.
   QuicPacketCreator* creator = QuicConnectionPeer::GetPacketCreator(
       client_->client()->session()->connection());
-  creator->set_max_packets_per_fec_group(6);
+  creator->set_max_packets_per_fec_group(3);
+  // Set FecPolicy to always protect data on all streams.
+  client_->SetFecPolicy(FEC_PROTECT_ALWAYS);
 
   string body;
   GenerateBody(&body, 10240);
@@ -687,6 +685,49 @@ TEST_P(EndToEndTest, DISABLED_LargePostSmallBandwidthLargeBuffer) {
   // This connection will not drop packets, because the buffer size is larger
   // than the default receive window.
   VerifyCleanConnection(false);
+}
+
+TEST_P(EndToEndTest, DoNotSetResumeWriteAlarmIfConnectionFlowControlBlocked) {
+  // Regression test for b/14677858.
+  // Test that the resume write alarm is not set in QuicConnection::OnCanWrite
+  // if currently connection level flow control blocked. If set, this results in
+  // an infinite loop in the EpollServer, as the alarm fires and is immediately
+  // rescheduled.
+  ASSERT_TRUE(Initialize());
+  if (negotiated_version_ < QUIC_VERSION_19) {
+    return;
+  }
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  // Ensure both stream and connection level are flow control blocked by setting
+  // the send window offset to 0.
+  const uint64 kFlowControlWindow =
+      server_config_.GetInitialFlowControlWindowToSend();
+  QuicSpdyClientStream* stream = client_->GetOrCreateStream();
+  QuicSession* session = client_->client()->session();
+  QuicFlowControllerPeer::SetSendWindowOffset(stream->flow_controller(), 0);
+  QuicFlowControllerPeer::SetSendWindowOffset(session->flow_controller(), 0);
+  EXPECT_TRUE(stream->flow_controller()->IsBlocked());
+  EXPECT_TRUE(session->flow_controller()->IsBlocked());
+
+  // Make sure that the stream has data pending so that it will be marked as
+  // write blocked when it receives a stream level WINDOW_UPDATE.
+  stream->SendBody("hello", false);
+
+  // The stream now attempts to write, fails because it is still connection
+  // level flow control blocked, and is added to the write blocked list.
+  QuicWindowUpdateFrame window_update(stream->id(), 2 * kFlowControlWindow);
+  stream->OnWindowUpdateFrame(window_update);
+
+  // Prior to fixing b/14677858 this call would result in an infinite loop in
+  // Chromium. As a proxy for detecting this, we now check whether the
+  // resume_writes_alarm is set after OnCanWrite. It should not be, as the
+  // connection is still flow control blocked.
+  session->connection()->OnCanWrite();
+
+  QuicAlarm* resume_writes_alarm =
+      QuicConnectionPeer::GetResumeWritesAlarm(session->connection());
+  EXPECT_FALSE(resume_writes_alarm->IsSet());
 }
 
 TEST_P(EndToEndTest, InvalidStream) {
@@ -745,6 +786,30 @@ TEST_P(EndToEndTest, Timeout) {
   while (client_->client()->connected()) {
     client_->client()->WaitForEvents();
   }
+}
+
+TEST_P(EndToEndTest, NegotiateMaxOpenStreams) {
+  // Negotiate 1 max open stream.
+  client_config_.set_max_streams_per_connection(1, 1);
+  ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  // Make the client misbehave after negotiation.
+  QuicSessionPeer::SetMaxOpenStreams(client_->client()->session(), 10);
+
+  HTTPMessage request(HttpConstants::HTTP_1_1,
+                      HttpConstants::POST, "/foo");
+  request.AddHeader("content-length", "3");
+  request.set_has_complete_message(false);
+
+  // Open two simultaneous streams.
+  client_->SendMessage(request);
+  client_->SendMessage(request);
+  client_->WaitForResponse();
+
+  EXPECT_FALSE(client_->connected());
+  EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
+  EXPECT_EQ(QUIC_TOO_MANY_OPEN_STREAMS, client_->connection_error());
 }
 
 TEST_P(EndToEndTest, LimitMaxOpenStreams) {
@@ -823,6 +888,7 @@ TEST_P(EndToEndTest, MaxInitialRTT) {
   client_->client()->WaitForCryptoHandshakeConfirmed();
   server_thread_->WaitForCryptoHandshakeConfirmed();
 
+  // Pause the server so we can access the server's internals without races.
   server_thread_->Pause();
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
