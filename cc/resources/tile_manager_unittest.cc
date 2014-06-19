@@ -418,51 +418,6 @@ TEST_P(TileManagerTest, TotalOOMMemoryToNewContent) {
   EXPECT_EQ(10, AssignedMemoryCount(pending_tree_tiles));
 }
 
-TEST_P(TileManagerTest, RespectMemoryLimit) {
-  if (UsingResourceLimit())
-    return;
-
-  Initialize(5, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
-
-  // We use double the tiles since the hard-limit is double.
-  TileVector large_tiles =
-      CreateTiles(10, TilePriorityForNowBin(), TilePriority());
-
-  size_t memory_required_bytes;
-  size_t memory_nice_to_have_bytes;
-  size_t memory_allocated_bytes;
-  size_t memory_used_bytes;
-
-  tile_manager()->AssignMemoryToTiles(global_state_);
-  tile_manager()->GetMemoryStats(&memory_required_bytes,
-                                 &memory_nice_to_have_bytes,
-                                 &memory_allocated_bytes,
-                                 &memory_used_bytes);
-  // Allocated bytes should never be more than the memory limit.
-  EXPECT_LE(memory_allocated_bytes, global_state_.hard_memory_limit_in_bytes);
-
-  // Finish raster of large tiles.
-  tile_manager()->UpdateVisibleTiles();
-
-  // Remove all large tiles. This will leave the memory currently
-  // used by these tiles as unused when AssignMemoryToTiles() is called.
-  large_tiles.clear();
-
-  // Create a new set of tiles using a different size. These tiles
-  // can use the memory currently assigned to the large tiles but
-  // they can't use the same resources as the size doesn't match.
-  TileVector small_tiles = CreateTilesWithSize(
-      10, TilePriorityForNowBin(), TilePriority(), gfx::Size(128, 128));
-
-  tile_manager()->AssignMemoryToTiles(global_state_);
-  tile_manager()->GetMemoryStats(&memory_required_bytes,
-                                 &memory_nice_to_have_bytes,
-                                 &memory_allocated_bytes,
-                                 &memory_used_bytes);
-  // Allocated bytes should never be more than the memory limit.
-  EXPECT_LE(memory_allocated_bytes, global_state_.hard_memory_limit_in_bytes);
-}
-
 // If true, the max tile limit should be applied as bytes; if false,
 // as num_resources_limit.
 INSTANTIATE_TEST_CASE_P(TileManagerTests,

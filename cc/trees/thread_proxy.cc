@@ -434,25 +434,6 @@ bool ThreadProxy::ReduceContentsTextureMemoryOnImplThread(size_t limit_bytes,
   return true;
 }
 
-void ThreadProxy::SendManagedMemoryStats() {
-  DCHECK(IsImplThread());
-  if (!impl().layer_tree_host_impl)
-    return;
-  if (!impl().contents_texture_manager)
-    return;
-
-  // If we are using impl-side painting, then SendManagedMemoryStats is called
-  // directly after the tile manager's manage function, and doesn't need to
-  // interact with main thread's layer tree.
-  if (impl().layer_tree_host_impl->settings().impl_side_painting)
-    return;
-
-  impl().layer_tree_host_impl->SendManagedMemoryStats(
-      impl().contents_texture_manager->MemoryVisibleBytes(),
-      impl().contents_texture_manager->MemoryVisibleAndNearbyBytes(),
-      impl().contents_texture_manager->MemoryUseBytes());
-}
-
 bool ThreadProxy::IsInsideDraw() { return impl().inside_draw; }
 
 void ThreadProxy::SetNeedsRedraw(const gfx::Rect& damage_rect) {

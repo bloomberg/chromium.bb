@@ -441,15 +441,6 @@ void CommandBufferProxyImpl::SetSurfaceVisible(bool visible) {
   Send(new GpuCommandBufferMsg_SetSurfaceVisible(route_id_, visible));
 }
 
-void CommandBufferProxyImpl::SendManagedMemoryStats(
-    const gpu::ManagedMemoryStats& stats) {
-  if (last_state_.error != gpu::error::kNoError)
-    return;
-
-  Send(new GpuCommandBufferMsg_SendClientManagedMemoryStats(route_id_,
-                                                            stats));
-}
-
 bool CommandBufferProxyImpl::ProduceFrontBuffer(const gpu::Mailbox& mailbox) {
   if (last_state_.error != gpu::error::kNoError)
     return false;

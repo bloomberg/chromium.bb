@@ -187,11 +187,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
   scoped_ptr<base::Value> BasicStateAsValue() const;
   scoped_ptr<base::Value> AllTilesAsValue() const;
-  void GetMemoryStats(size_t* memory_required_bytes,
-                      size_t* memory_nice_to_have_bytes,
-                      size_t* memory_allocated_bytes,
-                      size_t* memory_used_bytes) const;
-
   const MemoryHistory::Entry& memory_stats_from_last_assign() const {
     return memory_stats_from_last_assign_;
   }
@@ -288,7 +283,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
   scoped_refptr<ImageDecodeTask> CreateImageDecodeTask(Tile* tile,
                                                        SkPixelRef* pixel_ref);
   scoped_refptr<RasterTask> CreateRasterTask(Tile* tile);
-  scoped_ptr<base::Value> GetMemoryRequirementsAsValue() const;
   void UpdatePrioritizedTileSetIfNeeded();
 
   bool IsReadyToActivate() const;
@@ -308,9 +302,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
   bool all_tiles_that_need_to_be_rasterized_have_memory_;
   bool all_tiles_required_for_activation_have_memory_;
-
-  size_t memory_required_bytes_;
-  size_t memory_nice_to_have_bytes_;
 
   size_t bytes_releasable_;
   size_t resources_releasable_;

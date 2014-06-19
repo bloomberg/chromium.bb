@@ -48,7 +48,6 @@ class CONTENT_EXPORT GpuMemoryManagerClientState {
  public:
   ~GpuMemoryManagerClientState();
   void SetVisible(bool visible);
-  void SetManagedMemoryStats(const gpu::ManagedMemoryStats& stats);
 
  private:
   friend class GpuMemoryManager;

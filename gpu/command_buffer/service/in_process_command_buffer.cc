@@ -697,10 +697,6 @@ void InProcessCommandBuffer::SignalQuery(unsigned query,
 
 void InProcessCommandBuffer::SetSurfaceVisible(bool visible) {}
 
-void InProcessCommandBuffer::SendManagedMemoryStats(
-    const gpu::ManagedMemoryStats& stats) {
-}
-
 void InProcessCommandBuffer::Echo(const base::Closure& callback) {
   QueueTask(WrapCallback(callback));
 }

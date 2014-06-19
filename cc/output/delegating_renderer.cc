@@ -146,22 +146,4 @@ void DelegatingRenderer::DidChangeVisibility() {
     context_provider->ContextSupport()->SetSurfaceVisible(visible());
 }
 
-void DelegatingRenderer::SendManagedMemoryStats(size_t bytes_visible,
-                                                size_t bytes_visible_and_nearby,
-                                                size_t bytes_allocated) {
-  ContextProvider* context_provider = output_surface_->context_provider();
-  if (!context_provider) {
-    // In the software path each child process manages its memory separately,
-    // so memory stats don't have to be sent anywhere.
-    return;
-  }
-  gpu::ManagedMemoryStats stats;
-  stats.bytes_required = bytes_visible;
-  stats.bytes_nice_to_have = bytes_visible_and_nearby;
-  stats.bytes_allocated = bytes_allocated;
-  stats.backbuffer_requested = false;
-
-  context_provider->ContextSupport()->SendManagedMemoryStats(stats);
-}
-
 }  // namespace cc

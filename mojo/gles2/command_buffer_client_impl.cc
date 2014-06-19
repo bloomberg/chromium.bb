@@ -204,12 +204,6 @@ void CommandBufferClientImpl::SetSurfaceVisible(bool visible) {
   NOTIMPLEMENTED();
 }
 
-void CommandBufferClientImpl::SendManagedMemoryStats(
-    const gpu::ManagedMemoryStats& stats) {
-  // TODO(piman)
-  NOTIMPLEMENTED();
-}
-
 void CommandBufferClientImpl::Echo(const base::Closure& callback) {
   command_buffer_->Echo(callback);
 }

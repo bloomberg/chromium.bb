@@ -71,8 +71,6 @@ class CommandBufferClientImpl : public CommandBufferClient,
   virtual void SignalQuery(uint32 query,
                            const base::Closure& callback) OVERRIDE;
   virtual void SetSurfaceVisible(bool visible) OVERRIDE;
-  virtual void SendManagedMemoryStats(const gpu::ManagedMemoryStats& stats)
-      OVERRIDE;
   virtual void Echo(const base::Closure& callback) OVERRIDE;
   virtual uint32 CreateStreamTexture(uint32 texture_id) OVERRIDE;
 

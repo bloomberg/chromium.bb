@@ -39,10 +39,6 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
 
   virtual bool IsContextLost() OVERRIDE;
 
-  virtual void SendManagedMemoryStats(size_t bytes_visible,
-                                      size_t bytes_visible_and_nearby,
-                                      size_t bytes_allocated) OVERRIDE;
-
  private:
   DelegatingRenderer(RendererClient* client,
                      const LayerTreeSettings* settings,

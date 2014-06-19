@@ -240,9 +240,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
           proxy_->HasImplThread() ? proxy_->ImplThreadTaskRunner()
                                   : proxy_->MainThreadTaskRunner())),
       max_memory_needed_bytes_(0),
-      last_sent_memory_visible_bytes_(0),
-      last_sent_memory_visible_and_nearby_bytes_(0),
-      last_sent_memory_use_bytes_(0),
       zero_budget_(false),
       device_scale_factor_(1.f),
       overhang_ui_resource_id_(0),
@@ -350,8 +347,6 @@ void LayerTreeHostImpl::CommitComplete() {
       DCHECK(active_tree_->root_layer());
   }
 
-  client_->SendManagedMemoryStats();
-
   micro_benchmark_controller_.DidCompleteCommit();
 }
 
@@ -424,18 +419,6 @@ void LayerTreeHostImpl::ManageTiles() {
 
   tile_priorities_dirty_ = false;
   tile_manager_->ManageTiles(global_tile_state_);
-
-  size_t memory_required_bytes;
-  size_t memory_nice_to_have_bytes;
-  size_t memory_allocated_bytes;
-  size_t memory_used_bytes;
-  tile_manager_->GetMemoryStats(&memory_required_bytes,
-                                &memory_nice_to_have_bytes,
-                                &memory_allocated_bytes,
-                                &memory_used_bytes);
-  SendManagedMemoryStats(memory_required_bytes,
-                         memory_nice_to_have_bytes,
-                         memory_used_bytes);
 
   client_->DidManageTiles();
 }
@@ -1176,7 +1159,6 @@ void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
     client_->OnCanDrawStateChanged(CanDraw());
     client_->RenewTreePriority();
   }
-  client_->SendManagedMemoryStats();
 
   UpdateTileManagerMemoryPolicy(policy);
 }
@@ -2902,35 +2884,6 @@ std::string LayerTreeHostImpl::LayerTreeAsJson() const {
 
 int LayerTreeHostImpl::SourceAnimationFrameNumber() const {
   return fps_counter_->current_frame_number();
-}
-
-void LayerTreeHostImpl::SendManagedMemoryStats(
-    size_t memory_visible_bytes,
-    size_t memory_visible_and_nearby_bytes,
-    size_t memory_use_bytes) {
-  if (!renderer_)
-    return;
-
-  // Round the numbers being sent up to the next 8MB, to throttle the rate
-  // at which we spam the GPU process.
-  static const size_t rounding_step = 8 * 1024 * 1024;
-  memory_visible_bytes = RoundUp(memory_visible_bytes, rounding_step);
-  memory_visible_and_nearby_bytes = RoundUp(memory_visible_and_nearby_bytes,
-                                            rounding_step);
-  memory_use_bytes = RoundUp(memory_use_bytes, rounding_step);
-  if (last_sent_memory_visible_bytes_ == memory_visible_bytes &&
-      last_sent_memory_visible_and_nearby_bytes_ ==
-          memory_visible_and_nearby_bytes &&
-      last_sent_memory_use_bytes_ == memory_use_bytes) {
-    return;
-  }
-  last_sent_memory_visible_bytes_ = memory_visible_bytes;
-  last_sent_memory_visible_and_nearby_bytes_ = memory_visible_and_nearby_bytes;
-  last_sent_memory_use_bytes_ = memory_use_bytes;
-
-  renderer_->SendManagedMemoryStats(last_sent_memory_visible_bytes_,
-                                    last_sent_memory_visible_and_nearby_bytes_,
-                                    last_sent_memory_use_bytes_);
 }
 
 void LayerTreeHostImpl::AnimateScrollbars(base::TimeTicks time) {

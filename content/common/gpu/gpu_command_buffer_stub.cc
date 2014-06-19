@@ -235,8 +235,6 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnSignalSyncPoint)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalQuery,
                         OnSignalQuery)
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SendClientManagedMemoryStats,
-                        OnReceivedClientManagedMemoryStats)
     IPC_MESSAGE_HANDLER(
         GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback,
         OnSetClientHasMemoryAllocationChangedCallback)
@@ -901,15 +899,6 @@ void GpuCommandBufferStub::OnSignalQuery(uint32 query_id, uint32 id) {
   OnSignalSyncPointAck(id);
 }
 
-
-void GpuCommandBufferStub::OnReceivedClientManagedMemoryStats(
-    const gpu::ManagedMemoryStats& stats) {
-  TRACE_EVENT0(
-      "gpu",
-      "GpuCommandBufferStub::OnReceivedClientManagedMemoryStats");
-  if (memory_manager_client_state_)
-    memory_manager_client_state_->SetManagedMemoryStats(stats);
-}
 
 void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
     bool has_callback) {

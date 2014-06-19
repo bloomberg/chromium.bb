@@ -23,8 +23,6 @@ class TestContextSupport : public gpu::ContextSupport {
   virtual void SignalQuery(uint32 query,
                            const base::Closure& callback) OVERRIDE;
   virtual void SetSurfaceVisible(bool visible) OVERRIDE;
-  virtual void SendManagedMemoryStats(const gpu::ManagedMemoryStats& stats)
-    OVERRIDE;
   virtual void Swap() OVERRIDE;
   virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) OVERRIDE;
   virtual void SetSwapBuffersCompleteCallback(

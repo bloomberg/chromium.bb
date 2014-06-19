@@ -371,8 +371,6 @@ TileManager::TileManager(
       prioritized_tiles_dirty_(false),
       all_tiles_that_need_to_be_rasterized_have_memory_(true),
       all_tiles_required_for_activation_have_memory_(true),
-      memory_required_bytes_(0),
-      memory_nice_to_have_bytes_(0),
       bytes_releasable_(0),
       resources_releasable_(0),
       ever_exceeded_memory_budget_(false),
@@ -532,10 +530,6 @@ void TileManager::DidFinishRunningTasksRequiredForActivation() {
 void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
   TRACE_EVENT0("cc", "TileManager::GetTilesWithAssignedBins");
 
-  // Compute new stats to be return by GetMemoryStats().
-  memory_required_bytes_ = 0;
-  memory_nice_to_have_bytes_ = 0;
-
   const TileMemoryLimitPolicy memory_policy = global_state_.memory_limit_policy;
   const TreePriority tree_priority = global_state_.tree_priority;
 
@@ -578,18 +572,6 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
       active_bin = NEVER_BIN;
     if (!tile_is_ready_to_draw && pending_is_non_ideal)
       pending_bin = NEVER_BIN;
-
-    if (!tile_is_ready_to_draw || tile_version.requires_resource()) {
-      // The bin that the tile would have if the GPU memory manager had
-      // a maximally permissive policy, send to the GPU memory manager
-      // to determine policy.
-      ManagedTileBin gpu_memmgr_stats_bin = std::min(active_bin, pending_bin);
-      if ((gpu_memmgr_stats_bin == NOW_BIN) ||
-          (gpu_memmgr_stats_bin == NOW_AND_READY_TO_DRAW_BIN))
-        memory_required_bytes_ += BytesConsumedIfAllocated(tile);
-      if (gpu_memmgr_stats_bin != NEVER_BIN)
-        memory_nice_to_have_bytes_ += BytesConsumedIfAllocated(tile);
-    }
 
     ManagedTileBin tree_bin[NUM_TREES];
     tree_bin[ACTIVE_TREE] = kBinPolicyMap[memory_policy][active_bin];
@@ -712,21 +694,10 @@ bool TileManager::UpdateVisibleTiles() {
   return did_initialize_visible_tile;
 }
 
-void TileManager::GetMemoryStats(size_t* memory_required_bytes,
-                                 size_t* memory_nice_to_have_bytes,
-                                 size_t* memory_allocated_bytes,
-                                 size_t* memory_used_bytes) const {
-  *memory_required_bytes = memory_required_bytes_;
-  *memory_nice_to_have_bytes = memory_nice_to_have_bytes_;
-  *memory_allocated_bytes = resource_pool_->total_memory_usage_bytes();
-  *memory_used_bytes = resource_pool_->acquired_memory_usage_bytes();
-}
-
 scoped_ptr<base::Value> TileManager::BasicStateAsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
   state->SetInteger("tile_count", tiles_.size());
   state->Set("global_state", global_state_.AsValue().release());
-  state->Set("memory_requirements", GetMemoryRequirementsAsValue().release());
   return state.PassAs<base::Value>();
 }
 
@@ -736,25 +707,6 @@ scoped_ptr<base::Value> TileManager::AllTilesAsValue() const {
     state->Append(it->second->AsValue().release());
 
   return state.PassAs<base::Value>();
-}
-
-scoped_ptr<base::Value> TileManager::GetMemoryRequirementsAsValue() const {
-  scoped_ptr<base::DictionaryValue> requirements(new base::DictionaryValue());
-
-  size_t memory_required_bytes;
-  size_t memory_nice_to_have_bytes;
-  size_t memory_allocated_bytes;
-  size_t memory_used_bytes;
-  GetMemoryStats(&memory_required_bytes,
-                 &memory_nice_to_have_bytes,
-                 &memory_allocated_bytes,
-                 &memory_used_bytes);
-  requirements->SetInteger("memory_required_bytes", memory_required_bytes);
-  requirements->SetInteger("memory_nice_to_have_bytes",
-                           memory_nice_to_have_bytes);
-  requirements->SetInteger("memory_allocated_bytes", memory_allocated_bytes);
-  requirements->SetInteger("memory_used_bytes", memory_used_bytes);
-  return requirements.PassAs<base::Value>();
 }
 
 void TileManager::AssignGpuMemoryToTiles(

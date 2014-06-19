@@ -11,7 +11,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using gpu::MemoryAllocation;
-using gpu::ManagedMemoryStats;
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
@@ -150,10 +149,6 @@ class FakeClient : public GpuMemoryManagerClient {
     client_state_->SetVisible(visible);
   }
 
-  void SetManagedMemoryStats(const ManagedMemoryStats& stats) {
-    client_state_->SetManagedMemoryStats(stats);
-  }
-
   uint64 BytesWhenVisible() const {
     return allocation_.bytes_limit_when_visible;
   }
@@ -204,14 +199,6 @@ class GpuMemoryManagerTest : public testing::Test {
   void Manage() {
     ClientAssignmentCollector::ClearAllStats();
     memmgr_.Manage();
-  }
-
-  void SetClientStats(
-      FakeClient* client,
-      uint64 required,
-      uint64 nicetohave) {
-    client->SetManagedMemoryStats(
-        ManagedMemoryStats(required, nicetohave, 0, false));
   }
 
   GpuMemoryManager memmgr_;

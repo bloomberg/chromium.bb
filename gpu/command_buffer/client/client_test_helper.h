@@ -102,8 +102,6 @@ class MockClientGpuControl : public GpuControl {
 
   MOCK_METHOD2(SignalQuery, void(uint32 query, const base::Closure& callback));
   MOCK_METHOD1(SetSurfaceVisible, void(bool visible));
-  MOCK_METHOD1(SendManagedMemoryStats,
-               void(const ManagedMemoryStats& stats));
   MOCK_METHOD1(CreateStreamTexture, uint32(uint32));
 
  private:

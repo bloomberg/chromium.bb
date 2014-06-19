@@ -197,7 +197,6 @@ class GpuCommandBufferStub
   void OnSignalSyncPointAck(uint32 id);
   void OnSignalQuery(uint32 query, uint32 id);
 
-  void OnReceivedClientManagedMemoryStats(const gpu::ManagedMemoryStats& stats);
   void OnSetClientHasMemoryAllocationChangedCallback(bool has_callback);
 
   void OnRegisterGpuMemoryBuffer(int32 id,

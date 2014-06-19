@@ -20,7 +20,6 @@
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 
-using gpu::ManagedMemoryStats;
 using gpu::MemoryAllocation;
 
 namespace content {
@@ -206,12 +205,6 @@ void GpuMemoryManager::SetClientStateVisible(
   client_state->visible_ = visible;
   AddClientToList(client_state);
   ScheduleManage(visible ? kScheduleManageNow : kScheduleManageLater);
-}
-
-void GpuMemoryManager::SetClientStateManagedMemoryStats(
-    GpuMemoryManagerClientState* client_state,
-    const ManagedMemoryStats& stats) {
-  // TODO(ccameron): delete this from the full stack.
 }
 
 uint64 GpuMemoryManager::GetClientMemoryUsage(

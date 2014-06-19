@@ -166,11 +166,6 @@ void PpapiCommandBufferProxy::SetSurfaceVisible(bool visible) {
   NOTREACHED();
 }
 
-void PpapiCommandBufferProxy::SendManagedMemoryStats(
-    const gpu::ManagedMemoryStats& stats) {
-  NOTREACHED();
-}
-
 gpu::Capabilities PpapiCommandBufferProxy::GetCapabilities() {
   // TODO(boliu): Need to implement this to use cc in Pepper. Tracked in
   // crbug.com/325391.

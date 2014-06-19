@@ -386,11 +386,6 @@ void GLES2Implementation::SetSurfaceVisible(bool visible) {
     FreeEverything();
 }
 
-void GLES2Implementation::SendManagedMemoryStats(
-    const ManagedMemoryStats& stats) {
-  gpu_control_->SendManagedMemoryStats(stats);
-}
-
 void GLES2Implementation::WaitForCmd() {
   TRACE_EVENT0("gpu", "GLES2::WaitForCmd");
   helper_->CommandBufferHelper::Finish();

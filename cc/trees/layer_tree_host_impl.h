@@ -89,7 +89,6 @@ class LayerTreeHostImplClient {
   virtual bool ReduceContentsTextureMemoryOnImplThread(
       size_t limit_bytes,
       int priority_cutoff) = 0;
-  virtual void SendManagedMemoryStats() = 0;
   virtual bool IsInsideDraw() = 0;
   virtual void RenewTreePriority() = 0;
   virtual void PostDelayedScrollbarFadeOnImplThread(
@@ -352,11 +351,6 @@ class CC_EXPORT LayerTreeHostImpl
   bool needs_animate_layers() const {
     return !animation_registrar_->active_animation_controllers().empty();
   }
-
-  void SendManagedMemoryStats(
-      size_t memory_visible_bytes,
-      size_t memory_visible_and_nearby_bytes,
-      size_t memory_use_bytes);
 
   void set_max_memory_needed_bytes(size_t bytes) {
     max_memory_needed_bytes_ = bytes;
@@ -632,9 +626,6 @@ class CC_EXPORT LayerTreeHostImpl
   // manager, if there were no limit on memory usage.
   size_t max_memory_needed_bytes_;
 
-  size_t last_sent_memory_visible_bytes_;
-  size_t last_sent_memory_visible_and_nearby_bytes_;
-  size_t last_sent_memory_use_bytes_;
   bool zero_budget_;
 
   // Viewport size passed in from the main thread, in physical pixels.  This

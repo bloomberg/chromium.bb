@@ -305,10 +305,6 @@ void Display::SetSurfaceVisible(bool visible) {
   NOTIMPLEMENTED();
 }
 
-void Display::SendManagedMemoryStats(const gpu::ManagedMemoryStats& stats) {
-  NOTIMPLEMENTED();
-}
-
 void Display::Echo(const base::Closure& callback) {
   NOTIMPLEMENTED();
 }

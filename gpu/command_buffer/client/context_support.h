@@ -10,7 +10,6 @@
 #include "ui/gfx/rect.h"
 
 namespace gpu {
-struct ManagedMemoryStats;
 
 class ContextSupport {
  public:
@@ -25,8 +24,6 @@ class ContextSupport {
   // For onscreen contexts, indicates that the surface visibility has changed.
   // Clients aren't expected to draw to an invisible surface.
   virtual void SetSurfaceVisible(bool visible) = 0;
-
-  virtual void SendManagedMemoryStats(const ManagedMemoryStats& stats) = 0;
 
   virtual void Swap() = 0;
   virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) = 0;

@@ -77,10 +77,6 @@ class CC_EXPORT Renderer {
   bool visible() const { return visible_; }
   void SetVisible(bool visible);
 
-  virtual void SendManagedMemoryStats(size_t bytes_visible,
-                                      size_t bytes_visible_and_nearby,
-                                      size_t bytes_allocated) = 0;
-
  protected:
   explicit Renderer(RendererClient* client, const LayerTreeSettings* settings)
       : client_(client), settings_(settings), visible_(true) {}

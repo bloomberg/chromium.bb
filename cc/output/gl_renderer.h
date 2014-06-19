@@ -67,10 +67,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   virtual bool IsContextLost() OVERRIDE;
 
-  virtual void SendManagedMemoryStats(size_t bytes_visible,
-                                      size_t bytes_visible_and_nearby,
-                                      size_t bytes_allocated) OVERRIDE;
-
   static void DebugGLCall(gpu::gles2::GLES2Interface* gl,
                           const char* command,
                           const char* file,

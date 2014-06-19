@@ -297,21 +297,6 @@ bool SingleThreadProxy::ReduceContentsTextureMemoryOnImplThread(
       limit_bytes, priority_cutoff, resource_provider);
 }
 
-void SingleThreadProxy::SendManagedMemoryStats() {
-  DCHECK(Proxy::IsImplThread());
-  if (!layer_tree_host_impl_)
-    return;
-  PrioritizedResourceManager* contents_texture_manager =
-      layer_tree_host_->contents_texture_manager();
-  if (!contents_texture_manager)
-    return;
-
-  layer_tree_host_impl_->SendManagedMemoryStats(
-      contents_texture_manager->MemoryVisibleBytes(),
-      contents_texture_manager->MemoryVisibleAndNearbyBytes(),
-      contents_texture_manager->MemoryUseBytes());
-}
-
 bool SingleThreadProxy::IsInsideDraw() { return inside_draw_; }
 
 void SingleThreadProxy::UpdateRendererCapabilitiesOnImplThread() {

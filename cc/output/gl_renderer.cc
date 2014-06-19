@@ -387,17 +387,6 @@ void GLRenderer::DidChangeVisibility() {
   context_support_->SetSurfaceVisible(visible());
 }
 
-void GLRenderer::SendManagedMemoryStats(size_t bytes_visible,
-                                        size_t bytes_visible_and_nearby,
-                                        size_t bytes_allocated) {
-  gpu::ManagedMemoryStats stats;
-  stats.bytes_required = bytes_visible;
-  stats.bytes_nice_to_have = bytes_visible_and_nearby;
-  stats.bytes_allocated = bytes_allocated;
-  stats.backbuffer_requested = !is_backbuffer_discarded_;
-  context_support_->SendManagedMemoryStats(stats);
-}
-
 void GLRenderer::ReleaseRenderPassTextures() { render_pass_textures_.clear(); }
 
 void GLRenderer::DiscardPixels(bool has_external_stencil_test,

@@ -140,9 +140,6 @@ class CONTENT_EXPORT GpuMemoryManager :
   // GpuMemoryManagerClientState interface
   void SetClientStateVisible(
       GpuMemoryManagerClientState* client_state, bool visible);
-  void SetClientStateManagedMemoryStats(
-      GpuMemoryManagerClientState* client_state,
-      const gpu::ManagedMemoryStats& stats);
   void OnDestroyClientState(GpuMemoryManagerClientState* client);
 
   // Add or remove a client from its clients list (visible, nonvisible, or

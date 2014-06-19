@@ -20,7 +20,6 @@ class GpuMemoryBuffer;
 }
 
 namespace gpu {
-struct ManagedMemoryStats;
 
 // Common interface for GpuControl implementations.
 class GPU_EXPORT GpuControl {
@@ -55,8 +54,6 @@ class GPU_EXPORT GpuControl {
   virtual void SignalQuery(uint32_t query, const base::Closure& callback) = 0;
 
   virtual void SetSurfaceVisible(bool visible) = 0;
-
-  virtual void SendManagedMemoryStats(const ManagedMemoryStats& stats) = 0;
 
   // Invokes the callback once the context has been flushed.
   virtual void Echo(const base::Closure& callback) = 0;

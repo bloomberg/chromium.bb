@@ -317,10 +317,6 @@ void GLManager::SetSurfaceVisible(bool visible) {
   NOTIMPLEMENTED();
 }
 
-void GLManager::SendManagedMemoryStats(const ManagedMemoryStats& stats) {
-  NOTIMPLEMENTED();
-}
-
 void GLManager::Echo(const base::Closure& callback) {
   NOTIMPLEMENTED();
 }

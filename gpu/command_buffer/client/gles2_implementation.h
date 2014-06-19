@@ -247,8 +247,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   virtual void SignalQuery(uint32 query,
                            const base::Closure& callback) OVERRIDE;
   virtual void SetSurfaceVisible(bool visible) OVERRIDE;
-  virtual void SendManagedMemoryStats(const ManagedMemoryStats& stats)
-      OVERRIDE;
 
   void SetErrorMessageCallback(
       GLES2ImplementationErrorMessageCallback* callback) {
