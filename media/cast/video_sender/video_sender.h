@@ -76,15 +76,13 @@ class VideoSender : public RtcpSenderFeedback,
   void ScheduleNextRtcpReport();
   void SendRtcpReport(bool schedule_future_reports);
 
-  // Schedule and execute periodic checks for re-sending frames.  If no
+  // Schedule and execute periodic checks for re-sending packets.  If no
   // acknowledgements have been received for "too long," VideoSender will
-  // speculatively re-send the frame just after |latest_acked_frame_id_| (the
-  // whole frame).  This is a last resort tactic to prevent the session from
+  // speculatively re-send certain packets of an unacked frame to kick-start
+  // re-transmission.  This is a last resort tactic to prevent the session from
   // getting stuck after a long outage.
   void ScheduleNextResendCheck();
   void ResendCheck();
-
-  // Resend certain packets of an unacked frame to kick start re-transmission.
   void ResendForKickstart();
 
   // Returns true if there are too many frames in flight, as defined by the
@@ -169,10 +167,7 @@ class VideoSender : public RtcpSenderFeedback,
 
   // This is a "good enough" mapping for finding the RTP timestamp associated
   // with a video frame. The key is the lowest 8 bits of frame id (which is
-  // what is sent via RTCP). This map is used for logging purposes. The only
-  // time when this mapping will be incorrect is when it receives an ACK for a
-  // old enough frame such that 8-bit wrap around has already occurred, which
-  // should be pretty rare.
+  // what is sent via RTCP). This map is used for logging purposes.
   RtpTimestamp frame_id_to_rtp_timestamp_[256];
 
   // NOTE: Weak pointers must be invalidated before all other member variables.

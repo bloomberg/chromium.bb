@@ -78,7 +78,7 @@ VideoSender::VideoSender(
   media::cast::transport::CastTransportVideoConfig transport_config;
   transport_config.codec = video_config.codec;
   transport_config.rtp.config = video_config.rtp_config;
-  transport_config.rtp.max_outstanding_frames = max_unacked_frames_ + 1;
+  transport_config.rtp.max_outstanding_frames = max_unacked_frames_;
   transport_sender_->InitializeVideo(transport_config);
 
   rtcp_.SetCastReceiverEventHistorySize(kReceiverRtcpEventHistorySize);
