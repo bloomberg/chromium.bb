@@ -2,4 +2,4 @@
 FFmpegVideoDecoderTest.Initialize_Normal
 FFmpegVideoDecoderTest.Reinitialize_Failure
 FFmpegVideoDecoderTest.Reinitialize_Normal
-FFmpegVideoDecoderTest.Reinitialize_AfterDecodeFrame
+FFmpegVideoDecoderTest.Reinitialize_After*

@@ -2,3 +2,4 @@
 VideoDecoderVp8Test.*
 VideoEncoderVpxTest.*
 ChromotingHostTest.Connect
+ChromotingHostTest.Reconnect
