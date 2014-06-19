@@ -33,13 +33,13 @@ def _ToTestFeatures(names):
   return features
 
 
-def _ToTestApiData(names):
+def _ToTestAPIData(names):
   api_data = dict((name, [{'namespace': name, 'description': description}])
               for name, description in names)
   return api_data
 
 
-def _ToTestApiSchema(names, apis):
+def _ToTestAPISchema(names, apis):
   for name, json_file in names:
     apis['api'][json_file] = json.dumps(_TEST_API_DATA[name])
   return apis
@@ -60,7 +60,7 @@ _TEST_API_FEATURES = _ToTestFeatures([
 ])
 
 
-_TEST_API_DATA = _ToTestApiData([
+_TEST_API_DATA = _ToTestAPIData([
   ('alarms', u'<code>alarms</code>'),
   ('app.window', u'<code>app.window</code>'),
   ('browserAction', u'<code>browserAction</code>'),
@@ -90,7 +90,7 @@ _TEST_API_SCHEMA = [
 ]
 
 
-_TEST_DATA = _ToTestApiSchema(_TEST_API_SCHEMA, {
+_TEST_DATA = _ToTestAPISchema(_TEST_API_SCHEMA, {
   'api': {
     '_api_features.json': json.dumps(_TEST_API_FEATURES),
     '_manifest_features.json': '{}',

@@ -96,7 +96,7 @@ class AvailabilityFinder(object):
     return AvailabilityInfo(
         self._branch_utility.GetChannelInfo(api_info['channel']))
 
-  def _GetApiSchemaFilename(self, api_name, file_system, version):
+  def _GetAPISchemaFilename(self, api_name, file_system, version):
     '''Gets the name of the file which may contain the schema for |api_name| in
     |file_system|, or None if the API is not found. Note that this may be the
     single _EXTENSION_API file which all APIs share in older versions of Chrome,
@@ -119,16 +119,16 @@ class AvailabilityFinder(object):
         pass
     return None
 
-  def _GetApiSchema(self, api_name, file_system, version):
+  def _GetAPISchema(self, api_name, file_system, version):
     '''Searches |file_system| for |api_name|'s API schema data, and processes
     and returns it if found.
     '''
-    api_filename = self._GetApiSchemaFilename(api_name, file_system, version)
+    api_filename = self._GetAPISchemaFilename(api_name, file_system, version)
     if api_filename is None:
       # No file for the API could be found in the given |file_system|.
       return None
 
-    schema_fs = self._compiled_fs_factory.ForApiSchema(file_system)
+    schema_fs = self._compiled_fs_factory.ForAPISchema(file_system)
     api_schemas = schema_fs.GetFromFile(api_filename).Get()
     matching_schemas = [api for api in api_schemas
                         if api['namespace'] == api_name]
@@ -137,15 +137,15 @@ class AvailabilityFinder(object):
     assert len(matching_schemas) <= 1
     return matching_schemas or None
 
-  def _HasApiSchema(self, api_name, file_system, version):
+  def _HasAPISchema(self, api_name, file_system, version):
     '''Whether or not an API schema for |api_name|exists in the given
     |file_system|.
     '''
-    filename = self._GetApiSchemaFilename(api_name, file_system, version)
+    filename = self._GetAPISchemaFilename(api_name, file_system, version)
     if filename is None:
       return False
     if filename.endswith(_EXTENSION_API):
-      return self._GetApiSchema(api_name, file_system, version) is not None
+      return self._GetAPISchema(api_name, file_system, version) is not None
     return True
 
   def _CheckStableAvailability(self, api_name, file_system, version):
@@ -161,7 +161,7 @@ class AvailabilityFinder(object):
     if version >= _API_FEATURES_MIN_VERSION:
       # The _api_features.json file first appears in version 28 and should be
       # the most reliable for finding API availability.
-      available_channel = self._GetChannelFromApiFeatures(api_name,
+      available_channel = self._GetChannelFromAPIFeatures(api_name,
                                                           features_bundle)
     if version >= _ORIGINAL_FEATURES_MIN_VERSION:
       # The _permission_features.json and _manifest_features.json files are
@@ -177,7 +177,7 @@ class AvailabilityFinder(object):
       # Fall back to a check for file system existence if the API is not
       # stable in any of the _features.json files, or if the _features files
       # do not exist (version 19 and earlier).
-      return self._HasApiSchema(api_name, file_system, version)
+      return self._HasAPISchema(api_name, file_system, version)
 
   def _CheckChannelAvailability(self, api_name, file_system, channel_info):
     '''Searches through the _features files in a given |file_system|, falling
@@ -186,11 +186,11 @@ class AvailabilityFinder(object):
     '''
     features_bundle = self._CreateFeaturesBundle(file_system)
     available_channel = (
-        self._GetChannelFromApiFeatures(api_name, features_bundle) or
+        self._GetChannelFromAPIFeatures(api_name, features_bundle) or
         self._GetChannelFromPermissionFeatures(api_name, features_bundle) or
         self._GetChannelFromManifestFeatures(api_name, features_bundle))
     if (available_channel is None and
-        self._HasApiSchema(api_name, file_system, channel_info.version)):
+        self._HasAPISchema(api_name, file_system, channel_info.version)):
       # If an API is not represented in any of the _features files, but exists
       # in the filesystem, then assume it is available in this version.
       # The chrome.windows API is an example of this.
@@ -207,7 +207,7 @@ class AvailabilityFinder(object):
                           self._compiled_fs_factory,
                           self._object_store_creator)
 
-  def _GetChannelFromApiFeatures(self, api_name, features_bundle):
+  def _GetChannelFromAPIFeatures(self, api_name, features_bundle):
     return _GetChannelFromFeatures(api_name, features_bundle.GetAPIFeatures())
 
   def _GetChannelFromManifestFeatures(self, api_name, features_bundle):
@@ -220,7 +220,7 @@ class AvailabilityFinder(object):
     return _GetChannelFromFeatures(api_name,
                                    features_bundle.GetPermissionFeatures())
 
-  def _CheckApiAvailability(self, api_name, file_system, channel_info):
+  def _CheckAPIAvailability(self, api_name, file_system, channel_info):
     '''Determines the availability for an API at a certain version of Chrome.
     Two branches of logic are used depending on whether or not the API is
     determined to be 'stable' at the given version.
@@ -235,7 +235,7 @@ class AvailabilityFinder(object):
 
   def _FindScheduled(self, api_name):
     '''Determines the earliest version of Chrome where the API is stable.
-    Unlike the code in GetApiAvailability, this checks if the API is stable
+    Unlike the code in GetAPIAvailability, this checks if the API is stable
     even when Chrome is in dev or beta, which shows that the API is scheduled
     to be stable in that verison of Chrome.
     '''
@@ -248,7 +248,7 @@ class AvailabilityFinder(object):
 
     return stable_channel.version if stable_channel else None
 
-  def GetApiAvailability(self, api_name):
+  def GetAPIAvailability(self, api_name):
     '''Performs a search for an API's top-level availability by using a
     HostFileSystemIterator instance to traverse multiple version of the
     SVN filesystem.
@@ -264,7 +264,7 @@ class AvailabilityFinder(object):
       return availability
 
     def check_api_availability(file_system, channel_info):
-      return self._CheckApiAvailability(api_name, file_system, channel_info)
+      return self._CheckAPIAvailability(api_name, file_system, channel_info)
 
     channel_info = self._file_system_iterator.Descending(
         self._branch_utility.GetChannelInfo('dev'),
@@ -284,7 +284,7 @@ class AvailabilityFinder(object):
     self._top_level_object_store.Set(api_name, availability)
     return availability
 
-  def GetApiNodeAvailability(self, api_name):
+  def GetAPINodeAvailability(self, api_name):
     '''Returns an APISchemaGraph annotated with each node's availability (the
     ChannelInfo at the oldest channel it's available in).
     '''
@@ -299,14 +299,14 @@ class AvailabilityFinder(object):
     availability_graph = APISchemaGraph()
 
     host_fs = self._host_file_system
-    trunk_stat = assert_not_none(host_fs.Stat(self._GetApiSchemaFilename(
+    trunk_stat = assert_not_none(host_fs.Stat(self._GetAPISchemaFilename(
         api_name, host_fs, 'trunk')))
 
     # Weird object thing here because nonlocal is Python 3.
     previous = type('previous', (object,), {'stat': None, 'graph': None})
 
     def update_availability_graph(file_system, channel_info):
-      version_filename = assert_not_none(self._GetApiSchemaFilename(
+      version_filename = assert_not_none(self._GetAPISchemaFilename(
           api_name, file_system, channel_info.version))
       version_stat = assert_not_none(file_system.Stat(version_filename))
 
@@ -321,7 +321,7 @@ class AvailabilityFinder(object):
         #
         # Calling |availability_graph|.Lookup() on the nodes being updated
         # will return the |annotation| object -- the current |channel_info|.
-        version_graph = APISchemaGraph(self._GetApiSchema(
+        version_graph = APISchemaGraph(self._GetAPISchema(
             api_name, file_system, channel_info.version))
         availability_graph.Update(version_graph.Subtract(availability_graph),
                                   annotation=channel_info)
@@ -334,7 +334,7 @@ class AvailabilityFinder(object):
       return version_stat != trunk_stat
 
     self._file_system_iterator.Ascending(
-        self.GetApiAvailability(api_name).channel_info,
+        self.GetAPIAvailability(api_name).channel_info,
         update_availability_graph)
 
     self._node_level_object_store.Set(api_name, availability_graph)

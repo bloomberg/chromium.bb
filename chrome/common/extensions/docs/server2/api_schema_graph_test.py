@@ -56,7 +56,7 @@ API_SCHEMA = [{
 class APISchemaGraphTest(unittest.TestCase):
 
   def testLookup(self):
-    self._testApiSchema(APISchemaGraph(API_SCHEMA))
+    self._testAPISchema(APISchemaGraph(API_SCHEMA))
 
   def testIsEmpty(self):
     # A few assertions to make sure that Lookup works on empty sets.
@@ -79,10 +79,10 @@ class APISchemaGraphTest(unittest.TestCase):
                                         'parameters', 'updateInfo'))
 
   def testSubtractEmpty(self):
-    self._testApiSchema(
+    self._testAPISchema(
         APISchemaGraph(API_SCHEMA).Subtract(APISchemaGraph({})))
 
-  def _testApiSchema(self, api_schema_graph):
+  def _testAPISchema(self, api_schema_graph):
     self.assertEqual(LookupResult(True, None),
                      api_schema_graph.Lookup('tabs', 'properties',
                                              'TAB_PROPERTY_ONE'))

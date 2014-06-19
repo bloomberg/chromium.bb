@@ -32,21 +32,21 @@ class WhatsNewDataSource(DataSource):
       'version': change['version']
     } for change_id, change in whats_new_json.iteritems()]
 
-  def _GetApiVersion(self, platform, api_name):
+  def _GetAPIVersion(self, platform, api_name):
     version = None
     category = self._api_categorizer.GetCategory(platform, api_name)
     if category == 'chrome':
-      channel_info = self._availability_finder.GetApiAvailability(
+      channel_info = self._availability_finder.GetAPIAvailability(
           api_name).channel_info
       channel = channel_info.channel
       if channel == 'stable':
         version = channel_info.version
     return version
 
-  def _GenerateApiListWithVersion(self, platform):
+  def _GenerateAPIListWithVersion(self, platform):
     data = []
     for api_name, api_model in self._api_models.IterModels():
-      version = self._GetApiVersion(platform, api_name)
+      version = self._GetAPIVersion(platform, api_name)
       if version:
         api = {
           'name': api_name,
@@ -64,7 +64,7 @@ class WhatsNewDataSource(DataSource):
     def _MakeDictByPlatform(platform):
       whats_new_json = whats_new_json_future.Get()
       platform_list = []
-      apis = self._GenerateApiListWithVersion(platform)
+      apis = self._GenerateAPIListWithVersion(platform)
       apis.extend(self._GenerateChangesListWithVersion(platform,
           whats_new_json))
       apis.sort(key=itemgetter('version'), reverse=True)

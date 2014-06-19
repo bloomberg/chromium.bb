@@ -106,7 +106,7 @@ class CompiledFileSystem(object):
                          category='json')
 
     @memoize
-    def ForApiSchema(self, file_system):
+    def ForAPISchema(self, file_system):
       '''Creates a CompiledFileSystem for parsing raw JSON or IDL API schema
       data and formatting it so that it can be used by other classes, such
       as Model and APISchemaGraph.

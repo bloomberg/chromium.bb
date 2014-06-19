@@ -39,13 +39,13 @@ def _GetType(dict_, name):
 
 class _FakeAvailabilityFinder(object):
 
-  def GetApiAvailability(self, version):
+  def GetAPIAvailability(self, version):
     return AvailabilityInfo(ChannelInfo('stable', '396', 5))
 
 
 class _FakeScheduledAvailabilityFinder(object):
 
-  def GetApiAvailability(self, version):
+  def GetAPIAvailability(self, version):
     return AvailabilityInfo(ChannelInfo('beta', '1453', 27), scheduled=28)
 
 
@@ -69,7 +69,7 @@ class APIDataSourceTest(unittest.TestCase):
                                            server_instance.object_store_creator)
     self._api_models = server_instance.api_models
 
-    # Used for testGetApiAvailability() so that valid-ish data is processed.
+    # Used for testGetAPIAvailability() so that valid-ish data is processed.
     server_instance = ServerInstance.ForTest(
         file_system_provider=FakeHostFileSystemProvider(
             CANNED_API_FILE_SYSTEM_DATA))
@@ -114,7 +114,7 @@ class APIDataSourceTest(unittest.TestCase):
     self.assertEquals('67', _FormatValue(67))
     self.assertEquals('234,567', _FormatValue(234567))
 
-  def testGetApiAvailability(self):
+  def testGetAPIAvailability(self):
     api_availabilities = {
       'bluetooth': AvailabilityInfo(
           ChannelInfo('dev', CANNED_BRANCHES[28], 28)),
@@ -136,7 +136,7 @@ class APIDataSourceTest(unittest.TestCase):
                         _FakeTemplateCache(),
                         self._features_bundle,
                         None)
-      self.assertEquals(availability, model._GetApiAvailability())
+      self.assertEquals(availability, model._GetAPIAvailability())
 
   def testGetIntroList(self):
     model = _JSCModel(self._api_models.GetModel('tester').Get(),

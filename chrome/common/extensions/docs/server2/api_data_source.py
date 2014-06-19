@@ -115,12 +115,12 @@ class _JSCModel(object):
     as_dict['byName'] = _GetByNameDict(as_dict)
     return as_dict
 
-  def _GetApiAvailability(self):
-    return self._availability_finder.GetApiAvailability(self._namespace.name)
+  def _GetAPIAvailability(self):
+    return self._availability_finder.GetAPIAvailability(self._namespace.name)
 
   def _GetChannelWarning(self):
     if not self._IsExperimental():
-      return { self._GetApiAvailability().channel_info.channel: True }
+      return { self._GetAPIAvailability().channel_info.channel: True }
     return None
 
   def _IsExperimental(self):
@@ -354,7 +354,7 @@ class _JSCModel(object):
       version = None
       scheduled = None
     else:
-      availability = self._GetApiAvailability()
+      availability = self._GetAPIAvailability()
       status = availability.channel_info.channel
       version = availability.channel_info.version
       scheduled = availability.scheduled
