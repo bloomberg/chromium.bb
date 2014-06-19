@@ -1088,35 +1088,12 @@ RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(IncludeSelfOrNot i
     return 0;
 }
 
-RenderLayer* RenderLayer::ancestorCompositedScrollingLayer() const
-{
-    if (!compositor()->acceleratedCompositingForOverflowScrollEnabled())
-        return 0;
-
-    RenderObject* containingBlock = renderer()->containingBlock();
-    if (!containingBlock)
-        return 0;
-
-    RenderLayer* ancestorCompositedScrollingLayer = 0;
-    for (RenderLayer* ancestorLayer = containingBlock->enclosingLayer(); ancestorLayer; ancestorLayer = ancestorLayer->parent()) {
-        if (ancestorLayer->needsCompositedScrolling()) {
-            ancestorCompositedScrollingLayer = ancestorLayer;
-            break;
-        }
-    }
-
-    return ancestorCompositedScrollingLayer;
-}
-
 RenderLayer* RenderLayer::ancestorScrollingLayer() const
 {
-    RenderObject* containingBlock = renderer()->containingBlock();
-    if (!containingBlock)
-        return 0;
-
-    for (RenderLayer* ancestorLayer = containingBlock->enclosingLayer(); ancestorLayer; ancestorLayer = ancestorLayer->parent()) {
-        if (ancestorLayer->scrollsOverflow())
-            return ancestorLayer;
+    for (RenderObject* container = renderer()->containingBlock(); container; container = container->containingBlock()) {
+        RenderLayer* currentLayer = container->enclosingLayer();
+        if (currentLayer->scrollsOverflow())
+            return currentLayer;
     }
 
     return 0;
@@ -1621,7 +1598,7 @@ RenderLayer* RenderLayer::scrollParent() const
     // be a composited layer since the compositor will need to take special measures to ensure
     // that we scroll with our scrolling ancestor and it cannot do this if we do not promote.
 
-    RenderLayer* scrollParent = ancestorCompositedScrollingLayer();
+    RenderLayer* scrollParent = ancestorScrollingLayer();
     if (!scrollParent || scrollParent->stackingNode()->isStackingContext())
         return 0;
 

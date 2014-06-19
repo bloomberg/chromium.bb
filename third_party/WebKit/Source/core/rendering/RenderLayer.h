@@ -225,9 +225,6 @@ public:
     // Ancestor compositing layer, excluding this.
     RenderLayer* ancestorCompositingLayer() const { return enclosingCompositingLayer(ExcludeSelf); }
 
-    // Ancestor composited scrolling layer at or above our containing block.
-    RenderLayer* ancestorCompositedScrollingLayer() const;
-
     // Ancestor scrolling layer at or above our containing block.
     RenderLayer* ancestorScrollingLayer() const;
 

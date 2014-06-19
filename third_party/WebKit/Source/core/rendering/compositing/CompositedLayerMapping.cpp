@@ -380,7 +380,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
     if (scrollParent) {
         // If our containing block is our ancestor scrolling layer, then we'll already be clipped
         // to it via our scroll parent and we don't need an ancestor clipping layer.
-        if (m_owningLayer.renderer()->containingBlock()->enclosingLayer() == m_owningLayer.ancestorCompositedScrollingLayer())
+        if (m_owningLayer.renderer()->containingBlock()->enclosingLayer() == m_owningLayer.ancestorScrollingLayer())
             needsAncestorClip = false;
     }
 
