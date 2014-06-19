@@ -1110,20 +1110,20 @@ void WebViewGuest::AddWebViewToExtensionRendererState() {
   }
   DCHECK(embedder_extension_id() == partition_domain);
 
-  ExtensionRendererState::WebViewInfo webview_info;
-  webview_info.embedder_process_id = embedder_render_process_id();
-  webview_info.instance_id = view_instance_id();
-  webview_info.partition_id =  partition_id;
-  webview_info.embedder_extension_id = embedder_extension_id();
+  ExtensionRendererState::WebViewInfo web_view_info;
+  web_view_info.embedder_process_id = embedder_render_process_id();
+  web_view_info.instance_id = view_instance_id();
+  web_view_info.partition_id = partition_id;
+  web_view_info.embedder_extension_id = embedder_extension_id();
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &ExtensionRendererState::AddWebView,
-          base::Unretained(ExtensionRendererState::GetInstance()),
-          guest_web_contents()->GetRenderProcessHost()->GetID(),
-          guest_web_contents()->GetRoutingID(),
-          webview_info));
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&ExtensionRendererState::AddWebView,
+                 base::Unretained(ExtensionRendererState::GetInstance()),
+                 guest_web_contents()->GetRenderProcessHost()->GetID(),
+                 guest_web_contents()->GetRoutingID(),
+                 web_view_info));
 }
 
 // static

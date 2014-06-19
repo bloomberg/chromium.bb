@@ -223,12 +223,8 @@ bool ExtensionRendererState::GetTabAndWindowId(
 
 bool ExtensionRendererState::IsWebViewRenderer(int render_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (WebViewInfoMap::iterator i = webview_info_map_.begin();
-       i != webview_info_map_.end(); ++i) {
-    if (i->first.first == render_process_id)
-      return true;
-  }
-  return false;
+  return webview_partition_id_map_.find(render_process_id) !=
+         webview_partition_id_map_.end();
 }
 
 void ExtensionRendererState::AddWebView(int guest_process_id,
@@ -237,6 +233,14 @@ void ExtensionRendererState::AddWebView(int guest_process_id,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   RenderId render_id(guest_process_id, guest_routing_id);
   webview_info_map_[render_id] = webview_info;
+  WebViewPartitionIDMap::iterator iter =
+      webview_partition_id_map_.find(guest_process_id);
+  if (iter != webview_partition_id_map_.end()) {
+    ++iter->second.web_view_count;
+    return;
+  }
+  WebViewPartitionInfo partition_info(1, webview_info.partition_id);
+  webview_partition_id_map_[guest_process_id] = partition_info;
 }
 
 void ExtensionRendererState::RemoveWebView(int guest_process_id,
@@ -244,6 +248,14 @@ void ExtensionRendererState::RemoveWebView(int guest_process_id,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   RenderId render_id(guest_process_id, guest_routing_id);
   webview_info_map_.erase(render_id);
+  WebViewPartitionIDMap::iterator iter =
+      webview_partition_id_map_.find(guest_process_id);
+  if (iter != webview_partition_id_map_.end() &&
+      iter->second.web_view_count > 1) {
+    --iter->second.web_view_count;
+    return;
+  }
+  webview_partition_id_map_.erase(guest_process_id);
 }
 
 bool ExtensionRendererState::GetWebViewInfo(int guest_process_id,
@@ -254,6 +266,18 @@ bool ExtensionRendererState::GetWebViewInfo(int guest_process_id,
   WebViewInfoMap::iterator iter = webview_info_map_.find(render_id);
   if (iter != webview_info_map_.end()) {
     *webview_info = iter->second;
+    return true;
+  }
+  return false;
+}
+
+bool ExtensionRendererState::GetWebViewPartitionID(int guest_process_id,
+                                                   std::string* partition_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  WebViewPartitionIDMap::iterator iter =
+      webview_partition_id_map_.find(guest_process_id);
+  if (iter != webview_partition_id_map_.end()) {
+    *partition_id = iter->second.partition_id;
     return true;
   }
   return false;

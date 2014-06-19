@@ -42,6 +42,10 @@ class ExtensionRendererState {
   bool GetWebViewInfo(int guest_process_id, int guest_routing_id,
                       WebViewInfo* webview_info);
 
+  // Looks up the partition info for the embedder <webview> for a given guest
+  // process. Called on the IO thread.
+  bool GetWebViewPartitionID(int guest_process_id, std::string* partition_id);
+
   // Looks up the tab and window ID for a given request. Returns true if we have
   // the IDs in our map. Called on the IO thread.
   bool GetTabAndWindowId(
@@ -62,6 +66,17 @@ class ExtensionRendererState {
   typedef std::map<RenderId, TabAndWindowId> TabAndWindowIdMap;
   typedef std::map<RenderId, WebViewInfo> WebViewInfoMap;
 
+  struct WebViewPartitionInfo {
+    int web_view_count;
+    std::string partition_id;
+    WebViewPartitionInfo() {}
+    WebViewPartitionInfo(int count, std::string partition):
+      web_view_count(count),
+      partition_id(partition) {}
+  };
+
+  typedef std::map<int, WebViewPartitionInfo> WebViewPartitionIDMap;
+
   ExtensionRendererState();
   ~ExtensionRendererState();
 
@@ -79,6 +94,7 @@ class ExtensionRendererState {
   TabObserver* observer_;
   TabAndWindowIdMap map_;
   WebViewInfoMap webview_info_map_;
+  WebViewPartitionIDMap webview_partition_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionRendererState);
 };

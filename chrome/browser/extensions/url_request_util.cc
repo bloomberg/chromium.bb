@@ -147,12 +147,12 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
   // with privileged partition IDs as specified in the manifest file.
   ExtensionRendererState* renderer_state =
       ExtensionRendererState::GetInstance();
-  ExtensionRendererState::WebViewInfo webview_info;
-  bool is_guest = renderer_state->GetWebViewInfo(
-      info->GetChildID(), info->GetRouteID(), &webview_info);
+  std::string partition_id;
+  bool is_guest =
+      renderer_state->GetWebViewPartitionID(info->GetChildID(), &partition_id);
   std::string resource_path = request->url().path();
   if (is_guest && WebviewInfo::IsResourceWebviewAccessible(
-                      extension, webview_info.partition_id, resource_path)) {
+                      extension, partition_id, resource_path)) {
     return true;
   }
 
