@@ -4,6 +4,37 @@
 
 if (!is_android) {
 
+# GYP version: WebKit/public/blink.gyp:blink
+group("blink") {
+  deps = [
+    ":blink_headers",
+    ":blink_minimal",
+    "//third_party/WebKit/Source/platform",
+    "//third_party/WebKit/Source/web",
+  ]
+}
+
+# This target provides a minimal set of Blink APIs such as WebString to use in
+# places that cannot link against the full Blink library.  FIXME: We really
+# shouldn't have this at all and should instead remove all uses of Blink's API
+# types from places that can't link against Blink. crbug.com/248653
+#
+# GYP version: WebKit/public/blink.gyp:blink_minimal
+group("blink_minimal") {
+  deps = [
+    "//third_party/WebKit/Source/platform:blink_common",
+  ]
+}
+
+# TODO(GYP) enable this when web:test_support exists.
+# GYP version: WebKit/public/blink.gyp:blink_test_support
+#group("test_support") {
+#  deps = [
+#    "//third_party/WebKit/Source/web:test_support",
+#  ]
+#}
+
+# GYP version: WebKit/public/all.gyp:all_blink
 group("all_blink") {
   deps = [
     "//third_party/WebKit/Source/core",
@@ -14,7 +45,7 @@ group("all_blink") {
   ]
 }
 
-}
+}  # !is_android
 
 config("blink_headers_config") {
   include_dirs = [ ".." ]
@@ -26,12 +57,14 @@ source_set("blink_headers") {
   direct_dependent_configs = [ ":blink_headers_config" ]
 }
 
+# GYP version: WebKit/public/blink_devtools.gyp:blink_devtools_frontend_resources
 group("blink_devtools_frontend_resources") {
   deps = [
     "//third_party/WebKit/Source/devtools:devtools_frontend_resources",
   ]
 }
 
+# GYP version: WebKit/public/blink_devtools.gyp:blink_generate_devtools_grd
 group("blink_generate_devtools_grd") {
   deps = [
     "//third_party/WebKit/Source/devtools:generate_devtools_grd",

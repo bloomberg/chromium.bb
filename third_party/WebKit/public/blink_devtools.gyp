@@ -30,6 +30,7 @@
 {
     'targets': [
         {
+            # GN version: //third_party/WebKit/public:blink_devtools_frontend_resources
             'target_name': 'blink_devtools_frontend_resources',
             'type': 'none',
             'dependencies': [
@@ -37,6 +38,7 @@
             ],
         },
         {
+            # GN version: //third_party/WebKit/public:blink_generate_devtools_grd
             'target_name': 'blink_generate_devtools_grd',
             'type': 'none',
             'dependencies': [

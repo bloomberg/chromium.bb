@@ -7,6 +7,9 @@ import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/config.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
+# Most targets in this file are private actions so use that as the default.
+visibility = ":*"
+
 # TODO(GYP) Remove when test targets link (depends on ffmpeg)
 enable_blink_platform_test_targets = false
 
@@ -36,6 +39,7 @@ blink_platform_neon_files = [
 
 # blink_common in blink_platform.gyp
 component("blink_common") {
+  visibility = "//third_party/WebKit/*"
   sources = [
     "exported/WebCString.cpp",
     "exported/WebString.cpp",
@@ -157,6 +161,7 @@ action("color_data") {
 # This isn't strictly necessary since we can just add the deps to "platform",
 # but it helps to have the targets match the GYP build.
 group("make_platform_generated") {
+  visibility = "//third_party/WebKit/Source/*"
   deps = [
     ":blink_common",
     ":color_data",
@@ -168,6 +173,7 @@ group("make_platform_generated") {
 # TODO(brettw) Objective C Renaming postbuild steps on Mac.
 # blink_platform target in blink_platform.gyp
 component("platform") {
+  visibility = "//third_party/WebKit/*"
   output_name = "blink_platform"
 
   sources = platform_gypi.platform_files
@@ -339,7 +345,6 @@ component("platform") {
     # deps += [ "//third_party/openmax_dl/dl" ]
   }
 }
-
 
 yasm_assemble("heap_asm_stubs") {
   if (cpu_arch == "x86" || cpu_arch == "x64") {

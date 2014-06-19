@@ -13,6 +13,8 @@ import("//third_party/WebKit/Source/core/core.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
+visibility = "//third_party/WebKit/Source/*"
+
 rel_blink_core_gen_dir = rebase_path(blink_core_output_dir, root_build_dir)
 
 # Compute the optimization level. The GYP code sets "optimize: max" which sets
@@ -73,7 +75,7 @@ source_set("generated") {
     "//third_party/libpng",
     "//third_party/libwebp",
     "//third_party/libxml",
-    #"//third_party/libxslt",  # TODO(GYP)
+    "//third_party/libxslt",
     "//third_party/npapi",
     "//third_party/qcms",
     "//third_party/sqlite",
@@ -99,7 +101,7 @@ source_set("prerequisites") {
     "//third_party/libpng",
     "//third_party/libwebp",
     "//third_party/libxml",
-    #"//third_party/libxslt",  # TODO(GYP)
+    "//third_party/libxslt",
     "//third_party/npapi",
     "//third_party/ots",
     "//third_party/qcms",
@@ -129,7 +131,6 @@ source_set("prerequisites") {
     ":core_include_dirs",
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:inside_blink",
-    "//third_party/WebKit/Source:npapi_stub",
   ]
 }
 
@@ -140,6 +141,8 @@ source_set("prerequisites") {
 #
 # GYP version: WebKit/Source/core/core.gyp:webcore
 source_set("core") {
+  visibility = "//third_party/WebKit/*"
+
   exported_deps = [
     ":core_generated",
     "//skia",
@@ -165,7 +168,6 @@ source_set("core") {
 
   direct_dependent_configs = [
     ":core_include_dirs",
-    "//third_party/WebKit/Source:npapi_stub",
   ]
 
   # TODO(GYP) IPP libraries pkg-config. These seem to be experimental and used
@@ -392,7 +394,6 @@ source_set("core_generated") {
 
   configs += [
     "..:inside_blink",
-    "..:npapi_stub",
   ]
 
   deps = [
@@ -410,7 +411,7 @@ source_set("core_generated") {
     "//third_party/libpng",
     "//third_party/libwebp",
     "//third_party/libxml",
-    #"//third_party/libxslt/libxslt.gyp:libxslt",  TODO(GYP)
+    "//third_party/libxslt",
     "//third_party/npapi",
     "//third_party/qcms",
     "//third_party/sqlite",

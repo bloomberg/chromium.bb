@@ -6,6 +6,8 @@ import("//third_party/WebKit/Source/bindings/core/core.gni")
 import("//third_party/WebKit/Source/bindings/core/idl.gni")
 import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
 
+visibility = "//third_party/WebKit/*"
+
 # GYP version: Source/bindings/core/generated.gyp:interfaces_info_individual_core
 compute_interfaces_info_individual("interfaces_info_individual_core") {
   sources_static = core_static_idl_files

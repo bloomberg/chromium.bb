@@ -6,6 +6,8 @@ import("//third_party/WebKit/Source/build/convert_file_to_header_with_character_
 import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 
+visibility = "//third_party/WebKit/Source/*"
+
 protocol_file = "../../devtools/protocol.json"
 
 action("protocol_sources") {

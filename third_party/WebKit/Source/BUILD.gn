@@ -7,6 +7,8 @@ if (is_clang) {
   import("//build/config/clang/clang.gni")
 }
 
+visibility = "//third_party/WebKit/*"
+
 # features ---------------------------------------------------------------------
 
 config("features") {
@@ -77,12 +79,4 @@ config("non_test_config") {
   if (is_clang) {
     cflags += [ "-Wglobal-constructors" ]
   }
-}
-
-# stubs ------------------------------------------------------------------------
-
-# These set up include paths for targets that haven't been converted yet. They
-# can be removed when the corresponding targets have been converted to GN.
-config("npapi_stub") {
-  include_dirs = [ "//third_party/npapi", "//third_party/npapi/bindings" ]
 }

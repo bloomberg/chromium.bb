@@ -35,6 +35,9 @@ idl_compiler_files = get_path_info(_gypi.idl_compiler_files, "abspath")
 template("compute_interfaces_info_individual") {
   action(target_name) {
     script = "$bindings_scripts_dir/compute_interfaces_info_individual.py"
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
 
     # Save static list to temp file to avoid blowing out command-line length
     # limit.

@@ -6,6 +6,8 @@ import("//build/config/ui.gni")
 import("//third_party/WebKit/Source/config.gni")
 import("//third_party/WebKit/Source/build/make_file_arrays.gni")
 
+visibility = "//third_party/WebKit/*"
+
 web_gypi = exec_script(
     "//build/gypi_to_gn.py",
     [ rebase_path("web.gypi") ],

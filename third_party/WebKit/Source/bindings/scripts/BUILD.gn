@@ -6,6 +6,8 @@ import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
 import("//third_party/WebKit/Source/bindings/templates/templates.gni")
 
+visibility = "//third_party/WebKit/*"
+
 # A separate pre-caching step is *not required* to use lex/parse table
 # caching in PLY, as the caches are concurrency-safe.
 # However, pre-caching ensures that all compiler processes use the cached

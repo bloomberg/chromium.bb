@@ -33,6 +33,7 @@
     ],
     'targets': [
         {
+            # GN version: //third_party/WebKit/public:all_blink
             'target_name': 'all_blink',
             'type': 'none',
             'dependencies': [
