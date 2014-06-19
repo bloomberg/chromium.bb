@@ -6447,7 +6447,6 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
       } else {
         glDrawArraysInstancedANGLE(mode, first, count, primcount);
       }
-      ProcessPendingQueries();
       if (textures_set) {
         RestoreStateForTextures();
       }
@@ -6587,7 +6586,6 @@ error::Error GLES2DecoderImpl::DoDrawElements(
                      element_array_buffer->service_id());
       }
 
-      ProcessPendingQueries();
       if (textures_set) {
         RestoreStateForTextures();
       }
