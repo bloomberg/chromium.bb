@@ -607,9 +607,6 @@ bool XSSAuditor::eraseDangerousAttributesIfInjected(const FilterTokenRequest& re
         // FIXME: Don't create a new String for every attribute.value in the document.
         if (isNameOfInlineEventHandler(attribute.name)) {
             eraseAttribute = isContainedInRequest(canonicalize(snippetFromAttribute(request, attribute), ScriptLikeAttributeTruncation));
-        } else if (protocolIsJavaScript(stripLeadingAndTrailingHTMLSpaces(String(attribute.value)))) {
-            valueContainsJavaScriptURL = true;
-            eraseAttribute = isContainedInRequest(canonicalize(snippetFromAttribute(request, attribute), ScriptLikeAttributeTruncation));
         } else if (isSemicolonSeparatedAttribute(attribute)) {
             String subValue = semicolonSeparatedValueContainingJavaScriptURL(String(attribute.value));
             if (!subValue.isEmpty()) {
@@ -617,6 +614,9 @@ bool XSSAuditor::eraseDangerousAttributesIfInjected(const FilterTokenRequest& re
                 eraseAttribute = isContainedInRequest(canonicalize(nameFromAttribute(request, attribute), NoTruncation))
                     && isContainedInRequest(canonicalize(subValue, ScriptLikeAttributeTruncation));
             }
+        } else if (protocolIsJavaScript(stripLeadingAndTrailingHTMLSpaces(String(attribute.value)))) {
+            valueContainsJavaScriptURL = true;
+            eraseAttribute = isContainedInRequest(canonicalize(snippetFromAttribute(request, attribute), ScriptLikeAttributeTruncation));
         }
         if (!eraseAttribute)
             continue;
