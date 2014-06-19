@@ -288,4 +288,28 @@ TEST_F(EventsMacTest, NativeTitlebarEventLocation) {
             ui::EventLocationFromNative(event));
 }
 
+// Testing for ui::EventTypeFromNative() not covered by ButtonEvents.
+TEST_F(EventsMacTest, EventTypeFromNative) {
+  NSEvent* event = cocoa_test_event_utils::KeyEventWithType(NSKeyDown, 0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromNative(event));
+
+  event = cocoa_test_event_utils::KeyEventWithType(NSKeyUp, 0);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, ui::EventTypeFromNative(event));
+
+  event = cocoa_test_event_utils::MouseEventWithType(NSLeftMouseDragged, 0);
+  EXPECT_EQ(ui::ET_MOUSE_DRAGGED, ui::EventTypeFromNative(event));
+  event = cocoa_test_event_utils::MouseEventWithType(NSRightMouseDragged, 0);
+  EXPECT_EQ(ui::ET_MOUSE_DRAGGED, ui::EventTypeFromNative(event));
+  event = cocoa_test_event_utils::MouseEventWithType(NSOtherMouseDragged, 0);
+  EXPECT_EQ(ui::ET_MOUSE_DRAGGED, ui::EventTypeFromNative(event));
+
+  event = cocoa_test_event_utils::MouseEventWithType(NSMouseMoved, 0);
+  EXPECT_EQ(ui::ET_MOUSE_MOVED, ui::EventTypeFromNative(event));
+
+  event = cocoa_test_event_utils::EnterExitEventWithType(NSMouseEntered);
+  EXPECT_EQ(ui::ET_MOUSE_ENTERED, ui::EventTypeFromNative(event));
+  event = cocoa_test_event_utils::EnterExitEventWithType(NSMouseExited);
+  EXPECT_EQ(ui::ET_MOUSE_EXITED, ui::EventTypeFromNative(event));
+}
+
 }  // namespace ui
