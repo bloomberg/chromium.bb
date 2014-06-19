@@ -161,15 +161,15 @@ class AccessibilityFeaturesApiTest : public ExtensionApiTest,
   }
 };
 
-// Disabled now as this test is being flaky, see http://crbug.com/384266.
-INSTANTIATE_TEST_CASE_P(
-    DISABLED_AccessibilityFeatureaApiTestInstantiatePermission,
-    AccessibilityFeaturesApiTest,
-    testing::Bool());
+INSTANTIATE_TEST_CASE_P(AccessibilityFeatureaApiTestInstantiatePermission,
+                        AccessibilityFeaturesApiTest,
+                        testing::Bool());
 
 // Tests that an extension with read permission can read accessibility features
 // state, while an extension that doesn't have the permission cannot.
 IN_PROC_BROWSER_TEST_P(AccessibilityFeaturesApiTest, Get) {
+  // WARNING: Make sure that spoken feedback is not among enabled_features
+  // (see |Set| test for the reason).
   std::vector<std::string> enabled_features;
   enabled_features.push_back("largeCursor");
   enabled_features.push_back("stickyKeys");
@@ -188,19 +188,27 @@ IN_PROC_BROWSER_TEST_P(AccessibilityFeaturesApiTest, Get) {
   ASSERT_TRUE(GenerateTestArg(
       "getterTest", enabled_features, disabled_features, &test_arg));
   EXPECT_TRUE(
-      RunPlatformAppTestWithArg(GetTestExtensionPath(), test_arg.c_str()));
+      RunPlatformAppTestWithArg(GetTestExtensionPath(), test_arg.c_str()))
+      << message_;
 }
 
 // Tests that an extension with modify permission can modify accessibility
 // features, while an extension that doesn't have the permission can't.
 IN_PROC_BROWSER_TEST_P(AccessibilityFeaturesApiTest, Set) {
+  // WARNING: Make sure that spoken feedback does not get enabled at this point
+  // (before the test app is loaded), as that may break the test:
+  // |RunPlatformAppTestWithArg| waits for the test extension to load by
+  // waiting for EXTENSION_LOADED notification to be observed. It also assumes
+  // that there is only one extension being loaded during this time (it finishes
+  // when the first notification is seen). Enabling spoken feedback here would
+  // break this assumption as it would induce loading of ChromeVox extension.
   std::vector<std::string> enabled_features;
-  enabled_features.push_back("spokenFeedback");
   enabled_features.push_back("stickyKeys");
   enabled_features.push_back("autoclick");
   enabled_features.push_back("virtualKeyboard");
 
   std::vector<std::string> disabled_features;
+  disabled_features.push_back("spokenFeedback");
   disabled_features.push_back("largeCursor");
   disabled_features.push_back("highContrast");
   disabled_features.push_back("screenMagnifier");
@@ -214,7 +222,8 @@ IN_PROC_BROWSER_TEST_P(AccessibilityFeaturesApiTest, Set) {
 
   // The test extension attempts to flip all feature values.
   ASSERT_TRUE(
-      RunPlatformAppTestWithArg(GetTestExtensionPath(), test_arg.c_str()));
+      RunPlatformAppTestWithArg(GetTestExtensionPath(), test_arg.c_str()))
+      << message_;
 
   // The test tries to flip the feature states.
   if (ShouldModifyingFeatureSucceed()) {
@@ -227,6 +236,8 @@ IN_PROC_BROWSER_TEST_P(AccessibilityFeaturesApiTest, Set) {
 // Tests that an extension with read permission is notified when accessibility
 // features change.
 IN_PROC_BROWSER_TEST_F(AccessibilityFeaturesApiTest, ObserveFeatures) {
+  // WARNING: Make sure that spoken feedback is not among enabled_features
+  // (see |Set| test for the reason).
   std::vector<std::string> enabled_features;
   enabled_features.push_back("largeCursor");
   enabled_features.push_back("stickyKeys");
@@ -248,7 +259,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityFeaturesApiTest, ObserveFeatures) {
   // running when the accessibility features are flipped; oterwise, the
   // extension may not see events.
   ASSERT_TRUE(RunPlatformAppTestWithArg(kTestExtensionPathReadPermission,
-                                        test_arg.c_str()));
+                                        test_arg.c_str()))
+      << message_;
 
   // This should flip all features.
   ASSERT_TRUE(
