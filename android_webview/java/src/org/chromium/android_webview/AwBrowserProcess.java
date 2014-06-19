@@ -5,13 +5,16 @@
 package org.chromium.android_webview;
 
 import android.content.Context;
+import android.util.Log;
 
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
+import org.chromium.media.MediaDrmBridge;
 
+import java.util.UUID;
 
 /**
  * Wrapper for the steps needed to initialize the java and native sides of webview chromium.
@@ -50,10 +53,25 @@ public abstract class AwBrowserProcess {
                 try {
                     BrowserStartupController.get(context).startBrowserProcessesSync(
                                 BrowserStartupController.MAX_RENDERERS_SINGLE_PROCESS);
+                    initializePlatformKeySystem();
                 } catch (ProcessInitException e) {
                     throw new RuntimeException("Cannot initialize WebView", e);
                 }
             }
         });
+    }
+
+    private static void initializePlatformKeySystem() {
+        String[] mappings = AwResource.getConfigKeySystemUuidMapping();
+        for (String mapping : mappings) {
+            try {
+                String fragments[] = mapping.split(",");
+                String keySystem = fragments[0].trim();
+                UUID uuid = UUID.fromString(fragments[1]);
+                MediaDrmBridge.addKeySystemUuidMapping(keySystem, uuid);
+            } catch (java.lang.RuntimeException e) {
+                Log.e(TAG, "Can't parse key-system mapping: " + mapping);
+            }
+        }
     }
 }

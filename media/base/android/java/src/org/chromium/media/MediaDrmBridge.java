@@ -22,6 +22,7 @@ import org.chromium.base.JNINamespace;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.UUID;
@@ -31,7 +32,7 @@ import java.util.UUID;
  * sessions for a single MediaSourcePlayer.
  */
 @JNINamespace("media")
-class MediaDrmBridge {
+public class MediaDrmBridge {
     // Implementation Notes:
     // - A media crypto session (mMediaCryptoSession) is opened after MediaDrm
     //   is created. This session will be added to mSessionIds.
@@ -876,6 +877,15 @@ class MediaDrmBridge {
         }
     }
 
+    public static void addKeySystemUuidMapping(String keySystem, UUID uuid) {
+        ByteBuffer uuidBuffer = ByteBuffer.allocateDirect(16);
+        // MSB (byte) should be positioned at the first element.
+        uuidBuffer.order(ByteOrder.BIG_ENDIAN);
+        uuidBuffer.putLong(uuid.getMostSignificantBits());
+        uuidBuffer.putLong(uuid.getLeastSignificantBits());
+        nativeAddKeySystemUuidMapping(keySystem, uuidBuffer);
+    }
+
     private native void nativeOnMediaCryptoReady(long nativeMediaDrmBridge);
 
     private native void nativeOnSessionCreated(long nativeMediaDrmBridge, int sessionId,
@@ -892,4 +902,6 @@ class MediaDrmBridge {
 
     private native void nativeOnResetDeviceCredentialsCompleted(
             long nativeMediaDrmBridge, boolean success);
+
+    private static native void nativeAddKeySystemUuidMapping(String keySystem, ByteBuffer uuid);
 }

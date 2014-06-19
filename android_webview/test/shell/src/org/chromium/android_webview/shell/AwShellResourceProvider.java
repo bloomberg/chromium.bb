@@ -25,6 +25,8 @@ public class AwShellResourceProvider {
 
         AwResource.setDefaultTextEncoding(R.string.default_encoding);
 
+        AwResource.setConfigKeySystemUuidMapping(R.array.config_key_system_uuid_mapping);
+
         sInitialized = true;
     }
 }

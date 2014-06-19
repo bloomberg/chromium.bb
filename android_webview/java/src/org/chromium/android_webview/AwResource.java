@@ -35,6 +35,9 @@ public class AwResource {
     // String resource ID for the default text encoding to use.
     private static int STRING_DEFAULT_TEXT_ENCODING;
 
+    // Array resource ID for the configuration of platform specific key-systems.
+    private static int STRING_ARRAY_CONFIG_KEY_SYSTEM_UUID_MAPPING;
+
     // The embedder should inject a Resources object that will be used
     // to resolve Resource IDs into the actual resources.
     private static Resources sResources;
@@ -59,6 +62,10 @@ public class AwResource {
         STRING_DEFAULT_TEXT_ENCODING = encoding;
     }
 
+    public static void setConfigKeySystemUuidMapping(int config) {
+        STRING_ARRAY_CONFIG_KEY_SYSTEM_UUID_MAPPING = config;
+    }
+
     @CalledByNative
     public static String getDefaultTextEncoding() {
         return getResource(STRING_DEFAULT_TEXT_ENCODING, TYPE_STRING);
@@ -72,6 +79,11 @@ public class AwResource {
     @CalledByNative
     public static String getLoadErrorPageContent() {
         return getResource(RAW_LOAD_ERROR, TYPE_RAW);
+    }
+
+    public static String[] getConfigKeySystemUuidMapping() {
+        // No need to cache, since this should be called only once.
+        return sResources.getStringArray(STRING_ARRAY_CONFIG_KEY_SYSTEM_UUID_MAPPING);
     }
 
     private static String getResource(int resid, int type) {

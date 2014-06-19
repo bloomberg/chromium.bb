@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_util.h"
+#include "base/sys_byteorder.h"
 #include "jni/MediaDrmBridge_jni.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
@@ -276,9 +277,12 @@ bool MediaDrmBridge::IsSecurityLevelSupported(const std::string& key_system,
   return media_drm_bridge->SetSecurityLevel(security_level);
 }
 
-// static
-void MediaDrmBridge::AddKeySystemUuidMapping(const std::string& key_system,
-                                             const std::vector<uint8>& uuid) {
+static void AddKeySystemUuidMapping(JNIEnv* env, jclass clazz,
+                                    jstring j_key_system,
+                                    jobject j_buffer) {
+  std::string key_system = ConvertJavaStringToUTF8(env, j_key_system);
+  uint8* buffer = static_cast<uint8*>(env->GetDirectBufferAddress(j_buffer));
+  UUID uuid(buffer, buffer + 16);
   g_key_system_uuid_manager.Get().AddMapping(key_system, uuid);
 }
 
