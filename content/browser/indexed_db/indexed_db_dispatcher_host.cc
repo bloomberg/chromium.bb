@@ -650,6 +650,11 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
       }
       blob_info[i] =
           IndexedDBBlobInfo(info.uuid, path, info.file_name, info.mime_type);
+      if (info.size != static_cast<uint64_t>(-1)) {
+        blob_info[i].set_last_modified(
+            base::Time::FromDoubleT(info.last_modified));
+        blob_info[i].set_size(info.size);
+      }
     } else {
       blob_info[i] = IndexedDBBlobInfo(info.uuid, info.mime_type, info.size);
     }

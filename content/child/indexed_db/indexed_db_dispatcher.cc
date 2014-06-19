@@ -374,9 +374,9 @@ void IndexedDBDispatcher::RequestIDBDatabasePut(
     if (info.isFile()) {
       blob_or_file_info.file_path = info.filePath();
       blob_or_file_info.file_name = info.fileName();
-    } else {
-      blob_or_file_info.size = info.size();
+      blob_or_file_info.last_modified = info.lastModified();
     }
+    blob_or_file_info.size = info.size();
     blob_or_file_info.uuid = info.uuid().latin1();
     DCHECK(blob_or_file_info.uuid.size());
     blob_or_file_info.mime_type = info.type();

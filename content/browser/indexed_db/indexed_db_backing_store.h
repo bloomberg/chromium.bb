@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
@@ -435,8 +436,11 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     class WriteDescriptor {
      public:
-      WriteDescriptor(const GURL& url, int64_t key);
-      WriteDescriptor(const base::FilePath& path, int64_t key);
+      WriteDescriptor(const GURL& url, int64_t key, int64_t size);
+      WriteDescriptor(const base::FilePath& path,
+                      int64_t key,
+                      int64_t size,
+                      base::Time last_modified);
 
       bool is_file() const { return is_file_; }
       const GURL& url() const {
@@ -448,12 +452,16 @@ class CONTENT_EXPORT IndexedDBBackingStore
         return file_path_;
       }
       int64_t key() const { return key_; }
+      int64_t size() const { return size_; }
+      base::Time last_modified() const { return last_modified_; }
 
      private:
       bool is_file_;
       GURL url_;
       base::FilePath file_path_;
       int64_t key_;
+      int64_t size_;
+      base::Time last_modified_;
     };
 
     class ChainedBlobWriter : public base::RefCounted<ChainedBlobWriter> {

@@ -2160,17 +2160,18 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
       WriteDescriptorVec;
   ChainedBlobWriterImpl(
       int64 database_id,
-      IndexedDBBackingStore* backingStore,
+      IndexedDBBackingStore* backing_store,
       WriteDescriptorVec& blobs,
       scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback)
       : waiting_for_callback_(false),
         database_id_(database_id),
-        backing_store_(backingStore),
+        backing_store_(backing_store),
         callback_(callback),
         aborted_(false) {
     blobs_.swap(blobs);
     iter_ = blobs_.begin();
-    WriteNextFile();
+    backing_store->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ChainedBlobWriterImpl::WriteNextFile, this));
   }
 
   virtual void set_delegate(scoped_ptr<FileWriterDelegate> delegate) OVERRIDE {
@@ -2179,7 +2180,6 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
 
   virtual void ReportWriteCompletion(bool succeeded,
                                      int64 bytes_written) OVERRIDE {
-    // TODO(ericu): Check bytes_written against the blob's snapshot value.
     DCHECK(waiting_for_callback_);
     DCHECK(!succeeded || bytes_written >= 0);
     waiting_for_callback_ = false;
@@ -2190,10 +2190,14 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
       self_ref_ = NULL;
       return;
     }
-    if (succeeded)
+    if (iter_->size() != -1 && iter_->size() != bytes_written)
+      succeeded = false;
+    if (succeeded) {
+      ++iter_;
       WriteNextFile();
-    else
+    } else {
       callback_->Run(false);
+    }
   }
 
   virtual void Abort() OVERRIDE {
@@ -2219,7 +2223,6 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
         return;
       }
       waiting_for_callback_ = true;
-      ++iter_;
     }
   }
 
@@ -2244,17 +2247,17 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
                     base::TaskRunner* task_runner)
       : chained_blob_writer_(chained_blob_writer),
         task_runner_(task_runner),
-        bytes_written_(-1) {}
+        bytes_written_(0) {}
 
   void Run(base::File::Error rv,
            int64 bytes,
            FileWriterDelegate::WriteProgressStatus write_status) {
+    DCHECK_GE(bytes, 0);
+    bytes_written_ += bytes;
     if (write_status == FileWriterDelegate::SUCCESS_IO_PENDING)
       return;  // We don't care about progress events.
     if (rv == base::File::FILE_OK) {
-      DCHECK_GE(bytes, 0);
       DCHECK_EQ(write_status, FileWriterDelegate::SUCCESS_COMPLETED);
-      bytes_written_ = bytes;
     } else {
       DCHECK(write_status == FileWriterDelegate::ERROR_WRITE_STARTED ||
              write_status == FileWriterDelegate::ERROR_WRITE_NOT_STARTED);
@@ -2320,8 +2323,15 @@ bool IndexedDBBackingStore::WriteBlobFile(
 
     base::File::Info info;
     if (base::GetFileInfo(descriptor.file_path(), &info)) {
-      // TODO(ericu): Validate the snapshot date here.  Expand WriteDescriptor
-      // to include snapshot date and file size, and check both.
+      if (descriptor.size() != -1) {
+        if (descriptor.size() != info.size)
+          return false;
+        // The round-trip can be lossy; round to nearest millisecond.
+        int64 delta = (descriptor.last_modified() -
+            info.last_modified).InMilliseconds();
+        if (std::abs(delta) > 1)
+          return false;
+      }
       if (!base::TouchFile(path, info.last_accessed, info.last_modified)) {
         // TODO(ericu): Complain quietly; timestamp's probably not vital.
       }
@@ -3876,10 +3886,15 @@ leveldb::Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
         journal.push_back(journal_entry);
         if (info_iter->is_file()) {
           new_files_to_write->push_back(
-              WriteDescriptor(info_iter->file_path(), next_blob_key));
+              WriteDescriptor(info_iter->file_path(),
+                              next_blob_key,
+                              info_iter->size(),
+                              info_iter->last_modified()));
         } else {
-          new_files_to_write->push_back(WriteDescriptor(
-              getURLFromUUID(info_iter->uuid()), next_blob_key));
+          new_files_to_write->push_back(
+              WriteDescriptor(getURLFromUUID(info_iter->uuid()),
+                              next_blob_key,
+                              info_iter->size()));
         }
         info_iter->set_key(next_blob_key);
         new_blob_keys.push_back(&*info_iter);
@@ -4066,7 +4081,8 @@ class IndexedDBBackingStore::Transaction::BlobWriteCallbackWrapper
       : transaction_(transaction), callback_(callback) {}
   virtual void Run(bool succeeded) OVERRIDE {
     callback_->Run(succeeded);
-    transaction_->chained_blob_writer_ = NULL;
+    if (succeeded)  // Else it's already been deleted during rollback.
+      transaction_->chained_blob_writer_ = NULL;
   }
 
  private:
@@ -4213,12 +4229,21 @@ void IndexedDBBackingStore::Transaction::PutBlobInfo(
 
 IndexedDBBackingStore::Transaction::WriteDescriptor::WriteDescriptor(
     const GURL& url,
-    int64_t key)
-    : is_file_(false), url_(url), key_(key) {}
+    int64_t key,
+    int64_t size)
+    : is_file_(false), url_(url), key_(key), size_(size) {
+}
 
 IndexedDBBackingStore::Transaction::WriteDescriptor::WriteDescriptor(
     const FilePath& file_path,
-    int64_t key)
-    : is_file_(true), file_path_(file_path), key_(key) {}
+    int64_t key,
+    int64_t size,
+    base::Time last_modified)
+    : is_file_(true),
+      file_path_(file_path),
+      key_(key),
+      size_(size),
+      last_modified_(last_modified) {
+}
 
 }  // namespace content

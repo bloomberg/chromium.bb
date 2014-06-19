@@ -18,7 +18,6 @@ IndexedDBActiveBlobRegistry::IndexedDBActiveBlobRegistry(
     : backing_store_(backing_store), weak_factory_(this) {}
 
 IndexedDBActiveBlobRegistry::~IndexedDBActiveBlobRegistry() {
-  DCHECK(use_tracker_.empty());
 }
 
 void IndexedDBActiveBlobRegistry::AddBlobRef(int64 database_id,
