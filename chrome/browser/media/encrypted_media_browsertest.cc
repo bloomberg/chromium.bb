@@ -64,9 +64,11 @@ const char kLoadableSession[] = "LoadableSession";
 const char kUnknownSession[] = "UnknownSession";
 
 // EME-specific test results and errors.
-const char kEmeKeyError[] = "KEYERROR";
+const char kEmeKeyError[] = "KEY_ERROR";
 const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
-const char kFileIOTestSuccess[] = "FILEIOTESTSUCCESS";
+const char kFileIOTestSuccess[] = "FILE_IO_TEST_SUCCESS";
+
+const char kDefaultEmePlayer[] = "eme_player.html";
 
 // The type of video src used to load media.
 enum SrcType {
@@ -167,7 +169,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     if (!IsPlayBackPossible(key_system))
       expected_title = kEmeKeyError;
 
-    RunEncryptedMediaTest("encrypted_media_player.html",
+    RunEncryptedMediaTest(kDefaultEmePlayer,
                           media_file,
                           media_type,
                           key_system,
@@ -180,7 +182,8 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     bool receivedKeyMessage = false;
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        "window.domAutomationController.send(video.receivedKeyMessage);",
+        "window.domAutomationController.send("
+        "document.querySelector('video').receivedKeyMessage);",
         &receivedKeyMessage));
     EXPECT_TRUE(receivedKeyMessage);
   }
@@ -308,7 +311,7 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
                             const std::string& expected_title) {
     // Since we do not test playback, arbitrarily choose a test file and source
     // type.
-    RunEncryptedMediaTest("encrypted_media_player.html",
+    RunEncryptedMediaTest(kDefaultEmePlayer,
                           "bear-a-enc_a.webm",
                           kWebMAudioOnly,
                           key_system,
@@ -375,7 +378,7 @@ class EncryptedMediaTest
   }
 
   void RunInvalidResponseTest() {
-    RunEncryptedMediaTest("encrypted_media_player.html",
+    RunEncryptedMediaTest(kDefaultEmePlayer,
                           "bear-320x240-av-enc_av.webm",
                           kWebMAudioVideo,
                           CurrentKeySystem(),
@@ -591,7 +594,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
 #if defined(WIDEVINE_CDM_AVAILABLE)
 // The parent key system cannot be used in generateKeyRequest.
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException_Prefixed) {
-  RunEncryptedMediaTest("encrypted_media_player.html",
+  RunEncryptedMediaTest(kDefaultEmePlayer,
                         "bear-a-enc_a.webm",
                         kWebMAudioOnly,
                         "com.widevine",
@@ -605,7 +608,7 @@ IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException_Prefixed) {
 // TODO(jrummell): http://crbug.com/349181
 // The parent key system cannot be used when creating MediaKeys.
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
-  RunEncryptedMediaTest("encrypted_media_player.html",
+  RunEncryptedMediaTest(kDefaultEmePlayer,
                         "bear-a-enc_a.webm",
                         kWebMAudioOnly,
                         "com.widevine",
@@ -622,18 +625,14 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, InitializeCDMFail) {
   TestNonPlaybackCases(kExternalClearKeyInitializeFailKeySystem, kEmeKeyError);
 }
 
-// TODO(jrummell): Fix these tests to handle rejected promises when the CDM
-// crashes. Currently the JavaScript doesn't expect to get any more events
-// after a crash.
-
 // When CDM crashes, we should still get a decode error.
-IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, DISABLED_CDMCrashDuringDecode) {
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, CDMCrashDuringDecode) {
   IgnorePluginCrash();
   TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError);
 }
 
 // Testing that the media browser test does fail on plugin crash.
-IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, DISABLED_CDMExpectedCrash) {
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, CDMExpectedCrash) {
   // Plugin crash is not ignored by default, the test is expected to fail.
   EXPECT_NONFATAL_FAILURE(
       TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError),
@@ -646,7 +645,7 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, FileIOTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadLoadableSession) {
-  RunEncryptedMediaTest("encrypted_media_player.html",
+  RunEncryptedMediaTest(kDefaultEmePlayer,
                         "bear-320x240-v-enc_v.webm",
                         kWebMVideoOnly,
                         kExternalClearKeyKeySystem,
@@ -659,7 +658,7 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadLoadableSession) {
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadUnknownSession) {
   // TODO(xhwang): Add a specific error for this failure, e.g. kSessionNotFound.
-  RunEncryptedMediaTest("encrypted_media_player.html",
+  RunEncryptedMediaTest(kDefaultEmePlayer,
                         "bear-320x240-v-enc_v.webm",
                         kWebMVideoOnly,
                         kExternalClearKeyKeySystem,

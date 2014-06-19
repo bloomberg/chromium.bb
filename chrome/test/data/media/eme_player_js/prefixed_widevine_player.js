@@ -13,12 +13,12 @@ PrefixedWidevinePlayer.prototype.init = function(video) {
 
 PrefixedWidevinePlayer.prototype.onWebkitKeyMessage = function(message) {
   function onSuccess(response) {
-    Utils.timeLog('Got license response', key);
     var key = new Uint8Array(response);
-    Utils.timeLog('Adding key to sessionID: ' + message.sessionId);
+    Utils.timeLog('Adding key to sessionID: ' + message.sessionId, key);
     message.target.webkitAddKey(TestConfig.keySystem, key, new Uint8Array(1),
                                 message.sessionId);
   }
   Utils.sendRequest('POST', 'arraybuffer', message.message,
-                    TestConfig.licenseServer, onSuccess);
+                    TestConfig.licenseServerURL, onSuccess,
+                    TestConfig.forceInvalidResponse);
 };

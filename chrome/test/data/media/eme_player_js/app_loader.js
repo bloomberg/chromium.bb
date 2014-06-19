@@ -20,4 +20,5 @@ addScriptTag('prefixed_clearkey_player.js');
 addScriptTag('clearkey_player.js');
 addScriptTag('widevine_player.js');
 addScriptTag('prefixed_widevine_player.js');
+addScriptTag('file_io_test_player.js');
 addScriptTag('test_app.js');

@@ -8,11 +8,12 @@ var TestApp = new function() {
   this.video_ = null;
 }
 
-TestApp.play = function() {
+TestApp.loadPlayer = function() {
   if (this.video_) {
     Utils.timeLog('Delete old video tag.');
-    this.video_.src = '';
+    this.video_.pause();
     this.video_.remove();
+    delete(this.video_);
   }
 
   this.video_ = document.createElement('video');
@@ -29,34 +30,46 @@ TestApp.play = function() {
   }
   Utils.timeLog('Using ' + videoPlayer.constructor.name);
   var videoSpan = document.getElementById(VIDEO_ELEMENT_ID);
-  videoSpan.appendChild(this.video_);
+  if (videoSpan)
+    videoSpan.appendChild(this.video_);
+  else
+    document.body.appendChild(this.video_);
   videoPlayer.init(this.video_);
 
-  FPSObserver.observe(this.video_);
+  if (TestConfig.runFPS)
+    FPSObserver.observe(this.video_);
+
   this.video_.play();
+  return this.video_;
 };
 
 TestApp.getPlayer = function() {
-  var keySystem = TestConfig.keySystem;
+  // Update keySystem if using prefixed Clear Key since it is not available as a
+  // separate key system to choose from; however it can be set in URL query.
   var usePrefixedEME = TestConfig.usePrefixedEME;
-
-  // Update keySystem if using prefixed Clear Key since it is not available in
-  // as a separate key system to choose from.
-  if (keySystem == CLEARKEY && usePrefixedEME)
+  if (TestConfig.keySystem == CLEARKEY && usePrefixedEME)
     TestConfig.keySystem = PREFIXED_CLEARKEY;
+  var keySystem = TestConfig.keySystem;
 
   switch (keySystem) {
     case WIDEVINE_KEYSYSTEM:
       if (usePrefixedEME)
         return new PrefixedWidevinePlayer();
       return new WidevinePlayer();
+    case PREFIXED_CLEARKEY:
+       return new PrefixedClearKeyPlayer();
     case EXTERNAL_CLEARKEY:
     case CLEARKEY:
       if (usePrefixedEME)
         return new PrefixedClearKeyPlayer();
       return new ClearKeyPlayer();
+    case FILE_IO_TEST_KEYSYSTEM:
+      if (usePrefixedEME)
+        return new FileIOTestPlayer();
     default:
-      Utils.timeLog(keySystem + ' is not a supported system yet.');
-    return null;
+      Utils.timeLog(keySystem + ' is not a known key system');
+      if (usePrefixedEME)
+        return new PrefixedClearKeyPlayer();
+      return new ClearKeyPlayer();
   }
 };

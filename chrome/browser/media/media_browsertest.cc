@@ -58,7 +58,7 @@ void MediaBrowserTest::RunMediaTestPage(
 
 base::string16 MediaBrowserTest::RunTest(const GURL& gurl,
                                          const std::string& expected_title) {
-  DVLOG(1) << "Running test URL: " << gurl;
+  VLOG(0) << "Running test URL: " << gurl;
   // Observe the web contents for plugin crashes.
   Observe(browser()->tab_strip_model()->GetActiveWebContents());
   content::TitleWatcher title_watcher(

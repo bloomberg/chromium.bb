@@ -14,12 +14,13 @@ function InitPlayer(player, video) {
     'webkitneedkey': 'onWebkitNeedKey',
     'webkitkeymessage': 'onWebkitKeyMessage',
     'webkitkeyadded': 'onWebkitKeyAdded',
+    'webkitkeyerror': 'onWebkitKeyError',
     'error': 'onError',
     'abort': 'onAbort'
   };
 
   // List of events that fail tests.
-  var failingEvents = ['error', 'onAbort'];
+  var failingEvents = ['error', 'abort'];
 
   for (eventName in eventListenerMap) {
     video.addEventListener(eventName,
@@ -40,7 +41,7 @@ function InitPlayer(player, video) {
 }
 
 function InitEMEPlayer(player, video) {
-  player.onNeedKey = function(message) {
+  video.addEventListener('needkey', function(message) {
     Utils.timeLog('Creating new media key session for contentType: ' +
                   message.contentType + ', initData: ' +
                   Utils.getHexString(message.initData));
@@ -48,13 +49,20 @@ function InitEMEPlayer(player, video) {
       var mediaKeySession = message.target.mediaKeys.createSession(
           message.contentType, message.initData);
       mediaKeySession.addEventListener('message', player.onMessage);
+      mediaKeySession.addEventListener('message', function(message) {
+        video.receivedKeyMessage = true;
+        if (Utils.isHeartBeatMessage(message.message)) {
+          Utils.timeLog('MediaKeySession onMessage - heart beat', message);
+          video.receivedHeartbeat = true;
+        }
+      });
       mediaKeySession.addEventListener('error', function(error) {
-        Utils.failTest(error);
+        Utils.failTest(error, KEY_ERROR);
       });
     } catch (e) {
       Utils.failTest(e);
     }
-  };
+  });
 
   InitPlayer(player, video);
   try {
@@ -66,17 +74,40 @@ function InitEMEPlayer(player, video) {
 }
 
 function InitPrefixedEMEPlayer(player, video) {
-  player.onWebkitNeedKey = function(message) {
+  video.addEventListener('webkitneedkey', function(message) {
+    var initData = message.initData;
+    if (TestConfig.sessionToLoad) {
+      Utils.timeLog('Loading session: ' + TestConfig.sessionToLoad)
+      initData = Utils.convertToUint8Array(
+          PREFIXED_API_LOAD_SESSION_HEADER + TestConfig.sessionToLoad);
+    }
     Utils.timeLog(TestConfig.keySystem + ' Generate key request, initData: ' +
-                  Utils.getHexString(message.initData));
-    message.target.webkitGenerateKeyRequest(
-        TestConfig.keySystem, message.initData);
-  };
+                  Utils.getHexString(initData));
+    try {
+      message.target.webkitGenerateKeyRequest(TestConfig.keySystem, initData);
+    } catch(e) {
+      Utils.failTest(e);
+    }
+  });
 
-  player.onWebkitKeyAdded = function(message) {
+  video.addEventListener('webkitkeyadded', function(message) {
     Utils.timeLog('onWebkitKeyAdded', message);
-    message.target.hasKeyAdded = true;
-  };
+    message.target.receivedKeyAdded = true;
+  });
+
+  video.addEventListener('webkitkeyerror', function(error) {
+    Utils.timeLog('onWebkitKeyError', error);
+    Utils.failTest(error, KEY_ERROR);
+  });
+
+  video.addEventListener('webkitkeymessage', function(message) {
+    Utils.timeLog('onWebkitKeyMessage', message);
+    message.target.receivedKeyMessage = true;
+    if (Utils.isHeartBeatMessage(message.message)) {
+      Utils.timeLog('onWebkitKeyMessage - heart beat', message);
+      message.target.receivedHeartbeat = true;
+    }
+  });
 
   InitPlayer(player, video);
 }
