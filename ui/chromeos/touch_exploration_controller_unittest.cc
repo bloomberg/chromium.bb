@@ -819,7 +819,6 @@ TEST_F(TouchExplorationTest, SplitTapLongPress) {
 
   // Tap and hold at one location, and get a mouse move event in touch explore.
   EnterTouchExplorationModeAtLocation(initial_touch_location);
-
   std::vector<ui::LocatedEvent*> events =
       GetCapturedEventsOfType(ui::ET_MOUSE_MOVED);
   ASSERT_EQ(1U, events.size());
@@ -864,7 +863,6 @@ TEST_F(TouchExplorationTest, SplitTapReleaseLongPress) {
 
   // Tap and hold at one location, and get a mouse move event in touch explore.
   EnterTouchExplorationModeAtLocation(initial_touch_location);
-
   std::vector<ui::LocatedEvent*> events =
       GetCapturedEventsOfType(ui::ET_MOUSE_MOVED);
   ASSERT_EQ(1U, events.size());
@@ -899,5 +897,59 @@ TEST_F(TouchExplorationTest, SplitTapReleaseLongPress) {
             released_time - pressed_time);
  }
 
+TEST_F(TouchExplorationTest, SplitTapLongPressMultiFinger) {
+  SwitchTouchExplorationMode(true);
+  gfx::Point initial_touch_location(11, 12);
+  gfx::Point second_touch_location(33, 34);
+  gfx::Point third_touch_location(16, 17);
+
+  // Tap and hold at one location, and get a mouse move event in touch explore.
+  EnterTouchExplorationModeAtLocation(initial_touch_location);
+
+  std::vector<ui::LocatedEvent*> events =
+      GetCapturedEventsOfType(ui::ET_MOUSE_MOVED);
+  ASSERT_EQ(1U, events.size());
+
+  EXPECT_EQ(initial_touch_location, events[0]->location());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_IS_SYNTHESIZED);
+  EXPECT_TRUE(events[0]->flags() & ui::EF_TOUCH_ACCESSIBILITY);
+  ClearCapturedEvents();
+
+  // Now tap at a different location and hold for long press.
+  ui::TouchEvent split_tap_press(
+      ui::ET_TOUCH_PRESSED, second_touch_location, 1, Now());
+  generator_->Dispatch(&split_tap_press);
+  simulated_clock_->Advance(gesture_detector_config_.longpress_timeout);
+
+  // Placing a third finger on the screen should be discarded and not affect
+  // the events passed through.
+  ui::TouchEvent third_press(
+      ui::ET_TOUCH_PRESSED, third_touch_location, 2, Now());
+  generator_->Dispatch(&third_press);
+
+  // When all three fingers are released, there should be only two captured
+  // events: touch press and touch release. All fingers should then be up.
+  ui::TouchEvent touch_explore_release(
+      ui::ET_TOUCH_RELEASED, initial_touch_location, 0, Now());
+  generator_->Dispatch(&touch_explore_release);
+  ui::TouchEvent split_tap_release(
+      ui::ET_TOUCH_RELEASED, second_touch_location, 1, Now());
+  generator_->Dispatch(&split_tap_release);
+  ui::TouchEvent third_tap_release(
+      ui::ET_TOUCH_RELEASED, third_touch_location, 2, Now());
+  generator_->Dispatch(&third_tap_release);
+
+  const ScopedVector<ui::LocatedEvent>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(2U, captured_events.size());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
+  EXPECT_EQ(initial_touch_location, captured_events[0]->location());
+  base::TimeDelta pressed_time = captured_events[0]->time_stamp();
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
+  EXPECT_EQ(initial_touch_location, captured_events[1]->location());
+  base::TimeDelta released_time = captured_events[1]->time_stamp();
+  EXPECT_EQ(gesture_detector_config_.longpress_timeout,
+            released_time - pressed_time);
+  EXPECT_TRUE(IsInNoFingersDownState());
+}
 
 }  // namespace ui

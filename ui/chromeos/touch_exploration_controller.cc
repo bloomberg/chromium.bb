@@ -235,11 +235,12 @@ ui::EventRewriteStatus TouchExplorationController::InDoubleTapPressed(
     if (current_touch_ids_.size() != 0)
       return EVENT_REWRITE_DISCARD;
 
-    // Rewrite at location of last touch exploration.
+    // Rewrite release at location of last touch exploration with the same
+    // id as the prevoius press.
     rewritten_event->reset(
         new ui::TouchEvent(ui::ET_TOUCH_RELEASED,
                            last_touch_exploration_->location(),
-                           event.touch_id(),
+                           initial_press_->touch_id(),
                            event.time_stamp()));
     (*rewritten_event)->set_flags(event.flags());
     ResetToNoFingersDown();
@@ -353,6 +354,11 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
     if (current_touch_ids_.size() != 1)
       return EVENT_REWRITE_DISCARD;
 
+    // Continue to release the touch only if the touch explore finger is the
+    // only finger remaining.
+    if (current_touch_ids_.size() != 1)
+      return EVENT_REWRITE_DISCARD;
+
     // Rewrite at location of last touch exploration.
     rewritten_event->reset(
         new ui::TouchEvent(ui::ET_TOUCH_RELEASED,
@@ -446,7 +452,8 @@ void TouchExplorationController::VlogEvent(const ui::TouchEvent& touch_event,
     VLOG(0) << "\n Function name: " << function_name
             << "\n Event Type: " << type
             << "\n Location: " << location.ToString()
-            << "\n Touch ID: " << touch_id;
+            << "\n Touch ID: " << touch_id
+            << "\n Number of fingers down: " << current_touch_ids_.size();
     prev_event_.reset(new TouchEvent(touch_event));
   }
 }
