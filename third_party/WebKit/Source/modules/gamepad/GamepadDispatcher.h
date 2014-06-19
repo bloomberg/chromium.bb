@@ -5,11 +5,12 @@
 #ifndef GamepadDispatcher_h
 #define GamepadDispatcher_h
 
-#include "core/frame/DeviceSensorEventDispatcher.h"
+#include "core/frame/DeviceEventDispatcherBase.h"
+#include "platform/heap/Handle.h"
+#include "public/platform/WebGamepad.h"
 #include "public/platform/WebGamepadListener.h"
 
 namespace blink {
-class WebGamepad;
 class WebGamepads;
 }
 
@@ -17,24 +18,34 @@ namespace WebCore {
 
 class NavigatorGamepad;
 
-class GamepadDispatcher : public DeviceSensorEventDispatcher, public blink::WebGamepadListener {
+class GamepadDispatcher : public DeviceEventDispatcherBase, public blink::WebGamepadListener {
 public:
     static GamepadDispatcher& instance();
 
-    void addClient(NavigatorGamepad*);
-    void removeClient(NavigatorGamepad*);
     void sampleGamepads(blink::WebGamepads&);
+
+    struct ConnectionChange {
+        blink::WebGamepad pad;
+        unsigned index;
+    };
+
+    const ConnectionChange& latestConnectionChange() const { return m_latestChange; }
 
 private:
     GamepadDispatcher();
     virtual ~GamepadDispatcher();
 
+    // WebGamepadListener
     virtual void didConnectGamepad(unsigned index, const blink::WebGamepad&) OVERRIDE;
     virtual void didDisconnectGamepad(unsigned index, const blink::WebGamepad&) OVERRIDE;
-    void dispatchDidConnectOrDisconnectGamepad(unsigned index, const blink::WebGamepad&, bool connected);
 
+    // DeviceEventDispatcherBase
     virtual void startListening() OVERRIDE;
     virtual void stopListening() OVERRIDE;
+
+    void dispatchDidConnectOrDisconnectGamepad(unsigned index, const blink::WebGamepad&, bool connected);
+
+    ConnectionChange m_latestChange;
 };
 
 } // namespace WebCore

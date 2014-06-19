@@ -129,11 +129,8 @@ void NavigatorGamepad::trace(Visitor* visitor)
     WillBeHeapSupplement<Navigator>::trace(visitor);
 }
 
-void NavigatorGamepad::didConnectOrDisconnectGamepad(unsigned index, const blink::WebGamepad& webGamepad, bool connected)
+void NavigatorGamepad::didUpdateData()
 {
-    ASSERT(index < blink::WebGamepads::itemsLengthCap);
-    ASSERT(connected == webGamepad.connected);
-
     // We should stop listening once we detached.
     ASSERT(window());
 
@@ -144,23 +141,24 @@ void NavigatorGamepad::didConnectOrDisconnectGamepad(unsigned index, const blink
     if (window()->document()->activeDOMObjectsAreStopped() || window()->document()->activeDOMObjectsAreSuspended())
         return;
 
+    const GamepadDispatcher::ConnectionChange& change = GamepadDispatcher::instance().latestConnectionChange();
+
     if (!m_gamepads)
         m_gamepads = GamepadList::create();
 
-    Gamepad* gamepad = m_gamepads->item(index);
+    Gamepad* gamepad = m_gamepads->item(change.index);
     if (!gamepad)
         gamepad = Gamepad::create();
-    sampleGamepad(index, *gamepad, webGamepad);
-    m_gamepads->set(index, gamepad);
+    sampleGamepad(change.index, *gamepad, change.pad);
+    m_gamepads->set(change.index, gamepad);
 
-    const AtomicString& eventName = connected ? EventTypeNames::gamepadconnected : EventTypeNames::gamepaddisconnected;
-    RefPtrWillBeRawPtr<GamepadEvent> event = GamepadEvent::create(eventName, false, true, gamepad);
-    window()->dispatchEvent(event);
+    const AtomicString& eventName = change.pad.connected ? EventTypeNames::gamepadconnected : EventTypeNames::gamepaddisconnected;
+    window()->dispatchEvent(GamepadEvent::create(eventName, false, true, gamepad));
 }
 
 NavigatorGamepad::NavigatorGamepad(LocalFrame* frame)
     : DOMWindowProperty(frame)
-    , DeviceSensorEventController(frame ? frame->page() : 0)
+    , DeviceEventControllerBase(frame ? frame->page() : 0)
     , DOMWindowLifecycleObserver(frame ? frame->domWindow() : 0)
 {
 }
@@ -188,37 +186,18 @@ void NavigatorGamepad::willDetachGlobalObjectFromFrame()
 
 void NavigatorGamepad::registerWithDispatcher()
 {
-    GamepadDispatcher::instance().addClient(this);
+    GamepadDispatcher::instance().addController(this);
 }
 
 void NavigatorGamepad::unregisterWithDispatcher()
 {
-    GamepadDispatcher::instance().removeClient(this);
+    GamepadDispatcher::instance().removeController(this);
 }
 
 bool NavigatorGamepad::hasLastData()
 {
     // Gamepad data is polled instead of pushed.
     return false;
-}
-
-PassRefPtrWillBeRawPtr<Event> NavigatorGamepad::getLastEvent()
-{
-    // This is called only when hasLastData() is true.
-    ASSERT_NOT_REACHED();
-    return nullptr;
-}
-
-bool NavigatorGamepad::isNullEvent(Event*)
-{
-    // This is called only when hasLastData() is true.
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
-Document* NavigatorGamepad::document()
-{
-    return window() ? window()->document() : 0;
 }
 
 static bool isGamepadEvent(const AtomicString& eventType)
@@ -235,10 +214,13 @@ void NavigatorGamepad::didAddEventListener(DOMWindow*, const AtomicString& event
     }
 }
 
-void NavigatorGamepad::didRemoveEventListener(DOMWindow*, const AtomicString& eventType)
+void NavigatorGamepad::didRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
 {
-    if (isGamepadEvent(eventType))
+    if (isGamepadEvent(eventType)
+        && !window->hasEventListeners(EventTypeNames::gamepadconnected)
+        && !window->hasEventListeners(EventTypeNames::gamepaddisconnected)) {
         m_hasEventListener = false;
+    }
 }
 
 void NavigatorGamepad::didRemoveAllEventListeners(DOMWindow*)

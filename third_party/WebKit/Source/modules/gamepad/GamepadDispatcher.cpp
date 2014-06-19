@@ -17,19 +17,8 @@ GamepadDispatcher& GamepadDispatcher::instance()
     return gamepadDispatcher;
 }
 
-void GamepadDispatcher::addClient(NavigatorGamepad* client)
-{
-    addController(client);
-}
-
-void GamepadDispatcher::removeClient(NavigatorGamepad* client)
-{
-    removeController(client);
-}
-
 void GamepadDispatcher::sampleGamepads(blink::WebGamepads& gamepads)
 {
-    ASSERT(!m_controllers.isEmpty());
     blink::Platform::current()->sampleGamepads(gamepads);
 }
 
@@ -53,18 +42,12 @@ void GamepadDispatcher::didDisconnectGamepad(unsigned index, const blink::WebGam
 
 void GamepadDispatcher::dispatchDidConnectOrDisconnectGamepad(unsigned index, const blink::WebGamepad& gamepad, bool connected)
 {
-    {
-        TemporaryChange<bool> changeIsDispatching(m_isDispatching, true);
-        // Don't fire controllers removed or added during event dispatch.
-        size_t size = m_controllers.size();
-        for (size_t i = 0; i < size; ++i) {
-            if (m_controllers[i])
-                static_cast<NavigatorGamepad*>(m_controllers[i])->didConnectOrDisconnectGamepad(index, gamepad, connected);
-        }
-    }
+    ASSERT(index < blink::WebGamepads::itemsLengthCap);
+    ASSERT(connected == gamepad.connected);
 
-    if (m_needsPurge)
-        purgeControllers();
+    m_latestChange.pad = gamepad;
+    m_latestChange.index = index;
+    notifyControllers();
 }
 
 void GamepadDispatcher::startListening()

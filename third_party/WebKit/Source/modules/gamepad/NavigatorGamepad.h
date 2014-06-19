@@ -28,7 +28,7 @@
 
 #include "core/frame/DOMWindowLifecycleObserver.h"
 #include "core/frame/DOMWindowProperty.h"
-#include "core/frame/DeviceSensorEventController.h"
+#include "core/frame/DeviceEventControllerBase.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebGamepads.h"
@@ -40,11 +40,12 @@ class WebGamepads;
 
 namespace WebCore {
 
+class Document;
 class GamepadList;
 class Navigator;
 class WebKitGamepadList;
 
-class NavigatorGamepad FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorGamepad>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty, public DeviceSensorEventController, public DOMWindowLifecycleObserver {
+class NavigatorGamepad FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorGamepad>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty, public DeviceEventControllerBase, public DOMWindowLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorGamepad);
 public:
     static NavigatorGamepad* from(Document&);
@@ -70,13 +71,11 @@ private:
     virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
     virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
 
-    // DeviceSensorEventController
+    // DeviceEventControllerBase
     virtual void registerWithDispatcher() OVERRIDE;
     virtual void unregisterWithDispatcher() OVERRIDE;
     virtual bool hasLastData() OVERRIDE;
-    virtual PassRefPtrWillBeRawPtr<Event> getLastEvent() OVERRIDE;
-    virtual bool isNullEvent(Event*) OVERRIDE;
-    virtual Document* document() OVERRIDE;
+    virtual void didUpdateData() OVERRIDE;
 
     // DOMWindowLifecycleObserver
     virtual void didAddEventListener(DOMWindow*, const AtomicString&) OVERRIDE;

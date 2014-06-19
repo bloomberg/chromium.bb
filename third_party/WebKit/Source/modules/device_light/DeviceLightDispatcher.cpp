@@ -5,7 +5,6 @@
 #include "config.h"
 #include "modules/device_light/DeviceLightDispatcher.h"
 
-#include "core/frame/DeviceSensorEventDispatcher.h"
 #include "modules/device_light/DeviceLightController.h"
 #include "public/platform/Platform.h"
 
