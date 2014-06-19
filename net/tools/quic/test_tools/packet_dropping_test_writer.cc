@@ -35,8 +35,7 @@ class WriteUnblockedAlarm : public QuicAlarm::Delegate {
 // later point.
 class DelayAlarm : public QuicAlarm::Delegate {
  public:
-  explicit DelayAlarm(PacketDroppingTestWriter* writer)
-      : writer_(writer) {}
+  explicit DelayAlarm(PacketDroppingTestWriter* writer) : writer_(writer) {}
 
   virtual QuicTime OnAlarm() OVERRIDE {
     return writer_->ReleaseOldPackets();

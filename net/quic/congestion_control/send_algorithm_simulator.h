@@ -23,10 +23,10 @@ class SendAlgorithmSimulator {
   struct SentPacket {
     SentPacket(QuicPacketSequenceNumber sequence_number,
                QuicTime send_time,
-               QuicTime ack_time) :
-        sequence_number(sequence_number),
-        send_time(send_time),
-        ack_time(ack_time) {}
+               QuicTime ack_time)
+        : sequence_number(sequence_number),
+          send_time(send_time),
+          ack_time(ack_time) {}
     QuicPacketSequenceNumber sequence_number;
     QuicTime send_time;
     QuicTime ack_time;

@@ -10,10 +10,10 @@
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 
 using base::StringPiece;
-using net::test::kInitialFlowControlWindowForTest;
 using net::test::MakeAckFrame;
 using net::test::MockHelper;
 using net::test::QuicConnectionPeer;
+using net::test::kInitialFlowControlWindowForTest;
 
 namespace net {
 namespace tools {

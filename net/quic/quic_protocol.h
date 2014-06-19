@@ -161,7 +161,7 @@ enum FecProtection {
   MAY_FEC_PROTECT    // Callee does not have to but may FEC protect this data.
 };
 
-// Indicates FEC policy
+// Indicates FEC policy.
 enum FecPolicy {
   FEC_PROTECT_ALWAYS,   // All data in the stream should be FEC protected.
   FEC_PROTECT_OPTIONAL  // Data in the stream does not need FEC protection.

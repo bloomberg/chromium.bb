@@ -439,7 +439,7 @@ TEST(CryptoServerConfigGenerationTest, SCIDIsHashOfServerConfig) {
   hash->Finish(digest, sizeof(digest));
 
   ASSERT_EQ(scid.size(), sizeof(digest));
-  EXPECT_TRUE(0 == memcmp(digest, scid_str.data(), sizeof(digest)));
+  EXPECT_EQ(0, memcmp(digest, scid_str.data(), sizeof(digest)));
 }
 
 class CryptoServerTestNoConfig : public CryptoServerTest {
