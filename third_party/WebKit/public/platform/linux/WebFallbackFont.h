@@ -39,6 +39,7 @@ namespace blink {
 struct WebFallbackFont {
     WebCString name;
     WebCString filename;
+    int fontconfigInterfaceId;
     int ttcIndex;
     bool isBold;
     bool isItalic;
