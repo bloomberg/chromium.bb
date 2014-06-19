@@ -29,7 +29,8 @@ class MEDIA_EXPORT VideoDecoder {
     kDecryptError  // Decrypting error happened.
   };
 
-  // Callback to return decode frames.
+  // Callback for VideoDecoder to return a decoded frame whenever it becomes
+  // available. Only non-EOS frames should be returned via this callback.
   typedef base::Callback<void(const scoped_refptr<VideoFrame>&)> OutputCB;
 
   // Callback type for Decode(). Called after the decoder has completed decoding

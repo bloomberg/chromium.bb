@@ -179,6 +179,15 @@ class VideoFrameStreamTest
     } while (!pending_read_);
   }
 
+  void ReadAllFrames() {
+    do {
+      ReadOneFrame();
+    } while (frame_read_.get() && !frame_read_->end_of_stream());
+
+    const int total_num_frames = kNumConfigs * kNumBuffersInOneConfig;
+    DCHECK_EQ(num_decoded_frames_, total_num_frames);
+  }
+
   enum PendingState {
     NOT_PENDING,
     DEMUXER_READ_NORMAL,
@@ -371,12 +380,7 @@ TEST_P(VideoFrameStreamTest, ReadOneFrame) {
 
 TEST_P(VideoFrameStreamTest, ReadAllFrames) {
   Initialize();
-  do {
-    Read();
-  } while (frame_read_.get() && !frame_read_->end_of_stream());
-
-  const int total_num_frames = kNumConfigs * kNumBuffersInOneConfig;
-  DCHECK_EQ(num_decoded_frames_, total_num_frames);
+  ReadAllFrames();
 }
 
 TEST_P(VideoFrameStreamTest, Read_AfterReset) {
@@ -534,6 +538,15 @@ TEST_P(VideoFrameStreamTest, Reset_AfterDemuxerRead_ConfigChange) {
   SatisfyPendingCallback(DEMUXER_READ_CONFIG_CHANGE);
   Reset();
   Read();
+}
+
+TEST_P(VideoFrameStreamTest, Reset_AfterEndOfStream) {
+  Initialize();
+  ReadAllFrames();
+  Reset();
+  num_decoded_frames_ = 0;
+  demuxer_stream_->SeekToStart();
+  ReadAllFrames();
 }
 
 TEST_P(VideoFrameStreamTest, Reset_DuringNoKeyRead) {

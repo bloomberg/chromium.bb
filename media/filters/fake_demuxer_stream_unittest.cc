@@ -13,9 +13,9 @@
 
 namespace media {
 
-static const int kNumBuffersInOneConfig = 9;
-static const int kNumBuffersToReadFirst = 5;
-static const int kNumConfigs = 3;
+const int kNumBuffersInOneConfig = 9;
+const int kNumBuffersToReadFirst = 5;
+const int kNumConfigs = 3;
 COMPILE_ASSERT(kNumBuffersToReadFirst < kNumBuffersInOneConfig,
                do_not_read_too_many_buffers);
 COMPILE_ASSERT(kNumConfigs > 0, need_multiple_configs_to_trigger_config_change);
@@ -24,7 +24,8 @@ class FakeDemuxerStreamTest : public testing::Test {
  public:
   FakeDemuxerStreamTest()
       : status_(DemuxerStream::kAborted),
-        read_pending_(false) {}
+        read_pending_(false),
+        num_buffers_received_(0) {}
   virtual ~FakeDemuxerStreamTest() {}
 
   void BufferReady(DemuxerStream::Status status,
@@ -33,6 +34,8 @@ class FakeDemuxerStreamTest : public testing::Test {
     read_pending_ = false;
     status_ = status;
     buffer_ = buffer;
+    if (status == DemuxerStream::kOk && !buffer->end_of_stream())
+      num_buffers_received_++;
   }
 
   enum ReadResult {
@@ -48,12 +51,14 @@ class FakeDemuxerStreamTest : public testing::Test {
         new FakeDemuxerStream(kNumConfigs, kNumBuffersInOneConfig, false));
     for (int i = 0; i < kNumBuffersToReadFirst; ++i)
       ReadAndExpect(OK);
+    DCHECK_EQ(kNumBuffersToReadFirst, num_buffers_received_);
   }
 
   void EnterBeforeEOSState() {
     stream_.reset(new FakeDemuxerStream(1, kNumBuffersInOneConfig, false));
     for (int i = 0; i < kNumBuffersInOneConfig; ++i)
       ReadAndExpect(OK);
+    DCHECK_EQ(kNumBuffersInOneConfig, num_buffers_received_);
   }
 
   void ExpectReadResult(ReadResult result) {
@@ -128,23 +133,12 @@ class FakeDemuxerStreamTest : public testing::Test {
       ExpectReadResult(ABORTED);
   }
 
-  void TestRead(int num_configs,
-                int num_buffers_in_one_config,
-                bool is_encrypted) {
-    stream_.reset(new FakeDemuxerStream(
-        num_configs, num_buffers_in_one_config, is_encrypted));
-
-    int num_buffers_received = 0;
-
-    const VideoDecoderConfig& config = stream_->video_decoder_config();
-    EXPECT_TRUE(config.IsValidConfig());
-    EXPECT_EQ(is_encrypted, config.is_encrypted());
-
+  void ReadAllBuffers(int num_configs, int num_buffers_in_one_config) {
+    DCHECK_EQ(0, num_buffers_received_);
     for (int i = 0; i < num_configs; ++i) {
       for (int j = 0; j < num_buffers_in_one_config; ++j) {
         ReadAndExpect(OK);
-        num_buffers_received++;
-        EXPECT_EQ(num_buffers_received, stream_->num_buffers_returned());
+        EXPECT_EQ(num_buffers_received_, stream_->num_buffers_returned());
       }
 
       if (i == num_configs - 1)
@@ -156,7 +150,20 @@ class FakeDemuxerStreamTest : public testing::Test {
     // Will always get EOS after we hit EOS.
     ReadAndExpect(EOS);
 
-    EXPECT_EQ(num_configs * num_buffers_in_one_config, num_buffers_received);
+    EXPECT_EQ(num_configs * num_buffers_in_one_config, num_buffers_received_);
+  }
+
+  void TestRead(int num_configs,
+                int num_buffers_in_one_config,
+                bool is_encrypted) {
+    stream_.reset(new FakeDemuxerStream(
+        num_configs, num_buffers_in_one_config, is_encrypted));
+
+    const VideoDecoderConfig& config = stream_->video_decoder_config();
+    EXPECT_TRUE(config.IsValidConfig());
+    EXPECT_EQ(is_encrypted, config.is_encrypted());
+
+    ReadAllBuffers(num_configs, num_buffers_in_one_config);
   }
 
   base::MessageLoop message_loop_;
@@ -252,6 +259,27 @@ TEST_F(FakeDemuxerStreamTest, NoConfigChanges) {
   for (int i = 0; i < kNumBuffersInOneConfig; ++i)
     ReadAndExpect(OK);
   ReadAndExpect(EOS);
+}
+
+TEST_F(FakeDemuxerStreamTest, SeekToStart_Normal) {
+  EnterNormalReadState();
+  stream_->SeekToStart();
+  num_buffers_received_ = 0;
+  ReadAllBuffers(kNumConfigs, kNumBuffersInOneConfig);
+}
+
+TEST_F(FakeDemuxerStreamTest, SeekToStart_BeforeEOS) {
+  EnterBeforeEOSState();
+  stream_->SeekToStart();
+  num_buffers_received_ = 0;
+  ReadAllBuffers(1, kNumBuffersInOneConfig);
+}
+
+TEST_F(FakeDemuxerStreamTest, SeekToStart_AfterEOS) {
+  TestRead(3, 5, false);
+  stream_->SeekToStart();
+  num_buffers_received_ = 0;
+  ReadAllBuffers(3, 5);
 }
 
 }  // namespace media

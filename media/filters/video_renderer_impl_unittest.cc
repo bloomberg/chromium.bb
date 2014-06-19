@@ -174,10 +174,9 @@ class VideoRendererImplTest : public ::testing::Test {
   //   nn - Queue a decoder buffer with timestamp nn * 1000us
   //   abort - Queue an aborted read
   //   error - Queue a decoder error
-  //   eos - Queue an end of stream decoder buffer
   //
   // Examples:
-  //   A clip that is four frames long: "0 10 20 30 eos"
+  //   A clip that is four frames long: "0 10 20 30"
   //   A clip that has a decode error: "60 70 error"
   void QueueFrames(const std::string& str) {
     std::vector<std::string> tokens;
@@ -194,12 +193,6 @@ class VideoRendererImplTest : public ::testing::Test {
         scoped_refptr<VideoFrame> null_frame;
         decode_results_.push_back(
             std::make_pair(VideoDecoder::kDecodeError, null_frame));
-        continue;
-      }
-
-      if (tokens[i] == "eos") {
-        decode_results_.push_back(
-            std::make_pair(VideoDecoder::kOk, VideoFrame::CreateEOSFrame()));
         continue;
       }
 
@@ -261,6 +254,26 @@ class VideoRendererImplTest : public ::testing::Test {
         FROM_HERE, base::Bind(base::ResetAndReturn(&decode_cb_),
                               decode_results_.front().first));
     decode_results_.pop_front();
+  }
+
+  void SatisfyPendingReadWithEndOfStream() {
+    DCHECK(!decode_cb_.is_null());
+
+    // Return EOS buffer to trigger EOS frame.
+    EXPECT_CALL(demuxer_stream_, Read(_))
+        .WillOnce(RunCallback<0>(DemuxerStream::kOk,
+                                 DecoderBuffer::CreateEOSBuffer()));
+
+    // Satify pending |decode_cb_| to trigger a new DemuxerStream::Read().
+    message_loop_.PostTask(
+        FROM_HERE,
+        base::Bind(base::ResetAndReturn(&decode_cb_), VideoDecoder::kOk));
+
+    WaitForPendingRead();
+
+    message_loop_.PostTask(
+        FROM_HERE,
+        base::Bind(base::ResetAndReturn(&decode_cb_), VideoDecoder::kOk));
   }
 
   void AdvanceTimeInMs(int time_ms) {
@@ -414,10 +427,12 @@ TEST_F(VideoRendererImplTest, EndOfStream_ClipDuration) {
   // Next frame has timestamp way past duration. Its timestamp will be adjusted
   // to match the duration of the video.
   QueueFrames(base::IntToString(kVideoDurationInMs + 1000));
+  SatisfyPendingRead();
+  WaitForPendingRead();
 
   // Queue the end of stream frame and wait for the last frame to be rendered.
-  QueueFrames("eos");
-  SatisfyPendingRead();
+  SatisfyPendingReadWithEndOfStream();
+
   EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(kVideoDurationInMs)));
   AdvanceTimeInMs(kVideoDurationInMs);
   WaitForEnded();

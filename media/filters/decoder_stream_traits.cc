@@ -5,10 +5,12 @@
 #include "media/filters/decoder_stream_traits.h"
 
 #include "base/logging.h"
+#include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
+#include "media/base/video_frame.h"
 
 namespace media {
 
@@ -52,6 +54,11 @@ DecoderStreamTraits<DemuxerStream::AUDIO>::DecoderConfigType
   return stream.audio_decoder_config();
 }
 
+scoped_refptr<DecoderStreamTraits<DemuxerStream::AUDIO>::OutputType>
+    DecoderStreamTraits<DemuxerStream::AUDIO>::CreateEOSOutput() {
+  return OutputType::CreateEOSBuffer();
+}
+
 std::string DecoderStreamTraits<DemuxerStream::VIDEO>::ToString() {
   return "Video";
 }
@@ -92,6 +99,11 @@ DecoderStreamTraits<DemuxerStream::VIDEO>::DecoderConfigType
     DecoderStreamTraits<DemuxerStream::VIDEO>::GetDecoderConfig(
         DemuxerStream& stream) {
   return stream.video_decoder_config();
+}
+
+scoped_refptr<DecoderStreamTraits<DemuxerStream::VIDEO>::OutputType>
+    DecoderStreamTraits<DemuxerStream::VIDEO>::CreateEOSOutput() {
+  return OutputType::CreateEOSFrame();
 }
 
 }  // namespace media

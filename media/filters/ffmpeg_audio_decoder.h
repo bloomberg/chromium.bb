@@ -45,6 +45,26 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   virtual void Stop() OVERRIDE;
 
  private:
+  // There are four states the decoder can be in:
+  //
+  // - kUninitialized: The decoder is not initialized.
+  // - kNormal: This is the normal state. The decoder is idle and ready to
+  //            decode input buffers, or is decoding an input buffer.
+  // - kDecodeFinished: EOS buffer received, codec flushed and decode finished.
+  //                    No further Decode() call should be made.
+  // - kError: Unexpected error happened.
+  //
+  // These are the possible state transitions.
+  //
+  // kUninitialized -> kNormal:
+  //     The decoder is successfully initialized and is ready to decode buffers.
+  // kNormal -> kDecodeFinished:
+  //     When buffer->end_of_stream() is true and avcodec_decode_audio4()
+  //     returns 0 data.
+  // kNormal -> kError:
+  //     A decoding error occurs and decoding needs to stop.
+  // (any state) -> kNormal:
+  //     Any time Reset() is called.
   enum DecoderState {
     kUninitialized,
     kNormal,
@@ -58,7 +78,8 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   // Handles decoding an unencrypted encoded buffer.
   void DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer,
                     const DecodeCB& decode_cb);
-  bool FFmpegDecode(const scoped_refptr<DecoderBuffer>& buffer);
+  bool FFmpegDecode(const scoped_refptr<DecoderBuffer>& buffer,
+                    bool* has_produced_frame);
 
   // Handles (re-)initializing the decoder with a (new) config.
   // Returns true if initialization was successful.

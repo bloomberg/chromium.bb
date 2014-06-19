@@ -53,10 +53,6 @@ ACTION_P2(ResetAndRunCallback, callback, param) {
   base::ResetAndReturn(callback).Run(param);
 }
 
-MATCHER(IsEndOfStream, "end of stream") {
-  return (arg->end_of_stream());
-}
-
 }  // namespace
 
 class DecryptingVideoDecoderTest : public testing::Test {
@@ -156,9 +152,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
   // of stream state. This function must be called after
   // EnterNormalDecodingState() to work.
   void EnterEndOfStreamState() {
-    // The codec in the |decryptor_| will be flushed. We expect kDecodingDelay
-    // frames to be returned followed by a EOS frame.
-    EXPECT_CALL(*this, FrameReady(IsEndOfStream()));
+    // The codec in the |decryptor_| will be flushed.
     EXPECT_CALL(*this, FrameReady(decoded_video_frame_))
         .Times(kDecodingDelay);
     DecodeAndExpect(DecoderBuffer::CreateEOSBuffer(), VideoDecoder::kOk);

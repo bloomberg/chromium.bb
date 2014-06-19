@@ -62,7 +62,7 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
 
   // Handles decoding an unencrypted encoded buffer.
   bool FFmpegDecode(const scoped_refptr<DecoderBuffer>& buffer,
-                    bool* produced_frame);
+                    bool* has_produced_frame);
 
   // Handles (re-)initializing the decoder with a (new) config.
   // Returns true if initialization was successful.

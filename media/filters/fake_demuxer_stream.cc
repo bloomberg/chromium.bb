@@ -34,23 +34,29 @@ FakeDemuxerStream::FakeDemuxerStream(int num_configs,
                                      int num_buffers_in_one_config,
                                      bool is_encrypted)
     : task_runner_(base::MessageLoopProxy::current()),
-      num_configs_left_(num_configs),
+      num_configs_(num_configs),
       num_buffers_in_one_config_(num_buffers_in_one_config),
       config_changes_(num_configs > 1),
       is_encrypted_(is_encrypted),
-      num_buffers_left_in_current_config_(num_buffers_in_one_config),
-      num_buffers_returned_(0),
-      current_timestamp_(base::TimeDelta::FromMilliseconds(kStartTimestampMs)),
-      duration_(base::TimeDelta::FromMilliseconds(kDurationMs)),
-      next_coded_size_(kStartWidth, kStartHeight),
-      next_read_num_(0),
       read_to_hold_(-1) {
-  DCHECK_GT(num_configs_left_, 0);
-  DCHECK_GT(num_buffers_in_one_config_, 0);
+  DCHECK_GT(num_configs, 0);
+  DCHECK_GT(num_buffers_in_one_config, 0);
+  Initialize();
   UpdateVideoDecoderConfig();
 }
 
 FakeDemuxerStream::~FakeDemuxerStream() {}
+
+void FakeDemuxerStream::Initialize() {
+  DCHECK_EQ(-1, read_to_hold_);
+  num_configs_left_ = num_configs_;
+  num_buffers_left_in_current_config_ = num_buffers_in_one_config_;
+  num_buffers_returned_ = 0;
+  current_timestamp_ = base::TimeDelta::FromMilliseconds(kStartTimestampMs);
+  duration_ = base::TimeDelta::FromMilliseconds(kDurationMs);
+  next_coded_size_ = gfx::Size(kStartWidth, kStartHeight);
+  next_read_num_ = 0;
+}
 
 void FakeDemuxerStream::Read(const ReadCB& read_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -125,6 +131,11 @@ void FakeDemuxerStream::Reset() {
 
   if (!read_cb_.is_null())
     base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
+}
+
+void FakeDemuxerStream::SeekToStart() {
+  Reset();
+  Initialize();
 }
 
 void FakeDemuxerStream::UpdateVideoDecoderConfig() {

@@ -121,6 +121,7 @@ class MEDIA_EXPORT DecoderStream {
     STATE_FLUSHING_DECODER,
     STATE_PENDING_DEMUXER_READ,
     STATE_REINITIALIZING_DECODER,
+    STATE_END_OF_STREAM,  // End of stream reached; returns EOS on all reads.
     STATE_STOPPED,
     STATE_ERROR
   };

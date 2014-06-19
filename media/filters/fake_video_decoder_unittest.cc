@@ -72,17 +72,16 @@ class FakeVideoDecoderTest
   }
 
   void FrameReady(const scoped_refptr<VideoFrame>& frame) {
+    DCHECK(!frame->end_of_stream());
     last_decoded_frame_ = frame;
-    if (!frame->end_of_stream())
-      num_decoded_frames_++;
+    num_decoded_frames_++;
   }
 
   enum CallbackResult {
     PENDING,
     OK,
     NOT_ENOUGH_DATA,
-    ABORTED,
-    EOS
+    ABORTED
   };
 
   void ExpectReadResult(CallbackResult result) {
@@ -94,7 +93,6 @@ class FakeVideoDecoderTest
         EXPECT_EQ(0, pending_decode_requests_);
         ASSERT_EQ(VideoDecoder::kOk, last_decode_status_);
         ASSERT_TRUE(last_decoded_frame_);
-        EXPECT_FALSE(last_decoded_frame_->end_of_stream());
         break;
       case NOT_ENOUGH_DATA:
         EXPECT_EQ(0, pending_decode_requests_);
@@ -105,12 +103,6 @@ class FakeVideoDecoderTest
         EXPECT_EQ(0, pending_decode_requests_);
         ASSERT_EQ(VideoDecoder::kAborted, last_decode_status_);
         EXPECT_FALSE(last_decoded_frame_);
-        break;
-      case EOS:
-        EXPECT_EQ(0, pending_decode_requests_);
-        ASSERT_EQ(VideoDecoder::kOk, last_decode_status_);
-        ASSERT_TRUE(last_decoded_frame_);
-        EXPECT_TRUE(last_decoded_frame_->end_of_stream());
         break;
     }
   }
@@ -123,11 +115,11 @@ class FakeVideoDecoderTest
           current_config_,
           base::TimeDelta::FromMilliseconds(kDurationMs * num_input_buffers_),
           base::TimeDelta::FromMilliseconds(kDurationMs));
-      num_input_buffers_++;
     } else {
       buffer = DecoderBuffer::CreateEOSBuffer();
     }
 
+    ++num_input_buffers_;
     ++pending_decode_requests_;
 
     decoder_->Decode(
@@ -143,10 +135,10 @@ class FakeVideoDecoderTest
     } while (!last_decoded_frame_ && pending_decode_requests_ == 0);
   }
 
-  void ReadUntilEOS() {
+  void ReadAllFrames() {
     do {
-      ReadOneFrame();
-    } while (last_decoded_frame_ && !last_decoded_frame_->end_of_stream());
+      Decode();
+    } while (num_input_buffers_ <= kTotalBuffers); // All input buffers + EOS.
   }
 
   void EnterPendingReadState() {
@@ -247,7 +239,7 @@ TEST_P(FakeVideoDecoderTest, Initialize) {
 
 TEST_P(FakeVideoDecoderTest, Read_AllFrames) {
   Initialize();
-  ReadUntilEOS();
+  ReadAllFrames();
   EXPECT_EQ(kTotalBuffers, num_decoded_frames_);
 }
 
@@ -342,7 +334,7 @@ TEST_P(FakeVideoDecoderTest, Reinitialize_FrameDropped) {
   Initialize();
   ReadOneFrame();
   Initialize();
-  ReadUntilEOS();
+  ReadAllFrames();
   EXPECT_LT(num_decoded_frames_, kTotalBuffers);
 }
 

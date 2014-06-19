@@ -30,7 +30,8 @@ class MEDIA_EXPORT AudioDecoder {
     kDecryptError  // Decrypting error happened.
   };
 
-  // Callback to return decoded buffers.
+  // Callback for AudioDecoder to return a decoded frame whenever it becomes
+  // available. Only non-EOS frames should be returned via this callback.
   typedef base::Callback<void(const scoped_refptr<AudioBuffer>&)> OutputCB;
 
   // Callback for Decode(). Called after the decoder has completed decoding

@@ -259,8 +259,9 @@ static vpx_codec_ctx* InitializeVpxContext(vpx_codec_ctx* context,
 bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
   if (config.codec() != kCodecVP8 && config.codec() != kCodecVP9)
     return false;
-  // Only VP8 videos with alpha are handled by VpxVideoDecoder.  Everything else
-  // goes to FFmpegVideoDecoder.
+
+  // In VP8 videos, only those with alpha are handled by VpxVideoDecoder. All
+  // other VP8 videos go to FFmpegVideoDecoder.
   if (config.codec() == kCodecVP8 && config.format() != VideoFrame::YV12A)
     return false;
 
@@ -354,7 +355,6 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer) {
   // Transition to kDecodeFinished on the first end of stream buffer.
   if (state_ == kNormal && buffer->end_of_stream()) {
     state_ = kDecodeFinished;
-    output_cb_.Run(VideoFrame::CreateEOSFrame());
     base::ResetAndReturn(&decode_cb_).Run(kOk);
     return;
   }

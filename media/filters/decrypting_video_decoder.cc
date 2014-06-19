@@ -31,7 +31,7 @@ DecryptingVideoDecoder::DecryptingVideoDecoder(
       weak_factory_(this) {}
 
 void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                        bool /* live_mode */,
+                                        bool /* low_delay */,
                                         const PipelineStatusCB& status_cb,
                                         const OutputCB& output_cb) {
   DVLOG(2) << "Initialize()";
@@ -82,7 +82,6 @@ void DecryptingVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 
   // Return empty frames if decoding has finished.
   if (state_ == kDecodeFinished) {
-    output_cb_.Run(VideoFrame::CreateEOSFrame());
     base::ResetAndReturn(&decode_cb_).Run(kOk);
     return;
   }
@@ -277,12 +276,8 @@ void DecryptingVideoDecoder::DeliverFrame(
 
   if (status == Decryptor::kNeedMoreData) {
     DVLOG(2) << "DeliverFrame() - kNeedMoreData";
-    if (scoped_pending_buffer_to_decode->end_of_stream()) {
-      state_ = kDecodeFinished;
-      output_cb_.Run(media::VideoFrame::CreateEOSFrame());
-    } else {
-      state_ = kIdle;
-    }
+    state_ = scoped_pending_buffer_to_decode->end_of_stream() ? kDecodeFinished
+                                                              : kIdle;
     base::ResetAndReturn(&decode_cb_).Run(kOk);
     return;
   }

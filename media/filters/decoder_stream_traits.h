@@ -42,6 +42,7 @@ struct DecoderStreamTraits<DemuxerStream::AUDIO> {
   static void ReportStatistics(const StatisticsCB& statistics_cb,
                                int bytes_decoded);
   static DecoderConfigType GetDecoderConfig(DemuxerStream& stream);
+  static scoped_refptr<OutputType> CreateEOSOutput();
 };
 
 template <>
@@ -65,6 +66,7 @@ struct DecoderStreamTraits<DemuxerStream::VIDEO> {
   static void ReportStatistics(const StatisticsCB& statistics_cb,
                                int bytes_decoded);
   static DecoderConfigType GetDecoderConfig(DemuxerStream& stream);
+  static scoped_refptr<OutputType> CreateEOSOutput();
 };
 
 }  // namespace media

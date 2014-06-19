@@ -213,34 +213,6 @@ void FFmpegAudioDecoder::DecodeBuffer(
 
   DCHECK(buffer);
 
-  // During decode, because reads are issued asynchronously, it is possible to
-  // receive multiple end of stream buffers since each decode is acked. When the
-  // first end of stream buffer is read, FFmpeg may still have frames queued
-  // up in the decoder so we need to go through the decode loop until it stops
-  // giving sensible data.  After that, the decoder should output empty
-  // frames.  There are three states the decoder can be in:
-  //
-  //   kNormal: This is the starting state. Buffers are decoded. Decode errors
-  //            are discarded.
-  //   kFlushCodec: There isn't any more input data. Call avcodec_decode_audio4
-  //                until no more data is returned to flush out remaining
-  //                frames. The input buffer is ignored at this point.
-  //   kDecodeFinished: All calls return empty frames.
-  //   kError: Unexpected error happened.
-  //
-  // These are the possible state transitions.
-  //
-  // kNormal -> kFlushCodec:
-  //     When buffer->end_of_stream() is first true.
-  // kNormal -> kError:
-  //     A decoding error occurs and decoding needs to stop.
-  // kFlushCodec -> kDecodeFinished:
-  //     When avcodec_decode_audio4() returns 0 data.
-  // kFlushCodec -> kError:
-  //     When avcodec_decode_audio4() errors out.
-  // (any state) -> kNormal:
-  //     Any time Reset() is called.
-
   // Make sure we are notified if http://crbug.com/49709 returns.  Issue also
   // occurs with some damaged files.
   if (!buffer->end_of_stream() && buffer->timestamp() == kNoTimestamp()) {
@@ -249,22 +221,28 @@ void FFmpegAudioDecoder::DecodeBuffer(
     return;
   }
 
-  if (!FFmpegDecode(buffer)) {
-    state_ = kError;
-    decode_cb.Run(kDecodeError);
-    return;
-  }
+  bool has_produced_frame;
+  do {
+    has_produced_frame = false;
+    if (!FFmpegDecode(buffer, &has_produced_frame)) {
+      state_ = kError;
+      decode_cb.Run(kDecodeError);
+      return;
+    }
+    // Repeat to flush the decoder after receiving EOS buffer.
+  } while (buffer->end_of_stream() && has_produced_frame);
 
-  if (buffer->end_of_stream()) {
+  if (buffer->end_of_stream())
     state_ = kDecodeFinished;
-    output_cb_.Run(AudioBuffer::CreateEOSBuffer());
-  }
 
   decode_cb.Run(kOk);
 }
 
 bool FFmpegAudioDecoder::FFmpegDecode(
-    const scoped_refptr<DecoderBuffer>& buffer) {
+    const scoped_refptr<DecoderBuffer>& buffer,
+    bool* has_produced_frame) {
+  DCHECK(!*has_produced_frame);
+
   AVPacket packet;
   av_init_packet(&packet);
   if (buffer->end_of_stream()) {
@@ -347,8 +325,8 @@ bool FFmpegAudioDecoder::FFmpegDecode(
     const int decoded_frames = frame_decoded ? output->frame_count() : 0;
     if (IsEndOfStream(result, decoded_frames, buffer)) {
       DCHECK_EQ(packet.size, 0);
-      output_cb_.Run(AudioBuffer::CreateEOSBuffer());
     } else if (discard_helper_->ProcessBuffers(buffer, output)) {
+      *has_produced_frame = true;
       output_cb_.Run(output);
     }
   } while (packet.size > 0);

@@ -305,7 +305,6 @@ void OpusAudioDecoder::DecodeBuffer(
   // Libopus does not buffer output. Decoding is complete when an end of stream
   // input buffer is received.
   if (input->end_of_stream()) {
-    output_cb_.Run(AudioBuffer::CreateEOSBuffer());
     decode_cb.Run(kOk);
     return;
   }

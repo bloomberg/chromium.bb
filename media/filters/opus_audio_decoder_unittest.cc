@@ -126,11 +126,6 @@ class OpusAudioDecoderTest : public testing::Test {
     EXPECT_FALSE(decoded_audio_[i]->end_of_stream());
   }
 
-  void ExpectEndOfStream(size_t i) {
-    EXPECT_LT(i, decoded_audio_.size());
-    EXPECT_TRUE(decoded_audio_[i]->end_of_stream());
-  }
-
   size_t decoded_audio_size() const {
     return decoded_audio_.size();
   }
@@ -186,10 +181,9 @@ TEST_F(OpusAudioDecoderTest, ProduceAudioSamples) {
   ExpectDecodedAudio(1, 3500, 10000);
   ExpectDecodedAudio(2, 13500, 10000);
 
-  // Call one more time to trigger EOS.
+  // Call one more time with EOS.
   SendEndOfStream();
-  ASSERT_EQ(4u, decoded_audio_size());
-  ExpectEndOfStream(3);
+  ASSERT_EQ(3u, decoded_audio_size());
   Stop();
 }
 

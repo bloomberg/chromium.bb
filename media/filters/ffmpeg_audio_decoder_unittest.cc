@@ -105,6 +105,7 @@ class FFmpegAudioDecoderTest : public testing::Test {
   }
 
   void OnDecoderOutput(const scoped_refptr<AudioBuffer>& buffer) {
+    EXPECT_FALSE(buffer->end_of_stream());
     decoded_audio_.push_back(buffer);
   }
 
@@ -127,12 +128,6 @@ class FFmpegAudioDecoderTest : public testing::Test {
     EXPECT_LT(i, decoded_audio_.size());
     EXPECT_EQ(timestamp, decoded_audio_[i]->timestamp().InMicroseconds());
     EXPECT_EQ(duration, decoded_audio_[i]->duration().InMicroseconds());
-    EXPECT_FALSE(decoded_audio_[i]->end_of_stream());
-  }
-
-  void ExpectEndOfStream(size_t i) {
-    EXPECT_LT(i, decoded_audio_.size());
-    EXPECT_TRUE(decoded_audio_[i]->end_of_stream());
   }
 
   base::MessageLoop message_loop_;
@@ -173,10 +168,9 @@ TEST_F(FFmpegAudioDecoderTest, ProduceAudioSamples) {
   ExpectDecodedAudio(1, 2902, 13061);
   ExpectDecodedAudio(2, 15963, 23219);
 
-  // Call one more time to trigger EOS.
+  // Call one more time with EOS.
   Decode();
-  ASSERT_EQ(5u, decoded_audio_.size());
-  ExpectEndOfStream(3);
+  ASSERT_EQ(3u, decoded_audio_.size());
   Stop();
 }
 

@@ -148,7 +148,7 @@ static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
 }
 
 void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                 bool live_mode,
+                                 bool /* low_delay */,
                                  const PipelineStatusCB& orig_status_cb,
                                  const OutputCB& output_cb) {
   DVLOG(3) << "Initialize()";
@@ -581,7 +581,6 @@ void GpuVideoDecoder::NotifyFlushDone() {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK_EQ(state_, kDrainingDecoder);
   state_ = kDecoderDrained;
-  DeliverFrame(VideoFrame::CreateEOSFrame());
   base::ResetAndReturn(&eos_decode_cb_).Run(kOk);
 }
 

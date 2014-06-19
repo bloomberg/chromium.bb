@@ -33,7 +33,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
 
   // VideoDecoder implementation.
   virtual void Initialize(const VideoDecoderConfig& config,
-                          bool live_mode,
+                          bool low_delay,
                           const PipelineStatusCB& status_cb,
                           const OutputCB& output_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,

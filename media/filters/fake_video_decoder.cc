@@ -225,7 +225,6 @@ void FakeVideoDecoder::RunDecodeCallback(const DecodeCB& decode_cb) {
         output_cb_.Run(decoded_frames_.front());
         decoded_frames_.pop_front();
       }
-      output_cb_.Run(VideoFrame::CreateEOSFrame());
     } else if (!decoded_frames_.empty()) {
       output_cb_.Run(decoded_frames_.front());
       decoded_frames_.pop_front();

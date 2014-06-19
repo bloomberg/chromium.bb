@@ -290,10 +290,25 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   void DeliverEndOfStream() {
-    // Repeatedly return EOS buffer
-    while (!decode_cb_.is_null()) {
-      DeliverBuffer(AudioDecoder::kOk, AudioBuffer::CreateEOSBuffer());
-    }
+    DCHECK(!decode_cb_.is_null());
+
+    // Return EOS buffer to trigger EOS frame.
+    EXPECT_CALL(demuxer_stream_, Read(_))
+        .WillOnce(RunCallback<0>(DemuxerStream::kOk,
+                                 DecoderBuffer::CreateEOSBuffer()));
+
+    // Satify pending |decode_cb_| to trigger a new DemuxerStream::Read().
+    message_loop_.PostTask(
+        FROM_HERE,
+        base::Bind(base::ResetAndReturn(&decode_cb_), AudioDecoder::kOk));
+
+    WaitForPendingRead();
+
+    message_loop_.PostTask(
+        FROM_HERE,
+        base::Bind(base::ResetAndReturn(&decode_cb_), AudioDecoder::kOk));
+
+    message_loop_.RunUntilIdle();
   }
 
   // Delivers frames until |renderer_|'s internal buffer is full and no longer
@@ -480,7 +495,7 @@ class AudioRendererImplTest : public ::testing::Test {
   void DeliverBuffer(AudioDecoder::Status status,
                      const scoped_refptr<AudioBuffer>& buffer) {
     CHECK(!decode_cb_.is_null());
-    if (buffer)
+    if (buffer && !buffer->end_of_stream())
       output_cb_.Run(buffer);
     base::ResetAndReturn(&decode_cb_).Run(status);
 

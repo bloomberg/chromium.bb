@@ -189,7 +189,6 @@ void FFmpegVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   }
 
   if (state_ == kDecodeFinished) {
-    output_cb_.Run(VideoFrame::CreateEOSFrame());
     decode_cb_bound.Run(kOk);
     return;
   }
@@ -228,10 +227,8 @@ void FFmpegVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
     // Repeat to flush the decoder after receiving EOS buffer.
   } while (buffer->end_of_stream() && has_produced_frame);
 
-  if (buffer->end_of_stream()) {
-    output_cb_.Run(VideoFrame::CreateEOSFrame());
+  if (buffer->end_of_stream())
     state_ = kDecodeFinished;
-  }
 
   decode_cb_bound.Run(kOk);
 }
