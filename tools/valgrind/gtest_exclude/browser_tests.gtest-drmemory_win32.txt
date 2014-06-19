@@ -8,22 +8,19 @@
 
 # it takes too long to run all browser_tests with Dr.Memory,
 # and we only select subset to run
-# A*: ~120 tests
+# A*
 A*
-# B*: ~230 tests
+# B*
 BackgroundApp*.R*
-BluetoothSocketApi*.P*
-BookmarksT*.B*
-BookmarksT*.C*
+BluetoothS*
+BookmarksT*
 BrowserAcc*
 BrowserActionA*.I*
-BrowserCloseManagerB*/*.PRE*
-BrowserCloseManagerB*/*.Test*
-BrowserCloseManagerW*/*.TestWithDownloadsF*
-BrowserN*.D*
-BrowserN*.N*
-BrowserTest.P*
-C*
+BrowserCloseM*
+BrowserN*
+BrowserTest.*
+BitmapFetcher*
+# C*
 D*
 E*
 F*
