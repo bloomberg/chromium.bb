@@ -26,6 +26,10 @@ header {
   overflow: hidden;
 }
 
+html[dir='rtl'] .device {
+    background-position: right top;
+}
+
 .device .device-info {
   -webkit-padding-start: 40px;
   float: left;
