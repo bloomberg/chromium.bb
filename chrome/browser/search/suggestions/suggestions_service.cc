@@ -79,6 +79,7 @@ const char kSuggestionsFieldTrialSuggestionsSuffixParam[] =
     "suggestions_suffix";
 const char kSuggestionsFieldTrialBlacklistSuffixParam[] = "blacklist_suffix";
 const char kSuggestionsFieldTrialStateParam[] = "state";
+const char kSuggestionsFieldTrialControlParam[] = "control";
 const char kSuggestionsFieldTrialStateEnabled[] = "enabled";
 const char kSuggestionsFieldTrialTimeoutMs[] = "timeout_ms";
 
@@ -108,6 +109,12 @@ SuggestionsService::~SuggestionsService() {}
 // static
 bool SuggestionsService::IsEnabled() {
   return GetExperimentParam(kSuggestionsFieldTrialStateParam) ==
+         kSuggestionsFieldTrialStateEnabled;
+}
+
+// static
+bool SuggestionsService::IsControlGroup() {
+  return GetExperimentParam(kSuggestionsFieldTrialControlParam) ==
          kSuggestionsFieldTrialStateEnabled;
 }
 

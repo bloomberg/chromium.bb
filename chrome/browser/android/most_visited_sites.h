@@ -98,6 +98,9 @@ class MostVisitedSites : public content::NotificationObserver {
   // The maximum number of most visited sites to return.
   int num_sites_;
 
+  // Whether the user is in a control group for the purposes of logging.
+  bool is_control_group_;
+
   // Counters for UMA metrics.
 
   // Number of tiles using a local thumbnail image for this NTP session.

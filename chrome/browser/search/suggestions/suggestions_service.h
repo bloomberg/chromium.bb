@@ -37,6 +37,7 @@ extern const char kSuggestionsFieldTrialURLParam[];
 extern const char kSuggestionsFieldTrialSuggestionsSuffixParam[];
 extern const char kSuggestionsFieldTrialBlacklistSuffixParam[];
 extern const char kSuggestionsFieldTrialStateParam[];
+extern const char kSuggestionsFieldTrialControlParam[];
 extern const char kSuggestionsFieldTrialStateEnabled[];
 
 // An interface to fetch server suggestions asynchronously.
@@ -50,6 +51,9 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
   // Whether this service is enabled.
   static bool IsEnabled();
+
+  // Whether the user is part of a control group.
+  static bool IsControlGroup();
 
   // Request suggestions data, which will be passed to |callback|. Initiates a
   // fetch request unless a pending one exists. To prevent multiple requests,

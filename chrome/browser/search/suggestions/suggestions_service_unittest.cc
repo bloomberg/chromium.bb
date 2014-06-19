@@ -122,7 +122,8 @@ class SuggestionsServiceTest : public testing::Test {
   // Enables the "ChromeSuggestions.Group1" field trial.
   void EnableFieldTrial(const std::string& url,
                         const std::string& suggestions_suffix,
-                        const std::string& blacklist_suffix) {
+                        const std::string& blacklist_suffix,
+                        bool control_group) {
     // Clear the existing |field_trial_list_| to avoid firing a DCHECK.
     field_trial_list_.reset(NULL);
     field_trial_list_.reset(
@@ -132,6 +133,10 @@ class SuggestionsServiceTest : public testing::Test {
     std::map<std::string, std::string> params;
     params[kSuggestionsFieldTrialStateParam] =
         kSuggestionsFieldTrialStateEnabled;
+    if (control_group) {
+      params[kSuggestionsFieldTrialControlParam] =
+          kSuggestionsFieldTrialStateEnabled;
+    }
     params[kSuggestionsFieldTrialURLParam] = url;
     params[kSuggestionsFieldTrialSuggestionsSuffixParam] = suggestions_suffix;
     params[kSuggestionsFieldTrialBlacklistSuffixParam] = blacklist_suffix;
@@ -159,7 +164,7 @@ class SuggestionsServiceTest : public testing::Test {
   void FetchSuggestionsDataNoTimeoutHelper(bool interleaved_requests) {
     // Field trial enabled with a specific suggestions URL.
     EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsSuffix,
-                     kFakeBlacklistSuffix);
+                     kFakeBlacklistSuffix, false);
     scoped_ptr<SuggestionsService> suggestions_service(
         CreateSuggestionsServiceWithMockStore());
     EXPECT_TRUE(suggestions_service != NULL);
@@ -223,8 +228,17 @@ TEST_F(SuggestionsServiceTest, ServiceBeingCreated) {
   EXPECT_TRUE(CreateSuggestionsService() == NULL);
 
   // Field trial enabled.
-  EnableFieldTrial("", "", "");
+  EnableFieldTrial("", "", "", false);
   EXPECT_TRUE(CreateSuggestionsService() != NULL);
+}
+
+TEST_F(SuggestionsServiceTest, IsControlGroup) {
+  // Field trial enabled.
+  EnableFieldTrial("", "", "", false);
+  EXPECT_FALSE(SuggestionsService::IsControlGroup());
+
+  EnableFieldTrial("", "", "", true);
+  EXPECT_TRUE(SuggestionsService::IsControlGroup());
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataNoTimeout) {
@@ -238,7 +252,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataNoTimeoutInterleaved) {
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataRequestError) {
   // Field trial enabled with a specific suggestions URL.
   EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsSuffix,
-                   kFakeBlacklistSuffix);
+                   kFakeBlacklistSuffix, false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMockStore());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -268,7 +282,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataRequestError) {
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataResponseNotOK) {
   // Field trial enabled with a specific suggestions URL.
   EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsSuffix,
-                   kFakeBlacklistSuffix);
+                   kFakeBlacklistSuffix, false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMockStore());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -297,7 +311,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataResponseNotOK) {
 
 TEST_F(SuggestionsServiceTest, BlacklistURL) {
   EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsSuffix,
-                   kFakeBlacklistSuffix);
+                   kFakeBlacklistSuffix, false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMockStore());
   EXPECT_TRUE(suggestions_service != NULL);
