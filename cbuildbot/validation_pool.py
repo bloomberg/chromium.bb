@@ -1159,7 +1159,12 @@ class CalculateSuspects(object):
     else:
       candidates = [change for change in changes if not change.internal]
 
-    if all(message and message.IsPackageBuildFailure()
+    bad_changes = ValidationPool.GetShouldRejectChanges(candidates)
+    if bad_changes:
+      # If there are changes that have been set verified=-1 or
+      # code-review=-2, these changes are suspects of the failed build.
+      suspects.update(bad_changes)
+    elif all(message and message.IsPackageBuildFailure()
            for message in messages):
       # If we are here, there are no None messages.
       suspects = cls._FindPackageBuildFailureSuspects(candidates, messages)
@@ -1360,6 +1365,23 @@ class ValidationPool(object):
     return [x for x in changes if not x.patch_dict['currentPatchSet']['draft']]
 
   @classmethod
+  def GetShouldRejectChanges(cls, changes):
+    """Returns the changes that should be rejected.
+
+    Check whether the change should be rejected (e.g. verified: -1,
+    code-review: -2).
+
+    Args:
+      changes: List of changes.
+
+    Returns:
+      A list of changes that should be rejected.
+    """
+    return [x for x in changes if
+            any(x.HasApproval(f, v) for f, v in
+                constants.DEFAULT_CQ_SHOULD_REJECT_FIELDS.iteritems())]
+
+  @classmethod
   def FilterNonMatchingChanges(cls, changes):
     """Filter out changes that don't actually match our query.
 
@@ -1382,20 +1404,13 @@ class ValidationPool(object):
       List of changes that match our query.
     """
     filtered_changes = []
+    should_reject_changes = cls.GetShouldRejectChanges(changes)
     for change in changes:
+      if change in should_reject_changes:
+        continue
       # Because the gerrit cache sometimes gets stale, double-check that the
       # change hasn't already been merged.
       if change.status != 'NEW':
-        continue
-      # Check whether the change should be rejected (e.g. verified:
-      # -1, code-review: -2).
-      should_reject = False
-      for field, value in constants.DEFAULT_CQ_SHOULD_REJECT_FIELDS.iteritems():
-        if change.HasApproval(field, value):
-          should_reject = True
-          break
-
-      if should_reject:
         continue
       # Check that the user (or chrome-bot) uploaded a new change under our
       # feet while Gerrit was in the middle of answering our query.
@@ -2413,6 +2428,9 @@ class ValidationPool(object):
     """
     if changes is None:
       changes = self.changes
+
+    # Reload the changes to get latest statuses of the changes.
+    changes = self.ReloadChanges(changes)
 
     candidates = []
     for change in changes:

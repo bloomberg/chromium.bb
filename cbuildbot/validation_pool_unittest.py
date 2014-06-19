@@ -712,6 +712,8 @@ class ValidationFailureOrTimeout(MoxBase):
     self.PatchObject(validation_pool.ValidationPool, 'SendNotification')
     self.PatchObject(validation_pool.ValidationPool, 'RemoveCommitReady')
     self.PatchObject(validation_pool.ValidationPool, 'UpdateCLStatus')
+    self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
+                     return_value=self._patches)
     self.PatchObject(validation_pool.CalculateSuspects, 'OnlyLabFailures',
                      return_value=False)
     self.PatchObject(validation_pool.CalculateSuspects, 'OnlyInfraFailures',
