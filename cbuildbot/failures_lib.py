@@ -87,7 +87,7 @@ class CompoundFailure(StepFailure):
       return self.message
     else:
       # This includes the textual traceback(s).
-      return '\n'.join(['{e.type}: {e.str} {e.traceback}'.format(e=ex) for
+      return '\n'.join(['{e.type}: {e.str}\n{e.traceback}'.format(e=ex) for
                         ex in self.exc_infos])
 
   def HasEmptyList(self):
