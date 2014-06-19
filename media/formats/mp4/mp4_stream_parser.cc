@@ -550,9 +550,11 @@ bool MP4StreamParser::SendAndFlushSamples(BufferQueue* audio_buffers,
 bool MP4StreamParser::ReadAndDiscardMDATsUntil(const int64 offset) {
   bool err = false;
   while (mdat_tail_ < offset) {
-    const uint8* buf;
-    int size;
+    const uint8* buf = NULL;
+    int size = 0;
     queue_.PeekAt(mdat_tail_, &buf, &size);
+    if (size <= 0)
+      return false;
 
     FourCC type;
     int box_sz;
