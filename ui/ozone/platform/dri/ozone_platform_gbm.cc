@@ -78,12 +78,6 @@ class OzonePlatformGbm : public OzonePlatform {
   virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
     return cursor_factory_ozone_.get();
   }
-  virtual GpuPlatformSupport* GetGpuPlatformSupport() OVERRIDE {
-    return gpu_platform_support_.get()
-  }
-  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() OVERRIDE {
-    return gpu_platform_support_host_.get();
-  }
 #if defined(OS_CHROMEOS)
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       OVERRIDE {
@@ -105,8 +99,6 @@ class OzonePlatformGbm : public OzonePlatform {
     cursor_factory_ozone_.reset(new CursorFactoryOzone());
     event_factory_ozone_.reset(new EventFactoryEvdev(
         NULL, device_manager_.get()));
-
-    gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }
 
   virtual void InitializeGPU() OVERRIDE {
@@ -118,8 +110,6 @@ class OzonePlatformGbm : public OzonePlatform {
         new GbmSurfaceFactory(dri_.get(),
                               surface_generator_->device(),
                               screen_manager_.get()));
-
-    gpu_platform_support_.reset(CreateStubGpuPlatformSupport());
   }
 
  private:
@@ -132,9 +122,6 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<GbmSurfaceFactory> surface_factory_ozone_;
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
-
-  scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
-  scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformGbm);
 };

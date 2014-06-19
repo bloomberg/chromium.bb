@@ -804,10 +804,5 @@
     }, {
       'defines': ['USE_SECCOMP_BPF'],
     }],
-    ['use_ozone==1', {
-      'dependencies': [
-        '../ui/ozone/ozone.gyp:ozone',
-      ],
-    }],
   ],
 }

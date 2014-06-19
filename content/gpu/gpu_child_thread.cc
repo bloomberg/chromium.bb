@@ -19,11 +19,6 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "ui/gl/gl_implementation.h"
 
-#if defined(USE_OZONE)
-#include "ui/ozone/gpu/gpu_platform_support.h"
-#include "ui/ozone/ozone_platform.h"
-#endif
-
 namespace content {
 namespace {
 
@@ -118,13 +113,6 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
   if (handled)
     return true;
 
-#if defined(USE_OZONE)
-  if (ui::OzonePlatform::GetInstance()
-          ->GetGpuPlatformSupport()
-          ->OnMessageReceived(msg))
-    return true;
-#endif
-
   return gpu_channel_manager_.get() &&
       gpu_channel_manager_->OnMessageReceived(msg);
 }
@@ -164,12 +152,6 @@ void GpuChildThread::OnInitialize() {
                             watchdog_thread_.get(),
                             ChildProcess::current()->io_message_loop_proxy(),
                             ChildProcess::current()->GetShutDownEvent()));
-
-#if defined(USE_OZONE)
-  ui::OzonePlatform::GetInstance()
-      ->GetGpuPlatformSupport()
-      ->OnChannelEstablished(this);
-#endif
 }
 
 void GpuChildThread::StopWatchdog() {
