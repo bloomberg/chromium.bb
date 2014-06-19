@@ -617,5 +617,7 @@ name=http://crbug.com/313788
 UNADDRESSABLE ACCESS
 name=http://crbug.com/386711
 *!IntranetRedirectDetector::FinishSleep
-*!base::internal::Invoker<>::Run
-*!base::MessageLoop::RunTask
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/386741
+*!WebResourceService::StartFetch
