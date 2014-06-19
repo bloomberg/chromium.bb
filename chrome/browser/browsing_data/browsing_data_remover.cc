@@ -75,6 +75,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/net_errors.h"
+#include "net/base/sdch_manager.h"
 #include "net/cookies/cookie_store.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
@@ -929,6 +930,16 @@ void BrowsingDataRemover::DoClearCache(int rv) {
         // Clear QUIC server information from memory and the disk cache.
         http_cache->GetSession()->quic_stream_factory()->
             ClearCachedStatesInCryptoConfig();
+
+        // Clear SDCH dictionary state.
+        net::SdchManager* sdch_manager =
+            getter->GetURLRequestContext()->sdch_manager();
+        // The test is probably overkill, since chrome should always have an
+        // SdchManager.  But in general the URLRequestContext  is *not*
+        // guaranteed to have an SdchManager, so checking is wise.
+        if (sdch_manager)
+          sdch_manager->ClearData();
+
         rv = http_cache->GetBackend(
             &cache_, base::Bind(&BrowsingDataRemover::DoClearCache,
                                 base::Unretained(this)));

@@ -219,9 +219,22 @@ SdchManager::~SdchManager() {
   DCHECK(CalledOnValidThread());
   while (!dictionaries_.empty()) {
     DictionaryMap::iterator it = dictionaries_.begin();
-    it->second->Release();
     dictionaries_.erase(it->first);
   }
+}
+
+void SdchManager::ClearData() {
+  blacklisted_domains_.clear();
+  exponential_blacklist_count_.clear();
+  allow_latency_experiment_.clear();
+  if (fetcher_.get())
+    fetcher_->Cancel();
+
+  // Note that this may result in not having dictionaries we've advertised
+  // for incoming responses.  The window is relatively small (as ClearData()
+  // is not expected to be called frequently), so we rely on meta-refresh
+  // to handle this case.
+  dictionaries_.clear();
 }
 
 // static
@@ -252,9 +265,9 @@ void SdchManager::BlacklistDomain(const GURL& url) {
   if (count > 0)
     return;  // Domain is already blacklisted.
 
-  count = 1 + 2 * exponential_blacklist_count[domain];
+  count = 1 + 2 * exponential_blacklist_count_[domain];
   if (count > 0)
-    exponential_blacklist_count[domain] = count;
+    exponential_blacklist_count_[domain] = count;
   else
     count = INT_MAX;
 
@@ -265,13 +278,13 @@ void SdchManager::BlacklistDomainForever(const GURL& url) {
   SetAllowLatencyExperiment(url, false);
 
   std::string domain(StringToLowerASCII(url.host()));
-  exponential_blacklist_count[domain] = INT_MAX;
+  exponential_blacklist_count_[domain] = INT_MAX;
   blacklisted_domains_[domain] = INT_MAX;
 }
 
 void SdchManager::ClearBlacklistings() {
   blacklisted_domains_.clear();
-  exponential_blacklist_count.clear();
+  exponential_blacklist_count_.clear();
 }
 
 void SdchManager::ClearDomainBlacklisting(const std::string& domain) {
@@ -285,10 +298,10 @@ int SdchManager::BlackListDomainCount(const std::string& domain) {
 }
 
 int SdchManager::BlacklistDomainExponential(const std::string& domain) {
-  if (exponential_blacklist_count.end() ==
-      exponential_blacklist_count.find(domain))
+  if (exponential_blacklist_count_.end() ==
+      exponential_blacklist_count_.find(domain))
     return 0;
-  return exponential_blacklist_count[StringToLowerASCII(domain)];
+  return exponential_blacklist_count_[StringToLowerASCII(domain)];
 }
 
 bool SdchManager::IsInSupportedDomain(const GURL& url) {
@@ -455,20 +468,21 @@ bool SdchManager::AddSdchDictionary(const std::string& dictionary_text,
   Dictionary* dictionary =
       new Dictionary(dictionary_text, header_end + 2, client_hash,
                      dictionary_url, domain, path, expiration, ports);
-  dictionary->AddRef();
   dictionaries_[server_hash] = dictionary;
   return true;
 }
 
-void SdchManager::GetVcdiffDictionary(const std::string& server_hash,
-    const GURL& referring_url, Dictionary** dictionary) {
+void SdchManager::GetVcdiffDictionary(
+    const std::string& server_hash,
+    const GURL& referring_url,
+    scoped_refptr<Dictionary>* dictionary) {
   DCHECK(CalledOnValidThread());
   *dictionary = NULL;
   DictionaryMap::iterator it = dictionaries_.find(server_hash);
   if (it == dictionaries_.end()) {
     return;
   }
-  Dictionary* matching_dictionary = it->second;
+  scoped_refptr<Dictionary> matching_dictionary = it->second;
   if (!IsInSupportedDomain(referring_url))
     return;
   if (!matching_dictionary->CanUse(referring_url))

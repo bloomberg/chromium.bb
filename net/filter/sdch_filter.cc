@@ -336,20 +336,19 @@ Filter::FilterStatus SdchFilter::InitializeDictionary() {
   else
     next_stream_data_ = NULL;
 
-  DCHECK(!dictionary_.get());
+  DCHECK(!dictionary_);
   dictionary_hash_is_plausible_ = true;  // Assume plausible, but check.
 
-  SdchManager::Dictionary* dictionary = NULL;
   if ('\0' == dictionary_hash_[kServerIdLength - 1]) {
     SdchManager* manager(url_request_context_->sdch_manager());
     manager->GetVcdiffDictionary(
         std::string(dictionary_hash_, 0, kServerIdLength - 1),
-        url_, &dictionary);
+        url_, &dictionary_);
   } else {
     dictionary_hash_is_plausible_ = false;
   }
 
-  if (!dictionary) {
+  if (!dictionary_) {
     DCHECK(dictionary_hash_.size() == kServerIdLength);
     // Since dictionary was not found, check to see if hash was even plausible.
     for (size_t i = 0; i < kServerIdLength - 1; ++i) {
@@ -366,7 +365,6 @@ Filter::FilterStatus SdchFilter::InitializeDictionary() {
     decoding_status_ = DECODING_ERROR;
     return FILTER_ERROR;
   }
-  dictionary_ = dictionary;
   vcdiff_streaming_decoder_.reset(new open_vcdiff::VCDiffStreamingDecoder);
   vcdiff_streaming_decoder_->SetAllowVcdTarget(false);
   vcdiff_streaming_decoder_->StartDecoding(dictionary_->text().data(),

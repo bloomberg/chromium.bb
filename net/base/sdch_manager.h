@@ -49,6 +49,11 @@ class SdchFetcher {
   // from a server.  The callee is responsible for getting that dictionary_text,
   // and then calling back to AddSdchDictionary() to the SdchManager instance.
   virtual void Schedule(const GURL& dictionary_url) = 0;
+
+  // The Cancel() method is called to cancel all pending dictionary fetches.
+  // This is used for implementation of ClearData() below.
+  virtual void Cancel() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SdchFetcher);
 };
@@ -234,6 +239,9 @@ class NET_EXPORT SdchManager : public NON_EXPORTED_BASE(base::NonThreadSafe) {
   SdchManager();
   ~SdchManager();
 
+  // Clear data (for browser data removal).
+  void ClearData();
+
   // Record stats on various errors.
   static void SdchErrorRecovery(ProblemCodes problem);
 
@@ -304,12 +312,10 @@ class NET_EXPORT SdchManager : public NON_EXPORTED_BASE(base::NonThreadSafe) {
   // to use to decompreses data that arrived as SDCH encoded content.  Check to
   // be sure the returned |dictionary| can be used for decoding content supplied
   // in response to a request for |referring_url|.
-  // Caller is responsible for AddRef()ing the dictionary, and Release()ing it
-  // when done.
   // Return null in |dictionary| if there is no matching legal dictionary.
   void GetVcdiffDictionary(const std::string& server_hash,
                            const GURL& referring_url,
-                           Dictionary** dictionary);
+                           scoped_refptr<Dictionary>* dictionary);
 
   // Get list of available (pre-cached) dictionaries that we have already loaded
   // into memory.  The list is a comma separated list of (client) hashes per
@@ -335,7 +341,7 @@ class NET_EXPORT SdchManager : public NON_EXPORTED_BASE(base::NonThreadSafe) {
   typedef std::set<std::string> ExperimentSet;
 
   // A map of dictionaries info indexed by the hash that the server provides.
-  typedef std::map<std::string, Dictionary*> DictionaryMap;
+  typedef std::map<std::string, scoped_refptr<Dictionary> > DictionaryMap;
 
   // Support SDCH compression, by advertising in headers.
   static bool g_sdch_enabled_;
@@ -358,7 +364,7 @@ class NET_EXPORT SdchManager : public NON_EXPORTED_BASE(base::NonThreadSafe) {
 
   // Support exponential backoff in number of domain accesses before
   // blacklisting expires.
-  DomainCounter exponential_blacklist_count;
+  DomainCounter exponential_blacklist_count_;
 
   // List of hostnames for which a latency experiment is allowed (because a
   // round trip test has recently passed).

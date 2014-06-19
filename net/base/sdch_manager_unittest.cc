@@ -192,7 +192,7 @@ TEST_F(SdchManagerTest, CanUseHTTPSDictionaryOverHTTPSIfEnabled) {
   EXPECT_FALSE(dictionary_list.empty());
 
   // Dictionary should be available.
-  SdchManager::Dictionary* dictionary = NULL;
+  scoped_refptr<SdchManager::Dictionary> dictionary;
   std::string client_hash;
   std::string server_hash;
   sdch_manager()->GenerateHash(dictionary_text, &client_hash, &server_hash);
@@ -215,7 +215,7 @@ TEST_F(SdchManagerTest, CanNotUseHTTPDictionaryOverHTTPS) {
   sdch_manager()->GetAvailDictionaryList(target_url, &dictionary_list);
   EXPECT_TRUE(dictionary_list.empty());
 
-  SdchManager::Dictionary* dictionary = NULL;
+  scoped_refptr<SdchManager::Dictionary> dictionary;
   std::string client_hash;
   std::string server_hash;
   sdch_manager()->GenerateHash(dictionary_text, &client_hash, &server_hash);
@@ -401,7 +401,7 @@ TEST_F(SdchManagerTest, CanUseMultipleManagers) {
   // can't get them from the other.
   EXPECT_TRUE(sdch_manager()->AddSdchDictionary(
       dictionary_text_1, GURL("http://" + dictionary_domain_1)));
-  SdchManager::Dictionary* dictionary = NULL;
+  scoped_refptr<SdchManager::Dictionary> dictionary;
   sdch_manager()->GetVcdiffDictionary(
       server_hash_1,
       GURL("http://" + dictionary_domain_1 + "/random_url"),
@@ -439,6 +439,39 @@ TEST_F(SdchManagerTest, HttpsCorrectlySupported) {
   SdchManager::EnableSecureSchemeSupport(true);
   EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(url));
   EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(secure_url));
+}
+
+TEST_F(SdchManagerTest, ClearDictionaryData) {
+  std::string dictionary_domain("x.y.z.google.com");
+  GURL blacklist_url("http://bad.chromium.org");
+
+  std::string dictionary_text(NewSdchDictionary(dictionary_domain));
+  std::string tmp_hash;
+  std::string server_hash;
+
+  SdchManager::GenerateHash(dictionary_text, &tmp_hash, &server_hash);
+
+  EXPECT_TRUE(sdch_manager()->AddSdchDictionary(
+      dictionary_text, GURL("http://" + dictionary_domain)));
+  scoped_refptr<SdchManager::Dictionary> dictionary;
+  sdch_manager()->GetVcdiffDictionary(
+      server_hash,
+      GURL("http://" + dictionary_domain + "/random_url"),
+      &dictionary);
+  EXPECT_TRUE(dictionary);
+
+  sdch_manager()->BlacklistDomain(GURL(blacklist_url));
+  EXPECT_FALSE(sdch_manager()->IsInSupportedDomain(blacklist_url));
+
+  sdch_manager()->ClearData();
+
+  dictionary = NULL;
+  sdch_manager()->GetVcdiffDictionary(
+      server_hash,
+      GURL("http://" + dictionary_domain + "/random_url"),
+      &dictionary);
+  EXPECT_FALSE(dictionary);
+  EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(blacklist_url));
 }
 
 }  // namespace net
