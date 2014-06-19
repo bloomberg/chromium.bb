@@ -30,6 +30,10 @@
                     (GraphicsLayer
                       (bounds 285.00 1000.00)
                       (shouldFlattenTransform 0)
+                      (children 1
+                        (GraphicsLayer
+                        )
+                      )
                     )
                   )
                 )

@@ -19,6 +19,10 @@
                   (bounds 185.00 1025.00)
                   (shouldFlattenTransform 0)
                   (drawsContent 1)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )

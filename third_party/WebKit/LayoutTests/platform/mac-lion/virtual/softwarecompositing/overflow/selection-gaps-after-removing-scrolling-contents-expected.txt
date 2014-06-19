@@ -1,0 +1,497 @@
+This test passes if the container's scrolling contents layer (the first child of the GraphicsLayer with 4 children) draws content only on iterations 1 and 2, and its scrolling block selection layer (the child of the scrolling contents layer) draws content only on iteration 3. The scrolling block selection layer should also be much smaller than the scrolling contents layer.
+Lorem Ipsum
+Lorem Ipsum
+Lorem Ipsum
+Lorem Ipsum
+Lorem Ipsum
+Lorem Ipsum
+Lorem Ipsum
+Lorem Ipsum
+Lorem Ipsum
+Lorem Ipsum
+
+
+*** iteration 1: ***
+
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (children 11
+        (GraphicsLayer
+          (position 8.00 62.00)
+          (bounds 300.00 500.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #0000FF)
+          (children 4
+            (GraphicsLayer
+              (bounds 285.00 485.00)
+              (children 1
+                (GraphicsLayer
+                  (bounds 285.00 665.00)
+                  (shouldFlattenTransform 0)
+                  (drawsContent 1)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
+                )
+              )
+            )
+            (GraphicsLayer
+              (position 0.00 485.00)
+              (bounds 285.00 15.00)
+            )
+            (GraphicsLayer
+              (position 285.00 0.00)
+              (bounds 15.00 485.00)
+            )
+            (GraphicsLayer
+              (position 285.00 485.00)
+              (bounds 15.00 15.00)
+              (drawsContent 1)
+            )
+          )
+        )
+        (GraphicsLayer
+          (position 23.00 77.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 142.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 207.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 272.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 337.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 402.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 467.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 532.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 597.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 662.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+      )
+    )
+  )
+)
+
+
+*** iteration 2: ***
+
+(GraphicsLayer
+  (bounds 785.00 2436.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 785.00 2436.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (children 11
+        (GraphicsLayer
+          (position 8.00 80.00)
+          (bounds 300.00 500.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #0000FF)
+          (children 4
+            (GraphicsLayer
+              (bounds 285.00 485.00)
+              (children 1
+                (GraphicsLayer
+                  (bounds 285.00 665.00)
+                  (shouldFlattenTransform 0)
+                  (drawsContent 1)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
+                )
+              )
+            )
+            (GraphicsLayer
+              (position 0.00 485.00)
+              (bounds 285.00 15.00)
+            )
+            (GraphicsLayer
+              (position 285.00 0.00)
+              (bounds 15.00 485.00)
+            )
+            (GraphicsLayer
+              (position 285.00 485.00)
+              (bounds 15.00 15.00)
+              (drawsContent 1)
+            )
+          )
+        )
+        (GraphicsLayer
+          (position 23.00 95.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 160.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 225.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 290.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 355.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 420.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 485.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 550.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 615.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 680.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+      )
+    )
+  )
+)
+
+
+*** iteration 3: ***
+
+(GraphicsLayer
+  (bounds 785.00 4266.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 785.00 4266.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (children 11
+        (GraphicsLayer
+          (position 8.00 80.00)
+          (bounds 300.00 500.00)
+          (children 4
+            (GraphicsLayer
+              (bounds 285.00 485.00)
+              (children 1
+                (GraphicsLayer
+                  (bounds 285.00 665.00)
+                  (shouldFlattenTransform 0)
+                  (children 1
+                    (GraphicsLayer
+                      (position 0.00 195.00)
+                      (bounds 285.00 15.00)
+                      (drawsContent 1)
+                    )
+                  )
+                )
+              )
+            )
+            (GraphicsLayer
+              (position 0.00 485.00)
+              (bounds 285.00 15.00)
+            )
+            (GraphicsLayer
+              (position 285.00 0.00)
+              (bounds 15.00 485.00)
+            )
+            (GraphicsLayer
+              (position 285.00 485.00)
+              (bounds 15.00 15.00)
+              (drawsContent 1)
+            )
+          )
+        )
+        (GraphicsLayer
+          (position 23.00 95.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 160.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 225.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 290.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 355.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 420.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 485.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 550.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 615.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 680.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+      )
+    )
+  )
+)
+
+
+*** iteration 4: ***
+
+(GraphicsLayer
+  (bounds 785.00 6081.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 785.00 6081.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (children 11
+        (GraphicsLayer
+          (position 8.00 80.00)
+          (bounds 300.00 500.00)
+          (children 4
+            (GraphicsLayer
+              (bounds 285.00 485.00)
+              (children 1
+                (GraphicsLayer
+                  (bounds 285.00 665.00)
+                  (shouldFlattenTransform 0)
+                  (children 1
+                    (GraphicsLayer
+                      (position 0.00 195.00)
+                      (bounds 285.00 15.00)
+                    )
+                  )
+                )
+              )
+            )
+            (GraphicsLayer
+              (position 0.00 485.00)
+              (bounds 285.00 15.00)
+            )
+            (GraphicsLayer
+              (position 285.00 0.00)
+              (bounds 15.00 485.00)
+            )
+            (GraphicsLayer
+              (position 285.00 485.00)
+              (bounds 15.00 15.00)
+              (drawsContent 1)
+            )
+          )
+        )
+        (GraphicsLayer
+          (position 23.00 95.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 160.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 225.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 290.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 355.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 420.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 485.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 550.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 615.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+        (GraphicsLayer
+          (position 23.00 680.00)
+          (bounds 100.00 50.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #FFA500)
+        )
+      )
+    )
+  )
+)
+

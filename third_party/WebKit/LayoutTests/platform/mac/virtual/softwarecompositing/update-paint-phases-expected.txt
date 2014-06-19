@@ -44,6 +44,15 @@
                     GraphicsLayerPaintOverflowContents
                     GraphicsLayerPaintCompositedScroll
                   )
+                  (children 1
+                    (GraphicsLayer
+                      (paintingPhases
+                        GraphicsLayerPaintForeground
+                        GraphicsLayerPaintOverflowContents
+                        GraphicsLayerPaintCompositedScroll
+                      )
+                    )
+                  )
                 )
               )
             )

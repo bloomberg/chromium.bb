@@ -22,6 +22,10 @@
                   (bounds 189.00 308.00)
                   (shouldFlattenTransform 0)
                   (drawsContent 1)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )
@@ -51,6 +55,10 @@
                   (bounds 189.00 308.00)
                   (shouldFlattenTransform 0)
                   (drawsContent 1)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )

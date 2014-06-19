@@ -5,7 +5,7 @@
       (bounds 785.00 2016.00)
       (contentsOpaque 1)
       (drawsContent 1)
-      (children 50
+      (children 48
         (GraphicsLayer
           (position 10.00 10.00)
           (bounds 104.00 104.00)
@@ -19,6 +19,10 @@
                   (bounds 85.00 144.00)
                   (shouldFlattenTransform 0)
                   (drawsContent 1)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )
@@ -75,6 +79,10 @@
                   (bounds 105.00 144.00)
                   (shouldFlattenTransform 0)
                   (drawsContent 1)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )
@@ -96,24 +104,17 @@
           )
         )
         (GraphicsLayer
-          (position 157.00 18.00)
-          (bounds 80.00 40.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
           (children 2
             (GraphicsLayer
-              (position 136.00 -15.00)
-              (bounds 75.00 24.00)
+              (position 157.00 18.00)
+              (bounds 80.00 40.00)
               (contentsOpaque 1)
               (drawsContent 1)
-              (backgroundColor #0000FF)
+              (backgroundColor #808080)
             )
             (GraphicsLayer
-              (position 136.00 41.00)
-              (bounds 75.00 24.00)
+              (position 136.00 -15.00)
+              (bounds 75.00 80.00)
               (drawsContent 1)
             )
           )
@@ -130,6 +131,10 @@
                 (GraphicsLayer
                   (bounds 85.00 144.00)
                   (shouldFlattenTransform 0)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )
@@ -186,6 +191,10 @@
                   (bounds 85.00 144.00)
                   (shouldFlattenTransform 0)
                   (drawsContent 1)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )
@@ -242,6 +251,10 @@
                   (bounds 105.00 144.00)
                   (shouldFlattenTransform 0)
                   (drawsContent 1)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )
@@ -263,24 +276,17 @@
           )
         )
         (GraphicsLayer
-          (position 37.00 138.00)
-          (bounds 80.00 40.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
           (children 2
             (GraphicsLayer
-              (position 16.00 105.00)
-              (bounds 75.00 24.00)
+              (position 37.00 138.00)
+              (bounds 80.00 40.00)
               (contentsOpaque 1)
               (drawsContent 1)
-              (backgroundColor #0000FF)
+              (backgroundColor #808080)
             )
             (GraphicsLayer
-              (position 16.00 161.00)
-              (bounds 75.00 24.00)
+              (position 16.00 105.00)
+              (bounds 75.00 80.00)
               (drawsContent 1)
             )
           )
@@ -297,6 +303,10 @@
                 (GraphicsLayer
                   (bounds 85.00 144.00)
                   (shouldFlattenTransform 0)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )
@@ -352,6 +362,10 @@
                 (GraphicsLayer
                   (bounds 105.00 144.00)
                   (shouldFlattenTransform 0)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )
@@ -400,6 +414,10 @@
                 (GraphicsLayer
                   (bounds 105.00 144.00)
                   (shouldFlattenTransform 0)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )
@@ -449,6 +467,10 @@
                   (bounds 85.00 144.00)
                   (shouldFlattenTransform 0)
                   (drawsContent 1)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )
@@ -507,6 +529,10 @@
                 (GraphicsLayer
                   (bounds 85.00 144.00)
                   (shouldFlattenTransform 0)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )
@@ -566,6 +592,10 @@
                   (bounds 85.00 144.00)
                   (shouldFlattenTransform 0)
                   (drawsContent 1)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )
@@ -624,6 +654,10 @@
                 (GraphicsLayer
                   (bounds 85.00 144.00)
                   (shouldFlattenTransform 0)
+                  (children 1
+                    (GraphicsLayer
+                    )
+                  )
                 )
               )
             )
