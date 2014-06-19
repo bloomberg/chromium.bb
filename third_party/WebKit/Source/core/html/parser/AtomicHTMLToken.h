@@ -233,9 +233,7 @@ inline void AtomicHTMLToken::initializeAttributes(const HTMLToken::AttributeList
         if (attribute.name.isEmpty())
             continue;
 
-        // FIXME: We should be able to add the following ASSERT once we fix
-        // https://bugs.webkit.org/show_bug.cgi?id=62971
-        //   ASSERT(attribute.nameRange.start);
+        ASSERT(attribute.nameRange.start);
         ASSERT(attribute.nameRange.end);
         ASSERT(attribute.valueRange.start);
         ASSERT(attribute.valueRange.end);
