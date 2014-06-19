@@ -30,7 +30,7 @@ void ShowAppInfoDialog(AppListControllerDelegate* app_list_controller_delegate,
   DCHECK(app_list_window);
   gfx::Rect app_list_bounds = app_list_controller_delegate->GetAppListBounds();
 
-  views::View* app_info_view = new AppInfoDialog(profile, app);
+  views::View* app_info_view = new AppInfoDialog(app_list_window, profile, app);
   views::Widget* dialog_widget = AppListDialogContentsView::CreateDialogWidget(
       app_list_window,
       app_list_bounds,
@@ -39,7 +39,9 @@ void ShowAppInfoDialog(AppListControllerDelegate* app_list_controller_delegate,
   dialog_widget->Show();
 }
 
-AppInfoDialog::AppInfoDialog(Profile* profile, const extensions::Extension* app)
+AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
+                             Profile* profile,
+                             const extensions::Extension* app)
     : dialog_header_(NULL), dialog_body_(NULL), dialog_footer_(NULL) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
@@ -59,7 +61,7 @@ AppInfoDialog::AppInfoDialog(Profile* profile, const extensions::Extension* app)
   dialog_header_->SetBorder(views::Border::CreateSolidSidedBorder(
       0, 0, kHorizontalSeparatorHeight, 0, app_list::kDialogSeparatorColor));
 
-  dialog_footer_ = new AppInfoFooterPanel(profile, app);
+  dialog_footer_ = new AppInfoFooterPanel(parent_window, profile, app);
   dialog_footer_->SetBorder(views::Border::CreateSolidSidedBorder(
       kHorizontalSeparatorHeight, 0, 0, 0, app_list::kDialogSeparatorColor));
 

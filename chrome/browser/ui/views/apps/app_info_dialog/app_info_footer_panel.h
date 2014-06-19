@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_panel.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
 
 class Profile;
@@ -33,12 +34,18 @@ class AppInfoFooterPanel
       public extensions::ExtensionUninstallDialog::Delegate,
       public base::SupportsWeakPtr<AppInfoFooterPanel> {
  public:
-  AppInfoFooterPanel(Profile* profile, const extensions::Extension* app);
+  AppInfoFooterPanel(gfx::NativeWindow parent_window,
+                     Profile* profile,
+                     const extensions::Extension* app);
   virtual ~AppInfoFooterPanel();
 
  private:
   void CreateButtons();
   void LayoutButtons();
+
+  // Updates the visibility of the pin/unpin buttons so that only one is visible
+  // at a time.
+  void UpdatePinButtons();
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
@@ -53,12 +60,21 @@ class AppInfoFooterPanel
   void CreateShortcuts();
   bool CanCreateShortcuts() const;
 
+  // Pins and unpins the app from the shelf. Must only be called if
+  // CanSetPinnedToShelf() returns true.
+  void SetPinnedToShelf(bool value);
+  bool CanSetPinnedToShelf() const;
+
   // Uninstall the app. Must only be called if CanUninstallApp() returns true.
   void UninstallApp();
   bool CanUninstallApp() const;
 
+  gfx::NativeWindow parent_window_;
+
   // UI elements on the dialog. Elements are NULL if they are not displayed.
   views::LabelButton* create_shortcuts_button_;
+  views::LabelButton* pin_to_shelf_button_;
+  views::LabelButton* unpin_from_shelf_button_;
   views::LabelButton* remove_button_;
 
   scoped_ptr<extensions::ExtensionUninstallDialog> extension_uninstall_dialog_;
