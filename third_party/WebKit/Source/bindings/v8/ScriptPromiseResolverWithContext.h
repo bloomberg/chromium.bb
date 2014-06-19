@@ -38,7 +38,14 @@ public:
         return resolver.release();
     }
 
-    virtual ~ScriptPromiseResolverWithContext();
+    virtual ~ScriptPromiseResolverWithContext()
+    {
+        // This assertion fails if:
+        //  - promise() is called at least once and
+        //  - this resolver is destructed before it is resolved, rejected or
+        //    the associated ExecutionContext is stopped.
+        ASSERT(m_state == ResolvedOrRejected || !m_isPromiseCalled);
+    }
 
     // Anything that can be passed to toV8Value can be passed to this function.
     template <typename T>
@@ -60,6 +67,9 @@ public:
     // reject is called.
     ScriptPromise promise()
     {
+#if ASSERT_ENABLED
+        m_isPromiseCalled = true;
+#endif
         return m_resolver ? m_resolver->promise() : ScriptPromise();
     }
 
@@ -124,6 +134,10 @@ private:
     Timer<ScriptPromiseResolverWithContext> m_timer;
     RefPtr<ScriptPromiseResolver> m_resolver;
     ScopedPersistent<v8::Value> m_value;
+#if ASSERT_ENABLED
+    // True if promise() is called.
+    bool m_isPromiseCalled;
+#endif
 };
 
 } // namespace WebCore

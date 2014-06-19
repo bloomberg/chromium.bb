@@ -16,18 +16,12 @@ ScriptPromiseResolverWithContext::ScriptPromiseResolverWithContext(ScriptState* 
     , m_mode(Default)
     , m_timer(this, &ScriptPromiseResolverWithContext::onTimerFired)
     , m_resolver(ScriptPromiseResolver::create(m_scriptState.get()))
+#if ASSERTION_ENABLED
+    , m_isPromiseCalled(false)
+#endif
 {
     if (executionContext()->activeDOMObjectsAreStopped())
         m_state = ResolvedOrRejected;
-}
-
-ScriptPromiseResolverWithContext::~ScriptPromiseResolverWithContext()
-{
-    if (m_state != ResolvedOrRejected) {
-        ScriptState::Scope scope(m_scriptState.get());
-        reject(v8::Exception::Error(v8::String::NewFromUtf8(m_scriptState->isolate(),
-            "ScriptPromiseResolverWithContext is destructed without resolve / reject")));
-    }
 }
 
 void ScriptPromiseResolverWithContext::suspend()
@@ -92,7 +86,7 @@ void ScriptPromiseResolverWithContext::clear()
     m_resolver.clear();
     m_value.clear();
     if (m_mode == KeepAliveWhilePending) {
-        // |ref| was called in the constructor.
+        // |ref| was called in |keepAliveWhilePending|.
         deref();
     }
     // |this| may be deleted here, but it is safe to check |state| because
