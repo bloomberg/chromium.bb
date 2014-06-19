@@ -1237,6 +1237,11 @@ void PepperPluginInstanceImpl::ViewChanged(
   view_data_.css_scale =
       container_->pageZoomFactor() * container_->pageScaleFactor();
 
+  gfx::Size scroll_offset =
+      container_->element().document().frame()->scrollOffset();
+  view_data_.scroll_offset = PP_MakePoint(scroll_offset.width(),
+                                          scroll_offset.height());
+
   if (desired_fullscreen_state_ || view_data_.is_fullscreen) {
     WebElement element = container_->element();
     WebDocument document = element.document();

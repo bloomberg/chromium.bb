@@ -99,6 +99,7 @@ PROXIED_IFACE(PPB_WEBSOCKET_INTERFACE_1_0, PPB_WebSocket_1_0)
 // Note: PPB_Var and PPB_VarArrayBuffer are special and registered manually.
 PROXIED_IFACE(PPB_VIEW_INTERFACE_1_0, PPB_View_1_0)
 PROXIED_IFACE(PPB_VIEW_INTERFACE_1_1, PPB_View_1_1)
+PROXIED_IFACE(PPB_VIEW_INTERFACE_1_2, PPB_View_1_2)
 
 // This has no corresponding _Proxy object since it does no IPC.
 PROXIED_IFACE(PPB_AUDIO_CONFIG_INTERFACE_1_0, PPB_AudioConfig_1_0)

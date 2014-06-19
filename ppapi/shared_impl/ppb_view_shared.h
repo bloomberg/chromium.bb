@@ -27,6 +27,7 @@ struct PPAPI_SHARED_EXPORT ViewData {
   PP_Rect clip_rect;
   float device_scale;
   float css_scale;
+  PP_Point scroll_offset;
 };
 
 class PPAPI_SHARED_EXPORT PPB_View_Shared : public Resource,
@@ -49,6 +50,7 @@ class PPAPI_SHARED_EXPORT PPB_View_Shared : public Resource,
   virtual PP_Bool GetClipRect(PP_Rect* clip) const OVERRIDE;
   virtual float GetDeviceScale() const OVERRIDE;
   virtual float GetCSSScale() const OVERRIDE;
+  virtual PP_Bool GetScrollOffset(PP_Point* scroll_offset) const OVERRIDE;
 
  private:
   ViewData data_;

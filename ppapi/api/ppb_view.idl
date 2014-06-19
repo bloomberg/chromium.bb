@@ -12,7 +12,8 @@
 
 label Chrome {
   M18 = 1.0,
-  M28 = 1.1
+  M28 = 1.1,
+  [channel=dev] M37 = 1.2
 };
 
 /**
@@ -88,7 +89,7 @@ interface PPB_View {
    * and IsPageVisible() (whether the page is visible to the user).
    *
    * @param resource A <code>PP_Resource</code> corresponding to a
-   * <code>PPB_View</code> resource. 
+   * <code>PPB_View</code> resource.
    *
    * @return <code>PP_TRUE</code> if the instance might be visible to the
    * user, <code>PP_FALSE</code> if it is definitely not visible.
@@ -108,7 +109,7 @@ interface PPB_View {
    * not visible.
    *
    * @param resource A <code>PP_Resource</code> corresponding to a
-   * <code>PPB_View</code> resource. 
+   * <code>PPB_View</code> resource.
    *
    * @return <code>PP_TRUE</code> if the instance is plausibly visible to the
    * user, <code>PP_FALSE</code> if it is definitely not visible.
@@ -151,7 +152,7 @@ interface PPB_View {
    * the visual distraction when this happens.
    *
    * @param resource A <code>PP_Resource</code> corresponding to a
-   * <code>PPB_View</code> resource. 
+   * <code>PPB_View</code> resource.
    *
    * @param clip Output argument receiving the clip rect on success.
    *
@@ -193,5 +194,22 @@ interface PPB_View {
    */
   [version=1.1]
   float_t GetCSSScale([in] PP_Resource resource);
+
+  /**
+   * GetScrollOffset returns the scroll offset of the window containing the
+   * plugin.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a
+   * <code>PPB_View</code> resource.
+   *
+   * @param[out] offset A <code>PP_Point</code> which will be set to the value
+   * of the scroll offset in CSS pixels.
+   *
+   * @return Returns <code>PP_TRUE</code> if the resource was valid and the
+   * offset was filled in, <code>PP_FALSE</code> if not.
+   */
+  [version=1.2]
+  PP_Bool GetScrollOffset([in] PP_Resource resource,
+                          [out] PP_Point offset);
 };
 

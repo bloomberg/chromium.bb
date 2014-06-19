@@ -46,6 +46,7 @@ void TestView::RunTests(const std::string& filter) {
   RUN_TEST(PageHideShow, filter);
   RUN_TEST(SizeChange, filter);
   RUN_TEST(ClipChange, filter);
+  RUN_TEST(ScrollOffsetChange, filter);
 }
 
 bool TestView::WaitUntilViewChanged() {
@@ -197,5 +198,31 @@ std::string TestView::TestClipChange() {
              kViewChangeTimeoutSec) {
   }
   ASSERT_TRUE(last_view_.GetClipRect() == desired_clip);
+  PASS();
+}
+
+std::string TestView::TestScrollOffsetChange() {
+  instance_->EvalScript("document.body.style.width = '5000px';"
+                        "document.body.style.height = '5000px';");
+  instance_->EvalScript("window.scrollTo(5, 1);");
+
+  PP_Time begin_time = pp::Module::Get()->core()->GetTime();
+  while (WaitUntilViewChanged() &&
+         last_view_.GetScrollOffset() != pp::Point(5, 1) &&
+         pp::Module::Get()->core()->GetTime() - begin_time <
+             kViewChangeTimeoutSec) {
+  }
+  ASSERT_EQ(pp::Point(5, 1), last_view_.GetScrollOffset());
+
+  instance_->EvalScript("window.scrollTo(0, 0);");
+
+  begin_time = pp::Module::Get()->core()->GetTime();
+  while (WaitUntilViewChanged() &&
+         last_view_.GetScrollOffset() != pp::Point(0, 0) &&
+         pp::Module::Get()->core()->GetTime() - begin_time <
+             kViewChangeTimeoutSec) {
+  }
+  ASSERT_EQ(pp::Point(0, 0), last_view_.GetScrollOffset());
+
   PASS();
 }

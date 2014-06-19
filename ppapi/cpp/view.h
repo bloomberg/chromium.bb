@@ -138,6 +138,13 @@ class View : public Resource {
   /// @return A <code>float</code> value representing the number of DIPs per CSS
   /// pixel.
   float GetCSSScale() const;
+
+  /// GetScrollOffset returns the scroll offset of the window containing the
+  /// plugin.
+  ///
+  /// @return A <code>Point</code> which is set to the value of the scroll
+  /// offset in CSS pixels.
+  Point GetScrollOffset() const;
 };
 
 }  // namespace pp

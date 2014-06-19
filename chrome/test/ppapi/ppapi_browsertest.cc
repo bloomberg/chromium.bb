@@ -1167,6 +1167,7 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, InputEvent_AcceptTouchEvent) {
   RunTestViaHTTP( \
       LIST_TEST(View_SizeChange) \
       LIST_TEST(View_ClipChange) \
+      LIST_TEST(View_ScrollOffsetChange) \
   )
 
 IN_PROC_BROWSER_TEST_F(PPAPITest, View) {

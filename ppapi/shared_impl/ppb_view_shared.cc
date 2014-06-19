@@ -35,7 +35,9 @@ bool ViewData::Equals(const ViewData& other) const {
          clip_rect.point.y == other.clip_rect.point.y &&
          clip_rect.size.width == other.clip_rect.size.width &&
          clip_rect.size.height == other.clip_rect.size.height &&
-         device_scale == other.device_scale && css_scale == other.css_scale;
+         device_scale == other.device_scale && css_scale == other.css_scale &&
+         scroll_offset.x == other.scroll_offset.x &&
+         scroll_offset.y == other.scroll_offset.y;
 }
 
 PPB_View_Shared::PPB_View_Shared(ResourceObjectType type,
@@ -78,5 +80,12 @@ PP_Bool PPB_View_Shared::GetClipRect(PP_Rect* clip) const {
 float PPB_View_Shared::GetDeviceScale() const { return data_.device_scale; }
 
 float PPB_View_Shared::GetCSSScale() const { return data_.css_scale; }
+
+PP_Bool PPB_View_Shared::GetScrollOffset(PP_Point* scroll_offset) const {
+  if (!scroll_offset)
+    return PP_FALSE;
+  *scroll_offset = data_.scroll_offset;
+  return PP_TRUE;
+}
 
 }  // namespace ppapi

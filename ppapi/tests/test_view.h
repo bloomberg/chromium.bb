@@ -35,6 +35,7 @@ class TestView : public TestCase {
   std::string TestPageHideShow();
   std::string TestSizeChange();
   std::string TestClipChange();
+  std::string TestScrollOffsetChange();
 
   pp::View last_view_;
 

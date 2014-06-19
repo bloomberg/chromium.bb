@@ -1919,6 +1919,8 @@ static int32_t Pnacl_M36_PPB_VideoDecoder_Reset(PP_Resource video_decoder, struc
 
 /* Not generating wrapper methods for PPB_View_1_1 */
 
+/* Not generating wrapper methods for PPB_View_1_2 */
+
 /* Begin wrapper methods for PPB_WebSocket_1_0 */
 
 static PP_Resource Pnacl_M18_PPB_WebSocket_Create(PP_Instance instance) {
@@ -4799,6 +4801,8 @@ static const struct PPB_VideoDecoder_0_1 Pnacl_Wrappers_PPB_VideoDecoder_0_1 = {
 /* Not generating wrapper interface for PPB_View_1_0 */
 
 /* Not generating wrapper interface for PPB_View_1_1 */
+
+/* Not generating wrapper interface for PPB_View_1_2 */
 
 static const struct PPB_WebSocket_1_0 Pnacl_Wrappers_PPB_WebSocket_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M18_PPB_WebSocket_Create,

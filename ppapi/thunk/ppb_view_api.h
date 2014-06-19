@@ -27,6 +27,7 @@ class PPAPI_THUNK_EXPORT PPB_View_API {
   virtual PP_Bool GetClipRect(PP_Rect* clip) const = 0;
   virtual float GetDeviceScale() const = 0;
   virtual float GetCSSScale() const = 0;
+  virtual PP_Bool GetScrollOffset(PP_Point* offset) const = 0;
 };
 
 }  // namespace thunk
