@@ -35,6 +35,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/Platform.h"
 
 namespace WebCore {
@@ -606,16 +607,26 @@ void UseCounter::count(const Document& document, Feature feature)
 
 void UseCounter::count(const ExecutionContext* context, Feature feature)
 {
-    if (!context || !context->isDocument())
+    if (!context)
         return;
-    count(*toDocument(context), feature);
+    if (context->isDocument()) {
+        count(*toDocument(context), feature);
+        return;
+    }
+    if (context->isWorkerGlobalScope())
+        toWorkerGlobalScope(context)->countFeature(feature);
 }
 
 void UseCounter::countDeprecation(ExecutionContext* context, Feature feature)
 {
-    if (!context || !context->isDocument())
+    if (!context)
         return;
-    UseCounter::countDeprecation(*toDocument(context), feature);
+    if (context->isDocument()) {
+        UseCounter::countDeprecation(*toDocument(context), feature);
+        return;
+    }
+    if (context->isWorkerGlobalScope())
+        toWorkerGlobalScope(context)->countDeprecation(feature);
 }
 
 void UseCounter::countDeprecation(const DOMWindow* window, Feature feature)

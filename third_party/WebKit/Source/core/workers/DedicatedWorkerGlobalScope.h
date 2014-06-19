@@ -48,6 +48,8 @@ public:
     virtual ~DedicatedWorkerGlobalScope();
 
     virtual bool isDedicatedWorkerGlobalScope() const OVERRIDE { return true; }
+    virtual void countFeature(UseCounter::Feature) const OVERRIDE;
+    virtual void countDeprecation(UseCounter::Feature) const OVERRIDE;
 
     // Overridden to allow us to check our pending activity after executing imported script.
     virtual void importScripts(const Vector<String>& urls, ExceptionState&) OVERRIDE;
@@ -59,7 +61,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
-    DedicatedWorkerThread* thread();
+    DedicatedWorkerThread* thread() const;
 
     virtual void trace(Visitor*) OVERRIDE;
 

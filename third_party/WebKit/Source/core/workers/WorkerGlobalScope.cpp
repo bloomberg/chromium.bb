@@ -322,6 +322,16 @@ WorkerEventQueue* WorkerGlobalScope::eventQueue() const
     return m_eventQueue.get();
 }
 
+void WorkerGlobalScope::countFeature(UseCounter::Feature) const
+{
+    // FIXME: How should we count features for shared/service workers?
+}
+
+void WorkerGlobalScope::countDeprecation(UseCounter::Feature) const
+{
+    // FIXME: How should we count features for shared/service workers?
+}
+
 void WorkerGlobalScope::trace(Visitor* visitor)
 {
     visitor->trace(m_console);

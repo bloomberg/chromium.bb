@@ -78,9 +78,43 @@ void DedicatedWorkerGlobalScope::importScripts(const Vector<String>& urls, Excep
     thread()->workerObjectProxy().reportPendingActivity(hasPendingActivity());
 }
 
-DedicatedWorkerThread* DedicatedWorkerGlobalScope::thread()
+DedicatedWorkerThread* DedicatedWorkerGlobalScope::thread() const
 {
     return static_cast<DedicatedWorkerThread*>(Base::thread());
+}
+
+class UseCounterTask : public ExecutionContextTask {
+public:
+    static PassOwnPtr<UseCounterTask> createCount(UseCounter::Feature feature) { return adoptPtr(new UseCounterTask(feature, false)); }
+    static PassOwnPtr<UseCounterTask> createDeprecation(UseCounter::Feature feature) { return adoptPtr(new UseCounterTask(feature, true)); }
+
+private:
+    UseCounterTask(UseCounter::Feature feature, bool isDeprecation)
+        : m_feature(feature)
+        , m_isDeprecation(isDeprecation)
+    {
+    }
+
+    virtual void performTask(ExecutionContext* context) OVERRIDE
+    {
+        if (m_isDeprecation)
+            UseCounter::countDeprecation(*toDocument(context), m_feature);
+        else
+            UseCounter::count(*toDocument(context), m_feature);
+    }
+
+    UseCounter::Feature m_feature;
+    bool m_isDeprecation;
+};
+
+void DedicatedWorkerGlobalScope::countFeature(UseCounter::Feature feature) const
+{
+    thread()->workerObjectProxy().postTaskToMainExecutionContext(UseCounterTask::createCount(feature));
+}
+
+void DedicatedWorkerGlobalScope::countDeprecation(UseCounter::Feature feature) const
+{
+    thread()->workerObjectProxy().postTaskToMainExecutionContext(UseCounterTask::createDeprecation(feature));
 }
 
 void DedicatedWorkerGlobalScope::trace(Visitor* visitor)

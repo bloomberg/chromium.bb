@@ -49,6 +49,11 @@ void WorkerObjectProxy::postMessageToWorkerObject(PassRefPtr<SerializedScriptVal
     m_executionContext->postTask(bind(&WorkerMessagingProxy::postMessageToWorkerObject, m_messagingProxy, message, channels));
 }
 
+void WorkerObjectProxy::postTaskToMainExecutionContext(PassOwnPtr<ExecutionContextTask> task)
+{
+    m_executionContext->postTask(task);
+}
+
 void WorkerObjectProxy::confirmMessageFromWorkerObject(bool hasPendingActivity)
 {
     m_executionContext->postTask(bind(&WorkerMessagingProxy::confirmMessageFromWorkerObject, m_messagingProxy, hasPendingActivity));

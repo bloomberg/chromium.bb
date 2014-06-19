@@ -33,6 +33,7 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowBase64.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerEventQueue.h"
 #include "platform/heap/Handle.h"
@@ -70,6 +71,8 @@ namespace WebCore {
         virtual bool isSharedWorkerGlobalScope() const { return false; }
         virtual bool isDedicatedWorkerGlobalScope() const { return false; }
         virtual bool isServiceWorkerGlobalScope() const { return false; }
+        virtual void countFeature(UseCounter::Feature) const;
+        virtual void countDeprecation(UseCounter::Feature) const;
 
         const KURL& url() const { return m_url; }
         KURL completeURL(const String&) const;

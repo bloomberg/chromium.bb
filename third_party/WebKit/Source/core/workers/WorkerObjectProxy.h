@@ -39,6 +39,7 @@
 namespace WebCore {
 
 class ExecutionContext;
+class ExecutionContextTask;
 class WorkerMessagingProxy;
 
 // A proxy to talk to the worker object. This object is created on the
@@ -53,7 +54,7 @@ public:
     virtual ~WorkerObjectProxy() { }
 
     void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
-
+    void postTaskToMainExecutionContext(PassOwnPtr<ExecutionContextTask>);
     void confirmMessageFromWorkerObject(bool hasPendingActivity);
     void reportPendingActivity(bool hasPendingActivity);
 
