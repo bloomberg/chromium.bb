@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/keyed_service/core:core
       'target_name': 'keyed_service_core',
       'type': '<(component)',
       'defines': [
@@ -32,6 +33,7 @@
     ['OS != "ios"', {
       'targets': [
         {
+          # GN version: //components/keyed_service/content:content
           'target_name': 'keyed_service_content',
           'type': '<(component)',
           'defines': [

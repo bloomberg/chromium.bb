@@ -109,6 +109,10 @@ group("root") {
     deps += [ "//breakpad:symupload" ]
   }
 
+  if (!is_ios) {
+    deps += [ "//components/keyed_service/content" ]
+  }
+
   if (is_linux) {
     deps += [
       "//dbus",
@@ -139,6 +143,7 @@ group("root") {
     deps -= [
       "//cc",
       "//content",
+      "//components/keyed_service/content",  # Blocked on content.
       "//components/user_prefs",  # Blocked on content.
       "//components/visitedlink/browser",  # Blocked on content.
       "//components/visitedlink/common",  # Blocked on content.
