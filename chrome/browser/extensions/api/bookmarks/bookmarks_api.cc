@@ -355,7 +355,9 @@ void BookmarkEventRouter::OnWillAddBookmarkNode(BookmarkModel* model,
   if (IsEnhancedBookmarksExtensionActive(Profile::FromBrowserContext(
           browser_context_))) {
     static const char key[] = "stars.id";
-    node->SetMetaInfo(key, GenerateEnhancedBookmarksID(node->is_folder()));
+    std::string value;
+    if (!node->GetMetaInfo(key, &value))
+      node->SetMetaInfo(key, GenerateEnhancedBookmarksID(node->is_folder()));
   }
 }
 
