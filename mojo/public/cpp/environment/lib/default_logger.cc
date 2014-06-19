@@ -18,11 +18,15 @@ namespace {
 MojoLogLevel g_minimum_log_level = MOJO_LOG_LEVEL_INFO;
 
 const char* GetLogLevelString(MojoLogLevel log_level) {
-  if (log_level < MOJO_LOG_LEVEL_VERBOSE)
-    return "VERBOSE";
+  if (log_level <= MOJO_LOG_LEVEL_VERBOSE-3)
+    return "VERBOSE4+";
   switch (log_level) {
+    case MOJO_LOG_LEVEL_VERBOSE-2:
+      return "VERBOSE3";
+    case MOJO_LOG_LEVEL_VERBOSE-1:
+      return "VERBOSE2";
     case MOJO_LOG_LEVEL_VERBOSE:
-      return "VERBOSE";
+      return "VERBOSE1";
     case MOJO_LOG_LEVEL_INFO:
       return "INFO";
     case MOJO_LOG_LEVEL_WARNING:
@@ -39,7 +43,7 @@ void LogMessage(MojoLogLevel log_level, const char* message) {
     return;
 
   // TODO(vtl): Add timestamp also?
-  fprintf(stderr, "%s:%s\n", GetLogLevelString(log_level), message);
+  fprintf(stderr, "%s: %s\n", GetLogLevelString(log_level), message);
   if (log_level >= MOJO_LOG_LEVEL_FATAL)
     abort();
 }

@@ -162,6 +162,7 @@
       'sources': [
         'public/cpp/environment/tests/async_waiter_unittest.cc',
         'public/cpp/environment/tests/logger_unittest.cc',
+        'public/cpp/environment/tests/logging_unittest.cc',
       ],
     },
     {
@@ -320,12 +321,14 @@
       'sources': [
         'public/c/environment/async_waiter.h',
         'public/c/environment/logger.h',
+        'public/c/environment/logging.h',
         'public/cpp/environment/environment.h',
         'public/cpp/environment/lib/default_async_waiter.cc',
         'public/cpp/environment/lib/default_async_waiter.h',
         'public/cpp/environment/lib/default_logger.cc',
         'public/cpp/environment/lib/default_logger.h',
         'public/cpp/environment/lib/environment.cc',
+        'public/cpp/environment/lib/logging.cc',
       ],
       'include_dirs': [
         '..',
