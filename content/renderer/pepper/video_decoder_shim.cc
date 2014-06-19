@@ -256,8 +256,8 @@ void VideoDecoderShim::DecoderImpl::OnOutputComplete(
   scoped_ptr<PendingFrame> pending_frame;
   if (!frame->end_of_stream()) {
     pending_frame.reset(new PendingFrame(decode_id_, frame->coded_size()));
-    // Convert the VideoFrame pixels to ARGB.
-    libyuv::I420ToARGB(frame->data(media::VideoFrame::kYPlane),
+    // Convert the VideoFrame pixels to ABGR to match VideoDecodeAccelerator.
+    libyuv::I420ToABGR(frame->data(media::VideoFrame::kYPlane),
                        frame->stride(media::VideoFrame::kYPlane),
                        frame->data(media::VideoFrame::kUPlane),
                        frame->stride(media::VideoFrame::kUPlane),
