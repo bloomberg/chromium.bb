@@ -1312,16 +1312,37 @@ const char* TabStrip::GetClassName() const {
 }
 
 gfx::Size TabStrip::GetPreferredSize() const {
-  // For stacked tabs the minimum size is calculated as the size needed to
-  // handle showing any number of tabs. Otherwise report the minimum width as
-  // the size required for a single selected tab plus the new tab button. Don't
-  // base it on the actual number of tabs because it's undesirable to have the
-  // minimum window size change when a new tab is opened.
-  const int needed_tab_width = (touch_layout_ || adjust_layout_) ?
-      (Tab::GetTouchWidth() + (2 * kStackedPadding * kMaxStackedCount)) :
-      Tab::GetMinimumSelectedSize().width();
-  return gfx::Size(needed_tab_width + new_tab_button_width(), immersive_style_ ?
-      Tab::GetImmersiveHeight() : Tab::GetMinimumUnselectedSize().height());
+  int needed_tab_width;
+  if (touch_layout_ || adjust_layout_) {
+    // For stacked tabs the minimum size is calculated as the size needed to
+    // handle showing any number of tabs.
+    needed_tab_width =
+        Tab::GetTouchWidth() + (2 * kStackedPadding * kMaxStackedCount);
+  } else {
+    // Otherwise the minimum width is based on the actual number of tabs.
+    const int mini_tab_count = GetMiniTabCount();
+    needed_tab_width = mini_tab_count * Tab::GetMiniWidth();
+    const int remaining_tab_count = tab_count() - mini_tab_count;
+    const int min_selected_width = Tab::GetMinimumSelectedSize().width();
+    const int min_unselected_width = Tab::GetMinimumUnselectedSize().width();
+    if (remaining_tab_count > 0) {
+      needed_tab_width += kMiniToNonMiniGap + min_selected_width +
+          ((remaining_tab_count - 1) * min_unselected_width);
+    }
+    if (tab_count() > 1)
+      needed_tab_width += (tab_count() - 1) * kTabHorizontalOffset;
+
+    // Don't let the tabstrip shrink smaller than is necessary to show one tab,
+    // and don't force it to be larger than is necessary to show 20 tabs.
+    const int largest_min_tab_width =
+        min_selected_width + 19 * (min_unselected_width + kTabHorizontalOffset);
+    needed_tab_width = std::min(
+        std::max(needed_tab_width, min_selected_width), largest_min_tab_width);
+  }
+  return gfx::Size(
+      needed_tab_width + new_tab_button_width(),
+      immersive_style_ ?
+          Tab::GetImmersiveHeight() : Tab::GetMinimumUnselectedSize().height());
 }
 
 void TabStrip::OnDragEntered(const DropTargetEvent& event) {
