@@ -22,7 +22,6 @@
 #ifndef StyleResolver_h
 #define StyleResolver_h
 
-#include "core/animation/KeyframeEffectModel.h"
 #include "core/css/PseudoStyleRequest.h"
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
@@ -45,6 +44,8 @@
 
 namespace WebCore {
 
+class AnimatableValue;
+class AnimationTimeline;
 class CSSAnimationUpdate;
 class CSSFontSelector;
 class CSSRuleList;
@@ -53,9 +54,9 @@ class CSSStyleSheet;
 class CSSValue;
 class ContainerNode;
 class Document;
-class AnimationTimeline;
 class Element;
 class ElementRuleCollector;
+class Interpolation;
 class KeyframeList;
 class KeyframeValue;
 class MediaQueryEvaluator;
