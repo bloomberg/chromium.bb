@@ -7,6 +7,7 @@
 // status=stable -> Enable this in all Blink configurations.  We are committed to these APIs indefinitely.
 // status=experimental -> In-progress features, Web Developers might play with, but are not on by default in stable.
 // status=test -> Enabled in ContentShell for testing, otherwise off.
+// status=deprecated -> Alias for "test", will be removed at some point.
 // Features without a status are not enabled anywhere by default.
 //
 // "stable" features listed here should be rare, as anything which we've shipped stable
@@ -120,9 +121,8 @@ SharedWorker status=stable
 PictureSizes status=experimental
 Picture status=experimental
 
-// window.showModalDialog is deprecated and slated for removal from M36
-// Once this ships to stable supporting code can be removed.crbug.com/345831
-ShowModalDialog status=stable
+// window.showModalDialog is deprecated and slated for removal. crbug.com/345831
+ShowModalDialog status=deprecated
 
 SpeechSynthesis status=stable
 Stream status=experimental
