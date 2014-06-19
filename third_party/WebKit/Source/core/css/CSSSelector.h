@@ -42,7 +42,7 @@ namespace WebCore {
     // simple selector in the list. The relation() method returns the relationship of the current simple selector to
     // the one in tagHistory(). For example, the CSS selector .a.b #c is represented as:
     //
-    // selectorText(): .a.b .c
+    // selectorText(): .a.b #c
     // --> (relation == Descendant)
     //   selectorText(): .a.b
     //   --> (relation == SubSelector)
@@ -130,7 +130,7 @@ namespace WebCore {
             IndirectAdjacent, // ~ combinator
             SubSelector, // "No space" combinator
             ShadowPseudo, // Special case of shadow DOM pseudo elements / shadow pseudo element
-            ShadowDeep // /shadow-deep/ combinator
+            ShadowDeep // /deep/ combinator
         };
 
         enum PseudoType {
