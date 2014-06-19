@@ -27,6 +27,8 @@
   },
 
   "bluetooth": {
+    "socket" : true,
+    "low_energy" : true,
     "uuids": [
       "0000AB34-0000-1000-8000-00805F9B34FB",
       "29422880-D56D-11E3-9C1A-0800200C9A66"
