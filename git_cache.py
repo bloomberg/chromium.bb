@@ -99,11 +99,15 @@ class Lockfile(object):
 
   def unlock(self):
     """Release the lock."""
-    if not self.is_locked():
-      raise LockError("%s is not locked" % self.path)
-    if not self.i_am_locking():
-      raise LockError("%s is locked, but not by me" % self.path)
-    self._remove_lockfile()
+    try:
+      if not self.is_locked():
+        raise LockError("%s is not locked" % self.path)
+      if not self.i_am_locking():
+        raise LockError("%s is locked, but not by me" % self.path)
+      self._remove_lockfile()
+    except WinErr:
+      # Windows is unreliable when it comes to file locking.  YMMV.
+      pass
 
   def break_lock(self):
     """Remove the lock, even if it was created by someone else."""
@@ -127,17 +131,6 @@ class Lockfile(object):
   def i_am_locking(self):
     """Test if the file is locked by this process."""
     return self.is_locked() and self.pid == self._read_pid()
-
-  def __enter__(self):
-    self.lock()
-    return self
-
-  def __exit__(self, *_exc):
-    # Windows is unreliable when it comes to file locking.  YMMV.
-    try:
-      self.unlock()
-    except WinErr:
-      pass
 
 
 class Mirror(object):
@@ -317,7 +310,7 @@ class Mirror(object):
     return os.path.isfile(os.path.join(self.mirror_path, 'config'))
 
   def populate(self, depth=None, shallow=False, bootstrap=False,
-               verbose=False):
+               verbose=False, ignore_lock=False):
     assert self.GetCachePath()
     if shallow and not depth:
       depth = 10000
@@ -332,7 +325,11 @@ class Mirror(object):
       d = ['--depth', str(depth)]
 
 
-    with Lockfile(self.mirror_path):
+    lockfile = Lockfile(self.mirror_path)
+    if not ignore_lock:
+      lockfile.lock()
+
+    try:
       # Setup from scratch if the repo is new or is in a bad state.
       tempdir = None
       config_file = os.path.join(self.mirror_path, 'config')
@@ -380,6 +377,9 @@ class Mirror(object):
           logging.warn('Fetch of %s failed' % spec)
       if tempdir:
         os.rename(tempdir, self.mirror_path)
+    finally:
+      if not ignore_lock:
+        lockfile.unlock()
 
   def update_bootstrap(self, prune=False):
     # The files are named <git number>.zip
@@ -508,6 +508,8 @@ def CMDpopulate(parser, args):
                     help='Specify additional refs to be fetched')
   parser.add_option('--no_bootstrap', action='store_true',
                     help='Don\'t bootstrap from Google Storage')
+  parser.add_option('--ignore_locks', action='store_true',
+                    help='Don\'t try to lock repository')
 
   options, args = parser.parse_args(args)
   if not len(args) == 1:
@@ -519,6 +521,7 @@ def CMDpopulate(parser, args):
       'verbose': options.verbose,
       'shallow': options.shallow,
       'bootstrap': not options.no_bootstrap,
+      'ignore_lock': options.ignore_locks,
   }
   if options.depth:
     kwargs['depth'] = options.depth
