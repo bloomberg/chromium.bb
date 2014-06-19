@@ -20,13 +20,13 @@ BUILDER_JSON_URL = ('%(server_url)s/json/builders/%(bot_name)s/builds/'
 BUILDER_HTML_URL = ('%(server_url)s/builders/%(bot_name)s/builds/%(build_num)s')
 
 # Tryserver buildbots status page
-TRY_SERVER_URL = 'http://build.chromium.org/p/tryserver.chromium'
+TRY_SERVER_URL = 'http://build.chromium.org/p/tryserver.chromium.perf'
 
 # Hostname of the tryserver where perf bisect builders are hosted. This is used
 # for posting build request to tryserver.
 BISECT_BUILDER_HOST = 'master4.golo.chromium.org'
 # 'try_job_port' on tryserver to post build request.
-BISECT_BUILDER_PORT = 8328
+BISECT_BUILDER_PORT = 8341
 
 
 # From buildbot.status.builder.
