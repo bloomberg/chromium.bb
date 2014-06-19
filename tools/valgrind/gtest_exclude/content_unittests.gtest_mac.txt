@@ -54,3 +54,6 @@ GamepadProviderTest.UserGesture
 AppCacheRequestHandlerTest.*
 AppCacheResponseTest.*
 AppCacheStorageImplTest.*
+AppCacheStorageImplTest.*
+AppCacheUpdateJobTest.AlreadyChecking
+AppCacheUpdateJobTest.ManifestMissingMimeTypeTest
