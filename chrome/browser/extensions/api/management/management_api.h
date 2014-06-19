@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_MANAGEMENT_MANAGEMENT_API_H_
 
 #include "base/compiler_specific.h"
+#include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
@@ -14,15 +15,15 @@
 #include "chrome/common/web_application_info.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class ExtensionService;
 class ExtensionUninstallDialog;
 
 namespace extensions {
+class ExtensionRegistry;
 
 class ManagementFunction : public ChromeSyncExtensionFunction {
  protected:
@@ -218,7 +219,7 @@ class ManagementGenerateAppForLinkFunction : public AsyncManagementFunction {
 
  private:
   void OnFaviconForApp(const favicon_base::FaviconImageResult& image_result);
-  void FinishCreateBookmarkApp(const extensions::Extension* extension,
+  void FinishCreateBookmarkApp(const Extension* extension,
                                const WebApplicationInfo& web_app_info);
 
   std::string title_;
@@ -230,26 +231,37 @@ class ManagementGenerateAppForLinkFunction : public AsyncManagementFunction {
   base::CancelableTaskTracker cancelable_task_tracker_;
 };
 
-class ManagementEventRouter : public content::NotificationObserver {
+class ManagementEventRouter : public ExtensionRegistryObserver {
  public:
-  explicit ManagementEventRouter(Profile* profile);
+  explicit ManagementEventRouter(content::BrowserContext* context);
   virtual ~ManagementEventRouter();
 
  private:
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+  virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
+                                    const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                      const Extension* extension) OVERRIDE;
 
-  content::NotificationRegistrar registrar_;
+  // Dispatches management api events to listening extensions.
+  void BroadcastEvent(const Extension* extension, const char* event_name);
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagementEventRouter);
 };
 
 class ManagementAPI : public BrowserContextKeyedAPI,
-                      public extensions::EventRouter::Observer {
+                      public EventRouter::Observer {
  public:
   explicit ManagementAPI(content::BrowserContext* context);
   virtual ~ManagementAPI();
@@ -261,8 +273,7 @@ class ManagementAPI : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<ManagementAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
-      OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
 
  private:
   friend class BrowserContextKeyedAPIFactory<ManagementAPI>;

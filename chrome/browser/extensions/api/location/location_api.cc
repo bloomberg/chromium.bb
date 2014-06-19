@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/location/location_api.h"
 
 #include "chrome/browser/extensions/api/location/location_manager.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/location.h"
 #include "extensions/common/error_utils.h"
 
@@ -49,7 +48,7 @@ bool LocationWatchLocationFunction::RunSync() {
   }
 
   // TODO(vadimt): validate and use params->request_info.maximumAge
-  LocationManager::Get(GetProfile())
+  LocationManager::Get(browser_context())
       ->AddLocationRequest(extension_id(),
                            params->name,
                            min_distance_in_meters,
@@ -63,7 +62,7 @@ bool LocationClearWatchFunction::RunSync() {
       ClearWatch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  LocationManager::Get(GetProfile())
+  LocationManager::Get(browser_context())
       ->RemoveLocationRequest(extension_id(), params->name);
 
   return true;

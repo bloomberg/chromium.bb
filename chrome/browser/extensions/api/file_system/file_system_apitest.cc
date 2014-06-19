@@ -5,41 +5,42 @@
 #include "apps/saved_files_service.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
+
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 
 namespace {
 
-class AppInstallObserver : public content::NotificationObserver {
+class AppLoadObserver : public ExtensionRegistryObserver {
  public:
-  AppInstallObserver(
-      base::Callback<void(const Extension*)> callback)
-      : callback_(callback) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                   content::NotificationService::AllSources());
+  AppLoadObserver(content::BrowserContext* browser_context,
+                  base::Callback<void(const Extension*)> callback)
+      : callback_(callback), extension_registry_observer_(this) {
+    extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
   }
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    EXPECT_EQ(chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED, type);
-    callback_.Run(content::Details<const Extension>(details).ptr());
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE {
+    callback_.Run(extension);
   }
 
  private:
-  content::NotificationRegistrar registrar_;
   base::Callback<void(const Extension*)> callback_;
-  DISALLOW_COPY_AND_ASSIGN(AppInstallObserver);
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
+  DISALLOW_COPY_AND_ASSIGN(AppLoadObserver);
 };
 
 void SetLastChooseEntryDirectory(const base::FilePath& choose_entry_directory,
@@ -197,10 +198,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   FileSystemChooseEntryFunction::
       SkipPickerAndSelectSuggestedPathForTest();
   {
-    AppInstallObserver observer(
-        base::Bind(SetLastChooseEntryDirectory,
-                   test_file.DirName(),
-                   ExtensionPrefs::Get(profile())));
+    AppLoadObserver observer(profile(),
+                             base::Bind(SetLastChooseEntryDirectory,
+                                        test_file.DirName(),
+                                        ExtensionPrefs::Get(profile())));
     ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_existing"))
         << message_;
   }
@@ -216,11 +217,12 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   FileSystemChooseEntryFunction::
       SkipPickerAndSelectSuggestedPathForTest();
   {
-    AppInstallObserver observer(base::Bind(
-        SetLastChooseEntryDirectory,
-        test_file.DirName().Append(
-            base::FilePath::FromUTF8Unsafe("fake_directory_does_not_exist")),
-        ExtensionPrefs::Get(profile())));
+    AppLoadObserver observer(
+        profile(),
+        base::Bind(SetLastChooseEntryDirectory,
+                   test_file.DirName().Append(base::FilePath::FromUTF8Unsafe(
+                       "fake_directory_does_not_exist")),
+                   ExtensionPrefs::Get(profile())));
     ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_existing"))
         << message_;
   }
@@ -608,11 +610,11 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRestoreEntry) {
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  AppInstallObserver observer(
-      base::Bind(AddSavedEntry,
-                 test_file,
-                 false,
-                 apps::SavedFilesService::Get(profile())));
+  AppLoadObserver observer(profile(),
+                           base::Bind(AddSavedEntry,
+                                      test_file,
+                                      false,
+                                      apps::SavedFilesService::Get(profile())));
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/restore_entry"))
       << message_;
 }
@@ -623,11 +625,11 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRestoreDirectoryEntry) {
   base::FilePath test_directory = test_file.DirName();
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  AppInstallObserver observer(
-      base::Bind(AddSavedEntry,
-                 test_directory,
-                 true,
-                 apps::SavedFilesService::Get(profile())));
+  AppLoadObserver observer(profile(),
+                           base::Bind(AddSavedEntry,
+                                      test_directory,
+                                      true,
+                                      apps::SavedFilesService::Get(profile())));
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/restore_directory"))
       << message_;
 }

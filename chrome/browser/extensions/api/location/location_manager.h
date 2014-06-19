@@ -5,14 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_LOCATION_LOCATION_MANAGER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_LOCATION_LOCATION_MANAGER_H_
 
-#include <map>
 #include <string>
 
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "base/scoped_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-
-class Profile;
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
 class BrowserContext;
@@ -20,6 +17,7 @@ struct Geoposition;
 }  // namespace content
 
 namespace extensions {
+class ExtensionRegistry;
 class LocationManager;
 class LocationRequest;
 
@@ -31,10 +29,10 @@ struct Coordinates;
 }  // namespace location
 }  // namespace api
 
-// Profile's manager of all location watch requests created by chrome.location
-// API. Lives in the UI thread.
+// BrowserContext's manager of all location watch requests created by
+// chrome.location API. Lives in the UI thread.
 class LocationManager : public BrowserContextKeyedAPI,
-                        public content::NotificationObserver {
+                        public ExtensionRegistryObserver {
  public:
   explicit LocationManager(content::BrowserContext* context);
   virtual ~LocationManager();
@@ -55,7 +53,7 @@ class LocationManager : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<LocationManager>* GetFactoryInstance();
 
-  // Convenience method to get the LocationManager for a profile.
+  // Convenience method to get the LocationManager for a context.
   static LocationManager* Get(content::BrowserContext* context);
 
  private:
@@ -78,23 +76,25 @@ class LocationManager : public BrowserContextKeyedAPI,
                           const std::string& request_name,
                           const content::Geoposition& position);
 
-  // NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "LocationManager"; }
 
-  // Profile for this location manager.
-  Profile* const profile_;
+  content::BrowserContext* const browser_context_;
 
   // A map of our pending location requests, per extension.
   // Invariant: None of the LocationRequestLists are empty.
   LocationRequestMap location_requests_;
 
-  // Used for tracking registrations to profile's extensions events.
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationManager);
 };

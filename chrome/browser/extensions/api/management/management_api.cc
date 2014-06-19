@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/management/management_api.h"
 
-#include <map>
 #include <string>
 #include <vector>
 
@@ -19,7 +18,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/management/management_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
@@ -38,8 +36,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "extensions/browser/event_router.h"
@@ -859,7 +855,7 @@ ManagementGenerateAppForLinkFunction::~ManagementGenerateAppForLinkFunction() {
 }
 
 void ManagementGenerateAppForLinkFunction::FinishCreateBookmarkApp(
-    const extensions::Extension* extension,
+    const Extension* extension,
     const WebApplicationInfo& web_app_info) {
   if (extension) {
     scoped_ptr<management::ExtensionInfo> info =
@@ -937,73 +933,53 @@ bool ManagementGenerateAppForLinkFunction::RunAsync() {
   return true;
 }
 
-ManagementEventRouter::ManagementEventRouter(Profile* profile)
-    : profile_(profile) {
-  int types[] = {chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED};
-
-  CHECK(registrar_.IsEmpty());
-  for (size_t i = 0; i < arraysize(types); i++) {
-    registrar_.Add(this,
-                   types[i],
-                   content::Source<Profile>(profile_));
-  }
+ManagementEventRouter::ManagementEventRouter(content::BrowserContext* context)
+    : browser_context_(context), extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 
 ManagementEventRouter::~ManagementEventRouter() {}
 
-void ManagementEventRouter::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  const char* event_name = NULL;
-  const Extension* extension = NULL;
-  Profile* profile = content::Source<Profile>(source).ptr();
-  CHECK(profile);
-  CHECK(profile_->IsSameProfile(profile));
+void ManagementEventRouter::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  BroadcastEvent(extension, management::OnEnabled::kEventName);
+}
 
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED:
-      event_name = management::OnInstalled::kEventName;
-      extension =
-          content::Details<const InstalledExtensionInfo>(details)->extension;
-      break;
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED:
-      event_name = management::OnUninstalled::kEventName;
-      extension = content::Details<const Extension>(details).ptr();
-      break;
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
-      event_name = management::OnEnabled::kEventName;
-      extension = content::Details<const Extension>(details).ptr();
-      break;
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
-      event_name = management::OnDisabled::kEventName;
-      extension =
-          content::Details<const UnloadedExtensionInfo>(details)->extension;
-      break;
-    default:
-      NOTREACHED();
-      return;
-  }
-  DCHECK(event_name);
-  DCHECK(extension);
+void ManagementEventRouter::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  BroadcastEvent(extension, management::OnDisabled::kEventName);
+}
 
-  if (ui_util::ShouldNotBeVisible(extension, profile_))
-    return; // Don't dispatch events for built-in extensions.
+void ManagementEventRouter::OnExtensionInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  BroadcastEvent(extension, management::OnInstalled::kEventName);
+}
 
+void ManagementEventRouter::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  BroadcastEvent(extension, management::OnUninstalled::kEventName);
+}
+
+void ManagementEventRouter::BroadcastEvent(const Extension* extension,
+                                           const char* event_name) {
+  if (ui_util::ShouldNotBeVisible(extension, browser_context_))
+    return;  // Don't dispatch events for built-in extenions.
   scoped_ptr<base::ListValue> args(new base::ListValue());
   if (event_name == management::OnUninstalled::kEventName) {
     args->Append(new base::StringValue(extension->id()));
   } else {
-    scoped_ptr<management::ExtensionInfo> info = CreateExtensionInfo(
-        *extension, ExtensionSystem::Get(profile));
+    scoped_ptr<management::ExtensionInfo> info =
+        CreateExtensionInfo(*extension, ExtensionSystem::Get(browser_context_));
     args->Append(info->ToValue().release());
   }
 
-  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
-  EventRouter::Get(profile)->BroadcastEvent(event.Pass());
+  EventRouter::Get(browser_context_)
+      ->BroadcastEvent(scoped_ptr<Event>(new Event(event_name, args.Pass())));
 }
 
 ManagementAPI::ManagementAPI(content::BrowserContext* context)
@@ -1032,8 +1008,7 @@ ManagementAPI::GetFactoryInstance() {
 }
 
 void ManagementAPI::OnListenerAdded(const EventListenerInfo& details) {
-  management_event_router_.reset(
-      new ManagementEventRouter(Profile::FromBrowserContext(browser_context_)));
+  management_event_router_.reset(new ManagementEventRouter(browser_context_));
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 

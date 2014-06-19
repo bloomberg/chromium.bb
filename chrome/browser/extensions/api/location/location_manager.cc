@@ -10,15 +10,12 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/location.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_provider.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/common/geoposition.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -248,12 +245,8 @@ void LocationRequest::OnPositionReported(const content::Geoposition& position) {
 }
 
 LocationManager::LocationManager(content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
+    : browser_context_(context), extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 
 void LocationManager::AddLocationRequest(
@@ -343,40 +336,28 @@ void LocationManager::SendLocationUpdate(
 
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));
 
-  EventRouter::Get(profile_)
+  EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
-void LocationManager::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      // Grants permission to use geolocation once an extension with "location"
-      // permission is loaded.
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-
-      if (extension->permissions_data()->HasAPIPermission(
-              APIPermission::kLocation)) {
-          content::GeolocationProvider::GetInstance()->
-              UserDidOptIntoLocationServices();
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      // Delete all requests from the unloaded extension.
-      const Extension* extension =
-          content::Details<const UnloadedExtensionInfo>(details)->extension;
-      location_requests_.erase(extension->id());
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
+void LocationManager::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  // Grants permission to use geolocation once an extension with "location"
+  // permission is loaded.
+  if (extension->permissions_data()->HasAPIPermission(
+          APIPermission::kLocation)) {
+    content::GeolocationProvider::GetInstance()
+        ->UserDidOptIntoLocationServices();
   }
+}
+
+void LocationManager::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  // Delete all requests from the unloaded extension.
+  location_requests_.erase(extension->id());
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<LocationManager> >
@@ -388,7 +369,7 @@ LocationManager::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
- // static
+// static
 LocationManager* LocationManager::Get(content::BrowserContext* context) {
   return BrowserContextKeyedAPIFactory<LocationManager>::Get(context);
 }
