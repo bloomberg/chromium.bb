@@ -81,6 +81,7 @@ int main(int argc, char *argv[]) {
   CHECK(net::ParseIPLiteralToNumber(FLAGS_address, &addr));
 
   net::QuicConfig config;
+  config.SetDefaults();
   config.SetInitialFlowControlWindowToSend(FLAGS_initial_flow_control_window);
 
   // TODO(rjshade): Set version on command line.
