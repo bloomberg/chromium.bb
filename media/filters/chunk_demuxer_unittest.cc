@@ -45,6 +45,11 @@ const uint8 kVP8Keyframe[] = {
 // WebM Block bytes that represent a VP8 interframe.
 const uint8 kVP8Interframe[] = { 0x11, 0x00, 0x00 };
 
+static const uint8 kCuesHeader[] = {
+  0x1C, 0x53, 0xBB, 0x6B,  // Cues ID
+  0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // cues(size = 0)
+};
+
 const int kTracksHeaderSize = sizeof(kTracksHeader);
 const int kTracksSizeOffset = 4;
 
@@ -3450,6 +3455,29 @@ TEST_F(ChunkDemuxerTest, ClusterWithUnknownSize) {
 
   // A new cluster indicates end of the previous cluster with unknown size.
   AppendCluster(GenerateCluster(46, 66, 5, true));
+  CheckExpectedRanges(kSourceId, "{ [0,115) }");
+}
+
+TEST_F(ChunkDemuxerTest, CuesBetweenClustersWithUnknownSize) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
+
+  // Add two clusters separated by Cues in a single Append() call.
+  scoped_ptr<Cluster> cluster = GenerateCluster(0, 0, 4, true);
+  std::vector<uint8> data(cluster->data(), cluster->data() + cluster->size());
+  data.insert(data.end(), kCuesHeader, kCuesHeader + sizeof(kCuesHeader));
+  cluster = GenerateCluster(46, 66, 5, true);
+  data.insert(data.end(), cluster->data(), cluster->data() + cluster->size());
+  AppendData(&*data.begin(), data.size());
+
+  CheckExpectedRanges(kSourceId, "{ [0,115) }");
+}
+
+TEST_F(ChunkDemuxerTest, CuesBetweenClusters) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
+
+  AppendCluster(GenerateCluster(0, 0, 4));
+  AppendData(kCuesHeader, sizeof(kCuesHeader));
+  AppendCluster(GenerateCluster(46, 66, 5));
   CheckExpectedRanges(kSourceId, "{ [0,115) }");
 }
 

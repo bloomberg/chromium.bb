@@ -78,9 +78,6 @@ class WebMStreamParser : public StreamParser {
 
   bool unknown_segment_size_;
 
-  // True if a new cluster id has been seen and its end has not yet been parsed.
-  bool parsing_cluster_;
-
   scoped_ptr<WebMClusterParser> cluster_parser_;
   ByteQueue byte_queue_;
 

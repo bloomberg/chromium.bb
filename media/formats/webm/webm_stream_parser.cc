@@ -20,8 +20,7 @@ namespace media {
 
 WebMStreamParser::WebMStreamParser()
     : state_(kWaitingForInit),
-      unknown_segment_size_(false),
-      parsing_cluster_(false) {
+      unknown_segment_size_(false) {
 }
 
 WebMStreamParser::~WebMStreamParser() {
@@ -59,12 +58,12 @@ void WebMStreamParser::Flush() {
   DCHECK_NE(state_, kWaitingForInit);
 
   byte_queue_.Reset();
-  parsing_cluster_ = false;
-
-  if (state_ != kParsingClusters)
-    return;
-
-  cluster_parser_->Reset();
+  if (cluster_parser_)
+    cluster_parser_->Reset();
+  if (state_ == kParsingClusters) {
+    ChangeState(kParsingHeaders);
+    end_of_segment_cb_.Run();
+  }
 }
 
 bool WebMStreamParser::Parse(const uint8* buf, int size) {
@@ -151,6 +150,15 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
       // Skip the element.
       return result + element_size;
       break;
+    case kWebMIdCluster:
+      if (!cluster_parser_) {
+        MEDIA_LOG(log_cb_) << "Found Cluster element before Info.";
+        return -1;
+      }
+      ChangeState(kParsingClusters);
+      new_segment_cb_.Run();
+      return 0;
+      break;
     case kWebMIdSegment:
       // Segment of unknown size indicates live stream.
       if (element_size == kWebMUnknownSize)
@@ -231,8 +239,6 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
       tracks_parser.video_encryption_key_id(),
       log_cb_));
 
-  ChangeState(kParsingClusters);
-
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(true, params);
 
@@ -243,70 +249,28 @@ int WebMStreamParser::ParseCluster(const uint8* data, int size) {
   if (!cluster_parser_)
     return -1;
 
-  int result = 0;
-  int bytes_parsed;
-  bool cluster_ended;
-  do {
-    cluster_ended = false;
+  int bytes_parsed = cluster_parser_->Parse(data, size);
+  if (bytes_parsed < 0)
+    return bytes_parsed;
 
-    // If we are not parsing a cluster then handle the case when the next
-    // element is not a cluster.
-    if (!parsing_cluster_) {
-      int id;
-      int64 element_size;
-      bytes_parsed = WebMParseElementHeader(data, size, &id, &element_size);
+  const BufferQueue& audio_buffers = cluster_parser_->GetAudioBuffers();
+  const BufferQueue& video_buffers = cluster_parser_->GetVideoBuffers();
+  const TextBufferQueueMap& text_map = cluster_parser_->GetTextBuffers();
 
-      if (bytes_parsed < 0)
-        return bytes_parsed;
+  bool cluster_ended = cluster_parser_->cluster_ended();
 
-      if (bytes_parsed == 0)
-        return result;
+  if ((!audio_buffers.empty() || !video_buffers.empty() ||
+       !text_map.empty()) &&
+      !new_buffers_cb_.Run(audio_buffers, video_buffers, text_map)) {
+    return -1;
+  }
 
-      if (id != kWebMIdCluster) {
-        ChangeState(kParsingHeaders);
-        return result;
-      }
-    }
+  if (cluster_ended) {
+    ChangeState(kParsingHeaders);
+    end_of_segment_cb_.Run();
+  }
 
-    bytes_parsed = cluster_parser_->Parse(data, size);
-
-    if (bytes_parsed < 0)
-      return bytes_parsed;
-
-    // If cluster detected, immediately notify new segment if we have not
-    // already done this.
-    if (!parsing_cluster_ && bytes_parsed > 0) {
-      parsing_cluster_ = true;
-      new_segment_cb_.Run();
-    }
-
-    const BufferQueue& audio_buffers = cluster_parser_->GetAudioBuffers();
-    const BufferQueue& video_buffers = cluster_parser_->GetVideoBuffers();
-    const TextBufferQueueMap& text_map = cluster_parser_->GetTextBuffers();
-
-    cluster_ended = cluster_parser_->cluster_ended();
-
-    if ((!audio_buffers.empty() || !video_buffers.empty() ||
-         !text_map.empty()) &&
-        !new_buffers_cb_.Run(audio_buffers, video_buffers, text_map)) {
-      return -1;
-    }
-
-    if (cluster_ended) {
-      parsing_cluster_ = false;
-      end_of_segment_cb_.Run();
-    }
-
-    result += bytes_parsed;
-    data += bytes_parsed;
-    size -= bytes_parsed;
-
-    // WebMClusterParser returns 0 and |cluster_ended| is true if previously
-    // parsing an unknown-size cluster and |data| does not continue that
-    // cluster. Try parsing again in that case.
-  } while (size > 0 && (bytes_parsed > 0 || cluster_ended));
-
-  return result;
+  return bytes_parsed;
 }
 
 void WebMStreamParser::FireNeedKey(const std::string& key_id) {
