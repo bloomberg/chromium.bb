@@ -70,7 +70,7 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
                             const SkPaint&) OVERRIDE;
 
  protected:
-  virtual void willSave(SaveFlags) OVERRIDE;
+  virtual void willSave() OVERRIDE;
   virtual SaveLayerStrategy willSaveLayer(const SkRect*,
                                           const SkPaint*,
                                           SaveFlags) OVERRIDE;

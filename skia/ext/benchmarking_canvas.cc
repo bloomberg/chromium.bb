@@ -40,9 +40,9 @@ public:
   }
 
   // SkCanvas overrides.
-  virtual void willSave(SaveFlags flags) OVERRIDE {
+  virtual void willSave() OVERRIDE {
     AutoStamper stamper(this);
-    SkProxyCanvas::willSave(flags);
+    SkProxyCanvas::willSave();
   }
 
   virtual SaveLayerStrategy willSaveLayer(const SkRect* bounds,

@@ -66,7 +66,6 @@ TEST(SkiaBenchmarkingExtensionTest, SkDebugCanvas) {
   cmd = canvas.getDrawCommandAt(idx)->getType();
   EXPECT_EQ(cmd, SAVE);
   EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "Save");
-  EXPECT_TRUE(HasInfoField(canvas, idx, "SaveFlags"));
 
   ASSERT_TRUE(canvas.getDrawCommandAt(++idx) != NULL);
   cmd = canvas.getDrawCommandAt(idx)->getType();

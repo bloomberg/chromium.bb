@@ -354,9 +354,9 @@ void AnalysisCanvas::onClipRRect(const SkRRect& rrect,
   INHERITED::onClipRect(rrect.getBounds(), op, edge_style);
 }
 
-void AnalysisCanvas::willSave(SkCanvas::SaveFlags flags) {
+void AnalysisCanvas::willSave() {
   ++saved_stack_size_;
-  INHERITED::willSave(flags);
+  INHERITED::willSave();
 }
 
 SkCanvas::SaveLayerStrategy AnalysisCanvas::willSaveLayer(
