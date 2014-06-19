@@ -39,7 +39,7 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
         }
     }
 
-    Vector<RefPtr<Document> > documents;
+    WillBeHeapVector<RefPtrWillBeMember<Document> > documents;
     for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->isLocalFrame())
             documents.append(toLocalFrame(frame)->document());
