@@ -53,7 +53,12 @@ class ThreadableLoader;
 
 typedef int ExceptionCode;
 
-class XMLHttpRequest FINAL : public RefCountedWillBeRefCountedGarbageCollected<XMLHttpRequest>, public ScriptWrappable, public XMLHttpRequestEventTarget, private ThreadableLoaderClient, public ActiveDOMObject {
+class XMLHttpRequest FINAL
+    : public RefCountedWillBeRefCountedGarbageCollected<XMLHttpRequest>
+    , public ScriptWrappable
+    , public XMLHttpRequestEventTarget
+    , private ThreadableLoaderClient
+    , public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     REFCOUNTED_EVENT_TARGET(XMLHttpRequest);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);

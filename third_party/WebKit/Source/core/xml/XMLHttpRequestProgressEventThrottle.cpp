@@ -101,8 +101,9 @@ void XMLHttpRequestProgressEventThrottle::dispatchEvent(PassRefPtrWillBeRawPtr<E
             return;
         }
         m_deferredEvents.append(event);
-    } else
+    } else {
         m_target->dispatchEvent(event);
+    }
 }
 
 bool XMLHttpRequestProgressEventThrottle::flushDeferredProgressEvent()

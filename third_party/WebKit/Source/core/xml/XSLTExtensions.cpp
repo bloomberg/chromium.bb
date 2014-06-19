@@ -25,23 +25,22 @@
  */
 
 #include "config.h"
-
 #include "core/xml/XSLTExtensions.h"
+
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/Assertions.h"
-
 #include <libxml/xpathInternals.h>
-
 #include <libxslt/extensions.h>
 #include <libxslt/extra.h>
 #include <libxslt/xsltutils.h>
 
 namespace WebCore {
 
-// FIXME: This code is taken from libexslt 1.1.11; should sync with newer versions.
+// FIXME: This code is taken from libexslt 1.1.11; should sync with newer
+// versions.
 static void exsltNodeSetFunction(xmlXPathParserContextPtr ctxt, int nargs)
 {
-    xmlChar *strval;
+    xmlChar* strval;
     xmlNodePtr retNode;
     xmlXPathObjectPtr ret;
 
@@ -56,15 +55,15 @@ static void exsltNodeSetFunction(xmlXPathParserContextPtr ctxt, int nargs)
     }
 
     strval = xmlXPathPopString(ctxt);
-    retNode = xmlNewDocText(NULL, strval);
+    retNode = xmlNewDocText(0, strval);
     ret = xmlXPathNewValueTree(retNode);
 
     // FIXME: It might be helpful to push any errors from xmlXPathNewValueTree
     // up to the Javascript Console.
-    if (ret != NULL)
+    if (ret)
         ret->type = XPATH_NODESET;
 
-    if (strval != NULL)
+    if (strval)
         xmlFree(strval);
 
     valuePush(ctxt, ret);

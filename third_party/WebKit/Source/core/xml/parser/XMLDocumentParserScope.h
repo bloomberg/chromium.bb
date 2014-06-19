@@ -33,23 +33,22 @@ namespace WebCore {
 
 class ResourceFetcher;
 
-    class XMLDocumentParserScope {
-        WTF_MAKE_NONCOPYABLE(XMLDocumentParserScope);
-    public:
-        explicit XMLDocumentParserScope(ResourceFetcher*);
-        ~XMLDocumentParserScope();
+class XMLDocumentParserScope {
+    WTF_MAKE_NONCOPYABLE(XMLDocumentParserScope);
+public:
+    explicit XMLDocumentParserScope(ResourceFetcher*);
+    XMLDocumentParserScope(ResourceFetcher*, xmlGenericErrorFunc, xmlStructuredErrorFunc = 0, void* errorContext = 0);
+    ~XMLDocumentParserScope();
 
-        static ResourceFetcher* currentFetcher;
+    static ResourceFetcher* currentFetcher;
 
-        XMLDocumentParserScope(ResourceFetcher*, xmlGenericErrorFunc, xmlStructuredErrorFunc = 0, void* errorContext = 0);
+private:
+    ResourceFetcher* m_oldFetcher;
 
-    private:
-        ResourceFetcher* m_oldFetcher;
-
-        xmlGenericErrorFunc m_oldGenericErrorFunc;
-        xmlStructuredErrorFunc m_oldStructuredErrorFunc;
-        void* m_oldErrorContext;
-    };
+    xmlGenericErrorFunc m_oldGenericErrorFunc;
+    xmlStructuredErrorFunc m_oldStructuredErrorFunc;
+    void* m_oldErrorContext;
+};
 
 } // namespace WebCore
 

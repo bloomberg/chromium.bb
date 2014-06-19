@@ -69,13 +69,12 @@ void XSLImportRule::setXSLStyleSheet(const String& href, const KURL& baseURL, co
 
 bool XSLImportRule::isLoading()
 {
-    return (m_loading || (m_styleSheet && m_styleSheet->isLoading()));
+    return m_loading || (m_styleSheet && m_styleSheet->isLoading());
 }
 
 void XSLImportRule::loadSheet()
 {
     ResourceFetcher* fetcher = 0;
-
     XSLStyleSheet* rootSheet = parentStyleSheet();
 
     if (rootSheet) {
@@ -88,12 +87,13 @@ void XSLImportRule::loadSheet()
 
     String absHref = m_strHref;
     XSLStyleSheet* parentSheet = parentStyleSheet();
-    if (!parentSheet->baseURL().isNull())
-        // use parent styleheet's URL as the base URL
+    if (!parentSheet->baseURL().isNull()) {
+        // Use parent styleheet's URL as the base URL
         absHref = KURL(parentSheet->baseURL(), m_strHref).string();
+    }
 
-    // Check for a cycle in our import chain.  If we encounter a stylesheet
-    // in our parent chain with the same URL, then just bail.
+    // Check for a cycle in our import chain. If we encounter a stylesheet in
+    // our parent chain with the same URL, then just bail.
     for (XSLStyleSheet* parentSheet = parentStyleSheet(); parentSheet; parentSheet = parentSheet->parentStyleSheet()) {
         if (absHref == parentSheet->baseURL().string())
             return;
@@ -105,10 +105,10 @@ void XSLImportRule::loadSheet()
     if (m_resource) {
         m_resource->addClient(this);
 
-        // If the imported sheet is in the cache, then setXSLStyleSheet gets called,
-        // and the sheet even gets parsed (via parseString).  In this case we have
-        // loaded (even if our subresources haven't), so if we have a stylesheet after
-        // checking the cache, then we've clearly loaded.
+        // If the imported sheet is in the cache, then setXSLStyleSheet gets
+        // called, and the sheet even gets parsed (via parseString). In this
+        // case we have loaded (even if our subresources haven't), so if we have
+        // a stylesheet after checking the cache, then we've clearly loaded.
         if (!m_styleSheet)
             m_loading = true;
     }

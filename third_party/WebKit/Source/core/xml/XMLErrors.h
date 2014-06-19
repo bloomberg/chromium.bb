@@ -44,7 +44,7 @@ public:
     void trace(Visitor*);
 
     // Exposed for callbacks:
-    enum ErrorType { warning, nonFatal, fatal };
+    enum ErrorType { ErrorTypeWarning, ErrorTypeNonFatal, ErrorTypeFatal };
     void handleError(ErrorType, const char* message, int lineNumber, int columnNumber);
     void handleError(ErrorType, const char* message, TextPosition);
 

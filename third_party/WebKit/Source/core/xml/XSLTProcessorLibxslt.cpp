@@ -85,11 +85,9 @@ void XSLTProcessor::parseErrorFunc(void* userData, xmlError* error)
 // FIXME: There seems to be no way to control the ctxt pointer for loading here, thus we have globals.
 static XSLTProcessor* globalProcessor = 0;
 static ResourceFetcher* globalResourceFetcher = 0;
-static xmlDocPtr docLoaderFunc(const xmlChar* uri,
-                               xmlDictPtr,
-                               int options,
-                               void* ctxt,
-                               xsltLoadType type)
+
+static xmlDocPtr docLoaderFunc(
+    const xmlChar* uri, xmlDictPtr, int options, void* ctxt, xsltLoadType type)
 {
     if (!globalProcessor)
         return 0;
@@ -179,7 +177,8 @@ static bool saveResultToString(xmlDocPtr resultDoc, xsltStylesheetPtr sheet, Str
     if (retval < 0)
         return false;
 
-    // Workaround for <http://bugzilla.gnome.org/show_bug.cgi?id=495668>: libxslt appends an extra line feed to the result.
+    // Workaround for <http://bugzilla.gnome.org/show_bug.cgi?id=495668>:
+    // libxslt appends an extra line feed to the result.
     if (resultBuilder.length() > 0 && resultBuilder[resultBuilder.length() - 1] == '\n')
         resultBuilder.resize(resultBuilder.length() - 1);
 
@@ -193,7 +192,7 @@ static const char** xsltParamArrayFromParameterMap(XSLTProcessor::ParameterMap& 
     if (parameters.isEmpty())
         return 0;
 
-    const char** parameterArray = (const char**)fastMalloc(((parameters.size() * 2) + 1) * sizeof(char*));
+    const char** parameterArray = static_cast<const char**>(fastMalloc(((parameters.size() * 2) + 1) * sizeof(char*)));
 
     XSLTProcessor::ParameterMap::iterator end = parameters.end();
     unsigned index = 0;
@@ -213,8 +212,8 @@ static void freeXsltParamArray(const char** params)
         return;
 
     while (*temp) {
-        fastFree((void*)*(temp++));
-        fastFree((void*)*(temp++));
+        fastFree(const_cast<char*>(*(temp++)));
+        fastFree(const_cast<char*>(*(temp++)));
     }
     fastFree(params);
 }
@@ -222,12 +221,14 @@ static void freeXsltParamArray(const char** params)
 static xsltStylesheetPtr xsltStylesheetPointer(RefPtrWillBeMember<XSLStyleSheet>& cachedStylesheet, Node* stylesheetRootNode)
 {
     if (!cachedStylesheet && stylesheetRootNode) {
-        cachedStylesheet = XSLStyleSheet::createForXSLTProcessor(stylesheetRootNode->parentNode() ? stylesheetRootNode->parentNode() : stylesheetRootNode,
+        cachedStylesheet = XSLStyleSheet::createForXSLTProcessor(
+            stylesheetRootNode->parentNode() ? stylesheetRootNode->parentNode() : stylesheetRootNode,
             stylesheetRootNode->document().url().string(),
             stylesheetRootNode->document().url()); // FIXME: Should we use baseURL here?
 
-        // According to Mozilla documentation, the node must be a Document node, an xsl:stylesheet or xsl:transform element.
-        // But we just use text content regardless of node type.
+        // According to Mozilla documentation, the node must be a Document node,
+        // an xsl:stylesheet or xsl:transform element. But we just use text
+        // content regardless of node type.
         cachedStylesheet->parseString(createMarkup(stylesheetRootNode));
     }
 
@@ -292,8 +293,9 @@ bool XSLTProcessor::transformToString(Node* sourceNode, String& mimeType, String
     bool success = false;
     bool shouldFreeSourceDoc = false;
     if (xmlDocPtr sourceDoc = xmlDocPtrFromNode(sourceNode, shouldFreeSourceDoc)) {
-        // The XML declaration would prevent parsing the result as a fragment, and it's not needed even for documents,
-        // as the result of this function is always immediately parsed.
+        // The XML declaration would prevent parsing the result as a fragment,
+        // and it's not needed even for documents, as the result of this
+        // function is always immediately parsed.
         sheet->omitXmlDeclaration = true;
 
         xsltTransformContextPtr transformContext = xsltNewTransformContext(sheet, sourceDoc);
@@ -310,13 +312,15 @@ bool XSLTProcessor::transformToString(Node* sourceNode, String& mimeType, String
         if (0 != xsltSetCtxtSecurityPrefs(securityPrefs, transformContext))
             CRASH();
 
-        // <http://bugs.webkit.org/show_bug.cgi?id=16077>: XSLT processor <xsl:sort> algorithm only compares by code point.
+        // <http://bugs.webkit.org/show_bug.cgi?id=16077>: XSLT processor
+        // <xsl:sort> algorithm only compares by code point.
         xsltSetCtxtSortFunc(transformContext, xsltUnicodeSortFunction);
 
         // This is a workaround for a bug in libxslt.
-        // The bug has been fixed in version 1.1.13, so once we ship that this can be removed.
+        // The bug has been fixed in version 1.1.13, so once we ship that this
+        // can be removed.
         if (!transformContext->globalVars)
-           transformContext->globalVars = xmlHashCreate(20);
+            transformContext->globalVars = xmlHashCreate(20);
 
         const char** params = xsltParamArrayFromParameterMap(m_parameters);
         xsltQuoteUserParams(transformContext, params);

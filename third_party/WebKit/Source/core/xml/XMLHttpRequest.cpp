@@ -717,10 +717,11 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState)
     if (areMethodAndURLValidForSend()) {
         if (getRequestHeader("Content-Type").isEmpty()) {
             const String& blobType = body->type();
-            if (!blobType.isEmpty() && isValidContentType(blobType))
+            if (!blobType.isEmpty() && isValidContentType(blobType)) {
                 setRequestHeaderInternal("Content-Type", AtomicString(blobType));
-            else {
-                // From FileAPI spec, whenever media type cannot be determined, empty string must be returned.
+            } else {
+                // From FileAPI spec, whenever media type cannot be determined,
+                // empty string must be returned.
                 setRequestHeaderInternal("Content-Type", "");
             }
         }
@@ -1345,19 +1346,22 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
     bool useDecoder = m_responseTypeCode == ResponseTypeDefault || m_responseTypeCode == ResponseTypeText || m_responseTypeCode == ResponseTypeJSON || m_responseTypeCode == ResponseTypeDocument;
 
     if (useDecoder && !m_decoder) {
-        if (m_responseTypeCode == ResponseTypeJSON)
+        if (m_responseTypeCode == ResponseTypeJSON) {
             m_decoder = TextResourceDecoder::create("application/json", "UTF-8");
-        else if (!m_responseEncoding.isEmpty())
+        } else if (!m_responseEncoding.isEmpty()) {
             m_decoder = TextResourceDecoder::create("text/plain", m_responseEncoding);
         // allow TextResourceDecoder to look inside the m_response if it's XML or HTML
-        else if (responseIsXML()) {
+        } else if (responseIsXML()) {
             m_decoder = TextResourceDecoder::create("application/xml");
-            // Don't stop on encoding errors, unlike it is done for other kinds of XML resources. This matches the behavior of previous WebKit versions, Firefox and Opera.
+            // Don't stop on encoding errors, unlike it is done for other kinds
+            // of XML resources. This matches the behavior of previous WebKit
+            // versions, Firefox and Opera.
             m_decoder->useLenientXMLDecoding();
-        } else if (equalIgnoringCase(responseMIMEType(), "text/html"))
+        } else if (equalIgnoringCase(responseMIMEType(), "text/html")) {
             m_decoder = TextResourceDecoder::create("text/html", "UTF-8");
-        else
+        } else {
             m_decoder = TextResourceDecoder::create("text/plain", "UTF-8");
+        }
     }
 
     if (!len)

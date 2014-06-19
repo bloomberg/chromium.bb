@@ -61,13 +61,13 @@ void XMLErrors::handleError(ErrorType type, const char* message, int lineNumber,
 
 void XMLErrors::handleError(ErrorType type, const char* message, TextPosition position)
 {
-    if (type == fatal || (m_errorCount < maxErrors && m_lastErrorPosition.m_line != position.m_line && m_lastErrorPosition.m_column != position.m_column)) {
+    if (type == ErrorTypeFatal || (m_errorCount < maxErrors && m_lastErrorPosition.m_line != position.m_line && m_lastErrorPosition.m_column != position.m_column)) {
         switch (type) {
-        case warning:
+        case ErrorTypeWarning:
             appendErrorMessage("warning", position, message);
             break;
-        case fatal:
-        case nonFatal:
+        case ErrorTypeFatal:
+        case ErrorTypeNonFatal:
             appendErrorMessage("error", position, message);
         }
 

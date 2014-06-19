@@ -27,7 +27,6 @@
 #include "core/dom/ProcessingInstruction.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/PassRefPtr.h"
-
 #include <libxml/tree.h>
 #include <libxslt/transform.h>
 
@@ -54,8 +53,9 @@ public:
         return adoptRefWillBeNoop(new XSLStyleSheet(parentNode, finalURL.string(), finalURL, true));
     }
 
-    // Taking an arbitrary node is unsafe, because owner node pointer can become stale.
-    // XSLTProcessor ensures that the stylesheet doesn't outlive its parent, in part by not exposing it to JavaScript.
+    // Taking an arbitrary node is unsafe, because owner node pointer can become
+    // stale. XSLTProcessor ensures that the stylesheet doesn't outlive its
+    // parent, in part by not exposing it to JavaScript.
     static PassRefPtrWillBeRawPtr<XSLStyleSheet> createForXSLTProcessor(Node* parentNode, const String& originalURL, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
@@ -77,7 +77,7 @@ public:
 
     Document* ownerDocument();
     virtual XSLStyleSheet* parentStyleSheet() const OVERRIDE { return m_parentStyleSheet; }
-    void setParentStyleSheet(XSLStyleSheet* parent);
+    void setParentStyleSheet(XSLStyleSheet*);
 
     xmlDocPtr document();
     xsltStylesheetPtr compileStyleSheet();
