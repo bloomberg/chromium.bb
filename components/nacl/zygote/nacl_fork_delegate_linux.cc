@@ -36,6 +36,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+#include "sandbox/linux/suid/common/sandbox.h"
 
 namespace {
 
@@ -430,6 +431,7 @@ void NaClForkDelegate::AddPassthroughEnvToOptions(
   pass_through_vars.push_back(kNaClExeStderr);
   pass_through_vars.push_back(kNaClExeStdout);
   pass_through_vars.push_back(kNaClVerbosity);
+  pass_through_vars.push_back(sandbox::kSandboxEnvironmentApiRequest);
   for (size_t i = 0; i < pass_through_vars.size(); ++i) {
     std::string temp;
     if (env->GetVar(pass_through_vars[i].c_str(), &temp))
