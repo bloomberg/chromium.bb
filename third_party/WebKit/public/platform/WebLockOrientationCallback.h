@@ -5,6 +5,7 @@
 #ifndef WebLockOrientationCallback_h
 #define WebLockOrientationCallback_h
 
+#include "public/platform/WebLockOrientationError.h"
 #include "public/platform/WebScreenOrientationType.h"
 
 namespace blink {
@@ -25,7 +26,11 @@ public:
     virtual ~WebLockOrientationCallback() { }
 
     virtual void onSuccess(unsigned angle, WebScreenOrientationType) = 0;
-    virtual void onError(ErrorType) = 0;
+
+    // FIXME: those methods are defined and not virtual pure to not break the
+    // embedder during the transition period.
+    virtual void onError(ErrorType) { }
+    virtual void onError(WebLockOrientationError) { }
 };
 
 } // namespace blink

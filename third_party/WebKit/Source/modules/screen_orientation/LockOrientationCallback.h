@@ -26,6 +26,7 @@ public:
 
     virtual void onSuccess(unsigned angle, blink::WebScreenOrientationType) OVERRIDE;
     virtual void onError(ErrorType) OVERRIDE;
+    virtual void onError(blink::WebLockOrientationError) OVERRIDE;
 
 private:
     RefPtr<ScriptPromiseResolverWithContext> m_resolver;
@@ -34,4 +35,3 @@ private:
 } // namespace WebCore
 
 #endif // LockOrientationCallback_h
-
