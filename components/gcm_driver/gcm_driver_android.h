@@ -50,7 +50,6 @@ class GCMDriverAndroid : public GCMDriver {
   virtual void Disable() OVERRIDE;
   virtual GCMClient* GetGCMClientForTesting() const OVERRIDE;
   virtual bool IsStarted() const OVERRIDE;
-  virtual bool IsGCMClientReady() const OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
                                 bool clear_logs) OVERRIDE;

@@ -94,9 +94,6 @@ class GCMDriver {
   // Returns true if the service was started.
   virtual bool IsStarted() const = 0;
 
-  // Returns true if the gcm client is ready.
-  virtual bool IsGCMClientReady() const = 0;
-
   // Returns true if the gcm client has an open and active connection.
   virtual bool IsConnected() const = 0;
 

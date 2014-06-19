@@ -326,12 +326,10 @@ TEST_F(GCMDriverTest, SignInAndSignOutOnGCMEnabled) {
 
   // GCMClient should be started after sign-in.
   SignIn(kTestAccountID1);
-  EXPECT_TRUE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
   // GCMClient should be checked out after sign-out.
   SignOut();
-  EXPECT_FALSE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::CHECKED_OUT, GetGCMClient()->status());
 }
 
@@ -345,12 +343,10 @@ TEST_F(GCMDriverTest, SignInAndSignOutOnGCMDisabled) {
 
   // GCMClient should not be started after sign-in.
   SignIn(kTestAccountID1);
-  EXPECT_FALSE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::UNINITIALIZED, GetGCMClient()->status());
 
   // Check-out should still be performed after sign-out.
   SignOut();
-  EXPECT_FALSE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::CHECKED_OUT, GetGCMClient()->status());
 }
 
@@ -360,19 +356,16 @@ TEST_F(GCMDriverTest, SignOutAndThenSignIn) {
 
   // GCMClient should be started after sign-in.
   SignIn(kTestAccountID1);
-  EXPECT_TRUE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
   // GCMClient should be checked out after sign-out.
   SignOut();
-  EXPECT_FALSE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::CHECKED_OUT, GetGCMClient()->status());
 
   // Sign-in with a different account.
   SignIn(kTestAccountID2);
 
   // GCMClient should be started again.
-  EXPECT_TRUE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 }
 
@@ -382,7 +375,6 @@ TEST_F(GCMDriverTest, DisableAndReenableGCM) {
   SignIn(kTestAccountID1);
 
   // GCMClient should be started.
-  EXPECT_TRUE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
   // Disables the GCM.
@@ -391,7 +383,6 @@ TEST_F(GCMDriverTest, DisableAndReenableGCM) {
   PumpUILoop();
 
   // GCMClient should be stopped.
-  EXPECT_FALSE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::STOPPED, GetGCMClient()->status());
 
   // Enables the GCM.
@@ -400,7 +391,6 @@ TEST_F(GCMDriverTest, DisableAndReenableGCM) {
   PumpUILoop();
 
   // GCMClient should be started.
-  EXPECT_TRUE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
   // Disables the GCM.
@@ -409,14 +399,12 @@ TEST_F(GCMDriverTest, DisableAndReenableGCM) {
   PumpUILoop();
 
   // GCMClient should be stopped.
-  EXPECT_FALSE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::STOPPED, GetGCMClient()->status());
 
   // Sign out.
   SignOut();
 
   // GCMClient should be checked out.
-  EXPECT_FALSE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::CHECKED_OUT, GetGCMClient()->status());
 }
 
@@ -425,42 +413,36 @@ TEST_F(GCMDriverTest, StartOrStopGCMOnDemand) {
   SignIn(kTestAccountID1);
 
   // GCMClient is not started.
-  EXPECT_FALSE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::UNINITIALIZED, GetGCMClient()->status());
 
   // GCMClient is started after an app handler has been added.
   driver()->AddAppHandler(kTestAppID1, gcm_app_handler());
   PumpIOLoop();
   PumpUILoop();
-  EXPECT_TRUE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
   // Add another app handler.
   driver()->AddAppHandler(kTestAppID2, gcm_app_handler());
   PumpIOLoop();
   PumpUILoop();
-  EXPECT_TRUE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
   // GCMClient remains active after one app handler is gone.
   driver()->RemoveAppHandler(kTestAppID1);
   PumpIOLoop();
   PumpUILoop();
-  EXPECT_TRUE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
   // GCMClient should be stopped after the last app handler is gone.
   driver()->RemoveAppHandler(kTestAppID2);
   PumpIOLoop();
   PumpUILoop();
-  EXPECT_FALSE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::STOPPED, GetGCMClient()->status());
 
   // GCMClient is restarted after an app handler has been added.
   driver()->AddAppHandler(kTestAppID2, gcm_app_handler());
   PumpIOLoop();
   PumpUILoop();
-  EXPECT_TRUE(driver()->IsGCMClientReady());
   EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 }
 

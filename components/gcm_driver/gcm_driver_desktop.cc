@@ -356,7 +356,6 @@ GCMDriverDesktop::GCMDriverDesktop(
     : signed_in_(false),
       gcm_started_(false),
       gcm_enabled_(true),
-      gcm_client_ready_(false),
       connected_(false),
       ui_thread_(ui_thread),
       io_thread_(io_thread),
@@ -552,11 +551,6 @@ bool GCMDriverDesktop::IsStarted() const {
   return gcm_started_;
 }
 
-bool GCMDriverDesktop::IsGCMClientReady() const {
-  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
-  return gcm_client_ready_;
-}
-
 bool GCMDriverDesktop::IsConnected() const {
   return connected_;
 }
@@ -626,7 +620,6 @@ void GCMDriverDesktop::RemoveCachedData() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   gcm_started_ = false;
-  gcm_client_ready_ = false;
   delayed_task_controller_.reset();
   ClearCallbacks();
 }
@@ -667,10 +660,6 @@ void GCMDriverDesktop::MessageSendError(
 
 void GCMDriverDesktop::GCMClientReady() {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
-
-  if (gcm_client_ready_)
-    return;
-  gcm_client_ready_ = true;
 
   delayed_task_controller_->SetReady();
 }

@@ -113,10 +113,6 @@ bool GCMDriverAndroid::IsStarted() const {
   return true;
 }
 
-bool GCMDriverAndroid::IsGCMClientReady() const {
-  return true;
-}
-
 bool GCMDriverAndroid::IsConnected() const {
   // TODO(gcm): hook up to GCM connected status
   return true;

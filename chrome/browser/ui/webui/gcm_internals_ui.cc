@@ -157,8 +157,6 @@ void GcmInternalsUIMessageHandler::ReturnResults(
   if (profile_service) {
     device_info->SetString("signedInUserName",
                            profile_service->SignedInUserName());
-    device_info->SetBoolean("gcmClientReady",
-                            profile_service->driver()->IsGCMClientReady());
   }
   if (stats) {
     results.SetBoolean("isRecording", stats->is_recording);

@@ -42,10 +42,6 @@ bool FakeGCMDriver::IsStarted() const {
   return true;
 }
 
-bool FakeGCMDriver::IsGCMClientReady() const {
-  return true;
-}
-
 bool FakeGCMDriver::IsConnected() const {
   return true;
 }

@@ -33,7 +33,6 @@ cr.define('gcmInternals', function() {
     setIfExists(info, 'signedInUserName', 'signed-in-username');
     setIfExists(info, 'gcmClientCreated', 'gcm-client-created');
     setIfExists(info, 'gcmClientState', 'gcm-client-state');
-    setIfExists(info, 'gcmClientReady', 'gcm-client-ready');
     setIfExists(info, 'connectionClientCreated', 'connection-client-created');
     setIfExists(info, 'connectionState', 'connection-state');
     setIfExists(info, 'registeredAppIds', 'registered-app-ids');

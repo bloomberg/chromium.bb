@@ -61,7 +61,6 @@ class GCMDriverDesktop : public GCMDriver {
   virtual void Disable() OVERRIDE;
   virtual GCMClient* GetGCMClientForTesting() const OVERRIDE;
   virtual bool IsStarted() const OVERRIDE;
-  virtual bool IsGCMClientReady() const OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
                                 bool clear_logs) OVERRIDE;
@@ -117,9 +116,6 @@ class GCMDriverDesktop : public GCMDriver {
 
   // Flag to indicate if GCM is enabled.
   bool gcm_enabled_;
-
-  // Flag to indicate if GCMClient is ready.
-  bool gcm_client_ready_;
 
   // Flag to indicate the last known state of the GCM client. Because this
   // flag lives on the UI thread, while the GCM client lives on the IO thread,
