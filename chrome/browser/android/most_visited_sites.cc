@@ -278,7 +278,7 @@ void MostVisitedSites::RecordOpenedMostVisitedItem(JNIEnv* env,
                                                    jint index) {
   switch (mv_source_) {
     case TOP_SITES: {
-      HISTOGRAM_SPARSE_SLOWLY(kOpenedItemClientHistogramName, index);
+      UMA_HISTOGRAM_SPARSE_SLOWLY(kOpenedItemClientHistogramName, index);
       break;
     }
     case SUGGESTIONS_SERVICE: {
@@ -289,7 +289,7 @@ void MostVisitedSites::RecordOpenedMostVisitedItem(JNIEnv* env,
               server_suggestions_.suggestions(index).providers(0));
           LogHistogramEvent(histogram, index, num_sites_);
         } else {
-          HISTOGRAM_SPARSE_SLOWLY(kOpenedItemServerHistogramName, index);
+          UMA_HISTOGRAM_SPARSE_SLOWLY(kOpenedItemServerHistogramName, index);
         }
       }
       break;
@@ -353,9 +353,9 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
   mv_source_ = TOP_SITES;
 
   int num_tiles = urls.size();
-  HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, num_tiles);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, num_tiles);
   for (int i = 0; i < num_tiles; ++i) {
-    HISTOGRAM_SPARSE_SLOWLY(kImpressionClientHistogramName, i);
+    UMA_HISTOGRAM_SPARSE_SLOWLY(kImpressionClientHistogramName, i);
   }
 
   JNIEnv* env = AttachCurrentThread();
@@ -389,10 +389,10 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
           kImpressionServerHistogramFormat, suggestion.providers(0));
       LogHistogramEvent(histogram, i, num_sites_);
     } else {
-      HISTOGRAM_SPARSE_SLOWLY(kImpressionServerHistogramName, i);
+      UMA_HISTOGRAM_SPARSE_SLOWLY(kImpressionServerHistogramName, i);
     }
   }
-  HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, i);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, i);
 
   mv_source_ = SUGGESTIONS_SERVICE;
   // Keep a copy of the suggestions for eventual logging.
@@ -454,12 +454,12 @@ void MostVisitedSites::OnSuggestionsThumbnailAvailable(
 }
 
 void MostVisitedSites::RecordUMAMetrics() {
-  HISTOGRAM_SPARSE_SLOWLY(kNumLocalThumbnailTilesHistogramName,
-                          num_local_thumbs_);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kNumLocalThumbnailTilesHistogramName,
+                              num_local_thumbs_);
   num_local_thumbs_ = 0;
-  HISTOGRAM_SPARSE_SLOWLY(kNumEmptyTilesHistogramName, num_empty_thumbs_);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kNumEmptyTilesHistogramName, num_empty_thumbs_);
   num_empty_thumbs_ = 0;
-  HISTOGRAM_SPARSE_SLOWLY(kNumServerTilesHistogramName, num_server_thumbs_);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kNumServerTilesHistogramName, num_server_thumbs_);
   num_server_thumbs_ = 0;
 }
 
