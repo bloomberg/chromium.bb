@@ -168,6 +168,11 @@ crbug.com/366042 fast/history/history-traversal-is-asynchronous.html [ Leak ]
 crbug.com/364391 http/tests/misc/acid3.html [ Leak Pass ]
 
 crbug.com/366455 fast/dom/remove-svg-font-face-element-crash.xhtml [ Leak Pass ]
+crbug.com/366455 svg/W3C-SVG-1.1-SE/text-intro-05-t.svg [ Leak ]
+crbug.com/366455 svg/W3C-SVG-1.1/text-intro-01-t.svg [ Leak ]
+crbug.com/366455 svg/W3C-SVG-1.1/text-intro-04-t.svg [ Leak ]
+crbug.com/366455 svg/css/font-face-crash.html [ Leak ]
+crbug.com/366455 svg/custom/svg-fonts-fallback.xhtml [ Leak ]
 
 crbug.com/376188 http/tests/inspector/compiler-source-mapping-debug.html [ Leak ]
 crbug.com/376188 http/tests/inspector/network/load-resource-when-paused.html [ Leak ]
