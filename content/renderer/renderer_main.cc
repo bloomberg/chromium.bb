@@ -178,8 +178,6 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   base::PlatformThread::SetName("CrRendererMain");
 
-  platform.PlatformInitialize();
-
   bool no_sandbox = parsed_command_line.HasSwitch(switches::kNoSandbox);
 
   // Initialize histogram statistics gathering system.
@@ -199,6 +197,9 @@ int RendererMain(const MainFunctionParams& parameters) {
         std::set<std::string>());
     DCHECK(result);
   }
+
+  // PlatformInitialize uses FieldTrials, so this must happen later.
+  platform.PlatformInitialize();
 
 #if defined(ENABLE_PLUGINS)
   // Load pepper plugins before engaging the sandbox.
