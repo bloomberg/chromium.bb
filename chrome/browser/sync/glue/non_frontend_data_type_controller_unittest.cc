@@ -21,7 +21,8 @@
 #include "components/sync_driver/change_processor_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/model_associator_mock.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 
 using base::WaitableEvent;
@@ -112,14 +113,12 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
 class SyncNonFrontendDataTypeControllerTest : public testing::Test {
  public:
   SyncNonFrontendDataTypeControllerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB),
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD),
         service_(&profile_),
         model_associator_(NULL),
         change_processor_(NULL) {}
 
   virtual void SetUp() {
-    db_thread_.Start();
     profile_sync_factory_.reset(
         new StrictMock<ProfileSyncComponentsFactoryMock>());
 
@@ -137,7 +136,6 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
         NonFrontendDataTypeController::NOT_RUNNING) {
       non_frontend_dtc_->Stop();
     }
-    db_thread_.Stop();
   }
 
  protected:
@@ -207,9 +205,8 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
                    base::Unretained(&start_callback_)));
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
+
   scoped_refptr<NonFrontendDataTypeControllerFake> non_frontend_dtc_;
   scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   scoped_refptr<NonFrontendDataTypeControllerMock> dtc_mock_;

@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -30,7 +29,7 @@
 #include "components/sync_driver/model_associator_mock.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,7 +40,6 @@ using browser_sync::DataTypeController;
 using browser_sync::ModelAssociatorMock;
 using browser_sync::ModelLoadCallbackMock;
 using browser_sync::StartCallbackMock;
-using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;
@@ -96,7 +94,7 @@ KeyedService* BuildHistoryService(content::BrowserContext* profile) {
 class SyncBookmarkDataTypeControllerTest : public testing::Test {
  public:
   SyncBookmarkDataTypeControllerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
+      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
         service_(&profile_) {}
 
   virtual void SetUp() {
@@ -165,8 +163,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
                    base::Unretained(&start_callback_)));
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<BookmarkDataTypeController> bookmark_dtc_;
   scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   ProfileMock profile_;

@@ -12,7 +12,8 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -408,7 +409,8 @@ TEST_F(SyncTypedUrlModelAssociatorTest, NoTypedVisits) {
 // association on the UI thread, then ensure that AssociateModels() returns
 // false.
 TEST_F(SyncTypedUrlModelAssociatorTest, TestAbort) {
-  content::TestBrowserThread db_thread(BrowserThread::DB);
+  content::TestBrowserThreadBundle thread_bundle(
+      content::TestBrowserThreadBundle::REAL_DB_THREAD);
   base::WaitableEvent startup(false, false);
   base::WaitableEvent aborted(false, false);
   base::WaitableEvent done(false, false);
@@ -417,7 +419,6 @@ TEST_F(SyncTypedUrlModelAssociatorTest, TestAbort) {
   TypedUrlModelAssociator* associator(NULL);
   // Fire off to the DB thread to create the model associator and start
   // model association.
-  db_thread.Start();
   base::Closure callback = base::Bind(
       &CreateModelAssociatorAsync, &startup, &aborted, &done, &associator,
                                    &mock);

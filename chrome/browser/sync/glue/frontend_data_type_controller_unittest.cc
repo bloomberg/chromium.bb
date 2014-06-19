@@ -18,7 +18,7 @@
 #include "components/sync_driver/change_processor_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/model_associator_mock.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 
 using browser_sync::ChangeProcessorMock;
 using browser_sync::DataTypeController;
@@ -27,7 +27,6 @@ using browser_sync::FrontendDataTypeControllerMock;
 using browser_sync::ModelAssociatorMock;
 using browser_sync::ModelLoadCallbackMock;
 using browser_sync::StartCallbackMock;
-using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;
@@ -87,7 +86,7 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
 class SyncFrontendDataTypeControllerTest : public testing::Test {
  public:
   SyncFrontendDataTypeControllerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
+      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
         service_(&profile_) {}
 
   virtual void SetUp() {
@@ -149,12 +148,9 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
                    base::Unretained(&start_callback_)));
   }
 
-  void PumpLoop() {
-    message_loop_.RunUntilIdle();
-  }
+  void PumpLoop() { base::MessageLoop::current()->RunUntilIdle(); }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<FrontendDataTypeControllerFake> frontend_dtc_;
   scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   scoped_refptr<FrontendDataTypeControllerMock> dtc_mock_;

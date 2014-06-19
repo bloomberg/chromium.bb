@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "sync/util/extensions_activity.h"
@@ -24,7 +24,6 @@ namespace browser_sync {
 
 namespace {
 
-using content::BrowserThread;
 namespace keys = extensions::manifest_keys;
 
 // Create and return an extension with the given path.
@@ -63,7 +62,7 @@ void FireBookmarksApiEvent(
 class SyncChromeExtensionsActivityMonitorTest : public testing::Test {
  public:
   SyncChromeExtensionsActivityMonitorTest()
-      : ui_thread_(BrowserThread::UI, &ui_loop_),
+      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
         extension1_(MakeExtension("extension1")),
         extension2_(MakeExtension("extension2")),
         id1_(extension1_->id()),
@@ -71,8 +70,7 @@ class SyncChromeExtensionsActivityMonitorTest : public testing::Test {
   virtual ~SyncChromeExtensionsActivityMonitorTest() {}
 
  private:
-  base::MessageLoop ui_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
  protected:
   ExtensionsActivityMonitor monitor_;

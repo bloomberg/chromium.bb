@@ -7,7 +7,8 @@
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_driver/change_processor_mock.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -57,19 +58,15 @@ class SyncBackendRegistrarTest : public testing::Test {
   }
 
  protected:
-  SyncBackendRegistrarTest() :
-    sync_thread_(NULL),
-    ui_thread_(BrowserThread::UI, &ui_loop_),
-    db_thread_(BrowserThread::DB),
-    file_thread_(BrowserThread::FILE),
-    io_thread_(BrowserThread::IO) {}
+  SyncBackendRegistrarTest()
+      : sync_thread_(NULL),
+        thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
+                       content::TestBrowserThreadBundle::REAL_FILE_THREAD |
+                       content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
   virtual ~SyncBackendRegistrarTest() {}
 
   virtual void SetUp() {
-    db_thread_.Start();
-    file_thread_.Start();
-    io_thread_.Start();
     test_user_share_.SetUp();
     registrar_.reset(new SyncBackendRegistrar("test", &profile_,
                                               scoped_ptr<base::Thread>()));
@@ -84,9 +81,6 @@ class SyncBackendRegistrarTest : public testing::Test {
         base::Bind(&SyncBackendRegistrar::Shutdown,
                    base::Unretained(registrar_.release())));
     sync_thread_->message_loop()->RunUntilIdle();
-    io_thread_.Stop();
-    file_thread_.Stop();
-    db_thread_.Stop();
   }
 
   void ExpectRoutingInfo(
@@ -106,16 +100,12 @@ class SyncBackendRegistrarTest : public testing::Test {
     }
   }
 
-  base::MessageLoop ui_loop_;
   syncer::TestUserShare test_user_share_;
   TestingProfile profile_;
   scoped_ptr<SyncBackendRegistrar> registrar_;
 
   base::Thread* sync_thread_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
