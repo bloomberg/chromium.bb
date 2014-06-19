@@ -44,9 +44,6 @@ class CONTENT_EXPORT RendererOverridesHandler
   void ParseCaptureParameters(DevToolsProtocol::Command* command,
                               std::string* format, int* quality,
                               double* scale);
-  base::DictionaryValue* CreateScreenshotResponse(
-      const std::vector<unsigned char>& png_data);
-
   // DOM domain.
   scoped_refptr<DevToolsProtocol::Response>
       GrantPermissionsForSetFileInputFiles(
@@ -84,7 +81,8 @@ class CONTENT_EXPORT RendererOverridesHandler
 
   void ScreenshotCaptured(
       scoped_refptr<DevToolsProtocol::Command> command,
-      scoped_refptr<base::RefCountedBytes> png_data);
+      const unsigned char* png_data,
+      size_t png_size);
 
   void ScreencastFrameCaptured(
       const std::string& format,

@@ -44,6 +44,10 @@ enum LatencyComponentType {
   // Frame number when a window snapshot was requested. The snapshot
   // is taken when the rendering results actually reach the screen.
   WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
+  // Frame number for a snapshot requested via
+  // gpuBenchmarking.beginWindowSnapshotPNG
+  // TODO(vkuzkokov): remove when patch adding this hits Stable
+  WINDOW_OLD_SNAPSHOT_FRAME_NUMBER_COMPONENT,
   // ---------------------------TERMINAL COMPONENT-----------------------------
   // TERMINAL COMPONENT is when we show the latency end in chrome://tracing.
   // Timestamp when the mouse event is acked from renderer and it does not

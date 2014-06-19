@@ -192,6 +192,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   virtual void AccessibilityHitTest(const gfx::Point& point) OVERRIDE;
   virtual void AccessibilityFatalError() OVERRIDE;
 
+  // Forces redraw in the renderer and when the update reaches the browser
+  // grabs snapshot from the compositor. Returns PNG-encoded snapshot.
+  void GetSnapshotFromBrowser(
+      const base::Callback<void(const unsigned char*,size_t)> callback);
+
   const NativeWebKeyboardEvent* GetLastKeyboardEvent() const;
 
   // Notification that the screen info has changed.
@@ -693,7 +698,17 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // which may get in recursive loops).
   void DelayedAutoResized();
 
+  void WindowOldSnapshotReachedScreen(int snapshot_id);
+
   void WindowSnapshotReachedScreen(int snapshot_id);
+
+  void OnSnapshotDataReceived(int snapshot_id,
+                              const unsigned char* png,
+                              size_t size);
+
+  void OnSnapshotDataReceivedAsync(
+      int snapshot_id,
+      scoped_refptr<base::RefCountedBytes> png_data);
 
   // Send a message to the renderer process to change the accessibility mode.
   void SetAccessibilityMode(AccessibilityMode AccessibilityMode);
@@ -861,6 +876,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 #endif
 
   int64 last_input_number_;
+
+  int next_browser_snapshot_id_;
+  typedef std::map<int,
+      base::Callback<void(const unsigned char*, size_t)> > PendingSnapshotMap;
+  PendingSnapshotMap pending_browser_snapshots_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
 };
