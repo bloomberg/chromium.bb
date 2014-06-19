@@ -493,8 +493,10 @@ class ViewManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ViewManagerTest);
 };
 
+// TODO(sky): reenable tests: http://crbug.com/385475
+
 // Verifies client gets a valid id.
-TEST_F(ViewManagerTest, ValidId) {
+TEST_F(ViewManagerTest, DISABLED_ValidId) {
   // TODO(beng): this should really have the URL of the application that
   //             connected to ViewManagerInit.
   EXPECT_EQ("OnConnectionEstablished creator=",
@@ -509,7 +511,7 @@ TEST_F(ViewManagerTest, ValidId) {
 }
 
 // Verifies two clients/connections get different ids.
-TEST_F(ViewManagerTest, TwoClientsGetDifferentConnectionIds) {
+TEST_F(ViewManagerTest, DISABLED_TwoClientsGetDifferentConnectionIds) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   EXPECT_EQ("OnConnectionEstablished creator=mojo:test_url",
             ChangesToDescription1(connection2_->changes())[0]);
@@ -524,7 +526,7 @@ TEST_F(ViewManagerTest, TwoClientsGetDifferentConnectionIds) {
 }
 
 // Verifies client gets a valid id.
-TEST_F(ViewManagerTest, CreateNode) {
+TEST_F(ViewManagerTest, DISABLED_CreateNode) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   EXPECT_TRUE(connection_->changes().empty());
 
@@ -537,13 +539,13 @@ TEST_F(ViewManagerTest, CreateNode) {
   EXPECT_TRUE(connection_->changes().empty());
 }
 
-TEST_F(ViewManagerTest, CreateViewFailsWithBogusConnectionId) {
+TEST_F(ViewManagerTest, DISABLED_CreateViewFailsWithBogusConnectionId) {
   EXPECT_FALSE(connection_->CreateView(BuildViewId(2, 1)));
   EXPECT_TRUE(connection_->changes().empty());
 }
 
 // Verifies hierarchy changes.
-TEST_F(ViewManagerTest, AddRemoveNotify) {
+TEST_F(ViewManagerTest, DISABLED_AddRemoveNotify) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 3)));
 
@@ -573,7 +575,7 @@ TEST_F(ViewManagerTest, AddRemoveNotify) {
 }
 
 // Verifies AddNode fails when node is already in position.
-TEST_F(ViewManagerTest, AddNodeWithNoChange) {
+TEST_F(ViewManagerTest, DISABLED_AddNodeWithNoChange) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 3)));
 
@@ -596,7 +598,7 @@ TEST_F(ViewManagerTest, AddNodeWithNoChange) {
 }
 
 // Verifies AddNode fails when node is already in position.
-TEST_F(ViewManagerTest, AddAncestorFails) {
+TEST_F(ViewManagerTest, DISABLED_AddAncestorFails) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 3)));
 
@@ -618,7 +620,7 @@ TEST_F(ViewManagerTest, AddAncestorFails) {
 }
 
 // Verifies adding with an invalid id fails.
-TEST_F(ViewManagerTest, AddWithInvalidServerId) {
+TEST_F(ViewManagerTest, DISABLED_AddWithInvalidServerId) {
   // Create two nodes.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -628,7 +630,7 @@ TEST_F(ViewManagerTest, AddWithInvalidServerId) {
 }
 
 // Verifies adding to root sends right notifications.
-TEST_F(ViewManagerTest, AddToRoot) {
+TEST_F(ViewManagerTest, DISABLED_AddToRoot) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 21)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 3)));
 
@@ -658,7 +660,7 @@ TEST_F(ViewManagerTest, AddToRoot) {
 }
 
 // Verifies HierarchyChanged is correctly sent for various adds/removes.
-TEST_F(ViewManagerTest, NodeHierarchyChangedNodes) {
+TEST_F(ViewManagerTest, DISABLED_NodeHierarchyChangedNodes) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 11)));
   // Make 11 a child of 2.
@@ -741,7 +743,7 @@ TEST_F(ViewManagerTest, NodeHierarchyChangedNodes) {
   }
 }
 
-TEST_F(ViewManagerTest, NodeHierarchyChangedAddingKnownToUnknown) {
+TEST_F(ViewManagerTest, DISABLED_NodeHierarchyChangedAddingKnownToUnknown) {
   // Create the following structure: root -> 1 -> 11 and 2->21 (2 has no
   // parent).
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
@@ -788,7 +790,7 @@ TEST_F(ViewManagerTest, NodeHierarchyChangedAddingKnownToUnknown) {
   }
 }
 
-TEST_F(ViewManagerTest, ReorderNode) {
+TEST_F(ViewManagerTest, DISABLED_ReorderNode) {
   Id node1_id = BuildNodeId(1, 1);
   Id node2_id = BuildNodeId(1, 2);
   Id node3_id = BuildNodeId(1, 3);
@@ -867,7 +869,7 @@ TEST_F(ViewManagerTest, ReorderNode) {
 }
 
 // Verifies DeleteNode works.
-TEST_F(ViewManagerTest, DeleteNode) {
+TEST_F(ViewManagerTest, DISABLED_DeleteNode) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
@@ -895,13 +897,13 @@ TEST_F(ViewManagerTest, DeleteNode) {
 }
 
 // Verifies DeleteNode isn't allowed from a separate connection.
-TEST_F(ViewManagerTest, DeleteNodeFromAnotherConnectionDisallowed) {
+TEST_F(ViewManagerTest, DISABLED_DeleteNodeFromAnotherConnectionDisallowed) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   EXPECT_FALSE(connection2_->DeleteNode(BuildNodeId(1, 1), 1));
 }
 
 // Verifies DeleteView isn't allowed from a separate connection.
-TEST_F(ViewManagerTest, DeleteViewFromAnotherConnectionDisallowed) {
+TEST_F(ViewManagerTest, DISABLED_DeleteViewFromAnotherConnectionDisallowed) {
   ASSERT_TRUE(connection_->CreateView(BuildViewId(1, 1)));
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   EXPECT_FALSE(connection2_->DeleteView(BuildViewId(1, 1)));
@@ -909,7 +911,7 @@ TEST_F(ViewManagerTest, DeleteViewFromAnotherConnectionDisallowed) {
 
 // Verifies if a node was deleted and then reused that other clients are
 // properly notified.
-TEST_F(ViewManagerTest, ReuseDeletedNodeId) {
+TEST_F(ViewManagerTest, DISABLED_ReuseDeletedNodeId) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
 
@@ -952,7 +954,7 @@ TEST_F(ViewManagerTest, ReuseDeletedNodeId) {
 }
 
 // Assertions around setting a view.
-TEST_F(ViewManagerTest, SetView) {
+TEST_F(ViewManagerTest, DISABLED_SetView) {
   // Create nodes 1, 2 and 3 and the view 11. Nodes 2 and 3 are parented to 1.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -990,7 +992,7 @@ TEST_F(ViewManagerTest, SetView) {
 }
 
 // Verifies deleting a node with a view sends correct notifications.
-TEST_F(ViewManagerTest, DeleteNodeWithView) {
+TEST_F(ViewManagerTest, DISABLED_DeleteNodeWithView) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 3)));
@@ -1038,7 +1040,7 @@ TEST_F(ViewManagerTest, DeleteNodeWithView) {
 }
 
 // Sets view from one connection on another.
-TEST_F(ViewManagerTest, SetViewFromSecondConnection) {
+TEST_F(ViewManagerTest, DISABLED_SetViewFromSecondConnection) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -1067,7 +1069,7 @@ TEST_F(ViewManagerTest, SetViewFromSecondConnection) {
 }
 
 // Assertions for GetNodeTree.
-TEST_F(ViewManagerTest, GetNodeTree) {
+TEST_F(ViewManagerTest, DISABLED_GetNodeTree) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   // Create 11 in first connection and make it a child of 1.
@@ -1116,7 +1118,7 @@ TEST_F(ViewManagerTest, GetNodeTree) {
   }
 }
 
-TEST_F(ViewManagerTest, SetNodeBounds) {
+TEST_F(ViewManagerTest, DISABLED_SetNodeBounds) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1), 1));
 
@@ -1138,7 +1140,7 @@ TEST_F(ViewManagerTest, SetNodeBounds) {
 }
 
 // Various assertions around SetRoots.
-TEST_F(ViewManagerTest, SetRoots) {
+TEST_F(ViewManagerTest, DISABLED_SetRoots) {
   // Create 1, 2, and 3 in the first connection.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -1205,7 +1207,7 @@ TEST_F(ViewManagerTest, SetRoots) {
 }
 
 // Verify AddNode fails when trying to manipulate nodes in other roots.
-TEST_F(ViewManagerTest, CantMoveNodesFromOtherRoot) {
+TEST_F(ViewManagerTest, DISABLED_CantMoveNodesFromOtherRoot) {
   // Create 1 and 2 in the first connection.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -1223,7 +1225,7 @@ TEST_F(ViewManagerTest, CantMoveNodesFromOtherRoot) {
 
 // Verify RemoveNodeFromParent fails for nodes that are descendants of the
 // roots.
-TEST_F(ViewManagerTest, CantRemoveNodesInOtherRoots) {
+TEST_F(ViewManagerTest, DISABLED_CantRemoveNodesInOtherRoots) {
   // Create 1 and 2 in the first connection and parent both to the root.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -1259,7 +1261,7 @@ TEST_F(ViewManagerTest, CantRemoveNodesInOtherRoots) {
 }
 
 // Verify SetView fails for nodes that are not descendants of the roots.
-TEST_F(ViewManagerTest, CantRemoveSetViewInOtherRoots) {
+TEST_F(ViewManagerTest, DISABLED_CantRemoveSetViewInOtherRoots) {
   // Create 1 and 2 in the first connection and parent both to the root.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -1279,7 +1281,7 @@ TEST_F(ViewManagerTest, CantRemoveSetViewInOtherRoots) {
 }
 
 // Verify GetNodeTree fails for nodes that are not descendants of the roots.
-TEST_F(ViewManagerTest, CantGetNodeTreeOfOtherRoots) {
+TEST_F(ViewManagerTest, DISABLED_CantGetNodeTreeOfOtherRoots) {
   // Create 1 and 2 in the first connection and parent both to the root.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
@@ -1305,7 +1307,7 @@ TEST_F(ViewManagerTest, CantGetNodeTreeOfOtherRoots) {
   EXPECT_EQ("node=1,1 parent=null view=null", nodes[0].ToString());
 }
 
-TEST_F(ViewManagerTest, ConnectTwice) {
+TEST_F(ViewManagerTest, DISABLED_ConnectTwice) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
 
@@ -1335,7 +1337,7 @@ TEST_F(ViewManagerTest, ConnectTwice) {
   }
 }
 
-TEST_F(ViewManagerTest, OnViewInput) {
+TEST_F(ViewManagerTest, DISABLED_OnViewInput) {
   // Create node 1 and assign a view from connection 2 to it.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
