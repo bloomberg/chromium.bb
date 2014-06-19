@@ -210,6 +210,11 @@ class PersonalDataManager : public KeyedService,
   // Whether an autofill suggestion should be displayed to prompt the user to
   // grant Chrome access to the user's address book.
   bool ShouldShowAccessAddressBookSuggestion(AutofillType type);
+
+  // The Chrome binary is in the process of being changed, or has been changed.
+  // Future attempts to access the Address Book might incorrectly present a
+  // blocking dialog.
+  void BinaryChanging();
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
  protected:

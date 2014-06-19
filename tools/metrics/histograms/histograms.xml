@@ -1574,6 +1574,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Autofill.AddressBook.AccessSkipped" enum="BooleanSkipped">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    Whether an attempt to access the Mac AddressBook was skipped because doing
+    so would incorrectly cause the appearance of the permissions dialog. This
+    happens when Chrome auto-update changes the binary on disk before the first
+    AddressBook access attempt.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.AddressBookAvailable" enum="BooleanAvailable">
   <owner>isherman@chromium.org</owner>
   <summary>
@@ -33864,6 +33874,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanSelected" type="int">
   <int value="0" label="No selection"/>
   <int value="1" label="Selected"/>
+</enum>
+
+<enum name="BooleanSkipped" type="int">
+  <int value="0" label="Not skipped"/>
+  <int value="1" label="Skipped"/>
 </enum>
 
 <enum name="BooleanStale" type="int">

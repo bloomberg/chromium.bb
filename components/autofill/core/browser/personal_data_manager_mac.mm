@@ -31,6 +31,27 @@
 namespace autofill {
 namespace {
 
+// There is an uncommon sequence of events that causes the Address Book
+// permissions dialog to appear more than once for a given install of Chrome.
+//  1. Chrome has previously presented the Address Book permissions dialog.
+//  2. Chrome is launched.
+//  3. Chrome performs an auto-update, and changes its binary.
+//  4. Chrome attempts to access the Address Book for the first time since (2).
+// This sequence of events is rare because Chrome attempts to acess the Address
+// Book when the user focuses most form fields, so (4) generally occurs before
+// (3). For more details, see http://crbug.com/381763.
+//
+// When this sequence of events does occur, Chrome should not attempt to access
+// the Address Book unless the user explicitly asks Chrome to do so. The
+// jarring nature of the permissions dialog is worse than the potential benefit
+// of pulling information from the Address Book.
+//
+// Set to true after the Address Book is accessed for the first time.
+static bool g_accessed_address_book = false;
+
+// Set to true after the Chrome binary has been changed.
+static bool g_binary_changed = false;
+
 const char kAddressBookOrigin[] = "OS X Address Book";
 
 // Whether Chrome has prompted the user for permission to access the user's
@@ -43,6 +64,13 @@ bool HasPromptedForAccessToAddressBook(PrefService* pref_service) {
 // entries.
 bool ShouldUseAddressBook(PrefService* pref_service) {
   return pref_service->GetBoolean(prefs::kAutofillUseMacAddressBook);
+}
+
+// Records a UMA metric indicating whether an attempt to access the Address
+// Book was skipped because doing so would cause the Address Book permissions
+// prompt to incorrectly appear.
+void RecordAccessSkipped(bool skipped) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.AddressBook.AccessSkipped", skipped);
 }
 
 ABAddressBook* GetAddressBook(PrefService* pref_service) {
@@ -62,6 +90,7 @@ ABAddressBook* GetAddressBook(PrefService* pref_service) {
                           addressBook != nil);
   }
 
+  g_accessed_address_book = true;
   pref_service->SetBoolean(prefs::kAutofillMacAddressBookQueried, true);
   return addressBook;
 }
@@ -120,6 +149,14 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard(const std::string& app_locale,
   // entries.
   if (!ShouldUseAddressBook(pref_service))
     return;
+
+  // See the comment at the definition of g_accessed_address_book for an
+  // explanation of this logic.
+  if (g_binary_changed && !g_accessed_address_book) {
+    RecordAccessSkipped(true);
+    return;
+  }
+  RecordAccessSkipped(false);
 
   ABAddressBook* addressBook = GetAddressBook(pref_service);
 
@@ -341,6 +378,10 @@ bool PersonalDataManager::ShouldShowAccessAddressBookSuggestion(
   }
 
   return false;
+}
+
+void PersonalDataManager::BinaryChanging() {
+  g_binary_changed = true;
 }
 
 }  // namespace autofill
