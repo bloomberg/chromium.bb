@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace net {
@@ -21,7 +22,15 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
   FakeOAuth2TokenService();
   virtual ~FakeOAuth2TokenService();
 
+  virtual std::vector<std::string> GetAccounts() OVERRIDE;
+
   void AddAccount(const std::string& account_id);
+  void RemoveAccount(const std::string& account_id);
+
+  // Helper routines to issue tokens for pending requests.
+  void IssueAllTokensForAccount(const std::string& account_id,
+                                const std::string& access_token,
+                                const base::Time& expiration);
 
   void set_request_context(net::URLRequestContextGetter* request_context) {
     request_context_ = request_context;
@@ -45,6 +54,17 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
       OVERRIDE;
 
  private:
+  struct PendingRequest {
+    PendingRequest();
+    ~PendingRequest();
+
+    std::string account_id;
+    std::string client_id;
+    std::string client_secret;
+    ScopeSet scopes;
+    base::WeakPtr<RequestImpl> request;
+  };
+
   // OAuth2TokenService overrides.
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
 
@@ -54,6 +74,8 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
       OAuth2AccessTokenConsumer* consumer) OVERRIDE;
 
   std::set<std::string> account_ids_;
+  std::vector<PendingRequest> pending_requests_;
+
   net::URLRequestContextGetter* request_context_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(FakeOAuth2TokenService);
