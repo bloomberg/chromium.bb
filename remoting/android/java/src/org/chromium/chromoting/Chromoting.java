@@ -281,9 +281,12 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
                   @Override
                   public void onCancel(DialogInterface dialog) {
                       JniInterface.disconnectFromHost();
+                      mTokenFetcher = null;
                   }
               });
         SessionConnector connector = new SessionConnector(this, this, mHostListLoader);
+        assert mTokenFetcher == null;
+        mTokenFetcher = createTokenFetcher(host);
         connector.connectToHost(mAccount.name, mToken, host);
     }
 
@@ -459,9 +462,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         }
     }
 
-    public void fetchThirdPartyToken(String tokenUrl, String clientId, String scope) {
-        assert mTokenFetcher == null;
-
+    private ThirdPartyTokenFetcher createTokenFetcher(HostInfo host) {
         ThirdPartyTokenFetcher.Callback callback = new ThirdPartyTokenFetcher.Callback() {
             public void onTokenFetched(String code, String accessToken) {
                 // The native client sends the OAuth authorization code to the host as the token so
@@ -476,10 +477,11 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
                 JniInterface.nativeOnThirdPartyTokenFetched(token, sharedSecret);
             }
         };
-
-        mTokenFetcher = new ThirdPartyTokenFetcher(this, tokenUrl, clientId, scope, callback);
-        mTokenFetcher.fetchToken();
+        return new ThirdPartyTokenFetcher(this, host.getTokenUrlPatterns(), callback);
     }
 
-
+    public void fetchThirdPartyToken(String tokenUrl, String clientId, String scope) {
+        assert mTokenFetcher != null;
+        mTokenFetcher.fetchToken(tokenUrl, clientId, scope);
+    }
 }

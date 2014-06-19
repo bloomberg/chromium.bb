@@ -145,12 +145,7 @@ public class HostListLoader {
                     // attempt will fail because of the missing keys. The failed attempt will
                     // trigger reloading of the host-list, by which time the keys will hopefully be
                     // present, and the retried connection can succeed.
-                    HostInfo host = new HostInfo(
-                            hostJson.getString("hostName"),
-                            hostJson.getString("hostId"),
-                            hostJson.optString("jabberId"),
-                            hostJson.optString("publicKey"),
-                            hostJson.optString("status").equals("ONLINE"));
+                    HostInfo host = HostInfo.create(hostJson);
                     hostList.add(host);
                     ++index;
                 }

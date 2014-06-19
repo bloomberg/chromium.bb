@@ -10,10 +10,12 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -51,46 +53,42 @@ public class ThirdPartyTokenFetcher {
      */
     private final String mState;
 
-    /** URL of the third party login page. */
-    private final String mTokenUrl;
-
-    /** The client identifier. See http://tools.ietf.org/html/rfc6749#section-2.2. */
-    private final String mClientId;
-
-    /** The scope of access request. See http://tools.ietf.org/html/rfc6749#section-3.3. */
-    private final String mScope;
-
     private final Callback mCallback;
+
+    /** The list of TokenUrls allowed by the domain. */
+    private final ArrayList<String> mTokenUrlPatterns;
 
     private final String mRedirectUriScheme;
 
     private final String mRedirectUri;
 
     public ThirdPartyTokenFetcher(Activity context,
-                                  String tokenUrl,
-                                  String clientId,
-                                  String scope,
+                                  ArrayList<String> tokenUrlPatterns,
                                   Callback callback) {
         this.mContext = context;
-        this.mTokenUrl = tokenUrl;
-        this.mClientId = clientId;
         this.mState = generateXsrfToken();
-        this.mScope = scope;
         this.mCallback = callback;
+        this.mTokenUrlPatterns = tokenUrlPatterns;
 
         this.mRedirectUriScheme = context.getApplicationContext().getPackageName();
         this.mRedirectUri = mRedirectUriScheme + "://" + REDIRECT_URI_HOST;
     }
 
-    public void fetchToken() {
-        Uri.Builder uriBuilder = Uri.parse(mTokenUrl).buildUpon();
-        uriBuilder.appendQueryParameter("redirect_uri", this.mRedirectUri);
-        uriBuilder.appendQueryParameter("scope", mScope);
-        uriBuilder.appendQueryParameter("client_id", mClientId);
-        uriBuilder.appendQueryParameter("state", mState);
-        uriBuilder.appendQueryParameter("response_type", RESPONSE_TYPE);
+    /**
+     * @param tokenUrl URL of the third party login page.
+     * @param clientId The client identifier. See http://tools.ietf.org/html/rfc6749#section-2.2.
+     * @param scope The scope of access request. See http://tools.ietf.org/html/rfc6749#section-3.3.
+     */
+    public void fetchToken(String tokenUrl, String clientId, String scope) {
+        if (!isValidTokenUrl(tokenUrl)) {
+            failFetchToken(
+                    "Token URL does not match the domain\'s allowed URL patterns." +
+                    " URL: " + tokenUrl +
+                    ", patterns: " + TextUtils.join(",", this.mTokenUrlPatterns));
+            return;
+        }
 
-        Uri uri = uriBuilder.build();
+        Uri uri = buildRequestUri(tokenUrl, clientId, scope);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         Log.i("ThirdPartyAuth", "fetchToken() url:" + uri);
         OAuthRedirectActivity.setEnabled(mContext, true);
@@ -100,6 +98,27 @@ public class ThirdPartyTokenFetcher {
         } catch (ActivityNotFoundException e) {
             failFetchToken("No browser is installed to open the third party authentication page.");
         }
+    }
+
+    private Uri buildRequestUri(String tokenUrl, String clientId, String scope) {
+        Uri.Builder uriBuilder = Uri.parse(tokenUrl).buildUpon();
+        uriBuilder.appendQueryParameter("redirect_uri", this.mRedirectUri);
+        uriBuilder.appendQueryParameter("scope", scope);
+        uriBuilder.appendQueryParameter("client_id", clientId);
+        uriBuilder.appendQueryParameter("state", mState);
+        uriBuilder.appendQueryParameter("response_type", RESPONSE_TYPE);
+
+        return uriBuilder.build();
+    }
+
+    /** Verifies the host-supplied URL matches the domain's allowed URL patterns. */
+    private boolean isValidTokenUrl(String tokenUrl) {
+        for (String pattern : mTokenUrlPatterns) {
+            if (tokenUrl.matches(pattern)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isValidIntent(Intent intent) {
