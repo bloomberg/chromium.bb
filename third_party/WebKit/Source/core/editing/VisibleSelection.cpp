@@ -604,7 +604,7 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
         // If the start is in non-editable content that is inside the base's editable root, put it
         // at the first editable position after start inside the base's editable root.
         if (startRoot != baseRoot) {
-            VisiblePosition first = firstEditablePositionAfterPositionInRoot(m_start, baseRoot);
+            VisiblePosition first = firstEditableVisiblePositionAfterPositionInRoot(m_start, baseRoot);
             m_start = first.deepEquivalent();
             if (m_start.isNull()) {
                 ASSERT_NOT_REACHED();
@@ -615,7 +615,7 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
         // If the end is in non-editable content that is inside the base's root, put it
         // at the last editable position before the end inside the base's root.
         if (endRoot != baseRoot) {
-            VisiblePosition last = lastEditablePositionBeforePositionInRoot(m_end, baseRoot);
+            VisiblePosition last = lastEditableVisiblePositionBeforePositionInRoot(m_end, baseRoot);
             m_end = last.deepEquivalent();
             if (m_end.isNull())
                 m_end = m_start;

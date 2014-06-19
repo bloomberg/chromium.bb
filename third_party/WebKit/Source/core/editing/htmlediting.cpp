@@ -258,7 +258,7 @@ Position previousVisuallyDistinctCandidate(const Position& position)
     return Position();
 }
 
-VisiblePosition firstEditablePositionAfterPositionInRoot(const Position& position, Node* highestRoot)
+VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position& position, Node* highestRoot)
 {
     // position falls before highestRoot.
     if (comparePositions(position, firstPositionInNode(highestRoot)) == -1 && highestRoot->rendererIsEditable())
@@ -283,7 +283,7 @@ VisiblePosition firstEditablePositionAfterPositionInRoot(const Position& positio
     return VisiblePosition(p);
 }
 
-VisiblePosition lastEditablePositionBeforePositionInRoot(const Position& position, Node* highestRoot)
+VisiblePosition lastEditableVisiblePositionBeforePositionInRoot(const Position& position, Node* highestRoot)
 {
     // When position falls after highestRoot, the result is easy to compute.
     if (comparePositions(position, lastPositionInNode(highestRoot)) == 1)

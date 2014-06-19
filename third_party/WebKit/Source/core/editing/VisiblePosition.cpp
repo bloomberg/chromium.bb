@@ -475,7 +475,7 @@ VisiblePosition VisiblePosition::honorEditingBoundaryAtOrBefore(const VisiblePos
         return VisiblePosition();
 
     // Return the last position before pos that is in the same editable region as this position
-    return lastEditablePositionBeforePositionInRoot(pos.deepEquivalent(), highestRoot);
+    return lastEditableVisiblePositionBeforePositionInRoot(pos.deepEquivalent(), highestRoot);
 }
 
 VisiblePosition VisiblePosition::honorEditingBoundaryAtOrAfter(const VisiblePosition &pos) const
@@ -501,7 +501,7 @@ VisiblePosition VisiblePosition::honorEditingBoundaryAtOrAfter(const VisiblePosi
         return VisiblePosition();
 
     // Return the next position after pos that is in the same editable region as this position
-    return firstEditablePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
+    return firstEditableVisiblePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
 }
 
 VisiblePosition VisiblePosition::skipToStartOfEditingBoundary(const VisiblePosition &pos) const
@@ -521,7 +521,7 @@ VisiblePosition VisiblePosition::skipToStartOfEditingBoundary(const VisiblePosit
         return VisiblePosition(previousVisuallyDistinctCandidate(Position(highestRootOfPos, Position::PositionIsBeforeAnchor).parentAnchoredEquivalent()));
 
     // That must mean that |pos| is not editable. Return the last position before pos that is in the same editable region as this position
-    return lastEditablePositionBeforePositionInRoot(pos.deepEquivalent(), highestRoot);
+    return lastEditableVisiblePositionBeforePositionInRoot(pos.deepEquivalent(), highestRoot);
 }
 
 VisiblePosition VisiblePosition::skipToEndOfEditingBoundary(const VisiblePosition &pos) const
@@ -541,7 +541,7 @@ VisiblePosition VisiblePosition::skipToEndOfEditingBoundary(const VisiblePositio
         return VisiblePosition(Position(highestRootOfPos, Position::PositionIsAfterAnchor).parentAnchoredEquivalent());
 
     // That must mean that |pos| is not editable. Return the next position after pos that is in the same editable region as this position
-    return firstEditablePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
+    return firstEditableVisiblePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
 }
 
 static Position canonicalizeCandidate(const Position& candidate)
