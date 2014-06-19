@@ -648,7 +648,7 @@ float Font::getGlyphsAndAdvancesForSimpleText(const TextRunPaintInfo& runInfo, G
         float finalRoundingWidth = it.m_finalRoundingWidth;
         it.advance(runInfo.run.length(), &localGlyphBuffer);
         initialAdvance = finalRoundingWidth + it.m_runWidthSoFar - afterWidth;
-        glyphBuffer.reverse(0, glyphBuffer.size());
+        glyphBuffer.reverse();
     } else {
         initialAdvance = beforeWidth;
     }

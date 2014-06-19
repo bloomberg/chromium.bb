@@ -79,10 +79,11 @@ public:
         m_advances.append(advance);
     }
 
-    void reverse(unsigned from, unsigned length)
+    void reverse()
     {
-        for (unsigned i = from, end = from + length - 1; i < end; ++i, --end)
-            swap(i, end);
+        m_fontData.reverse();
+        m_glyphs.reverse();
+        m_advances.reverse();
     }
 
     void expandLastAdvance(float width)
@@ -93,21 +94,6 @@ public:
     }
 
 private:
-    void swap(unsigned index1, unsigned index2)
-    {
-        const SimpleFontData* f = m_fontData[index1];
-        m_fontData[index1] = m_fontData[index2];
-        m_fontData[index2] = f;
-
-        Glyph g = m_glyphs[index1];
-        m_glyphs[index1] = m_glyphs[index2];
-        m_glyphs[index2] = g;
-
-        FloatSize s = m_advances[index1];
-        m_advances[index1] = m_advances[index2];
-        m_advances[index2] = s;
-    }
-
     Vector<const SimpleFontData*, 2048> m_fontData;
     Vector<Glyph, 2048> m_glyphs;
     Vector<FloatSize, 2048> m_advances;

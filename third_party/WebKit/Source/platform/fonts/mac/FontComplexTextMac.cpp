@@ -85,7 +85,7 @@ float Font::getGlyphsAndAdvancesForComplexText(const TextRunPaintInfo& runInfo, 
 
     if (runInfo.run.rtl()) {
         initialAdvance = controller.totalWidth() + controller.finalRoundingWidth() - afterWidth;
-        glyphBuffer.reverse(0, glyphBuffer.size());
+        glyphBuffer.reverse();
     } else
         initialAdvance = beforeWidth;
 
