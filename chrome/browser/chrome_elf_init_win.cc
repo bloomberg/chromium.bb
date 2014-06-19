@@ -40,7 +40,8 @@ enum BlacklistSetupEventType {
   // The blacklist setup code failed to execute.
   BLACKLIST_SETUP_FAILED,
 
-  // Deprecated. The blacklist thunk setup code failed to execute.
+  // The blacklist thunk setup code failed. This is probably an indication
+  // that something else patched that code first.
   BLACKLIST_THUNK_SETUP_FAILED,
 
   // Deprecated. The blacklist interception code failed to execute.
@@ -143,9 +144,18 @@ void BrowserBlacklistBeaconSetup() {
   blacklist_registry_key.ReadValueDW(blacklist::kBeaconState, &blacklist_state);
 
   if (blacklist_state == blacklist::BLACKLIST_ENABLED) {
-    // The blacklist was enabled successfully so we record the event (along with
-    // the number of failed previous attempts).
-    RecordBlacklistSetupEvent(BLACKLIST_SETUP_RAN_SUCCESSFULLY);
+    // The blacklist setup didn't crash, so we report if it was enabled or not.
+    if (blacklist::IsBlacklistInitialized()) {
+      RecordBlacklistSetupEvent(BLACKLIST_SETUP_RAN_SUCCESSFULLY);
+    } else {
+      // The only way for the blacklist to be enabled, but not fully
+      // initialized is if the thunk setup failed. See blacklist.cc
+      // for more details.
+      RecordBlacklistSetupEvent(BLACKLIST_THUNK_SETUP_FAILED);
+    }
+
+    // Regardless of if the blacklist was fully enabled or not, report how many
+    // times we had to try to set it up.
     DWORD attempt_count = 0;
     blacklist_registry_key.ReadValueDW(blacklist::kBeaconAttemptCount,
                                        &attempt_count);

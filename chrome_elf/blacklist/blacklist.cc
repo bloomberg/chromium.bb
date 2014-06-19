@@ -197,9 +197,9 @@ bool ResetBeacon() {
     return false;
   }
 
-  // Reaching this point with the setup running state means the setup
-  // succeeded and so we reset to enabled.  Any other state indicates that setup
-  // was skipped; in that case we leave the state alone for later recording.
+  // Reaching this point with the setup running state means the setup did not
+  // crash, so we reset to enabled.  Any other state indicates that setup was
+  // skipped; in that case we leave the state alone for later recording.
   if (blacklist_state == BLACKLIST_SETUP_RUNNING)
     result = SetDWValue(&key, kBeaconState, BLACKLIST_ENABLED);
 
