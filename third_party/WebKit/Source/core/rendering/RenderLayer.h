@@ -472,10 +472,10 @@ public:
     void setCompositingReasons(CompositingReasons, CompositingReasons mask = CompositingReasonAll);
 
     bool hasCompositingDescendant() const { ASSERT(isAllowedToQueryCompositingState()); return m_hasCompositingDescendant; }
-    void setHasCompositingDescendant(bool b)  { m_hasCompositingDescendant = b; }
+    void setHasCompositingDescendant(bool);
 
     bool shouldIsolateCompositedDescendants() const { ASSERT(isAllowedToQueryCompositingState()); return m_shouldIsolateCompositedDescendants; }
-    void setShouldIsolateCompositedDescendants(bool b)  { m_shouldIsolateCompositedDescendants = b; }
+    void setShouldIsolateCompositedDescendants(bool);
 
     void updateDescendantDependentFlags();
 

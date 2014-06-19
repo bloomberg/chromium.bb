@@ -248,13 +248,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
 
     layer->stackingNode()->updateLayerListsIfNeeded();
 
-    // Clear the flag
-    layer->setHasCompositingDescendant(false);
-
-    // Start by assuming this layer will not need to composite.
     CompositingReasons reasonsToComposite = CompositingReasonNone;
-
-    // First accumulate the straightforward compositing reasons.
     CompositingReasons directReasons = m_compositingReasonFinder.directReasons(layer);
 
     // Video is special. It's the only RenderLayer type that can both have

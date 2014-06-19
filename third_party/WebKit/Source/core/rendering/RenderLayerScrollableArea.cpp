@@ -1432,7 +1432,7 @@ void RenderLayerScrollableArea::updateCompositingLayersAfterScroll()
         if (usesCompositedScrolling()) {
             DisableCompositingQueryAsserts disabler;
             ASSERT(box().hasCompositedLayerMapping());
-            box().compositedLayerMapping()->setNeedsGraphicsLayerUpdate();
+            box().compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
             compositor->setNeedsCompositingUpdate(CompositingUpdateAfterGeometryChange);
         } else {
             layer()->setNeedsCompositingInputsUpdate();

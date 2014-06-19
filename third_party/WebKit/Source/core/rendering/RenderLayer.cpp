@@ -210,7 +210,7 @@ void RenderLayer::contentChanged(ContentChangeType changeType)
         // layer for this canvas.
         // See http://crbug.com/349195
         if (hasCompositedLayerMapping())
-            compositedLayerMapping()->setNeedsGraphicsLayerUpdate();
+            compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
     }
 
     if (m_compositedLayerMapping)
@@ -1161,6 +1161,28 @@ void RenderLayer::setCompositingReasons(CompositingReasons reasons, CompositingR
         return;
     m_compositingReasons = (reasons & mask) | (compositingReasons() & ~mask);
     m_clipper.setCompositingClipRectsDirty();
+}
+
+void RenderLayer::setHasCompositingDescendant(bool hasCompositingDescendant)
+{
+    if (m_hasCompositingDescendant == static_cast<unsigned>(hasCompositingDescendant))
+        return;
+
+    m_hasCompositingDescendant = hasCompositingDescendant;
+
+    if (hasCompositedLayerMapping())
+        compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateLocal);
+}
+
+void RenderLayer::setShouldIsolateCompositedDescendants(bool shouldIsolateCompositedDescendants)
+{
+    if (m_shouldIsolateCompositedDescendants == static_cast<unsigned>(shouldIsolateCompositedDescendants))
+        return;
+
+    m_shouldIsolateCompositedDescendants = shouldIsolateCompositedDescendants;
+
+    if (hasCompositedLayerMapping())
+        compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateLocal);
 }
 
 bool RenderLayer::hasAncestorWithFilterOutsets() const
@@ -3447,7 +3469,7 @@ CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
 {
     if (!m_compositedLayerMapping) {
         m_compositedLayerMapping = adoptPtr(new CompositedLayerMapping(*this));
-        m_compositedLayerMapping->setNeedsGraphicsLayerUpdate();
+        m_compositedLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
 
         updateOrRemoveFilterEffectRenderer();
 
@@ -3465,7 +3487,7 @@ void RenderLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
         // require walking the z-order lists to find them. Instead, we over-invalidate
         // by marking our parent as needing a geometry update.
         if (RenderLayer* compositingParent = enclosingCompositingLayer(ExcludeSelf))
-            compositingParent->compositedLayerMapping()->setNeedsGraphicsLayerUpdate();
+            compositingParent->compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
     }
 
     m_compositedLayerMapping.clear();
@@ -3480,12 +3502,12 @@ void RenderLayer::setGroupedMapping(CompositedLayerMapping* groupedMapping, bool
         return;
 
     if (!layerBeingDestroyed && m_groupedMapping) {
-        m_groupedMapping->setNeedsGraphicsLayerUpdate();
+        m_groupedMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
         m_groupedMapping->removeRenderLayerFromSquashingGraphicsLayer(this);
     }
     m_groupedMapping = groupedMapping;
     if (!layerBeingDestroyed && m_groupedMapping)
-        m_groupedMapping->setNeedsGraphicsLayerUpdate();
+        m_groupedMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
 }
 
 bool RenderLayer::hasCompositedMask() const

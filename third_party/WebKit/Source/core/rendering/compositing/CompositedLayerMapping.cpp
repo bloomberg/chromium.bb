@@ -162,13 +162,12 @@ static ScrollingCoordinator* scrollingCoordinatorFromLayer(RenderLayer& layer)
 
 CompositedLayerMapping::CompositedLayerMapping(RenderLayer& layer)
     : m_owningLayer(layer)
+    , m_pendingUpdateScope(GraphicsLayerUpdateNone)
     , m_isMainFrameRenderViewLayer(false)
     , m_requiresOwnBackingStoreForIntrinsicReasons(true)
     , m_requiresOwnBackingStoreForAncestorReasons(true)
     , m_canCompositeFilters(false)
     , m_backgroundLayerPaintsFixedRootBackground(false)
-    , m_needToUpdateGraphicsLayer(false)
-    , m_needToUpdateGraphicsLayerOfAllDecendants(false)
     , m_scrollingContentsAreEmpty(false)
 {
     if (layer.isRootLayer() && renderer()->frame()->isMainFrame())
@@ -276,7 +275,7 @@ void CompositedLayerMapping::updateTransform(const RenderStyle* style)
 
 void CompositedLayerMapping::updateFilters(const RenderStyle* style)
 {
-    bool didCompositeFilters = m_canCompositeFilters;
+    unsigned didCompositeFilters = m_canCompositeFilters;
     m_canCompositeFilters = m_graphicsLayer->setFilters(owningLayer().computeFilterOperations(style));
     if (didCompositeFilters != m_canCompositeFilters) {
         //
@@ -1816,7 +1815,7 @@ GraphicsLayer* CompositedLayerMapping::layerForChildrenTransform() const
 
 bool CompositedLayerMapping::updateRequiresOwnBackingStoreForAncestorReasons(const RenderLayer* compositingAncestorLayer)
 {
-    bool previousRequiresOwnBackingStoreForAncestorReasons = m_requiresOwnBackingStoreForAncestorReasons;
+    unsigned previousRequiresOwnBackingStoreForAncestorReasons = m_requiresOwnBackingStoreForAncestorReasons;
     bool previousPaintsIntoCompositedAncestor = paintsIntoCompositedAncestor();
     bool canPaintIntoAncestor = compositingAncestorLayer
         && (compositingAncestorLayer->compositedLayerMapping()->mainGraphicsLayer()->drawsContent()
@@ -1830,7 +1829,7 @@ bool CompositedLayerMapping::updateRequiresOwnBackingStoreForAncestorReasons(con
 
 bool CompositedLayerMapping::updateRequiresOwnBackingStoreForIntrinsicReasons()
 {
-    bool previousRequiresOwnBackingStoreForIntrinsicReasons = m_requiresOwnBackingStoreForIntrinsicReasons;
+    unsigned previousRequiresOwnBackingStoreForIntrinsicReasons = m_requiresOwnBackingStoreForIntrinsicReasons;
     bool previousPaintsIntoCompositedAncestor = paintsIntoCompositedAncestor();
     RenderObject* renderer = m_owningLayer.renderer();
     m_requiresOwnBackingStoreForIntrinsicReasons = m_owningLayer.isRootLayer()
@@ -1867,41 +1866,12 @@ void CompositedLayerMapping::setBlendMode(blink::WebBlendMode blendMode)
     }
 }
 
-void CompositedLayerMapping::setNeedsGraphicsLayerUpdate()
-{
-    m_needToUpdateGraphicsLayerOfAllDecendants = true;
-
-    for (RenderLayer* current = &m_owningLayer; current; current = current->ancestorCompositingLayer()) {
-        ASSERT(current->hasCompositedLayerMapping());
-        CompositedLayerMappingPtr mapping = current->compositedLayerMapping();
-        if (mapping->m_needToUpdateGraphicsLayer)
-            return;
-        mapping->m_needToUpdateGraphicsLayer = true;
-    }
-}
-
 GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateTypeForChildren(GraphicsLayerUpdater::UpdateType updateType) const
 {
-    if (m_needToUpdateGraphicsLayerOfAllDecendants)
+    if (m_pendingUpdateScope >= GraphicsLayerUpdateSubtree)
         return GraphicsLayerUpdater::ForceUpdate;
     return updateType;
 }
-
-void CompositedLayerMapping::clearNeedsGraphicsLayerUpdate()
-{
-    m_needToUpdateGraphicsLayer = false;
-    m_needToUpdateGraphicsLayerOfAllDecendants = false;
-}
-
-#if ASSERT_ENABLED
-
-void CompositedLayerMapping::assertNeedsToUpdateGraphicsLayerBitsCleared()
-{
-    ASSERT(!m_needToUpdateGraphicsLayer);
-    ASSERT(!m_needToUpdateGraphicsLayerOfAllDecendants);
-}
-
-#endif
 
 struct SetContentsNeedsDisplayFunctor {
     void operator() (GraphicsLayer* layer) const

@@ -34,7 +34,7 @@ void CompositingInputsUpdater::update(RenderLayer* layer, UpdateType updateType,
 
     if (layer->needsCompositingInputsUpdate()) {
         if (info.enclosingCompositedLayer)
-            info.enclosingCompositedLayer->compositedLayerMapping()->setNeedsGraphicsLayerUpdate();
+            info.enclosingCompositedLayer->compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
         updateType = ForceUpdate;
     }
 

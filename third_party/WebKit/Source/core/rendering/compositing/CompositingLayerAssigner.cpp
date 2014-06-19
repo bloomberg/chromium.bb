@@ -181,7 +181,7 @@ bool CompositingLayerAssigner::updateSquashingAssignment(RenderLayer* layer, Squ
 
         // If we've modified the collection of squashed layers, we must update
         // the graphics layer geometry.
-        squashingState.mostRecentMapping->setNeedsGraphicsLayerUpdate();
+        squashingState.mostRecentMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
 
         layer->clipper().clearClipRectsIncludingDescendants();
 
@@ -194,7 +194,7 @@ bool CompositingLayerAssigner::updateSquashingAssignment(RenderLayer* layer, Squ
         if (layer->groupedMapping()) {
             // Before removing |layer| from an already-existing squashing layer that may have other content, issue a repaint.
             m_compositor->repaintOnCompositingChange(layer);
-            layer->groupedMapping()->setNeedsGraphicsLayerUpdate();
+            layer->groupedMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
             layer->setGroupedMapping(0);
         }
 
