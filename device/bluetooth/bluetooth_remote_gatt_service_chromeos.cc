@@ -250,4 +250,27 @@ void BluetoothRemoteGattServiceChromeOS::GattCharacteristicRemoved(
   delete characteristic;
 }
 
+void BluetoothRemoteGattServiceChromeOS::GattCharacteristicPropertyChanged(
+    const dbus::ObjectPath& object_path,
+    const std::string& property_name) {
+  if (characteristics_.find(object_path) == characteristics_.end()) {
+    VLOG(2) << "Properties of unknown characteristic changed";
+    return;
+  }
+
+  // We may receive a property changed event in certain cases, e.g. when the
+  // characteristic "Flags" property has been updated with values from the
+  // "Characteristic Extended Properties" descriptor. In this case, kick off
+  // a service changed observer event to let observers refresh the
+  // characteristics.
+  BluetoothGattCharacteristicClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothGattCharacteristicClient()->
+          GetProperties(object_path);
+  DCHECK(properties);
+  if (property_name != properties->flags.name())
+    return;
+
+  NotifyServiceChanged();
+}
+
 }  // namespace chromeos

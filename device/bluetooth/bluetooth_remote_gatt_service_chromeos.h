@@ -113,6 +113,9 @@ class BluetoothRemoteGattServiceChromeOS
       const dbus::ObjectPath& object_path) OVERRIDE;
   virtual void GattCharacteristicRemoved(
       const dbus::ObjectPath& object_path) OVERRIDE;
+  virtual void GattCharacteristicPropertyChanged(
+      const dbus::ObjectPath& object_path,
+      const std::string& property_name) OVERRIDE;
 
   // Object path of the GATT service.
   dbus::ObjectPath object_path_;
