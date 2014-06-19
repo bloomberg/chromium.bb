@@ -159,6 +159,10 @@ class Decoder {
   void Reset();
   void RecyclePicture(const PP_VideoPicture& picture);
 
+  PP_TimeTicks GetAverageLatency() {
+    return num_pictures_ ? total_latency_ / num_pictures_ : 0;
+  }
+
  private:
   void InitializeDone(int32_t result);
   void Start();
@@ -178,6 +182,12 @@ class Decoder {
   int next_picture_id_;
   bool flushing_;
   bool resetting_;
+
+  const PPB_Core* core_if_;
+  static const int kMaxDecodeDelay = 128;
+  PP_TimeTicks decode_time_[kMaxDecodeDelay];
+  PP_TimeTicks total_latency_;
+  int num_pictures_;
 };
 
 #if defined USE_VP8_TESTDATA_INSTEAD_OF_H264
@@ -227,7 +237,12 @@ Decoder::Decoder(MyInstance* instance,
       encoded_data_next_pos_to_decode_(0),
       next_picture_id_(0),
       flushing_(false),
-      resetting_(false) {
+      resetting_(false),
+      total_latency_(0.0),
+      num_pictures_(0) {
+  core_if_ = static_cast<const PPB_Core*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_CORE_INTERFACE));
+
 #if defined USE_VP8_TESTDATA_INSTEAD_OF_H264
   const PP_VideoProfile kBitstreamProfile = PP_VIDEOPROFILE_VP8MAIN;
 #else
@@ -295,6 +310,7 @@ void Decoder::DecodeNextFrame() {
     // Decode the frame. On completion, DecodeDone will call DecodeNextFrame
     // to implement a decode loop.
     uint32_t size = static_cast<uint32_t>(end_pos - start_pos);
+    decode_time_[next_picture_id_ % kMaxDecodeDelay] = core_if_->GetTimeTicks();
     decoder_->Decode(next_picture_id_++,
                      size,
                      kData + start_pos,
@@ -318,6 +334,12 @@ void Decoder::PictureReady(int32_t result, PP_VideoPicture picture) {
   if (result == PP_ERROR_ABORTED)
     return;
   assert(result == PP_OK);
+
+  num_pictures_++;
+  PP_TimeTicks latency = core_if_->GetTimeTicks() -
+                         decode_time_[picture.decode_id % kMaxDecodeDelay];
+  total_latency_ += latency;
+
   decoder_->GetPicture(
       callback_factory_.NewCallbackWithOutput(&Decoder::PictureReady));
   instance_->PaintPicture(this, picture);
@@ -349,12 +371,13 @@ MyInstance::MyInstance(PP_Instance instance, pp::Module* module)
       swap_ticks_(0),
       callback_factory_(this),
       context_(NULL) {
-  assert((console_if_ = static_cast<const PPB_Console*>(
-              module->GetBrowserInterface(PPB_CONSOLE_INTERFACE))));
-  assert((core_if_ = static_cast<const PPB_Core*>(
-              module->GetBrowserInterface(PPB_CORE_INTERFACE))));
-  assert((gles2_if_ = static_cast<const PPB_OpenGLES2*>(
-              module->GetBrowserInterface(PPB_OPENGLES2_INTERFACE))));
+  console_if_ = static_cast<const PPB_Console*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_CONSOLE_INTERFACE));
+  core_if_ = static_cast<const PPB_Core*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_CORE_INTERFACE));
+  gles2_if_ = static_cast<const PPB_OpenGLES2*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_OPENGLES2_INTERFACE));
+
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
 }
 
@@ -487,9 +510,18 @@ void MyInstance::PaintFinished(int32_t result) {
     double elapsed = core_if_->GetTimeTicks() - first_frame_delivered_ticks_;
     double fps = (elapsed > 0) ? num_frames_rendered_ / elapsed : 1000;
     double ms_per_swap = (swap_ticks_ * 1e3) / num_frames_rendered_;
+    double secs_average_latency = 0;
+    for (DecoderList::iterator it = video_decoders_.begin();
+         it != video_decoders_.end();
+         ++it)
+      secs_average_latency += (*it)->GetAverageLatency();
+    secs_average_latency /= video_decoders_.size();
+    double ms_average_latency = 1000 * secs_average_latency;
     LogError(this).s() << "Rendered frames: " << num_frames_rendered_
                        << ", fps: " << fps
-                       << ", with average ms/swap of: " << ms_per_swap;
+                       << ", with average ms/swap of: " << ms_per_swap
+                       << ", with average latency (ms) of: "
+                       << ms_average_latency;
   }
 
   // If the decoders were reset, this will be empty.
@@ -542,8 +574,8 @@ void MyInstance::CreateGLObjects() {
   // Assign vertex positions and texture coordinates to buffers for use in
   // shader program.
   static const float kVertices[] = {
-      -1, 1, -1, -1, 1, 1, 1, -1,  // Position coordinates.
-      0,  1, 0,  0,  1, 1, 1, 0,   // Texture coordinates.
+      -1, -1, -1, 1, 1, -1, 1, 1,  // Position coordinates.
+      0,  1,  0,  0, 1, 1,  1, 0,  // Texture coordinates.
   };
 
   GLuint buffer;
