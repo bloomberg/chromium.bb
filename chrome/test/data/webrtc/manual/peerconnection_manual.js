@@ -194,39 +194,37 @@ function forceIsacChanged() {
 
 /**
  * Updates the constraints in the getusermedia-constraints text box with a
- * MediaStreamConstraints string. This string is created based on the status of
- * the checkboxes for audio and video. If device enumeration is supported and
- * device source id's are not null they will be added to the constraints string.
- * Fetches the screen size using "screen" in Chrome as we need to pass a max
- * resolution else it defaults to 640x480 in the constraints for screen
- * capturing.
+ * MediaStreamConstraints string. This string is created based on the state
+ * of the 'audiosrc' and 'videosrc' checkboxes.
+ * If device enumeration is supported and device source id's are not null they
+ * will be added to the constraints string.
  */
 function updateGetUserMediaConstraints() {
-  var audioSelected = $('audiosrc');
-  var videoSelected = $('videosrc');
-  var constraints = {
-    audio: $('audio').checked,
-    video: $('video').checked
+  var selectedAudioDevice = $('audiosrc');
+  var selectedVideoDevice = $('videosrc');
+  var constraints = {audio: $('audio').checked,
+                     video: $('video').checked
   };
 
-  if (audioSelected.disabled == false && videoSelected.disabled == false) {
-    var devices = getSourcesFromField_(audioSelected, videoSelected);
-    if ($('audio').checked == true) {
-      if (devices.audioId != null) {
+  if ($('video').checked) {
+    // Default optional constraints placed here.
+    constraints.video = {optional: [{minWidth: $('video-width').value},
+                                    {minHeight: $('video-height').value},
+                                    {googLeakyBucket: true}]};
+  }
+
+  if (!selectedAudioDevice.disabled && !selectedAudioDevice.disabled) {
+    var devices = getSourcesFromField_(selectedAudioDevice,
+                                       selectedVideoDevice);
+
+    if ($('audio').checked) {
+      if (devices.audioId != null)
         constraints.audio = {optional: [{sourceId: devices.audioId}]};
-      } else {
-        constraints.audio = true;
-      }
     }
-    if ($('video').checked == true) {
-      // Default optional constraints placed here.
-      constraints.video = {optional: [{minWidth: $('video-width').value},
-                                      {minHeight: $('video-height').value},
-                                      {googLeakyBucket: true}]
-      };
-      if (devices.videoId != null) {
+
+    if ($('video').checked) {
+      if (devices.videoId != null)
         constraints.video.optional.push({sourceId: devices.videoId});
-      }
     }
   }
 
@@ -237,10 +235,11 @@ function updateGetUserMediaConstraints() {
                           maxWidth: screen.width,
                           maxHeight: screen.height}}
     };
-    if ($('audio').checked == true)
+    if ($('audio').checked)
       print_('Audio for screencapture is not implemented yet, please ' +
             'try to set audio = false prior requesting screencapture');
   }
+
   $('getusermedia-constraints').value = JSON.stringify(constraints, null, ' ');
 }
 
@@ -311,35 +310,38 @@ function removeLocalStreamFromPeerConnection(peerConnection) {
  * to update the constraints.
  */
 function getDevices() {
-  var audio_select = $('audiosrc');
-  var video_select = $('videosrc');
-  var get_devices = $('get-devices');
-  audio_select.innerHTML = '';
-  video_select.innerHTML = '';
+  selectedAudioDevice = $('audiosrc');
+  selectedVideoDevice = $('videosrc');
+  selectedAudioDevice.innerHTML = '';
+  selectedVideoDevice.innerHTML = '';
+
   try {
     eval(MediaStreamTrack.getSources(function() {}));
   } catch (exception) {
-    audio_select.disabled = true;
-    video_select.disabled = true;
-    refresh_devices.disabled = true;
+    selectedAudioDevice.disabled = true;
+    selectedVideoDevice.disabled = true;
+    $('get-devices').disabled = true;
+    $('get-devices-onload').disabled = true;
     updateGetUserMediaConstraints();
     error_('Device enumeration not supported. ' + exception);
   }
+
   MediaStreamTrack.getSources(function(devices) {
     for (var i = 0; i < devices.length; i++) {
       var option = document.createElement('option');
       option.value = devices[i].id;
       option.text = devices[i].label;
+
       if (devices[i].kind == 'audio') {
         if (option.text == '') {
           option.text = devices[i].id;
         }
-        audio_select.appendChild(option);
+        selectedAudioDevice.appendChild(option);
       } else if (devices[i].kind == 'video') {
         if (option.text == '') {
           option.text = devices[i].id;
         }
-        video_select.appendChild(option);
+        selectedVideoDevice.appendChild(option);
       } else {
         error_('Device type ' + devices[i].kind + ' not recognized, ' +
                 'cannot enumerate device. Currently only device types' +
@@ -349,12 +351,13 @@ function getDevices() {
       }
     }
   });
+
   checkIfDeviceDropdownsArePopulated_();
 }
 
 /**
  * Sets the transform to apply just before setting the local description and
- * sending to the peer.
+ *     sending to the peer.
  * @param {function} transformFunction A function which takes one SDP string as
  *     argument and returns the modified SDP string.
  */
