@@ -58,6 +58,7 @@ SharedQuadState* CreateTestSharedQuadState(
   const bool is_clipped = false;
   const float opacity = 1.0f;
   const SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
+  int sorting_context_id = 0;
   SharedQuadState* shared_state = render_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(content_to_target_transform,
                        content_bounds,
@@ -65,7 +66,8 @@ SharedQuadState* CreateTestSharedQuadState(
                        clip_rect,
                        is_clipped,
                        opacity,
-                       blend_mode);
+                       blend_mode,
+                       sorting_context_id);
   return shared_state;
 }
 
@@ -79,6 +81,7 @@ SharedQuadState* CreateTestSharedQuadStateClipped(
   const bool is_clipped = true;
   const float opacity = 1.0f;
   const SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
+  int sorting_context_id = 0;
   SharedQuadState* shared_state = render_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(content_to_target_transform,
                        content_bounds,
@@ -86,7 +89,8 @@ SharedQuadState* CreateTestSharedQuadStateClipped(
                        clip_rect,
                        is_clipped,
                        opacity,
-                       blend_mode);
+                       blend_mode,
+                       sorting_context_id);
   return shared_state;
 }
 

@@ -63,6 +63,7 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->is_clipped, b->is_clipped);
     EXPECT_EQ(a->opacity, b->opacity);
     EXPECT_EQ(a->blend_mode, b->blend_mode);
+    EXPECT_EQ(a->sorting_context_id, b->sorting_context_id);
   }
 
   void Compare(const DrawQuad* a, const DrawQuad* b) {
@@ -247,6 +248,9 @@ TEST_F(CCMessagesTest, AllQuads) {
   bool arbitrary_bool1 = true;
   bool arbitrary_bool2 = false;
   bool arbitrary_bool3 = true;
+  int arbitrary_context_id1 = 12;
+  int arbitrary_context_id2 = 57;
+  int arbitrary_context_id3 = -503;
   int arbitrary_int = 5;
   SkColor arbitrary_color = SkColorSetARGB(25, 36, 47, 58);
   SkXfermode::Mode arbitrary_blend_mode1 = SkXfermode::kScreen_Mode;
@@ -289,7 +293,8 @@ TEST_F(CCMessagesTest, AllQuads) {
                            arbitrary_rect2,
                            arbitrary_bool1,
                            arbitrary_float1,
-                           arbitrary_blend_mode1);
+                           arbitrary_blend_mode1,
+                           arbitrary_context_id1);
 
   scoped_ptr<RenderPass> pass_cmp = RenderPass::Create();
   pass_cmp->SetAll(arbitrary_id,
@@ -345,7 +350,8 @@ TEST_F(CCMessagesTest, AllQuads) {
                            arbitrary_rect3,
                            arbitrary_bool1,
                            arbitrary_float2,
-                           arbitrary_blend_mode2);
+                           arbitrary_blend_mode2,
+                           arbitrary_context_id2);
   SharedQuadState* shared_state2_cmp =
       pass_cmp->CreateAndAppendSharedQuadState();
   shared_state2_cmp->CopyFrom(shared_state2_in);
@@ -374,7 +380,8 @@ TEST_F(CCMessagesTest, AllQuads) {
                            arbitrary_rect1,
                            arbitrary_bool1,
                            arbitrary_float3,
-                           arbitrary_blend_mode3);
+                           arbitrary_blend_mode3,
+                           arbitrary_context_id3);
   SharedQuadState* shared_state3_cmp =
       pass_cmp->CreateAndAppendSharedQuadState();
   shared_state3_cmp->CopyFrom(shared_state3_in);
@@ -553,7 +560,8 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
                            gfx::Rect(),
                            false,
                            1.f,
-                           SkXfermode::kSrcOver_Mode);
+                           SkXfermode::kSrcOver_Mode,
+                           0);
 
   quad = CheckerboardDrawQuad::Create();
   quad->SetAll(shared_state1_in,
@@ -572,7 +580,8 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
                            gfx::Rect(),
                            false,
                            1.f,
-                           SkXfermode::kSrcOver_Mode);
+                           SkXfermode::kSrcOver_Mode,
+                           0);
 
   SharedQuadState* shared_state3_in = pass_in->CreateAndAppendSharedQuadState();
   shared_state3_in->SetAll(gfx::Transform(),
@@ -581,7 +590,8 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
                            gfx::Rect(),
                            false,
                            1.f,
-                           SkXfermode::kSrcOver_Mode);
+                           SkXfermode::kSrcOver_Mode,
+                           0);
 
   // The fourth SharedQuadState is used.
   SharedQuadState* shared_state4_in = pass_in->CreateAndAppendSharedQuadState();
@@ -591,7 +601,8 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
                            gfx::Rect(),
                            false,
                            1.f,
-                           SkXfermode::kSrcOver_Mode);
+                           SkXfermode::kSrcOver_Mode,
+                           0);
 
   quad = CheckerboardDrawQuad::Create();
   quad->SetAll(shared_state4_in,
@@ -610,7 +621,8 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
                            gfx::Rect(),
                            false,
                            1.f,
-                           SkXfermode::kSrcOver_Mode);
+                           SkXfermode::kSrcOver_Mode,
+                           0);
 
   // 5 SharedQuadStates go in.
   ASSERT_EQ(5u, pass_in->shared_quad_state_list.size());

@@ -320,8 +320,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetShouldFlattenTransform(bool flatten);
   bool should_flatten_transform() const { return should_flatten_transform_; }
 
-  void SetIs3dSorted(bool sorted);
-  bool is_3d_sorted() const { return is_3d_sorted_; }
+  bool Is3dSorted() const { return sorting_context_id_ != 0; }
 
   void set_use_parent_backface_visibility(bool use) {
     use_parent_backface_visibility_ = use;
@@ -458,6 +457,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   virtual void RunMicroBenchmark(MicroBenchmark* benchmark);
 
+  void Set3dSortingContextId(int id);
+  int sorting_context_id() const { return sorting_context_id_; }
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -530,6 +532,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // will be handled implicitly after the update completes.
   bool ignore_set_needs_commit_;
 
+  // Layers that share a sorting context id will be sorted together in 3d
+  // space.  0 is a special value that means this layer will not be sorted and
+  // will be drawn in paint order.
+  int sorting_context_id_;
+
  private:
   friend class base::RefCounted<Layer>;
 
@@ -588,7 +595,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool use_parent_backface_visibility_ : 1;
   bool draw_checkerboard_for_missing_tiles_ : 1;
   bool force_render_surface_ : 1;
-  bool is_3d_sorted_ : 1;
   bool transform_is_invertible_ : 1;
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;

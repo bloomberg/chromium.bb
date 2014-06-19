@@ -37,7 +37,8 @@ SolidColorDrawQuad* AddQuad(TestRenderPass* pass,
                        rect,
                        false,
                        1,
-                       SkXfermode::kSrcOver_Mode);
+                       SkXfermode::kSrcOver_Mode,
+                       0);
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
   quad->SetNew(shared_state, rect, rect, color, false);
   SolidColorDrawQuad* quad_ptr = quad.get();
@@ -55,7 +56,8 @@ SolidColorDrawQuad* AddClippedQuad(TestRenderPass* pass,
                        rect,
                        true,
                        1,
-                       SkXfermode::kSrcOver_Mode);
+                       SkXfermode::kSrcOver_Mode,
+                       0);
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
   quad->SetNew(shared_state, rect, rect, color, false);
   SolidColorDrawQuad* quad_ptr = quad.get();
@@ -68,8 +70,14 @@ SolidColorDrawQuad* AddTransformedQuad(TestRenderPass* pass,
                                        SkColor color,
                                        const gfx::Transform& transform) {
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(
-      transform, rect.size(), rect, rect, false, 1, SkXfermode::kSrcOver_Mode);
+  shared_state->SetAll(transform,
+                       rect.size(),
+                       rect,
+                       rect,
+                       false,
+                       1,
+                       SkXfermode::kSrcOver_Mode,
+                       0);
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
   quad->SetNew(shared_state, rect, rect, color, false);
   SolidColorDrawQuad* quad_ptr = quad.get();
@@ -87,7 +95,8 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
                        output_rect,
                        false,
                        1,
-                       SkXfermode::kSrcOver_Mode);
+                       SkXfermode::kSrcOver_Mode,
+                       0);
   scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
   quad->SetNew(shared_state,
                output_rect,
@@ -115,7 +124,8 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
                        output_rect,
                        false,
                        1,
-                       SkXfermode::kSrcOver_Mode);
+                       SkXfermode::kSrcOver_Mode,
+                       0);
   scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
   quad->SetNew(shared_state,
                output_rect,

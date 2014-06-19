@@ -651,6 +651,7 @@ static void AppendQuadsToFillScreen(
 
   gfx::Rect root_target_rect = root_layer->render_surface()->content_rect();
   float opacity = 1.f;
+  int sorting_context_id = 0;
   SharedQuadState* shared_quad_state = quad_culler.CreateSharedQuadState();
   shared_quad_state->SetAll(gfx::Transform(),
                             root_target_rect.size(),
@@ -658,7 +659,8 @@ static void AppendQuadsToFillScreen(
                             root_target_rect,
                             false,
                             opacity,
-                            SkXfermode::kSrcOver_Mode);
+                            SkXfermode::kSrcOver_Mode,
+                            sorting_context_id);
 
   for (Region::Iterator fill_rects(screen_background_color_region);
        fill_rects.has_rect();

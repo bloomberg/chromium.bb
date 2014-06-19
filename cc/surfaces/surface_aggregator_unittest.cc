@@ -430,7 +430,8 @@ void AddSolidColorQuadWithBlendMode(const gfx::Size& size,
               clip_rect,
               is_clipped,
               opacity,
-              blend_mode);
+              blend_mode,
+              0);
 
   scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
   color_quad->SetNew(pass->shared_quad_state_list.back(),

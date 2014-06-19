@@ -61,13 +61,13 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       force_render_surface_(false),
       transform_is_invertible_(true),
       is_container_for_fixed_position_layers_(false),
-      is_3d_sorted_(false),
       background_color_(0),
       opacity_(1.0),
       blend_mode_(SkXfermode::kSrcOver_Mode),
       draw_depth_(0.f),
       needs_push_properties_(false),
       num_dependents_need_push_properties_(0),
+      sorting_context_id_(0),
       current_draw_mode_(DRAW_MODE_NONE) {
   DCHECK_GT(layer_id_, 0);
   DCHECK(layer_tree_impl_);
@@ -248,7 +248,8 @@ void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
                 draw_properties_.clip_rect,
                 draw_properties_.is_clipped,
                 draw_properties_.opacity,
-                blend_mode_);
+                blend_mode_,
+                sorting_context_id_);
 }
 
 bool LayerImpl::WillDraw(DrawMode draw_mode,
@@ -512,7 +513,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
       is_container_for_fixed_position_layers_);
   layer->SetPositionConstraint(position_constraint_);
   layer->SetShouldFlattenTransform(should_flatten_transform_);
-  layer->SetIs3dSorted(is_3d_sorted_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
 
@@ -523,6 +523,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetScrollOffsetAndDelta(
       scroll_offset_, layer->ScrollDelta() - layer->sent_scroll_delta());
   layer->SetSentScrollDelta(gfx::Vector2d());
+  layer->Set3dSortingContextId(sorting_context_id_);
 
   LayerImpl* scroll_parent = NULL;
   if (scroll_parent_) {
@@ -631,7 +632,7 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
   result->Set("DrawTransform", list);
 
   result->SetBoolean("DrawsContent", draws_content_);
-  result->SetBoolean("Is3DSorted", is_3d_sorted_);
+  result->SetBoolean("Is3dSorted", Is3dSorted());
   result->SetDouble("Opacity", opacity());
   result->SetBoolean("ContentsOpaque", contents_opaque_);
 
@@ -974,11 +975,10 @@ void LayerImpl::SetShouldFlattenTransform(bool flatten) {
   NoteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::SetIs3dSorted(bool sorted) {
-  if (is_3d_sorted_ == sorted)
+void LayerImpl::Set3dSortingContextId(int id) {
+  if (id == sorting_context_id_)
     return;
-
-  is_3d_sorted_ = sorted;
+  sorting_context_id_ = id;
   NoteLayerPropertyChangedForSubtree();
 }
 

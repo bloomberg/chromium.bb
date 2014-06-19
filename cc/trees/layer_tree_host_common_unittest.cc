@@ -4000,8 +4000,8 @@ TEST_F(LayerTreeHostCommonTest,
                                true,
                                false);
 
-  front_facing_surface->SetIs3dSorted(true);
-  back_facing_surface->SetIs3dSorted(true);
+  front_facing_surface->Set3dSortingContextId(1);
+  back_facing_surface->Set3dSortingContextId(1);
 
   RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
@@ -6976,8 +6976,8 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
                                false);
   child3->SetDrawsContent(true);
 
-  child2->SetIs3dSorted(true);
-  child3->SetIs3dSorted(true);
+  child2->Set3dSortingContextId(1);
+  child3->Set3dSortingContextId(1);
 
   child2->AddChild(child3.Pass());
   child1->AddChild(child2.Pass());
@@ -7037,7 +7037,7 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
                                false);
 
   root->SetShouldFlattenTransform(false);
-  root->SetIs3dSorted(true);
+  root->Set3dSortingContextId(1);
   render_surface->SetDoubleSided(false);
   render_surface->SetForceRenderSurface(true);
 
@@ -7665,7 +7665,7 @@ TEST_F(LayerTreeHostCommonTest, DoNotClobberSorting) {
                                true);
 
   scroll_child->SetShouldFlattenTransform(false);
-  scroll_child->SetIs3dSorted(true);
+  scroll_child->Set3dSortingContextId(1);
 
   scroll_child->AddChild(top_content.Pass());
   scroll_child->AddChild(bottom_content.Pass());

@@ -157,7 +157,8 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                             draw_properties().clip_rect,
                             draw_properties().is_clipped,
                             draw_properties().opacity,
-                            blend_mode());
+                            blend_mode(),
+                            sorting_context_id_);
 
   gfx::Rect rect = scaled_visible_content_rect;
 

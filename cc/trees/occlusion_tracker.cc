@@ -131,7 +131,7 @@ static inline bool SurfaceTransformsToScreenKnown(const RenderSurfaceImpl* rs) {
 }
 
 static inline bool LayerIsInUnsorted3dRenderingContext(const Layer* layer) {
-  return layer->is_3d_sorted();
+  return layer->Is3dSorted();
 }
 static inline bool LayerIsInUnsorted3dRenderingContext(const LayerImpl* layer) {
   return false;

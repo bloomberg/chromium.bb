@@ -130,8 +130,10 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
     new_layer->SetHaveScrollEventHandlers(scroll_handler);
 
   bool is_3d_sorted;
-  if (dict->GetBoolean("Is3DSorted", &is_3d_sorted))
-    new_layer->SetIs3dSorted(is_3d_sorted);
+  if (dict->GetBoolean("Is3DSorted", &is_3d_sorted)) {
+    // A non-zero context ID will put the layer into a 3D sorting context
+    new_layer->Set3dSortingContextId(1);
+  }
 
   if (dict->HasKey("TouchRegion")) {
     success &= dict->GetList("TouchRegion", &list);

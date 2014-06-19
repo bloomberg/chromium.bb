@@ -112,7 +112,8 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
                             outer_rect,
                             false,
                             1.0,
-                            SkXfermode::kSrcOver_Mode);
+                            SkXfermode::kSrcOver_Mode,
+                            0);
   scoped_ptr<SolidColorDrawQuad> outer_quad = SolidColorDrawQuad::Create();
   outer_quad->SetNew(
       shared_quad_state, outer_rect, outer_rect, SK_ColorYELLOW, false);
@@ -198,7 +199,8 @@ TEST_F(SoftwareRendererTest, TileQuad) {
                             outer_rect,
                             false,
                             1.0,
-                            SkXfermode::kSrcOver_Mode);
+                            SkXfermode::kSrcOver_Mode,
+                            0);
   scoped_ptr<TileDrawQuad> outer_quad = TileDrawQuad::Create();
   outer_quad->SetNew(shared_quad_state,
                      outer_rect,
@@ -281,7 +283,8 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
                             tile_rect,
                             false,
                             1.0,
-                            SkXfermode::kSrcOver_Mode);
+                            SkXfermode::kSrcOver_Mode,
+                            0);
   scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
   quad->SetNew(shared_quad_state,
                tile_rect,

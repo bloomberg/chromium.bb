@@ -35,7 +35,8 @@ class CC_EXPORT SharedQuadState {
               const gfx::Rect& clip_rect,
               bool is_clipped,
               float opacity,
-              SkXfermode::Mode blend_mode);
+              SkXfermode::Mode blend_mode,
+              int sorting_context_id);
   scoped_ptr<base::Value> AsValue() const;
 
   // Transforms from quad's original content space to its target content space.
@@ -49,6 +50,7 @@ class CC_EXPORT SharedQuadState {
   bool is_clipped;
   float opacity;
   SkXfermode::Mode blend_mode;
+  int sorting_context_id;
 };
 
 }  // namespace cc

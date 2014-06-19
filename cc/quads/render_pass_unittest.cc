@@ -86,7 +86,8 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
                        gfx::Rect(),
                        false,
                        1,
-                       SkXfermode::kSrcOver_Mode);
+                       SkXfermode::kSrcOver_Mode,
+                       0);
 
   scoped_ptr<CheckerboardDrawQuad> checkerboard_quad =
       CheckerboardDrawQuad::Create();
@@ -136,7 +137,8 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
                         gfx::Rect(),
                         false,
                         1,
-                        SkXfermode::kSrcOver_Mode);
+                        SkXfermode::kSrcOver_Mode,
+                        0);
 
   scoped_ptr<CheckerboardDrawQuad> checkerboard_quad1 =
       CheckerboardDrawQuad::Create();
@@ -162,7 +164,8 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
                         gfx::Rect(),
                         false,
                         1,
-                        SkXfermode::kSrcOver_Mode);
+                        SkXfermode::kSrcOver_Mode,
+                        0);
 
   scoped_ptr<CheckerboardDrawQuad> checkerboard_quad3 =
       CheckerboardDrawQuad::Create();
@@ -203,7 +206,8 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
                                gfx::Rect(),
                                false,
                                1,
-                               SkXfermode::kSrcOver_Mode);
+                               SkXfermode::kSrcOver_Mode,
+                               0);
 
   scoped_ptr<CheckerboardDrawQuad> contrib_quad =
       CheckerboardDrawQuad::Create();
@@ -262,7 +266,8 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
                         gfx::Rect(),
                         false,
                         1,
-                        SkXfermode::kSrcOver_Mode);
+                        SkXfermode::kSrcOver_Mode,
+                        0);
 
   scoped_ptr<CheckerboardDrawQuad> checkerboard_quad1 =
       CheckerboardDrawQuad::Create();
@@ -280,7 +285,8 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
                         gfx::Rect(),
                         false,
                         1,
-                        SkXfermode::kSrcOver_Mode);
+                        SkXfermode::kSrcOver_Mode,
+                        0);
 
   // A second shared state with no quads.
   SharedQuadState* shared_state3 = pass->CreateAndAppendSharedQuadState();
@@ -290,7 +296,8 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
                         gfx::Rect(),
                         false,
                         1,
-                        SkXfermode::kSrcOver_Mode);
+                        SkXfermode::kSrcOver_Mode,
+                        0);
 
   // A last shared state with a quad again.
   SharedQuadState* shared_state4 = pass->CreateAndAppendSharedQuadState();
@@ -300,7 +307,8 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
                         gfx::Rect(),
                         false,
                         1,
-                        SkXfermode::kSrcOver_Mode);
+                        SkXfermode::kSrcOver_Mode,
+                        0);
 
   scoped_ptr<CheckerboardDrawQuad> checkerboard_quad2 =
       CheckerboardDrawQuad::Create();

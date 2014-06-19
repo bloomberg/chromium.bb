@@ -111,17 +111,17 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOffAxis) {
   background->AddChild(blur);
 
   background->SetShouldFlattenTransform(false);
-  background->SetIs3dSorted(true);
+  background->Set3dSortingContextId(1);
   green->SetShouldFlattenTransform(false);
-  green->SetIs3dSorted(true);
+  green->Set3dSortingContextId(1);
   gfx::Transform background_transform;
   background_transform.ApplyPerspectiveDepth(200.0);
   background->SetTransform(background_transform);
 
   blur->SetShouldFlattenTransform(false);
-  blur->SetIs3dSorted(true);
+  blur->Set3dSortingContextId(1);
   for (size_t i = 0; i < blur->children().size(); ++i)
-    blur->children()[i]->SetIs3dSorted(true);
+    blur->children()[i]->Set3dSortingContextId(1);
 
   gfx::Transform blur_transform;
   blur_transform.Translate(55.0, 65.0);

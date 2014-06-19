@@ -327,16 +327,16 @@ template <typename LayerType> static inline bool IsRootLayer(LayerType* layer) {
 
 template <typename LayerType>
 static inline bool LayerIsInExisting3DRenderingContext(LayerType* layer) {
-  return layer->is_3d_sorted() && layer->parent() &&
-         layer->parent()->is_3d_sorted();
+  return layer->Is3dSorted() && layer->parent() &&
+         layer->parent()->Is3dSorted();
 }
 
 template <typename LayerType>
 static bool IsRootLayerOfNewRenderingContext(LayerType* layer) {
   if (layer->parent())
-    return !layer->parent()->is_3d_sorted() && layer->is_3d_sorted();
+    return !layer->parent()->Is3dSorted() && layer->Is3dSorted();
 
-  return layer->is_3d_sorted();
+  return layer->Is3dSorted();
 }
 
 template <typename LayerType>
@@ -2365,7 +2365,7 @@ static void CalculateDrawPropertiesInternal(
   // drawn from back to front. If the preserves-3d property is also set on the
   // parent then skip the sorting as the parent will sort all the descendants
   // anyway.
-  if (globals.layer_sorter && descendants.size() && layer->is_3d_sorted() &&
+  if (globals.layer_sorter && descendants.size() && layer->Is3dSorted() &&
       !LayerIsInExisting3DRenderingContext(layer)) {
     SortLayers(descendants.begin() + sorting_start_index,
                descendants.end(),

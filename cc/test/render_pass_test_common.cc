@@ -80,7 +80,8 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                        rect,
                        false,
                        1,
-                       SkXfermode::kSrcOver_Mode);
+                       SkXfermode::kSrcOver_Mode,
+                       0);
 
   scoped_ptr<CheckerboardDrawQuad> checkerboard_quad =
       CheckerboardDrawQuad::Create();
@@ -197,7 +198,8 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                        rect,
                        false,
                        1,
-                       SkXfermode::kSrcOver_Mode);
+                       SkXfermode::kSrcOver_Mode,
+                       0);
 
   scoped_ptr<TileDrawQuad> tile_quad = TileDrawQuad::Create();
   tile_quad->SetNew(shared_state2,

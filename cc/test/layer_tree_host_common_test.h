@@ -43,7 +43,7 @@ class LayerTreeHostCommonTestBase {
     layer->SetPosition(position);
     layer->SetBounds(bounds);
     layer->SetShouldFlattenTransform(flatten_transform);
-    layer->SetIs3dSorted(is_3d_sorted);
+    layer->Set3dSortingContextId(is_3d_sorted ? 1 : 0);
   }
 
   void SetLayerPropertiesForTesting(Layer* layer,

@@ -40,7 +40,8 @@ SharedQuadState* CreateAndAppendTestSharedQuadState(
                        clip_rect,
                        is_clipped,
                        opacity,
-                       blend_mode);
+                       blend_mode,
+                       0);
   return shared_state;
 }
 

@@ -40,7 +40,8 @@ void AddTestSurfaceQuad(TestRenderPass* pass,
                             clip_rect,
                             is_clipped,
                             opacity,
-                            blend_mode);
+                            blend_mode,
+                            0);
 
   scoped_ptr<SurfaceDrawQuad> surface_quad = SurfaceDrawQuad::Create();
   gfx::Rect quad_rect = gfx::Rect(surface_size);
@@ -60,7 +61,8 @@ void AddTestRenderPassQuad(TestRenderPass* pass,
                        output_rect,
                        false,
                        1,
-                       SkXfermode::kSrcOver_Mode);
+                       SkXfermode::kSrcOver_Mode,
+                       0);
   scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
   quad->SetNew(shared_state,
                output_rect,

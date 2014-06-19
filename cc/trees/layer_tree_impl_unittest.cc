@@ -983,7 +983,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
                                false);
   root->SetDrawsContent(true);
   root->SetShouldFlattenTransform(false);
-  root->SetIs3dSorted(true);
+  root->Set3dSortingContextId(1);
   {
     // child 1 and child2 are initialized to overlap between x=50 and x=60.
     // grand_child is set to overlap both child1 and child2 between y=50 and
@@ -1009,7 +1009,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
                                  false);
     child1->SetDrawsContent(true);
     child1->SetShouldFlattenTransform(false);
-    child1->SetIs3dSorted(true);
+    child1->Set3dSortingContextId(1);
 
     position = gfx::PointF(50.f, 10.f);
     bounds = gfx::Size(50, 50);
@@ -1024,7 +1024,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
                                  false);
     child2->SetDrawsContent(true);
     child2->SetShouldFlattenTransform(false);
-    child2->SetIs3dSorted(true);
+    child2->Set3dSortingContextId(1);
 
     // Remember that grand_child is positioned with respect to its parent (i.e.
     // child1).  In screen space, the intended position is (10, 50), with size

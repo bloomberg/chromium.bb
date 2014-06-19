@@ -42,6 +42,7 @@ Layer::Layer()
       // Layer IDs start from 1.
       layer_id_(g_next_layer_id.GetNext() + 1),
       ignore_set_needs_commit_(false),
+      sorting_context_id_(0),
       parent_(NULL),
       layer_tree_host_(NULL),
       scroll_clip_layer_id_(INVALID_ID),
@@ -61,7 +62,6 @@ Layer::Layer()
       use_parent_backface_visibility_(false),
       draw_checkerboard_for_missing_tiles_(false),
       force_render_surface_(false),
-      is_3d_sorted_(false),
       transform_is_invertible_(true),
       background_color_(0),
       opacity_(1.f),
@@ -756,11 +756,11 @@ void Layer::SetDoubleSided(bool double_sided) {
   SetNeedsCommit();
 }
 
-void Layer::SetIs3dSorted(bool sorted) {
+void Layer::Set3dSortingContextId(int id) {
   DCHECK(IsPropertyChangeAllowed());
-  if (is_3d_sorted_ == sorted)
+  if (id == sorting_context_id_)
     return;
-  is_3d_sorted_ = sorted;
+  sorting_context_id_ = id;
   SetNeedsCommit();
 }
 
@@ -894,11 +894,11 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
       IsContainerForFixedPositionLayers());
   layer->SetPositionConstraint(position_constraint_);
   layer->SetShouldFlattenTransform(should_flatten_transform_);
-  layer->SetIs3dSorted(is_3d_sorted_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   if (!layer->TransformIsAnimatingOnImplOnly() && !TransformIsAnimating())
     layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
   DCHECK(!(TransformIsAnimating() && layer->TransformIsAnimatingOnImplOnly()));
+  layer->Set3dSortingContextId(sorting_context_id_);
 
   layer->SetScrollClipLayer(scroll_clip_layer_id_);
   layer->set_user_scrollable_horizontal(user_scrollable_horizontal_);

@@ -212,7 +212,7 @@ void WebLayerImpl::setShouldFlattenTransform(bool flatten) {
 }
 
 void WebLayerImpl::setRenderingContext(int context) {
-  layer_->SetIs3dSorted(context != 0);
+  layer_->Set3dSortingContextId(context);
 }
 
 void WebLayerImpl::setUseParentBackfaceVisibility(

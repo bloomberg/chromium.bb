@@ -193,7 +193,7 @@ class LayerSorterMainTest : public CalcDrawPropsImplTest {
   }
 
   void BuildLayerImplList(LayerImpl* layer, LayerImplList* list) {
-    if (layer->is_3d_sorted()) {
+    if (layer->Is3dSorted()) {
       list->push_back(layer);
     }
 

@@ -1903,9 +1903,9 @@ class OcclusionTrackerTestUnsorted3dLayers
                                  gfx::Size(100, 100),
                                  true);
     parent->SetShouldFlattenTransform(false);
-    parent->SetIs3dSorted(true);
-    child1->SetIs3dSorted(true);
-    child2->SetIs3dSorted(true);
+    parent->Set3dSortingContextId(1);
+    child1->Set3dSortingContextId(1);
+    child2->Set3dSortingContextId(1);
 
     this->CalcDrawEtc(parent);
 
@@ -1949,8 +1949,8 @@ class OcclusionTrackerTestPerspectiveTransform
                                  gfx::Size(200, 200),
                                  true);
     container->SetShouldFlattenTransform(false);
-    container->SetIs3dSorted(true);
-    layer->SetIs3dSorted(true);
+    container->Set3dSortingContextId(1);
+    layer->Set3dSortingContextId(1);
     layer->SetShouldFlattenTransform(false);
 
     this->CalcDrawEtc(parent);
@@ -1994,9 +1994,9 @@ class OcclusionTrackerTestPerspectiveTransformBehindCamera
     typename Types::ContentLayerType* layer = this->CreateDrawingLayer(
         container, transform, gfx::PointF(), gfx::Size(500, 500), true);
     container->SetShouldFlattenTransform(false);
-    container->SetIs3dSorted(true);
+    container->Set3dSortingContextId(1);
     layer->SetShouldFlattenTransform(false);
-    layer->SetIs3dSorted(true);
+    layer->Set3dSortingContextId(1);
     this->CalcDrawEtc(parent);
 
     TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
@@ -2037,9 +2037,9 @@ class OcclusionTrackerTestLayerBehindCameraDoesNotOcclude
     typename Types::ContentLayerType* layer = this->CreateDrawingLayer(
         parent, transform, gfx::PointF(), gfx::Size(100, 100), true);
     parent->SetShouldFlattenTransform(false);
-    parent->SetIs3dSorted(true);
+    parent->Set3dSortingContextId(1);
     layer->SetShouldFlattenTransform(false);
-    layer->SetIs3dSorted(true);
+    layer->Set3dSortingContextId(1);
     this->CalcDrawEtc(parent);
 
     TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
@@ -2078,9 +2078,9 @@ class OcclusionTrackerTestLargePixelsOccludeInsideClipRect
     typename Types::ContentLayerType* layer = this->CreateDrawingLayer(
         parent, transform, gfx::PointF(), gfx::Size(100, 100), true);
     parent->SetShouldFlattenTransform(false);
-    parent->SetIs3dSorted(true);
+    parent->Set3dSortingContextId(1);
     layer->SetShouldFlattenTransform(false);
-    layer->SetIs3dSorted(true);
+    layer->Set3dSortingContextId(1);
     this->CalcDrawEtc(parent);
 
     TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
