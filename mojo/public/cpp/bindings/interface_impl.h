@@ -7,6 +7,7 @@
 
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/interface_impl_internal.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
@@ -57,9 +58,10 @@ class InterfaceImpl : public internal::InterfaceImplBase<Interface> {
 //
 // Before returning, the instance's OnConnectionEstablished method is called.
 template <typename Impl>
-Impl* BindToPipe(Impl* instance,
-                 ScopedMessagePipeHandle handle,
-                 const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
+Impl* BindToPipe(
+    Impl* instance,
+    ScopedMessagePipeHandle handle,
+    const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
   instance->internal_state()->Bind(handle.Pass(), waiter);
   return instance;
 }
@@ -75,9 +77,10 @@ Impl* BindToPipe(Impl* instance,
 //
 // Before returning, the instance's OnConnectionEstablished method is called.
 template <typename Impl, typename Interface>
-Impl* BindToProxy(Impl* instance,
-                  InterfacePtr<Interface>* ptr,
-                  const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
+Impl* BindToProxy(
+    Impl* instance,
+    InterfacePtr<Interface>* ptr,
+    const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
   instance->internal_state()->BindProxy(ptr, waiter);
   return instance;
 }
@@ -94,9 +97,10 @@ Impl* BindToProxy(Impl* instance,
 // Before returning, the instance will receive a SetClient call, providing it
 // with a proxy to the client on the other end of the pipe.
 template <typename Impl, typename Interface>
-Impl* BindToRequest(Impl* instance,
-                    InterfaceRequest<Interface>* request,
-                    const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
+Impl* BindToRequest(
+    Impl* instance,
+    InterfaceRequest<Interface>* request,
+    const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
   return BindToPipe(instance, request->PassMessagePipe(), waiter);
 }
 

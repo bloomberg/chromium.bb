@@ -394,8 +394,6 @@
         'mojo_environment_chromium_impl',
       ],
       'sources': [
-        'environment/default_async_waiter.cc',
-        'environment/default_logger.cc',
         'environment/environment.cc',
       ],
       'include_dirs': [

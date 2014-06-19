@@ -51,9 +51,14 @@ MojoLogLevel GetMinimumLogLevel() {
   return ChromiumToMojoLogLevel(logging::GetMinLogLevel());
 }
 
+void SetMinimumLogLevel(MojoLogLevel log_level) {
+  logging::SetMinLogLevel(MojoToChromiumLogLevel(log_level));
+}
+
 const MojoLogger kDefaultLogger = {
   LogMessage,
-  GetMinimumLogLevel
+  GetMinimumLogLevel,
+  SetMinimumLogLevel
 };
 
 }  // namespace

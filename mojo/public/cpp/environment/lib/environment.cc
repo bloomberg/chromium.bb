@@ -4,23 +4,57 @@
 
 #include "mojo/public/cpp/environment/environment.h"
 
-#include "mojo/public/cpp/environment/lib/default_logger_internal.h"
+#include <stddef.h>
+
+#include "mojo/public/c/environment/logger.h"
+#include "mojo/public/cpp/environment/lib/default_async_waiter.h"
+#include "mojo/public/cpp/environment/lib/default_logger.h"
 #include "mojo/public/cpp/utility/run_loop.h"
 
 namespace mojo {
 
-Environment::Environment() {
-  SetMinimumLogLevel(MOJO_LOG_LEVEL_INFO);
+namespace {
+
+const MojoAsyncWaiter* g_default_async_waiter = NULL;
+const MojoLogger* g_default_logger = NULL;
+
+void Init(const MojoAsyncWaiter* default_async_waiter,
+          const MojoLogger* default_logger) {
+  g_default_async_waiter =
+      default_async_waiter ? default_async_waiter :
+                             &internal::kDefaultAsyncWaiter;
+  g_default_logger = default_logger ? default_logger :
+                                      &internal::kDefaultLogger;
+
   RunLoop::SetUp();
+}
+
+}  // namespace
+
+Environment::Environment() {
+  Init(NULL, NULL);
+}
+
+Environment::Environment(const MojoAsyncWaiter* default_async_waiter,
+                         const MojoLogger* default_logger) {
+  Init(default_async_waiter, default_logger);
 }
 
 Environment::~Environment() {
   RunLoop::TearDown();
+
+  // TODO(vtl): Maybe we should allow nesting, and restore previous default
+  // async waiters and loggers?
 }
 
 // static
-void Environment::SetMinimumLogLevel(MojoLogLevel minimum_log_level) {
-  internal::SetMinimumLogLevel(minimum_log_level);
+const MojoAsyncWaiter* Environment::GetDefaultAsyncWaiter() {
+  return g_default_async_waiter;
+}
+
+// static
+const MojoLogger* Environment::GetDefaultLogger() {
+  return g_default_logger;
 }
 
 }  // namespace mojo

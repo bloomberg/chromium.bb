@@ -4,6 +4,9 @@
 
 #include "mojo/public/cpp/environment/environment.h"
 
+#include "mojo/environment/default_async_waiter_impl.h"
+#include "mojo/environment/default_logger_impl.h"
+
 namespace mojo {
 
 // These methods are intentionally not implemented so that there is a link
@@ -12,8 +15,22 @@ namespace mojo {
 Environment::Environment() {
 }
 
+Environment::Environment(const MojoAsyncWaiter* default_async_waiter,
+                         const MojoLogger* default_logger) {
+}
+
 Environment::~Environment() {
 }
 #endif
+
+// static
+const MojoAsyncWaiter* Environment::GetDefaultAsyncWaiter() {
+  return internal::GetDefaultAsyncWaiterImpl();
+}
+
+// static
+const MojoLogger* Environment::GetDefaultLogger() {
+  return internal::GetDefaultLoggerImpl();
+}
 
 }  // namespace mojo

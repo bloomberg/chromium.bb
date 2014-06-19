@@ -5,9 +5,10 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
 
+#include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/bindings/lib/message_queue.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/environment/default_async_waiter.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
@@ -25,8 +26,9 @@ namespace internal {
 class Connector : public MessageReceiver {
  public:
   // The Connector takes ownership of |message_pipe|.
-  explicit Connector(ScopedMessagePipeHandle message_pipe,
-                     const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter());
+  explicit Connector(
+      ScopedMessagePipeHandle message_pipe,
+      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter());
   virtual ~Connector();
 
   // Sets the receiver to handle messages read from the message pipe.  The

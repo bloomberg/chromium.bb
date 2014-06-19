@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/environment/default_logger.h"
+#include "mojo/public/c/environment/logger.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -11,7 +11,7 @@ namespace {
 
 TEST(LoggerTest, Basic) {
   Environment environment;
-  const MojoLogger* const logger = GetDefaultLogger();
+  const MojoLogger* const logger = Environment::GetDefaultLogger();
 
   logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE-1, "Logged at VERBOSE-1 level");
   logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE, "Logged at VERBOSE level");
@@ -27,12 +27,12 @@ TEST(LoggerTest, Basic) {
 
 TEST(LoggerTest, LogLevels) {
   Environment environment;
-  const MojoLogger* const logger = GetDefaultLogger();
+  const MojoLogger* const logger = Environment::GetDefaultLogger();
 
   for (MojoLogLevel log_level = MOJO_LOG_LEVEL_VERBOSE-1;
        log_level <= MOJO_LOG_LEVEL_FATAL+1;
        log_level++) {
-    Environment::SetMinimumLogLevel(log_level);
+    logger->SetMinimumLogLevel(log_level);
 
     if (log_level <= MOJO_LOG_LEVEL_FATAL)
       EXPECT_EQ(log_level, logger->GetMinimumLogLevel());

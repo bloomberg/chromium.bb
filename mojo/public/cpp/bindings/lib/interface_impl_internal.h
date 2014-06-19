@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/message_header_validator.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
@@ -44,7 +45,7 @@ class InterfaceImplState : public ErrorHandler {
 
   void BindProxy(
       InterfacePtr<Interface>* ptr,
-      const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
+      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     MessagePipe pipe;
     ptr->Bind(pipe.handle0.Pass(), waiter);
     Bind(pipe.handle1.Pass(), waiter);

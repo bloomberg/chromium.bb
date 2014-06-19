@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "mojo/public/cpp/environment/default_async_waiter.h"
+#include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -42,7 +42,7 @@ class TestAsyncWaitCallback {
 MojoAsyncWaitID CallAsyncWait(const Handle& handle,
                               MojoHandleSignals signals,
                               TestAsyncWaitCallback* callback) {
-  return GetDefaultAsyncWaiter()->AsyncWait(
+  return Environment::GetDefaultAsyncWaiter()->AsyncWait(
       handle.value(),
       signals,
       MOJO_DEADLINE_INDEFINITE,
@@ -51,7 +51,7 @@ MojoAsyncWaitID CallAsyncWait(const Handle& handle,
 }
 
 void CallCancelWait(MojoAsyncWaitID wait_id) {
-  GetDefaultAsyncWaiter()->CancelWait(wait_id);
+  Environment::GetDefaultAsyncWaiter()->CancelWait(wait_id);
 }
 
 class AsyncWaiterTest : public testing::Test {

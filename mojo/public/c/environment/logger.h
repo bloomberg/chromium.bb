@@ -27,7 +27,8 @@ const MojoLogLevel MOJO_LOG_LEVEL_FATAL = 3;
 #endif
 
 // Structure with basic logging functions (on top of which more friendly logging
-// macros may be built). The functions are thread-safe.
+// macros may be built). The functions are thread-safe, except for
+// |SetMinimumLogLevel()| (see below).
 struct MojoLogger {
   // Logs |message| at level |log_level| if |log_level| is at least the current
   // minimum log level. If |log_level| is |MOJO_LOG_LEVEL_FATAL| (or greater),
@@ -39,6 +40,15 @@ struct MojoLogger {
   // logging messages below the minimum log level, this may be used to avoid
   // extra work.)
   MojoLogLevel (*GetMinimumLogLevel)(void);
+
+  // Sets the minimum log level (see above) to the lesser of |minimum_log_level|
+  // and |MOJO_LOG_LEVEL_FATAL|.
+  //
+  // Warning: This function may not be thread-safe, and should not be called
+  // concurrently with other |MojoLogger| functions. (In some environments --
+  // such as Chromium -- that share a logger across applications, this may mean
+  // that it is almost never safe to call this.)
+  void (*SetMinimumLogLevel)(MojoLogLevel minimum_log_level);
 };
 
 #endif  // MOJO_PUBLIC_C_ENVIRONMENT_LOGGER_H_

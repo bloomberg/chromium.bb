@@ -6,14 +6,14 @@
 #define MOJO_PUBLIC_CPP_GLES2_GLES2_H_
 
 #include "mojo/public/c/gles2/gles2.h"
-#include "mojo/public/cpp/environment/default_async_waiter.h"
+#include "mojo/public/cpp/environment/environment.h"
 
 namespace mojo {
 
 class GLES2Initializer {
  public:
-  explicit GLES2Initializer(
-      const MojoAsyncWaiter* async_waiter = GetDefaultAsyncWaiter()) {
+  explicit GLES2Initializer(const MojoAsyncWaiter* async_waiter =
+                                Environment::GetDefaultAsyncWaiter()) {
     MojoGLES2Initialize(async_waiter);
   }
   ~GLES2Initializer() { MojoGLES2Terminate(); }

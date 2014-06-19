@@ -15,7 +15,7 @@
 #include "mojo/embedder/embedder.h"
 #include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/c/system/core.h"
-#include "mojo/public/cpp/environment/default_async_waiter.h"
+#include "mojo/public/cpp/environment/environment.h"
 
 namespace {
 
@@ -329,11 +329,8 @@ static jobject AsyncWait(JNIEnv* env,
       new AsyncWaitCallbackData(env, jcaller, callback);
   MojoAsyncWaitID cancel_id;
   if (static_cast<MojoHandle>(mojo_handle) != MOJO_HANDLE_INVALID) {
-    cancel_id = mojo::GetDefaultAsyncWaiter()->AsyncWait(mojo_handle,
-                                                         signals,
-                                                         deadline,
-                                                         AsyncWaitCallback,
-                                                         callback_data);
+    cancel_id = mojo::Environment::GetDefaultAsyncWaiter()->AsyncWait(
+        mojo_handle, signals, deadline, AsyncWaitCallback, callback_data);
   } else {
     cancel_id = kInvalidHandleCancelID;
     base::MessageLoop::current()->PostTask(
@@ -360,7 +357,7 @@ static void CancelAsyncWait(JNIEnv* env,
   }
   scoped_ptr<AsyncWaitCallbackData> deleter(
       reinterpret_cast<AsyncWaitCallbackData*>(data_ptr));
-  mojo::GetDefaultAsyncWaiter()->CancelWait(id);
+  mojo::Environment::GetDefaultAsyncWaiter()->CancelWait(id);
 }
 
 bool RegisterCoreImpl(JNIEnv* env) {

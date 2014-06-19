@@ -5,7 +5,7 @@
 #include "mojo/bindings/js/waiting_callback.h"
 
 #include "gin/per_context_data.h"
-#include "mojo/public/cpp/environment/default_async_waiter.h"
+#include "mojo/public/cpp/environment/environment.h"
 
 namespace mojo {
 namespace js {
@@ -28,7 +28,7 @@ gin::Handle<WaitingCallback> WaitingCallback::Create(
     MojoHandleSignals signals) {
   gin::Handle<WaitingCallback> waiting_callback =
       gin::CreateHandle(isolate, new WaitingCallback(isolate, callback));
-  waiting_callback->wait_id_ = GetDefaultAsyncWaiter()->AsyncWait(
+  waiting_callback->wait_id_ = Environment::GetDefaultAsyncWaiter()->AsyncWait(
       handle.value(),
       signals,
       MOJO_DEADLINE_INDEFINITE,
@@ -41,7 +41,7 @@ void WaitingCallback::Cancel() {
   if (!wait_id_)
     return;
 
-  GetDefaultAsyncWaiter()->CancelWait(wait_id_);
+  Environment::GetDefaultAsyncWaiter()->CancelWait(wait_id_);
   wait_id_ = 0;
 }
 

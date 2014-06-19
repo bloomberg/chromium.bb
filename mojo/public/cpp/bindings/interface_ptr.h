@@ -11,6 +11,7 @@
 
 #include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/bindings/lib/interface_ptr_internal.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
@@ -55,8 +56,9 @@ class InterfacePtr {
   // ResetAndReturnMessagePipe. Then create a new InterfacePtr<..> on another
   // thread, and bind the new InterfacePtr<..> to the message pipe on that
   // thread.
-  void Bind(ScopedMessagePipeHandle handle,
-            const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
+  void Bind(
+      ScopedMessagePipeHandle handle,
+      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     reset();
     internal_state_.ConfigureProxy(handle.Pass(), waiter);
   }
@@ -110,7 +112,7 @@ class InterfacePtr {
 template <typename Interface>
 InterfacePtr<Interface> MakeProxy(
     ScopedMessagePipeHandle handle,
-    const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
+    const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
   InterfacePtr<Interface> ptr;
   if (handle.is_valid())
     ptr.Bind(handle.Pass(), waiter);

@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/lib/connector.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/shared_data.h"
+#include "mojo/public/cpp/environment/environment.h"
 
 namespace mojo {
 namespace internal {
@@ -18,7 +19,7 @@ class Router : public MessageReceiverWithResponder {
  public:
   Router(ScopedMessagePipeHandle message_pipe,
          FilterChain filters,
-         const MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter());
+         const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter());
   virtual ~Router();
 
   // Sets the receiver to handle messages read from the message pipe that do

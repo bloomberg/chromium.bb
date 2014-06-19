@@ -14,7 +14,6 @@
 #include "gin/wrappable.h"
 #include "mojo/bindings/js/handle.h"
 #include "mojo/bindings/js/waiting_callback.h"
-#include "mojo/public/cpp/environment/default_async_waiter.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
