@@ -33,7 +33,7 @@ private:
     virtual void startListening() OVERRIDE;
     virtual void stopListening() OVERRIDE;
 
-    RefPtr<BatteryStatus> m_batteryStatus;
+    RefPtrWillBePersistent<BatteryStatus> m_batteryStatus;
 };
 
 }

@@ -76,11 +76,13 @@ void BatteryManager::didUpdateData()
     ASSERT(RuntimeEnabledFeatures::batteryStatusEnabled());
     ASSERT(m_state != NotStarted);
 
-    RefPtr<BatteryStatus> oldStatus = m_batteryStatus;
+    RefPtrWillBeRawPtr<BatteryStatus> oldStatus = m_batteryStatus;
     m_batteryStatus = BatteryDispatcher::instance().latestData();
 
+#if !ENABLE(OILPAN)
     // BatteryDispatcher also holds a reference to m_batteryStatus.
     ASSERT(m_batteryStatus->refCount() > 1);
+#endif
 
     if (m_state == Pending) {
         ASSERT(m_resolver);
@@ -136,6 +138,12 @@ void BatteryManager::stop()
 {
     m_hasEventListener = false;
     stopUpdating();
+}
+
+void BatteryManager::trace(Visitor* visitor)
+{
+    visitor->trace(m_batteryStatus);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 } // namespace WebCore

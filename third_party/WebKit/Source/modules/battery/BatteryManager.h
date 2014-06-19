@@ -53,6 +53,8 @@ public:
     virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     enum State {
         NotStarted,
@@ -63,11 +65,10 @@ private:
     explicit BatteryManager(ExecutionContext*);
 
     RefPtr<ScriptPromiseResolverWithContext> m_resolver;
-    RefPtr<BatteryStatus> m_batteryStatus;
+    RefPtrWillBeMember<BatteryStatus> m_batteryStatus;
     State m_state;
 };
 
 }
 
 #endif // BatteryManager_h
-

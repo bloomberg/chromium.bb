@@ -34,7 +34,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
