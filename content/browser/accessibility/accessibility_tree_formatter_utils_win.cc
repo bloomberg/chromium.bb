@@ -42,11 +42,11 @@ AccessibilityRoleStateMap* AccessibilityRoleStateMap::GetInstance() {
 
 AccessibilityRoleStateMap::AccessibilityRoleStateMap() {
 // Convenience macros for generating readable strings.
-#define IA_ROLE_MAP(x) ia_role_string_map[x] = L#x;  \
-                       ia2_role_string_map[x] = L#x;
-#define IA2_ROLE_MAP(x) ia2_role_string_map[x] = L#x;
-#define IA_STATE_MAP(x) ia_state_string_map[STATE_SYSTEM_##x] = L#x;
-#define IA2_STATE_MAP(x) ia2_state_string_map[x] = L#x;
+#define IA_ROLE_MAP(x) ia_role_string_map[x] = L###x;  \
+                       ia2_role_string_map[x] = L###x;
+#define IA2_ROLE_MAP(x) ia2_role_string_map[x] = L###x;
+#define IA_STATE_MAP(x) ia_state_string_map[STATE_SYSTEM_##x] = L###x;
+#define IA2_STATE_MAP(x) ia2_state_string_map[x] = L###x;
 
   // MSAA / IAccessible roles. Each one of these is also a valid
   // IAccessible2 role, the IA_ROLE_MAP macro adds it to both.
