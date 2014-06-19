@@ -40,6 +40,12 @@ class OzonePlatformTest : public OzonePlatform {
   virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
     return cursor_factory_ozone_.get();
   }
+  virtual GpuPlatformSupport* GetGpuPlatformSupport() OVERRIDE {
+    return NULL;  // no GPU support
+  }
+  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() OVERRIDE {
+    return NULL;  // no GPU support
+  }
 
 #if defined(OS_CHROMEOS)
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
