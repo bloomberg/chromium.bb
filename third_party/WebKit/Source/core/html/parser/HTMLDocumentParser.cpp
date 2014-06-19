@@ -85,14 +85,17 @@ public:
     // WebThreadedDataReceiver
     virtual void acceptData(const char* data, int dataLength) OVERRIDE FINAL
     {
-        ASSERT(backgroundThread()->isCurrentThread());
+        ASSERT(backgroundThread() && backgroundThread()->isCurrentThread());
         if (m_backgroundParser.get())
             m_backgroundParser.get()->appendRawBytesFromParserThread(data, dataLength);
     }
 
     virtual blink::WebThread* backgroundThread() OVERRIDE FINAL
     {
-        return &HTMLParserThread::shared()->platformThread();
+        if (HTMLParserThread::shared())
+            return &HTMLParserThread::shared()->platformThread();
+
+        return 0;
     }
 
 private:
