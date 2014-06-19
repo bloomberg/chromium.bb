@@ -46,17 +46,16 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
       const autofill::PasswordForm& form,
       password_manager::PasswordStoreChangeList* changes) OVERRIDE;
   virtual bool RemoveLogin(const autofill::PasswordForm& form) OVERRIDE;
-  virtual bool RemoveLoginsCreatedBetween(base::Time delete_begin,
-                                          base::Time delete_end) OVERRIDE;
+  virtual bool RemoveLoginsCreatedBetween(
+      base::Time delete_begin,
+      base::Time delete_end,
+      password_manager::PasswordStoreChangeList* changes) OVERRIDE;
   virtual bool RemoveLoginsSyncedBetween(
       base::Time delete_begin,
       base::Time delete_end,
       password_manager::PasswordStoreChangeList* changes) OVERRIDE;
   virtual bool GetLogins(const autofill::PasswordForm& form,
                          PasswordFormList* forms) OVERRIDE;
-  virtual bool GetLoginsCreatedBetween(base::Time get_begin,
-                                       base::Time get_end,
-                                       PasswordFormList* forms) OVERRIDE;
   virtual bool GetAutofillableLogins(PasswordFormList* forms) OVERRIDE;
   virtual bool GetBlacklistLogins(PasswordFormList* forms) OVERRIDE;
 
@@ -100,13 +99,6 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   bool GetLoginsList(PasswordFormList* forms,
                      bool autofillable,
                      int wallet_handle);
-
-  // Reads PasswordForms from the wallet created/synced in the given time range.
-  bool GetLoginsList(PasswordFormList* forms,
-                     const base::Time& begin,
-                     const base::Time& end,
-                     int wallet_handle,
-                     TimestampToCompare date_to_compare);
 
   // Helper for some of the above GetLoginsList() methods.
   bool GetAllLogins(PasswordFormList* forms, int wallet_handle);

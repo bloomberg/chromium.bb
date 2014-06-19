@@ -356,11 +356,12 @@ bool NativeBackendKWallet::RemoveLogin(const PasswordForm& form) {
   return ok;
 }
 
-bool NativeBackendKWallet::RemoveLoginsCreatedBetween(base::Time delete_begin,
-                                                      base::Time delete_end) {
-  password_manager::PasswordStoreChangeList changes;
+bool NativeBackendKWallet::RemoveLoginsCreatedBetween(
+    base::Time delete_begin,
+    base::Time delete_end,
+    password_manager::PasswordStoreChangeList* changes) {
   return RemoveLoginsBetween(
-      delete_begin, delete_end, CREATION_TIMESTAMP, &changes);
+      delete_begin, delete_end, CREATION_TIMESTAMP, changes);
 }
 
 bool NativeBackendKWallet::RemoveLoginsSyncedBetween(
@@ -376,16 +377,6 @@ bool NativeBackendKWallet::GetLogins(const PasswordForm& form,
   if (wallet_handle == kInvalidKWalletHandle)
     return false;
   return GetLoginsList(forms, form.signon_realm, wallet_handle);
-}
-
-bool NativeBackendKWallet::GetLoginsCreatedBetween(base::Time get_begin,
-                                                   base::Time get_end,
-                                                   PasswordFormList* forms) {
-  int wallet_handle = WalletHandle();
-  if (wallet_handle == kInvalidKWalletHandle)
-    return false;
-  return GetLoginsList(
-      forms, get_begin, get_end, wallet_handle, CREATION_TIMESTAMP);
 }
 
 bool NativeBackendKWallet::GetAutofillableLogins(PasswordFormList* forms) {
@@ -488,33 +479,6 @@ bool NativeBackendKWallet::GetLoginsList(PasswordFormList* forms,
       forms->push_back(all_forms[i]);
     else
       delete all_forms[i];
-  }
-
-  return true;
-}
-
-bool NativeBackendKWallet::GetLoginsList(PasswordFormList* forms,
-                                         const base::Time& begin,
-                                         const base::Time& end,
-                                         int wallet_handle,
-                                         TimestampToCompare date_to_compare) {
-  PasswordFormList all_forms;
-  if (!GetAllLogins(&all_forms, wallet_handle))
-    return false;
-
-  // We have to read all the entries, and then filter them here.
-  base::Time autofill::PasswordForm::*date_member =
-      date_to_compare == CREATION_TIMESTAMP
-          ? &autofill::PasswordForm::date_created
-          : &autofill::PasswordForm::date_synced;
-  forms->reserve(forms->size() + all_forms.size());
-  for (size_t i = 0; i < all_forms.size(); ++i) {
-    if (begin <= all_forms[i]->*date_member &&
-        (end.is_null() || all_forms[i]->*date_member < end)) {
-      forms->push_back(all_forms[i]);
-    } else {
-      delete all_forms[i];
-    }
   }
 
   return true;

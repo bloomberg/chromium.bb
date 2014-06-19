@@ -104,8 +104,8 @@ void PasswordStore::RemoveLogin(const PasswordForm& form) {
                  base::Bind(&PasswordStore::RemoveLoginImpl, this, form)));
 }
 
-void PasswordStore::RemoveLoginsCreatedBetween(const base::Time& delete_begin,
-                                               const base::Time& delete_end) {
+void PasswordStore::RemoveLoginsCreatedBetween(base::Time delete_begin,
+                                               base::Time delete_end) {
   ScheduleTask(
       base::Bind(&PasswordStore::WrapModificationTask, this,
                  base::Bind(&PasswordStore::RemoveLoginsCreatedBetweenImpl,

@@ -933,7 +933,8 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginImpl(
 }
 
 PasswordStoreChangeList PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
-    const base::Time& delete_begin, const base::Time& delete_end) {
+    base::Time delete_begin,
+    base::Time delete_end) {
   PasswordStoreChangeList changes;
   std::vector<PasswordForm*> forms;
   if (login_metadata_db_->GetLoginsCreatedBetween(delete_begin, delete_end,

@@ -642,10 +642,12 @@ bool NativeBackendGnome::RemoveLogin(const PasswordForm& form) {
   return true;
 }
 
-bool NativeBackendGnome::RemoveLoginsCreatedBetween(base::Time delete_begin,
-                                                    base::Time delete_end) {
+bool NativeBackendGnome::RemoveLoginsCreatedBetween(
+    base::Time delete_begin,
+    base::Time delete_end,
+    password_manager::PasswordStoreChangeList* changes) {
   return RemoveLoginsBetween(
-      delete_begin, delete_end, CREATION_TIMESTAMP, NULL);
+      delete_begin, delete_end, CREATION_TIMESTAMP, changes);
 }
 
 bool NativeBackendGnome::RemoveLoginsSyncedBetween(
@@ -672,12 +674,6 @@ bool NativeBackendGnome::GetLogins(const PasswordForm& form,
     return false;
   }
   return true;
-}
-
-bool NativeBackendGnome::GetLoginsCreatedBetween(base::Time get_begin,
-                                                 base::Time get_end,
-                                                 PasswordFormList* forms) {
-  return GetLoginsBetween(get_begin, get_end, CREATION_TIMESTAMP, forms);
 }
 
 bool NativeBackendGnome::GetAutofillableLogins(PasswordFormList* forms) {
@@ -760,8 +756,8 @@ bool NativeBackendGnome::RemoveLoginsBetween(
     TimestampToCompare date_to_compare,
     password_manager::PasswordStoreChangeList* changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  if (changes)
-    changes->clear();
+  DCHECK(changes);
+  changes->clear();
   // We could walk the list and delete items as we find them, but it is much
   // easier to build the list and use RemoveLogin() to delete them.
   ScopedVector<autofill::PasswordForm> forms;
@@ -771,10 +767,8 @@ bool NativeBackendGnome::RemoveLoginsBetween(
   bool ok = true;
   for (size_t i = 0; i < forms.size(); ++i) {
     if (RemoveLogin(*forms[i])) {
-      if (changes) {
-        changes->push_back(password_manager::PasswordStoreChange(
-            password_manager::PasswordStoreChange::REMOVE, *forms[i]));
-      }
+      changes->push_back(password_manager::PasswordStoreChange(
+          password_manager::PasswordStoreChange::REMOVE, *forms[i]));
     } else {
       ok = false;
     }

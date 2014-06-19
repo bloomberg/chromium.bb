@@ -60,7 +60,8 @@ class TestPasswordStore : public PasswordStore {
   // Unused portions of PasswordStore interface
   virtual void ReportMetricsImpl() OVERRIDE {}
   virtual PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
-      const base::Time& begin, const base::Time& end) OVERRIDE;
+      base::Time begin,
+      base::Time end) OVERRIDE;
   virtual PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
       base::Time delete_begin,
       base::Time delete_end) OVERRIDE;

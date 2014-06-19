@@ -87,17 +87,16 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
       const autofill::PasswordForm& form,
       password_manager::PasswordStoreChangeList* changes) OVERRIDE;
   virtual bool RemoveLogin(const autofill::PasswordForm& form) OVERRIDE;
-  virtual bool RemoveLoginsCreatedBetween(base::Time delete_begin,
-                                          base::Time delete_end) OVERRIDE;
+  virtual bool RemoveLoginsCreatedBetween(
+      base::Time delete_begin,
+      base::Time delete_end,
+      password_manager::PasswordStoreChangeList* changes) OVERRIDE;
   virtual bool RemoveLoginsSyncedBetween(
       base::Time delete_begin,
       base::Time delete_end,
       password_manager::PasswordStoreChangeList* changes) OVERRIDE;
   virtual bool GetLogins(const autofill::PasswordForm& form,
                          PasswordFormList* forms) OVERRIDE;
-  virtual bool GetLoginsCreatedBetween(base::Time get_begin,
-                                       base::Time get_end,
-                                       PasswordFormList* forms) OVERRIDE;
   virtual bool GetAutofillableLogins(PasswordFormList* forms) OVERRIDE;
   virtual bool GetBlacklistLogins(PasswordFormList* forms) OVERRIDE;
 

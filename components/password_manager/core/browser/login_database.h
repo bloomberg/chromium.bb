@@ -51,8 +51,8 @@ class LoginDatabase {
   // Removes all logins created from |delete_begin| onwards (inclusive) and
   // before |delete_end|. You may use a null Time value to do an unbounded
   // delete in either direction.
-  bool RemoveLoginsCreatedBetween(const base::Time delete_begin,
-                                  const base::Time delete_end);
+  bool RemoveLoginsCreatedBetween(base::Time delete_begin,
+                                  base::Time delete_end);
 
   // Removes all logins synced from |delete_begin| onwards (inclusive) and
   // before |delete_end|. You may use a null Time value to do an unbounded

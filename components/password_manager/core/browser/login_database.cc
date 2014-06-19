@@ -415,8 +415,8 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form) {
   return s.Run();
 }
 
-bool LoginDatabase::RemoveLoginsCreatedBetween(const base::Time delete_begin,
-                                               const base::Time delete_end) {
+bool LoginDatabase::RemoveLoginsCreatedBetween(base::Time delete_begin,
+                                               base::Time delete_end) {
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM logins WHERE "
       "date_created >= ? AND date_created < ?"));

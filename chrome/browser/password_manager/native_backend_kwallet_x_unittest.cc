@@ -255,6 +255,14 @@ class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
   void CheckPasswordForms(const std::string& folder,
                           const ExpectationArray& sorted_expected);
 
+  enum RemoveBetweenMethod {
+    CREATED,
+    SYNCED,
+  };
+
+  // Tests RemoveLoginsCreatedBetween or RemoveLoginsSyncedBetween.
+  void TestRemoveLoginsBetween(RemoveBetweenMethod date_to_test);
+
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
@@ -322,6 +330,82 @@ void NativeBackendKWalletTest::TearDown() {
                                          base::MessageLoop::QuitClosure());
   base::MessageLoop::current()->Run();
   db_thread_.Stop();
+}
+
+void NativeBackendKWalletTest::TestRemoveLoginsBetween(
+    RemoveBetweenMethod date_to_test) {
+  NativeBackendKWalletStub backend(42);
+  EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
+
+  form_google_.date_synced = base::Time();
+  form_isc_.date_synced = base::Time();
+  form_google_.date_created = base::Time();
+  form_isc_.date_created = base::Time();
+  base::Time now = base::Time::Now();
+  base::Time next_day = now + base::TimeDelta::FromDays(1);
+  if (date_to_test == CREATED) {
+    // crbug/374132. Remove the next line once it's fixed.
+    next_day = base::Time::FromTimeT(next_day.ToTimeT());
+    form_google_.date_created = now;
+    form_isc_.date_created = next_day;
+  } else {
+    form_google_.date_synced = now;
+    form_isc_.date_synced = next_day;
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                 base::Unretained(&backend),
+                 form_google_));
+  BrowserThread::PostTask(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                 base::Unretained(&backend),
+                 form_isc_));
+
+  PasswordStoreChangeList expected_changes;
+  expected_changes.push_back(
+      PasswordStoreChange(PasswordStoreChange::REMOVE, form_google_));
+  PasswordStoreChangeList changes;
+  bool (NativeBackendKWallet::*method)(
+      base::Time, base::Time, password_manager::PasswordStoreChangeList*) =
+      date_to_test == CREATED
+          ? &NativeBackendKWalletStub::RemoveLoginsCreatedBetween
+          : &NativeBackendKWalletStub::RemoveLoginsSyncedBetween;
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(
+          method, base::Unretained(&backend), base::Time(), next_day, &changes),
+      base::Bind(&NativeBackendKWalletTest::CheckPasswordChangesWithResult,
+                 &expected_changes,
+                 &changes));
+  RunDBThread();
+
+  std::vector<const PasswordForm*> forms;
+  forms.push_back(&form_isc_);
+  ExpectationArray expected;
+  expected.push_back(make_pair(std::string(form_isc_.signon_realm), forms));
+  CheckPasswordForms("Chrome Form Data (42)", expected);
+
+  // Remove form_isc_.
+  expected_changes.clear();
+  expected_changes.push_back(
+      PasswordStoreChange(PasswordStoreChange::REMOVE, form_isc_));
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(
+          method, base::Unretained(&backend), next_day, base::Time(), &changes),
+      base::Bind(&NativeBackendKWalletTest::CheckPasswordChangesWithResult,
+                 &expected_changes,
+                 &changes));
+  RunDBThread();
+
+  CheckPasswordForms("Chrome Form Data (42)", ExpectationArray());
 }
 
 dbus::Response* NativeBackendKWalletTest::KLauncherMethodCall(
@@ -807,71 +891,12 @@ TEST_F(NativeBackendKWalletTest, ListLoginsAppends) {
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
 
+TEST_F(NativeBackendKWalletTest, RemoveLoginsCreatedBetween) {
+  TestRemoveLoginsBetween(CREATED);
+}
+
 TEST_F(NativeBackendKWalletTest, RemoveLoginsSyncedBetween) {
-  NativeBackendKWalletStub backend(42);
-  EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
-
-  base::Time now = base::Time::Now();
-  base::Time next_day = now + base::TimeDelta::FromDays(1);
-  form_google_.date_synced = now;
-  form_isc_.date_synced = next_day;
-  form_google_.date_created = base::Time();
-  form_isc_.date_created = base::Time();
-
-  BrowserThread::PostTask(
-      BrowserThread::DB,
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend),
-                 form_google_));
-  BrowserThread::PostTask(
-      BrowserThread::DB,
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend),
-                 form_isc_));
-
-  PasswordStoreChangeList expected_changes;
-  expected_changes.push_back(
-      PasswordStoreChange(PasswordStoreChange::REMOVE, form_google_));
-  PasswordStoreChangeList changes;
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB,
-      FROM_HERE,
-      base::Bind(&NativeBackendKWalletStub::RemoveLoginsSyncedBetween,
-                 base::Unretained(&backend),
-                 base::Time(),
-                 next_day,
-                 &changes),
-      base::Bind(&NativeBackendKWalletTest::CheckPasswordChangesWithResult,
-                 &expected_changes,
-                 &changes));
-  RunDBThread();
-
-  std::vector<const PasswordForm*> forms;
-  forms.push_back(&form_isc_);
-  ExpectationArray expected;
-  expected.push_back(make_pair(std::string(form_isc_.signon_realm), forms));
-  CheckPasswordForms("Chrome Form Data (42)", expected);
-
-  // Remove form_isc_.
-  expected_changes.clear();
-  expected_changes.push_back(
-      PasswordStoreChange(PasswordStoreChange::REMOVE, form_isc_));
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB,
-      FROM_HERE,
-      base::Bind(&NativeBackendKWalletStub::RemoveLoginsSyncedBetween,
-                 base::Unretained(&backend),
-                 next_day,
-                 base::Time(),
-                 &changes),
-      base::Bind(&NativeBackendKWalletTest::CheckPasswordChangesWithResult,
-                 &expected_changes,
-                 &changes));
-  RunDBThread();
-
-  CheckPasswordForms("Chrome Form Data (42)", ExpectationArray());
+  TestRemoveLoginsBetween(SYNCED);
 }
 
 // TODO(mdm): add more basic tests here at some point.

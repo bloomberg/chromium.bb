@@ -53,7 +53,8 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginImpl(
 }
 
 PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
-    const base::Time& delete_begin, const base::Time& delete_end) {
+    base::Time delete_begin,
+    base::Time delete_end) {
   std::vector<PasswordForm*> forms;
   PasswordStoreChangeList changes;
   if (login_db_->GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
