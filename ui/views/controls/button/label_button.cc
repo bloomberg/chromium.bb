@@ -100,8 +100,12 @@ void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
   explicitly_set_colors_[for_state] = true;
 }
 
-void LabelButton::SetHaloColor(SkColor color) {
-  label_->set_halo_color(color);
+void LabelButton::SetTextShadows(const gfx::ShadowValues& shadows) {
+  label_->set_shadows(shadows);
+}
+
+void LabelButton::SetTextSubpixelRenderingEnabled(bool enabled) {
+  label_->set_subpixel_rendering_enabled(enabled);
 }
 
 bool LabelButton::GetTextMultiLine() const {
@@ -180,6 +184,7 @@ void LabelButton::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
 gfx::Size LabelButton::GetPreferredSize() const {
   // Use a temporary label copy for sizing to avoid calculation side-effects.
   Label label(GetText(), cached_normal_font_list_);
+  label.set_shadows(label_->shadows());
   label.SetMultiLine(GetTextMultiLine());
 
   if (style() == STYLE_BUTTON) {
@@ -259,7 +264,7 @@ void LabelButton::Layout() {
   }
 
   gfx::Point label_origin(child_area.origin());
-  if (!image_size.IsEmpty() &&adjusted_alignment != gfx::ALIGN_RIGHT)
+  if (!image_size.IsEmpty() && adjusted_alignment != gfx::ALIGN_RIGHT)
     label_origin.set_x(image_origin.x() + image_size.width() + kSpacing);
 
   image_->SetBoundsRect(gfx::Rect(image_origin, image_size));

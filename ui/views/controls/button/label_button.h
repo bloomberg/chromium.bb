@@ -43,8 +43,11 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // Set the text color shown for the specified button state.
   void SetTextColor(ButtonState for_state, SkColor color);
 
-  // Sets a halo color on the label.
-  void SetHaloColor(SkColor color);
+  // Set drop shadows underneath the text.
+  void SetTextShadows(const gfx::ShadowValues& shadows);
+
+  // Sets whether subpixel rendering is used on the label.
+  void SetTextSubpixelRenderingEnabled(bool enabled);
 
   // Get or set the text's multi-line property to break on '\n', etc.
   bool GetTextMultiLine() const;

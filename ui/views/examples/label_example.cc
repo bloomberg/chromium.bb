@@ -62,11 +62,12 @@ void LabelExample::CreateExampleView(View* container) {
   label->SetEnabledColor(SK_ColorBLUE);
   container->AddChildView(label);
 
-  label = new Label(ASCIIToUTF16("A Courier-18 label with a halo and shadow."));
+  label = new Label(ASCIIToUTF16("A Courier-18 label with shadows."));
   label->SetFontList(gfx::FontList("Courier, 18px"));
-  label->set_shadows(gfx::ShadowValues(1,
-      gfx::ShadowValue(gfx::Point(2, 2), 0, SK_ColorGRAY)));
-  label->set_halo_color(SK_ColorGREEN);
+  gfx::ShadowValues shadows(1, gfx::ShadowValue(gfx::Point(), 1, SK_ColorRED));
+  gfx::ShadowValue shadow(gfx::Point(2, 2), 0, SK_ColorGRAY);
+  shadows.push_back(shadow);
+  label->set_shadows(shadows);
   container->AddChildView(label);
 
   label = new PreferredSizeLabel();

@@ -27,10 +27,6 @@
 
 namespace {
 
-// Text padding within the button border.
-const int kLeftRightInset = 7;
-const int kTopBottomInset = 2;
-
 scoped_ptr<views::Border> CreateBorder(const int normal_image_set[],
                                        const int hot_image_set[],
                                        const int pushed_image_set[]) {
@@ -44,8 +40,11 @@ scoped_ptr<views::Border> CreateBorder(const int normal_image_set[],
   border->SetPainter(false, views::Button::STATE_PRESSED,
       views::Painter::CreateImageGridPainter(pushed_image_set));
 
-  border->set_insets(gfx::Insets(kTopBottomInset, kLeftRightInset,
-                                 kTopBottomInset, kLeftRightInset));
+  const int kLeftRightInset = 10;
+  const int kTopInset = 0;
+  const int kBottomInset = 4;
+  border->set_insets(gfx::Insets(kTopInset, kLeftRightInset,
+                                 kBottomInset, kLeftRightInset));
 
   return border.PassAs<views::Border>();
 }
@@ -80,16 +79,11 @@ NewAvatarButton::NewAvatarButton(
   SetTextColor(views::Button::STATE_NORMAL, SK_ColorWHITE);
   SetTextColor(views::Button::STATE_HOVERED, SK_ColorWHITE);
   SetTextColor(views::Button::STATE_PRESSED, SK_ColorWHITE);
-  SetHaloColor(SK_ColorDKGRAY);
-  SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  SetTextShadows(gfx::ShadowValues(10,
+      gfx::ShadowValue(gfx::Point(), 1.0f, SK_ColorDKGRAY)));
+  SetTextSubpixelRenderingEnabled(false);
 
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-
-  bool is_win8 = false;
-#if defined(OS_WIN)
-  is_win8 = base::win::GetVersion() >= base::win::VERSION_WIN8;
-#endif
-
   if (button_style == THEMED_BUTTON) {
     const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_NORMAL);
     const int kHotImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_HOVER);
@@ -98,7 +92,8 @@ NewAvatarButton::NewAvatarButton(
     SetBorder(CreateBorder(kNormalImageSet, kHotImageSet, kPushedImageSet));
     set_menu_marker(
         rb->GetImageNamed(IDR_AVATAR_THEMED_BUTTON_DROPARROW).ToImageSkia());
-  } else if (is_win8) {
+#if defined(OS_WIN)
+  } else if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
     const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_METRO_BUTTON_NORMAL);
     const int kHotImageSet[] = IMAGE_GRID(IDR_AVATAR_METRO_BUTTON_HOVER);
     const int kPushedImageSet[] = IMAGE_GRID(IDR_AVATAR_METRO_BUTTON_PRESSED);
@@ -106,6 +101,7 @@ NewAvatarButton::NewAvatarButton(
     SetBorder(CreateBorder(kNormalImageSet, kHotImageSet, kPushedImageSet));
     set_menu_marker(
         rb->GetImageNamed(IDR_AVATAR_METRO_BUTTON_DROPARROW).ToImageSkia());
+#endif
   } else {
     const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_NORMAL);
     const int kHotImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_HOVER);
@@ -118,9 +114,8 @@ NewAvatarButton::NewAvatarButton(
 
   g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
 
-  // Subscribe to authentication error changes so that the avatar button
-  // can update itself.  Note that guest mode profiles won't have a token
-  // service.
+  // Subscribe to authentication error changes so that the avatar button can
+  // update itself.  Note that guest mode profiles won't have a token service.
   SigninErrorController* error =
       profiles::GetSigninErrorController(browser_->profile());
   if (error) {
