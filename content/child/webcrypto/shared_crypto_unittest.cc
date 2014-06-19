@@ -114,7 +114,7 @@ bool SupportsAesGcm() {
                             &key);
 
   if (status.IsError())
-    EXPECT_EQ(Status::ErrorUnsupported(), status);
+    EXPECT_EQ(blink::WebCryptoErrorTypeNotSupported, status.error_type());
   return status.IsSuccess();
 }
 

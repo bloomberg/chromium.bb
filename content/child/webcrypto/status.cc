@@ -151,8 +151,11 @@ Status Status::ErrorDataTooSmall() {
 }
 
 Status Status::ErrorUnsupported() {
-  return Status(blink::WebCryptoErrorTypeNotSupported,
-                "The requested operation is unsupported");
+  return ErrorUnsupported("The requested operation is unsupported");
+}
+
+Status Status::ErrorUnsupported(const std::string& message) {
+  return Status(blink::WebCryptoErrorTypeNotSupported, message);
 }
 
 Status Status::ErrorUnexpected() {

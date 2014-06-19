@@ -150,6 +150,7 @@ class CONTENT_EXPORT Status {
   // question was unsupported, some parameter combination was unsupported, or
   // something has not yet been implemented.
   static Status ErrorUnsupported();
+  static Status ErrorUnsupported(const std::string& message);
 
   // Something unexpected happened in the code, which implies there is a
   // source-level bug. These should not happen, but safer to fail than simply
