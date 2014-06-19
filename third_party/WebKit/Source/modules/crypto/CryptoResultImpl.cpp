@@ -47,26 +47,29 @@
 
 namespace WebCore {
 
-namespace {
-
-class WeakResolver : public ScriptPromiseResolverWithContext {
+class CryptoResultImpl::WeakResolver : public ScriptPromiseResolverWithContext {
 public:
-    static WeakPtr<ScriptPromiseResolverWithContext> create(ScriptState* scriptState)
+    static WeakPtr<ScriptPromiseResolverWithContext> create(ScriptState* scriptState, CryptoResultImpl* result)
     {
-        RefPtr<WeakResolver> p = adoptRef(new WeakResolver(scriptState));
+        RefPtr<WeakResolver> p = adoptRef(new WeakResolver(scriptState, result));
         p->suspendIfNeeded();
         p->keepAliveWhilePending();
         return p->m_weakPtrFactory.createWeakPtr();
     }
 
-private:
-    explicit WeakResolver(ScriptState* scriptState)
-        : ScriptPromiseResolverWithContext(scriptState)
-        , m_weakPtrFactory(this) { }
-    WeakPtrFactory<ScriptPromiseResolverWithContext> m_weakPtrFactory;
-};
+    virtual ~WeakResolver()
+    {
+        m_result->cancel();
+    }
 
-} // namespace
+private:
+    WeakResolver(ScriptState* scriptState, CryptoResultImpl* result)
+        : ScriptPromiseResolverWithContext(scriptState)
+        , m_weakPtrFactory(this)
+        , m_result(result) { }
+    WeakPtrFactory<ScriptPromiseResolverWithContext> m_weakPtrFactory;
+    RefPtr<CryptoResultImpl> m_result;
+};
 
 ExceptionCode webCryptoErrorToExceptionCode(blink::WebCryptoErrorType errorType)
 {
@@ -155,8 +158,19 @@ void CryptoResultImpl::completeWithKeyPair(const blink::WebCryptoKey& publicKey,
         m_resolver->resolve(KeyPair::create(publicKey, privateKey));
 }
 
+bool CryptoResultImpl::cancelled() const
+{
+    return acquireLoad(&m_cancelled);
+}
+
+void CryptoResultImpl::cancel()
+{
+    releaseStore(&m_cancelled, 1);
+}
+
 CryptoResultImpl::CryptoResultImpl(ScriptState* scriptState)
-    : m_resolver(WeakResolver::create(scriptState))
+    : m_resolver(WeakResolver::create(scriptState, this))
+    , m_cancelled(0)
 {
 }
 

@@ -47,6 +47,7 @@ public:
     virtual void completeWithBoolean(bool) = 0;
     virtual void completeWithKey(const blink::WebCryptoKey&) = 0;
     virtual void completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey) = 0;
+    virtual bool cancelled() const = 0;
 
     blink::WebCryptoResult result()
     {

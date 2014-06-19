@@ -86,6 +86,11 @@ void WebCryptoResult::completeWithKeyPair(const WebCryptoKey& publicKey, const W
     reset();
 }
 
+bool WebCryptoResult::cancelled() const
+{
+    return m_impl->cancelled();
+}
+
 WebCryptoResult::WebCryptoResult(const PassRefPtr<WebCore::CryptoResult>& impl)
     : m_impl(impl)
 {

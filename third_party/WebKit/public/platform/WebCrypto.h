@@ -44,6 +44,9 @@ namespace WebCore { class CryptoResult; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
+// FIXME: Remove once chromium side rolls.
+#define WEBCRYPTO_RESULT_HAS_CANCELLED 1
+
 namespace blink {
 
 class WebArrayBuffer;
@@ -95,6 +98,10 @@ public:
     BLINK_PLATFORM_EXPORT void completeWithKey(const WebCryptoKey&);
     BLINK_PLATFORM_EXPORT void completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey);
 
+    // Returns true if the underlying operation was cancelled.
+    // This method can be called from any thread.
+    BLINK_PLATFORM_EXPORT bool cancelled() const;
+
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT explicit WebCryptoResult(const WTF::PassRefPtr<WebCore::CryptoResult>&);
 #endif
@@ -145,6 +152,9 @@ public:
     // or asynchronously after the method has returned. When completing
     // asynchronously make a copy of the WebCryptoResult and call it from the
     // same thread that started the request.
+    //
+    // If the request was cancelled it is not necessary for implementations to
+    // set the result.
     //
     // -----------------------
     // Threading

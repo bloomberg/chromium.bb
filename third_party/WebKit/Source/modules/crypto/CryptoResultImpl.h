@@ -50,7 +50,7 @@ ExceptionCode webCryptoErrorToExceptionCode(blink::WebCryptoErrorType);
 //
 //  * At creation time there must be an active ExecutionContext.
 //  * The CryptoResult interface must only be called from the origin thread.
-//  * addref() and deref() can be called from any thread.
+//  * ref(), deref(), cancelled() and cancel() can be called from any thread.
 //  * One of the completeWith***() functions must be called, or the
 //    m_resolver will be leaked until the ExecutionContext is destroyed.
 class CryptoResultImpl FINAL : public CryptoResult {
@@ -65,14 +65,19 @@ public:
     virtual void completeWithBoolean(bool) OVERRIDE;
     virtual void completeWithKey(const blink::WebCryptoKey&) OVERRIDE;
     virtual void completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey) OVERRIDE;
+    virtual bool cancelled() const OVERRIDE;
 
     // It is only valid to call this before completion.
     ScriptPromise promise();
 
 private:
+    class WeakResolver;
     explicit CryptoResultImpl(ScriptState*);
 
+    void cancel();
+
     WeakPtr<ScriptPromiseResolverWithContext> m_resolver;
+    volatile int m_cancelled;
 };
 
 } // namespace WebCore
