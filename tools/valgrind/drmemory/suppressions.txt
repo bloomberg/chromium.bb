@@ -604,3 +604,12 @@ npapi_test_plugin.dll!NP_Initialize
 *!content::PluginLib::NP_Initialize
 *!content::PluginThread::PluginThread
 *!content::PluginMain
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/313788
+*!InProcessBrowserTest::AddBlankTabAndShow
+*!InProcessBrowserTest::CreateBrowser
+*!*::RunTestOnMainThread
+*!InProcessBrowserTest::RunTestOnMainThreadLoop
+*!ChromeBrowserMainParts::PreMainMessageLoopRunImpl
+*!ChromeBrowserMainParts::PreMainMessageLoopRun
