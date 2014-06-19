@@ -69,15 +69,21 @@ class ThreadProxyForTest : public ThreadProxy {
  private:
   TestHooks* test_hooks_;
 
-  virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {
-    ThreadProxy::ScheduledActionBeginOutputSurfaceCreation();
-    test_hooks_->ScheduledActionBeginOutputSurfaceCreation();
-  }
-
   virtual void ScheduledActionSendBeginMainFrame() OVERRIDE {
     test_hooks_->ScheduledActionWillSendBeginMainFrame();
     ThreadProxy::ScheduledActionSendBeginMainFrame();
     test_hooks_->ScheduledActionSendBeginMainFrame();
+  }
+
+  virtual DrawResult ScheduledActionDrawAndSwapIfPossible() OVERRIDE {
+    DrawResult result = ThreadProxy::ScheduledActionDrawAndSwapIfPossible();
+    test_hooks_->ScheduledActionDrawAndSwapIfPossible();
+    return result;
+  }
+
+  virtual void ScheduledActionAnimate() OVERRIDE {
+    ThreadProxy::ScheduledActionAnimate();
+    test_hooks_->ScheduledActionAnimate();
   }
 
   virtual void ScheduledActionCommit() OVERRIDE {
@@ -85,10 +91,9 @@ class ThreadProxyForTest : public ThreadProxy {
     test_hooks_->ScheduledActionCommit();
   }
 
-  virtual DrawResult ScheduledActionDrawAndSwapIfPossible() OVERRIDE {
-    DrawResult result = ThreadProxy::ScheduledActionDrawAndSwapIfPossible();
-    test_hooks_->ScheduledActionDrawAndSwapIfPossible();
-    return result;
+  virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {
+    ThreadProxy::ScheduledActionBeginOutputSurfaceCreation();
+    test_hooks_->ScheduledActionBeginOutputSurfaceCreation();
   }
 
   ThreadProxyForTest(
