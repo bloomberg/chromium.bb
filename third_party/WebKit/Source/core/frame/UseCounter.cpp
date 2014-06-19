@@ -745,6 +745,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case ElementSetPrefix:
         return "Setting 'Element.prefix' is deprecated, as it is read-only per DOM (http://dom.spec.whatwg.org/#element).";
 
+    case SyncXHRWithCredentials:
+        return "Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

@@ -1,3 +1,4 @@
+CONSOLE WARNING: Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated.
 CONSOLE MESSAGE: line 6: XHR loaded: 1
 Tests that XHRs are not added to resourceTreeModel.
 

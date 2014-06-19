@@ -1,4 +1,5 @@
 CONSOLE MESSAGE: line 10: sending a %s request to %s
+CONSOLE WARNING: Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated.
 CONSOLE MESSAGE: line 10: sending a %s request to %s
 CONSOLE MESSAGE: line 10: sending a %s request to %s
 CONSOLE MESSAGE: line 10: sending a %s request to %s
@@ -11,6 +12,7 @@ CONSOLE ERROR: XMLHttpRequest cannot load http://localhost:8000/inspector/resour
 Tests that XMLHttpRequest Logging works when Enabled and doesn't show logs when Disabled.
 
 sending a GET request to resources/xhr-exists.html console-xhr-logging.html:10
+Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated. network-test.js:94
 XHR finished loading: GET "http://127.0.0.1:8000/inspector/resources/xhr-exists.html". network-test.js:97
 sending a GET request to resources/xhr-does-not-exist.html console-xhr-logging.html:10
 GET http://127.0.0.1:8000/inspector/resources/xhr-does-not-exist.html 404 (Not Found) network-test.js:97
