@@ -51,7 +51,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
   // BrowserAccessibilityManager methods
   virtual void OnWindowFocused() OVERRIDE;
-  virtual void OnWindowBlurred() OVERRIDE;
   virtual void NotifyAccessibilityEvent(
       ui::AXEvent event_type, BrowserAccessibility* node) OVERRIDE;
 
@@ -92,6 +91,10 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
   // Owned by its parent; OnAccessibleHwndDeleted gets called upon deletion.
   LegacyRenderWidgetHostHWND* accessible_hwnd_;
+
+  // Set to true if we need to fire a focus event on the root as soon as
+  // possible.
+  bool focus_event_on_root_needed_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerWin);
 };
