@@ -255,9 +255,6 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/350982
 "race:libvpx/vp9/decoder/vp9_thread.c\n"
 
-// http://crbug.com/361790
-"race:workerGlobalScopeDestroyed\n"
-
 // http://crbug.com/363999
 "race:v8::internal::EnterDebugger::*EnterDebugger\n"
 
