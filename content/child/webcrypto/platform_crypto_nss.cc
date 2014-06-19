@@ -277,21 +277,6 @@ class PrivateKey : public Key {
 
 namespace {
 
-Status NssSupportsAesGcm() {
-  if (g_nss_runtime_support.Get().IsAesGcmSupported())
-    return Status::Success();
-  return Status::ErrorUnsupported(
-      "NSS version doesn't support AES-GCM. Try using version 3.15 or later");
-}
-
-Status NssSupportsRsaOaep() {
-  if (g_nss_runtime_support.Get().IsRsaOaepSupported())
-    return Status::Success();
-  return Status::ErrorUnsupported(
-      "NSS version doesn't support RSA-OAEP. Try using version 3.16.2 or "
-      "later");
-}
-
 // Creates a SECItem for the data in |buffer|. This does NOT make a copy, so
 // |buffer| should outlive the SECItem.
 SECItem MakeSECItemForBuffer(const CryptoData& buffer) {
@@ -463,9 +448,8 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
                             const CryptoData& additional_data,
                             unsigned int tag_length_bits,
                             std::vector<uint8>* buffer) {
-  Status status = NssSupportsAesGcm();
-  if (status.IsError())
-    return status;
+  if (!g_nss_runtime_support.Get().IsAesGcmSupported())
+    return Status::ErrorUnsupported();
 
   unsigned int tag_length_bytes = tag_length_bits / 8;
 
@@ -613,9 +597,8 @@ Status WebCryptoAlgorithmToNssMechFlags(
       return Status::Success();
     }
     case blink::WebCryptoAlgorithmIdAesGcm: {
-      Status status = NssSupportsAesGcm();
-      if (status.IsError())
-        return status;
+      if (!g_nss_runtime_support.Get().IsAesGcmSupported())
+        return Status::ErrorUnsupported();
       *mechanism = CKM_AES_GCM;
       *flags = CKF_ENCRYPT | CKF_DECRYPT;
       return Status::Success();
@@ -1254,9 +1237,8 @@ Status EncryptRsaOaep(PublicKey* key,
                       const CryptoData& label,
                       const CryptoData& data,
                       std::vector<uint8>* buffer) {
-  Status status = NssSupportsRsaOaep();
-  if (status.IsError())
-    return status;
+  if (!g_nss_runtime_support.Get().IsRsaOaepSupported())
+    return Status::ErrorUnsupported();
 
   CK_RSA_PKCS_OAEP_PARAMS oaep_params = {0};
   if (!InitializeRsaOaepParams(hash, label, &oaep_params))
@@ -1292,9 +1274,8 @@ Status DecryptRsaOaep(PrivateKey* key,
                       const CryptoData& label,
                       const CryptoData& data,
                       std::vector<uint8>* buffer) {
-  Status status = NssSupportsRsaOaep();
-  if (status.IsError())
-    return status;
+  if (!g_nss_runtime_support.Get().IsRsaOaepSupported())
+    return Status::ErrorUnsupported();
 
   CK_RSA_PKCS_OAEP_PARAMS oaep_params = {0};
   if (!InitializeRsaOaepParams(hash, label, &oaep_params))
@@ -1442,10 +1423,9 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                           unsigned long public_exponent,
                           blink::WebCryptoKey* public_key,
                           blink::WebCryptoKey* private_key) {
-  if (algorithm.id() == blink::WebCryptoAlgorithmIdRsaOaep) {
-    Status status = NssSupportsRsaOaep();
-    if (status.IsError())
-      return status;
+  if (algorithm.id() == blink::WebCryptoAlgorithmIdRsaOaep &&
+      !g_nss_runtime_support.Get().IsRsaOaepSupported()) {
+    return Status::ErrorUnsupported();
   }
 
   crypto::ScopedPK11Slot slot(PK11_GetInternalKeySlot());
