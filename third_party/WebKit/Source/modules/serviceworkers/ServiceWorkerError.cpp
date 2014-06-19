@@ -43,6 +43,8 @@ PassRefPtrWillBeRawPtr<DOMException> ServiceWorkerError::from(ScriptPromiseResol
     switch (webError->errorType) {
     case WebServiceWorkerError::ErrorTypeDisabled:
         return DOMException::create(NotSupportedError, "Service Worker support is disabled.");
+    case WebServiceWorkerError::ErrorTypeAbort:
+        return DOMException::create(AbortError, "The Service Worker operation was aborted.");
     case WebServiceWorkerError::ErrorTypeSecurity:
         return DOMException::create(SecurityError, "The Service Worker security policy prevented an action.");
     case WebServiceWorkerError::ErrorTypeInstall:
