@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#install-event-interface
 [
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,

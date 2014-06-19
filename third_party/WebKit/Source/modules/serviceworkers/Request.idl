@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#request-objects
-
+// http://fetch.spec.whatwg.org/#request-class
 [
     Constructor(optional Dictionary requestInitDict),
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker
 ] interface Request {
-    attribute DOMString url;
+    attribute ScalarValueString url;
     attribute ByteString method;
     readonly attribute DOMString origin;
     readonly attribute HeaderMap headers;

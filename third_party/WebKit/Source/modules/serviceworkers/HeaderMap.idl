@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#header-map-interface
+// http://fetch.spec.whatwg.org/#headers-class
+// FIXME: Fetch spec has renamed this to just 'Headers'
 // FIXME: This should be defined as MapClass(DOMString, DOMString)
 // once binding code supports it (http://crbug.com/347435).
 [

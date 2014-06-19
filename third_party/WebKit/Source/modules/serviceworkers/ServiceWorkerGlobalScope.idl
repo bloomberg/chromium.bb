@@ -27,6 +27,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#service-worker-global-scope-interface
 [
     Exposed=ServiceWorker,
     Global=Worker&ServiceWorker,
@@ -34,9 +36,9 @@
 ] interface ServiceWorkerGlobalScope : WorkerGlobalScope {
 
   readonly attribute ServiceWorkerClients clients;
-  [CallWith=ExecutionContext, Unforgeable] readonly attribute DOMString scope;
+  [CallWith=ExecutionContext, Unforgeable] readonly attribute ScalarValueString scope;
 
-  [CallWith=ScriptState] Promise fetch(DOMString request);
+  [CallWith=ScriptState] Promise fetch(ScalarValueString request);
   [CallWith=ScriptState] Promise fetch(Request request);
 
   attribute EventHandler onactivate;

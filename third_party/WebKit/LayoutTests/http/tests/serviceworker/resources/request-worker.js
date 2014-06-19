@@ -22,6 +22,10 @@ test(function() {
 
     request.url = 'http://localhost/';
     assert_equals(request.url, 'http://localhost/', 'Request.url should be writable');
+    request.url = 'http://localhost/\uD800'; // Unmatched lead surrogate.
+    assert_equals(request.url,
+                  'http://localhost/' + encodeURIComponent('\uFFFD'),
+                  'Request.url should have unmatched surrogates replaced.');
     request.method = 'POST';
     assert_equals(request.method, 'POST', 'Request.method should be writable');
     assert_throws({name: 'TypeError'}, function() { request.method = 'invalid \u0100'; },

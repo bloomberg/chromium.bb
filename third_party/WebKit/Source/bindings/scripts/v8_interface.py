@@ -761,9 +761,14 @@ def resolution_tests_methods(effective_overloads):
     # types at position i of its type list,
     # • DOMString
     # • an enumeration type
+    # * ByteString
+    # Blink: ScalarValueString is a pending Web IDL addition
     try:
         method = next(method for idl_type, method in idl_types_methods
-                      if idl_type.name == 'String' or idl_type.is_enum)
+                      if idl_type.name in ('String',
+                                           'ByteString',
+                                           'ScalarValueString') or
+                      idl_type.is_enum)
         yield 'true', method
     except StopIteration:
         pass

@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#service-worker-container-interface
 [
     RuntimeEnabled=ServiceWorker
 ] interface ServiceWorkerContainer {
@@ -38,6 +39,6 @@
 
     [CallWith=ScriptState] readonly attribute Promise ready;
 
-    [CallWith=ScriptState, ImplementedAs=registerServiceWorker] Promise register(DOMString url, optional Dictionary options);
-    [CallWith=ScriptState, ImplementedAs=unregisterServiceWorker] Promise unregister(optional DOMString scope);
+    [CallWith=ScriptState, ImplementedAs=registerServiceWorker] Promise register(ScalarValueString url, optional Dictionary options);
+    [CallWith=ScriptState, ImplementedAs=unregisterServiceWorker] Promise unregister(ScalarValueString scope);
 };

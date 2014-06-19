@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#response-objects
+// http://fetch.spec.whatwg.org/#response-class
 // FIXME: Split this idl/impl into AbstractResponse and Response.
 [
     // FIXME: Add ctors for String, Stream, and ArrayBuffer/ArrayBufferView response bodies.
