@@ -478,7 +478,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
             const CSSTransitionData::TransitionProperty& transitionProperty = transitionData->propertyList()[i];
             CSSTransitionData::TransitionPropertyType mode = transitionProperty.propertyType;
             CSSPropertyID property = transitionProperty.propertyId;
-            if (mode == CSSTransitionData::TransitionNone)
+            if (mode == CSSTransitionData::TransitionNone || mode == CSSTransitionData::TransitionUnknown)
                 continue;
 
             bool animateAll = mode == CSSTransitionData::TransitionAll;

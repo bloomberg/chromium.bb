@@ -86,6 +86,31 @@ const StylePropertyShorthand& webkitAnimationShorthandForParsing()
     return webkitAnimationLonghandsForParsing;
 }
 
+// Similar to animations, we have property after timing-function and delay after duration
+const StylePropertyShorthand& transitionShorthandForParsing()
+{
+    static const CSSPropertyID transitionProperties[] = {
+        CSSPropertyTransitionDuration,
+        CSSPropertyTransitionTimingFunction,
+        CSSPropertyTransitionDelay,
+        CSSPropertyTransitionProperty
+    };
+    DEFINE_STATIC_LOCAL(StylePropertyShorthand, transitionLonghands, (CSSPropertyTransition, transitionProperties, WTF_ARRAY_LENGTH(transitionProperties)));
+    return transitionLonghands;
+}
+
+const StylePropertyShorthand& webkitTransitionShorthandForParsing()
+{
+    static const CSSPropertyID webkitTransitionProperties[] = {
+        CSSPropertyWebkitTransitionDuration,
+        CSSPropertyWebkitTransitionTimingFunction,
+        CSSPropertyWebkitTransitionDelay,
+        CSSPropertyWebkitTransitionProperty
+    };
+    DEFINE_STATIC_LOCAL(StylePropertyShorthand, webkitTransitionLonghands, (CSSPropertyWebkitTransition, webkitTransitionProperties, WTF_ARRAY_LENGTH(webkitTransitionProperties)));
+    return webkitTransitionLonghands;
+}
+
 // Returns an empty list if the property is not a shorthand, otherwise the list of longhands for parsing.
 const StylePropertyShorthand& parsingShorthandForProperty(CSSPropertyID propertyID)
 {
@@ -96,6 +121,10 @@ const StylePropertyShorthand& parsingShorthandForProperty(CSSPropertyID property
         return borderShorthandForParsing();
     case CSSPropertyWebkitAnimation:
         return webkitAnimationShorthandForParsing();
+    case CSSPropertyTransition:
+        return transitionShorthandForParsing();
+    case CSSPropertyWebkitTransition:
+        return webkitTransitionShorthandForParsing();
     default:
         return shorthandForProperty(propertyID);
     }

@@ -1897,7 +1897,7 @@ bool CSSPropertyParser::parseAnimationShorthand(CSSPropertyID propId, bool impor
 bool CSSPropertyParser::parseTransitionShorthand(CSSPropertyID propId, bool important)
 {
     const unsigned numProperties = 4;
-    const StylePropertyShorthand& shorthand = shorthandForProperty(propId);
+    const StylePropertyShorthand& shorthand = parsingShorthandForProperty(propId);
     ASSERT(numProperties == shorthand.length());
 
     ShorthandScope scope(this, propId);
@@ -1938,8 +1938,8 @@ bool CSSPropertyParser::parseTransitionShorthand(CSSPropertyID propId, bool impo
             return false;
     }
 
-    ASSERT(shorthand.properties()[0] == CSSPropertyTransitionProperty || shorthand.properties()[0] == CSSPropertyWebkitTransitionProperty);
-    if (!isValidTransitionPropertyList(values[0].get()))
+    ASSERT(shorthand.properties()[3] == CSSPropertyTransitionProperty || shorthand.properties()[3] == CSSPropertyWebkitTransitionProperty);
+    if (!isValidTransitionPropertyList(values[3].get()))
         return false;
 
     // Fill in any remaining properties with the initial value and add
@@ -3087,7 +3087,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty()
         return cssValuePool().createIdentifierValue(result);
     if (equalIgnoringCase(value, "none"))
         return cssValuePool().createIdentifierValue(CSSValueNone);
-    return nullptr;
+    if (equalIgnoringCase(value, "inherit") || equalIgnoringCase(value, "initial"))
+        return nullptr;
+    return createPrimitiveStringValue(value);
 }
 
 bool CSSPropertyParser::parseWebkitTransformOriginShorthand(RefPtrWillBeRawPtr<CSSValue>& value1, RefPtrWillBeRawPtr<CSSValue>& value2, RefPtrWillBeRawPtr<CSSValue>& value3)

@@ -16,12 +16,11 @@ public:
     enum TransitionPropertyType {
         TransitionNone,
         TransitionSingleProperty,
+        TransitionUnknown,
         TransitionAll
     };
 
-    // FIXME: This is incorrect as per CSS3 Transitions, we should allow the
-    // user to specify unknown properties and keep them in the list (crbug.com/304020).
-    // Also, we shouldn't allow 'none' to be used alongside other properties.
+    // FIXME: We shouldn't allow 'none' to be used alongside other properties.
     struct TransitionProperty {
         TransitionProperty(CSSPropertyID id)
             : propertyType(TransitionSingleProperty)
@@ -30,17 +29,25 @@ public:
             ASSERT(id != CSSPropertyInvalid);
         }
 
+        TransitionProperty(const String& string)
+            : propertyType(TransitionUnknown)
+            , propertyId(CSSPropertyInvalid)
+            , propertyString(string)
+        {
+        }
+
         TransitionProperty(TransitionPropertyType type)
             : propertyType(type)
             , propertyId(CSSPropertyInvalid)
         {
-            ASSERT(type != TransitionSingleProperty);
+            ASSERT(type == TransitionNone || type == TransitionAll);
         }
 
-        bool operator==(const TransitionProperty& other) const { return propertyType == other.propertyType && propertyId == other.propertyId; }
+        bool operator==(const TransitionProperty& other) const { return propertyType == other.propertyType && propertyId == other.propertyId && propertyString == other.propertyString; }
 
         TransitionPropertyType propertyType;
         CSSPropertyID propertyId;
+        String propertyString;
     };
 
     static PassOwnPtrWillBeRawPtr<CSSTransitionData> create()

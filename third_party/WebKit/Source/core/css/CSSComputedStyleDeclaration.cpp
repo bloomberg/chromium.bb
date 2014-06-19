@@ -937,12 +937,14 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForGridPosition(const GridPosition&
     return list;
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> createTransitionPropertyValue(CSSTransitionData::TransitionProperty property)
+static PassRefPtrWillBeRawPtr<CSSValue> createTransitionPropertyValue(const CSSTransitionData::TransitionProperty& property)
 {
     if (property.propertyType == CSSTransitionData::TransitionNone)
         return cssValuePool().createIdentifierValue(CSSValueNone);
     if (property.propertyType == CSSTransitionData::TransitionAll)
         return cssValuePool().createIdentifierValue(CSSValueAll);
+    if (property.propertyType == CSSTransitionData::TransitionUnknown)
+        return cssValuePool().createValue(property.propertyString, CSSPrimitiveValue::CSS_STRING);
     ASSERT(property.propertyType == CSSTransitionData::TransitionSingleProperty);
     return cssValuePool().createValue(getPropertyNameString(property.propertyId), CSSPrimitiveValue::CSS_STRING);
 }

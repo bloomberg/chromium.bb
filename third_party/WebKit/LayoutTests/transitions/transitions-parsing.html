@@ -85,26 +85,28 @@ shouldBe("computedStyle.transitionProperty", "'font-size, all, color'");
 shouldBe("style.webkitTransitionProperty", "'font-size, all, color'");
 shouldBe("computedStyle.webkitTransitionProperty", "'font-size, all, color'");
 
-debug("Invalid transition-property values.");
-style.transitionProperty = "";
+debug("Unknown transition-property values.");
 
 style.transitionProperty = "solid, font-size";
-shouldBe("style.transitionProperty", "''");
-shouldBe("computedStyle.transitionProperty", "'all'");
-shouldBe("style.webkitTransitionProperty", "''");
-shouldBe("computedStyle.webkitTransitionProperty", "'all'");
+shouldBe("style.transitionProperty", "'solid, font-size'");
+shouldBe("computedStyle.transitionProperty", "'solid, font-size'");
+shouldBe("style.webkitTransitionProperty", "'solid, font-size'");
+shouldBe("computedStyle.webkitTransitionProperty", "'solid, font-size'");
 
 style.transitionProperty = "solid, left";
-shouldBe("style.transitionProperty", "''");
-shouldBe("computedStyle.transitionProperty", "'all'");
-shouldBe("style.webkitTransitionProperty", "''");
-shouldBe("computedStyle.webkitTransitionProperty", "'all'");
+shouldBe("style.transitionProperty", "'solid, left'");
+shouldBe("computedStyle.transitionProperty", "'solid, left'");
+shouldBe("style.webkitTransitionProperty", "'solid, left'");
+shouldBe("computedStyle.webkitTransitionProperty", "'solid, left'");
 
 style.transitionProperty = "solid";
-shouldBe("style.transitionProperty", "''");
-shouldBe("computedStyle.transitionProperty", "'all'");
-shouldBe("style.webkitTransitionProperty", "''");
-shouldBe("computedStyle.webkitTransitionProperty", "'all'");
+shouldBe("style.transitionProperty", "'solid'");
+shouldBe("computedStyle.transitionProperty", "'solid'");
+shouldBe("style.webkitTransitionProperty", "'solid'");
+shouldBe("computedStyle.webkitTransitionProperty", "'solid'");
+
+debug("Invalid transition-property values.");
+style.transitionProperty = "";
 
 style.transitionProperty = "20px";
 shouldBe("style.transitionProperty", "''");
@@ -664,12 +666,6 @@ shouldBe("computedStyle.transition", "'all 0s ease 0s'");
 shouldBe("style.webkitTransition", "''");
 shouldBe("computedStyle.webkitTransition", "'all 0s ease 0s'");
 
-style.transition = "widthFoo";
-shouldBe("style.transition", "''");
-shouldBe("computedStyle.transition", "'all 0s ease 0s'");
-shouldBe("style.webkitTransition", "''");
-shouldBe("computedStyle.webkitTransition", "'all 0s ease 0s'");
-
 style.transition = "all 30s width ease-in";
 shouldBe("style.transition", "''");
 shouldBe("computedStyle.transition", "'all 0s ease 0s'");
@@ -729,6 +725,24 @@ shouldBe("style.transition", "''");
 shouldBe("computedStyle.transition", "'all 0s ease 0s'");
 shouldBe("style.webkitTransition", "''");
 shouldBe("computedStyle.webkitTransition", "'all 0s ease 0s'");
+
+debug("Ambiguous shorthand values.");
+
+style.transition = "ease";
+shouldBe("style.transitionProperty", "'all'");
+shouldBe("style.transitionTimingFunction", "'ease'");
+
+style.transition = "ease-in ease-out";
+shouldBe("style.transitionProperty", "'ease-out'");
+shouldBe("style.transitionTimingFunction", "'ease-in'");
+
+style.transition = "20s 10s";
+shouldBe("style.transitionDelay", "'10s'");
+shouldBe("style.transitionDuration", "'20s'");
+
+style.transition = "-10s 10s";
+shouldBe("style.transitionDelay", "'-10s'");
+shouldBe("style.transitionDuration", "'10s'");
 
 document.body.removeChild(testContainer);
 </script>
