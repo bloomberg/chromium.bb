@@ -143,8 +143,11 @@ class NativeViewportWin : public gfx::WindowImpl,
   void OnWindowPosChanged(WINDOWPOS* window_pos) {
     if (!(window_pos->flags & SWP_NOSIZE) ||
         !(window_pos->flags & SWP_NOMOVE)) {
-      delegate_->OnBoundsChanged(gfx::Rect(window_pos->x, window_pos->y,
-                                           window_pos->cx, window_pos->cy));
+      RECT cr;
+      GetClientRect(hwnd(), &cr);
+      delegate_->OnBoundsChanged(
+          gfx::Rect(window_pos->x, window_pos->y,
+                    cr.right - cr.left, cr.bottom - cr.top));
     }
   }
 

@@ -136,7 +136,6 @@ void WindowTreeHostImpl::OnCreated() {
 
 void WindowTreeHostImpl::OnBoundsChanged(RectPtr bounds) {
   bounds_ = bounds.To<gfx::Rect>();
-  window()->SetBounds(gfx::Rect(bounds_.size()));
   OnHostResized(bounds_.size());
 }
 

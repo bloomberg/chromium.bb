@@ -87,8 +87,6 @@ class WindowManager : public Application,
         CreateWindow(kEmbeddedAppURL);
       else if (event->flags & ui::EF_RIGHT_MOUSE_BUTTON)
         CreateWindow(kNestingAppURL);
-      else if (event->flags & ui::EF_MIDDLE_MOUSE_BUTTON)
-        CreateWindow(kMojoBrowserURL);
     }
   }
 
@@ -106,15 +104,18 @@ class WindowManager : public Application,
     node->SetActiveView(view);
     view->SetColor(SK_ColorBLUE);
     view->AddObserver(this);
+
+    CreateWindow(kMojoBrowserURL);
   }
 
   void CreateWindow(const std::string& url) {
     Node* node = view_manager_->GetNodeById(parent_node_id_);
 
-    gfx::Rect bounds(50, 50, 400, 400);
+    gfx::Rect bounds(node->bounds().size());
+    bounds.Inset(25, 25);
     if (!node->children().empty()) {
       gfx::Point position = node->children().back()->bounds().origin();
-      position.Offset(50, 50);
+      position.Offset(25, 25);
       bounds.set_origin(position);
     }
 
