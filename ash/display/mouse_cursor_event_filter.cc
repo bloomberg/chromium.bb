@@ -42,7 +42,12 @@ const int kIndicatorThickness = 1;
 
 // This is to disable the new mouse warp logic in case
 // it caused the problem in the branch.
+// Events from Ozone don't have a native event
+#if defined(USE_OZONE)
+bool enable_mouse_warp_in_native_coords = false;
+#else
 bool enable_mouse_warp_in_native_coords = true;
+#endif
 
 void ConvertPointFromScreenToNative(const aura::Window* root_window,
                                     gfx::Point* point) {
