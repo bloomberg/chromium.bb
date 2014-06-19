@@ -1323,17 +1323,6 @@ void WebLocalFrameImpl::extendSelectionAndDelete(int before, int after)
     frame()->inputMethodController().extendSelectionAndDelete(before, after);
 }
 
-void WebLocalFrameImpl::addStyleSheetByURL(const WebString& url)
-{
-    RefPtrWillBeRawPtr<Element> styleElement = frame()->document()->createElement(HTMLNames::linkTag, false);
-
-    styleElement->setAttribute(HTMLNames::typeAttr, "text/css");
-    styleElement->setAttribute(HTMLNames::relAttr, "stylesheet");
-    styleElement->setAttribute(HTMLNames::hrefAttr, url);
-
-    frame()->document()->head()->appendChild(styleElement.release(), IGNORE_EXCEPTION);
-}
-
 void WebLocalFrameImpl::setCaretVisible(bool visible)
 {
     frame()->selection().setCaretVisible(visible);
@@ -1888,6 +1877,17 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
     String scriptResult = toCoreString(v8::Handle<v8::String>::Cast(result));
     if (!frame()->navigationScheduler().locationChangePending())
         frame()->document()->loader()->replaceDocument(scriptResult, ownerDocument.get());
+}
+
+void WebLocalFrameImpl::addStyleSheetByURL(const WebString& url)
+{
+    RefPtrWillBeRawPtr<Element> styleElement = frame()->document()->createElement(HTMLNames::linkTag, false);
+
+    styleElement->setAttribute(HTMLNames::typeAttr, "text/css");
+    styleElement->setAttribute(HTMLNames::relAttr, "stylesheet");
+    styleElement->setAttribute(HTMLNames::hrefAttr, url);
+
+    frame()->document()->head()->appendChild(styleElement.release(), IGNORE_EXCEPTION);
 }
 
 void WebLocalFrameImpl::willDetachParent()

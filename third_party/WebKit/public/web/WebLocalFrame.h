@@ -31,6 +31,9 @@ public:
     // Returns the frame inside a given frame or iframe element. Returns 0 if
     // the given element is not a frame, iframe or if the frame is empty.
     BLINK_EXPORT static WebLocalFrame* fromFrameOwnerElement(const WebElement&);
+
+    // Navigation Transitions  ---------------------------------------------
+    virtual void addStyleSheetByURL(const WebString& url) = 0;
 };
 
 } // namespace blink

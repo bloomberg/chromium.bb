@@ -472,10 +472,6 @@ public:
 
     virtual void setCaretVisible(bool) = 0;
 
-    // Navigation Transitions  ---------------------------------------------
-
-    virtual void addStyleSheetByURL(const WebString& url) = 0;
-
     // Printing ------------------------------------------------------------
 
     // Reformats the WebFrame for printing. WebPrintParams specifies the printable
