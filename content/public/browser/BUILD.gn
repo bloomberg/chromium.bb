@@ -33,4 +33,7 @@ source_set("browser") {
     "//content/browser",
     "//skia",
   ]
+
+  # We expose skia headers in the public API.
+  forward_dependent_configs_from = [ "//skia" ]
 }

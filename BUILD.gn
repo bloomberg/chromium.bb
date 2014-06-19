@@ -35,6 +35,10 @@ group("root") {
     "//components/translate:translate_core_browser",
     "//components/translate:translate_core_common",
     "//components/url_matcher",
+    "//components/user_prefs",
+    "//components/visitedlink/browser",
+    "//components/visitedlink/common",
+    #"//components/visitedlink/renderer",  # Blocked on blink
     "//content",
     "//crypto",
     "//extensions/common/api:extensions_api",
@@ -136,6 +140,9 @@ group("root") {
     deps -= [
       "//cc",
       "//content",
+      "//components/user_prefs",  # Blocked on content.
+      "//components/visitedlink/browser",  # Blocked on content.
+      "//components/visitedlink/common",  # Blocked on content.
       "//extensions/common/api:extensions_api",
       "//pdf",  # Not compiled on Android in GYP yet, either.
       "//ppapi:ppapi_c",
