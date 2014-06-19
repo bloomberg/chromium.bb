@@ -293,6 +293,9 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/380554
 "deadlock:g_type_add_interface_static\n"
 
+// http:://crbug.com/386385
+"race:appcache::AppCacheStorageImpl::DatabaseTask::CallRunCompleted\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
