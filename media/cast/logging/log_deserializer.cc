@@ -35,7 +35,12 @@ void MergePacketEvent(const AggregatedPacketEvent& from,
     for (int j = 0; j < to->base_packet_event_size(); j++) {
       BasePacketEvent* to_base_event = to->mutable_base_packet_event(j);
       if (from_base_event.packet_id() == to_base_event->packet_id()) {
+        int packet_size = std::max(
+            from_base_event.size(), to_base_event->size());
+        // Need special merge logic here because we need to prevent a valid
+        // packet size (> 0) from being overwritten with an invalid one (= 0).
         to_base_event->MergeFrom(from_base_event);
+        to_base_event->set_size(packet_size);
         merged = true;
         break;
       }
