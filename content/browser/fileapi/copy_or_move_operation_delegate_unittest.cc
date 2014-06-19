@@ -34,7 +34,6 @@ using content::AsyncFileTestHelper;
 using fileapi::CopyOrMoveOperationDelegate;
 using fileapi::FileStreamWriter;
 using fileapi::FileSystemOperation;
-using fileapi::FileSystemType;
 using fileapi::FileSystemURL;
 
 namespace content {
@@ -165,13 +164,10 @@ class ScopedThreadStopper {
 
 class CopyOrMoveOperationTestHelper {
  public:
-  CopyOrMoveOperationTestHelper(
-      const GURL& origin,
-      FileSystemType src_type,
-      FileSystemType dest_type)
-      : origin_(origin),
-        src_type_(src_type),
-        dest_type_(dest_type) {}
+  CopyOrMoveOperationTestHelper(const GURL& origin,
+                                fileapi::FileSystemType src_type,
+                                fileapi::FileSystemType dest_type)
+      : origin_(origin), src_type_(src_type), dest_type_(dest_type) {}
 
   ~CopyOrMoveOperationTestHelper() {
     file_system_context_ = NULL;
@@ -377,7 +373,9 @@ class CopyOrMoveOperationTestHelper {
   }
 
  private:
-  void GetUsageAndQuota(FileSystemType type, int64* usage, int64* quota) {
+  void GetUsageAndQuota(fileapi::FileSystemType type,
+                        int64* usage,
+                        int64* quota) {
     quota::QuotaStatusCode status = AsyncFileTestHelper::GetUsageAndQuota(
         quota_manager_.get(), origin_, type, usage, quota);
     ASSERT_EQ(quota::kQuotaStatusOk, status);
@@ -387,8 +385,8 @@ class CopyOrMoveOperationTestHelper {
   base::ScopedTempDir base_;
 
   const GURL origin_;
-  const FileSystemType src_type_;
-  const FileSystemType dest_type_;
+  const fileapi::FileSystemType src_type_;
+  const fileapi::FileSystemType dest_type_;
 
   base::MessageLoopForIO message_loop_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;

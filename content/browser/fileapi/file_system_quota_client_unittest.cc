@@ -22,7 +22,6 @@
 
 using content::AsyncFileTestHelper;
 using fileapi::FileSystemQuotaClient;
-using fileapi::FileSystemType;
 using fileapi::FileSystemURL;
 
 namespace content {
@@ -120,8 +119,8 @@ class FileSystemQuotaClientTest : public testing::Test {
   bool CreateFileSystemDirectory(const base::FilePath& file_path,
                                  const std::string& origin_url,
                                  quota::StorageType storage_type) {
-    FileSystemType type = fileapi::QuotaStorageTypeToFileSystemType(
-        storage_type);
+    fileapi::FileSystemType type =
+        fileapi::QuotaStorageTypeToFileSystemType(storage_type);
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL(origin_url), type, file_path);
 
@@ -137,8 +136,8 @@ class FileSystemQuotaClientTest : public testing::Test {
     if (file_path.empty())
       return false;
 
-    FileSystemType type = fileapi::QuotaStorageTypeToFileSystemType(
-        storage_type);
+    fileapi::FileSystemType type =
+        fileapi::QuotaStorageTypeToFileSystemType(storage_type);
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL(origin_url), type, file_path);
 

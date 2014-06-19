@@ -27,7 +27,6 @@ using content::AsyncFileTestHelper;
 using fileapi::AsyncFileUtilAdapter;
 using fileapi::FileSystemContext;
 using fileapi::FileSystemOperationContext;
-using fileapi::FileSystemType;
 using fileapi::FileSystemURL;
 using fileapi::LocalFileUtil;
 
@@ -36,7 +35,7 @@ namespace content {
 namespace {
 
 const GURL kOrigin("http://foo/");
-const FileSystemType kFileSystemType = fileapi::kFileSystemTypeTest;
+const fileapi::FileSystemType kFileSystemType = fileapi::kFileSystemTypeTest;
 
 }  // namespace
 

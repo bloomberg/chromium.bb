@@ -19,7 +19,6 @@
 #endif
 
 using fileapi::FileSystemMountOption;
-using fileapi::FileSystemType;
 using fileapi::FileSystemURL;
 using fileapi::IsolatedContext;
 using fileapi::kFileSystemTypeDragged;
@@ -103,7 +102,7 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
         .AppendASCII(names_[i]);
     std::string cracked_id;
     base::FilePath cracked_path;
-    FileSystemType cracked_type;
+    fileapi::FileSystemType cracked_type;
     FileSystemMountOption cracked_option;
     ASSERT_TRUE(isolated_context()->CrackVirtualPath(
         virtual_path, &cracked_id, &cracked_type, &cracked_path,
@@ -201,7 +200,7 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
               names_[i]).Append(relatives[j].path);
       std::string cracked_id;
       base::FilePath cracked_path;
-      FileSystemType cracked_type;
+      fileapi::FileSystemType cracked_type;
       FileSystemMountOption cracked_option;
       if (!relatives[j].valid) {
         ASSERT_FALSE(isolated_context()->CrackVirtualPath(

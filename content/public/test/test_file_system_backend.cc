@@ -26,7 +26,6 @@
 using fileapi::FileSystemContext;
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemOperationContext;
-using fileapi::FileSystemType;
 using fileapi::FileSystemURL;
 
 namespace content {
@@ -71,27 +70,27 @@ class TestFileSystemBackend::QuotaUtil
       FileSystemContext* context,
       quota::QuotaManagerProxy* proxy,
       const GURL& origin_url,
-      FileSystemType type) OVERRIDE {
+      fileapi::FileSystemType type) OVERRIDE {
     NOTREACHED();
     return base::File::FILE_OK;
   }
 
   virtual scoped_refptr<fileapi::QuotaReservation>
-      CreateQuotaReservationOnFileTaskRunner(
-          const GURL& origin_url,
-          FileSystemType type) OVERRIDE {
+  CreateQuotaReservationOnFileTaskRunner(
+      const GURL& origin_url,
+      fileapi::FileSystemType type) OVERRIDE {
     NOTREACHED();
     return scoped_refptr<fileapi::QuotaReservation>();
   }
 
   virtual void GetOriginsForTypeOnFileTaskRunner(
-      FileSystemType type,
+      fileapi::FileSystemType type,
       std::set<GURL>* origins) OVERRIDE {
     NOTREACHED();
   }
 
   virtual void GetOriginsForHostOnFileTaskRunner(
-      FileSystemType type,
+      fileapi::FileSystemType type,
       const std::string& host,
       std::set<GURL>* origins) OVERRIDE {
     NOTREACHED();
@@ -100,43 +99,43 @@ class TestFileSystemBackend::QuotaUtil
   virtual int64 GetOriginUsageOnFileTaskRunner(
       FileSystemContext* context,
       const GURL& origin_url,
-      FileSystemType type) OVERRIDE {
+      fileapi::FileSystemType type) OVERRIDE {
     return usage_;
   }
 
   virtual void AddFileUpdateObserver(
-      FileSystemType type,
+      fileapi::FileSystemType type,
       FileUpdateObserver* observer,
       base::SequencedTaskRunner* task_runner) OVERRIDE {
     NOTIMPLEMENTED();
   }
 
   virtual void AddFileChangeObserver(
-      FileSystemType type,
+      fileapi::FileSystemType type,
       fileapi::FileChangeObserver* observer,
       base::SequencedTaskRunner* task_runner) OVERRIDE {
     change_observers_ = change_observers_.AddObserver(observer, task_runner);
   }
 
   virtual void AddFileAccessObserver(
-      FileSystemType type,
+      fileapi::FileSystemType type,
       fileapi::FileAccessObserver* observer,
       base::SequencedTaskRunner* task_runner) OVERRIDE {
     NOTIMPLEMENTED();
   }
 
   virtual const fileapi::UpdateObserverList* GetUpdateObservers(
-      FileSystemType type) const OVERRIDE {
+      fileapi::FileSystemType type) const OVERRIDE {
     return &update_observers_;
   }
 
   virtual const fileapi::ChangeObserverList* GetChangeObservers(
-      FileSystemType type) const OVERRIDE {
+      fileapi::FileSystemType type) const OVERRIDE {
     return &change_observers_;
   }
 
   virtual const fileapi::AccessObserverList* GetAccessObservers(
-      FileSystemType type) const OVERRIDE {
+      fileapi::FileSystemType type) const OVERRIDE {
     return NULL;
   }
 
@@ -171,7 +170,7 @@ TestFileSystemBackend::TestFileSystemBackend(
 TestFileSystemBackend::~TestFileSystemBackend() {
 }
 
-bool TestFileSystemBackend::CanHandleType(FileSystemType type) const {
+bool TestFileSystemBackend::CanHandleType(fileapi::FileSystemType type) const {
   return (type == fileapi::kFileSystemTypeTest);
 }
 
@@ -187,13 +186,14 @@ void TestFileSystemBackend::ResolveURL(const FileSystemURL& url,
 }
 
 fileapi::AsyncFileUtil* TestFileSystemBackend::GetAsyncFileUtil(
-    FileSystemType type) {
+    fileapi::FileSystemType type) {
   return file_util_.get();
 }
 
 fileapi::CopyOrMoveFileValidatorFactory*
 TestFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
-    FileSystemType type, base::File::Error* error_code) {
+    fileapi::FileSystemType type,
+    base::File::Error* error_code) {
   DCHECK(error_code);
   *error_code = base::File::FILE_OK;
   if (require_copy_or_move_validator_) {
@@ -253,7 +253,7 @@ fileapi::FileSystemQuotaUtil* TestFileSystemBackend::GetQuotaUtil() {
 }
 
 const fileapi::UpdateObserverList* TestFileSystemBackend::GetUpdateObservers(
-    FileSystemType type) const {
+    fileapi::FileSystemType type) const {
   return quota_util_->GetUpdateObservers(type);
 }
 

@@ -15,7 +15,6 @@
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 
-using fileapi::FileSystemType;
 using fileapi::FileSystemUsageCache;
 using fileapi::ObfuscatedFileUtil;
 using fileapi::QuotaBackendImpl;
@@ -115,7 +114,8 @@ class QuotaBackendImplTest : public testing::Test {
   }
 
  protected:
-  void InitializeForOriginAndType(const GURL& origin, FileSystemType type) {
+  void InitializeForOriginAndType(const GURL& origin,
+                                  fileapi::FileSystemType type) {
     ASSERT_TRUE(file_util_->InitOriginDatabase(origin, true /* create */));
     ASSERT_TRUE(file_util_->origin_database_ != NULL);
 
@@ -134,7 +134,8 @@ class QuotaBackendImplTest : public testing::Test {
     return base::MessageLoopProxy::current().get();
   }
 
-  base::FilePath GetUsageCachePath(const GURL& origin, FileSystemType type) {
+  base::FilePath GetUsageCachePath(const GURL& origin,
+                                   fileapi::FileSystemType type) {
     base::FilePath path;
     base::File::Error error =
         backend_->GetUsageCachePath(origin, type, &path);
@@ -156,7 +157,7 @@ class QuotaBackendImplTest : public testing::Test {
 };
 
 TEST_F(QuotaBackendImplTest, ReserveQuota_Basic) {
-  FileSystemType type = fileapi::kFileSystemTypeTemporary;
+  fileapi::FileSystemType type = fileapi::kFileSystemTypeTemporary;
   InitializeForOriginAndType(GURL(kOrigin), type);
   quota_manager_proxy_->set_quota(10000);
 
@@ -182,7 +183,7 @@ TEST_F(QuotaBackendImplTest, ReserveQuota_Basic) {
 }
 
 TEST_F(QuotaBackendImplTest, ReserveQuota_NoSpace) {
-  FileSystemType type = fileapi::kFileSystemTypeTemporary;
+  fileapi::FileSystemType type = fileapi::kFileSystemTypeTemporary;
   InitializeForOriginAndType(GURL(kOrigin), type);
   quota_manager_proxy_->set_quota(100);
 
@@ -200,7 +201,7 @@ TEST_F(QuotaBackendImplTest, ReserveQuota_NoSpace) {
 }
 
 TEST_F(QuotaBackendImplTest, ReserveQuota_Revert) {
-  FileSystemType type = fileapi::kFileSystemTypeTemporary;
+  fileapi::FileSystemType type = fileapi::kFileSystemTypeTemporary;
   InitializeForOriginAndType(GURL(kOrigin), type);
   quota_manager_proxy_->set_quota(10000);
 
@@ -218,7 +219,7 @@ TEST_F(QuotaBackendImplTest, ReserveQuota_Revert) {
 }
 
 TEST_F(QuotaBackendImplTest, ReleaseReservedQuota) {
-  FileSystemType type = fileapi::kFileSystemTypeTemporary;
+  fileapi::FileSystemType type = fileapi::kFileSystemTypeTemporary;
   InitializeForOriginAndType(GURL(kOrigin), type);
   const int64 kInitialUsage = 2000;
   quota_manager_proxy_->set_usage(kInitialUsage);
@@ -232,7 +233,7 @@ TEST_F(QuotaBackendImplTest, ReleaseReservedQuota) {
 }
 
 TEST_F(QuotaBackendImplTest, CommitQuotaUsage) {
-  FileSystemType type = fileapi::kFileSystemTypeTemporary;
+  fileapi::FileSystemType type = fileapi::kFileSystemTypeTemporary;
   InitializeForOriginAndType(GURL(kOrigin), type);
   quota_manager_proxy_->set_quota(10000);
   base::FilePath path = GetUsageCachePath(GURL(kOrigin), type);
@@ -255,7 +256,7 @@ TEST_F(QuotaBackendImplTest, CommitQuotaUsage) {
 }
 
 TEST_F(QuotaBackendImplTest, DirtyCount) {
-  FileSystemType type = fileapi::kFileSystemTypeTemporary;
+  fileapi::FileSystemType type = fileapi::kFileSystemTypeTemporary;
   InitializeForOriginAndType(GURL(kOrigin), type);
   base::FilePath path = GetUsageCachePath(GURL(kOrigin), type);
 

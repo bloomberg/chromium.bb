@@ -14,7 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/quota/quota_reservation.h"
 
-using fileapi::FileSystemType;
 using fileapi::QuotaReservationManager;
 
 namespace content {
@@ -22,7 +21,7 @@ namespace content {
 namespace {
 
 const char kOrigin[] = "http://example.com";
-const FileSystemType kType = fileapi::kFileSystemTypeTemporary;
+const fileapi::FileSystemType kType = fileapi::kFileSystemTypeTemporary;
 
 const base::FilePath::StringType file1_name = FILE_PATH_LITERAL("file1");
 const base::FilePath::StringType file2_name = FILE_PATH_LITERAL("file2");
@@ -38,7 +37,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
 
   virtual void ReserveQuota(
       const GURL& origin,
-      FileSystemType type,
+      fileapi::FileSystemType type,
       int64 delta,
       const QuotaReservationManager::ReserveQuotaCallback& callback) OVERRIDE {
     base::MessageLoopProxy::current()->PostTask(
@@ -47,17 +46,17 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   }
 
   virtual void ReleaseReservedQuota(const GURL& origin,
-                                    FileSystemType type,
+                                    fileapi::FileSystemType type,
                                     int64 size) OVERRIDE {}
 
   virtual void CommitQuotaUsage(const GURL& origin,
-                                FileSystemType type,
+                                fileapi::FileSystemType type,
                                 int64 delta) OVERRIDE {}
 
   virtual void IncrementDirtyCount(const GURL& origin,
-                                   FileSystemType type) OVERRIDE {}
+                                   fileapi::FileSystemType type) OVERRIDE {}
   virtual void DecrementDirtyCount(const GURL& origin,
-                                   FileSystemType type) OVERRIDE {}
+                                   fileapi::FileSystemType type) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeBackend);
@@ -95,7 +94,7 @@ class QuotaReservationTest : public testing::Test {
   scoped_refptr<QuotaReservation> CreateQuotaReservation(
       scoped_refptr<fileapi::QuotaReservation> reservation,
       const GURL& origin,
-      FileSystemType type) {
+      fileapi::FileSystemType type) {
     // Sets reservation_ as a side effect.
     return scoped_refptr<QuotaReservation>(
         new QuotaReservation(reservation, origin, type));
@@ -149,7 +148,7 @@ void ReserveQuota(scoped_refptr<QuotaReservation> quota_reservation,
 // 2) Open a file, grow it, close it, and reserve quota with correct sizes.
 TEST_F(QuotaReservationTest, ReserveQuota) {
   GURL origin(kOrigin);
-  FileSystemType type = kType;
+  fileapi::FileSystemType type = kType;
 
   scoped_refptr<fileapi::QuotaReservation> reservation(
       reservation_manager()->CreateReservation(origin, type));
@@ -190,7 +189,7 @@ TEST_F(QuotaReservationTest, ReserveQuota) {
 // 1) We can open and close multiple files.
 TEST_F(QuotaReservationTest, MultipleFiles) {
   GURL origin(kOrigin);
-  FileSystemType type = kType;
+  fileapi::FileSystemType type = kType;
 
   scoped_refptr<fileapi::QuotaReservation> reservation(
       reservation_manager()->CreateReservation(origin, type));

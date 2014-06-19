@@ -9,7 +9,6 @@
 #include "url/gurl.h"
 
 using fileapi::CrackIsolatedFileSystemName;
-using fileapi::FileSystemType;
 using fileapi::GetExternalFileSystemRootURIString;
 using fileapi::GetIsolatedFileSystemName;
 using fileapi::GetIsolatedFileSystemRootURIString;
@@ -24,7 +23,7 @@ class FileSystemUtilTest : public testing::Test {};
 TEST_F(FileSystemUtilTest, ParseFileSystemSchemeURL) {
   GURL uri("filesystem:http://chromium.org/temporary/foo/bar");
   GURL origin_url;
-  FileSystemType type;
+  fileapi::FileSystemType type;
   base::FilePath virtual_path;
   ParseFileSystemSchemeURL(uri, &origin_url, &type, &virtual_path);
   EXPECT_EQ(GURL("http://chromium.org"), origin_url);

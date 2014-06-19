@@ -38,7 +38,6 @@ using content::AsyncFileTestHelper;
 using fileapi::FileSystemContext;
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemOperationContext;
-using fileapi::FileSystemType;
 using fileapi::FileSystemURL;
 using fileapi::ObfuscatedFileUtil;
 using fileapi::SandboxDirectoryDatabase;
@@ -126,13 +125,12 @@ FileSystemURL FileSystemURLDirName(const FileSystemURL& url) {
       fileapi::VirtualPath::DirName(url.virtual_path()));
 }
 
-std::string GetTypeString(FileSystemType type) {
+std::string GetTypeString(fileapi::FileSystemType type) {
   return fileapi::SandboxFileSystemBackendDelegate::GetTypeString(type);
 }
 
-bool HasFileSystemType(
-    ObfuscatedFileUtil::AbstractOriginEnumerator* enumerator,
-    FileSystemType type) {
+bool HasFileSystemType(ObfuscatedFileUtil::AbstractOriginEnumerator* enumerator,
+                       fileapi::FileSystemType type) {
   return enumerator->HasTypeDirectory(GetTypeString(type));
 }
 

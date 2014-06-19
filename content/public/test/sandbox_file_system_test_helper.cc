@@ -23,13 +23,13 @@
 using fileapi::FileSystemContext;
 using fileapi::FileSystemOperationContext;
 using fileapi::FileSystemOperationRunner;
-using fileapi::FileSystemType;
 using fileapi::FileSystemURL;
 
 namespace content {
 
 SandboxFileSystemTestHelper::SandboxFileSystemTestHelper(
-    const GURL& origin, FileSystemType type)
+    const GURL& origin,
+    fileapi::FileSystemType type)
     : origin_(origin), type_(type), file_util_(NULL) {
 }
 

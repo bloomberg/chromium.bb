@@ -24,15 +24,15 @@
 using content::AsyncFileTestHelper;
 using fileapi::CopyOrMoveFileValidator;
 using fileapi::CopyOrMoveFileValidatorFactory;
-using fileapi::FileSystemType;
 using fileapi::FileSystemURL;
 
 namespace content {
 
 namespace {
 
-const FileSystemType kNoValidatorType = fileapi::kFileSystemTypeTemporary;
-const FileSystemType kWithValidatorType = fileapi::kFileSystemTypeTest;
+const fileapi::FileSystemType kNoValidatorType =
+    fileapi::kFileSystemTypeTemporary;
+const fileapi::FileSystemType kWithValidatorType = fileapi::kFileSystemTypeTest;
 
 void ExpectOk(const GURL& origin_url,
               const std::string& name,
@@ -42,13 +42,10 @@ void ExpectOk(const GURL& origin_url,
 
 class CopyOrMoveFileValidatorTestHelper {
  public:
-  CopyOrMoveFileValidatorTestHelper(
-      const GURL& origin,
-      FileSystemType src_type,
-      FileSystemType dest_type)
-      : origin_(origin),
-        src_type_(src_type),
-        dest_type_(dest_type) {}
+  CopyOrMoveFileValidatorTestHelper(const GURL& origin,
+                                    fileapi::FileSystemType src_type,
+                                    fileapi::FileSystemType dest_type)
+      : origin_(origin), src_type_(src_type), dest_type_(dest_type) {}
 
   ~CopyOrMoveFileValidatorTestHelper() {
     file_system_context_ = NULL;
@@ -170,8 +167,8 @@ class CopyOrMoveFileValidatorTestHelper {
 
   const GURL origin_;
 
-  const FileSystemType src_type_;
-  const FileSystemType dest_type_;
+  const fileapi::FileSystemType src_type_;
+  const fileapi::FileSystemType dest_type_;
   std::string src_fsid_;
   std::string dest_fsid_;
 
