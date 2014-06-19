@@ -49,12 +49,13 @@ NativeViewAccessibilityWin
  public:
   BEGIN_COM_MAP(NativeViewAccessibilityWin)
     COM_INTERFACE_ENTRY2(IDispatch, IAccessible2_2)
-    COM_INTERFACE_ENTRY2(IAccessible, IAccessible2_2)
+    COM_INTERFACE_ENTRY(IAccessible)
+    COM_INTERFACE_ENTRY(IAccessible2)
     COM_INTERFACE_ENTRY(IAccessible2_2)
-    COM_INTERFACE_ENTRY(IAccessibleText)
-    COM_INTERFACE_ENTRY(IServiceProvider)
     COM_INTERFACE_ENTRY(IAccessibleEx)
+    COM_INTERFACE_ENTRY(IAccessibleText)
     COM_INTERFACE_ENTRY(IRawElementProviderSimple)
+    COM_INTERFACE_ENTRY(IServiceProvider)
   END_COM_MAP()
 
   virtual ~NativeViewAccessibilityWin();
