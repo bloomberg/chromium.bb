@@ -23,6 +23,9 @@ per-file data_reduction_proxy*=bengr@chromium.org
 per-file data_reduction_proxy*=marq@chromium.org
 per-file data_reduction_proxy*=bolian@chromium.org
 
+per-file enhanced_bookmarks*=noyau@chromium.org
+per-file enhanced_bookmarks*=sky@chromium.org
+
 per-file cloud_devices*=gene@chromium.org
 per-file cloud_devices*=noamsml@chromium.org
 per-file cloud_devices*=vitalybuka@chromium.org
