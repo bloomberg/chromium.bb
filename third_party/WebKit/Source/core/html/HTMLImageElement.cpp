@@ -175,11 +175,6 @@ void HTMLImageElement::resetFormOwner()
     }
 }
 
-void HTMLImageElement::updateCurrentSrc()
-{
-    m_currentSrc = AtomicString(document().completeURL(imageSourceURL()).string());
-}
-
 void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidate& candidate)
 {
     m_bestFitImageURL = candidate.url();
@@ -394,9 +389,16 @@ int HTMLImageElement::naturalHeight() const
     return imageLoader().image()->imageSizeForRenderer(renderer(), 1.0f).height();
 }
 
-const AtomicString& HTMLImageElement::currentSrc() const
+const String& HTMLImageElement::currentSrc() const
 {
-    return m_currentSrc;
+    // http://www.whatwg.org/specs/web-apps/current-work/multipage/edits.html#dom-img-currentsrc
+    // The currentSrc IDL attribute must return the img element's current request's current URL.
+    // Initially, the pending request turns into current request when it is either available or broken.
+    // We use the image's dimensions as a proxy to it being in any of these states.
+    if (!imageLoader().image() || !imageLoader().image()->image() || !imageLoader().image()->image()->width())
+        return emptyAtom;
+
+    return imageLoader().image()->url().string();
 }
 
 bool HTMLImageElement::isURLAttribute(const Attribute& attribute) const

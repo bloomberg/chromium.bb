@@ -460,8 +460,6 @@ void ImageLoader::dispatchPendingErrorEvent()
     if (!m_hasPendingErrorEvent)
         return;
     m_hasPendingErrorEvent = false;
-    if (isHTMLImageElement(element()))
-        toHTMLImageElement(element())->updateCurrentSrc();
 
     if (element()->document().frame())
         element()->dispatchEvent(Event::create(EventTypeNames::error));

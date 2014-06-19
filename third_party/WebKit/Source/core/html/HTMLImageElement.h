@@ -49,7 +49,7 @@ public:
 
     int naturalWidth() const;
     int naturalHeight() const;
-    const AtomicString& currentSrc() const;
+    const String& currentSrc() const;
 
     bool isServerMap() const;
 
@@ -70,7 +70,6 @@ public:
     void setSrc(const String&);
 
     void setWidth(int);
-    void updateCurrentSrc();
 
     int x() const;
     int y() const;
@@ -145,7 +144,6 @@ private:
 #endif
     CompositeOperator m_compositeOperator;
     AtomicString m_bestFitImageURL;
-    AtomicString m_currentSrc;
     float m_imageDevicePixelRatio;
     bool m_formWasSetByParser;
     bool m_elementCreatedByParser;
