@@ -594,6 +594,9 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
     // from when it was previously enabled.
     SafeBrowsingStoreFile::DeleteStore(
         SideEffectFreeWhitelistDBFilename(filename_base));
+    base::DeleteFile(
+        PrefixSetForFilename(SideEffectFreeWhitelistDBFilename(filename_base)),
+        false);
   }
 
   if (ip_blacklist_store_.get()) {
