@@ -160,11 +160,6 @@ crbug.com/330083 w3c/web-platform-tests/custom-elements/creating-and-passing-reg
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-014.html [ Timeout Failure ]
 crbug.com/330083 w3c/web-platform-tests/webrtc/simplecall.html [ Failure ]
 
-# Scrollbar differences.
-Bug(vollick) [ Mac ] virtual/softwarecompositing/overflow/scroll-parent-absolute.html [ NeedsRebaseline ]
-Bug(vollick) [ Mac ] virtual/gpu/compositedscrolling/overflow/scroll-parent-absolute.html [ NeedsRebaseline ]
-Bug(vollick) [ Mac ] compositing/overflow/scroll-parent-absolute.html [ NeedsRebaseline ]
-
 # Untriaged Aura-specific failure.
 crbug.com/229207 [ Win ] fast/forms/select/popup-closes-on-blur.html [ Failure ]
 
