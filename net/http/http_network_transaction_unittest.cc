@@ -3028,6 +3028,82 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
   EXPECT_EQ(kUploadData, response_data);
 }
 
+// Verifies that a session which races and wins against the owning transaction
+// (completing prior to host resolution), doesn't fail the transaction.
+// Regression test for crbug.com/334413.
+TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithSessionRace) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+
+  // Configure SPDY proxy server "proxy:70".
+  session_deps_.proxy_service.reset(
+      ProxyService::CreateFixed("https://proxy:70"));
+  CapturingBoundNetLog log;
+  session_deps_.net_log = log.bound().net_log();
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  // Fetch http://www.google.com/ through the SPDY proxy.
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, false));
+  MockWrite spdy_writes[] = {CreateMockWrite(*req)};
+
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> data(spdy_util_.ConstructSpdyBodyFrame(1, true));
+  MockRead spdy_reads[] = {
+      CreateMockRead(*resp), CreateMockRead(*data), MockRead(ASYNC, 0, 0),
+  };
+
+  DelayedSocketData spdy_data(
+      1,  // wait for one write to finish before reading.
+      spdy_reads,
+      arraysize(spdy_reads),
+      spdy_writes,
+      arraysize(spdy_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.SetNextProto(GetParam());
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  TestCompletionCallback callback1;
+
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+
+  // Stall the hostname resolution begun by the transaction.
+  session_deps_.host_resolver->set_synchronous_mode(false);
+  session_deps_.host_resolver->set_ondemand_mode(true);
+
+  int rv = trans->Start(&request, callback1.callback(), log.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  // Race a session to the proxy, which completes first.
+  session_deps_.host_resolver->set_ondemand_mode(false);
+  SpdySessionKey key(
+      HostPortPair("proxy", 70), ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
+  base::WeakPtr<SpdySession> spdy_session =
+      CreateSecureSpdySession(session, key, log.bound());
+
+  // Unstall the resolution begun by the transaction.
+  session_deps_.host_resolver->set_ondemand_mode(true);
+  session_deps_.host_resolver->ResolveAllPending();
+
+  EXPECT_FALSE(callback1.have_result());
+  rv = callback1.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+
+  std::string response_data;
+  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  EXPECT_EQ(kUploadData, response_data);
+}
+
 // Test a SPDY get through an HTTPS Proxy.
 TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
   HttpRequestInfo request;

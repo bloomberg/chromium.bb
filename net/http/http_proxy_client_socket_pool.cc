@@ -237,6 +237,13 @@ int HttpProxyConnectJob::DoSSLConnectComplete(int result) {
       return ERR_PROXY_CERTIFICATE_INVALID;
     }
   }
+  // A SPDY session to the proxy completed prior to resolving the proxy
+  // hostname. Surface this error, and allow the delegate to retry.
+  // See crbug.com/334413.
+  if (result == ERR_SPDY_SESSION_ALREADY_EXISTS) {
+    DCHECK(!transport_socket_handle_->socket());
+    return ERR_SPDY_SESSION_ALREADY_EXISTS;
+  }
   if (result < 0) {
     if (transport_socket_handle_->socket())
       transport_socket_handle_->socket()->Disconnect();
