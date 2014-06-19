@@ -43,7 +43,7 @@ handle_sigusr1(int signal_number, void *data)
 	/* We'd be safer if we actually had the struct
 	 * signalfd_siginfo from the signalfd data and could verify
 	 * this came from Xwayland.*/
-	weston_wm_create(wxs, wxs->wm_fd);
+	wxs->wm = weston_wm_create(wxs, wxs->wm_fd);
 	wl_event_source_remove(wxs->sigusr1_source);
 
 	return 1;
@@ -163,8 +163,10 @@ weston_xserver_shutdown(struct weston_xserver *wxs)
 	}
 	close(wxs->abstract_fd);
 	close(wxs->unix_fd);
-	if (wxs->wm)
+	if (wxs->wm) {
 		weston_wm_destroy(wxs->wm);
+		wxs->wm = NULL;
+	}
 	wxs->loop = NULL;
 }
 
