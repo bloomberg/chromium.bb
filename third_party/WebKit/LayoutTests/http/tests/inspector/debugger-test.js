@@ -114,7 +114,7 @@ InspectorTest.waitUntilResumed = function(callback)
 
 InspectorTest.resumeExecution = function(callback)
 {
-    if (WebInspector.panels.sources.paused)
+    if (WebInspector.panels.sources.paused())
         WebInspector.panels.sources.togglePause();
     InspectorTest.waitUntilResumed(callback);
 };
