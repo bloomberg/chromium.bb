@@ -32,6 +32,8 @@
 #define WebContentDecryptionModuleSession_h
 
 #include "WebCommon.h"
+#include "public/platform/WebContentDecryptionModuleException.h"
+#include "public/platform/WebContentDecryptionModuleResult.h"
 
 namespace blink {
 
@@ -47,10 +49,12 @@ public:
             MediaKeyErrorCodeClient,
         };
 
-        virtual void message(const unsigned char* message, size_t messageLength, const blink::WebURL& destinationURL) = 0;
+        virtual void message(const unsigned char* message, size_t messageLength, const WebURL& destinationURL) = 0;
         virtual void ready() = 0;
         virtual void close() = 0;
+        // FIXME: Remove this method once Chromium updated to use the new parameters.
         virtual void error(MediaKeyErrorCode, unsigned long systemCode) = 0;
+        virtual void error(WebContentDecryptionModuleException, unsigned long systemCode, const WebString& message) = 0;
 
     protected:
         virtual ~Client();
@@ -59,9 +63,15 @@ public:
     virtual ~WebContentDecryptionModuleSession();
 
     virtual WebString sessionId() const = 0;
+
+    // FIXME: Remove these methods once the new methods are implemented in Chromium.
     virtual void initializeNewSession(const WebString& mimeType, const unsigned char* initData, size_t initDataLength) = 0;
     virtual void update(const unsigned char* response, size_t responseLength) = 0;
     virtual void release() = 0;
+
+    virtual void initializeNewSession(const WebString& initDataType, const unsigned char* initData, size_t initDataLength, const WebString& sessionType, const WebContentDecryptionModuleResult&);
+    virtual void update(const unsigned char* response, size_t responseLength, const WebContentDecryptionModuleResult&);
+    virtual void release(const WebContentDecryptionModuleResult&);
 };
 
 } // namespace blink

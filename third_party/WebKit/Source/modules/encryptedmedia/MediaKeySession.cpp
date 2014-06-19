@@ -243,6 +243,27 @@ void MediaKeySession::error(MediaKeyErrorCode errorCode, unsigned long systemCod
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
+void MediaKeySession::error(blink::WebContentDecryptionModuleException exception, unsigned long systemCode, const blink::WebString& errorMessage)
+{
+    WTF_LOG(Media, "MediaKeySession::error: exception=%d, systemCode=%lu", exception, systemCode);
+
+    // FIXME: EME-WD MediaKeyError now derives from DOMException. Figure out how
+    // to implement this without breaking prefixed EME, which has a totally
+    // different definition. The spec may also change to be just a DOMException.
+    // For now, simply generate an existing MediaKeyError.
+    MediaKeyErrorCode errorCode;
+    switch (exception) {
+    case blink::WebContentDecryptionModuleExceptionClientError:
+        errorCode = MediaKeyErrorCodeClient;
+        break;
+    default:
+        // All other exceptions get converted into Unknown.
+        errorCode = MediaKeyErrorCodeUnknown;
+        break;
+    }
+    error(errorCode, systemCode);
+}
+
 const AtomicString& MediaKeySession::interfaceName() const
 {
     return EventTargetNames::MediaKeySession;

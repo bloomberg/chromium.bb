@@ -24,8 +24,14 @@
 
 #include "config.h"
 #include "public/platform/WebContentDecryptionModuleSession.h"
+#include "public/platform/WebString.h"
 
 namespace blink {
+
+static void ReportError(WebContentDecryptionModuleResult result)
+{
+    result.completeWithError(WebContentDecryptionModuleExceptionUnknownError, 0, "Not implemented.");
+}
 
 WebContentDecryptionModuleSession::~WebContentDecryptionModuleSession()
 {
@@ -33,6 +39,23 @@ WebContentDecryptionModuleSession::~WebContentDecryptionModuleSession()
 
 WebContentDecryptionModuleSession::Client::~Client()
 {
+}
+
+// FIXME: Remove the default implementations of these methods once the new
+// methods are implemented in Chromium.
+void WebContentDecryptionModuleSession::initializeNewSession(const WebString& initDataType, const unsigned char* initData, size_t initDataLength, const WebString& sessionType, const WebContentDecryptionModuleResult& result)
+{
+    ReportError(result);
+}
+
+void WebContentDecryptionModuleSession::update(const unsigned char* response, size_t responseLength, const WebContentDecryptionModuleResult& result)
+{
+    ReportError(result);
+}
+
+void WebContentDecryptionModuleSession::release(const WebContentDecryptionModuleResult& result)
+{
+    ReportError(result);
 }
 
 } // namespace blink

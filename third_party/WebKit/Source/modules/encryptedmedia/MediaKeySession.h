@@ -120,6 +120,7 @@ private:
     virtual void ready() OVERRIDE;
     virtual void close() OVERRIDE;
     virtual void error(MediaKeyErrorCode, unsigned long systemCode) OVERRIDE;
+    virtual void error(blink::WebContentDecryptionModuleException, unsigned long systemCode, const blink::WebString& errorMessage) OVERRIDE;
 
     String m_keySystem;
     RefPtr<MediaKeyError> m_error;
