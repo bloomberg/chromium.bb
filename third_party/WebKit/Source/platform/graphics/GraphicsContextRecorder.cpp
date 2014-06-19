@@ -423,11 +423,10 @@ public:
         return kNoLayer_SaveLayerStrategy;
     }
 
-    void willSave(SaveFlags flags) OVERRIDE
+    void willSave() OVERRIDE
     {
         RefPtr<JSONObject> params = addItemWithParams("save");
-        params->setString("saveFlags", saveFlagsToString(flags));
-        this->SkCanvas::willSave(flags);
+        this->SkCanvas::willSave();
     }
 
     bool isClipEmpty() const OVERRIDE
@@ -929,10 +928,6 @@ private:
     String saveFlagsToString(SkCanvas::SaveFlags flags)
     {
         String flagsString = "";
-        if (flags & SkCanvas::kMatrix_SaveFlag)
-            flagsString.append("kMatrix_SaveFlag ");
-        if (flags & SkCanvas::kClip_SaveFlag)
-            flagsString.append("kClip_SaveFlag ");
         if (flags & SkCanvas::kHasAlphaLayer_SaveFlag)
             flagsString.append("kHasAlphaLayer_SaveFlag ");
         if (flags & SkCanvas::kFullColorLayer_SaveFlag)

@@ -4,7 +4,6 @@ Canvas log:
     0 : {
         method : "save"
         params : {
-            saveFlags : "kMatrix_SaveFlag kClip_SaveFlag "
         }
     }
     1 : {
@@ -149,7 +148,6 @@ Canvas log:
     4 : {
         method : "save"
         params : {
-            saveFlags : "kMatrix_SaveFlag kClip_SaveFlag "
         }
     }
     5 : {
@@ -175,7 +173,6 @@ Canvas log:
     7 : {
         method : "save"
         params : {
-            saveFlags : "kMatrix_SaveFlag kClip_SaveFlag "
         }
     }
     8 : {
@@ -210,7 +207,7 @@ Canvas log:
                 textSize : 12
                 textSkewX : 0
             }
-            saveFlags : "kMatrix_SaveFlag kClip_SaveFlag kHasAlphaLayer_SaveFlag kFullColorLayer_SaveFlag kClipToLayer_SaveFlag "
+            saveFlags : "kHasAlphaLayer_SaveFlag kFullColorLayer_SaveFlag kClipToLayer_SaveFlag "
         }
     }
 }
