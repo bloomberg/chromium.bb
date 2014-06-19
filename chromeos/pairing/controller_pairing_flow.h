@@ -36,7 +36,6 @@ class CHROMEOS_EXPORT ControllerPairingFlow {
     STAGE_HOST_ENROLLMENT_IN_PROGRESS,
     STAGE_HOST_ENROLLMENT_ERROR,
     STAGE_PAIRING_DONE,
-    STAGE_STARTING_SESSION,
     STAGE_FINISHED
   };
 
@@ -88,7 +87,7 @@ class CHROMEOS_EXPORT ControllerPairingFlow {
 
   // Called to confirm or deny confirmation code. Can be called only on
   // |STAGE_WAITING_FOR_CODE_CONFIRMATION| stage.
-  virtual void SetConfirmationCodeIsCorrect(bool right) = 0;
+  virtual void SetConfirmationCodeIsCorrect(bool correct) = 0;
 
   // Called when user successfully authenticated on GAIA page. Can be called
   // only on |STAGE_WAITING_FOR_CREDENTIALS| stage.
