@@ -111,16 +111,6 @@ class Browser : public Application,
     return false;
   }
 
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) OVERRIDE {
-    // Ghetto workaround for crbug.com/386256.
-    if (EndsWith(new_contents, base::ASCIIToUTF16("]"), false)) {
-      sender->SetText(new_contents.substr(0, new_contents.size() - 1));
-      HandleKeyEvent(sender, ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_RETURN,
-                                          0, false));
-    }
-  }
-
   scoped_ptr<ViewsInit> views_init_;
 
   view_manager::ViewManager* view_manager_;
