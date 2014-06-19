@@ -26,9 +26,10 @@ class LaunchdInterceptionServer;
 // process creates an instance of this class and registers policies that it
 // can enforce on its children.
 //
-// With this sandbox, the bootstrap port of the parent process is replaced, so
-// that child processes is taken over by the sandbox. Bootstrap messages from
-// the parent are forwarded to launchd. Requests from the child that would
+// With this sandbox, the parent process must replace the bootstrap port prior
+// to the sandboxed target's execution. This should be done by setting the
+// base::LaunchOptions.replacement_bootstrap_name to the
+// server_bootstrap_name() of this class. Requests from the child that would
 // normally go to launchd are filtered based on the specified per-process
 // policies. If a request is permitted by the policy, it is forwarded on to
 // launchd for servicing. If it is not, then the sandbox will reply with a
@@ -77,6 +78,7 @@ class SANDBOX_EXPORT BootstrapSandbox {
   // with the |pid|, this returns NULL.
   const BootstrapSandboxPolicy* PolicyForProcess(pid_t pid) const;
 
+  std::string server_bootstrap_name() const { return server_bootstrap_name_; }
   mach_port_t real_bootstrap_port() const { return real_bootstrap_port_; }
 
  private:
@@ -85,6 +87,10 @@ class SANDBOX_EXPORT BootstrapSandbox {
   // A Mach IPC message server that is used to intercept and filter bootstrap
   // requests.
   scoped_ptr<LaunchdInterceptionServer> server_;
+
+  // The name in the system bootstrap server by which the |server_|'s port
+  // is known.
+  const std::string server_bootstrap_name_;
 
   // The original bootstrap port of the process, which is connected to the
   // real launchd server.

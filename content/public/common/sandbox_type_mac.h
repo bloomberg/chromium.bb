@@ -34,10 +34,6 @@ enum SandboxType {
   // The PPAPI plugin process.
   SANDBOX_TYPE_PPAPI,
 
-  // The NPAPI plugin process. This does not use a Seatbelt/.sb sandbox policy,
-  // but it uses a bootstrap sandbox.
-  SANDBOX_TYPE_NPAPI,
-
   SANDBOX_TYPE_AFTER_LAST_TYPE,  // Placeholder to ease iteration.
 };
 

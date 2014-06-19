@@ -128,6 +128,15 @@ struct BASE_EXPORT LaunchOptions {
   int ctrl_terminal_fd;
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_MACOSX)
+  // If this name is non-empty, the new child, after fork() but before exec(),
+  // will look up this server name in the bootstrap namespace. The resulting
+  // service port will be replaced as the bootstrap port in the child. Because
+  // the process's IPC space is cleared on exec(), any rights to the old
+  // bootstrap port will not be transferred to the new process.
+  std::string replacement_bootstrap_name;
+#endif
+
 #endif  // !defined(OS_WIN)
 };
 
@@ -250,6 +259,11 @@ BASE_EXPORT void RaiseProcessToHighPriority();
 // in the child after forking will restore the standard exception handler.
 // See http://crbug.com/20371/ for more details.
 void RestoreDefaultExceptionHandler();
+
+// Look up the bootstrap server named |replacement_bootstrap_name| via the
+// current |bootstrap_port|. Then replace the task's bootstrap port with the
+// received right.
+void ReplaceBootstrapPort(const std::string& replacement_bootstrap_name);
 #endif  // defined(OS_MACOSX)
 
 // Creates a LaunchOptions object suitable for launching processes in a test

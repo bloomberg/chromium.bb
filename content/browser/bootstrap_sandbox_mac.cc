@@ -40,7 +40,6 @@ class BootstrapSandboxPolicy : public BrowserChildProcessObserver {
   virtual ~BootstrapSandboxPolicy();
 
   void RegisterSandboxPolicies();
-  void RegisterNPAPIPolicy();
 
   scoped_ptr<sandbox::BootstrapSandbox> sandbox_;
 };
@@ -71,15 +70,6 @@ BootstrapSandboxPolicy::~BootstrapSandboxPolicy() {
 }
 
 void BootstrapSandboxPolicy::RegisterSandboxPolicies() {
-  RegisterNPAPIPolicy();
-}
-
-void BootstrapSandboxPolicy::RegisterNPAPIPolicy() {
-  sandbox::BootstrapSandboxPolicy policy;
-  policy.default_rule = sandbox::Rule(sandbox::POLICY_ALLOW);
-  policy.rules[kBootstrapPortNameForNPAPIPlugins] =
-      sandbox::Rule(sandbox_->real_bootstrap_port());
-  sandbox_->RegisterSandboxPolicy(SANDBOX_TYPE_NPAPI, policy);
 }
 
 }  // namespace

@@ -27,7 +27,7 @@ LaunchdInterceptionServer::LaunchdInterceptionServer(
 LaunchdInterceptionServer::~LaunchdInterceptionServer() {
 }
 
-bool LaunchdInterceptionServer::Initialize() {
+bool LaunchdInterceptionServer::Initialize(mach_port_t server_receive_right) {
   mach_port_t task = mach_task_self();
   kern_return_t kr;
 
@@ -46,7 +46,8 @@ bool LaunchdInterceptionServer::Initialize() {
   }
   sandbox_send_port_.reset(sandbox_port_);
 
-  message_server_.reset(new MachMessageServer(this, kBufferSize));
+  message_server_.reset(
+      new MachMessageServer(this, server_receive_right, kBufferSize));
   return message_server_->Initialize();
 }
 
@@ -59,9 +60,9 @@ void LaunchdInterceptionServer::DemuxMessage(mach_msg_header_t* request,
       sandbox_->PolicyForProcess(sender_pid);
   if (policy == NULL) {
     // No sandbox policy is in place for the sender of this message, which
-    // means it is from the sandbox host process or an unsandboxed child.
-    VLOG(3) << "Message from pid " << sender_pid << " forwarded to launchd";
-    ForwardMessage(request);
+    // means it came from the unknown. Reject it.
+    VLOG(3) << "Message from unknown pid " << sender_pid << " rejected.";
+    message_server_->RejectMessage(request, MIG_REMOTE_ERROR);
     return;
   }
 

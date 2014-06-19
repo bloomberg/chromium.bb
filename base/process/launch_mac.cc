@@ -5,6 +5,9 @@
 #include "base/process/launch.h"
 
 #include <mach/mach.h>
+#include <servers/bootstrap.h>
+
+#include "base/logging.h"
 
 namespace base {
 
@@ -23,6 +26,23 @@ void RestoreDefaultExceptionHandler() {
   // the desired behavior.
   task_set_exception_ports(mach_task_self(), exception_mask, MACH_PORT_NULL,
                            EXCEPTION_DEFAULT, THREAD_STATE_NONE);
+}
+
+void ReplaceBootstrapPort(const std::string& new_bootstrap_name) {
+  // This function is called between fork() and exec(), so it should take care
+  // to run properly in that situation.
+
+  mach_port_t port = MACH_PORT_NULL;
+  kern_return_t kr = bootstrap_look_up(bootstrap_port,
+      new_bootstrap_name.c_str(), &port);
+  if (kr != KERN_SUCCESS) {
+    RAW_LOG(FATAL, "Failed to look up replacement bootstrap port.");
+  }
+
+  kr = task_set_bootstrap_port(mach_task_self(), port);
+  if (kr != KERN_SUCCESS) {
+    RAW_LOG(FATAL, "Failed to replace bootstrap port.");
+  }
 }
 
 }  // namespace base

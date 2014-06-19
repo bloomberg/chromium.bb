@@ -28,8 +28,10 @@ class LaunchdInterceptionServer : public MessageDemuxer {
   explicit LaunchdInterceptionServer(const BootstrapSandbox* sandbox);
   virtual ~LaunchdInterceptionServer();
 
-  // Initializes the class and starts running the message server.
-  bool Initialize();
+  // Initializes the class and starts running the message server. If the
+  // |server_receive_right| is non-NULL, this class will take ownership of
+  // the receive right and intercept messages sent to that port.
+  bool Initialize(mach_port_t server_receive_right);
 
   // MessageDemuxer:
   virtual void DemuxMessage(mach_msg_header_t* request,

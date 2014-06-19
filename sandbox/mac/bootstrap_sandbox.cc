@@ -4,9 +4,13 @@
 
 #include "sandbox/mac/bootstrap_sandbox.h"
 
-#include "base/logging.h"
-#include "base/mac/mach_logging.h"
+#include <servers/bootstrap.h>
+#include <unistd.h>
 
+#include "base/logging.h"
+#include "base/mac/foundation_util.h"
+#include "base/mac/mach_logging.h"
+#include "base/strings/stringprintf.h"
 #include "sandbox/mac/launchd_interception_server.h"
 
 namespace sandbox {
@@ -19,41 +23,28 @@ scoped_ptr<BootstrapSandbox> BootstrapSandbox::Create() {
   scoped_ptr<BootstrapSandbox> sandbox(new BootstrapSandbox());
   sandbox->server_.reset(new LaunchdInterceptionServer(sandbox.get()));
 
-  if (!sandbox->server_->Initialize())
-    return null.Pass();
-
-  mach_port_t port = sandbox->server_->server_port();
-  kern_return_t kr = mach_port_insert_right(mach_task_self(), port, port,
-      MACH_MSG_TYPE_MAKE_SEND);
+  // Check in with launchd to get the receive right for the server that is
+  // published in the bootstrap namespace.
+  mach_port_t port = MACH_PORT_NULL;
+  kern_return_t kr = bootstrap_check_in(bootstrap_port,
+      sandbox->server_bootstrap_name().c_str(), &port);
   if (kr != KERN_SUCCESS) {
-    MACH_LOG(ERROR, kr) << "Failed to insert send right on bootstrap port.";
+    BOOTSTRAP_LOG(ERROR, kr)
+        << "Failed to bootstrap_check_in the sandbox server.";
     return null.Pass();
   }
-  base::mac::ScopedMachSendRight scoped_right(port);
+  base::mac::ScopedMachReceiveRight scoped_port(port);
 
-  // Note that the extern global bootstrap_port (in bootstrap.h) will not
-  // be changed here. The parent only has its bootstrap port replaced
-  // permanently because changing it repeatedly in a multi-threaded program
-  // could lead to unsafe access patterns. In a single-threaded program,
-  // the port would be restored after fork(). See the design document for
-  // a larger discussion.
-  //
-  // By not changing the global bootstrap_port, users of the bootstrap port
-  // in the parent can potentially skip an unnecessary indirection through
-  // the sandbox server.
-  kr = task_set_special_port(mach_task_self(), TASK_BOOTSTRAP_PORT, port);
-  if (kr != KERN_SUCCESS) {
-    MACH_LOG(ERROR, kr) << "Failed to set new bootstrap port.";
+  // Start the sandbox server.
+  if (sandbox->server_->Initialize(scoped_port.get()))
+    ignore_result(scoped_port.release());  // Transferred to server_.
+  else
     return null.Pass();
-  }
 
   return sandbox.Pass();
 }
 
 BootstrapSandbox::~BootstrapSandbox() {
-  kern_return_t kr = task_set_special_port(mach_task_self(),
-      TASK_BOOTSTRAP_PORT, real_bootstrap_port_);
-  MACH_CHECK(kr == KERN_SUCCESS, kr);
 }
 
 void BootstrapSandbox::RegisterSandboxPolicy(
@@ -69,6 +60,7 @@ void BootstrapSandbox::RegisterSandboxPolicy(
 void BootstrapSandbox::PrepareToForkWithPolicy(int sandbox_policy_id) {
   base::AutoLock lock(lock_);
 
+  // Verify that this is a real policy.
   CHECK(policies_.find(sandbox_policy_id) != policies_.end());
   CHECK_EQ(kNotAPolicy, effective_policy_id_)
       << "Cannot nest calls to PrepareToForkWithPolicy()";
@@ -89,6 +81,7 @@ void BootstrapSandbox::FinishedFork(base::ProcessHandle handle) {
   CHECK_NE(kNotAPolicy, effective_policy_id_)
       << "Must PrepareToForkWithPolicy() before FinishedFork()";
 
+  // Apply the policy to the new process.
   if (handle != base::kNullProcessHandle) {
     const auto& existing_process = sandboxed_processes_.find(handle);
     CHECK(existing_process == sandboxed_processes_.end());
@@ -125,7 +118,10 @@ const BootstrapSandboxPolicy* BootstrapSandbox::PolicyForProcess(
 }
 
 BootstrapSandbox::BootstrapSandbox()
-    : real_bootstrap_port_(MACH_PORT_NULL),
+    : server_bootstrap_name_(
+          base::StringPrintf("%s.sandbox.%d", base::mac::BaseBundleID(),
+              getpid())),
+      real_bootstrap_port_(MACH_PORT_NULL),
       effective_policy_id_(kNotAPolicy) {
   mach_port_t port = MACH_PORT_NULL;
   kern_return_t kr = task_get_special_port(

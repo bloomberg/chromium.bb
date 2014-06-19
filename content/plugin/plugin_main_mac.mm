@@ -3,14 +3,11 @@
 // found in the LICENSE file.
 
 #import <AppKit/AppKit.h>
-#include <servers/bootstrap.h>
 
 #include "base/environment.h"
-#include "base/mac/mach_logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "content/common/plugin_carbon_interpose_constants_mac.h"
-#include "content/common/sandbox_init_mac.h"
 #include "content/plugin/plugin_interpose_util_mac.h"
 #include "content/public/common/content_client.h"
 
@@ -49,27 +46,6 @@ void TrimInterposeEnvironment() {
 #endif
 
 void InitializeChromeApplication() {
-  // The bootstrap sandbox has taken over the bootstrap port. However, NPAPI
-  // plugins request servers with the BOOTSTRAP_PER_PID_SERVICE flag. This
-  // will fail, since the browser will be forwarding the message on behalf of
-  // the plugin, and the browser has already created these per-pid services
-  // for itself.
-  //
-  // Instead, request the real bootstrap port from the sandbox server, which
-  // can then be used by the plugin.
-  mach_port_t new_bootstrap_port = MACH_PORT_NULL;
-  kern_return_t kr = bootstrap_look_up(bootstrap_port,
-      kBootstrapPortNameForNPAPIPlugins, &new_bootstrap_port);
-  BOOTSTRAP_LOG_IF(ERROR, kr != KERN_SUCCESS, kr)
-      << "Failed to look up original bootstrap port.";
-  if (kr == KERN_SUCCESS) {
-    bootstrap_port = new_bootstrap_port;
-    kr = task_set_bootstrap_port(mach_task_self(), new_bootstrap_port);
-    MACH_LOG_IF(ERROR, kr != KERN_SUCCESS, kr)
-        << "Failed to reset TASK_BOOTSTRAP_PORT.";
-  }
-
-
   [NSApplication sharedApplication];
   mac_plugin_interposing::SetUpCocoaInterposing();
 }

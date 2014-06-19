@@ -385,6 +385,8 @@ bool LaunchProcess(const std::vector<std::string>& argv,
 
 #if defined(OS_MACOSX)
     RestoreDefaultExceptionHandler();
+    if (!options.replacement_bootstrap_name.empty())
+      ReplaceBootstrapPort(options.replacement_bootstrap_name);
 #endif  // defined(OS_MACOSX)
 
     ResetChildSignalHandlersToDefaults();

@@ -17,9 +17,10 @@ namespace sandbox {
 
 MachMessageServer::MachMessageServer(
     MessageDemuxer* demuxer,
+    mach_port_t server_receive_right,
     mach_msg_size_t buffer_size)
     : demuxer_(demuxer),
-      server_port_(MACH_PORT_NULL),
+      server_port_(server_receive_right),
       server_queue_(NULL),
       server_source_(NULL),
       buffer_size_(
@@ -39,14 +40,17 @@ bool MachMessageServer::Initialize() {
   mach_port_t task = mach_task_self();
   kern_return_t kr;
 
-  // Allocate a port for use as a new server port.
-  mach_port_t port;
-  if ((kr = mach_port_allocate(task, MACH_PORT_RIGHT_RECEIVE, &port)) !=
-          KERN_SUCCESS) {
-    MACH_LOG(ERROR, kr) << "Failed to allocate new server port.";
-    return false;
+  // Allocate a port for use as a new server port if one was not passed to the
+  // constructor.
+  if (!server_port_.is_valid()) {
+    mach_port_t port;
+    if ((kr = mach_port_allocate(task, MACH_PORT_RIGHT_RECEIVE, &port)) !=
+            KERN_SUCCESS) {
+      MACH_LOG(ERROR, kr) << "Failed to allocate new server port.";
+      return false;
+    }
+    server_port_.reset(port);
   }
-  server_port_.reset(port);
 
   // Allocate the message request and reply buffers.
   const int kMachMsgMemoryFlags = VM_MAKE_TAG(VM_MEMORY_MACH_MSG) |

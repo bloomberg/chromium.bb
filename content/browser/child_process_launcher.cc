@@ -288,6 +288,8 @@ class ChildProcessLauncher::Context
       const int bootstrap_sandbox_policy = delegate->GetSandboxType();
       if (ShouldEnableBootstrapSandbox() &&
           bootstrap_sandbox_policy != SANDBOX_TYPE_INVALID) {
+        options.replacement_bootstrap_name =
+            GetBootstrapSandbox()->server_bootstrap_name();
         GetBootstrapSandbox()->PrepareToForkWithPolicy(
             bootstrap_sandbox_policy);
       }

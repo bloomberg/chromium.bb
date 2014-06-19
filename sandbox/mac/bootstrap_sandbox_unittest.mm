@@ -96,7 +96,9 @@ class BootstrapSandboxTest : public base::MultiProcessTest {
                           const char* child_name,
                           base::ProcessHandle* out_pid) {
     sandbox_->PrepareToForkWithPolicy(policy_id);
-    base::ProcessHandle pid = SpawnChild(child_name);
+    base::LaunchOptions options;
+    options.replacement_bootstrap_name = sandbox_->server_bootstrap_name();
+    base::ProcessHandle pid = SpawnChildWithOptions(child_name, options);
     ASSERT_GT(pid, 0);
     sandbox_->FinishedFork(pid);
     int code = 0;
