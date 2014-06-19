@@ -21,6 +21,7 @@
         'enhanced_bookmarks/image_store.h',
         'enhanced_bookmarks/image_store_util.cc',
         'enhanced_bookmarks/image_store_util.h',
+        'enhanced_bookmarks/image_store_util_ios.mm',
         'enhanced_bookmarks/persistent_image_store.cc',
         'enhanced_bookmarks/persistent_image_store.h',
       ],

@@ -15,21 +15,26 @@
 
 namespace {
 
-const SkBitmap CreateBitmap(int width, int height, int a, int r, int g, int b) {
+gfx::Image CreateImage(int width, int height, int a, int r, int g, int b) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(width, height);
   bitmap.eraseARGB(a, r, g, b);
-  return bitmap;
+  gfx::Image image(gfx::Image::CreateFrom1xBitmap(bitmap));
+
+#if defined(OS_IOS)
+  // Make sure the image has a kImageRepCocoaTouch.
+  image.ToUIImage();
+#endif  // defined(OS_IOS)
+
+  return image;
 }
 
 gfx::Image GenerateWhiteImage() {
-  return gfx::Image::CreateFrom1xBitmap(
-      CreateBitmap(42, 24, 255, 255, 255, 255));
+  return CreateImage(42, 24, 255, 255, 255, 255);
 }
 
 gfx::Image GenerateBlackImage(int width, int height) {
-  return gfx::Image::CreateFrom1xBitmap(
-      CreateBitmap(width, height, 255, 0, 0, 0));
+  return CreateImage(width, height, 255, 0, 0, 0);
 }
 
 gfx::Image GenerateBlackImage() {
@@ -44,17 +49,17 @@ bool CompareImages(const gfx::Image& image_1, const gfx::Image& image_2) {
   if (image_1.IsEmpty() || image_2.IsEmpty())
     return false;
 
-  scoped_refptr<base::RefCountedMemory> image_1_png =
+  scoped_refptr<base::RefCountedMemory> image_1_bytes =
       enhanced_bookmarks::BytesForImage(image_1);
-  scoped_refptr<base::RefCountedMemory> image_2_png =
+  scoped_refptr<base::RefCountedMemory> image_2_bytes =
       enhanced_bookmarks::BytesForImage(image_2);
 
-  if (image_1_png->size() != image_2_png->size())
+  if (image_1_bytes->size() != image_2_bytes->size())
     return false;
 
-  return !memcmp(image_1_png->front(),
-                 image_2_png->front(),
-                 image_1_png->size());
+  return !memcmp(image_1_bytes->front(),
+                 image_2_bytes->front(),
+                 image_1_bytes->size());
 }
 
 // Factory functions for creating instances of the implementations.
@@ -240,7 +245,7 @@ TYPED_TEST(ImageStoreUnitTest, GetSize) {
   }
 
   if (this->use_persistent_store()) {
-    EXPECT_GE(this->store_->GetStoreSizeInBytes(), 100 * 1024); // 100kb
+    EXPECT_GE(this->store_->GetStoreSizeInBytes(),  90 * 1024); //  90kb
     EXPECT_LE(this->store_->GetStoreSizeInBytes(), 200 * 1024); // 200kb
   } else {
     EXPECT_GE(this->store_->GetStoreSizeInBytes(), 400 * 1024); // 400kb
