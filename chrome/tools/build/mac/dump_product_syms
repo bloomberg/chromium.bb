@@ -85,7 +85,6 @@ SRC_NAMES=(
     "ffmpegsumo.so"
     "libplugin_carbon_interpose.dylib"
     "ppGoogleNaClPluginChrome.plugin"
-    "remoting_host_plugin.plugin"
 )
 
 # PDF.plugin is optional. Only include it if present.

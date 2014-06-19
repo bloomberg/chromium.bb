@@ -229,12 +229,6 @@
               'dependencies': [
                 '../breakpad/breakpad.gyp:dump_syms',
                 '../breakpad/breakpad.gyp:symupload',
-
-                # In order to process symbols for the Remoting Host plugin,
-                # that plugin needs to be built beforehand.  Since the
-                # "Dump Symbols" step hangs off this target, that plugin also
-                # needs to be added as a dependency.
-                '../remoting/remoting.gyp:remoting_host_plugin',
               ],
               # The "Dump Symbols" post-build step is in a target_conditions
               # block so that it will follow the "Strip If Needed" step if that
