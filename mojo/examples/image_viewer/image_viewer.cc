@@ -6,12 +6,12 @@
 
 #include "base/strings/string_tokenizer.h"
 #include "mojo/public/cpp/application/application.h"
+#include "mojo/services/navigation/navigation.mojom.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
-#include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -20,29 +20,30 @@ namespace examples {
 
 class ImageViewer;
 
-class LaunchableConnection : public InterfaceImpl<launcher::Launchable> {
+class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
  public:
-  explicit LaunchableConnection(ImageViewer* viewer) : viewer_(viewer) {}
-  virtual ~LaunchableConnection() {}
+  explicit NavigatorImpl(ImageViewer* viewer) : viewer_(viewer) {}
+  virtual ~NavigatorImpl() {}
 
  private:
-  // Overridden from launcher::Launchable:
-  virtual void OnLaunch(URLResponsePtr response,
-                        ScopedDataPipeConsumerHandle response_body_stream,
-                        uint32_t node_id) OVERRIDE {
-    int content_length = GetContentLength(response->headers);
+  // Overridden from navigation::Navigate:
+  virtual void Navigate(
+      uint32_t node_id,
+      navigation::NavigationDetailsPtr navigation_details,
+      navigation::ResponseDetailsPtr response_details) OVERRIDE {
+    int content_length = GetContentLength(response_details->response->headers);
     unsigned char* data = new unsigned char[content_length];
     unsigned char* buf = data;
     uint32_t bytes_remaining = content_length;
     uint32_t num_bytes = bytes_remaining;
     while (bytes_remaining > 0) {
       MojoResult result = ReadDataRaw(
-          response_body_stream.get(),
+          response_details->response_body_stream.get(),
           buf,
           &num_bytes,
           MOJO_READ_DATA_FLAG_NONE);
       if (result == MOJO_RESULT_SHOULD_WAIT) {
-        Wait(response_body_stream.get(),
+        Wait(response_details->response_body_stream.get(),
              MOJO_HANDLE_SIGNAL_READABLE,
              MOJO_DEADLINE_INDEFINITE);
       } else if (result == MOJO_RESULT_OK) {
@@ -80,7 +81,7 @@ class LaunchableConnection : public InterfaceImpl<launcher::Launchable> {
 
   ImageViewer* viewer_;
 
-  DISALLOW_COPY_AND_ASSIGN(LaunchableConnection);
+  DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };
 
 class ImageViewer : public Application,
@@ -97,7 +98,7 @@ class ImageViewer : public Application,
  private:
   // Overridden from Application:
   virtual void Initialize() OVERRIDE {
-    AddService<LaunchableConnection>(this);
+    AddService<NavigatorImpl>(this);
     view_manager::ViewManager::Create(this, this);
   }
 
@@ -122,8 +123,8 @@ class ImageViewer : public Application,
   DISALLOW_COPY_AND_ASSIGN(ImageViewer);
 };
 
-void LaunchableConnection::UpdateView(view_manager::Id node_id,
-                                      const SkBitmap& bitmap) {
+void NavigatorImpl::UpdateView(view_manager::Id node_id,
+                                     const SkBitmap& bitmap) {
   viewer_->UpdateView(node_id, bitmap);
 }
 

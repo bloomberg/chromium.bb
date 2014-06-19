@@ -3,41 +3,42 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/application/application.h"
+#include "mojo/services/navigation/navigation.mojom.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
-#include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 
 namespace mojo {
 namespace examples {
 
 class HTMLViewer;
 
-class LaunchableConnection : public InterfaceImpl<launcher::Launchable> {
+class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
  public:
-  explicit LaunchableConnection(HTMLViewer* viewer) : viewer_(viewer) {}
-  virtual ~LaunchableConnection() {}
+  explicit NavigatorImpl(HTMLViewer* viewer) : viewer_(viewer) {}
+  virtual ~NavigatorImpl() {}
 
  private:
-  // Overridden from launcher::Launchable:
-  virtual void OnLaunch(
-      URLResponsePtr response,
-      ScopedDataPipeConsumerHandle response_body_stream,
-      view_manager::Id node_id) MOJO_OVERRIDE {
-    printf("In HTMLViewer, rendering url: %s\n", response->url.data());
+  // Overridden from navigation::Navigator:
+  virtual void Navigate(
+      uint32_t node_id,
+      navigation::NavigationDetailsPtr navigation_details,
+      navigation::ResponseDetailsPtr response_details) OVERRIDE {
+    printf("In HTMLViewer, rendering url: %s\n",
+           response_details->response->url.data());
     printf("HTML: \n");
     for (;;) {
       char buf[512];
       uint32_t num_bytes = sizeof(buf);
       MojoResult result = ReadDataRaw(
-          response_body_stream.get(),
+          response_details->response_body_stream.get(),
           buf,
           &num_bytes,
           MOJO_READ_DATA_FLAG_NONE);
       if (result == MOJO_RESULT_SHOULD_WAIT) {
-        Wait(response_body_stream.get(),
+        Wait(response_details->response_body_stream.get(),
              MOJO_HANDLE_SIGNAL_READABLE,
              MOJO_DEADLINE_INDEFINITE);
       } else if (result == MOJO_RESULT_OK) {
@@ -55,7 +56,7 @@ class LaunchableConnection : public InterfaceImpl<launcher::Launchable> {
 
   HTMLViewer* viewer_;
 
-  DISALLOW_COPY_AND_ASSIGN(LaunchableConnection);
+  DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };
 
 class HTMLViewer : public Application,
@@ -65,11 +66,11 @@ class HTMLViewer : public Application,
   virtual ~HTMLViewer() {}
 
  private:
-  friend class LaunchableConnection;
+  friend class NavigatorImpl;
 
   // Overridden from Application:
   virtual void Initialize() OVERRIDE {
-    AddService<LaunchableConnection>(this);
+    AddService<NavigatorImpl>(this);
     view_manager::ViewManager::Create(this, this);
   }
 
@@ -86,7 +87,7 @@ class HTMLViewer : public Application,
   DISALLOW_COPY_AND_ASSIGN(HTMLViewer);
 };
 
-void LaunchableConnection::UpdateView() {
+void NavigatorImpl::UpdateView() {
   viewer_->content_view_->SetColor(SK_ColorGREEN);
 }
 

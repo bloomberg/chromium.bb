@@ -137,7 +137,13 @@ class WindowManager : public Application,
       size_t index = node->children().size() - 1;
       details->url = base::StringPrintf(
           "%s/%x", kEmbeddedAppURL, kColors[index % arraysize(kColors)]);
-      navigator->Navigate(embedded->id(), details.Pass());
+
+      // TODO(beng): remove once nullable parameters land.
+      navigation::ResponseDetailsPtr response_details(
+          navigation::ResponseDetails::New());
+      navigator->Navigate(embedded->id(),
+                          details.Pass(),
+                          response_details.Pass());
     }
   }
 

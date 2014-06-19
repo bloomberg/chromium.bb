@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import "../network/url_loader.mojom"
+import "../../../navigation/navigation.mojom"
 
 module mojo.launcher {
 
@@ -13,15 +14,7 @@ interface Launcher {
 
 [Client=Launcher]
 interface LauncherClient {
-  OnLaunch(string handler_url,
-           mojo.URLResponse response,
-           handle<data_pipe_consumer> response_body_stream);
-};
-
-interface Launchable {
-  OnLaunch(mojo.URLResponse response,
-           handle<data_pipe_consumer> response_body_stream,
-           uint32 node_id);
+  OnLaunch(string handler_url, mojo.navigation.ResponseDetails response_details);
 };
 
 }

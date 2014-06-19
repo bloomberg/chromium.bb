@@ -49,9 +49,11 @@ class EmbeddedApp : public Application,
    public:
     explicit Navigator(EmbeddedApp* app) : app_(app) {}
    private:
-    virtual void Navigate(uint32 node_id,
-                          navigation::NavigationDetailsPtr details) OVERRIDE {
-      GURL url(details->url.To<std::string>());
+    virtual void Navigate(
+        uint32 node_id,
+        navigation::NavigationDetailsPtr navigation_details,
+        navigation::ResponseDetailsPtr response_details) OVERRIDE {
+      GURL url(navigation_details->url.To<std::string>());
       if (!url.is_valid()) {
         LOG(ERROR) << "URL is invalid.";
         return;

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import "../public/interfaces/network/url_loader.mojom"
+
 module mojo.navigation {
 
 struct NavigationDetails {
@@ -9,10 +11,21 @@ struct NavigationDetails {
   // TODO(aa): method, data, etc.
 };
 
+struct ResponseDetails {
+  // TODO(beng): consider providing access to URLRequest too. Currently it is
+  //             not possible to obtain from the URLLoader.
+  mojo.URLResponse response;
+  handle<data_pipe_consumer> response_body_stream;
+};
+
 // Applications implement this interface to support navigation of their views
 // by embedders.
+// |response_details| can be NULL when a navigation was not the result of a
+// network load.
 interface Navigator {
-  Navigate(uint32 node_id, NavigationDetails details);
+  Navigate(uint32 node_id,
+           NavigationDetails navigation_details,
+           ResponseDetails response_details);
 };
 
 }

@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "mojo/public/cpp/application/application.h"
+#include "mojo/services/navigation/navigation.mojom.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -142,15 +143,18 @@ class Browser : public Application,
   // launcher::LauncherClient:
   virtual void OnLaunch(
       const String& handler_url,
-      URLResponsePtr response,
-      ScopedDataPipeConsumerHandle response_body_stream) OVERRIDE {
+      navigation::ResponseDetailsPtr response_details) OVERRIDE {
     content_node_->Embed(handler_url);
 
-    launcher::LaunchablePtr launchable;
-    ConnectTo(handler_url, &launchable);
-    launchable->OnLaunch(response.Pass(),
-                         response_body_stream.Pass(),
-                         content_node_->id());
+    navigation::NavigationDetailsPtr navigation_details(
+        navigation::NavigationDetails::New());
+    navigation_details->url = response_details->response->url;
+
+    navigation::NavigatorPtr navigator;
+    ConnectTo(handler_url, &navigator);
+    navigator->Navigate(content_node_->id(),
+                        navigation_details.Pass(),
+                        response_details.Pass());
   }
 
   scoped_ptr<ViewsInit> views_init_;
