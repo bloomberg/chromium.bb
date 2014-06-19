@@ -5,4 +5,4 @@
 buildconfig = "//build/config/BUILDCONFIG.gn"
 
 # The secondary source root is a parallel directory tree where
-secondary_source = "//tools/gn/secondary/"
+secondary_source = "//build/secondary/"

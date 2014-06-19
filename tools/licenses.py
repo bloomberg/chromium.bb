@@ -35,6 +35,7 @@ PRUNE_PATHS = set([
     os.path.join('third_party','valgrind'),
 
     # Used for development and test, not in the shipping product.
+    os.path.join('build','secondary'),
     os.path.join('third_party','bison'),
     os.path.join('third_party','blanketjs'),
     os.path.join('third_party','cygwin'),
@@ -54,7 +55,6 @@ PRUNE_PATHS = set([
     os.path.join('third_party','qunit'),
     os.path.join('third_party','sinonjs'),
     os.path.join('third_party','syzygy'),
-    os.path.join('tools','gn'),
 
     # Chromium code in third_party.
     os.path.join('third_party','fuzzymatch'),

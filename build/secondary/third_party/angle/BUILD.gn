@@ -281,7 +281,7 @@ if (false) {
     deps = [ ":copy_angle_commit_h", ":copy_commit_h" ]
   }
 
-  hardcoded_commit = [ "//tools/gn/secondary/third_party/angle/angle_commit.h" ]
+  hardcoded_commit = [ "//build/secondary/third_party/angle/angle_commit.h" ]
   copy("copy_angle_commit_h") {
     sources = hardcoded_commit
     outputs = [ "$root_gen_dir/angle_commit.h" ]

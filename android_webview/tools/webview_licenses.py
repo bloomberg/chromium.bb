@@ -230,7 +230,7 @@ def _FindThirdPartyDirs():
     os.path.join('third_party', 'widevine'),
     # third_party directories in this tree aren't actually third party, but
     # provide a way to shadow experimental buildfiles into those directories.
-    os.path.join('tools', 'gn', 'secondary'),
+    os.path.join('build', 'secondary'),
     # Not shipped, Chromium code
     os.path.join('tools', 'swarming_client'),
   ]
