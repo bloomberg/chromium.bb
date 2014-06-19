@@ -79,7 +79,7 @@ private:
     // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()
     // calls into chromium to get a rendered audio stream.
 
-    class AudioSourceProviderImpl FINAL: public AudioSourceProvider {
+    class PLATFORM_EXPORT AudioSourceProviderImpl FINAL: public AudioSourceProvider {
     public:
         AudioSourceProviderImpl()
             : m_webAudioSourceProvider(0)
