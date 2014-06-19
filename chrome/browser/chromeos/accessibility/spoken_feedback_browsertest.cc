@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
@@ -37,20 +38,13 @@ using extensions::api::braille_display_private::StubBrailleController;
 namespace chromeos {
 
 //
-// Spoken feedback tests in a normal browser window.
+// Spoken feedback tests only in a logged in user's window.
 //
 
-enum SpokenFeedbackTestVariant {
-  kTestAsNormalUser,
-  kTestAsGuestUser
-};
-
-class SpokenFeedbackTest
-    : public InProcessBrowserTest,
-      public ::testing::WithParamInterface<SpokenFeedbackTestVariant> {
+class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
  protected:
-  SpokenFeedbackTest() {}
-  virtual ~SpokenFeedbackTest() {}
+  LoggedInSpokenFeedbackTest() {}
+  virtual ~LoggedInSpokenFeedbackTest() {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     AccessibilityManager::SetBrailleControllerForTest(&braille_controller_);
@@ -59,6 +53,78 @@ class SpokenFeedbackTest
   virtual void CleanUpOnMainThread() OVERRIDE {
     AccessibilityManager::SetBrailleControllerForTest(NULL);
   }
+
+  void SendKeyPress(ui::KeyboardCode key) {
+    gfx::NativeWindow root_window =
+        ash::Shell::GetInstance()->GetPrimaryRootWindow();
+    ASSERT_TRUE(
+        ui_test_utils::SendKeyPressToWindowSync(
+            root_window, key, false, false, false, false));
+  }
+
+ private:
+  StubBrailleController braille_controller_;
+  DISALLOW_COPY_AND_ASSIGN(LoggedInSpokenFeedbackTest);
+};
+
+IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, AddBookmark) {
+  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+
+  SpeechMonitor monitor;
+  AccessibilityManager::Get()->EnableSpokenFeedback(
+      true, ash::A11Y_NOTIFICATION_NONE);
+  EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
+
+  chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
+
+  // Create a bookmark with title "foo".
+  chrome::ExecuteCommand(browser(), IDC_BOOKMARK_PAGE);
+  EXPECT_EQ("Bookmark added!,", monitor.GetNextUtterance());
+  EXPECT_EQ("about blank,", monitor.GetNextUtterance());
+  EXPECT_EQ("Bookmark name,", monitor.GetNextUtterance());
+  EXPECT_EQ("text box", monitor.GetNextUtterance());
+
+  SendKeyPress(ui::VKEY_F);
+  EXPECT_EQ("f", monitor.GetNextUtterance());
+  SendKeyPress(ui::VKEY_O);
+  EXPECT_EQ("o", monitor.GetNextUtterance());
+  SendKeyPress(ui::VKEY_O);
+  EXPECT_EQ("o", monitor.GetNextUtterance());
+
+  SendKeyPress(ui::VKEY_TAB);
+  EXPECT_EQ("Bookmarks bar,", monitor.GetNextUtterance());
+  EXPECT_EQ("Bookmark folder,", monitor.GetNextUtterance());
+  EXPECT_TRUE(MatchPattern(monitor.GetNextUtterance(), "combo box*"));
+
+  SendKeyPress(ui::VKEY_RETURN);
+
+  // Focus bookmarks bar and listen for "foo".
+  chrome::ExecuteCommand(browser(), IDC_FOCUS_BOOKMARKS);
+  while (true) {
+    std::string utterance = monitor.GetNextUtterance();
+    VLOG(0) << "Got utterance: " << utterance;
+    if (utterance == "Bookmarks,")
+      break;
+  }
+  EXPECT_EQ("foo,", monitor.GetNextUtterance());
+  EXPECT_EQ("button", monitor.GetNextUtterance());
+}
+
+//
+// Spoken feedback tests in both a logged in browser window and guest mode.
+//
+
+enum SpokenFeedbackTestVariant {
+  kTestAsNormalUser,
+  kTestAsGuestUser
+};
+
+class SpokenFeedbackTest
+    : public LoggedInSpokenFeedbackTest,
+      public ::testing::WithParamInterface<SpokenFeedbackTestVariant> {
+ protected:
+  SpokenFeedbackTest() {}
+  virtual ~SpokenFeedbackTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     if (GetParam() == kTestAsGuestUser) {
@@ -70,10 +136,6 @@ class SpokenFeedbackTest
                                       chromeos::UserManager::kGuestUserName);
     }
   }
-
- private:
-  StubBrailleController braille_controller_;
-  DISALLOW_COPY_AND_ASSIGN(SpokenFeedbackTest);
 };
 
 INSTANTIATE_TEST_CASE_P(
@@ -106,8 +168,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusToolbar) {
   EXPECT_EQ("button", monitor.GetNextUtterance());
 }
 
-// Disabled for flakiness: http://crbug.com/359204
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_TypeInOmnibox) {
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TypeInOmnibox) {
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   SpeechMonitor monitor;
@@ -115,32 +176,33 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_TypeInOmnibox) {
       true, ash::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
 
+  // Wait for ChromeVox to finish speaking.
   chrome::ExecuteCommand(browser(), IDC_FOCUS_LOCATION);
-
-  gfx::NativeWindow window = ash::Shell::GetInstance()->GetPrimaryRootWindow();
-  ui_controls::SendKeyPress(window, ui::VKEY_X, false, false, false, false);
   while (true) {
     std::string utterance = monitor.GetNextUtterance();
     VLOG(0) << "Got utterance: " << utterance;
-    if (utterance == "x")
+    if (utterance == "text box")
       break;
   }
 
-  ui_controls::SendKeyPress(window, ui::VKEY_Y, false, false, false, false);
+  SendKeyPress(ui::VKEY_X);
+  EXPECT_EQ("x", monitor.GetNextUtterance());
+
+  SendKeyPress(ui::VKEY_Y);
   EXPECT_EQ("y", monitor.GetNextUtterance());
 
-  ui_controls::SendKeyPress(window, ui::VKEY_Z, false, false, false, false);
+  SendKeyPress(ui::VKEY_Z);
   EXPECT_EQ("z", monitor.GetNextUtterance());
 
-  ui_controls::SendKeyPress(window, ui::VKEY_BACK, false, false, false, false);
+  SendKeyPress(ui::VKEY_BACK);
   EXPECT_EQ("z", monitor.GetNextUtterance());
 }
 
 //
-// Spoken feedback tests that run in guest mode.
+// Spoken feedback tests that run only in guest mode.
 //
 
-class GuestSpokenFeedbackTest : public SpokenFeedbackTest {
+class GuestSpokenFeedbackTest : public LoggedInSpokenFeedbackTest {
  protected:
   GuestSpokenFeedbackTest() {}
   virtual ~GuestSpokenFeedbackTest() {}
@@ -214,7 +276,9 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, DISABLED_SpokenFeedbackInOobe) {
   EXPECT_EQ("Select your language:", monitor.GetNextUtterance());
   EXPECT_EQ("English ( United States)", monitor.GetNextUtterance());
   EXPECT_TRUE(MatchPattern(monitor.GetNextUtterance(), "Combo box * of *"));
-  ui_controls::SendKeyPress(window, ui::VKEY_TAB, false, false, false, false);
+  ASSERT_TRUE(
+      ui_test_utils::SendKeyPressToWindowSync(
+          window, ui::VKEY_TAB, false, false, false, false));
   EXPECT_EQ("Select your keyboard:", monitor.GetNextUtterance());
 }
 
