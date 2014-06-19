@@ -251,8 +251,8 @@
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
 #endif
 
-using blink::WebWindowFeatures;
 using base::FileDescriptor;
+using blink::WebWindowFeatures;
 using content::AccessTokenStore;
 using content::BrowserChildProcessHostIterator;
 using content::BrowserThread;
@@ -665,6 +665,9 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kEnableHyperlinkAuditing,
       true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(
+      prefs::kEnableDeprecatedWebPlatformFeatures,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
@@ -1609,6 +1612,18 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           prefs->GetBoolean(prefs::kDisable3DAPIs)) {
         // Turn this policy into a command line switch.
         command_line->AppendSwitch(switches::kDisable3DAPIs);
+      }
+
+      const base::ListValue* switches =
+          prefs->GetList(prefs::kEnableDeprecatedWebPlatformFeatures);
+      if (switches) {
+        // Enable any deprecated features that have been re-enabled by policy.
+        for (base::ListValue::const_iterator it = switches->begin();
+             it != switches->end(); ++it) {
+          std::string switch_to_enable;
+          if ((*it)->GetAsString(&switch_to_enable))
+            command_line->AppendSwitch(switch_to_enable);
+        }
       }
 
       // Disable client-side phishing detection in the renderer if it is

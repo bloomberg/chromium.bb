@@ -12,6 +12,7 @@
 #include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/browser/search_engines/default_search_policy_handler.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/browser/autofill_policy_handler.h"
@@ -491,24 +492,34 @@ void GetExtensionAllowedTypesMap(
     ScopedVector<StringMappingListPolicyHandler::MappingEntry>* result) {
   // Mapping from extension type names to Manifest::Type.
   result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "extension", scoped_ptr<base::Value>(base::Value::CreateIntegerValue(
+      "extension", scoped_ptr<base::Value>(new base::FundamentalValue(
           extensions::Manifest::TYPE_EXTENSION))));
   result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "theme", scoped_ptr<base::Value>(base::Value::CreateIntegerValue(
+      "theme", scoped_ptr<base::Value>(new base::FundamentalValue(
           extensions::Manifest::TYPE_THEME))));
   result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "user_script", scoped_ptr<base::Value>(base::Value::CreateIntegerValue(
+      "user_script", scoped_ptr<base::Value>(new base::FundamentalValue(
           extensions::Manifest::TYPE_USER_SCRIPT))));
   result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "hosted_app", scoped_ptr<base::Value>(base::Value::CreateIntegerValue(
+      "hosted_app", scoped_ptr<base::Value>(new base::FundamentalValue(
           extensions::Manifest::TYPE_HOSTED_APP))));
   result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "legacy_packaged_app", scoped_ptr<base::Value>(
-          base::Value::CreateIntegerValue(
-              extensions::Manifest::TYPE_LEGACY_PACKAGED_APP))));
+      "legacy_packaged_app", scoped_ptr<base::Value>(new base::FundamentalValue(
+          extensions::Manifest::TYPE_LEGACY_PACKAGED_APP))));
   result->push_back(new StringMappingListPolicyHandler::MappingEntry(
-      "platform_app", scoped_ptr<base::Value>(base::Value::CreateIntegerValue(
+      "platform_app", scoped_ptr<base::Value>(new base::FundamentalValue(
           extensions::Manifest::TYPE_PLATFORM_APP))));
+}
+
+void GetDeprecatedFeaturesMap(
+    ScopedVector<StringMappingListPolicyHandler::MappingEntry>* result) {
+  // Maps feature tags as specified in policy to the corresponding switch to
+  // re-enable them.
+  // TODO: Remove after 2015-04-30 per http://crbug.com/374782.
+  result->push_back(new StringMappingListPolicyHandler::MappingEntry(
+      "ShowModalDialog_EffectiveUntil20150430",
+      scoped_ptr<base::Value>(new base::StringValue(
+          switches::kEnableShowModalDialog))));
 }
 #endif  // !defined(OS_IOS)
 
@@ -581,6 +592,11 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           key::kExtensionAllowedTypes,
           extensions::pref_names::kAllowedTypes,
           base::Bind(GetExtensionAllowedTypesMap))));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new StringMappingListPolicyHandler(
+          key::kEnableDeprecatedWebPlatformFeatures,
+          prefs::kEnableDeprecatedWebPlatformFeatures,
+          base::Bind(GetDeprecatedFeaturesMap))));
 #endif  // !defined(OS_IOS)
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)

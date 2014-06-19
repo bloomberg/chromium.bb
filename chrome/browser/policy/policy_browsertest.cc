@@ -3015,6 +3015,31 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingWhitelist) {
       prefs, "other.host.name"));
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest,
+                       EnableDeprecatedWebPlatformFeatures_ShowModalDialog) {
+  base::ListValue enabled_features;
+  enabled_features.Append(new base::StringValue(
+      "ShowModalDialog_EffectiveUntil20150430"));
+  PolicyMap policies;
+  policies.Set(key::kEnableDeprecatedWebPlatformFeatures,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               enabled_features.DeepCopy(),
+               NULL);
+  UpdateProviderPolicy(policies);
+
+  // Policy only takes effect on new browsers, not existing browsers, so create
+  // a new browser.
+  Browser* browser2 = CreateBrowser(browser()->profile());
+  ui_test_utils::NavigateToURL(browser2, GURL(url::kAboutBlankURL));
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser2->tab_strip_model()->GetActiveWebContents(),
+      "domAutomationController.send(window.showModalDialog !== undefined);",
+      &result));
+  EXPECT_TRUE(result);
+}
+
 #endif  // !defined(CHROME_OS)
 
 }  // namespace policy

@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 269
+#   For your editing convenience: highest ID currently used: 270
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -6489,6 +6489,30 @@
       If you set this policy, users cannot change or override it.
 
       If the policy is left not set, the user can choose an image to be shown on the desktop and on the login screen background.''',
+    },
+    {
+      'name': 'EnableDeprecatedWebPlatformFeatures',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:37-', 'chrome_os:37-', 'android:37-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': [],
+      'id': 270,
+      'caption': '''Enable deprecated web platform features''',
+      'desc': '''Specify a list of deprecated web platform features to re-enable.
+
+      This policy gives administrators the ability to re-enable deprecated web platform features for a limited time. Features are identified by a string tag and the features corresponding to the tags included in the list specified by this policy will get re-enabled.
+
+      The following tags are currently defined:
+      - ShowModalDialog_EffectiveUntil20150430
+
+      If this policy is left not set or the list is empty, all deprecated web platform features will remain disabled.''',
     },
   ],
   'messages': {

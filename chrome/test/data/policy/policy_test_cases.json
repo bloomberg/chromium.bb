@@ -2114,6 +2114,18 @@
     ]
   },
 
+  "EnableDeprecatedWebPlatformFeatures": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "EnableDeprecatedWebPlatformFeatures": [
+        "ShowModalDialog_EffectiveUntil20150430"
+      ]
+    },
+    "pref_mappings": [
+      { "pref": "enable_deprecated_web_platform_features" }
+    ]
+  },
+
   "TouchVirtualKeyboardEnabled": {
     "os": ["chromeos"],
     "test_policy": { "TouchVirtualKeyboardEnabled": false },

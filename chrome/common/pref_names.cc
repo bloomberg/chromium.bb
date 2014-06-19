@@ -1139,6 +1139,9 @@ const char kMediaDeviceIdSalt[] = "media.device_id_salt";
 // Preference to disable 3D APIs (WebGL, Pepper 3D).
 const char kDisable3DAPIs[] = "disable_3d_apis";
 
+const char kEnableDeprecatedWebPlatformFeatures[] =
+    "enable_deprecated_web_platform_features";
+
 // Whether to enable hyperlink auditing ("<a ping>").
 const char kEnableHyperlinkAuditing[] = "enable_a_ping";
 

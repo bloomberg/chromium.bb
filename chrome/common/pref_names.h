@@ -355,6 +355,7 @@ extern const char kAutofillDialogDefaults[];
 extern const char kPinnedTabs[];
 
 extern const char kDisable3DAPIs[];
+extern const char kEnableDeprecatedWebPlatformFeatures[];
 extern const char kEnableHyperlinkAuditing[];
 extern const char kEnableReferrers[];
 extern const char kEnableDoNotTrack[];
