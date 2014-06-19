@@ -123,6 +123,7 @@ CASE 4, overlap1 gets removed:
               (bounds 100.00 100.00)
               (drawsContent 1)
               (repaint rects
+                (rect 160.00 160.00 100.00 100.00)
                 (rect 0.00 0.00 100.00 100.00)
                 (rect 0.00 0.00 100.00 100.00)
               )
@@ -161,7 +162,6 @@ CASE 5, overlap2 gets added back:
               (drawsContent 1)
               (repaint rects
                 (rect 80.00 80.00 100.00 100.00)
-                (rect 0.00 0.00 100.00 100.00)
                 (rect 0.00 0.00 100.00 100.00)
                 (rect 0.00 0.00 100.00 100.00)
               )

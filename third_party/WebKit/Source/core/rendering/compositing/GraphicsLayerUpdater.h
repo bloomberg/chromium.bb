@@ -59,7 +59,7 @@ public:
         ForceUpdate,
     };
 
-    void update(RenderLayer&, UpdateType = DoNotForceUpdate, const UpdateContext& = UpdateContext());
+    void update(Vector<RenderLayer*>& layersNeedingPaintInvalidation, RenderLayer&, UpdateType = DoNotForceUpdate, const UpdateContext& = UpdateContext());
     void rebuildTree(RenderLayer&, GraphicsLayerVector& childLayersOfEnclosingLayer);
 
     bool needsRebuildTree() const { return m_needsRebuildTree; }

@@ -333,7 +333,7 @@ void RenderLayerCompositor::updateIfNeeded()
     if (updateType != CompositingUpdateNone) {
         TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::updateRecursive");
         GraphicsLayerUpdater updater;
-        updater.update(*updateRoot);
+        updater.update(layersNeedingRepaint, *updateRoot);
 
         if (updater.needsRebuildTree())
             updateType = std::max(updateType, CompositingUpdateRebuildTree);

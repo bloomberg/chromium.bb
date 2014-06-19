@@ -525,7 +525,7 @@ void CompositedLayerMapping::computeBoundsOfOwningLayer(const RenderLayer* compo
 }
 
 void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& offsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation, const RenderLayer& referenceLayer,
-    Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer* squashingLayer, LayoutPoint* offsetFromTransformedAncestor)
+    Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer* squashingLayer, LayoutPoint* offsetFromTransformedAncestor, Vector<RenderLayer*>& layersNeedingPaintInvalidation)
 {
     if (!squashingLayer)
         return;
@@ -560,12 +560,6 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
     IntPoint squashLayerOrigin = squashLayerBounds.location();
     LayoutSize squashLayerOriginInOwningLayerSpace = squashLayerOrigin - offsetFromReferenceLayerToParentGraphicsLayer;
 
-    squashingLayer->setPosition(squashLayerBounds.location());
-    squashingLayer->setSize(squashLayerBounds.size());
-
-    *offsetFromTransformedAncestor = referenceOffsetFromTransformedAncestor;
-    offsetFromTransformedAncestor->move(squashLayerOriginInOwningLayerSpace);
-
     // Now that the squashing bounds are known, we can convert the RenderLayer painting offsets
     // from CLM owning layer space to the squashing layer space.
     //
@@ -583,8 +577,10 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
         // It is ok to repaint here, because all of the geometry needed to correctly repaint is computed by this point.
         IntSize newOffsetFromRenderer = -IntSize(offsetFromSquashLayerOrigin.width().round(), offsetFromSquashLayerOrigin.height().round());
         LayoutSize subpixelAccumulation = offsetFromSquashLayerOrigin + newOffsetFromRenderer;
-        if (layers[i].offsetFromRendererSet && layers[i].offsetFromRenderer != newOffsetFromRenderer)
+        if (layers[i].offsetFromRendererSet && layers[i].offsetFromRenderer != newOffsetFromRenderer) {
             layers[i].renderLayer->repainter().repaintIncludingNonCompositingDescendants();
+            layersNeedingPaintInvalidation.append(layers[i].renderLayer);
+        }
         layers[i].offsetFromRenderer = newOffsetFromRenderer;
         layers[i].offsetFromRendererSet = true;
 
@@ -595,11 +591,17 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
         layers[i].renderLayer->setOffsetFromSquashingLayerOrigin(layers[i].offsetFromRenderer);
     }
 
+    squashingLayer->setPosition(squashLayerBounds.location());
+    squashingLayer->setSize(squashLayerBounds.size());
+
+    *offsetFromTransformedAncestor = referenceOffsetFromTransformedAncestor;
+    offsetFromTransformedAncestor->move(squashLayerOriginInOwningLayerSpace);
+
     for (size_t i = 0; i < layers.size(); ++i)
         layers[i].localClipRectForSquashedLayer = localClipRectForSquashedLayer(referenceLayer, layers[i], layers);
 }
 
-void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType updateType, const RenderLayer* compositingContainer)
+void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType updateType, const RenderLayer* compositingContainer, Vector<RenderLayer*>& layersNeedingPaintInvalidation)
 {
     if (!shouldUpdateGraphicsLayer(updateType))
         return;
@@ -637,7 +639,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
     FloatSize contentsSize = relativeCompositingBounds.size();
 
     updateMainGraphicsLayerGeometry(relativeCompositingBounds, localCompositingBounds, graphicsLayerParentLocation);
-    updateSquashingLayerGeometry(offsetFromCompositedAncestor, graphicsLayerParentLocation, m_owningLayer, m_squashedLayers, m_squashingLayer.get(), &m_squashingLayerOffsetFromTransformedAncestor);
+    updateSquashingLayerGeometry(offsetFromCompositedAncestor, graphicsLayerParentLocation, m_owningLayer, m_squashedLayers, m_squashingLayer.get(), &m_squashingLayerOffsetFromTransformedAncestor, layersNeedingPaintInvalidation);
 
     // If we have a layer that clips children, position it.
     IntRect clippingBox;
@@ -651,7 +653,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
     updateTransformGeometry(snappedOffsetFromCompositedAncestor, relativeCompositingBounds);
     updateForegroundLayerGeometry(contentsSize, clippingBox);
     updateBackgroundLayerGeometry(contentsSize);
-    updateReflectionLayerGeometry();
+    updateReflectionLayerGeometry(layersNeedingPaintInvalidation);
     updateScrollingLayerGeometry(localCompositingBounds);
     updateChildClippingMaskLayerGeometry();
 
@@ -811,13 +813,13 @@ void CompositedLayerMapping::updateTransformGeometry(const IntPoint& snappedOffs
     }
 }
 
-void CompositedLayerMapping::updateReflectionLayerGeometry()
+void CompositedLayerMapping::updateReflectionLayerGeometry(Vector<RenderLayer*>& layersNeedingPaintInvalidation)
 {
     if (!m_owningLayer.reflectionInfo() || !m_owningLayer.reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping())
         return;
 
     CompositedLayerMappingPtr reflectionCompositedLayerMapping = m_owningLayer.reflectionInfo()->reflectionLayer()->compositedLayerMapping();
-    reflectionCompositedLayerMapping->updateGraphicsLayerGeometry(GraphicsLayerUpdater::ForceUpdate, &m_owningLayer);
+    reflectionCompositedLayerMapping->updateGraphicsLayerGeometry(GraphicsLayerUpdater::ForceUpdate, &m_owningLayer, layersNeedingPaintInvalidation);
 }
 
 void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCompositingBounds)

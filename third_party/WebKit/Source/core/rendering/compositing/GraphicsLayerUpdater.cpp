@@ -62,7 +62,7 @@ GraphicsLayerUpdater::~GraphicsLayerUpdater()
 {
 }
 
-void GraphicsLayerUpdater::update(RenderLayer& layer, UpdateType updateType, const UpdateContext& context)
+void GraphicsLayerUpdater::update(Vector<RenderLayer*>& layersNeedingPaintInvalidation, RenderLayer& layer, UpdateType updateType, const UpdateContext& context)
 {
     if (layer.hasCompositedLayerMapping()) {
         CompositedLayerMappingPtr mapping = layer.compositedLayerMapping();
@@ -84,7 +84,7 @@ void GraphicsLayerUpdater::update(RenderLayer& layer, UpdateType updateType, con
         if (mapping->updateGraphicsLayerConfiguration(updateType))
             m_needsRebuildTree = true;
 
-        mapping->updateGraphicsLayerGeometry(updateType, compositingContainer);
+        mapping->updateGraphicsLayerGeometry(updateType, compositingContainer, layersNeedingPaintInvalidation);
 
         updateType = mapping->updateTypeForChildren(updateType);
         mapping->clearNeedsGraphicsLayerUpdate();
@@ -98,7 +98,7 @@ void GraphicsLayerUpdater::update(RenderLayer& layer, UpdateType updateType, con
 
     UpdateContext childContext(context, layer);
     for (RenderLayer* child = layer.firstChild(); child; child = child->nextSibling())
-        update(*child, updateType, childContext);
+        update(layersNeedingPaintInvalidation, *child, updateType, childContext);
 }
 
 #if ASSERT_ENABLED

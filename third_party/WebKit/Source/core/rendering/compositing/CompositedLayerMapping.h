@@ -87,7 +87,7 @@ public:
     bool updateGraphicsLayerConfiguration(GraphicsLayerUpdater::UpdateType);
     // Update graphics layer position and bounds.
 
-    void updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType, const RenderLayer* compositingContainer);
+    void updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType, const RenderLayer* compositingContainer, Vector<RenderLayer*>& layersNeedingPaintInvalidation);
 
     // Update whether layer needs blending.
     void updateContentsOpaque();
@@ -217,7 +217,7 @@ private:
 
     // Helper methods to updateGraphicsLayerGeometry:
     void computeGraphicsLayerParentLocation(const RenderLayer* compositingContainer, const IntRect& ancestorCompositingBounds, IntPoint& graphicsLayerParentLocation);
-    void updateSquashingLayerGeometry(const LayoutPoint& offsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation, const RenderLayer& referenceLayer, Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer*, LayoutPoint* offsetFromTransformedAncestor);
+    void updateSquashingLayerGeometry(const LayoutPoint& offsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation, const RenderLayer& referenceLayer, Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer*, LayoutPoint* offsetFromTransformedAncestor, Vector<RenderLayer*>& layersNeedingPaintInvalidation);
     void updateMainGraphicsLayerGeometry(const IntRect& relativeCompositingBounds, const IntRect& localCompositingBounds, IntPoint& graphicsLayerParentLocation);
     void updateAncestorClippingLayerGeometry(const RenderLayer* compositingContainer, const IntPoint& snappedOffsetFromCompositedAncestor, IntPoint& graphicsLayerParentLocation);
     void updateChildContainmentLayerGeometry(const IntRect& clippingBox, const IntRect& localCompositingBounds);
@@ -226,7 +226,7 @@ private:
     void updateTransformGeometry(const IntPoint& snappedOffsetFromCompositedAncestor, const IntRect& relativeCompositingBounds);
     void updateForegroundLayerGeometry(const FloatSize& relativeCompositingBoundsSize, const IntRect& clippingBox);
     void updateBackgroundLayerGeometry(const FloatSize& relativeCompositingBoundsSize);
-    void updateReflectionLayerGeometry();
+    void updateReflectionLayerGeometry(Vector<RenderLayer*>& layersNeedingPaintInvalidation);
     void updateScrollingLayerGeometry(const IntRect& localCompositingBounds);
     void updateChildClippingMaskLayerGeometry();
 
