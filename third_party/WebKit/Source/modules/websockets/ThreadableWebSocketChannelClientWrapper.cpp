@@ -66,10 +66,10 @@ void ThreadableWebSocketChannelClientWrapper::didReceiveBinaryData(PassOwnPtr<Ve
         m_client->didReceiveBinaryData(binaryData);
 }
 
-void ThreadableWebSocketChannelClientWrapper::didUpdateBufferedAmount(unsigned long bufferedAmount)
+void ThreadableWebSocketChannelClientWrapper::didConsumeBufferedAmount(unsigned long consumed)
 {
     if (m_client)
-        m_client->didUpdateBufferedAmount(bufferedAmount);
+        m_client->didConsumeBufferedAmount(consumed);
 }
 
 void ThreadableWebSocketChannelClientWrapper::didStartClosingHandshake()
@@ -78,10 +78,10 @@ void ThreadableWebSocketChannelClientWrapper::didStartClosingHandshake()
         m_client->didStartClosingHandshake();
 }
 
-void ThreadableWebSocketChannelClientWrapper::didClose(unsigned long unhandledBufferedAmount, WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
+void ThreadableWebSocketChannelClientWrapper::didClose(WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
 {
     if (m_client)
-        m_client->didClose(unhandledBufferedAmount, closingHandshakeCompletion, code, reason);
+        m_client->didClose(closingHandshakeCompletion, code, reason);
 }
 
 void ThreadableWebSocketChannelClientWrapper::didReceiveMessageError()

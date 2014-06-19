@@ -49,9 +49,9 @@ public:
     void didConnect(const String& subprotocol, const String& extensions);
     void didReceiveMessage(const String& message);
     void didReceiveBinaryData(PassOwnPtr<Vector<char> >);
-    void didUpdateBufferedAmount(unsigned long bufferedAmount);
+    void didConsumeBufferedAmount(unsigned long);
     void didStartClosingHandshake();
-    void didClose(unsigned long unhandledBufferedAmount, WebSocketChannelClient::ClosingHandshakeCompletionStatus, unsigned short code, const String& reason);
+    void didClose(WebSocketChannelClient::ClosingHandshakeCompletionStatus, unsigned short code, const String& reason);
     void didReceiveMessageError();
 
     void trace(Visitor*) { }

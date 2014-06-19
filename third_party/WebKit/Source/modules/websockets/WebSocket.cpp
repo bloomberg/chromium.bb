@@ -228,11 +228,13 @@ WebSocket::WebSocket(ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_state(CONNECTING)
     , m_bufferedAmount(0)
+    , m_consumedBufferedAmount(0)
     , m_bufferedAmountAfterClose(0)
     , m_binaryType(BinaryTypeBlob)
     , m_subprotocol("")
     , m_extensions("")
     , m_eventQueue(EventQueue::create(this))
+    , m_bufferedAmountConsumeTimer(this, &WebSocket::reflectBufferedAmountConsumption)
 {
     ScriptWrappable::init(this);
 }
@@ -373,6 +375,15 @@ void WebSocket::updateBufferedAmountAfterClose(unsigned long payloadSize)
     logError("WebSocket is already in CLOSING or CLOSED state.");
 }
 
+void WebSocket::reflectBufferedAmountConsumption(Timer<WebSocket>*)
+{
+    ASSERT(m_bufferedAmount >= m_consumedBufferedAmount);
+    WTF_LOG(Network, "WebSocket %p reflectBufferedAmountConsumption() %lu => %lu", this, m_bufferedAmount, m_bufferedAmount - m_consumedBufferedAmount);
+
+    m_bufferedAmount -= m_consumedBufferedAmount;
+    m_consumedBufferedAmount = 0;
+}
+
 void WebSocket::releaseChannel()
 {
     ASSERT(m_channel);
@@ -393,6 +404,7 @@ void WebSocket::send(const String& message, ExceptionState& exceptionState)
         return;
     }
     ASSERT(m_channel);
+    m_bufferedAmount += message.utf8().length();
     handleSendResult(m_channel->send(message), exceptionState, WebSocketSendTypeString);
 }
 
@@ -409,6 +421,7 @@ void WebSocket::send(ArrayBuffer* binaryData, ExceptionState& exceptionState)
         return;
     }
     ASSERT(m_channel);
+    m_bufferedAmount += binaryData->byteLength();
     handleSendResult(m_channel->send(*binaryData, 0, binaryData->byteLength()), exceptionState, WebSocketSendTypeArrayBuffer);
 }
 
@@ -425,6 +438,7 @@ void WebSocket::send(ArrayBufferView* arrayBufferView, ExceptionState& exception
         return;
     }
     ASSERT(m_channel);
+    m_bufferedAmount += arrayBufferView->byteLength();
     RefPtr<ArrayBuffer> arrayBuffer(arrayBufferView->buffer());
     handleSendResult(m_channel->send(*arrayBuffer, arrayBufferView->byteOffset(), arrayBufferView->byteLength()), exceptionState, WebSocketSendTypeArrayBufferView);
 }
@@ -441,6 +455,7 @@ void WebSocket::send(Blob* binaryData, ExceptionState& exceptionState)
         updateBufferedAmountAfterClose(static_cast<unsigned long>(binaryData->size()));
         return;
     }
+    m_bufferedAmount += binaryData->size();
     ASSERT(m_channel);
     handleSendResult(m_channel->send(binaryData->blobDataHandle()), exceptionState, WebSocketSendTypeBlob);
 }
@@ -640,12 +655,15 @@ void WebSocket::didReceiveMessageError()
     m_eventQueue->dispatch(Event::create(EventTypeNames::error));
 }
 
-void WebSocket::didUpdateBufferedAmount(unsigned long bufferedAmount)
+void WebSocket::didConsumeBufferedAmount(unsigned long consumed)
 {
-    WTF_LOG(Network, "WebSocket %p didUpdateBufferedAmount() New bufferedAmount is %lu", this, bufferedAmount);
+    ASSERT(m_bufferedAmount >= consumed);
+    WTF_LOG(Network, "WebSocket %p didConsumeBufferedAmount(%lu)", this, consumed);
     if (m_state == CLOSED)
         return;
-    m_bufferedAmount = bufferedAmount;
+    m_consumedBufferedAmount += consumed;
+    if (!m_bufferedAmountConsumeTimer.isActive())
+        m_bufferedAmountConsumeTimer.startOneShot(0, FROM_HERE);
 }
 
 void WebSocket::didStartClosingHandshake()
@@ -654,15 +672,15 @@ void WebSocket::didStartClosingHandshake()
     m_state = CLOSING;
 }
 
-void WebSocket::didClose(unsigned long unhandledBufferedAmount, ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
+void WebSocket::didClose(ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
 {
     WTF_LOG(Network, "WebSocket %p didClose()", this);
     if (!m_channel)
         return;
-    bool wasClean = m_state == CLOSING && !unhandledBufferedAmount && closingHandshakeCompletion == ClosingHandshakeComplete && code != WebSocketChannel::CloseEventCodeAbnormalClosure;
-
+    bool hasAllDataConsumed = m_bufferedAmount == m_consumedBufferedAmount;
+    bool wasClean = m_state == CLOSING && hasAllDataConsumed && closingHandshakeCompletion == ClosingHandshakeComplete && code != WebSocketChannel::CloseEventCodeAbnormalClosure;
     m_state = CLOSED;
-    m_bufferedAmount = unhandledBufferedAmount;
+
     m_eventQueue->dispatch(CloseEvent::create(wasClean, code, reason));
     releaseChannel();
 }

@@ -46,13 +46,18 @@ public:
     };
 
     virtual ~WebSocketClient() { }
-    virtual void didConnect() { }
+    virtual void didConnect(const WebString& subprotocol, const WebString& extensions) { }
     virtual void didReceiveMessage(const WebString& message) { }
     virtual void didReceiveArrayBuffer(const WebArrayBuffer& arrayBuffer) { }
     virtual void didReceiveMessageError() { }
-    virtual void didUpdateBufferedAmount(unsigned long bufferedAmount) { }
+    virtual void didConsumeBufferedAmount(unsigned long consumed) { }
     virtual void didStartClosingHandshake() { }
-    virtual void didClose(unsigned long bufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const WebString& reason) { }
+    virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const WebString& reason) { }
+
+    // FIXME: Deperecate these methods.
+    virtual void didConnect() { }
+    virtual void didUpdateBufferedAmount(unsigned long bufferedAmount) { }
+    virtual void didClose(unsigned long unhandledBufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const WebString& reason) { }
 };
 
 } // namespace blink

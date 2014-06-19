@@ -115,7 +115,6 @@ NewWebSocketChannelImpl::NewWebSocketChannelImpl(ExecutionContext* context, WebS
     , m_identifier(0)
     , m_sendingQuota(0)
     , m_receivedDataSizeForFlowControl(receivedDataSizeForFlowControlHighWaterMark * 2) // initial quota
-    , m_bufferedAmount(0)
     , m_sentSizeOfTopMessage(0)
     , m_sourceURLAtConstruction(sourceURL)
     , m_lineNumberAtConstruction(lineNumber)
@@ -229,12 +228,6 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(PassOwnPtr<Vector<cha
     return SendSuccess;
 }
 
-unsigned long NewWebSocketChannelImpl::bufferedAmount() const
-{
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p bufferedAmount()", this);
-    return m_bufferedAmount;
-}
-
 void NewWebSocketChannelImpl::close(int code, const String& reason)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p close(%d, %s)", this, code, reason.utf8().data());
@@ -305,7 +298,7 @@ NewWebSocketChannelImpl::Message::Message(PassOwnPtr<Vector<char> > vectorData)
 void NewWebSocketChannelImpl::sendInternal()
 {
     ASSERT(m_handle);
-    unsigned long bufferedAmount = m_bufferedAmount;
+    unsigned long consumedBufferedAmount = 0;
     while (!m_messages.isEmpty() && m_sendingQuota > 0 && !m_blobLoader) {
         bool final = false;
         Message* message = m_messages.first().get();
@@ -318,6 +311,7 @@ void NewWebSocketChannelImpl::sendInternal()
             m_handle->send(final, type, message->text.data() + m_sentSizeOfTopMessage, size);
             m_sentSizeOfTopMessage += size;
             m_sendingQuota -= size;
+            consumedBufferedAmount += size;
             break;
         }
         case MessageTypeBlob:
@@ -332,6 +326,7 @@ void NewWebSocketChannelImpl::sendInternal()
             m_handle->send(final, type, static_cast<const char*>(message->arrayBuffer->data()) + m_sentSizeOfTopMessage, size);
             m_sentSizeOfTopMessage += size;
             m_sendingQuota -= size;
+            consumedBufferedAmount += size;
             break;
         }
         case MessageTypeVector: {
@@ -342,6 +337,7 @@ void NewWebSocketChannelImpl::sendInternal()
             m_handle->send(final, type, message->vectorData->data() + m_sentSizeOfTopMessage, size);
             m_sentSizeOfTopMessage += size;
             m_sendingQuota -= size;
+            consumedBufferedAmount += size;
             break;
         }
         }
@@ -350,9 +346,8 @@ void NewWebSocketChannelImpl::sendInternal()
             m_sentSizeOfTopMessage = 0;
         }
     }
-    if (m_client && m_bufferedAmount != bufferedAmount) {
-        m_client->didUpdateBufferedAmount(m_bufferedAmount);
-    }
+    if (m_client && consumedBufferedAmount > 0)
+        m_client->didConsumeBufferedAmount(consumedBufferedAmount);
 }
 
 void NewWebSocketChannelImpl::flowControlIfNecessary()
@@ -383,7 +378,7 @@ void NewWebSocketChannelImpl::handleDidClose(bool wasClean, unsigned short code,
     m_client = 0;
     WebSocketChannelClient::ClosingHandshakeCompletionStatus status =
         wasClean ? WebSocketChannelClient::ClosingHandshakeComplete : WebSocketChannelClient::ClosingHandshakeIncomplete;
-    client->didClose(m_bufferedAmount, status, code, reason);
+    client->didClose(status, code, reason);
     // client->didClose may delete this object.
 }
 

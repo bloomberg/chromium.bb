@@ -33,6 +33,7 @@
 
 #include "../platform/WebCommon.h"
 #include "../platform/WebPrivatePtr.h"
+#include "../platform/WebString.h"
 
 namespace WebCore { class WebSocketChannel; }
 
@@ -40,7 +41,6 @@ namespace blink {
 
 class WebArrayBuffer;
 class WebDocument;
-class WebString;
 class WebURL;
 class WebSocketClient;
 
@@ -84,11 +84,11 @@ public:
     virtual bool setBinaryType(BinaryType) = 0;
 
     virtual void connect(const WebURL&, const WebString& protocol) = 0;
-    virtual WebString subprotocol() = 0;
-    virtual WebString extensions() = 0;
+    virtual WebString subprotocol() { return WebString(); }
+    virtual WebString extensions() { return WebString(); }
     virtual bool sendText(const WebString&) = 0;
     virtual bool sendArrayBuffer(const WebArrayBuffer&) = 0;
-    virtual unsigned long bufferedAmount() const = 0;
+    virtual unsigned long bufferedAmount() const { return 0; }
     virtual void close(int code, const WebString& reason) = 0;
     virtual void fail(const WebString& reason) = 0;
     virtual void disconnect() = 0;
