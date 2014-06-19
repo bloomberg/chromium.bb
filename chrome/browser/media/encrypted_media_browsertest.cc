@@ -626,13 +626,15 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, InitializeCDMFail) {
 }
 
 // When CDM crashes, we should still get a decode error.
-IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, CDMCrashDuringDecode) {
+// crbug.com/386657
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, DISABLED_CDMCrashDuringDecode) {
   IgnorePluginCrash();
   TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError);
 }
 
 // Testing that the media browser test does fail on plugin crash.
-IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, CDMExpectedCrash) {
+// crbug.com/386657
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, DISABLED_CDMExpectedCrash) {
   // Plugin crash is not ignored by default, the test is expected to fail.
   EXPECT_NONFATAL_FAILURE(
       TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError),
