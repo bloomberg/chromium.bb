@@ -314,7 +314,7 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
     results['blink_revision'] = ''
     if port_obj.get_option('builder_name'):
         for (name, path) in port_obj.repository_paths():
-            scm = port_obj.host.scm_at_path(path)
+            scm = port_obj.host.scm_for_path(path)
             if scm:
                 rev = scm.svn_revision(path)
             if rev:
