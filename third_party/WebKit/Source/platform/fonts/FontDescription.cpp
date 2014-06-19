@@ -182,21 +182,27 @@ void FontDescription::updateTypesettingFeatures() const
         break;
     }
 
-    switch (commonLigaturesState()) {
-    case FontDescription::DisabledLigaturesState:
-        m_typesettingFeatures &= ~Ligatures;
-        break;
-    case FontDescription::EnabledLigaturesState:
-        m_typesettingFeatures |= Ligatures;
-        break;
-    case FontDescription::NormalLigaturesState:
-        break;
-    }
+    // As per CSS (http://dev.w3.org/csswg/css-text-3/#letter-spacing-property),
+    // When the effective letter-spacing between two characters is not zero (due to
+    // either justification or non-zero computed letter-spacing), user agents should
+    // not apply optional ligatures.
+    if (m_letterSpacing == 0) {
+        switch (commonLigaturesState()) {
+        case FontDescription::DisabledLigaturesState:
+            m_typesettingFeatures &= ~Ligatures;
+            break;
+        case FontDescription::EnabledLigaturesState:
+            m_typesettingFeatures |= Ligatures;
+            break;
+        case FontDescription::NormalLigaturesState:
+            break;
+        }
 
-    if (discretionaryLigaturesState() == FontDescription::EnabledLigaturesState
-        || historicalLigaturesState() == FontDescription::EnabledLigaturesState
-        || contextualLigaturesState() == FontDescription::EnabledLigaturesState) {
-        m_typesettingFeatures |= WebCore::Ligatures;
+        if (discretionaryLigaturesState() == FontDescription::EnabledLigaturesState
+            || historicalLigaturesState() == FontDescription::EnabledLigaturesState
+            || contextualLigaturesState() == FontDescription::EnabledLigaturesState) {
+            m_typesettingFeatures |= WebCore::Ligatures;
+        }
     }
 }
 

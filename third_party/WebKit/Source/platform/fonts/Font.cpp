@@ -250,7 +250,7 @@ CodePath Font::codePath(const TextRun& run) const
         return SimplePath;
 #endif
 
-    if (m_fontDescription.featureSettings() && m_fontDescription.featureSettings()->size() > 0)
+    if (m_fontDescription.featureSettings() && m_fontDescription.featureSettings()->size() > 0 && m_fontDescription.letterSpacing() == 0)
         return ComplexPath;
 
     if (run.length() > 1 && !WidthIterator::supportsTypesettingFeatures(*this))
