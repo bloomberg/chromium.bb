@@ -850,6 +850,7 @@ enum HistogramValue {
   INPUTMETHODPRIVATE_SETCURRENTINPUTMETHOD,
   INPUTMETHODPRIVATE_GETINPUTMETHODS,
   IDENTITY_GETPROFILEUSERINFO,
+  VIRTUALKEYBOARDPRIVATE_OPENSETTINGS,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

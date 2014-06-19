@@ -149,6 +149,13 @@
             ]
           }
         ]
+      },
+      {
+        "name": "openSettings",
+        "type": "function",
+        "description": "Opens chrome://settings/languages page.",
+        "parameters": [
+        ]
       }
     ],
     "events": [

@@ -36585,6 +36585,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="789" label="INPUTMETHODPRIVATE_SETCURRENTINPUTMETHOD"/>
   <int value="790" label="INPUTMETHODPRIVATE_GETINPUTMETHODS"/>
   <int value="791" label="IDENTITY_GETPROFILEUSERINFO"/>
+  <int value="792" label="VIRTUALKEYBOARDPRIVATE_OPENSETTINGS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

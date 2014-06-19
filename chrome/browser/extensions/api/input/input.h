@@ -109,6 +109,20 @@ class VirtualKeyboardPrivateGetKeyboardConfigFunction
   virtual bool RunSync() OVERRIDE;
 };
 
+class VirtualKeyboardPrivateOpenSettingsFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.openSettings",
+                             VIRTUALKEYBOARDPRIVATE_OPENSETTINGS);
+
+ protected:
+  virtual ~VirtualKeyboardPrivateOpenSettingsFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunSync() OVERRIDE;
+};
+
+
 class InputAPI : public BrowserContextKeyedAPI {
  public:
   explicit InputAPI(content::BrowserContext* context);

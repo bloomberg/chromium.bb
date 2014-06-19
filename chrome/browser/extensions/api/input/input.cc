@@ -8,6 +8,9 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_function_registry.h"
@@ -155,6 +158,19 @@ bool VirtualKeyboardPrivateGetKeyboardConfigFunction::RunSync() {
   results->SetBoolean("experimental",
       keyboard::IsExperimentalInputViewEnabled());
   SetResult(results);
+  return true;
+#else
+  error_ = kNotYetImplementedError;
+  return false;
+#endif
+}
+
+bool VirtualKeyboardPrivateOpenSettingsFunction::RunSync() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+#if defined(USE_ASH)
+  content::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
+  chrome::ShowSettingsSubPageForProfile(
+      ProfileManager::GetActiveUserProfile(), chrome::kLanguageOptionsSubPage);
   return true;
 #else
   error_ = kNotYetImplementedError;
