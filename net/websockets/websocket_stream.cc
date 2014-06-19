@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -178,14 +179,18 @@ class SSLErrorCallbacks : public WebSocketEventInterface::SSLErrorCallbacks {
 };
 
 void Delegate::OnResponseStarted(URLRequest* request) {
+  // All error codes, including OK and ABORTED, as with
+  // Net.ErrorCodesForMainFrame3
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.WebSocket.ErrorCodes",
+                              -request->status().error());
   if (!request->status().is_success()) {
     DVLOG(3) << "OnResponseStarted (request failed)";
     owner_->ReportFailure();
     return;
   }
-  DVLOG(3) << "OnResponseStarted (response code " << request->GetResponseCode()
-           << ")";
-  switch (request->GetResponseCode()) {
+  const int response_code = request->GetResponseCode();
+  DVLOG(3) << "OnResponseStarted (response code " << response_code << ")";
+  switch (response_code) {
     case HTTP_SWITCHING_PROTOCOLS:
       result_ = CONNECTED;
       owner_->PerformUpgrade();

@@ -15852,6 +15852,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.WebSocket.ErrorCodes" enum="NetErrorCodes">
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
+  <summary>
+    Positive net error codes that WebSockets end with, including OK and ABORTED.
+  </summary>
+</histogram>
+
 <histogram name="Net.WebSocket.HandshakeResult"
     enum="WebSocketNewHandshakeResult">
   <owner>yhirano@chromium.org</owner>
@@ -15861,6 +15870,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Results of WebSocket handshakes. Use this histogram as a baseline for
     investigating feature usage counters.
   </summary>
+</histogram>
+
+<histogram name="Net.WebSocket.ResponseCode" enum="HttpResponseCode">
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
+  <summary>All HTTP status codes seen during WebSocket handshakes.</summary>
 </histogram>
 
 <histogram name="Net.Wifi.InterfaceCount">

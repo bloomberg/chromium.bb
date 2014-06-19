@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -552,9 +553,14 @@ void WebSocketBasicHandshakeStream::OnFinishOpeningHandshake() {
 
 int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {
   DCHECK(http_response_info_);
-  const HttpResponseHeaders* headers = http_response_info_->headers.get();
+  // Most net errors happen during connection, so they are not seen by this
+  // method. The histogram for error codes is created in
+  // Delegate::OnResponseStarted in websocket_stream.cc instead.
   if (rv >= 0) {
-    switch (headers->response_code()) {
+    const HttpResponseHeaders* headers = http_response_info_->headers.get();
+    const int response_code = headers->response_code();
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.WebSocket.ResponseCode", response_code);
+    switch (response_code) {
       case HTTP_SWITCHING_PROTOCOLS:
         OnFinishOpeningHandshake();
         return ValidateUpgradeResponse(headers);
