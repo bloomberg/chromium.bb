@@ -64,7 +64,7 @@ bool CacaSurface::Initialize() {
       info.bytesPerPixel() * 8,
       info.width(),
       info.height(),
-      SkBitmap::ComputeRowBytes(SkBitmap::kARGB_8888_Config, info.width()),
+      info.minRowBytes(),
       0x00ff0000,
       0x0000ff00,
       0x000000ff,
