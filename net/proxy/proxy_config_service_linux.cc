@@ -205,7 +205,6 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromEnv(ProxyConfig* config) {
 namespace {
 
 const int kDebounceTimeoutMilliseconds = 250;
-const char kProxyGConfSchema[] = "org.gnome.system.proxy";
 
 #if defined(USE_GCONF)
 // This setting getter uses gconf, as used in GNOME 2 and some GNOME 3 desktops.
@@ -521,6 +520,8 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
 #endif  // defined(USE_GCONF)
 
 #if defined(USE_GIO)
+const char kProxyGConfSchema[] = "org.gnome.system.proxy";
+
 // This setting getter uses gsettings, as used in most GNOME 3 desktops.
 class SettingGetterImplGSettings
     : public ProxyConfigServiceLinux::SettingGetter {
