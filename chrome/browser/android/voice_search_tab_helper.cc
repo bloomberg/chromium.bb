@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/voice_search_tab_helper.h"
 
-#include "chrome/browser/google/google_util.h"
+#include "components/google/core/browser/google_util.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/VoiceSearchTabHelper_jni.h"

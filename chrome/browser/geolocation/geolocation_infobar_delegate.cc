@@ -6,8 +6,8 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/content_settings/permission_queue_controller.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "components/google/core/browser/google_util.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"

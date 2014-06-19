@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // Some Google related utility functions.
 
-#ifndef CHROME_BROWSER_GOOGLE_GOOGLE_UTIL_H__
-#define CHROME_BROWSER_GOOGLE_GOOGLE_UTIL_H__
+#ifndef COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_UTIL_H__
+#define COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_UTIL_H__
 
 #include <string>
 
@@ -111,4 +111,4 @@ bool IsYoutubeDomainUrl(const GURL& url,
 
 }  // namespace google_util
 
-#endif  // CHROME_BROWSER_GOOGLE_GOOGLE_UTIL_H__
+#endif  // COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_UTIL_H__

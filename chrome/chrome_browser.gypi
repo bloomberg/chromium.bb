@@ -718,8 +718,6 @@
         'browser/google/google_brand.h',
         'browser/google/google_brand_chromeos.cc',
         'browser/google/google_brand_chromeos.h',
-        'browser/google/google_util.cc',
-        'browser/google/google_util.h',
         'browser/gpu/gl_string_manager.cc',
         'browser/gpu/gl_string_manager.h',
         'browser/gpu/gpu_feature_checker.cc',

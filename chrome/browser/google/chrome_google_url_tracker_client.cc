@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_url_tracker_navigation_helper_impl.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -57,13 +56,6 @@ PrefService* ChromeGoogleURLTrackerClient::GetPrefs() {
 net::URLRequestContextGetter*
 ChromeGoogleURLTrackerClient::GetRequestContext() {
   return profile_->GetRequestContext();
-}
-
-bool ChromeGoogleURLTrackerClient::IsGoogleDomainURL(const GURL& url) {
-  return google_util::IsGoogleDomainUrl(
-      url,
-      google_util::DISALLOW_SUBDOMAIN,
-      google_util::DISALLOW_NON_STANDARD_PORTS);
 }
 
 void ChromeGoogleURLTrackerClient::Observe(

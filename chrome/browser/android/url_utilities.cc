@@ -4,7 +4,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "chrome/browser/google/google_util.h"
+#include "components/google/core/browser/google_util.h"
 #include "components/url_fixer/url_fixer.h"
 #include "jni/UrlUtilities_jni.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"

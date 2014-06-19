@@ -10,7 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/google/google_util.h"
+#include "components/google/core/browser/google_util.h"
 #include "net/cookies/canonical_cookie.h"
 
 namespace chrome_browser_net {

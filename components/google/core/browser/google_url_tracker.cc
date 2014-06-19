@@ -12,6 +12,7 @@
 #include "components/google/core/browser/google_switches.h"
 #include "components/google/core/browser/google_url_tracker_infobar_delegate.h"
 #include "components/google/core/browser/google_url_tracker_navigation_helper.h"
+#include "components/google/core/browser/google_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "net/base/load_flags.h"
@@ -122,7 +123,9 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   GURL url(url_str);
   if (!url.is_valid() || (url.path().length() > 1) || url.has_query() ||
       url.has_ref() ||
-      !client_->IsGoogleDomainURL(url))
+      !google_util::IsGoogleDomainUrl(url,
+                                      google_util::DISALLOW_SUBDOMAIN,
+                                      google_util::DISALLOW_NON_STANDARD_PORTS))
     return;
 
   std::swap(url, fetched_google_url_);

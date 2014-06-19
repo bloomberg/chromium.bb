@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/profiles/profile_reset_bubble_view.h"
 
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profile_resetter/profile_reset_global_error.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/url_constants.h"
+#include "components/google/core/browser/google_util.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"

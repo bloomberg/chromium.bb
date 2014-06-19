@@ -5,7 +5,7 @@
 #include "chrome/browser/google/google_search_counter.h"
 
 #include "base/logging.h"
-#include "chrome/browser/google/google_util.h"
+#include "components/google/core/browser/google_util.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"

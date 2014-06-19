@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker_client.h"
@@ -80,7 +79,6 @@ class TestGoogleURLTrackerClient : public GoogleURLTrackerClient {
   virtual bool IsBackgroundNetworkingEnabled() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
-  virtual bool IsGoogleDomainURL(const GURL& url) OVERRIDE;
 
  private:
   Profile* profile_;
@@ -115,13 +113,6 @@ PrefService* TestGoogleURLTrackerClient::GetPrefs() {
 
 net::URLRequestContextGetter* TestGoogleURLTrackerClient::GetRequestContext() {
   return profile_->GetRequestContext();
-}
-
-bool TestGoogleURLTrackerClient::IsGoogleDomainURL(const GURL& url) {
-  return google_util::IsGoogleDomainUrl(
-      url,
-      google_util::DISALLOW_SUBDOMAIN,
-      google_util::DISALLOW_NON_STANDARD_PORTS);
 }
 
 

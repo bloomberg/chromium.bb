@@ -15,6 +15,7 @@
         'components_strings.gyp:components_strings',
         'keyed_service_core',
         'infobars_core',
+        'url_fixer',
       ],
       'include_dirs': [
         '..',
@@ -36,6 +37,8 @@
         'google/core/browser/google_url_tracker_map_entry.h',
         'google/core/browser/google_url_tracker_navigation_helper.cc',
         'google/core/browser/google_url_tracker_navigation_helper.h',
+        'google/core/browser/google_util.cc',
+        'google/core/browser/google_util.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],

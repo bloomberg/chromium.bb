@@ -6,11 +6,11 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/common/url_constants.h"
+#include "components/google/core/browser/google_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
