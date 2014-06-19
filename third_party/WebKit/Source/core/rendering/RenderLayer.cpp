@@ -653,13 +653,8 @@ void RenderLayer::updatePagination()
     }
 }
 
-void RenderLayer::mapRectToRepaintBacking(const RenderObject* renderObject, const RenderLayerModelObject* repaintContainer, LayoutRect& rect)
+static RenderLayerModelObject* getTransformedAncestor(const RenderLayerModelObject* repaintContainer)
 {
-    if (!repaintContainer->groupedMapping()) {
-        renderObject->mapRectToPaintInvalidationBacking(repaintContainer, rect);
-        return;
-    }
-
     ASSERT(repaintContainer->layer()->enclosingTransformedAncestor());
     ASSERT(repaintContainer->layer()->enclosingTransformedAncestor()->renderer());
 
@@ -667,6 +662,37 @@ void RenderLayer::mapRectToRepaintBacking(const RenderObject* renderObject, cons
     RenderLayerModelObject* transformedAncestor = 0;
     if (RenderLayer* ancestor = repaintContainer->layer()->enclosingTransformedAncestor())
         transformedAncestor = ancestor->renderer();
+    return transformedAncestor;
+}
+
+LayoutPoint RenderLayer::positionFromPaintInvalidationContainer(const RenderObject* renderObject, const RenderLayerModelObject* repaintContainer)
+{
+    if (!repaintContainer || !repaintContainer->groupedMapping())
+        return renderObject->positionFromPaintInvalidationContainer(repaintContainer);
+
+    RenderLayerModelObject* transformedAncestor = getTransformedAncestor(repaintContainer);
+    if (!transformedAncestor)
+        return renderObject->positionFromPaintInvalidationContainer(repaintContainer);
+
+    // If the transformedAncestor is actually the RenderView, we might get
+    // confused and think that we can use LayoutState. Ideally, we'd made
+    // LayoutState work for all composited layers as well, but until then
+    // we need to disable LayoutState for squashed layers.
+    ForceHorriblySlowRectMapping slowRectMapping(*transformedAncestor);
+
+    LayoutPoint point = renderObject->positionFromPaintInvalidationContainer(transformedAncestor);
+    point.moveBy(-repaintContainer->groupedMapping()->squashingOffsetFromTransformedAncestor());
+    return point;
+}
+
+void RenderLayer::mapRectToRepaintBacking(const RenderObject* renderObject, const RenderLayerModelObject* repaintContainer, LayoutRect& rect)
+{
+    if (!repaintContainer->groupedMapping()) {
+        renderObject->mapRectToPaintInvalidationBacking(repaintContainer, rect);
+        return;
+    }
+
+    RenderLayerModelObject* transformedAncestor = getTransformedAncestor(repaintContainer);
     if (!transformedAncestor)
         return;
 
@@ -682,8 +708,6 @@ void RenderLayer::mapRectToRepaintBacking(const RenderObject* renderObject, cons
     // FIXME: remove this special-case code that works around the repainting code structure.
     renderObject->mapRectToPaintInvalidationBacking(transformedAncestor, rect);
     rect.moveBy(-repaintContainer->groupedMapping()->squashingOffsetFromTransformedAncestor());
-
-    return;
 }
 
 LayoutRect RenderLayer::computeRepaintRect(const RenderObject* renderObject, const RenderLayer* repaintContainer)

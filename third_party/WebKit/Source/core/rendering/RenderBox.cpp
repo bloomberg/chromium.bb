@@ -1582,7 +1582,7 @@ void RenderBox::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInv
     const LayoutRect oldPaintInvalidationRect = previousPaintInvalidationRect();
     const LayoutPoint oldPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
     setPreviousPaintInvalidationRect(boundsRectForPaintInvalidation(&newPaintInvalidationContainer));
-    setPreviousPositionFromPaintInvalidationContainer(positionFromPaintInvalidationContainer(&newPaintInvalidationContainer));
+    setPreviousPositionFromPaintInvalidationContainer(RenderLayer::positionFromPaintInvalidationContainer(this, &newPaintInvalidationContainer));
 
     // If we are set to do a full paint invalidation that means the RenderView will be
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child

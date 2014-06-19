@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/rendering/svg/RenderSVGModelObject.h"
 
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
@@ -139,7 +140,7 @@ void RenderSVGModelObject::invalidateTreeAfterLayout(const RenderLayerModelObjec
     const LayoutPoint oldPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
     const RenderLayerModelObject& newPaintInvalidationContainer = *containerForPaintInvalidation();
     setPreviousPaintInvalidationRect(clippedOverflowRectForPaintInvalidation(&newPaintInvalidationContainer));
-    setPreviousPositionFromPaintInvalidationContainer(positionFromPaintInvalidationContainer(&newPaintInvalidationContainer));
+    setPreviousPositionFromPaintInvalidationContainer(RenderLayer::positionFromPaintInvalidationContainer(this, &newPaintInvalidationContainer));
 
     // If an ancestor container had its transform changed, then we just
     // need to update the RenderSVGModelObject's repaint rect above. The invalidation

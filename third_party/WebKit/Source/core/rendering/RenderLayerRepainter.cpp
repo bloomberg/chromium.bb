@@ -116,7 +116,7 @@ void RenderLayerRepainter::computeRepaintRects()
         m_renderer.setPreviousPaintInvalidationRect(repaintRect);
     } else {
         m_repaintRect = repaintRect;
-        m_offset = m_renderer.positionFromPaintInvalidationContainer(repaintContainer);
+        m_offset = RenderLayer::positionFromPaintInvalidationContainer(&m_renderer, repaintContainer);
     }
 }
 

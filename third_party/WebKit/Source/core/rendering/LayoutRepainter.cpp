@@ -45,7 +45,7 @@ LayoutRepainter::LayoutRepainter(RenderObject& object, bool checkForRepaint)
             // Hits in compositing/video/video-controls-layer-creation.html
             DisableCompositingQueryAsserts disabler;
             m_oldBounds = m_object.boundsRectForPaintInvalidation(m_repaintContainer);
-            m_oldOffset = m_object.positionFromPaintInvalidationContainer(m_repaintContainer);
+            m_oldOffset = RenderLayer::positionFromPaintInvalidationContainer(&m_object, m_repaintContainer);
         }
     }
 }

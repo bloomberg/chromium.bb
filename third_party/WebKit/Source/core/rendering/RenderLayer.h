@@ -335,6 +335,11 @@ public:
     RenderLayer* scrollParent() const;
     RenderLayer* clipParent() const;
 
+    // Computes the position of the given render object in the space of |repaintContainer|.
+    // FIXME: invert the logic to have repaint containers take care of painting objects into them, rather than the reverse.
+    // This will allow us to clean up this static method messiness.
+    static LayoutPoint positionFromPaintInvalidationContainer(const RenderObject*, const RenderLayerModelObject* repaintContainer);
+
     // Adjusts the given rect (in the coordinate space of the RenderObject) to the coordinate space of |repaintContainer|'s GraphicsLayer backing.
     static void mapRectToRepaintBacking(const RenderObject*, const RenderLayerModelObject* repaintContainer, LayoutRect&);
 

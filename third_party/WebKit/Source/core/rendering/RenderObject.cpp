@@ -1651,7 +1651,7 @@ bool RenderObject::invalidatePaintAfterLayoutIfNeeded(const RenderLayerModelObje
     // This ASSERT fails due to animations.  See https://bugs.webkit.org/show_bug.cgi?id=37048
     // ASSERT(!newBoundsPtr || *newBoundsPtr == clippedOverflowRectForPaintInvalidation(paintInvalidationContainer));
     LayoutRect newBounds = newBoundsPtr ? *newBoundsPtr : computePaintInvalidationRect();
-    LayoutPoint newLocation = newLocationPtr ? (*newLocationPtr) : positionFromPaintInvalidationContainer(paintInvalidationContainer);
+    LayoutPoint newLocation = newLocationPtr ? (*newLocationPtr) : RenderLayer::positionFromPaintInvalidationContainer(this, paintInvalidationContainer);
 
     // FIXME: This should use a ConvertableToTraceFormat when they are available in Blink.
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::invalidatePaintAfterLayoutIfNeeded()",
