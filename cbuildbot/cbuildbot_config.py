@@ -2148,6 +2148,8 @@ _release.add_config('stumpy_moblab-release',
   boards=['stumpy_moblab'],
   images=['base', 'test'],
   paygen_skip_delta_payloads=True,
+  # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
+  paygen_skip_testing=True,
 )
 
 ### Per-chipset release groups
