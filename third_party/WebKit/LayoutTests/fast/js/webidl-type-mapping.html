@@ -625,6 +625,10 @@ shouldBeEqualToString("converter.testScalarValueString", "\u0100");
 ["true", "123", "null", "undefined"].forEach(function(value) {
     evalAndLog("converter.testScalarValueString = " + value);
     shouldBeEqualToString("converter.testScalarValueString", value);
+    shouldBeEqualToString("converter.testScalarValueStringTreatReturnedNullStringAsNullAttribute", value);
+    shouldBeEqualToString("converter.testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute", value);
+    shouldBeEqualToString("converter.getTestScalarValueStringTreatReturnedNullStringAsNullMethod()", value);
+    shouldBeEqualToString("converter.getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod()", value);
 });
 shouldNotThrow("converter.setTestScalarValueString('abc')");
 shouldNotThrow("converter.setTestScalarValueStringDefaultNull('abc')");
@@ -633,5 +637,9 @@ shouldNotThrow("converter.setTestScalarValueStringDefaultNull('\\u0100')");
 shouldThrow("converter.setTestScalarValueString()");
 shouldNotThrow("converter.setTestScalarValueStringDefaultNull()");
 shouldBeEqualToString("converter.testScalarValueString", "");
+shouldBeNull("converter.testScalarValueStringTreatReturnedNullStringAsNullAttribute");
+shouldBeUndefined("converter.testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute");
+shouldBeNull("converter.getTestScalarValueStringTreatReturnedNullStringAsNullMethod()");
+shouldBeUndefined("converter.getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod()");
 
 </script>

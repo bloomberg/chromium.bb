@@ -1078,12 +1078,28 @@ converter.testScalarValueString = "𝄞"
 PASS converter.testScalarValueString is "𝄞"
 converter.testScalarValueString = true
 PASS converter.testScalarValueString is "true"
+PASS converter.testScalarValueStringTreatReturnedNullStringAsNullAttribute is "true"
+PASS converter.testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute is "true"
+PASS converter.getTestScalarValueStringTreatReturnedNullStringAsNullMethod() is "true"
+PASS converter.getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod() is "true"
 converter.testScalarValueString = 123
 PASS converter.testScalarValueString is "123"
+PASS converter.testScalarValueStringTreatReturnedNullStringAsNullAttribute is "123"
+PASS converter.testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute is "123"
+PASS converter.getTestScalarValueStringTreatReturnedNullStringAsNullMethod() is "123"
+PASS converter.getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod() is "123"
 converter.testScalarValueString = null
 PASS converter.testScalarValueString is "null"
+PASS converter.testScalarValueStringTreatReturnedNullStringAsNullAttribute is "null"
+PASS converter.testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute is "null"
+PASS converter.getTestScalarValueStringTreatReturnedNullStringAsNullMethod() is "null"
+PASS converter.getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod() is "null"
 converter.testScalarValueString = undefined
 PASS converter.testScalarValueString is "undefined"
+PASS converter.testScalarValueStringTreatReturnedNullStringAsNullAttribute is "undefined"
+PASS converter.testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute is "undefined"
+PASS converter.getTestScalarValueStringTreatReturnedNullStringAsNullMethod() is "undefined"
+PASS converter.getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod() is "undefined"
 PASS converter.setTestScalarValueString('abc') did not throw exception.
 PASS converter.setTestScalarValueStringDefaultNull('abc') did not throw exception.
 PASS converter.setTestScalarValueString('\u0100') did not throw exception.
@@ -1091,6 +1107,10 @@ PASS converter.setTestScalarValueStringDefaultNull('\u0100') did not throw excep
 PASS converter.setTestScalarValueString() threw exception TypeError: Failed to execute 'setTestScalarValueString' on 'TypeConversions': 1 argument required, but only 0 present..
 PASS converter.setTestScalarValueStringDefaultNull() did not throw exception.
 PASS converter.testScalarValueString is ""
+PASS converter.testScalarValueStringTreatReturnedNullStringAsNullAttribute is null
+PASS converter.testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute is undefined.
+PASS converter.getTestScalarValueStringTreatReturnedNullStringAsNullMethod() is null
+PASS converter.getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod() is undefined.
 PASS successfullyParsed is true
 
 TEST COMPLETE

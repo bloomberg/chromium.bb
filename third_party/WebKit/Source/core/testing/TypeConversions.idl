@@ -55,6 +55,10 @@
     [ImplementedAs=setTestByteString] void setTestByteStringDefaultNull(optional ByteString byteString = null);
 
     attribute ScalarValueString testScalarValueString;
+    [ImplementedAs=testScalarValueString, TreatReturnedNullStringAs=Null] attribute ScalarValueString testScalarValueStringTreatReturnedNullStringAsNullAttribute;
+    [ImplementedAs=testScalarValueString, TreatReturnedNullStringAs=Undefined] attribute ScalarValueString testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute;
+    [ImplementedAs=testScalarValueString, TreatReturnedNullStringAs=Null] ScalarValueString getTestScalarValueStringTreatReturnedNullStringAsNullMethod();
+    [ImplementedAs=testScalarValueString, TreatReturnedNullStringAs=Undefined] ScalarValueString getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod();
     void setTestScalarValueString(ScalarValueString scalarValueString);
     [ImplementedAs=setTestScalarValueString] void setTestScalarValueStringDefaultNull(optional ScalarValueString scalarValueString = null);
 };
