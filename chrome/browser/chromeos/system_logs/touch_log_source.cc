@@ -31,16 +31,16 @@ void GetTouchLogs(system_logs::SystemLogsResponse* response) {
 
   std::vector<std::pair<std::string, CommandLine> > commands;
   CommandLine command =
-    CommandLine(base::FilePath("/opt/google/touchpad/tpcontrol"));
-  command.AppendArg("status");
+    CommandLine(base::FilePath("/opt/google/input/inputcontrol"));
+  command.AppendArg("--status");
   commands.push_back(std::make_pair("hack-33025-touchpad", command));
 
   command =
-    CommandLine(base::FilePath("/opt/google/touchpad/generate_userfeedback"));
+    CommandLine(base::FilePath("/opt/google/input/cmt_feedback"));
   commands.push_back(std::make_pair("hack-33025-touchpad_activity", command));
 
   command = CommandLine(
-      base::FilePath("/opt/google/touchscreen/touchscreen_feedback"));
+      base::FilePath("/opt/google/input/evdev_feedback"));
   commands.push_back(
       std::make_pair("hack-33025-touchscreen_activity", command));
 
