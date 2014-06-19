@@ -52,6 +52,8 @@ const char kConflictingBoundsOptions[] =
     "The $1 property cannot be specified for both inner and outer bounds.";
 const char kAlwaysOnTopPermission[] =
     "The \"app.window.alwaysOnTop\" permission is required.";
+const char kInvalidUrlParameter[] =
+    "The URL used for window creation must be local for security reasons.";
 }  // namespace app_window_constants
 
 const char kNoneFrameOption[] = "none";
@@ -152,10 +154,15 @@ bool AppWindowCreateFunction::RunAsync() {
   GURL url = GetExtension()->GetResourceURL(params->url);
   // Allow absolute URLs for component apps, otherwise prepend the extension
   // path.
-  if (GetExtension()->location() == extensions::Manifest::COMPONENT) {
-    GURL absolute = GURL(params->url);
-    if (absolute.has_scheme())
+  GURL absolute = GURL(params->url);
+  if (absolute.has_scheme()) {
+    if (GetExtension()->location() == extensions::Manifest::COMPONENT) {
       url = absolute;
+    } else {
+      // Show error when url passed isn't local.
+      error_ = app_window_constants::kInvalidUrlParameter;
+      return false;
+    }
   }
 
   // TODO(jeremya): figure out a way to pass the opening WebContents through to
