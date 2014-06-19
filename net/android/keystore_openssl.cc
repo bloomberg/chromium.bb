@@ -310,6 +310,44 @@ bool GetRsaPkeyWrapper(jobject private_key, EVP_PKEY* pkey) {
   return true;
 }
 
+// On Android < 4.2, the libkeystore.so ENGINE uses CRYPTO_EX_DATA and is not
+// added to the global engine list. If all references to it are dropped, OpenSSL
+// will dlclose the module, leaving a dangling function pointer in the RSA
+// CRYPTO_EX_DATA class. To work around this, leak an extra reference to the
+// ENGINE we extract in GetRsaLegacyKey.
+//
+// In 4.2, this change avoids the problem:
+// https://android.googlesource.com/platform/libcore/+/106a8928fb4249f2f3d4dba1dddbe73ca5cb3d61
+//
+// https://crbug.com/381465
+class KeystoreEngineWorkaround {
+ public:
+  KeystoreEngineWorkaround() : leaked_engine_(false) {}
+
+  void LeakRsaEngine(EVP_PKEY* pkey) {
+    if (leaked_engine_)
+      return;
+    ScopedRSA rsa(EVP_PKEY_get1_RSA(pkey));
+    if (!rsa.get() ||
+        !rsa.get()->engine ||
+        strcmp(ENGINE_get_id(rsa.get()->engine), "keystore") ||
+        !ENGINE_init(rsa.get()->engine)) {
+      NOTREACHED();
+      return;
+    }
+    leaked_engine_ = true;
+  }
+
+ private:
+  bool leaked_engine_;
+};
+
+void LeakRsaEngine(EVP_PKEY* pkey) {
+  static base::LazyInstance<KeystoreEngineWorkaround>::Leaky s_instance =
+      LAZY_INSTANCE_INITIALIZER;
+  s_instance.Get().LeakRsaEngine(pkey);
+}
+
 // Setup an EVP_PKEY to wrap an existing platform RSA PrivateKey object
 // for Android 4.0 to 4.1.x. Must only be used on Android < 4.2.
 // |private_key| is a JNI reference (local or global) to the object.
@@ -320,6 +358,7 @@ EVP_PKEY* GetRsaLegacyKey(jobject private_key) {
       GetOpenSSLSystemHandleForPrivateKey(private_key);
   if (sys_pkey != NULL) {
     CRYPTO_add(&sys_pkey->references, 1, CRYPTO_LOCK_EVP_PKEY);
+    LeakRsaEngine(sys_pkey);
   } else {
     // GetOpenSSLSystemHandleForPrivateKey() will fail on Android
     // 4.0.3 and earlier. However, it is possible to get the key
