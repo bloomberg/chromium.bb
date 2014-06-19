@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -17,7 +16,6 @@
 #include "chrome/browser/chromeos/login/screens/update_screen_actor.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_state.h"
 #include "content/public/browser/browser_thread.h"
