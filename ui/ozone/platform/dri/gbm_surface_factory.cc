@@ -5,9 +5,11 @@
 #include "ui/ozone/platform/dri/gbm_surface_factory.h"
 
 #include <EGL/egl.h>
+#include <gbm.h>
 
 #include "base/files/file_path.h"
 #include "ui/gfx/ozone/surface_ozone_egl.h"
+#include "ui/ozone/platform/dri/buffer_data.h"
 #include "ui/ozone/platform/dri/dri_vsync_provider.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
@@ -148,6 +150,38 @@ scoped_ptr<gfx::SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
 
   return scoped_ptr<gfx::SurfaceOzoneEGL>(
       new GbmSurfaceAdapter(screen_manager_->GetDisplayController(w)));
+}
+
+gfx::NativeBufferOzone GbmSurfaceFactory::CreateNativeBuffer(
+    gfx::Size size,
+    BufferFormat format) {
+  uint32_t gbm_format = 0;
+  switch (format) {
+    case SurfaceFactoryOzone::UNKNOWN:
+      return 0;
+    // TODO(alexst): Setting this to XRGB for now to allow presentation
+    // as a primary plane but disallowing overlay transparency. Address this
+    // to allow both use cases.
+    case SurfaceFactoryOzone::RGBA_8888:
+      gbm_format = GBM_FORMAT_XRGB8888;
+      break;
+    case SurfaceFactoryOzone::RGB_888:
+      gbm_format = GBM_FORMAT_RGB888;
+      break;
+  }
+  gbm_bo* buffer_object =
+      gbm_bo_create(device_,
+                    size.width(),
+                    size.height(),
+                    gbm_format,
+                    GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+  if (!buffer_object)
+    return 0;
+
+  BufferData* data = BufferData::CreateData(drm_, buffer_object);
+  DCHECK(data) << "Failed to associate the buffer with the controller";
+
+  return reinterpret_cast<gfx::NativeBufferOzone>(buffer_object);
 }
 
 }  // namespace ui

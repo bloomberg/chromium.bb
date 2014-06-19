@@ -27,6 +27,9 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
   virtual scoped_ptr<gfx::SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget w) OVERRIDE;
+  virtual gfx::NativeBufferOzone CreateNativeBuffer(
+      gfx::Size size,
+      BufferFormat format) OVERRIDE;
 
  private:
   gbm_device* device_;  // Not owned.
