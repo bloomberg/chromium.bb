@@ -173,6 +173,10 @@
       'filepath': 'Source/modules/navigatorcontentutils' \
                   '|LayoutTests/fast/dom/navigatorcontentutils'
     },
+    'out_of_process_frames': {
+      'filepath': 'Source/core/frame/FrameOwner' \
+                  '|Source/web/WebRemoteFrameImpl' \
+    },
     'fileapi': {
       'filepath': 'Source/modules/filesystem/' \
                   '|Source/core/fileapi/' \
@@ -385,5 +389,6 @@
     'css_grid_layout': [ 'svillar@igalia.com', 'jfernandez@igalia.com', 'rego@igalia.com' ],
     'css_flexbox': [ 'cbiesinger@chromium.org' ],
     'battery_status': [ 'timvolodine@chromium.org' ],
+    'out_of_process_frames': [ 'dcheng@chromium.org' ],
   },
 }
