@@ -1450,5 +1450,24 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, CropImageOnDrive) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ExposureImageOnDownloads) {
+  AddScript("gallery/photo_editor.js");
+  set_test_case_name("exposureImageOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
+                       ExposureImageOnDownloads) {
+  AddScript("gallery/photo_editor.js");
+  set_test_case_name("exposureImageOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ExposureImageOnDrive) {
+  AddScript("gallery/photo_editor.js");
+  set_test_case_name("exposureImageOnDrive");
+  StartTest();
+}
+
 }  // namespace
 }  // namespace file_manager

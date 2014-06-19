@@ -83,8 +83,9 @@ function launchWithTestEntries(
         selectedEntries.map(function(entry) { return entry.nameText; }));
   });
   return launch(entriesPromise).then(function() {
-    return appWindowPromise.then(function(appWindow) {
-      return {appWindow: appWindow, entries: entries};
+    var launchedPromise = Promise.all([appWindowPromise, entriesPromise]);
+    return launchedPromise.then(function(results) {
+      return {appWindow: results[0], entries: results[1]};
     });
   });
 }
