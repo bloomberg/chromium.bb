@@ -23,6 +23,7 @@ const char kDataReductionProxyFallback[] = "http://bar.com:80/";
 const char kDataReductionProxyKey[] = "12345";
 
 const char kProbeURLWithOKResponse[] = "http://ok.org/";
+const char kWarmupURLWithNoContentResponse[] = "http://warm.org/";
 
 const char kProxy[] = "proxy";
 
@@ -151,7 +152,8 @@ void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
   EXPECT_CALL(*settings, GetLocalStatePrefs())
       .Times(AnyNumber())
       .WillRepeatedly(Return(&pref_service_));
-  EXPECT_CALL(*settings, GetURLFetcher()).Times(0);
+  EXPECT_CALL(*settings, GetURLFetcherForAvailabilityCheck()).Times(0);
+  EXPECT_CALL(*settings, GetURLFetcherForWarmup()).Times(0);
   EXPECT_CALL(*settings, LogProxyState(_, _, _)).Times(0);
   settings_.reset(settings);
   settings_->configurator_.reset(new TestDataReductionProxyConfig());
@@ -165,6 +167,7 @@ DataReductionProxySettingsTestBase::ResetSettings<DataReductionProxySettings>(
 template <class C>
 void DataReductionProxySettingsTestBase::SetProbeResult(
     const std::string& test_url,
+    const std::string& warmup_test_url,
     const std::string& response,
     ProbeURLFetchResult result,
     bool success,
@@ -172,11 +175,12 @@ void DataReductionProxySettingsTestBase::SetProbeResult(
   MockDataReductionProxySettings<C>* settings =
       static_cast<MockDataReductionProxySettings<C>*>(settings_.get());
   if (0 == expected_calls) {
-    EXPECT_CALL(*settings, GetURLFetcher()).Times(0);
+    EXPECT_CALL(*settings, GetURLFetcherForAvailabilityCheck()).Times(0);
+    EXPECT_CALL(*settings, GetURLFetcherForWarmup()).Times(0);
     EXPECT_CALL(*settings, RecordProbeURLFetchResult(_)).Times(0);
   } else {
     EXPECT_CALL(*settings, RecordProbeURLFetchResult(result)).Times(1);
-    EXPECT_CALL(*settings, GetURLFetcher())
+    EXPECT_CALL(*settings, GetURLFetcherForAvailabilityCheck())
         .Times(expected_calls)
         .WillRepeatedly(Return(new net::FakeURLFetcher(
             GURL(test_url),
@@ -185,6 +189,15 @@ void DataReductionProxySettingsTestBase::SetProbeResult(
             success ? net::HTTP_OK : net::HTTP_INTERNAL_SERVER_ERROR,
             success ? net::URLRequestStatus::SUCCESS :
                       net::URLRequestStatus::FAILED)));
+    EXPECT_CALL(*settings, GetURLFetcherForWarmup())
+        .Times(expected_calls)
+        .WillRepeatedly(Return(new net::FakeURLFetcher(
+            GURL(warmup_test_url),
+            settings,
+            "",
+            success ? net::HTTP_NO_CONTENT : net::HTTP_INTERNAL_SERVER_ERROR,
+                success ? net::URLRequestStatus::SUCCESS :
+                          net::URLRequestStatus::FAILED)));
   }
 }
 
@@ -192,6 +205,7 @@ void DataReductionProxySettingsTestBase::SetProbeResult(
 template void
 DataReductionProxySettingsTestBase::SetProbeResult<DataReductionProxySettings>(
     const std::string& test_url,
+    const std::string& warmup_test_url,
     const std::string& response,
     ProbeURLFetchResult result,
     bool success,
@@ -212,6 +226,7 @@ void DataReductionProxySettingsTestBase::CheckProxyConfigs(
 void DataReductionProxySettingsTestBase::CheckProbe(
     bool initially_enabled,
     const std::string& probe_url,
+    const std::string& warmup_url,
     const std::string& response,
     bool request_succeeded,
     bool expected_enabled,
@@ -223,6 +238,7 @@ void DataReductionProxySettingsTestBase::CheckProbe(
     settings_->enabled_by_user_ = true;
   settings_->restricted_by_carrier_ = false;
   SetProbeResult(probe_url,
+                 warmup_url,
                  response,
                  FetchResult(initially_enabled,
                              request_succeeded && (response == "OK")),
@@ -237,11 +253,13 @@ void DataReductionProxySettingsTestBase::CheckProbe(
 
 void DataReductionProxySettingsTestBase::CheckProbeOnIPChange(
     const std::string& probe_url,
+    const std::string& warmup_url,
     const std::string& response,
     bool request_succeeded,
     bool expected_restricted,
     bool expected_fallback_restricted) {
   SetProbeResult(probe_url,
+                 warmup_url,
                  response,
                  FetchResult(!settings_->restricted_by_carrier_,
                              request_succeeded && (response == "OK")),
@@ -258,6 +276,7 @@ void DataReductionProxySettingsTestBase::CheckOnPrefChange(
     bool managed) {
   // Always have a sucessful probe for pref change tests.
   SetProbeResult(kProbeURLWithOKResponse,
+                 kWarmupURLWithNoContentResponse,
                  "OK",
                  FetchResult(enabled, true),
                  true,
@@ -277,6 +296,7 @@ void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
     bool enabled_at_startup) {
   base::MessageLoopForUI loop;
   SetProbeResult(kProbeURLWithOKResponse,
+                 kWarmupURLWithNoContentResponse,
                  "OK",
                  FetchResult(enabled_at_startup, true),
                  true,

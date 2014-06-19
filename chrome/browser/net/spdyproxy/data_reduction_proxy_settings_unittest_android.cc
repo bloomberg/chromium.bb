@@ -45,7 +45,7 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
   EXPECT_CALL(*settings, GetLocalStatePrefs())
       .Times(AnyNumber())
       .WillRepeatedly(Return(&pref_service_));
-  EXPECT_CALL(*settings, GetURLFetcher()).Times(0);
+  EXPECT_CALL(*settings, GetURLFetcherForAvailabilityCheck()).Times(0);
   EXPECT_CALL(*settings, LogProxyState(_, _, _)).Times(0);
   settings_.reset(settings);
 }
@@ -53,6 +53,7 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
 template <class C>
 void data_reduction_proxy::DataReductionProxySettingsTestBase::SetProbeResult(
     const std::string& test_url,
+    const std::string& warmup_test_url,
     const std::string& response,
     ProbeURLFetchResult result,
     bool success,
@@ -60,11 +61,11 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::SetProbeResult(
   MockDataReductionProxySettings<C>* settings =
       static_cast<MockDataReductionProxySettings<C>*>(settings_.get());
   if (0 == expected_calls) {
-    EXPECT_CALL(*settings, GetURLFetcher()).Times(0);
+    EXPECT_CALL(*settings, GetURLFetcherForAvailabilityCheck()).Times(0);
     EXPECT_CALL(*settings, RecordProbeURLFetchResult(_)).Times(0);
   } else {
     EXPECT_CALL(*settings, RecordProbeURLFetchResult(result)).Times(1);
-    EXPECT_CALL(*settings, GetURLFetcher())
+    EXPECT_CALL(*settings, GetURLFetcherForAvailabilityCheck())
         .Times(expected_calls)
         .WillRepeatedly(Return(new net::FakeURLFetcher(
             GURL(test_url),
@@ -86,6 +87,7 @@ data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings<
 template void
 data_reduction_proxy::DataReductionProxySettingsTestBase::SetProbeResult<
     DataReductionProxySettingsAndroid>(const std::string& test_url,
+                                       const std::string& warmup_test_url,
                                        const std::string& response,
                                        ProbeURLFetchResult result,
                                        bool success,

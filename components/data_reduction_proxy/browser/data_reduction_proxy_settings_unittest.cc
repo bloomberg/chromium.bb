@@ -31,6 +31,7 @@ const char kDataReductionProxySSL[] = "http://ssl.com:80";
 const char kProbeURLWithOKResponse[] = "http://ok.org/";
 const char kProbeURLWithBadResponse[] = "http://bad.org/";
 const char kProbeURLWithNoResponse[] = "http://no.org/";
+const char kWarmupURLWithNoContentResponse[] = "http://warm.org/";
 
 }  // namespace
 
@@ -157,10 +158,10 @@ TEST_F(DataReductionProxySettingsTest, TestSetProxyConfigs) {
 
 TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
   settings_->InitPrefMembers();
-    base::MessageLoopForUI loop;
-    // The proxy is disabled initially.
-    settings_->enabled_by_user_ = false;
-    settings_->SetProxyConfigs(false, false, false, false);
+  base::MessageLoopForUI loop;
+  // The proxy is disabled initially.
+  settings_->enabled_by_user_ = false;
+  settings_->SetProxyConfigs(false, false, false, false);
 
   EXPECT_FALSE(settings_->IsDataReductionProxyEnabled());
   EXPECT_FALSE(settings_->IsDataReductionProxyManaged());
@@ -172,6 +173,8 @@ TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
   CheckOnPrefChange(true, true, true);
   EXPECT_TRUE(settings_->IsDataReductionProxyEnabled());
   EXPECT_TRUE(settings_->IsDataReductionProxyManaged());
+
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(DataReductionProxySettingsTest, TestAcceptableChallenges) {
@@ -309,14 +312,42 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   base::MessageLoopForUI loop;
   // The proxy is enabled and unrestructed initially.
   // Request succeeded but with bad response, expect proxy to be restricted.
-  CheckProbe(true, kProbeURLWithBadResponse, "Bad", true, true, true, false);
+  CheckProbe(true,
+             kProbeURLWithBadResponse,
+             kWarmupURLWithNoContentResponse,
+             "Bad",
+             true,
+             true,
+             true,
+             false);
   // Request succeeded with valid response, expect proxy to be unrestricted.
-  CheckProbe(true, kProbeURLWithOKResponse, "OK", true, true, false, false);
+  CheckProbe(true,
+             kProbeURLWithOKResponse,
+             kWarmupURLWithNoContentResponse,
+             "OK",
+             true,
+             true,
+             false,
+             false);
   // Request failed, expect proxy to be enabled but restricted.
-  CheckProbe(true, kProbeURLWithNoResponse, "", false, true, true, false);
+  CheckProbe(true,
+             kProbeURLWithNoResponse,
+             kWarmupURLWithNoContentResponse,
+             "",
+             false,
+             true,
+             true,
+             false);
   // The proxy is disabled initially. Probes should not be emitted to change
   // state.
-  CheckProbe(false, kProbeURLWithOKResponse, "OK", true, false, false, false);
+  CheckProbe(false,
+             kProbeURLWithOKResponse,
+             kWarmupURLWithNoContentResponse,
+             "OK",
+             true,
+             false,
+             false,
+             false);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestOnIPAddressChanged) {
@@ -334,13 +365,33 @@ TEST_F(DataReductionProxySettingsTest, TestOnIPAddressChanged) {
   settings_->SetProxyConfigs(true, false, false, true);
   // IP address change triggers a probe that succeeds. Proxy remains
   // unrestricted.
-  CheckProbeOnIPChange(kProbeURLWithOKResponse, "OK", true, false, false);
+  CheckProbeOnIPChange(kProbeURLWithOKResponse,
+                       kWarmupURLWithNoContentResponse,
+                       "OK",
+                       true,
+                       false,
+                       false);
   // IP address change triggers a probe that fails. Proxy is restricted.
-  CheckProbeOnIPChange(kProbeURLWithBadResponse, "Bad", true, true, false);
+  CheckProbeOnIPChange(kProbeURLWithBadResponse,
+                       kWarmupURLWithNoContentResponse,
+                       "Bad",
+                       true,
+                       true,
+                       false);
   // IP address change triggers a probe that fails. Proxy remains restricted.
-  CheckProbeOnIPChange(kProbeURLWithBadResponse, "Bad", true, true, false);
+  CheckProbeOnIPChange(kProbeURLWithBadResponse,
+                       kWarmupURLWithNoContentResponse,
+                       "Bad",
+                       true,
+                       true,
+                       false);
   // IP address change triggers a probe that succeed. Proxy is unrestricted.
-  CheckProbeOnIPChange(kProbeURLWithBadResponse, "OK", true, false, false);
+  CheckProbeOnIPChange(kProbeURLWithBadResponse,
+                       kWarmupURLWithNoContentResponse,
+                       "OK",
+                       true,
+                       false,
+                       false);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestOnProxyEnabledPrefChange) {

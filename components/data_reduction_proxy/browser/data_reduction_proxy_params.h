@@ -58,8 +58,8 @@ class DataReductionProxyParams {
   // bypassed or disabled. If |kAlternativeAllowed| then an alternative proxy
   // configuration is allowed to be used. This alternative configuration would
   // replace the primary and fallback proxy configurations if enabled. Finally
-  // if |kPromoAllowed|, the client may show a promotion for the data
-  // reduction proxy.
+  // if |kPromoAllowed|, the client may show a promotion for the data reduction
+  // proxy.
   //
   // A standard configuration has a primary proxy, and a fallback proxy for
   // HTTP traffic. The alternative configuration has a different primary and
@@ -117,6 +117,11 @@ class DataReductionProxyParams {
   // Returns the URL to probe to decide if the primary origin should be used.
   const GURL& probe_url() const {
     return probe_url_;
+  }
+
+  // Returns the URL to fetch to warm the data reduction proxy connection.
+  const GURL& warmup_url() const {
+    return warmup_url_;
   }
 
   // Set the proxy authentication key.
@@ -180,6 +185,7 @@ class DataReductionProxyParams {
   virtual std::string GetDefaultAltOrigin() const;
   virtual std::string GetDefaultAltFallbackOrigin() const;
   virtual std::string GetDefaultProbeURL() const;
+  virtual std::string GetDefaultWarmupURL() const;
 
  private:
   GURL origin_;
@@ -188,6 +194,7 @@ class DataReductionProxyParams {
   GURL alt_origin_;
   GURL alt_fallback_origin_;
   GURL probe_url_;
+  GURL warmup_url_;
 
   std::string key_;
 
@@ -195,7 +202,6 @@ class DataReductionProxyParams {
   const bool fallback_allowed_;
   bool alt_allowed_;
   const bool promo_allowed_;
-
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyParams);
 };

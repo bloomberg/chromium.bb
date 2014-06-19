@@ -304,6 +304,13 @@ DataReductionProxySettings::GetDailyReceivedContentLengths() {
 void DataReductionProxySettings::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // The purpose of sending a request for the warmup URL is to warm the
+  // connection to the data_reduction_proxy. The result is ignored.
+  if (source == warmup_fetcher_.get())
+    return;
+
+  DCHECK(source == fetcher_.get());
   net::URLRequestStatus status = source->GetStatus();
   if (status.status() == net::URLRequestStatus::FAILED &&
       status.error() == net::ERR_INTERNET_DISCONNECTED) {
@@ -399,6 +406,7 @@ void DataReductionProxySettings::OnIPAddressChanged() {
   if (enabled_by_user_) {
     DCHECK(params_->allowed());
     ProbeWhetherDataReductionProxyIsAvailable();
+    WarmProxyConnection();
   }
 }
 
@@ -451,8 +459,10 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
                   at_startup);
 
   // Check if the proxy has been restricted explicitly by the carrier.
-  if (enabled_by_user_)
+  if (enabled_by_user_) {
     ProbeWhetherDataReductionProxyIsAvailable();
+    WarmProxyConnection();
+  }
 }
 
 void DataReductionProxySettings::SetProxyConfigs(bool enabled,
@@ -581,12 +591,15 @@ base::string16 DataReductionProxySettings::AuthHashForSalt(
   return base::UTF8ToUTF16(base::MD5String(salted_key));
 }
 
-net::URLFetcher* DataReductionProxySettings::GetURLFetcher() {
-  DCHECK(url_request_context_getter_);
-  net::URLFetcher* fetcher = net::URLFetcher::Create(params_->probe_url(),
+net::URLFetcher* DataReductionProxySettings::GetBaseURLFetcher(
+    const GURL& gurl,
+    int load_flags) {
+
+  net::URLFetcher* fetcher = net::URLFetcher::Create(gurl,
                                                      net::URLFetcher::GET,
                                                      this);
-  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY);
+  fetcher->SetLoadFlags(load_flags);
+  DCHECK(url_request_context_getter_);
   fetcher->SetRequestContext(url_request_context_getter_);
   // Configure max retries to be at most kMaxRetries times for 5xx errors.
   static const int kMaxRetries = 5;
@@ -595,12 +608,32 @@ net::URLFetcher* DataReductionProxySettings::GetURLFetcher() {
   return fetcher;
 }
 
+
+net::URLFetcher*
+DataReductionProxySettings::GetURLFetcherForAvailabilityCheck() {
+  return GetBaseURLFetcher(params_->probe_url(),
+                           net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY);
+}
+
+
 void DataReductionProxySettings::ProbeWhetherDataReductionProxyIsAvailable() {
-  net::URLFetcher* fetcher = GetURLFetcher();
+  net::URLFetcher* fetcher = GetURLFetcherForAvailabilityCheck();
   if (!fetcher)
     return;
   fetcher_.reset(fetcher);
   fetcher_->Start();
+}
+
+net::URLFetcher* DataReductionProxySettings::GetURLFetcherForWarmup() {
+  return GetBaseURLFetcher(params_->warmup_url(), net::LOAD_DISABLE_CACHE);
+}
+
+void DataReductionProxySettings::WarmProxyConnection() {
+  net::URLFetcher* fetcher = GetURLFetcherForWarmup();
+  if (!fetcher)
+    return;
+  warmup_fetcher_.reset(fetcher);
+  warmup_fetcher_->Start();
 }
 
 }  // namespace data_reduction_proxy

@@ -18,6 +18,7 @@ extern const char kDataReductionProxyDev[];
 extern const char kDataReductionProxyFallback[];
 extern const char kDataReductionProxyKey[];
 extern const char kDataReductionProxyProbeURL[];
+extern const char kDataReductionProxyWarmupURL[];
 extern const char kDataReductionSSLProxy[];
 extern const char kDisableDataReductionProxyDev[];
 extern const char kEnableDataReductionProxyDev[];

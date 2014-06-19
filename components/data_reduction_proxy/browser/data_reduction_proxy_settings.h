@@ -173,7 +173,13 @@ class DataReductionProxySettings
  protected:
   void InitPrefMembers();
 
-  virtual net::URLFetcher* GetURLFetcher();
+  // Returns a fetcher for the probe to check if OK for the proxy to use SPDY.
+  // Virtual for testing.
+  virtual net::URLFetcher* GetURLFetcherForAvailabilityCheck();
+
+  // Returns a fetcher to warm up the connection to the data reduction proxy.
+  // Virtual for testing.
+  virtual net::URLFetcher* GetURLFetcherForWarmup();
 
   // Virtualized for unit test support.
   virtual PrefService* GetOriginalProfilePrefs();
@@ -273,6 +279,12 @@ class DataReductionProxySettings
   // failure.
   void ProbeWhetherDataReductionProxyIsAvailable();
 
+  // Warms the connection to the data reduction proxy.
+  void WarmProxyConnection();
+
+  // Generic method to get a URL fetcher.
+  net::URLFetcher* GetBaseURLFetcher(const GURL& gurl, int load_flags);
+
   // Returns a UTF16 string that's the hash of the configured authentication
   // |key| and |salt|. Returns an empty UTF16 string if no key is configured or
   // the data reduction proxy feature isn't available.
@@ -284,6 +296,8 @@ class DataReductionProxySettings
   bool enabled_by_user_;
 
   scoped_ptr<net::URLFetcher> fetcher_;
+  scoped_ptr<net::URLFetcher> warmup_fetcher_;
+
   BooleanPrefMember spdy_proxy_auth_enabled_;
   BooleanPrefMember data_reduction_proxy_alternative_enabled_;
 

@@ -30,6 +30,10 @@ const char kDataReductionProxyKey[] = "spdy-proxy-auth-value";
 // proxy. Note this canary does not go through the data reduction proxy.
 const char kDataReductionProxyProbeURL[] = "data-reduction-proxy-probe-url";
 
+// Sets a URL to fetch to warm up the data reduction proxy on startup and
+// network changes.
+const char kDataReductionProxyWarmupURL[] = "data-reduction-proxy-warmup-url";
+
 // The origin of the data reduction SSL proxy.
 const char kDataReductionSSLProxy[] = "data-reduction-ssl-proxy";
 

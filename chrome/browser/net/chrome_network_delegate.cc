@@ -461,9 +461,11 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
   // only non-null profiles are considered.
   if (first_request_ && profile_) {
     bool record_timing = true;
-#if defined(DATA_REDUCTION_PROXY_PROBE_URL)
-    record_timing = (request->url() != GURL(DATA_REDUCTION_PROXY_PROBE_URL));
-#endif
+    if (data_reduction_proxy_params_) {
+      record_timing =
+          (request->url() != data_reduction_proxy_params_->probe_url()) &&
+          (request->url() != data_reduction_proxy_params_->warmup_url());
+    }
     if (record_timing) {
       first_request_ = false;
       net::LoadTimingInfo timing_info;

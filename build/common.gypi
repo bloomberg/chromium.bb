@@ -562,6 +562,7 @@
       'spdy_proxy_auth_property%' : '',
       'spdy_proxy_auth_value%' : '',
       'data_reduction_proxy_probe_url%' : '',
+      'data_reduction_proxy_warmup_url%' : '',
       'data_reduction_proxy_ssl_origin%' : '',
       'data_reduction_proxy_alt_origin%' : '',
       'data_reduction_proxy_alt_fallback_origin%' : '',
@@ -925,12 +926,14 @@
           'icu_use_data_file_flag%' : 1,
           'spdy_proxy_auth_origin%': '',
           'data_reduction_proxy_probe_url%': '',
+          'data_reduction_proxy_warmup_url%': '',
           'data_reduction_dev_host%': '',
           'data_reduction_fallback_host%': '',
         }, {
           'icu_use_data_file_flag%' : 0,
           'spdy_proxy_auth_origin%': 'https://proxy.googlezip.net:443/',
           'data_reduction_proxy_probe_url%': 'http://check.googlezip.net/connect',
+          'data_reduction_proxy_warmup_url%': 'http://www.gstatic.com/generate_204',
           'data_reduction_dev_host%': 'http://proxy-dev.googlezip.net:80/',
           'data_reduction_fallback_host%': 'http://compress.googlezip.net:80/',
         }],
@@ -1118,6 +1121,7 @@
     'spdy_proxy_auth_property%': '<(spdy_proxy_auth_property)',
     'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
     'data_reduction_proxy_probe_url%': '<(data_reduction_proxy_probe_url)',
+    'data_reduction_proxy_warmup_url%': '<(data_reduction_proxy_warmup_url)',
     'data_reduction_proxy_ssl_origin%' : '<(data_reduction_proxy_ssl_origin)',
     'data_reduction_proxy_alt_origin%' : '<(data_reduction_proxy_alt_origin)',
     'data_reduction_proxy_alt_fallback_origin%' : '<(data_reduction_proxy_alt_fallback_origin)',
@@ -2751,6 +2755,10 @@
       ['data_reduction_proxy_probe_url != ""', {
         'defines': [
           'DATA_REDUCTION_PROXY_PROBE_URL="<(data_reduction_proxy_probe_url)"'],
+      }],
+      ['data_reduction_proxy_warmup_url != ""', {
+        'defines': [
+          'DATA_REDUCTION_PROXY_WARMUP_URL="<(data_reduction_proxy_warmup_url)"'],
       }],
       ['data_reduction_proxy_ssl_origin != ""', {
         'defines': [
