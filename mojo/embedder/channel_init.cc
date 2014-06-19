@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/common/channel_init.h"
+#include "mojo/embedder/channel_init.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/embedder/embedder.h"
 
 namespace mojo {
-namespace common {
+namespace embedder {
 
 ChannelInit::ChannelInit()
     : channel_info_(NULL),
@@ -55,5 +55,5 @@ void ChannelInit::OnCreatedChannel(
   host->channel_info_ = channel;
 }
 
-}  // namespace common
+}  // namespace embedder
 }  // namespace mojo

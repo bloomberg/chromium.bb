@@ -7,8 +7,6 @@ component("common") {
   output_name = "mojo_common_lib"
 
   sources = [
-    "channel_init.cc",
-    "channel_init.h",
     "common_type_converters.cc",
     "common_type_converters.h",
     "data_pipe_utils.cc",

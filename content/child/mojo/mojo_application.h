@@ -6,7 +6,7 @@
 #define CONTENT_CHILD_MOJO_MOJO_APPLICATION_H_
 
 #include "ipc/ipc_platform_file.h"
-#include "mojo/common/channel_init.h"
+#include "mojo/embedder/channel_init.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 
 namespace IPC {
@@ -36,7 +36,7 @@ class MojoApplication {
  private:
   void OnActivate(const IPC::PlatformFileForTransit& file);
 
-  mojo::common::ChannelInit channel_init_;
+  mojo::embedder::ChannelInit channel_init_;
   mojo::ServiceProviderPtr host_service_provider_;
   mojo::ServiceProvider* service_provider_;
 

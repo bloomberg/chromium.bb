@@ -152,6 +152,8 @@
         'MOJO_USE_SYSTEM_IMPL',
       ],
       'sources': [
+        'embedder/channel_init.cc',
+        'embedder/channel_init.h',
         'embedder/embedder.cc',
         'embedder/embedder.h',
         'embedder/platform_channel_pair.cc',
@@ -332,8 +334,6 @@
         'mojo_system_impl',
       ],
       'sources': [
-        'common/channel_init.cc',
-        'common/channel_init.h',
         'common/common_type_converters.cc',
         'common/common_type_converters.h',
         'common/data_pipe_utils.cc',

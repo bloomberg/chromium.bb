@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_COMMON_CHANNEL_INIT_H_
-#define MOJO_COMMON_CHANNEL_INIT_H_
+#ifndef MOJO_EMBEDDER_CHANNEL_INIT_H_
+#define MOJO_EMBEDDER_CHANNEL_INIT_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
-#include "mojo/common/mojo_common_export.h"
 #include "mojo/public/cpp/system/core.h"
+#include "mojo/system/system_impl_export.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -21,11 +21,11 @@ namespace embedder {
 struct ChannelInfo;
 }
 
-namespace common {
+namespace embedder {
 
 // ChannelInit handle creation (and destruction) of the mojo channel. It is
 // expected that this class is created and destroyed on the main thread.
-class MOJO_COMMON_EXPORT ChannelInit {
+class MOJO_SYSTEM_IMPL_EXPORT ChannelInit {
  public:
   ChannelInit();
   ~ChannelInit();
@@ -53,7 +53,7 @@ class MOJO_COMMON_EXPORT ChannelInit {
   DISALLOW_COPY_AND_ASSIGN(ChannelInit);
 };
 
-}  // namespace common
+}  // namespace embedder
 }  // namespace mojo
 
-#endif  // MOJO_COMMON_CHANNEL_INIT_H_
+#endif  // MOJO_EMBEDDER_CHANNEL_INIT_H_

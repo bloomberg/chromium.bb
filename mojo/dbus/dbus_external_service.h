@@ -7,7 +7,7 @@
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
-#include "mojo/common/channel_init.h"
+#include "mojo/embedder/channel_init.h"
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/shell/external_service.mojom.h"
@@ -43,7 +43,7 @@ class DBusExternalServiceBase {
   const std::string service_name_;
   scoped_refptr<dbus::Bus> bus_;
   dbus::ExportedObject* exported_object_;  // Owned by bus_;
-  scoped_ptr<common::ChannelInit> channel_init_;
+  scoped_ptr<embedder::ChannelInit> channel_init_;
   DISALLOW_COPY_AND_ASSIGN(DBusExternalServiceBase);
 };
 

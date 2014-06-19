@@ -2466,7 +2466,7 @@
             'common/extensions/api/api.gyp:chrome_api',
             'debugger',
             'installer_util',
-            '../mojo/mojo.gyp:mojo_common_lib',
+            '../mojo/mojo.gyp:mojo_system_impl',
             '../third_party/re2/re2.gyp:re2',
             '../components/components.gyp:autofill_content_risk_proto',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',

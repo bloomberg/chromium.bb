@@ -14,7 +14,7 @@
 #include "dbus/file_descriptor.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
-#include "mojo/common/channel_init.h"
+#include "mojo/embedder/channel_init.h"
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
@@ -50,7 +50,7 @@ void DBusExternalServiceBase::ConnectChannel(
     return;
   }
   wrapped_fd.CheckValidity();
-  channel_init_.reset(new mojo::common::ChannelInit);
+  channel_init_.reset(new mojo::embedder::ChannelInit);
   mojo::ScopedMessagePipeHandle message_pipe =
       channel_init_->Init(wrapped_fd.TakeValue(),
                           base::MessageLoopProxy::current());

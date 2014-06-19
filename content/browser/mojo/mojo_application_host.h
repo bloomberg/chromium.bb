@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_MOJO_MOJO_APPLICATION_HOST_H_
 
 #include "base/process/process_handle.h"
-#include "mojo/common/channel_init.h"
+#include "mojo/embedder/channel_init.h"
 #include "mojo/embedder/scoped_platform_handle.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 
@@ -55,7 +55,7 @@ class MojoApplicationHost {
         const mojo::String& requestor_url) OVERRIDE;
   };
 
-  mojo::common::ChannelInit channel_init_;
+  mojo::embedder::ChannelInit channel_init_;
   mojo::embedder::ScopedPlatformHandle client_handle_;
 
   scoped_ptr<ServiceProviderImpl> child_service_provider_;
