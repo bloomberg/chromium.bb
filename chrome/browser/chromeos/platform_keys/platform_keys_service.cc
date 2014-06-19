@@ -49,6 +49,7 @@ void WrapGenerateKeyCallback(
 // |callback| with an error.
 void CheckValidityAndSign(const std::string& token_id,
                           const std::string& public_key_spki_der,
+                          platform_keys::HashAlgorithm hash_algorithm,
                           const std::string& data,
                           const PlatformKeysService::SignCallback& callback,
                           content::BrowserContext* browser_context,
@@ -58,8 +59,12 @@ void CheckValidityAndSign(const std::string& token_id,
                  kErrorKeyNotAllowedForSigning);
     return;
   }
-  platform_keys::subtle::Sign(
-      token_id, public_key_spki_der, data, callback, browser_context);
+  platform_keys::subtle::Sign(token_id,
+                              public_key_spki_der,
+                              hash_algorithm,
+                              data,
+                              callback,
+                              browser_context);
 }
 
 }  // namespace
@@ -94,6 +99,7 @@ void PlatformKeysService::GenerateRSAKey(const std::string& token_id,
 
 void PlatformKeysService::Sign(const std::string& token_id,
                                const std::string& public_key_spki_der,
+                               platform_keys::HashAlgorithm hash_algorithm,
                                const std::string& data,
                                const std::string& extension_id,
                                const SignCallback& callback) {
@@ -103,6 +109,7 @@ void PlatformKeysService::Sign(const std::string& token_id,
                                base::Bind(&CheckValidityAndSign,
                                           token_id,
                                           public_key_spki_der,
+                                          hash_algorithm,
                                           data,
                                           callback,
                                           browser_context_));

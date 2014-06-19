@@ -25,6 +25,7 @@ namespace api_epki = api::enterprise_platform_keys_internal;
 // extension. Keep this in sync with the custom binding in Javascript.
 const char kErrorInvalidToken[] = "The token is not valid.";
 
+const char kErrorAlgorithmNotSupported[] = "Algorithm not supported.";
 const char kErrorInvalidX509Cert[] =
     "Certificate is not a valid X.509 certificate.";
 const char kTokenIdUser[] = "user";
@@ -89,6 +90,18 @@ EnterprisePlatformKeysInternalSignFunction::Run() {
   if (!ValidateToken(params->token_id))
     return RespondNow(Error(kErrorInvalidToken));
 
+  chromeos::platform_keys::HashAlgorithm hash_algorithm;
+  if (params->hash_algorithm_name == "SHA-1")
+    hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA1;
+  else if (params->hash_algorithm_name == "SHA-256")
+    hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA256;
+  else if (params->hash_algorithm_name == "SHA-384")
+    hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA384;
+  else if (params->hash_algorithm_name == "SHA-512")
+    hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA512;
+  else
+    return RespondNow(Error(kErrorAlgorithmNotSupported));
+
   chromeos::PlatformKeysService* service =
       chromeos::PlatformKeysServiceFactory::GetForBrowserContext(
           browser_context());
@@ -97,6 +110,7 @@ EnterprisePlatformKeysInternalSignFunction::Run() {
   service->Sign(
       params->token_id,
       params->public_key,
+      hash_algorithm,
       params->data,
       extension_id(),
       base::Bind(&EnterprisePlatformKeysInternalSignFunction::OnSigned, this));

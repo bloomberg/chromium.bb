@@ -56,6 +56,15 @@ scoped_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
         base::BinaryValue::CreateWithCopiedBuffer(
             reinterpret_cast<const char*>(public_exponent.data()),
             public_exponent.size()));
+
+    const blink::WebCryptoAlgorithm& hash = rsaHashedKeyGen->hash();
+    DCHECK(!hash.isNull());
+    const blink::WebCryptoAlgorithmInfo* hash_info =
+        blink::WebCryptoAlgorithm::lookupAlgorithmInfo(hash.id());
+
+    scoped_ptr<base::DictionaryValue> hash_dict(new base::DictionaryValue);
+    hash_dict->SetStringWithoutPathExpansion("name", hash_info->name);
+    dict->SetWithoutPathExpansion("hash", hash_dict.release());
   }
   // Otherwise, |algorithm| is missing support here or no parameters were
   // required.

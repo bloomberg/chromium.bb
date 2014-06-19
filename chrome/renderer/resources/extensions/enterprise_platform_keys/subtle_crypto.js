@@ -102,6 +102,11 @@ SubtleCryptoImpl.prototype.generateKey =
       throw CreateSyntaxError();
     }
 
+    // normalizeAlgorithm returns an array, but publicExponent should be a
+    // Uint8Array.
+    normalizedAlgorithmParameters.publicExponent =
+        new Uint8Array(normalizedAlgorithmParameters.publicExponent);
+
     if (normalizedAlgorithmParameters.name !== 'RSASSA-PKCS1-v1_5' ||
         !equalsStandardPublicExponent(
             normalizedAlgorithmParameters.publicExponent)) {
@@ -118,7 +123,7 @@ SubtleCryptoImpl.prototype.generateKey =
         reject(CreateOperationError());
         return;
       }
-      resolve(new KeyPair(spki, algorithm, keyUsages));
+      resolve(new KeyPair(spki, normalizedAlgorithmParameters, keyUsages));
     });
   });
 };
@@ -141,16 +146,19 @@ SubtleCryptoImpl.prototype.sign = function(algorithm, key, dataView) {
     // might contain more data than dataView.
     var data = dataView.buffer.slice(dataView.byteOffset,
                                      dataView.byteOffset + dataView.byteLength);
-    internalAPI.sign(
-        subtleCrypto.tokenId, getSpki(key), data, function(signature) {
-          if (catchInvalidTokenError(reject))
-            return;
-          if (chrome.runtime.lastError) {
-            reject(CreateOperationError());
-            return;
-          }
-          resolve(signature);
-        });
+    internalAPI.sign(subtleCrypto.tokenId,
+                     getSpki(key),
+                     key.algorithm.hash.name,
+                     data,
+                     function(signature) {
+      if (catchInvalidTokenError(reject))
+        return;
+      if (chrome.runtime.lastError) {
+        reject(CreateOperationError());
+        return;
+      }
+      resolve(signature);
+    });
   });
 };
 

@@ -152,6 +152,7 @@ class GenerateRSAKeyState : public NSSOperationState {
 class SignState : public NSSOperationState {
  public:
   SignState(const std::string& public_key,
+            HashAlgorithm hash_algorithm,
             const std::string& data,
             const subtle::SignCallback& callback);
   virtual ~SignState() {}
@@ -169,6 +170,7 @@ class SignState : public NSSOperationState {
   }
 
   const std::string public_key_;
+  HashAlgorithm hash_algorithm_;
   const std::string data_;
 
  private:
@@ -259,9 +261,13 @@ GenerateRSAKeyState::GenerateRSAKeyState(
 }
 
 SignState::SignState(const std::string& public_key,
+                     HashAlgorithm hash_algorithm,
                      const std::string& data,
                      const subtle::SignCallback& callback)
-    : public_key_(public_key), data_(data), callback_(callback) {
+    : public_key_(public_key),
+      hash_algorithm_(hash_algorithm),
+      data_(data),
+      callback_(callback) {
 }
 
 GetCertificatesState::GetCertificatesState(
@@ -333,12 +339,28 @@ void RSASignOnWorkerThread(scoped_ptr<SignState> state) {
     return;
   }
 
+  SECOidTag sign_alg_tag = SEC_OID_UNKNOWN;
+  switch (state->hash_algorithm_) {
+    case HASH_ALGORITHM_SHA1:
+      sign_alg_tag = SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION;
+      break;
+    case HASH_ALGORITHM_SHA256:
+      sign_alg_tag = SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
+      break;
+    case HASH_ALGORITHM_SHA384:
+      sign_alg_tag = SEC_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION;
+      break;
+    case HASH_ALGORITHM_SHA512:
+      sign_alg_tag = SEC_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION;
+      break;
+  }
+
   SECItem sign_result = {siBuffer, NULL, 0};
   if (SEC_SignData(&sign_result,
                    reinterpret_cast<const unsigned char*>(state->data_.data()),
                    state->data_.size(),
                    rsa_key->key(),
-                   SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION) != SECSuccess) {
+                   sign_alg_tag) != SECSuccess) {
     LOG(ERROR) << "Couldn't sign.";
     state->OnError(FROM_HERE, kErrorInternal);
     return;
@@ -495,11 +517,13 @@ void GenerateRSAKey(const std::string& token_id,
 
 void Sign(const std::string& token_id,
           const std::string& public_key,
+          HashAlgorithm hash_algorithm,
           const std::string& data,
           const SignCallback& callback,
           BrowserContext* browser_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<SignState> state(new SignState(public_key, data, callback));
+  scoped_ptr<SignState> state(
+      new SignState(public_key, hash_algorithm, data, callback));
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
 

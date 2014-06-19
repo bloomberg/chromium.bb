@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -66,8 +67,9 @@ class PlatformKeysService : public KeyedService {
   typedef base::Callback<void(const std::string& signature,
                               const std::string& error_message)> SignCallback;
 
-  // Signs |data| with the private key matching |public_key_spki_der|, if that
-  // key is stored in the given token and wasn't used for signing before.
+  // Digests |data| with |hash_algorithm| and afterwards signs the digest with
+  // the private key matching |public_key_spki_der|, if that key is stored in
+  // the given token and wasn't used for signing before.
   // Unregisters the key so that every future attempt to sign data with this key
   // is rejected. |token_id| is currently ignored, instead the user token
   // associated with |browser_context| is always used. |public_key_spki_der|
@@ -77,6 +79,7 @@ class PlatformKeysService : public KeyedService {
   // Will only call back during the lifetime of this object.
   void Sign(const std::string& token_id,
             const std::string& public_key_spki_der,
+            platform_keys::HashAlgorithm hash_algorithm,
             const std::string& data,
             const std::string& extension_id,
             const SignCallback& callback);

@@ -26,6 +26,14 @@ namespace chromeos {
 
 namespace platform_keys {
 
+// Supported hash algorithms.
+enum HashAlgorithm {
+  HASH_ALGORITHM_SHA1,
+  HASH_ALGORITHM_SHA256,
+  HASH_ALGORITHM_SHA384,
+  HASH_ALGORITHM_SHA512
+};
+
 namespace subtle {
 // Functions of this namespace shouldn't be called directly from the context of
 // an extension. Instead use PlatformKeysService which enforces restrictions
@@ -46,14 +54,16 @@ void GenerateRSAKey(const std::string& token_id,
 typedef base::Callback<void(const std::string& signature,
                             const std::string& error_message)> SignCallback;
 
-// Signs |data| with the private key matching |public_key|, if that key is
-// stored in the given token. |token_id| is currently ignored, instead the user
-// token associated with |browser_context| is always used. |public_key| must be
-// the DER encoding of a SubjectPublicKeyInfo. |callback| will be invoked with
-// the signature or an error message.
+// Digests |data| with |hash_algorithm| and afterwards signs the digest with the
+// private key matching |public_key|, if that key is stored in the given token.
+// |token_id| is currently ignored, instead the user token associated with
+// |browser_context| is always used. |public_key| must be the DER encoding of a
+// SubjectPublicKeyInfo. |callback| will be invoked with the signature or an
+// error message.
 // Currently supports RSA keys only.
 void Sign(const std::string& token_id,
           const std::string& public_key,
+          HashAlgorithm hash_algorithm,
           const std::string& data,
           const SignCallback& callback,
           content::BrowserContext* browser_context);
