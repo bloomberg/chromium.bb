@@ -12,7 +12,6 @@ Indexes:
   create/delete
 Data access:
   Random read/write
-  Sporadic writes
   Read cache
 Cursors:
   Read & random writes

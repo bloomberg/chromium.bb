@@ -69,25 +69,6 @@ var tests = [
 // Read a sequence of an index into an object store via a key cursor.
   [testCursorReadsAndRandomWrites, kReadKeysOnly, kUseIndex, kDontWrite,
    kPlaceholderArg],
-// Make batches of random writes into a store, triggered by periodic setTimeout
-// calls.
-  [testSporadicWrites, 5, 0, kDontRead],
-// Make large batches of random writes into a store, triggered by periodic
-// setTimeout calls.
-  [testSporadicWrites, 50, 0, kDontRead],
-// Make batches of random writes into a store with many indices, triggered by
-// periodic setTimeout calls.
-  [testSporadicWrites, 5, 10, kDontRead],
-// Make large batches of random writes into a store with many indices, triggered
-// by periodic setTimeout calls.
-  [testSporadicWrites, 50, 10, kDontRead],
-// Make batches of random writes into a store, triggered by periodic setTimeout
-// calls.  Intersperse read transactions to test read-write lock conflicts.
-  [testSporadicWrites, 5, 0, kAlternateWithReads],
-// Make large batches of random writes into a store, triggered by periodic
-// setTimeout calls.  Intersperse read transactions to test read-write lock
-// conflicts.
-  [testSporadicWrites, 50, 0, kAlternateWithReads],
 // Make a small bunch of batches of reads of the same keys from an object store.
   [testReadCache, 10, kDontUseIndex],
 // Make a bunch of batches of reads of the same keys from an index.
@@ -445,81 +426,6 @@ function testCursorReadsAndRandomWrites(
     getValuesFromCursor(
         transaction, objectStoreNames[0], numReadsPerTransaction, numKeys,
         indexName, getKeyForRead, readKeysOnly, outputStoreName);
-  }
-}
-
-function testSporadicWrites(
-    numOperationsPerTransaction, numIndices, alternateWithReads,
-    onTestComplete) {
-  var numKeys = 1000;
-  // With 30 transactions, spaced 50ms apart, we'll need at least 1.5s.
-  var numTransactions = 30;
-  if (alternateWithReads)
-    numTransactions *= 2;
-  var delayBetweenBatches = 50;
-  var indexName;
-  var testName = getDisplayName(arguments);
-  var numTransactionsLeft = numTransactions;
-  var objectStoreNames = ["store"];
-  var numTransactionsRunning = 0;
-
-  var getValue = getSimpleValue;
-  if (numIndices)
-    getValue = function (i) { return getNFieldObjectValue(i, numIndices); };
-
-  automation.setStatus("Creating database.");
-  var options = [];
-  for (var i=0; i < numIndices; ++i) {
-    var o = {};
-    o.indexName = "index " + i;
-    o.indexKeyPath = getNFieldName(i);
-    o.indexIsUnique = false;
-    o.indexIsMultiEntry = false;
-    options.push(o);
-  }
-  createDatabase(testName, objectStoreNames, onCreated, onError, options);
-
-  function onCreated(db) {
-    automation.setStatus("Setting up test database.");
-    var transaction = getTransaction(db, objectStoreNames, "readwrite",
-        function() { onSetupComplete(db); });
-    putLinearValues(transaction, objectStoreNames, numKeys, getSimpleKey,
-        getValue);
-  }
-  var completionFunc;
-  function onSetupComplete(db) {
-    automation.setStatus("Setup complete.");
-    completionFunc =
-        getCompletionFunc(db, testName, window.performance.now(),
-            onTestComplete);
-    runOneBatch(db);
-  }
-
-  function runOneBatch(db) {
-    assert(numTransactionsLeft);
-    if (--numTransactionsLeft) {
-      setTimeout(function () { runOneBatch(db); }, delayBetweenBatches);
-    }
-
-    var mode, transaction;
-    if (alternateWithReads) {
-      ++numTransactionsRunning;
-      transaction =
-          getTransaction(db, objectStoreNames, "readonly", batchComplete);
-      getRandomValues(transaction, objectStoreNames,
-          numOperationsPerTransaction, numKeys);
-    }
-    ++numTransactionsRunning;
-    transaction =
-        getTransaction(db, objectStoreNames, "readwrite", batchComplete);
-    putRandomValues(transaction, objectStoreNames, numOperationsPerTransaction,
-        numKeys);
-
-    function batchComplete() {
-      assert(numTransactionsRunning);
-      if (!--numTransactionsRunning && !numTransactionsLeft)
-        completionFunc();
-    }
   }
 }
 
