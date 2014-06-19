@@ -45,11 +45,11 @@ protected:
     template<typename T>
     static PassRefPtrWillBeRawPtr<Animation> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, T timingInput, ExceptionState& exceptionState)
     {
-        return Animation::create(element, EffectInput::convert(element, keyframeDictionaryVector, exceptionState, true), timingInput);
+        return Animation::create(element, EffectInput::convert(element, keyframeDictionaryVector, exceptionState), timingInput);
     }
     static PassRefPtrWillBeRawPtr<Animation> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, ExceptionState& exceptionState)
     {
-        return Animation::create(element, EffectInput::convert(element, keyframeDictionaryVector, exceptionState, true));
+        return Animation::create(element, EffectInput::convert(element, keyframeDictionaryVector, exceptionState));
     }
 
     v8::Isolate* m_isolate;

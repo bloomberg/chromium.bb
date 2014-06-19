@@ -74,18 +74,19 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     if (!CSSAnimations::isAnimatableProperty(property))
         return DefaultStyleInterpolation::create(fromCSSValue, toCSSValue, property);
 
-    // FIXME: add non-negative CSSPropertyFontSize and CSSPropertyOutlineWidth
     switch (property) {
     case CSSPropertyBorderBottomWidth:
     case CSSPropertyBorderLeftWidth:
     case CSSPropertyBorderRightWidth:
     case CSSPropertyBorderTopWidth:
+    case CSSPropertyFontSize:
     case CSSPropertyHeight:
     case CSSPropertyLineHeight:
     case CSSPropertyMaxHeight:
     case CSSPropertyMaxWidth:
     case CSSPropertyMinHeight:
     case CSSPropertyMinWidth:
+    case CSSPropertyOutlineWidth:
     case CSSPropertyPaddingBottom:
     case CSSPropertyPaddingLeft:
     case CSSPropertyPaddingRight:
@@ -119,6 +120,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
 
     // FIXME: Remove the use of AnimatableValues, RenderStyles and Elements here.
     // FIXME: Remove this cache
+    ASSERT(element);
     if (!m_animatableValueCache)
         m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(*element, property, *fromCSSValue);
 
