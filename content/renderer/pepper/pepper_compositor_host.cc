@@ -10,6 +10,7 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/resources/texture_mailbox.h"
+#include "cc/trees/layer_tree_host.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/host_globals.h"
@@ -365,6 +366,12 @@ int32_t PepperCompositorHost::OnHostMsgCommitLayers(
     else
       layers_.push_back(LayerData(cc_layer, *pp_layer));
   }
+
+  // We need to force a commit for each CommitLayers() call, even if no layers
+  // changed since the last call to CommitLayers(). This is so
+  // WiewInitiatedPaint() will always be called.
+  if (layer_->layer_tree_host())
+    layer_->layer_tree_host()->SetNeedsCommit();
 
   return PP_OK_COMPLETIONPENDING;
 }
