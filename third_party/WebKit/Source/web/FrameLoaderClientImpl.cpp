@@ -32,8 +32,8 @@
 #include "config.h"
 #include "web/FrameLoaderClientImpl.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFullscreen.h"
 #include "core/events/MessageEvent.h"

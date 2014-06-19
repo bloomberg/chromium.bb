@@ -31,8 +31,8 @@
 #include "config.h"
 #include "web/WebViewImpl.h"
 
-#include "CSSValueKeywords.h"
-#include "HTMLNames.h"
+#include "core/CSSValueKeywords.h"
+#include "core/HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"

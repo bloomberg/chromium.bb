@@ -27,7 +27,7 @@
 #if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "web/ExternalDateTimeChooser.h"
 
-#include "InputTypeNames.h"
+#include "core/InputTypeNames.h"
 #include "platform/DateTimeChooserClient.h"
 #include "public/web/WebDateTimeChooserCompletion.h"
 #include "public/web/WebDateTimeChooserParams.h"

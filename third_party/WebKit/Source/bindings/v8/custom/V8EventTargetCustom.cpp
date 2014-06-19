@@ -31,10 +31,10 @@
 #include "config.h"
 #include "bindings/core/v8/V8EventTarget.h"
 
-#include "EventTargetHeaders.h"
-#include "EventTargetInterfaces.h"
-#include "EventTargetModulesHeaders.h"
-#include "EventTargetModulesInterfaces.h"
+#include "core/EventTargetHeaders.h"
+#include "core/EventTargetInterfaces.h"
+#include "modules/EventTargetModulesHeaders.h"
+#include "modules/EventTargetModulesInterfaces.h"
 
 namespace WebCore {
 

@@ -32,8 +32,8 @@
 #include "config.h"
 #include "web/ChromeClientImpl.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/HTMLNames.h"
 #include "core/accessibility/AXObject.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"

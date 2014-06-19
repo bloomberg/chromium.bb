@@ -78,7 +78,7 @@
 #include "config.h"
 #include "web/WebPageSerializerImpl.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"

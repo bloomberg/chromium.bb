@@ -72,7 +72,6 @@
 #include "config.h"
 #include "web/WebLocalFrameImpl.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
@@ -81,6 +80,7 @@
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8PerIsolateData.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarker.h"
 #include "core/dom/DocumentMarkerController.h"

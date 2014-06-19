@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebTextAreaElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "public/platform/WebString.h"
 #include "wtf/PassRefPtr.h"

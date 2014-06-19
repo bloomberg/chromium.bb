@@ -31,13 +31,13 @@
 #include "config.h"
 #include "bindings/v8/CustomElementWrapper.h"
 
-#include "V8HTMLElementWrapperFactory.h" // FIXME: should be bindings/core/v8
-#include "V8SVGElementWrapperFactory.h" // FIXME: should be bindings/core/v8
 #include "bindings/core/v8/V8HTMLElement.h"
 #include "bindings/core/v8/V8SVGElement.h"
 #include "bindings/v8/DOMDataStore.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/V8PerContextData.h"
+#include "core/V8HTMLElementWrapperFactory.h" // FIXME: should be bindings/core/v8
+#include "core/V8SVGElementWrapperFactory.h" // FIXME: should be bindings/core/v8
 #include "core/dom/custom/CustomElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLUnknownElement.h"

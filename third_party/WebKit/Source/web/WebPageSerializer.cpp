@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebPageSerializer.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/LocalFrame.h"

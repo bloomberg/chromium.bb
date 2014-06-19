@@ -31,10 +31,6 @@
 #include "config.h"
 #include "bindings/v8/CustomElementConstructorBuilder.h"
 
-#include "HTMLNames.h"
-#include "SVGNames.h"
-#include "V8HTMLElementWrapperFactory.h" // FIXME: should be bindings/core/v8
-#include "V8SVGElementWrapperFactory.h" // FIXME: should be bindings/core/v8
 #include "bindings/core/v8/V8Document.h"
 #include "bindings/v8/CustomElementBinding.h"
 #include "bindings/v8/DOMWrapperWorld.h"
@@ -43,6 +39,10 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8PerContextData.h"
+#include "core/HTMLNames.h"
+#include "core/SVGNames.h"
+#include "core/V8HTMLElementWrapperFactory.h" // FIXME: should be bindings/core/v8
+#include "core/V8SVGElementWrapperFactory.h" // FIXME: should be bindings/core/v8
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/custom/CustomElementDefinition.h"

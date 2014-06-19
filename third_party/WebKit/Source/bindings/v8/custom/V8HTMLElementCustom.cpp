@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/core/v8/V8HTMLElement.h"
 
-#include "V8HTMLElementWrapperFactory.h" // FIXME: should be bindings/core/v8
+#include "core/V8HTMLElementWrapperFactory.h" // FIXME: should be bindings/core/v8
 
 namespace WebCore {
 

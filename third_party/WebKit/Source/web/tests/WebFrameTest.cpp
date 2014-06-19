@@ -34,7 +34,7 @@
 
 #include "SkBitmap.h"
 #include "SkCanvas.h"
-#include "UserAgentStyleSheets.h"
+#include "core/UserAgentStyleSheets.h"
 #include "core/clipboard/Clipboard.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/ViewportStyleResolver.h"

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebOptionElement.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "public/platform/WebString.h"

@@ -6,7 +6,7 @@
 
 #include "public/web/WebDocument.h"
 
-#include "CSSPropertyNames.h"
+#include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/frame/LocalFrame.h"

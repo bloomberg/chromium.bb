@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebAXObject.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/accessibility/AXObject.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AXTable.h"

@@ -33,8 +33,8 @@
 #include "web/DateTimeChooserImpl.h"
 
 #include "CalendarPicker.h"
-#include "InputTypeNames.h"
 #include "PickerCommon.h"
+#include "core/InputTypeNames.h"
 #include "core/frame/FrameView.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/DateComponents.h"

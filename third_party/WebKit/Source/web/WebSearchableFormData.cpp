@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebSearchableFormData.h"
 
-#include "HTMLNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLFormControlElement.h"

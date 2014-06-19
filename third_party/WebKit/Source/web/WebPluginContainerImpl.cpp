@@ -44,8 +44,8 @@
 #include "web/WebInputEventConversion.h"
 #include "web/WebViewImpl.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/HTMLNames.h"
 #include "core/clipboard/Clipboard.h"
 #include "core/clipboard/DataObject.h"
 #include "core/events/GestureEvent.h"

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "web/PopupListBox.h"
 
-#include "CSSValueKeywords.h"
+#include "core/CSSValueKeywords.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/PlatformGestureEvent.h"

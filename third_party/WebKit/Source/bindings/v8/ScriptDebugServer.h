@@ -31,8 +31,8 @@
 #ifndef ScriptDebugServer_h
 #define ScriptDebugServer_h
 
-#include "InspectorBackendDispatcher.h"
 #include "bindings/v8/ScopedPersistent.h"
+#include "core/InspectorBackendDispatcher.h"
 #include "core/inspector/ScriptBreakpoint.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/ScriptDebugListener.h"
