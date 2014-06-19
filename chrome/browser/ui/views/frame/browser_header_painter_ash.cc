@@ -232,6 +232,7 @@ void BrowserHeaderPainterAsh::LayoutHeader() {
   painted_height_ = -1;
 
   UpdateCaptionButtonImages();
+  caption_button_container_->Layout();
 
   gfx::Size caption_button_container_size =
       caption_button_container_->GetPreferredSize();
@@ -240,7 +241,6 @@ void BrowserHeaderPainterAsh::LayoutHeader() {
       0,
       caption_button_container_size.width(),
       caption_button_container_size.height());
-  caption_button_container_->Layout();
 
   if (window_icon_) {
     // Vertically center the window icon with respect to the caption button

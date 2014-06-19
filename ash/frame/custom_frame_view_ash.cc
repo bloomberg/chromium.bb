@@ -153,7 +153,6 @@ class CustomFrameViewAsh::HeaderView
   // views::View:
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
 
   // ShellObserver:
   virtual void OnMaximizeModeStarted() OVERRIDE;
@@ -286,17 +285,6 @@ void CustomFrameViewAsh::HeaderView::OnPaint(gfx::Canvas* canvas) {
   HeaderPainter::Mode header_mode = paint_as_active ?
       HeaderPainter::MODE_ACTIVE : HeaderPainter::MODE_INACTIVE;
   header_painter_->PaintHeader(canvas, header_mode);
-}
-
-void CustomFrameViewAsh::HeaderView::
-    ChildPreferredSizeChanged(views::View* child) {
-  // FrameCaptionButtonContainerView animates the visibility changes in
-  // UpdateSizeButtonVisibility(false). Due to this a new size is not available
-  // until the completion of the animation. Layout it response to the preferred
-  // size changes.
-  if (child != caption_button_container_)
-    return;
-  parent()->Layout();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

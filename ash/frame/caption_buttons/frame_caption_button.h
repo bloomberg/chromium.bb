@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "ash/frame/caption_buttons/caption_button_types.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/compositor/layer_owner_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/custom_button.h"
 
@@ -20,8 +19,7 @@ namespace ash {
 
 // Base class for the window caption buttons (minimize, maximize, restore,
 // close).
-class ASH_EXPORT FrameCaptionButton : public views::CustomButton,
-                                      public ui::LayerOwnerDelegate {
+class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
  public:
   enum Animate {
     ANIMATE_YES,
@@ -73,10 +71,6 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton,
   void PaintCentered(gfx::Canvas* canvas,
                      const gfx::ImageSkia& to_center,
                      int alpha);
-
-  // ui::LayerOwnerDelegate:
-  virtual void OnLayerRecreated(ui::Layer* old_layer,
-                                ui::Layer* new_layer) OVERRIDE;
 
   // The button's current icon.
   CaptionButtonIcon icon_;
