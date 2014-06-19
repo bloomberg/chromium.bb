@@ -101,6 +101,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   RadioGroup radio_group_;
   views::Link* custom_link_;
   views::Link* manage_link_;
+  views::Link* learn_more_link_;
   views::LabelButton* close_button_;
   scoped_ptr<views::MenuRunner> menu_runner_;
   MediaMenuPartsMap media_menus_;

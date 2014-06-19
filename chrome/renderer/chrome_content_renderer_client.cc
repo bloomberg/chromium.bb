@@ -814,6 +814,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             render_frame->GetRoutingID(),
             group_name,
             identifier));
+        // Send IPC for showing content_setting_image/bubble.
+        observer->DidBlockContentType(content_type);
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay: {

@@ -460,6 +460,7 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
   EXPECT_FALSE(bubble_content.custom_link.empty());
   EXPECT_TRUE(bubble_content.custom_link_enabled);
   EXPECT_FALSE(bubble_content.manage_link.empty());
+  EXPECT_FALSE(bubble_content.learn_more_link.empty());
 }
 
 TEST_F(ContentSettingBubbleModelTest, PepperBroker) {

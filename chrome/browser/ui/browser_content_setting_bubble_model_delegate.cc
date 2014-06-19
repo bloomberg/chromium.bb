@@ -47,3 +47,12 @@ void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
       return;
   }
 }
+
+void BrowserContentSettingBubbleModelDelegate::ShowLearnMorePage(
+    ContentSettingsType type) {
+  if (type != CONTENT_SETTINGS_TYPE_PLUGINS)
+    return;
+  chrome::AddSelectedTabWithURL(browser_,
+                                GURL(chrome::kBlockedPluginLearnMoreURL),
+                                content::PAGE_TRANSITION_LINK);
+}

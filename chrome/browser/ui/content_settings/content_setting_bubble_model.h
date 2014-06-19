@@ -87,6 +87,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     bool custom_link_enabled;
     std::string manage_link;
     MediaMenuMap media_menus;
+    std::string learn_more_link;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(BubbleContent);
@@ -113,6 +114,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   virtual void OnPopupClicked(int index) {}
   virtual void OnCustomLinkClicked() {}
   virtual void OnManageLinkClicked() {}
+  virtual void OnLearnMoreLinkClicked() {}
   virtual void OnMediaMenuClicked(content::MediaStreamType type,
                                   const std::string& selected_device_id) {}
 
@@ -150,6 +152,9 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   }
   void set_manage_link(const std::string& link) {
     bubble_content_.manage_link = link;
+  }
+  void set_learn_more_link(const std::string& link) {
+    bubble_content_.learn_more_link = link;
   }
   void add_media_menu(content::MediaStreamType type, const MediaMenu& menu) {
     bubble_content_.media_menus[type] = menu;
@@ -190,8 +195,11 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
  private:
   void SetTitle();
   void SetManageLink();
-  virtual void OnManageLinkClicked() OVERRIDE;
+  void SetLearnMoreLink();
 
+  // content::ContentSettingBubbleModel:
+  virtual void OnManageLinkClicked() OVERRIDE;
+  virtual void OnLearnMoreLinkClicked() OVERRIDE;
   Delegate* delegate_;
 };
 

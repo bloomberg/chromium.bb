@@ -23,6 +23,7 @@ class BrowserContentSettingBubbleModelDelegate
   virtual void ShowCollectedCookiesDialog(
       content::WebContents* web_contents) OVERRIDE;
   virtual void ShowContentSettingsPage(ContentSettingsType type) OVERRIDE;
+  virtual void ShowLearnMorePage(ContentSettingsType type) OVERRIDE;
 
  private:
   Browser* browser_;

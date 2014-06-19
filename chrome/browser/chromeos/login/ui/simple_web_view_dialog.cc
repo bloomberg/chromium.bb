@@ -114,6 +114,9 @@ class StubBubbleModelDelegate : public ContentSettingBubbleModelDelegate {
   virtual void ShowContentSettingsPage(ContentSettingsType type) OVERRIDE {
   }
 
+  virtual void ShowLearnMorePage(ContentSettingsType type) OVERRIDE {
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(StubBubbleModelDelegate);
 };

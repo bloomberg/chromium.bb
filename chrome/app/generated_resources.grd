@@ -2386,6 +2386,9 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT" desc="Explanatory animated text that appears (and then disappears) in the address line when popup is blocked">
         Pop-up blocked
       </message>
+      <message name="IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT" desc="Explanatory animated text that appears (and then disappears) in the address line when plugin is blocked">
+        Plug-in blocked
+      </message>
       <message name="IDS_BLOCKED_JAVASCRIPT_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to run JavaScript.">
         JavaScript was blocked on this page.
       </message>

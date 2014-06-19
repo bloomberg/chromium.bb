@@ -95,6 +95,7 @@ ContentSettingTitleAndLinkModel::ContentSettingTitleAndLinkModel(
   DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   SetTitle();
   SetManageLink();
+  SetLearnMoreLink();
 }
 
 void ContentSettingTitleAndLinkModel::SetTitle() {
@@ -154,6 +155,22 @@ void ContentSettingTitleAndLinkModel::SetManageLink() {
 void ContentSettingTitleAndLinkModel::OnManageLinkClicked() {
   if (delegate_)
     delegate_->ShowContentSettingsPage(content_type());
+}
+
+void ContentSettingTitleAndLinkModel::SetLearnMoreLink() {
+  static const ContentSettingsTypeIdEntry kLearnMoreIDs[] = {
+    {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_LEARN_MORE},
+  };
+  int learn_more_id =
+      GetIdForContentType(kLearnMoreIDs, arraysize(kLearnMoreIDs),
+                          content_type());
+  if (learn_more_id)
+    set_learn_more_link(l10n_util::GetStringUTF8(learn_more_id));
+}
+
+void ContentSettingTitleAndLinkModel::OnLearnMoreLinkClicked() {
+  if (delegate_)
+    delegate_->ShowLearnMorePage(content_type());
 }
 
 class ContentSettingTitleLinkAndCustomModel

@@ -147,6 +147,7 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       content_setting_bubble_model_(content_setting_bubble_model),
       custom_link_(NULL),
       manage_link_(NULL),
+      learn_more_link_(NULL),
       close_button_(NULL) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
@@ -189,6 +190,9 @@ void ContentSettingBubbleContents::Init() {
   views::ColumnSet* column_set = layout->AddColumnSet(kSingleColumnSetId);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
+                        GridLayout::USE_PREF, 0, 0);
 
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model_->bubble_content();
@@ -201,6 +205,15 @@ void ContentSettingBubbleContents::Init() {
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->StartRow(0, kSingleColumnSetId);
     layout->AddView(title_label);
+    bubble_content_empty = false;
+  }
+
+  if (!bubble_content.learn_more_link.empty()) {
+    learn_more_link_ =
+        new views::Link(base::UTF8ToUTF16(bubble_content.learn_more_link));
+    learn_more_link_->set_listener(this);
+    learn_more_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    layout->AddView(learn_more_link_);
     bubble_content_empty = false;
   }
 
@@ -425,6 +438,11 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
 
 void ContentSettingBubbleContents::LinkClicked(views::Link* source,
                                                int event_flags) {
+  if (source == learn_more_link_) {
+    content_setting_bubble_model_->OnLearnMoreLinkClicked();
+    GetWidget()->Close();
+    return;
+  }
   if (source == custom_link_) {
     content_setting_bubble_model_->OnCustomLinkClicked();
     GetWidget()->Close();
