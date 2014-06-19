@@ -25029,6 +25029,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SBIRS.DroppedIncident" enum="IncidentType">
+  <owner>grt@google.com</owner>
+  <summary>
+    The type of incident given to the safe browsing incident reporting service
+    but dropped as a result of not participating in safe browsing.
+  </summary>
+</histogram>
+
 <histogram name="SBIRS.EnvCollectionTime" units="milliseconds">
   <owner>grt@google.com</owner>
   <summary>

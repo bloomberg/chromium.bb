@@ -310,10 +310,11 @@ SafeBrowsingPingManager* SafeBrowsingService::ping_manager() const {
 }
 
 scoped_ptr<TrackedPreferenceValidationDelegate>
-SafeBrowsingService::CreatePreferenceValidationDelegate() const {
+SafeBrowsingService::CreatePreferenceValidationDelegate(
+    Profile* profile) const {
 #if defined(FULL_SAFE_BROWSING)
   if (incident_service_)
-    return incident_service_->CreatePreferenceValidationDelegate();
+    return incident_service_->CreatePreferenceValidationDelegate(profile);
 #endif
   return scoped_ptr<TrackedPreferenceValidationDelegate>();
 }
@@ -528,7 +529,5 @@ void SafeBrowsingService::RefreshState() {
     csd_service_->SetEnabledAndRefreshState(enable);
   if (download_service_)
     download_service_->SetEnabled(enable);
-  if (incident_service_)
-    incident_service_->SetEnabled(enable);
 #endif
 }

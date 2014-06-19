@@ -454,7 +454,7 @@ ProfileImpl::ProfileImpl(
       g_browser_process->safe_browsing_service());
   if (safe_browsing_service) {
     pref_validation_delegate_ =
-        safe_browsing_service->CreatePreferenceValidationDelegate().Pass();
+        safe_browsing_service->CreatePreferenceValidationDelegate(this).Pass();
   }
 
   {

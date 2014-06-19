@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <map>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -18,13 +20,21 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/add_incident_callback.h"
 #include "chrome/browser/safe_browsing/incident_report_uploader.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
+class Profile;
 class SafeBrowsingDatabaseManager;
 class SafeBrowsingService;
 class TrackedPreferenceValidationDelegate;
 
 namespace base {
 class TaskRunner;
+}
+
+namespace content {
+class NotificationDetails;
+class NotificationSource;
 }
 
 namespace net {
@@ -41,29 +51,36 @@ class ClientIncidentReport_IncidentData;
 // A class that manages the collection of incidents and submission of incident
 // reports to the safe browsing client-side detection service. The service
 // begins operation when an incident is reported via the AddIncident method.
-// Following this, the service collects environmental data and waits a bit.
+// Incidents reported from a profile that is loading are held until the profile
+// is fully created. Incidents originating from profiles that do not participate
+// in safe browsing are dropped. Following the addition of an incident that is
+// not dropped, the service collects environmental data and waits a bit.
 // Additional incidents that arrive during this time are collated with the
 // initial incident. Finally, already-reported incidents are pruned and any
 // remaining are uploaded in an incident report.
-class IncidentReportingService {
+class IncidentReportingService : public content::NotificationObserver {
  public:
   IncidentReportingService(SafeBrowsingService* safe_browsing_service,
                            const scoped_refptr<net::URLRequestContextGetter>&
                                request_context_getter);
+
+  // All incident collection, data collection, and uploads in progress are
+  // dropped at destruction.
   virtual ~IncidentReportingService();
 
-  // Enables or disables the service. When disabling, incident or data
-  // collection in progress is dropped.
-  void SetEnabled(bool enabled);
-
   // Returns a callback by which external components can add an incident to the
-  // service.
-  AddIncidentCallback GetAddIncidentCallback();
+  // service on behalf of |profile|. The callback may outlive the service, but
+  // will no longer have any effect after the service is deleted. The callback
+  // must not be run after |profile| has been destroyed.
+  AddIncidentCallback GetAddIncidentCallback(Profile* profile);
 
   // Returns a preference validation delegate that adds incidents to the service
-  // for validation failures.
+  // for validation failures in |profile|. The delegate may outlive the service,
+  // but incidents reported by it will no longer have any effect after the
+  // service is deleted. The lifetime of the delegate should not extend beyond
+  // that of the profile it services.
   scoped_ptr<TrackedPreferenceValidationDelegate>
-      CreatePreferenceValidationDelegate();
+      CreatePreferenceValidationDelegate(Profile* profile);
 
  protected:
   // A pointer to a function that populates a protobuf with environment data.
@@ -77,6 +94,12 @@ class IncidentReportingService {
       CollectEnvironmentDataFn collect_environment_data_hook,
       const scoped_refptr<base::TaskRunner>& task_runner);
 
+  // Handles the creation of a new profile. Creates a new context for |profile|
+  // if one does not exist, and drops any received incidents for the profile if
+  // the profile is not participating in safe browsing. Overridden by unit tests
+  // to inject incidents prior to creation.
+  virtual void OnProfileCreated(Profile* profile);
+
   // Initiates an upload. Overridden by unit tests to provide a fake uploader.
   virtual scoped_ptr<IncidentReportUploader> StartReportUpload(
       const IncidentReportUploader::OnResultCallback& callback,
@@ -84,11 +107,26 @@ class IncidentReportingService {
       const ClientIncidentReport& report);
 
  private:
+  struct ProfileContext;
   class UploadContext;
+
+  // A mapping of profiles to contexts holding state about received incidents.
+  typedef std::map<Profile*, ProfileContext*> ProfileContextCollection;
+
+  // Returns the context for |profile|, creating it if it does not exist.
+  ProfileContext* GetOrCreateProfileContext(Profile* profile);
+
+  // Returns the context for |profile|, or NULL if it is unknown.
+  ProfileContext* GetProfileContext(Profile* profile);
+
+  // Handles the destruction of a profile. Incidents reported for the profile
+  // but not yet uploaded are dropped.
+  void OnProfileDestroyed(Profile* profile);
 
   // Adds |incident_data| to the service. The incident_time_msec field is
   // populated with the current time if the caller has not already done so.
-  void AddIncident(scoped_ptr<ClientIncidentReport_IncidentData> incident_data);
+  void AddIncident(Profile* profile,
+                   scoped_ptr<ClientIncidentReport_IncidentData> incident_data);
 
   // Starts a task to collect environment data in the blocking pool.
   void BeginEnvironmentCollection();
@@ -122,7 +160,9 @@ class IncidentReportingService {
   // Prunes incidents that have previously been reported.
   void PruneReportedIncidents(ClientIncidentReport* report);
 
-  // Uploads an incident report if all data collection is complete.
+  // Uploads an incident report if all data collection is complete. Incidents
+  // originating from profiles that do not participate in safe browsing are
+  // dropped.
   void UploadIfCollectionComplete();
 
   // Cancels all uploads, discarding all reports and responses in progress.
@@ -139,6 +179,11 @@ class IncidentReportingService {
   void OnReportUploadResult(UploadContext* context,
                             IncidentReportUploader::Result result,
                             scoped_ptr<ClientIncidentResponse> response);
+
+  // content::NotificationObserver methods.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   base::ThreadChecker thread_checker_;
 
@@ -160,8 +205,8 @@ class IncidentReportingService {
   // collection task at shutdown if it has not yet started.
   scoped_refptr<base::TaskRunner> environment_collection_task_runner_;
 
-  // True when the service has been enabled.
-  bool enabled_;
+  // Registrar for observing profile lifecycle notifications.
+  content::NotificationRegistrar notification_registrar_;
 
   // True when the asynchronous environment collection task has been fired off
   // but has not yet completed.
@@ -188,6 +233,9 @@ class IncidentReportingService {
 
   // The time at which environmental data collection was initiated.
   base::TimeTicks environment_collection_begin_;
+
+  // Context data for all on-the-record profiles.
+  ProfileContextCollection profiles_;
 
   // The collection of uploads in progress.
   ScopedVector<UploadContext> uploads_;

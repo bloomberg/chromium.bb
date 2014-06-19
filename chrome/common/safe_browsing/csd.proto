@@ -397,6 +397,8 @@ message ClientIncidentReport {
       }
       optional Channel chrome_update_channel = 5;
       optional int64 uptime_msec = 6;
+      optional bool metrics_consent = 7;
+      optional bool extended_consent = 8;
     }
     optional Process process = 3;
   }
