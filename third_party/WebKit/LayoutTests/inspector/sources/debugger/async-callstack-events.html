@@ -51,9 +51,22 @@ function onHashChange()
     debugger;
 }
 
+function doTestMediaEvents()
+{
+    var video = document.getElementById("video");
+    video.addEventListener("play", onVideoPlay, false);
+    video.play();
+}
+
+function onVideoPlay()
+{
+    video.removeEventListener("play", onVideoPlay, false);
+    debugger;
+}
+
 var test = function()
 {
-    var totalDebuggerStatements = 2;
+    var totalDebuggerStatements = 3;
     var maxAsyncCallStackDepth = 4;
     InspectorTest.runAsyncCallStacksTest(totalDebuggerStatements, maxAsyncCallStackDepth);
 }
@@ -62,6 +75,7 @@ var test = function()
 </head>
 
 <body onload="runTest()">
+<video id="video" src="../../../media/content/test.ogv"></video>
 <p id="content">
 Tests asynchronous call stacks for various DOM events.
 </p>

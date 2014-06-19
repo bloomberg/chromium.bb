@@ -15,4 +15,10 @@ Call stack:
     1) doTestSelectionChange (async-callstack-events.html:31)
     2) testFunction (async-callstack-events.html:11)
 
+Call stack:
+    0) onVideoPlay (async-callstack-events.html:64)
+    [play]
+    0) doTestMediaEvents (async-callstack-events.html:58)
+    1) testFunction (async-callstack-events.html:11)
+
 
