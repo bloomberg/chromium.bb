@@ -25,5 +25,19 @@
         'pref_registry/pref_registry_syncable.h',
       ],
     },
+    {
+      'target_name': 'pref_registry_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        'pref_registry',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'pref_registry/testing_pref_service_syncable.cc',
+        'pref_registry/testing_pref_service_syncable.h',
+      ],
+    },
   ],
 }

@@ -11,8 +11,8 @@
 #include "chrome/browser/search_engines/default_search_manager.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/search_engines/template_url_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,7 +44,7 @@ void ExpectSimilar(const TemplateURLData* expected,
 }
 
 // TODO(caitkp): TemplateURLData-ify this.
-void SetOverrides(TestingPrefServiceSyncable* prefs, bool update) {
+void SetOverrides(user_prefs::TestingPrefServiceSyncable* prefs, bool update) {
   prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
                      base::Value::CreateIntegerValue(1));
   base::ListValue* overrides = new base::ListValue;
@@ -78,7 +78,7 @@ void SetOverrides(TestingPrefServiceSyncable* prefs, bool update) {
   prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides);
 }
 
-void SetPolicy(TestingPrefServiceSyncable* prefs,
+void SetPolicy(user_prefs::TestingPrefServiceSyncable* prefs,
                bool enabled,
                TemplateURLData* data) {
   if (enabled) {
@@ -142,15 +142,17 @@ class DefaultSearchManagerTest : public testing::Test {
   DefaultSearchManagerTest() {};
 
   virtual void SetUp() OVERRIDE {
-    pref_service_.reset(new TestingPrefServiceSyncable);
+    pref_service_.reset(new user_prefs::TestingPrefServiceSyncable);
     DefaultSearchManager::RegisterProfilePrefs(pref_service_->registry());
     TemplateURLPrepopulateData::RegisterProfilePrefs(pref_service_->registry());
   }
 
-  TestingPrefServiceSyncable* pref_service() { return pref_service_.get(); }
+  user_prefs::TestingPrefServiceSyncable* pref_service() {
+    return pref_service_.get();
+  }
 
  private:
-  scoped_ptr<TestingPrefServiceSyncable> pref_service_;
+  scoped_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultSearchManagerTest);
 };

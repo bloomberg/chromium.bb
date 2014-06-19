@@ -24,6 +24,7 @@
         '../components/components.gyp:invalidation_test_support',
         '../components/components.gyp:metrics_test_support',
         '../components/components.gyp:password_manager_core_browser_test_support',
+        '../components/components.gyp:pref_registry_test_support',
         '../components/components.gyp:signin_core_browser_test_support',
         '../components/components.gyp:sync_driver_test_support',
         '../content/content.gyp:content_app_both',

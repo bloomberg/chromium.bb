@@ -10,38 +10,11 @@
 #include "base/prefs/pref_value_store.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/time/time.h"
-#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/sync_driver/pref_names.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-template <>
-TestingPrefServiceBase<PrefService, user_prefs::PrefRegistrySyncable>::
-    TestingPrefServiceBase(TestingPrefStore* managed_prefs,
-                           TestingPrefStore* user_prefs,
-                           TestingPrefStore* recommended_prefs,
-                           user_prefs::PrefRegistrySyncable* pref_registry,
-                           PrefNotifierImpl* pref_notifier)
-    : PrefService(
-          pref_notifier,
-          new PrefValueStore(managed_prefs,
-                             NULL,  // supervised_user_prefs
-                             NULL,  // extension_prefs
-                             NULL,  // command_line_prefs
-                             user_prefs,
-                             recommended_prefs,
-                             pref_registry->defaults().get(),
-                             pref_notifier),
-          user_prefs,
-          pref_registry,
-          base::Bind(&TestingPrefServiceBase<
-                         PrefService,
-                         user_prefs::PrefRegistrySyncable>::HandleReadError),
-          false),
-      managed_prefs_(managed_prefs),
-      user_prefs_(user_prefs),
-      recommended_prefs_(recommended_prefs) {}
 
 namespace sync_driver {
 
@@ -50,42 +23,13 @@ namespace {
 using ::testing::InSequence;
 using ::testing::StrictMock;
 
-// Test version of PrefServiceSyncable.
-class TestingPrefServiceSyncable
-    : public TestingPrefServiceBase<PrefService,
-                                    user_prefs::PrefRegistrySyncable> {
- public:
-  TestingPrefServiceSyncable();
-  virtual ~TestingPrefServiceSyncable();
-
-  user_prefs::PrefRegistrySyncable* registry();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestingPrefServiceSyncable);
-};
-
-TestingPrefServiceSyncable::TestingPrefServiceSyncable()
-    : TestingPrefServiceBase<PrefService, user_prefs::PrefRegistrySyncable>(
-          new TestingPrefStore(),
-          new TestingPrefStore(),
-          new TestingPrefStore(),
-          new user_prefs::PrefRegistrySyncable(),
-          new PrefNotifierImpl()) {}
-
-TestingPrefServiceSyncable::~TestingPrefServiceSyncable() {}
-
-user_prefs::PrefRegistrySyncable* TestingPrefServiceSyncable::registry() {
-  return static_cast<user_prefs::PrefRegistrySyncable*>(
-      DeprecatedGetPrefRegistry());
-}
-
 class SyncPrefsTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
   }
 
-  TestingPrefServiceSyncable pref_service_;
+  user_prefs::TestingPrefServiceSyncable pref_service_;
 
  private:
   base::MessageLoop loop_;

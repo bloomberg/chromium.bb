@@ -310,6 +310,9 @@
             'components.gyp:password_manager_core_browser',
             'components.gyp:precache_core',
 
+            # Dependencies of pref_registry
+            'components.gyp:pref_registry_test_support',
+
             # Dependencies of query_parser
             'components.gyp:query_parser',
 
