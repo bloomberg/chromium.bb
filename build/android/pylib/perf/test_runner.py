@@ -34,15 +34,6 @@ The JSON steps file contains a dictionary in the format:
   }
 }
 
-# TODO(bulach): remove once it rolls downstream, crbug.com/378862.
-The OLD JSON steps file contains a dictionary in the format:
-[
-  ["step_name_foo", "script_to_execute foo"],
-  ["step_name_bar", "script_to_execute bar"]
-]
-
-This preserves the order in which the steps are executed.
-
 The JSON flaky steps file contains a list with step names which results should
 be ignored:
 [
@@ -75,11 +66,7 @@ from pylib.base import base_test_runner
 def OutputJsonList(json_input, json_output):
   with file(json_input, 'r') as i:
     all_steps = json.load(i)
-  # TODO(bulach): remove once it rolls downstream, crbug.com/378862.
-  if isinstance(all_steps, list):
-    step_names = [t[0] for t in all_steps]
-  else:
-    step_names = all_steps['steps'].keys()
+  step_names = all_steps['steps'].keys()
   with file(json_output, 'w') as o:
     o.write(json.dumps(step_names))
   return 0

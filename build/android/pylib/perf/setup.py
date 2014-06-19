@@ -42,21 +42,6 @@ def _GetStepsDictFromSingleStep(test_options):
   }
   return steps_dict
 
-# TODO(bulach): remove once it rolls downstream, crbug.com/378862.
-def _GetStepsDictFromV0(steps_v0):
-  steps_dict = {
-    'version': 1,
-    'steps': {},
-  }
-  affinity = 0
-  for step in steps_v0:
-    steps_dict['steps'][step[0]] = {
-        'device_affinity': affinity,
-        'cmd': step[1],
-    }
-    affinity += 1
-  return steps_dict
-
 
 def _GetStepsDict(test_options):
   if test_options.single_step:
@@ -64,9 +49,6 @@ def _GetStepsDict(test_options):
   if test_options.steps:
     with file(test_options.steps, 'r') as f:
       steps = json.load(f)
-      # TODO(bulach): remove once it rolls downstream, crbug.com/378862.
-      if isinstance(steps, list):
-        return _GetStepsDictFromV0(steps)
 
       # Already using the new format.
       assert steps['version'] == 1
