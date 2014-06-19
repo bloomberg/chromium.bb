@@ -896,9 +896,11 @@ def CMDupload(change_info, args):
       # CC_LIST only when --private is specified explicitly on the command
       # line.
       if "--private" in upload_arg:
-        Warn("WARNING: CC_LIST is ignored since private flag is specified.  "
-             "You need to review and add them manually if necessary.")
+        Warn("WARNING: CC_LIST and WATCHLISTS are ignored when --private is "
+             "specified.  You need to review and add them manually if "
+             "necessary.")
         cc_list = ""
+        no_watchlists = True
       else:
         cc_list = GetCodeReviewSetting("CC_LIST")
       if not no_watchlists and watchers:
