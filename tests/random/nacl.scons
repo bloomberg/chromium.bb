@@ -5,9 +5,23 @@
 
 Import('env')
 
+# When testing the private-only nacl_secure_random(), we must link in
+# a lot of dependencies and initialize libsrpc manually.
+# TODO(mseaborn): Clean this up by removing irt_random.c's use of SRPC.
+env.Append(CPPDEFINES=[['TESTS_USE_IRT',
+                        str(int(env.Bit('tests_use_irt')))]])
+libs = []
+if not env.Bit('tests_use_irt'):
+  if env.Bit('nacl_glibc'):
+    # libnacl_random_private depends on functions in irt_blockhook.c,
+    # which we don't have when building against nacl-glibc.
+    Return()
+  libs += ['libnacl_random_private', '${PTHREAD_LIBS}', 'srpc',
+           'platform', 'imc_syscalls']
+
 nexe = env.ComponentProgram(
     env.ProgramNameForNmf('random_test'), 'random_test.c',
-    EXTRA_LIBS=['${TESTRUNNER_LIBS}', 'nacl'])
+    EXTRA_LIBS=libs + ['${NONIRT_LIBS}', '${TESTRUNNER_LIBS}', 'nacl'])
 
 node = env.CommandSelLdrTestNacl('random_test.out', nexe,
                                  sel_ldr_flags=['-E', 'OUTSIDE_BROWSER=1'])

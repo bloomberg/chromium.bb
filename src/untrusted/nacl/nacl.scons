@@ -185,6 +185,13 @@ env.AddHeaderToSdk(['nacl_list_mappings.h'])
 env.ComponentLibrary(
     'libnacl_list_mappings_private', ['list_mappings_private.c'])
 
+env.ComponentLibrary(
+    'libnacl_random_private',
+    [env.ComponentObject('irt_random',
+                         '${MAIN_DIR}/src/untrusted/irt/irt_random.c'),
+     env.ComponentObject('irt_nameservice',
+                         '${MAIN_DIR}/src/untrusted/irt/irt_nameservice.c')])
+
 
 imc_syscalls = [
     'imc_accept.c',

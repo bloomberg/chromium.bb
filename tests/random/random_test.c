@@ -11,9 +11,14 @@
 #include <nacl/nacl_random.h>
 
 #include "native_client/src/include/nacl_assert.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
 int TestMain(void) {
+#if !TESTS_USE_IRT
+  NaClSrpcModuleInit();
+#endif
+
   int result = 0;
 
   uint8_t byte1 = 0;

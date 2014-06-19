@@ -8,6 +8,7 @@
 #include <fcntl.h>
 
 #include "native_client/src/public/name_service.h"
+#include "native_client/src/untrusted/nacl/nacl_random.h"
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_private.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
@@ -31,7 +32,11 @@ static int prepare_secure_random(void) {
   return 0;
 }
 
-static int nacl_irt_get_random_bytes(void *buf, size_t count, size_t *nread) {
+int nacl_secure_random_init(void) {
+  return 0;
+}
+
+int nacl_secure_random(void *buf, size_t count, size_t *nread) {
   int error = prepare_secure_random();
   if (error == 0) {
     int rv = NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(read)(secure_random_fd,
@@ -45,5 +50,5 @@ static int nacl_irt_get_random_bytes(void *buf, size_t count, size_t *nread) {
 }
 
 const struct nacl_irt_random nacl_irt_random = {
-  nacl_irt_get_random_bytes,
+  nacl_secure_random,
 };
