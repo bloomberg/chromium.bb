@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/memory/scoped_vector.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "media/audio/audio_manager_base.h"
@@ -39,8 +40,9 @@ class AudioInputDevice::AudioThreadCallback
 
  private:
   int current_segment_id_;
+  ScopedVector<media::AudioBus> audio_buses_;
   CaptureCallback* capture_callback_;
-  scoped_ptr<AudioBus> audio_bus_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioThreadCallback);
 };
 
@@ -273,7 +275,6 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
                                   total_segments),
       current_segment_id_(0),
       capture_callback_(capture_callback) {
-  audio_bus_ = AudioBus::Create(audio_parameters_);
 }
 
 AudioInputDevice::AudioThreadCallback::~AudioThreadCallback() {
@@ -281,6 +282,17 @@ AudioInputDevice::AudioThreadCallback::~AudioThreadCallback() {
 
 void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
   shared_memory_.Map(memory_length_);
+
+  // Create vector of audio buses by wrapping existing blocks of memory.
+  uint8* ptr = static_cast<uint8*>(shared_memory_.memory());
+  for (int i = 0; i < total_segments_; ++i) {
+    media::AudioInputBuffer* buffer =
+        reinterpret_cast<media::AudioInputBuffer*>(ptr);
+    scoped_ptr<media::AudioBus> audio_bus =
+        media::AudioBus::WrapMemory(audio_parameters_, buffer->audio);
+    audio_buses_.push_back(audio_bus.release());
+    ptr += segment_length_;
+  }
 }
 
 void AudioInputDevice::AudioThreadCallback::Process(int pending_data) {
@@ -297,21 +309,17 @@ void AudioInputDevice::AudioThreadCallback::Process(int pending_data) {
   double volume = buffer->params.volume;
   bool key_pressed = buffer->params.key_pressed;
 
-  int audio_delay_milliseconds = pending_data / bytes_per_ms_;
-  int16* memory = reinterpret_cast<int16*>(&buffer->audio[0]);
-  const int bytes_per_sample = sizeof(memory[0]);
-
-  if (++current_segment_id_ >= total_segments_)
-    current_segment_id_ = 0;
-
-  // Deinterleave each channel and convert to 32-bit floating-point
-  // with nominal range -1.0 -> +1.0.
-  audio_bus_->FromInterleaved(memory, audio_bus_->frames(), bytes_per_sample);
+  // Use pre-allocated audio bus wrapping existing block of shared memory.
+  media::AudioBus* audio_bus = audio_buses_[current_segment_id_];
 
   // Deliver captured data to the client in floating point format
   // and update the audio-delay measurement.
+  int audio_delay_milliseconds = pending_data / bytes_per_ms_;
   capture_callback_->Capture(
-      audio_bus_.get(), audio_delay_milliseconds, volume, key_pressed);
+      audio_bus, audio_delay_milliseconds, volume, key_pressed);
+
+  if (++current_segment_id_ >= total_segments_)
+    current_segment_id_ = 0;
 }
 
 }  // namespace media

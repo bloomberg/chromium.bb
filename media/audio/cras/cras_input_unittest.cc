@@ -28,8 +28,8 @@ namespace media {
 
 class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
  public:
-  MOCK_METHOD5(OnData, void(
-      AudioInputStream*, const uint8*, uint32, uint32, double));
+  MOCK_METHOD4(OnData,
+               void(AudioInputStream*, const AudioBus*, uint32, double));
   MOCK_METHOD1(OnError, void(AudioInputStream*));
 };
 
@@ -85,14 +85,9 @@ class CrasInputStreamTest : public testing::Test {
     // samples can be provided when doing non-integer SRC.  For example
     // converting from 192k to 44.1k is a ratio of 4.35 to 1.
     MockAudioInputCallback mock_callback;
-    unsigned int expected_size = (kTestFramesPerPacket - 8) *
-                                 params.channels() *
-                                 params.bits_per_sample() / 8;
-
     base::WaitableEvent event(false, false);
 
-    EXPECT_CALL(mock_callback,
-                OnData(test_stream, _, Ge(expected_size), _, _))
+    EXPECT_CALL(mock_callback, OnData(test_stream, _, _, _))
         .WillOnce(InvokeWithoutArgs(&event, &base::WaitableEvent::Signal));
 
     test_stream->Start(&mock_callback);

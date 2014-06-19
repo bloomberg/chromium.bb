@@ -139,14 +139,7 @@ void VirtualAudioInputStream::PumpAudio(AudioBus* audio_bus) {
     base::AutoLock scoped_lock(converter_network_lock_);
     mixer_.Convert(audio_bus);
   }
-  audio_bus->ToInterleaved(params_.frames_per_buffer(),
-                           params_.bits_per_sample() / 8,
-                           buffer_.get());
-  callback_->OnData(this,
-                    buffer_.get(),
-                    params_.GetBytesPerBuffer(),
-                    params_.GetBytesPerBuffer(),
-                    1.0);
+  callback_->OnData(this, audio_bus, params_.GetBytesPerBuffer(), 1.0);
 }
 
 void VirtualAudioInputStream::Close() {

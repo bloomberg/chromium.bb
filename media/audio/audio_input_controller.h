@@ -117,8 +117,8 @@ class MEDIA_EXPORT AudioInputController
     virtual void OnRecording(AudioInputController* controller) = 0;
     virtual void OnError(AudioInputController* controller,
                          ErrorCode error_code) = 0;
-    virtual void OnData(AudioInputController* controller, const uint8* data,
-                        uint32 size) = 0;
+    virtual void OnData(AudioInputController* controller,
+                        const AudioBus* data) = 0;
     virtual void OnLog(AudioInputController* controller,
                        const std::string& message) = 0;
 
@@ -136,12 +136,10 @@ class MEDIA_EXPORT AudioInputController
     // soundcard which has been recorded.
     virtual void UpdateRecordedBytes(uint32 bytes) = 0;
 
-    // Write certain amount of data from |data|. This method returns
-    // number of written bytes.
-    virtual uint32 Write(const void* data,
-                         uint32 size,
-                         double volume,
-                         bool key_pressed) = 0;
+    // Write certain amount of data from |data|.
+    virtual void Write(const AudioBus* data,
+                       double volume,
+                       bool key_pressed) = 0;
 
     // Close this synchronous writer.
     virtual void Close() = 0;
@@ -230,8 +228,10 @@ class MEDIA_EXPORT AudioInputController
 
   // AudioInputCallback implementation. Threading details depends on the
   // device-specific implementation.
-  virtual void OnData(AudioInputStream* stream, const uint8* src, uint32 size,
-                      uint32 hardware_delay_bytes, double volume) OVERRIDE;
+  virtual void OnData(AudioInputStream* stream,
+                      const AudioBus* source,
+                      uint32 hardware_delay_bytes,
+                      double volume) OVERRIDE;
   virtual void OnError(AudioInputStream* stream) OVERRIDE;
 
   bool SharedMemoryAndSyncSocketMode() const { return sync_writer_ != NULL; }
@@ -261,7 +261,7 @@ class MEDIA_EXPORT AudioInputController
   void DoReportError();
   void DoSetVolume(double volume);
   void DoSetAutomaticGainControl(bool enabled);
-  void DoOnData(scoped_ptr<uint8[]> data, uint32 size);
+  void DoOnData(scoped_ptr<AudioBus> data);
   void DoLogAudioLevel(float level_dbfs);
 
   // Method to check if we get recorded data after a stream was started,
@@ -325,7 +325,6 @@ class MEDIA_EXPORT AudioInputController
   scoped_ptr<AudioPowerMonitor> audio_level_;
 
   // We need these to be able to feed data to the AudioPowerMonitor.
-  scoped_ptr<AudioBus> audio_bus_;
   media::AudioParameters audio_params_;
   base::TimeTicks last_audio_level_log_time_;
 #endif

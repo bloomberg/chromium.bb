@@ -202,7 +202,6 @@ void AudioInputController::DoCreate(AudioManager* audio_manager,
   audio_level_.reset(new media::AudioPowerMonitor(
       params.sample_rate(),
       TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMilliseconds)));
-  audio_bus_ = AudioBus::Create(params);
   audio_params_ = params;
 #endif
 
@@ -383,8 +382,7 @@ void AudioInputController::DoCheckForNoData() {
 }
 
 void AudioInputController::OnData(AudioInputStream* stream,
-                                  const uint8* data,
-                                  uint32 size,
+                                  const AudioBus* source,
                                   uint32 hardware_delay_bytes,
                                   double volume) {
   // Mark data as active to ensure that the periodic calls to
@@ -408,7 +406,7 @@ void AudioInputController::OnData(AudioInputStream* stream,
   // Use SharedMemory and SyncSocket if the client has created a SyncWriter.
   // Used by all low-latency clients except WebSpeech.
   if (SharedMemoryAndSyncSocketMode()) {
-    sync_writer_->Write(data, size, volume, key_pressed);
+    sync_writer_->Write(source, volume, key_pressed);
     sync_writer_->UpdateRecordedBytes(hardware_delay_bytes);
 
 #if defined(AUDIO_POWER_MONITORING)
@@ -424,9 +422,7 @@ void AudioInputController::OnData(AudioInputStream* stream,
       // Wrap data into an AudioBus to match AudioPowerMonitor::Scan.
       // TODO(henrika): remove this section when capture side uses AudioBus.
       // See http://crbug.com/375155 for details.
-      audio_bus_->FromInterleaved(
-          data, audio_bus_->frames(), audio_params_.bits_per_sample() / 8);
-      audio_level_->Scan(*audio_bus_, audio_bus_->frames());
+      audio_level_->Scan(*source, source->frames());
 
       // Get current average power level and add it to the log.
       // Possible range is given by [-inf, 0] dBFS.
@@ -445,26 +441,28 @@ void AudioInputController::OnData(AudioInputStream* stream,
       audio_level_->Reset();
     }
 #endif
-
     return;
   }
 
   // TODO(henrika): Investigate if we can avoid the extra copy here.
   // (see http://crbug.com/249316 for details). AFAIK, this scope is only
   // active for WebSpeech clients.
-  scoped_ptr<uint8[]> audio_data(new uint8[size]);
-  memcpy(audio_data.get(), data, size);
+  scoped_ptr<AudioBus> audio_data =
+      AudioBus::Create(source->channels(), source->frames());
+  source->CopyTo(audio_data.get());
 
   // Ownership of the audio buffer will be with the callback until it is run,
   // when ownership is passed to the callback function.
-  task_runner_->PostTask(FROM_HERE, base::Bind(
-      &AudioInputController::DoOnData, this, base::Passed(&audio_data), size));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &AudioInputController::DoOnData, this, base::Passed(&audio_data)));
 }
 
-void AudioInputController::DoOnData(scoped_ptr<uint8[]> data, uint32 size) {
+void AudioInputController::DoOnData(scoped_ptr<AudioBus> data) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (handler_)
-    handler_->OnData(this, data.get(), size);
+    handler_->OnData(this, data.get());
 }
 
 void AudioInputController::DoLogAudioLevel(float level_dbfs) {
