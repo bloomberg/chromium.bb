@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class DOMWindow;
+class LocalDOMWindow;
 class Database;
 class DatabaseCallback;
 class ExceptionState;
@@ -43,7 +43,7 @@ class LocalFrame;
 
 class DOMWindowWebDatabase {
 public:
-    static PassRefPtrWillBeRawPtr<Database> openDatabase(DOMWindow&, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Database> openDatabase(LocalDOMWindow&, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState&);
 
 private:
     DOMWindowWebDatabase() { };

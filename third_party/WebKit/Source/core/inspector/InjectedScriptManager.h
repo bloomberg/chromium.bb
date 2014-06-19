@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class DOMWindow;
+class LocalDOMWindow;
 class InjectedScript;
 class InjectedScriptHost;
 class ScriptValue;
@@ -59,7 +59,7 @@ public:
     int injectedScriptIdFor(ScriptState*);
     InjectedScript injectedScriptForObjectId(const String& objectId);
     void discardInjectedScripts();
-    void discardInjectedScriptsFor(DOMWindow*);
+    void discardInjectedScriptsFor(LocalDOMWindow*);
     void releaseObjectGroup(const String& objectGroup);
 
     typedef bool (*InspectedStateAccessCheck)(ScriptState*);

@@ -99,7 +99,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
 #include "core/frame/Console.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"

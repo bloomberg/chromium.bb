@@ -40,7 +40,7 @@
 #include "core/editing/markup.h"
 #include "core/events/Event.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
@@ -141,7 +141,7 @@ void LocalFrame::setView(PassRefPtr<FrameView> view)
     if (m_view)
         m_view->prepareForDetach();
 
-    // Prepare for destruction now, so any unload event handlers get run and the DOMWindow is
+    // Prepare for destruction now, so any unload event handlers get run and the LocalDOMWindow is
     // notified. If we wait until the view is destroyed, then things won't be hooked up enough for
     // these calls to work.
     if (!view && document() && document()->isActive()) {
@@ -169,7 +169,7 @@ void LocalFrame::sendOrientationChangeEvent()
     if (page()->visibilityState() != PageVisibilityStateVisible)
         return;
 
-    DOMWindow* window = domWindow();
+    LocalDOMWindow* window = domWindow();
     if (!window)
         return;
     window->dispatchEvent(Event::create(EventTypeNames::orientationchange));
@@ -236,7 +236,7 @@ FloatSize LocalFrame::resizePageRectsKeepingRatio(const FloatSize& originalSize,
     return resultSize;
 }
 
-void LocalFrame::setDOMWindow(PassRefPtrWillBeRawPtr<DOMWindow> domWindow)
+void LocalFrame::setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow> domWindow)
 {
     InspectorInstrumentation::frameWindowDiscarded(this, m_domWindow.get());
     if (domWindow)

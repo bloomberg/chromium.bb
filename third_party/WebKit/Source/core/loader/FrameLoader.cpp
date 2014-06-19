@@ -48,7 +48,7 @@
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -908,7 +908,7 @@ void FrameLoader::commitProvisionalLoad()
     // its frame is not in a consistent state for rendering, so avoid setJSStatusBarText
     // since it may cause clients to attempt to render the frame.
     if (!m_stateMachine.creatingInitialEmptyDocument()) {
-        DOMWindow* window = m_frame->domWindow();
+        LocalDOMWindow* window = m_frame->domWindow();
         window->setStatus(String());
         window->setDefaultStatus(String());
     }

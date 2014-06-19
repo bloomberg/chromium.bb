@@ -33,7 +33,7 @@
 #include "core/events/MessageEvent.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
 #include "core/workers/WorkerGlobalScopeProxyProvider.h"

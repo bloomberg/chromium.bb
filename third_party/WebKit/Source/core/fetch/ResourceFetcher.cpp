@@ -52,7 +52,7 @@
 #include "core/loader/SubstituteData.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/timing/Performance.h"
@@ -182,7 +182,7 @@ static void reportResourceTiming(ResourceTimingInfo* info, Document* initiatorDo
         initiatorDocument = initiatorDocument->parentDocument();
     if (!initiatorDocument || !initiatorDocument->loader())
         return;
-    if (DOMWindow* initiatorWindow = initiatorDocument->domWindow())
+    if (LocalDOMWindow* initiatorWindow = initiatorDocument->domWindow())
         initiatorWindow->performance().addResourceTiming(*info, initiatorDocument);
 }
 

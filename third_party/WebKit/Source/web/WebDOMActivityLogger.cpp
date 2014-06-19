@@ -34,7 +34,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMActivityLogger.h"
 #include "core/dom/Document.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 

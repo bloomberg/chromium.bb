@@ -130,8 +130,8 @@ void V8WindowShell::clearForNavigation()
     m_document.clear();
 
     // Clear the document wrapper cache before turning on access checks on
-    // the old DOMWindow wrapper. This way, access to the document wrapper
-    // will be protected by the security checks on the DOMWindow wrapper.
+    // the old LocalDOMWindow wrapper. This way, access to the document wrapper
+    // will be protected by the security checks on the LocalDOMWindow wrapper.
     clearDocumentProperty();
 
     v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(m_global.newLocal(m_isolate), m_isolate);
@@ -142,16 +142,16 @@ void V8WindowShell::clearForNavigation()
 
 // Create a new environment and setup the global object.
 //
-// The global object corresponds to a DOMWindow instance. However, to
-// allow properties of the JS DOMWindow instance to be shadowed, we
-// use a shadow object as the global object and use the JS DOMWindow
-// instance as the prototype for that shadow object. The JS DOMWindow
+// The global object corresponds to a LocalDOMWindow instance. However, to
+// allow properties of the JS LocalDOMWindow instance to be shadowed, we
+// use a shadow object as the global object and use the JS LocalDOMWindow
+// instance as the prototype for that shadow object. The JS LocalDOMWindow
 // instance is undetectable from JavaScript code because the __proto__
 // accessors skip that object.
 //
-// The shadow object and the DOMWindow instance are seen as one object
+// The shadow object and the LocalDOMWindow instance are seen as one object
 // from JavaScript. The JavaScript object that corresponds to a
-// DOMWindow instance is the shadow object. When mapping a DOMWindow
+// LocalDOMWindow instance is the shadow object. When mapping a LocalDOMWindow
 // instance to a V8 object, we return the shadow object.
 //
 // To implement split-window, see
@@ -290,7 +290,7 @@ static v8::Handle<v8::Object> toInnerGlobalObject(v8::Handle<v8::Context> contex
 
 bool V8WindowShell::installDOMWindow()
 {
-    DOMWindow* window = m_frame->domWindow();
+    LocalDOMWindow* window = m_frame->domWindow();
     v8::Local<v8::Object> windowWrapper = V8ObjectConstructor::newInstance(m_isolate, m_scriptState->perContextData()->constructorForType(&V8Window::wrapperTypeInfo));
     if (windowWrapper.IsEmpty())
         return false;
@@ -304,25 +304,25 @@ bool V8WindowShell::installDOMWindow()
     //
     // outerGlobalObject (Empty object, remains after navigation)
     //   -- has prototype --> innerGlobalObject (Holds global variables, changes during navigation)
-    //   -- has prototype --> DOMWindow instance
+    //   -- has prototype --> LocalDOMWindow instance
     //   -- has prototype --> Window.prototype
     //   -- has prototype --> Object.prototype
     //
     // Note: Much of this prototype structure is hidden from web content. The
-    //       outer, inner, and DOMWindow instance all appear to be the same
+    //       outer, inner, and LocalDOMWindow instance all appear to be the same
     //       JavaScript object.
     //
-    // Note: With Oilpan, the DOMWindow object is garbage collected.
-    //       Persistent references to this inner global object view of the DOMWindow
+    // Note: With Oilpan, the LocalDOMWindow object is garbage collected.
+    //       Persistent references to this inner global object view of the LocalDOMWindow
     //       aren't kept, as that would prevent the global object from ever being released.
-    //       It is safe not to do so, as the wrapper for the DOMWindow being installed here
+    //       It is safe not to do so, as the wrapper for the LocalDOMWindow being installed here
     //       already keeps a persistent reference, and it along with the inner global object
-    //       views of the DOMWindow will die together once that wrapper clears the persistent
+    //       views of the LocalDOMWindow will die together once that wrapper clears the persistent
     //       reference.
     v8::Handle<v8::Object> innerGlobalObject = toInnerGlobalObject(m_scriptState->context());
     V8DOMWrapper::setNativeInfoForHiddenWrapper(innerGlobalObject, &V8Window::wrapperTypeInfo, window);
     innerGlobalObject->SetPrototype(windowWrapper);
-    V8DOMWrapper::associateObjectWithWrapper<V8Window>(PassRefPtrWillBeRawPtr<DOMWindow>(window), &V8Window::wrapperTypeInfo, windowWrapper, m_isolate, WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8Window>(PassRefPtrWillBeRawPtr<LocalDOMWindow>(window), &V8Window::wrapperTypeInfo, windowWrapper, m_isolate, WrapperConfiguration::Dependent);
     return true;
 }
 
@@ -346,7 +346,7 @@ void V8WindowShell::updateDocumentProperty()
     checkDocumentWrapper(m_document.newLocal(m_isolate), m_frame->document());
 
     // If instantiation of the document wrapper fails, clear the cache
-    // and let the DOMWindow accessor handle access to the document.
+    // and let the LocalDOMWindow accessor handle access to the document.
     if (documentWrapper.IsEmpty()) {
         clearDocumentProperty();
         return;
@@ -355,7 +355,7 @@ void V8WindowShell::updateDocumentProperty()
     context->Global()->ForceSet(v8AtomicString(m_isolate, "document"), documentWrapper, static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
 
     // We also stash a reference to the document on the inner global object so that
-    // DOMWindow objects we obtain from JavaScript references are guaranteed to have
+    // LocalDOMWindow objects we obtain from JavaScript references are guaranteed to have
     // live Document objects.
     V8HiddenValue::setHiddenValue(m_isolate, toInnerGlobalObject(context), V8HiddenValue::document(m_isolate), documentWrapper);
 }

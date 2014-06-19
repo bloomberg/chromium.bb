@@ -42,7 +42,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/ConsoleTypes.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -94,7 +94,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // If called during context initialization, there will be no entered window.
-    DOMWindow* enteredWindow = enteredDOMWindow(isolate);
+    LocalDOMWindow* enteredWindow = enteredDOMWindow(isolate);
     if (!enteredWindow || !enteredWindow->isCurrentlyDisplayedInFrame())
         return;
 
@@ -139,7 +139,7 @@ static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8
     LocalFrame* target = findFrame(host, data, isolate);
     if (!target)
         return;
-    DOMWindow* targetWindow = target->domWindow();
+    LocalDOMWindow* targetWindow = target->domWindow();
 
     // FIXME: We should modify V8 to pass in more contextual information (context, property, and object).
     ExceptionState exceptionState(ExceptionState::UnknownContext, 0, 0, isolate->GetCurrentContext()->Global(), isolate);

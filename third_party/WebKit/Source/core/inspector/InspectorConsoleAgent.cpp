@@ -248,7 +248,7 @@ void InspectorConsoleAgent::consoleCount(ScriptState* scriptState, PassRefPtrWil
     addMessageToConsole(ConsoleAPIMessageSource, LogMessageType, DebugMessageLevel, message, callStack.get());
 }
 
-void InspectorConsoleAgent::frameWindowDiscarded(DOMWindow* window)
+void InspectorConsoleAgent::frameWindowDiscarded(LocalDOMWindow* window)
 {
     size_t messageCount = m_consoleMessages.size();
     for (size_t i = 0; i < messageCount; ++i)

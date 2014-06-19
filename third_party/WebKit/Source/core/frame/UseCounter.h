@@ -36,7 +36,7 @@
 namespace WebCore {
 
 class CSSStyleSheet;
-class DOMWindow;
+class LocalDOMWindow;
 class Document;
 class ExecutionContext;
 class StyleSheetContents;
@@ -494,7 +494,7 @@ public:
     //
     // The ExecutionContext* overload doesn't work for shared workers and
     // service workers.
-    static void countDeprecation(const DOMWindow*, Feature);
+    static void countDeprecation(const LocalDOMWindow*, Feature);
     static void countDeprecation(ExecutionContext*, Feature);
     static void countDeprecation(const Document&, Feature);
     String deprecationMessage(Feature);

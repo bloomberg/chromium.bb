@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class DOMWindow;
+class LocalDOMWindow;
 class EventTarget;
 class Event;
 class Node;
@@ -43,16 +43,16 @@ class WindowEventContext {
 public:
     WindowEventContext(Event*, PassRefPtrWillBeRawPtr<Node>, const NodeEventContext*);
 
-    DOMWindow* window() const;
+    LocalDOMWindow* window() const;
     EventTarget* target() const;
     bool handleLocalEvents(Event* event);
 
 private:
-    RefPtrWillBeMember<DOMWindow> m_window;
+    RefPtrWillBeMember<LocalDOMWindow> m_window;
     RefPtrWillBeMember<EventTarget> m_target;
 };
 
-inline DOMWindow* WindowEventContext::window() const
+inline LocalDOMWindow* WindowEventContext::window() const
 {
     return m_window.get();
 }

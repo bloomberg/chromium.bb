@@ -12,7 +12,7 @@
 
 namespace WebCore {
 
-class DOMWindow;
+class LocalDOMWindow;
 class DOMWrapperWorld;
 class ExecutionContext;
 class LocalFrame;
@@ -68,7 +68,7 @@ public:
 
     v8::Isolate* isolate() const { return m_isolate; }
     DOMWrapperWorld& world() const { return *m_world; }
-    DOMWindow* domWindow() const;
+    LocalDOMWindow* domWindow() const;
     virtual ExecutionContext* executionContext() const;
     virtual void setExecutionContext(ExecutionContext*);
 

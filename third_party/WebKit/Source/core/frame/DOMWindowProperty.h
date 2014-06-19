@@ -28,7 +28,7 @@
 
 namespace WebCore {
 
-class DOMWindow;
+class LocalDOMWindow;
 class LocalFrame;
 
 class DOMWindowProperty {
@@ -44,7 +44,7 @@ protected:
     virtual ~DOMWindowProperty();
 
     LocalFrame* m_frame;
-    DOMWindow* m_associatedDOMWindow;
+    LocalDOMWindow* m_associatedDOMWindow;
 };
 
 }

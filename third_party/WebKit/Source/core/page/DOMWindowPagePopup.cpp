@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/page/DOMWindowPagePopup.h"
 
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/page/PagePopupController.h"
 
 namespace WebCore {
@@ -49,20 +49,20 @@ const char* DOMWindowPagePopup::supplementName()
     return "DOMWindowPagePopup";
 }
 
-PagePopupController* DOMWindowPagePopup::pagePopupController(DOMWindow& window)
+PagePopupController* DOMWindowPagePopup::pagePopupController(LocalDOMWindow& window)
 {
     DOMWindowPagePopup* supplement = static_cast<DOMWindowPagePopup*>(from(&window, supplementName()));
     ASSERT(supplement);
     return supplement->m_controller.get();
 }
 
-void DOMWindowPagePopup::install(DOMWindow& window, PagePopupClient* popupClient)
+void DOMWindowPagePopup::install(LocalDOMWindow& window, PagePopupClient* popupClient)
 {
     ASSERT(popupClient);
     provideTo(window, supplementName(), adoptPtrWillBeNoop(new DOMWindowPagePopup(popupClient)));
 }
 
-void DOMWindowPagePopup::uninstall(DOMWindow& window)
+void DOMWindowPagePopup::uninstall(LocalDOMWindow& window)
 {
     pagePopupController(window)->clearPagePopupClient();
     window.removeSupplement(supplementName());
@@ -71,7 +71,7 @@ void DOMWindowPagePopup::uninstall(DOMWindow& window)
 void DOMWindowPagePopup::trace(Visitor* visitor)
 {
     visitor->trace(m_controller);
-    WillBeHeapSupplement<DOMWindow>::trace(visitor);
+    WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
 }
 
 }

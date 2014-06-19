@@ -236,7 +236,7 @@ void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, Injecte
     frontend->flush();
 }
 
-void ConsoleMessage::windowCleared(DOMWindow* window)
+void ConsoleMessage::windowCleared(LocalDOMWindow* window)
 {
     if (m_scriptState.get() && m_scriptState.get()->domWindow() == window)
         m_scriptState.clear();

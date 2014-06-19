@@ -31,7 +31,7 @@
 #include "config.h"
 #include "web/InspectorClientImpl.h"
 
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorInstrumentation.h"

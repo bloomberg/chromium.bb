@@ -6,7 +6,7 @@
 #include "core/frame/DeviceSingleWindowEventController.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/page/Page.h"
 
 namespace WebCore {
@@ -44,7 +44,7 @@ void DeviceSingleWindowEventController::dispatchDeviceEvent(PassRefPtrWillBeRawP
     }
 }
 
-void DeviceSingleWindowEventController::didAddEventListener(DOMWindow* window, const AtomicString& eventType)
+void DeviceSingleWindowEventController::didAddEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
     if (eventType != eventTypeName())
         return;
@@ -55,7 +55,7 @@ void DeviceSingleWindowEventController::didAddEventListener(DOMWindow* window, c
     m_hasEventListener = true;
 }
 
-void DeviceSingleWindowEventController::didRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
+void DeviceSingleWindowEventController::didRemoveEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
     if (eventType != eventTypeName() || window->hasEventListeners(eventTypeName()))
         return;
@@ -64,7 +64,7 @@ void DeviceSingleWindowEventController::didRemoveEventListener(DOMWindow* window
     m_hasEventListener = false;
 }
 
-void DeviceSingleWindowEventController::didRemoveAllEventListeners(DOMWindow*)
+void DeviceSingleWindowEventController::didRemoveAllEventListeners(LocalDOMWindow*)
 {
     stopUpdating();
     m_hasEventListener = false;

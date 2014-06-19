@@ -78,9 +78,9 @@ private:
     virtual void didUpdateData() OVERRIDE;
 
     // DOMWindowLifecycleObserver
-    virtual void didAddEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
-    virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
-    virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE;
+    virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) OVERRIDE;
+    virtual void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) OVERRIDE;
+    virtual void didRemoveAllEventListeners(LocalDOMWindow*) OVERRIDE;
 
     PersistentWillBeMember<GamepadList> m_gamepads;
     PersistentWillBeMember<WebKitGamepadList> m_webkitGamepads;

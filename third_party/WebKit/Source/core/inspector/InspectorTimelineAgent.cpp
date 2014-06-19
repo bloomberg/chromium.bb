@@ -32,7 +32,7 @@
 #include "core/inspector/InspectorTimelineAgent.h"
 
 #include "core/events/Event.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -226,7 +226,7 @@ static LocalFrame* frameForExecutionContext(ExecutionContext* context)
     return frame;
 }
 
-static bool eventHasListeners(const AtomicString& eventType, DOMWindow* window, Node* node, const EventPath& eventPath)
+static bool eventHasListeners(const AtomicString& eventType, LocalDOMWindow* window, Node* node, const EventPath& eventPath)
 {
     if (window && window->hasEventListeners(eventType))
         return true;
@@ -446,7 +446,7 @@ void InspectorTimelineAgent::didCallFunction()
     didCompleteCurrentRecord(TimelineRecordType::FunctionCall);
 }
 
-bool InspectorTimelineAgent::willDispatchEvent(Document* document, const Event& event, DOMWindow* window, Node* node, const EventPath& eventPath)
+bool InspectorTimelineAgent::willDispatchEvent(Document* document, const Event& event, LocalDOMWindow* window, Node* node, const EventPath& eventPath)
 {
     if (!eventHasListeners(event.type(), window, node, eventPath))
         return false;
@@ -455,7 +455,7 @@ bool InspectorTimelineAgent::willDispatchEvent(Document* document, const Event& 
     return true;
 }
 
-bool InspectorTimelineAgent::willDispatchEventOnWindow(const Event& event, DOMWindow* window)
+bool InspectorTimelineAgent::willDispatchEventOnWindow(const Event& event, LocalDOMWindow* window)
 {
     if (!window->hasEventListeners(event.type()))
         return false;

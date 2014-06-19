@@ -53,7 +53,7 @@
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -364,7 +364,7 @@ static NPObject* createScriptObject(LocalFrame* frame, v8::Isolate* isolate)
         return createNoScriptObject();
 
     ScriptState::Scope scope(scriptState);
-    DOMWindow* window = frame->domWindow();
+    LocalDOMWindow* window = frame->domWindow();
     v8::Handle<v8::Value> global = toV8(window, scriptState->context()->Global(), scriptState->isolate());
     ASSERT(global->IsObject());
     return npCreateV8ScriptObject(0, v8::Handle<v8::Object>::Cast(global), window, isolate);
@@ -400,7 +400,7 @@ NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement
         return createNoScriptObject();
 
     ScriptState::Scope scope(scriptState);
-    DOMWindow* window = m_frame->domWindow();
+    LocalDOMWindow* window = m_frame->domWindow();
     v8::Handle<v8::Value> v8plugin = toV8(plugin, scriptState->context()->Global(), scriptState->isolate());
     if (!v8plugin->IsObject())
         return createNoScriptObject();

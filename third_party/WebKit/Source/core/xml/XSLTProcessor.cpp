@@ -27,7 +27,7 @@
 #include "core/dom/DocumentEncodingData.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/editing/markup.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -90,7 +90,7 @@ PassRefPtrWillBeRawPtr<Document> XSLTProcessor::createDocumentFromSource(const S
             result->contentSecurityPolicy()->copyStateFrom(oldDocument->contentSecurityPolicy());
         }
     } else {
-        result = DOMWindow::createDocument(sourceMIMEType, init, forceXHTML);
+        result = LocalDOMWindow::createDocument(sourceMIMEType, init, forceXHTML);
     }
 
     DocumentEncodingData data;

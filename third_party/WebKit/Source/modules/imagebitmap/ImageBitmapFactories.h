@@ -54,7 +54,7 @@ class ImageBitmap;
 class ImageData;
 class ExecutionContext;
 
-class ImageBitmapFactories FINAL : public NoBaseWillBeGarbageCollectedFinalized<ImageBitmapFactories>, public WillBeHeapSupplement<DOMWindow>, public WillBeHeapSupplement<WorkerGlobalScope> {
+class ImageBitmapFactories FINAL : public NoBaseWillBeGarbageCollectedFinalized<ImageBitmapFactories>, public WillBeHeapSupplement<LocalDOMWindow>, public WillBeHeapSupplement<WorkerGlobalScope> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
 
 public:

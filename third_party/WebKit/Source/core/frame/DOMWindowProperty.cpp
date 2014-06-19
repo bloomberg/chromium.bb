@@ -28,7 +28,7 @@
 #include "core/frame/DOMWindowProperty.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 
 namespace WebCore {
@@ -57,12 +57,12 @@ DOMWindowProperty::~DOMWindowProperty()
 
 void DOMWindowProperty::willDestroyGlobalObjectInFrame()
 {
-    // If the property is getting this callback it must have been created with a LocalFrame/DOMWindow and it should still have them.
+    // If the property is getting this callback it must have been created with a LocalFrame/LocalDOMWindow and it should still have them.
     ASSERT(m_frame);
     ASSERT(m_associatedDOMWindow);
 
-    // DOMWindowProperty lifetime isn't tied directly to the DOMWindow itself so it is important that it unregister
-    // itself from any DOMWindow it is associated with if that DOMWindow is going away.
+    // DOMWindowProperty lifetime isn't tied directly to the LocalDOMWindow itself so it is important that it unregister
+    // itself from any LocalDOMWindow it is associated with if that LocalDOMWindow is going away.
     if (m_associatedDOMWindow)
         m_associatedDOMWindow->unregisterProperty(this);
     m_associatedDOMWindow = 0;
@@ -71,7 +71,7 @@ void DOMWindowProperty::willDestroyGlobalObjectInFrame()
 
 void DOMWindowProperty::willDetachGlobalObjectFromFrame()
 {
-    // If the property is getting this callback it must have been created with a LocalFrame/DOMWindow and it should still have them.
+    // If the property is getting this callback it must have been created with a LocalFrame/LocalDOMWindow and it should still have them.
     ASSERT(m_frame);
     ASSERT(m_associatedDOMWindow);
 }

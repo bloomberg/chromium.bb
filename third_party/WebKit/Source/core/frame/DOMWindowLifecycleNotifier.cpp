@@ -29,8 +29,8 @@
 
 namespace WebCore {
 
-DOMWindowLifecycleNotifier::DOMWindowLifecycleNotifier(DOMWindow* context)
-    : LifecycleNotifier<DOMWindow>(context)
+DOMWindowLifecycleNotifier::DOMWindowLifecycleNotifier(LocalDOMWindow* context)
+    : LifecycleNotifier<LocalDOMWindow>(context)
 {
 }
 
@@ -41,7 +41,7 @@ void DOMWindowLifecycleNotifier::addObserver(DOMWindowLifecycleNotifier::Observe
         m_windowObservers.add(static_cast<DOMWindowLifecycleObserver*>(observer));
     }
 
-    LifecycleNotifier<DOMWindow>::addObserver(observer);
+    LifecycleNotifier<LocalDOMWindow>::addObserver(observer);
 }
 
 void DOMWindowLifecycleNotifier::removeObserver(DOMWindowLifecycleNotifier::Observer* observer)
@@ -51,29 +51,29 @@ void DOMWindowLifecycleNotifier::removeObserver(DOMWindowLifecycleNotifier::Obse
         m_windowObservers.remove(static_cast<DOMWindowLifecycleObserver*>(observer));
     }
 
-    LifecycleNotifier<DOMWindow>::removeObserver(observer);
+    LifecycleNotifier<LocalDOMWindow>::removeObserver(observer);
 }
 
-PassOwnPtr<DOMWindowLifecycleNotifier> DOMWindowLifecycleNotifier::create(DOMWindow* context)
+PassOwnPtr<DOMWindowLifecycleNotifier> DOMWindowLifecycleNotifier::create(LocalDOMWindow* context)
 {
     return adoptPtr(new DOMWindowLifecycleNotifier(context));
 }
 
-void DOMWindowLifecycleNotifier::notifyAddEventListener(DOMWindow* window, const AtomicString& eventType)
+void DOMWindowLifecycleNotifier::notifyAddEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
     for (DOMWindowObserverSet::iterator it = m_windowObservers.begin(); it != m_windowObservers.end(); ++it)
         (*it)->didAddEventListener(window, eventType);
 }
 
-void DOMWindowLifecycleNotifier::notifyRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
+void DOMWindowLifecycleNotifier::notifyRemoveEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
     for (DOMWindowObserverSet::iterator it = m_windowObservers.begin(); it != m_windowObservers.end(); ++it)
         (*it)->didRemoveEventListener(window, eventType);
 }
 
-void DOMWindowLifecycleNotifier::notifyRemoveAllEventListeners(DOMWindow* window)
+void DOMWindowLifecycleNotifier::notifyRemoveAllEventListeners(LocalDOMWindow* window)
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
     for (DOMWindowObserverSet::iterator it = m_windowObservers.begin(); it != m_windowObservers.end(); ++it)

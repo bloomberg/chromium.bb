@@ -33,20 +33,20 @@
 
 namespace WebCore {
 
-class DOMWindow;
+class LocalDOMWindow;
 
-class DOMWindowSpeechSynthesis FINAL : public NoBaseWillBeGarbageCollectedFinalized<DOMWindowSpeechSynthesis>, public WillBeHeapSupplement<DOMWindow>, public DOMWindowProperty {
+class DOMWindowSpeechSynthesis FINAL : public NoBaseWillBeGarbageCollectedFinalized<DOMWindowSpeechSynthesis>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowSpeechSynthesis);
 public:
     virtual ~DOMWindowSpeechSynthesis();
 
-    static SpeechSynthesis* speechSynthesis(DOMWindow&);
-    static DOMWindowSpeechSynthesis& from(DOMWindow&);
+    static SpeechSynthesis* speechSynthesis(LocalDOMWindow&);
+    static DOMWindowSpeechSynthesis& from(LocalDOMWindow&);
 
     void trace(Visitor*);
 
 private:
-    explicit DOMWindowSpeechSynthesis(DOMWindow&);
+    explicit DOMWindowSpeechSynthesis(LocalDOMWindow&);
 
     SpeechSynthesis* speechSynthesis();
     static const char* supplementName();

@@ -142,7 +142,7 @@ PassRefPtrWillBeRawPtr<MessageEvent> MessageEvent::create(const AtomicString& ty
     return adoptRefWillBeNoop(new MessageEvent(type, initializer));
 }
 
-void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& origin, const String& lastEventId, DOMWindow* source, PassOwnPtr<MessagePortArray> ports)
+void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& origin, const String& lastEventId, LocalDOMWindow* source, PassOwnPtr<MessagePortArray> ports)
 {
     if (dispatched())
         return;
@@ -156,7 +156,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bo
     m_ports = ports;
 }
 
-void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, DOMWindow* source, PassOwnPtr<MessagePortArray> ports)
+void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, LocalDOMWindow* source, PassOwnPtr<MessagePortArray> ports)
 {
     if (dispatched())
         return;

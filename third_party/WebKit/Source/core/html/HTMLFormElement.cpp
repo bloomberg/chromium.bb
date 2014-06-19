@@ -37,7 +37,7 @@
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/events/ScopedEventQueue.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -402,7 +402,7 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmissi
 
     LocalFrame* targetFrame = document().frame()->loader().findFrameForNavigation(submission->target(), submission->state()->sourceDocument());
     if (!targetFrame) {
-        if (!DOMWindow::allowPopUp(*document().frame()) && !UserGestureIndicator::processingUserGesture())
+        if (!LocalDOMWindow::allowPopUp(*document().frame()) && !UserGestureIndicator::processingUserGesture())
             return;
         targetFrame = document().frame();
     } else {

@@ -29,7 +29,7 @@
 
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/SuspendableTimer.h"
 #include "core/inspector/InspectorInstrumentation.h"
 

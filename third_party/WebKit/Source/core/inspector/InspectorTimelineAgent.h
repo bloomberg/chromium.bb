@@ -54,7 +54,7 @@ struct TimelineImageInfo;
 struct TimelineThreadState;
 struct TimelineRecordEntry;
 
-class DOMWindow;
+class LocalDOMWindow;
 class Document;
 class DocumentLoader;
 class Event;
@@ -140,8 +140,8 @@ public:
     bool willCallFunction(ExecutionContext*, int scriptId, const String& scriptName, int scriptLine);
     void didCallFunction();
 
-    bool willDispatchEvent(Document* document, const Event& event, DOMWindow* window, Node* node, const EventPath& eventPath);
-    bool willDispatchEventOnWindow(const Event& event, DOMWindow* window);
+    bool willDispatchEvent(Document* document, const Event& event, LocalDOMWindow* window, Node* node, const EventPath& eventPath);
+    bool willDispatchEventOnWindow(const Event& event, LocalDOMWindow* window);
     void didDispatchEvent();
     void didDispatchEventOnWindow();
 

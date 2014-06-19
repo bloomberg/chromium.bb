@@ -28,7 +28,7 @@
 
 #include "core/dom/Document.h"
 #include "core/fileapi/FileError.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/ErrorCallback.h"
@@ -48,7 +48,7 @@ DOMWindowFileSystem::~DOMWindowFileSystem()
 {
 }
 
-void DOMWindowFileSystem::webkitRequestFileSystem(DOMWindow& window, int type, long long size, PassOwnPtr<FileSystemCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
+void DOMWindowFileSystem::webkitRequestFileSystem(LocalDOMWindow& window, int type, long long size, PassOwnPtr<FileSystemCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
 {
     if (!window.isCurrentlyDisplayedInFrame())
         return;
@@ -71,7 +71,7 @@ void DOMWindowFileSystem::webkitRequestFileSystem(DOMWindow& window, int type, l
     LocalFileSystem::from(*document)->requestFileSystem(document, fileSystemType, size, FileSystemCallbacks::create(successCallback, errorCallback, document, fileSystemType));
 }
 
-void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(DOMWindow& window, const String& url, PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
+void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(LocalDOMWindow& window, const String& url, PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
 {
     if (!window.isCurrentlyDisplayedInFrame())
         return;

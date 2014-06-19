@@ -648,7 +648,7 @@ PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value> 
     return resolver;
 }
 
-DOMWindow* toDOMWindow(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+LocalDOMWindow* toDOMWindow(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     if (value.IsEmpty() || !value->IsObject())
         return 0;
@@ -659,16 +659,16 @@ DOMWindow* toDOMWindow(v8::Handle<v8::Value> value, v8::Isolate* isolate)
     return 0;
 }
 
-DOMWindow* toDOMWindow(v8::Handle<v8::Context> context)
+LocalDOMWindow* toDOMWindow(v8::Handle<v8::Context> context)
 {
     if (context.IsEmpty())
         return 0;
     return toDOMWindow(context->Global(), context->GetIsolate());
 }
 
-DOMWindow* enteredDOMWindow(v8::Isolate* isolate)
+LocalDOMWindow* enteredDOMWindow(v8::Isolate* isolate)
 {
-    DOMWindow* window = toDOMWindow(isolate->GetEnteredContext());
+    LocalDOMWindow* window = toDOMWindow(isolate->GetEnteredContext());
     if (!window) {
         // We don't always have an entered DOM window, for example during microtask callbacks from V8
         // (where the entered context may be the DOM-in-JS context). In that case, we fall back
@@ -679,12 +679,12 @@ DOMWindow* enteredDOMWindow(v8::Isolate* isolate)
     return window;
 }
 
-DOMWindow* currentDOMWindow(v8::Isolate* isolate)
+LocalDOMWindow* currentDOMWindow(v8::Isolate* isolate)
 {
     return toDOMWindow(isolate->GetCurrentContext());
 }
 
-DOMWindow* callingDOMWindow(v8::Isolate* isolate)
+LocalDOMWindow* callingDOMWindow(v8::Isolate* isolate)
 {
     v8::Handle<v8::Context> context = isolate->GetCallingContext();
     if (context.IsEmpty()) {
@@ -728,7 +728,7 @@ ExecutionContext* callingExecutionContext(v8::Isolate* isolate)
 
 LocalFrame* toFrameIfNotDetached(v8::Handle<v8::Context> context)
 {
-    DOMWindow* window = toDOMWindow(context);
+    LocalDOMWindow* window = toDOMWindow(context);
     if (window && window->isCurrentlyDisplayedInFrame())
         return window->frame();
     // We return 0 here because |context| is detached from the LocalFrame. If we

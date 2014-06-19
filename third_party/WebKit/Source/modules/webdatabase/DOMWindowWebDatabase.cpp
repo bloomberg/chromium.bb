@@ -31,7 +31,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseCallback.h"
 #include "modules/webdatabase/DatabaseManager.h"
@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<Database> DOMWindowWebDatabase::openDatabase(DOMWindow& window, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Database> DOMWindowWebDatabase::openDatabase(LocalDOMWindow& window, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
 {
     if (!window.isCurrentlyDisplayedInFrame())
         return nullptr;

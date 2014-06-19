@@ -79,7 +79,7 @@ namespace WebCore {
 
         virtual void disconnectOwnerElement() OVERRIDE;
 
-        virtual void setDOMWindow(PassRefPtrWillBeRawPtr<DOMWindow>) OVERRIDE;
+        virtual void setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow>) OVERRIDE;
         FrameView* view() const;
         Document* document() const;
 

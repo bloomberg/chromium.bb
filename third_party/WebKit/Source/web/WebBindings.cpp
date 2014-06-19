@@ -43,7 +43,7 @@
 #include "bindings/v8/npruntime_impl.h"
 #include "bindings/v8/npruntime_priv.h"
 #include "core/dom/Range.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "public/platform/WebArrayBuffer.h"
 #include "public/web/WebArrayBufferView.h"
@@ -324,7 +324,7 @@ static NPObject* makeIntArrayImpl(const WebVector<int>& data, v8::Isolate* isola
     for (size_t i = 0; i < data.size(); ++i)
         result->Set(i, v8::Number::New(isolate, data[i]));
 
-    DOMWindow* window = currentDOMWindow(isolate);
+    LocalDOMWindow* window = currentDOMWindow(isolate);
     return npCreateV8ScriptObject(0, result, window, isolate);
 }
 
@@ -335,7 +335,7 @@ static NPObject* makeStringArrayImpl(const WebVector<WebString>& data, v8::Isola
     for (size_t i = 0; i < data.size(); ++i)
         result->Set(i, v8String(isolate, data[i]));
 
-    DOMWindow* window = currentDOMWindow(isolate);
+    LocalDOMWindow* window = currentDOMWindow(isolate);
     return npCreateV8ScriptObject(0, result, window, isolate);
 }
 

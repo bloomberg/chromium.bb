@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class DOMWindow;
+class LocalDOMWindow;
 class ExceptionState;
 class Node;
 

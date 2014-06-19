@@ -34,7 +34,7 @@
 
 #include "core/events/MessageEvent.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/workers/SharedWorkerThread.h"
 #include "core/workers/WorkerClients.h"
 #include "wtf/CurrentTime.h"

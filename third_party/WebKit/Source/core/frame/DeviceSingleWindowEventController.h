@@ -20,9 +20,9 @@ public:
     virtual void didUpdateData() OVERRIDE;
 
     // Inherited from DOMWindowLifecycleObserver.
-    virtual void didAddEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
-    virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
-    virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE;
+    virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) OVERRIDE;
+    virtual void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) OVERRIDE;
+    virtual void didRemoveAllEventListeners(LocalDOMWindow*) OVERRIDE;
 
 protected:
     explicit DeviceSingleWindowEventController(Document&);

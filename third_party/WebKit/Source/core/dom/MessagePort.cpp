@@ -34,7 +34,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/MessageEvent.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/WebString.h"
 #include "wtf/Functional.h"

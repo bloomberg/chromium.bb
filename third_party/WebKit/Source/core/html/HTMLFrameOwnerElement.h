@@ -28,7 +28,7 @@
 
 namespace WebCore {
 
-class DOMWindow;
+class LocalDOMWindow;
 class ExceptionState;
 class Frame;
 class RenderPart;
@@ -39,7 +39,7 @@ public:
     virtual ~HTMLFrameOwnerElement();
 
     Frame* contentFrame() const { return m_contentFrame; }
-    DOMWindow* contentWindow() const;
+    LocalDOMWindow* contentWindow() const;
     Document* contentDocument() const;
 
     void setContentFrame(Frame&);

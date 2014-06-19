@@ -5,7 +5,7 @@
 #include "config.h"
 #include "modules/netinfo/NavigatorNetworkInformation.h"
 
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "modules/netinfo/NetworkInformation.h"

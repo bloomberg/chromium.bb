@@ -46,7 +46,7 @@
 
 namespace WebCore {
 
-class DOMWindow;
+class LocalDOMWindow;
 class LocalFrame;
 class HTMLDocument;
 class SecurityOrigin;

@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-class DOMWindow;
+class LocalDOMWindow;
 
 static const int npObjectInternalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 
@@ -53,7 +53,7 @@ struct V8NPObject {
 public:
     NPObject object;
     v8::Persistent<v8::Object> v8Object;
-    DOMWindow* rootObject;
+    LocalDOMWindow* rootObject;
 };
 
 struct PrivateIdentifier {
@@ -64,7 +64,7 @@ struct PrivateIdentifier {
     bool isString;
 };
 
-NPObject* npCreateV8ScriptObject(NPP, v8::Handle<v8::Object>, DOMWindow*, v8::Isolate*);
+NPObject* npCreateV8ScriptObject(NPP, v8::Handle<v8::Object>, LocalDOMWindow*, v8::Isolate*);
 
 NPObject* v8ObjectToNPObject(v8::Handle<v8::Object>);
 

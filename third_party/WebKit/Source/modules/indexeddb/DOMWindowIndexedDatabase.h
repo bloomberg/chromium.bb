@@ -33,15 +33,15 @@
 namespace WebCore {
 
 class IDBFactory;
-class DOMWindow;
+class LocalDOMWindow;
 
-class DOMWindowIndexedDatabase FINAL : public NoBaseWillBeGarbageCollectedFinalized<DOMWindowIndexedDatabase>, public WillBeHeapSupplement<DOMWindow>, public DOMWindowProperty {
+class DOMWindowIndexedDatabase FINAL : public NoBaseWillBeGarbageCollectedFinalized<DOMWindowIndexedDatabase>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowIndexedDatabase);
 public:
     virtual ~DOMWindowIndexedDatabase();
-    static DOMWindowIndexedDatabase& from(DOMWindow&);
+    static DOMWindowIndexedDatabase& from(LocalDOMWindow&);
 
-    static IDBFactory* indexedDB(DOMWindow&);
+    static IDBFactory* indexedDB(LocalDOMWindow&);
 
     virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
     virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
@@ -49,12 +49,12 @@ public:
     void trace(Visitor*);
 
 private:
-    explicit DOMWindowIndexedDatabase(DOMWindow&);
+    explicit DOMWindowIndexedDatabase(LocalDOMWindow&);
 
     IDBFactory* indexedDB();
     static const char* supplementName();
 
-    DOMWindow& m_window;
+    LocalDOMWindow& m_window;
     PersistentWillBeMember<IDBFactory> m_idbFactory;
 };
 

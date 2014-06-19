@@ -29,7 +29,7 @@
 #include "core/events/Event.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMTimer.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -568,7 +568,7 @@ void Page::acceptLanguagesChanged()
 {
     Vector< RefPtr<LocalFrame> > frames;
 
-    // Even though we don't fire an event from here, the DOMWindow's will fire
+    // Even though we don't fire an event from here, the LocalDOMWindow's will fire
     // an event so we keep the frames alive until we are done.
     for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->isLocalFrame())

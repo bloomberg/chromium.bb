@@ -105,7 +105,7 @@ static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame
         windowRect.setHeight(features.height + (windowRect.height() - viewportSize.height()));
 
     // Ensure non-NaN values, minimum size as well as being within valid screen area.
-    FloatRect newWindowRect = DOMWindow::adjustWindowRect(frame, windowRect);
+    FloatRect newWindowRect = LocalDOMWindow::adjustWindowRect(frame, windowRect);
 
     host->chrome().setWindowRect(newWindowRect);
     host->chrome().show(policy);
@@ -115,7 +115,7 @@ static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame
 }
 
 LocalFrame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures& windowFeatures,
-    DOMWindow& callingWindow, LocalFrame& firstFrame, LocalFrame& openerFrame, DOMWindow::PrepareDialogFunction function, void* functionContext)
+    LocalDOMWindow& callingWindow, LocalFrame& firstFrame, LocalFrame& openerFrame, LocalDOMWindow::PrepareDialogFunction function, void* functionContext)
 {
     LocalFrame* activeFrame = callingWindow.frame();
     ASSERT(activeFrame);
@@ -169,7 +169,7 @@ void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerF
     if (openerFrame.document() && openerFrame.document()->isSandboxed(SandboxPopups))
         return;
 
-    if (!DOMWindow::allowPopUp(openerFrame))
+    if (!LocalDOMWindow::allowPopUp(openerFrame))
         return;
 
     if (policy == NavigationPolicyCurrentTab)

@@ -67,8 +67,8 @@ public:
 
     using Document::write;
     using Document::writeln;
-    void write(DOMWindow*, const Vector<String>& text, ExceptionState&);
-    void writeln(DOMWindow*, const Vector<String>& text, ExceptionState&);
+    void write(LocalDOMWindow*, const Vector<String>& text, ExceptionState&);
+    void writeln(LocalDOMWindow*, const Vector<String>& text, ExceptionState&);
 
     static bool isCaseSensitiveAttribute(const QualifiedName&);
 

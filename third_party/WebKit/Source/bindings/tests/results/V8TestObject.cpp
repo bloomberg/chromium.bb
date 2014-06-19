@@ -53,7 +53,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/TagCollection.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFormControlsCollection.h"
@@ -1040,7 +1040,7 @@ static void windowAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID(DOMWindow*, cppValue, toDOMWindow(v8Value, info.GetIsolate()));
+    TONATIVE_VOID(LocalDOMWindow*, cppValue, toDOMWindow(v8Value, info.GetIsolate()));
     impl->setWindowAttribute(WTF::getPtr(cppValue));
 }
 

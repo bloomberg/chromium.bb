@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class DOMWindow;
+class LocalDOMWindow;
 class Event;
 class ExceptionState;
 class MessagePort;
@@ -83,7 +83,7 @@ public:
     virtual ExecutionContext* executionContext() const = 0;
 
     virtual Node* toNode();
-    virtual DOMWindow* toDOMWindow();
+    virtual LocalDOMWindow* toDOMWindow();
     virtual MessagePort* toMessagePort();
 
     // FIXME: first 2 args to addEventListener and removeEventListener should
@@ -128,7 +128,7 @@ private:
     virtual void derefEventTarget() = 0;
 #endif
 
-    DOMWindow* executingWindow();
+    LocalDOMWindow* executingWindow();
     void fireEventListeners(Event*, EventTargetData*, EventListenerVector&);
     void countLegacyEvents(const AtomicString& legacyTypeName, EventListenerVector*, EventListenerVector*);
 

@@ -27,7 +27,7 @@
 
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"

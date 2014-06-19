@@ -29,7 +29,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/events/Event.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameView.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -128,7 +128,7 @@ void ScriptedAnimationController::dispatchEvents()
         // FIXME: we should figure out how to make dispatchEvent properly virtual to avoid
         // special casting window.
         // FIXME: We should not fire events for nodes that are no longer in the tree.
-        if (DOMWindow* window = eventTarget->toDOMWindow())
+        if (LocalDOMWindow* window = eventTarget->toDOMWindow())
             window->dispatchEvent(events[i], nullptr);
         else
             eventTarget->dispatchEvent(events[i]);

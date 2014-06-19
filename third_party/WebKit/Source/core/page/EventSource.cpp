@@ -42,7 +42,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
 #include "core/events/MessageEvent.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/parser/TextResourceDecoder.h"

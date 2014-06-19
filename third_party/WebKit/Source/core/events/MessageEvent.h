@@ -33,7 +33,7 @@
 #include "core/events/EventTarget.h"
 #include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "wtf/ArrayBuffer.h"
 
 namespace WebCore {
@@ -80,8 +80,8 @@ public:
     static PassRefPtrWillBeRawPtr<MessageEvent> create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState&);
     virtual ~MessageEvent();
 
-    void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& origin, const String& lastEventId, DOMWindow* source, PassOwnPtr<MessagePortArray>);
-    void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, DOMWindow* source, PassOwnPtr<MessagePortArray>);
+    void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& origin, const String& lastEventId, LocalDOMWindow* source, PassOwnPtr<MessagePortArray>);
+    void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, LocalDOMWindow* source, PassOwnPtr<MessagePortArray>);
 
     const String& origin() const { return m_origin; }
     const String& lastEventId() const { return m_lastEventId; }

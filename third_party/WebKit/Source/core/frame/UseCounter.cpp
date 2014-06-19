@@ -31,7 +31,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
@@ -629,7 +629,7 @@ void UseCounter::countDeprecation(ExecutionContext* context, Feature feature)
         toWorkerGlobalScope(context)->countDeprecation(feature);
 }
 
-void UseCounter::countDeprecation(const DOMWindow* window, Feature feature)
+void UseCounter::countDeprecation(const LocalDOMWindow* window, Feature feature)
 {
     if (!window || !window->document())
         return;

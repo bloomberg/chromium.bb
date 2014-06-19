@@ -110,7 +110,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
 
     FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
     RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
-    DOMWindow* domWindow = document->domWindow();
+    LocalDOMWindow* domWindow = document->domWindow();
     RenderView* documentRenderView = document->renderView();
 
     {
@@ -462,7 +462,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
 
     FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
     RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
-    DOMWindow* domWindow = document->domWindow();
+    LocalDOMWindow* domWindow = document->domWindow();
     RenderView* documentRenderView = document->renderView();
 
     {

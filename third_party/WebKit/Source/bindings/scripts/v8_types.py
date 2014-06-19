@@ -292,7 +292,7 @@ INCLUDES_FOR_TYPE = {
                          'bindings/v8/V8EventListenerList.h']),
     'EventListener': set(['bindings/v8/BindingSecurity.h',
                           'bindings/v8/V8EventListenerList.h',
-                          'core/frame/DOMWindow.h']),
+                          'core/frame/LocalDOMWindow.h']),
     'HTMLCollection': set(['bindings/core/v8/V8HTMLCollection.h',
                            'core/dom/ClassCollection.h',
                            'core/dom/TagCollection.h',

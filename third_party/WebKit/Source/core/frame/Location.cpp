@@ -33,7 +33,7 @@
 #include "core/dom/DOMURLUtilsReadOnly.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/weborigin/KURL.h"
@@ -136,14 +136,14 @@ String Location::hash() const
     return DOMURLUtilsReadOnly::hash(url());
 }
 
-void Location::setHref(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& url)
+void Location::setHref(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String& url)
 {
     if (!m_frame)
         return;
     setLocation(url, callingWindow, enteredWindow);
 }
 
-void Location::setProtocol(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& protocol, ExceptionState& exceptionState)
+void Location::setProtocol(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String& protocol, ExceptionState& exceptionState)
 {
     if (!m_frame)
         return;
@@ -155,7 +155,7 @@ void Location::setProtocol(DOMWindow* callingWindow, DOMWindow* enteredWindow, c
     setLocation(url.string(), callingWindow, enteredWindow);
 }
 
-void Location::setHost(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& host)
+void Location::setHost(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String& host)
 {
     if (!m_frame)
         return;
@@ -164,7 +164,7 @@ void Location::setHost(DOMWindow* callingWindow, DOMWindow* enteredWindow, const
     setLocation(url.string(), callingWindow, enteredWindow);
 }
 
-void Location::setHostname(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& hostname)
+void Location::setHostname(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String& hostname)
 {
     if (!m_frame)
         return;
@@ -173,7 +173,7 @@ void Location::setHostname(DOMWindow* callingWindow, DOMWindow* enteredWindow, c
     setLocation(url.string(), callingWindow, enteredWindow);
 }
 
-void Location::setPort(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& portString)
+void Location::setPort(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String& portString)
 {
     if (!m_frame)
         return;
@@ -182,7 +182,7 @@ void Location::setPort(DOMWindow* callingWindow, DOMWindow* enteredWindow, const
     setLocation(url.string(), callingWindow, enteredWindow);
 }
 
-void Location::setPathname(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& pathname)
+void Location::setPathname(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String& pathname)
 {
     if (!m_frame)
         return;
@@ -191,7 +191,7 @@ void Location::setPathname(DOMWindow* callingWindow, DOMWindow* enteredWindow, c
     setLocation(url.string(), callingWindow, enteredWindow);
 }
 
-void Location::setSearch(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& search)
+void Location::setSearch(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String& search)
 {
     if (!m_frame)
         return;
@@ -200,7 +200,7 @@ void Location::setSearch(DOMWindow* callingWindow, DOMWindow* enteredWindow, con
     setLocation(url.string(), callingWindow, enteredWindow);
 }
 
-void Location::setHash(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& hash)
+void Location::setHash(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String& hash)
 {
     if (!m_frame)
         return;
@@ -218,22 +218,22 @@ void Location::setHash(DOMWindow* callingWindow, DOMWindow* enteredWindow, const
     setLocation(url.string(), callingWindow, enteredWindow);
 }
 
-void Location::assign(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& url)
+void Location::assign(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String& url)
 {
     if (!m_frame)
         return;
     setLocation(url, callingWindow, enteredWindow);
 }
 
-void Location::replace(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String& url)
+void Location::replace(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String& url)
 {
     if (!m_frame)
         return;
-    // Note: We call DOMWindow::setLocation directly here because replace() always operates on the current frame.
+    // Note: We call LocalDOMWindow::setLocation directly here because replace() always operates on the current frame.
     m_frame->domWindow()->setLocation(url, callingWindow, enteredWindow, LockHistoryAndBackForwardList);
 }
 
-void Location::reload(DOMWindow* callingWindow)
+void Location::reload(LocalDOMWindow* callingWindow)
 {
     if (!m_frame)
         return;
@@ -242,7 +242,7 @@ void Location::reload(DOMWindow* callingWindow)
     m_frame->navigationScheduler().scheduleRefresh();
 }
 
-void Location::setLocation(const String& url, DOMWindow* callingWindow, DOMWindow* enteredWindow)
+void Location::setLocation(const String& url, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow)
 {
     ASSERT(m_frame);
     LocalFrame* frame = m_frame->loader().findFrameForNavigation(nullAtom, callingWindow->document());

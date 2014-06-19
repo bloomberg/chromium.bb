@@ -80,7 +80,7 @@ class ContextFeatures;
 class CustomElementRegistrationContext;
 class DOMImplementation;
 class DOMSelection;
-class DOMWindow;
+class LocalDOMWindow;
 class Database;
 class DatabaseThread;
 class DocumentFragment;
@@ -678,9 +678,9 @@ public:
     void didSplitTextNode(Text& oldNode);
 
     void clearDOMWindow() { m_domWindow = nullptr; }
-    DOMWindow* domWindow() const { return m_domWindow; }
+    LocalDOMWindow* domWindow() const { return m_domWindow; }
 
-    // Helper functions for forwarding DOMWindow event related tasks to the DOMWindow if it exists.
+    // Helper functions for forwarding LocalDOMWindow event related tasks to the LocalDOMWindow if it exists.
     void setWindowAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>);
     EventListener* getWindowAttributeEventListener(const AtomicString& eventType);
 
@@ -868,7 +868,7 @@ public:
     bool isDNSPrefetchEnabled() const { return m_isDNSPrefetchEnabled; }
     void parseDNSPrefetchControlHeader(const String&);
 
-    // FIXME(crbug.com/305497): This should be removed once DOMWindow is an ExecutionContext.
+    // FIXME(crbug.com/305497): This should be removed once LocalDOMWindow is an ExecutionContext.
     virtual void postTask(PassOwnPtr<ExecutionContextTask>) OVERRIDE; // Executes the task on context's thread asynchronously.
 
     virtual void tasksWereSuspended() OVERRIDE FINAL;
@@ -948,7 +948,7 @@ public:
     bool isDelayingLoadEvent();
     void loadPluginsSoon();
 
-    PassRefPtrWillBeRawPtr<Touch> createTouch(DOMWindow*, EventTarget*, int identifier, double pageX, double pageY, double screenX, double screenY, double radiusX, double radiusY, float rotationAngle, float force) const;
+    PassRefPtrWillBeRawPtr<Touch> createTouch(LocalDOMWindow*, EventTarget*, int identifier, double pageX, double pageY, double screenX, double screenY, double radiusX, double radiusY, float rotationAngle, float force) const;
     PassRefPtrWillBeRawPtr<TouchList> createTouchList(WillBeHeapVector<RefPtrWillBeMember<Touch> >&) const;
 
     const DocumentTiming& timing() const { return m_documentTiming; }
@@ -967,7 +967,7 @@ public:
     // Called when a single touch event handler has been added or removed for a node.
     // The Node should always be in this Document, except for child Documents which report
     // themselves to their parent exactly once if they have any touch handlers.
-    // Handlers added/removed from the DOMWindow are reported as the Document.
+    // Handlers added/removed from the LocalDOMWindow are reported as the Document.
     void didAddTouchEventHandler(Node*);
     void didRemoveTouchEventHandler(Node* handler) { didRemoveTouchEventHandler(handler, false); }
 
@@ -1039,7 +1039,7 @@ public:
 
     void addConsoleMessageWithRequestIdentifier(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier);
 
-    virtual DOMWindow* executingWindow() OVERRIDE FINAL;
+    virtual LocalDOMWindow* executingWindow() OVERRIDE FINAL;
     LocalFrame* executingFrame();
 
     DocumentLifecycleNotifier& lifecycleNotifier();
@@ -1155,8 +1155,8 @@ private:
 
     PassRefPtrWillBeRawPtr<HTMLCollection> ensureCachedCollection(CollectionType);
 
-    // Note that dispatching a window load event may cause the DOMWindow to be detached from
-    // the LocalFrame, so callers should take a reference to the DOMWindow (which owns us) to
+    // Note that dispatching a window load event may cause the LocalDOMWindow to be detached from
+    // the LocalFrame, so callers should take a reference to the LocalDOMWindow (which owns us) to
     // prevent the Document from getting blown away from underneath them.
     void dispatchWindowLoadEvent();
 
@@ -1195,7 +1195,7 @@ private:
     PendingSheetLayout m_pendingSheetLayout;
 
     LocalFrame* m_frame;
-    RawPtrWillBeMember<DOMWindow> m_domWindow;
+    RawPtrWillBeMember<LocalDOMWindow> m_domWindow;
     // FIXME: oilpan: when we get rid of the transition types change the
     // HTMLImportsController to not be a DocumentSupplement since it is
     // redundant with oilpan.

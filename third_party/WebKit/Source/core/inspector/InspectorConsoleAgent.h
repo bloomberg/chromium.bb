@@ -42,7 +42,7 @@ namespace WebCore {
 
 class ConsoleMessage;
 class DocumentLoader;
-class DOMWindow;
+class LocalDOMWindow;
 class LocalFrame;
 class InspectorFrontend;
 class InjectedScriptManager;
@@ -91,7 +91,7 @@ public:
 
     void consoleCount(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
 
-    void frameWindowDiscarded(DOMWindow*);
+    void frameWindowDiscarded(LocalDOMWindow*);
     void didCommitLoad(LocalFrame*, DocumentLoader*);
 
     void didFinishXHRLoading(XMLHttpRequest*, ThreadableLoaderClient*, unsigned long requestIdentifier, ScriptString, const AtomicString& method, const String& url, const String& sendURL, unsigned sendLineNumber);

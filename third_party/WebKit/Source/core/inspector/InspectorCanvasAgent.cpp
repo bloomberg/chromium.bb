@@ -42,7 +42,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 
 using WebCore::TypeBuilder::Array;
@@ -209,7 +209,7 @@ ScriptValue InspectorCanvasAgent::notifyRenderingContextWasWrapped(const ScriptV
 {
     ASSERT(m_frontend);
     ScriptState* scriptState = wrappedContext.scriptState();
-    DOMWindow* domWindow = 0;
+    LocalDOMWindow* domWindow = 0;
     if (scriptState)
         domWindow = scriptState->domWindow();
     LocalFrame* frame = domWindow ? domWindow->frame() : 0;

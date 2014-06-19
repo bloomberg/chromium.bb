@@ -27,7 +27,7 @@
 #ifndef CreateWindow_h
 #define CreateWindow_h
 
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
 #include "wtf/text/WTFString.h"
@@ -38,7 +38,7 @@ struct FrameLoadRequest;
 struct WindowFeatures;
 
 LocalFrame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures&,
-    DOMWindow& callingWindow, LocalFrame& firstFrame, LocalFrame& openerFrame, DOMWindow::PrepareDialogFunction = 0, void* functionContext = 0);
+    LocalDOMWindow& callingWindow, LocalFrame& firstFrame, LocalFrame& openerFrame, LocalDOMWindow::PrepareDialogFunction = 0, void* functionContext = 0);
 
 void createWindowForRequest(const FrameLoadRequest&, LocalFrame& openerFrame, NavigationPolicy, ShouldSendReferrer);
 

@@ -317,7 +317,7 @@ bool Dictionary::get(const String& key, unsigned long long& value) const
     return true;
 }
 
-bool Dictionary::get(const String& key, RefPtrWillBeMember<DOMWindow>& value) const
+bool Dictionary::get(const String& key, RefPtrWillBeMember<LocalDOMWindow>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))
@@ -524,7 +524,7 @@ bool Dictionary::get(const String& key, RefPtrWillBeMember<EventTarget>& value) 
         return false;
 
     value = nullptr;
-    // We need to handle a DOMWindow specially, because a DOMWindow wrapper
+    // We need to handle a LocalDOMWindow specially, because a LocalDOMWindow wrapper
     // exists on a prototype chain of v8Value.
     if (v8Value->IsObject()) {
         v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(v8Value);

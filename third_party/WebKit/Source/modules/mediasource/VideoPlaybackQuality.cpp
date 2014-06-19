@@ -32,7 +32,7 @@
 #include "modules/mediasource/VideoPlaybackQuality.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/timing/Performance.h"
 
 namespace WebCore {

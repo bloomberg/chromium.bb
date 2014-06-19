@@ -27,7 +27,7 @@
 #include "modules/gamepad/NavigatorGamepad.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "core/page/Page.h"
@@ -205,7 +205,7 @@ static bool isGamepadEvent(const AtomicString& eventType)
     return eventType == EventTypeNames::gamepadconnected || eventType == EventTypeNames::gamepaddisconnected;
 }
 
-void NavigatorGamepad::didAddEventListener(DOMWindow*, const AtomicString& eventType)
+void NavigatorGamepad::didAddEventListener(LocalDOMWindow*, const AtomicString& eventType)
 {
     if (RuntimeEnabledFeatures::gamepadEnabled() && isGamepadEvent(eventType)) {
         if (page() && page()->visibilityState() == PageVisibilityStateVisible)
@@ -214,7 +214,7 @@ void NavigatorGamepad::didAddEventListener(DOMWindow*, const AtomicString& event
     }
 }
 
-void NavigatorGamepad::didRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
+void NavigatorGamepad::didRemoveEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
     if (isGamepadEvent(eventType)
         && !window->hasEventListeners(EventTypeNames::gamepadconnected)
@@ -223,7 +223,7 @@ void NavigatorGamepad::didRemoveEventListener(DOMWindow* window, const AtomicStr
     }
 }
 
-void NavigatorGamepad::didRemoveAllEventListeners(DOMWindow*)
+void NavigatorGamepad::didRemoveAllEventListeners(LocalDOMWindow*)
 {
     m_hasEventListener = false;
 }

@@ -31,13 +31,13 @@
 #include "config.h"
 #include "modules/speech/DOMWindowSpeechSynthesis.h"
 
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-DOMWindowSpeechSynthesis::DOMWindowSpeechSynthesis(DOMWindow& window)
+DOMWindowSpeechSynthesis::DOMWindowSpeechSynthesis(LocalDOMWindow& window)
     : DOMWindowProperty(window.frame())
 {
 }
@@ -52,9 +52,9 @@ const char* DOMWindowSpeechSynthesis::supplementName()
 }
 
 // static
-DOMWindowSpeechSynthesis& DOMWindowSpeechSynthesis::from(DOMWindow& window)
+DOMWindowSpeechSynthesis& DOMWindowSpeechSynthesis::from(LocalDOMWindow& window)
 {
-    DOMWindowSpeechSynthesis* supplement = static_cast<DOMWindowSpeechSynthesis*>(WillBeHeapSupplement<DOMWindow>::from(window, supplementName()));
+    DOMWindowSpeechSynthesis* supplement = static_cast<DOMWindowSpeechSynthesis*>(WillBeHeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowSpeechSynthesis(window);
         provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
@@ -63,7 +63,7 @@ DOMWindowSpeechSynthesis& DOMWindowSpeechSynthesis::from(DOMWindow& window)
 }
 
 // static
-SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis(DOMWindow& window)
+SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis(LocalDOMWindow& window)
 {
     return DOMWindowSpeechSynthesis::from(window).speechSynthesis();
 }
@@ -78,7 +78,7 @@ SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis()
 void DOMWindowSpeechSynthesis::trace(Visitor* visitor)
 {
     visitor->trace(m_speechSynthesis);
-    WillBeHeapSupplement<DOMWindow>::trace(visitor);
+    WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
 }
 
 } // namespace WebCore

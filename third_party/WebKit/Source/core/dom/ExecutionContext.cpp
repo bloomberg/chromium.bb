@@ -275,7 +275,7 @@ void ExecutionContext::disableEval(const String& errorMessage)
     return m_client->disableEval(errorMessage);
 }
 
-DOMWindow* ExecutionContext::executingWindow() const
+LocalDOMWindow* ExecutionContext::executingWindow() const
 {
     RELEASE_ASSERT(m_client);
     return m_client->executingWindow();

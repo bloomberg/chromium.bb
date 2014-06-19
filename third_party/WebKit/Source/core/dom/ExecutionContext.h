@@ -51,7 +51,7 @@ class OrdinalNumber;
 namespace WebCore {
 
 class ContextLifecycleNotifier;
-class DOMWindow;
+class LocalDOMWindow;
 class EventListener;
 class EventQueue;
 class EventTarget;
@@ -77,7 +77,7 @@ public:
     const KURL& url() const;
     KURL completeURL(const String& url) const;
     void disableEval(const String& errorMessage);
-    DOMWindow* executingWindow() const;
+    LocalDOMWindow* executingWindow() const;
     String userAgent(const KURL&) const;
     void postTask(PassOwnPtr<ExecutionContextTask>);
     void postTask(const Closure&);

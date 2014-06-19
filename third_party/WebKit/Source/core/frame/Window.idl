@@ -30,7 +30,7 @@
 [
     CheckSecurity=Frame,
     Custom=ToV8,
-    ImplementedAs=DOMWindow,
+    ImplementedAs=LocalDOMWindow,
     PrimaryGlobal,
     WillBeGarbageCollected,
 ] interface Window : EventTarget {

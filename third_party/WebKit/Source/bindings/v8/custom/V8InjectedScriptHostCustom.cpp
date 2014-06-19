@@ -55,7 +55,7 @@
 #include "bindings/v8/custom/V8Uint8ArrayCustom.h"
 #include "bindings/v8/custom/V8Uint8ClampedArrayCustom.h"
 #include "core/events/EventTarget.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorDOMAgent.h"
@@ -280,7 +280,7 @@ void V8InjectedScriptHost::getEventListenersMethodCustom(const v8::FunctionCallb
     v8::Local<v8::Value> value = info[0];
     EventTarget* target = V8EventTarget::toNativeWithTypeCheck(info.GetIsolate(), value);
 
-    // We need to handle a DOMWindow specially, because a DOMWindow wrapper exists on a prototype chain.
+    // We need to handle a LocalDOMWindow specially, because a LocalDOMWindow wrapper exists on a prototype chain.
     if (!target)
         target = toDOMWindow(value, info.GetIsolate());
 

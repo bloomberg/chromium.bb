@@ -603,7 +603,7 @@ static Document* assertDocument(ErrorString* errorString, LocalFrame* frame)
 
 static IDBFactory* assertIDBFactory(ErrorString* errorString, Document* document)
 {
-    DOMWindow* domWindow = document->domWindow();
+    LocalDOMWindow* domWindow = document->domWindow();
     if (!domWindow) {
         *errorString = "No IndexedDB factory for given frame found";
         return 0;

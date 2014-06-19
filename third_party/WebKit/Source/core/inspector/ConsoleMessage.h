@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-class DOMWindow;
+class LocalDOMWindow;
 class InjectedScriptManager;
 class InspectorFrontend;
 class ScriptArguments;
@@ -61,7 +61,7 @@ public:
 
     MessageType type() const { return m_type; }
 
-    void windowCleared(DOMWindow*);
+    void windowCleared(LocalDOMWindow*);
 
     unsigned argumentCount();
 

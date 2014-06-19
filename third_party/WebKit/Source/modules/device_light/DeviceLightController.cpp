@@ -6,7 +6,7 @@
 #include "modules/device_light/DeviceLightController.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/page/Page.h"
 #include "modules/device_light/DeviceLightDispatcher.h"
 #include "modules/device_light/DeviceLightEvent.h"

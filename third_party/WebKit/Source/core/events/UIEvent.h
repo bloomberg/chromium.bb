@@ -26,11 +26,11 @@
 
 #include "core/events/Event.h"
 #include "core/events/EventDispatchMediator.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 
 namespace WebCore {
 
-typedef DOMWindow AbstractView;
+typedef LocalDOMWindow AbstractView;
 
 struct UIEventInit : public EventInit {
     UIEventInit();

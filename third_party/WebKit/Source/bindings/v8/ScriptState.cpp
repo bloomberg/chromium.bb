@@ -74,7 +74,7 @@ void ScriptState::setExecutionContext(ExecutionContext*)
     ASSERT_NOT_REACHED();
 }
 
-DOMWindow* ScriptState::domWindow() const
+LocalDOMWindow* ScriptState::domWindow() const
 {
     v8::HandleScope scope(m_isolate);
     return toDOMWindow(context());

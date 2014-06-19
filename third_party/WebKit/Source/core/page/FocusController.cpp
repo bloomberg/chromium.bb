@@ -40,7 +40,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/htmlediting.h" // For firstPositionInOrBeforeNode
 #include "core/events/Event.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAreaElement.h"
@@ -155,7 +155,7 @@ static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool
         }
     }
 
-    if (DOMWindow* window = document->domWindow())
+    if (LocalDOMWindow* window = document->domWindow())
         window->dispatchEvent(Event::create(focused ? EventTypeNames::focus : EventTypeNames::blur));
     if (focused && document->focusedElement()) {
         RefPtrWillBeRawPtr<Element> focusedElement(document->focusedElement());

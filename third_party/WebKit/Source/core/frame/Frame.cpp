@@ -32,7 +32,7 @@
 
 #include "core/dom/DocumentType.h"
 #include "core/events/Event.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameDestructionObserver.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/Settings.h"
@@ -121,7 +121,7 @@ Settings* Frame::settings() const
     return 0;
 }
 
-void Frame::setDOMWindow(PassRefPtrWillBeRawPtr<DOMWindow> domWindow)
+void Frame::setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow> domWindow)
 {
     if (m_domWindow)
         m_domWindow->reset();

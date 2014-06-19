@@ -6,7 +6,7 @@
 #include "core/frame/EventHandlerRegistry.h"
 
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Page.h"
@@ -190,7 +190,7 @@ void EventHandlerRegistry::clearWeakMembers(Visitor* visitor)
         const EventTargetSet* targets = &m_targets[handlerClass];
         for (EventTargetSet::const_iterator it = targets->begin(); it != targets->end(); ++it) {
             Node* node = it->key->toNode();
-            DOMWindow* window = it->key->toDOMWindow();
+            LocalDOMWindow* window = it->key->toDOMWindow();
             if (node && !visitor->isAlive(node)) {
                 deadTargets.append(node);
             } else if (window && !visitor->isAlive(window)) {
@@ -240,8 +240,8 @@ void EventHandlerRegistry::checkConsistency() const
                 // See the comment for |documentDetached| if either of these assertions fails.
                 ASSERT(node->document().frameHost());
                 ASSERT(node->document().frameHost() == &m_frameHost);
-            } else if (DOMWindow* window = iter->key->toDOMWindow()) {
-                // If any of these assertions fail, DOMWindow failed to unregister its handlers
+            } else if (LocalDOMWindow* window = iter->key->toDOMWindow()) {
+                // If any of these assertions fail, LocalDOMWindow failed to unregister its handlers
                 // properly.
                 ASSERT(window->frame());
                 ASSERT(window->frame()->host());

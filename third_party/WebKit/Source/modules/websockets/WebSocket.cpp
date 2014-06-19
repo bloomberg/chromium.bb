@@ -40,7 +40,7 @@
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/ConsoleTypes.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ScriptCallStack.h"

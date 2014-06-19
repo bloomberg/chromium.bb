@@ -33,7 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/MessageEvent.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"

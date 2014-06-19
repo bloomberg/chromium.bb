@@ -432,7 +432,7 @@ void _NPN_UnregisterObject(NPObject* npObject)
             set->remove(sub_object);
             liveObjectMap().remove(sub_object);
 
-            // Script objects hold a refernce to their DOMWindow*, which is going away if
+            // Script objects hold a refernce to their LocalDOMWindow*, which is going away if
             // we're unregistering the associated owner NPObject. Clear it out.
             if (V8NPObject* v8npObject = npObjectToV8NPObject(sub_object))
                 v8npObject->rootObject = 0;

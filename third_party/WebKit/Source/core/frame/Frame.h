@@ -41,12 +41,12 @@ class WebLayer;
 namespace WebCore {
 
 class ChromeClient;
-class DOMWindow;
 class FrameClient;
 class FrameDestructionObserver;
 class FrameHost;
 class FrameOwner;
 class HTMLFrameOwnerElement;
+class LocalDOMWindow;
 class Page;
 class RenderPart;
 class Settings;
@@ -80,10 +80,10 @@ public:
     FrameOwner* owner() const;
     HTMLFrameOwnerElement* deprecatedLocalOwner() const;
 
-    // FIXME: DOMWindow and Document should both be moved to LocalFrame
+    // FIXME: LocalDOMWindow and Document should both be moved to LocalFrame
     // after RemoteFrame is complete enough to exist without them.
-    virtual void setDOMWindow(PassRefPtrWillBeRawPtr<DOMWindow>);
-    DOMWindow* domWindow() const;
+    virtual void setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow>);
+    LocalDOMWindow* domWindow() const;
 
     FrameTree& tree() const;
     ChromeClient& chromeClient() const;
@@ -110,7 +110,7 @@ protected:
     FrameHost* m_host;
     FrameOwner* m_owner;
 
-    RefPtrWillBePersistent<DOMWindow> m_domWindow;
+    RefPtrWillBePersistent<LocalDOMWindow> m_domWindow;
 
 private:
     FrameClient* m_client;
@@ -129,7 +129,7 @@ inline void Frame::clearClient()
     m_client = 0;
 }
 
-inline DOMWindow* Frame::domWindow() const
+inline LocalDOMWindow* Frame::domWindow() const
 {
     return m_domWindow.get();
 }

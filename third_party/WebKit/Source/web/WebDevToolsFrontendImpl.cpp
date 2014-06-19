@@ -41,7 +41,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/events/Event.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorController.h"

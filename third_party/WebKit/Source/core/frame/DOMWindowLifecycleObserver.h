@@ -32,21 +32,21 @@
 
 namespace WebCore {
 
-class DOMWindow;
+class LocalDOMWindow;
 
-template<> void observerContext(DOMWindow*, LifecycleObserver<DOMWindow>*);
-template<> void unobserverContext(DOMWindow*, LifecycleObserver<DOMWindow>*);
+template<> void observerContext(LocalDOMWindow*, LifecycleObserver<LocalDOMWindow>*);
+template<> void unobserverContext(LocalDOMWindow*, LifecycleObserver<LocalDOMWindow>*);
 
-class DOMWindowLifecycleObserver : public LifecycleObserver<DOMWindow> {
+class DOMWindowLifecycleObserver : public LifecycleObserver<LocalDOMWindow> {
 public:
-    explicit DOMWindowLifecycleObserver(DOMWindow*);
+    explicit DOMWindowLifecycleObserver(LocalDOMWindow*);
     virtual ~DOMWindowLifecycleObserver();
 
-    DOMWindow* window() const;
+    LocalDOMWindow* window() const;
 
-    virtual void didAddEventListener(DOMWindow*, const AtomicString&) { }
-    virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) { }
-    virtual void didRemoveAllEventListeners(DOMWindow*) { }
+    virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) { }
+    virtual void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) { }
+    virtual void didRemoveAllEventListeners(LocalDOMWindow*) { }
 };
 
 } // namespace WebCore

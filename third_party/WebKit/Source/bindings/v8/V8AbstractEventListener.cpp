@@ -119,7 +119,7 @@ void V8AbstractEventListener::invokeEventHandler(Event* event, v8::Local<v8::Val
         v8::Local<v8::Value> savedEvent = V8HiddenValue::getHiddenValue(isolate(), scriptState()->context()->Global(), V8HiddenValue::event(isolate()));
         tryCatch.Reset();
 
-        // Make the event available in the global object, so DOMWindow can expose it.
+        // Make the event available in the global object, so LocalDOMWindow can expose it.
         V8HiddenValue::setHiddenValue(isolate(), scriptState()->context()->Global(), V8HiddenValue::event(isolate()), jsEvent);
         tryCatch.Reset();
 

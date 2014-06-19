@@ -108,7 +108,7 @@
 #include "core/events/PageTransitionEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -857,9 +857,9 @@ bool Document::haveImportsLoaded() const
     return !m_importsController->shouldBlockScriptExecution(*this);
 }
 
-DOMWindow* Document::executingWindow()
+LocalDOMWindow* Document::executingWindow()
 {
-    if (DOMWindow* owningWindow = domWindow())
+    if (LocalDOMWindow* owningWindow = domWindow())
         return owningWindow;
     if (HTMLImportsController* import = this->importsController())
         return import->master()->domWindow();
@@ -868,7 +868,7 @@ DOMWindow* Document::executingWindow()
 
 LocalFrame* Document::executingFrame()
 {
-    DOMWindow* window = executingWindow();
+    LocalDOMWindow* window = executingWindow();
     if (!window)
         return 0;
     return window->frame();
@@ -1847,7 +1847,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
 
     // FIXME: We should update style on our ancestor chain before proceeding
     // however doing so currently causes several tests to crash, as LocalFrame::setDocument calls Document::attach
-    // before setting the DOMWindow on the LocalFrame, or the SecurityOrigin on the document. The attach, in turn
+    // before setting the LocalDOMWindow on the LocalFrame, or the SecurityOrigin on the document. The attach, in turn
     // resolves style (here) and then when we resolve style on the parent chain, we may end up
     // re-attaching our containing iframe, which when asked HTMLFrameElementBase::isURLAllowed
     // hits a null-dereference due to security code always assuming the document has a SecurityOrigin.
@@ -2213,7 +2213,7 @@ void Document::detach(const AttachContext& context)
     if (svgExtensions())
         accessSVGExtensions().pauseAnimations();
 
-    // FIXME: This shouldn't be needed once DOMWindow becomes ExecutionContext.
+    // FIXME: This shouldn't be needed once LocalDOMWindow becomes ExecutionContext.
     if (m_domWindow)
         m_domWindow->clearEventQueue();
 
@@ -2253,8 +2253,8 @@ void Document::detach(const AttachContext& context)
     m_lifecycle.advanceTo(DocumentLifecycle::Stopped);
 #if ENABLE(OILPAN)
     // This mirrors the clearing of the document object's touch
-    // handlers that happens when the DOMWindow is destructed in a
-    // non-Oilpan setting (DOMWindow::removeAllEventListeners()),
+    // handlers that happens when the LocalDOMWindow is destructed in a
+    // non-Oilpan setting (LocalDOMWindow::removeAllEventListeners()),
     // except that it is now done during detach instead.
     didClearTouchEventHandlers(this);
 
@@ -2273,7 +2273,7 @@ void Document::prepareForDestruction()
     if (!isActive())
         return;
 
-    if (DOMWindow* window = this->domWindow())
+    if (LocalDOMWindow* window = this->domWindow())
         window->willDetachDocumentFromFrame();
     detach();
 }
@@ -2282,7 +2282,7 @@ void Document::removeAllEventListeners()
 {
     ContainerNode::removeAllEventListeners();
 
-    if (DOMWindow* domWindow = this->domWindow())
+    if (LocalDOMWindow* domWindow = this->domWindow())
         domWindow->removeAllEventListeners();
 }
 
@@ -2545,9 +2545,9 @@ void Document::implicitClose()
     if (!doload)
         return;
 
-    // The call to dispatchWindowLoadEvent can detach the DOMWindow and cause it (and its
+    // The call to dispatchWindowLoadEvent can detach the LocalDOMWindow and cause it (and its
     // attached Document) to be destroyed.
-    RefPtrWillBeRawPtr<DOMWindow> protectedWindow(this->domWindow());
+    RefPtrWillBeRawPtr<LocalDOMWindow> protectedWindow(this->domWindow());
 
     m_loadEventProgress = LoadEventInProgress;
 
@@ -2676,7 +2676,7 @@ void Document::dispatchUnloadEvents()
             toHTMLInputElement(*currentFocusedElement).endEditing();
         if (m_loadEventProgress < PageHideInProgress) {
             m_loadEventProgress = PageHideInProgress;
-            if (DOMWindow* window = domWindow())
+            if (LocalDOMWindow* window = domWindow())
                 window->dispatchEvent(PageTransitionEvent::create(EventTypeNames::pagehide, false), this);
             if (!m_frame)
                 return;
@@ -3878,7 +3878,7 @@ void Document::didSplitTextNode(Text& oldNode)
 
 void Document::setWindowAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener)
 {
-    DOMWindow* domWindow = this->domWindow();
+    LocalDOMWindow* domWindow = this->domWindow();
     if (!domWindow)
         return;
     domWindow->setAttributeEventListener(eventType, listener);
@@ -3886,7 +3886,7 @@ void Document::setWindowAttributeEventListener(const AtomicString& eventType, Pa
 
 EventListener* Document::getWindowAttributeEventListener(const AtomicString& eventType)
 {
-    DOMWindow* domWindow = this->domWindow();
+    LocalDOMWindow* domWindow = this->domWindow();
     if (!domWindow)
         return 0;
     return domWindow->getAttributeEventListener(eventType);
@@ -5068,7 +5068,7 @@ void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, Mess
         m_frame->console().addMessage(source, level, message, String(), 0, 0, nullptr, 0, requestIdentifier);
 }
 
-// FIXME(crbug.com/305497): This should be removed after ExecutionContext-DOMWindow migration.
+// FIXME(crbug.com/305497): This should be removed after ExecutionContext-LocalDOMWindow migration.
 void Document::postTask(PassOwnPtr<ExecutionContextTask> task)
 {
     m_taskRunner->postTask(task);
@@ -5097,7 +5097,7 @@ void Document::tasksWereResumed()
 }
 
 // FIXME: suspendScheduledTasks(), resumeScheduledTasks(), tasksNeedSuspension()
-// should be moved to DOMWindow once it inherits ExecutionContext
+// should be moved to LocalDOMWindow once it inherits ExecutionContext
 void Document::suspendScheduledTasks()
 {
     ExecutionContext::suspendScheduledTasks();
@@ -5251,7 +5251,7 @@ void Document::serviceScriptedAnimations(double monotonicAnimationStartTime)
     m_scriptedAnimationController->serviceScriptedAnimations(monotonicAnimationStartTime);
 }
 
-PassRefPtrWillBeRawPtr<Touch> Document::createTouch(DOMWindow* window, EventTarget* target, int identifier, double pageX, double pageY, double screenX, double screenY, double radiusX, double radiusY, float rotationAngle, float force) const
+PassRefPtrWillBeRawPtr<Touch> Document::createTouch(LocalDOMWindow* window, EventTarget* target, int identifier, double pageX, double pageY, double screenX, double screenY, double radiusX, double radiusY, float rotationAngle, float force) const
 {
     // Match behavior from when these types were integers, and avoid surprises from someone explicitly
     // passing Infinity/NaN.

@@ -31,7 +31,7 @@
 #include "core/dom/Node.h"
 #include "core/events/Event.h"
 #include "core/events/NodeEventContext.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 
 namespace WebCore {
 

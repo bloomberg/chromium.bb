@@ -34,14 +34,14 @@
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLFrameElementBase.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 
-static bool isDocumentAccessibleFromDOMWindow(Document* targetDocument, DOMWindow* callingWindow)
+static bool isDocumentAccessibleFromDOMWindow(Document* targetDocument, LocalDOMWindow* callingWindow)
 {
     if (!targetDocument)
         return false;
@@ -57,7 +57,7 @@ static bool isDocumentAccessibleFromDOMWindow(Document* targetDocument, DOMWindo
 
 static bool canAccessDocument(v8::Isolate* isolate, Document* targetDocument, ExceptionState& exceptionState)
 {
-    DOMWindow* callingWindow = callingDOMWindow(isolate);
+    LocalDOMWindow* callingWindow = callingDOMWindow(isolate);
     if (isDocumentAccessibleFromDOMWindow(targetDocument, callingWindow))
         return true;
 
@@ -68,7 +68,7 @@ static bool canAccessDocument(v8::Isolate* isolate, Document* targetDocument, Ex
 
 static bool canAccessDocument(v8::Isolate* isolate, Document* targetDocument, SecurityReportingOption reportingOption = ReportSecurityError)
 {
-    DOMWindow* callingWindow = callingDOMWindow(isolate);
+    LocalDOMWindow* callingWindow = callingDOMWindow(isolate);
     if (isDocumentAccessibleFromDOMWindow(targetDocument, callingWindow))
         return true;
 

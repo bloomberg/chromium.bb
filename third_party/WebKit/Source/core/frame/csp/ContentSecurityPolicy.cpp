@@ -31,7 +31,7 @@
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/events/SecurityPolicyViolationEvent.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/CSPDirectiveList.h"

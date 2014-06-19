@@ -46,7 +46,7 @@ public:
     const Vector<HTMLDimension>& rowLengths() const { return m_rowLengths; }
     const Vector<HTMLDimension>& colLengths() const { return m_colLengths; }
 
-    DOMWindow* anonymousNamedGetter(const AtomicString&);
+    LocalDOMWindow* anonymousNamedGetter(const AtomicString&);
 
     DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(blur);
     DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(error);

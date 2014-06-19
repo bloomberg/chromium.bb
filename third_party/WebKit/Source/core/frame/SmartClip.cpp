@@ -34,7 +34,7 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Page.h"

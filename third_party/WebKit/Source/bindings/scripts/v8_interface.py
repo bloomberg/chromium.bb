@@ -205,7 +205,7 @@ def generate_interface(interface):
     if (constructors or custom_constructors or has_event_constructor or
         named_constructor):
         includes.add('bindings/v8/V8ObjectConstructor.h')
-        includes.add('core/frame/DOMWindow.h')
+        includes.add('core/frame/LocalDOMWindow.h')
 
     template_contents.update({
         'any_type_attributes': any_type_attributes,

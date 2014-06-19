@@ -32,14 +32,14 @@
 #include "modules/quota/DOMWindowQuota.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/quota/DeprecatedStorageInfo.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-DOMWindowQuota::DOMWindowQuota(DOMWindow& window)
+DOMWindowQuota::DOMWindowQuota(LocalDOMWindow& window)
     : DOMWindowProperty(window.frame())
 {
 }
@@ -54,9 +54,9 @@ const char* DOMWindowQuota::supplementName()
 }
 
 // static
-DOMWindowQuota& DOMWindowQuota::from(DOMWindow& window)
+DOMWindowQuota& DOMWindowQuota::from(LocalDOMWindow& window)
 {
-    DOMWindowQuota* supplement = static_cast<DOMWindowQuota*>(WillBeHeapSupplement<DOMWindow>::from(window, supplementName()));
+    DOMWindowQuota* supplement = static_cast<DOMWindowQuota*>(WillBeHeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowQuota(window);
         provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
@@ -65,7 +65,7 @@ DOMWindowQuota& DOMWindowQuota::from(DOMWindow& window)
 }
 
 // static
-DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo(DOMWindow& window)
+DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo(LocalDOMWindow& window)
 {
     return DOMWindowQuota::from(window).webkitStorageInfo();
 }
@@ -80,7 +80,7 @@ DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo() const
 void DOMWindowQuota::trace(Visitor* visitor)
 {
     visitor->trace(m_storageInfo);
-    WillBeHeapSupplement<DOMWindow>::trace(visitor);
+    WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
 }
 
 } // namespace WebCore

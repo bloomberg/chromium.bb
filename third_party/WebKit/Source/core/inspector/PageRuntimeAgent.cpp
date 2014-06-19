@@ -149,7 +149,7 @@ void PageRuntimeAgent::reportExecutionContextCreation()
     }
 }
 
-void PageRuntimeAgent::frameWindowDiscarded(DOMWindow* window)
+void PageRuntimeAgent::frameWindowDiscarded(LocalDOMWindow* window)
 {
     Vector<RefPtr<ScriptState> > scriptStatesToRemove;
     for (ScriptStateToId::iterator it = m_scriptStateToId.begin(); it != m_scriptStateToId.end(); ++it) {

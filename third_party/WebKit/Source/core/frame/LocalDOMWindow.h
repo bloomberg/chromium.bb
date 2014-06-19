@@ -92,23 +92,23 @@ enum PageshowEventPersistence {
 
     enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
-    class DOMWindow FINAL : public RefCountedWillBeRefCountedGarbageCollected<DOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public DOMWindowBase64, public FrameDestructionObserver, public WillBeHeapSupplementable<DOMWindow>, public LifecycleContext<DOMWindow> {
-        WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindow);
-        REFCOUNTED_EVENT_TARGET(DOMWindow);
+    class LocalDOMWindow FINAL : public RefCountedWillBeRefCountedGarbageCollected<LocalDOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public DOMWindowBase64, public FrameDestructionObserver, public WillBeHeapSupplementable<LocalDOMWindow>, public LifecycleContext<LocalDOMWindow> {
+        WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
+        REFCOUNTED_EVENT_TARGET(LocalDOMWindow);
     public:
         static PassRefPtrWillBeRawPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
-        static PassRefPtrWillBeRawPtr<DOMWindow> create(LocalFrame& frame)
+        static PassRefPtrWillBeRawPtr<LocalDOMWindow> create(LocalFrame& frame)
         {
-            return adoptRefWillBeRefCountedGarbageCollected(new DOMWindow(frame));
+            return adoptRefWillBeRefCountedGarbageCollected(new LocalDOMWindow(frame));
         }
-        virtual ~DOMWindow();
+        virtual ~LocalDOMWindow();
 
         PassRefPtrWillBeRawPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
 
         virtual const AtomicString& interfaceName() const OVERRIDE;
         virtual ExecutionContext* executionContext() const OVERRIDE;
 
-        virtual DOMWindow* toDOMWindow() OVERRIDE;
+        virtual LocalDOMWindow* toDOMWindow() OVERRIDE;
 
         void registerProperty(DOMWindowProperty*);
         void unregisterProperty(DOMWindowProperty*);
@@ -139,7 +139,7 @@ enum PageshowEventPersistence {
         Navigator& clientInformation() const { return navigator(); }
 
         Location& location() const;
-        void setLocation(const String& location, DOMWindow* callingWindow, DOMWindow* enteredWindow,
+        void setLocation(const String& location, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow,
             SetLocationLocking = LockHistoryBasedOnGestureState);
 
         DOMSelection* getSelection();
@@ -152,12 +152,12 @@ enum PageshowEventPersistence {
         void print();
         void stop();
 
-        PassRefPtrWillBeRawPtr<DOMWindow> open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
-            DOMWindow* callingWindow, DOMWindow* enteredWindow);
+        PassRefPtrWillBeRawPtr<LocalDOMWindow> open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
+            LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow);
 
-        typedef void (*PrepareDialogFunction)(DOMWindow*, void* context);
+        typedef void (*PrepareDialogFunction)(LocalDOMWindow*, void* context);
         void showModalDialog(const String& urlString, const String& dialogFeaturesString,
-            DOMWindow* callingWindow, DOMWindow* enteredWindow, PrepareDialogFunction, void* functionContext);
+            LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, PrepareDialogFunction, void* functionContext);
 
         void alert(const String& message = String());
         bool confirm(const String& message);
@@ -194,13 +194,13 @@ enum PageshowEventPersistence {
 
         // Self-referential attributes
 
-        DOMWindow* self() const;
-        DOMWindow* window() const { return self(); }
-        DOMWindow* frames() const { return self(); }
+        LocalDOMWindow* self() const;
+        LocalDOMWindow* window() const { return self(); }
+        LocalDOMWindow* frames() const { return self(); }
 
-        DOMWindow* opener() const;
-        DOMWindow* parent() const;
-        DOMWindow* top() const;
+        LocalDOMWindow* opener() const;
+        LocalDOMWindow* parent() const;
+        LocalDOMWindow* top() const;
 
         // DOM Level 2 AbstractView Interface
 
@@ -226,10 +226,10 @@ enum PageshowEventPersistence {
         FrameConsole* frameConsole() const;
 
         void printErrorMessage(const String&);
-        String crossDomainAccessErrorMessage(DOMWindow* callingWindow);
-        String sanitizedCrossDomainAccessErrorMessage(DOMWindow* callingWindow);
+        String crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow);
+        String sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow);
 
-        void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, DOMWindow* source, ExceptionState&);
+        void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, LocalDOMWindow* source, ExceptionState&);
         void postMessageTimerFired(PassOwnPtr<PostMessageTimer>);
         void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event>, PassRefPtrWillBeRawPtr<ScriptCallStack>);
 
@@ -303,18 +303,18 @@ enum PageshowEventPersistence {
 
         Performance& performance() const;
 
-        // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,
+        // FIXME: When this LocalDOMWindow is no longer the active LocalDOMWindow (i.e.,
         // when its document is no longer the document that is displayed in its
         // frame), we would like to zero out m_frame to avoid being confused
         // by the document that is currently active in m_frame.
         bool isCurrentlyDisplayedInFrame() const;
 
         void willDetachDocumentFromFrame();
-        DOMWindow* anonymousIndexedGetter(uint32_t);
+        LocalDOMWindow* anonymousIndexedGetter(uint32_t);
 
-        bool isInsecureScriptAccess(DOMWindow& callingWindow, const String& urlString);
+        bool isInsecureScriptAccess(LocalDOMWindow& callingWindow, const String& urlString);
 
-        PassOwnPtr<LifecycleNotifier<DOMWindow> > createLifecycleNotifier();
+        PassOwnPtr<LifecycleNotifier<LocalDOMWindow> > createLifecycleNotifier();
 
         EventQueue* eventQueue() const;
         void enqueueWindowEvent(PassRefPtrWillBeRawPtr<Event>);
@@ -326,7 +326,7 @@ enum PageshowEventPersistence {
         void documentWasClosed();
         void statePopped(PassRefPtr<SerializedScriptValue>);
 
-        // FIXME: This shouldn't be public once DOMWindow becomes ExecutionContext.
+        // FIXME: This shouldn't be public once LocalDOMWindow becomes ExecutionContext.
         void clearEventQueue();
 
         void acceptLanguagesChanged();
@@ -337,7 +337,7 @@ enum PageshowEventPersistence {
         DOMWindowLifecycleNotifier& lifecycleNotifier();
 
     private:
-        explicit DOMWindow(LocalFrame&);
+        explicit LocalDOMWindow(LocalFrame&);
 
         Page* page();
 
@@ -397,12 +397,12 @@ enum PageshowEventPersistence {
         RefPtr<SerializedScriptValue> m_pendingStateObject;
     };
 
-    inline String DOMWindow::status() const
+    inline String LocalDOMWindow::status() const
     {
         return m_status;
     }
 
-    inline String DOMWindow::defaultStatus() const
+    inline String LocalDOMWindow::defaultStatus() const
     {
         return m_defaultStatus;
     }

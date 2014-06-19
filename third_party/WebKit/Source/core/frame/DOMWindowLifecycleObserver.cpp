@@ -27,22 +27,22 @@
 #include "config.h"
 #include "core/frame/DOMWindowLifecycleObserver.h"
 
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 
 namespace WebCore {
 
-template<> void observerContext(DOMWindow* context, LifecycleObserver<DOMWindow>* observer)
+template<> void observerContext(LocalDOMWindow* context, LifecycleObserver<LocalDOMWindow>* observer)
 {
     context->wasObservedBy(observer);
 }
 
-template<> void unobserverContext(DOMWindow* context, LifecycleObserver<DOMWindow>* observer)
+template<> void unobserverContext(LocalDOMWindow* context, LifecycleObserver<LocalDOMWindow>* observer)
 {
     context->wasUnobservedBy(observer);
 }
 
-DOMWindowLifecycleObserver::DOMWindowLifecycleObserver(DOMWindow* window)
-    : LifecycleObserver<DOMWindow>(window, DOMWindowLifecycleObserverType)
+DOMWindowLifecycleObserver::DOMWindowLifecycleObserver(LocalDOMWindow* window)
+    : LifecycleObserver<LocalDOMWindow>(window, DOMWindowLifecycleObserverType)
 {
 }
 
@@ -50,9 +50,9 @@ DOMWindowLifecycleObserver::~DOMWindowLifecycleObserver()
 {
 }
 
-DOMWindow* DOMWindowLifecycleObserver::window() const
+LocalDOMWindow* DOMWindowLifecycleObserver::window() const
 {
-    return static_cast<DOMWindow*>(lifecycleContext());
+    return static_cast<LocalDOMWindow*>(lifecycleContext());
 }
 
 } // namespace WebCore

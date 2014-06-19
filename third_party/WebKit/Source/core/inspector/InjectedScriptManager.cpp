@@ -113,7 +113,7 @@ void InjectedScriptManager::discardInjectedScripts()
     m_scriptStateToId.clear();
 }
 
-void InjectedScriptManager::discardInjectedScriptsFor(DOMWindow* window)
+void InjectedScriptManager::discardInjectedScriptsFor(LocalDOMWindow* window)
 {
     if (m_scriptStateToId.isEmpty())
         return;

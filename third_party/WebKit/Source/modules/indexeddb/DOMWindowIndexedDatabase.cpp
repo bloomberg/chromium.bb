@@ -27,13 +27,13 @@
 #include "modules/indexeddb/DOMWindowIndexedDatabase.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/page/Page.h"
 #include "modules/indexeddb/IDBFactory.h"
 
 namespace WebCore {
 
-DOMWindowIndexedDatabase::DOMWindowIndexedDatabase(DOMWindow& window)
+DOMWindowIndexedDatabase::DOMWindowIndexedDatabase(LocalDOMWindow& window)
     : DOMWindowProperty(window.frame())
     , m_window(window)
 {
@@ -46,7 +46,7 @@ DOMWindowIndexedDatabase::~DOMWindowIndexedDatabase()
 void DOMWindowIndexedDatabase::trace(Visitor* visitor)
 {
     visitor->trace(m_idbFactory);
-    WillBeHeapSupplement<DOMWindow>::trace(visitor);
+    WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
 }
 
 const char* DOMWindowIndexedDatabase::supplementName()
@@ -54,9 +54,9 @@ const char* DOMWindowIndexedDatabase::supplementName()
     return "DOMWindowIndexedDatabase";
 }
 
-DOMWindowIndexedDatabase& DOMWindowIndexedDatabase::from(DOMWindow& window)
+DOMWindowIndexedDatabase& DOMWindowIndexedDatabase::from(LocalDOMWindow& window)
 {
-    DOMWindowIndexedDatabase* supplement = static_cast<DOMWindowIndexedDatabase*>(WillBeHeapSupplement<DOMWindow>::from(window, supplementName()));
+    DOMWindowIndexedDatabase* supplement = static_cast<DOMWindowIndexedDatabase*>(WillBeHeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowIndexedDatabase(window);
         provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
@@ -76,7 +76,7 @@ void DOMWindowIndexedDatabase::willDetachGlobalObjectFromFrame()
     DOMWindowProperty::willDetachGlobalObjectFromFrame();
 }
 
-IDBFactory* DOMWindowIndexedDatabase::indexedDB(DOMWindow& window)
+IDBFactory* DOMWindowIndexedDatabase::indexedDB(LocalDOMWindow& window)
 {
     return from(window).indexedDB();
 }

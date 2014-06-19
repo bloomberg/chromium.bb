@@ -45,7 +45,7 @@ class ClientRect;
 class ClientRectList;
 class DOMPoint;
 class DOMStringList;
-class DOMWindow;
+class LocalDOMWindow;
 class Document;
 class DocumentMarker;
 class Element;
@@ -236,7 +236,7 @@ public:
     unsigned numberOfLiveDocuments() const;
     String dumpRefCountedInstanceCounts() const;
     Vector<String> consoleMessageArgumentCounts(Document*) const;
-    PassRefPtrWillBeRawPtr<DOMWindow> openDummyInspectorFrontend(const String& url);
+    PassRefPtrWillBeRawPtr<LocalDOMWindow> openDummyInspectorFrontend(const String& url);
     void closeDummyInspectorFrontend();
     Vector<unsigned long> setMemoryCacheCapacities(unsigned long minDeadBytes, unsigned long maxDeadBytes, unsigned long totalBytes);
     void setInspectorResourcesDataSizeLimits(int maximumResourcesContentSize, int maximumSingleResourceContentSize, ExceptionState&);

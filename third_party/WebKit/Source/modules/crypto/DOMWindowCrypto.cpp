@@ -31,12 +31,12 @@
 #include "config.h"
 #include "modules/crypto/DOMWindowCrypto.h"
 
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "modules/crypto/Crypto.h"
 
 namespace WebCore {
 
-DOMWindowCrypto::DOMWindowCrypto(DOMWindow& window)
+DOMWindowCrypto::DOMWindowCrypto(LocalDOMWindow& window)
     : DOMWindowProperty(window.frame())
 {
 }
@@ -50,9 +50,9 @@ const char* DOMWindowCrypto::supplementName()
     return "DOMWindowCrypto";
 }
 
-DOMWindowCrypto& DOMWindowCrypto::from(DOMWindow& window)
+DOMWindowCrypto& DOMWindowCrypto::from(LocalDOMWindow& window)
 {
-    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(WillBeHeapSupplement<DOMWindow>::from(window, supplementName()));
+    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(WillBeHeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowCrypto(window);
         provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
@@ -60,7 +60,7 @@ DOMWindowCrypto& DOMWindowCrypto::from(DOMWindow& window)
     return *supplement;
 }
 
-Crypto* DOMWindowCrypto::crypto(DOMWindow& window)
+Crypto* DOMWindowCrypto::crypto(LocalDOMWindow& window)
 {
     return DOMWindowCrypto::from(window).crypto();
 }
@@ -75,7 +75,7 @@ Crypto* DOMWindowCrypto::crypto() const
 void DOMWindowCrypto::trace(Visitor* visitor)
 {
     visitor->trace(m_crypto);
-    WillBeHeapSupplement<DOMWindow>::trace(visitor);
+    WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
 }
 
 } // namespace WebCore

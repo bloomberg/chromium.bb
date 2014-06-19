@@ -38,7 +38,7 @@
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "bindings/v8/npruntime_impl.h"
 #include "bindings/v8/npruntime_priv.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/UserGestureIndicator.h"
 #include "wtf/OwnPtr.h"
@@ -81,7 +81,7 @@ static ScriptState* mainWorldScriptState(v8::Isolate* isolate, NPP npp, NPObject
 {
     ASSERT(npObject->_class == &V8NPObjectClass);
     V8NPObject* object = reinterpret_cast<V8NPObject*>(npObject);
-    DOMWindow* window = object->rootObject;
+    LocalDOMWindow* window = object->rootObject;
     if (!window || !window->isCurrentlyDisplayedInFrame())
         return 0;
     v8::HandleScope handleScope(isolate);
@@ -116,7 +116,7 @@ NPObject* v8ObjectToNPObject(v8::Handle<v8::Object> object)
     return reinterpret_cast<NPObject*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
 }
 
-NPObject* npCreateV8ScriptObject(NPP npp, v8::Handle<v8::Object> object, DOMWindow* root, v8::Isolate* isolate)
+NPObject* npCreateV8ScriptObject(NPP npp, v8::Handle<v8::Object> object, LocalDOMWindow* root, v8::Isolate* isolate)
 {
     // Check to see if this object is already wrapped.
     if (object->InternalFieldCount() == npObjectInternalFieldCount) {

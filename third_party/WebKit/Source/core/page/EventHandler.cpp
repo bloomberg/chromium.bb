@@ -3555,7 +3555,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
             // differentiate between a one and two finger gesture), but we won't
             // actually dispatch any events for it. Set the target to the
             // Document so that there's some valid node here. Perhaps this
-            // should really be DOMWindow, but in all other cases the target of
+            // should really be LocalDOMWindow, but in all other cases the target of
             // a Touch is a Node so using the window could be a breaking change.
             // Since we know there was no handler invoked, the specific target
             // should be completely irrelevant to the application.

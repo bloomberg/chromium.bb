@@ -113,7 +113,7 @@ interface InspectorInstrumentation {
     void activeStyleSheetsUpdated([Keep] Document*);
 
     [Console, PageRuntime]
-    void frameWindowDiscarded(LocalFrame*, DOMWindow* domWindow);
+    void frameWindowDiscarded(LocalFrame*, LocalDOMWindow* domWindow);
 
     [CSS, Inline=FastReturn]
     void mediaQueryResultChanged(Document*);
@@ -155,7 +155,7 @@ interface InspectorInstrumentation {
     void didDispatchXHRReadyStateChangeEvent(const InspectorInstrumentationCookie&);
 
     [Timeline, Inline=FastReturn]
-    InspectorInstrumentationCookie willDispatchEvent([Keep] Document*, const Event&, DOMWindow*, Node*, const EventPath&);
+    InspectorInstrumentationCookie willDispatchEvent([Keep] Document*, const Event&, LocalDOMWindow*, Node*, const EventPath&);
 
     [Timeline, Inline=FastReturn]
     void didDispatchEvent(const InspectorInstrumentationCookie&);
@@ -173,7 +173,7 @@ interface InspectorInstrumentation {
     void didHandleEvent(const InspectorInstrumentationCookie&);
 
     [Timeline, Inline=FastReturn]
-    InspectorInstrumentationCookie willDispatchEventOnWindow(LocalFrame*, const Event&, DOMWindow*);
+    InspectorInstrumentationCookie willDispatchEventOnWindow(LocalFrame*, const Event&, LocalDOMWindow*);
 
     [Timeline, Inline=FastReturn]
     void didDispatchEventOnWindow(const InspectorInstrumentationCookie&);

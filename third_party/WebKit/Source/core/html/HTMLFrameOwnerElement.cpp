@@ -155,7 +155,7 @@ Document* HTMLFrameOwnerElement::contentDocument() const
     return (m_contentFrame && m_contentFrame->isLocalFrame()) ? toLocalFrame(m_contentFrame)->document() : 0;
 }
 
-DOMWindow* HTMLFrameOwnerElement::contentWindow() const
+LocalDOMWindow* HTMLFrameOwnerElement::contentWindow() const
 {
     return m_contentFrame ? m_contentFrame->domWindow() : 0;
 }

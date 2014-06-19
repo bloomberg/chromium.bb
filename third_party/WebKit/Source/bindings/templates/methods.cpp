@@ -23,7 +23,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {# Security checks #}
     {# FIXME: change to method.is_check_security_for_window #}
     {% if interface_name == 'EventTarget' %}
-    if (DOMWindow* window = impl->toDOMWindow()) {
+    if (LocalDOMWindow* window = impl->toDOMWindow()) {
         if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
             {{throw_from_exception_state(method)}};
             return;

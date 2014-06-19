@@ -41,7 +41,7 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/SharedBuffer.h"
@@ -242,7 +242,7 @@ const char* ImageBitmapFactories::supplementName()
 
 ImageBitmapFactories& ImageBitmapFactories::from(EventTarget& eventTarget)
 {
-    if (DOMWindow* window = eventTarget.toDOMWindow())
+    if (LocalDOMWindow* window = eventTarget.toDOMWindow())
         return fromInternal(*window);
 
     ASSERT(eventTarget.executionContext()->isWorkerGlobalScope());
@@ -287,7 +287,7 @@ void ImageBitmapFactories::ImageBitmapLoader::loadBlobAsync(ExecutionContext* co
 void ImageBitmapFactories::trace(Visitor* visitor)
 {
     visitor->trace(m_pendingLoaders);
-    WillBeHeapSupplement<DOMWindow>::trace(visitor);
+    WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
     WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);
 }
 

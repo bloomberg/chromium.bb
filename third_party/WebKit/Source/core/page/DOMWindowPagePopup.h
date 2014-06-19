@@ -36,16 +36,16 @@
 
 namespace WebCore {
 
-class DOMWindow;
+class LocalDOMWindow;
 class PagePopupClient;
 class PagePopupController;
 
-class DOMWindowPagePopup FINAL : public NoBaseWillBeGarbageCollected<DOMWindowPagePopup>, public WillBeHeapSupplement<DOMWindow> {
+class DOMWindowPagePopup FINAL : public NoBaseWillBeGarbageCollected<DOMWindowPagePopup>, public WillBeHeapSupplement<LocalDOMWindow> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowPagePopup);
 public:
-    static PagePopupController* pagePopupController(DOMWindow&);
-    static void install(DOMWindow&, PagePopupClient*);
-    static void uninstall(DOMWindow&);
+    static PagePopupController* pagePopupController(LocalDOMWindow&);
+    static void install(LocalDOMWindow&, PagePopupClient*);
+    static void uninstall(LocalDOMWindow&);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowPagePopup);
 
     void trace(Visitor*);

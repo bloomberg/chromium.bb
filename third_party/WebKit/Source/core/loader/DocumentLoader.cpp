@@ -44,7 +44,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/page/FrameTree.h"
@@ -320,7 +320,7 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
         return true;
     if (policy == NavigationPolicyIgnore)
         return false;
-    if (!DOMWindow::allowPopUp(*m_frame) && !UserGestureIndicator::processingUserGesture())
+    if (!LocalDOMWindow::allowPopUp(*m_frame) && !UserGestureIndicator::processingUserGesture())
         return false;
     frameLoader()->client()->loadURLExternally(request, policy);
     return false;
@@ -781,12 +781,12 @@ PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(LocalFram
     DocumentInit init(url, frame);
     init.withNewRegistrationContext();
 
-    // In some rare cases, we'll re-used a DOMWindow for a new Document. For example,
+    // In some rare cases, we'll re-used a LocalDOMWindow for a new Document. For example,
     // when a script calls window.open("..."), the browser gives JavaScript a window
     // synchronously but kicks off the load in the window asynchronously. Web sites
     // expect that modifications that they make to the window object synchronously
     // won't be blown away when the network load commits. To make that happen, we
-    // "securely transition" the existing DOMWindow to the Document that results from
+    // "securely transition" the existing LocalDOMWindow to the Document that results from
     // the network load. See also SecurityContext::isSecureTransitionTo.
     bool shouldReuseDefaultView = frame->loader().stateMachine()->isDisplayingInitialEmptyDocument() && frame->document()->isSecureTransitionTo(url);
 
@@ -796,7 +796,7 @@ PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(LocalFram
         frame->document()->prepareForDestruction();
 
     if (!shouldReuseDefaultView)
-        frame->setDOMWindow(DOMWindow::create(*frame));
+        frame->setDOMWindow(LocalDOMWindow::create(*frame));
 
     RefPtrWillBeRawPtr<Document> document = frame->domWindow()->installNewDocument(mimeType, init);
     if (ownerDocument) {
