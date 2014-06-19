@@ -142,16 +142,9 @@ URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
 }
 
 // Helper function to check for string in 'via' header. Returns true if
-// |via_value| is one of the values listed in the Via header and the response
-// was fetched via a proxy.
+// |via_value| is one of the values listed in the Via header.
 bool ViaHeaderContains(WebFrame* frame, const std::string& via_value) {
   const char kViaHeaderName[] = "Via";
-
-  DocumentState* document_state =
-      DocumentState::FromDataSource(frame->dataSource());
-  if (!document_state->was_fetched_via_proxy())
-    return false;
-
   std::vector<std::string> values;
   // Multiple via headers have already been coalesced and hence each value
   // separated by a comma corresponds to a proxy. The value added by a proxy is
