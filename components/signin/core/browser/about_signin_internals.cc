@@ -362,6 +362,8 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewAvatarMenu);
   AddSectionEntry(basic_info, "New Avatar Menu Flag Set?",
       new_avatar_menu_flag ? "True" : "False");
+  AddSectionEntry(basic_info, "Account Consistency Enabled?",
+      switches::IsEnableAccountConsistency() == true ? "True" : "False");
 
   // Only add username.  SID and LSID have moved to tokens section.
   const std::string field =
