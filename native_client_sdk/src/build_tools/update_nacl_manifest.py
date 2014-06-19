@@ -15,7 +15,6 @@ import csv
 import cStringIO
 import difflib
 import email
-import json
 import logging
 import logging.handlers
 import manifest_util
@@ -50,9 +49,47 @@ logger = logging.getLogger(__name__)
 def SplitVersion(version_string):
   """Split a version string (e.g. "18.0.1025.163") into its components.
 
-  Note that this function doesn't handle versions in the form "trunk.###".
+  e.g.
+  SplitVersion("trunk.123456") => ("trunk", "123456")
+  SplitVersion("18.0.1025.163") => (18, 0, 1025, 163)
   """
-  return tuple(map(int, version_string.split('.')))
+  parts = version_string.split('.')
+  if parts[0] == 'trunk':
+    return (parts[0], int(parts[1]))
+  return tuple([int(p) for p in parts])
+
+
+def GetMajorVersion(version_string):
+  """Get the major version number from a version string (e.g. "18.0.1025.163").
+
+  e.g.
+  GetMajorVersion("trunk.123456") => "trunk"
+  GetMajorVersion("18.0.1025.163") => 18
+  """
+  return SplitVersion(version_string)[0]
+
+
+def CompareVersions(version1, version2):
+  """Compare two version strings and return -1, 0, 1 (similar to cmp).
+
+  Versions can only be compared if they are both trunk versions, or neither is.
+
+  e.g.
+  CompareVersions("trunk.123", "trunk.456") => -1
+  CompareVersions("18.0.1025.163", "37.0.2054.3") => -1
+  CompareVersions("trunk.123", "18.0.1025.163") => Error
+
+  """
+  split1 = SplitVersion(version1)
+  split2 = SplitVersion(version2)
+  if split1[0] == split2[0]:
+    return cmp(split1[1:], split2[1:])
+
+  if split1 == 'trunk' or split2 == 'trunk':
+    raise Exception("Unable to compare versions %s and %s" % (
+      version1, version2))
+
+  return cmp(split1, split2)
 
 
 def JoinVersion(version_tuple):
@@ -60,6 +97,8 @@ def JoinVersion(version_tuple):
 
   The tuple should be of the form (18, 0, 1025, 163).
   """
+  assert len(version_tuple) == 4
+  assert version_tuple[0] != 'trunk'
   return '.'.join(map(str, version_tuple))
 
 
@@ -146,15 +185,6 @@ class Delegate(object):
       tuple."""
     raise NotImplementedError()
 
-  def GetTrunkRevision(self, version):
-    """Given a Chrome version, get its trunk revision.
-
-    Args:
-      version: A version string of the form '18.0.1025.64'
-    Returns:
-      The revision number for that version, as a string."""
-    raise NotImplementedError()
-
   def GsUtil_ls(self, url):
     """Runs gsutil ls |url|
 
@@ -222,12 +252,6 @@ class RealDelegate(Delegate):
     # The first line of this URL is the header:
     #   os,channel,version,timestamp
     return history[1:]
-
-  def GetTrunkRevision(self, version):
-    """See Delegate.GetTrunkRevision"""
-    url = 'http://omahaproxy.appspot.com/revision.json?version=%s' % (version,)
-    data = json.loads(urllib2.urlopen(url).read())
-    return 'trunk.%s' % int(data['chromium_revision'])
 
   def GsUtil_ls(self, url):
     """See Delegate.GsUtil_ls"""
@@ -366,8 +390,7 @@ class VersionFinder(object):
 
     shared_version_generator = self._FindNextSharedVersion(self.platforms,
                                                            GetPlatformHistory)
-    return self._DoGetMostRecentSharedVersion(shared_version_generator,
-                                              allow_trunk_revisions=False)
+    return self._DoGetMostRecentSharedVersion(shared_version_generator)
 
   def GetMostRecentSharedCanary(self):
     """Returns the most recent version of a canary pepper bundle that exists on
@@ -378,23 +401,12 @@ class VersionFinder(object):
 
     Returns:
       A tuple (version, channel, archives). The version is a string such as
-      "19.0.1084.41". The channel is always 'canary'. |archives| is a list of
+      "trunk.123456". The channel is always 'canary'. |archives| is a list of
       archive URLs."""
-    # Canary versions that differ in the last digit shouldn't be considered
-    # different; this number is typically used to represent an experiment, e.g.
-    # using ASAN or aura.
-    def CanaryKey(version):
-      return version[:-1]
+    version_generator = self._FindNextTrunkVersion()
+    return self._DoGetMostRecentSharedVersion(version_generator)
 
-    # We don't ship canary on Linux, so it won't appear in self.history.
-    # Instead, we can use the matching Linux trunk build for that version.
-    shared_version_generator = self._FindNextSharedVersion(
-        set(self.platforms) - set(('linux',)),
-        self._GetPlatformCanaryHistory, CanaryKey)
-    return self._DoGetMostRecentSharedVersion(shared_version_generator,
-                                              allow_trunk_revisions=True)
-
-  def GetAvailablePlatformArchivesFor(self, version, allow_trunk_revisions):
+  def GetAvailablePlatformArchivesFor(self, version):
     """Returns a sequence of archives that exist for a given version, on the
     given platforms.
 
@@ -403,8 +415,6 @@ class VersionFinder(object):
 
     Args:
       version: The version to find archives for. (e.g. "18.0.1025.164")
-      allow_trunk_revisions: If True, will search for archives using the
-          trunk revision that matches the branch version.
     Returns:
       A tuple (archives, missing_archives). |archives| is a list of archive
       URLs, |missing_archives| is a list of archive names.
@@ -419,20 +429,10 @@ class VersionFinder(object):
 
     if self.extra_archives:
       for extra_archive, extra_archive_min_version in self.extra_archives:
-        if SplitVersion(version) >= SplitVersion(extra_archive_min_version):
+        if CompareVersions(version, extra_archive_min_version) >= 0:
           expected_archives.add(extra_archive)
     found_archives = set(GetCanonicalArchiveName(a) for a in archive_urls)
     missing_archives = expected_archives - found_archives
-
-    if allow_trunk_revisions and missing_archives:
-      # Try to find trunk versions of any missing archives.
-      trunk_version = self.delegate.GetTrunkRevision(version)
-      trunk_archives = self._GetAvailableArchivesFor(trunk_version)
-      for trunk_archive_url in trunk_archives:
-        trunk_archive = GetCanonicalArchiveName(trunk_archive_url)
-        if trunk_archive in missing_archives:
-          archive_urls.append(trunk_archive_url)
-          missing_archives.discard(trunk_archive)
 
     # Only return archives that are "expected".
     def IsExpected(url):
@@ -441,8 +441,7 @@ class VersionFinder(object):
     expected_archive_urls = [u for u in archive_urls if IsExpected(u)]
     return expected_archive_urls, missing_archives
 
-  def _DoGetMostRecentSharedVersion(self, shared_version_generator,
-                                    allow_trunk_revisions):
+  def _DoGetMostRecentSharedVersion(self, shared_version_generator):
     """Returns the most recent version of a pepper bundle that exists on all
     given platforms.
 
@@ -451,8 +450,6 @@ class VersionFinder(object):
     Args:
       shared_version_generator: A generator that will yield (version, channel)
           tuples in order of most recent to least recent.
-      allow_trunk_revisions: If True, will search for archives using the
-          trunk revision that matches the branch version.
     Returns:
       A tuple (version, channel, archives). The version is a string such as
       "19.0.1084.41". The channel is one of ('stable', 'beta', 'dev',
@@ -477,8 +474,7 @@ class VersionFinder(object):
       logger.info('Found shared version: %s, channel: %s' % (
           version, channel))
 
-      archives, missing_archives = self.GetAvailablePlatformArchivesFor(
-          version, allow_trunk_revisions)
+      archives, missing_archives = self.GetAvailablePlatformArchivesFor(version)
 
       if not missing_archives:
         return version, channel, archives
@@ -506,24 +502,7 @@ class VersionFinder(object):
           (with_major_version == 0 or with_major_version == version[0])):
         yield channel, version
 
-  def _GetPlatformCanaryHistory(self, with_platform):
-    """Yields Chrome history for a given platform, but only for canary
-    versions.
-
-    Args:
-      with_platform: The name of the platform to filter for.
-    Returns:
-      A generator that yields a tuple (channel, version) for each version that
-      matches the platform and uses the canary channel. The version returned is
-      a tuple as returned from SplitVersion.
-    """
-    for platform, channel, version, _ in self.history:
-      version = SplitVersion(version)
-      if with_platform == platform and channel == CANARY:
-        yield channel, version
-
-
-  def _FindNextSharedVersion(self, platforms, generator_func, key_func=None):
+  def _FindNextSharedVersion(self, platforms, generator_func):
     """Yields versions of Chrome that exist on all given platforms, in order of
        newest to oldest.
 
@@ -535,17 +514,11 @@ class VersionFinder(object):
           ('mac', 'linux', 'win')
       generator_func: A function which takes a platform and returns a
           generator that yields (channel, version) tuples.
-      key_func: A function to convert the version into a value that should be
-          used for comparison. See python built-in sorted() or min(), for
-          an example.
     Returns:
       A generator that yields a tuple (version, channel) for each version that
       matches all platforms and the major version. The version returned is a
       string (e.g. "18.0.1025.164").
     """
-    if not key_func:
-      key_func = lambda x: x
-
     platform_generators = []
     for platform in platforms:
       platform_generators.append(generator_func(platform))
@@ -563,19 +536,13 @@ class VersionFinder(object):
               platform, JoinVersion(platform_versions[i][1])))
         logger.info('Checking versions: %s' % ', '.join(msg_info))
 
-      shared_version = min((v for c, v in platform_versions), key=key_func)
+      shared_version = min((v for c, v in platform_versions))
 
-      if all(key_func(v) == key_func(shared_version)
-             for c, v in platform_versions):
-        # The real shared_version should be the real minimum version. This will
-        # be different from shared_version above only if key_func compares two
-        # versions with different values as equal.
-        min_version = min((v for c, v in platform_versions))
-
+      if all(v == shared_version for c, v in platform_versions):
         # grab the channel from an arbitrary platform
         first_platform = platform_versions[0]
         channel = first_platform[0]
-        yield JoinVersion(min_version), channel
+        yield JoinVersion(shared_version), channel
 
         # force increment to next version for all platforms
         shared_version = None
@@ -587,6 +554,30 @@ class VersionFinder(object):
             platform_versions[i] = platform_gen.next()
       except StopIteration:
         return
+
+
+  def _FindNextTrunkVersion(self):
+    """Yields all trunk versions that exist in the cloud storage bucket, newest
+    to oldest.
+
+    Returns:
+      A generator that yields a tuple (version, channel) for each version that
+      matches all platforms and the major version. The version returned is a
+      string (e.g. "trunk.123456").
+    """
+    files = self.delegate.GsUtil_ls(GS_BUCKET_PATH)
+    assert all(f.startswith('gs://') for f in files)
+
+    trunk_versions = []
+    for f in files:
+      match = re.search(r'(trunk\.\d+)', f)
+      if match:
+        trunk_versions.append(match.group(1))
+
+    trunk_versions.sort(reverse=True)
+
+    for version in trunk_versions:
+      yield version, 'canary'
 
 
   def _GetAvailableArchivesFor(self, version_string):
@@ -602,7 +593,7 @@ class VersionFinder(object):
       All returned URLs will use the gs:// schema."""
     files = self.delegate.GsUtil_ls(GS_BUCKET_PATH + version_string)
 
-    assert all(file.startswith('gs://') for file in files)
+    assert all(f.startswith('gs://') for f in files)
 
     archives = [f for f in files if not f.endswith('.json')]
     manifests = [f for f in files if f.endswith('.json')]
@@ -657,7 +648,7 @@ class Updater(object):
       bundles that contain no archives will be considered for auto-updating."""
     # Make sure there is only one stable branch: the one with the max version.
     # All others are post-stable.
-    stable_major_versions = [SplitVersion(version)[0] for _, version, channel, _
+    stable_major_versions = [GetMajorVersion(version) for _, version, channel, _
                              in self.versions_to_update if channel == 'stable']
     # Add 0 in case there are no stable versions.
     max_stable_version = max([0] + stable_major_versions)
@@ -697,7 +688,7 @@ class Updater(object):
         bundle.MergeWithBundle(platform_bundle)
 
       # Fix the stability and recommended values
-      major_version = SplitVersion(version)[0]
+      major_version = GetMajorVersion(version)
       if major_version < max_stable_version:
         bundle.stability = 'post_stable'
       else:
@@ -832,7 +823,8 @@ def Run(delegate, platforms, extra_archives, fixed_bundle_versions=None):
     try:
       if bundle.name == BIONIC_CANARY_BUNDLE_NAME:
         logger.info('>>> Looking for most recent bionic_canary...')
-        version_finder = VersionFinder(delegate, platforms, extra_archives,
+        # Ignore extra_archives on bionic; There is no naclports bundle yet.
+        version_finder = VersionFinder(delegate, platforms, None,
                                        is_bionic=True)
         version, channel, archives = version_finder.GetMostRecentSharedCanary()
       elif bundle.name == CANARY_BUNDLE_NAME:
@@ -857,9 +849,8 @@ def Run(delegate, platforms, extra_archives, fixed_bundle_versions=None):
       # version may not be in the history.)
       version = fixed_bundle_versions[bundle.name]
       logger.info('Fixed bundle version: %s, %s' % (bundle.name, version))
-      allow_trunk_revisions = bundle.name == CANARY_BUNDLE_NAME
-      archives, missing = version_finder.GetAvailablePlatformArchivesFor(
-          version, allow_trunk_revisions)
+      archives, missing = \
+          version_finder.GetAvailablePlatformArchivesFor(version)
       if missing:
         logger.warn(
             'Some archives for version %s of bundle %s don\'t exist: '
