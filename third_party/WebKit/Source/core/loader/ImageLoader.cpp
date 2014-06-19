@@ -175,6 +175,8 @@ void ImageLoader::doUpdateFromElement(bool bypassMainWorldCSP)
     delayLoad.swap(m_delayLoad);
 
     Document& document = m_element->document();
+    if (!document.isActive())
+        return;
 
     AtomicString attr = m_element->imageSourceURL();
 
