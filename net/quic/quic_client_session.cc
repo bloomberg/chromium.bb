@@ -836,9 +836,11 @@ void QuicClientSession::OnConnectTimeout() {
   if (IsCryptoHandshakeConfirmed())
     return;
 
-  if (stream_factory_)
-    stream_factory_->OnSessionConnectTimeout(this);
-  CloseAllStreams(ERR_QUIC_HANDSHAKE_FAILED);
+  // TODO(rch): re-enable this code once beta is cut.
+  //  if (stream_factory_)
+  //    stream_factory_->OnSessionConnectTimeout(this);
+  //  CloseAllStreams(ERR_QUIC_HANDSHAKE_FAILED);
+  //  DCHECK_EQ(0u, GetNumOpenStreams());
 }
 
 }  // namespace net
