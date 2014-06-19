@@ -145,7 +145,7 @@ def CheckForMissingDevices(options, adb_online_devs):
     devices_missing_msg = '%d devices not detected.' % len(missing_devs)
     bb_annotations.PrintSummaryText(devices_missing_msg)
 
-    from_address = 'chrome-bot@google.com'
+    from_address = 'chrome-bot@chromium.org'
     to_address = 'chrome-labs-tech-ticket@google.com'
     subject = 'Devices offline on %s' % os.environ.get('BUILDBOT_SLAVENAME')
     msg = ('Please reboot the following devices:\n%s' %
