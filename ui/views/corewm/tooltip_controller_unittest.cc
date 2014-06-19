@@ -22,6 +22,8 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller_test_helper.h"
+#include "ui/views/test/desktop_test_views_delegate.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
@@ -77,7 +79,12 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
   virtual ~TooltipControllerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    wm_state_.reset(new wm::WMState);
+#if defined(OS_CHROMEOS)
+    views_delegate_.reset(new TestViewsDelegate);
+#else
+    views_delegate_.reset(new DesktopTestViewsDelegate);
+#endif
+
     aura::test::AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
 #if defined(OS_CHROMEOS)
@@ -107,7 +114,7 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
     helper_.reset();
     widget_.reset();
     aura::test::AuraTestBase::TearDown();
-    wm_state_.reset();
+    views_delegate_.reset();
   }
 
  protected:
@@ -135,11 +142,11 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
  private:
   scoped_ptr<TooltipController> controller_;
 
+  scoped_ptr<views::TestViewsDelegate> views_delegate_;
+
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;
 #endif
-
-  scoped_ptr<wm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipControllerTest);
 };
@@ -539,123 +546,6 @@ TEST_F(TooltipControllerCaptureTest, MAYBE_Capture) {
 
   widget2.reset();
 }
-
-// These tests search for a specific aura::Window to identify the
-// tooltip. Windows shows the tooltip using a native tooltip, so these tests
-// don't apply.
-#if !defined(OS_WIN) && !defined(OS_CHROMEOS)
-// This test creates two top level windows and verifies that the tooltip
-// displays correctly when mouse moves are dispatched to these windows.
-// Additionally it also verifies that the tooltip is reparented to the new
-// window when mouse moves are dispatched to it.
-TEST_F(TooltipControllerTest, TooltipsInMultipleRootWindows) {
-  view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text For RootWindow1"));
-  EXPECT_EQ(base::string16(), helper_->GetTooltipText());
-  EXPECT_EQ(NULL, helper_->GetTooltipWindow());
-
-  aura::Window* window = GetWindow();
-  aura::Window* root_window = GetRootWindow();
-
-  // Fire tooltip timer so tooltip becomes visible.
-  generator_->MoveMouseRelativeTo(window, view_->bounds().CenterPoint());
-  helper_->FireTooltipTimer();
-  EXPECT_TRUE(helper_->IsTooltipVisible());
-  for (int i = 0; i < 49; ++i) {
-    generator_->MoveMouseBy(1, 0);
-    EXPECT_TRUE(helper_->IsTooltipVisible());
-    EXPECT_EQ(window, root_window->GetEventHandlerForPoint(
-            generator_->current_location()));
-    base::string16 expected_tooltip =
-        ASCIIToUTF16("Tooltip Text For RootWindow1");
-    EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(window));
-    EXPECT_EQ(expected_tooltip, helper_->GetTooltipText());
-    EXPECT_EQ(window, helper_->GetTooltipWindow());
-  }
-
-  views::Widget* widget2 = CreateWidget(NULL);
-  widget2->SetContentsView(new View);
-  TooltipTestView* view2 = new TooltipTestView;
-  widget2->GetContentsView()->AddChildView(view2);
-  view2->SetBoundsRect(widget2->GetContentsView()->GetLocalBounds());
-  helper_.reset(new TooltipControllerTestHelper(
-                    GetController(widget2)));
-  generator_.reset(new aura::test::EventGenerator(
-      widget2->GetNativeWindow()->GetRootWindow()));
-    view2->set_tooltip_text(ASCIIToUTF16("Tooltip Text For RootWindow2"));
-
-  aura::Window* window2 = widget2->GetNativeWindow();
-  aura::Window* root_window2 =
-      widget2->GetNativeWindow()->GetRootWindow();
-  // Fire tooltip timer so tooltip becomes visible.
-  generator_->MoveMouseRelativeTo(window2, view2->bounds().CenterPoint());
-  helper_->FireTooltipTimer();
-
-  EXPECT_NE(root_window, root_window2);
-  EXPECT_NE(window, window2);
-
-  for (int i = 0; i < 49; ++i) {
-    generator_->MoveMouseBy(1, 0);
-    EXPECT_TRUE(helper_->IsTooltipVisible());
-    EXPECT_EQ(window2, root_window2->GetEventHandlerForPoint(
-              generator_->current_location()));
-    base::string16 expected_tooltip =
-        ASCIIToUTF16("Tooltip Text For RootWindow2");
-    EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(window2));
-    EXPECT_EQ(expected_tooltip, helper_->GetTooltipText());
-    EXPECT_EQ(window2, helper_->GetTooltipWindow());
-  }
-
-  bool tooltip_reparented = false;
-  for (size_t i = 0; i < root_window2->children().size(); ++i) {
-    if (root_window2->children()[i]->type() == ui::wm::WINDOW_TYPE_TOOLTIP) {
-      tooltip_reparented = true;
-      break;
-    }
-  }
-  EXPECT_TRUE(tooltip_reparented);
-  widget2->Close();
-}
-
-// This test validates whether the tooltip after becoming visible stays at the
-// top of the ZOrder in its root window after activation changes.
-TEST_F(TooltipControllerTest, TooltipAtTopOfZOrderAfterActivation) {
-  view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
-  EXPECT_EQ(base::string16(), helper_->GetTooltipText());
-  EXPECT_EQ(NULL, helper_->GetTooltipWindow());
-  generator_->MoveMouseToCenterOf(GetWindow());
-
-  EXPECT_EQ(GetWindow(), GetRootWindow()->GetEventHandlerForPoint(
-      generator_->current_location()));
-  base::string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
-  EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(GetWindow()));
-  EXPECT_EQ(base::string16(), helper_->GetTooltipText());
-  EXPECT_EQ(GetWindow(), helper_->GetTooltipWindow());
-
-  // Fire tooltip timer so tooltip becomes visible.
-  helper_->FireTooltipTimer();
-
-  EXPECT_TRUE(helper_->IsTooltipVisible());
-  generator_->MoveMouseBy(1, 0);
-
-  EXPECT_TRUE(helper_->IsTooltipVisible());
-  EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(GetWindow()));
-  EXPECT_EQ(expected_tooltip, helper_->GetTooltipText());
-  EXPECT_EQ(GetWindow(), helper_->GetTooltipWindow());
-
-  // Fake activation loss and gain in the native widget. This should cause a
-  // ZOrder change which should not affect the position of the tooltip.
-  DesktopNativeWidgetAura* native_widget =
-      static_cast<DesktopNativeWidgetAura*>(widget_->native_widget());
-  EXPECT_TRUE(native_widget != NULL);
-
-  native_widget->HandleActivationChanged(false);
-  native_widget->HandleActivationChanged(true);
-
-  EXPECT_EQ(
-      widget_->GetNativeWindow()->GetRootWindow()->children().back()->type(),
-      ui::wm::WINDOW_TYPE_TOOLTIP);
-}
-#endif
 
 namespace {
 
