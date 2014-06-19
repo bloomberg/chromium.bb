@@ -22,10 +22,8 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/extensions/api/proxy/proxy_api.h"
-#include "chrome/browser/extensions/api/web_request/web_request_api.h"
-#include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/net/chrome_extensions_network_delegate.h"
 #include "chrome/browser/net/client_hints.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
@@ -42,9 +40,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/info_map.h"
-#include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -57,6 +52,12 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/io_thread.h"
+#include "components/precache/content/precache_manager.h"
+#include "components/precache/content/precache_manager_factory.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "base/command_line.h"
 #include "base/sys_info.h"
@@ -65,12 +66,6 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "components/policy/core/browser/url_blacklist_manager.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/io_thread.h"
-#include "components/precache/content/precache_manager.h"
-#include "components/precache/content/precache_manager_factory.h"
 #endif
 
 using content::BrowserThread;
@@ -92,22 +87,6 @@ bool ChromeNetworkDelegate::g_never_throttle_requests_ = false;
 namespace {
 
 const char kDNTHeader[] = "DNT";
-
-// If the |request| failed due to problems with a proxy, forward the error to
-// the proxy extension API.
-void ForwardProxyErrors(net::URLRequest* request,
-                        extensions::EventRouterForwarder* event_router,
-                        void* profile) {
-  if (request->status().status() == net::URLRequestStatus::FAILED) {
-    switch (request->status().error()) {
-      case net::ERR_PROXY_AUTH_UNSUPPORTED:
-      case net::ERR_PROXY_CONNECTION_FAILED:
-      case net::ERR_TUNNEL_CONNECTION_FAILED:
-        extensions::ProxyEventRouter::GetInstance()->OnProxyError(
-            event_router, profile, request->status().error());
-    }
-  }
-}
 
 // Returns whether a URL parameter, |first_parameter| (e.g. foo=bar), has the
 // same key as the the |second_parameter| (e.g. foo=baz). Both parameters
@@ -176,54 +155,6 @@ void ForceGoogleSafeSearchCallbackWrapper(
   if (rv == net::OK && new_url->is_empty())
     ForceGoogleSafeSearch(request, new_url);
   callback.Run(rv);
-}
-
-enum RequestStatus { REQUEST_STARTED, REQUEST_DONE };
-
-// Notifies the extensions::ProcessManager that a request has started or stopped
-// for a particular RenderFrame.
-void NotifyEPMRequestStatus(RequestStatus status,
-                            void* profile_id,
-                            int process_id,
-                            int render_frame_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Profile* profile = reinterpret_cast<Profile*>(profile_id);
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
-    return;
-
-  extensions::ProcessManager* process_manager =
-      extensions::ExtensionSystem::Get(profile)->process_manager();
-  // This may be NULL in unit tests.
-  if (!process_manager)
-    return;
-
-  // Will be NULL if the request was not issued on behalf of a renderer (e.g. a
-  // system-level request).
-  content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(process_id, render_frame_id);
-  if (render_frame_host) {
-    if (status == REQUEST_STARTED) {
-      process_manager->OnNetworkRequestStarted(render_frame_host);
-    } else if (status == REQUEST_DONE) {
-      process_manager->OnNetworkRequestDone(render_frame_host);
-    } else {
-      NOTREACHED();
-    }
-  }
-}
-
-void ForwardRequestStatus(
-    RequestStatus status, net::URLRequest* request, void* profile_id) {
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  if (!info)
-    return;
-
-  int process_id, render_frame_id;
-  if (info->GetAssociatedRenderFrame(&process_id, &render_frame_id)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&NotifyEPMRequestStatus,
-                   status, profile_id, process_id, render_frame_id));
-  }
 }
 
 void UpdateContentLengthPrefs(
@@ -353,27 +284,34 @@ void RecordIOThreadToRequestStartOnUIThread(
 ChromeNetworkDelegate::ChromeNetworkDelegate(
     extensions::EventRouterForwarder* event_router,
     BooleanPrefMember* enable_referrers)
-    : event_router_(event_router),
-      profile_(NULL),
+    : profile_(NULL),
       enable_referrers_(enable_referrers),
       enable_do_not_track_(NULL),
       force_google_safe_search_(NULL),
+#if defined(ENABLE_CONFIGURATION_POLICY)
       url_blacklist_manager_(NULL),
+#endif
       domain_reliability_monitor_(NULL),
       received_content_length_(0),
       original_content_length_(0),
       first_request_(true),
       prerender_tracker_(NULL),
       data_reduction_proxy_params_(NULL) {
-  DCHECK(event_router);
   DCHECK(enable_referrers);
+  extensions_delegate_.reset(
+      ChromeExtensionsNetworkDelegate::Create(event_router));
 }
 
 ChromeNetworkDelegate::~ChromeNetworkDelegate() {}
 
 void ChromeNetworkDelegate::set_extension_info_map(
     extensions::InfoMap* extension_info_map) {
-  extension_info_map_ = extension_info_map;
+  extensions_delegate_->set_extension_info_map(extension_info_map);
+}
+
+void ChromeNetworkDelegate::set_profile(void* profile) {
+  profile_ = profile;
+  extensions_delegate_->set_profile(profile);
 }
 
 void ChromeNetworkDelegate::set_cookie_settings(
@@ -494,7 +432,7 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
   }
 #endif
 
-  ForwardRequestStatus(REQUEST_STARTED, request, profile_);
+  extensions_delegate_->ForwardStartRequestStatus(request);
 
   if (!enable_referrers_->GetValue())
     request->SetReferrer(std::string());
@@ -518,9 +456,8 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
                                   base::Unretained(new_url));
   }
 
-  int rv = ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
-      profile_, extension_info_map_.get(), request, wrapped_callback,
-      new_url);
+  int rv = extensions_delegate_->OnBeforeURLRequest(
+      request, wrapped_callback, new_url);
 
   if (force_safe_search && rv == net::OK && new_url->is_empty())
     ForceGoogleSafeSearch(request, new_url);
@@ -536,15 +473,13 @@ int ChromeNetworkDelegate::OnBeforeSendHeaders(
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
   TRACE_EVENT_ASYNC_STEP_PAST0("net", "URLRequest", request, "SendRequest");
-  return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
-      profile_, extension_info_map_.get(), request, callback, headers);
+  return extensions_delegate_->OnBeforeSendHeaders(request, callback, headers);
 }
 
 void ChromeNetworkDelegate::OnSendHeaders(
     net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
-  ExtensionWebRequestEventRouter::GetInstance()->OnSendHeaders(
-      profile_, extension_info_map_.get(), request, headers);
+  extensions_delegate_->OnSendHeaders(request, headers);
 }
 
 int ChromeNetworkDelegate::OnHeadersReceived(
@@ -553,7 +488,6 @@ int ChromeNetworkDelegate::OnHeadersReceived(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
-
   if (data_reduction_proxy::MaybeBypassProxyAndPrepareToRetry(
       data_reduction_proxy_params_,
       request,
@@ -562,9 +496,7 @@ int ChromeNetworkDelegate::OnHeadersReceived(
     return net::OK;
   }
 
-  return ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
-      profile_,
-      extension_info_map_.get(),
+  return extensions_delegate_->OnHeadersReceived(
       request,
       callback,
       original_response_headers,
@@ -576,16 +508,13 @@ void ChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
                                              const GURL& new_location) {
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->OnBeforeRedirect(request);
-  ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRedirect(
-      profile_, extension_info_map_.get(), request, new_location);
+  extensions_delegate_->OnBeforeRedirect(request, new_location);
 }
 
 
 void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
   TRACE_EVENT_ASYNC_STEP_PAST0("net", "URLRequest", request, "ResponseStarted");
-  ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
-      profile_, extension_info_map_.get(), request);
-  ForwardProxyErrors(request, event_router_.get(), profile_);
+  extensions_delegate_->OnResponseStarted(request);
 }
 
 void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
@@ -656,36 +585,26 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
           << " url: " << request->url();
     }
 
-    bool is_redirect = request->response_headers() &&
-        net::HttpResponseHeaders::IsRedirectResponseCode(
-            request->response_headers()->response_code());
-    if (!is_redirect) {
-      ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
-          profile_, extension_info_map_.get(), request);
-    }
+    extensions_delegate_->OnCompleted(request, started);
   } else if (request->status().status() == net::URLRequestStatus::FAILED ||
              request->status().status() == net::URLRequestStatus::CANCELED) {
-    ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
-            profile_, extension_info_map_.get(), request, started);
+    extensions_delegate_->OnCompleted(request, started);
   } else {
     NOTREACHED();
   }
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->OnCompleted(request, started);
-  ForwardProxyErrors(request, event_router_.get(), profile_);
-
-  ForwardRequestStatus(REQUEST_DONE, request, profile_);
+  extensions_delegate_->ForwardProxyErrors(request);
+  extensions_delegate_->ForwardDoneRequestStatus(request);
 }
 
 void ChromeNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
-  ExtensionWebRequestEventRouter::GetInstance()->OnURLRequestDestroyed(
-      profile_, request);
+  extensions_delegate_->OnURLRequestDestroyed(request);
 }
 
 void ChromeNetworkDelegate::OnPACScriptError(int line_number,
                                              const base::string16& error) {
-  extensions::ProxyEventRouter::GetInstance()->OnPACScriptError(
-      event_router_.get(), profile_, line_number, error);
+  extensions_delegate_->OnPACScriptError(line_number, error);
 }
 
 net::NetworkDelegate::AuthRequiredResponse
@@ -694,9 +613,8 @@ ChromeNetworkDelegate::OnAuthRequired(
     const net::AuthChallengeInfo& auth_info,
     const AuthCallback& callback,
     net::AuthCredentials* credentials) {
-  return ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
-      profile_, extension_info_map_.get(), request, auth_info,
-      callback, credentials);
+  return extensions_delegate_->OnAuthRequired(
+      request, auth_info, callback, credentials);
 }
 
 bool ChromeNetworkDelegate::OnCanGetCookies(
@@ -843,10 +761,8 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
 
 bool ChromeNetworkDelegate::OnCanThrottleRequest(
     const net::URLRequest& request) const {
-  if (g_never_throttle_requests_) {
+  if (g_never_throttle_requests_)
     return false;
-  }
-
   return request.first_party_for_cookies().scheme() ==
       extensions::kExtensionScheme;
 }

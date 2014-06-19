@@ -20,20 +20,20 @@
         'chromium_code': 1,
         # Disable schema compiler to generate model extension API code.
         # Only register the extension functions in extension system.
-        'non_compiled_schema_files': [
-          'browsing_data.json',
-          'chromeos_info_private.json',
-          'extension.json',
-          'idltest.idl',
-          'infobars.json',
-          'media_player_private.json',
-          'music_manager_private.idl',
-          'principals_private.idl',
-          'top_sites.json',
-          'web_request_internal.json',
-        ],
         'conditions': [
           ['OS!="android"', {
+            'non_compiled_schema_files': [
+              'browsing_data.json',
+              'chromeos_info_private.json',
+              'extension.json',
+              'idltest.idl',
+              'infobars.json',
+              'media_player_private.json',
+              'music_manager_private.idl',
+              'principals_private.idl',
+              'top_sites.json',
+              'web_request_internal.json',
+            ],
             'schema_files': [
               'accessibility_private.json',
               'activity_log_private.json',
@@ -135,22 +135,23 @@
               'windows.json',
             ],
           }, {  # OS=="android"
-              'schema_files': [
-                # These should be eliminated. See crbug.com/305852.
-                'activity_log_private.json',
-                'events.json',
-                'file_system.idl',
-                'manifest_types.json',
-                'permissions.json',
-                'sync_file_system.idl',
-                'tab_capture.idl',
-                'tabs.json',
-                'types.json',
-                'webview.json',
-                'web_navigation.json',
-                'web_request.json',
-                'windows.json',
-              ],
+            'non_compiled_schema_files': [
+            ],
+            'schema_files': [
+              # These should be eliminated. See crbug.com/305852.
+              'activity_log_private.json',
+              'events.json',
+              'file_system.idl',
+              'manifest_types.json',
+              'permissions.json',
+              'sync_file_system.idl',
+              'tab_capture.idl',
+              'tabs.json',
+              'types.json',
+              'webview.json',
+              'web_navigation.json',
+              'windows.json',
+            ],
           }],
           ['chromeos==1', {
             'schema_files': [

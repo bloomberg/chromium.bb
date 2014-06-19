@@ -1216,6 +1216,8 @@
         'browser/net/async_dns_field_trial.cc',
         'browser/net/async_dns_field_trial.h',
         'browser/net/chrome_cookie_notification_details.h',
+        'browser/net/chrome_extensions_network_delegate.cc',
+        'browser/net/chrome_extensions_network_delegate.h',
         'browser/net/chrome_fraudulent_certificate_reporter.cc',
         'browser/net/chrome_fraudulent_certificate_reporter.h',
         'browser/net/chrome_http_user_agent_settings.cc',
