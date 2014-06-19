@@ -118,7 +118,12 @@ class MetadataDatabaseIndex {
   // Promotes all demoted dirty trackers to normal dirty trackers.
   void PromoteDemotedDirtyTrackers();
 
+  size_t CountDirtyTracker() const;
+  size_t CountFileMetadata() const;
+  size_t CountFileTracker() const;
   std::vector<std::string> GetRegisteredAppIDs() const;
+  std::vector<int64> GetAllTrackerIDs() const;
+  std::vector<std::string> GetAllMetadataIDs() const;
 
  private:
   typedef base::ScopedPtrHashMap<std::string, FileMetadata> MetadataByID;
@@ -131,7 +136,6 @@ class MetadataDatabaseIndex {
   typedef base::hash_set<ParentIDAndTitle> PathSet;
   typedef std::set<int64> DirtyTrackers;
 
-  friend class MetadataDatabase;
   friend class MetadataDatabaseTest;
 
   // Maintains |app_root_by_app_id_|.

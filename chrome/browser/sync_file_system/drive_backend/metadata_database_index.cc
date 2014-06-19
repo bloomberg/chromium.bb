@@ -210,12 +210,42 @@ void MetadataDatabaseIndex::PromoteDemotedDirtyTrackers() {
   demoted_dirty_trackers_.clear();
 }
 
+size_t MetadataDatabaseIndex::CountDirtyTracker() const {
+  return dirty_trackers_.size() + demoted_dirty_trackers_.size();
+}
+
+size_t MetadataDatabaseIndex::CountFileMetadata() const {
+  return metadata_by_id_.size();
+}
+
+size_t MetadataDatabaseIndex::CountFileTracker() const {
+  return tracker_by_id_.size();
+}
+
 std::vector<std::string> MetadataDatabaseIndex::GetRegisteredAppIDs() const {
   std::vector<std::string> result;
   result.reserve(app_root_by_app_id_.size());
   for (TrackerIDByAppID::const_iterator itr = app_root_by_app_id_.begin();
        itr != app_root_by_app_id_.end(); ++itr)
     result.push_back(itr->first);
+  return result;
+}
+
+std::vector<int64> MetadataDatabaseIndex::GetAllTrackerIDs() const {
+  std::vector<int64> result;
+  for (TrackerByID::const_iterator itr = tracker_by_id_.begin();
+       itr != tracker_by_id_.end(); ++itr) {
+    result.push_back(itr->first);
+  }
+  return result;
+}
+
+std::vector<std::string> MetadataDatabaseIndex::GetAllMetadataIDs() const {
+  std::vector<std::string> result;
+  for (MetadataByID::const_iterator itr = metadata_by_id_.begin();
+       itr != metadata_by_id_.end(); ++itr) {
+    result.push_back(itr->first);
+  }
   return result;
 }
 
