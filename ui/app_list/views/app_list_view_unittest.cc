@@ -78,6 +78,9 @@ class AppListViewTestContext {
   // Tests displaying of the experimental app list and shows the start page.
   void RunStartPageTest();
 
+  // Tests switching rapidly between multiple pages of the launcher.
+  void RunPageSwitchingAnimationTest();
+
   // Tests changing the App List profile.
   void RunProfileChangeTest();
 
@@ -316,6 +319,49 @@ void AppListViewTestContext::RunStartPageTest() {
   Close();
 }
 
+void AppListViewTestContext::RunPageSwitchingAnimationTest() {
+  if (test_type_ == EXPERIMENTAL) {
+    Show();
+
+    AppListMainView* main_view = view_->app_list_main_view();
+    // Checks on the main view.
+    EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
+    EXPECT_NO_FATAL_FAILURE(CheckView(main_view->contents_view()));
+
+    ContentsView* contents_view = main_view->contents_view();
+    // Pad the ContentsView with blank pages so we have at least 3 views.
+    while (contents_view->NumLauncherPages() < 3)
+      contents_view->AddBlankPageForTesting();
+
+    contents_view->SetActivePage(0);
+    contents_view->Layout();
+    EXPECT_TRUE(IsViewAtOrigin(contents_view->GetPageView(0)));
+    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(1)));
+    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(2)));
+
+    // Change pages. View should not have moved without Layout().
+    contents_view->SetActivePage(1);
+    EXPECT_TRUE(IsViewAtOrigin(contents_view->GetPageView(0)));
+    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(1)));
+    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(2)));
+
+    // Change to a third page. This queues up the second animation behind the
+    // first.
+    contents_view->SetActivePage(2);
+    EXPECT_TRUE(IsViewAtOrigin(contents_view->GetPageView(0)));
+    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(1)));
+    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(2)));
+
+    // Call Layout(). Should jump to the third page.
+    contents_view->Layout();
+    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(0)));
+    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(1)));
+    EXPECT_TRUE(IsViewAtOrigin(contents_view->GetPageView(2)));
+  }
+
+  Close();
+}
+
 void AppListViewTestContext::RunProfileChangeTest() {
   EXPECT_FALSE(view_->GetWidget()->IsVisible());
   EXPECT_EQ(-1, GetPaginationModel()->total_pages());
@@ -527,6 +573,15 @@ TEST_P(AppListViewTestAura, StartPageTest) {
 
 TEST_P(AppListViewTestDesktop, StartPageTest) {
   EXPECT_NO_FATAL_FAILURE(test_context_->RunStartPageTest());
+}
+
+// Tests that the start page view operates correctly.
+TEST_P(AppListViewTestAura, PageSwitchingAnimationTest) {
+  EXPECT_NO_FATAL_FAILURE(test_context_->RunPageSwitchingAnimationTest());
+}
+
+TEST_P(AppListViewTestDesktop, PageSwitchingAnimationTest) {
+  EXPECT_NO_FATAL_FAILURE(test_context_->RunPageSwitchingAnimationTest());
 }
 
 // Tests that the profile changes operate correctly.

@@ -99,6 +99,10 @@ void PaginationModel::SelectPageRelative(int delta, bool animate) {
   SelectPage(CalculateTargetPage(delta), animate);
 }
 
+void PaginationModel::FinishAnimation() {
+  SelectPage(SelectedTargetPage(), false);
+}
+
 void PaginationModel::SetTransition(const Transition& transition) {
   // -1 and |total_pages_| is a valid target page, which means user is at
   // the end and there is no target page for this scroll.
@@ -177,6 +181,20 @@ void PaginationModel::RemoveObserver(PaginationModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+int PaginationModel::SelectedTargetPage() const {
+  // If no animation, or animation is in reverse, just the selected page.
+  if (!transition_animation_ || !transition_animation_->IsShowing())
+    return selected_page_;
+
+  // If, at the end of the current animation, we will animate to another page,
+  // return that eventual page.
+  if (pending_selected_page_ >= 0)
+    return pending_selected_page_;
+
+  // Just the target of the current animation.
+  return transition_.target_page;
+}
+
 void PaginationModel::NotifySelectedPageChanged(int old_selected,
                                                 int new_selected) {
   FOR_EACH_OBSERVER(PaginationModelObserver,
@@ -194,14 +212,7 @@ void PaginationModel::NotifyTransitionChanged() {
 
 int PaginationModel::CalculateTargetPage(int delta) const {
   DCHECK_GT(total_pages_, 0);
-
-  int current_page = selected_page_;
-  if (transition_animation_ && transition_animation_->IsShowing()) {
-    current_page = pending_selected_page_ >= 0 ?
-        pending_selected_page_ : transition_.target_page;
-  }
-
-  const int target_page = current_page + delta;
+  const int target_page = SelectedTargetPage() + delta;
 
   int start_page = 0;
   int end_page = total_pages_ - 1;

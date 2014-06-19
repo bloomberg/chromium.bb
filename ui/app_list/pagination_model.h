@@ -59,6 +59,10 @@ class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
   // Selects a page by relative |delta|.
   void SelectPageRelative(int delta, bool animate);
 
+  // Immediately completes all queued animations, jumping directly to the final
+  // target page.
+  void FinishAnimation();
+
   void SetTransition(const Transition& transition);
   void SetTransitionDurations(int duration_ms, int overscroll_duration_ms);
 
@@ -92,6 +96,10 @@ class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
   bool has_transition() const {
     return transition_.target_page != -1 || transition_.progress != 0;
   }
+
+  // Gets the page that the animation will eventually land on. If there is no
+  // active animation, just returns selected_page().
+  int SelectedTargetPage() const;
 
  private:
   void NotifySelectedPageChanged(int old_selected, int new_selected);
