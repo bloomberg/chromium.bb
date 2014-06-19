@@ -36,6 +36,22 @@ const uint32 kFilteredMessageClasses[] = {
   EmbeddedWorkerMsgStart,
 };
 
+bool CanRegisterServiceWorker(const GURL& document_url,
+                              const GURL& pattern,
+                              const GURL& script_url) {
+  // TODO: Respect Chrome's content settings, if we add a setting for
+  // controlling whether Service Worker is allowed.
+  return document_url.GetOrigin() == pattern.GetOrigin() &&
+         document_url.GetOrigin() == script_url.GetOrigin();
+}
+
+bool CanUnregisterServiceWorker(const GURL& document_url,
+                                const GURL& pattern) {
+  // TODO: Respect Chrome's content settings, if we add a setting for
+  // controlling whether Service Worker is allowed.
+  return document_url.GetOrigin() == pattern.GetOrigin();
+}
+
 }  // namespace
 
 ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
@@ -161,18 +177,6 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     return;
   }
 
-  // TODO(alecflett): This check is insufficient for release. Add a
-  // ServiceWorker-specific policy query in
-  // ChildProcessSecurityImpl. See http://crbug.com/311631.
-  if (pattern.GetOrigin() != script_url.GetOrigin()) {
-    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
-        thread_id,
-        request_id,
-        WebServiceWorkerError::ErrorTypeSecurity,
-        base::ASCIIToUTF16(kDomainMismatchErrorMessage)));
-    return;
-  }
-
   ServiceWorkerProviderHost* provider_host = GetContext()->GetProviderHost(
       render_process_id_, provider_id);
   if (!provider_host) {
@@ -188,6 +192,15 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     return;
   }
 
+  if (!CanRegisterServiceWorker(
+      provider_host->document_url(), pattern, script_url)) {
+    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+        thread_id,
+        request_id,
+        WebServiceWorkerError::ErrorTypeSecurity,
+        base::ASCIIToUTF16(kDomainMismatchErrorMessage)));
+    return;
+  }
   GetContext()->RegisterServiceWorker(
       pattern,
       script_url,
@@ -204,9 +217,6 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
     int request_id,
     int provider_id,
     const GURL& pattern) {
-  // TODO(alecflett): This check is insufficient for release. Add a
-  // ServiceWorker-specific policy query in
-  // ChildProcessSecurityImpl. See http://crbug.com/311631.
   if (!GetContext() || !ServiceWorkerUtils::IsFeatureEnabled()) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
@@ -228,6 +238,15 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
         request_id,
         blink::WebServiceWorkerError::ErrorTypeDisabled,
         base::ASCIIToUTF16(kDisabledErrorMessage)));
+    return;
+  }
+
+  if (!CanUnregisterServiceWorker(provider_host->document_url(), pattern)) {
+    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+        thread_id,
+        request_id,
+        WebServiceWorkerError::ErrorTypeSecurity,
+        base::ASCIIToUTF16(kDomainMismatchErrorMessage)));
     return;
   }
 
