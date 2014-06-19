@@ -391,20 +391,29 @@ void PictureLayerImpl::UpdateTilePriorities() {
   TRACE_EVENT0("cc", "PictureLayerImpl::UpdateTilePriorities");
 
   DoPostCommitInitializationIfNeeded();
-  UpdateIdealScales();
-  // TODO(sohanjg): Avoid needlessly update priorities when syncing to a
-  // non-updated tree which will then be updated immediately afterwards.
-  should_update_tile_priorities_ = true;
-  if (CanHaveTilings()) {
-    ManageTilings(draw_properties().screen_space_transform_is_animating,
-                  draw_properties().maximum_animation_contents_scale);
-  }
 
   if (layer_tree_impl()->device_viewport_valid_for_tile_management()) {
     visible_rect_for_tile_priority_ = visible_content_rect();
     viewport_size_for_tile_priority_ = layer_tree_impl()->DrawViewportSize();
     screen_space_transform_for_tile_priority_ = screen_space_transform();
   }
+
+  if (!CanHaveTilings()) {
+    ideal_page_scale_ = 0.f;
+    ideal_device_scale_ = 0.f;
+    ideal_contents_scale_ = 0.f;
+    ideal_source_scale_ = 0.f;
+    SanityCheckTilingState();
+    return;
+  }
+
+  // TODO(sohanjg): Avoid needlessly update priorities when syncing to a
+  // non-updated tree which will then be updated immediately afterwards.
+  should_update_tile_priorities_ = true;
+
+  UpdateIdealScales();
+  ManageTilings(draw_properties().screen_space_transform_is_animating,
+                draw_properties().maximum_animation_contents_scale);
 
   if (!tilings_->num_tilings())
     return;
@@ -1150,7 +1159,7 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
   float twin_low_res_scale = 0.f;
 
   PictureLayerImpl* twin = twin_layer_;
-  if (twin) {
+  if (twin && twin->CanHaveTilings()) {
     min_acceptable_high_res_scale = std::min(
         min_acceptable_high_res_scale,
         std::min(twin->raster_contents_scale_, twin->ideal_contents_scale_));
@@ -1273,14 +1282,7 @@ float PictureLayerImpl::MaximumTilingContentsScale() const {
 }
 
 void PictureLayerImpl::UpdateIdealScales() {
-  if (!CanHaveTilings()) {
-    ideal_page_scale_ = draw_properties().page_scale_factor;
-    ideal_device_scale_ = draw_properties().device_scale_factor;
-    ideal_contents_scale_ = draw_properties().ideal_contents_scale;
-    ideal_source_scale_ =
-        ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
-    return;
-  }
+  DCHECK(CanHaveTilings());
 
   float min_contents_scale = MinimumContentsScale();
   DCHECK_GT(min_contents_scale, 0.f);

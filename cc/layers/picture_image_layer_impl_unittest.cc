@@ -32,8 +32,8 @@ class TestablePictureImageLayerImpl : public PictureImageLayerImpl {
   void ScaleAndManageTilings(bool animating_transform_to_screen,
                              float maximum_animation_contents_scale) {
     DoPostCommitInitializationIfNeeded();
-    UpdateIdealScales();
     if (CanHaveTilings()) {
+      UpdateIdealScales();
       ManageTilings(animating_transform_to_screen,
                     maximum_animation_contents_scale);
     }
