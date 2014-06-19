@@ -60,6 +60,9 @@ class SessionCrashedBubbleView
 
   // WidgetDelegateView methods.
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
+  virtual bool ShouldShowWindowTitle() const OVERRIDE;
+  virtual bool ShouldShowCloseButton() const OVERRIDE;
 
   // views::BubbleDelegateView methods.
   virtual void Init() OVERRIDE;
@@ -117,9 +120,6 @@ class SessionCrashedBubbleView
 
   // Button for the user to confirm a session restore.
   views::LabelButton* restore_button_;
-
-  // Button for the user to close this bubble.
-  views::LabelButton* close_;
 
   // Checkbox for the user to opt-in to UMA reporting.
   views::Checkbox* uma_option_;

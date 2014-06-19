@@ -36,6 +36,7 @@
 #include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -55,14 +56,10 @@ const int kWidthOfDescriptionText = 320;
 // Distance between checkbox and the text to the right of it.
 const int kCheckboxTextDistance = 4;
 
-// Margins width for the top rows to compensate for the bottom panel for which
-// we don't want any margin.
-const int kMarginWidth = 12;
-const int kMarginHeight = kMarginWidth;
-
-// The color of the background of the sub panel to offer UMA optin.
-const SkColor kLightGrayBackgroundColor = 0xFFF0F0F0;
-const SkColor kWhiteBackgroundColor = 0xFFFFFFFF;
+// The color of the text and background of the sub panel to offer UMA optin.
+// These values match the BookmarkSyncPromoView colors.
+const SkColor kBackgroundColor = SkColorSetRGB(245, 245, 245);
+const SkColor kTextColor = SkColorSetRGB(102, 102, 102);
 
 // The Finch study name and group name that enables session crashed bubble UI.
 const char kEnableBubbleUIFinchName[] = "EnableSessionCrashedBubbleUI";
@@ -83,13 +80,13 @@ bool ShouldOfferMetricsReporting() {
 
 // Whether or not the bubble UI should be used.
 bool IsBubbleUIEnabled() {
-  const std::string group_name = base::FieldTrialList::FindFullName(
-      kEnableBubbleUIFinchName);
   const base::CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisableSessionCrashedBubble))
     return false;
   if (command_line.HasSwitch(switches::kEnableSessionCrashedBubble))
     return true;
+  const std::string group_name = base::FieldTrialList::FindFullName(
+      kEnableBubbleUIFinchName);
   return group_name == kEnableBubbleUIGroupEnabled;
 }
 
@@ -99,40 +96,28 @@ bool IsBubbleUIEnabled() {
 class SessionCrashedBubbleView::BrowserRemovalObserver
     : public chrome::BrowserListObserver {
  public:
-  explicit BrowserRemovalObserver(Browser* browser);
-  virtual ~BrowserRemovalObserver();
+  explicit BrowserRemovalObserver(Browser* browser) : browser_(browser) {
+    DCHECK(browser_);
+    BrowserList::AddObserver(this);
+  }
+
+  virtual ~BrowserRemovalObserver() {
+    BrowserList::RemoveObserver(this);
+  }
 
   // Overridden from chrome::BrowserListObserver.
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE {
+    if (browser == browser_)
+      browser_ = NULL;
+  }
 
-  Browser* browser() const;
+  Browser* browser() const { return browser_; }
 
  private:
   Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserRemovalObserver);
 };
-
-SessionCrashedBubbleView::BrowserRemovalObserver::BrowserRemovalObserver(
-    Browser* browser)
-    : browser_(browser) {
-  DCHECK(browser_);
-  BrowserList::AddObserver(this);
-}
-
-SessionCrashedBubbleView::BrowserRemovalObserver::~BrowserRemovalObserver() {
-  BrowserList::RemoveObserver(this);
-}
-
-void SessionCrashedBubbleView::BrowserRemovalObserver::OnBrowserRemoved(
-    Browser* browser) {
-  if (browser == browser_)
-    browser_ = NULL;
-}
-
-Browser* SessionCrashedBubbleView::BrowserRemovalObserver::browser() const {
-  return browser_;
-}
 
 // static
 void SessionCrashedBubbleView::Show(Browser* browser) {
@@ -188,7 +173,6 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(
       browser_(browser),
       web_contents_(web_contents),
       restore_button_(NULL),
-      close_(NULL),
       uma_option_(NULL),
       offer_uma_optin_(offer_uma_optin),
       started_navigation_(false) {
@@ -209,32 +193,24 @@ views::View* SessionCrashedBubbleView::GetInitiallyFocusedView() {
   return restore_button_;
 }
 
+base::string16 SessionCrashedBubbleView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_BUBBLE_TITLE);
+}
+
+bool SessionCrashedBubbleView::ShouldShowWindowTitle() const {
+  return true;
+}
+
+bool SessionCrashedBubbleView::ShouldShowCloseButton() const {
+  return true;
+}
+
 void SessionCrashedBubbleView::Init() {
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-
-  // Close button.
-  close_ = new views::LabelButton(this, base::string16());
-  close_->SetImage(views::CustomButton::STATE_NORMAL,
-                   *rb->GetImageNamed(IDR_CLOSE_2).ToImageSkia());
-  close_->SetImage(views::CustomButton::STATE_HOVERED,
-                   *rb->GetImageNamed(IDR_CLOSE_2_H).ToImageSkia());
-  close_->SetImage(views::CustomButton::STATE_PRESSED,
-                   *rb->GetImageNamed(IDR_CLOSE_2_P).ToImageSkia());
-  close_->SetSize(close_->GetPreferredSize());
-  close_->SetBorder(views::Border::CreateEmptyBorder(0, 0, 0, 0));
-
-  // Bubble title label.
-  views::Label* title_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_BUBBLE_TITLE));
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->SetFontList(rb->GetFontList(ui::ResourceBundle::BoldFont));
-
   // Description text label.
   views::Label* text_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_MESSAGE));
   text_label->SetMultiLine(true);
   text_label->SetLineHeight(20);
-  text_label->SetEnabledColor(SK_ColorDKGRAY);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_label->SizeToFit(kWidthOfDescriptionText);
 
@@ -243,56 +219,37 @@ void SessionCrashedBubbleView::Init() {
       this, l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON));
   restore_button_->SetStyle(views::Button::STYLE_BUTTON);
   restore_button_->SetIsDefault(true);
-  restore_button_->SetFontList(rb->GetFontList(ui::ResourceBundle::BoldFont));
 
   GridLayout* layout = new GridLayout(this);
   SetLayoutManager(layout);
 
-  // Title and close button row.
-  const int kTitleColumnSetId = 0;
-  views::ColumnSet* cs = layout->AddColumnSet(kTitleColumnSetId);
-  cs->AddPaddingColumn(0, kMarginWidth);
-  cs->AddColumn(GridLayout::LEADING, GridLayout::TRAILING, 0,
-                GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(1, views::kRelatedControlHorizontalSpacing);
-  cs->AddColumn(GridLayout::TRAILING, GridLayout::LEADING, 0,
-                GridLayout::USE_PREF, 0, 0);
-
   // Text row.
-  const int kTextColumnSetId = 1;
-  cs = layout->AddColumnSet(kTextColumnSetId);
-  cs->AddPaddingColumn(0, kMarginWidth);
-  cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
+  const int kTextColumnSetId = 0;
+  views::ColumnSet* cs = layout->AddColumnSet(kTextColumnSetId);
+  cs->AddPaddingColumn(0, GetBubbleFrameView()->GetTitleInsets().left());
+  cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                 GridLayout::FIXED, kWidthOfDescriptionText, 0);
+  cs->AddPaddingColumn(0, GetBubbleFrameView()->GetTitleInsets().left());
 
-  // Restore button row
-  const int kButtonColumnSetId = 2;
+  // Restore button row.
+  const int kButtonColumnSetId = 1;
   cs = layout->AddColumnSet(kButtonColumnSetId);
-  cs->AddPaddingColumn(0, kMarginWidth);
-  cs->AddPaddingColumn(1, views::kRelatedControlHorizontalSpacing);
-  cs->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
+  cs->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 1,
                 GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, kMarginWidth);
-
-  layout->AddPaddingRow(0, kMarginHeight);
-  layout->StartRow(0, kTitleColumnSetId);
-  layout->AddView(title_label);
-  layout->AddView(close_);
-  layout->AddPaddingRow(0, kMarginHeight);
+  cs->AddPaddingColumn(0, GetBubbleFrameView()->GetTitleInsets().left());
 
   layout->StartRow(0, kTextColumnSetId);
   layout->AddView(text_label);
-  layout->AddPaddingRow(0, kMarginHeight);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, kButtonColumnSetId);
   layout->AddView(restore_button_);
-  layout->AddPaddingRow(0, kMarginHeight);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Metrics reporting option.
   if (offer_uma_optin_)
     CreateUmaOptinView(layout);
 
-  set_color(kWhiteBackgroundColor);
   set_margins(gfx::Insets());
   Layout();
 }
@@ -303,11 +260,9 @@ void SessionCrashedBubbleView::CreateUmaOptinView(GridLayout* layout) {
   // a hyperlink in it), this checkbox contains an empty string as its label,
   // and the real text will be added as a separate view.
   uma_option_ = new views::Checkbox(base::string16());
-  uma_option_->SetTextColor(views::Button::STATE_NORMAL, SK_ColorGRAY);
   uma_option_->SetChecked(false);
   uma_option_->set_background(
-      views::Background::CreateSolidBackground(kLightGrayBackgroundColor));
-  uma_option_->set_listener(this);
+      views::Background::CreateSolidBackground(kBackgroundColor));
 
   // The text to the right of the checkbox.
   size_t offset;
@@ -319,14 +274,14 @@ void SessionCrashedBubbleView::CreateUmaOptinView(GridLayout* layout) {
       &offset);
   views::StyledLabel* uma_label = new views::StyledLabel(uma_text, this);
   uma_label->set_background(
-      views::Background::CreateSolidBackground(kLightGrayBackgroundColor));
+      views::Background::CreateSolidBackground(kBackgroundColor));
   views::StyledLabel::RangeStyleInfo link_style =
       views::StyledLabel::RangeStyleInfo::CreateForLink();
   link_style.font_style = gfx::Font::NORMAL;
   uma_label->AddStyleRange(gfx::Range(offset, offset + link_text.length()),
                            link_style);
   views::StyledLabel::RangeStyleInfo uma_style;
-  uma_style.color = SK_ColorGRAY;
+  uma_style.color = kTextColor;
   gfx::Range before_link_range(0, offset);
   if (!before_link_range.is_empty())
     uma_label->AddStyleRange(before_link_range, uma_style);
@@ -334,24 +289,24 @@ void SessionCrashedBubbleView::CreateUmaOptinView(GridLayout* layout) {
   if (!after_link_range.is_empty())
     uma_label->AddStyleRange(after_link_range, uma_style);
 
-  // We use a border instead of padding so that the background color reach
+  // We use a border instead of padding so that the background color reaches
   // the edges of the bubble.
-  uma_option_->SetBorder(
-      views::Border::CreateSolidSidedBorder(0, kMarginWidth, 0, 0,
-                                            kLightGrayBackgroundColor));
-  uma_label->SetBorder(
-      views::Border::CreateSolidSidedBorder(
-          kMarginHeight, kCheckboxTextDistance, kMarginHeight, kMarginWidth,
-          kLightGrayBackgroundColor));
+  const gfx::Insets title_insets = GetBubbleFrameView()->GetTitleInsets();
+  uma_option_->SetBorder(views::Border::CreateSolidSidedBorder(
+      0, title_insets.left(), 0, 0, kBackgroundColor));
+  uma_label->SetBorder(views::Border::CreateSolidSidedBorder(
+      views::kRelatedControlVerticalSpacing, kCheckboxTextDistance,
+      views::kRelatedControlVerticalSpacing, title_insets.left(),
+      kBackgroundColor));
 
   // Separator.
-  const int kSeparatorColumnSetId = 3;
+  const int kSeparatorColumnSetId = 2;
   views::ColumnSet* cs = layout->AddColumnSet(kSeparatorColumnSetId);
-  cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
-                GridLayout::FIXED, kWidthOfDescriptionText + kMarginWidth, 0);
+  cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                GridLayout::USE_PREF, 0, 0);
 
   // Reporting row.
-  const int kReportColumnSetId = 4;
+  const int kReportColumnSetId = 3;
   cs = layout->AddColumnSet(kReportColumnSetId);
   cs->AddColumn(GridLayout::CENTER, GridLayout::FILL, 0,
                 GridLayout::USE_PREF, 0, 0);
@@ -367,11 +322,8 @@ void SessionCrashedBubbleView::CreateUmaOptinView(GridLayout* layout) {
 
 void SessionCrashedBubbleView::ButtonPressed(views::Button* sender,
                                              const ui::Event& event) {
-  DCHECK(sender);
-  if (sender == restore_button_)
-    RestorePreviousSession(sender);
-  else if (sender == close_)
-    CloseBubble();
+  DCHECK_EQ(sender, restore_button_);
+  RestorePreviousSession(sender);
 }
 
 void SessionCrashedBubbleView::StyledLabelLinkClicked(const gfx::Range& range,
