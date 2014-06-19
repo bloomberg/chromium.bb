@@ -5,6 +5,7 @@
 #include "chrome/browser/apps/shortcut_manager.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,7 +35,11 @@ namespace {
 // This version number is stored in local prefs to check whether app shortcuts
 // need to be recreated. This might happen when we change various aspects of app
 // shortcuts like command-line flags or associated icons, binaries, etc.
+#if defined(OS_MACOSX)
+const int kCurrentAppShortcutsVersion = 1;
+#else
 const int kCurrentAppShortcutsVersion = 0;
+#endif
 
 // Delay in seconds before running UpdateShortcutsForAllApps.
 const int kUpdateShortcutsForAllAppsDelay = 10;
@@ -147,6 +153,9 @@ void AppShortcutManager::OnProfileWillBeRemoved(
 }
 
 void AppShortcutManager::UpdateShortcutsForAllAppsIfNeeded() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
+    return;
+
   int last_version = prefs_->GetInteger(prefs::kAppShortcutsVersion);
   if (last_version >= kCurrentAppShortcutsVersion)
     return;
