@@ -1756,6 +1756,43 @@ StyleRuleKeyframes* BisonCSSParser::createKeyframesRule(const String& name, Pass
     return rulePtr;
 }
 
+static void recordSelectorStats(const CSSParserContext& context, const CSSSelectorList& selectorList)
+{
+    if (!context.useCounter())
+        return;
+
+    for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector)) {
+        for (const CSSSelector* current = selector; current ; current = current->tagHistory()) {
+            UseCounter::Feature feature = UseCounter::NumberOfFeatures;
+            switch (current->pseudoType()) {
+            case CSSSelector::PseudoUnresolved:
+                feature = UseCounter::CSSSelectorPseudoUnresolved;
+                break;
+            case CSSSelector::PseudoShadow:
+                feature = UseCounter::CSSSelectorPseudoShadow;
+                break;
+            case CSSSelector::PseudoContent:
+                feature = UseCounter::CSSSelectorPseudoContent;
+                break;
+            case CSSSelector::PseudoHost:
+                feature = UseCounter::CSSSelectorPseudoHost;
+                break;
+            case CSSSelector::PseudoHostContext:
+                feature = UseCounter::CSSSelectorPseudoHostContext;
+                break;
+            default:
+                break;
+            }
+            if (feature != UseCounter::NumberOfFeatures)
+                context.useCounter()->count(feature);
+            if (current->relation() == CSSSelector::ShadowDeep)
+                context.useCounter()->count(UseCounter::CSSDeepCombinator);
+            if (current->selectorList())
+                recordSelectorStats(context, *current->selectorList());
+        }
+    }
+}
+
 StyleRuleBase* BisonCSSParser::createStyleRule(Vector<OwnPtr<CSSParserSelector> >* selectors)
 {
     StyleRule* result = 0;
@@ -1766,6 +1803,7 @@ StyleRuleBase* BisonCSSParser::createStyleRule(Vector<OwnPtr<CSSParserSelector> 
         rule->setProperties(createStylePropertySet());
         result = rule.get();
         m_parsedRules.append(rule.release());
+        recordSelectorStats(m_context, result->selectorList());
     }
     clearProperties();
     return result;
