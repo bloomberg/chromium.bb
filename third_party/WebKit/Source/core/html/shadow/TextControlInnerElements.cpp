@@ -98,20 +98,20 @@ PassRefPtr<RenderStyle> EditingViewPortElement::customStyleForRenderer()
 
 // ---------------------------
 
-inline TextControlInnerTextElement::TextControlInnerTextElement(Document& document)
+inline TextControlInnerEditorElement::TextControlInnerEditorElement(Document& document)
     : HTMLDivElement(document)
 {
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtrWillBeRawPtr<TextControlInnerTextElement> TextControlInnerTextElement::create(Document& document)
+PassRefPtrWillBeRawPtr<TextControlInnerEditorElement> TextControlInnerEditorElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<TextControlInnerTextElement> element = adoptRefWillBeNoop(new TextControlInnerTextElement(document));
+    RefPtrWillBeRawPtr<TextControlInnerEditorElement> element = adoptRefWillBeNoop(new TextControlInnerEditorElement(document));
     element->setAttribute(idAttr, ShadowElementNames::innerEditor());
     return element.release();
 }
 
-void TextControlInnerTextElement::defaultEventHandler(Event* event)
+void TextControlInnerEditorElement::defaultEventHandler(Event* event)
 {
     // FIXME: In the future, we should add a way to have default event listeners.
     // Then we would add one to the text field's inner div, and we wouldn't need this subclass.
@@ -130,18 +130,18 @@ void TextControlInnerTextElement::defaultEventHandler(Event* event)
         HTMLDivElement::defaultEventHandler(event);
 }
 
-RenderObject* TextControlInnerTextElement::createRenderer(RenderStyle*)
+RenderObject* TextControlInnerEditorElement::createRenderer(RenderStyle*)
 {
     return new RenderTextControlInnerBlock(this);
 }
 
-PassRefPtr<RenderStyle> TextControlInnerTextElement::customStyleForRenderer()
+PassRefPtr<RenderStyle> TextControlInnerEditorElement::customStyleForRenderer()
 {
     RenderObject* parentRenderer = shadowHost()->renderer();
     if (!parentRenderer || !parentRenderer->isTextControl())
         return originalStyleForRenderer();
     RenderTextControl* textControlRenderer = toRenderTextControl(parentRenderer);
-    return textControlRenderer->createInnerTextStyle(textControlRenderer->style());
+    return textControlRenderer->createInnerEditorStyle(textControlRenderer->style());
 }
 
 // ----------------------------

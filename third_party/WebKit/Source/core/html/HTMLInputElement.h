@@ -229,7 +229,7 @@ public:
     bool valueAttributeWasUpdatedAfterParsing() const { return m_valueAttributeWasUpdatedAfterParsing; }
     void updateView();
     bool needsToUpdateViewValue() const { return m_needsToUpdateViewValue; }
-    virtual void setInnerTextValue(const String&) OVERRIDE;
+    virtual void setInnerEditorValue(const String&) OVERRIDE;
 
     void cacheSelectionInResponseToSetValue(int caretOffset) { cacheSelection(caretOffset, caretOffset, SelectionHasNoDirection); }
 
@@ -341,7 +341,7 @@ private:
 
     virtual bool supportsPlaceholder() const OVERRIDE FINAL;
     virtual void updatePlaceholderText() OVERRIDE FINAL;
-    virtual bool isEmptyValue() const OVERRIDE FINAL { return innerTextValue().isEmpty(); }
+    virtual bool isEmptyValue() const OVERRIDE FINAL { return innerEditorValue().isEmpty(); }
     virtual bool isEmptySuggestedValue() const OVERRIDE FINAL { return suggestedValue().isEmpty(); }
     virtual void handleFocusEvent(Element* oldFocusedElement, FocusType) OVERRIDE FINAL;
     virtual void handleBlurEvent() OVERRIDE FINAL;

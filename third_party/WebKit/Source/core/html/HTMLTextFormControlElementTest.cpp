@@ -42,7 +42,7 @@ TEST_F(HTMLTextFormControlElementTest, SetSelectionRange)
     EXPECT_EQ(0, textControl().selectionStart());
     EXPECT_EQ(0, textControl().selectionEnd());
 
-    textControl().setInnerTextValue("Hello, text form.");
+    textControl().setInnerEditorValue("Hello, text form.");
     EXPECT_EQ(0, textControl().selectionStart());
     EXPECT_EQ(0, textControl().selectionEnd());
 

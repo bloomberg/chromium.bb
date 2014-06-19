@@ -110,7 +110,7 @@ const AtomicString& NumberInputType::formControlType() const
 
 void NumberInputType::setValue(const String& sanitizedValue, bool valueChanged, TextFieldEventBehavior eventBehavior)
 {
-    if (!valueChanged && sanitizedValue.isEmpty() && !element().innerTextValue().isEmpty())
+    if (!valueChanged && sanitizedValue.isEmpty() && !element().innerEditorValue().isEmpty())
         element().updateView();
     TextFieldInputType::setValue(sanitizedValue, valueChanged, eventBehavior);
 }
@@ -237,7 +237,7 @@ String NumberInputType::sanitizeValue(const String& proposedValue) const
 
 bool NumberInputType::hasBadInput() const
 {
-    String standardValue = convertFromVisibleValue(element().innerTextValue());
+    String standardValue = convertFromVisibleValue(element().innerEditorValue());
     return !standardValue.isEmpty() && !std::isfinite(parseToDoubleForNumberType(standardValue));
 }
 

@@ -74,7 +74,7 @@ private:
     void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) const;
     static String sanitizeUserInputValue(const String&, unsigned maxLength);
     void updateValue() const;
-    virtual void setInnerTextValue(const String&) OVERRIDE;
+    virtual void setInnerEditorValue(const String&) OVERRIDE;
     void setNonDirtyValue(const String&);
     void setValueCommon(const String&, TextFieldEventBehavior);
 

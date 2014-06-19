@@ -76,12 +76,12 @@ public:
 
     virtual String value() const = 0;
 
-    HTMLElement* innerTextElement() const;
+    HTMLElement* innerEditorElement() const;
 
     void selectionChanged(bool userTriggered);
     bool lastChangeWasUserEdit() const;
-    virtual void setInnerTextValue(const String&);
-    String innerTextValue() const;
+    virtual void setInnerEditorValue(const String&);
+    String innerEditorValue() const;
 
     String directionForFormData() const;
 

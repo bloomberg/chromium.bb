@@ -955,7 +955,7 @@ void HTMLInputElement::setEditingValue(const String& value)
 {
     if (!renderer() || !isTextField())
         return;
-    setInnerTextValue(value);
+    setInnerEditorValue(value);
     subtreeHasChanged();
 
     unsigned max = value.length();
@@ -967,9 +967,9 @@ void HTMLInputElement::setEditingValue(const String& value)
     dispatchInputEvent();
 }
 
-void HTMLInputElement::setInnerTextValue(const String& value)
+void HTMLInputElement::setInnerEditorValue(const String& value)
 {
-    HTMLTextFormControlElement::setInnerTextValue(value);
+    HTMLTextFormControlElement::setInnerEditorValue(value);
     m_needsToUpdateViewValue = false;
 }
 

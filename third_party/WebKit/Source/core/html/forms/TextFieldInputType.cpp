@@ -229,9 +229,9 @@ void TextFieldInputType::forwardEvent(Event* event)
     if (element().renderer() && (event->isMouseEvent() || event->isDragEvent() || event->hasInterface(EventNames::WheelEvent) || event->type() == EventTypeNames::blur || event->type() == EventTypeNames::focus)) {
         RenderTextControlSingleLine* renderTextControl = toRenderTextControlSingleLine(element().renderer());
         if (event->type() == EventTypeNames::blur) {
-            if (RenderBox* innerTextRenderer = element().innerTextElement()->renderBox()) {
+            if (RenderBox* innerEditorRenderer = element().innerEditorElement()->renderBox()) {
                 // FIXME: This class has no need to know about RenderLayer!
-                if (RenderLayer* innerLayer = innerTextRenderer->layer()) {
+                if (RenderLayer* innerLayer = innerEditorRenderer->layer()) {
                     if (RenderLayerScrollableArea* innerScrollableArea = innerLayer->scrollableArea()) {
                         IntSize scrollOffset(!renderTextControl->style()->isLeftToRightDirection() ? innerScrollableArea->scrollWidth().toInt() : 0, 0);
                         innerScrollableArea->scrollToOffset(scrollOffset, ScrollOffsetClamped);
@@ -288,7 +288,7 @@ void TextFieldInputType::createShadowSubtree()
     bool shouldHaveDataListIndicator = element().hasValidDataListOptions();
     bool createsContainer = shouldHaveSpinButton || shouldHaveDataListIndicator || needsContainer();
 
-    RefPtrWillBeRawPtr<TextControlInnerTextElement> innerEditor = TextControlInnerTextElement::create(document);
+    RefPtrWillBeRawPtr<TextControlInnerEditorElement> innerEditor = TextControlInnerEditorElement::create(document);
     if (!createsContainer) {
         shadowRoot->appendChild(innerEditor.release());
         return;
@@ -342,7 +342,7 @@ void TextFieldInputType::listAttributeTargetChanged()
             // containerElement mandatory.
             RefPtrWillBeRawPtr<Element> rpContainer = TextControlInnerContainer::create(document);
             rpContainer->setShadowPseudoId(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
-            RefPtrWillBeRawPtr<Element> innerEditor = element().innerTextElement();
+            RefPtrWillBeRawPtr<Element> innerEditor = element().innerEditorElement();
             innerEditor->parentNode()->replaceChild(rpContainer.get(), innerEditor.get());
             RefPtrWillBeRawPtr<Element> editingViewPort = EditingViewPortElement::create(document);
             editingViewPort->appendChild(innerEditor.release());
@@ -409,10 +409,10 @@ void TextFieldInputType::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent* 
 {
     // Make sure that the text to be inserted will not violate the maxLength.
 
-    // We use HTMLInputElement::innerTextValue() instead of
+    // We use HTMLInputElement::innerEditorValue() instead of
     // HTMLInputElement::value() because they can be mismatched by
     // sanitizeValue() in HTMLInputElement::subtreeHasChanged() in some cases.
-    unsigned oldLength = element().innerTextValue().length();
+    unsigned oldLength = element().innerEditorValue().length();
 
     // selectionLength represents the selection length of this text field to be
     // removed by this insertion.
@@ -462,7 +462,7 @@ void TextFieldInputType::updatePlaceholderText()
         placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
         Element* container = containerElement();
-        Node* previous = container ? container : element().innerTextElement();
+        Node* previous = container ? container : element().innerEditorElement();
         previous->parentNode()->insertBefore(placeholder, previous->nextSibling());
         ASSERT_WITH_SECURITY_IMPLICATION(placeholder->parentNode() == previous->parentNode());
     }
@@ -494,7 +494,7 @@ void TextFieldInputType::subtreeHasChanged()
     // HTMLInputElement::handleBeforeTextInsertedEvent() has already called
     // sanitizeUserInputValue().
     // sanitizeValue() is needed because IME input doesn't dispatch BeforeTextInsertedEvent.
-    element().setValueFromRenderer(sanitizeValue(convertFromVisibleValue(element().innerTextValue())));
+    element().setValueFromRenderer(sanitizeValue(convertFromVisibleValue(element().innerEditorValue())));
     element().updatePlaceholderVisibility(false);
     // Recalc for :invalid change.
     element().setNeedsStyleRecalc(SubtreeStyleChange);
@@ -523,7 +523,7 @@ void TextFieldInputType::spinButtonStepUp()
 void TextFieldInputType::updateView()
 {
     if (!element().suggestedValue().isNull()) {
-        element().setInnerTextValue(element().suggestedValue());
+        element().setInnerEditorValue(element().suggestedValue());
         element().updatePlaceholderVisibility(false);
     } else if (element().needsToUpdateViewValue()) {
         // Update the view only if needsToUpdateViewValue is true. It protects
@@ -532,7 +532,7 @@ void TextFieldInputType::updateView()
         // e.g. <input type=number> has a view value "abc", and input.max is
         // updated. In this case, updateView() is called but we should not
         // update the view value.
-        element().setInnerTextValue(visibleValue());
+        element().setInnerEditorValue(visibleValue());
         element().updatePlaceholderVisibility(false);
     }
 }

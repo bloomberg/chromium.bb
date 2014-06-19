@@ -42,8 +42,8 @@ bool RenderTextControlMultiLine::nodeAtPoint(const HitTestRequest& request, HitT
     if (!RenderTextControl::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, hitTestAction))
         return false;
 
-    if (result.innerNode() == node() || result.innerNode() == innerTextElement())
-        hitInnerTextElement(result, locationInContainer.point(), accumulatedOffset);
+    if (result.innerNode() == node() || result.innerNode() == innerEditorElement())
+        hitInnerEditorElement(result, locationInContainer.point(), accumulatedOffset);
 
     return true;
 }
@@ -75,11 +75,11 @@ int RenderTextControlMultiLine::baselinePosition(FontBaseline baselineType, bool
     return RenderBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
 }
 
-PassRefPtr<RenderStyle> RenderTextControlMultiLine::createInnerTextStyle(const RenderStyle* startStyle) const
+PassRefPtr<RenderStyle> RenderTextControlMultiLine::createInnerEditorStyle(const RenderStyle* startStyle) const
 {
     RefPtr<RenderStyle> textBlockStyle = RenderStyle::create();
     textBlockStyle->inheritFrom(startStyle);
-    adjustInnerTextStyle(textBlockStyle.get());
+    adjustInnerEditorStyle(textBlockStyle.get());
     textBlockStyle->setDisplay(BLOCK);
     textBlockStyle->setUnique();
 

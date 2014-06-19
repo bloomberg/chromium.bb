@@ -97,7 +97,7 @@ PassRefPtrWillBeRawPtr<HTMLTextAreaElement> HTMLTextAreaElement::create(Document
 
 void HTMLTextAreaElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    root.appendChild(TextControlInnerTextElement::create(document()));
+    root.appendChild(TextControlInnerEditorElement::create(document()));
 }
 
 const AtomicString& HTMLTextAreaElement::formControlType() const
@@ -121,7 +121,7 @@ void HTMLTextAreaElement::childrenChanged(bool changedByParser, Node* beforeChan
     HTMLElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
     setLastChangeWasNotUserEdit();
     if (m_isDirty)
-        setInnerTextValue(value());
+        setInnerEditorValue(value());
     else
         setNonDirtyValue(defaultValue());
 }
@@ -290,7 +290,7 @@ void HTMLTextAreaElement::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*
         return;
     unsigned unsignedMaxLength = static_cast<unsigned>(signedMaxLength);
 
-    const String& currentValue = innerTextValue();
+    const String& currentValue = innerEditorValue();
     unsigned currentLength = computeLengthForSubmission(currentValue);
     if (currentLength + computeLengthForSubmission(event->text()) < unsignedMaxLength)
         return;
@@ -320,7 +320,7 @@ void HTMLTextAreaElement::updateValue() const
         return;
 
     ASSERT(renderer());
-    m_value = innerTextValue();
+    m_value = innerEditorValue();
     const_cast<HTMLTextAreaElement*>(this)->m_valueIsUpToDate = true;
     const_cast<HTMLTextAreaElement*>(this)->notifyFormStateChanged();
     m_isDirty = true;
@@ -364,7 +364,7 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
         return;
 
     m_value = normalizedValue;
-    setInnerTextValue(m_value);
+    setInnerEditorValue(m_value);
     if (eventBehavior == DispatchNoEvent)
         setLastChangeWasNotUserEdit();
     updatePlaceholderVisibility(false);
@@ -387,9 +387,9 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
     }
 }
 
-void HTMLTextAreaElement::setInnerTextValue(const String& value)
+void HTMLTextAreaElement::setInnerEditorValue(const String& value)
 {
-    HTMLTextFormControlElement::setInnerTextValue(value);
+    HTMLTextFormControlElement::setInnerEditorValue(value);
     m_valueIsUpToDate = true;
 }
 
@@ -456,9 +456,9 @@ void HTMLTextAreaElement::setSuggestedValue(const String& value)
     m_suggestedValue = value;
 
     if (!value.isNull())
-        setInnerTextValue(m_suggestedValue);
+        setInnerEditorValue(m_suggestedValue);
     else
-        setInnerTextValue(m_value);
+        setInnerEditorValue(m_value);
     updatePlaceholderVisibility(false);
     setNeedsStyleRecalc(SubtreeStyleChange);
 }
@@ -552,7 +552,7 @@ void HTMLTextAreaElement::updatePlaceholderText()
         placeholder = newElement.get();
         placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
-        userAgentShadowRoot()->insertBefore(placeholder, innerTextElement()->nextSibling());
+        userAgentShadowRoot()->insertBefore(placeholder, innerEditorElement()->nextSibling());
     }
     placeholder->setTextContent(placeholderText);
 }

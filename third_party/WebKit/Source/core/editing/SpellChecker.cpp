@@ -129,7 +129,7 @@ void SpellChecker::didBeginEditing(Element* element)
         if (isHTMLTextFormControlElement(*element)) {
             HTMLTextFormControlElement* textControl = toHTMLTextFormControlElement(element);
             parent = textControl;
-            element = textControl->innerTextElement();
+            element = textControl->innerEditorElement();
             isTextField = isHTMLInputElement(*textControl) && toHTMLInputElement(*textControl).isTextField();
         }
 
@@ -702,11 +702,11 @@ void SpellChecker::didEndEditingOnTextField(Element* e)
     // Prevent new ones from appearing too.
     m_spellCheckRequester->cancelCheck();
     HTMLTextFormControlElement* textFormControlElement = toHTMLTextFormControlElement(e);
-    HTMLElement* innerText = textFormControlElement->innerTextElement();
+    HTMLElement* innerEditor = textFormControlElement->innerEditorElement();
     DocumentMarker::MarkerTypes markerTypes(DocumentMarker::Spelling);
     if (isGrammarCheckingEnabled() || unifiedTextCheckerEnabled())
         markerTypes.add(DocumentMarker::Grammar);
-    for (Node* node = innerText; node; node = NodeTraversal::next(*node, innerText)) {
+    for (Node* node = innerEditor; node; node = NodeTraversal::next(*node, innerEditor)) {
         m_frame.document()->markers().removeMarkers(node, markerTypes);
     }
 }

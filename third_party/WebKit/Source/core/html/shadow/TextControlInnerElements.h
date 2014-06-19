@@ -53,14 +53,14 @@ private:
     virtual bool supportsFocus() const OVERRIDE { return false; }
 };
 
-class TextControlInnerTextElement FINAL : public HTMLDivElement {
+class TextControlInnerEditorElement FINAL : public HTMLDivElement {
 public:
-    static PassRefPtrWillBeRawPtr<TextControlInnerTextElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<TextControlInnerEditorElement> create(Document&);
 
     virtual void defaultEventHandler(Event*) OVERRIDE;
 
 private:
-    explicit TextControlInnerTextElement(Document&);
+    explicit TextControlInnerEditorElement(Document&);
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
     virtual bool supportsFocus() const OVERRIDE { return false; }

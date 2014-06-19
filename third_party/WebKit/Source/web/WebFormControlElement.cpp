@@ -137,9 +137,9 @@ WebString WebFormControlElement::suggestedValue() const
 WebString WebFormControlElement::editingValue() const
 {
     if (isHTMLInputElement(*m_private))
-        return constUnwrap<HTMLInputElement>()->innerTextValue();
+        return constUnwrap<HTMLInputElement>()->innerEditorValue();
     if (isHTMLTextAreaElement(*m_private))
-        return constUnwrap<HTMLTextAreaElement>()->innerTextValue();
+        return constUnwrap<HTMLTextAreaElement>()->innerEditorValue();
     return WebString();
 }
 

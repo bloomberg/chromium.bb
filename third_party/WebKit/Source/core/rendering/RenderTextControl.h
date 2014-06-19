@@ -34,20 +34,21 @@ public:
     virtual ~RenderTextControl();
 
     HTMLTextFormControlElement* textFormControlElement() const;
-    virtual PassRefPtr<RenderStyle> createInnerTextStyle(const RenderStyle* startStyle) const = 0;
+    virtual PassRefPtr<RenderStyle> createInnerEditorStyle(const RenderStyle* startStyle) const = 0;
 
 protected:
     RenderTextControl(HTMLTextFormControlElement*);
 
-    // This convenience function should not be made public because innerTextElement may outlive the render tree.
-    HTMLElement* innerTextElement() const;
+    // This convenience function should not be made public because
+    // innerEditorElement may outlive the render tree.
+    HTMLElement* innerEditorElement() const;
 
     int scrollbarThickness() const;
-    void adjustInnerTextStyle(RenderStyle* textBlockStyle) const;
+    void adjustInnerEditorStyle(RenderStyle* textBlockStyle) const;
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
-    void hitInnerTextElement(HitTestResult&, const LayoutPoint& pointInContainer, const LayoutPoint& accumulatedOffset);
+    void hitInnerEditorElement(HitTestResult&, const LayoutPoint& pointInContainer, const LayoutPoint& accumulatedOffset);
 
     int textBlockLogicalWidth() const;
     int textBlockLogicalHeight() const;

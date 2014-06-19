@@ -120,7 +120,7 @@ void SearchInputType::handleKeydownEvent(KeyboardEvent* event)
 void SearchInputType::startSearchEventTimer()
 {
     ASSERT(element().renderer());
-    unsigned length = element().innerTextValue().length();
+    unsigned length = element().innerEditorValue().length();
 
     if (!length) {
         stopSearchEventTimer();

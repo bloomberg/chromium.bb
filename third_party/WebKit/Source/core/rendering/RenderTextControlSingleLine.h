@@ -34,8 +34,8 @@ class RenderTextControlSingleLine : public RenderTextControl {
 public:
     RenderTextControlSingleLine(HTMLInputElement*);
     virtual ~RenderTextControlSingleLine();
-    // FIXME: Move createInnerTextStyle() to TextControlInnerTextElement.
-    virtual PassRefPtr<RenderStyle> createInnerTextStyle(const RenderStyle* startStyle) const OVERRIDE FINAL;
+    // FIXME: Move createInnerEditorStyle() to TextControlInnerEditorElement.
+    virtual PassRefPtr<RenderStyle> createInnerEditorStyle(const RenderStyle* startStyle) const OVERRIDE FINAL;
 
     void capsLockStateMayHaveChanged();
 
@@ -78,7 +78,7 @@ private:
     HTMLElement* innerSpinButtonElement() const;
 
     bool m_shouldDrawCapsLockIndicator;
-    LayoutUnit m_desiredInnerTextLogicalHeight;
+    LayoutUnit m_desiredInnerEditorLogicalHeight;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTextControlSingleLine, isTextField());
