@@ -182,6 +182,13 @@ public class OmniboxSuggestion {
         return mIsDeletable;
     }
 
+    /**
+     * @return The relevance score of this suggestion.
+     */
+    public int getRelevance() {
+        return mRelevance;
+    }
+
     @Override
     public String toString() {
         return mType + " relevance=" +  mRelevance + " \"" + mDisplayText + "\" -> " + mUrl;
