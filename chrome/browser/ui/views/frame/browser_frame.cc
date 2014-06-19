@@ -184,7 +184,8 @@ views::View* BrowserFrame::GetFrameView() const {
 }
 
 bool BrowserFrame::UseCustomFrame() const {
-  return use_custom_frame_pref_.GetValue();
+  return use_custom_frame_pref_.GetValue() &&
+      browser_view_->IsBrowserTypeNormal();
 }
 
 bool BrowserFrame::ShouldSaveWindowPlacement() const {
