@@ -62,6 +62,7 @@ group("root") {
     "//sql",
     "//third_party/angle:translator",
     "//third_party/brotli",
+    "//third_party/ffmpeg",
     "//third_party/flac",
     "//third_party/harfbuzz-ng",
     "//third_party/iccjpeg",
@@ -161,6 +162,7 @@ group("root") {
       "//third_party/WebKit/public:all_blink",
 
       # Not tested on Android yet:
+      "//third_party/ffmpeg",
       "//webkit/browser:storage",
       "//webkit/child",
     ]
