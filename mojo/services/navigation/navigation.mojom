@@ -18,6 +18,11 @@ struct ResponseDetails {
   handle<data_pipe_consumer> response_body_stream;
 };
 
+// Embedders that support navigation of implement this interface.
+interface NavigatorHost {
+  RequestNavigate(uint32 source_node_id, NavigationDetails details);
+};
+
 // Applications implement this interface to support navigation of their views
 // by embedders.
 // |response_details| can be NULL when a navigation was not the result of a

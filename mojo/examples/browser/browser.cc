@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/services/navigation/navigation.mojom.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
@@ -10,9 +12,9 @@
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
-#include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "mojo/views/native_widget_view_manager.h"
 #include "mojo/views/views_init.h"
+#include "ui/events/event.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/layout/layout_manager.h"
@@ -23,28 +25,6 @@
 namespace mojo {
 namespace examples {
 
-class NodeView : public views::View {
- public:
-  explicit NodeView(view_manager::Node* node) : node_(node) {
-    // This class is provisional and assumes that the node has already been
-    // added to a parent. I suspect we'll want to make an improved version of
-    // this that lives in ui/views akin to NativeViewHost that properly
-    // attaches/detaches when the view is.
-    DCHECK(node->parent());
-  }
-  virtual ~NodeView() {}
-
-  // Overridden from views::View:
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE {
-    node_->SetBounds(ConvertRectToWidget(GetLocalBounds()));
-  }
-
- private:
-  view_manager::Node* node_;
-
-  DISALLOW_COPY_AND_ASSIGN(NodeView);
-};
-
 class BrowserLayoutManager : public views::LayoutManager {
  public:
   BrowserLayoutManager() {}
@@ -53,16 +33,11 @@ class BrowserLayoutManager : public views::LayoutManager {
  private:
   // Overridden from views::LayoutManager:
   virtual void Layout(views::View* host) OVERRIDE {
-    // Browser view has two children:
-    // 1. text input field.
-    // 2. content view.
-    DCHECK_EQ(2, host->child_count());
+    // Browser view has one child, a text input field.
+    DCHECK_EQ(1, host->child_count());
     views::View* text_field = host->child_at(0);
     gfx::Size ps = text_field->GetPreferredSize();
     text_field->SetBoundsRect(gfx::Rect(host->width(), ps.height()));
-    views::View* content_area = host->child_at(1);
-    content_area->SetBounds(0, text_field->bounds().bottom(), host->width(),
-                            host->height() - text_field->bounds().bottom());
   }
   virtual gfx::Size GetPreferredSize(const views::View* host) const OVERRIDE {
     return gfx::Size();
@@ -75,10 +50,9 @@ class BrowserLayoutManager : public views::LayoutManager {
 // TODO: cleanup!
 class Browser : public Application,
                 public view_manager::ViewManagerDelegate,
-                public views::TextfieldController,
-                public InterfaceImpl<launcher::LauncherClient> {
+                public views::TextfieldController {
  public:
-  Browser() : view_manager_(NULL), view_(NULL), content_node_(NULL) {}
+  Browser() : view_manager_(NULL), view_(NULL) {}
 
   virtual ~Browser() {
   }
@@ -88,8 +62,7 @@ class Browser : public Application,
   virtual void Initialize() MOJO_OVERRIDE {
     views_init_.reset(new ViewsInit);
     view_manager::ViewManager::Create(this, this);
-    ConnectTo("mojo:mojo_launcher", &launcher_);
-    launcher_.set_client(this);
+    ConnectTo("mojo:mojo_window_manager", &navigator_host_);
   }
 
   void CreateWidget(const gfx::Size& size) {
@@ -98,13 +71,12 @@ class Browser : public Application,
 
     views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;
     widget_delegate->GetContentsView()->AddChildView(textfield);
-    widget_delegate->GetContentsView()->AddChildView(
-        new NodeView(content_node_));
     widget_delegate->GetContentsView()->SetLayoutManager(
         new BrowserLayoutManager);
 
     views::Widget* widget = new views::Widget;
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+    views::Widget::InitParams params(
+        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.native_widget = new NativeWidgetViewManager(widget, view_);
     params.delegate = widget_delegate;
     params.bounds = gfx::Rect(size.width(), size.height());
@@ -120,12 +92,7 @@ class Browser : public Application,
     view_manager_ = view_manager;
     view_ = view_manager::View::Create(view_manager_);
     view_manager_->GetRoots().front()->SetActiveView(view_);
-
-    content_node_ = view_manager::Node::Create(view_manager_);
-    root->AddChild(content_node_);
-
     root->SetFocus();
-
     CreateWidget(root->bounds().size());
   }
 
@@ -135,34 +102,30 @@ class Browser : public Application,
     if (key_event.key_code() == ui::VKEY_RETURN) {
       GURL url(sender->text());
       printf("User entered this URL: %s\n", url.spec().c_str());
-      launcher_->Launch(url.spec());
+      navigation::NavigationDetailsPtr nav_details(
+          navigation::NavigationDetails::New());
+      nav_details->url = url.spec();
+      navigator_host_->RequestNavigate(view_manager_->GetRoots().front()->id(),
+                                       nav_details.Pass());
     }
     return false;
   }
 
-  // launcher::LauncherClient:
-  virtual void OnLaunch(
-      const String& handler_url,
-      navigation::ResponseDetailsPtr response_details) OVERRIDE {
-    content_node_->Embed(handler_url);
-
-    navigation::NavigationDetailsPtr navigation_details(
-        navigation::NavigationDetails::New());
-    navigation_details->url = response_details->response->url;
-
-    navigation::NavigatorPtr navigator;
-    ConnectTo(handler_url, &navigator);
-    navigator->Navigate(content_node_->id(),
-                        navigation_details.Pass(),
-                        response_details.Pass());
+  virtual void ContentsChanged(views::Textfield* sender,
+                               const base::string16& new_contents) OVERRIDE {
+    // Ghetto workaround for crbug.com/386256.
+    if (EndsWith(new_contents, base::ASCIIToUTF16("]"), false)) {
+      sender->SetText(new_contents.substr(0, new_contents.size() - 1));
+      HandleKeyEvent(sender, ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_RETURN,
+                                          0, false));
+    }
   }
 
   scoped_ptr<ViewsInit> views_init_;
 
   view_manager::ViewManager* view_manager_;
   view_manager::View* view_;
-  view_manager::Node* content_node_;
-  launcher::LauncherPtr launcher_;
+  navigation::NavigatorHostPtr navigator_host_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

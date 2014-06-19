@@ -259,7 +259,6 @@
       'dependencies': [
         'mojo_cpp_bindings',
         'mojo_network_bindings',
-        'mojo_navigation_bindings',
       ],
     },
     {

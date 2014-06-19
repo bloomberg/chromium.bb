@@ -145,12 +145,8 @@ void LaunchInstance::OnReceivedResponse(URLResponsePtr response) {
   std::string content_type = GetContentType(response->headers);
   std::string handler_url = app_->GetHandlerForContentType(content_type);
   if (!handler_url.empty()) {
-    navigation::ResponseDetailsPtr response_details =
-        navigation::ResponseDetails::New();
-    response_details->response = response.Pass();
-    response_details->response_body_stream = response_body_stream_.Pass();
-
-    client_->OnLaunch(handler_url, response_details.Pass());
+    client_->OnLaunch(handler_url, response.Pass(),
+                      response_body_stream_.Pass());
   }
 }
 
