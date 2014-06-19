@@ -232,7 +232,7 @@ void ShellDesktopController::CreateRootWindow() {
   // Set up basic pieces of ui::wm.
   gfx::Size size = GetPrimaryDisplaySize();
   if (size.IsEmpty())
-    size = gfx::Size(1366, 768);
+    size = gfx::Size(1280, 720);
 
   host_.reset(aura::WindowTreeHost::Create(gfx::Rect(size)));
   host_->InitHost();
