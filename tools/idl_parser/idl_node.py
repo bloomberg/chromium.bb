@@ -201,7 +201,7 @@ class IDLNode(object):
         child._parent = self
         self._children.append(child)
         continue
-      raise RuntimeError('Adding child of type .\n' % type(child).__name__)
+      raise RuntimeError('Adding child of type %s.\n' % type(child).__name__)
 
 
 #

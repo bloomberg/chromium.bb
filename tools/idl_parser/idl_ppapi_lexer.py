@@ -58,8 +58,9 @@ class IDLPPAPILexer(IDLLexer):
     self._AddKeywords(['mem_t', 'str_t', 'cstr_t', 'interface_t'])
 
     # Remove JS types
-    self._DelKeywords(['boolean', 'byte', 'Date', 'DOMString', 'double',
-                       'float', 'long', 'object', 'octet', 'short', 'unsigned'])
+    self._DelKeywords(['boolean', 'byte', 'ByteString', 'Date', 'DOMString',
+                       'double', 'float', 'long', 'object', 'octet', 'RegExp',
+                       'short', 'unsigned'])
 
 
 # If run by itself, attempt to build the lexer

@@ -12,7 +12,7 @@
 # on WebIDL.
 #
 # WebIDL, and WebIDL grammar can be found at:
-#   http://dev.w3.org/2006/webapi/WebIDL/
+#   http://heycam.github.io/webidl/
 # PLY can be found at:
 #   http://www.dabeaz.com/ply/
 #
@@ -144,7 +144,7 @@ def TokenTypeName(t):
 #    http://www.dabeaz.com/ply/
 #
 # The parser is based on the WebIDL standard.  See:
-#    http://www.w3.org/TR/WebIDL/#idl-grammar
+#    http://heycam.github.io/webidl/#idl-grammar
 #
 # The various productions are annotated so that the WHOLE number greater than
 # zero in the comment denotes the matching WebIDL grammar definition.
@@ -183,7 +183,7 @@ class IDLParser(object):
 
 #
 #The parser is based on the WebIDL standard.  See:
-# http://www.w3.org/TR/WebIDL/#idl-grammar
+# http://heycam.github.io/webidl/#idl-grammar
 #
   # [1]
   def p_Definitions(self, p):
@@ -193,7 +193,7 @@ class IDLParser(object):
       p[2].AddChildren(p[1])
       p[0] = ListFromConcat(p[2], p[3])
 
-      # [2] Add INLINE definition
+  # [2]
   def p_Definition(self, p):
     """Definition : CallbackOrInterface
                   | Partial
@@ -229,13 +229,13 @@ class IDLParser(object):
     """Interface : INTERFACE identifier Inheritance '{' InterfaceMembers '}' ';'"""
     p[0] = self.BuildNamed('Interface', p, 2, ListFromConcat(p[3], p[5]))
 
-  # [6] Error recovery for PARTIAL
+  # [6]
   def p_Partial(self, p):
     """Partial : PARTIAL PartialDefinition"""
     p[2].AddChildren(self.BuildTrue('Partial'))
     p[0] = p[2]
 
-  # [6.1] Error recovery for Enums
+  # [6.1] Error recovery for Partial
   def p_PartialError(self, p):
     """Partial : PARTIAL error"""
     p[0] = self.BuildError(p, 'Partial')
@@ -262,7 +262,7 @@ class IDLParser(object):
   # [10]
   def p_InterfaceMember(self, p):
     """InterfaceMember : Const
-                       | AttributeOrOperation"""
+                       | AttributeOrOperationOrIterator"""
     p[0] = p[1]
 
   # [11]
@@ -353,47 +353,54 @@ class IDLParser(object):
 
   # [21]
   def p_EnumValueList(self, p):
-    """EnumValueList : ExtendedAttributeList string EnumValues"""
+    """EnumValueList : ExtendedAttributeList string EnumValueListComma"""
     enum = self.BuildNamed('EnumItem', p, 2, p[1])
     p[0] = ListFromConcat(enum, p[3])
 
   # [22]
-  def p_EnumValues(self, p):
-    """EnumValues : ',' ExtendedAttributeList string EnumValues
-                  |"""
+  def p_EnumValueListComma(self, p):
+    """EnumValueListComma : ',' EnumValueListString
+                          |"""
     if len(p) > 1:
-      enum = self.BuildNamed('EnumItem', p, 3, p[2])
-      p[0] = ListFromConcat(enum, p[4])
+      p[0] = p[2]
 
   # [23]
+  def p_EnumValueListString(self, p):
+    """EnumValueListString : ExtendedAttributeList string EnumValueListComma
+                           |"""
+    if len(p) > 1:
+      enum = self.BuildNamed('EnumItem', p, 2, p[1])
+      p[0] = ListFromConcat(enum, p[3])
+
+  # [24]
   def p_CallbackRest(self, p):
     """CallbackRest : identifier '=' ReturnType '(' ArgumentList ')' ';'"""
     arguments = self.BuildProduction('Arguments', p, 4, p[5])
     p[0] = self.BuildNamed('Callback', p, 1, ListFromConcat(p[3], arguments))
 
-  # [24]
+  # [25]
   def p_Typedef(self, p):
     """Typedef : TYPEDEF ExtendedAttributeListNoComments Type identifier ';'"""
     p[0] = self.BuildNamed('Typedef', p, 4, ListFromConcat(p[2], p[3]))
 
-  # [24.1] Error recovery for Typedefs
+  # [25.1] Error recovery for Typedefs
   def p_TypedefError(self, p):
     """Typedef : TYPEDEF error ';'"""
     p[0] = self.BuildError(p, 'Typedef')
 
-  # [25]
+  # [26]
   def p_ImplementsStatement(self, p):
     """ImplementsStatement : identifier IMPLEMENTS identifier ';'"""
     name = self.BuildAttribute('REFERENCE', p[3])
     p[0] = self.BuildNamed('Implements', p, 1, name)
 
-  # [26]
+  # [27]
   def p_Const(self,  p):
     """Const : CONST ConstType identifier '=' ConstValue ';'"""
     value = self.BuildProduction('Value', p, 5, p[5])
     p[0] = self.BuildNamed('Const', p, 3, ListFromConcat(p[2], value))
 
-  # [27]
+  # [28]
   def p_ConstValue(self, p):
     """ConstValue : BooleanLiteral
                   | FloatLiteral
@@ -405,20 +412,20 @@ class IDLParser(object):
     else:
       p[0] = p[1]
 
-  # [27.1] Add definition for NULL
+  # [28.1] Add definition for NULL
   def p_null(self, p):
     """null : NULL"""
     p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'NULL'),
                           self.BuildAttribute('NAME', 'NULL'))
 
-  # [28]
+  # [29]
   def p_BooleanLiteral(self, p):
     """BooleanLiteral : TRUE
                       | FALSE"""
     value = self.BuildAttribute('VALUE', Boolean(p[1] == 'true'))
     p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'boolean'), value)
 
-  # [29]
+  # [30]
   def p_FloatLiteral(self, p):
     """FloatLiteral : float
                     | '-' INFINITY
@@ -431,77 +438,82 @@ class IDLParser(object):
     p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'float'),
                           self.BuildAttribute('VALUE', val))
 
-  # [30]
-  def p_AttributeOrOperation(self, p):
-    """AttributeOrOperation : STRINGIFIER StringifierAttributeOrOperation
-                            | StaticAttribute
-                            | Attribute
-                            | Operation"""
-    if len(p) > 2:
-      p[0] = p[2]
-    else:
-      p[0] = p[1]
+  # [31] Removed unsupported: Serializer, Stringifier
+  def p_AttributeOrOperationOrIterator(self, p):
+    """AttributeOrOperationOrIterator : StaticMember
+                                      | Attribute
+                                      | OperationOrIterator"""
+    p[0] = p[1]
 
-  # [31]
-  def p_StringifierAttributeOrOperation(self, p):
-    """StringifierAttributeOrOperation : Attribute
-                                       | OperationRest
-                                       | ';'"""
-    if p[1] == ';':
-      p[0] = self.BuildAttribute('STRINGIFIER', Boolean(True))
-    else:
-      p[0] = ListFromConcat(self.BuildAttribute('STRINGIFIER', p[1]), p[1])
+  # [32-37] NOT IMPLEMENTED (Serializer)
+  # [38-39] FIXME: NOT IMPLEMENTED (Stringifier) http://crbug.com/306606
 
-  # [31.1] FIXME: temporary production as part of moving |static| into
-  # base parser
-  def p_StaticAttribute(self, p):
-    """StaticAttribute : STATIC Attribute"""
+  # [40]
+  def p_StaticMember(self, p):
+    """StaticMember : STATIC StaticMemberRest"""
     p[2].AddChildren(self.BuildTrue('STATIC'))
     p[0] = p[2]
 
-  # [32]
-  def p_Attribute(self, p):
-    """Attribute : Inherit ReadOnly ATTRIBUTE Type identifier ';'"""
-    p[0] = self.BuildNamed('Attribute', p, 5,
-                           ListFromConcat(p[1], p[2], p[4]))
+  # [41]
+  def p_StaticMemberRest(self, p):
+    """StaticMemberRest : AttributeRest
+                        | ReturnType OperationRest"""
+    if len(p) == 2:
+      p[0] = p[1]
+    else:
+      p[2].AddChildren(p[1])
+      p[0] = p[2]
 
-  # [33]
+  # [42]
+  def p_Attribute(self, p):
+    """Attribute : Inherit AttributeRest"""
+    p[2].AddChildren(ListFromConcat(p[1]))
+    p[0] = p[2]
+
+  # [43]
+  def p_AttributeRest(self, p):
+    """AttributeRest : ReadOnly ATTRIBUTE Type identifier ';'"""
+    p[0] = self.BuildNamed('Attribute', p, 4,
+                           ListFromConcat(p[1], p[3]))
+
+  # [44]
   def p_Inherit(self, p):
     """Inherit : INHERIT
                |"""
     if len(p) > 1:
       p[0] = self.BuildTrue('INHERIT')
 
-  # [34]
+  # [45]
   def p_ReadOnly(self, p):
     """ReadOnly : READONLY
-               |"""
+                |"""
     if len(p) > 1:
       p[0] = self.BuildTrue('READONLY')
 
-  # [35]
-  def p_Operation(self, p):
-    """Operation : Qualifiers OperationRest"""
-    p[2].AddChildren(p[1])
-    p[0] = p[2]
-
-  # [36]
-  def p_Qualifiers(self, p):
-    """Qualifiers : STATIC
-                  | Specials"""
-    if p[1] == 'static':
-      p[0] = self.BuildTrue('STATIC')
+  # [46]
+  def p_OperationOrIterator(self, p):
+    """OperationOrIterator : ReturnType OperationOrIteratorRest
+                           | SpecialOperation"""
+    if len(p) == 3:
+      p[2].AddChildren(p[1])
+      p[0] = p[2]
     else:
       p[0] = p[1]
 
-  # [37]
+  # [47]
+  def p_SpecialOperation(self, p):
+    """SpecialOperation : Special Specials ReturnType OperationRest"""
+    p[4].AddChildren(ListFromConcat(p[1], p[2], p[3]))
+    p[0] = p[4]
+
+  # [48]
   def p_Specials(self, p):
     """Specials : Special Specials
                 | """
     if len(p) > 1:
       p[0] = ListFromConcat(p[1], p[2])
 
-  # [38]
+  # [49]
   def p_Special(self, p):
     """Special : GETTER
                | SETTER
@@ -510,14 +522,20 @@ class IDLParser(object):
                | LEGACYCALLER"""
     p[0] = self.BuildTrue(p[1].upper())
 
+  # [50] Removed unsupported: IteratorRest
+  def p_OperationOrIteratorRest(self, p):
+    """OperationOrIteratorRest : OperationRest"""
+    p[0] = p[1]
 
-  # [39]
+  # [51-53] NOT IMPLEMENTED (IteratorRest)
+
+  # [54]
   def p_OperationRest(self, p):
-    """OperationRest : ReturnType OptionalIdentifier '(' ArgumentList ')' ';'"""
-    arguments = self.BuildProduction('Arguments', p, 3, p[4])
-    p[0] = self.BuildNamed('Operation', p, 2, ListFromConcat(p[1], arguments))
+    """OperationRest : OptionalIdentifier '(' ArgumentList ')' ';'"""
+    arguments = self.BuildProduction('Arguments', p, 2, p[3])
+    p[0] = self.BuildNamed('Operation', p, 1, arguments)
 
-  # [40]
+  # [55]
   def p_OptionalIdentifier(self, p):
     """OptionalIdentifier : identifier
                           |"""
@@ -526,33 +544,32 @@ class IDLParser(object):
     else:
       p[0] = '_unnamed_'
 
-  # [41]
+  # [56]
   def p_ArgumentList(self, p):
     """ArgumentList : Argument Arguments
                     |"""
     if len(p) > 1:
       p[0] = ListFromConcat(p[1], p[2])
 
-  # [41.1] ArgumentList error recovery
+  # [56.1] ArgumentList error recovery
   def p_ArgumentListError(self, p):
     """ArgumentList : error """
     p[0] = self.BuildError(p, 'ArgumentList')
 
-  # [42]
+  # [57]
   def p_Arguments(self, p):
     """Arguments : ',' Argument Arguments
                  |"""
     if len(p) > 1:
       p[0] = ListFromConcat(p[2], p[3])
 
-  # [43]
+  # [58]
   def p_Argument(self, p):
     """Argument : ExtendedAttributeList OptionalOrRequiredArgument"""
     p[2].AddChildren(p[1])
     p[0] = p[2]
 
-
-  # [44]
+  # [59]
   def p_OptionalOrRequiredArgument(self, p):
     """OptionalOrRequiredArgument : OPTIONAL Type ArgumentName Default
                                   | Type Ellipsis ArgumentName"""
@@ -563,13 +580,13 @@ class IDLParser(object):
       arg = self.BuildNamed('Argument', p, 3, ListFromConcat(p[1], p[2]))
     p[0] = arg
 
-  # [45]
+  # [60]
   def p_ArgumentName(self, p):
     """ArgumentName : ArgumentNameKeyword
                     | identifier"""
     p[0] = p[1]
 
-  # [46]
+  # [61]
   def p_Ellipsis(self, p):
     """Ellipsis : ELLIPSIS
                 |"""
@@ -577,23 +594,23 @@ class IDLParser(object):
       p[0] = self.BuildNamed('Argument', p, 1)
       p[0].AddChildren(self.BuildTrue('ELLIPSIS'))
 
-  # [47]
+  # [62]
   def p_ExceptionMember(self, p):
     """ExceptionMember : Const
                        | ExceptionField"""
     p[0] = p[1]
 
-  # [48]
+  # [63]
   def p_ExceptionField(self, p):
     """ExceptionField : Type identifier ';'"""
     p[0] = self.BuildNamed('ExceptionField', p, 2, p[1])
 
-  # [48.1] Error recovery for ExceptionMembers
+  # [63.1] Error recovery for ExceptionMembers
   def p_ExceptionFieldError(self, p):
     """ExceptionField : error"""
     p[0] = self.BuildError(p, 'ExceptionField')
 
-  # [49] No comment version for mid statement attributes.
+  # [64] No comment version for mid statement attributes.
   def p_ExtendedAttributeListNoComments(self, p):
     """ExtendedAttributeListNoComments : '[' ExtendedAttribute ExtendedAttributes ']'
                                        | """
@@ -601,7 +618,7 @@ class IDLParser(object):
       items = ListFromConcat(p[2], p[3])
       p[0] = self.BuildProduction('ExtAttributes', p, 1, items)
 
-  # [49.1] Add optional comment field for start of statements.
+  # [64.1] Add optional comment field for start of statements.
   def p_ExtendedAttributeList(self, p):
     """ExtendedAttributeList : Comments '[' ExtendedAttribute ExtendedAttributes ']'
                              | Comments """
@@ -612,7 +629,7 @@ class IDLParser(object):
     else:
       p[0] = p[1]
 
-  # [50]
+  # [65]
   def p_ExtendedAttributes(self, p):
     """ExtendedAttributes : ',' ExtendedAttribute ExtendedAttributes
                           |"""
@@ -624,8 +641,8 @@ class IDLParser(object):
   #    [ identifier = identifier ]
   #    [ identifier ( ArgumentList )]
   #    [ identifier = identifier ( ArgumentList )]
-  # [51] map directly to 74-77
-  # [52-54, 56] are unsupported
+  # [66] map directly to [91-93, 95]
+  # [67-69, 71] are unsupported
   def p_ExtendedAttribute(self, p):
     """ExtendedAttribute : ExtendedAttributeNoArgs
                          | ExtendedAttributeArgList
@@ -633,7 +650,7 @@ class IDLParser(object):
                          | ExtendedAttributeNamedArgList"""
     p[0] = p[1]
 
-  # [55]
+  # [70]
   def p_ArgumentNameKeyword(self, p):
     """ArgumentNameKeyword : ATTRIBUTE
                            | CALLBACK
@@ -648,6 +665,7 @@ class IDLParser(object):
                            | INHERIT
                            | LEGACYCALLER
                            | PARTIAL
+                           | SERIALIZER
                            | SETTER
                            | STATIC
                            | STRINGIFIER
@@ -655,7 +673,7 @@ class IDLParser(object):
                            | UNRESTRICTED"""
     p[0] = p[1]
 
-  # [57]
+  # [72]
   def p_Type(self, p):
     """Type : SingleType
             | UnionType TypeSuffix"""
@@ -664,7 +682,7 @@ class IDLParser(object):
     else:
       p[0] = self.BuildProduction('Type', p, 1, ListFromConcat(p[1], p[2]))
 
-  # [58]
+  # [73]
   def p_SingleType(self, p):
     """SingleType : NonAnyType
                   | ANY TypeSuffixStartingWithArray"""
@@ -673,21 +691,24 @@ class IDLParser(object):
     else:
       p[0] = ListFromConcat(self.BuildProduction('Any', p, 1), p[2])
 
-  # [59]
+  # [74]
   def p_UnionType(self, p):
     """UnionType : '(' UnionMemberType OR UnionMemberType UnionMemberTypes ')'"""
 
-  # [60]
+  # [75]
   def p_UnionMemberType(self, p):
     """UnionMemberType : NonAnyType
                        | UnionType TypeSuffix
                        | ANY '[' ']' TypeSuffix"""
-  # [61]
+  # [76]
   def p_UnionMemberTypes(self, p):
     """UnionMemberTypes : OR UnionMemberType UnionMemberTypes
                         |"""
 
-  # [62] Moved DATE, DOMSTRING, OBJECT to PrimitiveType
+  # [77] Moved BYTESTRING, DOMSTRING, OBJECT, DATE, REGEXP to PrimitiveType
+  # Moving all built-in types into PrimitiveType makes it easier to
+  # differentiate between them and 'identifier', since p[1] would be a string in
+  # both cases.
   def p_NonAnyType(self, p):
     """NonAnyType : PrimitiveType TypeSuffix
                   | identifier TypeSuffix
@@ -703,7 +724,7 @@ class IDLParser(object):
       p[0] = self.BuildProduction('Sequence', p, 1, ListFromConcat(p[3], p[5]))
 
 
-  # [63]
+  # [78]
   def p_ConstType(self,  p):
     """ConstType : PrimitiveType Null
                  | identifier Null"""
@@ -714,23 +735,25 @@ class IDLParser(object):
       p[0] = p[1]
 
 
-  # [64]
+  # [79] Added BYTESTRING, DOMSTRING, OBJECT, DATE, REGEXP
   def p_PrimitiveType(self, p):
     """PrimitiveType : UnsignedIntegerType
                      | UnrestrictedFloatType
                      | BOOLEAN
                      | BYTE
                      | OCTET
+                     | BYTESTRING
                      | DOMSTRING
+                     | OBJECT
                      | DATE
-                     | OBJECT"""
+                     | REGEXP"""
     if type(p[1]) == str:
       p[0] = self.BuildNamed('PrimitiveType', p, 1)
     else:
       p[0] = p[1]
 
 
-  # [65]
+  # [80]
   def p_UnrestrictedFloatType(self, p):
     """UnrestrictedFloatType : UNRESTRICTED FloatType
                              | FloatType"""
@@ -742,13 +765,13 @@ class IDLParser(object):
     p[0] = typeref
 
 
-  # [66]
+  # [81]
   def p_FloatType(self, p):
     """FloatType : FLOAT
                  | DOUBLE"""
     p[0] = p[1]
 
-  # [67]
+  # [82]
   def p_UnsignedIntegerType(self, p):
     """UnsignedIntegerType : UNSIGNED IntegerType
                            | IntegerType"""
@@ -757,7 +780,7 @@ class IDLParser(object):
     else:
       p[0] = 'unsigned ' + p[2]
 
-  # [68]
+  # [83]
   def p_IntegerType(self, p):
     """IntegerType : SHORT
                    | LONG OptionalLong"""
@@ -766,7 +789,7 @@ class IDLParser(object):
     else:
       p[0] = p[1] + p[2]
 
-  # [69]
+  # [84]
   def p_OptionalLong(self, p):
     """OptionalLong : LONG
                     | """
@@ -776,7 +799,7 @@ class IDLParser(object):
       p[0] = ''
 
 
-  # [70] Add support for sized array
+  # [85] Add support for sized array
   def p_TypeSuffix(self, p):
     """TypeSuffix : '[' integer ']' TypeSuffix
                   | '[' ']' TypeSuffix
@@ -792,21 +815,21 @@ class IDLParser(object):
       p[0] = ListFromConcat(self.BuildTrue('NULLABLE'), p[2])
 
 
-  # [71]
+  # [86]
   def p_TypeSuffixStartingWithArray(self, p):
     """TypeSuffixStartingWithArray : '[' ']' TypeSuffix
                                    | """
     if len(p) > 1:
       p[0] = self.BuildProduction('Array', p, 0, p[3])
 
-  # [72]
+  # [87]
   def p_Null(self, p):
     """Null : '?'
             |"""
     if len(p) > 1:
       p[0] = self.BuildTrue('NULLABLE')
 
-  # [73]
+  # [88]
   def p_ReturnType(self, p):
     """ReturnType : Type
                   | VOID"""
@@ -816,29 +839,35 @@ class IDLParser(object):
     else:
       p[0] = p[1]
 
-  # [74]
+  # [89-90] NOT IMPLEMENTED (IdentifierList)
+
+  # [91]
   def p_ExtendedAttributeNoArgs(self, p):
     """ExtendedAttributeNoArgs : identifier"""
     p[0] = self.BuildNamed('ExtAttribute', p, 1)
 
-  # [75]
+  # [92]
   def p_ExtendedAttributeArgList(self, p):
     """ExtendedAttributeArgList : identifier '(' ArgumentList ')'"""
     arguments = self.BuildProduction('Arguments', p, 2, p[3])
     p[0] = self.BuildNamed('ExtAttribute', p, 1, arguments)
 
-  # [76]
+  # [93]
   def p_ExtendedAttributeIdent(self, p):
     """ExtendedAttributeIdent : identifier '=' identifier"""
     value = self.BuildAttribute('VALUE', p[3])
     p[0] = self.BuildNamed('ExtAttribute', p, 1, value)
 
-  # [77]
+  # [94] NOT IMPLEMENTED (ExtendedAttributeIdentList)
+
+  # [95]
   def p_ExtendedAttributeNamedArgList(self, p):
     """ExtendedAttributeNamedArgList : identifier '=' identifier '(' ArgumentList ')'"""
     args = self.BuildProduction('Arguments', p, 4, p[5])
     value = self.BuildNamed('Call', p, 3, args)
     p[0] = self.BuildNamed('ExtAttribute', p, 1, value)
+
+  # [96] NOT IMPLEMENTED (ExtendedAttributeTypePair)
 
 #
 # Parser Errors

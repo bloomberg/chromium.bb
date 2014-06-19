@@ -12,7 +12,7 @@
 # on WebIDL.
 #
 # WebIDL, and WebIDL grammar can be found at:
-#   http://dev.w3.org/2006/webapi/WebIDL/
+#   http://heycam.github.io/webidl/
 # PLY can be found at:
 #   http://www.dabeaz.com/ply/
 #
@@ -50,7 +50,7 @@ class IDLPPAPIParser(IDLParser):
 
 #
 #The parser is based on the WebIDL standard.  See:
-# http://www.w3.org/TR/WebIDL/#idl-grammar
+# http://heycam.github.io/webidl/#idl-grammar
 #
   # [1]
   def p_Definitions(self, p):

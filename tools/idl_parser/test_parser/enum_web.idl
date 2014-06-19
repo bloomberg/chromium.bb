@@ -67,20 +67,24 @@ enum MealType2 {
   "other"
 };
 
+/* TREE
+ *Enum(TrailingComma)
+ *  EnumItem(rice)
+ *  EnumItem(noodles)
+ *  EnumItem(other)
+*/
+enum TrailingComma {
+  "rice",
+  "noodles",
+  "other",
+};
+
 /* BUILD Error(Unexpected string "noodles" after string "rice".) */
 /* ERROR Unexpected string "noodles" after string "rice". */
 enum MissingComma {
   "rice"
   "noodles",
   "other"
-};
-
-/* BUILD Error(Trailing comma in block.) */
-/* ERROR Trailing comma in block. */
-enum TrailingComma {
-  "rice",
-  "noodles",
-  "other",
 };
 
 /* BUILD Error(Unexpected "," after ",".) */

@@ -76,13 +76,23 @@ interface MyIFaceBig {
  *  Attribute(readOnlyString)
  *    Type()
  *      PrimitiveType(DOMString)
- *  Operation(myFunction)
+ *  Attribute(staticString)
  *    Type()
- *      PrimitiveType(void)
+ *      PrimitiveType(DOMString)
+ *  Operation(myFunction)
  *    Arguments()
  *      Argument(myLong)
  *        Type()
  *          PrimitiveType(long long)
+ *    Type()
+ *      PrimitiveType(void)
+ *  Operation(staticFunction)
+ *    Arguments()
+ *      Argument(myLong)
+ *        Type()
+ *          PrimitiveType(long long)
+ *    Type()
+ *      PrimitiveType(void)
  */
 interface MyIFaceBig2 {
   const DOMString? nullValue = null;
@@ -90,35 +100,37 @@ interface MyIFaceBig2 {
   const long long longValue2 = 123;
   attribute DOMString myString;
   readonly attribute DOMString readOnlyString;
+  static attribute DOMString staticString;
   void myFunction(long long myLong);
+  static void staticFunction(long long myLong);
 };
 
 
 /* TREE
  *Interface(MyIFaceSpecials)
  *  Operation(set)
+ *    Arguments()
+ *      Argument(property)
+ *        Type()
+ *          PrimitiveType(DOMString)
  *    Type()
  *      PrimitiveType(void)
+ *  Operation(_unnamed_)
  *    Arguments()
  *      Argument(property)
  *        Type()
  *          PrimitiveType(DOMString)
- *  Operation(_unnamed_)
  *    Type()
  *      PrimitiveType(double)
- *    Arguments()
- *      Argument(property)
- *        Type()
- *          PrimitiveType(DOMString)
  *  Operation(GetFiveSix)
- *    Type()
- *      PrimitiveType(long long)
- *      Array(5)
- *        Array(6)
  *    Arguments()
  *      Argument(arg)
  *        Type()
  *          Typeref(SomeType)
+ *    Type()
+ *      PrimitiveType(long long)
+ *      Array(5)
+ *        Array(6)
  */
 interface MyIFaceSpecials {
   setter creator void set(DOMString property);

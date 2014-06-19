@@ -1,6 +1,7 @@
 ANY any
 ATTRIBUTE attribute
 BOOLEAN boolean
+BYTESTRING ByteString
 BYTE byte
 CALLBACK callback
 CONST const
@@ -26,6 +27,8 @@ OPTIONAL optional
 OR or
 PARTIAL partial
 READONLY readonly
+REGEXP RegExp
+SERIALIZER serializer
 SETTER setter
 SHORT short
 STATIC static
