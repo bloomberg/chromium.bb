@@ -40,6 +40,14 @@ SSH_ERROR_CODE = 255
 DEV_BIN_PATHS = '/usr/local/bin:/usr/local/sbin'
 
 
+class SSHConnectionError(Exception):
+  """Raised when SSH connection has failed."""
+
+
+class DeviceNotPingable(Exception):
+  """Raised when device is not pingable."""
+
+
 def NormalizePort(port, str_ok=True):
   """Checks if |port| is a valid port number and returns the number.
 
@@ -122,10 +130,6 @@ def CompileSSHConnectSettings(ConnectTimeout=30, ConnectionAttempts=4):
           '-o', 'ServerAliveCountMax=3',
           '-o', 'StrictHostKeyChecking=no',
           '-o', 'UserKnownHostsFile=/dev/null', ]
-
-
-class SSHConnectionError(Exception):
-  """Raised when SSH connection has failed."""
 
 
 class RemoteAccess(object):
@@ -464,6 +468,9 @@ class RemoteDevice(object):
     # Setup a working directory on the device.
     self.base_dir = base_dir
 
+    if not self.Pingable():
+      raise DeviceNotPingable('Device %s is not pingable.' % self.hostname)
+
     # Do not call RunCommand here because we have not set up work directory yet.
     self.BaseRunCommand(['mkdir', '-p', self.base_dir])
     self.work_dir = self.BaseRunCommand(
@@ -474,6 +481,21 @@ class RemoteDevice(object):
 
     self.cleanup_cmds = []
     self.RegisterCleanupCmd(['rm', '-rf', self.work_dir])
+
+  def Pingable(self, timeout=20):
+    """Returns True if the device is pingable.
+
+    Args:
+      timeout: Timeout in seconds (default: 20 seconds).
+
+    Returns:
+      True if the device responded to the ping before |timeout|.
+    """
+    result = cros_build_lib.RunCommand(
+        ['ping', '-c', '1', '-w', str(timeout), self.hostname],
+        error_code_ok=True,
+        capture_output=True)
+    return result.returncode == 0
 
   def _SetupSSH(self):
     """Setup the ssh connection with device."""
