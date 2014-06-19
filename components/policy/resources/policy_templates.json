@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 268
+#   For your editing convenience: highest ID currently used: 269
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4694,6 +4694,28 @@
       If the policy is set to true, the device will use a 24 hour clock format. If the policy is set to false, the device will use 12 hour clock format.
 
       If this policy is not set, the device will default to a 24 hour clock format.''',
+    },
+    {
+      'name': 'TouchVirtualKeyboardEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:37-' ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True
+      },
+      'example_value': False,
+      'id': 269,
+      'caption': '''Enable virtual keyboard''',
+      'desc': '''This policy configures enabling the virtual keyboard as an input device on ChromeOS. Users cannot override this policy.
+
+      If the policy is set to true, the on-screen virtual keyboard will always be enabled.
+
+      If set to false, the on-screen virtual keyboard will always be disabled.
+
+      If you set this policy, users cannot change or override it. However, users will still be able to enable/disable an accessibility on-screen keyboard which takes precedence over the virtual keyboard controlled by this policy. See the |VirtualKeyboardEnabled| policy for controlling the accessibility on-screen keyboard.
+
+      If this policy is left unset, the on-screen keyboard is disabled initially but can be enabled by the user anytime. Heuristic rules may also be used to decide when to display the keyboard.''',
     },
     {
       'name': 'ShowLogoutButtonInTray',

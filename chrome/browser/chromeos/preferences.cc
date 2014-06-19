@@ -307,6 +307,11 @@ void Preferences::RegisterProfilePrefs(
       prefs::kTouchHudProjectionEnabled,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+  registry->RegisterBooleanPref(
+      prefs::kTouchVirtualKeyboardEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {

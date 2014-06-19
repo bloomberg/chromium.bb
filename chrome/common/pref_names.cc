@@ -884,6 +884,10 @@ const char kCurrentWallpaperAppName[] = "wallpaper.app.name";
 // List of mounted file systems via the File System Provider API. Used to
 // restore them after a reboot.
 const char kFileSystemProviderMounted[] = "file_system_provider.mounted";
+
+// A boolean pref set to true if the virtual keyboard should be enabled.
+const char kTouchVirtualKeyboardEnabled[] = "ui.touch_virtual_keyboard_enabled";
+
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

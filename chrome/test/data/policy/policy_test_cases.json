@@ -2114,6 +2114,14 @@
     ]
   },
 
+  "TouchVirtualKeyboardEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "TouchVirtualKeyboardEnabled": false },
+    "pref_mappings": [
+      { "pref": "ui.touch_virtual_keyboard_enabled" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

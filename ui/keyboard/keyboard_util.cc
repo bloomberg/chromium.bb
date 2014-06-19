@@ -47,6 +47,9 @@ bool g_touch_keyboard_enabled = false;
 keyboard::KeyboardOverscrolOverride g_keyboard_overscroll_override =
     keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE;
 
+keyboard::KeyboardShowOverride g_keyboard_show_override =
+    keyboard::KEYBOARD_SHOW_OVERRIDE_NONE;
+
 }  // namespace
 
 namespace keyboard {
@@ -97,11 +100,18 @@ std::string GetKeyboardLayout() {
 }
 
 bool IsKeyboardEnabled() {
-  return g_accessibility_keyboard_enabled ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableVirtualKeyboard) ||
-      IsKeyboardUsabilityExperimentEnabled() ||
-      g_touch_keyboard_enabled;
+  // Accessibility setting prioritized over policy setting.
+  if (g_accessibility_keyboard_enabled)
+    return true;
+  // Policy strictly disables showing a virtual keyboard.
+  if (g_keyboard_show_override == keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED)
+    return false;
+  // Check if any of the flags are enabled.
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableVirtualKeyboard) ||
+         IsKeyboardUsabilityExperimentEnabled() ||
+         g_touch_keyboard_enabled ||
+         (g_keyboard_show_override == keyboard::KEYBOARD_SHOW_OVERRIDE_ENABLED);
 }
 
 bool IsKeyboardUsabilityExperimentEnabled() {
@@ -134,6 +144,10 @@ bool IsKeyboardOverscrollEnabled() {
 
 void SetKeyboardOverscrollOverride(KeyboardOverscrolOverride override) {
   g_keyboard_overscroll_override = override;
+}
+
+void SetKeyboardShowOverride(KeyboardShowOverride override) {
+  g_keyboard_show_override = override;
 }
 
 bool IsInputViewEnabled() {

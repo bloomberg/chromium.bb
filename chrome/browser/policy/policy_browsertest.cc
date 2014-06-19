@@ -152,6 +152,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/screenshot_taker.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "ui/keyboard/keyboard_util.h"
 #endif
 
 #if !defined(OS_MACOSX)
@@ -2418,7 +2419,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeFull) {
   EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, AccessibilityVirtualKeyboardEnabled) {
   // Verifies that the on-screen keyboard accessibility feature can be
   // controlled through policy.
   chromeos::AccessibilityManager* accessibility_manager =
@@ -2439,6 +2440,41 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
   // Verify that the on-screen keyboard cannot be enabled manually anymore.
   accessibility_manager->EnableVirtualKeyboard(true);
   EXPECT_FALSE(accessibility_manager->IsVirtualKeyboardEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
+  // Verify keyboard disabled by default.
+  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  // Verify keyboard can be toggled by default.
+  keyboard::SetTouchKeyboardEnabled(true);
+  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
+  keyboard::SetTouchKeyboardEnabled(false);
+  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+
+  // Verify enabling the policy takes effect immediately and that that user
+  // cannot disable the keyboard..
+  PolicyMap policies;
+  policies.Set(key::kTouchVirtualKeyboardEnabled,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateBooleanValue(true),
+               NULL);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
+  keyboard::SetTouchKeyboardEnabled(false);
+  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
+
+  // Verify that disabling the policy takes effect immediately and that the user
+  // cannot enable the keyboard.
+  policies.Set(key::kTouchVirtualKeyboardEnabled,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateBooleanValue(false),
+               NULL);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  keyboard::SetTouchKeyboardEnabled(true);
+  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
 }
 
 #endif

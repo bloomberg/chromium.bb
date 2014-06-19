@@ -462,6 +462,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kKeyboardDefaultToFunctionKeys,
     prefs::kLanguageSendFunctionKeys,
     base::Value::TYPE_BOOLEAN },
+  { key::kTouchVirtualKeyboardEnabled,
+    prefs::kTouchVirtualKeyboardEnabled,
+    base::Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

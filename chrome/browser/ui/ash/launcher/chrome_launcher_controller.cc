@@ -446,6 +446,9 @@ void ChromeLauncherController::Init() {
   if (ash::Shell::HasInstance()) {
     SetShelfAutoHideBehaviorFromPrefs();
     SetShelfAlignmentFromPrefs();
+#if defined(OS_CHROMEOS)
+    SetVirtualKeyboardBehaviorFromPrefs();
+#endif  // defined(OS_CHROMEOS)
     PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
     if (!prefs->FindPreference(prefs::kShelfAlignmentLocal)->HasUserSetting() ||
         !prefs->FindPreference(prefs::kShelfAutoHideBehaviorLocal)->
@@ -1128,6 +1131,9 @@ void ChromeLauncherController::ActiveUserChanged(
   SetShelfAlignmentFromPrefs();
   SetShelfAutoHideBehaviorFromPrefs();
   SetShelfBehaviorsFromPrefs();
+#if defined(OS_CHROMEOS)
+  SetVirtualKeyboardBehaviorFromPrefs();
+#endif  // defined(OS_CHROMEOS)
   // Restore the order of running, but unpinned applications for the activated
   // user.
   RestoreUnpinnedRunningApplicationOrder(user_email);
@@ -1710,6 +1716,21 @@ void ChromeLauncherController::SetShelfBehaviorsFromPrefs() {
   SetShelfAlignmentFromPrefs();
 }
 
+#if defined(OS_CHROMEOS)
+void ChromeLauncherController::SetVirtualKeyboardBehaviorFromPrefs() {
+  const PrefService* service = profile_->GetPrefs();
+  if (!service->HasPrefPath(prefs::kTouchVirtualKeyboardEnabled)) {
+    keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_NONE);
+  } else {
+    const bool enabled = service->GetBoolean(
+        prefs::kTouchVirtualKeyboardEnabled);
+    keyboard::SetKeyboardShowOverride(
+        enabled ? keyboard::KEYBOARD_SHOW_OVERRIDE_ENABLED
+                : keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED);
+  }
+}
+#endif //  defined(OS_CHROMEOS)
+
 ash::ShelfItemStatus ChromeLauncherController::GetAppState(
     const::std::string& app_id) {
   ash::ShelfItemStatus status = ash::STATUS_CLOSED;
@@ -2030,6 +2051,12 @@ void ChromeLauncherController::AttachProfile(Profile* profile) {
       prefs::kShelfPreferences,
       base::Bind(&ChromeLauncherController::SetShelfBehaviorsFromPrefs,
                  base::Unretained(this)));
+#if defined(OS_CHROMEOS)
+  pref_change_registrar_.Add(
+      prefs::kTouchVirtualKeyboardEnabled,
+      base::Bind(&ChromeLauncherController::SetVirtualKeyboardBehaviorFromPrefs,
+                 base::Unretained(this)));
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ChromeLauncherController::ReleaseProfile() {
