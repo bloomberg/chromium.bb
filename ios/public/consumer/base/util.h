@@ -7,9 +7,6 @@
 
 namespace ios {
 
-// Returns whether the operating system is iOS 6 or later.
-bool IsRunningOnIOS6OrLater();
-
 // Returns whether the operating system is at the given version or later.
 bool IsRunningOnOrLater(int major, int minor, int bug_fix);
 

@@ -52,8 +52,7 @@ TEST_F(DeviceUtilTest, GetDeviceIdentifier) {
   CleanNSUserDefaultsForDeviceId();
 
   std::string new_default_id = ios::device_util::GetDeviceIdentifier(NULL);
-  if (base::ios::IsRunningOnIOS6OrLater() &&
-      ![[[[UIDevice currentDevice] identifierForVendor] UUIDString]
+  if (![[[[UIDevice currentDevice] identifierForVendor] UUIDString]
           isEqualToString:@"00000000-0000-0000-0000-000000000000"]) {
     EXPECT_EQ(default_id, new_default_id);
   } else {

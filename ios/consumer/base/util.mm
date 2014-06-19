@@ -7,10 +7,6 @@
 
 namespace ios {
 
-bool IsRunningOnIOS6OrLater() {
-  return base::ios::IsRunningOnIOS6OrLater();
-}
-
 bool IsRunningOnOrLater(int major, int minor, int bug_fix) {
   return base::ios::IsRunningOnOrLater(major, minor, bug_fix);
 }

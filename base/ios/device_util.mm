@@ -44,13 +44,9 @@ NSString* GenerateClientId() {
   // http://openradar.appspot.com/12377282. If this is the case, revert to
   // generating a new one.
   if (!client_id || [client_id isEqualToString:kZeroUUID]) {
-    if (base::ios::IsRunningOnIOS6OrLater()) {
-      client_id = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
-      if ([client_id isEqualToString:kZeroUUID])
-        client_id = base::SysUTF8ToNSString(ios::device_util::GetRandomId());
-    } else {
+    client_id = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    if ([client_id isEqualToString:kZeroUUID])
       client_id = base::SysUTF8ToNSString(ios::device_util::GetRandomId());
-    }
   }
   return client_id;
 }
