@@ -25668,11 +25668,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Signin.Reconciler.DifferentPrimaryAccounts">
+<histogram name="Signin.Reconciler.DifferentPrimaryAccounts"
+    enum="DifferentPrimaryAccounts">
   <owner>mlerman@chromium.org</owner>
   <summary>
-    After the first execution of the account reconciler, true if the token
-    service and cookie jar contained different primary accounts.
+    After execution of the account reconcilor, compares the primary account in
+    the token service to the primary GAIA account of the cookie jar.
   </summary>
 </histogram>
 
@@ -34528,6 +34529,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="18" label="SQLite Integrity Nss Key Test"/>
   <int value="19" label="SQLite Integrity Thumbnails Test"/>
   <int value="20" label="SQLite Integrity Web Data Test"/>
+</enum>
+
+<enum name="DifferentPrimaryAccounts" type="int">
+  <int value="0" label="Primary Accounts the same"/>
+  <int value="1" label="(obsolete) Primary Accounts different"/>
+  <int value="2" label="No GAIA account in cookie jar"/>
+  <int value="3" label="Primary accounts present but different"/>
 </enum>
 
 <enum name="DllHash" type="int">

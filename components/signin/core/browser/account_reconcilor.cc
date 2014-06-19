@@ -604,9 +604,11 @@ void AccountReconcilor::FinishReconcile() {
 
   DCHECK(add_to_cookie_.empty());
   DCHECK(add_to_chrome_.empty());
+  int number_gaia_accounts = gaia_accounts_.size();
   bool are_primaries_equal =
-      gaia_accounts_.size() > 0 &&
+      number_gaia_accounts > 0 &&
       gaia::AreEmailsSame(primary_account_, gaia_accounts_[0].first);
+
 
   if (are_primaries_equal) {
     // Determine if we need to merge accounts from gaia cookie to chrome.
@@ -675,7 +677,8 @@ void AccountReconcilor::FinishReconcile() {
                                                  added_to_cookie,
                                                  add_to_chrome_.size(),
                                                  are_primaries_equal,
-                                                 first_execution_);
+                                                 first_execution_,
+                                                 number_gaia_accounts);
   first_execution_ = false;
   CalculateIfReconcileIsDone();
   ScheduleStartReconcileIfChromeAccountsChanged();

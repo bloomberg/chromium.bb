@@ -10,11 +10,22 @@
 
 namespace signin_metrics {
 
+// Helper method to determine which |DifferentPrimaryAccounts| applies.
+DifferentPrimaryAccounts ComparePrimaryAccounts(bool primary_accounts_same,
+                                                int pre_count_gaia_cookies) {
+  if (primary_accounts_same)
+    return ACCOUNTS_SAME;
+  if (pre_count_gaia_cookies == 0)
+    return NO_COOKIE_PRESENT;
+  return COOKIE_AND_TOKEN_PRIMARIES_DIFFERENT;
+}
+
 void LogSigninAccountReconciliation(int total_number_accounts,
                                     int count_added_to_cookie_jar,
                                     int count_added_to_token,
                                     bool primary_accounts_same,
-                                    bool is_first_reconcile) {
+                                    bool is_first_reconcile,
+                                    int pre_count_gaia_cookies) {
   UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfAccountsPerProfile",
                            total_number_accounts);
   // We want to include zeroes in the counts of added accounts to easily
@@ -24,16 +35,19 @@ void LogSigninAccountReconciliation(int total_number_accounts,
                              count_added_to_cookie_jar);
     UMA_HISTOGRAM_COUNTS_100("Signin.Reconciler.AddedToChrome.FirstRun",
                              count_added_to_token);
-    UMA_HISTOGRAM_BOOLEAN("Signin.Reconciler.DifferentPrimaryAccounts.FirstRun",
-                          !primary_accounts_same);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Signin.Reconciler.DifferentPrimaryAccounts.FirstRun",
+        ComparePrimaryAccounts(primary_accounts_same, pre_count_gaia_cookies),
+        NUM_DIFFERENT_PRIMARY_ACCOUNT_METRICS);
   } else {
     UMA_HISTOGRAM_COUNTS_100("Signin.Reconciler.AddedToCookieJar.SubsequentRun",
                              count_added_to_cookie_jar);
     UMA_HISTOGRAM_COUNTS_100("Signin.Reconciler.AddedToChrome.SubsequentRun",
                              count_added_to_token);
-    UMA_HISTOGRAM_BOOLEAN(
+    UMA_HISTOGRAM_ENUMERATION(
         "Signin.Reconciler.DifferentPrimaryAccounts.SubsequentRun",
-        !primary_accounts_same);
+        ComparePrimaryAccounts(primary_accounts_same, pre_count_gaia_cookies),
+        NUM_DIFFERENT_PRIMARY_ACCOUNT_METRICS);
   }
 }
 
