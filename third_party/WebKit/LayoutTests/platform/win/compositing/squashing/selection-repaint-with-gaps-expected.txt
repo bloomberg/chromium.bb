@@ -1,0 +1,63 @@
+lorem ipsumlorem ipsumlorem ipsum
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (children 1
+        (GraphicsLayer
+          (children 2
+            (GraphicsLayer
+              (position 8.00 8.00)
+              (bounds 300.00 500.00)
+            )
+            (GraphicsLayer
+              (position 15.00 35.00)
+              (bounds 100.00 210.00)
+              (drawsContent 1)
+              (repaint rects
+                (rect 37.00 80.00 3.00 17.00)
+                (rect 0.00 80.00 40.00 35.00)
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (children 1
+        (GraphicsLayer
+          (children 2
+            (GraphicsLayer
+              (position 8.00 8.00)
+              (bounds 300.00 500.00)
+            )
+            (GraphicsLayer
+              (position 15.00 35.00)
+              (bounds 100.00 210.00)
+              (drawsContent 1)
+              (repaint rects
+                (rect 37.00 160.00 3.00 17.00)
+                (rect 37.00 80.00 3.00 35.00)
+                (rect 0.00 160.00 40.00 35.00)
+                (rect 0.00 115.00 100.00 15.00)
+                (rect 0.00 80.00 40.00 35.00)
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+
