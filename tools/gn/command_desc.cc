@@ -276,7 +276,7 @@ void PrintOutputs(const Target* target, bool display_header) {
     std::vector<std::string> output_strings;
     FileTemplate file_template = FileTemplate::GetForTargetOutputs(target);
     for (size_t i = 0; i < target->sources().size(); i++)
-      file_template.ApplyString(target->sources()[i].value(), &output_strings);
+      file_template.Apply(target->sources()[i], &output_strings);
 
     std::sort(output_strings.begin(), output_strings.end());
     for (size_t i = 0; i < output_strings.size(); i++) {

@@ -30,7 +30,7 @@ void NinjaCopyTargetWriter::Run() {
 
     // Make the output file from the template.
     std::vector<std::string> template_result;
-    output_template.ApplyString(input_file.value(), &template_result);
+    output_template.Apply(input_file, &template_result);
     CHECK(template_result.size() == 1);
     OutputFile output_file(template_result[0]);
 

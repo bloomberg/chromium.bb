@@ -44,7 +44,7 @@ TEST(NinjaActionTargetWriter, WriteArgsSubstitutions) {
   args.push_back("-i");
   args.push_back("{{source}}");
   args.push_back("--out=foo bar{{source_name_part}}.o");
-  FileTemplate args_template(args);
+  FileTemplate args_template(setup.settings(), args);
 
   writer.WriteArgsSubstitutions(SourceFile("//foo/b ar.in"), args_template);
 #if defined(OS_WIN)

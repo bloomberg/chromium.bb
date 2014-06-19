@@ -720,10 +720,12 @@ SourceDir GetOutputDirForSourceDir(const Settings* settings,
   toolchain.SwapValue(&ret);
   ret.append("obj/");
 
-  // The source dir should be source-absolute, so we trim off the two leading
-  // slashes to append to the toolchain object directory.
-  DCHECK(source_dir.is_source_absolute());
-  ret.append(&source_dir.value()[2], source_dir.value().size() - 2);
+  if (source_dir.is_source_absolute()) {
+    // The source dir is source-absolute, so we trim off the two leading
+    // slashes to append to the toolchain object directory.
+    ret.append(&source_dir.value()[2], source_dir.value().size() - 2);
+  }
+  // (Put system-absolute stuff in the root obj directory.)
 
   return SourceDir(SourceDir::SWAP_IN, &ret);
 }
@@ -735,10 +737,13 @@ SourceDir GetGenDirForSourceDir(const Settings* settings,
   std::string ret;
   toolchain.SwapValue(&ret);
 
-  // The source dir should be source-absolute, so we trim off the two leading
-  // slashes to append to the toolchain object directory.
-  DCHECK(source_dir.is_source_absolute());
-  ret.append(&source_dir.value()[2], source_dir.value().size() - 2);
+  if (source_dir.is_source_absolute()) {
+    // The source dir should be source-absolute, so we trim off the two leading
+    // slashes to append to the toolchain object directory.
+    DCHECK(source_dir.is_source_absolute());
+    ret.append(&source_dir.value()[2], source_dir.value().size() - 2);
+  }
+  // (Put system-absolute stuff in the root gen directory.)
 
   return SourceDir(SourceDir::SWAP_IN, &ret);
 }

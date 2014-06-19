@@ -5,6 +5,10 @@
 #include "tools/gn/file_template.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/parse_tree.h"
+#include "tools/gn/scope.h"
+#include "tools/gn/settings.h"
+#include "tools/gn/target.h"
+#include "tools/gn/value_extractors.h"
 
 namespace functions {
 
@@ -67,12 +71,26 @@ Value RunProcessFileTemplate(Scope* scope,
     return Value();
   }
 
-  FileTemplate file_template(args[1], err);
+  FileTemplate file_template(scope->settings(), args[1], err);
   if (err->has_error())
     return Value();
 
+  Target::FileList input_files;
+  if (!ExtractListOfRelativeFiles(scope->settings()->build_settings(), args[0],
+                                  scope->GetSourceDir(), &input_files, err))
+    return Value();
+
   Value ret(function, Value::LIST);
-  file_template.Apply(args[0], function, &ret.list_value(), err);
+
+  // Temporary holding place, allocate outside to re-use buffer.
+  std::vector<std::string> string_output;
+
+  for (size_t i = 0; i < input_files.size(); i++) {
+    string_output.clear();
+    file_template.Apply(input_files[i], &string_output);
+    for (size_t out_i = 0; out_i < string_output.size(); out_i++)
+      ret.list_value().push_back(Value(function, string_output[out_i]));
+  }
   return ret;
 }
 

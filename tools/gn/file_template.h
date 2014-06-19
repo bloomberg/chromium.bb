@@ -14,6 +14,7 @@
 
 struct EscapeOptions;
 class ParseNode;
+class Settings;
 class SourceFile;
 class Target;
 
@@ -30,20 +31,17 @@ extern const char kSourceExpansion_Help[];
 class FileTemplate {
  public:
   struct Subrange {
+    // See the help in the .cc file for what these mean.
     enum Type {
       LITERAL = 0,
 
-      // {{source}} -> expands to be the source file name relative to the build
-      // root dir.
-      SOURCE,
-
-      // {{source_name_part}} -> file name without extension or directory.
-      // Maps "foo/bar.txt" to "bar".
-      NAME_PART,
-
-      // {{source_file_part}} -> file name including extension but no directory.
-      // Maps "foo/bar.txt" to "bar.txt".
-      FILE_PART,
+      SOURCE,  // {{source}}
+      NAME_PART,  // {{source_name_part}}
+      FILE_PART,  // {{source_file_part}}
+      SOURCE_DIR,  // {{source_dir}}
+      ROOT_RELATIVE_DIR,  // {{root_relative_dir}}
+      SOURCE_GEN_DIR,  // {{source_gen_dir}}
+      SOURCE_OUT_DIR,  // {{source_out_dir}}
 
       NUM_TYPES  // Must be last
     };
@@ -60,9 +58,9 @@ class FileTemplate {
 
   // Constructs a template from the given value. On error, the err will be
   // set. In this case you should not use this object.
-  FileTemplate(const Value& t, Err* err);
-  FileTemplate(const std::vector<std::string>& t);
-  FileTemplate(const std::vector<SourceFile>& t);
+  FileTemplate(const Settings* settings, const Value& t, Err* err);
+  FileTemplate(const Settings* settings, const std::vector<std::string>& t);
+  FileTemplate(const Settings* settings, const std::vector<SourceFile>& t);
 
   ~FileTemplate();
 
@@ -76,18 +74,10 @@ class FileTemplate {
   // Returns true if there are any substitutions.
   bool has_substitutions() const { return has_substitutions_; }
 
-  // Applies this template to the given list of sources, appending all
-  // results to the given dest list. The sources must be a list for the
-  // one that takes a value as an input, otherwise the given error will be set.
-  void Apply(const Value& sources,
-             const ParseNode* origin,
-             std::vector<Value>* dest,
-             Err* err) const;
-
-  // Low-level version of Apply that handles one source file. The results
-  // will be *appended* to the output.
-  void ApplyString(const std::string& input,
-                   std::vector<std::string>* output) const;
+  // Applies the template to one source file. The results will be *appended* to
+  // the output.
+  void Apply(const SourceFile& source,
+             std::vector<std::string>* output) const;
 
   // Writes a string representing the template with Ninja variables for the
   // substitutions, and the literals escaped for Ninja consumption.
@@ -115,7 +105,8 @@ class FileTemplate {
   // (see GetWithNinjaExpansions).
   void WriteNinjaVariablesForSubstitution(
       std::ostream& out,
-      const std::string& source,
+      const Settings* settings,
+      const SourceFile& source,
       const EscapeOptions& escape_options) const;
 
   // Returns the Ninja variable name used by the above Ninja functions to
@@ -124,13 +115,18 @@ class FileTemplate {
 
   // Extracts the given type of substitution from the given source. The source
   // should be the file name relative to the output directory.
-  static std::string GetSubstitution(const std::string& source,
+  static std::string GetSubstitution(const Settings* settings,
+                                     const SourceFile& source,
                                      Subrange::Type type);
 
   // Known template types, these include the "{{ }}"
   static const char kSource[];
   static const char kSourceNamePart[];
   static const char kSourceFilePart[];
+  static const char kSourceDir[];
+  static const char kRootRelDir[];
+  static const char kSourceGenDir[];
+  static const char kSourceOutDir[];
 
  private:
   typedef base::StackVector<Subrange, 8> Template;
@@ -140,6 +136,8 @@ class FileTemplate {
 
   // Parses a template string and adds it to the templates_ list.
   void ParseOneTemplateString(const std::string& str);
+
+  const Settings* settings_;
 
   TemplateVector templates_;
 

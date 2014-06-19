@@ -20,9 +20,25 @@ enum What {
   WHAT_EXTENSION,
   WHAT_DIR,
   WHAT_ABSPATH,
+  WHAT_GEN_DIR,
+  WHAT_OUT_DIR,
 };
 
-std::string GetOnePathInfo(const SourceDir& current_dir,
+// Returns the directory containing the input (resolving it against the
+// |current_dir|), regardless of whether the input is a directory or a file.
+SourceDir DirForInput(const SourceDir& current_dir,
+                      const std::string& input_string) {
+  if (!input_string.empty() && input_string[input_string.size() - 1] == '/') {
+    // Input is a directory.
+    return current_dir.ResolveRelativeDir(input_string);
+  }
+
+  // Input is a directory.
+  return current_dir.ResolveRelativeFile(input_string).GetDir();
+}
+
+std::string GetOnePathInfo(const Settings* settings,
+                           const SourceDir& current_dir,
                            What what,
                            const Value& input,
                            Err* err) {
@@ -61,6 +77,16 @@ std::string GetOnePathInfo(const SourceDir& current_dir,
       if (dir_incl_slash == "//")
         return std::string("//.");
       return dir_incl_slash.substr(0, dir_incl_slash.size() - 1).as_string();
+    }
+    case WHAT_GEN_DIR: {
+      return DirectoryWithNoLastSlash(
+          GetGenDirForSourceDir(settings,
+                                DirForInput(current_dir, input_string)));
+    }
+    case WHAT_OUT_DIR: {
+      return DirectoryWithNoLastSlash(
+          GetOutputDirForSourceDir(settings,
+                                   DirForInput(current_dir, input_string)));
     }
     case WHAT_ABSPATH: {
       if (!input_string.empty() && input_string[input_string.size() - 1] == '/')
@@ -123,6 +149,16 @@ const char kGetPathInfo_Help[] =
     "      will be appended such that it is always legal to append a slash\n"
     "      and a filename and get a valid path.\n"
     "\n"
+    "  \"out_dir\"\n"
+    "      The output file directory corresponding to the path of the\n"
+    "      given file, not including a trailing slash.\n"
+    "        \"//foo/bar/baz.txt\" => \"//out/Default/obj/foo/bar\"\n"
+
+    "  \"gen_dir\"\n"
+    "      The generated file directory corresponding to the path of the\n"
+    "      given file, not including a trailing slash.\n"
+    "        \"//foo/bar/baz.txt\" => \"//out/Default/gen/foo/bar\"\n"
+    "\n"
     "  \"abspath\"\n"
     "      The full absolute path name to the file or directory. It will be\n"
     "      resolved relative to the currebt directory, and then the source-\n"
@@ -168,6 +204,10 @@ Value RunGetPathInfo(Scope* scope,
     what = WHAT_EXTENSION;
   } else if (args[1].string_value() == "dir") {
     what = WHAT_DIR;
+  } else if (args[1].string_value() == "out_dir") {
+    what = WHAT_OUT_DIR;
+  } else if (args[1].string_value() == "gen_dir") {
+    what = WHAT_GEN_DIR;
   } else if (args[1].string_value() == "abspath") {
     what = WHAT_ABSPATH;
   } else {
@@ -177,13 +217,15 @@ Value RunGetPathInfo(Scope* scope,
 
   const SourceDir& current_dir = scope->GetSourceDir();
   if (args[0].type() == Value::STRING) {
-    return Value(function, GetOnePathInfo(current_dir, what, args[0], err));
+    return Value(function, GetOnePathInfo(scope->settings(), current_dir, what,
+                                          args[0], err));
   } else if (args[0].type() == Value::LIST) {
     const std::vector<Value>& input_list = args[0].list_value();
     Value result(function, Value::LIST);
     for (size_t i = 0; i < input_list.size(); i++) {
       result.list_value().push_back(Value(function,
-          GetOnePathInfo(current_dir, what, input_list[i], err)));
+          GetOnePathInfo(scope->settings(), current_dir, what,
+                         input_list[i], err)));
       if (err->has_error())
         return Value();
     }

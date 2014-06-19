@@ -165,5 +165,5 @@ FileTemplate NinjaTargetWriter::GetOutputTemplate() const {
         RemovePrefix(outputs[i].value(),
                      settings_->build_settings()->build_dir().value()));
   }
-  return FileTemplate(output_template_args);
+  return FileTemplate(target_->settings(), output_template_args);
 }

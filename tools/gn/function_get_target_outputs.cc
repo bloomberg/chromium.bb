@@ -15,7 +15,7 @@ namespace functions {
 
 namespace {
 
-void GetOutputsForTarget(const BuildSettings* build_settings,
+void GetOutputsForTarget(const Settings* settings,
                          const Target* target,
                          std::vector<std::string>* ret) {
   switch (target->output_type()) {
@@ -31,10 +31,10 @@ void GetOutputsForTarget(const BuildSettings* build_settings,
 
     case Target::ACTION_FOREACH: {
       // Action_foreach: return the result of the template in the outputs.
-      FileTemplate file_template(target->action_values().outputs());
+      FileTemplate file_template(settings, target->action_values().outputs());
       const std::vector<SourceFile>& sources = target->sources();
       for (size_t i = 0; i < sources.size(); i++)
-        file_template.ApplyString(sources[i].value(), ret);
+        file_template.Apply(sources[i], ret);
       break;
     }
 
@@ -50,11 +50,12 @@ void GetOutputsForTarget(const BuildSettings* build_settings,
     case Target::GROUP:
     case Target::SOURCE_SET: {
       // These return the stamp file, which is computed by the NinjaHelper.
-      NinjaHelper helper(build_settings);
+      NinjaHelper helper(settings->build_settings());
       OutputFile output_file = helper.GetTargetOutputFile(target);
 
       // The output file is relative to the build dir.
-      std::string absolute_output_file = build_settings->build_dir().value();
+      std::string absolute_output_file =
+          settings->build_settings()->build_dir().value();
       absolute_output_file.append(output_file.value());
 
       ret->push_back(absolute_output_file);
@@ -168,7 +169,7 @@ Value RunGetTargetOutputs(Scope* scope,
   }
 
   std::vector<std::string> files;
-  GetOutputsForTarget(scope->settings()->build_settings(), target, &files);
+  GetOutputsForTarget(scope->settings(), target, &files);
 
   Value ret(function, Value::LIST);
   ret.list_value().reserve(files.size());

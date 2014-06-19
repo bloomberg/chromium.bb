@@ -87,3 +87,25 @@ TEST_F(GetPathInfoTest, AbsPath) {
   EXPECT_EQ("/foo/", Call("/foo/", "abspath"));
   EXPECT_EQ("/", Call("/", "abspath"));
 }
+
+// Note build dir is "//out/Debug/".
+TEST_F(GetPathInfoTest, OutDir) {
+  EXPECT_EQ("//out/Debug/obj/src/foo/foo", Call("foo/bar.txt", "out_dir"));
+  EXPECT_EQ("//out/Debug/obj/src/foo/bar", Call("bar/", "out_dir"));
+  EXPECT_EQ("//out/Debug/obj/src/foo", Call(".", "out_dir"));
+  EXPECT_EQ("//out/Debug/obj/src/foo", Call("bar", "out_dir"));
+  EXPECT_EQ("//out/Debug/obj/foo", Call("//foo/bar.txt", "out_dir"));
+  // System paths go into the root obj directory.
+  EXPECT_EQ("//out/Debug/obj", Call("/foo/bar.txt", "out_dir"));
+}
+
+// Note build dir is "//out/Debug/".
+TEST_F(GetPathInfoTest, GenDir) {
+  EXPECT_EQ("//out/Debug/gen/src/foo/foo", Call("foo/bar.txt", "gen_dir"));
+  EXPECT_EQ("//out/Debug/gen/src/foo/bar", Call("bar/", "gen_dir"));
+  EXPECT_EQ("//out/Debug/gen/src/foo", Call(".", "gen_dir"));
+  EXPECT_EQ("//out/Debug/gen/src/foo", Call("bar", "gen_dir"));
+  EXPECT_EQ("//out/Debug/gen/foo", Call("//foo/bar.txt", "gen_dir"));
+  // System paths go into the root obj directory.
+  EXPECT_EQ("//out/Debug/gen", Call("/foo/bar.txt", "gen_dir"));
+}
