@@ -110,6 +110,9 @@ const QuicTag kRSEQ = TAG('R', 'S', 'E', 'Q');   // Rejected sequence number
 // Universal tags
 const QuicTag kPAD  = TAG('P', 'A', 'D', '\0');  // Padding
 
+// Reasons for server sending rejection message tag.
+const QuicTag kRREJ = TAG('R', 'R', 'E', 'J');
+
 // These tags have a special form so that they appear either at the beginning
 // or the end of a handshake message. Since handshake messages are sorted by
 // tag value, the tags with 0 at the end will sort first and those with 255 at

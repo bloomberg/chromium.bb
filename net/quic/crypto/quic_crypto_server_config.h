@@ -40,6 +40,32 @@ namespace test {
 class QuicCryptoServerConfigPeer;
 }  // namespace test
 
+enum HandshakeFailureReason {
+  HANDSHAKE_OK = 0,
+
+  // Failure reasons for an invalid client nonce.
+  // TODO(rtenneti): Implement capturing of error from strike register.
+  CLIENT_NONCE_UNKNOWN_FAILURE = 100,
+  CLIENT_NONCE_INVALID_FAILURE,
+
+  // Failure reasons for an invalid server nonce.
+  SERVER_NONCE_INVALID_FAILURE = 200,
+  SERVER_NONCE_DECRYPTION_FAILURE,
+  SERVER_NONCE_NOT_UNIQUE_FAILURE,
+
+  // Failure reasons for an invalid server config.
+  SERVER_CONFIG_INCHOATE_HELLO_FAILURE = 300,
+  SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE,
+
+  // Failure reasons for an invalid source adddress token.
+  SOURCE_ADDRESS_TOKEN_INVALID_FAILURE = 400,
+  SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE,
+  SOURCE_ADDRESS_TOKEN_PARSE_FAILURE,
+  SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE,
+  SOURCE_ADDRESS_TOKEN_CLOCK_SKEW_FAILURE,
+  SOURCE_ADDRESS_TOKEN_EXPIRED_FAILURE,
+};
+
 // Hook that allows application code to subscribe to primary config changes.
 class PrimaryConfigChangedCallback {
  public:
@@ -385,13 +411,13 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
                                     QuicRandom* rand,
                                     QuicWallTime now) const;
 
-  // ValidateSourceAddressToken returns true if the source address token in
-  // |token| is a valid and timely token for the IP address |ip| given that the
-  // current time is |now|.
-  bool ValidateSourceAddressToken(const Config& config,
-                                  base::StringPiece token,
-                                  const IPEndPoint& ip,
-                                  QuicWallTime now) const;
+  // ValidateSourceAddressToken returns HANDSHAKE_OK if the source address token
+  // in |token| is a valid and timely token for the IP address |ip| given that
+  // the current time is |now|. Otherwise it returns the reason for failure.
+  HandshakeFailureReason ValidateSourceAddressToken(const Config& config,
+                                                    base::StringPiece token,
+                                                    const IPEndPoint& ip,
+                                                    QuicWallTime now) const;
 
   // NewServerNonce generates and encrypts a random nonce.
   std::string NewServerNonce(QuicRandom* rand, QuicWallTime now) const;
@@ -399,10 +425,11 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // ValidateServerNonce decrypts |token| and verifies that it hasn't been
   // previously used and is recent enough that it is plausible that it was part
   // of a very recently provided rejection ("recent" will be on the order of
-  // 10-30 seconds). If so, it records that it has been used and returns true.
-  // Otherwise it returns false.
-  bool ValidateServerNonce(base::StringPiece echoed_server_nonce,
-                           QuicWallTime now) const;
+  // 10-30 seconds). If so, it records that it has been used and returns
+  // HANDSHAKE_OK. Otherwise it returns the reason for failure.
+  HandshakeFailureReason ValidateServerNonce(
+      base::StringPiece echoed_server_nonce,
+      QuicWallTime now) const;
 
   // replay_protection_ controls whether the server enforces that handshakes
   // aren't replays.

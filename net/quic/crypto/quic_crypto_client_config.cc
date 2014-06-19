@@ -587,6 +587,17 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
     }
   }
 
+  const QuicTag* reject_reasons;
+  size_t num_reject_reasons;
+  if (rej.GetTaglist(kRREJ, &reject_reasons,
+                     &num_reject_reasons) == QUIC_NO_ERROR) {
+#if defined(DEBUG)
+    for (size_t i = 0; i < num_reject_reasons; ++i) {
+      DVLOG(1) << "Reasons for rejection: " << reject_reasons[i];
+    }
+#endif
+  }
+
   return QUIC_NO_ERROR;
 }
 

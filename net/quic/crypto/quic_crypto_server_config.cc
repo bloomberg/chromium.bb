@@ -33,6 +33,7 @@
 #include "net/quic/crypto/strike_register.h"
 #include "net/quic/crypto/strike_register_client.h"
 #include "net/quic/quic_clock.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_socket_address_coder.h"
 #include "net/quic/quic_utils.h"
@@ -81,6 +82,9 @@ struct ClientHelloInfo {
   StringPiece client_nonce;
   StringPiece server_nonce;
   StringPiece user_agent_id;
+
+  // Errors from EvaluateClientHello.
+  vector<uint32> reject_reasons;
 };
 
 struct ValidateClientHelloResultCallback::Result {
@@ -146,6 +150,12 @@ class VerifyNonceIsValidAndUniqueCallback
   virtual void RunImpl(bool nonce_is_valid_and_unique) OVERRIDE {
     DVLOG(1) << "Using client nonce, unique: " << nonce_is_valid_and_unique;
     result_->info.unique = nonce_is_valid_and_unique;
+    // TODO(rtenneti): Implement capturing of error from strike register.
+    // Temporarily treat them as CLIENT_NONCE_UNKNOWN_FAILURE.
+    if (!nonce_is_valid_and_unique) {
+      result_->info.reject_reasons.push_back(
+          static_cast<uint32>(CLIENT_NONCE_UNKNOWN_FAILURE));
+    }
     done_cb_->Run(result_);
   }
 
@@ -888,32 +898,65 @@ void QuicCryptoServerConfig::EvaluateClientHello(
 
   client_hello.GetStringPiece(kUAID, &info->user_agent_id);
 
-  StringPiece srct;
-  if (requested_config.get() != NULL &&
-      client_hello.GetStringPiece(kSourceAddressTokenTag, &srct) &&
-      ValidateSourceAddressToken(*requested_config,
-                                 srct,
-                                 info->client_ip,
-                                 info->now)) {
-    info->valid_source_address_token = true;
-  } else {
-    // No server config with the requested ID, or no valid source address token.
+  if (!requested_config.get()) {
+    StringPiece requested_scid;
+    if (client_hello.GetStringPiece(kSCID, &requested_scid)) {
+      info->reject_reasons.push_back(
+          static_cast<uint32>(SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE));
+    } else {
+      info->reject_reasons.push_back(
+          static_cast<uint32>(SERVER_CONFIG_INCHOATE_HELLO_FAILURE));
+    }
+    // No server config with the requested ID.
     helper.ValidationComplete(QUIC_NO_ERROR, "");
     return;
+  }
+
+  HandshakeFailureReason source_address_token_error;
+  StringPiece srct;
+  if (client_hello.GetStringPiece(kSourceAddressTokenTag, &srct)) {
+    source_address_token_error =
+        ValidateSourceAddressToken(*requested_config,
+                                   srct,
+                                   info->client_ip,
+                                   info->now);
+    info->valid_source_address_token =
+        (source_address_token_error == HANDSHAKE_OK);
+  } else {
+    source_address_token_error = SOURCE_ADDRESS_TOKEN_INVALID_FAILURE;
+  }
+
+  bool found_error = false;
+  if (source_address_token_error != HANDSHAKE_OK) {
+    info->reject_reasons.push_back(
+        static_cast<uint32>(source_address_token_error));
+    // No valid source address token.
+    if (FLAGS_use_early_return_when_verifying_chlo) {
+      helper.ValidationComplete(QUIC_NO_ERROR, "");
+      return;
+    }
+    found_error = true;
   }
 
   if (client_hello.GetStringPiece(kNONC, &info->client_nonce) &&
       info->client_nonce.size() == kNonceSize) {
     info->client_nonce_well_formed = true;
   } else {
+    info->reject_reasons.push_back(
+        static_cast<uint32>(CLIENT_NONCE_INVALID_FAILURE));
     // Invalid client nonce.
     DVLOG(1) << "Invalid client nonce.";
-    helper.ValidationComplete(QUIC_NO_ERROR, "");
-    return;
+    if (FLAGS_use_early_return_when_verifying_chlo) {
+      helper.ValidationComplete(QUIC_NO_ERROR, "");
+      return;
+    }
+    found_error = true;
   }
 
   if (!replay_protection_) {
-    info->unique = true;
+    if (!found_error) {
+      info->unique = true;
+    }
     DVLOG(1) << "No replay protection.";
     helper.ValidationComplete(QUIC_NO_ERROR, "");
     return;
@@ -922,8 +965,22 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   client_hello.GetStringPiece(kServerNonceTag, &info->server_nonce);
   if (!info->server_nonce.empty()) {
     // If the server nonce is present, use it to establish uniqueness.
-    info->unique = ValidateServerNonce(info->server_nonce, info->now);
+    HandshakeFailureReason server_nonce_error =
+        ValidateServerNonce(info->server_nonce, info->now);
+    if (server_nonce_error == HANDSHAKE_OK) {
+      info->unique = true;
+    } else {
+      info->reject_reasons.push_back(static_cast<uint32>(server_nonce_error));
+      info->unique = false;
+    }
     DVLOG(1) << "Using server nonce, unique: " << info->unique;
+    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    return;
+  }
+
+  // We want to contact strike register if there are no errors because it is
+  // a RPC call and is expensive.
+  if (found_error) {
     helper.ValidationComplete(QUIC_NO_ERROR, "");
     return;
   }
@@ -969,6 +1026,12 @@ void QuicCryptoServerConfig::BuildRejection(
                           info.now));
   if (replay_protection_) {
     out->SetStringPiece(kServerNonceTag, NewServerNonce(rand, info.now));
+  }
+
+  if (FLAGS_send_quic_crypto_reject_reason) {
+    // Send client the reject reason for debugging purposes.
+    DCHECK_LT(0u, info.reject_reasons.size());
+    out->SetVector(kRREJ, info.reject_reasons);
   }
 
   // The client may have requested a certificate chain.
@@ -1288,7 +1351,7 @@ string QuicCryptoServerConfig::NewSourceAddressToken(const Config& config,
       rand, source_address_token.SerializeAsString());
 }
 
-bool QuicCryptoServerConfig::ValidateSourceAddressToken(
+HandshakeFailureReason QuicCryptoServerConfig::ValidateSourceAddressToken(
     const Config& config,
     StringPiece token,
     const IPEndPoint& ip,
@@ -1296,13 +1359,13 @@ bool QuicCryptoServerConfig::ValidateSourceAddressToken(
   string storage;
   StringPiece plaintext;
   if (!config.source_address_token_boxer->Unbox(token, &storage, &plaintext)) {
-    return false;
+    return SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE;
   }
 
   SourceAddressToken source_address_token;
   if (!source_address_token.ParseFromArray(plaintext.data(),
                                            plaintext.size())) {
-    return false;
+    return SOURCE_ADDRESS_TOKEN_PARSE_FAILURE;
   }
 
   IPAddressNumber ip_address = ip.address();
@@ -1311,7 +1374,7 @@ bool QuicCryptoServerConfig::ValidateSourceAddressToken(
   }
   if (source_address_token.ip() != IPAddressToPackedString(ip_address)) {
     // It's for a different IP address.
-    return false;
+    return SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE;
   }
 
   const QuicWallTime timestamp(
@@ -1320,15 +1383,15 @@ bool QuicCryptoServerConfig::ValidateSourceAddressToken(
 
   if (now.IsBefore(timestamp) &&
       delta.ToSeconds() > source_address_token_future_secs_) {
-    return false;
+    return SOURCE_ADDRESS_TOKEN_CLOCK_SKEW_FAILURE;
   }
 
   if (now.IsAfter(timestamp) &&
       delta.ToSeconds() > source_address_token_lifetime_secs_) {
-    return false;
+    return SOURCE_ADDRESS_TOKEN_EXPIRED_FAILURE;
   }
 
-  return true;
+  return HANDSHAKE_OK;
 }
 
 // kServerNoncePlaintextSize is the number of bytes in an unencrypted server
@@ -1354,12 +1417,13 @@ string QuicCryptoServerConfig::NewServerNonce(QuicRandom* rand,
       StringPiece(reinterpret_cast<char*>(server_nonce), sizeof(server_nonce)));
 }
 
-bool QuicCryptoServerConfig::ValidateServerNonce(StringPiece token,
-                                                 QuicWallTime now) const {
+HandshakeFailureReason QuicCryptoServerConfig::ValidateServerNonce(
+    StringPiece token,
+    QuicWallTime now) const {
   string storage;
   StringPiece plaintext;
   if (!server_nonce_boxer_.Unbox(token, &storage, &plaintext)) {
-    return false;
+    return SERVER_NONCE_DECRYPTION_FAILURE;
   }
 
   // plaintext contains:
@@ -1369,7 +1433,7 @@ bool QuicCryptoServerConfig::ValidateServerNonce(StringPiece token,
   if (plaintext.size() != kServerNoncePlaintextSize) {
     // This should never happen because the value decrypted correctly.
     LOG(DFATAL) << "Seemingly valid server nonce had incorrect length.";
-    return false;
+    return SERVER_NONCE_INVALID_FAILURE;
   }
 
   uint8 server_nonce[32];
@@ -1394,7 +1458,7 @@ bool QuicCryptoServerConfig::ValidateServerNonce(StringPiece token,
         server_nonce, static_cast<uint32>(now.ToUNIXSeconds()));
   }
 
-  return is_unique;
+  return is_unique ? HANDSHAKE_OK : SERVER_NONCE_NOT_UNIQUE_FAILURE;
 }
 
 QuicCryptoServerConfig::Config::Config()

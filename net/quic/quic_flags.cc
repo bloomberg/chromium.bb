@@ -39,3 +39,10 @@ bool FLAGS_quic_use_time_loss_detection = false;
 
 // If true, allow peer port migration of established QUIC connections.
 bool FLAGS_quic_allow_port_migration = true;
+
+// If true, it will return as soon as an error is detected while validating
+// CHLO.
+bool FLAGS_use_early_return_when_verifying_chlo = true;
+
+// If true, QUIC crypto reject message will include the reasons for rejection.
+bool FLAGS_send_quic_crypto_reject_reason = false;
