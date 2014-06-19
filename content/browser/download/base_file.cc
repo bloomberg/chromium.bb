@@ -159,15 +159,18 @@ DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
   // permissions / security descriptors that makes sense in the new directory.
   rename_result = MoveFileAndAdjustPermissions(new_path);
 
-  if (rename_result == DOWNLOAD_INTERRUPT_REASON_NONE) {
+  if (rename_result == DOWNLOAD_INTERRUPT_REASON_NONE)
     full_path_ = new_path;
-    // Re-open the file if we were still using it.
-    if (was_in_progress)
-      rename_result = Open();
-  }
+
+  // Re-open the file if we were still using it regardless of the interrupt
+  // reason.
+  DownloadInterruptReason open_result = DOWNLOAD_INTERRUPT_REASON_NONE;
+  if (was_in_progress)
+    open_result = Open();
 
   bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_RENAMED);
-  return rename_result;
+  return rename_result == DOWNLOAD_INTERRUPT_REASON_NONE ? open_result
+                                                         : rename_result;
 }
 
 void BaseFile::Detach() {
@@ -326,11 +329,10 @@ DownloadInterruptReason BaseFile::LogSystemError(
     const char* operation,
     logging::SystemErrorCode os_error) {
   // There's no direct conversion from a system error to an interrupt reason.
-  net::Error net_error = net::MapSystemError(os_error);
+  base::File::Error file_error = base::File::OSErrorToFileError(os_error);
   return LogInterruptReason(
       operation, os_error,
-      ConvertNetErrorToInterruptReason(
-          net_error, DOWNLOAD_INTERRUPT_FROM_DISK));
+      ConvertFileErrorToInterruptReason(file_error));
 }
 
 DownloadInterruptReason BaseFile::LogInterruptReason(

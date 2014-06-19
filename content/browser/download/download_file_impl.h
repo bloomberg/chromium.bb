@@ -68,7 +68,36 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
   virtual DownloadInterruptReason AppendDataToFile(
       const char* data, size_t data_len);
 
+  virtual base::TimeDelta GetRetryDelayForFailedRename(int attempt_number);
+
+  virtual bool ShouldRetryFailedRename(DownloadInterruptReason reason);
+
  private:
+  friend class DownloadFileTest;
+
+  // Options for RenameWithRetryInternal.
+  enum RenameOption {
+    UNIQUIFY = 1 << 0,  // If there's already a file on disk that conflicts with
+                        // |new_path|, try to create a unique file by appending
+                        // a uniquifier.
+    ANNOTATE_WITH_SOURCE_INFORMATION = 1 << 1
+  };
+
+  // Rename file_ to |new_path|.
+  // |option| specifies additional operations to be performed during the rename.
+  //     See RenameOption above.
+  // |retries_left| indicates how many times to retry the operation if the
+  //     rename fails with a transient error.
+  // |time_of_first_failure| Set to an empty base::TimeTicks during the first
+  //     call. Once the first failure is seen, subsequent calls of
+  //     RenameWithRetryInternal will have a non-empty value keeping track of
+  //     the time of first observed failure.  Used for UMA.
+  void RenameWithRetryInternal(const base::FilePath& new_path,
+                               RenameOption option,
+                               int retries_left,
+                               base::TimeTicks time_of_first_failure,
+                               const RenameCompletionCallback& callback);
+
   // Send an update on our progress.
   void SendUpdate();
 

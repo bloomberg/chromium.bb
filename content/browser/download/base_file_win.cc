@@ -10,6 +10,7 @@
 #include <shellapi.h>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/guid.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,6 +26,8 @@ namespace {
 const int kAllSpecialShFileOperationCodes[] = {
   // Should be kept in sync with the case statement below.
   ERROR_ACCESS_DENIED,
+  ERROR_SHARING_VIOLATION,
+  ERROR_INVALID_PARAMETER,
   0x71,
   0x72,
   0x73,
@@ -69,10 +72,25 @@ DownloadInterruptReason MapShFileOperationCodes(int code) {
   // above.
   switch (code) {
     // Not a pre-Win32 error code; here so that this particular
-    // case shows up in our histograms.  This is redundant with the
-    // mapping function net::MapSystemError used later.
+    // case shows up in our histograms.
     case ERROR_ACCESS_DENIED:  // Access is denied.
-      result = DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
+      result = DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR;
+      break;
+
+    // This isn't documented but returned from SHFileOperation. Sharing
+    // violations indicate that another process had the file open while we were
+    // trying to rename. Anti-virus is believed to be the cause of this error in
+    // the wild. Treated as a transient error on the assumption that the file
+    // will be made available for renaming at a later time.
+    case ERROR_SHARING_VIOLATION:
+      result = DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR;
+      break;
+
+    // This is also not a documented return value of SHFileOperation, but has
+    // been observed in the wild. We are treating it as a transient error based
+    // on the cases we have seen so far.  See http://crbug.com/368455.
+    case ERROR_INVALID_PARAMETER:
+      result = DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR;
       break;
 
     // The source and destination files are the same file.
@@ -250,12 +268,20 @@ DownloadInterruptReason MapShFileOperationCodes(int code) {
             arraysize(kAllSpecialShFileOperationCodes)));
   }
 
+  if (result == DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR) {
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+        "Download.MapWinShErrorTransientError", code,
+        base::CustomHistogram::ArrayToCustomRanges(
+            kAllSpecialShFileOperationCodes,
+            arraysize(kAllSpecialShFileOperationCodes)));
+  }
+
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE)
     return result;
 
   // If not one of the above codes, it should be a standard Windows error code.
-  return ConvertNetErrorToInterruptReason(
-      net::MapSystemError(code), DOWNLOAD_INTERRUPT_FROM_DISK);
+  return ConvertFileErrorToInterruptReason(
+      base::File::OSErrorToFileError(code));
 }
 
 // Maps a return code from ScanAndSaveDownloadedFile() to a

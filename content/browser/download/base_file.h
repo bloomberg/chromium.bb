@@ -56,7 +56,10 @@ class CONTENT_EXPORT BaseFile {
   DownloadInterruptReason AppendDataToFile(const char* data, size_t data_len);
 
   // Rename the download file. Returns a DownloadInterruptReason indicating the
-  // result of the operation.
+  // result of the operation. A return code of NONE indicates that the rename
+  // was successful. After a failure, the full_path() and in_progress() can be
+  // used to determine the last known filename and whether the file is available
+  // for writing or retrying the rename.
   virtual DownloadInterruptReason Rename(const base::FilePath& full_path);
 
   // Detach the file so it is not deleted on destruction.
@@ -79,8 +82,15 @@ class CONTENT_EXPORT BaseFile {
   // Windows to ensure the correct app client ID is available.
   DownloadInterruptReason AnnotateWithSourceInformation();
 
-  base::FilePath full_path() const { return full_path_; }
+  // Returns the last known path to the download file. Can be empty if there's
+  // no file.
+  const base::FilePath& full_path() const { return full_path_; }
+
+  // Returns true if the file is open. If true, the file can be written to or
+  // renamed.
   bool in_progress() const { return file_.IsValid(); }
+
+  // Returns the number of bytes in the file pointed to by full_path().
   int64 bytes_so_far() const { return bytes_so_far_; }
 
   // Fills |hash| with the hash digest for the file.

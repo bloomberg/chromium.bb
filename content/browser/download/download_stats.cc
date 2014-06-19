@@ -611,6 +611,18 @@ void RecordFileBandwidth(size_t length,
                            disk_write_time_ms * 100 / elapsed_time_ms);
 }
 
+void RecordDownloadFileRenameResultAfterRetry(
+    base::TimeDelta time_since_first_failure,
+    DownloadInterruptReason interrupt_reason) {
+  if (interrupt_reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
+    UMA_HISTOGRAM_TIMES("Download.TimeToRenameSuccessAfterInitialFailure",
+                        time_since_first_failure);
+  } else {
+    UMA_HISTOGRAM_TIMES("Download.TimeToRenameFailureAfterInitialFailure",
+                        time_since_first_failure);
+  }
+}
+
 void RecordSavePackageEvent(SavePackageEvent event) {
   UMA_HISTOGRAM_ENUMERATION("Download.SavePackage",
                             event,

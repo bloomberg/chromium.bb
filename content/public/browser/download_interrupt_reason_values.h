@@ -14,7 +14,6 @@
 INTERRUPT_REASON(FILE_FAILED, 1)
 
 // The file cannot be accessed due to security restrictions.
-// The file cannot be accessed.
 // "Access Denied".
 INTERRUPT_REASON(FILE_ACCESS_DENIED, 2)
 
