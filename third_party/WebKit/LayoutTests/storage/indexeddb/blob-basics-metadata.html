@@ -66,6 +66,7 @@ function testCursor()
     debug("testCursor():");
     evalAndLog("transaction = db.transaction('storeName', 'readonly')");
     transaction.onerror = unexpectedErrorCallback;
+    transaction.onabort = unexpectedAbortCallback;
     evalAndLog("store = transaction.objectStore('storeName')");
     evalAndLog("request = store.openCursor()");
 
@@ -107,6 +108,8 @@ function validateResult(variable, validation, onComplete)
     evalAndLog("transaction = db.transaction('storeName', 'readwrite')");
     evalAndLog("store = transaction.objectStore('storeName')");
     evalAndLog("store.put(" + variable + ", '" + keyName + "')");
+    transaction.onerror = unexpectedErrorCallback;
+    transaction.onabort = unexpectedAbortCallback;
     var readTransactionOnComplete = function (e) {
       shouldBeTrue("event.target.result" + validation);
       onComplete();
@@ -123,6 +126,7 @@ function doRead(keyName, onComplete)
     evalAndLog("request = store.get('" + keyName + "')");
     request.onsuccess = onComplete;
     transaction.onerror = unexpectedErrorCallback;
+    transaction.onabort = unexpectedAbortCallback;
 }
 
 if (window.eventSender) {

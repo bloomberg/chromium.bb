@@ -1310,7 +1310,7 @@ private:
             return handleError(DataCloneError, "A File object has been closed, and could therefore not be cloned.", next);
         int blobIndex = -1;
         m_blobDataHandles.add(file->uuid(), file->blobDataHandle());
-        if (appendFileInfo(file->uuid(), file->path(), file->name(), file->type(), &blobIndex)) {
+        if (appendFileInfo(file, &blobIndex)) {
             ASSERT(blobIndex >= 0);
             m_writer.writeFileIndex(blobIndex);
         } else {
@@ -1332,7 +1332,7 @@ private:
             if (file->hasBeenClosed())
                 return handleError(DataCloneError, "A File object has been closed, and could therefore not be cloned.", next);
             m_blobDataHandles.add(file->uuid(), file->blobDataHandle());
-            if (appendFileInfo(file->uuid(), file->path(), file->name(), file->type(), &blobIndex)) {
+            if (appendFileInfo(file, &blobIndex)) {
                 ASSERT(!i || blobIndex > 0);
                 ASSERT(blobIndex >= 0);
                 blobIndices.append(blobIndex);
@@ -1470,12 +1470,16 @@ private:
         return true;
     }
 
-    bool appendFileInfo(const String& uuid, const String& filePath, const String& fileName, const String& type, int* index)
+    bool appendFileInfo(const File* file, int* index)
     {
         if (!m_blobInfo)
             return false;
+
+        long long size = -1;
+        double lastModified = invalidFileTime();
+        file->captureSnapshot(size, lastModified);
         *index = m_blobInfo->size();
-        m_blobInfo->append(blink::WebBlobInfo(uuid, filePath, fileName, type));
+        m_blobInfo->append(blink::WebBlobInfo(file->uuid(), file->path(), file->name(), file->type(), lastModified, size));
         return true;
     }
 
