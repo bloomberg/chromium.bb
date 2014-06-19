@@ -30,6 +30,7 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
       const web_app::ShortcutInfo& shortcut_info);
 
   HWND GetNativeAppWindowHWND() const;
+  bool IsRunningInAsh();
   void EnsureCaptionStyleSet();
 
   // Overridden from ChromeNativeAppWindowViews:

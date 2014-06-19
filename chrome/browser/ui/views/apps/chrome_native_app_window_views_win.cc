@@ -40,17 +40,10 @@ ChromeNativeAppWindowViewsWin::ChromeNativeAppWindowViewsWin()
 }
 
 void ChromeNativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
-  if (!ash::Shell::HasInstance())
-    return;
-
-  views::Widget* widget =
-      implicit_cast<views::WidgetDelegate*>(this)->GetWidget();
-  chrome::HostDesktopType host_desktop_type =
-      chrome::GetHostDesktopTypeForNativeWindow(widget->GetNativeWindow());
   // Only switching into Ash from Native is supported. Tearing the user out of
   // Metro mode can only be done by launching a process from Metro mode itself.
   // This is done for launching apps, but not regular activations.
-  if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH &&
+  if (IsRunningInAsh() &&
       chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_NATIVE) {
     chrome::ActivateMetroChrome();
   }
@@ -58,6 +51,17 @@ void ChromeNativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
 
 HWND ChromeNativeAppWindowViewsWin::GetNativeAppWindowHWND() const {
   return views::HWNDForWidget(widget()->GetTopLevelWidget());
+}
+
+bool ChromeNativeAppWindowViewsWin::IsRunningInAsh() {
+  if (!ash::Shell::HasInstance())
+    return false;
+
+  views::Widget* widget =
+      implicit_cast<views::WidgetDelegate*>(this)->GetWidget();
+  chrome::HostDesktopType host_desktop_type =
+      chrome::GetHostDesktopTypeForNativeWindow(widget->GetNativeWindow());
+  return host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH;
 }
 
 void ChromeNativeAppWindowViewsWin::EnsureCaptionStyleSet() {
@@ -121,7 +125,7 @@ void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
 
   web_app::UpdateRelaunchDetailsForApp(profile, extension, hwnd);
 
-  if (!create_params.transparent_background)
+  if (!create_params.transparent_background && !IsRunningInAsh())
     EnsureCaptionStyleSet();
   UpdateShelfMenu();
 }
