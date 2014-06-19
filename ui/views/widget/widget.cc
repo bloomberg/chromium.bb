@@ -356,7 +356,6 @@ void Widget::Init(const InitParams& in_params) {
         internal::NativeWidgetPrivate::IsMouseButtonDown();
   }
   native_widget_->InitNativeWidget(params);
-  observer_manager_.Add(GetNativeTheme());
   if (RequiresNonClientView(params.type)) {
     non_client_view_ = new NonClientView;
     non_client_view_->SetFrameView(CreateNonClientFrameView());
@@ -378,6 +377,9 @@ void Widget::Init(const InitParams& in_params) {
     SetContentsView(params.delegate->GetContentsView());
     SetInitialBoundsForFramelessWindow(params.bounds);
   }
+  // This must come after SetContentsView() or it might not be able to find
+  // the correct NativeTheme (on Linux). See http://crbug.com/384492
+  observer_manager_.Add(GetNativeTheme());
   native_widget_initialized_ = true;
 }
 
