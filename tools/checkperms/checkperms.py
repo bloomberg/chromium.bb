@@ -50,6 +50,8 @@ EXECUTABLE_EXTENSIONS = (
 #
 # Case-insensitive, lower-case only.
 EXECUTABLE_PATHS = (
+  'chrome/test/data/app_shim/app_shim_32_bit.app/contents/'
+      'macos/app_mode_loader',
   'chrome/test/data/extensions/uitest/plugins/plugin.plugin/contents/'
       'macos/testnetscapeplugin',
   'chrome/test/data/extensions/uitest/plugins_private/plugin.plugin/contents/'

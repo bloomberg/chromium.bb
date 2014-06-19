@@ -15,6 +15,7 @@
 #include "base/files/file_path_watcher.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/launch_services_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -215,8 +216,10 @@ namespace apps {
 // Shims require static libraries http://crbug.com/386024.
 #if defined(COMPONENT_BUILD)
 #define MAYBE_Launch DISABLED_Launch
+#define MAYBE_RebuildShim DISABLED_RebuildShim
 #else
 #define MAYBE_Launch Launch
+#define MAYBE_RebuildShim RebuildShim
 #endif
 
 // Test that launching the shim for an app starts the app, and vice versa.
@@ -303,5 +306,93 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
     EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
   }
 }
+
+#if defined(ARCH_CPU_64_BITS)
+
+// Tests that a 32 bit shim attempting to launch 64 bit Chrome will eventually
+// be rebuilt.
+IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_RebuildShim) {
+  // Get the 32 bit shim.
+  base::FilePath test_data_dir;
+  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+  base::FilePath shim_path_32 =
+      test_data_dir.Append("app_shim").Append("app_shim_32_bit.app");
+  EXPECT_TRUE(base::PathExists(shim_path_32));
+
+  // Install test app.
+  const extensions::Extension* app = InstallPlatformApp("minimal");
+
+  // Use WebAppShortcutCreator to create a 64 bit shim.
+  web_app::WebAppShortcutCreator shortcut_creator(
+      web_app::GetWebAppDataDirectory(profile()->GetPath(), app->id(), GURL()),
+      web_app::ShortcutInfoForExtensionAndProfile(app, profile()),
+      extensions::FileHandlersInfo());
+  shortcut_creator.UpdateShortcuts();
+  base::FilePath shim_path = shortcut_creator.GetInternalShortcutPath();
+  NSMutableDictionary* plist_64 = [NSMutableDictionary
+      dictionaryWithContentsOfFile:base::mac::FilePathToNSString(
+          shim_path.Append("Contents").Append("Info.plist"))];
+
+  // Copy 32 bit shim to where it's expected to be.
+  // CopyDirectory doesn't seem to work when copying and renaming in one go.
+  ASSERT_TRUE(base::DeleteFile(shim_path, true));
+  ASSERT_TRUE(base::PathExists(shim_path.DirName()));
+  ASSERT_TRUE(base::CopyDirectory(shim_path_32, shim_path.DirName(), true));
+  ASSERT_TRUE(base::Move(shim_path.DirName().Append(shim_path_32.BaseName()),
+                         shim_path));
+  ASSERT_TRUE(base::PathExists(
+      shim_path.Append("Contents").Append("MacOS").Append("app_mode_loader")));
+
+  // Fix up the plist so that it matches the installed test app.
+  NSString* plist_path = base::mac::FilePathToNSString(
+      shim_path.Append("Contents").Append("Info.plist"));
+  NSMutableDictionary* plist =
+      [NSMutableDictionary dictionaryWithContentsOfFile:plist_path];
+
+  NSArray* keys_to_copy = @[
+    base::mac::CFToNSCast(kCFBundleIdentifierKey),
+    base::mac::CFToNSCast(kCFBundleNameKey),
+    app_mode::kCrAppModeShortcutIDKey,
+    app_mode::kCrAppModeUserDataDirKey,
+    app_mode::kBrowserBundleIDKey
+  ];
+  for (NSString* key in keys_to_copy) {
+    [plist setObject:[plist_64 objectForKey:key]
+              forKey:key];
+  }
+  [plist writeToFile:plist_path
+          atomically:YES];
+
+  base::mac::RemoveQuarantineAttribute(shim_path);
+
+  // Launch the shim, it should start the app and ultimately connect over IPC.
+  // This actually happens in multiple launches of the shim:
+  // (1) The shim will fail and instead launch Chrome with --app-id so that the
+  //     app starts.
+  // (2) Chrome launches the shim in response to an app starting, this time the
+  //     shim launches Chrome with --app-shim-error, which causes Chrome to
+  //     rebuild the shim.
+  // (3) After rebuilding, Chrome again launches the shim and expects it to
+  //     behave normally.
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  CommandLine shim_cmdline(CommandLine::NO_PROGRAM);
+  ASSERT_TRUE(base::mac::OpenApplicationWithPath(
+      shim_path, shim_cmdline, kLSLaunchDefaults, NULL));
+
+  // Wait for the app to start (1). At this point there is no shim host.
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
+
+  // Wait for the rebuilt shim to connect (3). This does not race with the app
+  // starting (1) because Chrome only launches the shim (2) after the app
+  // starts. Then Chrome must handle --app-shim-error on the UI thread before
+  // the shim is rebuilt.
+  WindowedAppShimLaunchObserver(app->id()).Wait();
+
+  EXPECT_TRUE(GetFirstAppWindow());
+  EXPECT_TRUE(HasAppShimHost(profile(), app->id()));
+}
+
+#endif  // defined(ARCH_CPU_64_BITS)
 
 }  // namespace apps
