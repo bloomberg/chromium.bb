@@ -6,12 +6,12 @@
 
 #include "base/strings/string_tokenizer.h"
 #include "mojo/public/cpp/application/application.h"
-#include "mojo/services/navigation/navigation.mojom.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
+#include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 

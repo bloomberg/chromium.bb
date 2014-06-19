@@ -186,7 +186,7 @@
       'target_name': 'mojo_navigation_bindings',
       'type': 'static_library',
       'sources': [
-        'services/navigation/navigation.mojom',
+        'services/public/interfaces/navigation/navigation.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
