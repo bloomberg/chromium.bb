@@ -10,7 +10,19 @@
 # and we only select subset to run
 # A*: ~120 tests
 A*
-#B*
+# B*: ~230 tests
+BackgroundApp*.R*
+BluetoothSocketApi*.P*
+BookmarksT*.B*
+BookmarksT*.C*
+BrowserAcc*
+BrowserActionA*.I*
+BrowserCloseManagerB*/*.PRE*
+BrowserCloseManagerB*/*.Test*
+BrowserCloseManagerW*/*.TestWithDownloadsF*
+BrowserN*.D*
+BrowserN*.N*
+BrowserTest.P*
 C*
 D*
 E*
