@@ -70,7 +70,8 @@ void SyncWorker::Initialize(scoped_ptr<SyncEngineContext> context) {
   context_ = context.Pass();
 
   task_manager_.reset(new SyncTaskManager(
-      weak_ptr_factory_.GetWeakPtr(), 0 /* maximum_background_task */));
+      weak_ptr_factory_.GetWeakPtr(), 0 /* maximum_background_task */,
+      context_->GetWorkerTaskRunner()));
   task_manager_->Initialize(SYNC_STATUS_OK);
 
   PostInitializeTask();

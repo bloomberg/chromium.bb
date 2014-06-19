@@ -81,7 +81,8 @@ class ConflictResolverTest : public testing::Test {
 
     sync_task_manager_.reset(new SyncTaskManager(
         base::WeakPtr<SyncTaskManager::Client>(),
-        10 /* maximum_background_task */));
+        10 /* maximum_background_task */,
+        base::MessageLoopProxy::current()));
     sync_task_manager_->Initialize(SYNC_STATUS_OK);
   }
 

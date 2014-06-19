@@ -76,7 +76,8 @@ scoped_ptr<DriveFileSyncService> DriveFileSyncService::Create(
   scoped_ptr<DriveFileSyncService> service(new DriveFileSyncService(profile));
   scoped_ptr<drive_backend::SyncTaskManager> task_manager(
       new drive_backend::SyncTaskManager(service->AsWeakPtr(),
-                                         0 /* maximum_background_task */));
+                                         0 /* maximum_background_task */,
+                                         base::MessageLoopProxy::current()));
   SyncStatusCallback callback = base::Bind(
       &drive_backend::SyncTaskManager::Initialize, task_manager->AsWeakPtr());
   service->Initialize(task_manager.Pass(), callback);
@@ -100,7 +101,8 @@ scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
   scoped_ptr<DriveFileSyncService> service(new DriveFileSyncService(profile));
   scoped_ptr<drive_backend::SyncTaskManager> task_manager(
       new drive_backend::SyncTaskManager(service->AsWeakPtr(),
-                                         0 /* maximum_background_task */));
+                                         0 /* maximum_background_task */,
+                                         base::MessageLoopProxy::current()));
   SyncStatusCallback callback = base::Bind(
       &drive_backend::SyncTaskManager::Initialize, task_manager->AsWeakPtr());
   service->InitializeForTesting(task_manager.Pass(),

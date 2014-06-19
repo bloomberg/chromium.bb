@@ -19,6 +19,10 @@
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "chrome/browser/sync_file_system/task_logger.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace tracked_objects {
 class Location;
 }
@@ -68,7 +72,8 @@ class SyncTaskManager
   // Runs at most |maximum_background_tasks| parallel as background tasks.
   // If |maximum_background_tasks| is zero, all task runs as foreground task.
   SyncTaskManager(base::WeakPtr<Client> client,
-                  size_t maximum_background_task);
+                  size_t maximum_background_task,
+                  base::SequencedTaskRunner* task_runner);
   virtual ~SyncTaskManager();
 
   // This needs to be called to start task scheduling.
@@ -160,7 +165,9 @@ class SyncTaskManager
   void RunTask(scoped_ptr<SyncTaskToken> token,
                scoped_ptr<SyncTask> task);
 
-  void StartNextTask();
+  // Runs a pending task as a foreground task if possible.
+  // If |token| is non-NULL, put |token| back to |token_| beforehand.
+  void MaybeStartNextForegroundTask(scoped_ptr<SyncTaskToken> token);
 
   base::WeakPtr<Client> client_;
 
@@ -190,6 +197,7 @@ class SyncTaskManager
 
   TaskDependencyManager dependency_manager_;
 
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncTaskManager);
