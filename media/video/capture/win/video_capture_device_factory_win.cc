@@ -220,6 +220,7 @@ static void GetDeviceSupportedFormatsDirectShow(
       continue;
     }
 
+    std::string id;
     device_id.Reset();
     hr = prop_bag->Read(L"DevicePath", device_id.Receive(), 0);
     if (FAILED(hr) || device_id.type() != VT_BSTR) {
@@ -235,7 +236,8 @@ static void GetDeviceSupportedFormatsDirectShow(
       DCHECK_EQ(device_id.type(), VT_BSTR);
       id = base::SysWideToUTF8(V_BSTR(&device_id));
     }
-    if (device.id() == base::SysWideToUTF8(V_BSTR(&device_id)))
+
+    if (device.id() == id)
       break;
     moniker.Release();
   }
