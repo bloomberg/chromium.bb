@@ -25,6 +25,7 @@
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGTextMetrics.h"
+#include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/WidthIterator.h"
 #include "platform/text/BidiCharacterRun.h"
 #include "platform/text/BidiResolver.h"

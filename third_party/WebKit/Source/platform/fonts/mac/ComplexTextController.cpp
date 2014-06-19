@@ -25,14 +25,15 @@
 #include "config.h"
 #include "platform/fonts/mac/ComplexTextController.h"
 
-#include <ApplicationServices/ApplicationServices.h>
 #include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
+#include "platform/fonts/GlyphBuffer.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/unicode/CharacterNames.h"
+#include <ApplicationServices/ApplicationServices.h>
 
 using namespace std;
 

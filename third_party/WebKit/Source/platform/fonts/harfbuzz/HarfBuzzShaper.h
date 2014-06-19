@@ -32,7 +32,6 @@
 #define HarfBuzzShaper_h
 
 #include "hb.h"
-#include "platform/fonts/GlyphBuffer.h"
 #include "platform/geometry/FloatBoxExtent.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/text/TextRun.h"
@@ -47,7 +46,9 @@
 namespace WebCore {
 
 class Font;
+class GlyphBuffer;
 class SimpleFontData;
+
 class HarfBuzzShaper FINAL {
 public:
     enum ForTextEmphasisOrNot {

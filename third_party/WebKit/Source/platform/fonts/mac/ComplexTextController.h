@@ -25,7 +25,6 @@
 #ifndef ComplexTextController_h
 #define ComplexTextController_h
 
-#include "platform/fonts/GlyphBuffer.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -43,6 +42,7 @@ typedef const struct __CTLine * CTLineRef;
 namespace WebCore {
 
 class Font;
+class GlyphBuffer;
 class SimpleFontData;
 class TextRun;
 

@@ -37,6 +37,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
+#include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
 #include "platform/text/SurrogatePairAwareTextIterator.h"
 #include "platform/text/TextBreakIterator.h"

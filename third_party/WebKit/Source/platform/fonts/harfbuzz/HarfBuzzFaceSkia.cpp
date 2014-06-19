@@ -40,7 +40,6 @@
 #include "SkUtils.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/harfbuzz/HarfBuzzShaper.h"
 
 #include "hb.h"

@@ -30,7 +30,6 @@
 #include "platform/fonts/FontData.h"
 #include "platform/fonts/FontMetrics.h"
 #include "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/GlyphMetricsMap.h"
 #include "platform/fonts/GlyphPageTreeNode.h"
 #include "platform/fonts/TypesettingFeatures.h"
