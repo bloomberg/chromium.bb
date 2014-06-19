@@ -14,8 +14,9 @@ namespace test {
 // mock it.
 NativeWidgetCapture::NativeWidgetCapture(
     internal::NativeWidgetDelegate* delegate)
-    : NativeWidgetAura(delegate),
+    : PlatformNativeWidget(delegate),
       mouse_capture_(false) {}
+
 NativeWidgetCapture::~NativeWidgetCapture() {}
 
 void NativeWidgetCapture::SetCapture() {

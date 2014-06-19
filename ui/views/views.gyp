@@ -627,6 +627,8 @@
         'test/views_test_helper_aura.h',
         'test/widget_test.cc',
         'test/widget_test.h',
+        'test/widget_test_aura.cc',
+        'test/widget_test_mac.mm',
         'test/x11_property_change_waiter.cc',
         'test/x11_property_change_waiter.h',
       ],

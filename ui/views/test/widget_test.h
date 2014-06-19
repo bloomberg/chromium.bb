@@ -7,12 +7,34 @@
 
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/test/views_test_base.h"
+
+#if defined(USE_AURA)
 #include "ui/views/widget/native_widget_aura.h"
+#if !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#endif
+#elif defined(OS_MACOSX)
+#include "ui/views/widget/native_widget_mac.h"
+#endif
+
+namespace ui {
+class EventProcessor;
+}
 
 namespace views {
 
 class NativeWidget;
 class Widget;
+
+#if defined(USE_AURA)
+typedef NativeWidgetAura PlatformNativeWidget;
+#if !defined(OS_CHROMEOS)
+typedef DesktopNativeWidgetAura PlatformDesktopNativeWidget;
+#endif
+#elif defined(OS_MACOSX)
+typedef NativeWidgetMac PlatformNativeWidget;
+typedef NativeWidgetMac PlatformDesktopNativeWidget;
+#endif
 
 namespace internal {
 
@@ -24,7 +46,7 @@ namespace test {
 
 // A widget that assumes mouse capture always works. It won't on Aura in
 // testing, so we mock it.
-class NativeWidgetCapture : public NativeWidgetAura {
+class NativeWidgetCapture : public PlatformNativeWidget {
  public:
   explicit NativeWidgetCapture(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetCapture();
@@ -64,6 +86,17 @@ class WidgetTest : public ViewsTestBase {
   View* GetMouseMoveHandler(internal::RootView* root_view);
 
   View* GetGestureHandler(internal::RootView* root_view);
+
+  // Simulate a OS-level destruction of the native widget held by |widget|.
+  static void SimulateNativeDestroy(Widget* widget);
+
+  // Return true if |window| is visible according to the native platform.
+  static bool IsNativeWindowVisible(gfx::NativeWindow window);
+
+  // Return the event processor for |widget|. On aura platforms, this is an
+  // aura::WindowEventDispatcher. Otherwise, it is a bridge to the OS event
+  // processor.
+  static ui::EventProcessor* GetEventProcessor(Widget* widget);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WidgetTest);
