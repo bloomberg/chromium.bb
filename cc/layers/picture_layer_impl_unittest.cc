@@ -2774,50 +2774,5 @@ TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
       quad_culler.shared_quad_state_list()[0]->visible_content_rect.ToString());
 }
 
-TEST_F(PictureLayerImplTest, UpdateTilesForMasksWithNoVisibleContent) {
-  gfx::Size tile_size(400, 400);
-  gfx::Size bounds(100000, 100);
-
-  host_impl_.CreatePendingTree();
-
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_.pending_tree(), 1);
-
-  scoped_ptr<FakePictureLayerImpl> layer_with_mask =
-      FakePictureLayerImpl::Create(host_impl_.pending_tree(), 2);
-
-  layer_with_mask->SetBounds(bounds);
-  layer_with_mask->SetContentBounds(bounds);
-
-  scoped_refptr<FakePicturePileImpl> pending_pile =
-      FakePicturePileImpl::CreateFilledPile(tile_size, bounds);
-  scoped_ptr<FakePictureLayerImpl> mask = FakePictureLayerImpl::CreateWithPile(
-      host_impl_.pending_tree(), 3, pending_pile);
-
-  mask->SetIsMask(true);
-  mask->SetBounds(bounds);
-  mask->SetContentBounds(bounds);
-  mask->SetDrawsContent(true);
-
-  FakePictureLayerImpl* pending_mask_content = mask.get();
-  layer_with_mask->SetMaskLayer(mask.PassAs<LayerImpl>());
-
-  scoped_ptr<FakePictureLayerImpl> child_of_layer_with_mask =
-      FakePictureLayerImpl::Create(host_impl_.pending_tree(), 4);
-
-  child_of_layer_with_mask->SetBounds(bounds);
-  child_of_layer_with_mask->SetContentBounds(bounds);
-  child_of_layer_with_mask->SetDrawsContent(true);
-
-  layer_with_mask->AddChild(child_of_layer_with_mask.PassAs<LayerImpl>());
-
-  root->AddChild(layer_with_mask.PassAs<LayerImpl>());
-
-  host_impl_.pending_tree()->SetRootLayer(root.Pass());
-
-  EXPECT_FALSE(pending_mask_content->tilings());
-  host_impl_.pending_tree()->UpdateDrawProperties();
-  EXPECT_NE(0u, pending_mask_content->num_tilings());
-}
-
 }  // namespace
 }  // namespace cc
