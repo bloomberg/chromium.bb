@@ -118,9 +118,9 @@ base::string16 GetObjectName(IPortableDeviceValues* properties_values) {
 }
 
 // Gets the last modified time of the object from the property key values
-// specified by the |properties_values|. On success, returns true and fills in
+// specified by the |properties_values|. On success, fills in
 // |last_modified_time|.
-bool GetLastModifiedTime(IPortableDeviceValues* properties_values,
+void GetLastModifiedTime(IPortableDeviceValues* properties_values,
                          base::Time* last_modified_time) {
   DCHECK(properties_values);
   DCHECK(last_modified_time);
@@ -128,20 +128,24 @@ bool GetLastModifiedTime(IPortableDeviceValues* properties_values,
   HRESULT hr = properties_values->GetValue(WPD_OBJECT_DATE_MODIFIED,
                                            last_modified_date.Receive());
   if (FAILED(hr))
-    return false;
+    return;
 
-  bool last_modified_time_set = (last_modified_date.get().vt == VT_DATE);
-  if (last_modified_time_set) {
-    SYSTEMTIME system_time;
-    FILETIME file_time;
-    if (VariantTimeToSystemTime(last_modified_date.get().date, &system_time) &&
-        SystemTimeToFileTime(&system_time, &file_time)) {
-      *last_modified_time = base::Time::FromFileTime(file_time);
-    } else {
-      last_modified_time_set = false;
-    }
+  // Some PTP devices don't provide an mtime. Try using the ctime instead.
+  if (last_modified_date.get().vt != VT_DATE) {
+    last_modified_date.Reset();
+    HRESULT hr = properties_values->GetValue(WPD_OBJECT_DATE_CREATED,
+                                             last_modified_date.Receive());
+    if (FAILED(hr))
+      return;
   }
-  return last_modified_time_set;
+
+  SYSTEMTIME system_time;
+  FILETIME file_time;
+  if (last_modified_date.get().vt == VT_DATE &&
+      VariantTimeToSystemTime(last_modified_date.get().date, &system_time) &&
+      SystemTimeToFileTime(&system_time, &file_time)) {
+    *last_modified_time = base::Time::FromFileTime(file_time);
+  }
 }
 
 // Gets the size of the file object in bytes from the property key values
@@ -161,7 +165,8 @@ bool GetObjectSize(IPortableDeviceValues* properties_values, int64* size) {
 
 // Gets the details of the object specified by the |object_id| given the media
 // transfer protocol |device|. On success, returns true and fills in |name|,
-// |is_directory|, |size| and |last_modified_time|.
+// |is_directory|, |size|. |last_modified_time| will be filled in if possible,
+// but failure to get it doesn't prevent success.
 bool GetObjectDetails(IPortableDevice* device,
                       const base::string16 object_id,
                       base::string16* name,
@@ -197,6 +202,7 @@ bool GetObjectDetails(IPortableDevice* device,
       FAILED(properties_to_read->Add(WPD_OBJECT_ORIGINAL_FILE_NAME)) ||
       FAILED(properties_to_read->Add(WPD_OBJECT_NAME)) ||
       FAILED(properties_to_read->Add(WPD_OBJECT_DATE_MODIFIED)) ||
+      FAILED(properties_to_read->Add(WPD_OBJECT_DATE_CREATED)) ||
       FAILED(properties_to_read->Add(WPD_OBJECT_SIZE)))
     return false;
 
@@ -219,8 +225,11 @@ bool GetObjectDetails(IPortableDevice* device,
     *last_modified_time = base::Time();
     return true;
   }
-  return (GetObjectSize(properties_values.get(), size) &&
-          GetLastModifiedTime(properties_values.get(), last_modified_time));
+
+  // Try to get the last modified time, but don't fail if we can't.
+  GetLastModifiedTime(properties_values.get(), last_modified_time);
+
+  return GetObjectSize(properties_values.get(), size);
 }
 
 // Creates an MTP device object entry for the given |device| and |object_id|.
