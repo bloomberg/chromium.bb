@@ -33,10 +33,17 @@ struct WebDeviceEmulationParams {
     // Insets of emulated view inside available view space, in fit to view mode.
     WebSize viewInsets;
 
+    // Offset of emulated view inside available space, not in fit to view mode.
+    WebFloatPoint offset;
+
+    // Scale of emulated view inside available space, not in fit to view mode.
+    float scale;
+
     WebDeviceEmulationParams()
         : screenPosition(Desktop)
         , deviceScaleFactor(0)
-        , fitToView(false) { }
+        , fitToView(false)
+        , scale(1) { }
 };
 
 } // namespace blink
