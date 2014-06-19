@@ -53,8 +53,7 @@ class SoundLevelIndicator : public views::View {
 
  private:
   // Overridden from views::View:
-  virtual void Paint(gfx::Canvas* canvas,
-                     const views::CullSet& cull_set) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(SoundLevelIndicator);
 };
@@ -63,8 +62,7 @@ SoundLevelIndicator::SoundLevelIndicator() {}
 
 SoundLevelIndicator::~SoundLevelIndicator() {}
 
-void SoundLevelIndicator::Paint(gfx::Canvas* canvas,
-                                const views::CullSet& cull_set) {
+void SoundLevelIndicator::OnPaint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(kSoundLevelIndicatorColor);
