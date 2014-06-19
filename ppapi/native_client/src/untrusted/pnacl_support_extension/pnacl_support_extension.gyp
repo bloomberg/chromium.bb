@@ -23,6 +23,7 @@
       'action': [
         'python',
         '<(DEPTH)/native_client/build/package_version/package_version.py',
+        '--quiet',
         '--packages', 'pnacl_translator',
         '--tar-dir', '<(DEPTH)/native_client/toolchain/.tars',
         '--dest-dir', '<(SHARED_INTERMEDIATE_DIR)',
