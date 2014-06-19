@@ -132,7 +132,7 @@ class NativeViewportX11 : public NativeViewport,
       if (protocol == atom_wm_delete_window_)
         delegate_->OnDestroyed();
     } else if (event->type == KeyPress || event->type == KeyRelease) {
-      ui::KeyEvent key_event(event, true);
+      ui::KeyEvent key_event(event, false);
       delegate_->OnEvent(&key_event);
     } else if (event->type == ButtonPress || event->type == ButtonRelease ||
                event->type == MotionNotify) {

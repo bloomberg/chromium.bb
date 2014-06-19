@@ -441,7 +441,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   // CEF sets focus to the window the user clicks down on.
   // TODO(beng): see if we can't do this some other way. CEF seems a heavy-
   //             handed way of accomplishing focus.
-  // No event filter for aura::Env. Create CompoundEvnetFilter per
+  // No event filter for aura::Env. Create CompoundEventFilter per
   // WindowEventDispatcher.
   root_window_event_filter_.reset(new wm::CompoundEventFilter);
   host_->window()->AddPreTargetHandler(root_window_event_filter_.get());
