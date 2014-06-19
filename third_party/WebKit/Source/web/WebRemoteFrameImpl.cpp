@@ -245,24 +245,6 @@ void WebRemoteFrameImpl::removeChild(WebFrame* frame)
     m_ownersForChildren.remove(frame);
 }
 
-WebFrame* WebRemoteFrameImpl::traversePrevious(bool wrap) const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-WebFrame* WebRemoteFrameImpl::traverseNext(bool wrap) const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-WebFrame* WebRemoteFrameImpl::findChildByName(const WebString&) const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
 WebDocument WebRemoteFrameImpl::document() const
 {
     ASSERT_NOT_REACHED();
@@ -837,6 +819,13 @@ WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(const WebString& name, Web
 void WebRemoteFrameImpl::setWebCoreFrame(PassRefPtr<RemoteFrame> frame)
 {
     m_frame = frame;
+}
+
+WebRemoteFrameImpl* WebRemoteFrameImpl::fromFrame(RemoteFrame& frame)
+{
+    if (!frame.client())
+        return 0;
+    return static_cast<RemoteFrameClient*>(frame.client())->webFrame();
 }
 
 } // namespace blink

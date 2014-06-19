@@ -14,7 +14,7 @@
 
 namespace blink {
 
-WebCore::Frame* toWebCoreFrame(WebFrame* frame)
+WebCore::Frame* toWebCoreFrame(const WebFrame* frame)
 {
     if (!frame)
         return 0;
@@ -82,6 +82,8 @@ void WebFrame::appendChild(WebFrame* child)
     } else {
         m_firstChild = child;
     }
+
+    toWebCoreFrame(this)->tree().invalidateScopedChildCount();
 }
 
 void WebFrame::removeChild(WebFrame* child)
@@ -99,6 +101,8 @@ void WebFrame::removeChild(WebFrame* child)
         child->m_nextSibling->m_previousSibling = child->m_previousSibling;
 
     child->m_previousSibling = child->m_nextSibling = 0;
+
+    toWebCoreFrame(this)->tree().invalidateScopedChildCount();
 }
 
 WebFrame* WebFrame::parent() const
@@ -132,6 +136,42 @@ WebFrame* WebFrame::previousSibling() const
 WebFrame* WebFrame::nextSibling() const
 {
     return m_nextSibling;
+}
+
+WebFrame* WebFrame::traversePrevious(bool wrap) const
+{
+    WebCore::Frame* frame = toWebCoreFrame(this);
+    if (!frame)
+        return 0;
+    return fromFrame(frame->tree().traversePreviousWithWrap(wrap));
+}
+
+WebFrame* WebFrame::traverseNext(bool wrap) const
+{
+    WebCore::Frame* frame = toWebCoreFrame(this);
+    if (!frame)
+        return 0;
+    return fromFrame(frame->tree().traverseNextWithWrap(wrap));
+}
+
+WebFrame* WebFrame::findChildByName(const WebString& name) const
+{
+    WebCore::Frame* frame = toWebCoreFrame(this);
+    if (!frame)
+        return 0;
+    // FIXME: It's not clear this should ever be called to find a remote frame.
+    // Perhaps just disallow that completely?
+    return fromFrame(frame->tree().child(name));
+}
+
+WebFrame* WebFrame::fromFrame(WebCore::Frame* frame)
+{
+    if (!frame)
+        return 0;
+
+    if (frame->isLocalFrame())
+        return WebLocalFrameImpl::fromFrame(toLocalFrame(*frame));
+    return WebRemoteFrameImpl::fromFrame(toRemoteFrame(*frame));
 }
 
 WebFrame::WebFrame()

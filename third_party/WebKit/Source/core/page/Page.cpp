@@ -124,6 +124,7 @@ Page::Page(PageClients& pageClients)
     , m_inspectorController(InspectorController::create(this, pageClients.inspectorClient))
     , m_pointerLockController(PointerLockController::create(this))
     , m_undoStack(UndoStack::create())
+    , m_mainFrame(0)
     , m_backForwardClient(pageClients.backForwardClient)
     , m_editorClient(pageClients.editorClient)
     , m_spellCheckerClient(pageClients.spellCheckerClient)
@@ -153,6 +154,8 @@ Page::Page(PageClients& pageClients)
 
 Page::~Page()
 {
+    // willBeDestroyed() must be called before Page destruction.
+    ASSERT(!m_mainFrame);
 }
 
 void Page::makeOrdinary()
@@ -197,7 +200,7 @@ PassRefPtrWillBeRawPtr<ClientRectList> Page::nonFastScrollableRects(const LocalF
     return ClientRectList::create(quads);
 }
 
-void Page::setMainFrame(PassRefPtr<Frame> mainFrame)
+void Page::setMainFrame(Frame* mainFrame)
 {
     ASSERT(!m_mainFrame); // Should only be called during initialization
     m_mainFrame = mainFrame;
@@ -382,7 +385,7 @@ void Page::allVisitedStateChanged()
     HashSet<Page*>::iterator pagesEnd = ordinaryPages().end();
     for (HashSet<Page*>::iterator it = ordinaryPages().begin(); it != pagesEnd; ++it) {
         Page* page = *it;
-        for (Frame* frame = page->m_mainFrame.get(); frame; frame = frame->tree().traverseNext()) {
+        for (Frame* frame = page->m_mainFrame; frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame())
                 toLocalFrame(frame)->document()->visitedLinkState().invalidateStyleForAllLinks();
         }
@@ -394,7 +397,7 @@ void Page::visitedStateChanged(LinkHash linkHash)
     HashSet<Page*>::iterator pagesEnd = ordinaryPages().end();
     for (HashSet<Page*>::iterator it = ordinaryPages().begin(); it != pagesEnd; ++it) {
         Page* page = *it;
-        for (Frame* frame = page->m_mainFrame.get(); frame; frame = frame->tree().traverseNext()) {
+        for (Frame* frame = page->m_mainFrame; frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame())
                 toLocalFrame(frame)->document()->visitedLinkState().invalidateStyleForLink(linkHash);
         }
@@ -604,17 +607,19 @@ void Page::trace(Visitor* visitor)
 
 void Page::willBeDestroyed()
 {
-    if (m_mainFrame && m_mainFrame->isLocalFrame())
-        deprecatedLocalMainFrame()->loader().frameDetached();
+    RefPtr<Frame> mainFrame = m_mainFrame;
+
+    if (mainFrame->isLocalFrame())
+        toLocalFrame(mainFrame.get())->loader().frameDetached();
 
     // Disable all agents prior to resetting the frame view.
     m_inspectorController->willBeDestroyed();
 
-    if (m_mainFrame->isLocalFrame()) {
-        toLocalFrame(m_mainFrame.get())->setView(nullptr);
+    if (mainFrame->isLocalFrame()) {
+        toLocalFrame(mainFrame.get())->setView(nullptr);
     } else {
         ASSERT(m_mainFrame->isRemoteFrame());
-        toRemoteFrame(m_mainFrame.get())->setView(nullptr);
+        toRemoteFrame(mainFrame.get())->setView(nullptr);
     }
 
     allPages().remove(this);
@@ -629,7 +634,7 @@ void Page::willBeDestroyed()
 #endif
 
     m_chrome->willBeDestroyed();
-    m_mainFrame.clear();
+    m_mainFrame = 0;
     if (m_validationMessageClient)
         m_validationMessageClient->willBeDestroyed();
     WillBeHeapSupplementable<Page>::willBeDestroyed();

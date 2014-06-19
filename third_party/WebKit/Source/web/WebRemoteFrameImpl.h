@@ -50,9 +50,6 @@ public:
     virtual bool hasVerticalScrollbar() const OVERRIDE;
     virtual WebView* view() const OVERRIDE;
     virtual void removeChild(WebFrame*) OVERRIDE;
-    virtual WebFrame* traversePrevious(bool wrap) const OVERRIDE;
-    virtual WebFrame* traverseNext(bool wrap) const OVERRIDE;
-    virtual WebFrame* findChildByName(const WebString&) const OVERRIDE;
     virtual WebDocument document() const OVERRIDE;
     virtual WebPerformance performance() const OVERRIDE;
     virtual bool dispatchBeforeUnloadEvent() OVERRIDE;
@@ -183,6 +180,8 @@ public:
 
     void setWebCoreFrame(PassRefPtr<WebCore::RemoteFrame>);
     WebCore::RemoteFrame* frame() const { return m_frame.get(); }
+
+    static WebRemoteFrameImpl* fromFrame(WebCore::RemoteFrame&);
 
 private:
     RemoteFrameClient m_frameClient;

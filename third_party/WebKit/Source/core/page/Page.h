@@ -128,14 +128,14 @@ public:
     SpellCheckerClient& spellCheckerClient() const { return *m_spellCheckerClient; }
     UndoStack& undoStack() const { return *m_undoStack; }
 
-    void setMainFrame(PassRefPtr<Frame>);
-    Frame* mainFrame() const { return m_mainFrame.get(); }
+    void setMainFrame(Frame*);
+    Frame* mainFrame() const { return m_mainFrame; }
     // Escape hatch for existing code that assumes that the root frame is
     // always a LocalFrame. With OOPI, this is not always the case. Code that
     // depends on this will generally have to be rewritten to propagate any
     // necessary state through all renderer processes for that page and/or
     // coordinate/rely on the browser process to help dispatch/coordinate work.
-    LocalFrame* deprecatedLocalMainFrame() const { return toLocalFrame(m_mainFrame.get()); }
+    LocalFrame* deprecatedLocalMainFrame() const { return toLocalFrame(m_mainFrame); }
 
     void documentDetached(Document*);
 
@@ -259,7 +259,19 @@ private:
     OwnPtr<ScrollingCoordinator> m_scrollingCoordinator;
     const OwnPtrWillBeMember<UndoStack> m_undoStack;
 
-    RefPtr<Frame> m_mainFrame;
+    // Typically, the main frame and Page should both be owned by the embedder,
+    // which must call Page::willBeDestroyed() prior to destroying Page. This
+    // call detaches the main frame and clears this pointer, thus ensuring that
+    // this field only references a live main frame.
+    //
+    // However, there are several locations (InspectorOverlay, SVGImage, and
+    // WebPagePopupImpl) which don't hold a reference to the main frame at all
+    // after creating it. These are still safe because they always create a
+    // Frame with a FrameView. FrameView and Frame hold references to each
+    // other, thus keeping each other alive. The call to willBeDestroyed()
+    // breaks this cycle, so the frame is still properly destroyed once no
+    // longer needed.
+    Frame* m_mainFrame;
 
     mutable RefPtr<PluginData> m_pluginData;
 

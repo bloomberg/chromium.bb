@@ -103,11 +103,6 @@ public:
     virtual bool hasVerticalScrollbar() const OVERRIDE;
     virtual WebView* view() const OVERRIDE;
     virtual void setOpener(WebFrame*) OVERRIDE;
-    virtual void appendChild(WebFrame*) OVERRIDE;
-    virtual void removeChild(WebFrame*) OVERRIDE;
-    virtual WebFrame* traversePrevious(bool wrap) const OVERRIDE;
-    virtual WebFrame* traverseNext(bool wrap) const OVERRIDE;
-    virtual WebFrame* findChildByName(const WebString&) const OVERRIDE;
     virtual WebDocument document() const OVERRIDE;
     virtual WebPerformance performance() const OVERRIDE;
     virtual bool dispatchBeforeUnloadEvent() OVERRIDE;
@@ -250,6 +245,7 @@ public:
     void createFrameView();
 
     static WebLocalFrameImpl* fromFrame(WebCore::LocalFrame*);
+    static WebLocalFrameImpl* fromFrame(WebCore::LocalFrame&);
     static WebLocalFrameImpl* fromFrameOwnerElement(WebCore::Element*);
 
     // If the frame hosts a PluginDocument, this method returns the WebPluginContainerImpl

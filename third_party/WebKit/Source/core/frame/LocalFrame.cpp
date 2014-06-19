@@ -106,9 +106,6 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
 PassRefPtr<LocalFrame> LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
 {
     RefPtr<LocalFrame> frame = adoptRef(new LocalFrame(client, host, owner));
-    // FIXME: Why is this here? RemoteFrames need this too.
-    if (!frame->owner())
-        frame->page()->setMainFrame(frame);
     InspectorInstrumentation::frameAttachedToParent(frame.get());
     return frame.release();
 }

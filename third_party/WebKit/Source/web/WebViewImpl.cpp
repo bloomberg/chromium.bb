@@ -2503,9 +2503,7 @@ void WebViewImpl::setPageEncoding(const WebString& encodingName)
 
 WebFrame* WebViewImpl::mainFrame()
 {
-    // FIXME: This should be updated so it can return both WebLocalFrames and
-    // WebRemoteFrames. Right now, it only returns WebLocalFrames.
-    return mainFrameImpl();
+    return WebFrame::fromFrame(m_page ? m_page->mainFrame() : 0);
 }
 
 WebFrame* WebViewImpl::findFrameByName(

@@ -202,7 +202,7 @@ public:
     void clearOpener() { setOpener(0); }
 
     // Adds the given frame as a child of this frame.
-    virtual void appendChild(WebFrame*);
+    BLINK_EXPORT void appendChild(WebFrame*);
 
     // Removes the given child from this frame.
     virtual void removeChild(WebFrame*);
@@ -221,13 +221,13 @@ public:
     BLINK_EXPORT WebFrame* previousSibling() const;
     BLINK_EXPORT WebFrame* nextSibling() const;
 
-    // Returns the next/previous frame in "frame traversal order"
+    // Returns the previous/next frame in "frame traversal order",
     // optionally wrapping around.
-    virtual WebFrame* traverseNext(bool wrap) const = 0;
-    virtual WebFrame* traversePrevious(bool wrap) const = 0;
+    BLINK_EXPORT WebFrame* traversePrevious(bool wrap) const;
+    BLINK_EXPORT WebFrame* traverseNext(bool wrap) const;
 
     // Returns the child frame identified by the given name.
-    virtual WebFrame* findChildByName(const WebString& name) const = 0;
+    BLINK_EXPORT WebFrame* findChildByName(const WebString& name) const;
 
 
     // Content ------------------------------------------------------------
@@ -673,6 +673,10 @@ public:
     // text form. This is used only by layout tests.
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const = 0;
 
+#if BLINK_IMPLEMENTATION
+    static WebFrame* fromFrame(WebCore::Frame*);
+#endif
+
 protected:
     explicit WebFrame();
     virtual ~WebFrame();
@@ -691,7 +695,7 @@ private:
 };
 
 #if BLINK_IMPLEMENTATION
-WebCore::Frame* toWebCoreFrame(WebFrame*);
+WebCore::Frame* toWebCoreFrame(const WebFrame*);
 #endif
 
 } // namespace blink

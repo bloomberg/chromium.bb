@@ -73,6 +73,8 @@ Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
         page()->incrementSubframeCount();
         if (m_owner->isLocal())
             toHTMLFrameOwnerElement(m_owner)->setContentFrame(*this);
+    } else {
+        page()->setMainFrame(this);
     }
 }
 

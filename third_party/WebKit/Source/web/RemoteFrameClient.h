@@ -15,6 +15,7 @@ class RemoteFrameClient : public WebCore::FrameClient {
 public:
     explicit RemoteFrameClient(WebRemoteFrameImpl*);
 
+    // FrameClient overrides:
     virtual WebCore::Frame* opener() const OVERRIDE;
     virtual void setOpener(WebCore::Frame*) OVERRIDE;
 
@@ -24,6 +25,8 @@ public:
     virtual WebCore::Frame* nextSibling() const OVERRIDE;
     virtual WebCore::Frame* firstChild() const OVERRIDE;
     virtual WebCore::Frame* lastChild() const OVERRIDE;
+
+    WebRemoteFrameImpl* webFrame() const { return m_webFrame; }
 
 private:
     WebRemoteFrameImpl* m_webFrame;

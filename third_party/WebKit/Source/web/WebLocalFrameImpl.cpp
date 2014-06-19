@@ -656,55 +656,6 @@ void WebLocalFrameImpl::setOpener(WebFrame* opener)
         m_frame->document()->initSecurityContext();
 }
 
-// FIXME: These methods should move into WebFrame once FrameTree is no longer
-// dependent on LocalFrame.
-void WebLocalFrameImpl::appendChild(WebFrame* child)
-{
-    WebFrame::appendChild(child);
-    frame()->tree().invalidateScopedChildCount();
-}
-
-void WebLocalFrameImpl::removeChild(WebFrame* child)
-{
-    WebFrame::removeChild(child);
-    frame()->tree().invalidateScopedChildCount();
-}
-
-WebFrame* WebLocalFrameImpl::traversePrevious(bool wrap) const
-{
-    if (!frame())
-        return 0;
-    // FIXME: This should move to WebFrame and become local/remote agnostic.
-    Frame* prevFrame = frame()->tree().traversePreviousWithWrap(wrap);
-    if (!prevFrame || !prevFrame->isLocalFrame())
-        return 0;
-    return fromFrame(toLocalFrame(prevFrame));
-}
-
-WebFrame* WebLocalFrameImpl::traverseNext(bool wrap) const
-{
-    // FIXME: This should move to WebFrame and become local/remote agnostic.
-    if (!frame())
-        return 0;
-    // FIXME: This should move to WebFrame and become local/remote agnostic.
-    Frame* nextFrame = frame()->tree().traverseNextWithWrap(wrap);
-    if (!nextFrame || !nextFrame->isLocalFrame())
-        return 0;
-    return fromFrame(toLocalFrame(nextFrame));
-}
-
-WebFrame* WebLocalFrameImpl::findChildByName(const WebString& name) const
-{
-    // FIXME: This should move to WebFrame and become local/remote agnostic.
-    if (!frame())
-        return 0;
-    // FIXME: This should move to WebFrame and become local/remote agnostic.
-    Frame* child = frame()->tree().child(name);
-    if (!child || !child->isLocalFrame())
-        return 0;
-    return fromFrame(toLocalFrame(child));
-}
-
 WebDocument WebLocalFrameImpl::document() const
 {
     if (!frame() || !frame()->document())
@@ -1726,7 +1677,12 @@ WebLocalFrameImpl* WebLocalFrameImpl::fromFrame(LocalFrame* frame)
 {
     if (!frame)
         return 0;
-    FrameLoaderClient* client = frame->loader().client();
+    return fromFrame(*frame);
+}
+
+WebLocalFrameImpl* WebLocalFrameImpl::fromFrame(LocalFrame& frame)
+{
+    FrameLoaderClient* client = frame.loader().client();
     if (!client || !client->isFrameLoaderClientImpl())
         return 0;
     return toFrameLoaderClientImpl(client)->webFrame();
