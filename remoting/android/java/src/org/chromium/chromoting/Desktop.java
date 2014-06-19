@@ -210,40 +210,38 @@ public class Desktop extends Activity implements View.OnSystemUiVisibilityChange
             mPressedTextKeys.add(keyCode);
             int[] codePoints = { unicode };
             JniInterface.sendTextEvent(new String(codePoints, 0, 1));
-            return super.dispatchKeyEvent(event);
+            return true;
         }
 
         if (!pressed && mPressedTextKeys.contains(keyCode)) {
             mPressedTextKeys.remove(keyCode);
-            return super.dispatchKeyEvent(event);
+            return true;
         }
 
         switch (keyCode) {
             case KeyEvent.KEYCODE_AT:
                 JniInterface.sendKeyEvent(KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
                 JniInterface.sendKeyEvent(KeyEvent.KEYCODE_2, pressed);
-                break;
+                return true;
 
             case KeyEvent.KEYCODE_POUND:
                 JniInterface.sendKeyEvent(KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
                 JniInterface.sendKeyEvent(KeyEvent.KEYCODE_3, pressed);
-                break;
+                return true;
 
             case KeyEvent.KEYCODE_STAR:
                 JniInterface.sendKeyEvent(KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
                 JniInterface.sendKeyEvent(KeyEvent.KEYCODE_8, pressed);
-                break;
+                return true;
 
             case KeyEvent.KEYCODE_PLUS:
                 JniInterface.sendKeyEvent(KeyEvent.KEYCODE_SHIFT_LEFT, pressed);
                 JniInterface.sendKeyEvent(KeyEvent.KEYCODE_EQUALS, pressed);
-                break;
+                return true;
 
             default:
                 // We try to send all other key codes to the host directly.
-                JniInterface.sendKeyEvent(keyCode, pressed);
+                return JniInterface.sendKeyEvent(keyCode, pressed);
         }
-
-        return super.dispatchKeyEvent(event);
     }
 }

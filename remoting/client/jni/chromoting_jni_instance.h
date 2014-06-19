@@ -87,7 +87,7 @@ class ChromotingJniInstance
   void SendMouseWheelEvent(int delta_x, int delta_y);
 
   // Sends the provided keyboard scan code to the host.
-  void SendKeyEvent(int key_code, bool key_down);
+  bool SendKeyEvent(int key_code, bool key_down);
 
   void SendTextEvent(const std::string& text);
 
@@ -135,6 +135,8 @@ class ChromotingJniInstance
 
   // Sets the device name. Can be called on any thread.
   void SetDeviceName(const std::string& device_name);
+
+  void SendKeyEventInternal(int usb_key_code, bool key_down);
 
   // Enables or disables periodic logging of performance statistics. Called on
   // the network thread.

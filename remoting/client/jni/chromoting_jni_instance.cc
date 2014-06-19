@@ -210,23 +210,15 @@ void ChromotingJniInstance::SendMouseWheelEvent(int delta_x, int delta_y) {
   connection_->input_stub()->InjectMouseEvent(event);
 }
 
-void ChromotingJniInstance::SendKeyEvent(int key_code, bool key_down) {
-  if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
-    jni_runtime_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingJniInstance::SendKeyEvent,
-                              this, key_code, key_down));
-    return;
+bool ChromotingJniInstance::SendKeyEvent(int key_code, bool key_down) {
+  uint32 usb_key_code = AndroidKeycodeToUsbKeycode(key_code);
+  if (!usb_key_code) {
+    LOG(WARNING) << "Ignoring unknown keycode: " << key_code;
+    return false;
   }
 
-  uint32 usb_code = AndroidKeycodeToUsbKeycode(key_code);
-  if (usb_code) {
-    protocol::KeyEvent event;
-    event.set_usb_keycode(usb_code);
-    event.set_pressed(key_down);
-    connection_->input_stub()->InjectKeyEvent(event);
-  } else {
-    LOG(WARNING) << "Ignoring unknown keycode: " << key_code;
-  }
+  SendKeyEventInternal(usb_key_code, key_down);
+  return true;
 }
 
 void ChromotingJniInstance::SendTextEvent(const std::string& text) {
@@ -447,6 +439,22 @@ void ChromotingJniInstance::SetDeviceName(const std::string& device_name) {
   }
 
   device_name_ = device_name;
+}
+
+void ChromotingJniInstance::SendKeyEventInternal(int usb_key_code,
+                                                 bool key_down) {
+  if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
+    jni_runtime_->network_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ChromotingJniInstance::SendKeyEventInternal,
+                              this, usb_key_code, key_down));
+    return;
+  }
+
+
+  protocol::KeyEvent event;
+  event.set_usb_keycode(usb_key_code);
+  event.set_pressed(key_down);
+  connection_->input_stub()->InjectKeyEvent(event);
 }
 
 void ChromotingJniInstance::EnableStatsLogging(bool enabled) {
