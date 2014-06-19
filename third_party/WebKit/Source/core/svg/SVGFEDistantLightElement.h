@@ -31,7 +31,7 @@ public:
 private:
     explicit SVGFEDistantLightElement(Document&);
 
-    virtual PassRefPtr<LightSource> lightSource() const OVERRIDE;
+    virtual PassRefPtr<LightSource> lightSource(Filter*) const OVERRIDE;
 };
 
 } // namespace WebCore

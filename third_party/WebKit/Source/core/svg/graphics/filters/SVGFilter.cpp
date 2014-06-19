@@ -48,6 +48,15 @@ float SVGFilter::applyVerticalScale(float value) const
     return Filter::applyVerticalScale(value);
 }
 
+FloatPoint3D SVGFilter::resolve3dPoint(const FloatPoint3D& point) const
+{
+    if (!m_effectBBoxMode)
+        return point;
+    return FloatPoint3D(point.x() * m_targetBoundingBox.width() + m_targetBoundingBox.x(),
+        point.y() * m_targetBoundingBox.height() + m_targetBoundingBox.y(),
+        point.z() * sqrtf(m_targetBoundingBox.size().diagonalLengthSquared() / 2));
+}
+
 PassRefPtr<SVGFilter> SVGFilter::create(const AffineTransform& absoluteTransform, const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode)
 {
     return adoptRef(new SVGFilter(absoluteTransform, absoluteSourceDrawingRegion, targetBoundingBox, filterRegion, effectBBoxMode));

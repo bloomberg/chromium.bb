@@ -61,14 +61,6 @@ SVGFELightElement* SVGFELightElement::findLightElement(const SVGElement& svgElem
     return Traversal<SVGFELightElement>::firstChild(svgElement);
 }
 
-PassRefPtr<LightSource> SVGFELightElement::findLightSource(const SVGElement& svgElement)
-{
-    SVGFELightElement* lightNode = findLightElement(svgElement);
-    if (!lightNode)
-        return nullptr;
-    return lightNode->lightSource();
-}
-
 bool SVGFELightElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());

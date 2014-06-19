@@ -21,6 +21,7 @@
 #include "core/svg/SVGFESpotLightElement.h"
 
 #include "core/SVGNames.h"
+#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SpotLightSource.h"
 
 namespace WebCore {
@@ -33,12 +34,12 @@ inline SVGFESpotLightElement::SVGFESpotLightElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGFESpotLightElement)
 
-PassRefPtr<LightSource> SVGFESpotLightElement::lightSource() const
+PassRefPtr<LightSource> SVGFESpotLightElement::lightSource(Filter* filter) const
 {
     FloatPoint3D pos(x()->currentValue()->value(), y()->currentValue()->value(), z()->currentValue()->value());
     FloatPoint3D direction(pointsAtX()->currentValue()->value(), pointsAtY()->currentValue()->value(), pointsAtZ()->currentValue()->value());
 
-    return SpotLightSource::create(pos, direction, specularExponent()->currentValue()->value(), limitingConeAngle()->currentValue()->value());
+    return SpotLightSource::create(filter->resolve3dPoint(pos), filter->resolve3dPoint(direction), specularExponent()->currentValue()->value(), limitingConeAngle()->currentValue()->value());
 }
 
 }

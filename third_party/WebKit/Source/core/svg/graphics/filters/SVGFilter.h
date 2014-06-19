@@ -38,6 +38,7 @@ public:
 
     virtual float applyHorizontalScale(float value) const OVERRIDE;
     virtual float applyVerticalScale(float value) const OVERRIDE;
+    virtual FloatPoint3D resolve3dPoint(const FloatPoint3D&) const OVERRIDE;
 
     virtual IntRect sourceImageRect() const OVERRIDE { return m_absoluteSourceDrawingRegion; }
     FloatRect targetBoundingBox() const { return m_targetBoundingBox; }

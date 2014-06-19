@@ -70,6 +70,7 @@ public:
     {
         return value * m_absoluteTransform.d();
     }
+    virtual FloatPoint3D resolve3dPoint(const FloatPoint3D& point) const { return point; }
 
     virtual IntRect sourceImageRect() const = 0;
 
