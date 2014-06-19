@@ -4,7 +4,7 @@
 
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -15,11 +15,10 @@
 namespace content {
 
 CrossProcessFrameConnector::CrossProcessFrameConnector(
-    RenderFrameHostImpl* frame_proxy_in_parent_renderer)
+    RenderFrameProxyHost* frame_proxy_in_parent_renderer)
     : frame_proxy_in_parent_renderer_(frame_proxy_in_parent_renderer),
       view_(NULL),
       device_scale_factor_(1) {
-  frame_proxy_in_parent_renderer->set_cross_process_frame_connector(this);
 }
 
 CrossProcessFrameConnector::~CrossProcessFrameConnector() {
@@ -63,7 +62,7 @@ void CrossProcessFrameConnector::set_view(
 
 void CrossProcessFrameConnector::RenderProcessGone() {
   frame_proxy_in_parent_renderer_->Send(new FrameMsg_ChildFrameProcessGone(
-      frame_proxy_in_parent_renderer_->routing_id()));
+      frame_proxy_in_parent_renderer_->GetRoutingID()));
 }
 
 void CrossProcessFrameConnector::ChildFrameBuffersSwapped(
@@ -76,10 +75,8 @@ void CrossProcessFrameConnector::ChildFrameBuffersSwapped(
   params.gpu_route_id = gpu_params.route_id;
   params.gpu_host_id = gpu_host_id;
 
-  frame_proxy_in_parent_renderer_->Send(
-      new FrameMsg_BuffersSwapped(
-          frame_proxy_in_parent_renderer_->routing_id(),
-          params));
+  frame_proxy_in_parent_renderer_->Send(new FrameMsg_BuffersSwapped(
+      frame_proxy_in_parent_renderer_->GetRoutingID(), params));
 }
 
 void CrossProcessFrameConnector::ChildFrameCompositorFrameSwapped(
@@ -93,7 +90,7 @@ void CrossProcessFrameConnector::ChildFrameCompositorFrameSwapped(
   params.producing_route_id = route_id;
   params.producing_host_id = host_id;
   frame_proxy_in_parent_renderer_->Send(new FrameMsg_CompositorFrameSwapped(
-      frame_proxy_in_parent_renderer_->routing_id(), params));
+      frame_proxy_in_parent_renderer_->GetRoutingID(), params));
 }
 
 void CrossProcessFrameConnector::OnBuffersSwappedACK(
@@ -145,7 +142,7 @@ void CrossProcessFrameConnector::OnForwardInputEvent(
   RenderWidgetHostImpl* child_widget =
       RenderWidgetHostImpl::From(view_->GetRenderWidgetHost());
   RenderWidgetHostImpl* parent_widget =
-      frame_proxy_in_parent_renderer_->render_view_host();
+      frame_proxy_in_parent_renderer_->GetRenderViewHost();
 
   if (blink::WebInputEvent::isKeyboardEventType(event->type)) {
     if (!parent_widget->GetLastKeyboardEvent())

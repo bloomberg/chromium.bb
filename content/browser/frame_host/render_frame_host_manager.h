@@ -154,6 +154,8 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // there is no current one.
   RenderWidgetHostView* GetRenderWidgetHostView() const;
 
+  RenderFrameProxyHost* GetProxyToParent();
+
   // Returns the pending RenderFrameHost, or NULL if there is no pending one.
   RenderFrameHostImpl* pending_frame_host() const {
     return pending_render_frame_host_.get();
@@ -475,13 +477,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   InterstitialPageImpl* interstitial_page_;
 
   NotificationRegistrar registrar_;
-
-  // When |render_frame_host_| is in a different process from its parent in
-  // the frame tree, this class connects its associated RenderWidgetHostView
-  // to the proxy RenderFrameHost for the parent's renderer process. NULL
-  // when |render_frame_host_| is the frame tree root or is in the same
-  // process as its parent.
-  CrossProcessFrameConnector* cross_process_frame_connector_;
 
   base::WeakPtrFactory<RenderFrameHostManager> weak_factory_;
 

@@ -4,7 +4,10 @@
 
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/render_frame_proxy_host.h"
+#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/notification_observer.h"
@@ -212,8 +215,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   SitePerProcessWebContentsObserver observer(shell()->web_contents());
 
   // Load same-site page into iframe.
+  FrameTreeNode* child = root->child_at(0);
   GURL http_url(test_server()->GetURL("files/title1.html"));
-  NavigateFrameToURL(root->child_at(0), http_url);
+  NavigateFrameToURL(child, http_url);
   EXPECT_EQ(http_url, observer.navigation_url());
   EXPECT_TRUE(observer.navigation_succeeded());
   {
@@ -224,6 +228,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
             ->GetRenderWidgetHostViewsInTree();
     EXPECT_EQ(1U, views_set.size());
   }
+  RenderFrameProxyHost* proxy_to_parent =
+      child->render_manager()->GetRenderFrameProxyHost(
+          shell()->web_contents()->GetSiteInstance());
+  EXPECT_FALSE(proxy_to_parent);
 
   // These must stay in scope with replace_host.
   GURL::Replacements replace_host;
@@ -239,7 +247,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
 
   // Ensure that we have created a new process for the subframe.
   ASSERT_EQ(1U, root->child_count());
-  FrameTreeNode* child = root->child_at(0);
   SiteInstance* site_instance = child->current_frame_host()->GetSiteInstance();
   RenderViewHost* rvh = child->current_frame_host()->render_view_host();
   RenderProcessHost* rph = child->current_frame_host()->GetProcess();
@@ -254,6 +261,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
             ->GetRenderWidgetHostViewsInTree();
     EXPECT_EQ(2U, views_set.size());
   }
+  proxy_to_parent = child->render_manager()->GetProxyToParent();
+  EXPECT_TRUE(proxy_to_parent);
+  EXPECT_TRUE(proxy_to_parent->cross_process_frame_connector());
+  EXPECT_EQ(
+      rvh->GetView(),
+      proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
 
   // Load another cross-site page into the same iframe.
   cross_site_url = test_server()->GetURL("files/title3.html");
@@ -284,6 +297,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
             ->GetRenderWidgetHostViewsInTree();
     EXPECT_EQ(2U, views_set.size());
   }
+  EXPECT_EQ(proxy_to_parent, child->render_manager()->GetProxyToParent());
+  EXPECT_TRUE(proxy_to_parent->cross_process_frame_connector());
+  EXPECT_EQ(
+      child->current_frame_host()->render_view_host()->GetView(),
+      proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
 }
 
 // Crash a subframe and ensures its children are cleared from the FrameTree.

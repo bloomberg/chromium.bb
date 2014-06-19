@@ -22,7 +22,7 @@ struct FrameHostMsg_ReclaimCompositorResources_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 
 namespace content {
-class RenderFrameHostImpl;
+class RenderFrameProxyHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewChildFrame;
 
@@ -31,8 +31,8 @@ class RenderWidgetHostViewChildFrame;
 // of RenderFrameHost.
 //
 // The RenderWidgetHostView of an out-of-process child frame needs to
-// communicate with the swapped out RenderFrameHost representing this frame
-// in the process of the parent frame. For example, assume you have this page:
+// communicate with the RenderFrameProxyHost representing this frame in the
+// process of the parent frame. For example, assume you have this page:
 //
 //   -----------------
 //   | frame 1       |
@@ -43,8 +43,8 @@ class RenderWidgetHostViewChildFrame;
 //
 // If frames 1 and 2 are in process A and B, there are 4 RenderFrameHosts:
 //   A1 - RFH for frame 1 in process A
-//   B1 - Swapped out RFH for frame 1 in process B
-//   A2 - Swapped out RFH for frame 2 in process A
+//   B1 - RFPH for frame 1 in process B
+//   A2 - RFPH for frame 2 in process A
 //   B2 - RFH for frame 2 in process B
 //
 // B2, having a parent frame in a different process, will have a
@@ -57,15 +57,16 @@ class RenderWidgetHostViewChildFrame;
 // (Note: B1 is only mentioned for completeness. It is not needed in this
 // example.)
 //
-// CrossProcessFrameConnector objects are owned by the child frame's
-// RenderFrameHostManager. When a child frame swaps, SetChildFrameView() is
-// called to update to the new view.
+// CrossProcessFrameConnector objects are owned by the RenderFrameProxyHost
+// in the child frame's RenderFrameHostManager corresponding to the parent's
+// SiteInstance, A2 in the picture above. When a child frame navigates in a new
+// process, set_view() is called to update to the new view.
 //
 class CrossProcessFrameConnector {
  public:
   // |frame_proxy_in_parent_renderer| corresponds to A2 in the example above.
   explicit CrossProcessFrameConnector(
-      RenderFrameHostImpl* frame_proxy_in_parent_renderer);
+      RenderFrameProxyHost* frame_proxy_in_parent_renderer);
   virtual ~CrossProcessFrameConnector();
 
   bool OnMessageReceived(const IPC::Message &msg);
@@ -73,6 +74,7 @@ class CrossProcessFrameConnector {
   // |view| corresponds to B2's RenderWidgetHostViewChildFrame in the example
   // above.
   void set_view(RenderWidgetHostViewChildFrame* view);
+  RenderWidgetHostViewChildFrame* get_view_for_testing() { return view_; }
 
   void RenderProcessGone();
 
@@ -104,11 +106,9 @@ class CrossProcessFrameConnector {
   void SetDeviceScaleFactor(float scale_factor);
   void SetSize(gfx::Rect frame_rect);
 
-  // The RenderFrameHost that routes messages to the parent frame's renderer
-  // process.
-  // TODO(kenrb): The type becomes RenderFrameProxyHost when that class comes
-  // to exist.
-  RenderFrameHostImpl* frame_proxy_in_parent_renderer_;
+  // The RenderFrameProxyHost that routes messages to the parent frame's
+  // renderer process.
+  RenderFrameProxyHost* frame_proxy_in_parent_renderer_;
 
   // The RenderWidgetHostView for the frame. Initially NULL.
   RenderWidgetHostViewChildFrame* view_;

@@ -279,8 +279,10 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
   if (delegate_->OnMessageReceived(this, msg))
     return true;
 
-  if (cross_process_frame_connector_ &&
-      cross_process_frame_connector_->OnMessageReceived(msg))
+  RenderFrameProxyHost* proxy =
+      frame_tree_node_->render_manager()->GetProxyToParent();
+  if (proxy && proxy->cross_process_frame_connector() &&
+      proxy->cross_process_frame_connector()->OnMessageReceived(msg))
     return true;
 
   bool handled = true;

@@ -11,12 +11,14 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 
+namespace content {
+
+class CrossProcessFrameConnector;
 class FrameTreeNode;
 class RenderProcessHost;
 class RenderFrameHostImpl;
 class RenderViewHostImpl;
-
-namespace content {
+class RenderWidgetHostView;
 
 // When a page's frames are rendered by multiple processes, each renderer has a
 // full copy of the frame tree. It has full RenderFrames for the frames it is
@@ -69,6 +71,8 @@ class RenderFrameProxyHost
     return site_instance_.get();
   }
 
+  void SetChildRWHView(RenderWidgetHostView* view);
+
   // TODO(nasko): The following methods should be removed once we don't have a
   // swapped out state on RenderFrameHosts. See https://crbug.com/357747.
   RenderFrameHostImpl* render_frame_host() {
@@ -85,10 +89,14 @@ class RenderFrameProxyHost
   // IPC::Sender
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
- private:
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
+  CrossProcessFrameConnector* cross_process_frame_connector() {
+    return cross_process_frame_connector_.get();
+  }
+
+ private:
   // This RenderFrameProxyHost's routing id.
   int routing_id_;
 
@@ -97,6 +105,12 @@ class RenderFrameProxyHost
 
   // The node in the frame tree where this proxy is located.
   FrameTreeNode* frame_tree_node_;
+
+  // When a RenderFrameHost is in a different process from its parent in the
+  // frame tree, this class connects its associated RenderWidgetHostView
+  // to this RenderFrameProxyHost, which corresponds to the same frame in the
+  // parent's renderer process.
+  scoped_ptr<CrossProcessFrameConnector> cross_process_frame_connector_;
 
   // TODO(nasko): This can be removed once we don't have a swapped out state on
   // RenderFrameHosts. See https://crbug.com/357747.
