@@ -605,6 +605,13 @@ cr.define('local_discovery', function() {
       'click',
       registerOverlayLoginButtonClicked);
 
+    if (loadTimeData.valueExists('backButtonURL')) {
+      $('back-button').hidden = false;
+      $('back-button').addEventListener('click', function() {
+        window.location.href = loadTimeData.getString('backButtonURL');
+      });
+    }
+
     updateVisibility();
     document.addEventListener('visibilitychange', updateVisibility, false);
 

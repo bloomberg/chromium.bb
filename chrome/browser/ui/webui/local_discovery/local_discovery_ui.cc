@@ -5,10 +5,13 @@
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
@@ -84,7 +87,7 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
                              IDS_LOCAL_DISCOVERY_AVAILABLE_DEVICES);
   source->AddLocalizedString("myDevicesTitle",
                              IDS_LOCAL_DISCOVERY_MY_DEVICES);
-
+  source->AddLocalizedString("backButton", IDS_SETTINGS_TITLE);
 
   // Cloud print connector-related strings.
 #if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
@@ -112,8 +115,13 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
 LocalDiscoveryUI::LocalDiscoveryUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   // Set up the chrome://devices/ source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateLocalDiscoveryHTMLSource());
+  content::WebUIDataSource* source = CreateLocalDiscoveryHTMLSource();
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(web_ui->GetWebContents());
+  // Show a back button pointing to Settings if the browser has no location bar.
+  if (browser && browser->is_trusted_source())
+    source->AddString("backButtonURL", chrome::kChromeUISettingsURL);
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 
   // TODO(gene): Use LocalDiscoveryUIHandler to send updated to the devices
   // page. For example

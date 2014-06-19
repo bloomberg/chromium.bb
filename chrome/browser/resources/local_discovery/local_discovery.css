@@ -113,3 +113,19 @@ section {
 .dialog-contents {
     padding-left: 17px;
 }
+
+#back-button {
+  background: url('chrome://theme/IDR_CHEVRON_LEFT') left no-repeat;
+  margin-bottom: 25px;
+  margin-top: 6px;
+  padding-left: 23px;
+}
+
+html[dir='rtl'] #back-button {
+  transform: scaleX(-1);
+}
+
+html[dir='rtl'] #back-button span {
+  display: inline-block;
+  transform: scaleX(-1);
+}
