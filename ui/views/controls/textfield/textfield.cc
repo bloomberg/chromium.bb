@@ -992,8 +992,8 @@ void Textfield::WriteDragDataForView(View* sender,
   const base::string16& selected_text(GetSelectedText());
   data->SetString(selected_text);
   Label label(selected_text, GetFontList());
-  const SkColor background = GetBackgroundColor();
-  label.SetBackgroundColor(SkColorSetA(background, SK_AlphaTRANSPARENT));
+  label.SetBackgroundColor(GetBackgroundColor());
+  label.set_subpixel_rendering_enabled(false);
   gfx::Size size(label.GetPreferredSize());
   gfx::NativeView native_view = GetWidget()->GetNativeView();
   gfx::Display display = gfx::Screen::GetScreenFor(native_view)->
@@ -1005,7 +1005,7 @@ void Textfield::WriteDragDataForView(View* sender,
   label.SetEnabledColor(GetTextColor());
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Desktop Linux Aura does not yet support transparency in drag images.
-  canvas->DrawColor(background);
+  canvas->DrawColor(GetBackgroundColor());
 #endif
   label.Paint(canvas.get(), views::CullSet());
   const gfx::Vector2d kOffset(-15, 0);

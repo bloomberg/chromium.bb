@@ -383,6 +383,7 @@ void Label::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   font_list_ = font_list;
   enabled_color_set_ = disabled_color_set_ = background_color_set_ = false;
+  subpixel_rendering_enabled_ = true;
   auto_color_readability_ = true;
   UpdateColorsFromTheme(ui::NativeTheme::instance());
   horizontal_alignment_ = gfx::ALIGN_CENTER;
@@ -439,7 +440,7 @@ int Label::ComputeDrawStringFlags() const {
   int flags = 0;
 
   // We can't use subpixel rendering if the background is non-opaque.
-  if (SkColorGetA(background_color_) != 0xFF)
+  if (SkColorGetA(background_color_) != 0xFF || !subpixel_rendering_enabled_)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
 
   if (directionality_mode_ == gfx::DIRECTIONALITY_FORCE_LTR) {

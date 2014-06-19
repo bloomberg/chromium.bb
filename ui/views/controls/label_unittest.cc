@@ -862,18 +862,19 @@ TEST(LabelTest, DrawMultiLineStringInRTL) {
   base::i18n::SetICUDefaultLocale(locale);
 }
 
-// Check that we disable subpixel rendering when a transparent background is
-// being used.
+// Ensure the subpixel rendering flag and background color alpha are respected.
 TEST(LabelTest, DisableSubpixelRendering) {
   Label label;
   label.SetBackgroundColor(SK_ColorWHITE);
-  EXPECT_EQ(
-      0, label.ComputeDrawStringFlags() & gfx::Canvas::NO_SUBPIXEL_RENDERING);
-
+  const int flag = gfx::Canvas::NO_SUBPIXEL_RENDERING;
+  EXPECT_EQ(0, label.ComputeDrawStringFlags() & flag);
+  label.set_subpixel_rendering_enabled(false);
+  EXPECT_EQ(flag, label.ComputeDrawStringFlags() & flag);
+  label.set_subpixel_rendering_enabled(true);
+  EXPECT_EQ(0, label.ComputeDrawStringFlags() & flag);
+  // Text cannot be drawn with subpixel rendering on transparent backgrounds.
   label.SetBackgroundColor(SkColorSetARGB(64, 255, 255, 255));
-  EXPECT_EQ(
-      gfx::Canvas::NO_SUBPIXEL_RENDERING,
-      label.ComputeDrawStringFlags() & gfx::Canvas::NO_SUBPIXEL_RENDERING);
+  EXPECT_EQ(flag, label.ComputeDrawStringFlags() & flag);
 }
 
 // Check that labels support GetTooltipHandlerForPoint.

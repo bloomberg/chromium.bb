@@ -54,12 +54,6 @@ class StickyKeyOverlayLabel : public views::Label {
   void SetKeyState(StickyKeyState state);
 
  private:
-  // views::Label overrides:
-  virtual void PaintText(gfx::Canvas* canvas,
-                         const base::string16& text,
-                         const gfx::Rect& text_bounds,
-                         int flags) OVERRIDE;
-
   StickyKeyState state_;
 
   DISALLOW_COPY_AND_ASSIGN(StickyKeyOverlayLabel);
@@ -76,6 +70,7 @@ StickyKeyOverlayLabel::StickyKeyOverlayLabel(const std::string& key_name)
   SetFocusable(false);
   SetEnabledColor(SkColorSetARGB(0x80, 0xFF, 0xFF, 0xFF));
   SetDisabledColor(SkColorSetARGB(0x80, 0xFF, 0xFF, 0xFF));
+  set_subpixel_rendering_enabled(false);
 }
 
 StickyKeyOverlayLabel::~StickyKeyOverlayLabel() {
@@ -104,19 +99,8 @@ void StickyKeyOverlayLabel::SetKeyState(StickyKeyState state) {
   SetFontList(font_list().DeriveWithStyle(style));
 }
 
-void StickyKeyOverlayLabel::PaintText(gfx::Canvas* canvas,
-                                      const base::string16& text,
-                                      const gfx::Rect& text_bounds,
-                                      int flags) {
-  views::Label::PaintText(canvas,
-                          text,
-                          text_bounds,
-                          flags | gfx::Canvas::NO_SUBPIXEL_RENDERING);
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
-//  StickyKeyOverlayLabel
+//  StickyKeysOverlayView
 class StickyKeysOverlayView : public views::WidgetDelegateView {
  public:
   StickyKeysOverlayView();

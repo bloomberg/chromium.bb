@@ -62,6 +62,12 @@ class VIEWS_EXPORT Label : public View {
   // Set drop shadows underneath the text.
   void set_shadows(const gfx::ShadowValues& shadows) { shadows_ = shadows; }
 
+  // Sets whether subpixel rendering is used; the default is true, but this
+  // feature also requires an opaque background color.
+  void set_subpixel_rendering_enabled(bool subpixel_rendering_enabled) {
+    subpixel_rendering_enabled_ = subpixel_rendering_enabled;
+  }
+
   // Set the color of a halo on the painted text (use transparent for none).
   void set_halo_color(SkColor halo_color) { halo_color_ = halo_color; }
 
@@ -218,6 +224,7 @@ class VIEWS_EXPORT Label : public View {
   bool disabled_color_set_;
   bool background_color_set_;
 
+  bool subpixel_rendering_enabled_;
   bool auto_color_readability_;
   mutable gfx::Size text_size_;
   mutable bool text_size_valid_;
