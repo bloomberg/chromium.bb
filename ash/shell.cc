@@ -889,6 +889,13 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   // The order in which event filters are added is significant.
 
+#if defined(OS_CHROMEOS)
+  // The StickyKeysController also rewrites events and must be added
+  // before observers, but after the EventRewriterEventFilter.
+  sticky_keys_controller_.reset(new StickyKeysController);
+  AddPreTargetHandler(sticky_keys_controller_.get());
+#endif
+
   // wm::UserActivityDetector passes events to observers, so let them get
   // rewritten first.
   user_activity_detector_.reset(new ::wm::UserActivityDetector);
@@ -921,10 +928,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   // created.
 #if defined(OS_CHROMEOS)
     keyboard::InitializeKeyboard();
-#endif
-
-#if defined(OS_CHROMEOS)
-  sticky_keys_controller_.reset(new StickyKeysController);
 #endif
 
   lock_state_controller_.reset(new LockStateController);

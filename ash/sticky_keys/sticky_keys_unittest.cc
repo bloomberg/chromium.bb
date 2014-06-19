@@ -16,7 +16,8 @@
 #include "base/memory/scoped_vector.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/events/event_source.h"
+#include "ui/events/event_handler.h"
+#include "ui/events/event_processor.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/x/device_data_manager.h"
 
@@ -29,7 +30,107 @@ const unsigned int kTouchPadDeviceId = 1;
 
 }  // namespace
 
-class StickyKeysTest : public test::AshTestBase {
+// Keeps a buffer of handled events.
+class EventBuffer : public ui::EventHandler {
+ public:
+  EventBuffer() {}
+  virtual ~EventBuffer() {}
+
+  void PopEvents(ScopedVector<ui::Event>* events) {
+    events->clear();
+    events->swap(events_);
+  }
+
+ private:
+  // ui::EventHandler overrides:
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    events_.push_back(new ui::KeyEvent(*event));
+  }
+
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    if (event->IsMouseWheelEvent()) {
+      events_.push_back(
+          new ui::MouseWheelEvent(*static_cast<ui::MouseWheelEvent*>(event)));
+    } else {
+      events_.push_back(new ui::MouseEvent(*event));
+    }
+  }
+
+  ScopedVector<ui::Event> events_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventBuffer);
+};
+
+// A testable and StickyKeysHandler.
+class MockStickyKeysHandlerDelegate :
+    public StickyKeysHandler::StickyKeysHandlerDelegate {
+ public:
+  class Delegate {
+   public:
+    virtual aura::Window* GetExpectedTarget() = 0;
+    virtual void OnShortcutPressed() = 0;
+
+   protected:
+    virtual ~Delegate() {}
+  };
+
+  MockStickyKeysHandlerDelegate(Delegate* delegate) : delegate_(delegate) {}
+
+  virtual ~MockStickyKeysHandlerDelegate() {}
+
+  // StickyKeysHandler override.
+  virtual void DispatchKeyEvent(ui::KeyEvent* event,
+                                aura::Window* target) OVERRIDE {
+    ASSERT_EQ(delegate_->GetExpectedTarget(), target);
+
+    // Detect a special shortcut when it is dispatched. This shortcut will
+    // not be hit in the LOCKED state as this case does not involve the
+    // delegate.
+    if (event->type() == ui::ET_KEY_PRESSED &&
+        event->key_code() == ui::VKEY_J &&
+        event->flags() | ui::EF_CONTROL_DOWN) {
+      delegate_->OnShortcutPressed();
+    }
+
+    events_.push_back(new ui::KeyEvent(*event));
+  }
+
+  virtual void DispatchMouseEvent(ui::MouseEvent* event,
+                                  aura::Window* target) OVERRIDE {
+    ASSERT_EQ(delegate_->GetExpectedTarget(), target);
+    events_.push_back(
+        new ui::MouseEvent(*event, target, target->GetRootWindow()));
+  }
+
+  virtual void DispatchScrollEvent(ui::ScrollEvent* event,
+                                   aura::Window* target) OVERRIDE {
+    events_.push_back(new ui::ScrollEvent(event->native_event()));
+  }
+
+  // Returns the count of dispatched events.
+  size_t GetEventCount() const {
+    return events_.size();
+  }
+
+  // Returns the |index|-th dispatched event.
+  const ui::Event* GetEvent(size_t index) const {
+    return events_[index];
+  }
+
+  // Clears all previously dispatched events.
+  void ClearEvents() {
+    events_.clear();
+  }
+
+ private:
+  ScopedVector<ui::Event> events_;
+  Delegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockStickyKeysHandlerDelegate);
+};
+
+class StickyKeysTest : public test::AshTestBase,
+                       public MockStickyKeysHandlerDelegate::Delegate {
  protected:
   StickyKeysTest()
       : target_(NULL),
@@ -50,35 +151,47 @@ class StickyKeysTest : public test::AshTestBase {
     test::AshTestBase::TearDown();
   }
 
-  virtual void OnShortcutPressed() {
+  // Overridden from MockStickyKeysHandlerDelegate::Delegate:
+  virtual aura::Window* GetExpectedTarget() OVERRIDE {
+    return target_ ? target_ : root_window_;
+  }
+
+  virtual void OnShortcutPressed() OVERRIDE {
     if (target_) {
       delete target_;
       target_ = NULL;
     }
   }
 
-  ui::KeyEvent* GenerateKey(ui::EventType type, ui::KeyboardCode code) {
-    scoped_xevent_.InitKeyEvent(type, code, 0);
-    ui::KeyEvent* event = new ui::KeyEvent(scoped_xevent_, false);
+  ui::KeyEvent* GenerateKey(bool is_key_press, ui::KeyboardCode code) {
+    scoped_xevent_.InitKeyEvent(
+        is_key_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
+        code,
+        0);
+    ui::KeyEvent* event =  new ui::KeyEvent(scoped_xevent_, false);
+    ui::Event::DispatcherApi dispatcher(event);
+    dispatcher.set_target(target_);
     return event;
   }
 
   // Creates a mouse event backed by a native XInput2 generic button event.
   // This is the standard native event on Chromebooks.
-  ui::MouseEvent* GenerateMouseEvent(ui::EventType type) {
-    return GenerateMouseEventAt(type, gfx::Point());
+  ui::MouseEvent* GenerateMouseEvent(bool is_button_press) {
+    return GenerateMouseEventAt(is_button_press, gfx::Point());
   }
 
   // Creates a mouse event backed by a native XInput2 generic button event.
   // The |location| should be in physical pixels.
-  ui::MouseEvent* GenerateMouseEventAt(ui::EventType type,
+  ui::MouseEvent* GenerateMouseEventAt(bool is_button_press,
                                        const gfx::Point& location) {
     scoped_xevent_.InitGenericButtonEvent(
         kTouchPadDeviceId,
-        type,
+        is_button_press ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
         location,
         0);
     ui::MouseEvent* event = new ui::MouseEvent(scoped_xevent_);
+    ui::Event::DispatcherApi dispatcher(event);
+    dispatcher.set_target(target_);
     return event;
   }
 
@@ -121,9 +234,14 @@ class StickyKeysTest : public test::AshTestBase {
   }
 
   // Creates a synthesized KeyEvent that is not backed by a native event.
-  ui::KeyEvent* GenerateSynthesizedKeyEvent(ui::EventType type,
-                                            ui::KeyboardCode code) {
-    return new ui::KeyEvent(type, code, 0, true);
+  ui::KeyEvent* GenerateSynthesizedKeyEvent(
+      bool is_key_press, ui::KeyboardCode code) {
+    ui::KeyEvent* event = new ui::KeyEvent(
+        is_key_press ? ui::ET_KEY_PRESSED : ui::ET_MOUSE_RELEASED,
+        code, 0, true);
+    ui::Event::DispatcherApi dispatcher(event);
+    dispatcher.set_target(target_);
+    return event;
   }
 
   // Creates a synthesized MouseEvent that is not backed by a native event.
@@ -141,9 +259,11 @@ class StickyKeysTest : public test::AshTestBase {
 
   // Creates a synthesized mouse press or release event.
   ui::MouseEvent* GenerateSynthesizedMouseClickEvent(
-      ui::EventType type,
+      bool is_button_press,
       const gfx::Point& location) {
-    return GenerateSynthesizedMouseEventAt(type, location);
+    return GenerateSynthesizedMouseEventAt(
+        is_button_press ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
+        location);
   }
 
   // Creates a synthesized ET_MOUSE_MOVED event.
@@ -164,28 +284,22 @@ class StickyKeysTest : public test::AshTestBase {
 
   void SendActivateStickyKeyPattern(StickyKeysHandler* handler,
                                     ui::KeyboardCode key_code) {
-    bool released = false;
-    int down_flags = 0;
     scoped_ptr<ui::KeyEvent> ev;
-    ev.reset(GenerateKey(ui::ET_KEY_PRESSED, key_code));
-    handler->HandleKeyEvent(*ev.get(), key_code, &down_flags, &released);
-    ev.reset(GenerateKey(ui::ET_KEY_RELEASED, key_code));
-    handler->HandleKeyEvent(*ev.get(), key_code, &down_flags, &released);
+    ev.reset(GenerateKey(true, key_code));
+    handler->HandleKeyEvent(ev.get());
+    ev.reset(GenerateKey(false, key_code));
+    handler->HandleKeyEvent(ev.get());
   }
 
-  bool HandleKeyEvent(const ui::KeyEvent& key_event,
-                      StickyKeysHandler* handler,
-                      int* down,
-                      bool* up) {
-    return handler->HandleKeyEvent(key_event, key_event.key_code(), down, up);
-  }
-
-  int HandleKeyEventForDownFlags(const ui::KeyEvent& key_event,
-                                 StickyKeysHandler* handler) {
-    bool released = false;
-    int down = 0;
-    handler->HandleKeyEvent(key_event, key_event.key_code(), &down, &released);
-    return down;
+  void SendActivateStickyKeyPattern(ui::EventProcessor* dispatcher,
+                                    ui::KeyboardCode key_code) {
+    scoped_ptr<ui::KeyEvent> ev;
+    ev.reset(GenerateKey(true, key_code));
+    ui::EventDispatchDetails details = dispatcher->OnEventFromSource(ev.get());
+    CHECK(!details.dispatcher_destroyed);
+    ev.reset(GenerateKey(false, key_code));
+    details = dispatcher->OnEventFromSource(ev.get());
+    CHECK(!details.dispatcher_destroyed);
   }
 
   aura::Window* target() { return target_; }
@@ -204,7 +318,9 @@ class StickyKeysTest : public test::AshTestBase {
 
 TEST_F(StickyKeysTest, BasicOneshotScenarioTest) {
   scoped_ptr<ui::KeyEvent> ev;
-  StickyKeysHandler sticky_key(ui::EF_SHIFT_DOWN);
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_SHIFT_DOWN, mock_delegate);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
 
@@ -212,42 +328,42 @@ TEST_F(StickyKeysTest, BasicOneshotScenarioTest) {
   SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_SHIFT);
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
 
-  ev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_A));
-  bool released = false;
-  int mod_down_flags = 0;
-  HandleKeyEvent(*ev.get(), &sticky_key, &mod_down_flags, &released);
-  // Next keyboard event is shift modified.
-  EXPECT_TRUE(mod_down_flags & ui::EF_SHIFT_DOWN);
-  // Modifier release notification happens.
-  EXPECT_TRUE(released);
+  ev.reset(GenerateKey(true, ui::VKEY_A));
+  sticky_key.HandleKeyEvent(ev.get());
 
-  ev.reset(GenerateKey(ui::ET_KEY_RELEASED, ui::VKEY_A));
-  released = false;
-  mod_down_flags = 0;
-  HandleKeyEvent(*ev.get(), &sticky_key, &mod_down_flags, &released);
+  // Next keyboard event is shift modified.
+  EXPECT_TRUE(ev->flags() & ui::EF_SHIFT_DOWN);
+
+  ev.reset(GenerateKey(false, ui::VKEY_A));
+  sticky_key.HandleKeyEvent(ev.get());
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
-  // Making sure Shift up keyboard event is available.
-  scoped_ptr<ui::Event> up_event;
-  ASSERT_EQ(0, sticky_key.GetModifierUpEvent(&up_event));
-  EXPECT_TRUE(up_event.get());
-  EXPECT_EQ(ui::ET_KEY_RELEASED, up_event->type());
+  // Making sure Shift up keyboard event is dispatched.
+  ASSERT_EQ(2U, mock_delegate->GetEventCount());
+  EXPECT_EQ(ui::ET_KEY_PRESSED, mock_delegate->GetEvent(0)->type());
+  EXPECT_EQ(ui::VKEY_A,
+            static_cast<const ui::KeyEvent*>(mock_delegate->GetEvent(0))
+                ->key_code());
+  EXPECT_EQ(ui::ET_KEY_RELEASED, mock_delegate->GetEvent(1)->type());
   EXPECT_EQ(ui::VKEY_SHIFT,
-            static_cast<const ui::KeyEvent*>(up_event.get())->key_code());
+            static_cast<const ui::KeyEvent*>(mock_delegate->GetEvent(1))
+                ->key_code());
 
   // Enabled state is one shot, so next key event should not be shift modified.
-  ev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_A));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
-  EXPECT_FALSE(mod_down_flags & ui::EF_SHIFT_DOWN);
+  ev.reset(GenerateKey(true, ui::VKEY_A));
+  sticky_key.HandleKeyEvent(ev.get());
+  EXPECT_FALSE(ev->flags() & ui::EF_SHIFT_DOWN);
 
-  ev.reset(GenerateKey(ui::ET_KEY_RELEASED, ui::VKEY_A));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
-  EXPECT_FALSE(mod_down_flags & ui::EF_SHIFT_DOWN);
+  ev.reset(GenerateKey(false, ui::VKEY_A));
+  sticky_key.HandleKeyEvent(ev.get());
+  EXPECT_FALSE(ev->flags() & ui::EF_SHIFT_DOWN);
 }
 
 TEST_F(StickyKeysTest, BasicLockedScenarioTest) {
   scoped_ptr<ui::KeyEvent> ev;
-  StickyKeysHandler sticky_key(ui::EF_SHIFT_DOWN);
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_SHIFT_DOWN, mock_delegate);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
 
@@ -260,24 +376,24 @@ TEST_F(StickyKeysTest, BasicLockedScenarioTest) {
   EXPECT_EQ(STICKY_KEY_STATE_LOCKED, sticky_key.current_state());
 
   // All keyboard events including keyUp become shift modified.
-  ev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_A));
-  int mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
-  EXPECT_TRUE(mod_down_flags & ui::EF_SHIFT_DOWN);
+  ev.reset(GenerateKey(true, ui::VKEY_A));
+  sticky_key.HandleKeyEvent(ev.get());
+  EXPECT_TRUE(ev->flags() & ui::EF_SHIFT_DOWN);
 
-  ev.reset(GenerateKey(ui::ET_KEY_RELEASED, ui::VKEY_A));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
-  EXPECT_TRUE(mod_down_flags & ui::EF_SHIFT_DOWN);
+  ev.reset(GenerateKey(false, ui::VKEY_A));
+  sticky_key.HandleKeyEvent(ev.get());
+  EXPECT_TRUE(ev->flags() & ui::EF_SHIFT_DOWN);
 
   // Locked state keeps after normal keyboard event.
   EXPECT_EQ(STICKY_KEY_STATE_LOCKED, sticky_key.current_state());
 
-  ev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_B));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
-  EXPECT_TRUE(mod_down_flags & ui::EF_SHIFT_DOWN);
+  ev.reset(GenerateKey(true, ui::VKEY_B));
+  sticky_key.HandleKeyEvent(ev.get());
+  EXPECT_TRUE(ev->flags() & ui::EF_SHIFT_DOWN);
 
-  ev.reset(GenerateKey(ui::ET_KEY_RELEASED, ui::VKEY_B));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
-  EXPECT_TRUE(mod_down_flags & ui::EF_SHIFT_DOWN);
+  ev.reset(GenerateKey(false, ui::VKEY_B));
+  sticky_key.HandleKeyEvent(ev.get());
+  EXPECT_TRUE(ev->flags() & ui::EF_SHIFT_DOWN);
 
   EXPECT_EQ(STICKY_KEY_STATE_LOCKED, sticky_key.current_state());
 
@@ -288,163 +404,146 @@ TEST_F(StickyKeysTest, BasicLockedScenarioTest) {
 
 TEST_F(StickyKeysTest, NonTargetModifierTest) {
   scoped_ptr<ui::KeyEvent> ev;
-  StickyKeysHandler sticky_key(ui::EF_SHIFT_DOWN);
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_SHIFT_DOWN, mock_delegate);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
 
   // Non target modifier key does not affect internal state
-  ev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_MENU));
-  int mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
+  ev.reset(GenerateKey(true, ui::VKEY_MENU));
+  sticky_key.HandleKeyEvent(ev.get());
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
-  EXPECT_EQ(ui::EF_NONE, mod_down_flags);
 
-  ev.reset(GenerateKey(ui::ET_KEY_RELEASED, ui::VKEY_MENU));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
+  ev.reset(GenerateKey(false, ui::VKEY_MENU));
+  sticky_key.HandleKeyEvent(ev.get());
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
-  EXPECT_EQ(ui::EF_NONE, mod_down_flags);
 
   SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_SHIFT);
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
 
   // Non target modifier key does not affect internal state
-  ev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_MENU));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
+  ev.reset(GenerateKey(true, ui::VKEY_MENU));
+  sticky_key.HandleKeyEvent(ev.get());
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
-  EXPECT_EQ(ui::EF_NONE, mod_down_flags);
 
-  ev.reset(GenerateKey(ui::ET_KEY_RELEASED, ui::VKEY_MENU));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
+  ev.reset(GenerateKey(false, ui::VKEY_MENU));
+  sticky_key.HandleKeyEvent(ev.get());
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
-  EXPECT_EQ(ui::EF_NONE, mod_down_flags);
 
   SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_SHIFT);
   EXPECT_EQ(STICKY_KEY_STATE_LOCKED, sticky_key.current_state());
 
   // Non target modifier key does not affect internal state
-  ev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_MENU));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
+  ev.reset(GenerateKey(true, ui::VKEY_MENU));
+  sticky_key.HandleKeyEvent(ev.get());
   EXPECT_EQ(STICKY_KEY_STATE_LOCKED, sticky_key.current_state());
-  EXPECT_EQ(ui::EF_NONE, mod_down_flags);
 
-  ev.reset(GenerateKey(ui::ET_KEY_RELEASED, ui::VKEY_MENU));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
+  ev.reset(GenerateKey(false, ui::VKEY_MENU));
+  sticky_key.HandleKeyEvent(ev.get());
   EXPECT_EQ(STICKY_KEY_STATE_LOCKED, sticky_key.current_state());
-  EXPECT_EQ(ui::EF_NONE, mod_down_flags);
 }
 
 TEST_F(StickyKeysTest, NormalShortcutTest) {
   // Sticky keys should not be enabled if we perform a normal shortcut.
   scoped_ptr<ui::KeyEvent> ev;
-  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
 
   // Perform ctrl+n shortcut.
-  ev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL));
-  int mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
-  ev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_N));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
-  ev.reset(GenerateKey(ui::ET_KEY_RELEASED, ui::VKEY_N));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
+  ev.reset(GenerateKey(true, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(ev.get());
+  ev.reset(GenerateKey(true, ui::VKEY_N));
+  sticky_key.HandleKeyEvent(ev.get());
+  ev.reset(GenerateKey(false, ui::VKEY_N));
+  sticky_key.HandleKeyEvent(ev.get());
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
-  ev.reset(GenerateKey(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
 
   // Sticky keys should not be enabled afterwards.
+  ev.reset(GenerateKey(false, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(ev.get());
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
-  EXPECT_EQ(ui::EF_NONE, mod_down_flags);
-
-  // Perform ctrl+n shortcut, releasing ctrl first.
-  ev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
-  ev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_N));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
-  EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
-  ev.reset(GenerateKey(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
-  ev.reset(GenerateKey(ui::ET_KEY_RELEASED, ui::VKEY_N));
-  mod_down_flags = HandleKeyEventForDownFlags(*ev.get(), &sticky_key);
-
-  // Sticky keys should not be enabled afterwards.
-  EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
-  EXPECT_EQ(ui::EF_NONE, mod_down_flags);
 }
 
 TEST_F(StickyKeysTest, NormalModifiedClickTest) {
   scoped_ptr<ui::KeyEvent> kev;
   scoped_ptr<ui::MouseEvent> mev;
-  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
 
   // Perform ctrl+click.
-  kev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL));
-  int mod_down_flags = HandleKeyEventForDownFlags(*kev.get(), &sticky_key);
-  mev.reset(GenerateMouseEvent(ui::ET_MOUSE_PRESSED));
-  bool released = false;
-  sticky_key.HandleMouseEvent(*mev.get(), &mod_down_flags, &released);
-  mev.reset(GenerateMouseEvent(ui::ET_MOUSE_RELEASED));
-  sticky_key.HandleMouseEvent(*mev.get(), &mod_down_flags, &released);
+  kev.reset(GenerateKey(true, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(kev.get());
+  mev.reset(GenerateMouseEvent(true));
+  sticky_key.HandleMouseEvent(mev.get());
+  mev.reset(GenerateMouseEvent(false));
+  sticky_key.HandleMouseEvent(mev.get());
 
   // Sticky keys should not be enabled afterwards.
-  kev.reset(GenerateKey(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL));
-  mod_down_flags = HandleKeyEventForDownFlags(*kev.get(), &sticky_key);
+  kev.reset(GenerateKey(false, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(kev.get());
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
-  EXPECT_EQ(ui::EF_NONE, mod_down_flags);
 }
 
 TEST_F(StickyKeysTest, MouseMovedModifierTest) {
   scoped_ptr<ui::KeyEvent> kev;
   scoped_ptr<ui::MouseEvent> mev;
-  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
 
   // Press ctrl and handle mouse move events.
-  kev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL));
-  int mod_down_flags = HandleKeyEventForDownFlags(*kev.get(), &sticky_key);
+  kev.reset(GenerateKey(true, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(kev.get());
   mev.reset(GenerateSynthesizedMouseMoveEvent(gfx::Point(0, 0)));
-  bool released = false;
-  sticky_key.HandleMouseEvent(*mev.get(), &mod_down_flags, &released);
+  sticky_key.HandleMouseEvent(mev.get());
   mev.reset(GenerateSynthesizedMouseMoveEvent(gfx::Point(100, 100)));
-  sticky_key.HandleMouseEvent(*mev.get(), &mod_down_flags, &released);
+  sticky_key.HandleMouseEvent(mev.get());
 
   // Sticky keys should be enabled afterwards.
-  kev.reset(GenerateKey(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL));
-  mod_down_flags = HandleKeyEventForDownFlags(*kev.get(), &sticky_key);
+  kev.reset(GenerateKey(false, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(kev.get());
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
-  EXPECT_EQ(ui::EF_NONE, mod_down_flags);
 }
 
 TEST_F(StickyKeysTest, NormalModifiedScrollTest) {
   scoped_ptr<ui::KeyEvent> kev;
   scoped_ptr<ui::ScrollEvent> sev;
-  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
 
   // Perform ctrl+scroll.
-  kev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL));
-  int mod_down_flags = HandleKeyEventForDownFlags(*kev.get(), &sticky_key);
+  kev.reset(GenerateKey(true, ui::VKEY_CONTROL));
   sev.reset(GenerateFlingScrollEvent(0, true));
-  bool released = false;
-  sticky_key.HandleScrollEvent(*sev.get(), &mod_down_flags, &released);
+  sticky_key.HandleScrollEvent(sev.get());
   sev.reset(GenerateScrollEvent(10));
-  sticky_key.HandleScrollEvent(*sev.get(), &mod_down_flags, &released);
+  sticky_key.HandleScrollEvent(sev.get());
   sev.reset(GenerateFlingScrollEvent(10, false));
-  sticky_key.HandleScrollEvent(*sev.get(), &mod_down_flags, &released);
+  sticky_key.HandleScrollEvent(sev.get());
 
   // Sticky keys should not be enabled afterwards.
-  kev.reset(GenerateKey(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL));
-  mod_down_flags = HandleKeyEventForDownFlags(*kev.get(), &sticky_key);
+  kev.reset(GenerateKey(false, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(kev.get());
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
-  EXPECT_EQ(ui::EF_NONE, mod_down_flags);
 }
 
 TEST_F(StickyKeysTest, MouseEventOneshot) {
   scoped_ptr<ui::MouseEvent> ev;
   scoped_ptr<ui::KeyEvent> kev;
-  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
   SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
@@ -452,47 +551,40 @@ TEST_F(StickyKeysTest, MouseEventOneshot) {
 
   // We should still be in the ENABLED state until we get the mouse
   // release event.
-  ev.reset(GenerateMouseEvent(ui::ET_MOUSE_PRESSED));
-  bool released = false;
-  int mod_down_flags = 0;
-  sticky_key.HandleMouseEvent(*ev.get(), &mod_down_flags, &released);
-  EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
+  ev.reset(GenerateMouseEvent(true));
+  sticky_key.HandleMouseEvent(ev.get());
+  EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
 
-  ev.reset(GenerateMouseEvent(ui::ET_MOUSE_RELEASED));
-  released = false;
-  mod_down_flags = 0;
-  sticky_key.HandleMouseEvent(*ev.get(), &mod_down_flags, &released);
-  EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
+  ev.reset(GenerateMouseEvent(false));
+  sticky_key.HandleMouseEvent(ev.get());
+  EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
 
   // Making sure modifier key release event is dispatched in the right order.
-  EXPECT_TRUE(released);
-  scoped_ptr<ui::Event> up_event;
-  ASSERT_EQ(0, sticky_key.GetModifierUpEvent(&up_event));
-  EXPECT_TRUE(up_event.get());
-  EXPECT_EQ(ui::ET_KEY_RELEASED, up_event->type());
+  ASSERT_EQ(2u, mock_delegate->GetEventCount());
+  EXPECT_EQ(ui::ET_MOUSE_RELEASED, mock_delegate->GetEvent(0)->type());
+  EXPECT_EQ(ui::ET_KEY_RELEASED, mock_delegate->GetEvent(1)->type());
   EXPECT_EQ(ui::VKEY_CONTROL,
-            static_cast<const ui::KeyEvent*>(up_event.get())->key_code());
+            static_cast<const ui::KeyEvent*>(mock_delegate->GetEvent(1))
+                ->key_code());
 
   // Enabled state is one shot, so next click should not be control modified.
-  ev.reset(GenerateMouseEvent(ui::ET_MOUSE_PRESSED));
-  released = false;
-  mod_down_flags = 0;
-  sticky_key.HandleMouseEvent(*ev.get(), &mod_down_flags, &released);
-  EXPECT_FALSE(mod_down_flags & ui::EF_CONTROL_DOWN);
+  ev.reset(GenerateMouseEvent(true));
+  sticky_key.HandleMouseEvent(ev.get());
+  EXPECT_FALSE(ev->flags() & ui::EF_CONTROL_DOWN);
 
-  ev.reset(GenerateMouseEvent(ui::ET_MOUSE_RELEASED));
-  released = false;
-  mod_down_flags = 0;
-  sticky_key.HandleMouseEvent(*ev.get(), &mod_down_flags, &released);
-  EXPECT_FALSE(mod_down_flags & ui::EF_CONTROL_DOWN);
+  ev.reset(GenerateMouseEvent(false));
+  sticky_key.HandleMouseEvent(ev.get());
+  EXPECT_FALSE(ev->flags() & ui::EF_CONTROL_DOWN);
 }
 
 TEST_F(StickyKeysTest, MouseEventLocked) {
   scoped_ptr<ui::MouseEvent> ev;
   scoped_ptr<ui::KeyEvent> kev;
-  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
 
@@ -504,44 +596,35 @@ TEST_F(StickyKeysTest, MouseEventLocked) {
 
   // Mouse events should not disable locked mode.
   for (int i = 0; i < 3; ++i) {
-    bool released = false;
-    int mod_down_flags = 0;
-    ev.reset(GenerateMouseEvent(ui::ET_MOUSE_PRESSED));
-    sticky_key.HandleMouseEvent(*ev.get(), &mod_down_flags, &released);
-    EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
-    ev.reset(GenerateMouseEvent(ui::ET_MOUSE_RELEASED));
-    released = false;
-  mod_down_flags = 0;
-    sticky_key.HandleMouseEvent(*ev.get(), &mod_down_flags, &released);
-    EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
+    ev.reset(GenerateMouseEvent(true));
+    sticky_key.HandleMouseEvent(ev.get());
+    EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
+    ev.reset(GenerateMouseEvent(false));
+    sticky_key.HandleMouseEvent(ev.get());
+    EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
     EXPECT_EQ(STICKY_KEY_STATE_LOCKED, sticky_key.current_state());
   }
 
   // Test with mouse wheel.
   for (int i = 0; i < 3; ++i) {
-    bool released = false;
-    int mod_down_flags = 0;
     ev.reset(GenerateMouseWheelEvent(ui::MouseWheelEvent::kWheelDelta));
-    sticky_key.HandleMouseEvent(*ev.get(), &mod_down_flags, &released);
+    sticky_key.HandleMouseEvent(ev.get());
     ev.reset(GenerateMouseWheelEvent(-ui::MouseWheelEvent::kWheelDelta));
-    released = false;
-  mod_down_flags = 0;
-    sticky_key.HandleMouseEvent(*ev.get(), &mod_down_flags, &released);
-    EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
+    sticky_key.HandleMouseEvent(ev.get());
+    EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
     EXPECT_EQ(STICKY_KEY_STATE_LOCKED, sticky_key.current_state());
   }
 
   // Test mixed case with mouse events and key events.
   ev.reset(GenerateMouseWheelEvent(ui::MouseWheelEvent::kWheelDelta));
-  bool released = false;
-  int mod_down_flags = 0;
-  sticky_key.HandleMouseEvent(*ev.get(), &mod_down_flags, &released);
-  EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
-  kev.reset(GenerateKey(ui::ET_KEY_PRESSED, ui::VKEY_N));
-  mod_down_flags = HandleKeyEventForDownFlags(*kev.get(), &sticky_key);
-  EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
-  mod_down_flags = HandleKeyEventForDownFlags(*kev.get(), &sticky_key);
-  EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
+  sticky_key.HandleMouseEvent(ev.get());
+  EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
+  kev.reset(GenerateKey(true, ui::VKEY_N));
+  sticky_key.HandleKeyEvent(kev.get());
+  EXPECT_TRUE(kev->flags() & ui::EF_CONTROL_DOWN);
+  kev.reset(GenerateKey(false, ui::VKEY_N));
+  sticky_key.HandleKeyEvent(kev.get());
+  EXPECT_TRUE(kev->flags() & ui::EF_CONTROL_DOWN);
 
   EXPECT_EQ(STICKY_KEY_STATE_LOCKED, sticky_key.current_state());
 }
@@ -549,10 +632,14 @@ TEST_F(StickyKeysTest, MouseEventLocked) {
 TEST_F(StickyKeysTest, ScrollEventOneshot) {
   scoped_ptr<ui::ScrollEvent> ev;
   scoped_ptr<ui::KeyEvent> kev;
-  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   int scroll_deltas[] = {-10, 10};
   for (int i = 0; i < 2; ++i) {
+    mock_delegate->ClearEvents();
+
     // Enable sticky keys.
     EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
     SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
@@ -561,44 +648,42 @@ TEST_F(StickyKeysTest, ScrollEventOneshot) {
     // Test a scroll sequence. Sticky keys should only be disabled at the end
     // of the scroll sequence. Fling cancel event starts the scroll sequence.
     ev.reset(GenerateFlingScrollEvent(0, true));
-    bool released = false;
-    int mod_down_flags = 0;
-    sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
-    EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
+    sticky_key.HandleScrollEvent(ev.get());
+    EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
     EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
 
     // Scrolls should all be modified but not disable sticky keys.
     for (int j = 0; j < 3; ++j) {
       ev.reset(GenerateScrollEvent(scroll_deltas[i]));
-      released = false;
-  mod_down_flags = 0;
-      sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
-      EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
+      sticky_key.HandleScrollEvent(ev.get());
+      EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
       EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
     }
 
     // Fling start event ends scroll sequence.
     ev.reset(GenerateFlingScrollEvent(scroll_deltas[i], false));
-    released = false;
-  mod_down_flags = 0;
-    sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
-    EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
+    sticky_key.HandleScrollEvent(ev.get());
+    EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
     EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
 
-    scoped_ptr<ui::Event> up_event;
-    EXPECT_TRUE(released);
-    ASSERT_EQ(0, sticky_key.GetModifierUpEvent(&up_event));
-    EXPECT_TRUE(up_event.get());
-    EXPECT_EQ(ui::ET_KEY_RELEASED, up_event->type());
+    ASSERT_EQ(2U, mock_delegate->GetEventCount());
+    EXPECT_EQ(ui::ET_SCROLL_FLING_START, mock_delegate->GetEvent(0)->type());
+    EXPECT_FLOAT_EQ(scroll_deltas[i],
+                    static_cast<const ui::ScrollEvent*>(
+                        mock_delegate->GetEvent(0))->y_offset());
+    EXPECT_EQ(ui::ET_KEY_RELEASED, mock_delegate->GetEvent(1)->type());
     EXPECT_EQ(ui::VKEY_CONTROL,
-              static_cast<const ui::KeyEvent*>(up_event.get())->key_code());
+              static_cast<const ui::KeyEvent*>(mock_delegate->GetEvent(1))
+                  ->key_code());
   }
 }
 
 TEST_F(StickyKeysTest, ScrollDirectionChanged) {
   scoped_ptr<ui::ScrollEvent> ev;
   scoped_ptr<ui::KeyEvent> kev;
-  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   // Test direction change with both boundary value and negative value.
   const int direction_change_values[2] = {0, -10};
@@ -608,26 +693,21 @@ TEST_F(StickyKeysTest, ScrollDirectionChanged) {
 
     // Fling cancel starts scroll sequence.
     ev.reset(GenerateFlingScrollEvent(0, true));
-    bool released = false;
-    int mod_down_flags = 0;
-    sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
+    sticky_key.HandleScrollEvent(ev.get());
     EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
 
     // Test that changing directions in a scroll sequence will
     // return sticky keys to DISABLED state.
     for (int j = 0; j < 3; ++j) {
       ev.reset(GenerateScrollEvent(10));
-      released = false;
-  mod_down_flags = 0;
-      sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
-      EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
+      sticky_key.HandleScrollEvent(ev.get());
+      EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
       EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
     }
 
     ev.reset(GenerateScrollEvent(direction_change_values[i]));
-    released = false;
-  mod_down_flags = 0;
-    sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
+    sticky_key.HandleScrollEvent(ev.get());
+    EXPECT_FALSE(ev->flags() & ui::EF_CONTROL_DOWN);
     EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
   }
 }
@@ -635,7 +715,9 @@ TEST_F(StickyKeysTest, ScrollDirectionChanged) {
 TEST_F(StickyKeysTest, ScrollEventLocked) {
   scoped_ptr<ui::ScrollEvent> ev;
   scoped_ptr<ui::KeyEvent> kev;
-  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   // Lock sticky keys.
   SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
@@ -646,45 +728,63 @@ TEST_F(StickyKeysTest, ScrollEventLocked) {
   for (int i = 0; i < 5; ++i) {
     // Fling cancel starts scroll sequence.
     ev.reset(GenerateFlingScrollEvent(0, true));
-    bool released = false;
-    int mod_down_flags = 0;
-    sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
+    sticky_key.HandleScrollEvent(ev.get());
 
     ev.reset(GenerateScrollEvent(10));
-    released = false;
-  mod_down_flags = 0;
-    sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
-    EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
+    sticky_key.HandleScrollEvent(ev.get());
+    EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
     ev.reset(GenerateScrollEvent(-10));
-    sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
-    EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
+    sticky_key.HandleScrollEvent(ev.get());
+    EXPECT_TRUE(ev->flags() & ui::EF_CONTROL_DOWN);
 
     // Fling start ends scroll sequence.
     ev.reset(GenerateFlingScrollEvent(-10, false));
-    sticky_key.HandleScrollEvent(*ev.get(), &mod_down_flags, &released);
+    sticky_key.HandleScrollEvent(ev.get());
   }
 
   EXPECT_EQ(STICKY_KEY_STATE_LOCKED, sticky_key.current_state());
 }
 
+TEST_F(StickyKeysTest, EventTargetDestroyed) {
+  scoped_ptr<ui::KeyEvent> ev;
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
+
+  target()->Focus();
+
+  // Go into ENABLED state.
+  EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
+  SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
+  EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
+
+  // CTRL+J is a special shortcut that will destroy the event target.
+  ev.reset(GenerateKey(true, ui::VKEY_J));
+  sticky_key.HandleKeyEvent(ev.get());
+  EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
+  EXPECT_FALSE(target());
+}
+
 TEST_F(StickyKeysTest, SynthesizedEvents) {
   // Non-native, internally generated events should be properly handled
   // by sticky keys.
-  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN);
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   // Test non-native key events.
   scoped_ptr<ui::KeyEvent> kev;
   SendActivateStickyKeyPattern(&sticky_key, ui::VKEY_CONTROL);
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
 
-  kev.reset(GenerateSynthesizedKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_K));
-  int mod_down_flags = HandleKeyEventForDownFlags(*kev.get(), &sticky_key);
-  EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
+  kev.reset(GenerateSynthesizedKeyEvent(true, ui::VKEY_K));
+  sticky_key.HandleKeyEvent(kev.get());
+  EXPECT_TRUE(kev->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
 
-  kev.reset(GenerateSynthesizedKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_K));
-  mod_down_flags = HandleKeyEventForDownFlags(*kev.get(), &sticky_key);
-  EXPECT_FALSE(mod_down_flags & ui::EF_CONTROL_DOWN);
+  kev.reset(GenerateSynthesizedKeyEvent(false, ui::VKEY_K));
+  sticky_key.HandleKeyEvent(kev.get());
+  EXPECT_FALSE(kev->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
 
   // Test non-native mouse events.
@@ -692,21 +792,216 @@ TEST_F(StickyKeysTest, SynthesizedEvents) {
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
 
   scoped_ptr<ui::MouseEvent> mev;
-  mev.reset(GenerateSynthesizedMouseClickEvent(ui::ET_MOUSE_PRESSED,
-                                               gfx::Point(0, 0)));
-  bool released = false;
-  sticky_key.HandleMouseEvent(*mev.get(), &mod_down_flags, &released);
-  EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
+  mev.reset(GenerateSynthesizedMouseClickEvent(true, gfx::Point(0, 0)));
+  sticky_key.HandleMouseEvent(mev.get());
+  EXPECT_TRUE(mev->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
 
-  mev.reset(GenerateSynthesizedMouseClickEvent(ui::ET_MOUSE_RELEASED,
-                                               gfx::Point(0, 0)));
-  released = false;
-  mod_down_flags = 0;
-  sticky_key.HandleMouseEvent(*mev.get(), &mod_down_flags, &released);
-  EXPECT_TRUE(mod_down_flags & ui::EF_CONTROL_DOWN);
-  EXPECT_TRUE(released);
+  mev.reset(GenerateSynthesizedMouseClickEvent(false, gfx::Point(0, 0)));
+  sticky_key.HandleMouseEvent(mev.get());
+  EXPECT_TRUE(mev->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
 }
+
+TEST_F(StickyKeysTest, KeyEventDispatchImpl) {
+  // Test the actual key event dispatch implementation.
+  EventBuffer buffer;
+  ScopedVector<ui::Event> events;
+  ui::EventProcessor* dispatcher =
+      Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
+  Shell::GetInstance()->AddPreTargetHandler(&buffer);
+  Shell::GetInstance()->sticky_keys_controller()->Enable(true);
+
+  SendActivateStickyKeyPattern(dispatcher, ui::VKEY_CONTROL);
+  scoped_ptr<ui::KeyEvent> ev;
+  buffer.PopEvents(&events);
+
+  // Test key press event is correctly modified and modifier release
+  // event is sent.
+  ev.reset(GenerateKey(true, ui::VKEY_C));
+  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(ev.get());
+  buffer.PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_EQ(ui::ET_KEY_PRESSED, events[0]->type());
+  EXPECT_EQ(ui::VKEY_C, static_cast<ui::KeyEvent*>(events[0])->key_code());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1])->key_code());
+
+  // Test key release event is not modified.
+  ev.reset(GenerateKey(false, ui::VKEY_C));
+  details = dispatcher->OnEventFromSource(ev.get());
+  ASSERT_FALSE(details.dispatcher_destroyed);
+  buffer.PopEvents(&events);
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[0]->type());
+  EXPECT_EQ(ui::VKEY_C,
+            static_cast<ui::KeyEvent*>(events[0])->key_code());
+  EXPECT_FALSE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+
+  // Test that synthesized key events are dispatched correctly.
+  SendActivateStickyKeyPattern(dispatcher, ui::VKEY_CONTROL);
+  buffer.PopEvents(&events);
+  scoped_ptr<ui::KeyEvent> kev;
+  kev.reset(GenerateSynthesizedKeyEvent(true, ui::VKEY_K));
+  details = dispatcher->OnEventFromSource(kev.get());
+  ASSERT_FALSE(details.dispatcher_destroyed);
+  buffer.PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_EQ(ui::ET_KEY_PRESSED, events[0]->type());
+  EXPECT_EQ(ui::VKEY_K, static_cast<ui::KeyEvent*>(events[0])->key_code());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1])->key_code());
+
+  Shell::GetInstance()->RemovePreTargetHandler(&buffer);
+}
+
+class StickyKeysMouseDispatchTest
+    : public StickyKeysTest,
+      public ::testing::WithParamInterface<int> {
+};
+
+TEST_P(StickyKeysMouseDispatchTest, MouseEventDispatchImpl) {
+  int scale_factor = GetParam();
+  std::ostringstream display_specs;
+  display_specs << "1280x1024*" << scale_factor;
+  UpdateDisplay(display_specs.str());
+
+  EventBuffer buffer;
+  ScopedVector<ui::Event> events;
+  ui::EventProcessor* dispatcher =
+      Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
+  Shell::GetInstance()->AddPreTargetHandler(&buffer);
+  Shell::GetInstance()->sticky_keys_controller()->Enable(true);
+
+  scoped_ptr<ui::MouseEvent> ev;
+  SendActivateStickyKeyPattern(dispatcher, ui::VKEY_CONTROL);
+  buffer.PopEvents(&events);
+
+  // Test mouse press event is correctly modified and has correct DIP location.
+  gfx::Point physical_location(400, 400);
+  gfx::Point dip_location(physical_location.x() / scale_factor,
+                          physical_location.y() / scale_factor);
+  ev.reset(GenerateMouseEventAt(true, physical_location));
+  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(ev.get());
+  buffer.PopEvents(&events);
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, events[0]->type());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(dip_location.ToString(),
+            static_cast<ui::MouseEvent*>(events[0])->location().ToString());
+
+  // Test mouse release event is correctly modified and modifier release
+  // event is sent. The mouse event should have the correct DIP location.
+  ev.reset(GenerateMouseEventAt(false, physical_location));
+  details = dispatcher->OnEventFromSource(ev.get());
+  ASSERT_FALSE(details.dispatcher_destroyed);
+  buffer.PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_EQ(ui::ET_MOUSE_RELEASED, events[0]->type());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(dip_location.ToString(),
+            static_cast<ui::MouseEvent*>(events[0])->location().ToString());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1])->key_code());
+
+  // Test synthesized mouse events are dispatched correctly.
+  SendActivateStickyKeyPattern(dispatcher, ui::VKEY_CONTROL);
+  buffer.PopEvents(&events);
+  ev.reset(GenerateSynthesizedMouseClickEvent(false, physical_location));
+  details = dispatcher->OnEventFromSource(ev.get());
+  ASSERT_FALSE(details.dispatcher_destroyed);
+  buffer.PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_EQ(ui::ET_MOUSE_RELEASED, events[0]->type());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(dip_location.ToString(),
+            static_cast<ui::MouseEvent*>(events[0])->location().ToString());
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1])->key_code());
+
+  Shell::GetInstance()->RemovePreTargetHandler(&buffer);
+}
+
+TEST_P(StickyKeysMouseDispatchTest, MouseWheelEventDispatchImpl) {
+  int scale_factor = GetParam();
+  std::ostringstream display_specs;
+  display_specs << "1280x1024*" << scale_factor;
+  UpdateDisplay(display_specs.str());
+
+  // Test the actual mouse wheel event dispatch implementation.
+  EventBuffer buffer;
+  ScopedVector<ui::Event> events;
+  ui::EventProcessor* dispatcher =
+      Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
+  Shell::GetInstance()->AddPreTargetHandler(&buffer);
+  Shell::GetInstance()->sticky_keys_controller()->Enable(true);
+
+  scoped_ptr<ui::MouseWheelEvent> ev;
+  SendActivateStickyKeyPattern(dispatcher, ui::VKEY_CONTROL);
+  buffer.PopEvents(&events);
+
+  // Test positive mouse wheel event is correctly modified and modifier release
+  // event is sent.
+  ev.reset(GenerateMouseWheelEvent(ui::MouseWheelEvent::kWheelDelta));
+  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(ev.get());
+  ASSERT_FALSE(details.dispatcher_destroyed);
+  buffer.PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_TRUE(events[0]->IsMouseWheelEvent());
+  EXPECT_EQ(ui::MouseWheelEvent::kWheelDelta / scale_factor,
+            static_cast<ui::MouseWheelEvent*>(events[0])->y_offset());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1])->key_code());
+
+  // Test negative mouse wheel event is correctly modified and modifier release
+  // event is sent.
+  SendActivateStickyKeyPattern(dispatcher, ui::VKEY_CONTROL);
+  buffer.PopEvents(&events);
+
+  ev.reset(GenerateMouseWheelEvent(-ui::MouseWheelEvent::kWheelDelta));
+  details = dispatcher->OnEventFromSource(ev.get());
+  ASSERT_FALSE(details.dispatcher_destroyed);
+  buffer.PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_TRUE(events[0]->IsMouseWheelEvent());
+  EXPECT_EQ(-ui::MouseWheelEvent::kWheelDelta / scale_factor,
+            static_cast<ui::MouseWheelEvent*>(events[0])->y_offset());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1])->key_code());
+
+  // Test synthesized mouse wheel events are dispatched correctly.
+  SendActivateStickyKeyPattern(dispatcher, ui::VKEY_CONTROL);
+  buffer.PopEvents(&events);
+  ev.reset(
+      GenerateSynthesizedMouseWheelEvent(ui::MouseWheelEvent::kWheelDelta));
+  details = dispatcher->OnEventFromSource(ev.get());
+  ASSERT_FALSE(details.dispatcher_destroyed);
+  buffer.PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_TRUE(events[0]->IsMouseWheelEvent());
+  EXPECT_EQ(ui::MouseWheelEvent::kWheelDelta / scale_factor,
+            static_cast<ui::MouseWheelEvent*>(events[0])->y_offset());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1])->key_code());
+
+  Shell::GetInstance()->RemovePreTargetHandler(&buffer);
+}
+
+INSTANTIATE_TEST_CASE_P(DPIScaleFactors,
+                        StickyKeysMouseDispatchTest,
+                        ::testing::Values(1, 2));
 
 }  // namespace ash
