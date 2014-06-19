@@ -11,7 +11,7 @@
 #include "chrome/browser/android/banners/app_banner_metrics_ids.h"
 #include "chrome/browser/android/banners/app_banner_settings_helper.h"
 #include "chrome/browser/android/banners/app_banner_utilities.h"
-#include "chrome/browser/bitmap_fetcher.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/android/content_view_core.h"

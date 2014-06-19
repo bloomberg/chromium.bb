@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bitmap_fetcher.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/profiles/profile.h"

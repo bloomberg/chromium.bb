@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_IMAGE_HOLDER_H_
 
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/bitmap_fetcher.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"

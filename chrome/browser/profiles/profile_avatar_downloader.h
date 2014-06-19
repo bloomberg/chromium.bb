@@ -5,7 +5,7 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_AVATAR_DOWNLOADER_H_
 
 #include "base/files/file_path.h"
-#include "chrome/browser/bitmap_fetcher.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 
 class ProfileInfoCache;
 

@@ -14,7 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/bitmap_fetcher.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "sync/api/sync_data.h"
 #include "sync/protocol/sync.pb.h"
 #include "ui/gfx/image/image.h"

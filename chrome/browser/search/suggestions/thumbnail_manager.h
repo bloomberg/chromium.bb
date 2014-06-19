@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chrome/browser/bitmap_fetcher.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 

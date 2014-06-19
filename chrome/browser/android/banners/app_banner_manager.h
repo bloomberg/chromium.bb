@@ -9,7 +9,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/android/meta_tag_observer.h"
-#include "chrome/browser/bitmap_fetcher.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 
 namespace content {
 struct FrameNavigateParams;

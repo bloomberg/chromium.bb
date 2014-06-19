@@ -620,6 +620,7 @@
         'browser/background/background_application_list_model_unittest.cc',
         'browser/background/background_contents_service_unittest.cc',
         'browser/background/background_mode_manager_unittest.cc',
+        'browser/bitmap_fetcher/bitmap_fetcher_service_unittest.cc',
         'browser/bookmarks/bookmark_html_writer_unittest.cc',
         'browser/bookmarks/chrome_bookmark_client_unittest.cc',
         'browser/browser_about_handler_unittest.cc',

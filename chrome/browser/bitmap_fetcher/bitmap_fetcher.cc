@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bitmap_fetcher.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_fetcher.h"
@@ -11,13 +11,12 @@
 
 namespace chrome {
 
-BitmapFetcher::BitmapFetcher(const GURL& url,
-                             BitmapFetcherDelegate* delegate)
-    : url_(url),
-      delegate_(delegate) {
+BitmapFetcher::BitmapFetcher(const GURL& url, BitmapFetcherDelegate* delegate)
+    : url_(url), delegate_(delegate) {
 }
 
-BitmapFetcher::~BitmapFetcher() {}
+BitmapFetcher::~BitmapFetcher() {
+}
 
 void BitmapFetcher::Start(net::URLRequestContextGetter* request_context,
                           const std::string& referrer,
