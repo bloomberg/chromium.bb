@@ -106,8 +106,7 @@ group("root") {
   ]
 
   if (!is_win) {
-    # TODO(brettw) re-enable once this compiles reliably.
-    #deps += [ "//breakpad:symupload" ]
+    deps += [ "//breakpad:symupload" ]
   }
 
   if (is_linux) {
@@ -157,6 +156,7 @@ group("root") {
 
       # Fails on Android for unknown reasons.
       "//third_party/flac",
+      "//breakpad:symupload",
 
       # TODO(brettw) make Blink work on Android.
       "//third_party/WebKit/public:all_blink",

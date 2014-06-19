@@ -343,6 +343,10 @@ if (is_linux && current_toolchain == host_toolchain) {
       "src/tools/linux/dump_syms/dump_syms.cc",
     ]
 
+    # There are some warnings in this code.
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+
     # dwarf2reader.cc uses dynamic_cast. Because we don't typically
     # don't support RTTI, we enable it for this single target. Since
     # dump_syms doesn't share any object files with anything else,
