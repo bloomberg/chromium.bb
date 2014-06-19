@@ -198,10 +198,10 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingPageSize) {
   ASSERT_EQ(2UL, caps.papers.size());
   EXPECT_EQ("Letter", caps.papers[0].vendor_id);
   EXPECT_EQ("US Letter", caps.papers[0].display_name);
-  EXPECT_EQ(214200, caps.papers[0].size_um.width());
-  EXPECT_EQ(277200, caps.papers[0].size_um.height());
+  EXPECT_EQ(215900, caps.papers[0].size_um.width());
+  EXPECT_EQ(279400, caps.papers[0].size_um.height());
   EXPECT_EQ("Legal", caps.papers[1].vendor_id);
   EXPECT_EQ("US Legal", caps.papers[1].display_name);
-  EXPECT_EQ(214200, caps.papers[1].size_um.width());
-  EXPECT_EQ(352800, caps.papers[1].size_um.height());
+  EXPECT_EQ(215900, caps.papers[1].size_um.width());
+  EXPECT_EQ(355600, caps.papers[1].size_um.height());
 }

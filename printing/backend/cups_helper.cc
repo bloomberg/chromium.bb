@@ -36,7 +36,7 @@ const char kDuplex[] = "Duplex";
 const char kDuplexNone[] = "None";
 const char kPageSize[] = "PageSize";
 
-const double kMicronsPerPoint = kHundrethsMMPerInch / kPointsPerInch * 10;
+const double kMicronsPerPoint = 10.0f * kHundrethsMMPerInch / kPointsPerInch;
 
 #if !defined(OS_MACOSX)
 void ParseLpOptions(const base::FilePath& filepath,
