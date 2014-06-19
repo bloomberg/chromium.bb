@@ -47,7 +47,7 @@ void DevToolsNetworkTransaction::Throttle(int result) {
     throttled_byte_count_ += result;
 
   if (interceptor_)
-    interceptor_->ThrottleTransaction(this);
+    interceptor_->ThrottleTransaction(this, callback_type_ == START);
 }
 
 void DevToolsNetworkTransaction::OnCallback(int rv) {

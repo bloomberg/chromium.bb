@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -40,7 +41,7 @@ class DevToolsNetworkInterceptor {
 
   bool ShouldFail(const DevToolsNetworkTransaction* transaction);
   bool ShouldThrottle(const DevToolsNetworkTransaction* transaction);
-  void ThrottleTransaction(DevToolsNetworkTransaction* transaction);
+  void ThrottleTransaction(DevToolsNetworkTransaction* transaction, bool start);
 
   const DevToolsNetworkConditions* conditions() const {
     return conditions_.get();
@@ -49,17 +50,26 @@ class DevToolsNetworkInterceptor {
  private:
   scoped_refptr<DevToolsNetworkConditions> conditions_;
 
-  void UpdateThrottles();
-  void ArmTimer();
+  void UpdateThrottledTransactions(base::TimeTicks now);
+  void UpdateSuspendedTransactions(base::TimeTicks now);
+  void ArmTimer(base::TimeTicks now);
   void OnTimer();
 
   typedef std::set<DevToolsNetworkTransaction*> Transactions;
   Transactions transactions_;
 
+  // Transactions suspended for a "latency" period.
+  typedef std::pair<DevToolsNetworkTransaction*, int64_t> SuspendedTransaction;
+  typedef std::vector<SuspendedTransaction> SuspendedTransactions;
+  SuspendedTransactions suspended_transactions_;
+
+  // Transactions waiting certain amount of transfer to be "accounted".
   std::vector<DevToolsNetworkTransaction*> throttled_transactions_;
+
   base::OneShotTimer<DevToolsNetworkInterceptor> timer_;
   base::TimeTicks offset_;
   base::TimeDelta tick_length_;
+  base::TimeDelta latency_length_;
   uint64_t last_tick_;
 
   base::WeakPtrFactory<DevToolsNetworkInterceptor> weak_ptr_factory_;
