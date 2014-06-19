@@ -38,7 +38,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/crypto/Key.h"
-#include "modules/crypto/KeyPair.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebArrayBuffer.h"
@@ -154,8 +153,21 @@ void CryptoResultImpl::completeWithKey(const blink::WebCryptoKey& key)
 
 void CryptoResultImpl::completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey)
 {
-    if (m_resolver)
-        m_resolver->resolve(KeyPair::create(publicKey, privateKey));
+    if (m_resolver) {
+        ScriptState* scriptState = m_resolver->scriptState();
+        ScriptState::Scope scope(scriptState);
+
+        // FIXME: Use Dictionary instead, to limit amount of direct v8 access used from WebCore.
+        v8::Handle<v8::Object> keyPair = v8::Object::New(scriptState->isolate());
+
+        v8::Handle<v8::Value> publicKeyValue = toV8NoInline(Key::create(publicKey), scriptState->context()->Global(), scriptState->isolate());
+        v8::Handle<v8::Value> privateKeyValue = toV8NoInline(Key::create(privateKey), scriptState->context()->Global(), scriptState->isolate());
+
+        keyPair->Set(v8::String::NewFromUtf8(scriptState->isolate(), "publicKey"), publicKeyValue);
+        keyPair->Set(v8::String::NewFromUtf8(scriptState->isolate(), "privateKey"), privateKeyValue);
+
+        m_resolver->resolve(v8::Handle<v8::Value>(keyPair));
+    }
 }
 
 bool CryptoResultImpl::cancelled() const
