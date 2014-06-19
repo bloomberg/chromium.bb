@@ -20,8 +20,8 @@ LLVM_WIN_REVISION = 'HEAD'
 
 # ASan on Windows is useful enough to use it even while the clang/win is still
 # in bringup. Use a pinned revision to make it slightly more stable.
-if (sys.platform in ['win32', 'cygwin'] and
-    re.search(r'\b(asan)=1', os.environ.get('GYP_DEFINES', ''))):
+if (re.search(r'\b(asan)=1', os.environ.get('GYP_DEFINES', '')) and
+    not 'LLVM_FORCE_HEAD_REVISION' in os.environ):
   LLVM_WIN_REVISION = '210586'
 
 # Path constants. (All of these should be absolute paths.)
