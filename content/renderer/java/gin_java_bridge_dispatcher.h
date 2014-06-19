@@ -63,6 +63,7 @@ class GinJavaBridgeDispatcher
   typedef std::map<std::string, ObjectID> NamedObjectMap;
   NamedObjectMap named_objects_;
   ObjectMap objects_;
+  bool inside_did_clear_window_object_;
 
   DISALLOW_COPY_AND_ASSIGN(GinJavaBridgeDispatcher);
 };

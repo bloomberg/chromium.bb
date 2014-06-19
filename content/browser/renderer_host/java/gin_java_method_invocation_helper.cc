@@ -118,11 +118,6 @@ bool GinJavaMethodInvocationHelper::AppendObjectRef(
 
 void GinJavaMethodInvocationHelper::Invoke() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(object_->GetLocalRef(env));
-  if (obj.is_null()) {
-    SetInvocationFailure(kObjectIsGone);
-    return;
-  }
   const JavaMethod* method =
       object_->FindMethod(method_name_, arguments_->GetSize());
   if (!method) {
@@ -137,6 +132,18 @@ void GinJavaMethodInvocationHelper::Invoke() {
     return;
   }
 
+  ScopedJavaLocalRef<jobject> obj;
+  ScopedJavaLocalRef<jclass> cls;
+  if (method->is_static()) {
+    cls = object_->GetLocalClassRef(env);
+  } else {
+    obj = object_->GetLocalRef(env);
+  }
+  if (obj.is_null() && cls.is_null()) {
+    SetInvocationFailure(kObjectIsGone);
+    return;
+  }
+
   std::vector<jvalue> parameters(method->num_parameters());
   for (size_t i = 0; i < method->num_parameters(); ++i) {
     const base::Value* argument;
@@ -144,7 +151,13 @@ void GinJavaMethodInvocationHelper::Invoke() {
     parameters[i] = CoerceJavaScriptValueToJavaValue(
         env, argument, method->parameter_type(i), true, object_refs_);
   }
-  InvokeMethod(obj.obj(), method->return_type(), method->id(), &parameters[0]);
+  if (method->is_static()) {
+    InvokeMethod(
+        NULL, cls.obj(), method->return_type(), method->id(), &parameters[0]);
+  } else {
+    InvokeMethod(
+        obj.obj(), NULL, method->return_type(), method->id(), &parameters[0]);
+  }
 
   // Now that we're done with the jvalue, release any local references created
   // by CoerceJavaScriptValueToJavaValue().
@@ -197,38 +210,48 @@ const std::string& GinJavaMethodInvocationHelper::GetErrorMessage() {
 }
 
 void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
+                                                 jclass clazz,
                                                  const JavaType& return_type,
                                                  jmethodID id,
                                                  jvalue* parameters) {
+  DCHECK(object || clazz);
   JNIEnv* env = AttachCurrentThread();
   base::ListValue result_wrapper;
   switch (return_type.type) {
     case JavaType::TypeBoolean:
       result_wrapper.AppendBoolean(
-          env->CallBooleanMethodA(object, id, parameters));
+          object ? env->CallBooleanMethodA(object, id, parameters)
+                 : env->CallStaticBooleanMethodA(clazz, id, parameters));
       break;
     case JavaType::TypeByte:
       result_wrapper.AppendInteger(
-          env->CallByteMethodA(object, id, parameters));
+          object ? env->CallByteMethodA(object, id, parameters)
+                 : env->CallStaticByteMethodA(clazz, id, parameters));
       break;
     case JavaType::TypeChar:
       result_wrapper.AppendInteger(
-          env->CallCharMethodA(object, id, parameters));
+          object ? env->CallCharMethodA(object, id, parameters)
+                 : env->CallStaticCharMethodA(clazz, id, parameters));
       break;
     case JavaType::TypeShort:
       result_wrapper.AppendInteger(
-          env->CallShortMethodA(object, id, parameters));
+          object ? env->CallShortMethodA(object, id, parameters)
+                 : env->CallStaticShortMethodA(clazz, id, parameters));
       break;
     case JavaType::TypeInt:
       result_wrapper.AppendInteger(
-          env->CallIntMethodA(object, id, parameters));
+          object ? env->CallIntMethodA(object, id, parameters)
+                 : env->CallStaticIntMethodA(clazz, id, parameters));
       break;
     case JavaType::TypeLong:
       result_wrapper.AppendDouble(
-          env->CallLongMethodA(object, id, parameters));
+          object ? env->CallLongMethodA(object, id, parameters)
+                 : env->CallStaticLongMethodA(clazz, id, parameters));
       break;
     case JavaType::TypeFloat: {
-      float result = env->CallFloatMethodA(object, id, parameters);
+      float result = object
+                         ? env->CallFloatMethodA(object, id, parameters)
+                         : env->CallStaticFloatMethodA(clazz, id, parameters);
       if (base::IsFinite(result)) {
         result_wrapper.AppendDouble(result);
       } else {
@@ -238,7 +261,9 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
       break;
     }
     case JavaType::TypeDouble: {
-      double result = env->CallDoubleMethodA(object, id, parameters);
+      double result = object
+                          ? env->CallDoubleMethodA(object, id, parameters)
+                          : env->CallStaticDoubleMethodA(clazz, id, parameters);
       if (base::IsFinite(result)) {
         result_wrapper.AppendDouble(result);
       } else {
@@ -248,7 +273,10 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
       break;
     }
     case JavaType::TypeVoid:
-      env->CallVoidMethodA(object, id, parameters);
+      if (object)
+        env->CallVoidMethodA(object, id, parameters);
+      else
+        env->CallStaticVoidMethodA(clazz, id, parameters);
       result_wrapper.Append(
           GinJavaBridgeValue::CreateUndefinedValue().release());
       break;
@@ -261,7 +289,8 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
       break;
     case JavaType::TypeString: {
       jstring java_string = static_cast<jstring>(
-          env->CallObjectMethodA(object, id, parameters));
+          object ? env->CallObjectMethodA(object, id, parameters)
+                 : env->CallStaticObjectMethodA(clazz, id, parameters));
       // If an exception was raised, we must clear it before calling most JNI
       // methods. ScopedJavaLocalRef is liable to make such calls, so we test
       // first.
@@ -285,7 +314,9 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
       // If an exception was raised, we must clear it before calling most JNI
       // methods. ScopedJavaLocalRef is liable to make such calls, so we test
       // first.
-      jobject java_object = env->CallObjectMethodA(object, id, parameters);
+      jobject java_object =
+          object ? env->CallObjectMethodA(object, id, parameters)
+                 : env->CallStaticObjectMethodA(clazz, id, parameters);
       if (base::android::ClearException(env)) {
         SetInvocationFailure(kJavaExceptionRaised);
         return;

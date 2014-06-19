@@ -44,6 +44,8 @@ class CONTENT_EXPORT GinJavaMethodInvocationHelper
     virtual ~ObjectDelegate() {}
     virtual base::android::ScopedJavaLocalRef<jobject> GetLocalRef(
         JNIEnv* env) = 0;
+    virtual base::android::ScopedJavaLocalRef<jclass> GetLocalClassRef(
+        JNIEnv* env) = 0;
     virtual const JavaMethod* FindMethod(const std::string& method_name,
                                          size_t num_parameters) = 0;
     virtual bool IsObjectGetClassMethod(const JavaMethod* method) = 0;
@@ -83,6 +85,7 @@ class CONTENT_EXPORT GinJavaMethodInvocationHelper
 
   // Called on the background thread.
   void InvokeMethod(jobject object,
+                    jclass clazz,
                     const JavaType& return_type,
                     jmethodID id,
                     jvalue* parameters);

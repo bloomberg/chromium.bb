@@ -24,6 +24,11 @@ class NullObjectDelegate
     return base::android::ScopedJavaLocalRef<jobject>();
   }
 
+  virtual base::android::ScopedJavaLocalRef<jclass> GetLocalClassRef(
+      JNIEnv* env) OVERRIDE {
+    return base::android::ScopedJavaLocalRef<jclass>();
+  }
+
   virtual const JavaMethod* FindMethod(const std::string& method_name,
                                        size_t num_parameters) OVERRIDE {
     return NULL;
