@@ -54,6 +54,23 @@ struct ArrayDataTraits<P*> {
   }
 };
 
+template <typename T>
+struct ArrayDataTraits<Array_Data<T>*> {
+  typedef ArrayPointer<T> StorageType;
+  typedef Array_Data<T>*& Ref;
+  typedef Array_Data<T>* const& ConstRef;
+
+  static size_t GetStorageSize(size_t num_elements) {
+    return sizeof(StorageType) * num_elements;
+  }
+  static Ref ToRef(StorageType* storage, size_t offset) {
+    return storage[offset].ptr;
+  }
+  static ConstRef ToConstRef(const StorageType* storage, size_t offset) {
+    return storage[offset].ptr;
+  }
+};
+
 // Specialization of Arrays for bools, optimized for space. It has the
 // following differences from a generalized Array:
 // * Each element takes up a single bit of memory.
