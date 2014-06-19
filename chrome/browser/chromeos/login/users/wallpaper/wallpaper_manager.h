@@ -223,6 +223,12 @@ class WallpaperManager: public content::NotificationObserver {
   // Returns the appropriate wallpaper resolution for all root windows.
   static WallpaperResolution GetAppropriateResolution();
 
+  // Returns custom wallpaper path. Append |sub_dir|, |user_id_hash| and |file|
+  // to custom wallpaper directory.
+  static base::FilePath GetCustomWallpaperPath(const char* sub_dir,
+                                               const std::string& user_id_hash,
+                                               const std::string& file);
+
   void SetCommandLineForTesting(base::CommandLine* command_line);
 
   // Indicates imminent shutdown, allowing the WallpaperManager to remove any
@@ -235,12 +241,6 @@ class WallpaperManager: public content::NotificationObserver {
   // Loads wallpaper asynchronously if the current wallpaper is not the
   // wallpaper of logged in user.
   void EnsureLoggedInUserWallpaperLoaded();
-
-  // Returns custom wallpaper path. Append |sub_dir|, |user_id_hash| and |file|
-  // to custom wallpaper directory.
-  base::FilePath GetCustomWallpaperPath(const char* sub_dir,
-                                        const std::string& user_id_hash,
-                                        const std::string& file) const;
 
   // Gets wallpaper information of logged in user.
   bool GetLoggedInUserWallpaperInfo(WallpaperInfo* info);
@@ -343,11 +343,50 @@ class WallpaperManager: public content::NotificationObserver {
 
  private:
   friend class TestApi;
+  friend class PendingWallpaper;
   friend class WallpaperManagerBrowserTest;
   friend class WallpaperManagerBrowserTestDefaultWallpaper;
   friend class WallpaperManagerPolicyTest;
 
   typedef std::map<std::string, gfx::ImageSkia> CustomWallpaperMap;
+
+
+  // Record data for User Metrics Analysis.
+  static void RecordUma(User::WallpaperType type, int index);
+
+  // Saves original custom wallpaper to |path| (absolute path) on filesystem
+  // and starts resizing operation of the custom wallpaper if necessary.
+  static void SaveCustomWallpaper(const std::string& user_id_hash,
+                                  const base::FilePath& path,
+                                  ash::WallpaperLayout layout,
+                                  scoped_ptr<gfx::ImageSkia> image);
+
+  // Moves custom wallpapers from |user_id| directory to |user_id_hash|
+  // directory.
+  static void MoveCustomWallpapersOnWorker(
+      const std::string& user_id,
+      const std::string& user_id_hash,
+      base::WeakPtr<WallpaperManager> weak_ptr);
+
+  // Gets |user_id|'s custom wallpaper at |wallpaper_path|. Falls back on
+  // original custom wallpaper. When |update_wallpaper| is true, sets wallpaper
+  // to the loaded wallpaper. Must run on wallpaper sequenced worker thread.
+  static void GetCustomWallpaperInternal(
+      const std::string& user_id,
+      const WallpaperInfo& info,
+      const base::FilePath& wallpaper_path,
+      bool update_wallpaper,
+      MovableOnDestroyCallbackHolder on_finish,
+      base::WeakPtr<WallpaperManager> weak_ptr);
+
+  // Resize and save customized default wallpaper.
+  static void ResizeCustomizedDefaultWallpaper(
+      scoped_ptr<gfx::ImageSkia> image,
+      const UserImage::RawImage& raw_image,
+      const CustomizedWallpaperRescaledFiles* rescaled_files,
+      bool* success,
+      gfx::ImageSkia* small_wallpaper_image,
+      gfx::ImageSkia* large_wallpaper_image);
 
   // Initialize wallpaper for the specified user to default and saves this
   // settings in local state.
@@ -404,11 +443,6 @@ class WallpaperManager: public content::NotificationObserver {
                      bool update_wallpaper,
                      MovableOnDestroyCallbackHolder on_finish);
 
-  // Moves custom wallpapers from |user_id| directory to |user_id_hash|
-  // directory.
-  void MoveCustomWallpapersOnWorker(const std::string& user_id,
-                                    const std::string& user_id_hash);
-
   // Called when the original custom wallpaper is moved to the new place.
   // Updates the corresponding user wallpaper info.
   void MoveCustomWallpapersSuccess(const std::string& user_id,
@@ -419,15 +453,6 @@ class WallpaperManager: public content::NotificationObserver {
   // user_id_hash instead of user_id. This must be called after user_id_hash is
   // ready.
   void MoveLoggedInUserCustomWallpaper();
-
-  // Gets |user_id|'s custom wallpaper at |wallpaper_path|. Falls back on
-  // original custom wallpaper. When |update_wallpaper| is true, sets wallpaper
-  // to the loaded wallpaper. Must run on wallpaper sequenced worker thread.
-  void GetCustomWallpaperInternal(const std::string& user_id,
-                                  const WallpaperInfo& info,
-                                  const base::FilePath& wallpaper_path,
-                                  bool update_wallpaper,
-                                  MovableOnDestroyCallbackHolder on_finish);
 
   // Gets wallpaper information of |user_id| from Local State or memory. Returns
   // false if wallpaper information is not found.
@@ -442,16 +467,6 @@ class WallpaperManager: public content::NotificationObserver {
                           bool update_wallpaper,
                           MovableOnDestroyCallbackHolder on_finish,
                           const UserImage& user_image);
-
-  // Record data for User Metrics Analysis.
-  void RecordUma(User::WallpaperType type, int index) const;
-
-  // Saves original custom wallpaper to |path| (absolute path) on filesystem
-  // and starts resizing operation of the custom wallpaper if necessary.
-  void SaveCustomWallpaper(const std::string& user_id_hash,
-                           const base::FilePath& path,
-                           ash::WallpaperLayout layout,
-                           scoped_ptr<gfx::ImageSkia> image) const;
 
   // Creates new PendingWallpaper request (or updates currently pending).
   void ScheduleSetUserWallpaper(const std::string& user_id, bool delayed);
@@ -501,15 +516,6 @@ class WallpaperManager: public content::NotificationObserver {
       const GURL& wallpaper_url,
       scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
       const UserImage& user_image);
-
-  // Resize and save customized default wallpaper.
-  void ResizeCustomizedDefaultWallpaper(
-      scoped_ptr<gfx::ImageSkia> image,
-      const UserImage::RawImage& raw_image,
-      const CustomizedWallpaperRescaledFiles* rescaled_files,
-      bool* success,
-      gfx::ImageSkia* small_wallpaper_image,
-      gfx::ImageSkia* large_wallpaper_image);
 
   // Check the result of ResizeCustomizedDefaultWallpaper and finally
   // apply Customized Default Wallpaper.
