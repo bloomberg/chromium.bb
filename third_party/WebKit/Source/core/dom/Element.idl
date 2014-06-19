@@ -61,24 +61,24 @@
 
     // Common extensions
 
-    readonly attribute double offsetLeft;
-    readonly attribute double offsetTop;
-    readonly attribute double offsetWidth;
-    readonly attribute double offsetHeight;
+    readonly attribute long offsetLeft;
+    readonly attribute long offsetTop;
+    readonly attribute long offsetWidth;
+    readonly attribute long offsetHeight;
     [ImplementedAs=offsetParentForBindings, PerWorldBindings] readonly attribute Element offsetParent;
-    readonly attribute double clientLeft;
-    readonly attribute double clientTop;
-    readonly attribute double clientWidth;
-    readonly attribute double clientHeight;
+    readonly attribute long clientLeft;
+    readonly attribute long clientTop;
+    readonly attribute long clientWidth;
+    readonly attribute long clientHeight;
 
     // FIXME: should be:
     // attribute (Dictionary or double) scrollLeft;
     // attribute (Dictionary or double) scrollTop;
     // http://crbug.com/240176
-    [Custom=Setter] attribute double scrollLeft;
-    [Custom=Setter] attribute double scrollTop;
-    readonly attribute double scrollWidth;
-    readonly attribute double scrollHeight;
+    [Custom=Setter] attribute long scrollLeft;
+    [Custom=Setter] attribute long scrollTop;
+    readonly attribute long scrollWidth;
+    readonly attribute long scrollHeight;
 
     void focus();
     void blur();

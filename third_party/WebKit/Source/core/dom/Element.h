@@ -184,28 +184,28 @@ public:
     void scrollByLines(int lines);
     void scrollByPages(int pages);
 
-    double offsetLeft();
-    double offsetTop();
-    double offsetWidth();
-    double offsetHeight();
+    int offsetLeft();
+    int offsetTop();
+    int offsetWidth();
+    int offsetHeight();
 
     // FIXME: Replace uses of offsetParent in the platform with calls
     // to the render layer and merge offsetParentForBindings and offsetParent.
     Element* offsetParentForBindings();
 
     Element* offsetParent();
-    double clientLeft();
-    double clientTop();
-    double clientWidth();
-    double clientHeight();
-    virtual double scrollLeft();
-    virtual double scrollTop();
-    virtual void setScrollLeft(double);
+    int clientLeft();
+    int clientTop();
+    int clientWidth();
+    int clientHeight();
+    virtual int scrollLeft();
+    virtual int scrollTop();
+    virtual void setScrollLeft(int);
     virtual void setScrollLeft(const Dictionary& scrollOptionsHorizontal, ExceptionState&);
-    virtual void setScrollTop(double);
+    virtual void setScrollTop(int);
     virtual void setScrollTop(const Dictionary& scrollOptionsVertical, ExceptionState&);
-    virtual double scrollWidth();
-    virtual double scrollHeight();
+    virtual int scrollWidth();
+    virtual int scrollHeight();
 
     IntRect boundsInRootViewSpace();
 
