@@ -11,7 +11,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_details.h"
@@ -36,11 +35,13 @@ WebContentsObserverAndroid::WebContentsObserverAndroid(
 WebContentsObserverAndroid::~WebContentsObserverAndroid() {
 }
 
-jlong Init(JNIEnv* env, jobject obj, jlong native_content_view_core) {
-  ContentViewCore* content_view_core =
-      reinterpret_cast<ContentViewCore*>(native_content_view_core);
+jlong Init(JNIEnv* env, jobject obj, jobject java_web_contents) {
+  content::WebContents* web_contents =
+        content::WebContents::FromJavaWebContents(java_web_contents);
+  CHECK(web_contents);
+
   WebContentsObserverAndroid* native_observer = new WebContentsObserverAndroid(
-      env, obj, content_view_core->GetWebContents());
+      env, obj, web_contents);
   return reinterpret_cast<intptr_t>(native_observer);
 }
 

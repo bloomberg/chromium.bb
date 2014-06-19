@@ -6,6 +6,8 @@ package org.chromium.content.browser;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.ThreadUtils;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * This class receives callbacks that act as hooks for various a native web contents events related
@@ -15,8 +17,14 @@ import org.chromium.base.JNINamespace;
 public abstract class WebContentsObserverAndroid {
     private long mNativeWebContentsObserverAndroid;
 
+    // TODO(yfriedman): Switch everyone to use the WebContents constructor.
     public WebContentsObserverAndroid(ContentViewCore contentViewCore) {
-        mNativeWebContentsObserverAndroid = nativeInit(contentViewCore.getNativeContentViewCore());
+        this(contentViewCore.getWebContents());
+    }
+
+    public WebContentsObserverAndroid(WebContents webContents) {
+        ThreadUtils.assertOnUiThread();
+        mNativeWebContentsObserverAndroid = nativeInit(webContents);
     }
 
     @CalledByNative
@@ -165,6 +173,6 @@ public abstract class WebContentsObserverAndroid {
         }
     }
 
-    private native long nativeInit(long contentViewCorePtr);
+    private native long nativeInit(WebContents webContents);
     private native void nativeDestroy(long nativeWebContentsObserverAndroid);
 }

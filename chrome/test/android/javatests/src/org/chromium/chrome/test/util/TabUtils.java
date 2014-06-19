@@ -6,6 +6,7 @@ package org.chromium.chrome.test.util;
 
 import android.view.ContextMenu;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.content.browser.ContentViewClient;
@@ -16,6 +17,7 @@ import org.chromium.content.browser.test.util.TestContentViewClientWrapper;
 import org.chromium.content.browser.test.util.TestWebContentsObserver;
 
 import java.lang.ref.WeakReference;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A utility class that contains methods generic to all Tabs tests.
@@ -37,7 +39,7 @@ public class TabUtils {
         private final CallbackHelper mOnCloseTabHelper;
         private final OnContextMenuShownHelper mOnContextMenuShownHelper;
 
-        public TestCallbackHelperContainerForTab(Tab tab) {
+        private TestCallbackHelperContainerForTab(Tab tab) {
             super(createTestContentViewClientForTab(tab),
                     new TestWebContentsObserver(tab.getContentViewCore()));
             mOnCloseTabHelper = new CallbackHelper();
@@ -84,7 +86,21 @@ public class TabUtils {
     /**
      * Creates, binds and returns a TestCallbackHelperContainer for a given Tab.
      */
-    public static TestCallbackHelperContainerForTab getTestCallbackHelperContainer(Tab tab) {
-        return tab == null ? null : new TestCallbackHelperContainerForTab(tab);
+    public static TestCallbackHelperContainerForTab getTestCallbackHelperContainer(final Tab tab) {
+        if (tab == null) {
+            return null;
+        }
+        final AtomicReference<TestCallbackHelperContainerForTab> result =
+                new AtomicReference<TestCallbackHelperContainerForTab>();
+        // TODO(yfriedman): Change callers to be executed on the UI thread. Unfortunately this is
+        // super convenient as the caller is nearly always on the test thread which is fine to block
+        // and it's cumbersome to keep bouncing to the UI thread.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                result.set(new TestCallbackHelperContainerForTab(tab));
+            }
+        });
+        return result.get();
     }
 }

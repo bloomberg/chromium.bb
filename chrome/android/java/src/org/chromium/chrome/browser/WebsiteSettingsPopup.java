@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.content_public.browser.WebContents;
 
 import java.net.URISyntaxException;
@@ -56,10 +57,20 @@ public class WebsiteSettingsPopup implements OnClickListener {
         mDialog.setCanceledOnTouchOutside(true);
         // This needs to come after other member initialization.
         final long nativeWebsiteSettingsPopup = nativeInit(this, webContents);
+        final WebContentsObserverAndroid webContentsObserver =
+                new WebContentsObserverAndroid(mWebContents) {
+            @Override
+            public void navigationEntryCommitted() {
+                // If a navigation is committed (e.g. from in-page redirect), the data we're
+                // showing is stale so dismiss the dialog.
+                mDialog.dismiss();
+            }
+        };
         mDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
                 assert nativeWebsiteSettingsPopup != 0;
+                webContentsObserver.detachFromWebContents();
                 nativeDestroy(nativeWebsiteSettingsPopup);
             }
         });
