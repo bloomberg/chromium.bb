@@ -146,6 +146,14 @@ static void beginDeferredFilter(GraphicsContext* context, FilterData* filterData
         filterData->filter->enableCache();
     FloatRect boundaries = enclosingIntRect(filterData->boundaries);
     context->save();
+    float scaledArea = boundaries.width() * boundaries.height();
+
+    // If area of scaled size is bigger than the upper limit, adjust the scale
+    // to fit.
+    if (scaledArea > FilterEffect::maxFilterArea()) {
+        float scale = sqrtf(FilterEffect::maxFilterArea() / scaledArea);
+        context->scale(scale, scale);
+    }
     // Clip drawing of filtered image to primitive boundaries.
     context->clipRect(boundaries);
     if (filterElement->hasAttribute(SVGNames::filterResAttr)) {
