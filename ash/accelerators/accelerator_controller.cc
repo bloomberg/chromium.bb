@@ -509,7 +509,8 @@ bool HandleWindowSnap(int action) {
   // http://crbug.com/135487.
   if (!window_state ||
       window_state->window()->type() != ui::wm::WINDOW_TYPE_NORMAL ||
-      window_state->IsFullscreen()) {
+      window_state->IsFullscreen() ||
+      !window_state->CanSnap()) {
     return false;
   }
 
