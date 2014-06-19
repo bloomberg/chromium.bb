@@ -22,8 +22,10 @@ All output is written to native_client_sdk/doc_generated/...
 How to build
 ------------
 
-To build the docs you will needs sphinx installed (and sphinx-build in your
-path). On debian/ubuntu this command is part of the ``python-sphinx`` package.
+To build the docs you will need these debian/ubuntu packages:
+
+* python-sphinx
+* python-beautifulsoup
 
 There are two primary make targets: ``chromesite`` and ``chromesite_rst``. The
 ``chromesite`` target will build all documentation, including the doxygen docs.

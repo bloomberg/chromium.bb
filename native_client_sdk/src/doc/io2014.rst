@@ -1,0 +1,186 @@
+###################
+Building a NaCl App
+###################
+In the browser!
+---------------
+
+Follow along with Brad Nelson's Google I/O 2014 talk.
+Explore our new in-browser development environment and debugger.
+
+Learn how easy it is to edit, build, and debug NaCl application
+all in your desktop web browser or on a Chromebook.
+Work either on-line or off-line!
+
+.. raw:: html
+
+  <iframe class="video" width="500" height="281"
+  src="//www.youtube.com/embed/MvKEomoiKBA?rel=0" frameborder="0"></iframe>
+
+
+Installation
+============
+
+The setup process currently requires several steps.
+We're working to reduce the number of steps in future releases.
+As the process gets easier, we'll update this page.
+
+You currently need to:
+
+* Navigate to: chrome://flags and:
+
+  * Enable **Native Client**.
+  * Enable **Native Client GDB-based debugging**.  (For the debugger)
+
+* Install the NaCl in-browser debugger.
+
+  * Install the `NaCl Debugger Extension <https://chrome.google.com/webstore/detail/nacl-debugger/ncpkkhabohglmhjibnloicgdfjmojkfd>`_.
+
+  * Install `GDB <https://chrome.google.com/webstore/detail/gdb/gkjoooooiaohiceibmdleokniplmbahe>`_.
+
+* Install the `NaCl Development Environment <https://chrome.google.com/webstore/detail/nacl-development-environm/aljpgkjeipgnmdpikaajmnepbcfkglfa>`_.
+
+  * First run is slow (as it downloads and installs packages).
+
+
+Editor
+======
+
+To follow along in this tutorial, you'll need to use a text editor to modify
+various files in our development environment.
+There are currently two editor options, nano or vim.
+Emacs is coming soon...
+If you're unsure what to pick, nano is simpler to start with and has on-screen
+help.
+
+* You can open **nano** like this::
+
+    $ nano <filename>
+
+  Here's an online `nano tutorial <http://mintaka.sdsu.edu/reu/nano.html>`_.
+
+* You can open **vim** like this::
+
+    $ vim <filename>
+
+  Here's an online `vim tutorial <http://www.openvim.com/tutorial.html>`_.
+
+
+Git Setup
+=========
+
+This tutorial also uses a revision control program called
+`git <http://en.wikipedia.org/wiki/Git_(software)>`_.
+In order to commit to a git repository,
+you need to setup your environment to with your identity.
+
+You'll need to add these lines to `~/.bashrc` to cause them to be invoked each
+time you start the development environment.
+::
+
+  git config --global user.name "John Doe"
+  git config --global user.email johndoe@example.com
+
+Tour (follow the video)
+=======================
+
+Create a working directory and go into it::
+
+  $ mkdir work
+  $ cd work
+
+Download a zip file containing our sample::
+
+  $ curl http://nacltools.storage.googleapis.com/io2014/voronoi.zip -O
+  $ ls -l
+
+Unzip the sample::
+
+  $ unzip voronoi.zip
+
+Go into the sample and take a look at the files inside::
+
+  $ cd voronoi
+  $ ls
+
+Our project combines voronoi.cc with several C++ libraries to produce a NEXE
+(or Native Client Executable).
+
+.. image:: /images/voronoi1.png
+
+The resulting application combines the NEXE with some Javascript to load
+the NaCl module, producing the complete application.
+
+.. image:: /images/voronoi2.png
+
+Let's use git (a revision control program) to track our changes.
+
+First, create a new repository::
+
+  $ git init
+
+Add everything here::
+
+  $ git add .
+
+Then commit our starting state::
+
+  $ git commit -m "imported voronoi demo"
+
+Now, likes run **make** to compile our program (NOTE: Changed since video,
+we've got Makefiles!)::
+
+  $ make
+
+Oops, we get this error::
+
+  voronoi.cc: In member function 'void Voronoi::Update()':
+  voronoi.cc:506: error: 'struct PSContext2D_t' has no member named 'hieght'
+
+We'll need to start an editor to fix this.
+You'll want to change *hieght* to *height* on line 506.
+Then rebuild::
+
+  $ make
+
+Lets look at the diff::
+
+  $ git diff
+
+And commit our fix::
+
+  $ git commit -am "fixed build error"
+
+To test our application, we run a local web server, written in python.
+Run the server with this command (NOTE: Running through a Makefile
+now)::
+
+  $ make serve
+
+Then, navigate to http://localhost:5103/ to test the demo.
+
+If you follow along with the demo video, you will discover the sample crashes
+when you change the thread count.
+
+*Debugger walk-thru coming soon.*
+
+Once you've identified the problem. You'll want to stop the test server.
+Press enter to halt it.
+
+Open your editor again, navigate to line 485 and change *valu* to *value*.
+
+Then rebuild::
+
+  $ make
+
+Check the diff and commit our fix::
+
+  $ git diff
+  $ git commit -am "fixed thread ui bug"
+
+Now look at your commit history::
+
+  $ git log
+
+Run the demo again. And everything now works::
+
+  $ make serve

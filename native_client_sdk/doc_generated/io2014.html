@@ -1,0 +1,168 @@
+{{+bindTo:partials.standard_nacl_article}}
+
+<section id="building-a-nacl-app">
+<h1 id="building-a-nacl-app">Building a NaCl App</h1>
+<section id="in-the-browser">
+<h2 id="in-the-browser">In the browser!</h2>
+<p>Follow along with Brad Nelson&#8217;s Google I/O 2014 talk.
+Explore our new in-browser development environment and debugger.</p>
+<p>Learn how easy it is to edit, build, and debug NaCl application
+all in your desktop web browser or on a Chromebook.
+Work either on-line or off-line!</p>
+<iframe class="video" width="500" height="281"
+src="//www.youtube.com/embed/MvKEomoiKBA?rel=0" frameborder="0"></iframe><section id="installation">
+<h3 id="installation">Installation</h3>
+<p>The setup process currently requires several steps.
+We&#8217;re working to reduce the number of steps in future releases.
+As the process gets easier, we&#8217;ll update this page.</p>
+<p>You currently need to:</p>
+<ul class="small-gap">
+<li><p class="first">Navigate to: chrome://flags and:</p>
+<ul class="small-gap">
+<li>Enable <strong>Native Client</strong>.</li>
+<li>Enable <strong>Native Client GDB-based debugging</strong>.  (For the debugger)</li>
+</ul>
+</li>
+<li><p class="first">Install the NaCl in-browser debugger.</p>
+<ul class="small-gap">
+<li>Install the <a class="reference external" href="https://chrome.google.com/webstore/detail/nacl-debugger/ncpkkhabohglmhjibnloicgdfjmojkfd">NaCl Debugger Extension</a>.</li>
+<li>Install <a class="reference external" href="https://chrome.google.com/webstore/detail/gdb/gkjoooooiaohiceibmdleokniplmbahe">GDB</a>.</li>
+</ul>
+</li>
+<li><p class="first">Install the <a class="reference external" href="https://chrome.google.com/webstore/detail/nacl-development-environm/aljpgkjeipgnmdpikaajmnepbcfkglfa">NaCl Development Environment</a>.</p>
+<ul class="small-gap">
+<li>First run is slow (as it downloads and installs packages).</li>
+</ul>
+</li>
+</ul>
+</section><section id="editor">
+<h3 id="editor">Editor</h3>
+<p>To follow along in this tutorial, you&#8217;ll need to use a text editor to modify
+various files in our development environment.
+There are currently two editor options, nano or vim.
+Emacs is coming soon...
+If you&#8217;re unsure what to pick, nano is simpler to start with and has on-screen
+help.</p>
+<ul class="small-gap">
+<li><p class="first">You can open <strong>nano</strong> like this:</p>
+<pre class="prettyprint">
+$ nano &lt;filename&gt;
+</pre>
+<p>Here&#8217;s an online <a class="reference external" href="http://mintaka.sdsu.edu/reu/nano.html">nano tutorial</a>.</p>
+</li>
+<li><p class="first">You can open <strong>vim</strong> like this:</p>
+<pre class="prettyprint">
+$ vim &lt;filename&gt;
+</pre>
+<p>Here&#8217;s an online <a class="reference external" href="http://www.openvim.com/tutorial.html">vim tutorial</a>.</p>
+</li>
+</ul>
+</section><section id="git-setup">
+<h3 id="git-setup">Git Setup</h3>
+<p>This tutorial also uses a revision control program called
+<a class="reference external" href="http://en.wikipedia.org/wiki/Git_(software)">git</a>.
+In order to commit to a git repository,
+you need to setup your environment to with your identity.</p>
+<p>You&#8217;ll need to add these lines to <cite>~/.bashrc</cite> to cause them to be invoked each
+time you start the development environment.</p>
+<pre class="prettyprint">
+git config --global user.name &quot;John Doe&quot;
+git config --global user.email johndoe&#64;example.com
+</pre>
+</section><section id="tour-follow-the-video">
+<h3 id="tour-follow-the-video">Tour (follow the video)</h3>
+<p>Create a working directory and go into it:</p>
+<pre class="prettyprint">
+$ mkdir work
+$ cd work
+</pre>
+<p>Download a zip file containing our sample:</p>
+<pre class="prettyprint">
+$ curl http://nacltools.storage.googleapis.com/io2014/voronoi.zip -O
+$ ls -l
+</pre>
+<p>Unzip the sample:</p>
+<pre class="prettyprint">
+$ unzip voronoi.zip
+</pre>
+<p>Go into the sample and take a look at the files inside:</p>
+<pre class="prettyprint">
+$ cd voronoi
+$ ls
+</pre>
+<p>Our project combines voronoi.cc with several C++ libraries to produce a NEXE
+(or Native Client Executable).</p>
+<img alt="/native-client/images/voronoi1.png" src="/native-client/images/voronoi1.png" />
+<p>The resulting application combines the NEXE with some Javascript to load
+the NaCl module, producing the complete application.</p>
+<img alt="/native-client/images/voronoi2.png" src="/native-client/images/voronoi2.png" />
+<p>Let&#8217;s use git (a revision control program) to track our changes.</p>
+<p>First, create a new repository:</p>
+<pre class="prettyprint">
+$ git init
+</pre>
+<p>Add everything here:</p>
+<pre class="prettyprint">
+$ git add .
+</pre>
+<p>Then commit our starting state:</p>
+<pre class="prettyprint">
+$ git commit -m &quot;imported voronoi demo&quot;
+</pre>
+<p>Now, likes run <strong>make</strong> to compile our program (NOTE: Changed since video,
+we&#8217;ve got Makefiles!):</p>
+<pre class="prettyprint">
+$ make
+</pre>
+<p>Oops, we get this error:</p>
+<pre class="prettyprint">
+voronoi.cc: In member function 'void Voronoi::Update()':
+voronoi.cc:506: error: 'struct PSContext2D_t' has no member named 'hieght'
+</pre>
+<p>We&#8217;ll need to start an editor to fix this.
+You&#8217;ll want to change <em>hieght</em> to <em>height</em> on line 506.
+Then rebuild:</p>
+<pre class="prettyprint">
+$ make
+</pre>
+<p>Lets look at the diff:</p>
+<pre class="prettyprint">
+$ git diff
+</pre>
+<p>And commit our fix:</p>
+<pre class="prettyprint">
+$ git commit -am &quot;fixed build error&quot;
+</pre>
+<p>To test our application, we run a local web server, written in python.
+Run the server with this command (NOTE: Running through a Makefile
+now):</p>
+<pre class="prettyprint">
+$ make serve
+</pre>
+<p>Then, navigate to <a class="reference external" href="http://localhost:5103/">http://localhost:5103/</a> to test the demo.</p>
+<p>If you follow along with the demo video, you will discover the sample crashes
+when you change the thread count.</p>
+<p><em>Debugger walk-thru coming soon.</em></p>
+<p>Once you&#8217;ve identified the problem. You&#8217;ll want to stop the test server.
+Press enter to halt it.</p>
+<p>Open your editor again, navigate to line 485 and change <em>valu</em> to <em>value</em>.</p>
+<p>Then rebuild:</p>
+<pre class="prettyprint">
+$ make
+</pre>
+<p>Check the diff and commit our fix:</p>
+<pre class="prettyprint">
+$ git diff
+$ git commit -am &quot;fixed thread ui bug&quot;
+</pre>
+<p>Now look at your commit history:</p>
+<pre class="prettyprint">
+$ git log
+</pre>
+<p>Run the demo again. And everything now works:</p>
+<pre class="prettyprint">
+$ make serve
+</pre>
+</section></section></section>
+
+{{/partials.standard_nacl_article}}
