@@ -187,6 +187,11 @@ struct _drm_intel_bo_gem {
 	void *mem_virtual;
 	/** GTT virtual address for the buffer, saved across map/unmap cycles */
 	void *gtt_virtual;
+	/**
+	 * Virtual address of the buffer allocated by user, used for userptr
+	 * objects only.
+	 */
+	void *user_virtual;
 	int map_count;
 	drmMMListHead vma_list;
 
@@ -224,6 +229,11 @@ struct _drm_intel_bo_gem {
 	 * processes, so we don't know their state.
 	 */
 	bool idle;
+
+	/**
+	 * Boolean of whether this buffer was allocated with userptr
+	 */
+	bool is_userptr;
 
 	/**
 	 * Size in bytes of this buffer and its relocation descendents.
@@ -852,6 +862,80 @@ drm_intel_gem_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
 					       tiling, stride);
 }
 
+static drm_intel_bo *
+drm_intel_gem_bo_alloc_userptr(drm_intel_bufmgr *bufmgr,
+				const char *name,
+				void *addr,
+				uint32_t tiling_mode,
+				uint32_t stride,
+				unsigned long size,
+				unsigned long flags)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bufmgr;
+	drm_intel_bo_gem *bo_gem;
+	int ret;
+	struct drm_i915_gem_userptr userptr;
+
+	/* Tiling with userptr surfaces is not supported
+	 * on all hardware so refuse it for time being.
+	 */
+	if (tiling_mode != I915_TILING_NONE)
+		return NULL;
+
+	bo_gem = calloc(1, sizeof(*bo_gem));
+	if (!bo_gem)
+		return NULL;
+
+	bo_gem->bo.size = size;
+
+	VG_CLEAR(userptr);
+	userptr.user_ptr = (__u64)((unsigned long)addr);
+	userptr.user_size = size;
+	userptr.flags = flags;
+
+	ret = drmIoctl(bufmgr_gem->fd,
+			DRM_IOCTL_I915_GEM_USERPTR,
+			&userptr);
+	if (ret != 0) {
+		DBG("bo_create_userptr: "
+		    "ioctl failed with user ptr %p size 0x%lx, "
+		    "user flags 0x%lx\n", addr, size, flags);
+		free(bo_gem);
+		return NULL;
+	}
+
+	bo_gem->gem_handle = userptr.handle;
+	bo_gem->bo.handle = bo_gem->gem_handle;
+	bo_gem->bo.bufmgr    = bufmgr;
+	bo_gem->is_userptr   = true;
+	bo_gem->bo.virtual   = addr;
+	/* Save the address provided by user */
+	bo_gem->user_virtual = addr;
+	bo_gem->tiling_mode  = I915_TILING_NONE;
+	bo_gem->swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
+	bo_gem->stride       = 0;
+
+	DRMINITLISTHEAD(&bo_gem->name_list);
+	DRMINITLISTHEAD(&bo_gem->vma_list);
+
+	bo_gem->name = name;
+	atomic_set(&bo_gem->refcount, 1);
+	bo_gem->validate_index = -1;
+	bo_gem->reloc_tree_fences = 0;
+	bo_gem->used_as_reloc_target = false;
+	bo_gem->has_error = false;
+	bo_gem->reusable = false;
+
+	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
+
+	DBG("bo_create_userptr: "
+	    "ptr %p buf %d (%s) size %ldb, stride 0x%x, tile mode %d\n",
+		addr, bo_gem->gem_handle, bo_gem->name,
+		size, stride, tiling_mode);
+
+	return &bo_gem->bo;
+}
+
 /**
  * Returns a drm_intel_bo wrapping the given buffer object handle.
  *
@@ -1183,6 +1267,12 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 	struct drm_i915_gem_set_domain set_domain;
 	int ret;
 
+	if (bo_gem->is_userptr) {
+		/* Return the same user ptr */
+		bo->virtual = bo_gem->user_virtual;
+		return 0;
+	}
+
 	pthread_mutex_lock(&bufmgr_gem->lock);
 
 	if (bo_gem->map_count++ == 0)
@@ -1250,6 +1340,9 @@ map_gtt(drm_intel_bo *bo)
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	int ret;
+
+	if (bo_gem->is_userptr)
+		return -EINVAL;
 
 	if (bo_gem->map_count++ == 0)
 		drm_intel_gem_bo_open_vma(bufmgr_gem, bo_gem);
@@ -1397,12 +1490,17 @@ drm_intel_gem_bo_map_unsynchronized(drm_intel_bo *bo)
 
 static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 {
-	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bufmgr_gem *bufmgr_gem;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	int ret = 0;
 
 	if (bo == NULL)
 		return 0;
+
+	if (bo_gem->is_userptr)
+		return 0;
+
+	bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 
 	pthread_mutex_lock(&bufmgr_gem->lock);
 
@@ -1462,6 +1560,9 @@ drm_intel_gem_bo_subdata(drm_intel_bo *bo, unsigned long offset,
 	struct drm_i915_gem_pwrite pwrite;
 	int ret;
 
+	if (bo_gem->is_userptr)
+		return -EINVAL;
+
 	VG_CLEAR(pwrite);
 	pwrite.handle = bo_gem->gem_handle;
 	pwrite.offset = offset;
@@ -1513,6 +1614,9 @@ drm_intel_gem_bo_get_subdata(drm_intel_bo *bo, unsigned long offset,
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	struct drm_i915_gem_pread pread;
 	int ret;
+
+	if (bo_gem->is_userptr)
+		return -EINVAL;
 
 	VG_CLEAR(pread);
 	pread.handle = bo_gem->gem_handle;
@@ -2481,6 +2585,12 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	int ret;
 
+	/* Tiling with userptr surfaces is not supported
+	 * on all hardware so refuse it for time being.
+	 */
+	if (bo_gem->is_userptr)
+		return -EINVAL;
+
 	/* Linear buffers have no stride. By ensuring that we only ever use
 	 * stride 0 with linear buffers, we simplify our code.
 	 */
@@ -3237,6 +3347,53 @@ drm_intel_bufmgr_gem_unref(drm_intel_bufmgr *bufmgr)
 	}
 }
 
+static bool
+has_userptr(drm_intel_bufmgr_gem *bufmgr_gem)
+{
+	int ret;
+	void *ptr;
+	long pgsz;
+	struct drm_i915_gem_userptr userptr;
+	struct drm_gem_close close_bo;
+
+	pgsz = sysconf(_SC_PAGESIZE);
+	assert(pgsz > 0);
+
+	ret = posix_memalign(&ptr, pgsz, pgsz);
+	if (ret) {
+		DBG("Failed to get a page (%ld) for userptr detection!\n",
+			pgsz);
+		return false;
+	}
+
+	memset(&userptr, 0, sizeof(userptr));
+	userptr.user_ptr = (__u64)(unsigned long)ptr;
+	userptr.user_size = pgsz;
+
+retry:
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_USERPTR, &userptr);
+	if (ret) {
+		if (errno == ENODEV && userptr.flags == 0) {
+			userptr.flags = I915_USERPTR_UNSYNCHRONIZED;
+			goto retry;
+		}
+		free(ptr);
+		return false;
+	}
+
+	close_bo.handle = userptr.handle;
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CLOSE, &close_bo);
+	if (ret == 0) {
+		free(ptr);
+	} else {
+		fprintf(stderr, "Failed to release test userptr object! (%d) "
+				"i915 kernel driver may not be sane!\n", errno);
+		return false;
+	}
+
+	return true;
+}
+
 /**
  * Initializes the GEM buffer manager, which uses the kernel to allocate, map,
  * and manage map buffer objections.
@@ -3337,6 +3494,10 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	gp.param = I915_PARAM_HAS_RELAXED_FENCING;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
 	bufmgr_gem->has_relaxed_fencing = ret == 0;
+
+	if (has_userptr(bufmgr_gem))
+		bufmgr_gem->bufmgr.bo_alloc_userptr =
+			drm_intel_gem_bo_alloc_userptr;
 
 	gp.param = I915_PARAM_HAS_WAIT_TIMEOUT;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);

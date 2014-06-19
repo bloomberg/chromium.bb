@@ -62,6 +62,20 @@ drm_intel_bo_alloc_for_render(drm_intel_bufmgr *bufmgr, const char *name,
 }
 
 drm_public drm_intel_bo *
+drm_intel_bo_alloc_userptr(drm_intel_bufmgr *bufmgr,
+			   const char *name, void *addr,
+			   uint32_t tiling_mode,
+			   uint32_t stride,
+			   unsigned long size,
+			   unsigned long flags)
+{
+	if (bufmgr->bo_alloc_userptr)
+		return bufmgr->bo_alloc_userptr(bufmgr, name, addr, tiling_mode,
+						stride, size, flags);
+	return NULL;
+}
+
+drm_public drm_intel_bo *
 drm_intel_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
                         int x, int y, int cpp, uint32_t *tiling_mode,
                         unsigned long *pitch, unsigned long flags)

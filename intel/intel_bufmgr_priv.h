@@ -62,6 +62,18 @@ struct _drm_intel_bufmgr {
 					      unsigned int alignment);
 
 	/**
+	 * Allocate a buffer object from an existing user accessible
+	 * address malloc'd with the provided size.
+	 * Alignment is used when mapping to the gtt.
+	 * Flags may be I915_VMAP_READ_ONLY or I915_USERPTR_UNSYNCHRONIZED
+	 */
+	drm_intel_bo *(*bo_alloc_userptr)(drm_intel_bufmgr *bufmgr,
+					  const char *name, void *addr,
+					  uint32_t tiling_mode, uint32_t stride,
+					  unsigned long size,
+					  unsigned long flags);
+
+	/**
 	 * Allocate a tiled buffer object.
 	 *
 	 * Alignment for tiled objects is set automatically; the 'flags'
