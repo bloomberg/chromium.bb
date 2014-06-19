@@ -55,7 +55,9 @@ AppInfoPermissionsPanel::~AppInfoPermissionsPanel() {
 // Given a list of strings, returns a view containing a list of these strings
 // as bulleted items.
 views::View* AppInfoPermissionsPanel::CreateBulletedListView(
-    const std::vector<base::string16>& messages) {
+    const std::vector<base::string16>& messages,
+    bool allow_multiline,
+    gfx::ElideBehavior elide_behavior) {
   const int kSpacingBetweenBulletAndStartOfText = 5;
   views::View* list_view = CreateVerticalStack();
 
@@ -64,7 +66,11 @@ views::View* AppInfoPermissionsPanel::CreateBulletedListView(
        ++it) {
     views::Label* permission_label = new views::Label(*it);
     permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    permission_label->SetMultiLine(true);
+
+    if (allow_multiline)
+      permission_label->SetMultiLine(true);
+    else
+      permission_label->SetElideBehavior(elide_behavior);
 
     // Extract only the bullet from the IDS_EXTENSION_PERMISSION_LINE text, and
     // place it in it's own view so it doesn't align vertically with the
@@ -101,7 +107,8 @@ void AppInfoPermissionsPanel::CreateActivePermissionsControl() {
   } else {
     active_permissions_heading_ = CreateHeading(l10n_util::GetStringUTF16(
         IDS_APPLICATION_INFO_ACTIVE_PERMISSIONS_TEXT));
-    active_permissions_list_ = CreateBulletedListView(permission_strings);
+    active_permissions_list_ =
+        CreateBulletedListView(permission_strings, true, gfx::TRUNCATE);
   }
 }
 
@@ -118,8 +125,8 @@ void AppInfoPermissionsPanel::CreateRetainedFilesControl() {
 
     retained_files_heading_ = CreateHeading(l10n_util::GetStringUTF16(
         IDS_APPLICATION_INFO_RETAINED_FILE_PERMISSIONS_TEXT));
-    retained_files_list_ =
-        CreateBulletedListView(retained_file_permission_messages);
+    retained_files_list_ = CreateBulletedListView(
+        retained_file_permission_messages, false, gfx::ELIDE_MIDDLE);
   }
 }
 

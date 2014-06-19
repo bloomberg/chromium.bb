@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_panel.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/controls/button/button.h"
 
 class Profile;
@@ -46,9 +47,12 @@ class AppInfoPermissionsPanel : public AppInfoPanel,
                            RetainedFilePermissionsObtainedCorrectly);
 
   // Given a list of strings, returns a view containing a list of these strings
-  // as bulleted items.
+  // as bulleted items with the given |elide_behavior|. If |allow_multiline| is
+  // true, allow multi-lined bulleted items and ignore the |elide_behavior|.
   views::View* CreateBulletedListView(
-      const std::vector<base::string16>& messages);
+      const std::vector<base::string16>& messages,
+      bool allow_multiline,
+      gfx::ElideBehavior elide_behavior);
 
   // Internal initialisation methods.
   void CreateActivePermissionsControl();
