@@ -249,7 +249,7 @@ class Page14(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page14, self).__init__(
-      url='http://jsfiddle.net/bNp2h/2/show/',
+      url='http://jsfiddle.net/bNp2h/3/show/',
       page_set=page_set)
 
     self.gpu_raster = True
