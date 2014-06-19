@@ -60,11 +60,9 @@ class SuspendedProcessWatcher : public content::RenderProcessHostObserver {
             content::RenderProcessHost::AllHostsIterator());
          !i.IsAtEnd(); i.Advance()) {
       content::RenderProcessHost* host = i.GetCurrentValue();
-      if (host->HasConnection()) {
-        host->AddObserver(this);
-        host->Send(new ViewMsg_SetWebKitSharedTimersSuspended(true));
-        suspended_processes_.push_back(host->GetID());
-      }
+      host->AddObserver(this);
+      host->Send(new ViewMsg_SetWebKitSharedTimersSuspended(true));
+      suspended_processes_.push_back(host->GetID());
     }
   }
 
