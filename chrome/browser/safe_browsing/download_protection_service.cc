@@ -95,6 +95,7 @@ enum MaliciousExtensionType {
   EXTENSION_APK,
   EXTENSION_DMG,
   EXTENSION_PKG,
+  EXTENSION_TORRENT,
   EXTENSION_MAX,
 };
 
@@ -121,6 +122,8 @@ MaliciousExtensionType GetExtensionType(const base::FilePath& f) {
   if (f.MatchesExtension(FILE_PATH_LITERAL(".apk"))) return EXTENSION_APK;
   if (f.MatchesExtension(FILE_PATH_LITERAL(".dmg"))) return EXTENSION_DMG;
   if (f.MatchesExtension(FILE_PATH_LITERAL(".pkg"))) return EXTENSION_PKG;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".torrent")))
+    return EXTENSION_TORRENT;
   return EXTENSION_OTHER;
 }
 
