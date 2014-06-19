@@ -129,6 +129,13 @@ class Host(SystemHost):
     def scm(self):
         return self._scm
 
+    def scm_for_path(self, path):
+        # FIXME: make scm() be a wrapper around this, and clean up the way
+        # callers call initialize_scm() (to remove patch_directories) and scm().
+        if sys.platform == "win32":
+            self._engage_awesome_windows_hacks()
+        return SCMDetector(self.filesystem, self.executive).detect_scm_system(path)
+
     def buildbot_for_builder_name(self, name):
         if self.port_factory.get_from_builder_name(name).is_chromium():
             return self.chromium_buildbot()
