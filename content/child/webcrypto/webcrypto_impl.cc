@@ -170,6 +170,14 @@ struct BaseState {
   explicit BaseState(const blink::WebCryptoResult& result)
       : origin_thread(GetCurrentBlinkThread()), result(result) {}
 
+  bool cancelled() {
+#ifdef WEBCRYPTO_RESULT_HAS_CANCELLED
+    return result.cancelled();
+#else
+    return false;
+#endif
+  }
+
   scoped_refptr<base::TaskRunner> origin_thread;
 
   webcrypto::Status status;
@@ -352,6 +360,8 @@ void DoEncryptReply(scoped_ptr<EncryptState> state) {
 
 void DoEncrypt(scoped_ptr<EncryptState> passed_state) {
   EncryptState* state = passed_state.get();
+  if (state->cancelled())
+    return;
   state->status = webcrypto::Encrypt(state->algorithm,
                                      state->key,
                                      webcrypto::CryptoData(state->data),
@@ -366,6 +376,8 @@ void DoDecryptReply(scoped_ptr<DecryptState> state) {
 
 void DoDecrypt(scoped_ptr<DecryptState> passed_state) {
   DecryptState* state = passed_state.get();
+  if (state->cancelled())
+    return;
   state->status = webcrypto::Decrypt(state->algorithm,
                                      state->key,
                                      webcrypto::CryptoData(state->data),
@@ -380,6 +392,8 @@ void DoDigestReply(scoped_ptr<DigestState> state) {
 
 void DoDigest(scoped_ptr<DigestState> passed_state) {
   DigestState* state = passed_state.get();
+  if (state->cancelled())
+    return;
   state->status = webcrypto::Digest(
       state->algorithm, webcrypto::CryptoData(state->data), &state->buffer);
   state->origin_thread->PostTask(
@@ -399,6 +413,8 @@ void DoGenerateKeyReply(scoped_ptr<GenerateKeyState> state) {
 
 void DoGenerateKey(scoped_ptr<GenerateKeyState> passed_state) {
   GenerateKeyState* state = passed_state.get();
+  if (state->cancelled())
+    return;
   state->is_asymmetric =
       webcrypto::IsAlgorithmAsymmetric(state->algorithm.id());
   if (state->is_asymmetric) {
@@ -440,6 +456,8 @@ void DoImportKeyReply(scoped_ptr<ImportKeyState> state) {
 
 void DoImportKey(scoped_ptr<ImportKeyState> passed_state) {
   ImportKeyState* state = passed_state.get();
+  if (state->cancelled())
+    return;
   state->status = webcrypto::ImportKey(state->format,
                                        webcrypto::CryptoData(state->key_data),
                                        state->algorithm,
@@ -474,6 +492,8 @@ void DoExportKeyReply(scoped_ptr<ExportKeyState> state) {
 
 void DoExportKey(scoped_ptr<ExportKeyState> passed_state) {
   ExportKeyState* state = passed_state.get();
+  if (state->cancelled())
+    return;
   state->status =
       webcrypto::ExportKey(state->format, state->key, &state->buffer);
   state->origin_thread->PostTask(
@@ -486,6 +506,8 @@ void DoSignReply(scoped_ptr<SignState> state) {
 
 void DoSign(scoped_ptr<SignState> passed_state) {
   SignState* state = passed_state.get();
+  if (state->cancelled())
+    return;
   state->status = webcrypto::Sign(state->algorithm,
                                   state->key,
                                   webcrypto::CryptoData(state->data),
@@ -505,6 +527,8 @@ void DoVerifyReply(scoped_ptr<VerifySignatureState> state) {
 
 void DoVerify(scoped_ptr<VerifySignatureState> passed_state) {
   VerifySignatureState* state = passed_state.get();
+  if (state->cancelled())
+    return;
   state->status =
       webcrypto::VerifySignature(state->algorithm,
                                  state->key,
@@ -522,6 +546,8 @@ void DoWrapKeyReply(scoped_ptr<WrapKeyState> state) {
 
 void DoWrapKey(scoped_ptr<WrapKeyState> passed_state) {
   WrapKeyState* state = passed_state.get();
+  if (state->cancelled())
+    return;
   state->status = webcrypto::WrapKey(state->format,
                                      state->key,
                                      state->wrapping_key,
@@ -538,6 +564,8 @@ void DoUnwrapKeyReply(scoped_ptr<UnwrapKeyState> state) {
 
 void DoUnwrapKey(scoped_ptr<UnwrapKeyState> passed_state) {
   UnwrapKeyState* state = passed_state.get();
+  if (state->cancelled())
+    return;
   state->status =
       webcrypto::UnwrapKey(state->format,
                            webcrypto::CryptoData(state->wrapped_key),
