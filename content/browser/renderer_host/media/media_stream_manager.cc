@@ -1100,24 +1100,34 @@ std::string MediaStreamManager::AddRequest(DeviceRequest* request) {
   std::string unique_label;
   do {
     unique_label = RandomLabel();
-  } while (requests_.find(unique_label) != requests_.end());
+  } while (FindRequest(unique_label) != NULL);
 
-  requests_.insert(std::make_pair(unique_label, request));
+  requests_.push_back(std::make_pair(unique_label, request));
 
   return unique_label;
 }
 
 MediaStreamManager::DeviceRequest*
 MediaStreamManager::FindRequest(const std::string& label) const {
-  DeviceRequests::const_iterator request_it = requests_.find(label);
-  return request_it == requests_.end() ? NULL : request_it->second;
+  for (DeviceRequests::const_iterator request_it = requests_.begin();
+       request_it != requests_.end(); ++request_it) {
+    if (request_it->first == label)
+      return request_it->second;
+  }
+  return NULL;
 }
 
 void MediaStreamManager::DeleteRequest(const std::string& label) {
   DVLOG(1) << "DeleteRequest({label= " << label << "})";
-  DeviceRequests::iterator it = requests_.find(label);
-  scoped_ptr<DeviceRequest> request(it->second);
-  requests_.erase(it);
+  for (DeviceRequests::iterator request_it = requests_.begin();
+       request_it != requests_.end(); ++request_it) {
+    if (request_it->first == label) {
+      scoped_ptr<DeviceRequest> request(request_it->second);
+      requests_.erase(request_it);
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 void MediaStreamManager::PostRequestToUI(const std::string& label,
@@ -1648,7 +1658,7 @@ void MediaStreamManager::DevicesEnumerated(
     // to be invalid so that the next media request will trigger the
     // enumeration again. See issue/317673.
     cache->valid = !devices.empty();
- }
+  }
 
   if (need_update_clients && monitoring_started_)
     NotifyDevicesChanged(stream_type, devices);

@@ -36,6 +36,7 @@
 using ::testing::_;
 using ::testing::DeleteArg;
 using ::testing::DoAll;
+using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::SaveArg;
 
@@ -567,12 +568,15 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithoutWaiting) {
 
   // Generate first stream.
   SetupFakeUI(true);
-  EXPECT_CALL(*host_.get(), OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
+  {
+    InSequence s;
+    EXPECT_CALL(*host_.get(),
+                OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
 
-  // Generate second stream.
-  EXPECT_CALL(*host_.get(),
-              OnStreamGenerated(kRenderId, kPageRequestId + 1, 0, 1));
-
+    // Generate second stream.
+    EXPECT_CALL(*host_.get(),
+                OnStreamGenerated(kRenderId, kPageRequestId + 1, 0, 1));
+  }
   base::RunLoop run_loop1;
   base::RunLoop run_loop2;
   host_->OnGenerateStream(kRenderId, kPageRequestId, options, origin_,

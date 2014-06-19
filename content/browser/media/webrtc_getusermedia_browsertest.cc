@@ -452,7 +452,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 
   RunTwoGetTwoGetUserMediaWithDifferentContraints(constraints1, constraints2,
                                                   expected_result);
- }
+}
 
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
                        TwoGetUserMediaWithSecondVideoCropped) {
@@ -464,7 +464,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       DISABLED_TwoGetUserMediaWithFirstHdSecondVga) {
+                       TwoGetUserMediaWithFirstHdSecondVga) {
   std::string constraints1 =
       "{video: {mandatory: {minWidth:1280 , minHeight: 720}}}";
   std::string constraints2 =

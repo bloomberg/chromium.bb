@@ -26,9 +26,10 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_MANAGER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_MANAGER_H_
 
-#include <map>
+#include <list>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -228,7 +229,10 @@ class CONTENT_EXPORT MediaStreamManager
     StreamDeviceInfoArray devices;
   };
 
-  typedef std::map<std::string, DeviceRequest*> DeviceRequests;
+  // |DeviceRequests| is a list to ensure requests are processed in the order
+  // they arrive. The first member of the pair is the label of the
+  // |DeviceRequest|.
+  typedef std::list<std::pair<std::string, DeviceRequest*> > DeviceRequests;
 
   // Initializes the device managers on IO thread.  Auto-starts the device
   // thread and registers this as a listener with the device managers.
