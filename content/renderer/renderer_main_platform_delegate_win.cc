@@ -18,6 +18,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_thread_impl.h"
 #include "sandbox/win/src/sandbox.h"
+#include "skia/ext/fontmgr_default_win.h"
 #include "skia/ext/vector_platform_device_emf_win.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
@@ -60,6 +61,7 @@ void WarmupDirectWrite() {
   SkTypeface* typeface =
       GetPreSandboxWarmupFontMgr()->legacyCreateTypeface("Times New Roman", 0);
   DoPreSandboxWarmupForTypeface(typeface);
+  SetDefaultSkiaFactory(GetPreSandboxWarmupFontMgr());
 }
 
 }  // namespace

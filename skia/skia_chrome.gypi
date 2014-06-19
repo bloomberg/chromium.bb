@@ -38,6 +38,8 @@
     'ext/convolver.h',
     'ext/event_tracer_impl.cc',
     'ext/event_tracer_impl.h',
+    'ext/fontmgr_default_win.cc',
+    'ext/fontmgr_default_win.h',
     'ext/google_logging.cc',
     'ext/image_operations.cc',
     'ext/image_operations.h',

@@ -260,6 +260,8 @@ component("skia") {
     "ext/convolver.h",
     "ext/event_tracer_impl.cc",
     "ext/event_tracer_impl.h",
+    "ext/fontmgr_default_win.cc",
+    "ext/fontmgr_default_win.h",
     "ext/google_logging.cc",
     "ext/image_operations.cc",
     "ext/image_operations.h",
@@ -425,7 +427,6 @@ component("skia") {
   } else {
     sources -= [
       "//third_party/skia/src/ports/SkFontHost_win.cpp",
-      "//third_party/skia/src/ports/SkFontMgr_default_gdi.cpp",
       "//third_party/skia/src/ports/SkFontMgr_win_dw.cpp",
       "//third_party/skia/src/ports/SkOSFile_win.cpp",
       "//third_party/skia/src/ports/SkRemotableFontMgr_win_dw.cpp",
