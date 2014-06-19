@@ -166,7 +166,7 @@ void DeleteSelectionCommand::initializePositionData()
 
     ASSERT(isEditablePosition(start, ContentIsEditable, DoNotUpdateStyle));
     if (!isEditablePosition(end, ContentIsEditable, DoNotUpdateStyle))
-        end = lastEditableVisiblePositionBeforePositionInRoot(end, highestEditableRoot(start)).deepEquivalent();
+        end = lastEditablePositionBeforePositionInRoot(end, highestEditableRoot(start));
 
     m_upstreamStart = start.upstream();
     m_downstreamStart = start.downstream();

@@ -285,16 +285,21 @@ VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position& 
 
 VisiblePosition lastEditableVisiblePositionBeforePositionInRoot(const Position& position, Node* highestRoot)
 {
+    return VisiblePosition(lastEditablePositionBeforePositionInRoot(position, highestRoot));
+}
+
+Position lastEditablePositionBeforePositionInRoot(const Position& position, Node* highestRoot)
+{
     // When position falls after highestRoot, the result is easy to compute.
     if (comparePositions(position, lastPositionInNode(highestRoot)) == 1)
-        return VisiblePosition(lastPositionInNode(highestRoot));
+        return lastPositionInNode(highestRoot);
 
     Position editablePosition = position;
 
     if (position.deprecatedNode()->treeScope() != highestRoot->treeScope()) {
         Node* shadowAncestor = highestRoot->treeScope().ancestorInThisScope(editablePosition.deprecatedNode());
         if (!shadowAncestor)
-            return VisiblePosition();
+            return Position();
 
         editablePosition = firstPositionInOrBeforeNode(shadowAncestor);
     }
@@ -303,9 +308,8 @@ VisiblePosition lastEditableVisiblePositionBeforePositionInRoot(const Position& 
         editablePosition = isAtomicNode(editablePosition.deprecatedNode()) ? positionInParentBeforeNode(*editablePosition.deprecatedNode()) : previousVisuallyDistinctCandidate(editablePosition);
 
     if (editablePosition.deprecatedNode() && editablePosition.deprecatedNode() != highestRoot && !editablePosition.deprecatedNode()->isDescendantOf(highestRoot))
-        return VisiblePosition();
-
-    return VisiblePosition(editablePosition);
+        return Position();
+    return editablePosition;
 }
 
 // FIXME: The method name, comment, and code say three different things here!

@@ -144,6 +144,8 @@ inline Position lastPositionInOrAfterNode(Node* node)
     return editingIgnoresContent(node) ? positionAfterNode(node) : lastPositionInNode(node);
 }
 
+Position lastEditablePositionBeforePositionInRoot(const Position&, Node*);
+
 // comparision functions on Position
 
 int comparePositions(const Position&, const Position&);
