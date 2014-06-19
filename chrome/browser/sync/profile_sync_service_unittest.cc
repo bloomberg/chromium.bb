@@ -586,17 +586,10 @@ TEST_F(ProfileSyncServiceTest, RollbackThenBackup) {
 #endif
 
 TEST_F(ProfileSyncServiceTest, GetSyncServiceURL) {
-  CommandLine command_line(*CommandLine::ForCurrentProcess());
-
-  // See that it defaults to a "dev" URL.
-  //
-  // Yes, we're hardcoding the URL here so this test will have to be updated
-  // when/if the URL ever changes.
-  EXPECT_EQ("https://clients4.google.com/chrome-sync/dev",
-            ProfileSyncService::GetSyncServiceURL(command_line).spec());
-
   // See that we can override the URL with a flag.
-  command_line.AppendSwitchASCII("--sync-url", "https://foo/bar");
+  CommandLine command_line(
+      base::FilePath(base::FilePath(FILE_PATH_LITERAL("chrome.exe"))));
+  command_line.AppendSwitchASCII(switches::kSyncServiceURL, "https://foo/bar");
   EXPECT_EQ("https://foo/bar",
             ProfileSyncService::GetSyncServiceURL(command_line).spec());
 }
