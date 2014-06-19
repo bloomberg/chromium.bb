@@ -11,6 +11,27 @@
 #include "content/public/browser/histogram_fetcher.h"
 
 UMAHistogramHelper::UMAHistogramHelper() {
+  base::StatisticsRecorder::Initialize();
+}
+
+UMAHistogramHelper::~UMAHistogramHelper() {
+}
+
+void UMAHistogramHelper::PrepareSnapshot(const char* const histogram_names[],
+                                         size_t num_histograms) {
+  for (size_t i = 0; i < num_histograms; ++i) {
+    std::string histogram_name = histogram_names[i];
+
+    base::HistogramBase* histogram =
+        base::StatisticsRecorder::FindHistogram(histogram_name);
+    // If there is no histogram present, then don't record a snapshot. The logic
+    // in the Expect* methods will act to treat no histogram equivalent to
+    // samples with zeros.
+    if (histogram) {
+      histogram_snapshots[histogram_name] =
+          make_linked_ptr(histogram->SnapshotSamples().release());
+    }
+  }
 }
 
 void UMAHistogramHelper::Fetch() {
@@ -82,18 +103,25 @@ void UMAHistogramHelper::CheckBucketCount(
     base::HistogramBase::Sample sample,
     base::HistogramBase::Count expected_count,
     base::HistogramSamples& samples) {
-  EXPECT_EQ(expected_count, samples.GetCount(sample))
+  int actual_count = samples.GetCount(sample);
+  if (histogram_snapshots.count(name))
+    actual_count -= histogram_snapshots[name]->GetCount(sample);
+  EXPECT_EQ(expected_count, actual_count)
       << "Histogram \"" << name
       << "\" does not have the right number of samples (" << expected_count
-      << ") in the expected bucket (" << sample << ").";
+      << ") in the expected bucket (" << sample << "). It has (" << actual_count
+      << ").";
 }
 
 void UMAHistogramHelper::CheckTotalCount(
     const std::string& name,
     base::HistogramBase::Count expected_count,
     base::HistogramSamples& samples) {
-  EXPECT_EQ(expected_count, samples.TotalCount())
+  int actual_count = samples.TotalCount();
+  if (histogram_snapshots.count(name))
+    actual_count -= histogram_snapshots[name]->TotalCount();
+  EXPECT_EQ(expected_count, actual_count)
       << "Histogram \"" << name
       << "\" does not have the right total number of samples ("
-      << expected_count << ").";
+      << expected_count << "). It has (" << actual_count << ").";
 }

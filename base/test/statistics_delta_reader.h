@@ -17,6 +17,10 @@ class HistogramSamples;
 
 // This class acts as a differential reader for histogram samples, enabling
 // tests to check that metrics were recorded as they should be.
+//
+// This class is DEPRECATED.
+// TODO(mlerman): Remove all references to this class with UMAHistogramHelper
+// references. crbug.com/384011
 class StatisticsDeltaReader {
  public:
   StatisticsDeltaReader();
