@@ -210,6 +210,8 @@
         'models/menu_model.h',
         'models/menu_model_delegate.h',
         'models/menu_separator_types.h',
+        'models/simple_combobox_model.cc',
+        'models/simple_combobox_model.h',
         'models/simple_menu_model.cc',
         'models/simple_menu_model.h',
         'models/table_model.cc',

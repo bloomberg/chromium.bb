@@ -29,6 +29,10 @@ class Link;
 class View;
 }
 
+namespace ui {
+class SimpleComboboxModel;
+}
+
 class TranslateBubbleView : public views::BubbleDelegateView,
                             public views::ButtonListener,
                             public views::ComboboxListener,
@@ -169,6 +173,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   views::View* error_view_;
   views::View* advanced_view_;
 
+  scoped_ptr<ui::SimpleComboboxModel> denial_combobox_model_;
   scoped_ptr<LanguageComboboxModel> source_language_combobox_model_;
   scoped_ptr<LanguageComboboxModel> target_language_combobox_model_;
 
