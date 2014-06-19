@@ -175,7 +175,11 @@ OptInManager.prototype.isEligibleUrl = function(url) {
     'https://encrypted.google.'
   ];
   var tlds = [
-    'com'
+    'com',
+    'co.uk',
+    'de',
+    'fr',
+    'ru'
   ];
 
   // Check URLs which do not have locale-based TLDs first.

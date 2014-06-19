@@ -101,12 +101,10 @@ TEST_F(HotwordServiceTest, IsHotwordAllowedLocale) {
   EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
   SetApplicationLocale(static_cast<Profile*>(profile.get()), "en_us");
   EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
-  SetApplicationLocale(static_cast<Profile*>(profile.get()), "en_gb");
-  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
   SetApplicationLocale(static_cast<Profile*>(profile.get()), "de_DE");
-  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
+  EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
   SetApplicationLocale(static_cast<Profile*>(profile.get()), "fr_fr");
-  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
+  EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
 
   // Test that incognito even with a valid locale and valid field trial
   // still returns false.
