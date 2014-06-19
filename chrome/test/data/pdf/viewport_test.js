@@ -359,26 +359,26 @@ var tests = [
     viewport.setZoom_(1);
 
     mockCallback.reset();
-    viewport.goToPage(0)
+    viewport.goToPage(0);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq(0, viewport.position.x);
     chrome.test.assertEq(0, viewport.position.y);
 
     mockCallback.reset();
-    viewport.goToPage(1)
+    viewport.goToPage(1);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq(0, viewport.position.x);
     chrome.test.assertEq(100, viewport.position.y);
 
     mockCallback.reset();
-    viewport.goToPage(2)
+    viewport.goToPage(2);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq(0, viewport.position.x);
     chrome.test.assertEq(300, viewport.position.y);
 
     viewport.setZoom_(0.5);
     mockCallback.reset();
-    viewport.goToPage(2)
+    viewport.goToPage(2);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq(0, viewport.position.x);
     chrome.test.assertEq(150, viewport.position.y);
