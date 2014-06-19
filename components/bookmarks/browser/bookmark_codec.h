@@ -21,6 +21,8 @@ class ListValue;
 class Value;
 }
 
+namespace bookmarks {
+
 // BookmarkCodec is responsible for encoding and decoding the BookmarkModel
 // into JSON values. The encoded values are written to disk via the
 // BookmarkStorage.
@@ -203,5 +205,7 @@ class BookmarkCodec {
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkCodec);
 };
+
+}  // namespace bookmarks
 
 #endif  // COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_CODEC_H_

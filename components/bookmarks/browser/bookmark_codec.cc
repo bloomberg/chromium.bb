@@ -17,6 +17,8 @@
 
 using base::Time;
 
+namespace bookmarks {
+
 const char* BookmarkCodec::kRootsKey = "roots";
 const char* BookmarkCodec::kRootFolderNameKey = "bookmark_bar";
 const char* BookmarkCodec::kOtherBookmarkFolderNameKey = "other";
@@ -487,3 +489,5 @@ void BookmarkCodec::FinalizeChecksum() {
   base::MD5Final(&digest, &md5_context_);
   computed_checksum_ = base::MD5DigestToBase16(digest);
 }
+
+}  // namespace bookmarks

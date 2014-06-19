@@ -28,6 +28,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/favicon_size.h"
 
+using bookmarks::BookmarkCodec;
 using content::BrowserThread;
 
 namespace {

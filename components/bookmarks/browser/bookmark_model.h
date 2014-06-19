@@ -32,6 +32,7 @@ class SequencedTaskRunner;
 }
 
 namespace bookmarks {
+class BookmarkCodecTest;
 class BookmarkExpandedStateTracker;
 class BookmarkIndex;
 class BookmarkLoadDetails;
@@ -287,8 +288,7 @@ class BookmarkModel : public KeyedService {
   BookmarkClient* client() const { return client_; }
 
  private:
-  friend class BookmarkCodecTest;
-  friend class BookmarkModelTest;
+  friend class bookmarks::BookmarkCodecTest;
   friend class bookmarks::BookmarkStorage;
   friend class bookmarks::ScopedGroupBookmarkActions;
   friend class test::TestBookmarkClient;

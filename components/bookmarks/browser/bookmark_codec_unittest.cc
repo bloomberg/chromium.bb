@@ -19,6 +19,7 @@
 
 using base::ASCIIToUTF16;
 
+namespace bookmarks {
 namespace {
 
 const char kUrl1Title[] = "url1";
@@ -473,3 +474,5 @@ TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
   EXPECT_TRUE(bbn->GetChild(0)->GetMetaInfo(kNestedKey, &meta_value));
   EXPECT_EQ("value3", meta_value);
 }
+
+}  // namespace bookmarks
