@@ -150,6 +150,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   // separator is added before the new menu items and |added_separator| is set
   // to true.
   void BuildMenuForPermanentNode(const BookmarkNode* node,
+                                 int icon_resource_id,
                                  views::MenuItemView* menu,
                                  int* next_menu_id,
                                  bool* added_separator);

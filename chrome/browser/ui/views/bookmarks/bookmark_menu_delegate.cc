@@ -441,14 +441,15 @@ void BookmarkMenuDelegate::BuildMenusForPermanentNodes(
     int* next_menu_id) {
   BookmarkModel* model = GetBookmarkModel();
   bool added_separator = false;
-  BuildMenuForPermanentNode(model->other_node(), menu, next_menu_id,
-                            &added_separator);
-  BuildMenuForPermanentNode(model->mobile_node(), menu, next_menu_id,
-                            &added_separator);
+  BuildMenuForPermanentNode(model->other_node(), IDR_BOOKMARK_BAR_FOLDER, menu,
+                            next_menu_id, &added_separator);
+  BuildMenuForPermanentNode(model->mobile_node(), IDR_BOOKMARK_BAR_FOLDER, menu,
+                            next_menu_id, &added_separator);
 }
 
 void BookmarkMenuDelegate::BuildMenuForPermanentNode(
     const BookmarkNode* node,
+    int icon_resource_id,
     MenuItemView* menu,
     int* next_menu_id,
     bool* added_separator) {
@@ -467,7 +468,7 @@ void BookmarkMenuDelegate::BuildMenuForPermanentNode(
   }
 
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* folder_icon = rb->GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER);
+  gfx::ImageSkia* folder_icon = rb->GetImageSkiaNamed(icon_resource_id);
   MenuItemView* submenu = menu->AppendSubMenuWithIcon(
       id, node->GetTitle(), *folder_icon);
   BuildMenu(node, 0, submenu, next_menu_id);
@@ -480,9 +481,8 @@ void BookmarkMenuDelegate::BuildMenuForManagedNode(
   // Don't add a separator for this menu.
   bool added_separator = true;
   const BookmarkNode* node = GetChromeBookmarkClient()->managed_node();
-  // TODO(joaodasilva): use the "managed bookmark folder" icon here.
-  // http://crbug.com/49598
-  BuildMenuForPermanentNode(node, menu, next_menu_id, &added_separator);
+  BuildMenuForPermanentNode(node, IDR_BOOKMARK_BAR_FOLDER_MANAGED, menu,
+                            next_menu_id, &added_separator);
 }
 
 void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,

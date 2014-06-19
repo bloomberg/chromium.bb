@@ -1335,7 +1335,7 @@ void BookmarkBarView::Init() {
   other_bookmarked_button_->SetEnabled(false);
   AddChildView(other_bookmarked_button_);
 
-  managed_bookmarks_button_ = CreateOtherBookmarkedButton();
+  managed_bookmarks_button_ = CreateManagedBookmarksButton();
   // Also re-enabled when the model is loaded.
   managed_bookmarks_button_->SetEnabled(false);
   AddChildView(managed_bookmarks_button_);
@@ -1419,9 +1419,10 @@ MenuButton* BookmarkBarView::CreateManagedBookmarksButton() {
   MenuButton* button =
       new BookmarkFolderButton(this, base::string16(), this, false);
   button->set_id(VIEW_ID_MANAGED_BOOKMARKS);
-  // TODO(joaodasilva): replace with a "managed folder" icon.
-  // http://crbug.com/49598
-  button->SetImage(views::Button::STATE_NORMAL, GetFolderIcon());
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia* image =
+      rb->GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER_MANAGED);
+  button->SetImage(views::Button::STATE_NORMAL, *image);
   button->set_context_menu_controller(this);
   button->set_tag(kManagedFolderButtonTag);
   return button;
