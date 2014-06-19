@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/drive/drive_app_converter.h"
+#include "chrome/browser/apps/drive/drive_app_converter.h"
 
 #include <algorithm>
 #include <set>
@@ -101,11 +101,12 @@ class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
 };
 
 DriveAppConverter::DriveAppConverter(Profile* profile,
-                                     const drive::DriveAppInfo& app_info,
+                                     const drive::DriveAppInfo& drive_app_info,
                                      const FinishedCallback& finished_callback)
     : profile_(profile),
-      app_info_(app_info),
-      app_(NULL),
+      drive_app_info_(drive_app_info),
+      extension_(NULL),
+      is_new_install_(false),
       finished_callback_(finished_callback) {
   DCHECK(profile_);
 }
@@ -115,28 +116,30 @@ DriveAppConverter::~DriveAppConverter() {
 }
 
 void DriveAppConverter::Start() {
-  if (app_info_.app_name.empty() ||
-      !app_info_.create_url.is_valid()) {
+  DCHECK(!IsStarted());
+
+  if (drive_app_info_.app_name.empty() ||
+      !drive_app_info_.create_url.is_valid()) {
     finished_callback_.Run(this, false);
     return;
   }
 
-  web_app_.title = base::UTF8ToUTF16(app_info_.app_name);
-  web_app_.app_url = app_info_.create_url;
+  web_app_.title = base::UTF8ToUTF16(drive_app_info_.app_name);
+  web_app_.app_url = drive_app_info_.create_url;
 
   const std::set<int> allowed_sizes(extension_misc::kExtensionIconSizes,
                                     extension_misc::kExtensionIconSizes +
                                         extension_misc::kNumExtensionIconSizes);
   std::set<int> pending_sizes;
-  for (size_t i = 0; i < app_info_.app_icons.size(); ++i) {
-    const int icon_size = app_info_.app_icons[i].first;
+  for (size_t i = 0; i < drive_app_info_.app_icons.size(); ++i) {
+    const int icon_size = drive_app_info_.app_icons[i].first;
     if (allowed_sizes.find(icon_size) == allowed_sizes.end() ||
         pending_sizes.find(icon_size) != pending_sizes.end()) {
       continue;
     }
 
     pending_sizes.insert(icon_size);
-    const GURL& icon_url = app_info_.app_icons[i].second;
+    const GURL& icon_url = drive_app_info_.app_icons[i].second;
     IconFetcher* fetcher = new IconFetcher(this, icon_url, icon_size);
     fetchers_.push_back(fetcher);  // Pass ownership to |fetchers|.
     fetcher->Start();
@@ -144,6 +147,15 @@ void DriveAppConverter::Start() {
 
   if (fetchers_.empty())
     StartInstall();
+}
+
+bool DriveAppConverter::IsStarted() const {
+  return !fetchers_.empty() || crx_installer_;
+}
+
+bool DriveAppConverter::IsInstalling(const std::string& app_id) const {
+  return crx_installer_ && crx_installer_->extension() &&
+         crx_installer_->extension()->id() == app_id;
 }
 
 void DriveAppConverter::OnIconFetchComplete(const IconFetcher* fetcher) {
@@ -167,6 +179,12 @@ void DriveAppConverter::StartInstall() {
   DCHECK(!crx_installer_);
   crx_installer_ = extensions::CrxInstaller::CreateSilent(
       extensions::ExtensionSystem::Get(profile_)->extension_service());
+  // The converted url app should not be syncable. Drive apps go with the user's
+  // account and url apps will be created when needed. Syncing those apps could
+  // hit an edge case where the synced url apps become orphans when the user has
+  // corresponding chrome apps.
+  crx_installer_->set_do_not_sync(true);
+
   extensions::InstallTracker::Get(profile_)->AddObserver(this);
   crx_installer_->InstallWebApp(web_app_);
 }
@@ -186,8 +204,10 @@ void DriveAppConverter::OnFinishCrxInstall(const std::string& extension_id,
     return;
   }
 
-  app_ = crx_installer_->extension();
-  finished_callback_.Run(this, success);
-
+  extension_ = crx_installer_->extension();
+  is_new_install_ = success && crx_installer_->current_version().empty();
   PostInstallCleanUp();
+
+  finished_callback_.Run(this, success);
+  // |finished_callback_| could delete this.
 }

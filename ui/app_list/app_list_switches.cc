@@ -21,6 +21,9 @@ const char kDisableVoiceSearch[] = "disable-app-list-voice-search";
 // If set, the app list will be centered and wide instead of tall.
 const char kEnableCenteredAppList[] = "enable-centered-app-list";
 
+// If set, Drive apps of the user shows side-by-side with Chrome apps.
+const char kEnableDriveAppsInAppList[] = "enable-drive-apps-in-app-list";
+
 // If set, the experimental app list will be used. Implies
 // --enable-centered-app-list.
 const char kEnableExperimentalAppList[] = "enable-experimental-app-list";
@@ -70,6 +73,10 @@ bool IsExperimentalAppListEnabled() {
 bool IsCenteredAppListEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(kEnableCenteredAppList) ||
          IsExperimentalAppListEnabled();
+}
+
+bool IsDriveAppsInAppListEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(kEnableDriveAppsInAppList);
 }
 
 }  // namespace switches

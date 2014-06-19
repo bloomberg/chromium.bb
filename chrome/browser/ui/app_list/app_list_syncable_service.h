@@ -19,6 +19,7 @@
 #include "sync/api/syncable_service.h"
 #include "sync/protocol/app_list_specifics.pb.h"
 
+class DriveAppProvider;
 class ExtensionAppModelBuilder;
 class Profile;
 
@@ -100,6 +101,9 @@ class AppListSyncableService : public syncer::SyncableService,
  private:
   class ModelObserver;
   typedef std::map<std::string, SyncItem*> SyncItemMap;
+
+  // KeyedService
+  virtual void Shutdown() OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -195,6 +199,9 @@ class AppListSyncableService : public syncer::SyncableService,
   SyncItemMap sync_items_;
   syncer::SyncableService::StartSyncFlare flare_;
   std::string oem_folder_name_;
+
+  // Provides integration with Drive apps.
+  scoped_ptr<DriveAppProvider> drive_app_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListSyncableService);
 };

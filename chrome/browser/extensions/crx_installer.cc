@@ -229,19 +229,14 @@ void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
 
   if (!installer_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&CrxInstaller::ConvertWebAppOnFileThread,
-                     this,
-                     web_app,
-                     install_directory_)))
+          base::Bind(&CrxInstaller::ConvertWebAppOnFileThread, this, web_app)))
     NOTREACHED();
 }
 
 void CrxInstaller::ConvertWebAppOnFileThread(
-    const WebApplicationInfo& web_app,
-    const base::FilePath& install_directory) {
-  base::string16 error;
-  scoped_refptr<Extension> extension(
-      ConvertWebAppToExtension(web_app, base::Time::Now(), install_directory));
+    const WebApplicationInfo& web_app) {
+  scoped_refptr<Extension> extension(ConvertWebAppToExtension(
+      web_app, base::Time::Now(), install_directory_));
   if (!extension.get()) {
     // Validation should have stopped any potential errors before getting here.
     NOTREACHED() << "Could not convert web app to extension.";

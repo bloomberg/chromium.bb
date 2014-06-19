@@ -184,24 +184,13 @@ class CrxInstaller
   }
 
   void set_install_immediately(bool val) {
-    if (val)
-      install_flags_ |= kInstallFlagInstallImmediately;
-    else
-      install_flags_ &= ~kInstallFlagInstallImmediately;
+    set_install_flag(kInstallFlagInstallImmediately, val);
   }
-
   void set_is_ephemeral(bool val) {
-    if (val)
-      install_flags_ |= kInstallFlagIsEphemeral;
-    else
-      install_flags_ &= ~kInstallFlagIsEphemeral;
+    set_install_flag(kInstallFlagIsEphemeral, val);
   }
-
-  void set_install_flag(int flag, bool val) {
-    if (val)
-      install_flags_ |= flag;
-    else
-      install_flags_ &= ~flag;
+  void set_do_not_sync(bool val) {
+    set_install_flag(kInstallFlagDoNotSync, val);
   }
 
   bool did_handle_successfully() const { return did_handle_successfully_; }
@@ -209,6 +198,8 @@ class CrxInstaller
   Profile* profile() { return installer_.profile(); }
 
   const Extension* extension() { return installer_.extension().get(); }
+
+  const std::string& current_version() const { return current_version_; }
 
  private:
   friend class ::ExtensionServiceTest;
@@ -224,8 +215,7 @@ class CrxInstaller
   void ConvertUserScriptOnFileThread();
 
   // Converts the source web app to an extension.
-  void ConvertWebAppOnFileThread(const WebApplicationInfo& web_app,
-                                 const base::FilePath& install_directory);
+  void ConvertWebAppOnFileThread(const WebApplicationInfo& web_app);
 
   // Called after OnUnpackSuccess as a last check to see whether the install
   // should complete.
@@ -279,6 +269,13 @@ class CrxInstaller
   // and needs additional permissions.
   void ConfirmReEnable();
 
+  void set_install_flag(int flag, bool val) {
+    if (val)
+      install_flags_ |= flag;
+    else
+      install_flags_ &= ~flag;
+  }
+
   // The file we're installing.
   base::FilePath source_file_;
 
@@ -286,7 +283,7 @@ class CrxInstaller
   GURL download_url_;
 
   // The directory extensions are installed to.
-  base::FilePath install_directory_;
+  const base::FilePath install_directory_;
 
   // The location the installation came from (bundled with Chromium, registry,
   // manual install, etc). This metadata is saved with the installation if

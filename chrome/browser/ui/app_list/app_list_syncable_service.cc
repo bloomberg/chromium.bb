@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/apps/drive/drive_app_provider.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -241,6 +242,15 @@ void AppListSyncableService::BuildModel() {
     VLOG(1) << this << ": AppListSyncableService: InitializeWithProfile.";
     apps_builder_->InitializeWithProfile(profile_, model_.get());
   }
+
+  if (app_list::switches::IsDriveAppsInAppListEnabled())
+    drive_app_provider_.reset(new DriveAppProvider(profile_));
+}
+
+void AppListSyncableService::Shutdown() {
+  // DriveAppProvider touches other KeyedServices in its dtor and needs be
+  // released in shutdown stage.
+  drive_app_provider_.reset();
 }
 
 void AppListSyncableService::Observe(

@@ -78,6 +78,14 @@
         'browser/apps/app_url_redirector.h',
         'browser/apps/chrome_apps_client.cc',
         'browser/apps/chrome_apps_client.h',
+        'browser/apps/drive/drive_app_converter.cc',
+        'browser/apps/drive/drive_app_converter.h',
+        'browser/apps/drive/drive_app_mapping.cc',
+        'browser/apps/drive/drive_app_mapping.h',
+        'browser/apps/drive/drive_app_provider.cc',
+        'browser/apps/drive/drive_app_provider.h',
+        'browser/apps/drive/drive_service_bridge.cc',
+        'browser/apps/drive/drive_service_bridge.h',
         'browser/apps/ephemeral_app_launcher.cc',
         'browser/apps/ephemeral_app_launcher.h',
         'browser/apps/ephemeral_app_service.cc',
@@ -1251,6 +1259,11 @@
             'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api_stub.cc',
           ],
         }],
+        ['enable_app_list==0', {
+          'sources/': [
+            ['exclude', '^browser/apps/drive/'],
+          ],
+        }]
       ],
     },
     {

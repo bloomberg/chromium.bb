@@ -599,6 +599,7 @@
         'browser/android/mock_google_location_settings_helper.cc',
         'browser/android/mock_google_location_settings_helper.h',
         'browser/app_controller_mac_unittest.mm',
+        'browser/apps/drive/drive_app_mapping_unittest.cc',
         'browser/apps/ephemeral_app_service_unittest.cc',
         'browser/autocomplete/autocomplete_input_unittest.cc',
         'browser/autocomplete/autocomplete_match_unittest.cc',
@@ -2738,6 +2739,7 @@
           ],
         }, {
           'sources/': [
+            ['exclude', '^browser/apps/drive/'],
             ['exclude', '^browser/ui/app_list/'],
             ['exclude', '^browser/ui/views/app_list/'],
           ],

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/drive/drive_app_converter.h"
+#include "chrome/browser/apps/drive/drive_app_converter.h"
 
 #include <utility>
 
@@ -12,6 +12,7 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -24,6 +25,10 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::AppLaunchInfo;
+using extensions::Extension;
+using extensions::ExtensionRegistry;
+
 namespace {
 
 const char kAppName[] = "Test drive app";
@@ -31,7 +36,7 @@ const char kAppUrl[] = "http://foobar.com/drive_app";
 
 }  // namespace
 
-class DriveAppConverterTest : public ExtensionBrowserTest  {
+class DriveAppConverterTest : public ExtensionBrowserTest {
  public:
   DriveAppConverterTest() {}
   virtual ~DriveAppConverterTest() {}
@@ -103,47 +108,49 @@ class DriveAppConverterTest : public ExtensionBrowserTest  {
 IN_PROC_BROWSER_TEST_F(DriveAppConverterTest, GoodApp) {
   InstallAndWaitFinish(GetTestDriveApp());
 
-  const extensions::Extension* app = converter()->app();
+  const Extension* app = converter()->extension();
   ASSERT_TRUE(app != NULL);
   EXPECT_EQ(kAppName, app->name());
   EXPECT_TRUE(app->is_hosted_app());
   EXPECT_TRUE(app->from_bookmark());
-  EXPECT_EQ(GURL(kAppUrl), extensions::AppLaunchInfo::GetLaunchWebURL(app));
+  EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(app));
   EXPECT_EQ(extensions::LAUNCH_CONTAINER_TAB,
-            extensions::AppLaunchInfo::GetLaunchContainer(app));
+            AppLaunchInfo::GetLaunchContainer(app));
   EXPECT_EQ(0u, app->permissions_data()->active_permissions()->apis().size());
   EXPECT_EQ(1u, extensions::IconsInfo::GetIcons(app).map().size());
 
-  const extensions::Extension* installed =
-      extensions::ExtensionSystem::Get(profile())
-          ->extension_service()
-          ->GetInstalledExtension(app->id());
+  const Extension* installed = extensions::ExtensionSystem::Get(profile())
+                                   ->extension_service()
+                                   ->GetInstalledExtension(app->id());
   EXPECT_EQ(app, installed);
+  EXPECT_FALSE(extensions::util::ShouldSyncApp(app, profile()));
 }
 
 IN_PROC_BROWSER_TEST_F(DriveAppConverterTest, BadApp) {
   drive::DriveAppInfo no_name = GetTestDriveApp();
   no_name.app_name.clear();
   InstallAndWaitFinish(no_name);
-  EXPECT_TRUE(converter()->app() == NULL);
+  EXPECT_TRUE(converter()->extension() == NULL);
 
   drive::DriveAppInfo no_url = GetTestDriveApp();
   no_url.create_url = GURL();
   InstallAndWaitFinish(no_url);
-  EXPECT_TRUE(converter()->app() == NULL);
+  EXPECT_TRUE(converter()->extension() == NULL);
 }
 
 IN_PROC_BROWSER_TEST_F(DriveAppConverterTest, InstallTwice) {
   InstallAndWaitFinish(GetTestDriveApp());
-  const extensions::Extension* first_install = converter()->app();
+  const Extension* first_install = converter()->extension();
   ASSERT_TRUE(first_install != NULL);
+  EXPECT_TRUE(converter()->is_new_install());
   const std::string first_install_id = first_install->id();
   const base::Version first_install_version(first_install->VersionString());
   ASSERT_TRUE(first_install_version.IsValid());
 
   InstallAndWaitFinish(GetTestDriveApp());
-  const extensions::Extension* second_install = converter()->app();
+  const Extension* second_install = converter()->extension();
   ASSERT_TRUE(second_install != NULL);
+  EXPECT_FALSE(converter()->is_new_install());
 
   // Two different app instances.
   ASSERT_NE(first_install, second_install);

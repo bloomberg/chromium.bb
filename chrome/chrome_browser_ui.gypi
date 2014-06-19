@@ -171,8 +171,6 @@
         'browser/ui/app_list/app_list_util.h',
         'browser/ui/app_list/app_list_view_delegate.cc',
         'browser/ui/app_list/app_list_view_delegate.h',
-        'browser/ui/app_list/drive/drive_app_converter.cc',
-        'browser/ui/app_list/drive/drive_app_converter.h',
         'browser/ui/app_list/extension_app_item.cc',
         'browser/ui/app_list/extension_app_item.h',
         'browser/ui/app_list/extension_app_model_builder.cc',

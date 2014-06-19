@@ -34,6 +34,18 @@ class FakeDriveService : public DriveServiceInterface {
   // Loads the app list for Drive API. Returns true on success.
   bool LoadAppListForDriveApi(const std::string& relative_path);
 
+  // Adds an app to app list.
+  void AddApp(const std::string& app_id,
+              const std::string& app_name,
+              const std::string& product_id,
+              const std::string& create_url);
+
+  // Removes an app by product id.
+  void RemoveAppByProductId(const std::string& product_id);
+
+  // Returns true if the service knows the given drive app id.
+  bool HasApp(const std::string& app_id) const;
+
   // Changes the offline state. All functions fail with GDATA_NO_CONNECTION
   // when offline. By default the offline state is false.
   void set_offline(bool offline) { offline_ = offline; }
@@ -335,6 +347,7 @@ class FakeDriveService : public DriveServiceInterface {
   bool never_return_all_file_list_;
   base::FilePath last_cancelled_file_;
   GURL share_url_base_;
+  std::string app_json_template_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDriveService);
 };

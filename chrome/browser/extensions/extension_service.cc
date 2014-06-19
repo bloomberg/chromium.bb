@@ -584,8 +584,7 @@ bool ExtensionService::UpdateExtension(const std::string& id,
 
   if (extension) {
     installer->set_is_ephemeral(extension_prefs_->IsEphemeralApp(id));
-    installer->set_install_flag(extensions::kInstallFlagDoNotSync,
-                                extension_prefs_->DoNotSync(id));
+    installer->set_do_not_sync(extension_prefs_->DoNotSync(id));
   }
 
   installer->set_creation_flags(creation_flags);

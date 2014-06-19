@@ -879,6 +879,8 @@
         'browser/apps/app_crash_browsertest.cc',
         'browser/apps/app_window_browsertest.cc',
         'browser/apps/app_url_redirector_browsertest.cc',
+        'browser/apps/drive/drive_app_converter_browsertest.cc',
+        'browser/apps/drive/drive_app_provider_browsertest.cc',
         'browser/apps/ephemeral_app_browsertest.cc',
         'browser/apps/ephemeral_app_browsertest.h',
         'browser/apps/ephemeral_app_service_browsertest.cc',
@@ -1365,7 +1367,6 @@
         'browser/translate/translate_manager_browsertest.cc',
         'browser/ui/app_list/app_list_controller_browsertest.cc',
         'browser/ui/app_list/app_list_service_views_browsertest.cc',
-        'browser/ui/app_list/drive/drive_app_converter_browsertest.cc',
         'browser/ui/app_list/search/people/people_provider_browsertest.cc',
         'browser/ui/app_list/search/webstore/webstore_provider_browsertest.cc',
         'browser/ui/ash/accelerator_commands_browsertest.cc',
@@ -1979,6 +1980,7 @@
         }],
         ['enable_app_list==0', {
           'sources/': [
+            ['exclude', '^browser/apps/drive/'],
             ['exclude', '^browser/ui/app_list/'],
             ['exclude', '^browser/ui/webui/app_list/'],
           ],

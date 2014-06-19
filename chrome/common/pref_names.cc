@@ -2341,6 +2341,12 @@ const char kAppLauncherShortcutVersion[] = "apps.app_launcher.shortcut_version";
 
 // A boolean identifying if we should show the app launcher promo or not.
 const char kShowAppLauncherPromo[] = "app_launcher.show_promo";
+
+// A dictionary that tracks the Drive app to Chrome app mapping. The key is
+// a Drive app id and the value is the corresponding Chrome app id. The pref
+// is unsynable and used to track local mappings only.
+const char kAppLauncherDriveAppMapping[] =
+    "apps.app_launcher.drive_app_mapping";
 #endif
 
 // If set, the user requested to launch the app with this extension id while

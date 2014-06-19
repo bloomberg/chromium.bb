@@ -15,6 +15,7 @@ APP_LIST_EXPORT extern const char kDisableAppInfo[];
 APP_LIST_EXPORT extern const char kDisableSyncAppList[];
 APP_LIST_EXPORT extern const char kDisableVoiceSearch[];
 APP_LIST_EXPORT extern const char kEnableCenteredAppList[];
+APP_LIST_EXPORT extern const char kEnableDriveAppsInAppList[];
 APP_LIST_EXPORT extern const char kEnableExperimentalAppList[];
 APP_LIST_EXPORT extern const char kEnableHotwordAlwaysOn[];
 APP_LIST_EXPORT extern const char kEnableSyncAppList[];
@@ -34,6 +35,8 @@ bool APP_LIST_EXPORT IsExperimentalAppListEnabled();
 // instead use AppListViewDelegate::ShouldCenterWindow. It checks a superset of
 // the conditions that trigger the position.
 bool APP_LIST_EXPORT IsCenteredAppListEnabled();
+
+bool APP_LIST_EXPORT IsDriveAppsInAppListEnabled();
 
 }  // namespace switches
 }  // namespace app_list

@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 
+#include <set>
+
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/apps/drive/drive_app_provider.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -50,8 +53,16 @@ AppListSyncableServiceFactory::AppListSyncableServiceFactory()
         "AppListSyncableService",
         BrowserContextDependencyManager::GetInstance()) {
   VLOG(1) << "AppListSyncableServiceFactory()";
-  DependsOn(
+  typedef std::set<BrowserContextKeyedServiceFactory*> FactorySet;
+  FactorySet dependent_factories;
+  dependent_factories.insert(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+  DriveAppProvider::AppendDependsOnFactories(&dependent_factories);
+  for (FactorySet::iterator it = dependent_factories.begin();
+       it != dependent_factories.end();
+       ++it) {
+    DependsOn(*it);
+  }
 }
 
 AppListSyncableServiceFactory::~AppListSyncableServiceFactory() {

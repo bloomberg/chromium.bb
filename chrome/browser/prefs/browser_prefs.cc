@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/accessibility/invert_bubble_prefs.h"
+#include "chrome/browser/apps/drive/drive_app_mapping.h"
 #include "chrome/browser/apps/shortcut_manager.h"
 #include "chrome/browser/autocomplete/zero_suggest_provider.h"
 #include "chrome/browser/background/background_mode_manager.h"
@@ -419,6 +420,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   autofill::GeneratedCreditCardBubbleController::RegisterUserPrefs(registry);
   DeviceIDFetcher::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
+  DriveAppMapping::RegisterProfilePrefs(registry);
   extensions::CommandService::RegisterProfilePrefs(registry);
   extensions::ExtensionSettingsHandler::RegisterProfilePrefs(registry);
   extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);

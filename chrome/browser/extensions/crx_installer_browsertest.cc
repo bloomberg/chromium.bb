@@ -538,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DoNotSync) {
                                   browser()->profile())->extension_service();
   scoped_refptr<CrxInstaller> crx_installer(
       CrxInstaller::CreateSilent(service));
-  crx_installer->set_install_flag(kInstallFlagDoNotSync, true);
+  crx_installer->set_do_not_sync(true);
   crx_installer->InstallCrx(test_data_dir_.AppendASCII("good.crx"));
   EXPECT_TRUE(WaitForCrxInstallerDone());
   ASSERT_TRUE(crx_installer->extension());

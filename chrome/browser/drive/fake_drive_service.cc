@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/message_loop/message_loop.h"
@@ -213,6 +214,65 @@ bool FakeDriveService::LoadAppListForDriveApi(
   app_info_value_.reset(
       static_cast<base::DictionaryValue*>(value.release()));
   return app_info_value_;
+}
+
+void FakeDriveService::AddApp(const std::string& app_id,
+                              const std::string& app_name,
+                              const std::string& product_id,
+                              const std::string& create_url) {
+  if (app_json_template_.empty()) {
+    base::FilePath path =
+        test_util::GetTestFilePath("drive/applist_app_template.json");
+    CHECK(base::ReadFileToString(path, &app_json_template_));
+  }
+
+  std::string app_json = app_json_template_;
+  ReplaceSubstringsAfterOffset(&app_json, 0, "$AppId", app_id);
+  ReplaceSubstringsAfterOffset(&app_json, 0, "$AppName", app_name);
+  ReplaceSubstringsAfterOffset(&app_json, 0, "$ProductId", product_id);
+  ReplaceSubstringsAfterOffset(&app_json, 0, "$CreateUrl", create_url);
+
+  JSONStringValueSerializer json(app_json);
+  std::string error_message;
+  scoped_ptr<base::Value> value(json.Deserialize(NULL, &error_message));
+  CHECK_EQ(base::Value::TYPE_DICTIONARY, value->GetType());
+
+  base::ListValue* item_list;
+  CHECK(app_info_value_->GetListWithoutPathExpansion("items", &item_list));
+  item_list->Append(value.release());
+}
+
+void FakeDriveService::RemoveAppByProductId(const std::string& product_id) {
+  base::ListValue* item_list;
+  CHECK(app_info_value_->GetListWithoutPathExpansion("items", &item_list));
+  for (size_t i = 0; i < item_list->GetSize(); ++i) {
+    base::DictionaryValue* item;
+    CHECK(item_list->GetDictionary(i, &item));
+    const char kKeyProductId[] = "productId";
+    std::string item_product_id;
+    if (item->GetStringWithoutPathExpansion(kKeyProductId, &item_product_id) &&
+        product_id == item_product_id) {
+      item_list->Remove(i, NULL);
+      return;
+    }
+  }
+}
+
+bool FakeDriveService::HasApp(const std::string& app_id) const {
+  base::ListValue* item_list;
+  CHECK(app_info_value_->GetListWithoutPathExpansion("items", &item_list));
+  for (size_t i = 0; i < item_list->GetSize(); ++i) {
+    base::DictionaryValue* item;
+    CHECK(item_list->GetDictionary(i, &item));
+    const char kKeyId[] = "id";
+    std::string item_id;
+    if (item->GetStringWithoutPathExpansion(kKeyId, &item_id) &&
+        item_id == app_id) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void FakeDriveService::SetQuotaValue(int64 used, int64 total) {
