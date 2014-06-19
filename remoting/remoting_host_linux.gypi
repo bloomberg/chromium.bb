@@ -95,7 +95,7 @@
                     '<(PRODUCT_DIR)/remoting_me2me_host',
                   ],
                   'outputs': [
-                    '<(PRODUCT_DIR)/<(plugin_file).breakpad.<(target_arch)',
+                    '<(PRODUCT_DIR)/remoting_me2me_host.breakpad.<(target_arch)',
                   ],
                   'action': ['<(DEPTH)/build/linux/dump_app_syms',
                              '<(PRODUCT_DIR)/dump_syms',
