@@ -54,7 +54,7 @@ HttpStreamFactoryImpl::Request::~Request() {
 
 void HttpStreamFactoryImpl::Request::SetSpdySessionKey(
     const SpdySessionKey& spdy_session_key) {
-  DCHECK(!spdy_session_key_.get());
+  CHECK(!spdy_session_key_.get());
   spdy_session_key_.reset(new SpdySessionKey(spdy_session_key));
   RequestSet& request_set =
       factory_->spdy_session_request_map_[spdy_session_key];
@@ -248,6 +248,10 @@ HttpStreamFactoryImpl::Request::RemoveRequestFromSpdySessionRequestMap() {
       spdy_session_request_map.erase(*spdy_session_key_);
     spdy_session_key_.reset();
   }
+}
+
+bool HttpStreamFactoryImpl::Request::HasSpdySessionKey() const {
+  return spdy_session_key_.get() != NULL;
 }
 
 // TODO(jgraettinger): Currently, HttpStreamFactoryImpl::Job notifies a

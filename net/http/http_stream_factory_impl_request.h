@@ -37,6 +37,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   // for this SpdySessionKey, since we may need to wait for NPN to complete
   // before knowing if SPDY is available.
   void SetSpdySessionKey(const SpdySessionKey& spdy_session_key);
+  bool HasSpdySessionKey() const;
 
   // Attaches |job| to this request. Does not mean that Request will use |job|,
   // but Request will own |job|.
