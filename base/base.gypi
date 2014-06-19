@@ -308,6 +308,7 @@
           'mac/scoped_sending_event.mm',
           'mac/scoped_typeref.h',
           'mac/sdk_forward_declarations.h',
+          'mac/sdk_forward_declarations.mm',
           'macros.h',
           'md5.cc',
           'md5.h',

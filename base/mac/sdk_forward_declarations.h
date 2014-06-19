@@ -16,6 +16,8 @@
 #import <ImageCaptureCore/ImageCaptureCore.h>
 #import <IOBluetooth/IOBluetooth.h>
 
+#include "base/base_export.h"
+
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 
@@ -180,8 +182,9 @@ enum CWChannelBand {
 - (IOReturn)performSDPQuery:(id)target uuids:(NSArray*)uuids;
 @end
 
-#endif  // MAC_OS_X_VERSION_10_7
+BASE_EXPORT extern "C" NSString* const NSWindowWillEnterFullScreenNotification;
 
+#endif  // MAC_OS_X_VERSION_10_7
 
 #if !defined(MAC_OS_X_VERSION_10_8) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_8

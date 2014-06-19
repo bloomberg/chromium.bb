@@ -8,6 +8,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/string_util.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -25,6 +26,7 @@
 - (void)recordAnchorOffset;
 - (void)parentWindowDidResize:(NSNotification*)notification;
 - (void)parentWindowWillClose:(NSNotification*)notification;
+- (void)parentWindowWillBecomeFullScreen:(NSNotification*)notification;
 - (void)closeCleanup;
 @end
 
@@ -119,6 +121,11 @@
              selector:@selector(parentWindowWillClose:)
                  name:NSWindowWillCloseNotification
                object:parentWindow_];
+  // Watch for the full screen event, if so, close the bubble
+  [center addObserver:self
+             selector:@selector(parentWindowWillBecomeFullScreen:)
+                 name:NSWindowWillEnterFullScreenNotification
+               object:parentWindow_];
   // Watch for parent window's resizing, to ensure this one is always
   // anchored correctly.
   [center addObserver:self
@@ -151,6 +158,9 @@
 }
 
 - (void)parentWindowDidResize:(NSNotification*)notification {
+  if (!parentWindow_)
+    return;
+
   DCHECK_EQ(parentWindow_, [notification object]);
   NSPoint newOrigin = NSMakePoint(NSMinX([parentWindow_ frame]),
                                   NSMaxY([parentWindow_ frame]));
@@ -160,6 +170,11 @@
 }
 
 - (void)parentWindowWillClose:(NSNotification*)notification {
+  parentWindow_ = nil;
+  [self close];
+}
+
+- (void)parentWindowWillBecomeFullScreen:(NSNotification*)notification {
   parentWindow_ = nil;
   [self close];
 }
