@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "6.1",
+  "version": "6.2",
   "entries": [
     {
       "id": 1,
@@ -953,9 +953,13 @@ LONG_STRING_CONST(
     {
       "id": 74,
       "cr_bugs": [278606, 382686],
-      "description": "Testing EGL sync fences is broken on most Qualcomm drivers",
+      "description": "Testing EGL sync fences was broken on most Qualcomm drivers",
       "os": {
-        "type": "android"
+        "type": "android",
+        "version": {
+          "op": "<=",
+          "value": "4.4.3"
+        }
       },
       "gl_vendor": {
         "op": "beginwith",
@@ -991,9 +995,13 @@ LONG_STRING_CONST(
     {
       "id": 76,
       "cr_bugs": [371530],
-      "description": "Testing EGL sync fences is broken on IMG",
+      "description": "Testing EGL sync fences was broken on IMG",
       "os": {
-        "type": "android"
+        "type": "android",
+        "version": {
+          "op": "<=",
+          "value": "4.4.3"
+        }
       },
       "gl_vendor": {
         "op": "beginwith",
@@ -1006,9 +1014,13 @@ LONG_STRING_CONST(
     {
       "id": 77,
       "cr_bugs": [378691, 373360, 371530],
-      "description": "Testing fences is broken on Mali-400 MP drivers",
+      "description": "Testing fences was broken on Mali-400 MP drivers",
       "os": {
-        "type": "android"
+        "type": "android",
+        "version": {
+          "op": "<=",
+          "value": "4.4.3"
+        }
       },
       "gl_vendor": {
         "op": "beginwith",
@@ -1025,9 +1037,13 @@ LONG_STRING_CONST(
     {
       "id": 78,
       "cr_bugs": [378691, 373360, 371530],
-      "description": "Testing fences is broken on Broadcom drivers",
+      "description": "Testing fences was broken on Broadcom drivers",
       "os": {
-        "type": "android"
+        "type": "android",
+        "version": {
+          "op": "<=",
+          "value": "4.4.3"
+        }
       },
       "gl_vendor": {
         "op": "beginwith",
