@@ -13,7 +13,6 @@ InspectorTest.timelinePropertyFormatters = {
     usedHeapSizeDelta: "skip",
     mimeType: "formatAsTypeName",
     id: "formatAsTypeName",
-    counters: "formatAsTypeName",
     timerId: "formatAsTypeName",
     scriptLine: "formatAsTypeName",
     layerId: "formatAsTypeName",
