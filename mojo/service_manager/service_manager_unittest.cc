@@ -25,6 +25,20 @@ struct TestContext {
   int num_loader_deletes;
 };
 
+class QuitMessageLoopErrorHandler : public ErrorHandler {
+ public:
+  QuitMessageLoopErrorHandler() {}
+  virtual ~QuitMessageLoopErrorHandler() {}
+
+  // |ErrorHandler| implementation:
+  virtual void OnConnectionError() OVERRIDE {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QuitMessageLoopErrorHandler);
+};
+
 class TestServiceImpl : public InterfaceImpl<TestService> {
  public:
   explicit TestServiceImpl(TestContext* context) : context_(context) {
@@ -114,7 +128,7 @@ class TestServiceLoader : public ServiceLoader {
 // Used to test that the requestor url will be correctly passed.
 class TestAImpl : public InterfaceImpl<TestA> {
  public:
-  TestAImpl(Application* app) : app_(app) {}
+  explicit TestAImpl(Application* app) : app_(app) {}
 
   virtual void LoadB() OVERRIDE {
     TestBPtr b;
@@ -135,7 +149,7 @@ class TestBImpl : public InterfaceImpl<TestB> {
 
 class TestApp : public Application, public ServiceLoader {
  public:
-  TestApp(std::string requestor_url)
+  explicit TestApp(std::string requestor_url)
       : requestor_url_(requestor_url),
         num_connects_(0) {
   }
@@ -351,6 +365,26 @@ TEST_F(ServiceManagerTest, ANoLoadB) {
   sm.ConnectTo(GURL(kTestAURLString), &a, GURL());
   a->LoadB();
   loop_.Run();
+  EXPECT_EQ(0, b_app->num_connects());
+}
+
+TEST_F(ServiceManagerTest, NoServiceNoLoad) {
+  ServiceManager sm;
+
+  TestApp* b_app = new TestApp(std::string());
+  b_app->AddService<TestBImpl>();
+  sm.SetLoaderForURL(scoped_ptr<ServiceLoader>(b_app), GURL(kTestBURLString));
+
+  // There is no TestA service implementation registered with ServiceManager,
+  // so this cannot succeed (but also shouldn't crash).
+  TestAPtr a;
+  sm.ConnectTo(GURL(kTestBURLString), &a, GURL());
+  QuitMessageLoopErrorHandler quitter;
+  a.set_error_handler(&quitter);
+  a->LoadB();
+
+  loop_.Run();
+  EXPECT_TRUE(a.encountered_error());
   EXPECT_EQ(0, b_app->num_connects());
 }
 

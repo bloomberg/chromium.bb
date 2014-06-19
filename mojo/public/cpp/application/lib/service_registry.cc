@@ -58,7 +58,9 @@ void ServiceRegistry::ConnectToService(const mojo::String& service_url,
                                        const mojo::String& service_name,
                                        ScopedMessagePipeHandle client_handle,
                                        const mojo::String& requestor_url) {
-  if (!application_->AllowIncomingConnection(service_name, requestor_url)) {
+  if (name_to_service_connector_.find(service_name) ==
+          name_to_service_connector_.end() ||
+      !application_->AllowIncomingConnection(service_name, requestor_url)) {
     client_handle.reset();
     return;
   }
