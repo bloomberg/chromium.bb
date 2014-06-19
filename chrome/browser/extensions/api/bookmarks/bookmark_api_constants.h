@@ -25,6 +25,7 @@ extern const char kInvalidUrlError[];
 extern const char kModifySpecialError[];
 extern const char kEditBookmarksDisabled[];
 extern const char kModifyManagedError[];
+extern const char kInvalidParamError[];
 
 }  // namespace bookmark_api_constants
 }  // namespace extensions

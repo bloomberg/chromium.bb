@@ -269,10 +269,12 @@
         "name": "getMetaInfo",
         "type": "function",
         "description": "Gets meta info from a bookmark node",
+        "allowAmbiguousOptionalArguments": true,
         "parameters": [
           {
             "name": "id",
-            "description": "The id of the bookmark to retrieve meta info from",
+            "description": "The id of the bookmark to retrieve meta info from. If omitted meta info for all nodes is returned.",
+            "optional": true,
             "type": "string"
           },
           {
@@ -287,13 +289,11 @@
             "parameters": [
               {
                 "name": "value",
-                "description": "If a key was given, the value of the specified field, if present. Otherwise an object containing all meta info fields for the node.",
+                "description": "If a key was given, the value of the specified field, if present. Otherwise an object containing all meta info fields for the node. If id is not given then meta info for all nodes as an object with node id to meta info.",
                 "optional": true,
-                // TODO(rfevang): Convert this to always return MetaInfoFields
-                // if the API is made public.
                 "choices": [
                   {"type": "string"},
-                  {"$ref": "MetaInfoFields"}
+                  {"type": "object", "additionalProperties": {"type": "any"}}
                 ]
               }
             ]

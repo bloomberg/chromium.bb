@@ -134,5 +134,27 @@ bool RemoveNode(BookmarkModel* model,
   return true;
 }
 
+void GetMetaInfo(const BookmarkNode& node,
+                 base::DictionaryValue* id_to_meta_info_map) {
+  if (!node.IsVisible())
+    return;
+
+  const BookmarkNode::MetaInfoMap* meta_info = node.GetMetaInfoMap();
+  base::DictionaryValue* value = new base::DictionaryValue();
+  if (meta_info) {
+    BookmarkNode::MetaInfoMap::const_iterator itr;
+    for (itr = meta_info->begin(); itr != meta_info->end(); ++itr) {
+      value->SetStringWithoutPathExpansion(itr->first, itr->second);
+    }
+  }
+  id_to_meta_info_map->Set(base::Int64ToString(node.id()), value);
+
+  if (node.is_folder()) {
+    for (int i = 0; i < node.child_count(); ++i) {
+      GetMetaInfo(*(node.GetChild(i)), id_to_meta_info_map);
+    }
+  }
+}
+
 }  // namespace bookmark_api_helpers
 }  // namespace extensions

@@ -666,25 +666,47 @@ bool BookmarkManagerPrivateGetMetaInfoFunction::RunOnReady() {
   scoped_ptr<GetMetaInfo::Params> params(GetMetaInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  const BookmarkNode* node = GetBookmarkNodeFromId(params->id);
-  if (!node)
-    return false;
+  if (params->id) {
+    const BookmarkNode* node = GetBookmarkNodeFromId(*params->id);
+    if (!node)
+      return false;
 
-  if (params->key) {
-    std::string value;
-    if (node->GetMetaInfo(*params->key, &value)) {
+    if (params->key) {
+      std::string value;
+      if (node->GetMetaInfo(*params->key, &value)) {
+        GetMetaInfo::Results::Value result;
+        result.as_string.reset(new std::string(value));
+        results_ = GetMetaInfo::Results::Create(result);
+      }
+    } else {
       GetMetaInfo::Results::Value result;
-      result.as_string.reset(new std::string(value));
+      result.as_object.reset(new GetMetaInfo::Results::Value::Object);
+
+      const BookmarkNode::MetaInfoMap* meta_info = node->GetMetaInfoMap();
+      if (meta_info) {
+        BookmarkNode::MetaInfoMap::const_iterator itr;
+        base::DictionaryValue& temp = result.as_object->additional_properties;
+        for (itr = meta_info->begin(); itr != meta_info->end(); itr++) {
+          temp.SetStringWithoutPathExpansion(itr->first, itr->second);
+        }
+      }
       results_ = GetMetaInfo::Results::Create(result);
     }
   } else {
-    GetMetaInfo::Results::Value result;
-    result.as_meta_info_fields.reset(
-        new bookmark_manager_private::MetaInfoFields);
+    if (params->key) {
+      error_ = bookmark_api_constants::kInvalidParamError;
+      return true;
+    }
 
-    const BookmarkNode::MetaInfoMap* meta_info = node->GetMetaInfoMap();
-    if (meta_info)
-      result.as_meta_info_fields->additional_properties = *meta_info;
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+    const BookmarkNode* node = model->root_node();
+
+    GetMetaInfo::Results::Value result;
+    result.as_object.reset(new GetMetaInfo::Results::Value::Object);
+
+    bookmark_api_helpers::GetMetaInfo(*node,
+        &result.as_object->additional_properties);
+
     results_ = GetMetaInfo::Results::Create(result);
   }
 
