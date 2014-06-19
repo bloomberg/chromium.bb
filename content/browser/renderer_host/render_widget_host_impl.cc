@@ -192,8 +192,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       allow_privileged_mouse_lock_(false),
       has_touch_handler_(false),
       weak_factory_(this),
-      last_input_number_(static_cast<int64>(GetProcess()->GetID()) << 32),
-      next_browser_snapshot_id_(0) {
+      last_input_number_(static_cast<int64>(GetProcess()->GetID()) << 32) {
   CHECK(delegate_);
   if (routing_id_ == MSG_ROUTING_NONE) {
     routing_id_ = process_->GetNextRoutingID();
@@ -1161,13 +1160,6 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
 void RenderWidgetHostImpl::InvalidateScreenInfo() {
   screen_info_out_of_date_ = true;
   screen_info_.reset();
-}
-
-void RenderWidgetHostImpl::GetSnapshotFromBrowser(
-    const base::Callback<void(const unsigned char*,size_t)> callback) {
-  int id = next_browser_snapshot_id_++;
-  pending_browser_snapshots_.insert(std::make_pair(id, callback));
-  Send(new ViewMsg_ForceRedraw(GetRoutingID(), id));
 }
 
 void RenderWidgetHostImpl::OnSelectionChanged(const base::string16& text,
@@ -2165,12 +2157,6 @@ void RenderWidgetHostImpl::ComputeTouchLatency(
 
 void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
   ui::LatencyInfo::LatencyComponent window_snapshot_component;
-  if (latency_info.FindLatency(ui::WINDOW_OLD_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-                               GetLatencyComponentId(),
-                               &window_snapshot_component)) {
-    WindowOldSnapshotReachedScreen(
-        static_cast<int>(window_snapshot_component.sequence_number));
-  }
   if (latency_info.FindLatency(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
                                GetLatencyComponentId(),
                                &window_snapshot_component)) {
@@ -2230,7 +2216,7 @@ void RenderWidgetHostImpl::WindowSnapshotAsyncCallback(
       routing_id, snapshot_id, snapshot_size, png_data->data()));
 }
 
-void RenderWidgetHostImpl::WindowOldSnapshotReachedScreen(int snapshot_id) {
+void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
   DCHECK(base::MessageLoopForUI::IsCurrent());
 
   std::vector<unsigned char> png;
@@ -2266,53 +2252,6 @@ void RenderWidgetHostImpl::WindowOldSnapshotReachedScreen(int snapshot_id) {
                  snapshot_size));
 }
 
-void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
-
-  gfx::Rect view_bounds = GetView()->GetViewBounds();
-  gfx::Rect snapshot_bounds(view_bounds.size());
-
-  std::vector<unsigned char> png;
-  if (ui::GrabViewSnapshot(
-      GetView()->GetNativeView(), &png, snapshot_bounds)) {
-    OnSnapshotDataReceived(snapshot_id, &png.front(), png.size());
-    return;
-  }
-
-  ui::GrabViewSnapshotAsync(
-      GetView()->GetNativeView(),
-      snapshot_bounds,
-      base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&RenderWidgetHostImpl::OnSnapshotDataReceivedAsync,
-                 weak_factory_.GetWeakPtr(),
-                 snapshot_id));
-}
-
-void RenderWidgetHostImpl::OnSnapshotDataReceived(int snapshot_id,
-                                                  const unsigned char* data,
-                                                  size_t size) {
-  // Any pending snapshots with a lower ID than the one received are considered
-  // to be implicitly complete, and returned the same snapshot data.
-  PendingSnapshotMap::iterator it = pending_browser_snapshots_.begin();
-  while(it != pending_browser_snapshots_.end()) {
-      if (it->first <= snapshot_id) {
-        it->second.Run(data, size);
-        pending_browser_snapshots_.erase(it++);
-      } else {
-        ++it;
-      }
-  }
-}
-
-void RenderWidgetHostImpl::OnSnapshotDataReceivedAsync(
-    int snapshot_id,
-    scoped_refptr<base::RefCountedBytes> png_data) {
-  if (png_data)
-    OnSnapshotDataReceived(snapshot_id, png_data->front(), png_data->size());
-  else
-    OnSnapshotDataReceived(snapshot_id, NULL, 0);
-}
-
 // static
 void RenderWidgetHostImpl::CompositorFrameDrawn(
     const std::vector<ui::LatencyInfo>& latency_info) {
@@ -2323,8 +2262,7 @@ void RenderWidgetHostImpl::CompositorFrameDrawn(
          b != latency_info[i].latency_components.end();
          ++b) {
       if (b->first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT ||
-          b->first.first == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT ||
-          b->first.first == ui::WINDOW_OLD_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
+          b->first.first == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
         // Matches with GetLatencyComponentId
         int routing_id = b->first.second & 0xffffffff;
         int process_id = (b->first.second >> 32) & 0xffffffff;
@@ -2348,8 +2286,7 @@ void RenderWidgetHostImpl::AddLatencyInfoComponentIds(
       latency_info->latency_components.begin();
   while (lc != latency_info->latency_components.end()) {
     ui::LatencyComponentType component_type = lc->first.first;
-    if (component_type == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT ||
-        component_type == ui::WINDOW_OLD_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
+    if (component_type == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
       // Generate a new component entry with the correct component ID
       ui::LatencyInfo::LatencyMap::key_type key =
           std::make_pair(component_type, GetLatencyComponentId());

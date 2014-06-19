@@ -2069,12 +2069,6 @@ void RenderWidgetHostViewMac::AddPendingLatencyInfo(
             NULL)) {
       should_defer = true;
     }
-    if (latency_info[i].FindLatency(
-            ui::WINDOW_OLD_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-            render_widget_host_->GetLatencyComponentId(),
-            NULL)) {
-      should_defer = true;
-    }
   }
   if (should_defer) {
     // Multiple pending screenshot requests will work, but if every frame
@@ -2119,7 +2113,8 @@ void RenderWidgetHostViewMac::TickPendingLatencyInfoDelay() {
         base::Bind(&RenderWidgetHostViewMac::TickPendingLatencyInfoDelay,
                    pending_latency_info_delay_weak_ptr_factory_.GetWeakPtr()));
     [compositing_iosurface_layer_ gotNewFrame];
-  } else {
+  }
+  if (software_layer_) {
     // In software mode there is not an explicit setNeedsDisplay/display loop,
     // so just wait a pretend-vsync at 60 Hz.
     base::MessageLoop::current()->PostDelayedTask(
