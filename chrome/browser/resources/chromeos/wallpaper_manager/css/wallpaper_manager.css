@@ -33,8 +33,9 @@ body {
 }
 
 .dialog-container {
-  -webkit-box-orient: vertical;
-  display: -webkit-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -116,15 +117,14 @@ body {
 }
 
 .dialog-main {
-  -webkit-box-align: stretch;
-  -webkit-box-flex: 1;
-  display: -webkit-box;
+  display: flex;
+  flex: 1;
 }
 
 #category-container {
-  -webkit-box-flex: 1;
-  -webkit-box-orient: vertical;
-  display: -webkit-box;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   position: relative;
 }
 
@@ -161,16 +161,26 @@ body {
   width: 16px;
 }
 
+#wallpaper-set-by-message {
+  -webkit-padding-end: 5px;
+  -webkit-padding-start: 15px;
+  height: 17px;
+}
+
+#wallpaper-set-by-message:empty {
+  display: none;
+}
+
 .image-picker {
   -webkit-padding-end: 5px;
   -webkit-padding-start: 15px;
   display: block;
+  flex: 1;
   /* Set font size to 0 to remove the extra vertical margin between two rows of
    * thumbnails.
    * TODO(bshe): Find the root cause of the margin.
    */
   font-size: 0;
-  height: 287px;
   outline: none;
   overflow-y: auto;
   padding-bottom: 15px;

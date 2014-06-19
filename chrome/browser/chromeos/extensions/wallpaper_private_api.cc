@@ -263,6 +263,8 @@ bool WallpaperPrivateGetStringsFunction::RunSync() {
   SET_STRING("invalidWallpaper", IDS_WALLPAPER_MANAGER_INVALID_WALLPAPER);
   SET_STRING("surpriseMeLabel", IDS_WALLPAPER_MANAGER_SURPRISE_ME_LABEL);
   SET_STRING("learnMore", IDS_LEARN_MORE);
+  SET_STRING("currentWallpaperSetByMessage",
+             IDS_CURRENT_WALLPAPER_SET_BY_MESSAGE);
 #undef SET_STRING
 
   webui::SetFontAndTextDirection(dict);
@@ -277,6 +279,12 @@ bool WallpaperPrivateGetStringsFunction::RunSync() {
 #if defined(GOOGLE_CHROME_BUILD)
   dict->SetString("manifestBaseURL", kWallpaperManifestBaseURL);
 #endif
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  std::string app_name(
+      profile->GetPrefs()->GetString(prefs::kCurrentWallpaperAppName));
+  if (!app_name.empty())
+    dict->SetString("wallpaperAppName", app_name);
 
   dict->SetBoolean("isOEMDefaultWallpaper", IsOEMDefaultWallpaper());
   dict->SetString("canceledWallpaper",
