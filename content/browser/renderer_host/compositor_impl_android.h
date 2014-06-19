@@ -25,14 +25,12 @@ class SkBitmap;
 struct ANativeWindow;
 
 namespace cc {
-class InputHandlerClient;
 class Layer;
 class LayerTreeHost;
 }
 
 namespace content {
 class CompositorClient;
-class GraphicsContext;
 class UIResourceProvider;
 
 // -----------------------------------------------------------------------------
