@@ -61,6 +61,7 @@ crbug.com/364377 http/tests/security/isolatedWorld/all-window-prototypes.html [ 
 crbug.com/364377 http/tests/security/isolatedWorld/body-properties.html [ Leak ]
 crbug.com/364377 http/tests/security/isolatedWorld/body-prototype.html [ Leak ]
 crbug.com/364377 http/tests/security/isolatedWorld/bypass-main-world-csp-for-inline-script.html [ Leak ]
+crbug.com/364377 http/tests/security/isolatedWorld/bypass-main-world-csp-for-inline-style.html [ Leak ]
 crbug.com/364377 http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Leak ]
 crbug.com/364377 http/tests/security/isolatedWorld/bypass-main-world-csp.html [ Leak ]
 crbug.com/364377 http/tests/security/isolatedWorld/click-event.html [ Leak ]
