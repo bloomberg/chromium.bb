@@ -220,10 +220,9 @@ RTCPeerConnection::~RTCPeerConnection()
     // We are assuming that a wrapper is always created when RTCPeerConnection is created.
     ASSERT(m_closed || m_stopped);
 
-    // FIXME: Oilpan: We can't call stop here since it touches m_dataChannels.
-    // Another way to ensure that data channels are stopped at RTCPeerConnection
-    // destruction is needed.
+#if !ENABLE(OILPAN)
     stop();
+#endif
 }
 
 void RTCPeerConnection::createOffer(PassOwnPtr<RTCSessionDescriptionCallback> successCallback, PassOwnPtr<RTCErrorCallback> errorCallback, const Dictionary& mediaConstraints, ExceptionState& exceptionState)
@@ -515,7 +514,7 @@ PassRefPtrWillBeRawPtr<RTCDataChannel> RTCPeerConnection::createDataChannel(Stri
     options.get("protocol", protocolString);
     init.protocol = protocolString;
 
-    RefPtrWillBeRawPtr<RTCDataChannel> channel = RTCDataChannel::create(executionContext(), m_peerHandler.get(), label, init, exceptionState);
+    RefPtrWillBeRawPtr<RTCDataChannel> channel = RTCDataChannel::create(executionContext(), this, m_peerHandler.get(), label, init, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     m_dataChannels.append(channel);
@@ -649,7 +648,7 @@ void RTCPeerConnection::didAddRemoteDataChannel(blink::WebRTCDataChannelHandler*
     if (m_signalingState == SignalingStateClosed)
         return;
 
-    RefPtrWillBeRawPtr<RTCDataChannel> channel = RTCDataChannel::create(executionContext(), adoptPtr(handler));
+    RefPtrWillBeRawPtr<RTCDataChannel> channel = RTCDataChannel::create(executionContext(), this, adoptPtr(handler));
     m_dataChannels.append(channel);
 
     scheduleDispatchEvent(RTCDataChannelEvent::create(EventTypeNames::datachannel, false, false, channel.release()));
