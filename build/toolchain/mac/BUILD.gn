@@ -84,18 +84,18 @@ template("mac_clang_toolchain") {
       description = "LIBTOOL-STATIC \$out"
     }
     tool("solink") {
-      command = "if [ ! -e \$lib -o ! -e \${lib}.TOC ] || otool -l \$lib | grep -q LC_REEXPORT_DYLIB ; then $ld -shared \$ldflags -o \$lib @\$rspfile \$solibs \$libs \$postbuilds && { otool -l \$lib | grep LC_ID_DYLIB -A 5; nm -gP \$lib | cut -f1-2 -d' ' | grep -v U\$\$; true; } > \${lib}.TOC; else $ld -shared \$ldflags -o \$lib \$in \$solibs \$libs \$postbuilds && { otool -l \$lib | grep LC_ID_DYLIB -A 5; nm -gP \$lib | cut -f1-2 -d' ' | grep -v U\$\$; true; } > \${lib}.tmp && if ! cmp -s \${lib}.tmp \${lib}.TOC; then mv \${lib}.tmp \${lib}.TOC ; fi; fi"
+      command = "if [ ! -e \$lib -o ! -e \${lib}.TOC ] || otool -l \$lib | grep -q LC_REEXPORT_DYLIB ; then $ld -shared \$ldflags -o \$lib -Wl,-filelist,\$rspfile \$solibs \$libs \$postbuilds && { otool -l \$lib | grep LC_ID_DYLIB -A 5; nm -gP \$lib | cut -f1-2 -d' ' | grep -v U\$\$; true; } > \${lib}.TOC; else $ld -shared \$ldflags -o \$lib \$in \$solibs \$libs \$postbuilds && { otool -l \$lib | grep LC_ID_DYLIB -A 5; nm -gP \$lib | cut -f1-2 -d' ' | grep -v U\$\$; true; } > \${lib}.tmp && if ! cmp -s \${lib}.tmp \${lib}.TOC; then mv \${lib}.tmp \${lib}.TOC ; fi; fi"
       description = "SOLINK \$lib"
       rspfile = "\$out.rsp"
-      rspfile_content = "\$in"
+      rspfile_content = "\$in_newline"
       #pool = "link_pool"
       restat = "1"
     }
     tool("link") {
-      command = "$ld \$ldflags -o \$out @\$rspfile \$solibs \$libs \$postbuilds"
+      command = "$ld \$ldflags -o \$out -Wl,-filelist,\$rspfile \$solibs \$libs \$postbuilds"
       description = "LINK \$out"
       rspfile = "\$out.rsp"
-      rspfile_content = "\$in"
+      rspfile_content = "\$in_newline"
       #pool = "link_pool"
     }
     #tool("infoplist") {
