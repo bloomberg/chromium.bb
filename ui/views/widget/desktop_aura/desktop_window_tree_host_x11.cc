@@ -1530,6 +1530,13 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
   switch (xev->type) {
     case EnterNotify:
     case LeaveNotify: {
+      // Ignore EventNotify and LeaveNotify events from children of |xwindow_|.
+      // NativeViewGLSurfaceGLX adds a child to |xwindow_|.
+      // TODO(pkotwicz|tdanderson): Figure out whether the suppression is
+      // necessary. crbug.com/385716
+      if (xev->xcrossing.detail == NotifyInferior)
+        break;
+
       ui::MouseEvent mouse_event(xev);
       DispatchMouseEvent(&mouse_event);
       break;

@@ -332,6 +332,13 @@ uint32_t WindowTreeHostX11::DispatchEvent(const ui::PlatformEvent& event) {
 
   switch (xev->type) {
     case EnterNotify: {
+      // Ignore EventNotify events from children of |xwindow_|.
+      // NativeViewGLSurfaceGLX adds a child to |xwindow_|.
+      // TODO(pkotwicz|tdanderson): Figure out whether the suppression is
+      // necessary. crbug.com/385716
+      if (xev->xcrossing.detail == NotifyInferior)
+        break;
+
       aura::Window* root_window = window();
       client::CursorClient* cursor_client =
           client::GetCursorClient(root_window);
@@ -348,6 +355,13 @@ uint32_t WindowTreeHostX11::DispatchEvent(const ui::PlatformEvent& event) {
       break;
     }
     case LeaveNotify: {
+      // Ignore LeaveNotify events from children of |xwindow_|.
+      // NativeViewGLSurfaceGLX adds a child to |xwindow_|.
+      // TODO(pkotwicz|tdanderson): Figure out whether the suppression is
+      // necessary. crbug.com/385716
+      if (xev->xcrossing.detail == NotifyInferior)
+        break;
+
       ui::MouseEvent mouse_event(xev);
       TranslateAndDispatchLocatedEvent(&mouse_event);
       break;
