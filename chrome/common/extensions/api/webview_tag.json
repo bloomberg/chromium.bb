@@ -576,7 +576,7 @@
       {
         "name": "contentload",
         "options": { "supportsDom": true },
-        "description": "Fired when the guest window fires a <code>load</code> event.<p>The following example code modifies the default font size of the guest's <code>body</code> element after the page loads:</p><pre>webview.addEventListener('contentload', function() {\r  webview.executeScript({ code: 'document.body.style.fontSize = \"42px\"' });\r});</pre>",
+        "description": "Fired when the guest window fires a <code>load</code> event, i.e., when a new document is loaded. This does <em>not</em> include page navigation within the current document or asynchronous resource loads. <p>The following example code modifies the default font size of the guest's <code>body</code> element after the page loads:</p><pre>webview.addEventListener('contentload', function() {\r  webview.executeScript({ code: 'document.body.style.fontSize = \"42px\"' });\r});</pre>",
         "parameters": []
       },
       {
@@ -660,7 +660,7 @@
       {
         "name": "loadabort",
         "options": { "supportsDom": true },
-        "description": "Fired when a top-level load has aborted without committing. <p class=\"note\"><strong>Note:</strong> When a resource load is aborted, a <code>loadabort</code> event will be followed by a <code>loadstop</code> event.</p>",
+        "description": "Fired when a top-level load has aborted without committing. <p class=\"note\"><strong>Note:</strong> When a resource load is aborted, a <code>loadabort</code> event will eventually be followed by a <code>loadstop</code> event, even if all committed loads since the last <code>loadstop</code> event (if any) were aborted.</p>",
         "parameters": [
           {
             "name": "url",
@@ -683,7 +683,7 @@
       {
         "name": "loadcommit",
         "options": { "supportsDom": true },
-        "description": "Fired when a load has committed.",
+        "description": "Fired when a load has committed. This includes navigation within the current document as well as subframe document-level loads, but does <em>not</em> include asynchronous resource loads.",
         "parameters": [
           {
             "name": "url",
@@ -739,7 +739,7 @@
       {
         "name": "loadstop",
         "options": { "supportsDom": true },
-        "description": "Fired when all loads in the guest page (including all subframes) have completed. Fires in addition to any related <code>loadcommit</code> or <code>loadabort</code> events, which occur per-frame. <p class=\"note\"><strong>Note:</strong> When a resource load is aborted, a <code>loadstop</code> event will follow a <code>loadabort</code> event.</p>",
+        "description": "Fired when all frame-level loads in a guest page (including all its subframes) have completed. This includes navigation within the current document as well as subframe document-level loads, but does <em>not</em> include asynchronous resource loads. This event fires every time the number of document-level loads transitions from one (or more) to zero. For example, if a page that has already finished loading (i.e., <code>loadstop</code> already fired once) creates a new iframe which loads a page, then a second <code>loadstop</code> will fire when the iframe page load completes. This pattern is commonly observed on pages that load ads. <p class=\"note\"><strong>Note:</strong> When a committed load is aborted, a <code>loadstop</code> event will eventually follow a <code>loadabort</code> event, even if all committed loads since the last <code>loadstop</code> event (if any) were aborted.</p>",
         "parameters": []
       },
       {
