@@ -396,7 +396,7 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32 c, b
     ASSERT(isMainThread());
 
     if (variant == AutoVariant) {
-        if (m_fontDescription.variant() && !primaryFont()->isSVGFont()) {
+        if (m_fontDescription.variant() == FontVariantSmallCaps && !primaryFont()->isSVGFont()) {
             UChar32 upperC = toUpper(c);
             if (upperC != c) {
                 c = upperC;

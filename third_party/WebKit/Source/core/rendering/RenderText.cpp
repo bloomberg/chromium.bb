@@ -713,7 +713,7 @@ ALWAYS_INLINE float RenderText::widthFromCache(const Font& f, int start, int len
             return combineText->combinedTextWidth(f);
     }
 
-    if (f.isFixedPitch() && !f.fontDescription().variant() && m_isAllASCII && (!glyphOverflow || !glyphOverflow->computeBounds)) {
+    if (f.isFixedPitch() && f.fontDescription().variant() == FontVariantNormal && m_isAllASCII && (!glyphOverflow || !glyphOverflow->computeBounds)) {
         float monospaceCharacterWidth = f.spaceWidth();
         float w = 0;
         bool isSpace;
