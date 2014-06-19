@@ -181,13 +181,14 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver,
 
   // Returns an element of issued_prerenders_, which should be replaced
   // by a new prerender of the priority indicated, or NULL, if the priority
-  // is too low.
-  PrerenderProperties* GetIssuedPrerenderSlotForPriority(double priority);
+  // is too low (or if the URL requested is already prerendering).
+  PrerenderProperties* GetIssuedPrerenderSlotForPriority(const GURL& url,
+                                                         double priority);
 
   void ContinuePrerenderCheck(scoped_ptr<CandidatePrerenderInfo> info);
   void LogCandidateURLStats(const GURL& url) const;
-  void IssuePrerender(scoped_ptr<CandidatePrerenderInfo> info,
-                      scoped_ptr<LocalPredictorURLInfo> url_info,
+  void IssuePrerender(CandidatePrerenderInfo* info,
+                      LocalPredictorURLInfo* url_info,
                       PrerenderProperties* prerender_properties);
   void MaybeCancelURLFetcher(net::URLFetcher* fetcher);
   // Returns true if the parsed response is semantically correct and could

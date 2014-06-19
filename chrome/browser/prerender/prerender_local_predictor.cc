@@ -32,9 +32,12 @@
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/common/prefetch_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "crypto/secure_hash.h"
@@ -50,6 +53,7 @@ using base::ListValue;
 using base::Value;
 using content::BrowserThread;
 using content::PageTransition;
+using content::RenderFrameHost;
 using content::SessionStorageNamespace;
 using content::WebContents;
 using history::URLID;
@@ -64,6 +68,8 @@ namespace {
 
 static const size_t kURLHashSize = 5;
 static const int kNumPrerenderCandidates = 5;
+static const int kInvalidProcessId = -1;
+static const int kInvalidFrameId = -1;
 
 }  // namespace
 
@@ -90,9 +96,16 @@ struct PrerenderLocalPredictor::CandidatePrerenderInfo {
   LocalPredictorURLInfo source_url_;
   vector<LocalPredictorURLInfo> candidate_urls_;
   scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
+  // Render Process ID and Route ID of the page causing the prerender to be
+  // issued. Needed so that we can cause its renderer to issue prefetches within
+  // its context.
+  int render_process_id_;
+  int render_frame_id_;
   scoped_ptr<gfx::Size> size_;
   base::Time start_time_;  // used for various time measurements
-  explicit CandidatePrerenderInfo(URLID source_id) {
+  explicit CandidatePrerenderInfo(URLID source_id)
+      : render_process_id_(kInvalidProcessId),
+        render_frame_id_(kInvalidFrameId) {
     source_url_.id = source_id;
   }
   void MaybeAddCandidateURLFromLocalData(URLID id, double priority) {
@@ -598,6 +611,9 @@ void PrerenderLocalPredictor::OnLookupURL(
 
   info->session_storage_namespace_ =
       source_web_contents->GetController().GetDefaultSessionStorageNamespace();
+  RenderFrameHost* rfh = source_web_contents->GetMainFrame();
+  info->render_process_id_ = rfh->GetProcess()->GetID();
+  info->render_frame_id_ = rfh->GetRoutingID();
 
   gfx::Rect container_bounds = source_web_contents->GetContainerBounds();
   info->size_.reset(new gfx::Size(container_bounds.size()));
@@ -1053,10 +1069,25 @@ bool PrerenderLocalPredictor::DoesPrerenderMatchPLTRecord(
 }
 
 PrerenderLocalPredictor::PrerenderProperties*
-PrerenderLocalPredictor::GetIssuedPrerenderSlotForPriority(double priority) {
+PrerenderLocalPredictor::GetIssuedPrerenderSlotForPriority(const GURL& url,
+                                                           double priority) {
   int num_prerenders = GetLocalPredictorMaxConcurrentPrerenders();
   while (static_cast<int>(issued_prerenders_.size()) < num_prerenders)
     issued_prerenders_.push_back(new PrerenderProperties());
+  // First, check if we already have a prerender for the same URL issued.
+  // If yes, we don't want to prerender this URL again, so we return NULL
+  // (on matching slot found).
+  for (int i = 0; i < static_cast<int>(issued_prerenders_.size()); i++) {
+    PrerenderProperties* p = issued_prerenders_[i];
+    DCHECK(p != NULL);
+    if (p->prerender_handle && p->prerender_handle->IsPrerendering() &&
+        p->prerender_handle->Matches(url, NULL)) {
+      return NULL;
+    }
+  }
+  // Otherwise, let's see if there are any empty slots. If yes, return the first
+  // one we find. Otherwise, if the lowest priority prerender has a lower
+  // priority than the page we want to prerender, use its slot.
   PrerenderProperties* lowest_priority_prerender = NULL;
   for (int i = 0; i < static_cast<int>(issued_prerenders_.size()); i++) {
     PrerenderProperties* p = issued_prerenders_[i];
@@ -1091,8 +1122,10 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       g_browser_process->safe_browsing_service()->database_manager();
 #endif
   PrerenderProperties* prerender_properties = NULL;
-
+  int num_issued = 0;
   for (int i = 0; i < static_cast<int>(info->candidate_urls_.size()); i++) {
+    if (num_issued > GetLocalPredictorMaxLaunchPrerenders())
+      return;
     RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_EXAMINE_NEXT_URL);
     url_info.reset(new LocalPredictorURLInfo(info->candidate_urls_[i]));
     if (url_info->local_history_based) {
@@ -1126,7 +1159,7 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       continue;
     }
     prerender_properties =
-        GetIssuedPrerenderSlotForPriority(url_info->priority);
+        GetIssuedPrerenderSlotForPriority(url_info->url, url_info->priority);
     if (!prerender_properties) {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_PRIORITY_TOO_LOW);
       url_info.reset(NULL);
@@ -1148,7 +1181,9 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       // For root pages, we assume that they are reasonably safe, and we
       // will just prerender them without any additional checks.
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ROOT_PAGE);
-      break;
+      IssuePrerender(info.get(), url_info.get(), prerender_properties);
+      num_issued++;
+      continue;
     }
     if (IsLogOutURL(url_info->url)) {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_LOGOUT_URL);
@@ -1166,40 +1201,48 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       // If a page is on the side-effect free whitelist, we will just prerender
       // it without any additional checks.
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ON_SIDE_EFFECT_FREE_WHITELIST);
-      break;
+      IssuePrerender(info.get(), url_info.get(), prerender_properties);
+      num_issued++;
+      continue;
     }
 #endif
     if (!SkipLocalPredictorServiceWhitelist() &&
         url_info->service_whitelist && url_info->service_whitelist_lookup_ok) {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ON_SERVICE_WHITELIST);
-      break;
+      IssuePrerender(info.get(), url_info.get(), prerender_properties);
+      num_issued++;
+      continue;
     }
     if (!SkipLocalPredictorLoggedIn() &&
         !url_info->logged_in && url_info->logged_in_lookup_ok) {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_NOT_LOGGED_IN);
-      break;
+      IssuePrerender(info.get(), url_info.get(), prerender_properties);
+      num_issued++;
+      continue;
     }
     if (!SkipLocalPredictorDefaultNoPrerender()) {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_FALLTHROUGH_NOT_PRERENDERING);
       url_info.reset(NULL);
     } else {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_FALLTHROUGH_PRERENDERING);
+      IssuePrerender(info.get(), url_info.get(), prerender_properties);
+      num_issued++;
+      continue;
     }
-  }
-  if (!url_info.get())
-    return;
-  RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ISSUING_PRERENDER);
-  DCHECK(prerender_properties != NULL);
-  if (IsLocalPredictorPrerenderLaunchEnabled()) {
-    IssuePrerender(info.Pass(), url_info.Pass(), prerender_properties);
   }
 }
 
 void PrerenderLocalPredictor::IssuePrerender(
-    scoped_ptr<CandidatePrerenderInfo> info,
-    scoped_ptr<LocalPredictorURLInfo> url_info,
+    CandidatePrerenderInfo* info,
+    LocalPredictorURLInfo* url_info,
     PrerenderProperties* prerender_properties) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ISSUING_PRERENDER);
+  DCHECK(prerender_properties != NULL);
+  DCHECK(info != NULL);
+  DCHECK(url_info != NULL);
+  if (!IsLocalPredictorPrerenderLaunchEnabled())
+    return;
   URLID url_id = url_info->id;
   const GURL& url = url_info->url;
   double priority = url_info->priority;
@@ -1242,6 +1285,16 @@ void PrerenderLocalPredictor::IssuePrerender(
     if (new_prerender_handle) {
       new_prerender_handle->OnCancel();
       RecordEvent(EVENT_ISSUE_PRERENDER_CANCELLED_OLD_PRERENDER);
+    }
+    // If we are prefetching rather than prerendering, now is the time to launch
+    // the prefetch.
+    if (IsLocalPredictorPrerenderPrefetchEnabled()) {
+      // Obtain the render frame host that caused this prefetch.
+      RenderFrameHost* rfh = RenderFrameHost::FromID(info->render_process_id_,
+                                                     info->render_frame_id_);
+      // If it is still alive, launch the prefresh.
+      if (rfh)
+        rfh->Send(new PrefetchMsg_Prefetch(rfh->GetRoutingID(), url));
     }
   }
 

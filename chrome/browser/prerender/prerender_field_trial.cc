@@ -44,6 +44,7 @@ const char kLocalPredictorUnencryptedSyncOnlyKeyName[] =
 const char kSideEffectFreeWhitelistKeyName[] = "SideEffectFreeWhitelist";
 const char kPrerenderLaunchKeyName[] = "PrerenderLaunch";
 const char kPrerenderAlwaysControlKeyName[] = "PrerenderAlwaysControl";
+const char kPrerenderPrefetchKeyName[] = "PrerenderPrefetch";
 const char kPrerenderQueryPrerenderServiceKeyName[] =
     "PrerenderQueryPrerenderService";
 const char kPrerenderQueryPrerenderServiceCurrentURLKeyName[] =
@@ -57,6 +58,7 @@ const char kPrerenderTTLKeyName[] = "PrerenderTTLSeconds";
 const char kPrerenderPriorityHalfLifeTimeKeyName[] =
     "PrerenderPriorityHalfLifeTimeSeconds";
 const char kMaxConcurrentPrerenderKeyName[] = "MaxConcurrentPrerenders";
+const char kMaxLaunchPrerenderKeyName[] = "MaxLaunchPrerenders";
 const char kSkipFragment[] = "SkipFragment";
 const char kSkipHTTPS[] = "SkipHTTPS";
 const char kSkipWhitelist[] = "SkipWhitelist";
@@ -328,7 +330,14 @@ bool IsLocalPredictorPrerenderLaunchEnabled() {
 }
 
 bool IsLocalPredictorPrerenderAlwaysControlEnabled() {
-  return GetLocalPredictorSpecValue(kPrerenderAlwaysControlKeyName) ==
+  // If we prefetch rather than prerender, we automatically also prerender
+  // as a control group only.
+  return (GetLocalPredictorSpecValue(kPrerenderAlwaysControlKeyName) ==
+          kEnabledGroup) || IsLocalPredictorPrerenderPrefetchEnabled();
+}
+
+bool IsLocalPredictorPrerenderPrefetchEnabled() {
+  return GetLocalPredictorSpecValue(kPrerenderPrefetchKeyName) ==
       kEnabledGroup;
 }
 
@@ -391,6 +400,14 @@ int GetLocalPredictorPrerenderPriorityHalfLifeTimeSeconds() {
 int GetLocalPredictorMaxConcurrentPrerenders() {
   int num_prerenders;
   StringToInt(GetLocalPredictorSpecValue(kMaxConcurrentPrerenderKeyName),
+              &num_prerenders);
+  // Sanity check: Ensure the number of prerenders is between 1 and 10.
+  return std::min(std::max(num_prerenders, 1), 10);
+}
+
+int GetLocalPredictorMaxLaunchPrerenders() {
+  int num_prerenders;
+  StringToInt(GetLocalPredictorSpecValue(kMaxLaunchPrerenderKeyName),
               &num_prerenders);
   // Sanity check: Ensure the number of prerenders is between 1 and 10.
   return std::min(std::max(num_prerenders, 1), 10);
