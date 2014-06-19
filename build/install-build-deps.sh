@@ -143,16 +143,14 @@ arm_list="libc6-dev-armhf-cross
           g++-arm-linux-gnueabihf"
 
 # Packages to build NaCl, its toolchains, and its ports.
-nacl_list="bison cmake xvfb gawk texinfo autoconf libtool
-           libssl0.9.8:i386 lib32z1-dev
-           libgpm2:i386 libncurses5:i386
-           g++-mingw-w64-i686 libtinfo-dev libtinfo-dev:i386
-           libglib2.0-0:i386 libnss3:i386
-           libgconf-2-4:i386 libfontconfig1:i386
-           libpango1.0-0:i386 libxi6:i386 libxcursor1:i386 libxcomposite1:i386
-           libasound2:i386 libxdamage1:i386 libxtst6:i386 libxrandr2:i386
-           libcap2:i386 libgtk2.0-0:i386 libxss1:i386
-           libexif12:i386 libgl1-mesa-glx:i386 libelf-dev:i386"
+nacl_list="autoconf bison cmake g++-mingw-w64-i686 gawk lib32z1-dev
+           libasound2:i386 libcap2:i386 libelf-dev:i386 libexif12:i386
+           libfontconfig1:i386 libgconf-2-4:i386 libgl1-mesa-glx:i386
+           libglib2.0-0:i386 libgpm2:i386 libgtk2.0-0:i386 libncurses5:i386
+           libnss3:i386 libpango1.0-0:i386 libssl0.9.8:i386 libtinfo-dev
+           libtinfo-dev:i386 libtool libxcomposite1:i386 libxcursor1:i386
+           libxdamage1:i386 libxi6:i386 libxrandr2:i386 libxss1:i386
+           libxtst6:i386 texinfo xvfb"
 
 # Some package names have changed over time
 if package_exists ttf-mscorefonts-installer; then
