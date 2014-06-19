@@ -83,8 +83,7 @@ group("root") {
     "//third_party/smhasher:murmurhash3",
     "//third_party/smhasher:pmurhash",
     "//third_party/speex",
-    "//third_party/WebKit/public:blink_headers",
-    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/public:all_blink",
     "//third_party/zlib",
     "//third_party:jpeg",
     "//tools/gn",
@@ -159,8 +158,7 @@ group("root") {
       "//third_party/flac",
 
       # TODO(brettw) make Blink work on Android.
-      "//third_party/WebKit/public:blink_headers",
-      "//third_party/WebKit/Source/wtf",
+      "//third_party/WebKit/public:all_blink",
 
       # Not tested on Android yet:
       "//webkit/browser:storage",
