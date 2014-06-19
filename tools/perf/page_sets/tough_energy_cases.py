@@ -46,7 +46,8 @@ class ToughEnergyCasesPageSet(page_set_module.PageSet):
     self.AddPage(ToughEnergyCasesPage(
       'file://tough_energy_cases/above-fold-animated-gif.html',
       self))
-    self.AddPage(GmailPage(self))
+    # TODO(dominikg): fix crbug.com/386152
+    #self.AddPage(GmailPage(self))
     # Why: Below the fold animated gif
     self.AddPage(ToughEnergyCasesPage(
       'file://tough_energy_cases/below-fold-animated-gif.html',

@@ -97,7 +97,8 @@ class Top10PageSet(page_set_module.PageSet):
     self.AddPage(Google(self))
 
     # productivity, top google properties
-    self.AddPage(Gmail(self))
+    # TODO(dominikg): fix crbug.com/386152
+    #self.AddPage(Gmail(self))
 
     # productivity, top google properties
     self.AddPage(GoogleCalendar(self))
