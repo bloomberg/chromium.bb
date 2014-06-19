@@ -17,7 +17,10 @@ class TestGCMNetworkChannelDelegate : public GCMNetworkChannelDelegate {
   TestGCMNetworkChannelDelegate()
       : register_call_count_(0) {}
 
-  virtual void Initialize() OVERRIDE {}
+  virtual void Initialize(
+      GCMNetworkChannelDelegate::ConnectionStateCallback callback) OVERRIDE {
+    connection_state_callback = callback;
+  }
 
   virtual void RequestToken(RequestTokenCallback callback) OVERRIDE {
     request_token_callback = callback;
@@ -41,6 +44,7 @@ class TestGCMNetworkChannelDelegate : public GCMNetworkChannelDelegate {
   RegisterCallback register_callback;
   int register_call_count_;
   MessageCallback message_callback;
+  ConnectionStateCallback connection_state_callback;
 };
 
 // Backoff policy for test. Run first 5 retries without delay.
@@ -406,7 +410,7 @@ TEST_F(GCMNetworkChannelTest, Base64EncodeDecode) {
   EXPECT_EQ(input, plain);
 }
 
-TEST_F(GCMNetworkChannelTest, TransientError) {
+TEST_F(GCMNetworkChannelTest, HttpTransientError) {
   EXPECT_FALSE(delegate()->message_callback.is_null());
   // POST will fail.
   url_fetcher_factory()->SetFakeResponse(GURL("http://test.url.com"),
@@ -434,6 +438,15 @@ TEST_F(GCMNetworkChannelTest, TransientError) {
   EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
   network_channel()->OnNetworkChanged(
       net::NetworkChangeNotifier::CONNECTION_NONE);
+  EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
+}
+
+TEST_F(GCMNetworkChannelTest, GcmConnectionState) {
+  delegate()->connection_state_callback.Run(
+      GCMNetworkChannelDelegate::CONNECTION_STATE_OFFLINE);
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, get_last_invalidator_state());
+  delegate()->connection_state_callback.Run(
+      GCMNetworkChannelDelegate::CONNECTION_STATE_ONLINE);
   EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
 }
 

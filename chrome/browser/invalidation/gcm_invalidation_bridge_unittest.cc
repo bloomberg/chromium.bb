@@ -13,6 +13,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/base/ip_endpoint.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace invalidation {
@@ -45,7 +46,9 @@ class CustomFakeGCMDriver : public gcm::FakeGCMDriver {
 
 class GCMInvalidationBridgeTest : public ::testing::Test {
  protected:
-  GCMInvalidationBridgeTest() {}
+  GCMInvalidationBridgeTest()
+      : connection_state_(
+            syncer::GCMNetworkChannelDelegate::CONNECTION_STATE_OFFLINE) {}
 
   virtual ~GCMInvalidationBridgeTest() {}
 
@@ -66,7 +69,13 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
                                             identity_provider_.get()));
 
     delegate_ = bridge_->CreateDelegate();
-    delegate_->Initialize();
+    delegate_->Initialize(
+        base::Bind(&GCMInvalidationBridgeTest::ConnectionStateChanged,
+                   base::Unretained(this)));
+    RunLoop();
+  }
+
+  void RunLoop() {
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
   }
@@ -83,6 +92,11 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
     request_token_errors_.push_back(error);
   }
 
+  void ConnectionStateChanged(
+      syncer::GCMNetworkChannelDelegate::ConnectionState connection_state) {
+    connection_state_ = connection_state;
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<Profile> profile_;
   scoped_ptr<gcm::GCMDriver> gcm_driver_;
@@ -91,6 +105,7 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
   std::vector<std::string> issued_tokens_;
   std::vector<GoogleServiceAuthError> request_token_errors_;
   std::string registration_id_;
+  syncer::GCMNetworkChannelDelegate::ConnectionState connection_state_;
 
   scoped_ptr<GCMInvalidationBridge> bridge_;
   scoped_ptr<syncer::GCMNetworkChannelDelegate> delegate_;
@@ -102,8 +117,7 @@ TEST_F(GCMInvalidationBridgeTest, RequestToken) {
   delegate_->RequestToken(
       base::Bind(&GCMInvalidationBridgeTest::RequestTokenFinished,
                  base::Unretained(this)));
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  RunLoop();
   EXPECT_EQ(1U, issued_tokens_.size());
   EXPECT_NE("", issued_tokens_[0]);
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(), request_token_errors_[0]);
@@ -118,8 +132,7 @@ TEST_F(GCMInvalidationBridgeTest, RequestTokenTwoConcurrentRequests) {
   delegate_->RequestToken(
       base::Bind(&GCMInvalidationBridgeTest::RequestTokenFinished,
                  base::Unretained(this)));
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  RunLoop();
 
   EXPECT_EQ(2U, issued_tokens_.size());
 
@@ -135,10 +148,22 @@ TEST_F(GCMInvalidationBridgeTest, Register) {
   EXPECT_TRUE(registration_id_.empty());
   delegate_->Register(base::Bind(&GCMInvalidationBridgeTest::RegisterFinished,
                                  base::Unretained(this)));
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  RunLoop();
 
   EXPECT_FALSE(registration_id_.empty());
+}
+
+TEST_F(GCMInvalidationBridgeTest, ConnectionState) {
+  EXPECT_EQ(syncer::GCMNetworkChannelDelegate::CONNECTION_STATE_OFFLINE,
+            connection_state_);
+  bridge_->OnConnected(net::IPEndPoint());
+  RunLoop();
+  EXPECT_EQ(syncer::GCMNetworkChannelDelegate::CONNECTION_STATE_ONLINE,
+            connection_state_);
+  bridge_->OnDisconnected();
+  RunLoop();
+  EXPECT_EQ(syncer::GCMNetworkChannelDelegate::CONNECTION_STATE_OFFLINE,
+            connection_state_);
 }
 
 }  // namespace

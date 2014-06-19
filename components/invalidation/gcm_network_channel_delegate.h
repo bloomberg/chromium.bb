@@ -24,16 +24,23 @@ namespace syncer {
 // thread and callbacks should be invoked there as well.
 class GCMNetworkChannelDelegate {
  public:
+  enum ConnectionState {
+    CONNECTION_STATE_OFFLINE,
+    CONNECTION_STATE_ONLINE
+  };
+
   typedef base::Callback<void(const GoogleServiceAuthError& error,
                               const std::string& token)> RequestTokenCallback;
   typedef base::Callback<void(const std::string& registration_id,
                               gcm::GCMClient::Result result)> RegisterCallback;
   typedef base::Callback<void(const std::string& message,
                               const std::string& echo_token)> MessageCallback;
+  typedef base::Callback<void(ConnectionState connection_state)>
+      ConnectionStateCallback;
 
   virtual ~GCMNetworkChannelDelegate() {}
 
-  virtual void Initialize() = 0;
+  virtual void Initialize(ConnectionStateCallback callback) = 0;
   // Request access token. Callback should be called either with access token or
   // error code.
   virtual void RequestToken(RequestTokenCallback callback) = 0;

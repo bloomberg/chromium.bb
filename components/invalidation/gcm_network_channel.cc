@@ -110,7 +110,8 @@ GCMNetworkChannel::GCMNetworkChannel(
       diagnostic_info_(this),
       weak_factory_(this) {
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
-  delegate_->Initialize();
+  delegate_->Initialize(base::Bind(&GCMNetworkChannel::OnConnectionStateChanged,
+                                   weak_factory_.GetWeakPtr()));
   Register();
 }
 
@@ -281,6 +282,24 @@ void GCMNetworkChannel::OnIncomingMessage(const std::string& message,
   // This code shouldn't be invoked on Android.
   NOTREACHED();
 #endif
+}
+
+void GCMNetworkChannel::OnConnectionStateChanged(
+    GCMNetworkChannelDelegate::ConnectionState connection_state) {
+  switch (connection_state) {
+    case GCMNetworkChannelDelegate::CONNECTION_STATE_OFFLINE: {
+      NotifyStateChange(TRANSIENT_INVALIDATION_ERROR);
+      break;
+    }
+    case GCMNetworkChannelDelegate::CONNECTION_STATE_ONLINE: {
+      NotifyStateChange(INVALIDATIONS_ENABLED);
+      break;
+    }
+    default: {
+      NOTREACHED();
+      break;
+    }
+  }
 }
 
 void GCMNetworkChannel::OnNetworkChanged(

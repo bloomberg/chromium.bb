@@ -93,6 +93,8 @@ class INVALIDATION_EXPORT_PRIVATE GCMNetworkChannel
                           const std::string& token);
   void OnIncomingMessage(const std::string& message,
                          const std::string& echo_token);
+  void OnConnectionStateChanged(
+      GCMNetworkChannelDelegate::ConnectionState connection_state);
 
   // Base64 encoding/decoding with URL safe alphabet.
   // http://tools.ietf.org/html/rfc4648#page-7

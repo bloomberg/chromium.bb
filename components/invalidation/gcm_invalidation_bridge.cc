@@ -41,7 +41,7 @@ class GCMInvalidationBridge::Core : public syncer::GCMNetworkChannelDelegate,
   virtual ~Core();
 
   // syncer::GCMNetworkChannelDelegate implementation.
-  virtual void Initialize() OVERRIDE;
+  virtual void Initialize(ConnectionStateCallback callback) OVERRIDE;
   virtual void RequestToken(RequestTokenCallback callback) OVERRIDE;
   virtual void InvalidateToken(const std::string& token) OVERRIDE;
   virtual void Register(RegisterCallback callback) OVERRIDE;
@@ -58,11 +58,14 @@ class GCMInvalidationBridge::Core : public syncer::GCMNetworkChannelDelegate,
   void OnIncomingMessage(const std::string& message,
                          const std::string& echo_token);
 
+  void OnConnectionStateChanged(ConnectionState connection_state);
+
  private:
   base::WeakPtr<GCMInvalidationBridge> bridge_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner_;
 
   MessageCallback message_callback_;
+  ConnectionStateCallback connection_state_callback_;
 
   base::WeakPtrFactory<Core> weak_factory_;
 
@@ -81,8 +84,9 @@ GCMInvalidationBridge::Core::Core(
 
 GCMInvalidationBridge::Core::~Core() {}
 
-void GCMInvalidationBridge::Core::Initialize() {
+void GCMInvalidationBridge::Core::Initialize(ConnectionStateCallback callback) {
   DCHECK(CalledOnValidThread());
+  connection_state_callback_ = callback;
   // Pass core WeapPtr and TaskRunner to GCMInvalidationBridge for it to be able
   // to post back.
   ui_thread_task_runner_->PostTask(
@@ -143,6 +147,13 @@ void GCMInvalidationBridge::Core::OnIncomingMessage(
     const std::string& echo_token) {
   DCHECK(!message_callback_.is_null());
   message_callback_.Run(message, echo_token);
+}
+
+void GCMInvalidationBridge::Core::OnConnectionStateChanged(
+    ConnectionState connection_state) {
+  if (!connection_state_callback_.is_null()) {
+    connection_state_callback_.Run(connection_state);
+  }
 }
 
 GCMInvalidationBridge::GCMInvalidationBridge(
@@ -317,11 +328,19 @@ void GCMInvalidationBridge::OnSendError(
 }
 
 void GCMInvalidationBridge::OnConnected(const net::IPEndPoint& ip_endpoint) {
-  // TODO(pavely): update invalidator state.
+  core_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMInvalidationBridge::Core::OnConnectionStateChanged,
+                 core_,
+                 syncer::GCMNetworkChannelDelegate::CONNECTION_STATE_ONLINE));
 }
 
 void GCMInvalidationBridge::OnDisconnected() {
-  // TODO(pavely): update invalidator state.
+  core_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMInvalidationBridge::Core::OnConnectionStateChanged,
+                 core_,
+                 syncer::GCMNetworkChannelDelegate::CONNECTION_STATE_OFFLINE));
 }
 
 
