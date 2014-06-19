@@ -18,7 +18,6 @@
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/filters/frame_processor.h"
-#include "media/filters/legacy_frame_processor.h"
 #include "media/filters/stream_parser_factory.h"
 
 using base::TimeDelta;
@@ -96,7 +95,7 @@ class SourceState {
 
   SourceState(
       scoped_ptr<StreamParser> stream_parser,
-      scoped_ptr<FrameProcessorBase> frame_processor, const LogCB& log_cb,
+      scoped_ptr<FrameProcessor> frame_processor, const LogCB& log_cb,
       const CreateDemuxerStreamCB& create_demuxer_stream_cb);
 
   ~SourceState();
@@ -228,7 +227,7 @@ class SourceState {
   typedef std::map<StreamParser::TrackId, ChunkDemuxerStream*> TextStreamMap;
   TextStreamMap text_stream_map_;  // |this| owns the map's stream pointers.
 
-  scoped_ptr<FrameProcessorBase> frame_processor_;
+  scoped_ptr<FrameProcessor> frame_processor_;
   LogCB log_cb_;
   StreamParser::InitCB init_cb_;
 
@@ -242,7 +241,7 @@ class SourceState {
 };
 
 SourceState::SourceState(scoped_ptr<StreamParser> stream_parser,
-                         scoped_ptr<FrameProcessorBase> frame_processor,
+                         scoped_ptr<FrameProcessor> frame_processor,
                          const LogCB& log_cb,
                          const CreateDemuxerStreamCB& create_demuxer_stream_cb)
     : create_demuxer_stream_cb_(create_demuxer_stream_cb),
@@ -1147,11 +1146,9 @@ void ChunkDemuxer::CancelPendingSeek(TimeDelta seek_time) {
   base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
 }
 
-ChunkDemuxer::Status ChunkDemuxer::AddId(
-    const std::string& id,
-    const std::string& type,
-    std::vector<std::string>& codecs,
-    const bool use_legacy_frame_processor) {
+ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
+                                         const std::string& type,
+                                         std::vector<std::string>& codecs) {
   base::AutoLock auto_lock(lock_);
 
   if ((state_ != WAITING_FOR_INIT && state_ != INITIALIZING) || IsValidId(id))
@@ -1176,16 +1173,9 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(
   if (has_video)
     source_id_video_ = id;
 
-  scoped_ptr<FrameProcessorBase> frame_processor;
-  if (use_legacy_frame_processor) {
-    frame_processor.reset(new LegacyFrameProcessor(
-        base::Bind(&ChunkDemuxer::IncreaseDurationIfNecessary,
-                   base::Unretained(this))));
-  } else {
-    frame_processor.reset(new FrameProcessor(
-        base::Bind(&ChunkDemuxer::IncreaseDurationIfNecessary,
-                   base::Unretained(this))));
-  }
+  scoped_ptr<FrameProcessor> frame_processor(
+      new FrameProcessor(base::Bind(&ChunkDemuxer::IncreaseDurationIfNecessary,
+                         base::Unretained(this))));
 
   scoped_ptr<SourceState> source_state(
       new SourceState(stream_parser.Pass(),

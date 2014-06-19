@@ -412,8 +412,6 @@
         'filters/h264_parser.h',
         'filters/in_memory_url_protocol.cc',
         'filters/in_memory_url_protocol.h',
-        'filters/legacy_frame_processor.cc',
-        'filters/legacy_frame_processor.h',
         'filters/opus_audio_decoder.cc',
         'filters/opus_audio_decoder.h',
         'filters/skcanvas_video_renderer.cc',

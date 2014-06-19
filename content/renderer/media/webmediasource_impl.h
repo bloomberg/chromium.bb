@@ -26,7 +26,6 @@ class WebMediaSourceImpl : public blink::WebMediaSource {
   virtual AddStatus addSourceBuffer(
       const blink::WebString& type,
       const blink::WebVector<blink::WebString>& codecs,
-      const FrameProcessorChoice frame_processor_choice,
       blink::WebSourceBuffer** source_buffer);
   virtual double duration();
   virtual void setDuration(double duration);
