@@ -23,6 +23,10 @@ typedef union _XEvent XEvent;
 
 class PrefService;
 
+namespace ash {
+class StickyKeysController;
+}
+
 namespace chromeos {
 namespace input_method {
 class ImeKeyboard;
@@ -51,7 +55,10 @@ class EventRewriter
     kDeviceAppleKeyboard,
   };
 
-  EventRewriter();
+  // Does not take ownership of the |sticky_keys_controller|, which may also
+  // be NULL (for testing without ash), in which case sticky key operations
+  // don't happen.
+  explicit EventRewriter(ash::StickyKeysController* sticky_keys_controller);
   virtual ~EventRewriter();
 
   // Calls DeviceAddedInternal.
@@ -98,7 +105,7 @@ class EventRewriter
 #endif
 
  private:
-  // Things that internal rewriter phases can change about an Event.
+  // Things that keyboard-related rewriter phases can change about an Event.
   struct MutableKeyState {
     int flags;
     ui::KeyboardCode key_code;
@@ -157,6 +164,9 @@ class EventRewriter
   ui::EventRewriteStatus RewriteTouchEvent(
       const ui::TouchEvent& touch_event,
       scoped_ptr<ui::Event>* rewritten_event);
+  ui::EventRewriteStatus RewriteScrollEvent(
+      const ui::ScrollEvent& scroll_event,
+      scoped_ptr<ui::Event>* rewritten_event);
 
   // Rewriter phases. These can inspect the original |event|, but operate using
   // the current |state|, which may have been modified by previous phases.
@@ -174,6 +184,10 @@ class EventRewriter
 
   chromeos::input_method::ImeKeyboard* ime_keyboard_for_testing_;
   const PrefService* pref_service_for_testing_;
+
+  // The sticky keys controller is not owned here;
+  // at time of writing it is a singleton in ash::Shell>
+  ash::StickyKeysController* sticky_keys_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRewriter);
 };

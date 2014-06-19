@@ -6,10 +6,12 @@
 
 #include <vector>
 
+#include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
@@ -153,12 +155,24 @@ void UpdateX11EventMask(int ui_flags, unsigned int* x_flags) {
 }
 #endif
 
+bool IsSendEvent(const ui::Event& event) {
+#if defined(USE_X11)
+  // Do not rewrite an event sent by ui_controls::SendKeyPress(). See
+  // crbug.com/136465.
+  XEvent* xev = event.native_event();
+  if (xev && xev->xany.send_event)
+    return true;
+#endif
+  return false;
+}
+
 }  // namespace
 
-EventRewriter::EventRewriter()
+EventRewriter::EventRewriter(ash::StickyKeysController* sticky_keys_controller)
     : last_device_id_(kBadDeviceId),
       ime_keyboard_for_testing_(NULL),
-      pref_service_for_testing_(NULL) {
+      pref_service_for_testing_(NULL),
+      sticky_keys_controller_(sticky_keys_controller) {
 #if defined(USE_X11)
   ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
   if (base::SysInfo::IsRunningOnChromeOS()) {
@@ -190,35 +204,38 @@ void EventRewriter::RewriteLocatedEventForTesting(const ui::Event& event,
 ui::EventRewriteStatus EventRewriter::RewriteEvent(
     const ui::Event& event,
     scoped_ptr<ui::Event>* rewritten_event) {
-#if defined(USE_X11)
-  // Do not rewrite an event sent by ui_controls::SendKeyPress(). See
-  // crbug.com/136465.
-  XEvent* xev = event.native_event();
-  if (xev && xev->xany.send_event)
-    return ui::EVENT_REWRITE_CONTINUE;
-#endif
-  switch (event.type()) {
-    case ui::ET_KEY_PRESSED:
-    case ui::ET_KEY_RELEASED:
-      return RewriteKeyEvent(static_cast<const ui::KeyEvent&>(event),
-                             rewritten_event);
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_MOUSE_RELEASED:
-      return RewriteMouseEvent(static_cast<const ui::MouseEvent&>(event),
-                               rewritten_event);
-    case ui::ET_TOUCH_PRESSED:
-    case ui::ET_TOUCH_RELEASED:
-      return RewriteTouchEvent(static_cast<const ui::TouchEvent&>(event),
-                               rewritten_event);
-    default:
-      return ui::EVENT_REWRITE_CONTINUE;
+  if ((event.type() == ui::ET_KEY_PRESSED) ||
+      (event.type() == ui::ET_KEY_RELEASED)) {
+    return RewriteKeyEvent(static_cast<const ui::KeyEvent&>(event),
+                           rewritten_event);
   }
-  NOTREACHED();
+  if (event.IsMouseEvent()) {
+    return RewriteMouseEvent(static_cast<const ui::MouseEvent&>(event),
+                             rewritten_event);
+  }
+  if ((event.type() == ui::ET_TOUCH_PRESSED) ||
+      (event.type() == ui::ET_TOUCH_RELEASED)) {
+    return RewriteTouchEvent(static_cast<const ui::TouchEvent&>(event),
+                             rewritten_event);
+  }
+  if (event.IsScrollEvent()) {
+    return RewriteScrollEvent(static_cast<const ui::ScrollEvent&>(event),
+                              rewritten_event);
+  }
+  return ui::EVENT_REWRITE_CONTINUE;
 }
 
 ui::EventRewriteStatus EventRewriter::NextDispatchEvent(
     const ui::Event& last_event,
     scoped_ptr<ui::Event>* new_event) {
+  if (sticky_keys_controller_) {
+    // In the case of sticky keys, we know what the events obtained here are:
+    // modifier key releases that match the ones previously discarded. So, we
+    // know that they don't have to be passed through the post-sticky key
+    // rewriting phases, |RewriteExtendedKeys()| and |RewriteFunctionKeys()|,
+    // because those phases do nothing with modifier key releases.
+    return sticky_keys_controller_->NextDispatchEvent(new_event);
+  }
   NOTREACHED();
   return ui::EVENT_REWRITE_CONTINUE;
 }
@@ -333,14 +350,33 @@ ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
     const ui::KeyEvent& key_event,
     scoped_ptr<ui::Event>* rewritten_event) {
   MutableKeyState state = {key_event.flags(), key_event.key_code()};
-  RewriteModifierKeys(key_event, &state);
-  RewriteNumPadKeys(key_event, &state);
-  RewriteExtendedKeys(key_event, &state);
-  RewriteFunctionKeys(key_event, &state);
+  bool is_send_event = IsSendEvent(key_event);
+  if (!is_send_event) {
+    RewriteModifierKeys(key_event, &state);
+    RewriteNumPadKeys(key_event, &state);
+  }
+  ui::EventRewriteStatus status = ui::EVENT_REWRITE_CONTINUE;
+  if (sticky_keys_controller_) {
+    status = sticky_keys_controller_->RewriteKeyEvent(
+        key_event, state.key_code, &state.flags);
+    if (status == ui::EVENT_REWRITE_DISCARD)
+      return ui::EVENT_REWRITE_DISCARD;
+  }
+  if (!is_send_event) {
+    RewriteExtendedKeys(key_event, &state);
+    RewriteFunctionKeys(key_event, &state);
+  }
   if ((key_event.flags() == state.flags) &&
-      (key_event.key_code() == state.key_code)) {
+      (key_event.key_code() == state.key_code) &&
+      (status == ui::EVENT_REWRITE_CONTINUE)) {
     return ui::EVENT_REWRITE_CONTINUE;
   }
+  // Sticky keys may have returned a result other than |EVENT_REWRITE_CONTINUE|,
+  // in which case we need to preserve that return status. Alternatively, we
+  // might be here because key_event changed, in which case we need to return
+  // |EVENT_REWRITE_REWRITTEN|.
+  if (status == ui::EVENT_REWRITE_CONTINUE)
+    status = ui::EVENT_REWRITE_REWRITTEN;
   ui::KeyEvent* rewritten_key_event = new ui::KeyEvent(key_event);
   rewritten_event->reset(rewritten_key_event);
   rewritten_key_event->set_flags(state.flags);
@@ -360,16 +396,26 @@ ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
                              state.key_code, state.flags & ui::EF_SHIFT_DOWN));
   }
 #endif
-  return ui::EVENT_REWRITE_REWRITTEN;
+  return status;
 }
 
 ui::EventRewriteStatus EventRewriter::RewriteMouseEvent(
     const ui::MouseEvent& mouse_event,
     scoped_ptr<ui::Event>* rewritten_event) {
   int flags = mouse_event.flags();
-  RewriteLocatedEvent(mouse_event, &flags);
-  if (mouse_event.flags() == flags)
+  if ((mouse_event.type() == ui::ET_MOUSE_PRESSED) ||
+      (mouse_event.type() == ui::ET_MOUSE_RELEASED)) {
+    RewriteLocatedEvent(mouse_event, &flags);
+  }
+  ui::EventRewriteStatus status = ui::EVENT_REWRITE_CONTINUE;
+  if (sticky_keys_controller_)
+    status = sticky_keys_controller_->RewriteMouseEvent(mouse_event, &flags);
+  if ((mouse_event.flags() == flags) &&
+      (status == ui::EVENT_REWRITE_CONTINUE)) {
     return ui::EVENT_REWRITE_CONTINUE;
+  }
+  if (status == ui::EVENT_REWRITE_CONTINUE)
+    status = ui::EVENT_REWRITE_REWRITTEN;
   ui::MouseEvent* rewritten_mouse_event = new ui::MouseEvent(mouse_event);
   rewritten_event->reset(rewritten_mouse_event);
   rewritten_mouse_event->set_flags(flags);
@@ -397,7 +443,7 @@ ui::EventRewriteStatus EventRewriter::RewriteMouseEvent(
     }
   }
 #endif
-  return ui::EVENT_REWRITE_REWRITTEN;
+  return status;
 }
 
 ui::EventRewriteStatus EventRewriter::RewriteTouchEvent(
@@ -422,6 +468,32 @@ ui::EventRewriteStatus EventRewriter::RewriteTouchEvent(
   }
 #endif
   return ui::EVENT_REWRITE_REWRITTEN;
+}
+
+ui::EventRewriteStatus EventRewriter::RewriteScrollEvent(
+    const ui::ScrollEvent& scroll_event,
+    scoped_ptr<ui::Event>* rewritten_event) {
+  int flags = scroll_event.flags();
+  ui::EventRewriteStatus status = ui::EVENT_REWRITE_CONTINUE;
+  if (sticky_keys_controller_)
+    status = sticky_keys_controller_->RewriteScrollEvent(scroll_event, &flags);
+  if (status == ui::EVENT_REWRITE_CONTINUE)
+    return status;
+  ui::ScrollEvent* rewritten_scroll_event = new ui::ScrollEvent(scroll_event);
+  rewritten_event->reset(rewritten_scroll_event);
+  rewritten_scroll_event->set_flags(flags);
+#if defined(USE_X11)
+  XEvent* xev = rewritten_scroll_event->native_event();
+  if (xev) {
+    XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+    if (xievent) {
+      UpdateX11EventMask(
+          rewritten_scroll_event->flags(),
+          reinterpret_cast<unsigned int*>(&xievent->mods.effective));
+    }
+  }
+#endif
+  return status;
 }
 
 void EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
