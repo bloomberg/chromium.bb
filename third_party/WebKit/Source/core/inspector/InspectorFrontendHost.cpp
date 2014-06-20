@@ -156,17 +156,25 @@ void InspectorFrontendHost::copyText(const String& text)
 
 static String escapeUnicodeNonCharacters(const String& str)
 {
+    const UChar nonChar = 0xD800;
+
+    unsigned i = 0;
+    while (i < str.length() && str[i] < nonChar)
+        ++i;
+    if (i == str.length())
+        return str;
+
     StringBuilder dst;
-    for (unsigned i = 0; i < str.length(); ++i) {
+    dst.append(str, 0, i);
+    for (; i < str.length(); ++i) {
         UChar c = str[i];
-        if (c >= 0xD800) {
+        if (c >= nonChar) {
             unsigned symbol = static_cast<unsigned>(c);
             String symbolCode = String::format("\\u%04X", symbol);
             dst.append(symbolCode);
         } else {
             dst.append(c);
         }
-
     }
     return dst.toString();
 }
