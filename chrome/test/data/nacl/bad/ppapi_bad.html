@@ -197,24 +197,6 @@ function runTests() {
 <!-- The tests will create and remove embeds from this div. -->
 <div id="embeds"></div>
 
-<!-- These two embeds are not automatically tested - visual inspection only. -->
-
-<embed id="cross_manifest_pdf"
-  width=100 height=20
-  src="http://www.google.com/crossorigin.manifest"
-  style="background-color:gray"
-  type="application/pdf" />
-
-<!-- This load would have succeeded if the NEXE was from a chrome-extension
-     URL and NaCl had been registered as handling the PDF MIME type using
-     the nacl_modules attribute in a Chrome extension manifest. -->
-
-<embed id="cross_origin_pdf"
-  width=100 height=20
-  src="ppapi_bad_crossorigin.nmf"
-  style="background-color:gray"
-  type="application/pdf" />
-
 <script type="text/javascript">
 //<![CDATA[
 runTests();
