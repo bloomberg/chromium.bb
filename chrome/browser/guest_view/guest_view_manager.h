@@ -15,12 +15,17 @@
 #include "content/public/browser/web_contents.h"
 
 class GuestViewBase;
+class GuestViewManagerFactory;
 class GuestWebContentsObserver;
 class GURL;
 
 namespace content {
 class BrowserContext;
 }  // namespace content
+
+namespace guestview {
+class TestGuestViewManager;
+}  // namespace guestview
 
 class GuestViewManager : public content::BrowserPluginGuestManager,
                          public base::SupportsUserData::Data {
@@ -30,6 +35,11 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   static GuestViewManager* FromBrowserContext(content::BrowserContext* context);
 
+  // Overrides factory for testing. Default (NULL) value indicates regular
+  // (non-test) environment.
+  static void set_factory_for_testing(GuestViewManagerFactory* factory) {
+    GuestViewManager::factory_ = factory;
+  }
   // Returns the guest WebContents associated with the given |guest_instance_id|
   // if the provided |embedder_render_process_id| is allowed to access it.
   // If the embedder is not allowed access, the embedder will be killed, and
@@ -52,14 +62,15 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   virtual bool ForEachGuest(content::WebContents* embedder_web_contents,
                             const GuestCallback& callback) OVERRIDE;
 
- private:
+ protected:
   friend class GuestViewBase;
   friend class GuestWebContentsObserver;
-  friend class TestGuestViewManager;
+  friend class guestview::TestGuestViewManager;
   FRIEND_TEST_ALL_PREFIXES(GuestViewManagerTest, AddRemove);
 
-  void AddGuest(int guest_instance_id,
-                content::WebContents* guest_web_contents);
+  // Can be overriden in tests.
+  virtual void AddGuest(int guest_instance_id,
+                        content::WebContents* guest_web_contents);
 
   void RemoveGuest(int guest_instance_id);
 
@@ -85,6 +96,9 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   static bool CanEmbedderAccessGuest(int embedder_render_process_id,
                                      GuestViewBase* guest);
+
+  // Static factory instance (always NULL for non-test).
+  static GuestViewManagerFactory* factory_;
 
   // Contains guests' WebContents, mapping from their instance ids.
   typedef std::map<int, content::WebContents*> GuestInstanceMap;

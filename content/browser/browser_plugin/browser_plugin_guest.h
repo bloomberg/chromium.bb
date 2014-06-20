@@ -363,7 +363,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   // Indicates that this BrowserPluginGuest has associated renderer-side state.
   // This is used to determine whether or not to create a new RenderView when
-  // this guest is attached.
+  // this guest is attached. A BrowserPluginGuest would have renderer-side state
+  // prior to attachment if it is created via a call to window.open and
+  // maintains a JavaScript reference to its opener.
   bool has_render_view_;
 
   // Last seen size of guest contents (by OnUpdateRect).

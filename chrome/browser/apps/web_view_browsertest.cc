@@ -10,6 +10,8 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/guest_view/guest_view_manager.h"
+#include "chrome/browser/guest_view/guest_view_manager_factory.h"
 #include "chrome/browser/prerender/prerender_link_manager.h"
 #include "chrome/browser/prerender/prerender_link_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -92,10 +94,11 @@ class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {
   virtual std::string GetHTMLContents() OVERRIDE { return std::string(); }
 };
 
-// Used to get notified when a guest is created.
-class GuestContentBrowserClient : public chrome::ChromeContentBrowserClient {
+class TestGuestViewManager : public GuestViewManager {
  public:
-  GuestContentBrowserClient() : web_contents_(NULL) {}
+  explicit TestGuestViewManager(content::BrowserContext* context) :
+      GuestViewManager(context),
+      web_contents_(NULL) {}
 
   content::WebContents* WaitForGuestCreated() {
     if (web_contents_)
@@ -107,13 +110,10 @@ class GuestContentBrowserClient : public chrome::ChromeContentBrowserClient {
   }
 
  private:
-  // ChromeContentBrowserClient implementation:
-  virtual void GuestWebContentsAttached(
-      content::WebContents* guest_web_contents,
-      content::WebContents* embedder_web_contents,
-      const base::DictionaryValue& extra_params) OVERRIDE {
-    ChromeContentBrowserClient::GuestWebContentsAttached(
-        guest_web_contents, embedder_web_contents, extra_params);
+  // GuestViewManager override:
+  virtual void AddGuest(int guest_instance_id,
+                        content::WebContents* guest_web_contents) OVERRIDE{
+    GuestViewManager::AddGuest(guest_instance_id, guest_web_contents);
     web_contents_ = guest_web_contents;
 
     if (message_loop_runner_)
@@ -122,6 +122,32 @@ class GuestContentBrowserClient : public chrome::ChromeContentBrowserClient {
 
   content::WebContents* web_contents_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+};
+
+// Test factory for creating test instances of GuestViewManager.
+class TestGuestViewManagerFactory : public GuestViewManagerFactory {
+ public:
+  TestGuestViewManagerFactory() :
+      test_guest_view_manager_(NULL) {}
+
+  virtual ~TestGuestViewManagerFactory() {}
+
+  virtual GuestViewManager* CreateGuestViewManager(
+      content::BrowserContext* context) OVERRIDE {
+    return GetManager(context);
+  }
+
+  TestGuestViewManager* GetManager(content::BrowserContext* context) {
+    if (!test_guest_view_manager_) {
+      test_guest_view_manager_ = new TestGuestViewManager(context);
+    }
+    return test_guest_view_manager_;
+  }
+
+ private:
+  TestGuestViewManager* test_guest_view_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestGuestViewManagerFactory);
 };
 
 class WebContentsHiddenObserver : public content::WebContentsObserver {
@@ -651,17 +677,13 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   }
 
   void LoadAppWithGuest(const std::string& app_path) {
-    GuestContentBrowserClient new_client;
-    content::ContentBrowserClient* old_client =
-        SetBrowserClientForTesting(&new_client);
 
     ExtensionTestMessageListener launched_listener("WebViewTest.LAUNCHED",
                                                    false);
     launched_listener.set_failure_message("WebViewTest.FAILURE");
     LoadAndLaunchPlatformApp(app_path.c_str(), &launched_listener);
 
-    guest_web_contents_ = new_client.WaitForGuestCreated();
-    SetBrowserClientForTesting(old_client);
+    guest_web_contents_ = GetGuestViewManager()->WaitForGuestCreated();
   }
 
   void SendMessageToEmbedder(const std::string& message) {
@@ -699,8 +721,13 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     return embedder_web_contents_;
   }
 
+  TestGuestViewManager* GetGuestViewManager() {
+    return factory_.GetManager(browser()->profile());
+  }
+
   WebViewTest() : guest_web_contents_(NULL),
                   embedder_web_contents_(NULL) {
+    GuestViewManager::set_factory_for_testing(&factory_);
   }
 
  private:
@@ -716,6 +743,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   scoped_ptr<content::FakeSpeechRecognitionManager>
       fake_speech_recognition_manager_;
 
+  TestGuestViewManagerFactory factory_;
   // Note that these are only set if you launch app using LoadAppWithGuest().
   content::WebContents* guest_web_contents_;
   content::WebContents* embedder_web_contents_;
@@ -1181,10 +1209,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialTeardown) {
 
   LoadAndLaunchPlatformApp("web_view/interstitial_teardown", "EmbedderLoaded");
 
-  GuestContentBrowserClient new_client;
-  content::ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&new_client);
-
   // Now load the guest.
   content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ExtensionTestMessageListener second("GuestAddedToDom", false);
@@ -1194,8 +1218,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialTeardown) {
   ASSERT_TRUE(second.WaitUntilSatisfied());
 
   // Wait for interstitial page to be shown in guest.
-  content::WebContents* guest_web_contents = new_client.WaitForGuestCreated();
-  SetBrowserClientForTesting(old_client);
+  content::WebContents* guest_web_contents =
+      GetGuestViewManager()->WaitForGuestCreated();
   ASSERT_TRUE(guest_web_contents->GetRenderProcessHost()->IsIsolatedGuest());
   WaitForInterstitial(guest_web_contents);
 

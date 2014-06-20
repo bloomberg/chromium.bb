@@ -55,12 +55,8 @@ class GuestView : public GuestViewBase {
   }
 
  protected:
-  GuestView(int guest_instance_id,
-            content::WebContents* guest_web_contents,
-            const std::string& embedder_extension_id)
-      : GuestViewBase(guest_instance_id,
-                      guest_web_contents,
-                      embedder_extension_id) {}
+  explicit GuestView(int guest_instance_id)
+      : GuestViewBase(guest_instance_id) {}
   virtual ~GuestView() {}
 
  private:

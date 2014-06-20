@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/guest_view/guest_view_base.h"
 #include "chrome/browser/guest_view/guest_view_constants.h"
+#include "chrome/browser/guest_view/guest_view_manager_factory.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
@@ -24,6 +25,9 @@ using content::BrowserContext;
 using content::SiteInstance;
 using content::WebContents;
 
+// static
+GuestViewManagerFactory* GuestViewManager::factory_ = NULL;
+
 GuestViewManager::GuestViewManager(content::BrowserContext* context)
     : current_instance_id_(0), last_instance_id_removed_(0), context_(context) {
 }
@@ -37,7 +41,11 @@ GuestViewManager* GuestViewManager::FromBrowserContext(
       static_cast<GuestViewManager*>(context->GetUserData(
           guestview::kGuestViewManagerKeyName));
   if (!guest_manager) {
-    guest_manager = new GuestViewManager(context);
+    if (factory_) {
+      guest_manager = factory_->CreateGuestViewManager(context);
+    } else {
+      guest_manager = new GuestViewManager(context);
+    }
     context->SetUserData(guestview::kGuestViewManagerKeyName, guest_manager);
   }
   return guest_manager;

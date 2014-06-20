@@ -136,18 +136,8 @@ void BrowserPluginEmbedder::OnGuestCallback(
                 : NULL;
   }
 
-  if (guest) {
-    // There is an implicit order expectation here:
-    // 1. The content embedder is made aware of the attachment.
-    // 2. BrowserPluginGuest::Attach is called.
-    // 3. The content embedder issues queued events if any that happened
-    //    prior to attachment.
-    GetContentClient()->browser()->GuestWebContentsAttached(
-        guest->GetWebContents(),
-        GetWebContents(),
-        *extra_params);
+  if (guest)
     guest->Attach(GetWebContents(), params, *extra_params);
-  }
 }
 
 void BrowserPluginEmbedder::OnAttach(

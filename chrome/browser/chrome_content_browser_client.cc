@@ -904,25 +904,6 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
 #endif  // defined(ENABLE_EXTENSIONS)
 }
 
-void ChromeContentBrowserClient::GuestWebContentsAttached(
-    WebContents* guest_web_contents,
-    WebContents* embedder_web_contents,
-    const base::DictionaryValue& extra_params) {
-#if defined(ENABLE_EXTENSIONS)
-  GuestViewBase* guest = GuestViewBase::FromWebContents(guest_web_contents);
-  if (!guest) {
-    // It's ok to return here, since we could be running a browser plugin
-    // outside an extension, and don't need to attach a
-    // BrowserPluginGuestDelegate in that case;
-    // e.g. running with flag --enable-browser-plugin-for-all-view-types.
-    return;
-  }
-  guest->Attach(embedder_web_contents, extra_params);
-#else
-  NOTREACHED();
-#endif  // defined(ENABLE_EXTENSIONS)
-}
-
 void ChromeContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
   int id = host->GetID();

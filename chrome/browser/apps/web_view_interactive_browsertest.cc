@@ -11,6 +11,8 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/guest_view/guest_view_base.h"
+#include "chrome/browser/guest_view/guest_view_manager.h"
+#include "chrome/browser/guest_view/guest_view_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -33,6 +35,62 @@
 
 using apps::AppWindow;
 
+class TestGuestViewManager : public GuestViewManager {
+ public:
+  explicit TestGuestViewManager(content::BrowserContext* context) :
+      GuestViewManager(context),
+      web_contents_(NULL) {}
+
+  content::WebContents* WaitForGuestCreated() {
+    if (web_contents_)
+      return web_contents_;
+
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+    return web_contents_;
+  }
+
+ private:
+  // GuestViewManager override:
+  virtual void AddGuest(int guest_instance_id,
+                        content::WebContents* guest_web_contents) OVERRIDE{
+    GuestViewManager::AddGuest(guest_instance_id, guest_web_contents);
+    web_contents_ = guest_web_contents;
+
+    if (message_loop_runner_)
+      message_loop_runner_->Quit();
+  }
+
+  content::WebContents* web_contents_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+};
+
+// Test factory for creating test instances of GuestViewManager.
+class TestGuestViewManagerFactory : public GuestViewManagerFactory {
+ public:
+  TestGuestViewManagerFactory() :
+      test_guest_view_manager_(NULL) {}
+
+  virtual ~TestGuestViewManagerFactory() {}
+
+  virtual GuestViewManager* CreateGuestViewManager(
+      content::BrowserContext* context) OVERRIDE {
+    return GetManager(context);
+  }
+
+  TestGuestViewManager* GetManager(content::BrowserContext* context) {
+    if (!test_guest_view_manager_) {
+      test_guest_view_manager_ = new TestGuestViewManager(context);
+    }
+    return test_guest_view_manager_;
+  }
+
+ private:
+  TestGuestViewManager* test_guest_view_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestGuestViewManagerFactory);
+};
+
 class WebViewInteractiveTest
     : public extensions::PlatformAppBrowserTest {
  public:
@@ -41,7 +99,13 @@ class WebViewInteractiveTest
         embedder_web_contents_(NULL),
         corner_(gfx::Point()),
         mouse_click_result_(false),
-        first_click_(true) {}
+        first_click_(true) {
+    GuestViewManager::set_factory_for_testing(&factory_);
+  }
+
+  TestGuestViewManager* GetGuestViewManager() {
+    return factory_.GetManager(browser()->profile());
+  }
 
   void MoveMouseInsideWindowWithListener(gfx::Point point,
                                          const std::string& message) {
@@ -186,10 +250,6 @@ class WebViewInteractiveTest
   void TestHelper(const std::string& test_name,
                   const std::string& app_location,
                   TestServer test_server) {
-    GuestContentBrowserClient new_client;
-    content::ContentBrowserClient* old_client =
-        SetBrowserClientForTesting(&new_client);
-
     content::WebContents* embedder_web_contents = NULL;
     scoped_ptr<ExtensionTestMessageListener> done_listener(
         RunAppHelper(
@@ -198,10 +258,7 @@ class WebViewInteractiveTest
     ASSERT_TRUE(done_listener);
     ASSERT_TRUE(done_listener->WaitUntilSatisfied());
 
-    guest_web_contents_ = new_client.WaitForGuestCreated();
-    // Reset the browser client so that we do not notice any unexpected
-    // behavior.
-    SetBrowserClientForTesting(old_client);
+    guest_web_contents_ = GetGuestViewManager()->WaitForGuestCreated();
   }
 
   void RunTest(const std::string& app_name) {
@@ -447,6 +504,7 @@ class WebViewInteractiveTest
   }
 
  protected:
+  TestGuestViewManagerFactory factory_;
   content::WebContents* guest_web_contents_;
   content::WebContents* embedder_web_contents_;
   gfx::Point corner_;
@@ -455,39 +513,6 @@ class WebViewInteractiveTest
   // Only used in drag/drop test.
   base::Closure quit_closure_;
   std::string last_drop_data_;
-
- private:
-  // Used to get notified when a guest is created.
-  class GuestContentBrowserClient : public chrome::ChromeContentBrowserClient {
-   public:
-    GuestContentBrowserClient() : web_contents_(NULL) {}
-
-    content::WebContents* WaitForGuestCreated() {
-      if (web_contents_)
-        return web_contents_;
-
-      message_loop_runner_ = new content::MessageLoopRunner;
-      message_loop_runner_->Run();
-      return web_contents_;
-    }
-
-   private:
-    // ChromeContentBrowserClient implementation:
-    virtual void GuestWebContentsAttached(
-        content::WebContents* guest_web_contents,
-        content::WebContents* embedder_web_contents,
-        const base::DictionaryValue& extra_params) OVERRIDE {
-      ChromeContentBrowserClient::GuestWebContentsAttached(
-          guest_web_contents, embedder_web_contents, extra_params);
-      web_contents_ = guest_web_contents;
-
-      if (message_loop_runner_)
-        message_loop_runner_->Quit();
-    }
-
-    content::WebContents* web_contents_;
-    scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  };
 };
 
 // ui_test_utils::SendMouseMoveSync doesn't seem to work on OS_MACOSX, and

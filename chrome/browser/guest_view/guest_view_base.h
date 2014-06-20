@@ -64,9 +64,23 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   virtual const char* GetViewType() const = 0;
 
+  // This method is called after the guest has been attached to an embedder and
+  // suspended resource loads have been resumed.
+  //
+  // This method can be overriden by subclasses. This gives the derived class
+  // an opportunity to perform setup actions after attachment.
+  virtual void DidAttachToEmbedder() {}
+
   // This method can be overridden by subclasses. This method is called when
   // the initial set of frames within the page have completed loading.
   virtual void DidStopLoading() {}
+
+  // This method is called immediately before suspended resource loads have been
+  // resumed on attachment to an embedder.
+  //
+  // This method can be overriden by subclasses. This gives the derived class
+  // an opportunity to perform setup actions before attachment.
+  virtual void WillAttachToEmbedder() {}
 
   // This method is called when the guest WebContents is about to be destroyed.
   //
@@ -93,14 +107,16 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // this behavior to enable drag-and-drop.
   virtual bool IsDragAndDropEnabled() const;
 
+  // Once a guest WebContents is ready, this initiates the association of |this|
+  // GuestView with |guest_web_contents|.
+  void Init(content::WebContents* guest_web_contents,
+            const std::string& embedder_extension_id);
+
   bool IsViewType(const char* const view_type) const {
     return !strcmp(GetViewType(), view_type);
   }
 
   base::WeakPtr<GuestViewBase> AsWeakPtr();
-
-  virtual void Attach(content::WebContents* embedder_web_contents,
-                      const base::DictionaryValue& args);
 
   content::WebContents* embedder_web_contents() const {
     return embedder_web_contents_;
@@ -148,13 +164,16 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // BrowserPluginGuestDelegate implementation.
   virtual void Destroy() OVERRIDE FINAL;
+  virtual void DidAttach() OVERRIDE FINAL;
   virtual void RegisterDestructionCallback(
       const DestructionCallback& callback) OVERRIDE FINAL;
+  virtual void WillAttach(
+      content::WebContents* embedder_web_contents,
+      const base::DictionaryValue& extra_params) OVERRIDE FINAL;
 
  protected:
-  GuestViewBase(int guest_instance_id,
-                content::WebContents* guest_web_contents,
-                const std::string& embedder_extension_id);
+  explicit GuestViewBase(int guest_instance_id);
+
   virtual ~GuestViewBase();
 
   // Dispatches an event |event_name| to the embedder with the |event| fields.
@@ -177,15 +196,17 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
       const blink::WebGestureEvent& event) OVERRIDE FINAL;
 
   content::WebContents* embedder_web_contents_;
-  const std::string embedder_extension_id_;
+  std::string embedder_extension_id_;
   int embedder_render_process_id_;
-  content::BrowserContext* const browser_context_;
+  content::BrowserContext* browser_context_;
   // |guest_instance_id_| is a profile-wide unique identifier for a guest
   // WebContents.
   const int guest_instance_id_;
   // |view_instance_id_| is an identifier that's unique within a particular
   // embedder RenderViewHost for a particular <*view> instance.
   int view_instance_id_;
+
+  bool initialized_;
 
   // This is a queue of Events that are destined to be sent to the embedder once
   // the guest is attached to a particular embedder.

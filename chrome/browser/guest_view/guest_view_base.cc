@@ -66,17 +66,25 @@ class GuestViewBase::EmbedderWebContentsObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(EmbedderWebContentsObserver);
 };
 
-GuestViewBase::GuestViewBase(int guest_instance_id,
-                             WebContents* guest_web_contents,
-                             const std::string& embedder_extension_id)
-    : WebContentsObserver(guest_web_contents),
-      embedder_web_contents_(NULL),
-      embedder_extension_id_(embedder_extension_id),
+GuestViewBase::GuestViewBase(int guest_instance_id)
+    : embedder_web_contents_(NULL),
       embedder_render_process_id_(0),
-      browser_context_(guest_web_contents->GetBrowserContext()),
+      browser_context_(NULL),
       guest_instance_id_(guest_instance_id),
       view_instance_id_(guestview::kInstanceIDNone),
+      initialized_(false),
       weak_ptr_factory_(this) {
+}
+
+void GuestViewBase::Init(WebContents* guest_web_contents,
+                         const std::string& embedder_extension_id) {
+  if (initialized_)
+    return;
+  initialized_ = true;
+  browser_context_ = guest_web_contents->GetBrowserContext();
+  embedder_extension_id_ = embedder_extension_id;
+
+  WebContentsObserver::Observe(guest_web_contents);
   guest_web_contents->SetDelegate(this);
   webcontents_guestview_map.Get().insert(
       std::make_pair(guest_web_contents, this));
@@ -155,32 +163,6 @@ bool GuestViewBase::IsDragAndDropEnabled() const {
   return false;
 }
 
-void GuestViewBase::Attach(content::WebContents* embedder_web_contents,
-                           const base::DictionaryValue& args) {
-  embedder_web_contents_ = embedder_web_contents;
-  embedder_web_contents_observer_.reset(
-      new EmbedderWebContentsObserver(this));
-  embedder_render_process_id_ =
-      embedder_web_contents->GetRenderProcessHost()->GetID();
-  args.GetInteger(guestview::kParameterInstanceId, &view_instance_id_);
-  extra_params_.reset(args.DeepCopy());
-
-  // GuestViewBase::Attach is called prior to initialization (and initial
-  // navigation) of the guest in the content layer in order to permit mapping
-  // the necessary associations between the <*view> element and its guest. This
-  // is needed by the <webview> WebRequest API to allow intercepting resource
-  // requests during navigation. However, queued events should be fired after
-  // content layer initialization in order to ensure that load events (such as
-  // 'loadstop') fire in embedder after the contentWindow is available.
-  if (!in_extension())
-    return;
-
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&GuestViewBase::SendQueuedEvents,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
 void GuestViewBase::Destroy() {
   WillDestroy();
   if (!destruction_callback_.is_null())
@@ -188,6 +170,12 @@ void GuestViewBase::Destroy() {
   delete guest_web_contents();
 }
 
+void GuestViewBase::DidAttach() {
+  // Give the derived class an opportunity to perform some actions.
+  DidAttachToEmbedder();
+
+  SendQueuedEvents();
+}
 
 void GuestViewBase::SetOpener(GuestViewBase* guest) {
   if (guest && guest->IsViewType(GetViewType())) {
@@ -200,6 +188,19 @@ void GuestViewBase::SetOpener(GuestViewBase* guest) {
 void GuestViewBase::RegisterDestructionCallback(
     const DestructionCallback& callback) {
   destruction_callback_ = callback;
+}
+
+void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
+                               const base::DictionaryValue& extra_params) {
+  embedder_web_contents_ = embedder_web_contents;
+  embedder_web_contents_observer_.reset(
+      new EmbedderWebContentsObserver(this));
+  embedder_render_process_id_ =
+      embedder_web_contents->GetRenderProcessHost()->GetID();
+  extra_params.GetInteger(guestview::kParameterInstanceId, &view_instance_id_);
+  extra_params_.reset(extra_params.DeepCopy());
+
+  WillAttachToEmbedder();
 }
 
 void GuestViewBase::DidStopLoading(content::RenderViewHost* render_view_host) {

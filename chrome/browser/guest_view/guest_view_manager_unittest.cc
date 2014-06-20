@@ -12,22 +12,7 @@
 using content::WebContents;
 using content::WebContentsTester;
 
-class GuestViewManagerTest : public testing::Test {
- public:
-  GuestViewManagerTest() {}
-  virtual ~GuestViewManagerTest() {}
-
-  scoped_ptr<WebContents> CreateWebContents() {
-    return scoped_ptr<WebContents>(
-        WebContentsTester::CreateTestWebContents(&profile_, NULL));
-  }
-
- private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(GuestViewManagerTest);
-};
+namespace guestview {
 
 // This class allows us to access some private variables in
 // GuestViewManager.
@@ -49,9 +34,33 @@ class TestGuestViewManager : public GuestViewManager {
   DISALLOW_COPY_AND_ASSIGN(TestGuestViewManager);
 };
 
+} // namespace guestview
+
+namespace {
+
+class GuestViewManagerTest : public testing::Test {
+ public:
+  GuestViewManagerTest() {}
+  virtual ~GuestViewManagerTest() {}
+
+  scoped_ptr<WebContents> CreateWebContents() {
+    return scoped_ptr<WebContents>(
+        WebContentsTester::CreateTestWebContents(&profile_, NULL));
+  }
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(GuestViewManagerTest);
+};
+
+}  // namespace
+
 TEST_F(GuestViewManagerTest, AddRemove) {
   TestingProfile profile;
-  scoped_ptr<TestGuestViewManager> manager(new TestGuestViewManager(&profile));
+  scoped_ptr<guestview::TestGuestViewManager> manager(
+      new guestview::TestGuestViewManager(&profile));
 
   scoped_ptr<WebContents> web_contents1(CreateWebContents());
   scoped_ptr<WebContents> web_contents2(CreateWebContents());

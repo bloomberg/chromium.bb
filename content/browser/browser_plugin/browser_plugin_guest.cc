@@ -226,11 +226,6 @@ void BrowserPluginGuest::Initialize(
 
   // Inform the embedder of the guest's attachment.
   SendMessageToEmbedder(new BrowserPluginMsg_Attach_ACK(instance_id_));
-
-  if (delegate_) {
-    delegate_->DidAttach(extra_params);
-    has_render_view_ = true;
-  }
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {
@@ -487,6 +482,9 @@ void BrowserPluginGuest::Attach(
   if (attached())
     return;
 
+  if (delegate_)
+    delegate_->WillAttach(embedder_web_contents, extra_params);
+
   // If a RenderView has already been created for this new window, then we need
   // to initialize the browser-side state now so that the RenderFrameHostManager
   // does not create a new RenderView on navigation.
@@ -501,6 +499,9 @@ void BrowserPluginGuest::Attach(
   Initialize(params, embedder_web_contents, extra_params);
 
   SendQueuedMessages();
+
+  if (delegate_)
+    delegate_->DidAttach();
 
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Attached"));
 }

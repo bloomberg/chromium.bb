@@ -189,19 +189,17 @@ void AttachWebViewHelpers(WebContents* contents) {
 WebViewGuest::WebViewGuest(int guest_instance_id,
                            WebContents* guest_web_contents,
                            const std::string& embedder_extension_id)
-   :  GuestView<WebViewGuest>(guest_instance_id,
-                              guest_web_contents,
-                              embedder_extension_id),
+   :  GuestView<WebViewGuest>(guest_instance_id),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)),
       pending_context_menu_request_id_(0),
       next_permission_request_id_(0),
       is_overriding_user_agent_(false),
-      pending_reload_on_attachment_(false),
       main_frame_id_(0),
       chromevox_injected_(false),
       find_helper_(this),
       javascript_dialog_helper_(this) {
+  Init(guest_web_contents, embedder_extension_id);
   notification_registrar_.Add(
       this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::Source<WebContents>(guest_web_contents));
@@ -387,28 +385,48 @@ scoped_ptr<base::ListValue> WebViewGuest::MenuModelToValue(
   return items.Pass();
 }
 
-void WebViewGuest::Attach(WebContents* embedder_web_contents,
-                          const base::DictionaryValue& args) {
+void WebViewGuest::DidAttachToEmbedder() {
   std::string name;
-  args.GetString(webview::kName, &name);
-  // If the guest window's name is empty, then the WebView tag's name is
-  // assigned. Otherwise, the guest window's name takes precedence over the
-  // WebView tag's name.
-  if (name_.empty())
-    name_ = name;
+  if (extra_params()->GetString(webview::kName, &name)) {
+    // If the guest window's name is empty, then the WebView tag's name is
+    // assigned. Otherwise, the guest window's name takes precedence over the
+    // WebView tag's name.
+    if (name_.empty())
+      name_ = name;
+  }
   ReportFrameNameChange(name_);
 
   std::string user_agent_override;
-  if (args.GetString(webview::kParameterUserAgentOverride,
-                     &user_agent_override)) {
+  if (extra_params()->GetString(webview::kParameterUserAgentOverride,
+                                &user_agent_override)) {
     SetUserAgentOverride(user_agent_override);
   } else {
     SetUserAgentOverride("");
   }
 
-  GuestViewBase::Attach(embedder_web_contents, args);
+  std::string src;
+  if (extra_params()->GetString("src", &src) && !src.empty())
+    NavigateGuest(src);
 
-  AddWebViewToExtensionRendererState();
+  if (GetOpener()) {
+    // We need to do a navigation here if the target URL has changed between
+    // the time the WebContents was created and the time it was attached.
+    // We also need to do an initial navigation if a RenderView was never
+    // created for the new window in cases where there is no referrer.
+    PendingWindowMap::iterator it =
+        GetOpener()->pending_new_windows_.find(this);
+    if (it != GetOpener()->pending_new_windows_.end()) {
+      const NewWindowInfo& new_window_info = it->second;
+      if (new_window_info.changed || !guest_web_contents()->HasOpener())
+        NavigateGuest(new_window_info.url.spec());
+    } else {
+      NOTREACHED();
+    }
+
+    // Once a new guest is attached to the DOM of the embedder page, then the
+    // lifetime of the new guest is no longer managed by the opener guest.
+    GetOpener()->pending_new_windows_.erase(this);
+  }
 }
 
 void WebViewGuest::DidStopLoading() {
@@ -473,36 +491,6 @@ bool WebViewGuest::AddMessageToConsole(WebContents* source,
 void WebViewGuest::CloseContents(WebContents* source) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   DispatchEvent(new GuestViewBase::Event(webview::kEventClose, args.Pass()));
-}
-
-void WebViewGuest::DidAttach(const base::DictionaryValue& extra_params) {
-  std::string src;
-  if (extra_params.GetString("src", &src) && !src.empty())
-    NavigateGuest(src);
-
-  if (GetOpener()) {
-    // We need to do a navigation here if the target URL has changed between
-    // the time the WebContents was created and the time it was attached.
-    // We also need to do an initial navigation if a RenderView was never
-    // created for the new window in cases where there is no referrer.
-    PendingWindowMap::iterator it =
-        GetOpener()->pending_new_windows_.find(this);
-    if (it != GetOpener()->pending_new_windows_.end()) {
-      const NewWindowInfo& new_window_info = it->second;
-      NavigateGuest(new_window_info.url.spec());
-    } else {
-      NOTREACHED();
-    }
-
-    // Once a new guest is attached to the DOM of the embedder page, then the
-    // lifetime of the new guest is no longer managed by the opener guest.
-    GetOpener()->pending_new_windows_.erase(this);
-  }
-
-  if (pending_reload_on_attachment_) {
-    pending_reload_on_attachment_ = false;
-    guest_web_contents()->GetController().Reload(false);
-  }
 }
 
 void WebViewGuest::FindReply(WebContents* source,
@@ -845,6 +833,8 @@ WebViewGuest::SetPermissionResult WebViewGuest::SetPermission(
 
 void WebViewGuest::SetUserAgentOverride(
     const std::string& user_agent_override) {
+  if (!attached())
+    return;
   is_overriding_user_agent_ = !user_agent_override.empty();
   if (is_overriding_user_agent_) {
     content::RecordAction(UserMetricsAction("WebView.Guest.OverrideUA"));
@@ -1052,18 +1042,14 @@ void WebViewGuest::RenderProcessGone(base::TerminationStatus status) {
 }
 
 void WebViewGuest::UserAgentOverrideSet(const std::string& user_agent) {
+  if (!attached())
+    return;
   content::NavigationController& controller =
       guest_web_contents()->GetController();
   content::NavigationEntry* entry = controller.GetVisibleEntry();
   if (!entry)
     return;
   entry->SetIsOverridingUserAgent(!user_agent.empty());
-  if (!attached()) {
-    // We cannot reload now because all resource loads are suspended until
-    // attachment.
-    pending_reload_on_attachment_ = true;
-    return;
-  }
   guest_web_contents()->GetController().Reload(false);
 }
 
@@ -1204,6 +1190,13 @@ void WebViewGuest::RequestPointerLockPermission(
                  base::Unretained(this),
                  callback),
       false /* allowed_by_default */);
+}
+
+void WebViewGuest::WillAttachToEmbedder() {
+  // We must install the mapping from guests to WebViews prior to resuming
+  // suspended resource loads so that the WebRequest API will catch resource
+  // requests.
+  AddWebViewToExtensionRendererState();
 }
 
 content::JavaScriptDialogManager*
@@ -1472,8 +1465,9 @@ content::WebContents* WebViewGuest::OpenURLFromTab(
         opener->pending_new_windows_.find(this);
     if (it == opener->pending_new_windows_.end())
       return NULL;
-    const NewWindowInfo& old_target_url = it->second;
-    NewWindowInfo new_window_info(params.url, old_target_url.name);
+    const NewWindowInfo& info = it->second;
+    NewWindowInfo new_window_info(params.url, info.name);
+    new_window_info.changed = new_window_info.url != info.url;
     it->second = new_window_info;
     return NULL;
   }

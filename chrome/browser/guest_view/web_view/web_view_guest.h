@@ -88,12 +88,12 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void SetZoom(double zoom_factor);
 
   // GuestViewBase implementation.
-  virtual void Attach(content::WebContents* embedder_web_contents,
-                      const base::DictionaryValue& args) OVERRIDE;
+  virtual void DidAttachToEmbedder() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
   virtual void EmbedderDestroyed() OVERRIDE;
   virtual void GuestDestroyed() OVERRIDE;
   virtual bool IsDragAndDropEnabled() const OVERRIDE;
+  virtual void WillAttachToEmbedder() OVERRIDE;
   virtual void WillDestroy() OVERRIDE;
 
   // WebContentsDelegate implementation.
@@ -151,14 +151,12 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                                   content::WebContents* new_contents) OVERRIDE;
 
   // BrowserPluginGuestDelegate implementation.
-  virtual void DidAttach(const base::DictionaryValue& extra_params) OVERRIDE;
   virtual void SizeChanged(const gfx::Size& old_size, const gfx::Size& new_size)
       OVERRIDE;
   virtual void RequestPointerLockPermission(
       bool user_gesture,
       bool last_unlocked_by_target,
       const base::Callback<void(bool)>& callback) OVERRIDE;
-
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -455,10 +453,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // True if the user agent is overridden.
   bool is_overriding_user_agent_;
 
-  // Indicates that the page needs to be reloaded once it has been attached to
-  // an embedder.
-  bool pending_reload_on_attachment_;
-
   // Main frame ID of last committed page.
   int64 main_frame_id_;
 
@@ -497,9 +491,11 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   struct NewWindowInfo {
     GURL url;
     std::string name;
+    bool changed;
     NewWindowInfo(const GURL& url, const std::string& name) :
         url(url),
-        name(name) {}
+        name(name),
+        changed(false) {}
   };
 
   typedef std::map<WebViewGuest*, NewWindowInfo> PendingWindowMap;
