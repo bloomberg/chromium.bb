@@ -1,8 +1,10 @@
 {
   "compile_targets": [
-    "browser_tests_run"
+    "browser_tests_run",
+    "sandbox_linux_unittests_run"
   ],
   "gtest_tests": [
-    "browser_tests"
+    "browser_tests",
+    "sandbox_linux_unittests"
   ]
 }
