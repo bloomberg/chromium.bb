@@ -13508,10 +13508,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.FtpServerTypeCount" enum="FtpServerType">
+  <obsolete>
+    Replaced by Net.FtpServerTypeCount2 on 2012-11-03.
+  </obsolete>
   <owner>phajdan.jr@chromium.org</owner>
   <summary>
-    Each bucket is the number of FTP server types the user has encountered
-    during the session.
+    Each bucket is the number of times the FTP server type was encountered.
+  </summary>
+</histogram>
+
+<histogram name="Net.FtpServerTypeCount2" enum="FtpServerType2">
+  <owner>phajdan.jr@chromium.org</owner>
+  <summary>
+    Each bucket is the number of times the FTP server type was encountered.
   </summary>
 </histogram>
 
@@ -13572,10 +13581,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.HadFtpServerType" enum="FtpServerType">
+  <obsolete>
+    Replaced by Net.HadFtpServerType2 on 2012-11-13.
+  </obsolete>
   <owner>phajdan.jr@chromium.org</owner>
   <summary>
-    Each bucket is a boolean (0 or 1) indicating whether the user has had a
-    connection with an FTP server of that type during the session.
+    Each bucket is the number of sessions that encountered a given FTP server
+    type. Each session reports a given server type at most once.
+  </summary>
+</histogram>
+
+<histogram name="Net.HadFtpServerType2" enum="FtpServerType2">
+  <owner>phajdan.jr@chromium.org</owner>
+  <summary>
+    Each bucket is the number of sessions that encountered a given FTP server
+    type. Each session reports a given server type at most once.
   </summary>
 </histogram>
 
@@ -37821,8 +37841,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="FtpServerType" type="int">
+  <obsolete>
+    Deprecated 2012-11-13. No longer generated.
+  </obsolete>
   <summary>
-    FTP server type as defined in net/ftp/ftp_server_type_histograms.h
+    Old FTP server type as previously defined in
+    net/ftp/ftp_server_type_histograms.h
   </summary>
   <int value="0" label="Unknown">
     Unknown (could be a server we don't support, a broken server, or a security
@@ -37840,6 +37864,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="8" label="win16">
     win16 hosts: SuperTCP or NetManage Chameleon
   </int>
+</enum>
+
+<enum name="FtpServerType2" type="int">
+  <summary>
+    FTP server type as defined in net/ftp/ftp_server_type_histograms.h
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="/bin/ls"/>
+  <int value="2" label="Windows"/>
+  <int value="3" label="VMS"/>
+  <int value="4" label="Netware"/>
+  <int value="5" label="OS/2"/>
 </enum>
 
 <enum name="GaiaSessionRestoreOutcome" type="int">
