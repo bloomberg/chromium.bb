@@ -26,7 +26,9 @@ class SmoothnessController(object):
     self._interaction = None
 
   def Start(self, page, tab):
-    custom_categories = ['webkit.console', 'benchmark']
+    # FIXME: Remove webkit.console when blink.console lands in chromium and
+    # the ref builds are updated. crbug.com/386847
+    custom_categories = ['webkit.console', 'blink.console', 'benchmark']
     custom_categories += page.GetSyntheticDelayCategories()
     tab.browser.StartTracing(','.join(custom_categories), 60)
     if tab.browser.platform.IsRawDisplayFrameRateSupported():

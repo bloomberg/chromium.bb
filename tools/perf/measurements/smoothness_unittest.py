@@ -68,11 +68,16 @@ class SmoothnessUnitTest(
         'DELAY(cc.BeginMainFrame;0.012000;static)',
         'DELAY(cc.DrawAndSwap;0.012000;alternating)',
         'DELAY(gpu.PresentingFrame;0.012000;static)',
-        'benchmark',
-        'webkit.console'
+        'benchmark'
     ]
     actual_category_filter = tab.browser.category_filter.split(',')
     actual_category_filter.sort()
+
+    # FIXME: Put blink.console into the expected above and remove these two
+    # remove entries when the blink.console change has rolled into chromium.
+    actual_category_filter.remove('webkit.console')
+    actual_category_filter.remove('blink.console')
+
     if expected_category_filter != actual_category_filter:
       sys.stderr.write("Expected category filter: %s\n" %
                        repr(expected_category_filter))

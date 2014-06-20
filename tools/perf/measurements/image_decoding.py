@@ -27,8 +27,11 @@ class ImageDecoding(page_measurement.PageMeasurement):
     self._power_metric.Start(page, tab)
     # FIXME: bare 'devtools' is for compatibility with older reference versions
     # only and may eventually be removed.
+    # FIXME: Remove webkit.console when blink.console lands in chromium and
+    # the ref builds are updated. crbug.com/386847
     tab.browser.StartTracing(
-        'disabled-by-default-devtools.timeline*,devtools,webkit.console')
+        'disabled-by-default-devtools.timeline*,' +
+            'devtools,webkit.console,blink.console')
 
   def StopBrowserAfterPage(self, browser, page):
     return not browser.tabs[0].ExecuteJavaScript("""

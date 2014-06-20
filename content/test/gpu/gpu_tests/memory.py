@@ -83,7 +83,9 @@ class _MemoryValidator(page_test.PageTest):
         '--force-gpu-mem-available-mb=%s' % MEMORY_LIMIT_MB)
 
   def WillNavigateToPage(self, page, tab):
-    custom_categories = ['webkit.console', 'gpu']
+    # FIXME: Remove webkit.console when blink.console lands in chromium and the
+    # ref builds are updated. crbug.com/386847
+    custom_categories = ['webkit.console', 'blink.console', 'gpu']
     tab.browser.StartTracing(','.join(custom_categories), 60)
 
   def _FormatException(self, low_or_high, mb_used):
