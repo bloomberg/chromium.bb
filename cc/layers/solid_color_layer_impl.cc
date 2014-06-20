@@ -27,7 +27,8 @@ void SolidColorLayerImpl::AppendQuads(QuadSink* quad_sink,
   SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
 
-  AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
+  AppendDebugBorderQuad(
+      quad_sink, content_bounds(), shared_quad_state, append_quads_data);
 
   // We create a series of smaller quads instead of just one large one so that
   // the culler can reduce the total pixels drawn.

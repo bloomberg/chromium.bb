@@ -165,6 +165,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
   if (current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     AppendDebugBorderQuad(
         quad_sink,
+        scaled_content_bounds,
         shared_quad_state,
         append_quads_data,
         DebugColors::DirectPictureBorderColor(),
@@ -197,7 +198,8 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
     return;
   }
 
-  AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
+  AppendDebugBorderQuad(
+      quad_sink, scaled_content_bounds, shared_quad_state, append_quads_data);
 
   if (ShowDebugBorders()) {
     for (PictureLayerTilingSet::CoverageIterator iter(

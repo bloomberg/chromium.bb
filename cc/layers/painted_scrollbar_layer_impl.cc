@@ -81,7 +81,8 @@ void PaintedScrollbarLayerImpl::AppendQuads(
   SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
 
-  AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
+  AppendDebugBorderQuad(
+      quad_sink, content_bounds(), shared_quad_state, append_quads_data);
 
   gfx::Rect thumb_quad_rect = ComputeThumbQuadRect();
   gfx::Rect visible_thumb_quad_rect =
