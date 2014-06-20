@@ -519,7 +519,7 @@
     "extension_types": ["extension", "platform_app"]
   },
   "identity.email": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension", "platform_app"]
   },
   "identityPrivate": {

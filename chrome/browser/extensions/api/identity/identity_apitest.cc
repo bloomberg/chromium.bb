@@ -595,10 +595,29 @@ class IdentityGetProfileUserInfoFunctionTest : public ExtensionBrowserTest {
         utils::RunFunctionAndReturnSingleResult(func.get(), "[]", browser()));
     return api::identity::ProfileUserInfo::FromValue(*value.get());
   }
+
+  scoped_ptr<api::identity::ProfileUserInfo> RunGetProfileUserInfoWithEmail() {
+    scoped_refptr<IdentityGetProfileUserInfoFunction> func(
+        new IdentityGetProfileUserInfoFunction);
+    func->set_extension(CreateExtensionWithEmailPermission());
+    scoped_ptr<base::Value> value(
+        utils::RunFunctionAndReturnSingleResult(func.get(), "[]", browser()));
+    return api::identity::ProfileUserInfo::FromValue(*value.get());
+  }
+
+ private:
+  scoped_refptr<Extension> CreateExtensionWithEmailPermission() {
+    scoped_ptr<base::DictionaryValue> test_extension_value(
+        utils::ParseDictionary(
+            "{\"name\": \"Test\", \"version\": \"1.0\", "
+            "\"permissions\": [\"identity.email\"]}"));
+    return utils::CreateExtension(test_extension_value.get());
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest, NotSignedIn) {
-  scoped_ptr<api::identity::ProfileUserInfo> info = RunGetProfileUserInfo();
+  scoped_ptr<api::identity::ProfileUserInfo> info =
+      RunGetProfileUserInfoWithEmail();
   EXPECT_TRUE(info->email.empty());
   EXPECT_TRUE(info->id.empty());
 }
@@ -609,8 +628,28 @@ IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest, SignedIn) {
   profile()->GetPrefs()
       ->SetString(prefs::kGoogleServicesUserAccountId, "12345");
 
-  scoped_ptr<api::identity::ProfileUserInfo> info = RunGetProfileUserInfo();
+  scoped_ptr<api::identity::ProfileUserInfo> info =
+      RunGetProfileUserInfoWithEmail();
   EXPECT_EQ("president@example.com", info->email);
+  EXPECT_EQ("12345", info->id);
+}
+
+IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest,
+                       NotSignedInNoEmail) {
+  scoped_ptr<api::identity::ProfileUserInfo> info = RunGetProfileUserInfo();
+  EXPECT_TRUE(info->email.empty());
+  EXPECT_TRUE(info->id.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest,
+                       SignedInNoEmail) {
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                   "president@example.com");
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUserAccountId,
+                                   "12345");
+
+  scoped_ptr<api::identity::ProfileUserInfo> info = RunGetProfileUserInfo();
+  EXPECT_TRUE(info->email.empty());
   EXPECT_EQ("12345", info->id);
 }
 

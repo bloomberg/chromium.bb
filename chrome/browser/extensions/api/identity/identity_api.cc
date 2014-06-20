@@ -31,6 +31,8 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "url/gurl.h"
 
@@ -768,8 +770,11 @@ ExtensionFunction::ResponseAction IdentityGetProfileUserInfoFunction::Run() {
   }
 
   api::identity::ProfileUserInfo profile_user_info;
-  profile_user_info.email =
-      GetProfile()->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
+  if (GetExtension()->permissions_data()->HasAPIPermission(
+          APIPermission::kIdentityEmail)) {
+    profile_user_info.email =
+        GetProfile()->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
+  }
   profile_user_info.id =
       GetProfile()->GetPrefs()->GetString(prefs::kGoogleServicesUserAccountId);
 
