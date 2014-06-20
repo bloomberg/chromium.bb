@@ -117,7 +117,11 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 			  "-wm", wm_fd,
 			  "-terminate",
 			  NULL) < 0)
-			weston_log("exec failed: %m\n");
+			weston_log("exec of '%s %s -rootless "
+                                   "-listen %s -listen %s -wm %s "
+                                   "-terminate' failed: %m\n",
+                                   xserver, display,
+                                   abstract_fd, unix_fd, wm_fd);
 	fail:
 		_exit(EXIT_FAILURE);
 
