@@ -61,6 +61,8 @@ namespace WebCore {
 
         virtual ~WorkerThreadableLoader();
 
+        virtual void overrideTimeout(unsigned long timeout) OVERRIDE;
+
         virtual void cancel() OVERRIDE;
 
         bool done() const { return m_workerClientWrapper->done(); }
@@ -89,6 +91,7 @@ namespace WebCore {
         public:
             // All executed on the worker context's thread.
             MainThreadBridge(PassRefPtr<ThreadableLoaderClientWrapper>, PassOwnPtr<ThreadableLoaderClient>, WorkerLoaderProxy&, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, const String& outgoingReferrer);
+            void overrideTimeout(unsigned long timeoutMilliseconds);
             void cancel();
             void destroy();
 
@@ -101,6 +104,7 @@ namespace WebCore {
             virtual ~MainThreadBridge();
 
             static void mainThreadCreateLoader(ExecutionContext*, MainThreadBridge*, PassOwnPtr<CrossThreadResourceRequestData>, ThreadableLoaderOptions, ResourceLoaderOptions, const String& outgoingReferrer);
+            static void mainThreadOverrideTimeout(ExecutionContext*, MainThreadBridge*, unsigned long timeoutMilliseconds);
             static void mainThreadCancel(ExecutionContext*, MainThreadBridge*);
             virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
             virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) OVERRIDE;
