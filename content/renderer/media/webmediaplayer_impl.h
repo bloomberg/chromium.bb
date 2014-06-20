@@ -310,8 +310,6 @@ class WebMediaPlayerImpl
 
   bool supports_save_;
 
-  bool starting_;
-
   // These two are mutually exclusive:
   //   |data_source_| is used for regular resource loads.
   //   |chunk_demuxer_| is used for Media Source resource loads.

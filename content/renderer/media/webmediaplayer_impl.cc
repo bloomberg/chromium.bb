@@ -168,7 +168,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       incremented_externally_allocated_memory_(false),
       gpu_factories_(RenderThreadImpl::current()->GetGpuFactories()),
       supports_save_(true),
-      starting_(false),
       chunk_demuxer_(NULL),
       // Threaded compositing isn't enabled universally yet.
       compositor_task_runner_(
@@ -341,7 +340,7 @@ void WebMediaPlayerImpl::seek(double seconds) {
 
   base::TimeDelta seek_time = ConvertSecondsToTimestamp(seconds);
 
-  if (starting_ || seeking_) {
+  if (seeking_) {
     pending_seek_ = true;
     pending_seek_seconds_ = seconds;
     if (chunk_demuxer_)
@@ -902,7 +901,6 @@ void WebMediaPlayerImpl::InvalidateOnMainThread() {
 void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
   DVLOG(1) << __FUNCTION__ << "(" << status << ")";
   DCHECK(main_loop_->BelongsToCurrentThread());
-  starting_ = false;
   seeking_ = false;
   if (pending_seek_) {
     pending_seek_ = false;
@@ -1199,7 +1197,7 @@ void WebMediaPlayerImpl::StartPipeline() {
   }
 
   // ... and we're ready to go!
-  starting_ = true;
+  seeking_ = true;
   pipeline_.Start(
       filter_collection.Pass(),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
