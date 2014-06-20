@@ -28,6 +28,7 @@
 
 #include "platform/mediastream/RTCStatsResponseBase.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 using namespace WebCore;
 
@@ -53,13 +54,13 @@ WebRTCStatsResponse::operator PassRefPtrWillBeRawPtr<WebCore::RTCStatsResponseBa
     return m_private.get();
 }
 
-size_t WebRTCStatsResponse::addReport(WebString id, WebString type, double timestamp)
+size_t WebRTCStatsResponse::addReport(const WebString& id, const WebString& type, double timestamp)
 {
     ASSERT(!m_private.isNull());
     return m_private->addReport(id, type, timestamp);
 }
 
-void WebRTCStatsResponse::addStatistic(size_t report, WebString name, WebString value)
+void WebRTCStatsResponse::addStatistic(size_t report, const WebString& name, const WebString& value)
 {
     ASSERT(!m_private.isNull());
     m_private->addStatistic(report, name, value);

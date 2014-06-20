@@ -43,8 +43,8 @@ public:
 
     PassRefPtrWillBeRawPtr<RTCStatsReport> namedItem(const AtomicString& name);
 
-    virtual size_t addReport(String id, String type, double timestamp) OVERRIDE;
-    virtual void addStatistic(size_t report, String name, String value) OVERRIDE;
+    virtual size_t addReport(const String& id, const String& type, double timestamp) OVERRIDE;
+    virtual void addStatistic(size_t report, const String& name, const String& value) OVERRIDE;
 
     virtual void trace(Visitor*) OVERRIDE;
 

@@ -51,8 +51,8 @@ public:
 
     BLINK_PLATFORM_EXPORT void reset();
 
-    BLINK_PLATFORM_EXPORT size_t addReport(WebString id, WebString type, double timestamp);
-    BLINK_PLATFORM_EXPORT void addStatistic(size_t report, WebString name, WebString value);
+    BLINK_PLATFORM_EXPORT size_t addReport(const WebString& id, const WebString& type, double timestamp);
+    BLINK_PLATFORM_EXPORT void addStatistic(size_t report, const WebString& name, const WebString& value);
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebRTCStatsResponse(const PassRefPtrWillBeRawPtr<WebCore::RTCStatsResponseBase>&);
