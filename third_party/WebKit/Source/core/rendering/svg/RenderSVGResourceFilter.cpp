@@ -34,8 +34,6 @@
 #include "platform/graphics/filters/SourceAlpha.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 
-using namespace std;
-
 namespace WebCore {
 
 const RenderSVGResourceType RenderSVGResourceFilter::s_resourceType = FilterResourceType;

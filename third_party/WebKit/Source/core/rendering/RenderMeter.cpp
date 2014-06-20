@@ -25,8 +25,6 @@
 #include "core/html/HTMLMeterElement.h"
 #include "core/rendering/RenderTheme.h"
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace HTMLNames;

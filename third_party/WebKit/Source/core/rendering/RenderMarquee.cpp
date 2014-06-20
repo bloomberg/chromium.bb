@@ -54,8 +54,6 @@
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -129,13 +127,13 @@ int RenderMarquee::computePosition(EMarqueeDirection dir, bool stopAtContentEdge
         }
         if (dir == MRIGHT) {
             if (stopAtContentEdge)
-                return max<LayoutUnit>(0, ltr ? (contentWidth - clientWidth) : (clientWidth - contentWidth));
+                return std::max<LayoutUnit>(0, ltr ? (contentWidth - clientWidth) : (clientWidth - contentWidth));
             else
                 return ltr ? contentWidth : clientWidth;
         }
         else {
             if (stopAtContentEdge)
-                return min<LayoutUnit>(0, ltr ? (contentWidth - clientWidth) : (clientWidth - contentWidth));
+                return std::min<LayoutUnit>(0, ltr ? (contentWidth - clientWidth) : (clientWidth - contentWidth));
             else
                 return ltr ? -clientWidth : -contentWidth;
         }
@@ -145,13 +143,13 @@ int RenderMarquee::computePosition(EMarqueeDirection dir, bool stopAtContentEdge
         int clientHeight = this->clientHeight();
         if (dir == MUP) {
             if (stopAtContentEdge)
-                 return min(contentHeight - clientHeight, 0);
+                return std::min(contentHeight - clientHeight, 0);
             else
                 return -clientHeight;
         }
         else {
             if (stopAtContentEdge)
-                return max(contentHeight - clientHeight, 0);
+                return std::max(contentHeight - clientHeight, 0);
             else
                 return contentHeight;
         }
@@ -307,9 +305,9 @@ void RenderMarquee::timerFired()
         int currentPos = (isHorizontal() ? layer()->scrollableArea()->scrollXOffset() : layer()->scrollableArea()->scrollYOffset());
         newPos =  currentPos + (addIncrement ? increment : -increment);
         if (positive)
-            newPos = min(newPos, endPoint);
+            newPos = std::min(newPos, endPoint);
         else
-            newPos = max(newPos, endPoint);
+            newPos = std::max(newPos, endPoint);
     }
 
     if (newPos == endPoint) {

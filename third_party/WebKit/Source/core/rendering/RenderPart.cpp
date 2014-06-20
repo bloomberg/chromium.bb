@@ -34,8 +34,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 
-using namespace std;
-
 namespace WebCore {
 
 RenderPart::RenderPart(Element* node)

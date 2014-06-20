@@ -35,8 +35,6 @@
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/fonts/SimpleFontData.h"
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace HTMLNames;

@@ -69,8 +69,6 @@
   overflow content.
 */
 
-using namespace std;
-
 namespace WebCore {
 
 FixedTableLayout::FixedTableLayout(RenderTable* table)

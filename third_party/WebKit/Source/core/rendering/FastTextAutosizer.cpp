@@ -48,8 +48,6 @@
 #include "core/dom/ExecutionContextTask.h"
 #endif
 
-using namespace std;
-
 namespace WebCore {
 
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
@@ -862,9 +860,9 @@ float FastTextAutosizer::multiplierFromBlock(const RenderBlock* block)
 
     // Block width, in CSS pixels.
     float blockWidth = widthFromBlock(block);
-    float multiplier = m_pageInfo.m_frameWidth ? min(blockWidth, static_cast<float>(m_pageInfo.m_layoutWidth)) / m_pageInfo.m_frameWidth : 1.0f;
+    float multiplier = m_pageInfo.m_frameWidth ? std::min(blockWidth, static_cast<float>(m_pageInfo.m_layoutWidth)) / m_pageInfo.m_frameWidth : 1.0f;
 
-    return max(m_pageInfo.m_baseMultiplier * multiplier, 1.0f);
+    return std::max(m_pageInfo.m_baseMultiplier * multiplier, 1.0f);
 }
 
 const RenderBlock* FastTextAutosizer::deepestBlockContainingAllText(Cluster* cluster)

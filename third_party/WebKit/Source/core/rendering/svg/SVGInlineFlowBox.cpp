@@ -27,8 +27,6 @@
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 
-using namespace std;
-
 namespace WebCore {
 
 void SVGInlineFlowBox::paintSelectionBackground(PaintInfo& paintInfo)

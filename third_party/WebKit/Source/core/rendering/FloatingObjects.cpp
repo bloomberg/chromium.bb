@@ -28,7 +28,6 @@
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderView.h"
 
-using namespace std;
 using namespace WTF;
 
 namespace WebCore {
@@ -201,7 +200,7 @@ LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatT
             return getCachedlowestFloatLogicalBottom(floatType);
     } else {
         if (hasLowestFloatLogicalBottomCached(isInHorizontalWritingMode, FloatingObject::FloatLeft) && hasLowestFloatLogicalBottomCached(isInHorizontalWritingMode, FloatingObject::FloatRight)) {
-            return max(getCachedlowestFloatLogicalBottom(FloatingObject::FloatLeft),
+            return std::max(getCachedlowestFloatLogicalBottom(FloatingObject::FloatLeft),
                 getCachedlowestFloatLogicalBottom(FloatingObject::FloatRight));
         }
     }
@@ -218,19 +217,19 @@ LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatT
                 FloatingObject::Type curType = floatingObject->type();
                 LayoutUnit curFloatLogicalBottom = m_renderer->logicalBottomForFloat(floatingObject);
                 if (curType & FloatingObject::FloatLeft)
-                    lowestFloatBottomLeft = max(lowestFloatBottomLeft, curFloatLogicalBottom);
+                    lowestFloatBottomLeft = std::max(lowestFloatBottomLeft, curFloatLogicalBottom);
                 if (curType & FloatingObject::FloatRight)
-                    lowestFloatBottomRight = max(lowestFloatBottomRight, curFloatLogicalBottom);
+                    lowestFloatBottomRight = std::max(lowestFloatBottomRight, curFloatLogicalBottom);
             }
         }
-        lowestFloatBottom = max(lowestFloatBottomLeft, lowestFloatBottomRight);
+        lowestFloatBottom = std::max(lowestFloatBottomLeft, lowestFloatBottomRight);
         setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, FloatingObject::FloatLeft, lowestFloatBottomLeft);
         setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, FloatingObject::FloatRight, lowestFloatBottomRight);
     } else {
         for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
             FloatingObject* floatingObject = it->get();
             if (floatingObject->isPlaced() && floatingObject->type() == floatType)
-                lowestFloatBottom = max(lowestFloatBottom, m_renderer->logicalBottomForFloat(floatingObject));
+                lowestFloatBottom = std::max(lowestFloatBottom, m_renderer->logicalBottomForFloat(floatingObject));
         }
         setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, floatType, lowestFloatBottom);
     }
@@ -391,7 +390,7 @@ LayoutUnit FloatingObjects::logicalRightOffsetForPositioningFloat(LayoutUnit fix
     if (heightRemaining)
         *heightRemaining = adapter.heightRemaining();
 
-    return min(fixedOffset, adapter.offset());
+    return std::min(fixedOffset, adapter.offset());
 }
 
 LayoutUnit FloatingObjects::logicalLeftOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight)
@@ -407,7 +406,7 @@ LayoutUnit FloatingObjects::logicalRightOffset(LayoutUnit fixedOffset, LayoutUni
     ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatRight> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), fixedOffset);
     placedFloatsTree().allOverlapsWithAdapter(adapter);
 
-    return min(fixedOffset, adapter.offset());
+    return std::min(fixedOffset, adapter.offset());
 }
 
 FloatingObjects::FloatBottomCachedValue::FloatBottomCachedValue()

@@ -37,8 +37,6 @@
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderView.h"
 
-using namespace std;
-
 namespace WebCore {
 
 RenderRegion::RenderRegion(Element* element, RenderFlowThread* flowThread)
@@ -84,15 +82,15 @@ LayoutRect RenderRegion::overflowRectForFlowThreadPortion(const LayoutRect& flow
     LayoutRect clipRect;
     if (m_flowThread->isHorizontalWritingMode()) {
         LayoutUnit minY = isFirstPortion ? flowThreadOverflow.y() : flowThreadPortionRect.y();
-        LayoutUnit maxY = isLastPortion ? max(flowThreadPortionRect.maxY(), flowThreadOverflow.maxY()) : flowThreadPortionRect.maxY();
-        LayoutUnit minX = min(flowThreadPortionRect.x(), flowThreadOverflow.x());
-        LayoutUnit maxX = max(flowThreadPortionRect.maxX(), flowThreadOverflow.maxX());
+        LayoutUnit maxY = isLastPortion ? std::max(flowThreadPortionRect.maxY(), flowThreadOverflow.maxY()) : flowThreadPortionRect.maxY();
+        LayoutUnit minX = std::min(flowThreadPortionRect.x(), flowThreadOverflow.x());
+        LayoutUnit maxX = std::max(flowThreadPortionRect.maxX(), flowThreadOverflow.maxX());
         clipRect = LayoutRect(minX, minY, maxX - minX, maxY - minY);
     } else {
         LayoutUnit minX = isFirstPortion ? flowThreadOverflow.x() : flowThreadPortionRect.x();
-        LayoutUnit maxX = isLastPortion ? max(flowThreadPortionRect.maxX(), flowThreadOverflow.maxX()) : flowThreadPortionRect.maxX();
-        LayoutUnit minY = min(flowThreadPortionRect.y(), (flowThreadOverflow.y()));
-        LayoutUnit maxY = max(flowThreadPortionRect.y(), (flowThreadOverflow.maxY()));
+        LayoutUnit maxX = isLastPortion ? std::max(flowThreadPortionRect.maxX(), flowThreadOverflow.maxX()) : flowThreadPortionRect.maxX();
+        LayoutUnit minY = std::min(flowThreadPortionRect.y(), (flowThreadOverflow.y()));
+        LayoutUnit maxY = std::max(flowThreadPortionRect.y(), (flowThreadOverflow.maxY()));
         clipRect = LayoutRect(minX, minY, maxX - minX, maxY - minY);
     }
 

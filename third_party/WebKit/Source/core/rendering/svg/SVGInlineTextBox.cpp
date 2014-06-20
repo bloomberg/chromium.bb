@@ -44,8 +44,6 @@
 #include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
-using namespace std;
-
 namespace WebCore {
 
 struct ExpectedSVGInlineTextBoxSize : public InlineTextBox {
@@ -147,8 +145,8 @@ FloatRect SVGInlineTextBox::selectionRectForTextFragment(const SVGTextFragment& 
 LayoutRect SVGInlineTextBox::localSelectionRect(int startPosition, int endPosition)
 {
     int boxStart = start();
-    startPosition = max(startPosition - boxStart, 0);
-    endPosition = min(endPosition - boxStart, static_cast<int>(len()));
+    startPosition = std::max(startPosition - boxStart, 0);
+    endPosition = std::min(endPosition - boxStart, static_cast<int>(len()));
     if (startPosition >= endPosition)
         return LayoutRect();
 
@@ -728,8 +726,8 @@ void SVGInlineTextBox::paintTextMatchMarker(GraphicsContext* context, const Floa
 
         SVGInlineTextBox* textBox = toSVGInlineTextBox(box);
 
-        int markerStartPosition = max<int>(marker->startOffset() - textBox->start(), 0);
-        int markerEndPosition = min<int>(marker->endOffset() - textBox->start(), textBox->len());
+        int markerStartPosition = std::max<int>(marker->startOffset() - textBox->start(), 0);
+        int markerEndPosition = std::min<int>(marker->endOffset() - textBox->start(), textBox->len());
 
         if (markerStartPosition >= markerEndPosition)
             continue;

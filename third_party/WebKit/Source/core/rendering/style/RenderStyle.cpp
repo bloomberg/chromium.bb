@@ -40,8 +40,6 @@
 #include "platform/geometry/FloatRoundedRect.h"
 #include "wtf/MathExtras.h"
 
-using namespace std;
-
 namespace WebCore {
 
 struct SameSizeAsBorderValue {
@@ -1238,7 +1236,7 @@ void RenderStyle::setFontSize(float size)
     if (!std::isfinite(size) || size < 0)
         size = 0;
     else
-        size = min(maximumAllowedFontSize, size);
+        size = std::min(maximumAllowedFontSize, size);
 
     FontSelector* currentFontSelector = font().fontSelector();
     FontDescription desc(fontDescription());
@@ -1248,7 +1246,7 @@ void RenderStyle::setFontSize(float size)
     float multiplier = textAutosizingMultiplier();
     if (multiplier > 1) {
         float autosizedFontSize = TextAutosizer::computeAutosizedFontSize(size, multiplier);
-        desc.setComputedSize(min(maximumAllowedFontSize, autosizedFontSize));
+        desc.setComputedSize(std::min(maximumAllowedFontSize, autosizedFontSize));
     }
 
     setFontDescription(desc);
@@ -1329,10 +1327,10 @@ void RenderStyle::getShadowExtent(const ShadowList* shadowList, LayoutUnit &top,
             continue;
         float blurAndSpread = shadow.blur() + shadow.spread();
 
-        top = min<LayoutUnit>(top, shadow.y() - blurAndSpread);
-        right = max<LayoutUnit>(right, shadow.x() + blurAndSpread);
-        bottom = max<LayoutUnit>(bottom, shadow.y() + blurAndSpread);
-        left = min<LayoutUnit>(left, shadow.x() - blurAndSpread);
+        top = std::min<LayoutUnit>(top, shadow.y() - blurAndSpread);
+        right = std::max<LayoutUnit>(right, shadow.x() + blurAndSpread);
+        bottom = std::max<LayoutUnit>(bottom, shadow.y() + blurAndSpread);
+        left = std::min<LayoutUnit>(left, shadow.x() - blurAndSpread);
     }
 }
 
@@ -1349,10 +1347,10 @@ LayoutBoxExtent RenderStyle::getShadowInsetExtent(const ShadowList* shadowList) 
         if (shadow.style() == Normal)
             continue;
         float blurAndSpread = shadow.blur() + shadow.spread();
-        top = max<LayoutUnit>(top, shadow.y() + blurAndSpread);
-        right = min<LayoutUnit>(right, shadow.x() - blurAndSpread);
-        bottom = min<LayoutUnit>(bottom, shadow.y() - blurAndSpread);
-        left = max<LayoutUnit>(left, shadow.x() + blurAndSpread);
+        top = std::max<LayoutUnit>(top, shadow.y() + blurAndSpread);
+        right = std::min<LayoutUnit>(right, shadow.x() - blurAndSpread);
+        bottom = std::min<LayoutUnit>(bottom, shadow.y() - blurAndSpread);
+        left = std::max<LayoutUnit>(left, shadow.x() + blurAndSpread);
     }
 
     return LayoutBoxExtent(top, right, bottom, left);
@@ -1370,8 +1368,8 @@ void RenderStyle::getShadowHorizontalExtent(const ShadowList* shadowList, Layout
             continue;
         float blurAndSpread = shadow.blur() + shadow.spread();
 
-        left = min<LayoutUnit>(left, shadow.x() - blurAndSpread);
-        right = max<LayoutUnit>(right, shadow.x() + blurAndSpread);
+        left = std::min<LayoutUnit>(left, shadow.x() - blurAndSpread);
+        right = std::max<LayoutUnit>(right, shadow.x() + blurAndSpread);
     }
 }
 
@@ -1387,8 +1385,8 @@ void RenderStyle::getShadowVerticalExtent(const ShadowList* shadowList, LayoutUn
             continue;
         float blurAndSpread = shadow.blur() + shadow.spread();
 
-        top = min<LayoutUnit>(top, shadow.y() - blurAndSpread);
-        bottom = max<LayoutUnit>(bottom, shadow.y() + blurAndSpread);
+        top = std::min<LayoutUnit>(top, shadow.y() - blurAndSpread);
+        bottom = std::max<LayoutUnit>(bottom, shadow.y() + blurAndSpread);
     }
 }
 

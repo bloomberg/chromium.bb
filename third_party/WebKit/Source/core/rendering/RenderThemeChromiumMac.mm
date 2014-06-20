@@ -63,8 +63,6 @@
 #import <wtf/RetainPtr.h>
 #import <wtf/StdLibExtras.h>
 
-using namespace std;
-
 // The methods in this file are specific to the Mac OS X platform.
 
 // We estimate the animation rate of a Mac OS X progress bar is 33 fps.
@@ -1084,7 +1082,7 @@ bool RenderThemeChromiumMac::paintProgressBar(RenderObject* renderObject, const 
 
     trackInfo.bounds = IntRect(IntPoint(), inflatedRect.size());
     trackInfo.min = 0;
-    trackInfo.max = numeric_limits<SInt32>::max();
+    trackInfo.max = std::numeric_limits<SInt32>::max();
     trackInfo.value = lround(renderProgress->position() * nextafter(trackInfo.max, 0));
     trackInfo.trackInfo.progress.phase = lround(renderProgress->animationProgress() * nextafter(progressAnimationNumFrames, 0));
     trackInfo.attributes = kThemeTrackHorizontal;
@@ -1131,7 +1129,7 @@ bool RenderThemeChromiumMac::paintMenuListButton(RenderObject* o, const PaintInf
                              r.width() - o->style()->borderLeftWidth() - o->style()->borderRightWidth(),
                              r.height() - o->style()->borderTopWidth() - o->style()->borderBottomWidth());
     // Since we actually know the size of the control here, we restrict the font scale to make sure the arrows will fit vertically in the bounds
-    float fontScale = min(o->style()->fontSize() / baseFontSize, bounds.height() / (baseArrowHeight * 2 + baseSpaceBetweenArrows));
+    float fontScale = std::min(o->style()->fontSize() / baseFontSize, bounds.height() / (baseArrowHeight * 2 + baseSpaceBetweenArrows));
     float centerY = bounds.y() + bounds.height() / 2.0f;
     float arrowHeight = baseArrowHeight * fontScale;
     float arrowWidth = baseArrowWidth * fontScale;

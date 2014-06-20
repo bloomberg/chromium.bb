@@ -33,8 +33,6 @@
 #include "core/rendering/RenderRubyBase.h"
 #include "core/rendering/RenderRubyRun.h"
 
-using namespace std;
-
 namespace WebCore {
 
 RenderRubyBase::RenderRubyBase()

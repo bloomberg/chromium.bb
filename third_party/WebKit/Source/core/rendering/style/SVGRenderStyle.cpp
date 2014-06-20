@@ -29,9 +29,6 @@
 
 #include "core/rendering/style/SVGRenderStyle.h"
 
-
-using namespace std;
-
 namespace WebCore {
 
 SVGRenderStyle::SVGRenderStyle()

@@ -42,8 +42,6 @@
 #include "platform/LengthFunctions.h"
 #include "platform/graphics/GraphicsContext.h"
 
-using namespace std;
-
 namespace WebCore {
 
 RenderSVGRoot::RenderSVGRoot(SVGElement* node)

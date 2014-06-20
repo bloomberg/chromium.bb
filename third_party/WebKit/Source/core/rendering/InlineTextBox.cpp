@@ -57,8 +57,6 @@
 
 #include <algorithm>
 
-using namespace std;
-
 namespace WebCore {
 
 struct SameSizeAsInlineTextBox : public InlineBox {
@@ -142,10 +140,10 @@ LayoutUnit InlineTextBox::selectionHeight()
 
 bool InlineTextBox::isSelected(int startPos, int endPos) const
 {
-    int sPos = max(startPos - m_start, 0);
+    int sPos = std::max(startPos - m_start, 0);
     // The position after a hard line break is considered to be past its end.
     // See the corresponding code in InlineTextBox::selectionState.
-    int ePos = min(endPos - m_start, int(m_len) + (isLineBreak() ? 0 : 1));
+    int ePos = std::min(endPos - m_start, int(m_len) + (isLineBreak() ? 0 : 1));
     return (sPos < ePos);
 }
 
@@ -197,8 +195,8 @@ RenderObject::SelectionState InlineTextBox::selectionState()
 
 LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
 {
-    int sPos = max(startPos - m_start, 0);
-    int ePos = min(endPos - m_start, (int)m_len);
+    int sPos = std::max(startPos - m_start, 0);
+    int ePos = std::min(endPos - m_start, (int)m_len);
 
     if (sPos > ePos)
         return LayoutRect();
@@ -299,7 +297,7 @@ float InlineTextBox::placeEllipsisBox(bool flowIsLTR, float visibleLeftEdge, flo
             // and the ellipsis edge.
             m_truncation = cFullTruncation;
             truncatedWidth += ellipsisWidth;
-            return min(ellipsisX, logicalLeft());
+            return std::min(ellipsisX, logicalLeft());
         }
 
         // Set the truncation index on the text run.
@@ -676,8 +674,8 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         selectionStartEnd(sPos, ePos);
 
     if (m_truncation != cNoTruncation) {
-        sPos = min<int>(sPos, m_truncation);
-        ePos = min<int>(ePos, m_truncation);
+        sPos = std::min<int>(sPos, m_truncation);
+        ePos = std::min<int>(ePos, m_truncation);
         length = m_truncation;
     }
 
@@ -798,8 +796,8 @@ void InlineTextBox::selectionStartEnd(int& sPos, int& ePos)
             startPos = 0;
     }
 
-    sPos = max(startPos - m_start, 0);
-    ePos = min(endPos - m_start, (int)m_len);
+    sPos = std::max(startPos - m_start, 0);
+    ePos = std::min(endPos - m_start, (int)m_len);
 }
 
 void alignSelectionRectToDevicePixels(FloatRect& rect)
@@ -850,7 +848,7 @@ void InlineTextBox::paintSelection(GraphicsContext* context, const FloatPoint& b
     LayoutUnit selectionTop = root().selectionTopAdjustedForPrecedingBlock();
 
     int deltaY = roundToInt(renderer().style()->isFlippedLinesWritingMode() ? selectionBottom - logicalBottom() : logicalTop() - selectionTop);
-    int selHeight = max(0, roundToInt(selectionBottom - selectionTop));
+    int selHeight = std::max(0, roundToInt(selectionBottom - selectionTop));
 
     FloatPoint localOrigin(boxOrigin.x(), boxOrigin.y() - deltaY);
     FloatRect clipRect(localOrigin, FloatSize(m_logicalWidth, selHeight));
@@ -1006,12 +1004,12 @@ static void strokeWavyTextDecoration(GraphicsContext* context, FloatPoint p1, Fl
     // the actual curve passes approximately at half of that distance, that is 3 pixels.
     // The minimum height of the curve is also approximately 3 pixels. Increases the curve's height
     // as strockThickness increases to make the curve looks better.
-    float controlPointDistance = 3 * max<float>(2, strokeThickness);
+    float controlPointDistance = 3 * std::max<float>(2, strokeThickness);
 
     // Increment used to form the diamond shape between start point (p1), control
     // points and end point (p2) along the axis of the decoration. Makes the
     // curve wider as strockThickness increases to make the curve looks better.
-    float step = 2 * max<float>(2, strokeThickness);
+    float step = 2 * std::max<float>(2, strokeThickness);
 
     bool isVerticalLine = (p1.x() == p2.x());
 
@@ -1160,14 +1158,14 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
             float shadowY = isHorizontal() ? s.y() : -s.x();
             shadowRect.move(shadowX, shadowY);
             clipRect.unite(shadowRect);
-            extraOffset = max(extraOffset, max(0.0f, shadowY) + s.blur());
+            extraOffset = std::max(extraOffset, std::max(0.0f, shadowY) + s.blur());
         }
         context->clip(clipRect);
         extraOffset += baseline + 2;
         localOrigin.move(0, extraOffset);
     }
 
-    for (size_t i = max(static_cast<size_t>(1), shadowCount); i--; ) {
+    for (size_t i = std::max(static_cast<size_t>(1), shadowCount); i--; ) {
         // Even if we have no shadows, we still want to run the code below this once.
         if (i < shadowCount) {
             if (!i) {
@@ -1233,11 +1231,11 @@ void InlineTextBox::paintDocumentMarker(GraphicsContext* pt, const FloatPoint& b
         markerSpansWholeBox = false;
 
     if (!markerSpansWholeBox || grammar) {
-        int startPosition = max<int>(marker->startOffset() - m_start, 0);
-        int endPosition = min<int>(marker->endOffset() - m_start, m_len);
+        int startPosition = std::max<int>(marker->startOffset() - m_start, 0);
+        int endPosition = std::min<int>(marker->endOffset() - m_start, m_len);
 
         if (m_truncation != cNoTruncation)
-            endPosition = min<int>(endPosition, m_truncation);
+            endPosition = std::min<int>(endPosition, m_truncation);
 
         // Calculate start & width
         int deltaY = renderer().style()->isFlippedLinesWritingMode() ? selectionBottom() - logicalBottom() : logicalTop() - selectionTop();
@@ -1286,8 +1284,8 @@ void InlineTextBox::paintTextMatchMarker(GraphicsContext* pt, const FloatPoint& 
     int deltaY = renderer().style()->isFlippedLinesWritingMode() ? selectionBottom() - logicalBottom() : logicalTop() - selectionTop();
     int selHeight = selectionHeight();
 
-    int sPos = max(marker->startOffset() - m_start, (unsigned)0);
-    int ePos = min(marker->endOffset() - m_start, (unsigned)m_len);
+    int sPos = std::max(marker->startOffset() - m_start, (unsigned)0);
+    int ePos = std::min(marker->endOffset() - m_start, (unsigned)m_len);
     TextRun run = constructTextRun(style, font);
 
     // Always compute and store the rect associated with this marker. The computed rect is in absolute coordinates.

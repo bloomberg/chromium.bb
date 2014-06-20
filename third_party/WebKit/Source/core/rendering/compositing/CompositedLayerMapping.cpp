@@ -54,8 +54,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringBuilder.h"
 
-using namespace std;
-
 namespace WebCore {
 
 using namespace HTMLNames;

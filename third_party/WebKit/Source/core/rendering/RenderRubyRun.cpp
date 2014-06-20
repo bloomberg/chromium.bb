@@ -36,8 +36,6 @@
 #include "core/rendering/RenderRubyText.h"
 #include "core/rendering/RenderText.h"
 
-using namespace std;
-
 namespace WebCore {
 
 RenderRubyRun::RenderRubyRun()
@@ -283,11 +281,11 @@ void RenderRubyRun::getOverhang(bool firstLine, RenderObject* startRenderer, Ren
         return;
 
     int logicalWidth = this->logicalWidth();
-    int logicalLeftOverhang = numeric_limits<int>::max();
-    int logicalRightOverhang = numeric_limits<int>::max();
+    int logicalLeftOverhang = std::numeric_limits<int>::max();
+    int logicalRightOverhang = std::numeric_limits<int>::max();
     for (RootInlineBox* rootInlineBox = rubyBase->firstRootBox(); rootInlineBox; rootInlineBox = rootInlineBox->nextRootBox()) {
-        logicalLeftOverhang = min<int>(logicalLeftOverhang, rootInlineBox->logicalLeft());
-        logicalRightOverhang = min<int>(logicalRightOverhang, logicalWidth - rootInlineBox->logicalRight());
+        logicalLeftOverhang = std::min<int>(logicalLeftOverhang, rootInlineBox->logicalLeft());
+        logicalRightOverhang = std::min<int>(logicalRightOverhang, logicalWidth - rootInlineBox->logicalRight());
     }
 
     startOverhang = style()->isLeftToRightDirection() ? logicalLeftOverhang : logicalRightOverhang;
@@ -304,9 +302,9 @@ void RenderRubyRun::getOverhang(bool firstLine, RenderObject* startRenderer, Ren
     // and no more than half the font size.
     int halfWidthOfFontSize = rubyText->style(firstLine)->fontSize() / 2;
     if (startOverhang)
-        startOverhang = min<int>(startOverhang, min<int>(toRenderText(startRenderer)->minLogicalWidth(), halfWidthOfFontSize));
+        startOverhang = std::min<int>(startOverhang, std::min<int>(toRenderText(startRenderer)->minLogicalWidth(), halfWidthOfFontSize));
     if (endOverhang)
-        endOverhang = min<int>(endOverhang, min<int>(toRenderText(endRenderer)->minLogicalWidth(), halfWidthOfFontSize));
+        endOverhang = std::min<int>(endOverhang, std::min<int>(toRenderText(endRenderer)->minLogicalWidth(), halfWidthOfFontSize));
 }
 
 } // namespace WebCore

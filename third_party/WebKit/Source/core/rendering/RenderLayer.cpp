@@ -91,8 +91,6 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 
-using namespace std;
-
 namespace WebCore {
 
 namespace {
@@ -2766,7 +2764,7 @@ RenderLayer* RenderLayer::hitTestLayer(RenderLayer* rootLayer, RenderLayer* cont
 
     // The following are used for keeping track of the z-depth of the hit point of 3d-transformed
     // descendants.
-    double localZOffset = -numeric_limits<double>::infinity();
+    double localZOffset = -std::numeric_limits<double>::infinity();
     double* zOffsetForDescendantsPtr = 0;
     double* zOffsetForContentsPtr = 0;
 

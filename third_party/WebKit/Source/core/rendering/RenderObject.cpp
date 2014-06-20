@@ -90,8 +90,6 @@
 #include <stdio.h>
 #endif
 
-using namespace std;
-
 namespace WebCore {
 
 namespace {
@@ -1080,35 +1078,35 @@ void RenderObject::drawDoubleBoxSide(GraphicsContext* graphicsContext, int x1, i
 
     switch (side) {
     case BSTop:
-        drawLineForBoxSide(graphicsContext, x1 + max((-adjacentWidth1 * 2 + 1) / 3, 0),
-            y1, x2 - max((-adjacentWidth2 * 2 + 1) / 3, 0), y1 + thirdOfThickness,
+        drawLineForBoxSide(graphicsContext, x1 + std::max((-adjacentWidth1 * 2 + 1) / 3, 0),
+            y1, x2 - std::max((-adjacentWidth2 * 2 + 1) / 3, 0), y1 + thirdOfThickness,
             side, color, SOLID, adjacent1BigThird, adjacent2BigThird, antialias);
-        drawLineForBoxSide(graphicsContext, x1 + max((adjacentWidth1 * 2 + 1) / 3, 0),
-            y2 - thirdOfThickness, x2 - max((adjacentWidth2 * 2 + 1) / 3, 0), y2,
+        drawLineForBoxSide(graphicsContext, x1 + std::max((adjacentWidth1 * 2 + 1) / 3, 0),
+            y2 - thirdOfThickness, x2 - std::max((adjacentWidth2 * 2 + 1) / 3, 0), y2,
             side, color, SOLID, adjacent1BigThird, adjacent2BigThird, antialias);
         break;
     case BSLeft:
-        drawLineForBoxSide(graphicsContext, x1, y1 + max((-adjacentWidth1 * 2 + 1) / 3, 0),
-            x1 + thirdOfThickness, y2 - max((-adjacentWidth2 * 2 + 1) / 3, 0),
+        drawLineForBoxSide(graphicsContext, x1, y1 + std::max((-adjacentWidth1 * 2 + 1) / 3, 0),
+            x1 + thirdOfThickness, y2 - std::max((-adjacentWidth2 * 2 + 1) / 3, 0),
             side, color, SOLID, adjacent1BigThird, adjacent2BigThird, antialias);
-        drawLineForBoxSide(graphicsContext, x2 - thirdOfThickness, y1 + max((adjacentWidth1 * 2 + 1) / 3, 0),
-            x2, y2 - max((adjacentWidth2 * 2 + 1) / 3, 0),
+        drawLineForBoxSide(graphicsContext, x2 - thirdOfThickness, y1 + std::max((adjacentWidth1 * 2 + 1) / 3, 0),
+            x2, y2 - std::max((adjacentWidth2 * 2 + 1) / 3, 0),
             side, color, SOLID, adjacent1BigThird, adjacent2BigThird, antialias);
         break;
     case BSBottom:
-        drawLineForBoxSide(graphicsContext, x1 + max((adjacentWidth1 * 2 + 1) / 3, 0),
-            y1, x2 - max((adjacentWidth2 * 2 + 1) / 3, 0), y1 + thirdOfThickness,
+        drawLineForBoxSide(graphicsContext, x1 + std::max((adjacentWidth1 * 2 + 1) / 3, 0),
+            y1, x2 - std::max((adjacentWidth2 * 2 + 1) / 3, 0), y1 + thirdOfThickness,
             side, color, SOLID, adjacent1BigThird, adjacent2BigThird, antialias);
-        drawLineForBoxSide(graphicsContext, x1 + max((-adjacentWidth1 * 2 + 1) / 3, 0),
-            y2 - thirdOfThickness, x2 - max((-adjacentWidth2 * 2 + 1) / 3, 0), y2,
+        drawLineForBoxSide(graphicsContext, x1 + std::max((-adjacentWidth1 * 2 + 1) / 3, 0),
+            y2 - thirdOfThickness, x2 - std::max((-adjacentWidth2 * 2 + 1) / 3, 0), y2,
             side, color, SOLID, adjacent1BigThird, adjacent2BigThird, antialias);
         break;
     case BSRight:
-        drawLineForBoxSide(graphicsContext, x1, y1 + max((adjacentWidth1 * 2 + 1) / 3, 0),
-            x1 + thirdOfThickness, y2 - max((adjacentWidth2 * 2 + 1) / 3, 0),
+        drawLineForBoxSide(graphicsContext, x1, y1 + std::max((adjacentWidth1 * 2 + 1) / 3, 0),
+            x1 + thirdOfThickness, y2 - std::max((adjacentWidth2 * 2 + 1) / 3, 0),
             side, color, SOLID, adjacent1BigThird, adjacent2BigThird, antialias);
-        drawLineForBoxSide(graphicsContext, x2 - thirdOfThickness, y1 + max((-adjacentWidth1 * 2 + 1) / 3, 0),
-            x2, y2 - max((-adjacentWidth2 * 2 + 1) / 3, 0),
+        drawLineForBoxSide(graphicsContext, x2 - thirdOfThickness, y1 + std::max((-adjacentWidth1 * 2 + 1) / 3, 0),
+            x2, y2 - std::max((-adjacentWidth2 * 2 + 1) / 3, 0),
             side, color, SOLID, adjacent1BigThird, adjacent2BigThird, antialias);
         break;
     default:
@@ -1134,27 +1132,27 @@ void RenderObject::drawRidgeOrGrooveBoxSide(GraphicsContext* graphicsContext, in
 
     switch (side) {
     case BSTop:
-        drawLineForBoxSide(graphicsContext, x1 + max(-adjacentWidth1, 0) / 2, y1, x2 - max(-adjacentWidth2, 0) / 2, (y1 + y2 + 1) / 2,
+        drawLineForBoxSide(graphicsContext, x1 + std::max(-adjacentWidth1, 0) / 2, y1, x2 - std::max(-adjacentWidth2, 0) / 2, (y1 + y2 + 1) / 2,
             side, color, s1, adjacent1BigHalf, adjacent2BigHalf, antialias);
-        drawLineForBoxSide(graphicsContext, x1 + max(adjacentWidth1 + 1, 0) / 2, (y1 + y2 + 1) / 2, x2 - max(adjacentWidth2 + 1, 0) / 2, y2,
+        drawLineForBoxSide(graphicsContext, x1 + std::max(adjacentWidth1 + 1, 0) / 2, (y1 + y2 + 1) / 2, x2 - std::max(adjacentWidth2 + 1, 0) / 2, y2,
             side, color, s2, adjacentWidth1 / 2, adjacentWidth2 / 2, antialias);
         break;
     case BSLeft:
-        drawLineForBoxSide(graphicsContext, x1, y1 + max(-adjacentWidth1, 0) / 2, (x1 + x2 + 1) / 2, y2 - max(-adjacentWidth2, 0) / 2,
+        drawLineForBoxSide(graphicsContext, x1, y1 + std::max(-adjacentWidth1, 0) / 2, (x1 + x2 + 1) / 2, y2 - std::max(-adjacentWidth2, 0) / 2,
             side, color, s1, adjacent1BigHalf, adjacent2BigHalf, antialias);
-        drawLineForBoxSide(graphicsContext, (x1 + x2 + 1) / 2, y1 + max(adjacentWidth1 + 1, 0) / 2, x2, y2 - max(adjacentWidth2 + 1, 0) / 2,
+        drawLineForBoxSide(graphicsContext, (x1 + x2 + 1) / 2, y1 + std::max(adjacentWidth1 + 1, 0) / 2, x2, y2 - std::max(adjacentWidth2 + 1, 0) / 2,
             side, color, s2, adjacentWidth1 / 2, adjacentWidth2 / 2, antialias);
         break;
     case BSBottom:
-        drawLineForBoxSide(graphicsContext, x1 + max(adjacentWidth1, 0) / 2, y1, x2 - max(adjacentWidth2, 0) / 2, (y1 + y2 + 1) / 2,
+        drawLineForBoxSide(graphicsContext, x1 + std::max(adjacentWidth1, 0) / 2, y1, x2 - std::max(adjacentWidth2, 0) / 2, (y1 + y2 + 1) / 2,
             side, color, s2, adjacent1BigHalf, adjacent2BigHalf, antialias);
-        drawLineForBoxSide(graphicsContext, x1 + max(-adjacentWidth1 + 1, 0) / 2, (y1 + y2 + 1) / 2, x2 - max(-adjacentWidth2 + 1, 0) / 2, y2,
+        drawLineForBoxSide(graphicsContext, x1 + std::max(-adjacentWidth1 + 1, 0) / 2, (y1 + y2 + 1) / 2, x2 - std::max(-adjacentWidth2 + 1, 0) / 2, y2,
             side, color, s1, adjacentWidth1 / 2, adjacentWidth2 / 2, antialias);
         break;
     case BSRight:
-        drawLineForBoxSide(graphicsContext, x1, y1 + max(adjacentWidth1, 0) / 2, (x1 + x2 + 1) / 2, y2 - max(adjacentWidth2, 0) / 2,
+        drawLineForBoxSide(graphicsContext, x1, y1 + std::max(adjacentWidth1, 0) / 2, (x1 + x2 + 1) / 2, y2 - std::max(adjacentWidth2, 0) / 2,
             side, color, s2, adjacent1BigHalf, adjacent2BigHalf, antialias);
-        drawLineForBoxSide(graphicsContext, (x1 + x2 + 1) / 2, y1 + max(-adjacentWidth1 + 1, 0) / 2, x2, y2 - max(-adjacentWidth2 + 1, 0) / 2,
+        drawLineForBoxSide(graphicsContext, (x1 + x2 + 1) / 2, y1 + std::max(-adjacentWidth1 + 1, 0) / 2, x2, y2 - std::max(-adjacentWidth2 + 1, 0) / 2,
             side, color, s1, adjacentWidth1 / 2, adjacentWidth2 / 2, antialias);
         break;
     }
@@ -1181,28 +1179,28 @@ void RenderObject::drawSolidBoxSide(GraphicsContext* graphicsContext, int x1, in
     FloatPoint quad[4];
     switch (side) {
     case BSTop:
-        quad[0] = FloatPoint(x1 + max(-adjacentWidth1, 0), y1);
-        quad[1] = FloatPoint(x1 + max(adjacentWidth1, 0), y2);
-        quad[2] = FloatPoint(x2 - max(adjacentWidth2, 0), y2);
-        quad[3] = FloatPoint(x2 - max(-adjacentWidth2, 0), y1);
+        quad[0] = FloatPoint(x1 + std::max(-adjacentWidth1, 0), y1);
+        quad[1] = FloatPoint(x1 + std::max(adjacentWidth1, 0), y2);
+        quad[2] = FloatPoint(x2 - std::max(adjacentWidth2, 0), y2);
+        quad[3] = FloatPoint(x2 - std::max(-adjacentWidth2, 0), y1);
         break;
     case BSBottom:
-        quad[0] = FloatPoint(x1 + max(adjacentWidth1, 0), y1);
-        quad[1] = FloatPoint(x1 + max(-adjacentWidth1, 0), y2);
-        quad[2] = FloatPoint(x2 - max(-adjacentWidth2, 0), y2);
-        quad[3] = FloatPoint(x2 - max(adjacentWidth2, 0), y1);
+        quad[0] = FloatPoint(x1 + std::max(adjacentWidth1, 0), y1);
+        quad[1] = FloatPoint(x1 + std::max(-adjacentWidth1, 0), y2);
+        quad[2] = FloatPoint(x2 - std::max(-adjacentWidth2, 0), y2);
+        quad[3] = FloatPoint(x2 - std::max(adjacentWidth2, 0), y1);
         break;
     case BSLeft:
-        quad[0] = FloatPoint(x1, y1 + max(-adjacentWidth1, 0));
-        quad[1] = FloatPoint(x1, y2 - max(-adjacentWidth2, 0));
-        quad[2] = FloatPoint(x2, y2 - max(adjacentWidth2, 0));
-        quad[3] = FloatPoint(x2, y1 + max(adjacentWidth1, 0));
+        quad[0] = FloatPoint(x1, y1 + std::max(-adjacentWidth1, 0));
+        quad[1] = FloatPoint(x1, y2 - std::max(-adjacentWidth2, 0));
+        quad[2] = FloatPoint(x2, y2 - std::max(adjacentWidth2, 0));
+        quad[3] = FloatPoint(x2, y1 + std::max(adjacentWidth1, 0));
         break;
     case BSRight:
-        quad[0] = FloatPoint(x1, y1 + max(adjacentWidth1, 0));
-        quad[1] = FloatPoint(x1, y2 - max(adjacentWidth2, 0));
-        quad[2] = FloatPoint(x2, y2 - max(-adjacentWidth2, 0));
-        quad[3] = FloatPoint(x2, y1 + max(-adjacentWidth1, 0));
+        quad[0] = FloatPoint(x1, y1 + std::max(adjacentWidth1, 0));
+        quad[1] = FloatPoint(x1, y2 - std::max(adjacentWidth2, 0));
+        quad[2] = FloatPoint(x2, y2 - std::max(-adjacentWidth2, 0));
+        quad[3] = FloatPoint(x2, y1 + std::max(-adjacentWidth1, 0));
         break;
     }
 
@@ -1750,17 +1748,17 @@ bool RenderObject::invalidatePaintAfterLayoutIfNeeded(const RenderLayerModelObje
         style()->getBoxShadowHorizontalExtent(shadowLeft, shadowRight);
         int borderRight = isBox() ? toRenderBox(this)->borderRight() : 0;
         LayoutUnit boxWidth = isBox() ? toRenderBox(this)->width() : LayoutUnit();
-        LayoutUnit minInsetRightShadowExtent = min<LayoutUnit>(-insetShadowExtent.right(), min<LayoutUnit>(newBounds.width(), oldBounds.width()));
-        LayoutUnit borderWidth = max<LayoutUnit>(borderRight, max<LayoutUnit>(valueForLength(style()->borderTopRightRadius().width(), boxWidth), valueForLength(style()->borderBottomRightRadius().width(), boxWidth)));
-        LayoutUnit decorationsLeftWidth = max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + max<LayoutUnit>(outlineWidth, -shadowLeft);
-        LayoutUnit decorationsRightWidth = max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + max<LayoutUnit>(outlineWidth, shadowRight);
-        LayoutRect rightRect(newBounds.x() + min(newBounds.width(), oldBounds.width()) - decorationsLeftWidth,
+        LayoutUnit minInsetRightShadowExtent = std::min<LayoutUnit>(-insetShadowExtent.right(), std::min<LayoutUnit>(newBounds.width(), oldBounds.width()));
+        LayoutUnit borderWidth = std::max<LayoutUnit>(borderRight, std::max<LayoutUnit>(valueForLength(style()->borderTopRightRadius().width(), boxWidth), valueForLength(style()->borderBottomRightRadius().width(), boxWidth)));
+        LayoutUnit decorationsLeftWidth = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + std::max<LayoutUnit>(outlineWidth, -shadowLeft);
+        LayoutUnit decorationsRightWidth = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + std::max<LayoutUnit>(outlineWidth, shadowRight);
+        LayoutRect rightRect(newBounds.x() + std::min(newBounds.width(), oldBounds.width()) - decorationsLeftWidth,
             newBounds.y(),
             width + decorationsLeftWidth + decorationsRightWidth,
-            max(newBounds.height(), oldBounds.height()));
-        LayoutUnit right = min<LayoutUnit>(newBounds.maxX(), oldBounds.maxX());
+            std::max(newBounds.height(), oldBounds.height()));
+        LayoutUnit right = std::min<LayoutUnit>(newBounds.maxX(), oldBounds.maxX());
         if (rightRect.x() < right) {
-            rightRect.setWidth(min(rightRect.width(), right - rightRect.x()));
+            rightRect.setWidth(std::min(rightRect.width(), right - rightRect.x()));
             invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(rightRect), invalidationReason);
         }
     }
@@ -1771,17 +1769,17 @@ bool RenderObject::invalidatePaintAfterLayoutIfNeeded(const RenderLayerModelObje
         style()->getBoxShadowVerticalExtent(shadowTop, shadowBottom);
         int borderBottom = isBox() ? toRenderBox(this)->borderBottom() : 0;
         LayoutUnit boxHeight = isBox() ? toRenderBox(this)->height() : LayoutUnit();
-        LayoutUnit minInsetBottomShadowExtent = min<LayoutUnit>(-insetShadowExtent.bottom(), min<LayoutUnit>(newBounds.height(), oldBounds.height()));
-        LayoutUnit borderHeight = max<LayoutUnit>(borderBottom, max<LayoutUnit>(valueForLength(style()->borderBottomLeftRadius().height(), boxHeight), valueForLength(style()->borderBottomRightRadius().height(), boxHeight)));
-        LayoutUnit decorationsTopHeight = max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + max<LayoutUnit>(outlineWidth, -shadowTop);
-        LayoutUnit decorationsBottomHeight = max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + max<LayoutUnit>(outlineWidth, shadowBottom);
+        LayoutUnit minInsetBottomShadowExtent = std::min<LayoutUnit>(-insetShadowExtent.bottom(), std::min<LayoutUnit>(newBounds.height(), oldBounds.height()));
+        LayoutUnit borderHeight = std::max<LayoutUnit>(borderBottom, std::max<LayoutUnit>(valueForLength(style()->borderBottomLeftRadius().height(), boxHeight), valueForLength(style()->borderBottomRightRadius().height(), boxHeight)));
+        LayoutUnit decorationsTopHeight = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + std::max<LayoutUnit>(outlineWidth, -shadowTop);
+        LayoutUnit decorationsBottomHeight = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + std::max<LayoutUnit>(outlineWidth, shadowBottom);
         LayoutRect bottomRect(newBounds.x(),
-            min(newBounds.maxY(), oldBounds.maxY()) - decorationsTopHeight,
-            max(newBounds.width(), oldBounds.width()),
+            std::min(newBounds.maxY(), oldBounds.maxY()) - decorationsTopHeight,
+            std::max(newBounds.width(), oldBounds.width()),
             height + decorationsTopHeight + decorationsBottomHeight);
-        LayoutUnit bottom = min(newBounds.maxY(), oldBounds.maxY());
+        LayoutUnit bottom = std::min(newBounds.maxY(), oldBounds.maxY());
         if (bottomRect.y() < bottom) {
-            bottomRect.setHeight(min(bottomRect.height(), bottom - bottomRect.y()));
+            bottomRect.setHeight(std::min(bottomRect.height(), bottom - bottomRect.y()));
             invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(bottomRect), invalidationReason);
         }
     }
@@ -3265,7 +3263,7 @@ int RenderObject::caretMinOffset() const
 int RenderObject::caretMaxOffset() const
 {
     if (isReplaced())
-        return node() ? max(1U, node()->countChildren()) : 1;
+        return node() ? std::max(1U, node()->countChildren()) : 1;
     if (isHR())
         return 1;
     return 0;

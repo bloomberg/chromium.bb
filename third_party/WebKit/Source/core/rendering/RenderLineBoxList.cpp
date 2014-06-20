@@ -36,8 +36,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RootInlineBox.h"
 
-using namespace std;
-
 namespace WebCore {
 
 #ifndef NDEBUG
@@ -155,7 +153,7 @@ bool RenderLineBoxList::rangeIntersectsRect(RenderBoxModelObject* renderer, Layo
     LayoutUnit physicalStart = block->flipForWritingMode(logicalTop);
     LayoutUnit physicalEnd = block->flipForWritingMode(logicalBottom);
     LayoutUnit physicalExtent = absoluteValue(physicalEnd - physicalStart);
-    physicalStart = min(physicalStart, physicalEnd);
+    physicalStart = std::min(physicalStart, physicalEnd);
 
     if (renderer->style()->isHorizontalWritingMode()) {
         physicalStart += offset.y();
@@ -187,7 +185,7 @@ bool RenderLineBoxList::anyLineIntersectsRect(RenderBoxModelObject* renderer, co
 bool RenderLineBoxList::lineIntersectsDirtyRect(RenderBoxModelObject* renderer, InlineFlowBox* box, const PaintInfo& paintInfo, const LayoutPoint& offset) const
 {
     RootInlineBox& root = box->root();
-    LayoutUnit logicalTop = min<LayoutUnit>(box->logicalTopVisualOverflow(root.lineTop()), root.selectionTop());
+    LayoutUnit logicalTop = std::min<LayoutUnit>(box->logicalTopVisualOverflow(root.lineTop()), root.selectionTop());
     LayoutUnit logicalBottom = box->logicalBottomVisualOverflow(root.lineBottom());
 
     return rangeIntersectsRect(renderer, logicalTop, logicalBottom, paintInfo.rect, offset);
