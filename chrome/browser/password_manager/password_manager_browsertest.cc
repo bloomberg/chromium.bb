@@ -925,3 +925,25 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptWhenReloading) {
     EXPECT_FALSE(observer.infobar_shown());
   }
 }
+
+// Test that if a form gets dynamically added between the form parsing and
+// rendering, and while the main frame still loads, it still is registered, and
+// thus saving passwords from it works.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       FormsAddedBetweenParsingAndRendering) {
+  NavigateToFile("/password/between_parsing_and_rendering.html");
+
+  NavigationObserver observer(WebContents());
+  std::string submit =
+      "document.getElementById('username').value = 'temp';"
+      "document.getElementById('password').value = 'random';"
+      "document.getElementById('submit-button').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
+  observer.Wait();
+
+  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    EXPECT_TRUE(controller()->PasswordPendingUserDecision());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+  }
+}

@@ -142,6 +142,11 @@ class PasswordManager : public LoginModel {
   // |provisional_save_manager_|.
   bool ShouldPromptUserToSavePassword() const;
 
+  // Checks for every from in |forms| whether |pending_login_managers_| already
+  // contain a manager for that form. If not, adds a manager for each such form.
+  void CreatePendingLoginManagers(
+      const std::vector<autofill::PasswordForm>& forms);
+
   // Note about how a PasswordFormManager can transition from
   // pending_login_managers_ to provisional_save_manager_ and the infobar.
   //

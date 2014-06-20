@@ -310,10 +310,19 @@ void PasswordManager::OnPasswordFormSubmitted(
 
 void PasswordManager::OnPasswordFormsParsed(
     const std::vector<PasswordForm>& forms) {
+  CreatePendingLoginManagers(forms);
+}
+
+void PasswordManager::CreatePendingLoginManagers(
+    const std::vector<PasswordForm>& forms) {
   // Don't try to autofill or save passwords in the presence of SSL errors.
   if (driver_->DidLastPageLoadEncounterSSLErrors())
     return;
 
+  // Copy the weak pointers to the currently known login managers for comparison
+  // against the newly added.
+  std::vector<PasswordFormManager*> old_login_managers(
+      pending_login_managers_.get());
   for (std::vector<PasswordForm>::const_iterator iter = forms.begin();
        iter != forms.end();
        ++iter) {
@@ -321,6 +330,16 @@ void PasswordManager::OnPasswordFormsParsed(
     // SpdyProxy authentication, as indicated by the realm.
     if (EndsWith(iter->signon_realm, kSpdyProxyRealm, true))
       continue;
+    bool old_manager_found = false;
+    for (std::vector<PasswordFormManager*>::const_iterator old_manager =
+             old_login_managers.begin();
+         !old_manager_found && old_manager != old_login_managers.end();
+         ++old_manager) {
+      old_manager_found |= (*old_manager)->DoesManage(
+          *iter, PasswordFormManager::ACTION_MATCH_REQUIRED);
+    }
+    if (old_manager_found)
+      continue;  // The current form is already managed.
 
     bool ssl_valid = iter->origin.SchemeIsSecure();
     PasswordFormManager* manager =
@@ -346,6 +365,8 @@ bool PasswordManager::ShouldPromptUserToSavePassword() const {
 
 void PasswordManager::OnPasswordFormsRendered(
     const std::vector<PasswordForm>& visible_forms) {
+  CreatePendingLoginManagers(visible_forms);
+
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
   if (client_->IsLoggingActive()) {
     logger.reset(new BrowserSavePasswordProgressLogger(client_));
