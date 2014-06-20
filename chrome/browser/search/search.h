@@ -289,6 +289,11 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
 // Returns the Cacheable New Tab Page URL for the given |profile|.
 GURL GetNewTabPageURL(Profile* profile);
 
+// Returns true if 'use_alternate_instant_url' flag is set to true in field
+// trials to use an alternate Instant search base page URL for prefetching
+// search results. This allows experimentation of Instant search.
+bool ShouldUseAltInstantURL();
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_SEARCH_SEARCH_H_

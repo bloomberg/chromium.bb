@@ -75,6 +75,12 @@ const char kPrerenderInstantUrlOnOmniboxFocus[] =
 // search query.
 const char kReuseInstantSearchBasePage[] = "reuse_instant_search_base_page";
 
+// Controls whether to use the alternate Instant search base URL. This allows
+// experimentation of Instant search.
+const char kUseAltInstantURL[] = "use_alternate_instant_url";
+const char kAltInstantURLPath[] = "search";
+const char kAltInstantURLQueryParams[] = "&qbp=1";
+
 const char kDisplaySearchButtonFlagName[] = "display_search_button";
 const char kOriginChipFlagName[] = "origin_chip";
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
@@ -551,6 +557,15 @@ GURL GetInstantURL(Profile* profile, int start_margin,
   if (!IsURLAllowedForSupervisedUser(instant_url, profile))
     return GURL();
 
+  if (ShouldUseAltInstantURL()) {
+    GURL::Replacements replacements;
+    const std::string path(kAltInstantURLPath);
+    replacements.SetPathStr(path);
+    const std::string query(
+        instant_url.query() + std::string(kAltInstantURLQueryParams));
+    replacements.SetQueryStr(query);
+    instant_url = instant_url.ReplaceComponents(replacements);
+  }
   return instant_url;
 }
 
@@ -842,6 +857,12 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
                                     bool default_value,
                                     const FieldTrialFlags& flags) {
   return !!GetUInt64ValueForFlagWithDefault(flag, default_value ? 1 : 0, flags);
+}
+
+bool ShouldUseAltInstantURL() {
+  FieldTrialFlags flags;
+  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
+      kUseAltInstantURL, false, flags);
 }
 
 }  // namespace chrome
