@@ -92,7 +92,7 @@ private:
 
     RawPtrWillBeMember<NodeType> m_currentNode;
     unsigned m_cachedNodeCount;
-    unsigned m_cachedNodeIndex;
+    unsigned m_cachedNodeIndex : 31;
     unsigned m_isLengthCacheValid : 1;
 };
 
