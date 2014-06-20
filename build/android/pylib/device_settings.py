@@ -47,6 +47,20 @@ def ConfigureContentSettingsDict(device, desired_settings):
       logging.info('\t%s: %s', key, value)
 
 
+ENABLE_LOCATION_SETTING = {
+  'settings/secure': {
+    # Ensure Geolocation is enabled and allowed for tests.
+    'location_providers_allowed': 'gps,network',
+  }
+}
+
+DISABLE_LOCATION_SETTING = {
+  'settings/secure': {
+    # Ensure Geolocation is disabled.
+    'location_providers_allowed': '',
+  }
+}
+
 DETERMINISTIC_DEVICE_SETTINGS = {
   'com.google.settings/partner': {
     'network_location_opt_in': 0,
@@ -82,9 +96,6 @@ DETERMINISTIC_DEVICE_SETTINGS = {
     # automation fail (because the dialog steals the focus then mistakenly
     # receives the injected user input events).
     'anr_show_background': 0,
-
-    # Ensure Geolocation is enabled and allowed for tests.
-    'location_providers_allowed': 'gps,network',
 
     'lockscreen.disabled': 1,
 

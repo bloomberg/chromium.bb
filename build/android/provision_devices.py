@@ -146,8 +146,12 @@ def ProvisionDevices(options):
     device = device_utils.DeviceUtils(device_serial)
     device.old_interface.EnableAdbRoot()
     _ConfigureLocalProperties(device)
-    device_settings.ConfigureContentSettingsDict(
-        device, device_settings.DETERMINISTIC_DEVICE_SETTINGS)
+    device_settings_map = device_settings.DETERMINISTIC_DEVICE_SETTINGS
+    if options.disable_location:
+      device_settings_map.update(device_settings.DISABLE_LOCATION_SETTING)
+    else:
+      device_settings_map.update(device_settings.ENABLE_LOCATION_SETTING)
+    device_settings.ConfigureContentSettingsDict(device, device_settings_map)
     if 'perf' in os.environ.get('BUILDBOT_BUILDERNAME', '').lower():
       # TODO(tonyg): We eventually want network on. However, currently radios
       # can cause perfbots to drain faster than they charge.
@@ -195,6 +199,8 @@ def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--skip-wipe', action='store_true', default=False,
                     help="Don't wipe device data during provisioning.")
+  parser.add_option('--disable-location', action='store_true', default=False,
+                    help="Disallow Google location services on devices.")
   parser.add_option('-d', '--device',
                     help='The serial number of the device to be provisioned')
   parser.add_option('-t', '--target', default='Debug', help='The build target')
