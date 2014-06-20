@@ -491,7 +491,7 @@ void RenderLayerCompositor::applyUpdateLayerCompositingStateChickenEggHacks(Rend
 
 void RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer, UpdateLayerCompositingStateOptions options)
 {
-    layer->setCompositingReasons(layer->styleDeterminedCompositingReasons(), CompositingReasonComboAllStyleDeterminedReasons);
+    layer->setCompositingReasons(layer->potentialCompositingReasonsFromStyle(), CompositingReasonComboAllDirectStyleDeterminedReasons);
     CompositingStateTransitionType compositedLayerUpdate = CompositingLayerAssigner(this).computeCompositedLayerUpdate(layer);
 
     if (compositedLayerUpdate != NoCompositingStateChange)
@@ -773,16 +773,14 @@ void RenderLayerCompositor::updateRootLayerPosition()
     }
 }
 
-void RenderLayerCompositor::updateStyleDeterminedCompositingReasons(RenderLayer* layer)
+void RenderLayerCompositor::updatePotentialCompositingReasonsFromStyle(RenderLayer* layer)
 {
-    CompositingReasons reasons = m_compositingReasonFinder.styleDeterminedReasons(layer->renderer());
-    layer->setStyleDeterminedCompositingReasons(reasons);
+    layer->setPotentialCompositingReasonsFromStyle(m_compositingReasonFinder.potentialCompositingReasonsFromStyle(layer->renderer()));
 }
 
 void RenderLayerCompositor::updateDirectCompositingReasons(RenderLayer* layer)
 {
-    CompositingReasons reasons = m_compositingReasonFinder.directReasons(layer);
-    layer->setCompositingReasons(reasons, CompositingReasonComboAllDirectReasons);
+    layer->setCompositingReasons(m_compositingReasonFinder.directReasons(layer), CompositingReasonComboAllDirectReasons);
 }
 
 void RenderLayerCompositor::setOverlayLayer(GraphicsLayer* layer)

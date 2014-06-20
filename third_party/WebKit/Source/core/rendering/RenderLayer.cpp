@@ -137,7 +137,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_staticInlinePosition(0)
     , m_staticBlockPosition(0)
     , m_enclosingPaginationLayer(0)
-    , m_styleDeterminedCompositingReasons(CompositingReasonNone)
+    , m_potentialCompositingReasonsFromStyle(CompositingReasonNone)
     , m_compositingReasons(CompositingReasonNone)
     , m_groupedMapping(0)
     , m_repainter(*renderer)
@@ -1156,7 +1156,6 @@ void RenderLayer::clearChildNeedsCompositingInputsUpdate()
 
 void RenderLayer::setCompositingReasons(CompositingReasons reasons, CompositingReasons mask)
 {
-    ASSERT(reasons == (reasons & mask));
     if ((compositingReasons() & mask) == (reasons & mask))
         return;
     m_compositingReasons = (reasons & mask) | (compositingReasons() & ~mask);
@@ -3726,7 +3725,7 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
         updateFilters(oldStyle, renderer()->style());
     }
 
-    compositor()->updateStyleDeterminedCompositingReasons(this);
+    compositor()->updatePotentialCompositingReasonsFromStyle(this);
 
     setNeedsCompositingInputsUpdate();
 

@@ -164,51 +164,30 @@ static bool requiresCompositingOrSquashing(CompositingReasons reasons)
     return reasons != CompositingReasonNone;
 }
 
-static CompositingReasons subtreeReasonsForCompositing(RenderObject* renderer, bool hasCompositedDescendants, bool has3DTransformedDescendants)
+static CompositingReasons subtreeReasonsForCompositing(RenderLayer* layer, bool hasCompositedDescendants, bool has3DTransformedDescendants)
 {
     CompositingReasons subtreeReasons = CompositingReasonNone;
-
-    // FIXME: this seems to be a potentially different layer than the layer for which this was called. May not be an error, but is very confusing.
-    RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
 
     // When a layer has composited descendants, some effects, like 2d transforms, filters, masks etc must be implemented
     // via compositing so that they also apply to those composited descdendants.
     if (hasCompositedDescendants) {
-        if (layer->transform())
-            subtreeReasons |= CompositingReasonTransformWithCompositedDescendants;
+        subtreeReasons |= layer->potentialCompositingReasonsFromStyle() & CompositingReasonComboCompositedDescendants;
 
         if (layer->shouldIsolateCompositedDescendants()) {
             ASSERT(layer->stackingNode()->isStackingContext());
             subtreeReasons |= CompositingReasonIsolateCompositedDescendants;
         }
 
-        // If the implementation of createsGroup changes, we need to be aware of that in this part of code.
-        ASSERT((renderer->isTransparent() || renderer->hasMask() || renderer->hasFilter() || renderer->hasBlendMode()) == renderer->createsGroup());
-        if (renderer->isTransparent())
-            subtreeReasons |= CompositingReasonOpacityWithCompositedDescendants;
-        if (renderer->hasMask())
-            subtreeReasons |= CompositingReasonMaskWithCompositedDescendants;
-        if (renderer->hasFilter())
-            subtreeReasons |= CompositingReasonFilterWithCompositedDescendants;
-        if (renderer->hasBlendMode())
-            subtreeReasons |= CompositingReasonBlendingWithCompositedDescendants;
-
-        if (renderer->hasReflection())
-            subtreeReasons |= CompositingReasonReflectionWithCompositedDescendants;
-
-        if (renderer->hasClipOrOverflowClip())
+        // FIXME: This should move into CompositingReasonFinder::potentialCompositingReasonsFromStyle, but
+        // theres a poor interaction with RenderTextControlSingleLine, which sets this hasOverflowClip directly.
+        if (layer->renderer()->hasClipOrOverflowClip())
             subtreeReasons |= CompositingReasonClipsCompositingDescendants;
     }
 
     // A layer with preserve-3d or perspective only needs to be composited if there are descendant layers that
     // will be affected by the preserve-3d or perspective.
-    if (has3DTransformedDescendants) {
-        if (renderer->style()->transformStyle3D() == TransformStyle3DPreserve3D)
-            subtreeReasons |= CompositingReasonPreserve3DWith3DDescendants;
-
-        if (renderer->style()->hasPerspective())
-            subtreeReasons |= CompositingReasonPerspectiveWith3DDescendants;
-    }
+    if (has3DTransformedDescendants)
+        subtreeReasons |= layer->potentialCompositingReasonsFromStyle() & CompositingReasonCombo3DDescendants;
 
     return subtreeReasons;
 }
@@ -411,7 +390,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
             overlapMap.add(layer, absBounds);
 
         // Now check for reasons to become composited that depend on the state of descendant layers.
-        CompositingReasons subtreeCompositingReasons = subtreeReasonsForCompositing(layer->renderer(), childRecursionData.m_subtreeIsCompositing, anyDescendantHas3DTransform);
+        CompositingReasons subtreeCompositingReasons = subtreeReasonsForCompositing(layer, childRecursionData.m_subtreeIsCompositing, anyDescendantHas3DTransform);
         reasonsToComposite |= subtreeCompositingReasons;
         if (!willBeCompositedOrSquashed && compositor->canBeComposited(layer) && requiresCompositingOrSquashing(subtreeCompositingReasons)) {
             childRecursionData.m_compositingAncestor = layer;

@@ -437,8 +437,10 @@ public:
 
     bool scrollsOverflow() const;
 
-    CompositingReasons styleDeterminedCompositingReasons() const { return m_styleDeterminedCompositingReasons; }
-    void setStyleDeterminedCompositingReasons(CompositingReasons reasons) { ASSERT(reasons == (reasons & CompositingReasonComboAllStyleDeterminedReasons)); m_styleDeterminedCompositingReasons = reasons; }
+    CompositingReasons potentialCompositingReasonsFromStyle() const { return m_potentialCompositingReasonsFromStyle; }
+    void setPotentialCompositingReasonsFromStyle(CompositingReasons reasons) { ASSERT(reasons == (reasons & CompositingReasonComboAllStyleDeterminedReasons)); m_potentialCompositingReasonsFromStyle = reasons; }
+
+    bool hasStyleDeterminedDirectCompositingReasons() const { return m_potentialCompositingReasonsFromStyle & CompositingReasonComboAllDirectStyleDeterminedReasons; }
 
     class CompositingInputs {
     public:
@@ -695,7 +697,7 @@ private:
 
     // These compositing reasons are updated whenever style changes, not while updating compositing layers.
     // They should not be used to infer the compositing state of this layer.
-    CompositingReasons m_styleDeterminedCompositingReasons;
+    CompositingReasons m_potentialCompositingReasonsFromStyle;
 
     // Once computed, indicates all that a layer needs to become composited using the CompositingReasons enum bitfield.
     CompositingReasons m_compositingReasons;

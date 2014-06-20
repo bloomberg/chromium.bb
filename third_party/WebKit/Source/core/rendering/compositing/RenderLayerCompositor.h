@@ -165,7 +165,7 @@ public:
 
     virtual String debugName(const GraphicsLayer*) OVERRIDE;
 
-    void updateStyleDeterminedCompositingReasons(RenderLayer*);
+    void updatePotentialCompositingReasonsFromStyle(RenderLayer*);
 
     // Whether the layer could ever be composited.
     bool canBeComposited(const RenderLayer*) const;

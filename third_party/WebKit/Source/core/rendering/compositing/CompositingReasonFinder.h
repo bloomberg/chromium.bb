@@ -19,7 +19,7 @@ class CompositingReasonFinder {
 public:
     explicit CompositingReasonFinder(RenderView&);
 
-    CompositingReasons styleDeterminedReasons(RenderObject*) const;
+    CompositingReasons potentialCompositingReasonsFromStyle(RenderObject*) const;
     CompositingReasons directReasons(const RenderLayer*) const;
 
     void updateTriggers();

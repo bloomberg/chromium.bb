@@ -96,13 +96,32 @@ const uint64_t CompositingReasonComboAllDirectReasons =
     | CompositingReasonVideoOverlay
     | CompositingReasonWillChangeCompositingHint;
 
-const uint64_t CompositingReasonComboAllStyleDeterminedReasons =
+const uint64_t CompositingReasonComboAllDirectStyleDeterminedReasons =
     CompositingReason3DTransform
     | CompositingReasonBackfaceVisibilityHidden
     | CompositingReasonActiveAnimation
     | CompositingReasonTransitionProperty
     | CompositingReasonFilters
     | CompositingReasonWillChangeCompositingHint;
+
+const uint64_t CompositingReasonComboCompositedDescendants =
+    CompositingReasonTransformWithCompositedDescendants
+    | CompositingReasonIsolateCompositedDescendants
+    | CompositingReasonOpacityWithCompositedDescendants
+    | CompositingReasonMaskWithCompositedDescendants
+    | CompositingReasonFilterWithCompositedDescendants
+    | CompositingReasonBlendingWithCompositedDescendants
+    | CompositingReasonReflectionWithCompositedDescendants
+    | CompositingReasonClipsCompositingDescendants;
+
+const uint64_t CompositingReasonCombo3DDescendants =
+    CompositingReasonPreserve3DWith3DDescendants
+    | CompositingReasonPerspectiveWith3DDescendants;
+
+const uint64_t CompositingReasonComboAllStyleDeterminedReasons =
+    CompositingReasonComboAllDirectStyleDeterminedReasons
+    | CompositingReasonComboCompositedDescendants
+    | CompositingReasonCombo3DDescendants;
 
 const uint64_t CompositingReasonComboReasonsThatRequireOwnBacking =
     CompositingReasonComboAllDirectReasons
