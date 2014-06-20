@@ -61,16 +61,19 @@ class TreeHosts : public base::SupportsUserData::Data {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, public:
 
-WindowTreeHostMojo::WindowTreeHostMojo(const gfx::Rect& bounds,
+WindowTreeHostMojo::WindowTreeHostMojo(view_manager::Node* node,
                                        WindowTreeHostMojoDelegate* delegate)
-    : bounds_(bounds),
+    : node_(node),
+      bounds_(node->bounds()),
       delegate_(delegate) {
+  node_->AddObserver(this);
   CreateCompositor(GetAcceleratedWidget());
 
   TreeHosts::Get()->Add(this);
 }
 
 WindowTreeHostMojo::~WindowTreeHostMojo() {
+  node_->RemoveObserver(this);
   TreeHosts::Get()->Remove(this);
   DestroyCompositor();
   DestroyDispatcher();
@@ -156,6 +159,21 @@ void WindowTreeHostMojo::OnCursorVisibilityChangedNative(bool show) {
 
 ui::EventProcessor* WindowTreeHostMojo::GetEventProcessor() {
   return dispatcher();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WindowTreeHostMojo, view_manager::NodeObserver implementation:
+
+void WindowTreeHostMojo::OnNodeBoundsChange(
+    view_manager::Node* node,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    view_manager::NodeObserver::DispositionChangePhase phase) {
+  bounds_ = new_bounds;
+  if (old_bounds.origin() != new_bounds.origin())
+    OnHostMoved(bounds_.origin());
+  if (old_bounds.size() != new_bounds.size())
+    OnHostResized(bounds_.size());
 }
 
 }  // namespace mojo

@@ -52,7 +52,7 @@ class Browser : public Application,
                 public view_manager::ViewManagerDelegate,
                 public views::TextfieldController {
  public:
-  Browser() : view_manager_(NULL), view_(NULL) {}
+  Browser() : view_manager_(NULL) {}
 
   virtual ~Browser() {
   }
@@ -65,7 +65,7 @@ class Browser : public Application,
     ConnectTo("mojo:mojo_window_manager", &navigator_host_);
   }
 
-  void CreateWidget(const gfx::Size& size) {
+  void CreateWidget(view_manager::Node* node) {
     views::Textfield* textfield = new views::Textfield;
     textfield->set_controller(this);
 
@@ -77,9 +77,9 @@ class Browser : public Application,
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.native_widget = new NativeWidgetViewManager(widget, view_);
+    params.native_widget = new NativeWidgetViewManager(widget, node);
     params.delegate = widget_delegate;
-    params.bounds = gfx::Rect(size.width(), size.height());
+    params.bounds = gfx::Rect(node->bounds().width(), node->bounds().height());
     widget->Init(params);
     widget->Show();
     textfield->RequestFocus();
@@ -90,10 +90,9 @@ class Browser : public Application,
                            view_manager::Node* root) OVERRIDE {
     // TODO: deal with OnRootAdded() being invoked multiple times.
     view_manager_ = view_manager;
-    view_ = view_manager::View::Create(view_manager_);
-    view_manager_->GetRoots().front()->SetActiveView(view_);
+    root->SetActiveView(view_manager::View::Create(view_manager));
     root->SetFocus();
-    CreateWidget(root->bounds().size());
+    CreateWidget(root);
   }
 
   // views::TextfieldController:
@@ -114,7 +113,6 @@ class Browser : public Application,
   scoped_ptr<ViewsInit> views_init_;
 
   view_manager::ViewManager* view_manager_;
-  view_manager::View* view_;
   navigation::NavigatorHostPtr navigator_host_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);

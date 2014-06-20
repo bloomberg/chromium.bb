@@ -86,11 +86,11 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
 }  // namespace
 
 NativeWidgetViewManager::NativeWidgetViewManager(
-    views::internal::NativeWidgetDelegate* delegate, view_manager::View* view)
+    views::internal::NativeWidgetDelegate* delegate, view_manager::Node* node)
     : NativeWidgetAura(delegate),
-      view_(view) {
-  view_->AddObserver(this);
-  window_tree_host_.reset(new WindowTreeHostMojo(gfx::Rect(800, 600), this));
+      node_(node) {
+  node_->active_view()->AddObserver(this);
+  window_tree_host_.reset(new WindowTreeHostMojo(node_, this));
   window_tree_host_->InitHost();
 
   ime_filter_.reset(
@@ -106,7 +106,7 @@ NativeWidgetViewManager::NativeWidgetViewManager(
 }
 
 NativeWidgetViewManager::~NativeWidgetViewManager() {
-  view_->RemoveObserver(this);
+  node_->active_view()->RemoveObserver(this);
 }
 
 void NativeWidgetViewManager::InitNativeWidget(
@@ -118,7 +118,7 @@ void NativeWidgetViewManager::InitNativeWidget(
 
 void NativeWidgetViewManager::CompositorContentsChanged(
     const SkBitmap& bitmap) {
-  view_->SetContents(bitmap);
+  node_->active_view()->SetContents(bitmap);
 }
 
 void NativeWidgetViewManager::OnViewInputEvent(view_manager::View* view,

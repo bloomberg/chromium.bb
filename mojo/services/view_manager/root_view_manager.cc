@@ -6,10 +6,10 @@
 
 #include "base/auto_reset.h"
 #include "base/scoped_observer.h"
-#include "mojo/aura/screen_mojo.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/services/view_manager/root_node_manager.h"
 #include "mojo/services/view_manager/root_view_manager_delegate.h"
+#include "mojo/services/view_manager/screen_impl.h"
 #include "mojo/services/view_manager/window_tree_host_impl.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -114,7 +114,7 @@ RootViewManager::RootViewManager(ServiceProvider* service_provider,
     : delegate_(delegate),
       root_node_manager_(root_node),
       in_setup_(false) {
-  screen_.reset(ScreenMojo::Create());
+  screen_.reset(ScreenImpl::Create());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
   NativeViewportPtr viewport;
   ConnectToService(service_provider,

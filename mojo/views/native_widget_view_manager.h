@@ -6,6 +6,7 @@
 #define MOJO_VIEWS_NATIVE_WIDGET_VIEW_MANAGER_H_
 
 #include "mojo/aura/window_tree_host_mojo_delegate.h"
+#include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "ui/views/widget/native_widget_aura.h"
 
@@ -25,10 +26,11 @@ class WindowTreeHostMojo;
 
 class NativeWidgetViewManager : public views::NativeWidgetAura,
                                 public WindowTreeHostMojoDelegate,
-                                public view_manager::ViewObserver {
+                                public view_manager::ViewObserver,
+                                public view_manager::NodeObserver {
  public:
   NativeWidgetViewManager(views::internal::NativeWidgetDelegate* delegate,
-                          view_manager::View* view);
+                          view_manager::Node* node);
   virtual ~NativeWidgetViewManager();
 
  private:
@@ -49,7 +51,7 @@ class NativeWidgetViewManager : public views::NativeWidgetAura,
 
   scoped_ptr<ui::internal::InputMethodDelegate> ime_filter_;
 
-  view_manager::View* view_;
+  view_manager::Node* node_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetViewManager);
 };

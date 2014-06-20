@@ -250,7 +250,7 @@
             'mojo_geometry_bindings',
             'mojo_geometry_lib',
             'mojo_system_impl',
-            'mojo_view_manager_bindings',
+            'mojo_view_manager_lib',
           ],
           'sources': [
             'examples/aura_demo/aura_demo.cc',
