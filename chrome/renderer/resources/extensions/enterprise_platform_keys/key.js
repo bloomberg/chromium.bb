@@ -40,10 +40,19 @@ var KeyImpl = function(type, publicKeySpki, algorithm, usages, extractable) {
   this.extractable = extractable;
 };
 
-var Key =
-    utils.expose('Key',
-                 KeyImpl,
-                 {readonly:['extractable', 'type', 'algorithm', 'usages']});
+var KeyBase = function() {};
+
+Object.defineProperty(KeyBase.prototype, 'algorithm', {
+  enumerable: true,
+  get: function() {
+    return utils.deepCopy(privates(this).impl.algorithm);
+  }
+});
+
+var Key = utils.expose(
+    'Key',
+    KeyImpl,
+    {superclass: KeyBase, readonly: ['extractable', 'type', 'usages']});
 
 /**
  * Returns |key|'s Subject Public Key Info. Throws an exception if |key| is not

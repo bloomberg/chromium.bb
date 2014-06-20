@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 var createClassWrapper = requireNative('utils').createClassWrapper;
+var nativeDeepCopy = requireNative('utils').deepCopy;
 var schemaRegistry = requireNative('schema_registry');
 var CHECK = requireNative('logging').CHECK;
 var WARNING = requireNative('logging').WARNING;
@@ -124,7 +125,16 @@ function expose(name, cls, exposed) {
   return publicClass;
 }
 
+/**
+ * Returns a deep copy of |value|. The copy will have no references to nested
+ * values of |value|.
+ */
+function deepCopy(value) {
+  return nativeDeepCopy(value);
+}
+
 exports.forEach = forEach;
 exports.loadTypeSchema = loadTypeSchema;
 exports.lookup = lookup;
 exports.expose = expose;
+exports.deepCopy = deepCopy;

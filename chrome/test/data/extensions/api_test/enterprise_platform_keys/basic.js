@@ -260,6 +260,49 @@ function beforeTests(callback) {
   });
 }
 
+function checkAlgorithmIsCopiedOnRead(key) {
+  var algorithm = key.algorithm;
+  var originalAlgorithm = {
+    name: algorithm.name,
+    modulusLength: algorithm.modulusLength,
+    publicExponent: algorithm.publicExponent,
+    hash: {name: algorithm.hash.name}
+  };
+  var originalModulusLength = algorithm.modulusLength;
+  algorithm.hash.name = null;
+  algorithm.hash = null;
+  algorithm.name = null;
+  algorithm.modulusLength = null;
+  algorithm.publicExponent = null;
+  assertEq(originalAlgorithm, key.algorithm);
+}
+
+function checkPropertyIsReadOnly(object, key) {
+  var original = object[key];
+  try {
+    object[key] = {};
+    fail('Expected the property to be read-only and an exception to be thrown');
+  } catch (error) {
+    assertEq(original, object[key]);
+  }
+}
+
+function checkKeyPairCommonFormat(keyPair) {
+  checkPropertyIsReadOnly(keyPair, 'privateKey');
+  var privateKey = keyPair.privateKey;
+  assertEq('private', privateKey.type);
+  assertEq(false, privateKey.extractable);
+  checkPropertyIsReadOnly(privateKey, 'algorithm');
+  checkAlgorithmIsCopiedOnRead(privateKey);
+
+  checkPropertyIsReadOnly(keyPair, 'publicKey');
+  var publicKey = keyPair.publicKey;
+  assertEq('public', publicKey.type);
+  assertEq(true, publicKey.extractable);
+  checkPropertyIsReadOnly(publicKey, 'algorithm');
+  checkAlgorithmIsCopiedOnRead(publicKey);
+}
+
 function runTests(userToken) {
   chrome.test.runTests([
     function hasSubtleCryptoMethods() {
@@ -308,6 +351,9 @@ function runTests(userToken) {
                 function(error) { fail("GenerateKey failed: " + error); })
           .then(callbackPass(function(publicKeySpki) {
                   // Ensure that the returned key pair has the expected format.
+                  // Some parameter independent checks:
+                  checkKeyPairCommonFormat(cachedKeyPair);
+
                   // Checks depending on the generateKey arguments:
                   var privateKey = cachedKeyPair.privateKey;
                   assertEq(['sign'], privateKey.usages);

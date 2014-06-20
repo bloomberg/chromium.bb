@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
+#include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
 
 namespace extensions {
 
@@ -15,6 +16,9 @@ UtilsNativeHandler::UtilsNativeHandler(ScriptContext* context)
   RouteFunction("createClassWrapper",
                 base::Bind(&UtilsNativeHandler::CreateClassWrapper,
                            base::Unretained(this)));
+  RouteFunction(
+      "deepCopy",
+      base::Bind(&UtilsNativeHandler::DeepCopy, base::Unretained(this)));
 }
 
 UtilsNativeHandler::~UtilsNativeHandler() {}
@@ -79,6 +83,13 @@ void UtilsNativeHandler::CreateClassWrapper(
     }
   }
   args.GetReturnValue().Set(result);
+}
+
+void UtilsNativeHandler::DeepCopy(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  CHECK_EQ(1, args.Length());
+  args.GetReturnValue().Set(
+      blink::WebSerializedScriptValue::serialize(args[0]).deserialize());
 }
 
 }  // namespace extensions
