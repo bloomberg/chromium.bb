@@ -24,14 +24,45 @@ namespace printing {
 
 namespace {
 
+const int kMaxPaperSizeDiffereceInPoints = 2;
+
 // Return true if PPD name of paper is equal.
-bool IsPaperNameEqual(const PMPaper& paper1, const PMPaper& paper2) {
-  CFStringRef name1 = NULL;
+bool IsPaperNameEqual(CFStringRef name1, const PMPaper& paper2) {
   CFStringRef name2 = NULL;
-  return (PMPaperGetPPDPaperName(paper1, &name1) == noErr) &&
-         (PMPaperGetPPDPaperName(paper2, &name2) == noErr) &&
-         (CFStringCompare(name1, name2,
-                          kCFCompareCaseInsensitive) == kCFCompareEqualTo);
+  return (name1 && PMPaperGetPPDPaperName(paper2, &name2) == noErr) &&
+         (CFStringCompare(name1, name2, kCFCompareCaseInsensitive) ==
+          kCFCompareEqualTo);
+}
+
+PMPaper MatchPaper(CFArrayRef paper_list,
+                   CFStringRef name,
+                   double width,
+                   double height) {
+  double best_match = std::numeric_limits<double>::max();
+  PMPaper best_matching_paper = NULL;
+  int num_papers = CFArrayGetCount(paper_list);
+  for (int i = 0; i < num_papers; ++i) {
+    PMPaper paper = (PMPaper)[(NSArray*)paper_list objectAtIndex : i];
+    double paper_width = 0.0;
+    double paper_height = 0.0;
+    PMPaperGetWidth(paper, &paper_width);
+    PMPaperGetHeight(paper, &paper_height);
+    double difference =
+        std::max(fabs(width - paper_width), fabs(height - paper_height));
+
+    // Ignore papers with size too different from expected.
+    if (difference > kMaxPaperSizeDiffereceInPoints)
+      continue;
+
+    if (name && IsPaperNameEqual(name, paper))
+      return paper;
+
+    if (difference < best_match) {
+      best_matching_paper = paper;
+      best_match = difference;
+    }
+  }
+  return best_matching_paper;
 }
 
 }  // namespace
@@ -214,7 +245,7 @@ bool PrintingContextMac::SetPrinter(const std::string& device_name) {
   }
 
   PMPrinter new_printer = PMPrinterCreateFromPrinterID(new_printer_id.get());
-  if (new_printer == NULL)
+  if (!new_printer)
     return false;
 
   OSStatus status = PMSessionSetCurrentPMPrinter(print_session, new_printer);
@@ -229,89 +260,75 @@ bool PrintingContextMac::UpdatePageFormatWithPaperInfo() {
   PMPageFormat default_page_format =
       static_cast<PMPageFormat>([print_info_.get() PMPageFormat]);
 
-  PMPaper default_paper;
-  if (PMGetPageFormatPaper(default_page_format, &default_paper) != noErr)
-    return false;
-
-  double default_page_width = 0.0;
-  double default_page_height = 0.0;
-  if (PMPaperGetWidth(default_paper, &default_page_width) != noErr)
-    return false;
-
-  if (PMPaperGetHeight(default_paper, &default_page_height) != noErr)
-    return false;
-
   PMPrinter current_printer = NULL;
   if (PMSessionGetCurrentPrinter(print_session, &current_printer) != noErr)
     return false;
 
-  if (current_printer == nil)
-    return false;
+  double page_width = 0.0;
+  double page_height = 0.0;
+  base::ScopedCFTypeRef<CFStringRef> paper_name;
+  PMPaperMargins margins = {0};
+
+  const PrintSettings::RequestedMedia& media = settings_.requested_media();
+  if (media.IsDefault()) {
+    PMPaper default_paper;
+    if (PMGetPageFormatPaper(default_page_format, &default_paper) != noErr ||
+        PMPaperGetWidth(default_paper, &page_width) != noErr ||
+        PMPaperGetHeight(default_paper, &page_height) != noErr) {
+      return false;
+    }
+
+    // Ignore result, because we can continue without following.
+    CFStringRef tmp_paper_name = NULL;
+    PMPaperGetPPDPaperName(default_paper, &tmp_paper_name);
+    PMPaperGetMargins(default_paper, &margins);
+    paper_name.reset(tmp_paper_name, base::scoped_policy::RETAIN);
+  } else {
+    const double kMutiplier = kPointsPerInch / (10.0f * kHundrethsMMPerInch);
+    page_width = media.size_microns.width() * kMutiplier;
+    page_height = media.size_microns.height() * kMutiplier;
+    paper_name.reset(base::SysUTF8ToCFStringRef(media.vendor_id));
+  }
 
   CFArrayRef paper_list = NULL;
   if (PMPrinterGetPaperList(current_printer, &paper_list) != noErr)
     return false;
 
-  double best_match = std::numeric_limits<double>::max();
-  PMPaper best_matching_paper = kPMNoData;
-  int num_papers = CFArrayGetCount(paper_list);
-  for (int i = 0; i < num_papers; ++i) {
-    PMPaper paper = (PMPaper)[(NSArray*)paper_list objectAtIndex: i];
-    double paper_width = 0.0;
-    double paper_height = 0.0;
-    PMPaperGetWidth(paper, &paper_width);
-    PMPaperGetHeight(paper, &paper_height);
-    double current_match = std::max(fabs(default_page_width - paper_width),
-                                    fabs(default_page_height - paper_height));
-    // Ignore paper sizes that are very different.
-    if (current_match > 2)
-      continue;
-    current_match += IsPaperNameEqual(paper, default_paper) ? 0 : 1;
-    if (current_match < best_match) {
-      best_matching_paper = paper;
-      best_match = current_match;
-    }
+  PMPaper best_matching_paper =
+      MatchPaper(paper_list, paper_name, page_width, page_height);
+
+  if (best_matching_paper)
+    return UpdatePageFormatWithPaper(best_matching_paper, default_page_format);
+
+  // Do nothing if unmatched paper was default system paper.
+  if (media.IsDefault())
+    return true;
+
+  PMPaper paper = NULL;
+  if (PMPaperCreateCustom(current_printer,
+                          CFSTR("Custom paper ID"),
+                          CFSTR("Custom paper"),
+                          page_width,
+                          page_height,
+                          &margins,
+                          &paper) != noErr) {
+    return false;
   }
+  bool result = UpdatePageFormatWithPaper(paper, default_page_format);
+  PMRelease(paper);
+  return result;
+}
 
-  if (best_matching_paper == kPMNoData) {
-    PMPaper paper = kPMNoData;
-    // Create a custom paper for the specified default page size.
-    PMPaperMargins default_margins;
-    if (PMPaperGetMargins(default_paper, &default_margins) != noErr)
-      return false;
-
-    const PMPaperMargins margins =
-        {default_margins.top, default_margins.left, default_margins.bottom,
-         default_margins.right};
-    CFStringRef paper_id = CFSTR("Custom paper ID");
-    CFStringRef paper_name = CFSTR("Custom paper");
-    if (PMPaperCreateCustom(current_printer, paper_id, paper_name,
-            default_page_width, default_page_height, &margins, &paper) !=
-            noErr) {
-      return false;
-    }
-    [print_info_.get() updateFromPMPageFormat];
-    PMRelease(paper);
-  } else {
-    PMPageFormat chosen_page_format = NULL;
-    if (PMCreatePageFormat((PMPageFormat*) &chosen_page_format) != noErr)
-      return false;
-
-    // Create page format from that paper.
-    if (PMCreatePageFormatWithPMPaper(&chosen_page_format,
-            best_matching_paper) != noErr) {
-      PMRelease(chosen_page_format);
-      return false;
-    }
-    // Copy over the original format with the new page format.
-    if (PMCopyPageFormat(chosen_page_format, default_page_format) != noErr) {
-      PMRelease(chosen_page_format);
-      return false;
-    }
-    [print_info_.get() updateFromPMPageFormat];
-    PMRelease(chosen_page_format);
-  }
-  return true;
+bool PrintingContextMac::UpdatePageFormatWithPaper(PMPaper paper,
+                                                   PMPageFormat page_format) {
+  PMPageFormat new_format = NULL;
+  if (PMCreatePageFormatWithPMPaper(&new_format, paper) != noErr)
+    return false;
+  // Copy over the original format with the new page format.
+  bool result = (PMCopyPageFormat(new_format, page_format) == noErr);
+  [print_info_.get() updateFromPMPageFormat];
+  PMRelease(new_format);
+  return result;
 }
 
 bool PrintingContextMac::SetCopiesInPrintSettings(int copies) {

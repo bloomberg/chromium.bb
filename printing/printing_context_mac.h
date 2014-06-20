@@ -54,12 +54,17 @@ class PRINTING_EXPORT PrintingContextMac : public PrintingContext {
   PageRanges GetPageRangesFromPrintInfo();
 
   // Updates |print_info_| to use the given printer.
-  // Returns true if the printer was set else returns false.
+  // Returns true if the printer was set.
   bool SetPrinter(const std::string& device_name);
 
-  // Updates |print_info_| page format with user default paper information.
-  // Returns true if the paper was set else returns false.
+  // Updates |print_info_| page format with paper selected by user. If paper was
+  // not selected, default system paper is used.
+  // Returns true if the paper was set.
   bool UpdatePageFormatWithPaperInfo();
+
+  // Updates |print_info_| page format with |paper|.
+  // Returns true if the paper was set.
+  bool UpdatePageFormatWithPaper(PMPaper paper, PMPageFormat page_format);
 
   // Sets the print job destination type as preview job.
   // Returns true if the print job destination type is set.
