@@ -175,12 +175,12 @@ String Clipboard::getData(const String& type) const
     return convertURIListToURL(data);
 }
 
-bool Clipboard::setData(const String& type, const String& data)
+void Clipboard::setData(const String& type, const String& data)
 {
     if (!canWriteData())
-        return false;
+        return;
 
-    return m_dataObject->setData(normalizeType(type), data);
+    m_dataObject->setData(normalizeType(type), data);
 }
 
 // extensions beyond IE's API

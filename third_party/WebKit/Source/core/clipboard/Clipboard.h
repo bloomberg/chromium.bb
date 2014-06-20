@@ -71,7 +71,7 @@ public:
 
     void clearData(const String& type = String());
     String getData(const String& type) const;
-    bool setData(const String& type, const String& data);
+    void setData(const String& type, const String& data);
 
     // extensions beyond IE's API
     Vector<String> types() const;

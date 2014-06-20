@@ -152,12 +152,11 @@ String DataObject::getData(const String& type) const
     return String();
 }
 
-bool DataObject::setData(const String& type, const String& data)
+void DataObject::setData(const String& type, const String& data)
 {
     clearData(type);
     if (!add(data, type))
         ASSERT_NOT_REACHED();
-    return true;
 }
 
 void DataObject::urlAndTitle(String& url, String* title) const

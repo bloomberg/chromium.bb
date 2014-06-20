@@ -75,7 +75,7 @@ public:
 
     ListHashSet<String> types() const;
     String getData(const String& type) const;
-    bool setData(const String& type, const String& data);
+    void setData(const String& type, const String& data);
 
     void urlAndTitle(String& url, String* title = 0) const;
     void setURLAndTitle(const String& url, const String& title);
