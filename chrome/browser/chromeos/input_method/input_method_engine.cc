@@ -92,6 +92,23 @@ std::string GetKeyFromEvent(const ui::KeyEvent& event) {
   return base::UTF16ToUTF8(base::string16(1, ch));
 }
 
+void GetExtensionKeyboardEventFromKeyEvent(
+    const ui::KeyEvent& event,
+    InputMethodEngine::KeyboardEvent* ext_event) {
+  DCHECK(event.type() == ui::ET_KEY_RELEASED ||
+         event.type() == ui::ET_KEY_PRESSED);
+  DCHECK(ext_event);
+  ext_event->type = (event.type() == ui::ET_KEY_RELEASED) ? "keyup" : "keydown";
+
+  ext_event->code = event.code();
+  ext_event->key_code = static_cast<int>(event.key_code());
+  ext_event->alt_key = event.IsAltDown();
+  ext_event->ctrl_key = event.IsControlDown();
+  ext_event->shift_key = event.IsShiftDown();
+  ext_event->caps_lock = event.IsCapsLockDown();
+  ext_event->key = GetKeyFromEvent(event);
+}
+
 }  // namespace
 
 InputMethodEngine::InputMethodEngine()
@@ -287,6 +304,9 @@ bool InputMethodEngine::SendKeyEvents(
     const KeyboardEvent& event = events[i];
     const ui::EventType type =
         (event.type == "keyup") ? ui::ET_KEY_RELEASED : ui::ET_KEY_PRESSED;
+    ui::KeyboardCode key_code = static_cast<ui::KeyboardCode>(event.key_code);
+    if (key_code == ui::VKEY_UNKNOWN)
+      key_code = ui::DomKeycodeToKeyboardCode(event.code);
 
     int flags = ui::EF_NONE;
     flags |= event.alt_key   ? ui::EF_ALT_DOWN       : ui::EF_NONE;
@@ -295,7 +315,7 @@ bool InputMethodEngine::SendKeyEvents(
     flags |= event.caps_lock ? ui::EF_CAPS_LOCK_DOWN : ui::EF_NONE;
 
     ui::KeyEvent ui_event(type,
-                          ui::DomKeycodeToKeyboardCode(event.code),
+                          key_code,
                           event.code,
                           flags,
                           false /* is_char */);
@@ -580,26 +600,6 @@ void InputMethodEngine::PropertyActivate(const std::string& property_name) {
 void InputMethodEngine::Reset() {
   observer_->OnReset(engine_id_);
 }
-
-namespace {
-
-void GetExtensionKeyboardEventFromKeyEvent(
-    const ui::KeyEvent& event,
-    InputMethodEngine::KeyboardEvent* ext_event) {
-  DCHECK(event.type() == ui::ET_KEY_RELEASED ||
-         event.type() == ui::ET_KEY_PRESSED);
-  DCHECK(ext_event);
-  ext_event->type = (event.type() == ui::ET_KEY_RELEASED) ? "keyup" : "keydown";
-
-  ext_event->code = event.code();
-  ext_event->alt_key = event.IsAltDown();
-  ext_event->ctrl_key = event.IsControlDown();
-  ext_event->shift_key = event.IsShiftDown();
-  ext_event->caps_lock = event.IsCapsLockDown();
-  ext_event->key = GetKeyFromEvent(event);
-}
-
-}  // namespace
 
 void InputMethodEngine::ProcessKeyEvent(
     const ui::KeyEvent& key_event,

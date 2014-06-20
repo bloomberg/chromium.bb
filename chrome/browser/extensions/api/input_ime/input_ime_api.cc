@@ -552,6 +552,7 @@ bool InputImeSendKeyEventsFunction::RunAsync() {
     event.type = input_ime::KeyboardEvent::ToString(key_data[i]->type);
     event.key = key_data[i]->key;
     event.code = key_data[i]->code;
+    event.key_code = key_data[i]->key_code.get() ? *(key_data[i]->key_code) : 0;
     if (key_data[i]->alt_key)
       event.alt_key = *(key_data[i]->alt_key);
     if (key_data[i]->ctrl_key)

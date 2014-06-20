@@ -30,6 +30,7 @@ class InputMethodEngineInterface : public IMEEngineHandlerInterface {
     std::string type;
     std::string key;
     std::string code;
+    int key_code; // only used by on-screen keyboards.
     std::string extension_id;
     bool alt_key;
     bool ctrl_key;
