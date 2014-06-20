@@ -39,7 +39,9 @@
 #endif
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
+#include "chrome/browser/shell_integration_linux.h"
 #include "chrome/browser/ui/views/panels/x11_panel_resizer.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #endif
 
@@ -285,6 +287,12 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds, bool always_on_top)
   params.keep_on_top = always_on_top;
   params.visible_on_all_workspaces = always_on_top;
   params.bounds = bounds;
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  params.wm_class_name = web_app::GetWMClassFromAppName(panel->app_name());
+  params.wm_class_class = shell_integration_linux::GetProgramClassName();
+#endif
+
   window_->Init(params);
   window_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
   window_->set_focus_on_creation(false);
