@@ -103,9 +103,9 @@ PassOwnPtr<blink::WebMessagePortChannelArray> MessagePort::toWebMessagePortChann
 }
 
 // static
-PassOwnPtr<MessagePortArray> MessagePort::toMessagePortArray(ExecutionContext* context, const blink::WebMessagePortChannelArray& webChannels)
+PassOwnPtrWillBeRawPtr<MessagePortArray> MessagePort::toMessagePortArray(ExecutionContext* context, const blink::WebMessagePortChannelArray& webChannels)
 {
-    OwnPtr<MessagePortArray> ports;
+    OwnPtrWillBeRawPtr<MessagePortArray> ports = nullptr;
     if (!webChannels.isEmpty()) {
         OwnPtr<MessagePortChannelArray> channels = adoptPtr(new MessagePortChannelArray(webChannels.size()));
         for (size_t i = 0; i < webChannels.size(); ++i)
@@ -196,7 +196,7 @@ void MessagePort::dispatchMessages()
         if (executionContext()->isWorkerGlobalScope() && toWorkerGlobalScope(executionContext())->isClosing())
             return;
 
-        OwnPtr<MessagePortArray> ports = MessagePort::entanglePorts(*executionContext(), channels.release());
+        OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::entanglePorts(*executionContext(), channels.release());
         RefPtrWillBeRawPtr<Event> evt = MessageEvent::create(ports.release(), message.release());
 
         dispatchEvent(evt.release(), ASSERT_NO_EXCEPTION);
@@ -242,14 +242,14 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessageP
     return portArray.release();
 }
 
-PassOwnPtr<MessagePortArray> MessagePort::entanglePorts(ExecutionContext& context, PassOwnPtr<MessagePortChannelArray> channels)
+PassOwnPtrWillBeRawPtr<MessagePortArray> MessagePort::entanglePorts(ExecutionContext& context, PassOwnPtr<MessagePortChannelArray> channels)
 {
     if (!channels || !channels->size())
         return nullptr;
 
-    OwnPtr<MessagePortArray> portArray = adoptPtr(new MessagePortArray(channels->size()));
+    OwnPtrWillBeRawPtr<MessagePortArray> portArray = adoptPtrWillBeNoop(new MessagePortArray(channels->size()));
     for (unsigned i = 0; i < channels->size(); ++i) {
-        RefPtr<MessagePort> port = MessagePort::create(context);
+        RefPtrWillBeRawPtr<MessagePort> port = MessagePort::create(context);
         port->entangle((*channels)[i].release());
         (*portArray)[i] = port.release();
     }

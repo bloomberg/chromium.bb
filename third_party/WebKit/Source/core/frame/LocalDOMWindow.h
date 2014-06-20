@@ -83,7 +83,7 @@ namespace WebCore {
 
     struct WindowFeatures;
 
-    typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
+    typedef WillBeHeapVector<RefPtrWillBeMember<MessagePort>, 1> MessagePortArray;
 
 enum PageshowEventPersistence {
     PageshowEventNotPersisted = 0,

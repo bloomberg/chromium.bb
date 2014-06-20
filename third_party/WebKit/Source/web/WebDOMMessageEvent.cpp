@@ -52,7 +52,7 @@ void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble,
     LocalDOMWindow* window = 0;
     if (sourceFrame)
         window = toWebLocalFrameImpl(sourceFrame)->frame()->domWindow();
-    OwnPtr<MessagePortArray> ports;
+    OwnPtrWillBeRawPtr<MessagePortArray> ports = nullptr;
     if (sourceFrame)
         ports = MessagePort::toMessagePortArray(window->document(), webChannels);
     unwrap<MessageEvent>()->initMessageEvent(type, canBubble, cancelable, messageData, origin, lastEventId, window, ports.release());

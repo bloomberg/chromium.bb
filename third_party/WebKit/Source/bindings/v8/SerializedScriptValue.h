@@ -55,7 +55,7 @@ class BlobDataHandle;
 class ExceptionState;
 class MessagePort;
 
-typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
+typedef WillBeHeapVector<RefPtrWillBeMember<MessagePort>, 1> MessagePortArray;
 typedef Vector<RefPtr<WTF::ArrayBuffer>, 1> ArrayBufferArray;
 typedef HashMap<String, RefPtr<BlobDataHandle> > BlobDataHandleMap;
 typedef Vector<blink::WebBlobInfo> WebBlobInfoArray;

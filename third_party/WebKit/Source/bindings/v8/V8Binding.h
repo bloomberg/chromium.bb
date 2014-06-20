@@ -690,6 +690,39 @@ WillBeHeapVector<RefPtrWillBeMember<T> > toRefPtrWillBeMemberNativeArray(v8::Han
     return result;
 }
 
+template <class T, class V8T>
+WillBeHeapVector<RefPtrWillBeMember<T> > toRefPtrWillBeMemberNativeArray(v8::Handle<v8::Value> value, const String& propertyName, v8::Isolate* isolate, bool* success = 0)
+{
+    if (success)
+        *success = true;
+
+    v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
+    uint32_t length = 0;
+    if (value->IsArray()) {
+        length = v8::Local<v8::Array>::Cast(v8Value)->Length();
+    } else if (toV8Sequence(value, length, isolate).IsEmpty()) {
+        throwTypeError(ExceptionMessages::notASequenceTypeProperty(propertyName), isolate);
+        return WillBeHeapVector<RefPtrWillBeMember<T> >();
+    }
+
+    WillBeHeapVector<RefPtrWillBeMember<T> > result;
+    result.reserveInitialCapacity(length);
+    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
+    for (uint32_t i = 0; i < length; ++i) {
+        v8::Handle<v8::Value> element = object->Get(i);
+        if (V8T::hasInstance(element, isolate)) {
+            v8::Handle<v8::Object> elementObject = v8::Handle<v8::Object>::Cast(element);
+            result.uncheckedAppend(V8T::toNative(elementObject));
+        } else {
+            if (success)
+                *success = false;
+            throwTypeError("Invalid Array element type", isolate);
+            return WillBeHeapVector<RefPtrWillBeMember<T> >();
+        }
+    }
+    return result;
+}
+
 // Converts a JavaScript value to an array as per the Web IDL specification:
 // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-array
 template <class T>

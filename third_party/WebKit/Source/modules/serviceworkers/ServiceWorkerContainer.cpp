@@ -206,7 +206,7 @@ void ServiceWorkerContainer::dispatchMessageEvent(const blink::WebString& messag
     if (!executionContext() || !executionContext()->executingWindow())
         return;
 
-    OwnPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(executionContext(), webChannels);
+    OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(executionContext(), webChannels);
     RefPtr<SerializedScriptValue> value = SerializedScriptValue::createFromWire(message);
     executionContext()->executingWindow()->dispatchEvent(MessageEvent::create(ports.release(), value));
 }

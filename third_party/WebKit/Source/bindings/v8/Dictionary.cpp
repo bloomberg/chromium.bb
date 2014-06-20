@@ -350,7 +350,7 @@ bool Dictionary::get(const String& key, MessagePortArray& value) const
     if (WebCore::isUndefinedOrNull(v8Value))
         return true;
     bool success = false;
-    value = toRefPtrNativeArray<MessagePort, V8MessagePort>(v8Value, key, m_isolate, &success);
+    value = toRefPtrWillBeMemberNativeArray<MessagePort, V8MessagePort>(v8Value, key, m_isolate, &success);
     return success;
 }
 

@@ -143,12 +143,12 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     TOSTRING_VOID(V8StringResource<>, originArg, info[4]);
     TOSTRING_VOID(V8StringResource<>, lastEventIdArg, info[5]);
     LocalDOMWindow* sourceArg = toDOMWindow(info[6], info.GetIsolate());
-    OwnPtr<MessagePortArray> portArray;
+    OwnPtrWillBeRawPtr<MessagePortArray> portArray = nullptr;
     const int portArrayIndex = 7;
     if (!isUndefinedOrNull(info[portArrayIndex])) {
-        portArray = adoptPtr(new MessagePortArray);
+        portArray = adoptPtrWillBeNoop(new MessagePortArray);
         bool success = false;
-        *portArray = toRefPtrNativeArray<MessagePort, V8MessagePort>(info[portArrayIndex], portArrayIndex + 1, info.GetIsolate(), &success);
+        *portArray = toRefPtrWillBeMemberNativeArray<MessagePort, V8MessagePort>(info[portArrayIndex], portArrayIndex + 1, info.GetIsolate(), &success);
         if (!success)
             return;
     }
