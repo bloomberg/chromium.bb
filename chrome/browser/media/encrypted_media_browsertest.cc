@@ -531,14 +531,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Video_WebM) {
-#if defined(WIDEVINE_CDM_AVAILABLE)
-  // TODO(xhwang): Remove this once VP9 is supported by Widevine CDM.
-  // See http://crbug.com/361318.
-  if (IsWidevine(CurrentKeySystem())) {
-    VLOG(0) << "VP9 not supported in Widevine CDM.";
-    return;
-  }
-#endif
   TestSimplePlayback("bear-320x240-v-vp9-enc_v.webm", kWebMVP9VideoOnly);
 }
 

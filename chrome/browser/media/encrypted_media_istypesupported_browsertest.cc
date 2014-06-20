@@ -883,9 +883,6 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
       std::string(), no_codecs(), "com.widevine.alpha.foo"));
 }
 
-// TODO(xhwang): Add VP9 Widevine tests after VP9 is supported by Widevine CDM.
-// See http://crbug.com/361318
-
 IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
                        IsSupportedKeySystemWithMediaMimeType_Widevine_WebM) {
   // Valid video types.
@@ -898,6 +895,12 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vp8_and_vorbis_codecs(), kWidevineAlpha));
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp9_codec(), kWidevineAlpha));
+  EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp90_codec(), kWidevineAlpha));
+  EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp9_and_vorbis_codecs(), kWidevineAlpha));
+  EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vorbis_codec(), kWidevineAlpha));
 
   // Valid video types - parent key system.
@@ -909,6 +912,12 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
       "video/webm", vp80_codec(), kWidevine));
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vp8_and_vorbis_codecs(), kWidevine));
+  EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp9_codec(), kWidevine));
+  EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp90_codec(), kWidevine));
+  EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp9_and_vorbis_codecs(), kWidevine));
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vorbis_codec(), kWidevine));
 
@@ -941,6 +950,10 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
       "audio/webm", vp8_codec(), kWidevineAlpha));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "audio/webm", vp8_and_vorbis_codecs(), kWidevineAlpha));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/webm", vp9_codec(), kWidevineAlpha));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/webm", vp9_and_vorbis_codecs(), kWidevineAlpha));
 
   // Non-Webm codec.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
