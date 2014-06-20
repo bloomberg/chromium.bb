@@ -117,12 +117,15 @@ class WEBVIEW_EXPORT WebView : public View,
   // Overridden from content::WebContentsObserver:
   virtual void RenderViewDeleted(
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void RenderViewHostChanged(
       content::RenderViewHost* old_host,
       content::RenderViewHost* new_host) OVERRIDE;
   virtual void DidShowFullscreenWidget(int routing_id) OVERRIDE;
   virtual void DidDestroyFullscreenWidget(int routing_id) OVERRIDE;
   virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) OVERRIDE;
+  virtual void DidAttachInterstitialPage() OVERRIDE;
+  virtual void DidDetachInterstitialPage() OVERRIDE;
   // Workaround for MSVC++ linker bug/feature that requires
   // instantiation of the inline IPC::Listener methods in all translation units.
   virtual void OnChannelConnected(int32 peer_id) OVERRIDE {}

@@ -252,6 +252,10 @@ void WebView::RenderViewDeleted(content::RenderViewHost* render_view_host) {
   NotifyMaybeTextInputClientChanged();
 }
 
+void WebView::RenderProcessGone(base::TerminationStatus status) {
+  NotifyMaybeTextInputClientChanged();
+}
+
 void WebView::RenderViewHostChanged(content::RenderViewHost* old_host,
                                     content::RenderViewHost* new_host) {
   FocusManager* const focus_manager = GetFocusManager();
@@ -273,6 +277,14 @@ void WebView::DidDestroyFullscreenWidget(int routing_id) {
 void WebView::DidToggleFullscreenModeForTab(bool entered_fullscreen) {
   if (embed_fullscreen_widget_mode_enabled_)
     ReattachForFullscreenChange(entered_fullscreen);
+}
+
+void WebView::DidAttachInterstitialPage() {
+  NotifyMaybeTextInputClientChanged();
+}
+
+void WebView::DidDetachInterstitialPage() {
+  NotifyMaybeTextInputClientChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
