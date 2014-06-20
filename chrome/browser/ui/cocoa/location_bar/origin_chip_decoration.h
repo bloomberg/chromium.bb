@@ -8,10 +8,10 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ui/cocoa/location_bar/button_decoration.h"
 #include "chrome/browser/ui/toolbar/origin_chip_info.h"
+#include "extensions/browser/extension_icon_image.h"
 
 class LocationBarViewMac;
 class LocationIconDecoration;

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/image_loader.h"
+#include "extensions/browser/image_loader.h"
 
 #include <map>
 #include <vector>
@@ -10,33 +10,22 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
-#include "base/lazy_instance.h"
-#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/extensions/image_loader_factory.h"
-#include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/component_extension_resource_manager.h"
+#include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/image_loader_factory.h"
 #include "extensions/common/extension.h"
-#include "grit/chrome_unscaled_resources.h"
-#include "grit/component_extension_resources_map.h"
-#include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_family.h"
 #include "ui/gfx/image/image_skia.h"
 
-#if defined(OS_CHROMEOS)
-#include "ui/file_manager/file_manager_resource_util.h"
-#endif
-
-#if defined(USE_AURA)
-#include "ui/keyboard/keyboard_util.h"
-#endif
-
 using content::BrowserThread;
 using extensions::Extension;
+using extensions::ExtensionsBrowserClient;
 using extensions::ImageLoader;
 using extensions::Manifest;
 
@@ -105,23 +94,6 @@ void LoadImageOnBlockingPool(const ImageLoader::ImageRepresentation& image_info,
   gfx::PNGCodec::Decode(data, file_contents.length(), bitmap);
 }
 
-// Add the resources from |entries| (there are |size| of them) to
-// |path_to_resource_id| after normalizing separators.
-void AddComponentResourceEntries(
-    std::map<base::FilePath, int>* path_to_resource_id,
-    const GritResourceMap* entries,
-    size_t size) {
-  for (size_t i = 0; i < size; ++i) {
-    base::FilePath resource_path = base::FilePath().AppendASCII(
-        entries[i].name);
-    resource_path = resource_path.NormalizePathSeparators();
-
-    DCHECK(path_to_resource_id->find(resource_path) ==
-        path_to_resource_id->end());
-    (*path_to_resource_id)[resource_path] = entries[i].value;
-  }
-}
-
 std::vector<SkBitmap> LoadResourceBitmaps(
     const Extension* extension,
     const std::vector<ImageLoader::ImageRepresentation>& info_list) {
@@ -139,10 +111,14 @@ std::vector<SkBitmap> LoadResourceBitmaps(
            extension->path() == it->resource.extension_root());
 
     int resource_id;
-    if (extension->location() == Manifest::COMPONENT &&
-        ImageLoader::IsComponentExtensionResource(
-            extension->path(), it->resource.relative_path(), &resource_id)) {
-      LoadResourceOnUIThread(resource_id, &bitmaps[i]);
+    if (extension->location() == Manifest::COMPONENT) {
+      extensions::ComponentExtensionResourceManager* manager =
+          extensions::ExtensionsBrowserClient::Get()->
+          GetComponentExtensionResourceManager();
+      if (manager && manager->IsComponentExtensionResource(
+              extension->path(), it->resource.relative_path(), &resource_id)) {
+        LoadResourceOnUIThread(resource_id, &bitmaps[i]);
+      }
     }
   }
   return bitmaps;
@@ -246,75 +222,6 @@ ImageLoader::~ImageLoader() {
 // static
 ImageLoader* ImageLoader::Get(content::BrowserContext* context) {
   return ImageLoaderFactory::GetForBrowserContext(context);
-}
-
-// A map from a resource path to the resource ID.  Used only by
-// IsComponentExtensionResource below.
-static base::LazyInstance<std::map<base::FilePath, int> > path_to_resource_id =
-    LAZY_INSTANCE_INITIALIZER;
-
-// static
-bool ImageLoader::IsComponentExtensionResource(
-    const base::FilePath& extension_path,
-    const base::FilePath& resource_path,
-    int* resource_id) {
-  static const GritResourceMap kExtraComponentExtensionResources[] = {
-    {"web_store/webstore_icon_128.png", IDR_WEBSTORE_ICON},
-    {"web_store/webstore_icon_16.png", IDR_WEBSTORE_ICON_16},
-    {"chrome_app/product_logo_128.png", IDR_PRODUCT_LOGO_128},
-    {"chrome_app/product_logo_16.png", IDR_PRODUCT_LOGO_16},
-#if defined(ENABLE_SETTINGS_APP)
-    {"settings_app/settings_app_icon_128.png", IDR_SETTINGS_APP_ICON_128},
-    {"settings_app/settings_app_icon_16.png", IDR_SETTINGS_APP_ICON_16},
-    {"settings_app/settings_app_icon_32.png", IDR_SETTINGS_APP_ICON_32},
-    {"settings_app/settings_app_icon_48.png", IDR_SETTINGS_APP_ICON_48},
-#endif
-  };
-
-  if (path_to_resource_id.Get().empty()) {
-    AddComponentResourceEntries(
-        path_to_resource_id.Pointer(),
-        kComponentExtensionResources,
-        kComponentExtensionResourcesSize);
-    AddComponentResourceEntries(
-        path_to_resource_id.Pointer(),
-        kExtraComponentExtensionResources,
-        arraysize(kExtraComponentExtensionResources));
-#if defined(OS_CHROMEOS)
-    size_t file_manager_resource_size;
-    const GritResourceMap* file_manager_resources =
-        file_manager::GetFileManagerResources(&file_manager_resource_size);
-    AddComponentResourceEntries(
-        path_to_resource_id.Pointer(),
-        file_manager_resources,
-        file_manager_resource_size);
-
-    size_t keyboard_resource_size;
-    const GritResourceMap* keyboard_resources =
-        keyboard::GetKeyboardExtensionResources(&keyboard_resource_size);
-    AddComponentResourceEntries(
-        path_to_resource_id.Pointer(),
-        keyboard_resources,
-        keyboard_resource_size);
-#endif
-  }
-
-  base::FilePath directory_path = extension_path;
-  base::FilePath resources_dir;
-  base::FilePath relative_path;
-  if (!PathService::Get(chrome::DIR_RESOURCES, &resources_dir) ||
-      !resources_dir.AppendRelativePath(directory_path, &relative_path)) {
-    return false;
-  }
-  relative_path = relative_path.Append(resource_path);
-  relative_path = relative_path.NormalizePathSeparators();
-
-  std::map<base::FilePath, int>::const_iterator entry =
-      path_to_resource_id.Get().find(relative_path);
-  if (entry != path_to_resource_id.Get().end())
-    *resource_id = entry->second;
-
-  return entry != path_to_resource_id.Get().end();
 }
 
 void ImageLoader::LoadImageAsync(const Extension* extension,

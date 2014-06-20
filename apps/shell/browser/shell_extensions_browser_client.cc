@@ -237,4 +237,9 @@ ShellExtensionsBrowserClient::CreateRuntimeAPIDelegate(
   return scoped_ptr<RuntimeAPIDelegate>(new apps::ShellRuntimeAPIDelegate());
 }
 
+ComponentExtensionResourceManager*
+ShellExtensionsBrowserClient::GetComponentExtensionResourceManager() {
+  return NULL;
+}
+
 }  // namespace extensions

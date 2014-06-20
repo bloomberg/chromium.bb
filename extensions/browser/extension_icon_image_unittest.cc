@@ -1,21 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_icon_image.h"
+#include "extensions/browser/extension_icon_image.h"
 
 #include "base/json/json_file_value_serializer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/image_loader.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
-#include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -182,8 +180,7 @@ class ExtensionIconImageTest : public testing::Test,
   }
 
   gfx::ImageSkia GetDefaultIcon() {
-    return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_EXTENSIONS_FAVICON);
+    return gfx::ImageSkia(gfx::ImageSkiaRep(gfx::Size(16, 16), 1.0f));
   }
 
   // Loads an image to be used in test from the extension.
@@ -213,7 +210,7 @@ TEST_F(ExtensionIconImageTest, Basic) {
   supported_factors.push_back(ui::SCALE_FACTOR_100P);
   supported_factors.push_back(ui::SCALE_FACTOR_200P);
   ui::test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
-  scoped_ptr<Profile> profile(new TestingProfile());
+  scoped_ptr<content::BrowserContext> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -287,7 +284,7 @@ TEST_F(ExtensionIconImageTest, FallbackToSmallerWhenNoBigger) {
   supported_factors.push_back(ui::SCALE_FACTOR_100P);
   supported_factors.push_back(ui::SCALE_FACTOR_200P);
   ui::test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
-  scoped_ptr<Profile> profile(new TestingProfile());
+  scoped_ptr<content::BrowserContext> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -326,7 +323,7 @@ TEST_F(ExtensionIconImageTest, FallbackToSmallerWhenNoBigger) {
 // one. Requested size is smaller than 32 though, so the smaller resource should
 // be loaded.
 TEST_F(ExtensionIconImageTest, FallbackToSmaller) {
-  scoped_ptr<Profile> profile(new TestingProfile());
+  scoped_ptr<content::BrowserContext> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -363,7 +360,7 @@ TEST_F(ExtensionIconImageTest, FallbackToSmaller) {
 // If resource set is empty, |GetRepresentation| should synchronously return
 // default icon, without notifying observer of image change.
 TEST_F(ExtensionIconImageTest, NoResources) {
-  scoped_ptr<Profile> profile(new TestingProfile());
+  scoped_ptr<content::BrowserContext> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -402,7 +399,7 @@ TEST_F(ExtensionIconImageTest, NoResources) {
 // the observer should be notified when it's done. |GetRepresentation| should
 // return the default icon representation once image load is done.
 TEST_F(ExtensionIconImageTest, InvalidResource) {
-  scoped_ptr<Profile> profile(new TestingProfile());
+  scoped_ptr<content::BrowserContext> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -441,7 +438,7 @@ TEST_F(ExtensionIconImageTest, InvalidResource) {
 // Test that IconImage works with lazily (but synchronously) created default
 // icon when IconImage returns synchronously.
 TEST_F(ExtensionIconImageTest, LazyDefaultIcon) {
-  scoped_ptr<Profile> profile(new TestingProfile());
+  scoped_ptr<content::BrowserContext> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -479,7 +476,7 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon) {
 // Test that IconImage works with lazily (but synchronously) created default
 // icon when IconImage returns asynchronously.
 TEST_F(ExtensionIconImageTest, LazyDefaultIcon_AsyncIconImage) {
-  scoped_ptr<Profile> profile(new TestingProfile());
+  scoped_ptr<content::BrowserContext> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
@@ -523,7 +520,7 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon_AsyncIconImage) {
 // representation was not loaded while IconImage host was around, transparent
 // representations should be returned.
 TEST_F(ExtensionIconImageTest, IconImageDestruction) {
-  scoped_ptr<Profile> profile(new TestingProfile());
+  scoped_ptr<content::BrowserContext> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);

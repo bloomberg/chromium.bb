@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_ACTION_ICON_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_icon_image.h"
+#include "extensions/browser/extension_icon_image.h"
 
 class ExtensionAction;
 class ExtensionIconSet;

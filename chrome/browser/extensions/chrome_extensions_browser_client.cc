@@ -6,6 +6,7 @@
 
 #include "apps/common/api/generated_api.h"
 #include "base/command_line.h"
+#include "base/path_service.h"
 #include "base/version.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
+#include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/generated_api.h"
@@ -267,6 +270,13 @@ void ChromeExtensionsBrowserClient::RegisterExtensionFunctions(
   // Generated APIs from Chrome.
   extensions::api::GeneratedFunctionRegistry::RegisterAll(registry);
 #endif
+}
+
+ComponentExtensionResourceManager*
+ChromeExtensionsBrowserClient::GetComponentExtensionResourceManager() {
+  if (!resource_manager_)
+    resource_manager_.reset(new ChromeComponentExtensionResourceManager());
+  return resource_manager_.get();
 }
 
 scoped_ptr<extensions::RuntimeAPIDelegate>

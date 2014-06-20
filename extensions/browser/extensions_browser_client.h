@@ -34,6 +34,7 @@ namespace extensions {
 
 class ApiActivityMonitor;
 class AppSorting;
+class ComponentExtensionResourceManager;
 class Extension;
 class ExtensionHostDelegate;
 class ExtensionPrefsObserver;
@@ -172,6 +173,11 @@ class ExtensionsBrowserClient {
   // core runtime API implementation.
   virtual scoped_ptr<RuntimeAPIDelegate> CreateRuntimeAPIDelegate(
       content::BrowserContext* context) const = 0;
+
+  // Returns the manager of resource bundles used in extensions. Returns NULL if
+  // the manager doesn't exist.
+  virtual ComponentExtensionResourceManager*
+  GetComponentExtensionResourceManager() = 0;
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

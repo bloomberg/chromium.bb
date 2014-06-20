@@ -14,12 +14,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
-#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
+#include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extension_protocols.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -35,6 +36,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
+using extensions::ExtensionsBrowserClient;
 
 namespace {
 
@@ -224,7 +226,8 @@ net::URLRequestJob* MaybeCreateURLRequestResourceBundleJob(
     base::FilePath request_path =
         extensions::file_util::ExtensionURLToRelativeFilePath(request->url());
     int resource_id = 0;
-    if (extensions::ImageLoader::IsComponentExtensionResource(
+    if (ExtensionsBrowserClient::Get()->GetComponentExtensionResourceManager()->
+        IsComponentExtensionResource(
             directory_path, request_path, &resource_id)) {
       relative_path = relative_path.Append(request_path);
       relative_path = relative_path.NormalizePathSeparators();

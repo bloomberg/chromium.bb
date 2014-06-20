@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
+#include "extensions/browser/extension_icon_image.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/gfx/image/image_skia.h"
 

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_IMAGE_LOADER_H_
-#define CHROME_BROWSER_EXTENSIONS_IMAGE_LOADER_H_
+#ifndef EXTENSIONS_BROWSER_IMAGE_LOADER_H_
+#define EXTENSIONS_BROWSER_IMAGE_LOADER_H_
 
 #include <set>
 
@@ -75,15 +75,6 @@ class ImageLoader : public KeyedService {
   ImageLoader();
   virtual ~ImageLoader();
 
-  // Checks whether image is a component extension resource. Returns false
-  // if a given |resource| does not have a corresponding image in bundled
-  // resources. Otherwise fills |resource_id|. This doesn't check if the
-  // extension the resource is in is actually a component extension.
-  static bool IsComponentExtensionResource(
-      const base::FilePath& extension_path,
-      const base::FilePath& resource_path,
-      int* resource_id);
-
   // Specify image resource to load. If the loaded image is larger than
   // |max_size| it will be resized to those dimensions. IMPORTANT NOTE: this
   // function may call back your callback synchronously (ie before it returns)
@@ -127,4 +118,4 @@ class ImageLoader : public KeyedService {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_IMAGE_LOADER_H_
+#endif  // EXTENSIONS_BROWSER_IMAGE_LOADER_H_

@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_icon_image.h"
+#include "extensions/browser/extension_icon_image.h"
 
 #include <vector>
 
 #include "base/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/image_loader.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/image_loader.h"
 #include "extensions/common/extension.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"

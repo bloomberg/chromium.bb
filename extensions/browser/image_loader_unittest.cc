@@ -1,16 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/image_loader.h"
+#include "extensions/browser/image_loader.h"
 
+#include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/component_extension_resource_manager.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -19,11 +23,14 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/file_manager/grit/file_manager_resources.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/size.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/file_manager/grit/file_manager_resources.h"
+#endif
 
 using content::BrowserThread;
 using extensions::Extension;
@@ -316,7 +323,14 @@ TEST_F(ImageLoaderTest, LoadImageFamily) {
 }
 
 // Tests IsComponentExtensionResource function.
+// TODO(mukai): move this to ChromeComponentExtensionResourceManager's test.
 TEST_F(ImageLoaderTest, IsComponentExtensionResource) {
+  extensions::ComponentExtensionResourceManager* resource_manager =
+      extensions::ExtensionsBrowserClient::Get()->
+      GetComponentExtensionResourceManager();
+  if (!resource_manager)
+    return;
+
   scoped_refptr<Extension> extension(CreateExtension(
       "file_manager", Manifest::COMPONENT));
   ASSERT_TRUE(extension.get() != NULL);
@@ -328,10 +342,10 @@ TEST_F(ImageLoaderTest, IsComponentExtensionResource) {
 
 #if defined(OS_CHROMEOS)
   int resource_id;
-  ASSERT_EQ(true,
-            ImageLoader::IsComponentExtensionResource(extension->path(),
-                                                      resource.relative_path(),
-                                                      &resource_id));
+  ASSERT_TRUE(resource_manager->IsComponentExtensionResource(
+      extension->path(),
+      resource.relative_path(),
+      &resource_id));
   ASSERT_EQ(IDR_FILE_MANAGER_ICON_16, resource_id);
 #endif
 }

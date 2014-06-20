@@ -14,20 +14,22 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/message_bundle.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
+using extensions::ExtensionsBrowserClient;
 
 namespace extensions {
 
@@ -201,7 +203,8 @@ static bool LoadScriptContent(const std::string& extension_id,
       ExtensionResource::SYMLINKS_MUST_RESOLVE_WITHIN_ROOT);
   if (path.empty()) {
     int resource_id;
-    if (extensions::ImageLoader::IsComponentExtensionResource(
+    if (ExtensionsBrowserClient::Get()->GetComponentExtensionResourceManager()->
+        IsComponentExtensionResource(
             script_file->extension_root(), script_file->relative_path(),
             &resource_id)) {
       const ResourceBundle& rb = ResourceBundle::GetSharedInstance();

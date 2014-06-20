@@ -162,4 +162,9 @@ TestExtensionsBrowserClient::CreateRuntimeAPIDelegate(
   return scoped_ptr<RuntimeAPIDelegate>(new TestRuntimeAPIDelegate());
 }
 
+ComponentExtensionResourceManager*
+TestExtensionsBrowserClient::GetComponentExtensionResourceManager() {
+  return NULL;
+}
+
 }  // namespace extensions

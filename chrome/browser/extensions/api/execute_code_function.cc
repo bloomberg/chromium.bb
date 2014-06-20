@@ -5,9 +5,10 @@
 #include "chrome/browser/extensions/api/execute_code_function.h"
 
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
-#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
+#include "extensions/browser/component_extension_resource_manager.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/file_reader.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_messages.h"
@@ -196,7 +197,8 @@ bool ExecuteCodeFunction::RunAsync() {
   }
 
   int resource_id;
-  if (ImageLoader::IsComponentExtensionResource(
+  if (ExtensionsBrowserClient::Get()->GetComponentExtensionResourceManager()->
+      IsComponentExtensionResource(
           resource_.extension_root(), resource_.relative_path(),
           &resource_id)) {
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();

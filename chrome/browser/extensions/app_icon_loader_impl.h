@@ -9,7 +9,7 @@
 #include <string>
 
 #include "chrome/browser/extensions/app_icon_loader.h"
-#include "chrome/browser/extensions/extension_icon_image.h"
+#include "extensions/browser/extension_icon_image.h"
 
 class Profile;
 

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_TOOLBAR_ORIGIN_CHIP_INFO_H_
 
 #include "base/strings/string16.h"
-#include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "extensions/browser/extension_icon_image.h"
 
 class GURL;
 class Profile;

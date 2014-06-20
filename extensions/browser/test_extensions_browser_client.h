@@ -75,6 +75,8 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
       ExtensionFunctionRegistry* registry) const OVERRIDE;
   virtual scoped_ptr<RuntimeAPIDelegate> CreateRuntimeAPIDelegate(
       content::BrowserContext* context) const OVERRIDE;
+  virtual ComponentExtensionResourceManager*
+  GetComponentExtensionResourceManager() OVERRIDE;
 
  private:
   content::BrowserContext* main_context_;       // Not owned.

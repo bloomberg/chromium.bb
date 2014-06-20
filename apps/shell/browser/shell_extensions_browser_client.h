@@ -75,6 +75,8 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
       ExtensionFunctionRegistry* registry) const OVERRIDE;
   virtual scoped_ptr<RuntimeAPIDelegate> CreateRuntimeAPIDelegate(
       content::BrowserContext* context) const OVERRIDE;
+  virtual ComponentExtensionResourceManager*
+  GetComponentExtensionResourceManager() OVERRIDE;
 
  private:
   // The single BrowserContext for app_shell. Not owned.

@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
+#include "extensions/browser/extension_icon_image.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class AppListControllerDelegate;
