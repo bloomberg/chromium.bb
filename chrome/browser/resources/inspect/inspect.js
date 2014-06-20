@@ -665,7 +665,7 @@ function unsetModal(dialog) {
     if (dialog.tabIndexes[i] === null)
       node.removeAttribute('tabindex');
     else
-      node.setAttribute('tabindex', tabIndexes[i]);
+      node.setAttribute('tabindex', dialog.tabIndexes[i]);
   }
 
   if (window.holdDevices) {
