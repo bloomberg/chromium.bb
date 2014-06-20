@@ -447,25 +447,24 @@ void GlassBrowserFrameView::LayoutNewStyleAvatar() {
     return;
 
   gfx::Size label_size = new_avatar_button()->GetPreferredSize();
-  int button_size_with_offset = kNewAvatarButtonOffset + label_size.width();
 
   int button_x = frame()->GetMinimizeButtonOffset() -
       kNewAvatarButtonOffset - label_size.width();
   if (base::i18n::IsRTL())
     button_x = width() - frame()->GetMinimizeButtonOffset() +
         kNewAvatarButtonOffset;
-  int button_y = frame()->IsMaximized() ? NonClientTopBorderHeight() : 1;
 
-  // If the window is maximized, the button is 2 pixels too tall. Determined
-  // via visual inspection.
-  int height_to_subtract = frame()->IsMaximized() ? 2 : 0;
+  // We need to offset the button correctly in maximized mode, so that the
+  // custom glass style aligns with the native control glass style. The
+  // glass shadow is off by 1px, which was determined by visual inspection.
+  int button_y = !frame()->IsMaximized() ? 1 :
+      NonClientTopBorderHeight() + kTabstripTopShadowThickness - 1;
 
   new_avatar_button()->SetBounds(
       button_x,
       button_y,
       label_size.width(),
-      button_y + gfx::win::GetSystemMetricsInDIP(SM_CXMENUSIZE) -
-          height_to_subtract);
+      gfx::win::GetSystemMetricsInDIP(SM_CYMENUSIZE) + 1);
 }
 
 void GlassBrowserFrameView::LayoutAvatar() {

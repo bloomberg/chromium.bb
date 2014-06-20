@@ -32,7 +32,6 @@ scoped_ptr<views::Border> CreateBorder(const int normal_image_set[],
                                        const int pushed_image_set[]) {
   scoped_ptr<views::LabelButtonBorder> border(
       new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON));
-
   border->SetPainter(false, views::Button::STATE_NORMAL,
       views::Painter::CreateImageGridPainter(normal_image_set));
   border->SetPainter(false, views::Button::STATE_HOVERED,
@@ -163,8 +162,8 @@ void NewAvatarButton::OnErrorChanged() {
   const SigninErrorController* error =
       profiles::GetSigninErrorController(browser_->profile());
   if (error && error->HasError()) {
-    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-    icon = *rb->GetImageNamed(IDR_WARNING).ToImageSkia();
+    icon = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR).ToImageSkia();
   }
 
   SetImage(views::Button::STATE_NORMAL, icon);

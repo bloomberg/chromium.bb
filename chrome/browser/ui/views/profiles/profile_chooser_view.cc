@@ -1298,19 +1298,19 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
   const gfx::ImageSkia* delete_default_image =
       rb->GetImageNamed(IDR_CLOSE_1).ToImageSkia();
   const int kDeleteButtonWidth = delete_default_image->width();
-  const gfx::ImageSkia* warning_default_image = reauth_required ?
-      rb->GetImageNamed(IDR_WARNING).ToImageSkia() : NULL;
+  const gfx::ImageSkia warning_default_image = reauth_required ?
+      *rb->GetImageNamed(IDR_ICON_PROFILES_ACCOUNT_BUTTON_ERROR).ToImageSkia() :
+      gfx::ImageSkia();
   const int kWarningButtonWidth = reauth_required ?
-      warning_default_image->width() + views::kRelatedButtonHSpacing : 0;
-  int available_width = width -
-      kDeleteButtonWidth - kWarningButtonWidth - views::kButtonHEdgeMarginNew;
-
+      warning_default_image.width() + views::kRelatedButtonHSpacing : 0;
+  int available_width = width - 2 * views::kButtonHEdgeMarginNew
+      - kDeleteButtonWidth - kWarningButtonWidth;
   views::LabelButton* email_button = new BackgroundColorHoverButton(
-      NULL,
+      reauth_required ? this : NULL,
       gfx::ElideText(base::UTF8ToUTF16(account), gfx::FontList(),
                      available_width, gfx::ELIDE_EMAIL),
-      gfx::ImageSkia(),
-      gfx::ImageSkia());
+      warning_default_image,
+      warning_default_image);
   layout->StartRow(1, 0);
   layout->AddView(email_button);
 
@@ -1325,28 +1325,16 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
   delete_button->SetImage(views::ImageButton::STATE_PRESSED,
                           rb->GetImageSkiaNamed(IDR_CLOSE_1_P));
   delete_button->SetBounds(
-      available_width + kWarningButtonWidth, 0,
-      kDeleteButtonWidth, kButtonHeight);
+      width - views::kButtonHEdgeMarginNew - kDeleteButtonWidth,
+      0, kDeleteButtonWidth, kButtonHeight);
 
   email_button->set_notify_enter_exit_on_child(true);
   email_button->AddChildView(delete_button);
 
   // Save the original email address, as the button text could be elided.
   delete_account_button_map_[delete_button] = account;
-
-  // Warning button.
-  if (reauth_required) {
-    views::ImageButton* reauth_button = new views::ImageButton(this);
-    reauth_button->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
-                                     views::ImageButton::ALIGN_MIDDLE);
-    reauth_button->SetImage(views::ImageButton::STATE_NORMAL,
-                            warning_default_image);
-    reauth_button->SetBounds(
-        available_width, 0, kWarningButtonWidth, kButtonHeight);
-
-    email_button->AddChildView(reauth_button);
-    reauth_account_button_map_[reauth_button] = account;
-  }
+  if (reauth_required)
+    reauth_account_button_map_[email_button] = account;
 }
 
 views::View* ProfileChooserView::CreateGaiaSigninView() {
