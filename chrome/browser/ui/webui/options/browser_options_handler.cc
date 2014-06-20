@@ -610,6 +610,10 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   RegisterTitle(values, "thirdPartyImeConfirmOverlay",
                 IDS_OPTIONS_SETTINGS_LANGUAGES_THIRD_PARTY_WARNING_TITLE);
 #endif
+
+  values->SetBoolean("showSetDefault", ShouldShowSetDefaultBrowser());
+
+  values->SetBoolean("allowAdvancedSettings", ShouldAllowAdvancedSettings());
 }
 
 #if defined(ENABLE_FULL_PRINTING)
@@ -619,9 +623,6 @@ void BrowserOptionsHandler::RegisterCloudPrintValues(
                     l10n_util::GetStringFUTF16(
                         IDS_CLOUD_PRINT_CHROMEOS_OPTION_LABEL,
                         l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
-
-  values->SetBoolean("showSetDefault", ShouldShowSetDefaultBrowser());
-  values->SetBoolean("allowAdvancedSettings", ShouldAllowAdvancedSettings());
 }
 #endif  // defined(ENABLE_FULL_PRINTING)
 
