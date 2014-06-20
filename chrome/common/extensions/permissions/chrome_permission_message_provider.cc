@@ -111,6 +111,8 @@ std::vector<base::string16> ChromePermissionMessageProvider::GetWarningMessages(
   bool media_galleries_read = false;
   bool media_galleries_copy_to = false;
   bool media_galleries_delete = false;
+  bool accessibility_read = false;
+  bool accessibility_write = false;
   for (PermissionMessages::const_iterator i = messages.begin();
        i != messages.end(); ++i) {
     switch (i->id()) {
@@ -129,6 +131,12 @@ std::vector<base::string16> ChromePermissionMessageProvider::GetWarningMessages(
       case PermissionMessage::kMediaGalleriesAllGalleriesDelete:
         media_galleries_delete = true;
         break;
+      case PermissionMessage::kAccessibilityFeaturesRead:
+        accessibility_read = true;
+        break;
+      case PermissionMessage::kAccessibilityFeaturesModify:
+        accessibility_write = true;
+        break;
       default:
         break;
     }
@@ -143,6 +151,16 @@ std::vector<base::string16> ChromePermissionMessageProvider::GetWarningMessages(
             IDS_EXTENSION_PROMPT_WARNING_AUDIO_AND_VIDEO_CAPTURE));
         continue;
       } else if (id == PermissionMessage::kVideoCapture) {
+        // The combined message will be pushed above.
+        continue;
+      }
+    }
+    if (accessibility_read && accessibility_write) {
+      if (id == PermissionMessage::kAccessibilityFeaturesRead) {
+        message_strings.push_back(l10n_util::GetStringUTF16(
+            IDS_EXTENSION_PROMPT_WARNING_ACCESSIBILITY_FEATURES_READ_MODIFY));
+        continue;
+      } else if (id == PermissionMessage::kAccessibilityFeaturesModify) {
         // The combined message will be pushed above.
         continue;
       }
