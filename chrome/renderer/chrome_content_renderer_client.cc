@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/path_service.h"
@@ -810,12 +811,19 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_NOT_AUTHORIZED, group_name));
         placeholder->set_allow_loading(true);
-        render_frame->Send(new ChromeViewHostMsg_BlockedUnauthorizedPlugin(
-            render_frame->GetRoutingID(),
-            group_name,
-            identifier));
-        // Send IPC for showing content_setting_image/bubble.
-        observer->DidBlockContentType(content_type);
+        // Check to see if old infobar should be displayed.
+        std::string trial_group =
+            base::FieldTrialList::FindFullName("UnauthorizedPluginInfoBar");
+        if (plugin.type != content::WebPluginInfo::PLUGIN_TYPE_NPAPI ||
+            trial_group == "Enabled") {
+          render_frame->Send(new ChromeViewHostMsg_BlockedUnauthorizedPlugin(
+              render_frame->GetRoutingID(),
+              group_name,
+              identifier));
+        } else {
+          // Send IPC for showing blocked plugins page action.
+          observer->DidBlockContentType(content_type);
+        }
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay: {

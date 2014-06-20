@@ -61,6 +61,7 @@ void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {
   // Mark here so they will be sync-ed.
   base::FieldTrialList::FindValue("CLD1VsCLD2");
   base::FieldTrialList::FindValue("MouseEventPreconnect");
+  base::FieldTrialList::FindValue("UnauthorizedPluginInfoBar");
   // Activate the autocomplete dynamic field trials.
   OmniboxFieldTrial::ActivateDynamicTrials();
 }
