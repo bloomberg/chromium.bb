@@ -19,3 +19,13 @@ group("resources") {
     deps += [ "//chrome/common:extensions_api_resources" ]
   }
 }
+
+# GYP version: chrome/chrome_resources.gyp:chrome_strings
+group("strings") {
+  deps = [
+    "//chrome/app:chromium_strings",
+    "//chrome/app:generated_resources",
+    "//chrome/app:google_chrome_strings",
+    "//chrome/app/resources:locale_settings",
+  ]
+}

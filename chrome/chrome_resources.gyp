@@ -167,7 +167,7 @@
       # to run grit would list its own .grd files, but unfortunately some
       # of the static libraries currently have circular dependencies among
       # generated headers.
-
+      #
       # GN version: //chrome:resources
       'target_name': 'chrome_resources',
       'type': 'none',
@@ -228,10 +228,13 @@
       # to run grit would list its own .grd files, but unfortunately some
       # of the static libraries currently have circular dependencies among
       # generated headers.
+      #
+      # GN version: //chrome:strings
       'target_name': 'chrome_strings',
       'type': 'none',
       'actions': [
         {
+          # GN version: //chrome/app/resources:locale_settings
           'action_name': 'generate_locale_settings',
           'variables': {
             'grit_grd_file': 'app/resources/locale_settings.grd',
@@ -239,6 +242,7 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          # GN version: //chrome/app:chromium_strings
           'action_name': 'generate_chromium_strings',
           'variables': {
             'grit_grd_file': 'app/chromium_strings.grd',
@@ -246,6 +250,7 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          # GN version: //chrome/app:generated_resources
           'action_name': 'generate_generated_resources',
           'variables': {
             'grit_grd_file': 'app/generated_resources.grd',
@@ -253,6 +258,7 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          # GN version: //chrome/app:google_chrome_strings
           'action_name': 'generate_google_chrome_strings',
           'variables': {
             'grit_grd_file': 'app/google_chrome_strings.grd',
@@ -334,6 +340,7 @@
       'includes': [ '../build/grit_target.gypi' ],
     },
     {
+      # GN version: //chrome/app/theme:theme_resources
       'target_name': 'theme_resources',
       'type': 'none',
       'dependencies': [

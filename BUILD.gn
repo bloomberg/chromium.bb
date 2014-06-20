@@ -21,7 +21,7 @@ group("root") {
 
     "//apps/common/api:apps_api",
     "//cc",
-    "//chrome:resources",
+    "//chrome/common",
     "//components/favicon_base",
     "//components/language_usage_metrics",
     "//components/metrics",
@@ -142,6 +142,7 @@ group("root") {
   if (is_android) {
     deps -= [
       "//cc",
+      "//chrome/common",  # Blocked on content.
       "//content",
       "//components/keyed_service/content",  # Blocked on content.
       "//components/user_prefs",  # Blocked on content.

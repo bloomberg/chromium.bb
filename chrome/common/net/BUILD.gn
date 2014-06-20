@@ -36,7 +36,7 @@ static_library("net") {
       "x509_certificate_model.cc",
     ]
   } else {
-    deps += [ "//gpu:ipc" ]
+    deps += [ "//gpu/ipc" ]
   }
 
   if (is_win || is_mac || is_ios) {

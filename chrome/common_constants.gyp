@@ -62,6 +62,7 @@
   },
   'targets': [
     {
+      # GN version: //chrome/common:constants
       'target_name': 'common_constants',
       'type': 'static_library',
       'include_dirs': [

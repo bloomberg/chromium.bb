@@ -96,6 +96,11 @@ def LoadPythonDictionary(path):
   if 'target_conditions' in file_data:
     del file_data['target_conditions']
 
+  # Strip targets in the toplevel, since some files define these and we can't
+  # slurp them in.
+  if 'targets' in file_data:
+    del file_data['targets']
+
   return file_data
 
 

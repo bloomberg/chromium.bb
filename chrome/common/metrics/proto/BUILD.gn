@@ -8,5 +8,5 @@ import("//third_party/protobuf/proto_library.gni")
 proto_library("proto") {
   sources = [
     "chrome_experiments.proto",
-  }
+  ]
 }

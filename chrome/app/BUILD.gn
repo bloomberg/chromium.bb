@@ -1,0 +1,23 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//tools/grit/grit_rule.gni")
+
+# GYP version: chrome/chrome_resources.gyp:chrome_strings
+#              (generate_generated_resources action)
+grit("generated_resources") {
+  source = "generated_resources.grd"
+}
+
+# GYP version: chrome/chrome_resources.gyp:chrome_strings
+#              (generate_google_chrome_strings action)
+grit("google_chrome_strings") {
+  source = "google_chrome_strings.grd"
+}
+
+# GYP version: chrome/chrome_resources.gyp:chrome_strings
+#              (generate_chromium_strings action)
+grit("chromium_strings") {
+  source = "chromium_strings.grd"
+}

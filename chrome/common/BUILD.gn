@@ -4,6 +4,13 @@
 
 import("//tools/grit/grit_rule.gni")
 
+# TODO(GYP) uncomment when this is used below.
+#gypi_values = exec_script(
+#    "//build/gypi_to_gn.py",
+#    [ rebase_path("../chrome_common.gypi") ],
+#    "scope",
+#    [ "../chrome_common.gypi" ])
+
 # GYP version: chrome/chrome_resources.gyp:chrome_resources
 #              (generate_common_resources action)
 grit("resources") {
@@ -16,7 +23,124 @@ grit("extensions_api_resources") {
   source = "extensions_api_resources.grd"
 }
 
-# TODO(GYP) add this target.
-#static_library("common") {
-#  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-#}
+# GYP version: chrome/chrome_common.gyp:common
+static_library("common") {
+  # TODO(GYP) Uncomment when these compile.
+  #sources = rebase_path(gypi_values.chrome_common_sources, ".", "//chrome")
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  deps = [
+    ":version",
+    #":installer_util",  TODO(GYP)
+    "//base:base",
+    "//base:i18n",
+    "//base:prefs",
+    "//base:base_static",
+    "//chrome:resources",
+    "//chrome:strings",
+    "//chrome/app/theme:theme_resources",
+    "//chrome/common:constants",
+    "//chrome/common/metrics/proto",
+    "//chrome/common/net",
+    #"//components/cloud_devices:common",  TODO(GYP)
+    #"//components/json_schema",  TODO(GYP)
+    "//components/metrics",  
+    #"//components/components.gyp:policy_component_common",  TODO(GYP)
+    "//components/translate:translate_core_common",
+    #"//components/variations",  TODO(GYP)
+    "//content/public/common",
+    "//crypto",
+    #"//extensions/extensions_resources.gyp:extensions_resources",  TODO(GYP)
+    #"//extensions/extensions_strings.gyp:extensions_strings",  TODO(GYP)
+    #"//media/cast/cast.gyp:cast_transport",  TODO(GYP)
+    "//net",
+    "//skia",
+    "//third_party/icu",
+    "//third_party/libxml",
+    "//third_party/sqlite",
+    "//third_party/zlib:zip",
+    "//ui/resources:resources",
+    "//url",
+  ]
+}
+
+if (is_linux) {
+  action("version") {
+    visibility = ":common"
+    script = "//build/util/version.py"
+
+    lastchange_path = "//build/util/LASTCHANGE"
+    version_path = "//chrome/VERSION"
+    template_input_path = "chrome_version_info_posix.h.version"
+    if (is_chrome_branded) {
+      branding_path = "//chrome/app/theme/google_chrome/BRANDING"
+    } else {
+      branding_path = "//chrome/app/theme/chromium/BRANDING"
+    }
+
+    source_prereqs = [
+      version_path,
+      template_input_path,
+      lastchange_path,
+      branding_path,
+    ]
+
+    outfile = "$target_gen_dir/chrome_version_info_posix.h"
+    outputs = [ outfile ]
+
+    args = [
+      "-f", rebase_path(version_path, root_build_dir),
+      "-f", rebase_path(branding_path, root_build_dir),
+      "-f", rebase_path(lastchange_path, root_build_dir),
+      rebase_path(template_input_path, root_build_dir),
+      rebase_path(outfile, root_build_dir),
+    ]
+  }
+} else {
+  # Other platforms have a different way to do versioning.
+  group("version") {
+  }
+}
+
+# GN version: chrome/common_constants.gyp:common_constants
+static_library("constants") {
+  sources = [
+    "chrome_constants.cc",
+    "chrome_constants.h",
+    "chrome_icon_resources_win.cc",
+    "chrome_icon_resources_win.h",
+    "chrome_paths.cc",
+    "chrome_paths.h",
+    "chrome_paths_android.cc",
+    "chrome_paths_internal.h",
+    "chrome_paths_linux.cc",
+    "chrome_paths_mac.mm",
+    "chrome_paths_win.cc",
+    "chrome_switches.cc",
+    "chrome_switches.h",
+    "env_vars.cc",
+    "env_vars.h",
+    "net/test_server_locations.cc",
+    "net/test_server_locations.h",
+    "pref_font_script_names-inl.h",
+    "pref_font_webkit_names.h",
+    "pref_names.cc",
+    "pref_names.h",
+    "widevine_cdm_constants.cc",
+    "widevine_cdm_constants.h",
+  ]
+
+  # TODO(GYP) remove when widevine is supported for real.
+  configs += [ "//content:widevine_stub_config" ]
+
+  deps = [
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    # TODO(GYP)
+    #'../components/components.gyp:bookmarks_common',
+    #'../components/nacl.gyp:nacl_switches',
+    #'../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
+    #    (Also see widevine config above.)
+  ]
+}
