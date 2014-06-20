@@ -50,7 +50,7 @@ namespace content {
 
 class BrowserPlugin;
 class BrowserPluginManager;
-class RenderFrameImpl;
+class RenderFrameProxy;
 
 class CONTENT_EXPORT ChildFrameCompositingHelper
     : public base::RefCounted<ChildFrameCompositingHelper>,
@@ -60,7 +60,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
       const base::WeakPtr<BrowserPlugin>& browser_plugin);
   static ChildFrameCompositingHelper* CreateCompositingHelperForRenderFrame(
       blink::WebFrame* frame,
-      RenderFrameImpl* render_frame,
+      RenderFrameProxy* render_frame_proxy,
       int host_routing_id);
 
   void CopyFromCompositingSurface(int request_id,
@@ -94,7 +94,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   ChildFrameCompositingHelper(
       const base::WeakPtr<BrowserPlugin>& browser_plugin,
       blink::WebFrame* frame,
-      RenderFrameImpl* render_frame,
+      RenderFrameProxy* render_frame_proxy,
       int host_routing_id);
 
   enum SwapBuffersType {
@@ -157,7 +157,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   // other member objects, as they may access this pointer during their
   // destruction.
   base::WeakPtr<BrowserPlugin> browser_plugin_;
-  RenderFrameImpl* render_frame_;
+  RenderFrameProxy* render_frame_proxy_;
 
   scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection_;
   scoped_refptr<cc::DelegatedFrameProvider> frame_provider_;

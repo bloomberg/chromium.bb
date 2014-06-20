@@ -43,6 +43,7 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/render_frame_impl.h"
+#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
@@ -1199,20 +1200,11 @@ void RenderWidget::didBecomeReadyForAdditionalInput() {
 }
 
 void RenderWidget::DidCommitCompositorFrame() {
-  FOR_EACH_OBSERVER(RenderFrameImpl, swapped_out_frames_,
+  FOR_EACH_OBSERVER(RenderFrameProxy, render_frame_proxies_,
                     DidCommitCompositorFrame());
 #if defined(VIDEO_HOLE)
-  // Not using FOR_EACH_OBSERVER because |swapped_out_frames_| and
-  // |video_hole_frames_| may have common frames.
-  if (!video_hole_frames_.might_have_observers())
-    return;
-  ObserverListBase<RenderFrameImpl>::Iterator iter(video_hole_frames_);
-  RenderFrameImpl* frame;
-  while ((frame = iter.GetNext()) != NULL) {
-    // Prevent duplicate notification of DidCommitCompositorFrame().
-    if (!swapped_out_frames_.HasObserver(frame))
-      frame->DidCommitCompositorFrame();
-  }
+  FOR_EACH_OBSERVER(RenderFrameImpl, video_hole_frames_,
+                    DidCommitCompositorFrame());
 #endif  // defined(VIDEO_HOLE)
 }
 
@@ -2048,12 +2040,12 @@ RenderWidget::CreateGraphicsContext3D() {
   return context.Pass();
 }
 
-void RenderWidget::RegisterSwappedOutChildFrame(RenderFrameImpl* frame) {
-  swapped_out_frames_.AddObserver(frame);
+void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {
+  render_frame_proxies_.AddObserver(proxy);
 }
 
-void RenderWidget::UnregisterSwappedOutChildFrame(RenderFrameImpl* frame) {
-  swapped_out_frames_.RemoveObserver(frame);
+void RenderWidget::UnregisterRenderFrameProxy(RenderFrameProxy* proxy) {
+  render_frame_proxies_.RemoveObserver(proxy);
 }
 
 void RenderWidget::RegisterRenderFrame(RenderFrameImpl* frame) {

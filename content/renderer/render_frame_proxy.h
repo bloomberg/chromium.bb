@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_RENDER_FRAME_PROXY_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -13,8 +14,12 @@
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"
 
+struct FrameMsg_BuffersSwapped_Params;
+struct FrameMsg_CompositorFrameSwapped_Params;
+
 namespace content {
 
+class ChildFrameCompositingHelper;
 class RenderFrameImpl;
 class RenderViewImpl;
 
@@ -58,6 +63,10 @@ class CONTENT_EXPORT RenderFrameProxy
     return render_frame_;
   }
 
+  // Out-of-process child frames receive a signal from RenderWidgetCompositor
+  // when a compositor frame has committed.
+  void DidCommitCompositorFrame();
+
  private:
   RenderFrameProxy(int routing_id, int frame_routing_id);
 
@@ -66,10 +75,17 @@ class CONTENT_EXPORT RenderFrameProxy
 
   // IPC handlers
   void OnDeleteProxy();
+  void OnChildFrameProcessGone();
+  void OnBuffersSwapped(const FrameMsg_BuffersSwapped_Params& params);
+  void OnCompositorFrameSwapped(const IPC::Message& message);
+
+  blink::WebFrame* GetWebFrame();
 
   int routing_id_;
   int frame_routing_id_;
   RenderFrameImpl* render_frame_;
+
+  scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxy);
 };

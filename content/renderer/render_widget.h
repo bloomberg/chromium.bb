@@ -69,6 +69,7 @@ namespace content {
 class ExternalPopupMenu;
 class PepperPluginInstanceImpl;
 class RenderFrameImpl;
+class RenderFrameProxy;
 class RenderWidgetCompositor;
 class RenderWidgetTest;
 class ResizingModeSelector;
@@ -110,8 +111,8 @@ class CONTENT_EXPORT RenderWidget
   }
 
   // Functions to track out-of-process frames for special notifications.
-  void RegisterSwappedOutChildFrame(RenderFrameImpl* frame);
-  void UnregisterSwappedOutChildFrame(RenderFrameImpl* frame);
+  void RegisterRenderFrameProxy(RenderFrameProxy* proxy);
+  void UnregisterRenderFrameProxy(RenderFrameProxy* proxy);
 
   // Functions to track all RenderFrame objects associated with this
   // RenderWidget.
@@ -692,9 +693,9 @@ class CONTENT_EXPORT RenderWidget
 
   scoped_ptr<ResizingModeSelector> resizing_mode_selector_;
 
-  // Lists of swapped out RenderFrames that need to be notified
-  // of compositing-related events (e.g. DidCommitCompositorFrame).
-  ObserverList<RenderFrameImpl> swapped_out_frames_;
+  // Lists of RenderFrameProxy objects that need to be notified of
+  // compositing-related events (e.g. DidCommitCompositorFrame).
+  ObserverList<RenderFrameProxy> render_frame_proxies_;
 #if defined(VIDEO_HOLE)
   ObserverList<RenderFrameImpl> video_hole_frames_;
 #endif  // defined(VIDEO_HOLE)

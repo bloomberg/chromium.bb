@@ -20,6 +20,7 @@
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/render_frame_impl.h"
+#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_thread_impl.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -48,16 +49,17 @@ ChildFrameCompositingHelper::CreateCompositingHelperForBrowserPlugin(
 ChildFrameCompositingHelper*
 ChildFrameCompositingHelper::CreateCompositingHelperForRenderFrame(
     blink::WebFrame* frame,
-    RenderFrameImpl* render_frame,
+    RenderFrameProxy* render_frame_proxy,
     int host_routing_id) {
   return new ChildFrameCompositingHelper(
-      base::WeakPtr<BrowserPlugin>(), frame, render_frame, host_routing_id);
+      base::WeakPtr<BrowserPlugin>(), frame, render_frame_proxy,
+      host_routing_id);
 }
 
 ChildFrameCompositingHelper::ChildFrameCompositingHelper(
     const base::WeakPtr<BrowserPlugin>& browser_plugin,
     blink::WebFrame* frame,
-    RenderFrameImpl* render_frame,
+    RenderFrameProxy* render_frame_proxy,
     int host_routing_id)
     : host_routing_id_(host_routing_id),
       last_route_id_(0),
@@ -68,7 +70,7 @@ ChildFrameCompositingHelper::ChildFrameCompositingHelper(
       software_ack_pending_(false),
       opaque_(true),
       browser_plugin_(browser_plugin),
-      render_frame_(render_frame),
+      render_frame_proxy_(render_frame_proxy),
       frame_(frame) {}
 
 ChildFrameCompositingHelper::~ChildFrameCompositingHelper() {}
@@ -102,8 +104,8 @@ void ChildFrameCompositingHelper::SendCompositorFrameSwappedACKToBrowser(
     GetBrowserPluginManager()->Send(
         new BrowserPluginHostMsg_CompositorFrameSwappedACK(
             host_routing_id_, GetInstanceID(), params));
-  } else if (render_frame_) {
-    render_frame_->Send(
+  } else if (render_frame_proxy_) {
+    render_frame_proxy_->Send(
         new FrameHostMsg_CompositorFrameSwappedACK(host_routing_id_, params));
   }
 }
@@ -115,8 +117,8 @@ void ChildFrameCompositingHelper::SendBuffersSwappedACKToBrowser(
   if (GetBrowserPluginManager()) {
     GetBrowserPluginManager()->Send(new BrowserPluginHostMsg_BuffersSwappedACK(
         host_routing_id_, params));
-  } else if (render_frame_) {
-    render_frame_->Send(
+  } else if (render_frame_proxy_) {
+    render_frame_proxy_->Send(
         new FrameHostMsg_BuffersSwappedACK(host_routing_id_, params));
   }
 }
@@ -129,8 +131,8 @@ void ChildFrameCompositingHelper::SendReclaimCompositorResourcesToBrowser(
     GetBrowserPluginManager()->Send(
         new BrowserPluginHostMsg_ReclaimCompositorResources(
             host_routing_id_, GetInstanceID(), params));
-  } else if (render_frame_) {
-    render_frame_->Send(
+  } else if (render_frame_proxy_) {
+    render_frame_proxy_->Send(
         new FrameHostMsg_ReclaimCompositorResources(host_routing_id_, params));
   }
 }
