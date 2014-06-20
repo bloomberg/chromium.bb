@@ -292,6 +292,50 @@ Status NssSupportsRsaOaep() {
       "later");
 }
 
+#if defined(USE_NSS) && !defined(OS_CHROMEOS)
+Status ErrorRsaKeyImportNotSupported() {
+  return Status::ErrorUnsupported(
+      "NSS version must be at least 3.16.2 for RSA key import. See "
+      "http://crbug.com/380424");
+}
+
+Status NssSupportsKeyImport(blink::WebCryptoAlgorithmId algorithm) {
+  // Prior to NSS 3.16.2 RSA key parameters were not validated. This is
+  // a security problem for RSA private key import from JWK which uses a
+  // CKA_ID based on the public modulus to retrieve the private key.
+
+  if (!IsAlgorithmRsa(algorithm))
+    return Status::Success();
+
+  if (!NSS_VersionCheck("3.16.2"))
+    return ErrorRsaKeyImportNotSupported();
+
+  // Also ensure that the version of Softoken is 3.16.2 or later.
+  crypto::ScopedPK11Slot slot(PK11_GetInternalSlot());
+  CK_SLOT_INFO info = {};
+  if (PK11_GetSlotInfo(slot.get(), &info) != SECSuccess)
+    return ErrorRsaKeyImportNotSupported();
+
+  // CK_SLOT_INFO.hardwareVersion contains the major.minor
+  // version info for Softoken in the corresponding .major/.minor
+  // fields, and .firmwareVersion contains the patch.build
+  // version info (in the .major/.minor fields)
+  if ((info.hardwareVersion.major > 3) ||
+      (info.hardwareVersion.major == 3 &&
+       (info.hardwareVersion.minor > 16 ||
+        (info.hardwareVersion.minor == 16 &&
+         info.firmwareVersion.major >= 2)))) {
+    return Status::Success();
+  }
+
+  return ErrorRsaKeyImportNotSupported();
+}
+#else
+Status NssSupportsKeyImport(blink::WebCryptoAlgorithmId) {
+  return Status::Success();
+}
+#endif
+
 // Creates a SECItem for the data in |buffer|. This does NOT make a copy, so
 // |buffer| should outlive the SECItem.
 SECItem MakeSECItemForBuffer(const CryptoData& buffer) {
@@ -987,6 +1031,10 @@ Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm,
                      bool extractable,
                      blink::WebCryptoKeyUsageMask usage_mask,
                      blink::WebCryptoKey* key) {
+  Status status = NssSupportsKeyImport(algorithm.id());
+  if (status.IsError())
+    return status;
+
   DCHECK(key);
 
   if (!key_data.byte_length())
@@ -1016,7 +1064,7 @@ Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm,
     return Status::ErrorUnexpected();
 
   scoped_ptr<PublicKey> key_handle;
-  Status status = PublicKey::Create(sec_public_key.Pass(), &key_handle);
+  status = PublicKey::Create(sec_public_key.Pass(), &key_handle);
   if (status.IsError())
     return status;
 
@@ -1156,6 +1204,10 @@ Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm,
                       bool extractable,
                       blink::WebCryptoKeyUsageMask usage_mask,
                       blink::WebCryptoKey* key) {
+  Status status = NssSupportsKeyImport(algorithm.id());
+  if (status.IsError())
+    return status;
+
   DCHECK(key);
 
   if (!key_data.byte_length())
@@ -1191,8 +1243,7 @@ Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm,
     return Status::ErrorUnexpected();
 
   scoped_ptr<PrivateKey> key_handle;
-  Status status =
-      PrivateKey::Create(private_key.Pass(), key_algorithm, &key_handle);
+  status = PrivateKey::Create(private_key.Pass(), key_algorithm, &key_handle);
   if (status.IsError())
     return status;
 
@@ -1689,6 +1740,10 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
                            const CryptoData& exponent2,
                            const CryptoData& coefficient,
                            blink::WebCryptoKey* key) {
+  Status status = NssSupportsKeyImport(algorithm.id());
+  if (status.IsError())
+    return status;
+
   CK_OBJECT_CLASS obj_class = CKO_PRIVATE_KEY;
   CK_KEY_TYPE key_type = CKK_RSA;
   CK_BBOOL ck_false = CK_FALSE;
@@ -1770,8 +1825,7 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
     return Status::ErrorUnexpected();
 
   scoped_ptr<PrivateKey> key_handle;
-  Status status =
-      PrivateKey::Create(private_key.Pass(), key_algorithm, &key_handle);
+  status = PrivateKey::Create(private_key.Pass(), key_algorithm, &key_handle);
   if (status.IsError())
     return status;
 
