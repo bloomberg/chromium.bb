@@ -1,0 +1,46 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Collection of all components. You wouldn't link to this, but this is rather
+# to reference the files so they can be compiled by the build system.
+group("all") {
+  visibility = "//:*"  # Only for the root targets to bring in.
+
+  deps = [
+    "//components/cloud_devices/common",
+    "//components/favicon_base",
+    "//components/json_schema",
+    "//components/language_usage_metrics",
+    "//components/metrics",
+    "//components/navigation_metrics",
+    "//components/onc",
+    "//components/os_crypt",
+    "//components/query_parser",
+    "//components/resources:components_resources",
+    "//components/startup_metric_utils",
+    "//components/tracing",
+    "//components/translate:translate_core_browser",
+    "//components/translate:translate_core_common",
+    "//components/url_matcher",
+    "//components/user_prefs",
+    "//components/visitedlink/browser",
+    "//components/visitedlink/common",
+    #"//components/visitedlink/renderer",  # Blocked on blink
+  ]
+
+  if (!is_ios) {
+    deps += [ "//components/keyed_service/content" ]
+  }
+
+  if (is_android) {
+    deps -= [
+      "//components/cloud_devices/common",  # Should work, needs checking.
+      "//components/json_schema",  # Should work, needs checking.
+      "//components/keyed_service/content",  # Blocked on content.
+      "//components/user_prefs",  # Blocked on content.
+      "//components/visitedlink/browser",  # Blocked on content.
+      "//components/visitedlink/common",  # Blocked on content.
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("json_schema") {
+  sources = [
+    "json_schema_constants.cc",
+    "json_schema_constants.h",
+    "json_schema_validator.cc",
+    "json_schema_validator.h",
+  ]
+
+  deps = [
+    "//base",
+    "//third_party/re2",
+  ]
+}

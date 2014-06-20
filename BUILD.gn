@@ -22,23 +22,6 @@ group("root") {
     "//apps/common/api:apps_api",
     "//cc",
     "//chrome/common",
-    "//components/favicon_base",
-    "//components/language_usage_metrics",
-    "//components/metrics",
-    "//components/navigation_metrics",
-    "//components/onc",
-    "//components/os_crypt",
-    "//components/query_parser",
-    "//components/resources:components_resources",
-    "//components/startup_metric_utils",
-    "//components/tracing",
-    "//components/translate:translate_core_browser",
-    "//components/translate:translate_core_common",
-    "//components/url_matcher",
-    "//components/user_prefs",
-    "//components/visitedlink/browser",
-    "//components/visitedlink/common",
-    #"//components/visitedlink/renderer",  # Blocked on blink
     "//content",
     "//crypto",
     "//extensions/common/api:extensions_api",
@@ -109,10 +92,6 @@ group("root") {
     deps += [ "//breakpad:symupload" ]
   }
 
-  if (!is_ios) {
-    deps += [ "//components/keyed_service/content" ]
-  }
-
   if (is_linux) {
     deps += [
       "//dbus",
@@ -144,10 +123,6 @@ group("root") {
       "//cc",
       "//chrome/common",  # Blocked on content.
       "//content",
-      "//components/keyed_service/content",  # Blocked on content.
-      "//components/user_prefs",  # Blocked on content.
-      "//components/visitedlink/browser",  # Blocked on content.
-      "//components/visitedlink/common",  # Blocked on content.
       "//extensions/common/api:extensions_api",
       "//pdf",  # Not compiled on Android in GYP yet, either.
       "//ppapi:ppapi_c",
