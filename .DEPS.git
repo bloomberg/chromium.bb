@@ -102,7 +102,7 @@ deps = {
     'src/third_party/mesa/src':
         Var('git_url') + '/chromium/deps/mesa.git@457812d99a213dedf1c4cd38018ff48118d0c44f',
     'src/third_party/openmax_dl':
-        Var('git_url') + '/external/webrtc/deps/third_party/openmax.git@cf42f62aae8cb9c9e0ed021ee6985affbe118677',
+        Var('git_url') + '/external/webrtc/deps/third_party/openmax.git@333c00b74820c9dc0022d124c5a10a788d74d5ca',
     'src/third_party/openssl':
         Var('git_url') + '/chromium/deps/openssl.git@063a4b93646788bd883fc0cb1b5eafc991ddacc4',
     'src/third_party/opus/src':
