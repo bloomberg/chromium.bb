@@ -11,9 +11,19 @@ InspectorTest.dumpStats = function(presentationRecord)
 {
     if (!presentationRecord.presentationParent())
         return "";
-    var aggregatedStats = presentationRecord.presentationAggregatedStats();
+
+    var aggregatedStats = {};
+    var uiUtils = WebInspector.panels.timeline._uiUtils;
+    if (presentationRecord.coalesced()) {
+        var presentationChildren = presentationRecord.presentationChildren();
+        for (var i = 0; i < presentationChildren.length; ++i)
+            uiUtils.aggregateTimeForRecord(aggregatedStats, presentationChildren[i].record());
+    } else {
+        uiUtils.aggregateTimeForRecord(aggregatedStats, presentationRecord.record());
+    }
+
     var timeByCategory = "";
-    
+
     for (category in aggregatedStats) {
         if (timeByCategory)
             timeByCategory += ", ";
