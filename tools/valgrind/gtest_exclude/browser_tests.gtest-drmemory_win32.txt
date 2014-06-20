@@ -9,23 +9,32 @@
 # it takes too long to run all browser_tests with Dr.Memory,
 # and we only select subset to run
 # A*
+Act*
+AppA*
+AppL*
+AppW*
+Autof*.Do*
+Autof*Edit*
+AutofillTest.P*
 # B*
 BackgroundApp*.R*
 Bluetooth*
 BitmapFetcher*
 BookmarksT*
 BrowserAcc*
-BrowserActionA*.I*
+BrowserActionA*.*
 BrowserCloseM*
 BrowserN*
-BrowserTest.*
+BrowserT*
 # C*
-CaptivePortal*
-CastStreamingApiTestWithPixelOutput.*
-ClickModifierTest.*
-ClickToPlayPluginTest.*
-CommandLineWebstoreInstall.*
-D*
+Cap*
+Cas*
+Clear*
+Click*
+Com*
+ChromeC*
+Con*UITest.*
+# D*
 E*
 F*
 G*
