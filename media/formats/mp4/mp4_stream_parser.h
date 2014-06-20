@@ -42,6 +42,7 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   enum State {
     kWaitingForInit,
     kParsingBoxes,
+    kWaitingForSampleData,
     kEmittingSamples,
     kError
   };
@@ -78,6 +79,15 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
 
   void Reset();
 
+  // Checks to see if we have enough data in |queue_| to transition to
+  // kEmittingSamples and start enqueuing samples.
+  bool HaveEnoughDataToEnqueueSamples();
+
+  // Sets |highest_end_offset_| based on the data in |moov_|
+  // and |moof|. Returns true if |highest_end_offset_| was successfully
+  // computed.
+  bool ComputeHighestEndOffset(const MovieFragment& moof);
+
   State state_;
   InitCB init_cb_;
   NewConfigCB config_cb_;
@@ -98,6 +108,11 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   // |mdat_tail_| is the stream offset of the end of the current 'mdat' box.
   // Valid iff it is greater than the head of the queue.
   int64 mdat_tail_;
+
+  // The highest end offset in the current moof. This offset is
+  // relative to |moof_head_|. This value is used to make sure we have collected
+  // enough bytes to parse all samples and aux_info in the current moof.
+  int64 highest_end_offset_;
 
   scoped_ptr<mp4::Movie> moov_;
   scoped_ptr<mp4::TrackRunIterator> runs_;

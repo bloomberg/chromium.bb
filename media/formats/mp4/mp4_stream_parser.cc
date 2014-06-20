@@ -92,18 +92,33 @@ bool MP4StreamParser::Parse(const uint8* buf, int size) {
   BufferQueue audio_buffers;
   BufferQueue video_buffers;
 
-  bool result, err = false;
+  bool result = false;
+  bool err = false;
 
   do {
-    if (state_ == kParsingBoxes) {
-      result = ParseBox(&err);
-    } else {
-      DCHECK_EQ(kEmittingSamples, state_);
-      result = EnqueueSample(&audio_buffers, &video_buffers, &err);
-      if (result) {
-        int64 max_clear = runs_->GetMaxClearOffset() + moof_head_;
-        err = !ReadAndDiscardMDATsUntil(max_clear);
-      }
+    switch (state_) {
+      case kWaitingForInit:
+      case kError:
+        NOTREACHED();
+        return false;
+
+      case kParsingBoxes:
+        result = ParseBox(&err);
+        break;
+
+      case kWaitingForSampleData:
+        result = HaveEnoughDataToEnqueueSamples();
+        if (result)
+          ChangeState(kEmittingSamples);
+        break;
+
+      case kEmittingSamples:
+        result = EnqueueSample(&audio_buffers, &video_buffers, &err);
+        if (result) {
+          int64 max_clear = runs_->GetMaxClearOffset() + moof_head_;
+          err = !ReadAndDiscardMDATsUntil(max_clear);
+        }
+        break;
     }
   } while (result && !err);
 
@@ -312,9 +327,10 @@ bool MP4StreamParser::ParseMoof(BoxReader* reader) {
   if (!runs_)
     runs_.reset(new TrackRunIterator(moov_.get(), log_cb_));
   RCHECK(runs_->Init(moof));
+  RCHECK(ComputeHighestEndOffset(moof));
   EmitNeedKeyIfNecessary(moof.pssh);
   new_segment_cb_.Run();
-  ChangeState(kEmittingSamples);
+  ChangeState(kWaitingForSampleData);
   return true;
 }
 
@@ -393,6 +409,8 @@ bool MP4StreamParser::PrepareAACBuffer(
 bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
                                     BufferQueue* video_buffers,
                                     bool* err) {
+  DCHECK_EQ(state_, kEmittingSamples);
+
   if (!runs_->IsRunValid()) {
     // Flush any buffers we've gotten in this chunk so that buffers don't
     // cross NewSegment() calls
@@ -400,7 +418,7 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
     if (*err)
       return false;
 
-    // Remain in kEnqueueingSamples state, discarding data, until the end of
+    // Remain in kEmittingSamples state, discarding data, until the end of
     // the current 'mdat' box has been appended to the queue.
     if (!queue_.Trim(mdat_tail_))
       return false;
@@ -426,8 +444,10 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
   bool video = has_video_ && video_track_id_ == runs_->track_id();
 
   // Skip this entire track if it's not one we're interested in
-  if (!audio && !video)
+  if (!audio && !video) {
     runs_->AdvanceRun();
+    return true;
+  }
 
   // Attempt to cache the auxiliary information first. Aux info is usually
   // placed in a contiguous block before the sample data, rather than being
@@ -575,6 +595,41 @@ bool MP4StreamParser::ReadAndDiscardMDATsUntil(const int64 offset) {
 void MP4StreamParser::ChangeState(State new_state) {
   DVLOG(2) << "Changing state: " << new_state;
   state_ = new_state;
+}
+
+bool MP4StreamParser::HaveEnoughDataToEnqueueSamples() {
+  DCHECK_EQ(state_, kWaitingForSampleData);
+  // For muxed content, make sure we have data up to |highest_end_offset_|
+  // so we can ensure proper enqueuing behavior. Otherwise assume we have enough
+  // data and allow per sample offset checks to meter sample enqueuing.
+  // TODO(acolwell): Fix trun box handling so we don't have to special case
+  // muxed content.
+  return !(has_audio_ && has_video_ &&
+           queue_.tail() < highest_end_offset_ + moof_head_);
+}
+
+bool MP4StreamParser::ComputeHighestEndOffset(const MovieFragment& moof) {
+  highest_end_offset_ = 0;
+
+  TrackRunIterator runs(moov_.get(), log_cb_);
+  RCHECK(runs.Init(moof));
+
+  while (runs.IsRunValid()) {
+    int64 aux_info_end_offset = runs.aux_info_offset() + runs.aux_info_size();
+    if (aux_info_end_offset > highest_end_offset_)
+      highest_end_offset_ = aux_info_end_offset;
+
+    while (runs.IsSampleValid()) {
+      int64 sample_end_offset = runs.sample_offset() + runs.sample_size();
+      if (sample_end_offset > highest_end_offset_)
+        highest_end_offset_ = sample_end_offset;
+
+      runs.AdvanceSample();
+    }
+    runs.AdvanceRun();
+  }
+
+  return true;
 }
 
 }  // namespace mp4
