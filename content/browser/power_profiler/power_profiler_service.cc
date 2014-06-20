@@ -62,7 +62,7 @@ void PowerProfilerService::AddObserver(PowerProfilerObserver* observer) {
 void PowerProfilerService::RemoveObserver(PowerProfilerObserver* observer) {
   observers_.RemoveObserver(observer);
 
-  if (!observers_.might_have_observers())
+  if (status_ == PROFILING && !observers_.might_have_observers())
     Stop();
 }
 

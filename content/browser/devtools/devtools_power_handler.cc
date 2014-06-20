@@ -24,6 +24,7 @@ DevToolsPowerHandler::DevToolsPowerHandler() {
 }
 
 DevToolsPowerHandler::~DevToolsPowerHandler() {
+  PowerProfilerService::GetInstance()->RemoveObserver(this);
 }
 
 void DevToolsPowerHandler::OnPowerEvent(const PowerEventVector& events) {
