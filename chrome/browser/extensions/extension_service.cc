@@ -70,7 +70,6 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
-#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/one_shot_event.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -968,8 +967,7 @@ void ExtensionService::GrantPermissionsAndEnableExtension(
 
 void ExtensionService::GrantPermissions(const Extension* extension) {
   CHECK(extension);
-  extensions::PermissionsUpdater perms_updater(profile());
-  perms_updater.GrantActivePermissions(extension);
+  extensions::PermissionsUpdater(profile()).GrantActivePermissions(extension);
 }
 
 // static
@@ -1591,40 +1589,10 @@ void ExtensionService::AddComponentExtension(const Extension* extension) {
   AddExtension(extension);
 }
 
-void ExtensionService::UpdateActivePermissions(const Extension* extension) {
-  // If the extension has used the optional permissions API, it will have a
-  // custom set of active permissions defined in the extension prefs. Here,
-  // we update the extension's active permissions based on the prefs.
-  scoped_refptr<PermissionSet> active_permissions =
-      extension_prefs_->GetActivePermissions(extension->id());
-
-  if (active_permissions.get()) {
-    // We restrict the active permissions to be within the bounds defined in the
-    // extension's manifest.
-    //  a) active permissions must be a subset of optional + default permissions
-    //  b) active permissions must contains all default permissions
-    scoped_refptr<PermissionSet> total_permissions = PermissionSet::CreateUnion(
-        extensions::PermissionsParser::GetRequiredPermissions(extension),
-        extensions::PermissionsParser::GetOptionalPermissions(extension));
-
-    // Make sure the active permissions contain no more than optional + default.
-    scoped_refptr<PermissionSet> adjusted_active =
-        PermissionSet::CreateIntersection(
-            total_permissions.get(), active_permissions.get());
-
-    // Make sure the active permissions contain the default permissions.
-    adjusted_active = PermissionSet::CreateUnion(
-        extensions::PermissionsParser::GetRequiredPermissions(extension),
-        adjusted_active.get());
-
-    extensions::PermissionsUpdater perms_updater(profile());
-    perms_updater.UpdateActivePermissions(extension, adjusted_active.get());
-  }
-}
-
 void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
                                                 bool is_extension_installed) {
-  UpdateActivePermissions(extension);
+  extensions::PermissionsUpdater(profile_)
+      .InitializeActivePermissions(extension);
 
   // We keep track of all permissions the user has granted each extension.
   // This allows extensions to gracefully support backwards compatibility

@@ -110,8 +110,7 @@ void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 
 // Test that the PermissionUpdater can correctly add and remove active
 // permissions. This tests all of PermissionsUpdater's public methods because
-// GrantActivePermissions and UpdateActivePermissions are used by
-// AddPermissions.
+// GrantActivePermissions and SetActivePermissions are used by AddPermissions.
 TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   InitializeEmptyExtensionService();
 

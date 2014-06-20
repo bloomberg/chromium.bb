@@ -9,10 +9,12 @@
 
 #include "base/memory/ref_counted.h"
 
-class Profile;
-
 namespace base {
 class DictionaryValue;
+}
+
+namespace content {
+class BrowserContext;
 }
 
 namespace extensions {
@@ -25,7 +27,7 @@ class PermissionSet;
 // and notifies interested parties of the changes.
 class PermissionsUpdater {
  public:
-  explicit PermissionsUpdater(Profile* profile);
+  explicit PermissionsUpdater(content::BrowserContext* browser_context);
   ~PermissionsUpdater();
 
   // Adds the set of |permissions| to the |extension|'s active permission set
@@ -43,15 +45,21 @@ class PermissionsUpdater {
   // granted permission set.
   void GrantActivePermissions(const Extension* extension);
 
-  // Sets the |extension|'s active permissions to |permissions|.
-  void UpdateActivePermissions(const Extension* extension,
-                               const PermissionSet* permissions);
+  // Initializes the |extension|'s active permission set to include only
+  // permissions currently requested by the extension and all the permissions
+  // required by the extension.
+  void InitializeActivePermissions(const Extension* extension);
 
  private:
   enum EventType {
     ADDED,
     REMOVED,
   };
+
+  // Sets the |extension|'s active permissions to |permissions| and records the
+  // change in the prefs.
+  void SetActivePermissions(const Extension* extension,
+                            const PermissionSet* permisssions);
 
   // Dispatches specified event to the extension.
   void DispatchEvent(const std::string& extension_id,
@@ -67,10 +75,8 @@ class PermissionsUpdater {
                                 const Extension* extension,
                                 const PermissionSet* changed);
 
-  // Gets the ExtensionPrefs for the associated profile.
-  ExtensionPrefs* GetExtensionPrefs();
-
-  Profile* profile_;
+  // The associated BrowserContext.
+  content::BrowserContext* browser_context_;
 };
 
 }  // namespace extensions

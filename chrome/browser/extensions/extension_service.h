@@ -505,11 +505,6 @@ class ExtensionService
   void FinishInstallation(const extensions::Extension* extension,
                           bool was_ephemeral);
 
-  // Updates the |extension|'s active permission set to include only permissions
-  // currently requested by the extension and all the permissions required by
-  // the extension.
-  void UpdateActivePermissions(const extensions::Extension* extension);
-
   // Disables the extension if the privilege level has increased
   // (e.g., due to an upgrade).
   void CheckPermissionsIncrease(const extensions::Extension* extension,
