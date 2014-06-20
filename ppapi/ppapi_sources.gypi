@@ -406,6 +406,8 @@
       'tests/test_audio_config.h',
       'tests/test_case.cc',
       'tests/test_case.h',
+      'tests/test_compositor.cc',
+      'tests/test_compositor.h',
       'tests/test_console.cc',
       'tests/test_console.h',
       'tests/test_core.cc',

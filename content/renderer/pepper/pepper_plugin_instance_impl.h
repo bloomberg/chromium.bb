@@ -635,7 +635,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // - we are not in Flash full-screen mode (or transitioning to it)
   // Otherwise it destroys the layer.
   // It does either operation lazily.
-  void UpdateLayer();
+  // device_changed: true if the bound device has been changed, and
+  // UpdateLayer() will be forced to recreate the layer and attaches to the
+  // container.
+  void UpdateLayer(bool device_changed);
 
   // Internal helper function for PrintPage().
   bool PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
