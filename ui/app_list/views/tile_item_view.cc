@@ -25,7 +25,6 @@ const int kTileHorizontalPadding = 10;
 const int kTileImageSize = 48;
 
 const SkColor kTileBackgroundColor = SK_ColorWHITE;
-const SkColor kTileBorderColor = SkColorSetARGB(0x30, 0xD0, 0xD0, 0xD0);
 const int kTileColorStripHeight = 2;
 const SkAlpha kTileColorStripOpacity = 0X5F;
 const int kTileCornerRadius = 2;
@@ -49,7 +48,7 @@ class TileItemView::TileItemBackground : public views::Background {
     paint.setFlags(SkPaint::kAntiAlias_Flag);
 
     // Paint the border.
-    paint.setColor(kTileBorderColor);
+    paint.setColor(kStartPageBorderColor);
     canvas->DrawRoundRect(view->GetContentsBounds(), kTileCornerRadius, paint);
 
     // Paint a rectangle for the color strip.

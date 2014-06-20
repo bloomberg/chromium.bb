@@ -174,15 +174,19 @@ void AppListMainView::ModelChanged() {
 }
 
 void AppListMainView::UpdateSearchBoxVisibility() {
-  search_box_view_->SetVisible(
+  bool visible =
       !contents_view_->IsNamedPageActive(ContentsView::NAMED_PAGE_START) ||
-      contents_view_->IsShowingSearchResults());
+      contents_view_->IsShowingSearchResults();
+  search_box_view_->SetVisible(visible);
+  if (visible)
+    search_box_view_->search_box()->RequestFocus();
 }
 
-void AppListMainView::OnStartPageSearchButtonPressed() {
+void AppListMainView::OnStartPageSearchTextfieldChanged(
+    const base::string16& new_contents) {
   search_box_view_->SetVisible(true);
-  search_box_view_->search_box()->SetText(base::string16());
-  search_box_view_->RequestFocus();
+  search_box_view_->search_box()->SetText(new_contents);
+  search_box_view_->search_box()->RequestFocus();
 }
 
 void AppListMainView::SetDragAndDropHostOfCurrentAppList(

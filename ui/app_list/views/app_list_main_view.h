@@ -56,7 +56,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   void UpdateSearchBoxVisibility();
 
-  void OnStartPageSearchButtonPressed();
+  void OnStartPageSearchTextfieldChanged(const base::string16& new_contents);
 
   SearchBoxView* search_box_view() const { return search_box_view_; }
 
