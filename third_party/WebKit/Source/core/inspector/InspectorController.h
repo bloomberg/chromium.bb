@@ -48,6 +48,7 @@ class InjectedScriptManager;
 class InspectorBackendDispatcher;
 class InspectorAgent;
 class InspectorClient;
+class InspectorCSSAgent;
 class InspectorDOMAgent;
 class InspectorFrontend;
 class InspectorFrontendChannel;
@@ -147,6 +148,7 @@ private:
     InspectorDOMAgent* m_domAgent;
     InspectorPageAgent* m_pageAgent;
     InspectorResourceAgent* m_resourceAgent;
+    InspectorCSSAgent* m_cssAgent;
     InspectorTimelineAgent* m_timelineAgent;
     InspectorLayerTreeAgent* m_layerTreeAgent;
     InspectorTracingAgent* m_tracingAgent;
@@ -157,7 +159,6 @@ private:
     Page* m_page;
     InspectorClient* m_inspectorClient;
     InspectorAgentRegistry m_agents;
-    Vector<InspectorAgent*> m_moduleAgents;
     bool m_isUnderTest;
     bool m_deferredAgentsInitialized;
     String m_hostId;

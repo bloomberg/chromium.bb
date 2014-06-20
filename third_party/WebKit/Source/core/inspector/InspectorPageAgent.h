@@ -164,6 +164,9 @@ public:
     bool deviceMetricsOverrideEnabled();
     static DocumentLoader* assertDocumentLoader(ErrorString*, LocalFrame*);
     InspectorResourceContentLoader* resourceContentLoader() { return m_inspectorResourceContentLoader.get(); }
+    void clearEditedResourcesContent();
+    void addEditedResourceContent(const String& url, const String& content);
+    bool getEditedResourceContent(const String& url, String* content);
 
 private:
     static void resourceContent(ErrorString*, LocalFrame*, const KURL&, String* result, bool* base64Encoded);
@@ -206,6 +209,7 @@ private:
     double m_embedderFontScaleFactor;
 
     OwnPtr<InspectorResourceContentLoader> m_inspectorResourceContentLoader;
+    HashMap<String, String> m_editedResourceContent;
 };
 
 

@@ -748,23 +748,28 @@ function closeInspectorAndNotifyDone()
 
 var outputElement;
 var outputElementParent;
+var savedOutput;
+
+function createOutputElement()
+{
+    var intermediate = document.createElement("div");
+    document.body.appendChild(intermediate);
+
+    outputElementParent = document.createElement("div");
+    intermediate.appendChild(outputElementParent);
+
+    outputElement = document.createElement("div");
+    outputElement.className = "output";
+    outputElement.id = "output";
+    outputElement.style.whiteSpace = "pre";
+    if (!window.quietUntilDone)
+        outputElementParent.appendChild(outputElement);
+}
 
 function output(text)
 {
-    if (!outputElement) {
-        var intermediate = document.createElement("div");
-        document.body.appendChild(intermediate);
-
-        outputElementParent = document.createElement("div");
-        intermediate.appendChild(outputElementParent);
-
-        outputElement = document.createElement("div");
-        outputElement.className = "output";
-        outputElement.id = "output";
-        outputElement.style.whiteSpace = "pre";
-        if (!window.quietUntilDone)
-            outputElementParent.appendChild(outputElement);
-    }
+    if (!outputElement)
+        createOutputElement();
     outputElement.appendChild(document.createTextNode(text));
     outputElement.appendChild(document.createElement("br"));
 }
@@ -775,6 +780,19 @@ function clearOutput()
         outputElement.remove();
         outputElement = null;
     }
+}
+
+function saveOutput()
+{
+    savedOutput = outputElement ? outputElement.innerHTML : "";
+}
+
+function restoreOutput()
+{
+    if (!savedOutput)
+        return;
+    createOutputElement();
+    outputElement.innerHTML = savedOutput;
 }
 
 function StandaloneTestRunnerStub()

@@ -75,6 +75,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_state(adoptPtr(new InspectorCompositeState(inspectorClient)))
     , m_overlay(InspectorOverlay::create(page, inspectorClient))
+    , m_cssAgent(0)
     , m_layerTreeAgent(0)
     , m_page(page)
     , m_inspectorClient(inspectorClient)
@@ -153,7 +154,9 @@ void InspectorController::initializeDeferredAgents()
     m_resourceAgent = resourceAgentPtr.get();
     m_agents.append(resourceAgentPtr.release());
 
-    m_agents.append(InspectorCSSAgent::create(m_domAgent, m_pageAgent, m_resourceAgent));
+    OwnPtr<InspectorCSSAgent> cssAgentPtr(InspectorCSSAgent::create(m_domAgent, m_pageAgent, m_resourceAgent));
+    m_cssAgent = cssAgentPtr.get();
+    m_agents.append(cssAgentPtr.release());
 
     m_agents.append(InspectorDOMStorageAgent::create(m_pageAgent));
 
@@ -190,7 +193,6 @@ void InspectorController::willBeDestroyed()
 
 void InspectorController::registerModuleAgent(PassOwnPtr<InspectorAgent> agent)
 {
-    m_moduleAgents.append(agent.get());
     m_agents.append(agent);
 }
 
@@ -423,9 +425,7 @@ void InspectorController::flushPendingFrontendMessages()
 
 void InspectorController::didCommitLoadForMainFrame()
 {
-    Vector<InspectorAgent*> agents = m_moduleAgents;
-    for (size_t i = 0; i < agents.size(); i++)
-        agents[i]->didCommitLoadForMainFrame();
+    m_agents.didCommitLoadForMainFrame();
 }
 
 void InspectorController::didBeginFrame(int frameId)

@@ -371,7 +371,6 @@ void InspectorCSSAgent::clearFrontend()
     ErrorString error;
     disable(&error);
     m_frontend = 0;
-    resetNonPersistentData();
 }
 
 void InspectorCSSAgent::discardAgent()
@@ -447,6 +446,7 @@ void InspectorCSSAgent::disable(ErrorString*)
 void InspectorCSSAgent::didCommitLoadForMainFrame()
 {
     reset();
+    m_pageAgent->clearEditedResourcesContent();
 }
 
 void InspectorCSSAgent::mediaQueryResultChanged()
@@ -493,6 +493,7 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
 {
     if (styleSheetEditInProgress())
         return;
+
     m_invalidatedDocuments.add(document);
     if (m_creatingViaInspectorStyleSheet)
         flushPendingFrontendMessages();

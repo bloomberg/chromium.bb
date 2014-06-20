@@ -79,6 +79,7 @@ public:
     void registerInDispatcher(InspectorBackendDispatcher*);
     void discardAgents();
     void flushPendingFrontendMessages();
+    void didCommitLoadForMainFrame();
 
 private:
     InstrumentingAgents* m_instrumentingAgents;

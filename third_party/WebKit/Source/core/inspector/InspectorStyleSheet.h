@@ -249,6 +249,9 @@ private:
     bool hasSourceURL() const;
     bool startsAtZero() const;
 
+    void updateText(const String& newText);
+    Element* ownerStyleElement() const;
+
     InspectorPageAgent* m_pageAgent;
     InspectorResourceAgent* m_resourceAgent;
     RefPtrWillBePersistent<CSSStyleSheet> m_pageStyleSheet;

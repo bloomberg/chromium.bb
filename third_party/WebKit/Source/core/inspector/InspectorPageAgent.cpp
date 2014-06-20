@@ -1289,5 +1289,23 @@ void InspectorPageAgent::setShowViewportSizeOnResize(ErrorString*, bool show, co
     m_state->setBoolean(PageAgentState::showGridOnResize, showGrid && *showGrid);
 }
 
+void InspectorPageAgent::clearEditedResourcesContent()
+{
+    m_editedResourceContent.clear();
+}
+
+void InspectorPageAgent::addEditedResourceContent(const String& url, const String& content)
+{
+    m_editedResourceContent.set(url, content);
+}
+
+bool InspectorPageAgent::getEditedResourceContent(const String& url, String* content)
+{
+    if (!m_editedResourceContent.contains(url))
+        return false;
+    *content = m_editedResourceContent.get(url);
+    return true;
+}
+
 } // namespace WebCore
 

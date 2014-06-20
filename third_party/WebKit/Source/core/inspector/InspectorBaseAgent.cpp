@@ -100,5 +100,11 @@ void InspectorAgentRegistry::flushPendingFrontendMessages()
         m_agents[i]->flushPendingFrontendMessages();
 }
 
+void InspectorAgentRegistry::didCommitLoadForMainFrame()
+{
+    for (size_t i = 0; i < m_agents.size(); i++)
+        m_agents[i]->didCommitLoadForMainFrame();
+}
+
 } // namespace WebCore
 
