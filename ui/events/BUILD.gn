@@ -143,10 +143,8 @@ component("events") {
 
   if (use_ozone) {
     sources += [
-      "ozone/evdev/device_manager_evdev.cc",
-      "ozone/evdev/device_manager_evdev.h",
-      "ozone/evdev/device_manager_udev.cc",
-      "ozone/evdev/device_manager_udev.h",
+      "ozone/device/udev/device_manager_udev.cc",
+      "ozone/device/udev/device_manager_udev.h",
       "ozone/evdev/event_converter_evdev.cc",
       "ozone/evdev/event_converter_evdev.h",
       "ozone/evdev/event_device_info.cc",
