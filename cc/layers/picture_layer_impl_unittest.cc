@@ -140,13 +140,12 @@ class PictureLayerImplTest : public testing::Test {
     pending_layer_->DoPostCommitInitializationIfNeeded();
   }
 
-  void SetupDrawPropertiesAndManageTilings(
-      FakePictureLayerImpl* layer,
-      float ideal_contents_scale,
-      float device_scale_factor,
-      float page_scale_factor,
-      float maximum_animation_contents_scale,
-      bool animating_transform_to_screen) {
+  void SetupDrawPropertiesAndUpdateTiles(FakePictureLayerImpl* layer,
+                                         float ideal_contents_scale,
+                                         float device_scale_factor,
+                                         float page_scale_factor,
+                                         float maximum_animation_contents_scale,
+                                         bool animating_transform_to_screen) {
     layer->draw_properties().ideal_contents_scale = ideal_contents_scale;
     layer->draw_properties().device_scale_factor = device_scale_factor;
     layer->draw_properties().page_scale_factor = page_scale_factor;
@@ -154,8 +153,7 @@ class PictureLayerImplTest : public testing::Test {
         maximum_animation_contents_scale;
     layer->draw_properties().screen_space_transform_is_animating =
         animating_transform_to_screen;
-    layer->ScaleAndManageTilings(animating_transform_to_screen,
-                                 maximum_animation_contents_scale);
+    layer->UpdateTiles();
   }
   static void VerifyAllTilesExistAndHavePile(
       const PictureLayerTiling* tiling,
@@ -174,19 +172,19 @@ class PictureLayerImplTest : public testing::Test {
                                     float page_scale_factor,
                                     float maximum_animation_contents_scale,
                                     bool animating_transform) {
-    SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                        contents_scale,
-                                        device_scale_factor,
-                                        page_scale_factor,
-                                        maximum_animation_contents_scale,
-                                        animating_transform);
+    SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                      contents_scale,
+                                      device_scale_factor,
+                                      page_scale_factor,
+                                      maximum_animation_contents_scale,
+                                      animating_transform);
 
-    SetupDrawPropertiesAndManageTilings(active_layer_,
-                                        contents_scale,
-                                        device_scale_factor,
-                                        page_scale_factor,
-                                        maximum_animation_contents_scale,
-                                        animating_transform);
+    SetupDrawPropertiesAndUpdateTiles(active_layer_,
+                                      contents_scale,
+                                      device_scale_factor,
+                                      page_scale_factor,
+                                      maximum_animation_contents_scale,
+                                      animating_transform);
   }
 
   void ResetTilingsAndRasterScales() {
@@ -223,8 +221,7 @@ class PictureLayerImplTest : public testing::Test {
 
     SetupTrees(pending_pile, active_pile);
 
-    SetupDrawPropertiesAndManageTilings(
-        active_layer_, 1.f, 1.f, 1.f, 1.f, false);
+    SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
 
     // Add 1x1 rects at the centers of each tile, then re-record pile contents
     active_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
@@ -319,9 +316,9 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
 
   Region invalidation;
   AddDefaultTilingsWithInvalidation(invalidation);
-  SetupDrawPropertiesAndManageTilings(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
 
-  // UpdateTilePriorities with valid viewport. Should update tile viewport.
+  // UpdateTiles with valid viewport. Should update tile viewport.
   bool valid_for_tile_management = true;
   gfx::Rect viewport = gfx::Rect(layer_bounds);
   gfx::Transform transform;
@@ -329,7 +326,7 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
       transform, viewport, viewport, valid_for_tile_management);
   active_layer_->draw_properties().visible_content_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
-  active_layer_->UpdateTilePriorities();
+  active_layer_->UpdateTiles();
 
   gfx::Rect visible_rect_for_tile_priority =
       active_layer_->visible_rect_for_tile_priority();
@@ -351,7 +348,7 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   active_layer_->draw_properties().screen_space_transform = transform;
   host_impl_.SetExternalDrawConstraints(
       transform, viewport, viewport, valid_for_tile_management);
-  active_layer_->UpdateTilePriorities();
+  active_layer_->UpdateTiles();
 
   EXPECT_RECT_EQ(visible_rect_for_tile_priority,
                  active_layer_->visible_rect_for_tile_priority());
@@ -367,7 +364,7 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   valid_for_tile_management = true;
   host_impl_.SetExternalDrawConstraints(
       transform, viewport, viewport, valid_for_tile_management);
-  active_layer_->UpdateTilePriorities();
+  active_layer_->UpdateTiles();
 
   EXPECT_FALSE(visible_rect_for_tile_priority ==
                active_layer_->visible_rect_for_tile_priority());
@@ -404,7 +401,7 @@ TEST_F(PictureLayerImplTest, InvalidViewportAfterReleaseResources) {
   EXPECT_TRUE(active_layer_->HighResTiling());
 
   size_t num_tilings = active_layer_->num_tilings();
-  active_layer_->UpdateTilePriorities();
+  active_layer_->UpdateTiles();
   pending_layer_->AddTiling(0.5f);
   EXPECT_EQ(num_tilings + 1, active_layer_->num_tilings());
 }
@@ -578,8 +575,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsWithNoRecording) {
 
   SetupTrees(pending_pile, active_pile);
 
-  SetupDrawPropertiesAndManageTilings(
-      pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
 
   EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
 }
@@ -599,12 +595,12 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
   EXPECT_LT(low_res_factor, 1.f);
 
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      6.f,  // ideal contents scale
-                                      3.f,  // device scale
-                                      2.f,  // page scale
-                                      1.f,  // maximum animation scale
-                                      false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    6.f,  // ideal contents scale
+                                    3.f,  // device scale
+                                    2.f,  // page scale
+                                    1.f,  // maximum animation scale
+                                    false);
   ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(6.f,
                   pending_layer_->tilings()->tiling_at(0)->contents_scale());
@@ -612,12 +608,12 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
                   pending_layer_->tilings()->tiling_at(1)->contents_scale());
 
   // If we change the page scale factor, then we should get new tilings.
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      6.6f,  // ideal contents scale
-                                      3.f,   // device scale
-                                      2.2f,  // page scale
-                                      1.f,   // maximum animation scale
-                                      false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    6.6f,  // ideal contents scale
+                                    3.f,   // device scale
+                                    2.2f,  // page scale
+                                    1.f,   // maximum animation scale
+                                    false);
   ASSERT_EQ(4u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(6.6f,
                   pending_layer_->tilings()->tiling_at(0)->contents_scale());
@@ -625,12 +621,12 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
                   pending_layer_->tilings()->tiling_at(2)->contents_scale());
 
   // If we change the device scale factor, then we should get new tilings.
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      7.26f,  // ideal contents scale
-                                      3.3f,   // device scale
-                                      2.2f,   // page scale
-                                      1.f,    // maximum animation scale
-                                      false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    7.26f,  // ideal contents scale
+                                    3.3f,   // device scale
+                                    2.2f,   // page scale
+                                    1.f,    // maximum animation scale
+                                    false);
   ASSERT_EQ(6u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(7.26f,
                   pending_layer_->tilings()->tiling_at(0)->contents_scale());
@@ -639,12 +635,12 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
 
   // If we change the device scale factor, but end up at the same total scale
   // factor somehow, then we don't get new tilings.
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      7.26f,  // ideal contents scale
-                                      2.2f,   // device scale
-                                      3.3f,   // page scale
-                                      1.f,    // maximum animation scale
-                                      false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    7.26f,  // ideal contents scale
+                                    2.2f,   // device scale
+                                    3.3f,   // page scale
+                                    1.f,    // maximum animation scale
+                                    false);
   ASSERT_EQ(6u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(7.26f,
                   pending_layer_->tilings()->tiling_at(0)->contents_scale());
@@ -674,12 +670,12 @@ TEST_F(PictureLayerImplTest, CreateTilingsEvenIfTwinHasNone) {
   float maximum_animation_scale = 1.f;
 
   SetupPendingTree(valid_pile);
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      high_res_scale,
-                                      device_scale,
-                                      page_scale,
-                                      maximum_animation_scale,
-                                      false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    high_res_scale,
+                                    device_scale,
+                                    page_scale,
+                                    maximum_animation_scale,
+                                    false);
   ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(high_res_scale,
                   pending_layer_->HighResTiling()->contents_scale());
@@ -688,31 +684,33 @@ TEST_F(PictureLayerImplTest, CreateTilingsEvenIfTwinHasNone) {
 
   ActivateTree();
   SetupPendingTree(empty_pile);
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      high_res_scale,
-                                      device_scale,
-                                      page_scale,
-                                      maximum_animation_scale,
-                                      false);
+  EXPECT_FALSE(pending_layer_->CanHaveTilings());
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    high_res_scale,
+                                    device_scale,
+                                    page_scale,
+                                    maximum_animation_scale,
+                                    false);
   ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
   ASSERT_EQ(0u, pending_layer_->tilings()->num_tilings());
 
   ActivateTree();
-  SetupDrawPropertiesAndManageTilings(active_layer_,
-                                      high_res_scale,
-                                      device_scale,
-                                      page_scale,
-                                      maximum_animation_scale,
-                                      false);
+  EXPECT_FALSE(active_layer_->CanHaveTilings());
+  SetupDrawPropertiesAndUpdateTiles(active_layer_,
+                                    high_res_scale,
+                                    device_scale,
+                                    page_scale,
+                                    maximum_animation_scale,
+                                    false);
   ASSERT_EQ(0u, active_layer_->tilings()->num_tilings());
 
   SetupPendingTree(valid_pile);
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      high_res_scale,
-                                      device_scale,
-                                      page_scale,
-                                      maximum_animation_scale,
-                                      false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    high_res_scale,
+                                    device_scale,
+                                    page_scale,
+                                    maximum_animation_scale,
+                                    false);
   ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
   ASSERT_EQ(0u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(high_res_scale,
@@ -919,7 +917,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
 
   // Now move the ideal scale to 1.1 on the active layer. Our target stays 1.2.
-  SetupDrawPropertiesAndManageTilings(
+  SetupDrawPropertiesAndUpdateTiles(
       active_layer_, 1.1f, device_scale, page_scale, 1.f, false);
 
   // Because the pending layer's ideal scale is still 1.0, our tilings fall
@@ -930,7 +928,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
 
   // Move the ideal scale on the pending layer to 1.1 as well. Our target stays
   // 1.2 still.
-  SetupDrawPropertiesAndManageTilings(
+  SetupDrawPropertiesAndUpdateTiles(
       pending_layer_, 1.1f, device_scale, page_scale, 1.f, false);
 
   // Our 1.0 tiling now falls outside the range between our ideal scale and our
@@ -1088,12 +1086,12 @@ TEST_F(PictureLayerImplTest, ReleaseResources) {
   SetupTrees(pending_pile, active_pile);
   EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
 
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      1.3f,  // ideal contents scale
-                                      2.7f,  // device scale
-                                      3.2f,  // page scale
-                                      1.f,   // maximum animation scale
-                                      false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    1.3f,  // ideal contents scale
+                                    2.7f,  // device scale
+                                    3.2f,  // page scale
+                                    1.f,   // maximum animation scale
+                                    false);
   EXPECT_EQ(2u, pending_layer_->tilings()->num_tilings());
 
   // All tilings should be removed when losing output surface.
@@ -1103,12 +1101,12 @@ TEST_F(PictureLayerImplTest, ReleaseResources) {
   EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
 
   // This should create new tilings.
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      1.3f,  // ideal contents scale
-                                      2.7f,  // device scale
-                                      3.2f,  // page scale
-                                      1.f,   // maximum animation scale
-                                      false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    1.3f,  // ideal contents scale
+                                    2.7f,  // device scale
+                                    3.2f,  // page scale
+                                    1.f,   // maximum animation scale
+                                    false);
   EXPECT_EQ(2u, pending_layer_->tilings()->num_tilings());
 }
 
@@ -1125,8 +1123,7 @@ TEST_F(PictureLayerImplTest, ClampTilesToToMaxTileSize) {
   SetupTrees(pending_pile, active_pile);
   EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
 
-  SetupDrawPropertiesAndManageTilings(
-      pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
   ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
 
   pending_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
@@ -1149,8 +1146,7 @@ TEST_F(PictureLayerImplTest, ClampTilesToToMaxTileSize) {
   host_impl_.InitializeRenderer(FakeOutputSurface::Create3d(
       context.Pass()).PassAs<OutputSurface>());
 
-  SetupDrawPropertiesAndManageTilings(
-      pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
   ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
 
   pending_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
@@ -1174,8 +1170,7 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
   SetupTrees(pending_pile, active_pile);
   EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
 
-  SetupDrawPropertiesAndManageTilings(
-      pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
   ASSERT_LE(1u, pending_layer_->tilings()->num_tilings());
 
   pending_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
@@ -1198,8 +1193,7 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
   host_impl_.InitializeRenderer(FakeOutputSurface::Create3d(
       context.Pass()).PassAs<OutputSurface>());
 
-  SetupDrawPropertiesAndManageTilings(
-      pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
   ASSERT_LE(1u, pending_layer_->tilings()->num_tilings());
 
   pending_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
@@ -1594,7 +1588,7 @@ TEST_F(PictureLayerImplTest, HighResCreatedWhenBoundsShrink) {
   host_impl_.active_tree()->UpdateDrawProperties();
   EXPECT_FALSE(host_impl_.active_tree()->needs_update_draw_properties());
 
-  SetupDrawPropertiesAndManageTilings(
+  SetupDrawPropertiesAndUpdateTiles(
       active_layer_, 0.5f, 0.5f, 0.5f, 0.5f, false);
   active_layer_->tilings()->RemoveAllTilings();
   PictureLayerTiling* tiling = active_layer_->tilings()->AddTiling(0.5f);
@@ -1642,8 +1636,7 @@ TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {
   SetupDefaultTrees(layer_bounds);
   EXPECT_FALSE(host_impl_.use_gpu_rasterization());
   EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
-  SetupDrawPropertiesAndManageTilings(
-      pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
   // Should have a low-res and a high-res tiling.
   ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
 
@@ -1651,8 +1644,7 @@ TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {
 
   host_impl_.SetUseGpuRasterization(true);
   EXPECT_TRUE(host_impl_.use_gpu_rasterization());
-  SetupDrawPropertiesAndManageTilings(
-      pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
 
   // Should only have the high-res tiling.
   ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
@@ -1754,8 +1746,7 @@ class DeferredInitPictureLayerImplTest : public PictureLayerImplTest {
 // that trees need update draw properties after deferred initialization.
 // However, this is also a regression test for PictureLayerImpl in that
 // not having this update will cause a crash.
-TEST_F(DeferredInitPictureLayerImplTest,
-       PreventUpdateTilePrioritiesDuringLostContext) {
+TEST_F(DeferredInitPictureLayerImplTest, PreventUpdateTilesDuringLostContext) {
   host_impl_.pending_tree()->UpdateDrawProperties();
   host_impl_.active_tree()->UpdateDrawProperties();
   EXPECT_FALSE(host_impl_.pending_tree()->needs_update_draw_properties());
@@ -2285,46 +2276,46 @@ TEST_F(NoLowResPictureLayerImplTest, ManageTilingsCreatesTilings) {
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
   EXPECT_LT(low_res_factor, 1.f);
 
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      6.f,  // ideal contents scale
-                                      3.f,  // device scale
-                                      2.f,  // page scale
-                                      1.f,  // maximum animation scale
-                                      false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    6.f,  // ideal contents scale
+                                    3.f,  // device scale
+                                    2.f,  // page scale
+                                    1.f,  // maximum animation scale
+                                    false);
   ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(6.f,
                   pending_layer_->tilings()->tiling_at(0)->contents_scale());
 
   // If we change the page scale factor, then we should get new tilings.
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      6.6f,  // ideal contents scale
-                                      3.f,   // device scale
-                                      2.2f,  // page scale
-                                      1.f,   // maximum animation scale
-                                      false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    6.6f,  // ideal contents scale
+                                    3.f,   // device scale
+                                    2.2f,  // page scale
+                                    1.f,   // maximum animation scale
+                                    false);
   ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(6.6f,
                   pending_layer_->tilings()->tiling_at(0)->contents_scale());
 
   // If we change the device scale factor, then we should get new tilings.
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      7.26f,  // ideal contents scale
-                                      3.3f,   // device scale
-                                      2.2f,   // page scale
-                                      1.f,    // maximum animation scale
-                                      false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    7.26f,  // ideal contents scale
+                                    3.3f,   // device scale
+                                    2.2f,   // page scale
+                                    1.f,    // maximum animation scale
+                                    false);
   ASSERT_EQ(3u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(7.26f,
                   pending_layer_->tilings()->tiling_at(0)->contents_scale());
 
   // If we change the device scale factor, but end up at the same total scale
   // factor somehow, then we don't get new tilings.
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      7.26f,  // ideal contents scale
-                                      2.2f,   // device scale
-                                      3.3f,   // page scale
-                                      1.f,    // maximum animation scale
-                                      false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    7.26f,  // ideal contents scale
+                                    2.2f,   // device scale
+                                    3.3f,   // page scale
+                                    1.f,    // maximum animation scale
+                                    false);
   ASSERT_EQ(3u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(7.26f,
                   pending_layer_->tilings()->tiling_at(0)->contents_scale());
@@ -2419,9 +2410,9 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
 
   Region invalidation;
   AddDefaultTilingsWithInvalidation(invalidation);
-  SetupDrawPropertiesAndManageTilings(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
 
-  // UpdateTilePriorities with valid viewport. Should update tile viewport.
+  // UpdateTiles with valid viewport. Should update tile viewport.
   bool valid_for_tile_management = true;
   gfx::Rect viewport = gfx::Rect(layer_bounds);
   gfx::Transform transform;
@@ -2429,7 +2420,7 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
       transform, viewport, viewport, valid_for_tile_management);
   active_layer_->draw_properties().visible_content_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
-  active_layer_->UpdateTilePriorities();
+  active_layer_->UpdateTiles();
 
   gfx::Rect visible_rect_for_tile_priority =
       active_layer_->visible_rect_for_tile_priority();
@@ -2451,7 +2442,7 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   active_layer_->draw_properties().screen_space_transform = transform;
   host_impl_.SetExternalDrawConstraints(
       transform, viewport, viewport, valid_for_tile_management);
-  active_layer_->UpdateTilePriorities();
+  active_layer_->UpdateTiles();
 
   EXPECT_RECT_EQ(visible_rect_for_tile_priority,
                  active_layer_->visible_rect_for_tile_priority());
@@ -2467,7 +2458,7 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   valid_for_tile_management = true;
   host_impl_.SetExternalDrawConstraints(
       transform, viewport, viewport, valid_for_tile_management);
-  active_layer_->UpdateTilePriorities();
+  active_layer_->UpdateTiles();
 
   EXPECT_FALSE(visible_rect_for_tile_priority ==
                active_layer_->visible_rect_for_tile_priority());
@@ -2504,7 +2495,7 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportAfterReleaseResources) {
   EXPECT_TRUE(active_layer_->HighResTiling());
 
   size_t num_tilings = active_layer_->num_tilings();
-  active_layer_->UpdateTilePriorities();
+  active_layer_->UpdateTiles();
   pending_layer_->AddTiling(0.5f);
   EXPECT_EQ(num_tilings + 1, active_layer_->num_tilings());
 }
@@ -2586,7 +2577,7 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
 
   // Now move the ideal scale to 1.1 on the active layer. Our target stays 1.2.
-  SetupDrawPropertiesAndManageTilings(
+  SetupDrawPropertiesAndUpdateTiles(
       active_layer_, 1.1f, device_scale, page_scale, 1.f, false);
 
   // Because the pending layer's ideal scale is still 1.0, our tilings fall
@@ -2597,7 +2588,7 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
 
   // Move the ideal scale on the pending layer to 1.1 as well. Our target stays
   // 1.2 still.
-  SetupDrawPropertiesAndManageTilings(
+  SetupDrawPropertiesAndUpdateTiles(
       pending_layer_, 1.1f, device_scale, page_scale, 1.f, false);
 
   // Our 1.0 tiling now falls outside the range between our ideal scale and our
@@ -2639,18 +2630,18 @@ TEST_F(PictureLayerImplTest, ScaleCollision) {
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
   EXPECT_LT(low_res_factor, 1.f);
 
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      pending_contents_scale,
-                                      device_scale_factor,
-                                      page_scale_factor,
-                                      maximum_animation_contents_scale,
-                                      animating_transform);
-  SetupDrawPropertiesAndManageTilings(active_layer_,
-                                      active_contents_scale,
-                                      device_scale_factor,
-                                      page_scale_factor,
-                                      maximum_animation_contents_scale,
-                                      animating_transform);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    pending_contents_scale,
+                                    device_scale_factor,
+                                    page_scale_factor,
+                                    maximum_animation_contents_scale,
+                                    animating_transform);
+  SetupDrawPropertiesAndUpdateTiles(active_layer_,
+                                    active_contents_scale,
+                                    device_scale_factor,
+                                    page_scale_factor,
+                                    maximum_animation_contents_scale,
+                                    animating_transform);
 
   ASSERT_EQ(4u, pending_layer_->tilings()->num_tilings());
   ASSERT_EQ(4u, active_layer_->tilings()->num_tilings());
@@ -2701,12 +2692,12 @@ TEST_F(NoLowResPictureLayerImplTest, ReleaseResources) {
   SetupTrees(pending_pile, active_pile);
   EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
 
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      1.3f,  // ideal contents scale
-                                      2.7f,  // device scale
-                                      3.2f,  // page scale
-                                      1.f,   // maximum animation scale
-                                      false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    1.3f,  // ideal contents scale
+                                    2.7f,  // device scale
+                                    3.2f,  // page scale
+                                    1.f,   // maximum animation scale
+                                    false);
   EXPECT_EQ(1u, pending_layer_->tilings()->num_tilings());
 
   // All tilings should be removed when losing output surface.
@@ -2716,12 +2707,12 @@ TEST_F(NoLowResPictureLayerImplTest, ReleaseResources) {
   EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
 
   // This should create new tilings.
-  SetupDrawPropertiesAndManageTilings(pending_layer_,
-                                      1.3f,  // ideal contents scale
-                                      2.7f,  // device scale
-                                      3.2f,  // page scale
-                                      1.f,   // maximum animation scale
-                                      false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_,
+                                    1.3f,  // ideal contents scale
+                                    2.7f,  // device scale
+                                    3.2f,  // page scale
+                                    1.f,   // maximum animation scale
+                                    false);
   EXPECT_EQ(1u, pending_layer_->tilings()->num_tilings());
 }
 
@@ -2740,8 +2731,7 @@ TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
 
   SetupTrees(pending_pile, active_pile);
 
-  SetupDrawPropertiesAndManageTilings(
-      pending_layer_, 2.5f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 2.5f, 1.f, 1.f, 1.f, false);
   host_impl_.pending_tree()->UpdateDrawProperties();
 
   active_layer_->draw_properties().visible_content_rect =

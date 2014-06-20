@@ -497,15 +497,15 @@ bool LayerTreeImpl::UpdateDrawProperties() {
          ++it) {
       LayerImpl* layer = *it;
       if (it.represents_itself())
-        layer->UpdateTilePriorities();
+        layer->UpdateTiles();
 
       if (!it.represents_contributing_render_surface())
         continue;
 
       if (layer->mask_layer())
-        layer->mask_layer()->UpdateTilePriorities();
+        layer->mask_layer()->UpdateTiles();
       if (layer->replica_layer() && layer->replica_layer()->mask_layer())
-        layer->replica_layer()->mask_layer()->UpdateTilePriorities();
+        layer->replica_layer()->mask_layer()->UpdateTiles();
     }
   }
 

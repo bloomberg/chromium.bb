@@ -91,7 +91,7 @@ class CC_EXPORT PictureLayerImpl
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE;
-  virtual void UpdateTilePriorities() OVERRIDE;
+  virtual void UpdateTiles() OVERRIDE;
   virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE;
   virtual void DidBecomeActive() OVERRIDE;
   virtual void DidBeginTracing() OVERRIDE;
@@ -138,12 +138,10 @@ class CC_EXPORT PictureLayerImpl
   void RemoveTiling(float contents_scale);
   void RemoveAllTilings();
   void SyncFromActiveLayer(const PictureLayerImpl* other);
-  void ManageTilings(bool animating_transform_to_screen,
-                     float maximum_animation_contents_scale);
-  virtual bool ShouldAdjustRasterScale(
-      bool animating_transform_to_screen) const;
-  virtual void RecalculateRasterScales(bool animating_transform_to_screen,
-                                       float maximum_animation_contents_scale);
+  void AddTilingsForRasterScale();
+  void UpdateTilePriorities();
+  virtual bool ShouldAdjustRasterScale() const;
+  virtual void RecalculateRasterScales();
   void CleanUpTilingsOnActiveLayer(
       std::vector<PictureLayerTiling*> used_tilings);
   float MinimumContentsScale() const;
@@ -194,7 +192,7 @@ class CC_EXPORT PictureLayerImpl
   float low_res_raster_contents_scale_;
 
   bool raster_source_scale_is_fixed_;
-  bool was_animating_transform_to_screen_;
+  bool was_screen_space_transform_animating_;
   bool needs_post_commit_initialization_;
   // A sanity state check to make sure UpdateTilePriorities only gets called
   // after a CalculateContentsScale/ManageTilings.

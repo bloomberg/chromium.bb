@@ -34,6 +34,19 @@ static gfx::Rect ViewportInLayerSpace(
   return ToEnclosingRect(viewport_in_layer_space);
 }
 
+static void UpdateAllTilePriorities(PictureLayerTilingSet* set,
+                                    WhichTree tree,
+                                    const gfx::Rect& visible_layer_rect,
+                                    float layer_contents_scale,
+                                    double current_frame_time_in_seconds) {
+  for (size_t i = 0; i < set->num_tilings(); ++i) {
+    set->tiling_at(i)->UpdateTilePriorities(tree,
+                                            visible_layer_rect,
+                                            layer_contents_scale,
+                                            current_frame_time_in_seconds);
+  }
+}
+
 class TestablePictureLayerTiling : public PictureLayerTiling {
  public:
   using PictureLayerTiling::SetLiveTilesRect;
@@ -1171,11 +1184,11 @@ TEST_F(PictureLayerTilingIteratorTest, AddTilingsToMatchScale) {
               gfx::Rect(layer_bounds),
               base::Bind(&TileExists, false));
 
-  active_set.UpdateTilePriorities(
-      PENDING_TREE,
-      gfx::Rect(layer_bounds),  // visible content rect
-      1.f,                      // current contents scale
-      1.0);                     // current frame time
+  UpdateAllTilePriorities(&active_set,
+                          PENDING_TREE,
+                          gfx::Rect(layer_bounds),  // visible content rect
+                          1.f,                      // current contents scale
+                          1.0);                     // current frame time
 
   // The active tiling has tiles now.
   VerifyTiles(active_set.tiling_at(0),
@@ -1196,11 +1209,11 @@ TEST_F(PictureLayerTilingIteratorTest, AddTilingsToMatchScale) {
 
   // UpdateTilePriorities on the pending tiling at the same frame time. The
   // pending tiling should get tiles.
-  pending_set.UpdateTilePriorities(
-      PENDING_TREE,
-      gfx::Rect(layer_bounds),  // visible content rect
-      1.f,                      // current contents scale
-      1.0);                     // current frame time
+  UpdateAllTilePriorities(&pending_set,
+                          PENDING_TREE,
+                          gfx::Rect(layer_bounds),  // visible content rect
+                          1.f,                      // current contents scale
+                          1.0);                     // current frame time
 
   VerifyTiles(pending_set.tiling_at(0),
               1.f,

@@ -54,11 +54,6 @@ class CC_EXPORT PictureLayerTilingSet {
   // Remove all tiles; keep all tilings.
   void RemoveAllTiles();
 
-  void UpdateTilePriorities(WhichTree tree,
-                            const gfx::Rect& visible_layer_rect,
-                            float layer_contents_scale,
-                            double current_frame_time_in_seconds);
-
   void DidBecomeActive();
   void DidBecomeRecycled();
 

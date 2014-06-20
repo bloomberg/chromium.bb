@@ -307,19 +307,6 @@ PictureLayerTilingSet::CoverageIterator::operator bool() const {
       region_iter_.has_rect();
 }
 
-void PictureLayerTilingSet::UpdateTilePriorities(
-    WhichTree tree,
-    const gfx::Rect& visible_layer_rect,
-    float layer_contents_scale,
-    double current_frame_time_in_seconds) {
-  for (size_t i = 0; i < tilings_.size(); ++i) {
-    tilings_[i]->UpdateTilePriorities(tree,
-                                      visible_layer_rect,
-                                      layer_contents_scale,
-                                      current_frame_time_in_seconds);
-  }
-}
-
 void PictureLayerTilingSet::DidBecomeActive() {
   for (size_t i = 0; i < tilings_.size(); ++i)
     tilings_[i]->DidBecomeActive();

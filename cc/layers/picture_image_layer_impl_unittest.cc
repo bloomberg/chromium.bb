@@ -26,18 +26,8 @@ class TestablePictureImageLayerImpl : public PictureImageLayerImpl {
   }
   using PictureLayerImpl::UpdateIdealScales;
   using PictureLayerImpl::MaximumTilingContentsScale;
-  using PictureLayerImpl::ManageTilings;
   using PictureLayerImpl::DoPostCommitInitializationIfNeeded;
 
-  void ScaleAndManageTilings(bool animating_transform_to_screen,
-                             float maximum_animation_contents_scale) {
-    DoPostCommitInitializationIfNeeded();
-    if (CanHaveTilings()) {
-      UpdateIdealScales();
-      ManageTilings(animating_transform_to_screen,
-                    maximum_animation_contents_scale);
-    }
-  }
   PictureLayerTilingSet* tilings() { return tilings_.get(); }
 
   friend class PictureImageLayerImplTest;
@@ -80,13 +70,12 @@ class PictureImageLayerImplTest : public testing::Test {
     return make_scoped_ptr(layer);
   }
 
-  void SetupDrawPropertiesAndManageTilings(
-      TestablePictureImageLayerImpl* layer,
-      float ideal_contents_scale,
-      float device_scale_factor,
-      float page_scale_factor,
-      float maximum_animation_contents_scale,
-      bool animating_transform_to_screen) {
+  void SetupDrawPropertiesAndUpdateTiles(TestablePictureImageLayerImpl* layer,
+                                         float ideal_contents_scale,
+                                         float device_scale_factor,
+                                         float page_scale_factor,
+                                         float maximum_animation_contents_scale,
+                                         bool animating_transform_to_screen) {
     layer->draw_properties().ideal_contents_scale = ideal_contents_scale;
     layer->draw_properties().device_scale_factor = device_scale_factor;
     layer->draw_properties().page_scale_factor = page_scale_factor;
@@ -94,8 +83,7 @@ class PictureImageLayerImplTest : public testing::Test {
         maximum_animation_contents_scale;
     layer->draw_properties().screen_space_transform_is_animating =
         animating_transform_to_screen;
-    layer->ScaleAndManageTilings(animating_transform_to_screen,
-                                 maximum_animation_contents_scale);
+    layer->UpdateTiles();
   }
 
  protected:
@@ -109,7 +97,7 @@ TEST_F(PictureImageLayerImplTest, CalculateContentsScale) {
   scoped_ptr<TestablePictureImageLayerImpl> layer(CreateLayer(1, PENDING_TREE));
   layer->SetDrawsContent(true);
 
-  SetupDrawPropertiesAndManageTilings(layer.get(), 2.f, 3.f, 4.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(layer.get(), 2.f, 3.f, 4.f, 1.f, false);
 
   EXPECT_FLOAT_EQ(1.f, layer->contents_scale_x());
   EXPECT_FLOAT_EQ(1.f, layer->contents_scale_y());
@@ -128,24 +116,27 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
   const float page_scale_factor = 4.f;
   const float maximum_animation_contents_scale = 1.f;
   const bool animating_transform_to_screen = false;
-  SetupDrawPropertiesAndManageTilings(pending_layer.get(),
-                                      suggested_ideal_contents_scale,
-                                      device_scale_factor,
-                                      page_scale_factor,
-                                      maximum_animation_contents_scale,
-                                      animating_transform_to_screen);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer.get(),
+                                    suggested_ideal_contents_scale,
+                                    device_scale_factor,
+                                    page_scale_factor,
+                                    maximum_animation_contents_scale,
+                                    animating_transform_to_screen);
+  EXPECT_EQ(1.f, pending_layer->tilings()->tiling_at(0)->contents_scale());
 
   // Push to active layer.
+  host_impl_.pending_tree()->SetRootLayer(pending_layer.PassAs<LayerImpl>());
   host_impl_.ActivatePendingTree();
-  scoped_ptr<TestablePictureImageLayerImpl> active_layer(
-      CreateLayer(1, ACTIVE_TREE));
-  pending_layer->PushPropertiesTo(active_layer.get());
-  SetupDrawPropertiesAndManageTilings(active_layer.get(),
-                                      suggested_ideal_contents_scale,
-                                      device_scale_factor,
-                                      page_scale_factor,
-                                      maximum_animation_contents_scale,
-                                      animating_transform_to_screen);
+  TestablePictureImageLayerImpl* active_layer =
+      static_cast<TestablePictureImageLayerImpl*>(
+          host_impl_.active_tree()->root_layer());
+  SetupDrawPropertiesAndUpdateTiles(active_layer,
+                                    suggested_ideal_contents_scale,
+                                    device_scale_factor,
+                                    page_scale_factor,
+                                    maximum_animation_contents_scale,
+                                    animating_transform_to_screen);
+  EXPECT_EQ(1.f, active_layer->tilings()->tiling_at(0)->contents_scale());
 
   // Create tile and resource.
   active_layer->tilings()->tiling_at(0)->CreateAllTilesForTesting();

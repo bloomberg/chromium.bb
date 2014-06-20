@@ -33,21 +33,17 @@ void PictureImageLayerImpl::GetDebugBorderProperties(
   *width = DebugColors::ImageLayerBorderWidth(layer_tree_impl());
 }
 
-bool PictureImageLayerImpl::ShouldAdjustRasterScale(
-    bool animating_transform_to_screen) const {
+bool PictureImageLayerImpl::ShouldAdjustRasterScale() const {
   return false;
 }
 
-void PictureImageLayerImpl::RecalculateRasterScales(
-    bool animating_transform_to_screen,
-    float maximum_animation_contents_scale) {
-  // Defaults from PictureLayerImpl.
-  PictureLayerImpl::RecalculateRasterScales(animating_transform_to_screen,
-                                            maximum_animation_contents_scale);
-
+void PictureImageLayerImpl::RecalculateRasterScales() {
   // Don't scale images during rastering to ensure image quality, save memory
   // and avoid frequent re-rastering on change of scale.
-  raster_contents_scale_ = std::max(1.f, MinimumContentsScale());
+  raster_page_scale_ = 1.f;
+  raster_device_scale_ = 1.f;
+  raster_source_scale_ = std::max(1.f, MinimumContentsScale());
+  raster_contents_scale_ = raster_source_scale_;
   // We don't need low res tiles.
   low_res_raster_contents_scale_ = raster_contents_scale_;
 }

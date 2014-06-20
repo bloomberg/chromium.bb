@@ -25,11 +25,8 @@ class CC_EXPORT PictureImageLayerImpl : public PictureLayerImpl {
  protected:
   PictureImageLayerImpl(LayerTreeImpl* tree_impl, int id);
 
-  virtual bool ShouldAdjustRasterScale(
-      bool animating_transform_to_screen) const OVERRIDE;
-  virtual void RecalculateRasterScales(bool animating_transform_to_screen,
-                                       float maximum_animation_contents_scale)
-      OVERRIDE;
+  virtual bool ShouldAdjustRasterScale() const OVERRIDE;
+  virtual void RecalculateRasterScales() OVERRIDE;
   virtual void GetDebugBorderProperties(
       SkColor* color, float* width) const OVERRIDE;
 
