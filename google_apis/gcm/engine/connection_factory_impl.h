@@ -29,8 +29,7 @@ class GCMStatsRecorder;
 
 class GCM_EXPORT ConnectionFactoryImpl :
     public ConnectionFactory,
-    public net::NetworkChangeNotifier::ConnectionTypeObserver,
-    public net::NetworkChangeNotifier::IPAddressObserver {
+    public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   ConnectionFactoryImpl(
       const std::vector<GURL>& mcs_endpoints,
@@ -53,10 +52,9 @@ class GCM_EXPORT ConnectionFactoryImpl :
   virtual void SignalConnectionReset(ConnectionResetReason reason) OVERRIDE;
   virtual void SetConnectionListener(ConnectionListener* listener) OVERRIDE;
 
-  // NetworkChangeNotifier observer implementations.
-  virtual void OnConnectionTypeChanged(
+  // NetworkChangeObserver implementation.
+  virtual void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
-  virtual void OnIPAddressChanged() OVERRIDE;
 
   // Returns the server to which the factory is currently connected, or if
   // a connection is currently pending, the server to which the next connection
@@ -148,6 +146,11 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // connect. Canary jobs are able to preempt connections pending backoff
   // expiration.
   bool waiting_for_backoff_;
+
+  // Whether the NetworkChangeNotifier has informed the client that there is
+  // no current connection. No connection attempts will be made until the
+  // client is informed of a valid connection type.
+  bool waiting_for_network_online_;
 
   // Whether login successfully completed after the connection was established.
   // If a connection reset happens while attempting to log in, the current

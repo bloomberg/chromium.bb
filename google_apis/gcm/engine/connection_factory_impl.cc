@@ -57,6 +57,7 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
     pac_request_(NULL),
     connecting_(false),
     waiting_for_backoff_(false),
+    waiting_for_network_online_(false),
     logging_in_(false),
     recorder_(recorder),
     listener_(NULL),
@@ -65,8 +66,7 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
 }
 
 ConnectionFactoryImpl::~ConnectionFactoryImpl() {
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   if (pac_request_) {
     network_session_->proxy_service()->CancelPacRequest(pac_request_);
     pac_request_ = NULL;
@@ -83,8 +83,8 @@ void ConnectionFactoryImpl::Initialize(
   backoff_entry_ = CreateBackoffEntry(&backoff_policy_);
   request_builder_ = request_builder;
 
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  waiting_for_network_online_ = net::NetworkChangeNotifier::IsOffline();
   connection_handler_ = CreateConnectionHandler(
       base::TimeDelta::FromMilliseconds(kReadTimeoutMs),
       read_callback,
@@ -150,6 +150,8 @@ std::string ConnectionFactoryImpl::GetConnectionStateString() const {
     return "CONNECTING";
   if (waiting_for_backoff_)
     return "WAITING FOR BACKOFF";
+  if (waiting_for_network_online_)
+    return "WAITING FOR NETWORK CHANGE";
   return "NOT CONNECTED";
 }
 
@@ -182,6 +184,9 @@ void ConnectionFactoryImpl::SignalConnectionReset(
   CloseSocket();
   DCHECK(!IsEndpointReachable());
 
+  if (waiting_for_network_online_)
+    return;
+
   // Network changes get special treatment as they can trigger a one-off canary
   // request that bypasses backoff (but does nothing if a connection is in
   // progress). Other connection reset events can be ignored as a connection
@@ -208,8 +213,6 @@ void ConnectionFactoryImpl::SignalConnectionReset(
     // We shouldn't be in backoff in thise case.
     DCHECK_EQ(0, backoff_entry_->failure_count());
   }
-  DCHECK(!connecting_);
-  DCHECK(!waiting_for_backoff_);
 
   // At this point the last login time has been consumed or deemed irrelevant,
   // reset it.
@@ -229,21 +232,19 @@ base::TimeTicks ConnectionFactoryImpl::NextRetryAttempt() const {
   return backoff_entry_->GetReleaseTime();
 }
 
-void ConnectionFactoryImpl::OnConnectionTypeChanged(
+void ConnectionFactoryImpl::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
+  if (type == net::NetworkChangeNotifier::CONNECTION_NONE) {
+    DVLOG(1) << "Network lost, resettion connection.";
+    waiting_for_network_online_ = true;
+
+    // Will do nothing due to |waiting_for_network_online_ == true|.
+    SignalConnectionReset(NETWORK_CHANGE);
     return;
+  }
 
   DVLOG(1) << "Connection type changed to " << type << ", reconnecting.";
-
-  // The connection may have been silently dropped, attempt to reconnect.
-  SignalConnectionReset(NETWORK_CHANGE);
-}
-
-void ConnectionFactoryImpl::OnIPAddressChanged() {
-  DVLOG(1) << "IP Address changed, reconnecting.";
-
-  // The connection may have been silently dropped, attempt to reconnect.
+  waiting_for_network_online_ = false;
   SignalConnectionReset(NETWORK_CHANGE);
 }
 
@@ -270,6 +271,9 @@ net::IPEndPoint ConnectionFactoryImpl::GetPeerIP() {
 void ConnectionFactoryImpl::ConnectImpl() {
   DCHECK(!IsEndpointReachable());
   DCHECK(!socket_handle_.socket());
+
+  if (waiting_for_network_online_)
+    return;
 
   connecting_ = true;
   GURL current_endpoint = GetCurrentEndpoint();

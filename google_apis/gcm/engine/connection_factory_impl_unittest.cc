@@ -387,8 +387,8 @@ TEST_F(ConnectionFactoryImplTest, MultipleFailuresThenSucceed) {
   EXPECT_TRUE(connected_server().is_valid());
 }
 
-// IP events should trigger canary connections.
-TEST_F(ConnectionFactoryImplTest, FailThenIPEvent) {
+// Network change events should trigger canary connections.
+TEST_F(ConnectionFactoryImplTest, FailThenNetworkChangeEvent) {
   factory()->SetConnectResult(net::ERR_CONNECTION_FAILED);
   factory()->Connect();
   WaitForConnections();
@@ -396,26 +396,7 @@ TEST_F(ConnectionFactoryImplTest, FailThenIPEvent) {
   EXPECT_FALSE(initial_backoff.is_null());
 
   factory()->SetConnectResult(net::ERR_FAILED);
-  factory()->OnIPAddressChanged();
-  WaitForConnections();
-
-  // Backoff should increase.
-  base::TimeTicks next_backoff = factory()->NextRetryAttempt();
-  EXPECT_GT(next_backoff, initial_backoff);
-  EXPECT_FALSE(factory()->IsEndpointReachable());
-}
-
-// Connection type events should trigger canary connections.
-TEST_F(ConnectionFactoryImplTest, FailThenConnectionTypeEvent) {
-  factory()->SetConnectResult(net::ERR_CONNECTION_FAILED);
-  factory()->Connect();
-  WaitForConnections();
-  base::TimeTicks initial_backoff = factory()->NextRetryAttempt();
-  EXPECT_FALSE(initial_backoff.is_null());
-
-  factory()->SetConnectResult(net::ERR_FAILED);
-  factory()->OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  factory()->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_WIFI);
   WaitForConnections();
 
   // Backoff should increase.
@@ -434,8 +415,7 @@ TEST_F(ConnectionFactoryImplTest, CanarySucceedsThenDisconnects) {
   EXPECT_FALSE(initial_backoff.is_null());
 
   factory()->SetConnectResult(net::OK);
-  factory()->OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  factory()->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
   WaitForConnections();
   EXPECT_TRUE(factory()->IsEndpointReachable());
   EXPECT_TRUE(connected_server().is_valid());
@@ -460,8 +440,7 @@ TEST_F(ConnectionFactoryImplTest, CanarySucceedsRetryDuringLogin) {
 
   factory()->SetDelayLogin(true);
   factory()->SetConnectResult(net::OK);
-  factory()->OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  factory()->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_WIFI);
   WaitForConnections();
   EXPECT_FALSE(factory()->IsEndpointReachable());
 
@@ -543,6 +522,31 @@ TEST_F(ConnectionFactoryImplTest, SignalResetRestoresBackoff) {
             CalculateBackoff(3));
   EXPECT_FALSE(factory()->IsEndpointReachable());
   EXPECT_FALSE(connected_server().is_valid());
+}
+
+// When the network is disconnected, close the socket and suppress further
+// connection attempts until the network returns.
+TEST_F(ConnectionFactoryImplTest, SuppressConnectWhenNoNetwork) {
+  factory()->SetConnectResult(net::OK);
+  factory()->Connect();
+  EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
+  EXPECT_TRUE(factory()->IsEndpointReachable());
+
+  // Advance clock so the login window reset isn't encountered.
+  factory()->tick_clock()->Advance(base::TimeDelta::FromSeconds(11));
+
+  // Will trigger reset, but will not attempt a new connection.
+  factory()->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_NONE);
+  EXPECT_FALSE(factory()->IsEndpointReachable());
+  EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
+
+  // When the network returns, attempt to connect.
+  factory()->SetConnectResult(net::OK);
+  factory()->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_4G);
+  WaitForConnections();
+
+  EXPECT_TRUE(factory()->IsEndpointReachable());
+  EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
 }
 
 }  // namespace gcm
