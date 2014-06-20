@@ -160,7 +160,7 @@ function launch(selectedEntriesPromise) {
     if (entries.length === 1) {
       var parentPromise = new Promise(entries[0].getParent.bind(entries[0]));
       return parentPromise.then(getChildren).then(function(entries) {
-        return entries.filter(FileType.isImageOrVideo);
+        return entries.filter(FileType.isImage);
       });
     } else {
       return entries;
