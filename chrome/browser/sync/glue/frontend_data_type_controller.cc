@@ -147,7 +147,7 @@ DataTypeController::State FrontendDataTypeController::state() const {
 void FrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
     const tracked_objects::Location& from_here, const std::string& message) {
   RecordUnrecoverableError(from_here, message);
-  sync_service_->DisableBrokenDatatype(type(), from_here, message);
+  sync_service_->DisableDatatype(type(), from_here, message);
 }
 
 FrontendDataTypeController::FrontendDataTypeController()

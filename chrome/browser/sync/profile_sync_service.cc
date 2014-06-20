@@ -942,7 +942,7 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 }
 
 // TODO(zea): Move this logic into the DataTypeController/DataTypeManager.
-void ProfileSyncService::DisableBrokenDatatype(
+void ProfileSyncService::DisableDatatype(
     syncer::ModelType type,
     const tracked_objects::Location& from_here,
     std::string message) {
@@ -961,6 +961,24 @@ void ProfileSyncService::DisableBrokenDatatype(
   // Update this before posting a task. So if a configure happens before
   // the task that we are going to post, this type would still be disabled.
   failed_data_types_handler_.UpdateFailedDataTypes(errors);
+
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&ProfileSyncService::ReconfigureDatatypeManager,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
+  // Only reconfigure if the type actually had a data type or unready error.
+  if (!failed_data_types_handler_.ResetDataTypeErrorFor(type) &&
+      !failed_data_types_handler_.ResetUnreadyErrorFor(type)) {
+    return;
+  }
+
+  // If the type is no longer enabled, don't bother reconfiguring.
+  // TODO(zea): something else should encapsulate the notion of "whether a type
+  // should be enabled".
+  if (!syncer::CoreTypes().Has(type) && !GetPreferredDataTypes().Has(type))
+    return;
 
   base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ProfileSyncService::ReconfigureDatatypeManager,
@@ -1342,9 +1360,9 @@ void ProfileSyncService::OnEncryptedTypesChanged(
   // delete directives are unnecessary.
   if (GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
       encrypted_types_.Has(syncer::SESSIONS)) {
-    DisableBrokenDatatype(syncer::HISTORY_DELETE_DIRECTIVES,
-                          FROM_HERE,
-                          "Delete directives not supported with encryption.");
+    DisableDatatype(syncer::HISTORY_DELETE_DIRECTIVES,
+                    FROM_HERE,
+                    "Delete directives not supported with encryption.");
   }
 }
 
@@ -1748,9 +1766,9 @@ void ProfileSyncService::OnUserChoseDatatypes(
   failed_data_types_handler_.Reset();
   if (GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
       encrypted_types_.Has(syncer::SESSIONS)) {
-    DisableBrokenDatatype(syncer::HISTORY_DELETE_DIRECTIVES,
-                          FROM_HERE,
-                          "Delete directives not supported with encryption.");
+    DisableDatatype(syncer::HISTORY_DELETE_DIRECTIVES,
+                    FROM_HERE,
+                    "Delete directives not supported with encryption.");
   }
   ChangePreferredDataTypes(chosen_types);
   AcknowledgeSyncedTypes();

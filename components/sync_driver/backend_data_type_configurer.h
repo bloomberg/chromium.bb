@@ -32,6 +32,7 @@ class BackendDataTypeConfigurer {
     DISABLED,             // Not syncing. Disabled by user.
     FATAL,                // Not syncing due to unrecoverable error.
     CRYPTO,               // Not syncing due to a cryptographer error.
+    UNREADY,              // Not syncing due to transient error.
   };
   typedef std::map<syncer::ModelType, DataTypeConfigState>
       DataTypeConfigStateMap;

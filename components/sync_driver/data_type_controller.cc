@@ -56,4 +56,8 @@ DataTypeController::disable_callback() {
   return disable_callback_;
 }
 
+bool DataTypeController::ReadyForStart() const {
+  return true;
+}
+
 }  // namespace browser_sync

@@ -38,9 +38,14 @@ bool FailedDataTypesHandler::UpdateFailedDataTypes(const TypeErrorMap& errors) {
        ++iter) {
     syncer::SyncError::ErrorType failure_type = iter->second.error_type();
     switch (failure_type) {
+      case syncer::SyncError::UNSET:
+        NOTREACHED();
+        break;
       case syncer::SyncError::UNRECOVERABLE_ERROR:
+        unrecoverable_errors_.insert(*iter);
+        break;
       case syncer::SyncError::DATATYPE_ERROR:
-        fatal_errors_.insert(*iter);
+        data_type_errors_.insert(*iter);
         break;
       case syncer::SyncError::CRYPTO_ERROR:
         crypto_errors_.insert(*iter);
@@ -48,17 +53,20 @@ bool FailedDataTypesHandler::UpdateFailedDataTypes(const TypeErrorMap& errors) {
       case syncer::SyncError::PERSISTENCE_ERROR:
         persistence_errors_.insert(*iter);
         break;
-      default:
-        NOTREACHED();
+      case syncer::SyncError::UNREADY_ERROR:
+        unready_errors_.insert(*iter);
+        break;
     }
   }
   return true;
 }
 
 void FailedDataTypesHandler::Reset() {
-  fatal_errors_.clear();
+  unrecoverable_errors_.clear();
+  data_type_errors_.clear();
   crypto_errors_.clear();
   persistence_errors_.clear();
+  unready_errors_.clear();
 }
 
 void FailedDataTypesHandler::ResetCryptoErrors() {
@@ -73,26 +81,37 @@ void FailedDataTypesHandler::ResetPersistenceErrorsFrom(
   }
 }
 
+bool FailedDataTypesHandler::ResetDataTypeErrorFor(syncer::ModelType type) {
+  return data_type_errors_.erase(type) > 0;
+}
+
+bool FailedDataTypesHandler::ResetUnreadyErrorFor(syncer::ModelType type) {
+  return unready_errors_.erase(type) > 0;
+}
+
 FailedDataTypesHandler::TypeErrorMap FailedDataTypesHandler::GetAllErrors()
     const {
   TypeErrorMap result;
-
-  if (AnyFailedDataType()) {
-    result = fatal_errors_;
-    result.insert(crypto_errors_.begin(), crypto_errors_.end());
-    result.insert(persistence_errors_.begin(), persistence_errors_.end());
-  }
+  result = unrecoverable_errors_;
+  result.insert(data_type_errors_.begin(), data_type_errors_.end());
+  result.insert(crypto_errors_.begin(), crypto_errors_.end());
+  result.insert(persistence_errors_.begin(), persistence_errors_.end());
+  result.insert(unready_errors_.begin(), unready_errors_.end());
   return result;
 }
 
 syncer::ModelTypeSet FailedDataTypesHandler::GetFailedTypes() const {
   syncer::ModelTypeSet result = GetFatalErrorTypes();
   result.PutAll(GetCryptoErrorTypes());
+  result.PutAll(GetUnreadyErrorTypes());
   return result;
 }
 
-syncer::ModelTypeSet FailedDataTypesHandler::GetFatalErrorTypes() const {
-  return GetTypesFromErrorMap(fatal_errors_);
+syncer::ModelTypeSet FailedDataTypesHandler::GetFatalErrorTypes()
+    const {
+  syncer::ModelTypeSet result = GetTypesFromErrorMap(unrecoverable_errors_);
+  result.PutAll(GetTypesFromErrorMap(data_type_errors_));
+  return result;
 }
 
 syncer::ModelTypeSet FailedDataTypesHandler::GetCryptoErrorTypes() const {
@@ -105,10 +124,17 @@ syncer::ModelTypeSet FailedDataTypesHandler::GetPersistenceErrorTypes() const {
   return result;
 }
 
+syncer::ModelTypeSet FailedDataTypesHandler::GetUnreadyErrorTypes() const {
+  syncer::ModelTypeSet result = GetTypesFromErrorMap(unready_errors_);
+  return result;
+}
+
 bool FailedDataTypesHandler::AnyFailedDataType() const {
   // Note: persistence errors are not failed types. They just trigger automatic
   // unapply + getupdates, at which point they are associated like normal.
-  return !fatal_errors_.empty() || !crypto_errors_.empty();
+  return !unrecoverable_errors_.empty() ||
+         !data_type_errors_.empty() ||
+         !crypto_errors_.empty();
 }
 
 }  // namespace browser_sync

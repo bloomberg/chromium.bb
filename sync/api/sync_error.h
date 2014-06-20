@@ -29,13 +29,17 @@ class SYNC_EXPORT SyncError {
   enum ErrorType {
     UNSET,                // No error.
     UNRECOVERABLE_ERROR,  // An unrecoverable runtime error was encountered, and
-                          // sync should be disabled completely.
+                          // sync should be disabled and purged completely.
     DATATYPE_ERROR,       // A datatype error was encountered, and the datatype
-                          // should be disabled.
+                          // should be disabled and purged completely. Note that
+                          // datatype errors may be reset, triggering a
+                          // re-enable.
     PERSISTENCE_ERROR,    // A persistence error was detected, and the
                           // datataype should be associated after a sync update.
     CRYPTO_ERROR,         // A cryptographer error was detected, and the
                           // datatype should be associated after it is resolved.
+    UNREADY_ERROR,        // The type is not ready to start yet, so should be
+                          // neither purged nor enabled until it is ready.
   };
 
   // Default constructor refers to "no error", and IsSet() will return false.

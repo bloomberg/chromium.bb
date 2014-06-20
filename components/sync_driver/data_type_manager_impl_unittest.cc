@@ -1154,4 +1154,46 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureForBackupRollback) {
                   syncer::CONFIGURE_REASON_BACKUP_ROLLBACK);
 }
 
+TEST_F(SyncDataTypeManagerImplTest, ReenableAfterDataTypeError) {
+  syncer::SyncError error(FROM_HERE,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "Datatype disabled",
+                          syncer::BOOKMARKS);
+  std::map<syncer::ModelType, syncer::SyncError> errors;
+  errors[syncer::BOOKMARKS] = error;
+  failed_data_types_handler_.UpdateFailedDataTypes(errors);
+
+  AddController(PREFERENCES);  // Will succeed.
+  AddController(BOOKMARKS);    // Will be disabled due to datatype error.
+
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::PARTIAL_SUCCESS);
+
+  Configure(dtm_.get(), ModelTypeSet(BOOKMARKS, PREFERENCES));
+  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
+  GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  // Re-enable bookmarks.
+  failed_data_types_handler_.ResetDataTypeErrorFor(syncer::BOOKMARKS);
+
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::OK);
+
+  Configure(dtm_.get(), ModelTypeSet(BOOKMARKS, PREFERENCES));
+  EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
+  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
+  EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
+  EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
+}
+
 }  // namespace browser_sync

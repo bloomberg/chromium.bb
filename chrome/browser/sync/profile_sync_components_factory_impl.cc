@@ -193,7 +193,7 @@ void ProfileSyncComponentsFactoryImpl::DisableBrokenType(
     const tracked_objects::Location& from_here,
     const std::string& message) {
   ProfileSyncService* p = ProfileSyncServiceFactory::GetForProfile(profile_);
-  p->DisableBrokenDatatype(type, from_here, message);
+  p->DisableDatatype(type, from_here, message);
 }
 
 DataTypeController::DisableTypeCallback

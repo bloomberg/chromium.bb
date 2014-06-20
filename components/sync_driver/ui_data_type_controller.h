@@ -69,8 +69,8 @@ class UIDataTypeController : public DataTypeController {
   // associate models. The default implementation is a no-op.
   // Return value:
   //   True - if models are ready and association can proceed.
-  //   False - if models are not ready. Associate() should be called when the
-  //           models are ready.
+  //   False - if models are not ready. OnModelLoaded() should be called when
+  //           the models are ready.
   virtual bool StartModels();
 
   // Perform any DataType controller specific state cleanup before stopping

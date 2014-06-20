@@ -83,8 +83,26 @@ void DataTypeManagerImpl::Configure(syncer::ModelTypeSet desired_types,
   syncer::ModelTypeSet filtered_desired_types;
   for (syncer::ModelTypeSet::Iterator type = desired_types.First();
       type.Good(); type.Inc()) {
+    DataTypeController::TypeMap::const_iterator iter =
+        controllers_->find(type.Get());
     if (syncer::IsControlType(type.Get()) ||
-        controllers_->find(type.Get()) != controllers_->end()) {
+        iter != controllers_->end()) {
+      if (iter != controllers_->end()) {
+        if (!iter->second->ReadyForStart()) {
+          // Add the type to the unready types set to prevent purging it. It's
+          // up to the datatype controller to, if necessary, explicitly
+          // mark the type as broken to trigger a purge.
+          syncer::SyncError error(FROM_HERE,
+                                  syncer::SyncError::UNREADY_ERROR,
+                                  "Datatype not ready at config time.",
+                                  type.Get());
+          std::map<syncer::ModelType, syncer::SyncError> errors;
+          errors[type.Get()] = error;
+          failed_data_types_handler_->UpdateFailedDataTypes(errors);
+        } else {
+          failed_data_types_handler_->ResetUnreadyErrorFor(type.Get());
+        }
+      }
       filtered_desired_types.Put(type.Get());
     }
   }
@@ -111,19 +129,9 @@ void DataTypeManagerImpl::ConfigureImpl(
     return;
   }
 
-  if (state_ == CONFIGURED &&
-      last_requested_types_.Equals(desired_types) &&
-      reason == syncer::CONFIGURE_REASON_RECONFIGURATION &&
-      syncer::Intersection(failed_data_types_handler_->GetFailedTypes(),
-                           last_requested_types_).Empty()) {
-    // If the set of enabled types hasn't changed and there are no failing
-    // types, we can exit out early.
-    DVLOG(1) << "Reconfigure with same types, bypassing confguration.";
-    NotifyStart();
-    ConfigureResult result(OK, last_requested_types_);
-    NotifyDone(result);
-    return;
-  }
+  // TODO(zea): consider not performing a full configuration once there's a
+  // reliable way to determine if the requested set of enabled types matches the
+  // current set.
 
   last_requested_types_ = desired_types;
   last_configure_reason_ = reason;
@@ -141,24 +149,29 @@ void DataTypeManagerImpl::ConfigureImpl(
 BackendDataTypeConfigurer::DataTypeConfigStateMap
 DataTypeManagerImpl::BuildDataTypeConfigStateMap(
     const syncer::ModelTypeSet& types_being_configured) const {
-  // 1. Get the failed types (both due to fatal and crypto errors).
+  // 1. Get the failed types (due to fatal, crypto, and unready errors).
   // 2. Add the difference between last_requested_types_ and the failed types
   //    as CONFIGURE_INACTIVE.
   // 3. Flip |types_being_configured| to CONFIGURE_ACTIVE.
   // 4. Set non-enabled user types as DISABLED.
-  // 5. Set the fatal and crypto types to their respective states.
+  // 5. Set the fatal, crypto, and unready types to their respective states.
   syncer::ModelTypeSet error_types =
       failed_data_types_handler_->GetFailedTypes();
   syncer::ModelTypeSet fatal_types =
       failed_data_types_handler_->GetFatalErrorTypes();
   syncer::ModelTypeSet crypto_types =
       failed_data_types_handler_->GetCryptoErrorTypes();
+  syncer::ModelTypeSet unready_types=
+      failed_data_types_handler_->GetUnreadyErrorTypes();
 
   // Types with persistence errors are only purged/resynced when they're
   // actively being configured.
   syncer::ModelTypeSet persistence_types =
       failed_data_types_handler_->GetPersistenceErrorTypes();
   persistence_types.RetainAll(types_being_configured);
+
+  // Types with unready errors do not count as unready if they've been disabled.
+  unready_types.RetainAll(last_requested_types_);
 
   syncer::ModelTypeSet enabled_types = last_requested_types_;
   enabled_types.RemoveAll(error_types);
@@ -190,6 +203,9 @@ DataTypeManagerImpl::BuildDataTypeConfigStateMap(
       &config_state_map);
   BackendDataTypeConfigurer::SetDataTypesState(
       BackendDataTypeConfigurer::CRYPTO, crypto_types,
+        &config_state_map);
+  BackendDataTypeConfigurer::SetDataTypesState(
+      BackendDataTypeConfigurer::UNREADY, unready_types,
         &config_state_map);
   return config_state_map;
 }

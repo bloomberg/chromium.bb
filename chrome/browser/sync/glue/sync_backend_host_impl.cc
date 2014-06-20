@@ -347,8 +347,15 @@ void SyncBackendHostImpl::ConfigureDataTypes(
       GetDataTypesInState(FATAL, config_state_map);
   syncer::ModelTypeSet crypto_types =
       GetDataTypesInState(CRYPTO, config_state_map);
+  syncer::ModelTypeSet unready_types =
+      GetDataTypesInState(UNREADY, config_state_map);
   disabled_types.PutAll(fatal_types);
+
+  // TODO(zea): These types won't be fully purged if they are subsequently
+  // disabled by the user. Fix that. See crbug.com/386778
   disabled_types.PutAll(crypto_types);
+  disabled_types.PutAll(unready_types);
+
   syncer::ModelTypeSet active_types =
       GetDataTypesInState(CONFIGURE_ACTIVE, config_state_map);
   syncer::ModelTypeSet clean_first_types =
@@ -392,6 +399,7 @@ void SyncBackendHostImpl::ConfigureDataTypes(
   syncer::ModelTypeSet inactive_types =
       GetDataTypesInState(CONFIGURE_INACTIVE, config_state_map);
   types_to_purge.RemoveAll(inactive_types);
+  types_to_purge.RemoveAll(unready_types);
 
   // If a type has already been disabled and unapplied or journaled, it will
   // not be part of the |types_to_purge| set, and therefore does not need

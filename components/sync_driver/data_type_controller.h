@@ -136,6 +136,13 @@ class DataTypeController
   // UserShare handle to associate model data with.
   void OnUserShareReady(syncer::UserShare* share);
 
+  // Whether the DataTypeController is ready to start. This is useful if the
+  // datatype itself must make the decision about whether it should be enabled
+  // at all (and therefore whether the initial download of the sync data for
+  // the type should be performed).
+  // Returns true by default.
+  virtual bool ReadyForStart() const;
+
  protected:
   friend class base::RefCountedDeleteOnMessageLoop<DataTypeController>;
   friend class base::DeleteHelper<DataTypeController>;

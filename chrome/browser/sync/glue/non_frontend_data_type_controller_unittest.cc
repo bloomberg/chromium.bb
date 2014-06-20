@@ -375,7 +375,7 @@ TEST_F(SyncNonFrontendDataTypeControllerTest,
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
   EXPECT_CALL(*dtc_mock_.get(), RecordUnrecoverableError(_, "Test"));
-  EXPECT_CALL(service_, DisableBrokenDatatype(_, _, _))
+  EXPECT_CALL(service_, DisableDatatype(_, _, _))
       .WillOnce(InvokeWithoutArgs(non_frontend_dtc_.get(),
                                   &NonFrontendDataTypeController::Stop));
   SetStopExpectations();

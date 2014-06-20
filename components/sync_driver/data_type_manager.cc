@@ -29,9 +29,6 @@ DataTypeManager::ConfigureResult::ConfigureResult(
       failed_data_types(failed_data_types),
       unfinished_data_types(unfinished_data_types),
       needs_crypto(needs_crypto) {
-  if (!failed_data_types.empty() || !needs_crypto.Empty()) {
-    DCHECK_NE(OK, status);
-  }
 }
 
 DataTypeManager::ConfigureResult::~ConfigureResult() {

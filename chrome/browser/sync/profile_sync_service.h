@@ -60,10 +60,6 @@ namespace base {
 class CommandLine;
 };
 
-namespace extensions {
-struct Event;
-}
-
 namespace browser_sync {
 class BackendMigrator;
 class ChangeProcessor;
@@ -553,12 +549,16 @@ class ProfileSyncService : public ProfileSyncServiceBase,
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;
 
-  // Called when a datatype wishes to disable itself due to having hit an
-  // unrecoverable error.
-  virtual void DisableBrokenDatatype(
-      syncer::ModelType type,
-      const tracked_objects::Location& from_here,
-      std::string message);
+  // Called when a datatype wishes to disable itself. Note, this does not change
+  // preferred state of a datatype and is not persisted across restarts.
+  virtual void DisableDatatype(syncer::ModelType type,
+                               const tracked_objects::Location& from_here,
+                               std::string message);
+
+  // Called to re-enable a type disabled by DisableDatatype(..). Note, this does
+  // not change the preferred state of a datatype, and is not persisted across
+  // restarts.
+  void ReenableDatatype(syncer::ModelType type);
 
   // The functions below (until ActivateDataType()) should only be
   // called if sync_initialized() is true.

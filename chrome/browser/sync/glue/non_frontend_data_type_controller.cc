@@ -383,7 +383,7 @@ void NonFrontendDataTypeController::DisableImpl(
     const tracked_objects::Location& from_here,
     const std::string& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  profile_sync_service_->DisableBrokenDatatype(type(), from_here, message);
+  profile_sync_service_->DisableDatatype(type(), from_here, message);
 }
 
 void NonFrontendDataTypeController::RecordAssociationTime(

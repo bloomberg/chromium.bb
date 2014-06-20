@@ -34,9 +34,12 @@ SyncError::SyncError(const tracked_objects::Location& location,
     case CRYPTO_ERROR:
       type_message = "cryptographer error was encountered: ";
       break;
-    default:
-      NOTREACHED();
-      type_message = "invalid error: ";
+    case UNREADY_ERROR:
+      type_message = "unready error was encountered: ";
+      break;
+    case UNSET:
+      NOTREACHED() << "Invalid error type";
+      return;
   }
   Init(location, type_message + custom_message, model_type, error_type);
   PrintLogError();
