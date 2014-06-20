@@ -7,7 +7,6 @@
 #include "config.h"
 #include "V8TestObject.h"
 
-#include "HTMLNames.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/tests/v8/V8Attr.h"
 #include "bindings/tests/v8/V8Document.h"
@@ -47,6 +46,7 @@
 #include "bindings/v8/custom/V8Float32ArrayCustom.h"
 #include "bindings/v8/custom/V8Int32ArrayCustom.h"
 #include "bindings/v8/custom/V8Uint8ArrayCustom.h"
+#include "core/HTMLNames.h"
 #include "core/css/MediaQueryListListener.h"
 #include "core/dom/ClassCollection.h"
 #include "core/dom/ContextFeatures.h"

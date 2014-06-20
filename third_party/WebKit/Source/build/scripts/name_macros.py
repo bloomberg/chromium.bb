@@ -141,7 +141,7 @@ class Writer(in_generator.Writer):
     def generate_headers_header(self):
         base_header_for_suffix = ''
         if self.suffix:
-            base_header_for_suffix = '\n#include "%(namespace)sHeaders.h"\n' % {'namespace': self.namespace}
+            base_header_for_suffix = '\n#include "core/%(namespace)sHeaders.h"\n' % {'namespace': self.namespace}
         return HEADER_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
             'namespace': self.namespace,
@@ -183,7 +183,7 @@ class Writer(in_generator.Writer):
     def generate_interfaces_header(self):
         base_header_for_suffix = ''
         if self.suffix:
-            base_header_for_suffix = '\n#include "%(namespace)sInterfaces.h"\n' % {'namespace': self.namespace}
+            base_header_for_suffix = '\n#include "core/%(namespace)sInterfaces.h"\n' % {'namespace': self.namespace}
         return INTERFACES_HEADER_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
             'namespace': self.namespace,

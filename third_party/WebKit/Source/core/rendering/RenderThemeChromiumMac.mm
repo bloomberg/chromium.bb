@@ -21,9 +21,9 @@
 #import "config.h"
 #import "core/rendering/RenderThemeChromiumMac.h"
 
-#import "CSSValueKeywords.h"
-#import "HTMLNames.h"
-#import "UserAgentStyleSheets.h"
+#import "core/CSSValueKeywords.h"
+#import "core/HTMLNames.h"
+#import "core/UserAgentStyleSheets.h"
 #import "core/css/CSSValueList.h"
 #import "core/dom/Document.h"
 #import "core/dom/Element.h"

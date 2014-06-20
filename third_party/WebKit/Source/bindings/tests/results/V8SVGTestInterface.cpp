@@ -7,11 +7,11 @@
 #include "config.h"
 #include "V8SVGTestInterface.h"
 
-#include "SVGNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8ObjectConstructor.h"
+#include "core/SVGNames.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"

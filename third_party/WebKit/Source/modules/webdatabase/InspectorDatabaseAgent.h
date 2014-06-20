@@ -29,7 +29,7 @@
 #ifndef InspectorDatabaseAgent_h
 #define InspectorDatabaseAgent_h
 
-#include "InspectorFrontend.h"
+#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"

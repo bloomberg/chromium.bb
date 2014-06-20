@@ -7,7 +7,6 @@
 #include "config.h"
 #include "V8TestInterfaceNode.h"
 
-#include "HTMLNames.h"
 #include "bindings/tests/v8/V8TestInterfaceEmpty.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8AbstractEventListener.h"
@@ -15,6 +14,7 @@
 #include "bindings/v8/V8EventListenerList.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8ObjectConstructor.h"
+#include "core/HTMLNames.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"

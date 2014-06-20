@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
 
-#include "FetchInitiatorTypeNames.h"
+#include "core/FetchInitiatorTypeNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/fetch/CSSStyleSheetResource.h"

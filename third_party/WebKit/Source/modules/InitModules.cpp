@@ -8,7 +8,7 @@
 #include "EventModulesFactory.h"
 #include "EventModulesNames.h"
 #include "EventTargetModulesNames.h"
-#include "EventTypeNames.h"
+#include "core/EventTypeNames.h"
 #include "core/dom/Document.h"
 
 namespace WebCore {

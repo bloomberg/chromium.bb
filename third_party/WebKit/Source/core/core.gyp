@@ -46,7 +46,6 @@
       '..',  # WebKit/Source
       # FIXME: Remove these once core scripts generate qualified
       # includes correctly: http://crbug.com/380054
-      '<(blink_core_output_dir)',
       '<(blink_modules_output_dir)',
       '<(bindings_core_v8_output_dir)',
       '<(bindings_modules_v8_output_dir)',
