@@ -4170,6 +4170,9 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_NEW_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
     New window
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_NEXT_USER" desc="The text in the keyboard overlay to explain the shortcut (Switch to next user).">
+    Next user
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_NEXT_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (go to the next window).">
     Next window
   </message>
@@ -4199,6 +4202,9 @@ Battery full
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_PASTE_AS_PLAIN_TEXT" desc="The text in the keyboard overlay to explain the shortcut.">
     Paste as plain text
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_PREVIOUS_USER" desc="The text in the keyboard overlay to explain the shortcut (Switch to previous user).">
+    Previous user
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_PREVIOUS_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (go to the previous window).">
     Previous window
