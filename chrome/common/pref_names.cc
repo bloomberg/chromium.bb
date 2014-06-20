@@ -507,7 +507,16 @@ const char kMultipleProfilePrefMigration[] =
 // of web pages, and resource prefetching.
 // NOTE: The "dns_prefetching.enabled" value is used so that historical user
 // preferences are not lost.
+// TODO(bnc): Remove kNetworkPredictionEnabled once kAllowNetworkPrediction is
+// functioning as per crbug.com/334602.
 const char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";
+
+// A preference of enum chrome_browser_net::NetworkPredictionOptions shows
+// if prediction of network actions is allowed, depending on network type.
+// Actions include DNS prefetching, TCP and SSL preconnection, prerendering
+// of web pages, and resource prefetching.
+// TODO(bnc): Implement this preference as per crbug.com/334602.
+const char kAllowNetworkPrediction[] = "net.allow_network_prediction";
 
 // An integer representing the state of the default apps installation process.
 // This value is persisted in the profile's user preferences because the process

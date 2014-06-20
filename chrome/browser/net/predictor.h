@@ -80,6 +80,15 @@ class PredictorObserver {
 // the IO thread.
 class Predictor {
  public:
+  // Enum describing when to allow network predictions based on connection type.
+  // The same enum must be used by the platform-dependent components.
+  // TODO(bnc): implement as per crbug.com/334602.
+  enum NetworkPredictionOptions {
+    NETWORK_PREDICTION_ALWAYS,
+    NETWORK_PREDICTION_WIFI_ONLY,
+    NETWORK_PREDICTION_NEVER
+  };
+
   // A version number for prefs that are saved. This should be incremented when
   // we change the format so that we discard old data.
   static const int kPredictorReferrerVersion;

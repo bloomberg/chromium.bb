@@ -182,6 +182,7 @@ extern const char kLastPolicyCheckTime[];
 extern const char kInstantUIZeroSuggestUrlPrefix[];
 extern const char kMultipleProfilePrefMigration[];
 extern const char kNetworkPredictionEnabled[];
+extern const char kAllowNetworkPrediction[];
 extern const char kDefaultAppsInstallState[];
 extern const char kHideWebStoreIcon[];
 #if defined(OS_CHROMEOS)
