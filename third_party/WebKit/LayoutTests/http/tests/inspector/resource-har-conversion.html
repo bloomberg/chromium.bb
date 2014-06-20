@@ -3,6 +3,7 @@
 <head>
 <script src="inspector-test.js"></script>
 <script src="resources-test.js"></script>
+<script src="network-test.js"></script>
 
 <script>
 
@@ -28,7 +29,7 @@ var test = function()
     {
         function findRequestByURL(url)
         {
-            var requests = WebInspector.networkLog.requests;
+            var requests = InspectorTest.networkRequests();
             for (var i = 0; i < requests.length; ++i) {
                 if (url.test(requests[i].url))
                     return requests[i];
@@ -47,7 +48,7 @@ var test = function()
         }
 
         addCookieHeadersToRequest(findRequestByURL(/inspector-test\.js$/));
-        var log = (new WebInspector.HARLog(WebInspector.networkLog.requests)).build();
+        var log = (new WebInspector.HARLog(InspectorTest.networkRequests())).build();
         // Filter out favicon.ico requests that only appear on certain platforms.
         log.entries = log.entries.filter(function(entry) {
             return !/favicon\.ico$/.test(entry.request.url);

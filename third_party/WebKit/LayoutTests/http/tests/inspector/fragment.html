@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="inspector-test.js"></script>
+<script src="network-test.js"></script>
 <script type="text/javascript">
 function loadIFrame()
 {
@@ -39,7 +40,7 @@ function test()
             return request.url.indexOf("fragment-frame.html") !== -1
         }
 
-        var request = WebInspector.panels.network.requests.filter(filterFrame)[0];
+        var request = InspectorTest.networkRequests().filter(filterFrame)[0];
         InspectorTest.addResult("Child frame request url: " + request.url);
         InspectorTest.completeTest(step2);
     }

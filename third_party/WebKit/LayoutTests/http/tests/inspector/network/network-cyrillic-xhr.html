@@ -37,14 +37,14 @@ function test()
 
     function step2()
     {
-        var request = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 2];
-        dumpRequest(request, step3);
+        var requests = InspectorTest.networkRequests();
+        dumpRequest(requests[requests.length - 2], step3);
     }
 
     function step3()
     {
-        var request = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 1];
-        dumpRequest(request, step4);
+        var requests = InspectorTest.networkRequests();
+        dumpRequest(requests[requests.length - 1], step4);
     }
 
     function step4()

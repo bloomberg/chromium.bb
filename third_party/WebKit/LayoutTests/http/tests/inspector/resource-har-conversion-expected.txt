@@ -112,6 +112,42 @@ Page reloaded.
                 method : "GET"
                 queryString : [
                 ]
+                url : "http://127.0.0.1:8000/inspector/network-test.js"
+            }
+            response : {
+                bodySize : <number>
+                content : {
+                    mimeType : "application/x-javascript"
+                    size : <number>
+                }
+                cookies : [
+                ]
+                headers : <object>
+                headersSize : <number>
+                httpVersion : "HTTP/1.1"
+                redirectURL : ""
+                status : 304
+                statusText : "Not Modified"
+            }
+            startedDateTime : <plausible>
+            time : <number>
+            timings : <object>
+        }
+        {
+            cache : {
+            }
+            connection : <string>
+            pageref : "page_1"
+            request : {
+                bodySize : <number>
+                cookies : [
+                ]
+                headers : <object>
+                headersSize : <number>
+                httpVersion : "HTTP/1.1"
+                method : "GET"
+                queryString : [
+                ]
                 url : "http://127.0.0.1:8000/inspector/resource-har-conversion.html"
             }
             response : {

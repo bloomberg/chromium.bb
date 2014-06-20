@@ -28,15 +28,13 @@ function test()
 
         function scriptLoaded()
         {
-            var requestsCount = WebInspector.inspectorView.panel("network").requests.length;
-            var request = WebInspector.inspectorView.panel("network").requests[requestsCount - 1];
+            var request = InspectorTest.networkRequests().pop();
             request.requestContent(contentLoaded);
         }
 
         function contentLoaded()
         {
-            var requestsCount = WebInspector.inspectorView.panel("network").requests.length;
-            var request = WebInspector.inspectorView.panel("network").requests[requestsCount - 1];
+            var request = InspectorTest.networkRequests().pop();
             callback(request.content);
         }
     }

@@ -10,7 +10,7 @@ function test()
 
     function lastRequest()
     {
-        return networkPanel.requests[networkPanel.requests.length - 1];
+        return InspectorTest.networkRequests().pop();
     }
 
     function dumpRequest(request)

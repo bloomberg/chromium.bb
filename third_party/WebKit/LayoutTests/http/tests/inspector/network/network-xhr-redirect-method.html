@@ -7,23 +7,23 @@
 function test()
 {
     var offset;
-    var requests = WebInspector.inspectorView.panel("network").requests;
 
     InspectorTest.resetInspectorResourcesData(step1);
 
     function step1()
     {
         InspectorTest.recordNetwork();
-        offset = requests.length;
+        offset = InspectorTest.networkRequests().length;
         InspectorTest.makeSimpleXHR("PUT", "resources/redirect.cgi?status=301&ttl=3", true, step2);
     }
 
     function step2()
     {
-        requests[offset].requestContent(step3);
+        InspectorTest.networkRequests()[offset].requestContent(step3);
     }
 
     function step3() {
+        var requests = InspectorTest.networkRequests();
         for (var i = 0; i < requests.length; ++i) {
             var request = requests[i];
             var requestMethod = request.requestMethod;

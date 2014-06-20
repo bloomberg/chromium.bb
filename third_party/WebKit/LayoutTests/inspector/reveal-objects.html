@@ -2,6 +2,7 @@
 <head>
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script src="../http/tests/inspector/elements-test.js"></script>
+<script src="../http/tests/inspector/network-test.js"></script>
 <script>
 function loadResource(url)
 {
@@ -48,7 +49,7 @@ function test() {
 
             function secondXhrCallback()
             {
-                var requests = WebInspector.networkLog.requests;
+                var requests = InspectorTest.networkRequests();
                 for (var i = 0; i < requests.length; ++i) {
                     if (requests[i].url.indexOf("missing.js") !== -1) {
                         requestWithoutResource = requests[i];

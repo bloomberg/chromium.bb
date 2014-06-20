@@ -24,8 +24,9 @@ function test()
 
     function messageAdded(payload)
     {
-        InspectorTest.addResult("requests in the network panel: " + WebInspector.inspectorView.panel("network").requests.length);
-        InspectorTest.assertTrue(WebInspector.inspectorView.panel("network").requests.length == 0, "Blob load request to the browser is shown in the network panel.");
+        var requests = InspectorTest.networkRequests();
+        InspectorTest.addResult("requests in the network panel: " + requests.length);
+        InspectorTest.assertTrue(requests.length == 0, "Blob load request to the browser is shown in the network panel.");
         InspectorTest.completeTest();
     }
 }

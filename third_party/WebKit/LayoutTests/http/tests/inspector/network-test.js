@@ -8,9 +8,13 @@ function xhrLoadedCallback()
 
 var initialize_NetworkTest = function() {
 
+InspectorTest.networkRequests = function() {
+    return WebInspector.networkLog.requests.slice();
+}
+
 InspectorTest.dumpNetworkRequests = function()
 {
-    var requests = WebInspector.inspectorView.panel("network").requests.slice();
+    var requests = InspectorTest.networkRequests();
     requests.sort(function(a, b) {return a.url.localeCompare(b.url);});
     InspectorTest.addResult("resources count = " + requests.length);
     for (i = 0; i < requests.length; i++)

@@ -13,7 +13,7 @@ var test = function()
     {
         var writer = new WebInspector.HARWriter();
         var stream = new InspectorTest.StringOutputStream(onSaved);
-        writer.write(stream, WebInspector.networkLog.requests, new WebInspector.Progress());
+        writer.write(stream, InspectorTest.networkRequests(), new WebInspector.Progress());
     }
 
     function onSaved(data)

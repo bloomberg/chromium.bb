@@ -18,7 +18,7 @@ function test()
 
     function findResource(url, status, cached)
     {
-        var requests = WebInspector.networkLog.requests;
+        var requests = InspectorTest.networkRequests();
         for (var i = 0; i < requests.length; ++i) {
             var request = requests[i];
             if (url.test(request.url) && (status === request.statusCode) && (cached === request.cached))

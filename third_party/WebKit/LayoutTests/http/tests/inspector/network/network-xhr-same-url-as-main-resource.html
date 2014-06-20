@@ -10,7 +10,7 @@ function test()
 
     function step2()
     {
-        var request1 = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 1];
+        var request1 = InspectorTest.networkRequests().pop();
         InspectorTest.addResult(request1.type.name());
         InspectorTest.completeTest();
     }

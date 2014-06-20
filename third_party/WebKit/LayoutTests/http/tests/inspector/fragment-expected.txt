@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 15: Done.
+CONSOLE MESSAGE: line 16: Done.
 Tests fragment is stripped from url by resource and page agents.
 
 

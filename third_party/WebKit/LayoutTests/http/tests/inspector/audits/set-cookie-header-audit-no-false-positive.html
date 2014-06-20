@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
 <script>
 var test = function()
 {
@@ -9,7 +10,7 @@ var test = function()
     function step1()
     {
         WebInspector.inspectorView.showPanel("network");
-        var requests = WebInspector.panels.network.requests;
+        var requests = InspectorTest.networkRequests();
         for (var i = 0; i < requests.length; ++i)
             InspectorTest.assertTrue(requests[i].responseHeaderValue("Set-Cookie") === undefined);
         InspectorTest.addResult("Success, no Set-Cookie headers found.");

@@ -16,7 +16,7 @@ var test = function()
 
     function findRequestByURL(url)
     {
-        var requests = WebInspector.networkLog.requests;
+        var requests = InspectorTest.networkRequests();
         for (var i = 0; i < requests.length; ++i) {
             if (url.test(requests[i].url))
                 return requests[i];

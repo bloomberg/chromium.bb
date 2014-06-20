@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
 <script>
 function loadStylesheet()
 {
@@ -23,7 +24,7 @@ function test()
         var eventUISourceCode = event.data;
         if (eventUISourceCode.originURL().indexOf("style.css") == -1)
             return;
-        var request = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 1];
+        var request = InspectorTest.networkRequests().pop();
         uiSourceCode = WebInspector.workspace.uiSourceCodeForOriginURL(request.url);
         if (!uiSourceCode)
             return;

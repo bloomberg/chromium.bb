@@ -60,26 +60,26 @@ function test()
 
     function step1()
     {
-        var request = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 4];
-        dumpRequest(request, step2);
+        var requests = InspectorTest.networkRequests();
+        dumpRequest(requests[requests.length - 4], step2);
     }
 
     function step2()
     {
-        var request = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 3];
-        dumpRequest(request, step3);
+        var requests = InspectorTest.networkRequests();
+        dumpRequest(requests[requests.length - 3], step3);
     }
 
     function step3()
     {
-        var request = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 2];
-        dumpRequest(request, step4);
+        var requests = InspectorTest.networkRequests();
+        dumpRequest(requests[requests.length - 2], step4);
     }
 
     function step4()
     {
-        var request = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 1];
-        dumpRequest(request, step5);
+        var requests = InspectorTest.networkRequests();
+        dumpRequest(requests[requests.length - 1], step5);
     }
 
     function step5()

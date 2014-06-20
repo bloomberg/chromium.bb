@@ -14,11 +14,11 @@ function test()
 {
     InspectorTest.recordNetwork();
 
-    var networkPanel = WebInspector.inspectorView.showPanel("network");
+    WebInspector.inspectorView.showPanel("network");
 
     function lastRequest()
     {
-        return networkPanel.requests[networkPanel.requests.length - 1];
+        return InspectorTest.networkRequests().pop();
     }
 
     function reportRequest(request)

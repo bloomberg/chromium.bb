@@ -3,6 +3,7 @@
 <script src="inspector-test.js"></script>
 <script src="debugger-test.js"></script>
 <script src="console-test.js"></script>
+<script src="network-test.js"></script>
 <script src="resources/compiled.js"></script>
 <script src="resources/compiled-with-wrong-source-map-url.js"></script>
 
@@ -45,7 +46,7 @@ function test()
         {
             function callbackWhenSourceMapRequestIsAvailable(callback)
             {
-                var requests = WebInspector.networkLog.requests;
+                var requests = InspectorTest.networkRequests();
                 for (var i = 0; i < requests.length; ++i) {
                     if (requests[i].url.indexOf("source-map.json_not_found") === -1 || !requests[i].finished)
                         continue;

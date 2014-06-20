@@ -37,8 +37,9 @@ function test()
             return;
         }
 
-        var request1 = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 2];
-        var request2 = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 1];
+        var requests = InspectorTest.networkRequests();
+        var request1 = requests[requests.length - 2];
+        var request2 = requests[requests.length - 1];
         request1.requestContent(step3);
         request2.requestContent(step3);
     }
@@ -48,8 +49,9 @@ function test()
     {
         if (--toLoad)
             return;
-        var request1 = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 2];
-        var request2 = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 1];
+        var requests = InspectorTest.networkRequests();
+        var request1 = requests[requests.length - 2];
+        var request2 = requests[requests.length - 1];
         InspectorTest.addResult("resource1.content: " + request1.content);
         InspectorTest.addResult("resource2.content: " + request2.content);
         InspectorTest.assertTrue(request1.content === 'request1' && request2.content === 'request2');
