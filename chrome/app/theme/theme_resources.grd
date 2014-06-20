@@ -123,6 +123,7 @@
       <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_CHEVRONS" file="common/chevron.png" />
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER" file="mac/bookmark_bar_folder.png" />
+        <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_MANAGED" file="mac/bookmark_bar_folder_managed.png" />
       </if>
       <if expr="not is_macosx and not is_ios">
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER" file="common/bookmark_bar_folder.png" />

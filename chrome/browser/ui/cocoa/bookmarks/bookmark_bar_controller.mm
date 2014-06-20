@@ -582,8 +582,12 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (!node)
     return defaultImage_;
 
-  // TODO(joaodasilva): return the "Managed Bookmarks" icon here for the
-  // managed node.
+  if (node == bookmarkClient_->managed_node()) {
+    // Most users never see this node, so the image is only loaded if needed.
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    return rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER_MANAGED).ToNSImage();
+  }
+
   if (node->is_folder())
     return folderImage_;
 

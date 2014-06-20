@@ -83,9 +83,13 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
   const BookmarkNode* managedNode = client->managed_node();
   if (!barNode->empty() || !managedNode->empty())
     [bookmark_menu addItem:[NSMenuItem separatorItem]];
-  // TODO(joaodasilva): use the 'Managed Bookmarks' icon for the managedNode.
-  if (!managedNode->empty())
-    AddNodeAsSubmenu(bookmark_menu, managedNode, !is_submenu);
+  if (!managedNode->empty()) {
+    // Most users never see this node, so the image is only loaded if needed.
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    NSImage* image =
+        rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER_MANAGED).ToNSImage();
+    AddNodeAsSubmenu(bookmark_menu, managedNode, image, !is_submenu);
+  }
   if (!barNode->empty())
     AddNodeToMenu(barNode, bookmark_menu, !is_submenu);
 
@@ -95,6 +99,7 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
     [bookmark_menu addItem:[NSMenuItem separatorItem]];
     AddNodeAsSubmenu(bookmark_menu,
                      model->other_node(),
+                     folder_image_,
                      !is_submenu);
   }
 
@@ -108,6 +113,7 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
 
     AddNodeAsSubmenu(bookmark_menu,
                      model->mobile_node(),
+                     folder_image_,
                      !is_submenu);
   }
 
@@ -223,13 +229,14 @@ void BookmarkMenuBridge::ClearBookmarkMenu(NSMenu* menu) {
 
 void BookmarkMenuBridge::AddNodeAsSubmenu(NSMenu* menu,
                                           const BookmarkNode* node,
+                                          NSImage* image,
                                           bool add_extra_items) {
   NSString* title = SysUTF16ToNSString(node->GetTitle());
   NSMenuItem* items = [[[NSMenuItem alloc]
                             initWithTitle:title
                                    action:nil
                             keyEquivalent:@""] autorelease];
-  [items setImage:folder_image_];
+  [items setImage:image];
   [menu addItem:items];
   NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
   [menu setSubmenu:submenu forItem:items];

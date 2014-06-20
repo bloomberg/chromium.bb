@@ -90,12 +90,13 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
   // Mark the bookmark menu as being invalid.
   void InvalidateMenu()  { menuIsValid_ = false; }
 
-  // Helper for adding the node as a submenu to the menu with the
-  // given title.
+  // Helper for adding the node as a submenu to the menu with the |node|'s title
+  // and the given |image| as its icon.
   // If |add_extra_items| is true, also adds extra menu items at bottom of
   // menu, such as "Open All Bookmarks".
   void AddNodeAsSubmenu(NSMenu* menu,
                         const BookmarkNode* node,
+                        NSImage* image,
                         bool add_extra_items);
 
   // Helper for recursively adding items to our bookmark menu.
