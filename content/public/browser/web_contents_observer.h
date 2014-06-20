@@ -13,6 +13,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace content {
@@ -327,6 +328,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Invoked when an accessibility event is received from the renderer.
   virtual void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) {}
+
+  // Invoked when brand color is changed to |brand_color|.
+  virtual void DidChangeBrandColor(SkColor brand_color) {}
 
   // Invoked if an IPC message is coming from a specific RenderFrameHost.
   virtual bool OnMessageReceived(const IPC::Message& message,

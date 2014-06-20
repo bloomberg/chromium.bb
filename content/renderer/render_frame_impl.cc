@@ -2207,6 +2207,14 @@ void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame) {
   render_view_->didUpdateCurrentHistoryItem(frame);
 }
 
+void RenderFrameImpl::didChangeBrandColor() {
+  if (frame_->parent())
+    return;
+
+  Send(new FrameHostMsg_DidChangeBrandColor(
+      routing_id_, frame_->document().brandColor()));
+}
+
 blink::WebNotificationPresenter* RenderFrameImpl::notificationPresenter() {
   return notification_provider_;
 }

@@ -697,6 +697,7 @@ class CONTENT_EXPORT WebContentsImpl
                          const IPC::Message& message);
 
   // IPC message handlers.
+  void OnBrandColorChanged(SkColor brand_color);
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
                                         const std::string& security_info,
                                         const std::string& http_request,
