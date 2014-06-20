@@ -46,6 +46,7 @@ MASTERS = [
     {'name': 'ChromiumGPUFYI', 'url_name': 'chromium.gpu.fyi', 'groups': ['@ToT Chromium FYI']},
     {'name': 'ChromiumWebkit', 'url_name': 'chromium.webkit', 'groups': ['@ToT Chromium', '@ToT Blink']},
     {'name': 'ChromiumFYI', 'url_name': 'chromium.fyi', 'groups': ['@ToT Chromium FYI']},
+    {'name': 'GpuTryServer', 'url_name': 'tryserver.chromium.gpu', 'groups': ['TryServers']},
     {'name': 'V8', 'url_name': 'client.v8', 'groups': ['@ToT V8']},
 ]
 
