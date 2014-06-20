@@ -116,7 +116,8 @@ class WindowManager : public Application,
         app_url = "mojo://mojo_embedded_app";
       else if (event->flags & ui::EF_RIGHT_MOUSE_BUTTON)
         app_url = "mojo://mojo_nesting_app";
-      DCHECK(!app_url.empty());
+      if (app_url.empty())
+        return;
 
       Node* node = view_manager_->GetNodeById(parent_node_id_);
       navigation::NavigationDetailsPtr nav_details(
