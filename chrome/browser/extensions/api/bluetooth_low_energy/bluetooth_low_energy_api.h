@@ -74,6 +74,44 @@ class BluetoothLowEnergyExtensionFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyExtensionFunction);
 };
 
+class BluetoothLowEnergyConnectFunction
+    : public BluetoothLowEnergyExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.connect",
+                             BLUETOOTHLOWENERGY_CONNECT);
+
+ protected:
+  virtual ~BluetoothLowEnergyConnectFunction() {}
+
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
+
+ private:
+  // Success and error callbacks, called by
+  // BluetoothLowEnergyEventRouter::Connect.
+  void SuccessCallback();
+  void ErrorCallback(BluetoothLowEnergyEventRouter::Status status);
+};
+
+class BluetoothLowEnergyDisconnectFunction
+    : public BluetoothLowEnergyExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.disconnect",
+                             BLUETOOTHLOWENERGY_DISCONNECT);
+
+ protected:
+  virtual ~BluetoothLowEnergyDisconnectFunction() {}
+
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
+
+ private:
+  // Success and error callbacks, called by
+  // BluetoothLowEnergyEventRouter::Disconnect.
+  void SuccessCallback();
+  void ErrorCallback(BluetoothLowEnergyEventRouter::Status status);
+};
+
 class BluetoothLowEnergyGetServiceFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:

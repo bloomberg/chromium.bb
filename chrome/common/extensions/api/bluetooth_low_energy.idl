@@ -26,7 +26,7 @@ namespace bluetoothLowEnergy {
     // Indicates whether this service represents a local service hosted by the
     // application and available to other peripherals, or a remote service
     // hosted and received from a remote peripheral.
-    boolean isLocal;
+    [nodoc] boolean isLocal;
 
     // Returns the identifier assigned to this service. Use the instance ID to
     // distinguish between services from a peripheral with the same UUID and
@@ -49,7 +49,7 @@ namespace bluetoothLowEnergy {
     // Indicates whether this characteristic represents a local characteristic
     // hosted by the application and available to other peripherals, or a remote
     // characteristic hosted and received from a remote peripheral.
-    boolean isLocal;
+    [nodoc] boolean isLocal;
 
     // The GATT service this characteristic belongs to.
     Service service;
@@ -80,7 +80,7 @@ namespace bluetoothLowEnergy {
     // Indicates whether this descriptor represents a local descriptor
     // hosted by the application and available to other peripherals, or a remote
     // descriptor hosted and received from a remote peripheral.
-    boolean isLocal;
+    [nodoc] boolean isLocal;
 
     // The GATT characteristic this descriptor belongs to.
     Characteristic characteristic;
@@ -98,6 +98,15 @@ namespace bluetoothLowEnergy {
     ArrayBuffer? value;
   };
 
+  // The connection properties specified during a call to $ref:connect.
+  dictionary ConnectProperties {
+    // Flag indicating whether a connection to the device is left open when the
+    // event page of the application is unloaded (see <a
+    // href="http://developer.chrome.com/apps/app_lifecycle.html">Manage App
+    // Lifecycle</a>). The default value is <code>false.</code>
+    boolean persistent;
+  };
+
   callback CharacteristicCallback = void(Characteristic result);
   callback CharacteristicsCallback = void(Characteristic[] result);
   callback DescriptorCallback = void(Descriptor result);
@@ -108,6 +117,29 @@ namespace bluetoothLowEnergy {
 
   // These functions all report failures via chrome.runtime.lastError.
   interface Functions {
+    // Establishes a connection between the application and the device with the
+    // given address. A device may be already connected and its GATT services
+    // available without calling <code>connect</code>, however, an app that
+    // wants to access GATT services of a device should call this function to
+    // make sure that a connection to the device is maintained. If the device
+    // is not connected, all GATT services of the device will be discovered
+    // after a successful call to <code>connect</code>.
+    // |deviceAddress| : The Bluetooth address of the remote device to which a
+    // GATT connection should be opened.
+    // |properties| : Connection properties (optional).
+    // |callback| : Called when the connect request has completed.
+    static void connect(DOMString deviceAddress,
+                        optional ConnectProperties properties,
+                        ResultCallback callback);
+
+    // Closes the app's connection to the device with the given address. Note
+    // that this will not always destroy the physical link itself, since there
+    // may be other apps with open connections.
+    // |deviceAddress| : The Bluetooth address of the remote device.
+    // |callback| : Called when the disconnect request has completed.
+    static void disconnect(DOMString deviceAddress,
+                           optional ResultCallback callback);
+
     // Get the GATT service with the given instance ID.
     // |serviceId| : The instance ID of the requested GATT service.
     // |callback| : Called with the requested Service object.
@@ -115,7 +147,7 @@ namespace bluetoothLowEnergy {
 
     // Get all the GATT services that were discovered on the remote device with
     // the given device address.
-    // |deviceAddress| : The Bluetooth Address of the remote device whose GATT
+    // |deviceAddress| : The Bluetooth address of the remote device whose GATT
     // services should be returned.
     // |callback| : Called with the list of requested Service objects.
     static void getServices(DOMString deviceAddress, ServicesCallback callback);

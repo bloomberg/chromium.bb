@@ -7,11 +7,13 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_connection.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
 #include "chrome/common/extensions/api/bluetooth/bluetooth_manifest_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_descriptor.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
@@ -22,6 +24,7 @@ using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
 using device::BluetoothDevice;
 using device::BluetoothGattCharacteristic;
+using device::BluetoothGattConnection;
 using device::BluetoothGattDescriptor;
 using device::BluetoothGattService;
 
@@ -120,6 +123,19 @@ void PopulateDescriptor(const BluetoothGattDescriptor* descriptor,
   out->value.reset(new std::string(value.begin(), value.end()));
 }
 
+typedef extensions::ApiResourceManager<extensions::BluetoothLowEnergyConnection>
+    ConnectionResourceManager;
+ConnectionResourceManager* GetConnectionResourceManager(
+    content::BrowserContext* context) {
+  ConnectionResourceManager* manager = ConnectionResourceManager::Get(context);
+  DCHECK(manager)
+      << "There is no Bluetooth low energy connection manager. "
+         "If this assertion is failing during a test, then it is likely that "
+         "TestExtensionSystem is failing to provide an instance of "
+         "ApiResourceManager<BluetoothLowEnergyConnection>.";
+  return manager;
+}
+
 }  // namespace
 
 namespace extensions {
@@ -191,6 +207,94 @@ bool BluetoothLowEnergyEventRouter::InitializeAdapterAndInvokeCallback(
 
 bool BluetoothLowEnergyEventRouter::HasAdapter() const {
   return (adapter_.get() != NULL);
+}
+
+void BluetoothLowEnergyEventRouter::Connect(
+    bool persistent,
+    const Extension* extension,
+    const std::string& device_address,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!adapter_) {
+    VLOG(1) << "BluetoothAdapter not ready.";
+    error_callback.Run(kStatusErrorFailed);
+    return;
+  }
+
+  if (connecting_devices_.count(device_address) != 0) {
+    error_callback.Run(kStatusErrorInProgress);
+    return;
+  }
+
+  const std::string extension_id = extension->id();
+  BluetoothLowEnergyConnection* conn =
+      FindConnection(extension_id, device_address);
+  if (conn) {
+    if (conn->GetConnection()->IsConnected()) {
+      VLOG(1) << "Application already connected to device: " << device_address;
+      error_callback.Run(kStatusErrorAlreadyConnected);
+      return;
+    }
+
+    // There is a connection object but it's no longer active. Simply remove it.
+    RemoveConnection(extension_id, device_address);
+  }
+
+  BluetoothDevice* device = adapter_->GetDevice(device_address);
+  if (!device) {
+    VLOG(1) << "Bluetooth device not found: " << device_address;
+    error_callback.Run(kStatusErrorNotFound);
+    return;
+  }
+
+  connecting_devices_.insert(device_address);
+  device->CreateGattConnection(
+      base::Bind(&BluetoothLowEnergyEventRouter::OnCreateGattConnection,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 persistent,
+                 extension_id,
+                 device_address,
+                 callback),
+      base::Bind(&BluetoothLowEnergyEventRouter::OnConnectError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 device_address,
+                 error_callback));
+}
+
+void BluetoothLowEnergyEventRouter::Disconnect(
+    const Extension* extension,
+    const std::string& device_address,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!adapter_) {
+    VLOG(1) << "BluetoothAdapter not ready.";
+    error_callback.Run(kStatusErrorFailed);
+    return;
+  }
+
+  if (disconnecting_devices_.count(device_address) != 0) {
+    error_callback.Run(kStatusErrorInProgress);
+    return;
+  }
+
+  const std::string& extension_id = extension->id();
+  BluetoothLowEnergyConnection* conn =
+      FindConnection(extension_id, device_address);
+  if (!conn || !conn->GetConnection()->IsConnected()) {
+    VLOG(1) << "Application not connected to device: " << device_address;
+    error_callback.Run(kStatusErrorNotConnected);
+    return;
+  }
+
+  disconnecting_devices_.insert(device_address);
+  conn->GetConnection()->Disconnect(
+      base::Bind(&BluetoothLowEnergyEventRouter::OnDisconnect,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 extension_id,
+                 device_address,
+                 callback));
 }
 
 bool BluetoothLowEnergyEventRouter::GetServices(
@@ -440,8 +544,7 @@ BluetoothLowEnergyEventRouter::GetDescriptor(
   return kStatusSuccess;
 }
 
-BluetoothLowEnergyEventRouter::Status
-BluetoothLowEnergyEventRouter::ReadCharacteristicValue(
+void BluetoothLowEnergyEventRouter::ReadCharacteristicValue(
     const Extension* extension,
     const std::string& instance_id,
     const base::Closure& callback,
@@ -450,14 +553,16 @@ BluetoothLowEnergyEventRouter::ReadCharacteristicValue(
   DCHECK(extension);
   if (!adapter_) {
     VLOG(1) << "BluetoothAdapter not ready.";
-    return kStatusErrorFailed;
+    error_callback.Run(kStatusErrorFailed);
+    return;
   }
 
   BluetoothGattCharacteristic* characteristic =
       FindCharacteristicById(instance_id);
   if (!characteristic) {
     VLOG(1) << "Characteristic not found: " << instance_id;
-    return kStatusErrorNotFound;
+    error_callback.Run(kStatusErrorNotFound);
+    return;
   }
 
   BluetoothPermissionRequest request(
@@ -465,7 +570,8 @@ BluetoothLowEnergyEventRouter::ReadCharacteristicValue(
   if (!BluetoothManifestData::CheckRequest(extension, request)) {
     VLOG(1) << "App has no permission to access this characteristic: "
             << instance_id;
-    return kStatusErrorPermissionDenied;
+    error_callback.Run(kStatusErrorPermissionDenied);
+    return;
   }
 
   characteristic->ReadRemoteCharacteristic(
@@ -475,12 +581,9 @@ BluetoothLowEnergyEventRouter::ReadCharacteristicValue(
       base::Bind(&BluetoothLowEnergyEventRouter::OnError,
                  weak_ptr_factory_.GetWeakPtr(),
                  error_callback));
-
-  return kStatusSuccess;
 }
 
-BluetoothLowEnergyEventRouter::Status
-BluetoothLowEnergyEventRouter::WriteCharacteristicValue(
+void BluetoothLowEnergyEventRouter::WriteCharacteristicValue(
     const Extension* extension,
     const std::string& instance_id,
     const std::vector<uint8>& value,
@@ -490,14 +593,16 @@ BluetoothLowEnergyEventRouter::WriteCharacteristicValue(
   DCHECK(extension);
   if (!adapter_) {
     VLOG(1) << "BluetoothAdapter not ready.";
-    return kStatusErrorFailed;
+    error_callback.Run(kStatusErrorFailed);
+    return;
   }
 
   BluetoothGattCharacteristic* characteristic =
       FindCharacteristicById(instance_id);
   if (!characteristic) {
     VLOG(1) << "Characteristic not found: " << instance_id;
-    return kStatusErrorNotFound;
+    error_callback.Run(kStatusErrorNotFound);
+    return;
   }
 
   BluetoothPermissionRequest request(
@@ -505,7 +610,8 @@ BluetoothLowEnergyEventRouter::WriteCharacteristicValue(
   if (!BluetoothManifestData::CheckRequest(extension, request)) {
     VLOG(1) << "App has no permission to access this characteristic: "
             << instance_id;
-    return kStatusErrorPermissionDenied;
+    error_callback.Run(kStatusErrorPermissionDenied);
+    return;
   }
 
   characteristic->WriteRemoteCharacteristic(
@@ -514,11 +620,9 @@ BluetoothLowEnergyEventRouter::WriteCharacteristicValue(
       base::Bind(&BluetoothLowEnergyEventRouter::OnError,
                  weak_ptr_factory_.GetWeakPtr(),
                  error_callback));
-  return kStatusSuccess;
 }
 
-BluetoothLowEnergyEventRouter::Status
-BluetoothLowEnergyEventRouter::ReadDescriptorValue(
+void BluetoothLowEnergyEventRouter::ReadDescriptorValue(
     const Extension* extension,
     const std::string& instance_id,
     const base::Closure& callback,
@@ -527,13 +631,15 @@ BluetoothLowEnergyEventRouter::ReadDescriptorValue(
   DCHECK(extension);
   if (!adapter_) {
     VLOG(1) << "BluetoothAdapter not ready.";
-    return kStatusErrorFailed;
+    error_callback.Run(kStatusErrorFailed);
+    return;
   }
 
   BluetoothGattDescriptor* descriptor = FindDescriptorById(instance_id);
   if (!descriptor) {
     VLOG(1) << "Descriptor not found: " << instance_id;
-    return kStatusErrorNotFound;
+    error_callback.Run(kStatusErrorNotFound);
+    return;
   }
 
   BluetoothPermissionRequest request(
@@ -541,7 +647,8 @@ BluetoothLowEnergyEventRouter::ReadDescriptorValue(
   if (!BluetoothManifestData::CheckRequest(extension, request)) {
     VLOG(1) << "App has no permission to access this descriptor: "
             << instance_id;
-    return kStatusErrorPermissionDenied;
+    error_callback.Run(kStatusErrorPermissionDenied);
+    return;
   }
 
   descriptor->ReadRemoteDescriptor(
@@ -551,11 +658,9 @@ BluetoothLowEnergyEventRouter::ReadDescriptorValue(
       base::Bind(&BluetoothLowEnergyEventRouter::OnError,
                  weak_ptr_factory_.GetWeakPtr(),
                  error_callback));
-  return kStatusSuccess;
 }
 
-BluetoothLowEnergyEventRouter::Status
-BluetoothLowEnergyEventRouter::WriteDescriptorValue(
+void BluetoothLowEnergyEventRouter::WriteDescriptorValue(
     const Extension* extension,
     const std::string& instance_id,
     const std::vector<uint8>& value,
@@ -565,13 +670,15 @@ BluetoothLowEnergyEventRouter::WriteDescriptorValue(
   DCHECK(extension);
   if (!adapter_) {
     VLOG(1) << "BluetoothAdapter not ready.";
-    return kStatusErrorFailed;
+    error_callback.Run(kStatusErrorFailed);
+    return;
   }
 
   BluetoothGattDescriptor* descriptor = FindDescriptorById(instance_id);
   if (!descriptor) {
     VLOG(1) << "Descriptor not found: " << instance_id;
-    return kStatusErrorNotFound;
+    error_callback.Run(kStatusErrorNotFound);
+    return;
   }
 
   BluetoothPermissionRequest request(
@@ -579,7 +686,8 @@ BluetoothLowEnergyEventRouter::WriteDescriptorValue(
   if (!BluetoothManifestData::CheckRequest(extension, request)) {
     VLOG(1) << "App has no permission to access this descriptor: "
             << instance_id;
-    return kStatusErrorPermissionDenied;
+    error_callback.Run(kStatusErrorPermissionDenied);
+    return;
   }
 
   descriptor->WriteRemoteDescriptor(
@@ -588,7 +696,6 @@ BluetoothLowEnergyEventRouter::WriteDescriptorValue(
       base::Bind(&BluetoothLowEnergyEventRouter::OnError,
                  weak_ptr_factory_.GetWeakPtr(),
                  error_callback));
-  return kStatusSuccess;
 }
 
 void BluetoothLowEnergyEventRouter::SetAdapterForTesting(
@@ -1007,10 +1114,108 @@ void BluetoothLowEnergyEventRouter::OnValueSuccess(
   callback.Run();
 }
 
+void BluetoothLowEnergyEventRouter::OnCreateGattConnection(
+    bool persistent,
+    const std::string& extension_id,
+    const std::string& device_address,
+    const base::Closure& callback,
+    scoped_ptr<BluetoothGattConnection> connection) {
+  VLOG(2) << "GATT connection created.";
+  DCHECK(connection.get());
+  DCHECK(!FindConnection(extension_id, device_address));
+  DCHECK_EQ(device_address, connection->GetDeviceAddress());
+  DCHECK_NE(0U, connecting_devices_.count(device_address));
+
+  BluetoothLowEnergyConnection* conn = new BluetoothLowEnergyConnection(
+      persistent, extension_id, connection.Pass());
+  ConnectionResourceManager* manager =
+      GetConnectionResourceManager(browser_context_);
+  manager->Add(conn);
+
+  connecting_devices_.erase(device_address);
+  callback.Run();
+}
+
+void BluetoothLowEnergyEventRouter::OnDisconnect(
+    const std::string& extension_id,
+    const std::string& device_address,
+    const base::Closure& callback) {
+  VLOG(2) << "GATT connection terminated.";
+  DCHECK_NE(0U, disconnecting_devices_.count(device_address));
+  if (!RemoveConnection(extension_id, device_address)) {
+    VLOG(1) << "The connection was removed before disconnect completed, id: "
+            << extension_id << ", device: " << device_address;
+  }
+
+  disconnecting_devices_.erase(device_address);
+  callback.Run();
+}
+
 void BluetoothLowEnergyEventRouter::OnError(
     const ErrorCallback& error_callback) {
   VLOG(2) << "Remote characteristic/descriptor value read/write failed.";
   error_callback.Run(kStatusErrorFailed);
+}
+
+void BluetoothLowEnergyEventRouter::OnConnectError(
+    const std::string& device_address,
+    const ErrorCallback& error_callback,
+    BluetoothDevice::ConnectErrorCode error_code) {
+  VLOG(2) << "Failed to create GATT connection: " << error_code;
+  DCHECK_NE(0U, connecting_devices_.count(device_address));
+
+  connecting_devices_.erase(device_address);
+  error_callback.Run(kStatusErrorFailed);
+}
+
+BluetoothLowEnergyConnection* BluetoothLowEnergyEventRouter::FindConnection(
+    const std::string& extension_id,
+    const std::string& device_address) {
+  ConnectionResourceManager* manager =
+      GetConnectionResourceManager(browser_context_);
+
+  base::hash_set<int>* connection_ids = manager->GetResourceIds(extension_id);
+  if (!connection_ids)
+    return NULL;
+
+  for (base::hash_set<int>::const_iterator iter = connection_ids->begin();
+       iter != connection_ids->end();
+       ++iter) {
+    extensions::BluetoothLowEnergyConnection* conn =
+        manager->Get(extension_id, *iter);
+    if (!conn)
+      continue;
+
+    if (conn->GetConnection()->GetDeviceAddress() == device_address)
+      return conn;
+  }
+
+  return NULL;
+}
+
+bool BluetoothLowEnergyEventRouter::RemoveConnection(
+    const std::string& extension_id,
+    const std::string& device_address) {
+  ConnectionResourceManager* manager =
+      GetConnectionResourceManager(browser_context_);
+
+  base::hash_set<int>* connection_ids = manager->GetResourceIds(extension_id);
+  if (!connection_ids)
+    return false;
+
+  for (base::hash_set<int>::const_iterator iter = connection_ids->begin();
+       iter != connection_ids->end();
+       ++iter) {
+    extensions::BluetoothLowEnergyConnection* conn =
+        manager->Get(extension_id, *iter);
+    if (!conn || conn->GetConnection()->GetDeviceAddress() != device_address)
+      continue;
+
+    manager->Remove(extension_id, *iter);
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace extensions

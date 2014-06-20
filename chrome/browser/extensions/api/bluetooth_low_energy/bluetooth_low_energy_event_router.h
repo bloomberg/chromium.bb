@@ -33,6 +33,7 @@ class BrowserContext;
 
 namespace extensions {
 
+class BluetoothLowEnergyConnection;
 class Extension;
 
 // The BluetoothLowEnergyEventRouter is used by the bluetoothLowEnergy API to
@@ -50,6 +51,9 @@ class BluetoothLowEnergyEventRouter
     kStatusSuccess = 0,
     kStatusErrorPermissionDenied,
     kStatusErrorNotFound,
+    kStatusErrorAlreadyConnected,
+    kStatusErrorNotConnected,
+    kStatusErrorInProgress,
     kStatusErrorFailed
   };
 
@@ -69,6 +73,28 @@ class BluetoothLowEnergyEventRouter
 
   // Returns true, if the BluetoothAdapter was initialized.
   bool HasAdapter() const;
+
+  // Creates a GATT connection to the device with address |device_address| for
+  // extension |extension|. The connection is kept alive until the extension is
+  // unloaded, the device is removed, or is disconnect by the host subsystem.
+  // |error_callback| is called with an error status in case of failure. If
+  // |persistent| is true, then the allocated connection resource is persistent
+  // across unloads.
+  void Connect(bool persistent,
+               const Extension* extension,
+               const std::string& device_address,
+               const base::Closure& callback,
+               const ErrorCallback& error_callback);
+
+  // Disconnects the currently open GATT connection of extension |extension| to
+  // device with address |device_address|. |error_callback| is called with an
+  // error status in case of failure, e.g. if the device is not found or the
+  // given
+  // extension does not have an open connection to the device.
+  void Disconnect(const Extension* extension,
+                  const std::string& device_address,
+                  const base::Closure& callback,
+                  const ErrorCallback& error_callback);
 
   // Returns the list of api::bluetooth_low_energy::Service objects associated
   // with the Bluetooth device with address |device_address| in |out_services|.
@@ -138,42 +164,38 @@ class BluetoothLowEnergyEventRouter
       api::bluetooth_low_energy::Descriptor* out_descriptor) const;
 
   // Sends a request to read the value of the characteristic with intance ID
-  // |instance_id|. If the read request was sent successfully, returns
-  // kStatusSuccess and invokes |callback| on success and |error_callback| on
+  // |instance_id|. Invokes |callback| on success and |error_callback| on
   // failure. |extension| is the extension that made the call.
-  Status ReadCharacteristicValue(const Extension* extension,
-                                 const std::string& instance_id,
-                                 const base::Closure& callback,
-                                 const ErrorCallback& error_callback);
+  void ReadCharacteristicValue(const Extension* extension,
+                               const std::string& instance_id,
+                               const base::Closure& callback,
+                               const ErrorCallback& error_callback);
 
   // Sends a request to write the value of the characteristic with instance ID
-  // |instance_id|. If the read request was sent successfully, returns
-  // kStatusSuccess and invokes |callback| on success and |error_callback| on
+  // |instance_id|. Invokes |callback| on success and |error_callback| on
   // failure. |extension| is the extension that made the call.
-  Status WriteCharacteristicValue(const Extension* extension,
-                                  const std::string& instance_id,
-                                  const std::vector<uint8>& value,
-                                  const base::Closure& callback,
-                                  const ErrorCallback& error_callback);
+  void WriteCharacteristicValue(const Extension* extension,
+                                const std::string& instance_id,
+                                const std::vector<uint8>& value,
+                                const base::Closure& callback,
+                                const ErrorCallback& error_callback);
 
   // Sends a request to read the value of the descriptor with instance ID
-  // |instance_id|. If the read request was sent successfully, returns
-  // kStatusSuccess and invokes |callback| on success and |error_callback| on
+  // |instance_id|. Invokes |callback| on success and |error_callback| on
   // failure. |extension| is the extension that made the call.
-  Status ReadDescriptorValue(const Extension* extension,
-                             const std::string& instance_id,
-                             const base::Closure& callback,
-                             const ErrorCallback& error_callback);
+  void ReadDescriptorValue(const Extension* extension,
+                           const std::string& instance_id,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback);
 
   // Sends a request to write the value of the descriptor with instance ID
-  // |instance_id|. If the read request was sent successfully, returns
-  // kStatusSuccess and invokes |callback| on success and |error_callback| on
+  // |instance_id|. Invokes |callback| on success and |error_callback| on
   // failure. |extension| is the extension that made the call.
-  Status WriteDescriptorValue(const Extension* extension,
-                              const std::string& instance_id,
-                              const std::vector<uint8>& value,
-                              const base::Closure& callback,
-                              const ErrorCallback& error_callback);
+  void WriteDescriptorValue(const Extension* extension,
+                            const std::string& instance_id,
+                            const std::vector<uint8>& value,
+                            const base::Closure& callback,
+                            const ErrorCallback& error_callback);
 
   // Initializes the adapter for testing. Used by unit tests only.
   void SetAdapterForTesting(device::BluetoothAdapter* adapter);
@@ -253,9 +275,40 @@ class BluetoothLowEnergyEventRouter
   void OnValueSuccess(const base::Closure& callback,
                       const std::vector<uint8>& value);
 
+  // Called by BluetoothDevice in response to a call to CreateGattConnection.
+  void OnCreateGattConnection(
+      bool persistent,
+      const std::string& extension_id,
+      const std::string& device_address,
+      const base::Closure& callback,
+      scoped_ptr<device::BluetoothGattConnection> connection);
+
+  // Called by BluetoothGattConnection in response to a call to Disconnect.
+  void OnDisconnect(const std::string& extension_id,
+                    const std::string& device_address,
+                    const base::Closure& callback);
+
   // Called by BluetoothGattCharacteristic and BluetoothGattDescriptor in
   // case of an error during the read/write operations.
   void OnError(const ErrorCallback& error_callback);
+
+  // Called by BluetoothDevice in response to a call to CreateGattConnection.
+  void OnConnectError(const std::string& device_address,
+                      const ErrorCallback& error_callback,
+                      device::BluetoothDevice::ConnectErrorCode error_code);
+
+  // Finds and returns a BluetoothLowEnergyConnection to device with address
+  // |device_address| from the managed API resources for extension with ID
+  // |extension_id|.
+  BluetoothLowEnergyConnection* FindConnection(
+      const std::string& extension_id,
+      const std::string& device_address);
+
+  // Removes the connection to device with address |device_address| from the
+  // managed API resources for extension with ID |extension_id|. Returns false,
+  // if the connection could not be found.
+  bool RemoveConnection(const std::string& extension_id,
+                        const std::string& device_address);
 
   // Mapping from instance ids to identifiers of owning instances. The keys are
   // used to identify individual instances of GATT objects and are used by
@@ -283,6 +336,10 @@ class BluetoothLowEnergyEventRouter
   // Pointer to the current BluetoothAdapter instance. This represents a local
   // Bluetooth adapter of the system.
   scoped_refptr<device::BluetoothAdapter> adapter_;
+
+  // Set of device addresses to which a connect/disconnect is currently pending.
+  std::set<std::string> connecting_devices_;
+  std::set<std::string> disconnecting_devices_;
 
   // BrowserContext passed during initialization.
   content::BrowserContext* browser_context_;

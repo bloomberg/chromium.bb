@@ -851,6 +851,8 @@ enum HistogramValue {
   INPUTMETHODPRIVATE_GETINPUTMETHODS,
   IDENTITY_GETPROFILEUSERINFO,
   VIRTUALKEYBOARDPRIVATE_OPENSETTINGS,
+  BLUETOOTHLOWENERGY_CONNECT,
+  BLUETOOTHLOWENERGY_DISCONNECT,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY
