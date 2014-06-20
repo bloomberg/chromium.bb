@@ -219,22 +219,13 @@ static void GetDeviceSupportedFormatsDirectShow(
       continue;
     }
 
-    std::string id;
     device_id.Reset();
     hr = prop_bag->Read(L"DevicePath", device_id.Receive(), 0);
-    if (FAILED(hr) || device_id.type() != VT_BSTR) {
-      // If there is no clear DevicePath, try with Description and FriendlyName.
-      ScopedVariant name;
-      if (SUCCEEDED(prop_bag->Read(L"Description", name.Receive(), 0)) ||
-          SUCCEEDED(prop_bag->Read(L"FriendlyName", name.Receive(), 0))) {
-        id = base::SysWideToUTF8(V_BSTR(&name));
-      }
-    } else {
-      DCHECK_EQ(device_id.type(), VT_BSTR);
-      id = base::SysWideToUTF8(V_BSTR(&device_id));
+    if (FAILED(hr)) {
+      DVLOG(1) << "Couldn't read a device's DevicePath.";
+      return;
     }
-
-    if (device.id() == id)
+    if (device.id() == base::SysWideToUTF8(V_BSTR(&device_id)))
       break;
     moniker.Release();
   }
