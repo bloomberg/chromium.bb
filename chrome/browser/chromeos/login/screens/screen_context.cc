@@ -98,13 +98,15 @@ void ScreenContext::ApplyChanges(const base::DictionaryValue& diff,
                                  std::vector<std::string>* keys) {
   DCHECK(CalledOnValidThread());
   DCHECK(!HasChanges());
-  DCHECK(keys);
-  keys->clear();
-  keys->reserve(diff.size());
+  if (keys) {
+    keys->clear();
+    keys->reserve(diff.size());
+  }
   base::DictionaryValue::Iterator it(diff);
   while (!it.IsAtEnd()) {
     Set(it.key(), it.value().DeepCopy());
-    keys->push_back(it.key());
+    if (keys)
+      keys->push_back(it.key());
     it.Advance();
   }
   changes_.Clear();

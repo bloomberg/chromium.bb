@@ -7,6 +7,7 @@
  */
 
 <include src="../../login/screen.js"></include>
+<include src="screen_context.js"></include>
 <include src="../user_images_grid.js"></include>
 <include src="apps_menu.js"></include>
 <include src="../../login/bubble.js"></include>

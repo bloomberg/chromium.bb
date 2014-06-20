@@ -71,7 +71,7 @@ class ScreenContext : public base::NonThreadSafe {
   void GetChangesAndReset(base::DictionaryValue* diff);
 
   // Applies changes from |diff| to the context. All keys from |diff|
-  // are stored in |keys|.
+  // are stored in |keys|. |keys| argument is optional and can be NULL.
   void ApplyChanges(const base::DictionaryValue& diff,
                     std::vector<std::string>* keys);
 

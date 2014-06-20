@@ -7,6 +7,8 @@
  * values that are shared between C++ and JS sides.
  */
 cr.define('login', function() {
+  'use strict';
+
   function require(condition, message) {
     if (!condition) {
       throw Error(message);
@@ -27,6 +29,7 @@ cr.define('login', function() {
   function ScreenContext() {
     this.storage_ = {};
     this.changes_ = {};
+    this.observers_ = {};
   }
 
   ScreenContext.prototype = {
@@ -73,11 +76,21 @@ cr.define('login', function() {
      */
     applyChanges: function(changes) {
       require(!this.hasChanges(), 'Context has changes.');
-      Object.keys(changes).forEach(function(key) {
+      var oldValues = {};
+      for (var key in changes) {
         checkKeyIsValid(key);
         checkValueIsValid(changes[key]);
+        oldValues[key] = this.storage_[key];
         this.storage_[key] = changes[key];
-      }, this);
+      }
+      var observers = this.cloneObservers_();
+      for (var key in changes) {
+        if (observers.hasOwnProperty(key)) {
+          var keyObservers = observers[key];
+          for (var observerIndex in keyObservers)
+            keyObservers[observerIndex](changes[key], oldValues[key], key);
+        }
+      }
       return Object.keys(changes);
     },
 
@@ -87,6 +100,35 @@ cr.define('login', function() {
     getChangesAndReset: function() {
       var result = this.changes_;
       this.changes_ = {};
+      return result;
+    },
+
+    addObserver: function(key, observer) {
+      if (!this.observers_.hasOwnProperty(key))
+        this.observers_[key] = [];
+      if (this.observers_[key].indexOf(observer) !== -1) {
+        console.warn('Observer already registered.');
+        return;
+      }
+      this.observers_[key].push(observer);
+    },
+
+    removeObserver: function(observer) {
+      for (var key in this.observers_) {
+        var observerIndex = this.observers_[key].indexOf(observer);
+        if (observerIndex != -1)
+          this.observers_[key].splice(observerIndex, 1);
+      }
+    },
+
+    /**
+     * Creates deep copy of observers lists.
+     * @private
+     */
+    cloneObservers_: function() {
+      var result = {};
+      for (var key in this.observers_)
+        result[key] = this.observers_[key].slice();
       return result;
     }
   };
