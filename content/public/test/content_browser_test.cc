@@ -104,7 +104,7 @@ void ContentBrowserTest::TearDown() {
   BrowserTestBase::TearDown();
 
   // LinuxInputMethodContextFactory has to be shutdown.
-#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(USE_X11)
+#if !defined(OS_CHROMEOS) && defined(OS_LINUX)
   ui::ShutdownInputMethodForTesting();
 #endif
 

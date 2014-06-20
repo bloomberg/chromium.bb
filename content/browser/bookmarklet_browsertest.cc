@@ -70,6 +70,4 @@ IN_PROC_BROWSER_TEST_F(BookmarkletTest, DocumentWrite) {
   EXPECT_EQ("hello world", GetBodyText());
 }
 
-
 }  // namespace content
-

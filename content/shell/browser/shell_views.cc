@@ -437,6 +437,7 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
 void Shell::PlatformExit() {
 #if defined(OS_CHROMEOS)
   delete wm_test_helper_;
+  wm_test_helper_ = NULL;
 #endif
   delete views_delegate_;
   views_delegate_ = NULL;
