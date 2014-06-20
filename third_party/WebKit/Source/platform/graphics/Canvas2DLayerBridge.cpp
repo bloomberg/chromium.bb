@@ -76,12 +76,13 @@ PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size,
         return nullptr;
     RefPtr<Canvas2DLayerBridge> layerBridge;
     OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
-    layerBridge = adoptRef(new Canvas2DLayerBridge(contextProvider.release(), canvas.release(), msaaSampleCount, opacityMode));
+    layerBridge = adoptRef(new Canvas2DLayerBridge(contextProvider.release(), canvas.release(), surface.release(), msaaSampleCount, opacityMode));
     return layerBridge.release();
 }
 
-Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<blink::WebGraphicsContext3DProvider> contextProvider, PassOwnPtr<SkDeferredCanvas> canvas, int msaaSampleCount, OpacityMode opacityMode)
+Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<blink::WebGraphicsContext3DProvider> contextProvider, PassOwnPtr<SkDeferredCanvas> canvas, PassRefPtr<SkSurface> surface, int msaaSampleCount, OpacityMode opacityMode)
     : m_canvas(canvas)
+    , m_surface(surface)
     , m_contextProvider(contextProvider)
     , m_imageBuffer(0)
     , m_msaaSampleCount(msaaSampleCount)
@@ -99,6 +100,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<blink::WebGraphicsContext3DP
     , m_releasedMailboxInfoIndex(InvalidMailboxIndex)
 {
     ASSERT(m_canvas);
+    ASSERT(m_surface);
     ASSERT(m_contextProvider);
     // Used by browser tests to detect the use of a Canvas2DLayerBridge.
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
@@ -143,6 +145,7 @@ void Canvas2DLayerBridge::beginDestruction()
     m_destructionInProgress = true;
     GraphicsLayer::unregisterContentsLayer(m_layer->layer());
     m_canvas->setNotificationClient(0);
+    m_surface.clear();
     m_canvas.clear();
     m_layer->clearTexture();
     // Orphaning the layer is required to trigger the recration of a new layer
@@ -165,6 +168,15 @@ void Canvas2DLayerBridge::setIsHidden(bool hidden)
     if (isHidden()) {
         freeTransientResources();
     }
+}
+
+void Canvas2DLayerBridge::willReadback()
+{
+    // A readback operation may alter the texture parameters, which may affect
+    // the compositor's behavior. Therefore, we must trigger copy-on-write
+    // even though we are not technically writing to the texture, only to its
+    // parameters.
+    m_surface->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
 }
 
 void Canvas2DLayerBridge::freeTransientResources()
@@ -337,6 +349,7 @@ bool Canvas2DLayerBridge::checkSurfaceValid()
         return false;
     if (m_contextProvider->context3d()->isContextLost()) {
         m_isSurfaceValid = false;
+        m_surface.clear();
         if (m_imageBuffer)
             m_imageBuffer->notifySurfaceInvalid();
         setRateLimitingEnabled(false);
@@ -365,7 +378,8 @@ bool Canvas2DLayerBridge::restoreSurface()
         IntSize size(m_canvas->getTopDevice()->width(), m_canvas->getTopDevice()->height());
         RefPtr<SkSurface> surface(createSkSurface(m_contextProvider->grContext(), size, m_msaaSampleCount));
         if (surface.get()) {
-            m_canvas->setSurface(surface.get());
+            m_surface = surface.release();
+            m_canvas->setSurface(m_surface.get());
             m_isSurfaceValid = true;
             // FIXME: draw sad canvas picture into new buffer crbug.com/243842
         }

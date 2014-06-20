@@ -308,7 +308,7 @@ PassRefPtr<SkColorFilter> ImageBuffer::createColorSpaceFilter(ColorSpace srcColo
 }
 
 template <Multiply multiplied>
-PassRefPtr<Uint8ClampedArray> getImageData(const IntRect& rect, GraphicsContext* context, const IntSize& size)
+PassRefPtr<Uint8ClampedArray> getImageData(const IntRect& rect, GraphicsContext* context, ImageBufferSurface* surface)
 {
     float area = 4.0f * rect.width() * rect.height();
     if (area > static_cast<float>(std::numeric_limits<int>::max()))
@@ -318,13 +318,14 @@ PassRefPtr<Uint8ClampedArray> getImageData(const IntRect& rect, GraphicsContext*
 
     if (rect.x() < 0
         || rect.y() < 0
-        || rect.maxX() > size.width()
-        || rect.maxY() > size.height())
+        || rect.maxX() > surface->size().width()
+        || rect.maxY() > surface->size().height())
         result->zeroFill();
 
     SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::Make(rect.width(), rect.height(), kRGBA_8888_SkColorType, alphaType);
 
+    surface->willReadback();
     context->readPixels(info, result->data(), 4 * rect.width(), rect.x(), rect.y());
     return result.release();
 }
@@ -333,14 +334,14 @@ PassRefPtr<Uint8ClampedArray> ImageBuffer::getUnmultipliedImageData(const IntRec
 {
     if (!isSurfaceValid())
         return Uint8ClampedArray::create(rect.width() * rect.height() * 4);
-    return getImageData<Unmultiplied>(rect, context(), m_surface->size());
+    return getImageData<Unmultiplied>(rect, context(), m_surface.get());
 }
 
 PassRefPtr<Uint8ClampedArray> ImageBuffer::getPremultipliedImageData(const IntRect& rect) const
 {
     if (!isSurfaceValid())
         return Uint8ClampedArray::create(rect.width() * rect.height() * 4);
-    return getImageData<Premultiplied>(rect, context(), m_surface->size());
+    return getImageData<Premultiplied>(rect, context(), m_surface.get());
 }
 
 void ImageBuffer::putByteArray(Multiply multiplied, Uint8ClampedArray* source, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint)

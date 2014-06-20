@@ -59,6 +59,7 @@ public:
     virtual SkCanvas* canvas() const = 0;
     virtual const SkBitmap& bitmap() const;
     virtual void willUse() { } // Called by ImageBuffer before reading or writing to the surface.
+    virtual void willReadback() { }
     virtual bool isValid() const = 0;
     virtual bool restore() { return false; };
     virtual blink::WebLayer* layer() const { return 0; };

@@ -70,6 +70,7 @@ public:
 
     // ImageBufferSurface implementation
     void willUse();
+    void willReadback();
     SkCanvas* canvas() const { return m_canvas.get(); }
     bool checkSurfaceValid();
     bool restoreSurface();
@@ -94,12 +95,13 @@ public:
     void beginDestruction();
 
 protected:
-    Canvas2DLayerBridge(PassOwnPtr<blink::WebGraphicsContext3DProvider>, PassOwnPtr<SkDeferredCanvas>, int, OpacityMode);
+    Canvas2DLayerBridge(PassOwnPtr<blink::WebGraphicsContext3DProvider>, PassOwnPtr<SkDeferredCanvas>, PassRefPtr<SkSurface>, int, OpacityMode);
     void setRateLimitingEnabled(bool);
     bool releasedMailboxHasExpired();
     blink::WebGraphicsContext3D* context();
 
     OwnPtr<SkDeferredCanvas> m_canvas;
+    RefPtr<SkSurface> m_surface;
     OwnPtr<blink::WebExternalTextureLayer> m_layer;
     OwnPtr<blink::WebGraphicsContext3DProvider> m_contextProvider;
     ImageBuffer* m_imageBuffer;
