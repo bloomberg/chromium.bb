@@ -1423,6 +1423,7 @@ class ValidationPool(object):
     return filtered_changes
 
   @classmethod
+  @failures_lib.SetFailureType(failures_lib.BuilderFailure)
   def AcquirePreCQPool(cls, *args, **kwargs):
     """See ValidationPool.__init__ for arguments."""
     kwargs.setdefault('pre_cq', True)

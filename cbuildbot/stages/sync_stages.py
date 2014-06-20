@@ -757,7 +757,6 @@ class PreCQSyncStage(SyncStage):
       self.pool = validation_pool.ValidationPool.Load(filename,
           metadata=self._run.attrs.metadata)
 
-  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     super(PreCQSyncStage, self).PerformStage()
     self.pool = validation_pool.ValidationPool.AcquirePreCQPool(
@@ -766,6 +765,9 @@ class PreCQSyncStage(SyncStage):
         dryrun=self._run.options.debug_forced, changes=self.patches,
         metadata=self._run.attrs.metadata)
     self.pool.ApplyPoolIntoRepo()
+
+    if len(self.pool.changes) == 0:
+      cros_build_lib.Die('No changes have been applied.')
 
 
 class PreCQLauncherStage(SyncStage):
