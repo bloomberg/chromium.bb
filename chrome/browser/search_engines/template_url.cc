@@ -22,7 +22,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
@@ -31,6 +30,7 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
+#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -1139,6 +1139,18 @@ TemplateURL::~TemplateURL() {
 }
 
 // static
+base::string16 TemplateURL::GenerateKeyword(const GURL& url) {
+  DCHECK(url.is_valid());
+  // Strip "www." off the front of the keyword; otherwise the keyword won't work
+  // properly.  See http://code.google.com/p/chromium/issues/detail?id=6984 .
+  // Special case: if the host was exactly "www." (not sure this can happen but
+  // perhaps with some weird intranet and custom DNS server?), ensure we at
+  // least don't return the empty string.
+  base::string16 keyword(net::StripWWWFromHost(url));
+  return keyword.empty() ? base::ASCIIToUTF16("www") : keyword;
+}
+
+// static
 GURL TemplateURL::GenerateFaviconURL(const GURL& url) {
   DCHECK(url.is_valid());
   GURL::Replacements rep;
@@ -1343,6 +1355,25 @@ void TemplateURL::EncodeSearchTerms(
   NOTREACHED();
 }
 
+GURL TemplateURL::GenerateSearchURL(
+    const SearchTermsData& search_terms_data) const {
+  if (!url_ref_.IsValid(search_terms_data))
+    return GURL();
+
+  if (!url_ref_.SupportsReplacement(search_terms_data))
+    return GURL(url());
+
+  // Use something obscure for the search terms argument so that in the rare
+  // case the term replaces the URL it's unlikely another keyword would have the
+  // same url.
+  // TODO(jnd): Add additional parameters to get post data when the search URL
+  // has post parameters.
+  return GURL(url_ref_.ReplaceSearchTerms(
+      TemplateURLRef::SearchTermsArgs(
+          base::ASCIIToUTF16("blah.blah.blah.blah.blah")),
+      search_terms_data, NULL));
+}
+
 void TemplateURL::CopyFrom(const TemplateURL& other) {
   if (this == &other)
     return;
@@ -1372,9 +1403,9 @@ void TemplateURL::ResetKeywordIfNecessary(
     bool force) {
   if (IsGoogleSearchURLWithReplaceableKeyword(search_terms_data) || force) {
     DCHECK(GetType() != OMNIBOX_API_EXTENSION);
-    GURL url(TemplateURLService::GenerateSearchURL(this, search_terms_data));
+    GURL url(GenerateSearchURL(search_terms_data));
     if (url.is_valid())
-      data_.SetKeyword(TemplateURLService::GenerateKeyword(url));
+      data_.SetKeyword(GenerateKeyword(url));
   }
 }
 

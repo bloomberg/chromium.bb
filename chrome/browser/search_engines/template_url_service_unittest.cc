@@ -510,45 +510,6 @@ TEST_F(TemplateURLServiceTest, AddSameKeywordWithExtensionPresent) {
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword_")));
 }
 
-TEST_F(TemplateURLServiceTest, GenerateKeyword) {
-  ASSERT_EQ(ASCIIToUTF16("foo"),
-            TemplateURLService::GenerateKeyword(GURL("http://foo")));
-  // www. should be stripped.
-  ASSERT_EQ(ASCIIToUTF16("foo"),
-            TemplateURLService::GenerateKeyword(GURL("http://www.foo")));
-  // Make sure we don't get a trailing '/'.
-  ASSERT_EQ(ASCIIToUTF16("blah"),
-            TemplateURLService::GenerateKeyword(GURL("http://blah/")));
-  // Don't generate the empty string.
-  ASSERT_EQ(ASCIIToUTF16("www"),
-            TemplateURLService::GenerateKeyword(GURL("http://www.")));
-}
-
-TEST_F(TemplateURLServiceTest, GenerateSearchURL) {
-  TestSearchTermsData search_terms_data("http://google.com/");
-
-  struct GenerateSearchURLCase {
-    const char* test_name;
-    const char* url;
-    const char* expected;
-  } generate_url_cases[] = {
-    { "invalid URL", "foo{searchTerms}", "" },
-    { "URL with no replacements", "http://foo/", "http://foo/" },
-    { "basic functionality", "http://foo/{searchTerms}",
-      "http://foo/blah.blah.blah.blah.blah" }
-  };
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(generate_url_cases); ++i) {
-    TemplateURLData data;
-    data.SetURL(generate_url_cases[i].url);
-    TemplateURL t_url(data);
-    std::string result = TemplateURLService::GenerateSearchURL(
-        &t_url, search_terms_data).spec();
-    EXPECT_EQ(result, generate_url_cases[i].expected)
-        << generate_url_cases[i].test_name << " failed.";
-  }
-}
-
 TEST_F(TemplateURLServiceTest, ClearBrowsingData_Keywords) {
   Time now = Time::Now();
   TimeDelta one_day = TimeDelta::FromDays(1);
@@ -865,8 +826,7 @@ TEST_F(TemplateURLServiceTest, RepairPrepopulatedSearchEngines) {
   // The keyword wasn't reverted.
   EXPECT_EQ(ASCIIToUTF16("trash"), google->short_name());
   EXPECT_EQ("www.google.com",
-            TemplateURLService::GenerateSearchURL(
-                google, model()->search_terms_data()).host());
+            google->GenerateSearchURL(model()->search_terms_data()).host());
 
   // Bing was repaired.
   bing = model()->GetTemplateURLForKeyword(ASCIIToUTF16("bing.com"));

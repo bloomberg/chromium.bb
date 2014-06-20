@@ -113,19 +113,9 @@ class TemplateURLService : public WebDataServiceConsumer,
       scoped_ptr<TemplateURLData>* default_provider_data,
       bool* is_managed);
 
-  // Generates a suitable keyword for the specified url, which must be valid.
-  // This is guaranteed not to return an empty string, since TemplateURLs should
-  // never have an empty keyword.
-  static base::string16 GenerateKeyword(const GURL& url);
-
   // Removes any unnecessary characters from a user input keyword.
   // This removes the leading scheme, "www." and any trailing slash.
   static base::string16 CleanUserInputKeyword(const base::string16& keyword);
-
-  // Returns the search url for t_url.  Returns an empty GURL if t_url has no
-  // url().
-  static GURL GenerateSearchURL(const TemplateURL* t_url,
-                                const SearchTermsData& search_terms_data);
 
   // Saves enough of url to |prefs| so that it can be loaded from preferences on
   // start up.

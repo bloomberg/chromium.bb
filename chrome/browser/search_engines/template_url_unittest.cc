@@ -1460,3 +1460,39 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
                 "ctxs_url=www.wikipedia.org&"
             "ctxs_encoding=utf-8&", result);
 }
+
+TEST_F(TemplateURLTest, GenerateKeyword) {
+  ASSERT_EQ(ASCIIToUTF16("foo"),
+            TemplateURL::GenerateKeyword(GURL("http://foo")));
+  // www. should be stripped.
+  ASSERT_EQ(ASCIIToUTF16("foo"),
+            TemplateURL::GenerateKeyword(GURL("http://www.foo")));
+  // Make sure we don't get a trailing '/'.
+  ASSERT_EQ(ASCIIToUTF16("blah"),
+            TemplateURL::GenerateKeyword(GURL("http://blah/")));
+  // Don't generate the empty string.
+  ASSERT_EQ(ASCIIToUTF16("www"),
+            TemplateURL::GenerateKeyword(GURL("http://www.")));
+}
+
+TEST_F(TemplateURLTest, GenerateSearchURL) {
+  struct GenerateSearchURLCase {
+    const char* test_name;
+    const char* url;
+    const char* expected;
+  } generate_url_cases[] = {
+    { "invalid URL", "foo{searchTerms}", "" },
+    { "URL with no replacements", "http://foo/", "http://foo/" },
+    { "basic functionality", "http://foo/{searchTerms}",
+      "http://foo/blah.blah.blah.blah.blah" }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(generate_url_cases); ++i) {
+    TemplateURLData data;
+    data.SetURL(generate_url_cases[i].url);
+    TemplateURL t_url(data);
+    EXPECT_EQ(t_url.GenerateSearchURL(search_terms_data_).spec(),
+              generate_url_cases[i].expected)
+        << generate_url_cases[i].test_name << " failed.";
+  }
+}

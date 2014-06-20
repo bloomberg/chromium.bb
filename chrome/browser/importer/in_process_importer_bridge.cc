@@ -11,7 +11,6 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_parser.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "components/autofill/core/common/password_form.h"
@@ -99,7 +98,7 @@ TemplateURL* CreateTemplateURL(const base::string16& title,
 
   TemplateURLData data;
   if (keyword.empty())
-    data.SetKeyword(TemplateURLService::GenerateKeyword(url));
+    data.SetKeyword(TemplateURL::GenerateKeyword(url));
   else
     data.SetKeyword(keyword);
   // We set short name by using the title if it exists.

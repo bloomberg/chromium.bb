@@ -58,7 +58,7 @@ base::string16 GenerateKeywordFromNavigationEntry(
   if (!url.SchemeIs(url::kHttpScheme) || (url.path().length() > 1))
     return base::string16();
 
-  return TemplateURLService::GenerateKeyword(url);
+  return TemplateURL::GenerateKeyword(url);
 }
 
 }  // namespace

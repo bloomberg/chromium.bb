@@ -179,8 +179,7 @@ static bool IsSameOrigin(const GURL& requested_origin,
   DCHECK(requested_origin == requested_origin.GetOrigin());
   DCHECK(template_url->GetType() != TemplateURL::OMNIBOX_API_EXTENSION);
   return requested_origin ==
-      TemplateURLService::GenerateSearchURL(template_url,
-          search_terms_data).GetOrigin();
+      template_url->GenerateSearchURL(search_terms_data).GetOrigin();
 }
 
 }  // namespace
@@ -284,8 +283,7 @@ void SearchProviderInstallData::SetDefault(const TemplateURL* template_url) {
   DCHECK(template_url->GetType() != TemplateURL::OMNIBOX_API_EXTENSION);
 
   IOThreadSearchTermsData search_terms_data(google_base_url_);
-  const GURL url(TemplateURLService::GenerateSearchURL(
-      template_url, search_terms_data));
+  const GURL url(template_url->GenerateSearchURL(search_terms_data));
   if (!url.is_valid() || !url.has_host()) {
     default_search_origin_.clear();
     return;

@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "libxml/parser.h"
 #include "libxml/xmlwriter.h"
@@ -299,7 +298,7 @@ TemplateURL* TemplateURLParsingContext::GetTemplateURL(
   if (derive_image_from_url_ && data_.favicon_url.is_empty())
     data_.favicon_url = TemplateURL::GenerateFaviconURL(search_url);
 
-  data_.SetKeyword(TemplateURLService::GenerateKeyword(search_url));
+  data_.SetKeyword(TemplateURL::GenerateKeyword(search_url));
   data_.show_in_default_list = show_in_default_list;
 
   // Bail if the search URL is empty or if either TemplateURLRef is invalid.

@@ -480,6 +480,11 @@ class TemplateURL {
   explicit TemplateURL(const TemplateURLData& data);
   ~TemplateURL();
 
+  // Generates a suitable keyword for the specified url, which must be valid.
+  // This is guaranteed not to return an empty string, since TemplateURLs should
+  // never have an empty keyword.
+  static base::string16 GenerateKeyword(const GURL& url);
+
   // Generates a favicon URL from the specified url.
   static GURL GenerateFaviconURL(const GURL& url);
 
@@ -650,6 +655,10 @@ class TemplateURL {
       base::string16* encoded_terms,
       base::string16* encoded_original_query) const;
 
+  // Returns the search url for this template URL.
+  // Returns an empty GURL if this template URL has no url().
+  GURL GenerateSearchURL(const SearchTermsData& search_terms_data) const;
+
  private:
   friend class TemplateURLService;
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ReflectsBookmarkBarPinned);
@@ -662,8 +671,7 @@ class TemplateURL {
   // Resets the keyword if IsGoogleSearchURLWithReplaceableKeyword() or |force|.
   // The |force| parameter is useful when the existing keyword is known to be
   // a placeholder.  The resulting keyword is generated using
-  // TemplateURLService::GenerateSearchURL() and
-  // TemplateURLService::GenerateKeyword().
+  // GenerateSearchURL() and GenerateKeyword().
   void ResetKeywordIfNecessary(const SearchTermsData& search_terms_data,
                                bool force);
 
