@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
 
+#include "ash/shelf/shelf_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -12,7 +13,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/settings_window_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "grit/ash_resources.h"
 
 MultiProfileBrowserStatusMonitor::MultiProfileBrowserStatusMonitor(
     ChromeLauncherController* launcher_controller)
@@ -69,6 +72,24 @@ void MultiProfileBrowserStatusMonitor::ActiveUserChanged(
                 ChromeLauncherController::APP_STATE_WINDOW_ACTIVE :
                 ChromeLauncherController::APP_STATE_INACTIVE);
       }
+    }
+  }
+
+  // Remove settings window icons not associated with this profile and create
+  // icons for windows associated with the current profile.
+  for (BrowserList::const_iterator it = browser_list->begin();
+       it != browser_list->end(); ++it) {
+    Browser* browser = *it;
+    if (!chrome::SettingsWindowManager::GetInstance()->IsSettingsBrowser(
+            browser)) {
+      continue;
+    }
+    if (multi_user_util::IsProfileFromActiveUser(browser->profile())) {
+      ash::SetShelfItemDetailsForDialogWindow(
+          browser->window()->GetNativeWindow(),
+          IDR_ASH_SHELF_ICON_SETTINGS);
+    } else {
+      ash::ClearShelfItemDetailsForWindow(browser->window()->GetNativeWindow());
     }
   }
 

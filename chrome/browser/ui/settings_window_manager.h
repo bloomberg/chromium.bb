@@ -38,6 +38,9 @@ class SettingsWindowManager {
   // returns it, otherwise returns NULL.
   Browser* FindBrowserForProfile(Profile* profile);
 
+  // Returns true if |browser| is a settings window.
+  bool IsSettingsBrowser(Browser* browser) const;
+
  private:
   friend struct DefaultSingletonTraits<SettingsWindowManager>;
   typedef std::map<Profile*, SessionID::id_type> ProfileSessionMap;

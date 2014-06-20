@@ -2129,4 +2129,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsWindow) {
   ASSERT_TRUE(settings_browser);
   EXPECT_EQ(browser_count, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(item_count + 1, shelf_model->item_count());
+
+  // TODO(stevenjb): Test multiprofile on Chrome OS when test support is addded.
+  // crbug.com/230464.
 }

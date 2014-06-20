@@ -41,8 +41,8 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(USE_ASH)
+#include "ash/shelf/shelf_util.h"
 #include "ash/wm/window_util.h"
-#include "chrome/browser/ui/ash/launcher/launcher_item_util.h"
 #include "grit/ash_resources.h"
 #endif
 
@@ -496,8 +496,9 @@ void TaskManagerView::Show(Browser* browser) {
     focus_manager->SetFocusedView(instance_->tab_table_);
 
 #if defined(USE_ASH)
-  CreateShelfItemForDialog(IDR_ASH_SHELF_ICON_TASK_MANAGER,
-                           instance_->GetWidget()->GetNativeWindow());
+  ash::SetShelfItemDetailsForDialogWindow(
+      instance_->GetWidget()->GetNativeWindow(),
+      IDR_ASH_SHELF_ICON_TASK_MANAGER);
 #endif
 }
 

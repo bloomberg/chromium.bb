@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/launcher_item_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -83,8 +82,9 @@ class BrowserStatusMonitor::SettingsWindowObserver
 
   // SettingsWindowManagerObserver
   virtual void OnNewSettingsWindow(Browser* settings_browser) OVERRIDE {
-    CreateShelfItemForDialog(IDR_ASH_SHELF_ICON_SETTINGS,
-                             settings_browser->window()->GetNativeWindow());
+    ash::SetShelfItemDetailsForDialogWindow(
+        settings_browser->window()->GetNativeWindow(),
+        IDR_ASH_SHELF_ICON_SETTINGS);
   }
 
  private:

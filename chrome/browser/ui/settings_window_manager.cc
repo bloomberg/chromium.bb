@@ -74,6 +74,13 @@ Browser* SettingsWindowManager::FindBrowserForProfile(Profile* profile) {
   return NULL;
 }
 
+bool SettingsWindowManager::IsSettingsBrowser(Browser* browser) const {
+  ProfileSessionMap::const_iterator iter =
+      settings_session_map_.find(browser->profile());
+  return (iter != settings_session_map_.end() &&
+          iter->second == browser->session_id().id());
+}
+
 SettingsWindowManager::SettingsWindowManager() {
 }
 

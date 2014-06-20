@@ -39,6 +39,16 @@ void SetShelfItemDetailsForWindow(aura::Window* window,
   window->SetProperty(kShelfItemDetailsKey, item_details);
 }
 
+void SetShelfItemDetailsForDialogWindow(aura::Window* window,
+                                        int image_resource_id) {
+  // |item_details| is owned by |window|.
+  ShelfItemDetails* item_details = new ShelfItemDetails;
+  item_details->type = TYPE_DIALOG;
+  item_details->image_resource_id = image_resource_id;
+  item_details->title = window->title();
+  window->SetProperty(kShelfItemDetailsKey, item_details);
+}
+
 void ClearShelfItemDetailsForWindow(aura::Window* window) {
   window->ClearProperty(kShelfItemDetailsKey);
 }

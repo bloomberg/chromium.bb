@@ -329,8 +329,6 @@
         'browser/ui/ash/launcher/launcher_favicon_loader.h',
         'browser/ui/ash/launcher/launcher_item_controller.cc',
         'browser/ui/ash/launcher/launcher_item_controller.h',
-        'browser/ui/ash/launcher/launcher_item_util.cc',
-        'browser/ui/ash/launcher/launcher_item_util.h',
         'browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.cc',
         'browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h',
         'browser/ui/ash/launcher/multi_profile_browser_status_monitor.cc',
