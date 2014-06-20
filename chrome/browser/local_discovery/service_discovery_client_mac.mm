@@ -431,11 +431,12 @@ ServiceResolverImplMac::GetContainerForTesting() {
 - (void)netServiceBrowser:(NSNetServiceBrowser *)netServiceBrowser
         didRemoveService:(NSNetService *)netService
         moreComing:(BOOL)moreServicesComing {
-  container_->OnServicesUpdate(local_discovery::ServiceWatcher::UPDATE_REMOVED,
-                               [[netService name] UTF8String]);
-
   NSUInteger index = [services_ indexOfObject:netService];
   if (index != NSNotFound) {
+    container_->OnServicesUpdate(
+        local_discovery::ServiceWatcher::UPDATE_REMOVED,
+        [[netService name] UTF8String]);
+
     // Stop monitoring this service for updates.
     [[services_ objectAtIndex:index] stopMonitoring];
     [services_ removeObjectAtIndex:index];
