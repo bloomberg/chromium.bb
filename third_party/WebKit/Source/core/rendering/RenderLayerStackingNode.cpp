@@ -202,8 +202,6 @@ void RenderLayerStackingNode::collectLayers(OwnPtr<Vector<RenderLayerStackingNod
     if (layer()->isInTopLayer())
         return;
 
-    layer()->updateDescendantDependentFlags();
-
     if (!isNormalFlowOnly()) {
         OwnPtr<Vector<RenderLayerStackingNode*> >& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
         if (!buffer)
