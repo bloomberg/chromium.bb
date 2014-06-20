@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //extensions:strings
       'target_name': 'extensions_strings',
       'type': 'none',
       'actions': [

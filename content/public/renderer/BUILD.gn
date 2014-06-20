@@ -12,13 +12,13 @@ source_set("renderer") {
   configs += [
     "//content:content_implementation",
     "//content:libjingle_stub_config",
-    "//content:widevine_stub_config",
   ]
 
   deps = [
     "//content/renderer",
     "//skia",
     "//third_party/WebKit/public:blink_headers",
+    "//third_party/widevine/cdm:version_h",
     "//v8",
   ]
 

@@ -68,6 +68,7 @@ group("root") {
     "//third_party/smhasher:pmurhash",
     "//third_party/speex",
     "//third_party/WebKit/public:all_blink",
+    "//third_party/widevine/cdm:version_h",
     "//third_party/zlib",
     "//third_party:jpeg",
     "//tools/gn",

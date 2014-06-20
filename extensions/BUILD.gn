@@ -1,0 +1,25 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//tools/grit/grit_rule.gni")
+
+# GYP version: extensions/extensions_resources.gyp:extensions_resources
+group("extensions_resources") {
+  deps = [
+    ":extensions_renderer_resources",
+    ":extensions_resources_grd",
+  ]
+}
+
+# GYP version: extensions/extensions_resources.gyp:extensions_resources
+#              (exntensions_resources action)
+grit("extensions_resources_grd") {
+  source = "extensions_resources.grd"
+}
+
+# GYP version: extensions/extensions_resources.gyp:extensions_resources
+#              (exntensions_renderer_resources action)
+grit("extensions_renderer_resources") {
+  source = "renderer/resources/extensions_renderer_resources.grd"
+}

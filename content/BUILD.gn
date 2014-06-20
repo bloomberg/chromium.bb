@@ -94,11 +94,6 @@ config("libjingle_stub_config") {
   }
 }
 
-config("widevine_stub_config") {
-  # The real implementation does a copy rule to copy the header to the gen dir.
-  include_dirs = [ "//third_party/widevine/cdm" ]
-}
-
 # Sets up include dirs while webrtc is being converted to GN.
 # TODO(GYP) remove when webrtc is ready.
 config("webrtc_stub_config") {

@@ -51,8 +51,8 @@ static_library("common") {
     #"//components/variations",  TODO(GYP)
     "//content/public/common",
     "//crypto",
-    #"//extensions/extensions_resources.gyp:extensions_resources",  TODO(GYP)
-    #"//extensions/extensions_strings.gyp:extensions_strings",  TODO(GYP)
+    "//extensions:extensions_resources",
+    "//extensions/strings",
     #"//media/cast/cast.gyp:cast_transport",  TODO(GYP)
     "//net",
     "//skia",
@@ -131,16 +131,12 @@ static_library("constants") {
     "widevine_cdm_constants.h",
   ]
 
-  # TODO(GYP) remove when widevine is supported for real.
-  configs += [ "//content:widevine_stub_config" ]
-
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//third_party/widevine/cdm:version_h",
     # TODO(GYP)
     #'../components/components.gyp:bookmarks_common',
     #'../components/nacl.gyp:nacl_switches',
-    #'../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
-    #    (Also see widevine config above.)
   ]
 }

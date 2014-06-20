@@ -1,0 +1,13 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//tools/grit/grit_rule.gni")
+
+# GYP version: extensions/extensions_strings.gyp:extensions_strings
+grit("strings") {
+  # This target is in this directory since it matches the output grit path for
+  # the GYP version of this target. Weirdly, it does not match the input path.
+  # The .grd should probably be moved here.
+  source = "../extensions_strings.grd"
+}

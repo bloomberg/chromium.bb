@@ -50,6 +50,7 @@
   # anything to be done in this file (instead of a higher-level .gyp file).
   'targets': [
     {
+      # GN version: //third_party/widevine/cdm:adapter
       'target_name': 'widevinecdmadapter',
       'type': 'none',
       'conditions': [
@@ -84,6 +85,7 @@
       ],
     },
     {
+      # GN version: //third_party/widevine/cdm:version_h
       'target_name': 'widevine_cdm_version_h',
       'type': 'none',
       'copies': [{
@@ -92,6 +94,7 @@
       }],
     },
     {
+      # GN version: //third_party/widevine/cdm:binaries
       'target_name': 'widevine_cdm_binaries',
       'type': 'none',
       'conditions': [

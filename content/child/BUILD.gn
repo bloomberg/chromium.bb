@@ -17,6 +17,7 @@ source_set("child") {
   deps = [
     "//base",
     "//components/tracing",
+    "//mojo/environment:chromium",
     "//mojo/public/interfaces/service_provider",
     "//skia",
     "//third_party/icu",
@@ -24,7 +25,6 @@ source_set("child") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",
-    #'../mojo/mojo.gyp:mojo_environment_chromium',  # TODO(GYP)
   ]
 
   if (!use_default_render_theme) {

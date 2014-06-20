@@ -45,26 +45,27 @@ source_set("common") {
 
   if (!is_ios) {
     deps += [
+      "//cc",
       "//ipc",
-      "//gpu/command_buffer/client:gles2_c_lib",
-      "//gpu/command_buffer/client:gles2_implementation",
-      "//ui/gl",
-      #'../cc/cc.gyp:cc',
-      #'../gpu/gpu.gyp:command_buffer_service',
+      "//mojo/environment:chromium",
+      "//mojo/system",
       # TODO: the dependency on gl_in_process_context should be decoupled from
       # content and moved to android_webview. See crbug.com/365797.
+      "//gpu/command_buffer/client:gl_in_process_context",
+      "//gpu/command_buffer/client:gles2_c_lib",
+      "//gpu/command_buffer/client:gles2_implementation",
+      "//gpu/command_buffer/service",
+      "//gpu/ipc",
+      "//ui/gl",
+      "//webkit/browser:storage",
+      "//webkit/common",
+      "//webkit/common:storage",
+      "//webkit/common/gpu",
       #'../gpu/gpu.gyp:gl_in_process_context',
-      #'../gpu/gpu.gyp:gpu_ipc',
       #'../gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings',
       #'../media/media.gyp:media',
       #'../media/media.gyp:shared_memory_support',
-      #'../mojo/mojo.gyp:mojo_environment_chromium',
-      #'../mojo/mojo.gyp:mojo_system_impl',
       #'../third_party/WebKit/public/blink.gyp:blink',
-      #'../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
-      #'../webkit/common/webkit_common.gyp:webkit_common',
-      #'../webkit/storage_browser.gyp:webkit_storage_browser',
-      #'../webkit/storage_common.gyp:webkit_storage_common',
     ]
   }
 
@@ -156,8 +157,7 @@ source_set("common") {
 
   if (enable_plugins) {
     deps += [
-      # TODO(GYP) enable once supported in the GN build.
-      #"//ppapi:shared",
+      "//ppapi:ppapi_shared",
     ]
   } else {
     sources -= [

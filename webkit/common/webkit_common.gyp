@@ -9,6 +9,7 @@
   },
   'targets': [
     {
+      # GN version: //webkit/common:common",
       'target_name': 'webkit_common',
       'type': '<(component)',
       'defines': [
