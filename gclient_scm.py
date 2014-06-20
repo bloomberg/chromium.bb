@@ -498,7 +498,12 @@ class GitWrapper(SCMWrapper):
       if self._Capture(['rev-list', '-n', '1', 'HEAD']) == revision:
         self.Print('Up-to-date; skipping checkout.')
       else:
-        self._Capture(['checkout', '--quiet', '%s' % revision])
+        # 'git checkout' may need to overwrite existing untracked files. Allow
+        # it only when nuclear options are enabled.
+        if options.force and options.delete_unversioned_trees:
+          self._Capture(['checkout', '--force', '--quiet', '%s' % revision])
+        else:
+          self._Capture(['checkout', '--quiet', '%s' % revision])
       if not printed_path:
         self.Print('_____ %s%s' % (self.relpath, rev_str), timestamp=False)
     elif current_type == 'hash':
