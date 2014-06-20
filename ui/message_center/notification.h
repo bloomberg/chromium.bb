@@ -66,8 +66,6 @@ class MESSAGE_CENTER_EXPORT Notification {
 
   Notification(const Notification& other);
 
-  Notification& operator=(const Notification& other);
-
   virtual ~Notification();
 
   // Copies the internal on-memory state from |base|, i.e. shown_as_popup,
@@ -202,6 +200,8 @@ class MESSAGE_CENTER_EXPORT Notification {
       const base::Closure& click_callback);
 
  protected:
+  Notification& operator=(const Notification& other);
+
   // The type of notification we'd like displayed.
   NotificationType type_;
 

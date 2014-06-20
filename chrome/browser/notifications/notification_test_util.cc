@@ -65,7 +65,7 @@ StubNotificationUIManager::GetAllIdsByProfileAndSourceOrigin(
     const GURL& source) {
   std::set<std::string> notification_ids;
   if (source == notification_.origin_url() && profile->IsSameProfile(profile_))
-    notification_ids.insert(notification_.notification_id());
+    notification_ids.insert(notification_.delegate_id());
   return notification_ids;
 }
 

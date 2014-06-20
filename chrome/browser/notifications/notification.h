@@ -82,7 +82,8 @@ class Notification : public message_center::Notification {
   // A url for the image to be shown (optional).
   const GURL& image_url() const { return image_url_; }
 
-  std::string notification_id() const { return delegate()->id(); }
+  // Id of the delegate embedded inside this instance.
+  std::string delegate_id() const { return delegate()->id(); }
   int process_id() const { return delegate()->process_id(); }
 
   content::WebContents* GetWebContents() const {

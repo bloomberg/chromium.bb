@@ -383,7 +383,7 @@ std::string DesktopNotificationService::AddIconNotification(
                             blink::WebTextDirectionDefault,
                             base::string16(), replace_id, delegate);
   g_browser_process->notification_ui_manager()->Add(notification, profile);
-  return notification.notification_id();
+  return notification.delegate_id();
 }
 
 DesktopNotificationService::DesktopNotificationService(
