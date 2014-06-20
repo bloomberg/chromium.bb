@@ -566,10 +566,13 @@ uint16 KeyEvent::GetCharacter() const {
   DCHECK(native_event()->type == KeyPress ||
          native_event()->type == KeyRelease);
 
-  uint16 ch = 0;
-  if (!IsControlDown())
-    ch = GetCharacterFromXEvent(native_event());
-  return ch ? ch : GetCharacterFromKeyCode(key_code_, flags());
+  // When a control key is held, prefer ASCII characters to non ASCII
+  // characters in order to use it for shortcut keys.  GetCharacterFromKeyCode
+  // returns 'a' for VKEY_A even if the key is actually bound to 'à' in X11.
+  // GetCharacterFromXEvent returns 'à' in that case.
+  return IsControlDown() ?
+      GetCharacterFromKeyCode(key_code_, flags()) :
+      GetCharacterFromXEvent(native_event());
 #else
   if (native_event()) {
     DCHECK(EventTypeFromNative(native_event()) == ET_KEY_PRESSED ||
