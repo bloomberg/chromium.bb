@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_INTERRUPT_REASONS_IMPL_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_INTERRUPT_REASONS_IMPL_H_
 
-#include "base/files/file.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "net/base/net_errors.h"
 
@@ -22,10 +21,6 @@ enum DownloadInterruptSource {
 // Safe to call from any thread.
 DownloadInterruptReason CONTENT_EXPORT ConvertNetErrorToInterruptReason(
     net::Error file_error, DownloadInterruptSource source);
-
-// Safe to call from any thread.
-DownloadInterruptReason CONTENT_EXPORT ConvertFileErrorToInterruptReason(
-    base::File::Error file_error);
 
 }  // namespace content
 
