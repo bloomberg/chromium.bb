@@ -12,9 +12,69 @@
           'type': 'executable',
           'variables': {
             'developer_dir': '<!(xcode-select -print-path)',
-            'iphone_sim_path': '<(developer_dir)/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks',
-            'other_frameworks_path': '<(developer_dir)/../OtherFrameworks'
+            # TODO(lliabraa): Once all builders are on Xcode 6 this variable can
+            # be removed and the actions gated by this variable can be run by
+            # default (crbug.com/385030).
+            'xcode_version': '<!(xcodebuild -version | grep Xcode | awk \'{print $2}\')',
           },
+          'conditions': [
+            ['xcode_version=="6.0"', {
+              'variables': {
+                'iphone_sim_path': '<(developer_dir)/../SharedFrameworks',
+              },
+              'defines': [
+                'IOSSIM_USE_XCODE_6',
+              ],
+              'actions': [
+                {
+                  'action_name': 'generate_dvt_foundation_header',
+                  'inputs': [
+                    '<(iphone_sim_path)/DVTFoundation.framework/Versions/Current/DVTFoundation',
+                    '<(PRODUCT_DIR)/class-dump',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/iossim/DVTFoundation.h'
+                  ],
+                  'action': [
+                    # Actions don't provide a way to redirect stdout, so a custom
+                    # script is invoked that will execute the first argument and
+                    # write the output to the file specified as the second argument.
+                    # -I sorts classes, categories, and protocols by inheritance.
+                    # -C <regex> only displays classes matching regular expression.
+                    './redirect-stdout.sh',
+                    '<(PRODUCT_DIR)/class-dump -CDVTStackBacktrace|DVTInvalidation|DVTMixIn <(iphone_sim_path)/DVTFoundation.framework',
+                    '<(INTERMEDIATE_DIR)/iossim/DVTFoundation.h',
+                  ],
+                  'message': 'Generating DVTFoundation.h',
+                },
+                {
+                  'action_name': 'generate_dvt_core_simulator',
+                  'inputs': [
+                    '<(developer_dir)/Library/PrivateFrameworks/CoreSimulator.framework/Versions/Current/CoreSimulator',
+                    '<(PRODUCT_DIR)/class-dump',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/iossim/CoreSimulator.h'
+                  ],
+                  'action': [
+                    # Actions don't provide a way to redirect stdout, so a custom
+                    # script is invoked that will execute the first argument and
+                    # write the output to the file specified as the second argument.
+                    # -I sorts classes, categories, and protocols by inheritance.
+                    # -C <regex> only displays classes matching regular expression.
+                    './redirect-stdout.sh',
+                    '<(PRODUCT_DIR)/class-dump -CSim <(developer_dir)/Library/PrivateFrameworks/CoreSimulator.framework',
+                    '<(INTERMEDIATE_DIR)/iossim/CoreSimulator.h',
+                  ],
+                  'message': 'Generating CoreSimulator.h',
+                },
+              ],  # actions
+            }, {  # else: xcode_version!="6"
+              'variables': {
+                'iphone_sim_path': '<(developer_dir)/Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks',
+              },
+            }],  # xcode_version
+          ],  # conditions
           'dependencies': [
             'third_party/class-dump/class-dump.gyp:class-dump#host',
           ],
@@ -48,9 +108,9 @@
                 '<(PRODUCT_DIR)/class-dump -I -CiPhoneSimulator <(iphone_sim_path)/DVTiPhoneSimulatorRemoteClient.framework',
                 '<(INTERMEDIATE_DIR)/iossim/DVTiPhoneSimulatorRemoteClient.h',
               ],
-              'message': 'Generating header',
+              'message': 'Generating DVTiPhoneSimulatorRemoteClient.h',
             },
-          ],
+          ],  # actions
           'xcode_settings': {
             'ARCHS': ['x86_64'],
             'WARNING_CFLAGS': [

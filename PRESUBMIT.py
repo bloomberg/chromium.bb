@@ -54,6 +54,8 @@ _TEST_CODE_EXCLUDED_PATHS = (
     r'chrome[/\\]browser[/\\]automation[/\\].*',
     # Non-production example code.
     r'mojo[/\\]examples[/\\].*',
+    # Launcher for running iOS tests on the simulator.
+    r'testing[/\\]iossim[/\\]iossim\.mm$',
 )
 
 _TEST_ONLY_WARNING = (
