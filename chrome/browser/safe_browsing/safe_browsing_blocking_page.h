@@ -281,9 +281,6 @@ class SafeBrowsingBlockingPageV2 : public SafeBrowsingBlockingPage {
                                 const base::string16& description2,
                                 const base::string16& description3);
 
-  // For the FieldTrial: this contains the name of the condition.
-  std::string trialCondition_;
-
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV2);
 };
 
@@ -301,6 +298,9 @@ class SafeBrowsingBlockingPageV3 : public SafeBrowsingBlockingPage {
   // when creating the HTML.
   void PopulateMalwareLoadTimeData(base::DictionaryValue* load_time_data);
   void PopulatePhishingLoadTimeData(base::DictionaryValue* load_time_data);
+
+  // For the M37 FieldTrial: this contains the name of the condition.
+  std::string trial_condition_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV3);
 };

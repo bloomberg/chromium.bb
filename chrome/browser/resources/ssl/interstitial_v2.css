@@ -68,6 +68,11 @@ h1 {
   line-height: 1.25em;
 }
 
+h2 {
+  font-size: 1.2em;
+  font-weight: normal;
+}
+
 .hidden {
   display: none;
 }
@@ -112,7 +117,8 @@ h1 {
 .safe-browsing a,
 .safe-browsing #details,
 .safe-browsing #details-button,
-.safe-browsing h1 {
+.safe-browsing h1,
+.safe-browsing h2 {
   color: white;
 }
 

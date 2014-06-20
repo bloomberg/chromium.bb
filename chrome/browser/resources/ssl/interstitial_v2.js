@@ -11,10 +11,12 @@ function setupEvents() {
   var overridable = loadTimeData.getBoolean('overridable');
   var ssl = loadTimeData.getBoolean('ssl');
 
-  if (ssl)
+  if (ssl) {
     $('body').classList.add('ssl');
-  else
+  } else {
     $('body').classList.add('safe-browsing');
+    setupMalwareFinchExperiment();
+  }
 
   $('primary-button').addEventListener('click', function() {
     if (!ssl)

@@ -427,9 +427,17 @@ const Experiment::Choice kSSLInterstitialVersions[] = {
 const Experiment::Choice kMalwareInterstitialVersions[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V2,
-    switches::kMalwareInterstitialVersionV2, "" },
+    switches::kMalwareInterstitialV2, "" },
   { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3,
-    switches::kMalwareInterstitialVersionV3, "" },
+    switches::kMalwareInterstitialV3, "" },
+  { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_ADVICE,
+    switches::kMalwareInterstitialV3Advice, "" },
+  { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_SOCIAL,
+    switches::kMalwareInterstitialV3Social, "" },
+  { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_NOTRECOMMEND,
+    switches::kMalwareInterstitialV3NotRecommend, "" },
+  { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_HISTORY,
+    switches::kMalwareInterstitialV3History, "" },
 };
 
 #if defined(OS_CHROMEOS)

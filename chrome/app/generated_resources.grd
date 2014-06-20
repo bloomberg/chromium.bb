@@ -9257,8 +9257,29 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_SUBRESOURCE" desc="The explanation of why Safe Browsing has blocked the page.">
         Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware. The malicious content comes from <ph name="SUBRESOURCE_HOST">$2<ex>evil.com</ex></ph>, a known malware distributor.
       </message>
+      <message name="IDS_MALWARE_V3_ADVICE_HEADING" desc="A header for the IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_ADVICE paragraph.">
+        What should you do?
+      </message>
+      <message name="IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_ADVICE" desc="The explanation of why Safe Browsing has blocked the page, with additional advice.">
+        You should come back to this website in a few hours. Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware.
+      </message>
+      <message name="IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_SUBRESOURCE_ADVICE" desc="The explanation of why Safe Browsing has blocked the page, with additional advice.">
+        Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware. The malicious content comes from <ph name="SUBRESOURCE_HOST">$2<ex>evil.com</ex></ph>, a known malware distributor. You should come back in a few hours.
+      </message>
+      <message name="IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_HISTORY" desc="The explanation of why Safe Browsing has blocked the page, with additional text about history.">
+        Even if you have visited this website before, it is not safe right now. Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware.
+      </message>
+      <message name="IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_SUBRESOURCE_HISTORY" desc="The explanation of why Safe Browsing has blocked the page, with additional text about history.">
+        Even if you have visited this website before, it is not safe right now. Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware. The malicious content comes from <ph name="SUBRESOURCE_HOST">$2<ex>evil.com</ex></ph>, a known malware distributor.
+      </message>
       <message name="IDS_MALWARE_V3_PROCEED_PARAGRAPH" desc="The paragraph that lets the user skip the warning.">
         If you understand the risks to your security, you may <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this unsafe site<ph name="END_LINK">&lt;/a&gt;</ph> before the dangerous programs have been removed.
+      </message>
+      <message name="IDS_MALWARE_V3_PROCEED_PARAGRAPH_NOT_RECOMMEND" desc="The paragraph that lets the user skip the warning, with the additional anti-recommendation string.">
+        If you understand the risks to your security, you may <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this unsafe site<ph name="END_LINK">&lt;/a&gt;</ph> (not recommended) before the dangerous programs have been removed.
+      </message>
+      <message name="IDS_MALWARE_V3_PROCEED_PARAGRAPH_SOCIAL" desc="The paragraph that lets the user skip the warning, with the additional anti-recommendation string.">
+        More than 80% of people who see this warning go back to safety instead of risking malware. However, if you understand the risks to your security, you may <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this unsafe site<ph name="END_LINK">&lt;/a&gt;</ph> before the dangerous programs have been removed.
       </message>
 
       <!-- Phishing interstitial V3 -->
@@ -14388,11 +14409,23 @@ Do you accept?
     <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_TRIAL_DESCRIPTION" desc="Description of the about:flags malware interstitial v3 experiment">
       Switch between different versions of the malware and phishing interstitials.
     </message>
-    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V2" desc="Go back to the old (V1) version">
-      Last version
+    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V2" desc="Go back to the old (V2) version">
+      Old version
     </message>
-    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3" desc="The new interstitial, with a gray background (also default)">
-      Newest version
+    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3" desc="The new interstitial (also default)">
+      New version
+    </message>
+    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_ADVICE" desc="The new interstitial plus an advice string">
+      New version plus advice
+    </message>
+    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_SOCIAL" desc="The new interstitial plus a social string">
+      New version plus social string
+    </message>
+    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_NOTRECOMMEND" desc="The new interstitial plus an anti-recommendation string">
+      New version plus anti-recommendation string
+    </message>
+    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_HISTORY" desc="The new interstitial (also default)">
+      New version plus history string
     </message>
 
   </messages>
