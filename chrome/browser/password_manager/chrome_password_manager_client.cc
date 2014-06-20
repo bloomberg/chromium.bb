@@ -189,13 +189,7 @@ void ChromePasswordManagerClient::OnLogRouterAvailabilityChanged(
     return;
   can_use_log_router_ = router_can_be_used;
 
-  if (!web_contents())
-    return;
-
-  // Also inform the renderer process to start or stop logging.
-  web_contents()->GetRenderViewHost()->Send(new AutofillMsg_ChangeLoggingState(
-      web_contents()->GetRenderViewHost()->GetRoutingID(),
-      can_use_log_router_));
+  NotifyRendererOfLoggingAvailability();
 }
 
 void ChromePasswordManagerClient::LogSavePasswordProgress(
@@ -251,6 +245,8 @@ bool ChromePasswordManagerClient::OnMessageReceived(
                         ShowPasswordEditingPopup)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_HidePasswordGenerationPopup,
                         HidePasswordGenerationPopup)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordAutofillAgentConstructed,
+                        NotifyRendererOfLoggingAvailability)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -304,6 +300,15 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
           web_contents()->GetNativeView());
   popup_controller_->Show(false /* display_password */);
 #endif  // defined(USE_AURA) || defined(OS_MACOSX)
+}
+
+void ChromePasswordManagerClient::NotifyRendererOfLoggingAvailability() {
+  if (!web_contents())
+    return;
+
+  web_contents()->GetRenderViewHost()->Send(new AutofillMsg_SetLoggingState(
+      web_contents()->GetRenderViewHost()->GetRoutingID(),
+      can_use_log_router_));
 }
 
 void ChromePasswordManagerClient::CommitFillPasswordForm(

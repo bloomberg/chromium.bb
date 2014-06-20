@@ -233,6 +233,7 @@ PasswordAutofillAgent::PasswordAutofillAgent(content::RenderView* render_view)
       was_password_autofilled_(false),
       username_selection_start_(0),
       weak_ptr_factory_(this) {
+  Send(new AutofillHostMsg_PasswordAutofillAgentConstructed(routing_id()));
 }
 
 PasswordAutofillAgent::~PasswordAutofillAgent() {
@@ -544,7 +545,7 @@ bool PasswordAutofillAgent::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PasswordAutofillAgent, message)
     IPC_MESSAGE_HANDLER(AutofillMsg_FillPasswordForm, OnFillPasswordForm)
-    IPC_MESSAGE_HANDLER(AutofillMsg_ChangeLoggingState, OnChangeLoggingState)
+    IPC_MESSAGE_HANDLER(AutofillMsg_SetLoggingState, OnSetLoggingState)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -792,7 +793,7 @@ void PasswordAutofillAgent::OnFillPasswordForm(
   }
 }
 
-void PasswordAutofillAgent::OnChangeLoggingState(bool active) {
+void PasswordAutofillAgent::OnSetLoggingState(bool active) {
   logging_state_active_ = active;
 }
 

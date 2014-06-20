@@ -109,6 +109,10 @@ class ChromePasswordManagerClient
   void ShowPasswordEditingPopup(
       const gfx::RectF& bounds, const autofill::PasswordForm& form);
 
+  // Sends a message to the renderer with the current value of
+  // |can_use_log_router_|.
+  void NotifyRendererOfLoggingAvailability();
+
   Profile* const profile_;
 
   password_manager::ContentPasswordManagerDriver driver_;

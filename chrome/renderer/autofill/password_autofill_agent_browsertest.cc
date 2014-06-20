@@ -1299,7 +1299,7 @@ TEST_F(PasswordAutofillAgentTest, OnChangeLoggingState_NoMessage) {
 // Test that logging can be turned on by a message.
 TEST_F(PasswordAutofillAgentTest, OnChangeLoggingState_Activated) {
   // Turn the logging on.
-  AutofillMsg_ChangeLoggingState msg_activate(0, true);
+  AutofillMsg_SetLoggingState msg_activate(0, true);
   // Up-cast to access OnMessageReceived, which is private in the agent.
   EXPECT_TRUE(static_cast<IPC::Listener*>(password_autofill_)
                   ->OnMessageReceived(msg_activate));
@@ -1314,11 +1314,11 @@ TEST_F(PasswordAutofillAgentTest, OnChangeLoggingState_Activated) {
 // Test that logging can be turned off by a message.
 TEST_F(PasswordAutofillAgentTest, OnChangeLoggingState_Deactivated) {
   // Turn the logging on and then off.
-  AutofillMsg_ChangeLoggingState msg_activate(0, /*active=*/true);
+  AutofillMsg_SetLoggingState msg_activate(0, /*active=*/true);
   // Up-cast to access OnMessageReceived, which is private in the agent.
   EXPECT_TRUE(static_cast<IPC::Listener*>(password_autofill_)
                   ->OnMessageReceived(msg_activate));
-  AutofillMsg_ChangeLoggingState msg_deactivate(0, /*active=*/false);
+  AutofillMsg_SetLoggingState msg_deactivate(0, /*active=*/false);
   EXPECT_TRUE(static_cast<IPC::Listener*>(password_autofill_)
                   ->OnMessageReceived(msg_deactivate));
 
@@ -1327,6 +1327,14 @@ TEST_F(PasswordAutofillAgentTest, OnChangeLoggingState_Deactivated) {
   const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_RecordSavePasswordProgress::ID);
   EXPECT_FALSE(message);
+}
+
+// Test that the agent sends an IPC call to get the current activity state of
+// password saving logging soon after construction.
+TEST_F(PasswordAutofillAgentTest, SendsLoggingStateUpdatePingOnConstruction) {
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_PasswordAutofillAgentConstructed::ID);
+  EXPECT_TRUE(message);
 }
 
 }  // namespace autofill

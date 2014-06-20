@@ -117,7 +117,7 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_FillPasswordForm,
 
 // Notification to start (|active| == true) or stop (|active| == false) logging
 // the decisions made about saving the password.
-IPC_MESSAGE_ROUTED1(AutofillMsg_ChangeLoggingState, bool /* active */)
+IPC_MESSAGE_ROUTED1(AutofillMsg_SetLoggingState, bool /* active */)
 
 // Send the heuristic and server field type predictions to the renderer.
 IPC_MESSAGE_ROUTED1(
@@ -198,6 +198,11 @@ IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsParsed,
 // forms are visible on the page (e.g. not set to display:none.)
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsRendered,
                     std::vector<autofill::PasswordForm> /* forms */)
+
+// A ping to the browser that PasswordAutofillAgent was constructed. As a
+// consequence, the browser sends AutofillMsg_SetLoggingState with the current
+// state of the logging activity.
+IPC_MESSAGE_ROUTED0(AutofillHostMsg_PasswordAutofillAgentConstructed);
 
 // Notification that this password form was submitted by the user.
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormSubmitted,
