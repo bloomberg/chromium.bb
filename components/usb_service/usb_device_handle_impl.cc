@@ -13,6 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "components/usb_service/usb_context.h"
 #include "components/usb_service/usb_device_impl.h"
+#include "components/usb_service/usb_error.h"
 #include "components/usb_service/usb_interface.h"
 #include "components/usb_service/usb_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -158,7 +159,11 @@ UsbDeviceHandleImpl::InterfaceClaimer::~InterfaceClaimer() {
 }
 
 bool UsbDeviceHandleImpl::InterfaceClaimer::Claim() const {
-  return libusb_claim_interface(handle_->handle(), interface_number_) == 0;
+  const int rv = libusb_claim_interface(handle_->handle(), interface_number_);
+  if (rv != LIBUSB_SUCCESS) {
+    LOG(ERROR) << "Failed to claim interface: " << ConvertErrorToString(rv);
+  }
+  return rv == LIBUSB_SUCCESS;
 }
 
 struct UsbDeviceHandleImpl::Transfer {
@@ -344,13 +349,15 @@ bool UsbDeviceHandleImpl::SetInterfaceAlternateSetting(
     return false;
   const int rv = libusb_set_interface_alt_setting(
       handle_, interface_number, alternate_setting);
-  if (rv == 0) {
+  if (rv == LIBUSB_SUCCESS) {
     claimed_interfaces_[interface_number]->set_alternate_setting(
         alternate_setting);
     RefreshEndpointMap();
-    return true;
+  } else {
+    LOG(ERROR) << "Failed to set interface (" << interface_number
+        << ", " << alternate_setting << "): " << ConvertErrorToString(rv);
   }
-  return false;
+  return rv == LIBUSB_SUCCESS;
 }
 
 bool UsbDeviceHandleImpl::ResetDevice() {
@@ -358,7 +365,11 @@ bool UsbDeviceHandleImpl::ResetDevice() {
   if (!device_)
     return false;
 
-  return libusb_reset_device(handle_) == 0;
+  const int rv = libusb_reset_device(handle_);
+  if (rv != LIBUSB_SUCCESS) {
+    LOG(ERROR) << "Failed to reset device: " << ConvertErrorToString(rv);
+  }
+  return rv == LIBUSB_SUCCESS;
 }
 
 bool UsbDeviceHandleImpl::GetSerial(base::string16* serial) {
@@ -366,8 +377,12 @@ bool UsbDeviceHandleImpl::GetSerial(base::string16* serial) {
   PlatformUsbDevice device = libusb_get_device(handle_);
   libusb_device_descriptor desc;
 
-  if (libusb_get_device_descriptor(device, &desc) != LIBUSB_SUCCESS)
+  const int rv = libusb_get_device_descriptor(device, &desc);
+  if (rv != LIBUSB_SUCCESS) {
+    LOG(ERROR) << "Failed to read device descriptor: "
+        << ConvertErrorToString(rv);
     return false;
+  }
 
   if (desc.iSerialNumber == 0)
     return false;
@@ -381,8 +396,11 @@ bool UsbDeviceHandleImpl::GetSerial(base::string16* serial) {
                                    0,
                                    reinterpret_cast<unsigned char*>(&langid[0]),
                                    sizeof(langid));
-  if (size < 0)
+  if (size < 0) {
+    LOG(ERROR) << "Failed to get language IDs: "
+        << ConvertErrorToString(size);
     return false;
+  }
 
   int language_count = (size - 2) / 2;
 
@@ -395,6 +413,11 @@ bool UsbDeviceHandleImpl::GetSerial(base::string16* serial) {
                                      langid[i],
                                      reinterpret_cast<unsigned char*>(&text[0]),
                                      sizeof(text));
+    if (size < 0) {
+      LOG(ERROR) << "Failed to get serial number (langid " << langid[i] << "): "
+          << ConvertErrorToString(size);
+      continue;
+    }
     if (size <= 2)
       continue;
     if ((text[0] >> 8) != LIBUSB_DT_STRING)
@@ -626,9 +649,11 @@ void UsbDeviceHandleImpl::SubmitTransfer(
   // it requires an interface we didn't claim.
   transfer.claimed_interface = GetClaimedInterfaceForEndpoint(handle->endpoint);
 
-  if (libusb_submit_transfer(handle) == LIBUSB_SUCCESS) {
+  const int rv = libusb_submit_transfer(handle);
+  if (rv == LIBUSB_SUCCESS) {
     transfers_[handle] = transfer;
   } else {
+    LOG(ERROR) << "Failed to submit transfer: " << ConvertErrorToString(rv);
     message_loop_proxy->PostTask(
         FROM_HERE,
         base::Bind(

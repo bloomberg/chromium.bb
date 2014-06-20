@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "components/usb_service/usb_context.h"
 #include "components/usb_service/usb_device_handle_impl.h"
+#include "components/usb_service/usb_error.h"
 #include "components/usb_service/usb_interface_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/libusb/src/libusb/libusb.h"
@@ -93,7 +94,7 @@ void UsbDeviceImpl::RequestUsbAcess(
 scoped_refptr<UsbDeviceHandle> UsbDeviceImpl::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
   PlatformUsbDeviceHandle handle;
-  int rv = libusb_open(platform_device_, &handle);
+  const int rv = libusb_open(platform_device_, &handle);
   if (LIBUSB_SUCCESS == rv) {
     scoped_refptr<UsbConfigDescriptor> interfaces = ListInterfaces();
     if (!interfaces)
@@ -102,8 +103,10 @@ scoped_refptr<UsbDeviceHandle> UsbDeviceImpl::Open() {
         new UsbDeviceHandleImpl(context_, this, handle, interfaces);
     handles_.push_back(device_handle);
     return device_handle;
+  } else {
+    LOG(ERROR) << "Failed to open device: " << ConvertErrorToString(rv);
+    return NULL;
   }
-  return NULL;
 }
 
 bool UsbDeviceImpl::Close(scoped_refptr<UsbDeviceHandle> handle) {
@@ -124,12 +127,15 @@ scoped_refptr<UsbConfigDescriptor> UsbDeviceImpl::ListInterfaces() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   PlatformUsbConfigDescriptor platform_config;
-  const int list_result =
+  const int rv =
       libusb_get_active_config_descriptor(platform_device_, &platform_config);
-  if (list_result == 0)
+  if (rv == LIBUSB_SUCCESS) {
     return new UsbConfigDescriptorImpl(platform_config);
-
-  return NULL;
+  } else {
+    LOG(ERROR) << "Failed to get config descriptor: "
+        << ConvertErrorToString(rv);
+    return NULL;
+  }
 }
 
 void UsbDeviceImpl::OnDisconnect() {

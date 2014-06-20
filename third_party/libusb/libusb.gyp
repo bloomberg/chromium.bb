@@ -18,6 +18,7 @@
         'src/libusb/io.c',
         'src/libusb/libusb.h',
         'src/libusb/libusbi.h',
+        'src/libusb/strerror.c',
         'src/libusb/sync.c',
         'src/libusb/version.h',
         'src/libusb/version_nano.h',

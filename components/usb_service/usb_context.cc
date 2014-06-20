@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
+#include "components/usb_service/usb_error.h"
 #include "third_party/libusb/src/libusb/interrupt.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
@@ -54,10 +55,13 @@ void UsbContext::UsbEventHandler::ThreadMain() {
   VLOG(1) << "UsbEventHandler started.";
   if (running_) {
     start_polling_.Signal();
-    libusb_handle_events(context_);
   }
-  while (running_)
-    libusb_handle_events(context_);
+  while (running_) {
+    const int rv = libusb_handle_events(context_);
+    if (rv != LIBUSB_SUCCESS) {
+      LOG(WARNING) << "Failed to handle events: " << ConvertErrorToString(rv);
+    }
+  }
   VLOG(1) << "UsbEventHandler shutting down.";
 }
 
