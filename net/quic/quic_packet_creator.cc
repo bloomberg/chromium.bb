@@ -312,6 +312,11 @@ bool QuicPacketCreator::HasPendingFrames() const {
   return !queued_frames_.empty();
 }
 
+bool QuicPacketCreator::HasPendingRetransmittableFrames() const {
+  return queued_retransmittable_frames_.get() != NULL &&
+      !queued_retransmittable_frames_->frames().empty();
+}
+
 size_t QuicPacketCreator::ExpansionOnNewFrame() const {
   // If packet is FEC protected, there's no expansion.
   if (should_fec_protect_) {

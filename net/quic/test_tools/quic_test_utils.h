@@ -29,7 +29,10 @@ namespace test {
 
 static const QuicConnectionId kTestConnectionId = 42;
 static const int kTestPort = 123;
-static const uint32 kInitialFlowControlWindowForTest = 32 * 1024;  // 32 KB
+static const uint32 kInitialStreamFlowControlWindowForTest =
+    32 * 1024;  // 32 KB
+static const uint32 kInitialSessionFlowControlWindowForTest =
+    64 * 1024;  // 64 KB
 
 // Data stream IDs start at 5: the crypto stream is 1, headers stream is 3.
 static const QuicStreamId kClientDataStreamId1 = 5;

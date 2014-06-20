@@ -19,6 +19,7 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/tools/balsa/balsa_headers.h"
+#include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_socket_utils.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
@@ -35,10 +36,12 @@ const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 QuicClient::QuicClient(IPEndPoint server_address,
                        const QuicServerId& server_id,
                        const QuicVersionVector& supported_versions,
-                       bool print_response)
+                       bool print_response,
+                       EpollServer* epoll_server)
     : server_address_(server_address),
       server_id_(server_id),
       local_port_(0),
+      epoll_server_(epoll_server),
       fd_(-1),
       helper_(CreateQuicConnectionHelper()),
       initialized_(false),
@@ -53,11 +56,13 @@ QuicClient::QuicClient(IPEndPoint server_address,
                        const QuicServerId& server_id,
                        const QuicVersionVector& supported_versions,
                        bool print_response,
-                       const QuicConfig& config)
+                       const QuicConfig& config,
+                       EpollServer* epoll_server)
     : server_address_(server_address),
       server_id_(server_id),
       config_(config),
       local_port_(0),
+      epoll_server_(epoll_server),
       fd_(-1),
       helper_(CreateQuicConnectionHelper()),
       initialized_(false),
@@ -72,19 +77,22 @@ QuicClient::~QuicClient() {
     session()->connection()->SendConnectionClosePacket(
         QUIC_PEER_GOING_AWAY, "");
   }
+  if (fd_ > 0) {
+    epoll_server_->UnregisterFD(fd_);
+  }
 }
 
 bool QuicClient::Initialize() {
   DCHECK(!initialized_);
 
-  epoll_server_.set_timeout_in_us(50 * 1000);
+  epoll_server_->set_timeout_in_us(50 * 1000);
   crypto_config_.SetDefaults();
 
   if (!CreateUDPSocket()) {
     return false;
   }
 
-  epoll_server_.RegisterFD(fd_, this, kEpollFlags);
+  epoll_server_->RegisterFD(fd_, this, kEpollFlags);
   initialized_ = true;
   return true;
 }
@@ -202,7 +210,7 @@ void QuicClient::Disconnect() {
   if (connected()) {
     session()->connection()->SendConnectionClose(QUIC_PEER_GOING_AWAY);
   }
-  epoll_server_.UnregisterFD(fd_);
+  epoll_server_->UnregisterFD(fd_);
   close(fd_);
   fd_ = -1;
   initialized_ = false;
@@ -234,7 +242,7 @@ void QuicClient::WaitForStreamToClose(QuicStreamId id) {
   DCHECK(connected());
 
   while (connected() && !session_->IsClosedStream(id)) {
-    epoll_server_.WaitForEventsAndExecuteCallbacks();
+    epoll_server_->WaitForEventsAndExecuteCallbacks();
   }
 }
 
@@ -242,14 +250,14 @@ void QuicClient::WaitForCryptoHandshakeConfirmed() {
   DCHECK(connected());
 
   while (connected() && !session_->IsCryptoHandshakeConfirmed()) {
-    epoll_server_.WaitForEventsAndExecuteCallbacks();
+    epoll_server_->WaitForEventsAndExecuteCallbacks();
   }
 }
 
 bool QuicClient::WaitForEvents() {
   DCHECK(connected());
 
-  epoll_server_.WaitForEventsAndExecuteCallbacks();
+  epoll_server_->WaitForEventsAndExecuteCallbacks();
   return session_->num_active_requests() != 0;
 }
 
@@ -302,7 +310,7 @@ QuicConnectionId QuicClient::GenerateConnectionId() {
 }
 
 QuicEpollConnectionHelper* QuicClient::CreateQuicConnectionHelper() {
-  return new QuicEpollConnectionHelper(&epoll_server_);
+  return new QuicEpollConnectionHelper(epoll_server_);
 }
 
 QuicPacketWriter* QuicClient::CreateQuicPacketWriter() {

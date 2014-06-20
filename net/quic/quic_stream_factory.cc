@@ -835,6 +835,8 @@ int QuicStreamFactory::CreateSession(
       server_id.is_https() ? kServerSecureInitialCongestionWindow
                            : kServerInecureInitialCongestionWindow);
   config.SetInitialFlowControlWindowToSend(kInitialReceiveWindowSize);
+  config.SetInitialStreamFlowControlWindowToSend(kInitialReceiveWindowSize);
+  config.SetInitialSessionFlowControlWindowToSend(kInitialReceiveWindowSize);
   if (http_server_properties_) {
     const HttpServerProperties::NetworkStats* stats =
         http_server_properties_->GetServerNetworkStats(

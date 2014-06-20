@@ -33,7 +33,12 @@ class QuicConfigTest : public ::testing::Test {
 TEST_F(QuicConfigTest, ToHandshakeMessage) {
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_pacing, false);
   config_.SetDefaults();
-  config_.SetInitialFlowControlWindowToSend(kInitialFlowControlWindowForTest);
+  config_.SetInitialFlowControlWindowToSend(
+      kInitialSessionFlowControlWindowForTest);
+  config_.SetInitialStreamFlowControlWindowToSend(
+      kInitialStreamFlowControlWindowForTest);
+  config_.SetInitialSessionFlowControlWindowToSend(
+      kInitialSessionFlowControlWindowForTest);
   config_.set_idle_connection_state_lifetime(QuicTime::Delta::FromSeconds(5),
                                              QuicTime::Delta::FromSeconds(2));
   config_.set_max_streams_per_connection(4, 2);
@@ -51,7 +56,15 @@ TEST_F(QuicConfigTest, ToHandshakeMessage) {
 
   error = msg.GetUint32(kIFCW, &value);
   EXPECT_EQ(QUIC_NO_ERROR, error);
-  EXPECT_EQ(kInitialFlowControlWindowForTest, value);
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest, value);
+
+  error = msg.GetUint32(kSFCW, &value);
+  EXPECT_EQ(QUIC_NO_ERROR, error);
+  EXPECT_EQ(kInitialStreamFlowControlWindowForTest, value);
+
+  error = msg.GetUint32(kCFCW, &value);
+  EXPECT_EQ(QUIC_NO_ERROR, error);
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest, value);
 
   const QuicTag* out;
   size_t out_len;
@@ -89,7 +102,11 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   client_config.SetInitialRoundTripTimeUsToSend(
       10 * base::Time::kMicrosecondsPerMillisecond);
   client_config.SetInitialFlowControlWindowToSend(
-      2 * kInitialFlowControlWindowForTest);
+      2 * kInitialSessionFlowControlWindowForTest);
+  client_config.SetInitialStreamFlowControlWindowToSend(
+      2 * kInitialStreamFlowControlWindowForTest);
+  client_config.SetInitialSessionFlowControlWindowToSend(
+      2 * kInitialSessionFlowControlWindowForTest);
   QuicTagVector copt;
   copt.push_back(kTBBR);
   client_config.SetCongestionOptionsToSend(copt);
@@ -113,7 +130,11 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   EXPECT_EQ(1u, config_.ReceivedCongestionOptions().size());
   EXPECT_EQ(config_.ReceivedCongestionOptions()[0], kTBBR);
   EXPECT_EQ(config_.ReceivedInitialFlowControlWindowBytes(),
-            2 * kInitialFlowControlWindowForTest);
+            2 * kInitialSessionFlowControlWindowForTest);
+  EXPECT_EQ(config_.ReceivedInitialStreamFlowControlWindowBytes(),
+            2 * kInitialStreamFlowControlWindowForTest);
+  EXPECT_EQ(config_.ReceivedInitialSessionFlowControlWindowBytes(),
+            2 * kInitialSessionFlowControlWindowForTest);
 }
 
 TEST_F(QuicConfigTest, ProcessServerHello) {
@@ -131,7 +152,11 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   server_config.SetInitialRoundTripTimeUsToSend(
       10 * base::Time::kMicrosecondsPerMillisecond);
   server_config.SetInitialFlowControlWindowToSend(
-      2 * kInitialFlowControlWindowForTest);
+      2 * kInitialSessionFlowControlWindowForTest);
+  server_config.SetInitialStreamFlowControlWindowToSend(
+      2 * kInitialStreamFlowControlWindowForTest);
+  server_config.SetInitialSessionFlowControlWindowToSend(
+      2 * kInitialSessionFlowControlWindowForTest);
   CryptoHandshakeMessage msg;
   server_config.ToHandshakeMessage(&msg);
   string error_details;
@@ -151,7 +176,11 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
             config_.ReceivedInitialRoundTripTimeUs());
   EXPECT_FALSE(config_.HasReceivedLossDetection());
   EXPECT_EQ(config_.ReceivedInitialFlowControlWindowBytes(),
-            2 * kInitialFlowControlWindowForTest);
+            2 * kInitialSessionFlowControlWindowForTest);
+  EXPECT_EQ(config_.ReceivedInitialStreamFlowControlWindowBytes(),
+            2 * kInitialStreamFlowControlWindowForTest);
+  EXPECT_EQ(config_.ReceivedInitialSessionFlowControlWindowBytes(),
+            2 * kInitialSessionFlowControlWindowForTest);
 }
 
 TEST_F(QuicConfigTest, MissingOptionalValuesInCHLO) {

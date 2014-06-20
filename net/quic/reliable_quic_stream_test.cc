@@ -118,6 +118,8 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
     // negotiated in the config.
     QuicConfigPeer::SetReceivedInitialFlowControlWindow(
         session_->config(), initial_flow_control_window_bytes_);
+    QuicConfigPeer::SetReceivedInitialStreamFlowControlWindow(
+        session_->config(), initial_flow_control_window_bytes_);
 
     stream_.reset(new TestStream(kHeadersStreamId, session_.get(),
                                  stream_should_process_data));
@@ -644,7 +646,7 @@ TEST_F(ReliableQuicStreamTest,
   // Receive a stream frame that violates flow control: the byte offset is
   // higher than the receive window offset.
   QuicStreamFrame frame(stream_->id(), false,
-                        kInitialFlowControlWindowForTest + 1,
+                        kInitialSessionFlowControlWindowForTest + 1,
                         MakeIOVector("."));
   EXPECT_GT(frame.offset, QuicFlowControllerPeer::ReceiveWindowOffset(
                               stream_->flow_controller()));

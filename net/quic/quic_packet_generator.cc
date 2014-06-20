@@ -97,7 +97,11 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
                                                   FecProtection fec_protection,
                                                   QuicAckNotifier* notifier) {
   IsHandshake handshake = id == kCryptoStreamId ? IS_HANDSHAKE : NOT_HANDSHAKE;
-  SendQueuedFrames(false);
+  // To make reasoning about crypto frames easier, we don't combine them with
+  // other retransmittable frames in a single packet.
+  const bool flush = handshake == IS_HANDSHAKE &&
+      packet_creator_.HasPendingRetransmittableFrames();
+  SendQueuedFrames(flush);
 
   size_t total_bytes_consumed = 0;
   bool fin_consumed = false;
@@ -153,6 +157,11 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
       }
       break;
     }
+  }
+
+  // Don't allow the handshake to be bundled with other retransmittable frames.
+  if (handshake == IS_HANDSHAKE) {
+    SendQueuedFrames(true);
   }
 
   // Try to close FEC group since we've either run out of data to send or we're

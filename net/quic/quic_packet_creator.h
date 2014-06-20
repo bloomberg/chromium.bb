@@ -116,6 +116,9 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // Returns true if there are frames pending to be serialized.
   bool HasPendingFrames() const;
 
+  // Returns true if there are retransmittable frames pending to be serialized.
+  bool HasPendingRetransmittableFrames() const;
+
   // Returns whether FEC protection is currently enabled. Note: Enabled does not
   // mean that an FEC group is currently active; i.e., IsFecProtected() may
   // still return false.

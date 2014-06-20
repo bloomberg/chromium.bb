@@ -13,7 +13,6 @@ using base::StringPiece;
 using net::test::MakeAckFrame;
 using net::test::MockHelper;
 using net::test::QuicConnectionPeer;
-using net::test::kInitialFlowControlWindowForTest;
 
 namespace net {
 namespace tools {

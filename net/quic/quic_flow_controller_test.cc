@@ -24,9 +24,9 @@ class QuicFlowControllerTest : public ::testing::Test {
  public:
   QuicFlowControllerTest()
       : stream_id_(1234),
-        send_window_(kInitialFlowControlWindowForTest),
-        receive_window_(kInitialFlowControlWindowForTest),
-        max_receive_window_(kInitialFlowControlWindowForTest),
+        send_window_(kInitialSessionFlowControlWindowForTest),
+        receive_window_(kInitialSessionFlowControlWindowForTest),
+        max_receive_window_(kInitialSessionFlowControlWindowForTest),
         connection_(false),
         old_flag_(&FLAGS_enable_quic_stream_flow_control_2, true) {
   }
@@ -95,7 +95,7 @@ TEST_F(QuicFlowControllerTest, ReceivingBytes) {
   EXPECT_TRUE(flow_controller_->IsEnabled());
   EXPECT_FALSE(flow_controller_->IsBlocked());
   EXPECT_FALSE(flow_controller_->FlowControlViolation());
-  EXPECT_EQ(kInitialFlowControlWindowForTest,
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest,
             QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
 
   // Receive some bytes, updating highest received offset, but not enough to
@@ -113,7 +113,7 @@ TEST_F(QuicFlowControllerTest, ReceivingBytes) {
 
   // Result is that once again we have a fully open receive window.
   EXPECT_FALSE(flow_controller_->FlowControlViolation());
-  EXPECT_EQ(kInitialFlowControlWindowForTest,
+  EXPECT_EQ(kInitialSessionFlowControlWindowForTest,
             QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
 }
 

@@ -28,7 +28,6 @@ using net::QuicServerId;
 using net::test::QuicConnectionPeer;
 using net::test::QuicSessionPeer;
 using net::test::ReliableQuicStreamPeer;
-using net::test::kInitialFlowControlWindowForTest;
 using std::string;
 using std::vector;
 
@@ -104,11 +103,13 @@ BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers,
 MockableQuicClient::MockableQuicClient(
     IPEndPoint server_address,
     const QuicServerId& server_id,
-    const QuicVersionVector& supported_versions)
+    const QuicVersionVector& supported_versions,
+    EpollServer* epoll_server)
     : QuicClient(server_address,
                  server_id,
                  supported_versions,
-                 false),
+                 false,
+                 epoll_server),
       override_connection_id_(0),
       test_writer_(NULL) {}
 
@@ -116,12 +117,14 @@ MockableQuicClient::MockableQuicClient(
     IPEndPoint server_address,
     const QuicServerId& server_id,
     const QuicConfig& config,
-    const QuicVersionVector& supported_versions)
+    const QuicVersionVector& supported_versions,
+    EpollServer* epoll_server)
     : QuicClient(server_address,
                  server_id,
                  supported_versions,
                  false,
-                 config),
+                 config,
+                 epoll_server),
       override_connection_id_(0),
       test_writer_(NULL) {}
 
@@ -163,7 +166,8 @@ QuicTestClient::QuicTestClient(IPEndPoint server_address,
                                                   server_address.port(),
                                                   false,
                                                   PRIVACY_MODE_DISABLED),
-                                     supported_versions)) {
+                                     supported_versions,
+                                     &epoll_server_)) {
   Initialize(true);
 }
 
@@ -176,7 +180,8 @@ QuicTestClient::QuicTestClient(IPEndPoint server_address,
                                                   server_address.port(),
                                                   secure,
                                                   PRIVACY_MODE_DISABLED),
-                                     supported_versions)) {
+                                     supported_versions,
+                                     &epoll_server_)) {
   Initialize(secure);
 }
 
@@ -193,7 +198,8 @@ QuicTestClient::QuicTestClient(
                                               secure,
                                               PRIVACY_MODE_DISABLED),
                                  config,
-                                 supported_versions)) {
+                                 supported_versions,
+                                 &epoll_server_)) {
   Initialize(secure);
 }
 
@@ -226,6 +232,10 @@ void QuicTestClient::ExpectCertificates(bool on) {
     proof_verifier_ = NULL;
     client_->SetProofVerifier(NULL);
   }
+}
+
+void QuicTestClient::SetUserAgentID(const string& user_agent_id) {
+  client_->SetUserAgentID(user_agent_id);
 }
 
 ssize_t QuicTestClient::SendRequest(const string& uri) {
@@ -404,9 +414,9 @@ void QuicTestClient::ClearPerRequestState() {
 
 void QuicTestClient::WaitForResponseForMs(int timeout_ms) {
   int64 timeout_us = timeout_ms * base::Time::kMicrosecondsPerMillisecond;
-  int64 old_timeout_us = client()->epoll_server()->timeout_in_us();
+  int64 old_timeout_us = epoll_server()->timeout_in_us();
   if (timeout_us > 0) {
-    client()->epoll_server()->set_timeout_in_us(timeout_us);
+    epoll_server()->set_timeout_in_us(timeout_us);
   }
   const QuicClock* clock =
       QuicConnectionPeer::GetHelper(client()->session()->connection())->
@@ -419,15 +429,15 @@ void QuicTestClient::WaitForResponseForMs(int timeout_ms) {
     client_->WaitForEvents();
   }
   if (timeout_us > 0) {
-    client()->epoll_server()->set_timeout_in_us(old_timeout_us);
+    epoll_server()->set_timeout_in_us(old_timeout_us);
   }
 }
 
 void QuicTestClient::WaitForInitialResponseForMs(int timeout_ms) {
   int64 timeout_us = timeout_ms * base::Time::kMicrosecondsPerMillisecond;
-  int64 old_timeout_us = client()->epoll_server()->timeout_in_us();
+  int64 old_timeout_us = epoll_server()->timeout_in_us();
   if (timeout_us > 0) {
-    client()->epoll_server()->set_timeout_in_us(timeout_us);
+    epoll_server()->set_timeout_in_us(timeout_us);
   }
   const QuicClock* clock =
       QuicConnectionPeer::GetHelper(client()->session()->connection())->
@@ -441,7 +451,7 @@ void QuicTestClient::WaitForInitialResponseForMs(int timeout_ms) {
     client_->WaitForEvents();
   }
   if (timeout_us > 0) {
-    client()->epoll_server()->set_timeout_in_us(old_timeout_us);
+    epoll_server()->set_timeout_in_us(old_timeout_us);
   }
 }
 

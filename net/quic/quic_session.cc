@@ -106,10 +106,17 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
       goaway_received_(false),
       goaway_sent_(false),
       has_pending_handshake_(false) {
-  flow_controller_.reset(new QuicFlowController(
-      connection_.get(), 0, is_server(), kDefaultFlowControlSendWindow,
-      config_.GetInitialFlowControlWindowToSend(),
-      config_.GetInitialFlowControlWindowToSend()));
+  if (connection_->version() <= QUIC_VERSION_19) {
+    flow_controller_.reset(new QuicFlowController(
+        connection_.get(), 0, is_server(), kDefaultFlowControlSendWindow,
+        config_.GetInitialFlowControlWindowToSend(),
+        config_.GetInitialFlowControlWindowToSend()));
+  } else {
+    flow_controller_.reset(new QuicFlowController(
+        connection_.get(), 0, is_server(), kDefaultFlowControlSendWindow,
+        config_.GetInitialSessionFlowControlWindowToSend(),
+        config_.GetInitialSessionFlowControlWindowToSend()));
+  }
 
   connection_->set_visitor(visitor_shim_.get());
   connection_->SetFromConfig(config_);
@@ -461,14 +468,36 @@ bool QuicSession::IsCryptoHandshakeConfirmed() {
 
 void QuicSession::OnConfigNegotiated() {
   connection_->SetFromConfig(config_);
-  // Tell all streams about the newly received peer receive window.
-  if (connection()->version() >= QUIC_VERSION_17 &&
-      config_.HasReceivedInitialFlowControlWindowBytes()) {
-    // Streams which were created before the SHLO was received (0RTT requests)
-    // are now informed of the peer's initial flow control window.
-    uint32 new_window = config_.ReceivedInitialFlowControlWindowBytes();
-    OnNewStreamFlowControlWindow(new_window);
-    OnNewSessionFlowControlWindow(new_window);
+  QuicVersion version = connection()->version();
+  if (version < QUIC_VERSION_17) {
+    return;
+  }
+
+  if (version <= QUIC_VERSION_19) {
+    // QUIC_VERSION_17,18,19 don't support independent stream/session flow
+    // control windows.
+    if (config_.HasReceivedInitialFlowControlWindowBytes()) {
+      // Streams which were created before the SHLO was received (0-RTT
+      // requests) are now informed of the peer's initial flow control window.
+      uint32 new_window = config_.ReceivedInitialFlowControlWindowBytes();
+      OnNewStreamFlowControlWindow(new_window);
+      OnNewSessionFlowControlWindow(new_window);
+    }
+
+    return;
+  }
+
+  // QUIC_VERSION_20 and higher can have independent stream and session flow
+  // control windows.
+  if (config_.HasReceivedInitialStreamFlowControlWindowBytes()) {
+    // Streams which were created before the SHLO was received (0-RTT
+    // requests) are now informed of the peer's initial flow control window.
+    OnNewStreamFlowControlWindow(
+        config_.ReceivedInitialStreamFlowControlWindowBytes());
+  }
+  if (config_.HasReceivedInitialSessionFlowControlWindowBytes()) {
+    OnNewSessionFlowControlWindow(
+        config_.ReceivedInitialSessionFlowControlWindowBytes());
   }
 }
 

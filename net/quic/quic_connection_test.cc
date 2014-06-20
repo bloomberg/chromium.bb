@@ -520,11 +520,7 @@ class TestConnection : public QuicConnection {
   // split needlessly across packet boundaries).  As a result, we have separate
   // tests for some cases for this stream.
   QuicConsumedData SendCryptoStreamData() {
-    this->Flush();
-    QuicConsumedData consumed =
-        SendStreamDataWithString(kCryptoStreamId, "chlo", 0, !kFin, NULL);
-    this->Flush();
-    return consumed;
+    return SendStreamDataWithString(kCryptoStreamId, "chlo", 0, !kFin, NULL);
   }
 
   bool is_server() {
@@ -1669,7 +1665,7 @@ TEST_P(QuicConnectionTest, FramePackingNonCryptoThenCrypto) {
 TEST_P(QuicConnectionTest, FramePackingCryptoThenNonCrypto) {
   CongestionBlockWrites();
 
-  // Send an ack and two stream frames (one crypto, then one non-crypto) in 3
+  // Send an ack and two stream frames (one crypto, then one non-crypto) in 2
   // packets by queueing them.
   connection_.SendAck();
   EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(DoAll(
@@ -1678,7 +1674,7 @@ TEST_P(QuicConnectionTest, FramePackingCryptoThenNonCrypto) {
       IgnoreResult(InvokeWithoutArgs(&connection_,
                                      &TestConnection::SendStreamData3))));
 
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(3);
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
   CongestionUnblockWrites();
   connection_.GetSendAlarm()->Fire();
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
@@ -3058,6 +3054,28 @@ TEST_P(QuicConnectionTest, SendDelayedAckOnOutgoingCryptoPacket) {
   connection_.SendStreamDataWithString(kCryptoStreamId, "foo", 0, !kFin, NULL);
   // Check that ack is bundled with outgoing crypto data.
   EXPECT_EQ(version() <= QUIC_VERSION_15 ? 2u : 3u, writer_->frame_count());
+  EXPECT_FALSE(writer_->ack_frames().empty());
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+}
+
+TEST_P(QuicConnectionTest, BundleAckForSecondCHLO) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(
+      IgnoreResult(InvokeWithoutArgs(&connection_,
+                                     &TestConnection::SendCryptoStreamData)));
+  // Process a packet from the crypto stream, which is frame1_'s default.
+  // Receiving the CHLO as packet 2 first will cause the connection to
+  // immediately send an ack, due to the packet gap.
+  ProcessPacket(2);
+  // Check that ack is sent and that delayed ack alarm is reset.
+  if (version() > QUIC_VERSION_15) {
+    EXPECT_EQ(3u, writer_->frame_count());
+    EXPECT_FALSE(writer_->stop_waiting_frames().empty());
+  } else {
+    EXPECT_EQ(2u, writer_->frame_count());
+  }
+  EXPECT_EQ(1u, writer_->stream_frames().size());
   EXPECT_FALSE(writer_->ack_frames().empty());
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
 }

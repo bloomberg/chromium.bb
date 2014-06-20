@@ -6,8 +6,6 @@
 
 #include "net/quic/test_tools/quic_test_utils.h"
 
-using net::test::kInitialFlowControlWindowForTest;
-
 namespace net {
 namespace tools {
 namespace test {

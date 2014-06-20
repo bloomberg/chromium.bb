@@ -1241,10 +1241,10 @@ void QuicConnection::WritePendingRetransmissions() {
     // Retransmitted data packets do not use FEC, even when it's enabled.
     // Retransmitted packets use the same sequence number length as the
     // original.
-    // Flush the packet creator before making a new packet.
+    // Flush the packet generator before making a new packet.
     // TODO(ianswett): Implement ReserializeAllFrames as a separate path that
     // does not require the creator to be flushed.
-    Flush();
+    packet_generator_.FlushAllQueuedFrames();
     SerializedPacket serialized_packet = packet_generator_.ReserializeAllFrames(
         pending.retransmittable_frames.frames(),
         pending.sequence_number_length);
@@ -1780,7 +1780,7 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
   frame->error_code = error;
   frame->error_details = details;
   packet_generator_.AddControlFrame(QuicFrame(frame));
-  Flush();
+  packet_generator_.FlushAllQueuedFrames();
 }
 
 void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
@@ -1840,10 +1840,6 @@ size_t QuicConnection::max_packet_length() const {
 
 void QuicConnection::set_max_packet_length(size_t length) {
   return packet_generator_.set_max_packet_length(length);
-}
-
-void QuicConnection::Flush() {
-  packet_generator_.FlushAllQueuedFrames();
 }
 
 bool QuicConnection::HasQueuedData() const {

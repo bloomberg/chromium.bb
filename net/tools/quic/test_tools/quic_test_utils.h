@@ -27,7 +27,10 @@ namespace test {
 
 static const QuicConnectionId kTestConnectionId = 42;
 static const int kTestPort = 123;
-static const uint32 kInitialFlowControlWindowForTest = 32 * 1024;  // 32 KB
+static const uint32 kInitialStreamFlowControlWindowForTest =
+    32 * 1024;  // 32 KB
+static const uint32 kInitialSessionFlowControlWindowForTest =
+    64 * 1024;  // 64 KB
 
 // Testing convenience method to construct a QuicAckFrame with |num_nack_ranges|
 // nack ranges of width 1 packet, starting from |least_unacked|.

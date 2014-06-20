@@ -389,10 +389,6 @@ class NET_EXPORT_PRIVATE QuicConnection
     return connection_close_packet_.release();
   }
 
-  // Flush any queued frames immediately.  Preserves the batch write mode and
-  // does nothing if there are no pending frames.
-  void Flush();
-
   // Returns true if the underlying UDP socket is writable, there is
   // no queued data and the connection is not congestion-control
   // blocked.

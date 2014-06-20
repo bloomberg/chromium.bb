@@ -136,7 +136,11 @@ class QuicEndToEndTest : public PlatformTest {
     server_address_ = IPEndPoint(ip, 0);
     server_config_.SetDefaults();
     server_config_.SetInitialFlowControlWindowToSend(
-        kInitialFlowControlWindowForTest);
+        kInitialSessionFlowControlWindowForTest);
+    server_config_.SetInitialStreamFlowControlWindowToSend(
+        kInitialStreamFlowControlWindowForTest);
+    server_config_.SetInitialSessionFlowControlWindowToSend(
+        kInitialSessionFlowControlWindowForTest);
     server_thread_.reset(new ServerThread(
          new QuicServer(server_config_, QuicSupportedVersions()),
          server_address_,

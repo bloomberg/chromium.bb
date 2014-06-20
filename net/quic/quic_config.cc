@@ -436,7 +436,13 @@ QuicConfig::QuicConfig()
       initial_round_trip_time_us_(kIRTT, PRESENCE_OPTIONAL),
       // TODO(rjshade): Make this PRESENCE_REQUIRED when retiring
       // QUIC_VERSION_17.
-      initial_flow_control_window_bytes_(kIFCW, PRESENCE_OPTIONAL) {
+      initial_flow_control_window_bytes_(kIFCW, PRESENCE_OPTIONAL),
+      // TODO(rjshade): Make this PRESENCE_REQUIRED when retiring
+      // QUIC_VERSION_19.
+      initial_stream_flow_control_window_bytes_(kSFCW, PRESENCE_OPTIONAL),
+      // TODO(rjshade): Make this PRESENCE_REQUIRED when retiring
+      // QUIC_VERSION_19.
+      initial_session_flow_control_window_bytes_(kCFCW, PRESENCE_OPTIONAL) {
 }
 
 QuicConfig::~QuicConfig() {}
@@ -558,6 +564,50 @@ uint32 QuicConfig::ReceivedInitialFlowControlWindowBytes() const {
   return initial_flow_control_window_bytes_.GetReceivedValue();
 }
 
+void QuicConfig::SetInitialStreamFlowControlWindowToSend(uint32 window_bytes) {
+  if (window_bytes < kDefaultFlowControlSendWindow) {
+    LOG(DFATAL) << "Initial stream flow control receive window ("
+                << window_bytes << ") cannot be set lower than default ("
+                << kDefaultFlowControlSendWindow << ").";
+    window_bytes = kDefaultFlowControlSendWindow;
+  }
+  initial_stream_flow_control_window_bytes_.SetSendValue(window_bytes);
+}
+
+uint32 QuicConfig::GetInitialStreamFlowControlWindowToSend() const {
+  return initial_stream_flow_control_window_bytes_.GetSendValue();
+}
+
+bool QuicConfig::HasReceivedInitialStreamFlowControlWindowBytes() const {
+  return initial_stream_flow_control_window_bytes_.HasReceivedValue();
+}
+
+uint32 QuicConfig::ReceivedInitialStreamFlowControlWindowBytes() const {
+  return initial_stream_flow_control_window_bytes_.GetReceivedValue();
+}
+
+void QuicConfig::SetInitialSessionFlowControlWindowToSend(uint32 window_bytes) {
+  if (window_bytes < kDefaultFlowControlSendWindow) {
+    LOG(DFATAL) << "Initial session flow control receive window ("
+                << window_bytes << ") cannot be set lower than default ("
+                << kDefaultFlowControlSendWindow << ").";
+    window_bytes = kDefaultFlowControlSendWindow;
+  }
+  initial_session_flow_control_window_bytes_.SetSendValue(window_bytes);
+}
+
+uint32 QuicConfig::GetInitialSessionFlowControlWindowToSend() const {
+  return initial_session_flow_control_window_bytes_.GetSendValue();
+}
+
+bool QuicConfig::HasReceivedInitialSessionFlowControlWindowBytes() const {
+  return initial_session_flow_control_window_bytes_.HasReceivedValue();
+}
+
+uint32 QuicConfig::ReceivedInitialSessionFlowControlWindowBytes() const {
+  return initial_session_flow_control_window_bytes_.GetReceivedValue();
+}
+
 bool QuicConfig::negotiated() {
   // TODO(ianswett): Add the negotiated parameters once and iterate over all
   // of them in negotiated, ToHandshakeMessage, ProcessClientHello, and
@@ -585,6 +635,8 @@ void QuicConfig::SetDefaults() {
       kDefaultMaxTimeForCryptoHandshakeSecs);
 
   SetInitialFlowControlWindowToSend(kDefaultFlowControlSendWindow);
+  SetInitialStreamFlowControlWindowToSend(kDefaultFlowControlSendWindow);
+  SetInitialSessionFlowControlWindowToSend(kDefaultFlowControlSendWindow);
 }
 
 void QuicConfig::EnablePacing(bool enable_pacing) {
@@ -605,6 +657,8 @@ void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   initial_round_trip_time_us_.ToHandshakeMessage(out);
   loss_detection_.ToHandshakeMessage(out);
   initial_flow_control_window_bytes_.ToHandshakeMessage(out);
+  initial_stream_flow_control_window_bytes_.ToHandshakeMessage(out);
+  initial_session_flow_control_window_bytes_.ToHandshakeMessage(out);
   congestion_options_.ToHandshakeMessage(out);
 }
 
@@ -641,6 +695,14 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
   }
   if (error == QUIC_NO_ERROR) {
     error = initial_flow_control_window_bytes_.ProcessPeerHello(
+        peer_hello, hello_type, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = initial_stream_flow_control_window_bytes_.ProcessPeerHello(
+        peer_hello, hello_type, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = initial_session_flow_control_window_bytes_.ProcessPeerHello(
         peer_hello, hello_type, error_details);
   }
   if (error == QUIC_NO_ERROR) {

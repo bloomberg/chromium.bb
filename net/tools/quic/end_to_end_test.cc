@@ -182,9 +182,17 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
     // Use different flow control windows for client/server.
     client_config_.SetInitialFlowControlWindowToSend(
-        2 * kInitialFlowControlWindowForTest);
+        2 * kInitialSessionFlowControlWindowForTest);
+    client_config_.SetInitialStreamFlowControlWindowToSend(
+        2 * kInitialStreamFlowControlWindowForTest);
+    client_config_.SetInitialSessionFlowControlWindowToSend(
+        2 * kInitialSessionFlowControlWindowForTest);
     server_config_.SetInitialFlowControlWindowToSend(
-        3 * kInitialFlowControlWindowForTest);
+        3 * kInitialSessionFlowControlWindowForTest);
+    server_config_.SetInitialStreamFlowControlWindowToSend(
+        3 * kInitialStreamFlowControlWindowForTest);
+    server_config_.SetInitialSessionFlowControlWindowToSend(
+        3 * kInitialSessionFlowControlWindowForTest);
 
     QuicInMemoryCachePeer::ResetForTests();
     AddToCache("GET", "https://www.google.com/foo",
@@ -217,10 +225,38 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     client_config_.SetInitialFlowControlWindowToSend(window);
   }
 
+  void set_client_initial_stream_flow_control_receive_window(uint32 window) {
+    CHECK(client_.get() == NULL);
+    DLOG(INFO) << "Setting client initial stream flow control window: "
+               << window;
+    client_config_.SetInitialStreamFlowControlWindowToSend(window);
+  }
+
+  void set_client_initial_session_flow_control_receive_window(uint32 window) {
+    CHECK(client_.get() == NULL);
+    DLOG(INFO) << "Setting client initial session flow control window: "
+               << window;
+    client_config_.SetInitialSessionFlowControlWindowToSend(window);
+  }
+
   void set_server_initial_flow_control_receive_window(uint32 window) {
     CHECK(server_thread_.get() == NULL);
     DVLOG(1) << "Setting server initial flow control window: " << window;
     server_config_.SetInitialFlowControlWindowToSend(window);
+  }
+
+  void set_server_initial_stream_flow_control_receive_window(uint32 window) {
+    CHECK(server_thread_.get() == NULL);
+    DLOG(INFO) << "Setting server initial stream flow control window: "
+               << window;
+    server_config_.SetInitialStreamFlowControlWindowToSend(window);
+  }
+
+  void set_server_initial_session_flow_control_receive_window(uint32 window) {
+    CHECK(server_thread_.get() == NULL);
+    DLOG(INFO) << "Setting server initial session flow control window: "
+               << window;
+    server_config_.SetInitialSessionFlowControlWindowToSend(window);
   }
 
   bool Initialize() {
@@ -1065,7 +1101,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
   IPEndPoint old_address = client_->client()->client_address();
 
   // Stop listening on the old FD.
-  EpollServer* eps = client_->client()->epoll_server();
+  EpollServer* eps = client_->epoll_server();
   int old_fd = client_->client()->fd();
   eps->UnregisterFD(old_fd);
   // Create a new socket before closing the old one, which will result in a new
@@ -1103,7 +1139,9 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
   EXPECT_NE(old_address.port(), new_address.port());
 }
 
-TEST_P(EndToEndTest, DifferentFlowControlWindows) {
+
+TEST_P(EndToEndTest, DifferentFlowControlWindowsQ019) {
+  // TODO(rjshade): Remove this test when removing QUIC_VERSION_19.
   // Client and server can set different initial flow control receive windows.
   // These are sent in CHLO/SHLO. Tests that these values are exchanged properly
   // in the crypto handshake.
@@ -1115,6 +1153,9 @@ TEST_P(EndToEndTest, DifferentFlowControlWindows) {
   set_server_initial_flow_control_receive_window(kServerIFCW);
 
   ASSERT_TRUE(Initialize());
+  if (negotiated_version_ > QUIC_VERSION_19) {
+    return;
+  }
 
   // Values are exchanged during crypto handshake, so wait for that to finish.
   client_->client()->WaitForCryptoHandshakeConfirmed();
@@ -1133,6 +1174,66 @@ TEST_P(EndToEndTest, DifferentFlowControlWindows) {
   QuicSession* session = dispatcher->session_map().begin()->second;
   EXPECT_EQ(kClientIFCW,
             session->config()->ReceivedInitialFlowControlWindowBytes());
+  server_thread_->Resume();
+}
+
+TEST_P(EndToEndTest, DifferentFlowControlWindowsQ020) {
+  // TODO(rjshade): Rename to DifferentFlowControlWindows when removing
+  // QUIC_VERSION_19.
+  // Client and server can set different initial flow control receive windows.
+  // These are sent in CHLO/SHLO. Tests that these values are exchanged properly
+  // in the crypto handshake.
+  const uint32 kClientStreamIFCW = 123456;
+  const uint32 kClientSessionIFCW = 234567;
+  set_client_initial_stream_flow_control_receive_window(kClientStreamIFCW);
+  set_client_initial_session_flow_control_receive_window(kClientSessionIFCW);
+
+  const uint32 kServerStreamIFCW = 654321;
+  const uint32 kServerSessionIFCW = 765432;
+  set_server_initial_stream_flow_control_receive_window(kServerStreamIFCW);
+  set_server_initial_session_flow_control_receive_window(kServerSessionIFCW);
+
+  ASSERT_TRUE(Initialize());
+  if (negotiated_version_ <= QUIC_VERSION_19) {
+    return;
+  }
+
+  // Values are exchanged during crypto handshake, so wait for that to finish.
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+  server_thread_->WaitForCryptoHandshakeConfirmed();
+
+  // Open a data stream to make sure the stream level flow control is updated.
+  QuicSpdyClientStream* stream = client_->GetOrCreateStream();
+  stream->SendBody("hello", false);
+
+  // Client should have the right values for server's receive window.
+  EXPECT_EQ(kServerStreamIFCW,
+            client_->client()
+                ->session()
+                ->config()
+                ->ReceivedInitialStreamFlowControlWindowBytes());
+  EXPECT_EQ(kServerSessionIFCW,
+            client_->client()
+                ->session()
+                ->config()
+                ->ReceivedInitialSessionFlowControlWindowBytes());
+  EXPECT_EQ(kServerStreamIFCW, QuicFlowControllerPeer::SendWindowOffset(
+                                   stream->flow_controller()));
+  EXPECT_EQ(kServerSessionIFCW,
+            QuicFlowControllerPeer::SendWindowOffset(
+                client_->client()->session()->flow_controller()));
+
+  // Server should have the right values for client's receive window.
+  server_thread_->Pause();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  QuicSession* session = dispatcher->session_map().begin()->second;
+  EXPECT_EQ(kClientStreamIFCW,
+            session->config()->ReceivedInitialStreamFlowControlWindowBytes());
+  EXPECT_EQ(kClientSessionIFCW,
+            session->config()->ReceivedInitialSessionFlowControlWindowBytes());
+  EXPECT_EQ(kClientSessionIFCW, QuicFlowControllerPeer::SendWindowOffset(
+                                    session->flow_controller()));
   server_thread_->Resume();
 }
 

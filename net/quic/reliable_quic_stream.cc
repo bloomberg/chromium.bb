@@ -25,6 +25,34 @@ struct iovec MakeIovec(StringPiece data) {
   return iov;
 }
 
+size_t GetInitialStreamFlowControlWindowToSend(QuicSession* session) {
+  QuicVersion version = session->connection()->version();
+  if (version <= QUIC_VERSION_19) {
+    return session->config()->GetInitialFlowControlWindowToSend();
+  }
+
+  return session->config()->GetInitialStreamFlowControlWindowToSend();
+}
+
+size_t GetReceivedFlowControlWindow(QuicSession* session) {
+  QuicVersion version = session->connection()->version();
+  if (version <= QUIC_VERSION_19) {
+    if (session->config()->HasReceivedInitialFlowControlWindowBytes()) {
+      return session->config()->ReceivedInitialFlowControlWindowBytes();
+    }
+
+    return kDefaultFlowControlSendWindow;
+  }
+
+  // Version must be >= QUIC_VERSION_20, so we check for stream specific flow
+  // control window.
+  if (session->config()->HasReceivedInitialStreamFlowControlWindowBytes()) {
+    return session->config()->ReceivedInitialStreamFlowControlWindowBytes();
+  }
+
+  return kDefaultFlowControlSendWindow;
+}
+
 }  // namespace
 
 // Wrapper that aggregates OnAckNotifications for packets sent using
@@ -127,14 +155,10 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
       fec_policy_(FEC_PROTECT_OPTIONAL),
       is_server_(session_->is_server()),
       flow_controller_(
-          session_->connection(),
-          id_,
-          is_server_,
-          session_->config()->HasReceivedInitialFlowControlWindowBytes() ?
-              session_->config()->ReceivedInitialFlowControlWindowBytes() :
-              kDefaultFlowControlSendWindow,
-          session_->config()->GetInitialFlowControlWindowToSend(),
-          session_->config()->GetInitialFlowControlWindowToSend()),
+          session_->connection(), id_, is_server_,
+          GetReceivedFlowControlWindow(session),
+          GetInitialStreamFlowControlWindowToSend(session),
+          GetInitialStreamFlowControlWindowToSend(session)),
       connection_flow_controller_(session_->flow_controller()) {
 }
 

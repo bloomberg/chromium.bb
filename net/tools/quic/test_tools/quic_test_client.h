@@ -14,6 +14,7 @@
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_protocol.h"
 #include "net/tools/balsa/balsa_frame.h"
+#include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_client.h"
 #include "net/tools/quic/test_tools/simple_client.h"
 
@@ -35,12 +36,14 @@ class MockableQuicClient : public QuicClient {
  public:
   MockableQuicClient(IPEndPoint server_address,
                      const QuicServerId& server_id,
-                     const QuicVersionVector& supported_versions);
+                     const QuicVersionVector& supported_versions,
+                     EpollServer* epoll_server);
 
   MockableQuicClient(IPEndPoint server_address,
                      const QuicServerId& server_id,
                      const QuicConfig& config,
-                     const QuicVersionVector& supported_versions);
+                     const QuicVersionVector& supported_versions,
+                     EpollServer* epoll_server);
 
   virtual ~MockableQuicClient() OVERRIDE;
   virtual QuicPacketWriter* CreateQuicPacketWriter() OVERRIDE;
@@ -78,6 +81,9 @@ class QuicTestClient : public SimpleClient,
   // certificates. The certificates, if any, are not verified, but the common
   // name is recorded and available with |cert_common_name()|.
   void ExpectCertificates(bool on);
+
+  // Sets the |user_agent_id| of the |client_|.
+  void SetUserAgentID(const string& user_agent_id);
 
   // Wraps data in a quic packet and sends it.
   ssize_t SendData(string data, bool last_data);
@@ -157,6 +163,8 @@ class QuicTestClient : public SimpleClient,
 
   void WaitForWriteToFlush();
 
+  EpollServer* epoll_server() { return &epoll_server_; }
+
  protected:
   QuicTestClient();
 
@@ -165,6 +173,7 @@ class QuicTestClient : public SimpleClient,
   void set_client(MockableQuicClient* client) { client_.reset(client); }
 
  private:
+  EpollServer epoll_server_;
   scoped_ptr<MockableQuicClient> client_;  // The actual client
   QuicSpdyClientStream* stream_;
 

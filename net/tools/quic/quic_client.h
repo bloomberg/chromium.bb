@@ -47,15 +47,19 @@ class QuicClient : public EpollCallbackInterface,
                                     const string& response_body) = 0;
   };
 
-  QuicClient(IPEndPoint server_address,
-             const QuicServerId& server_id,
-             const QuicVersionVector& supported_versions,
-             bool print_response);
+  // Create a quic client, which will have events managed by an externally owned
+  // EpollServer.
   QuicClient(IPEndPoint server_address,
              const QuicServerId& server_id,
              const QuicVersionVector& supported_versions,
              bool print_response,
-             const QuicConfig& config);
+             EpollServer* epoll_server);
+  QuicClient(IPEndPoint server_address,
+             const QuicServerId& server_id,
+             const QuicVersionVector& supported_versions,
+             bool print_response,
+             const QuicConfig& config,
+             EpollServer* epoll_server);
 
   virtual ~QuicClient();
 
@@ -131,7 +135,7 @@ class QuicClient : public EpollCallbackInterface,
 
   const IPEndPoint& client_address() const { return client_address_; }
 
-  EpollServer* epoll_server() { return &epoll_server_; }
+  EpollServer* epoll_server() { return epoll_server_; }
 
   int fd() { return fd_; }
 
@@ -140,6 +144,10 @@ class QuicClient : public EpollCallbackInterface,
   // This should only be set before the initial Connect()
   void set_server_id(const QuicServerId& server_id) {
     server_id_ = server_id;
+  }
+
+  void SetUserAgentID(const string& user_agent_id) {
+    crypto_config_.set_user_agent_id(user_agent_id);
   }
 
   // SetProofVerifier sets the ProofVerifier that will be used to verify the
@@ -208,7 +216,7 @@ class QuicClient : public EpollCallbackInterface,
   // Session which manages streams.
   scoped_ptr<QuicClientSession> session_;
   // Listens for events on the client socket.
-  EpollServer epoll_server_;
+  EpollServer* epoll_server_;
   // UDP socket.
   int fd_;
 
