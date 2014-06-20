@@ -81,16 +81,9 @@ void EnableWebTestProxyCreation(
   RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy);
 }
 
-void SetMockGamepads(const WebGamepads& pads) {
-  RendererWebKitPlatformSupportImpl::SetMockGamepadsForTesting(pads);
-}
-
-void MockGamepadConnected(int index, const WebGamepad& pad) {
-  RendererWebKitPlatformSupportImpl::MockGamepadConnected(index, pad);
-}
-
-void MockGamepadDisconnected(int index, const WebGamepad& pad) {
-  RendererWebKitPlatformSupportImpl::MockGamepadDisconnected(index, pad);
+void SetMockGamepadProvider(RendererGamepadProvider* provider) {
+  RenderThreadImpl::current()->webkit_platform_support()->
+      set_gamepad_provider(provider);
 }
 
 void SetMockDeviceMotionData(const WebDeviceMotionData& data) {

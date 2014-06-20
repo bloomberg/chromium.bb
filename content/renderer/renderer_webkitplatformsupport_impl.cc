@@ -141,9 +141,6 @@ namespace content {
 namespace {
 
 static bool g_sandbox_enabled = true;
-static blink::WebGamepadListener* web_gamepad_listener = NULL;
-base::LazyInstance<WebGamepads>::Leaky g_test_gamepads =
-    LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<blink::WebDeviceMotionData>::Leaky
     g_test_device_motion_data = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
@@ -231,7 +228,8 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
       child_thread_loop_(base::MessageLoopProxy::current()),
-      web_scrollbar_behavior_(new WebScrollbarBehaviorImpl) {
+      web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
+      gamepad_provider_(NULL) {
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(
         new RendererWebKitPlatformSupportImpl::SandboxSupport);
@@ -885,19 +883,14 @@ WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
 //------------------------------------------------------------------------------
 
 void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
-  if (g_test_gamepads == 0) {
-    RenderThreadImpl::current()->gamepad_shared_memory_reader()->
-        SampleGamepads(gamepads);
-  } else {
-    gamepads = g_test_gamepads.Get();
-  }
+  DCHECK(gamepad_provider_);
+  gamepad_provider_->SampleGamepads(gamepads);
 }
 
 void RendererWebKitPlatformSupportImpl::setGamepadListener(
       blink::WebGamepadListener* listener) {
-  web_gamepad_listener = listener;
-  RenderThreadImpl::current()->gamepad_shared_memory_reader()->
-      SetGamepadListener(listener);
+  DCHECK(gamepad_provider_);
+  gamepad_provider_->SetGamepadListener(listener);
 }
 
 //------------------------------------------------------------------------------
@@ -943,28 +936,6 @@ bool RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(
   bool was_enabled = g_sandbox_enabled;
   g_sandbox_enabled = enable;
   return was_enabled;
-}
-
-// static
-void RendererWebKitPlatformSupportImpl::SetMockGamepadsForTesting(
-    const WebGamepads& pads) {
-  g_test_gamepads.Get() = pads;
-}
-
-// static
-void RendererWebKitPlatformSupportImpl::MockGamepadConnected(
-    int index,
-    const WebGamepad& pad) {
-  if (web_gamepad_listener)
-    web_gamepad_listener->didConnectGamepad(index, pad);
-}
-
-// static
-void RendererWebKitPlatformSupportImpl::MockGamepadDisconnected(
-    int index,
-    const WebGamepad& pad) {
-  if (web_gamepad_listener)
-    web_gamepad_listener->didDisconnectGamepad(index, pad);
 }
 
 //------------------------------------------------------------------------------

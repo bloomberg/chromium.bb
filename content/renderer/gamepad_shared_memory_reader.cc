@@ -6,19 +6,22 @@
 
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
+#include "content/common/gamepad_hardware_buffer.h"
 #include "content/common/gamepad_user_gesture.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/common/gamepad_hardware_buffer.h"
+#include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/public/platform/WebGamepadListener.h"
 
 namespace content {
 
-GamepadSharedMemoryReader::GamepadSharedMemoryReader()
+GamepadSharedMemoryReader::GamepadSharedMemoryReader(
+    RendererWebKitPlatformSupportImpl* webkit_platform_support)
     : gamepad_hardware_buffer_(NULL),
       gamepad_listener_(NULL),
       is_polling_(false),
       ever_interacted_with_(false) {
+  webkit_platform_support->set_gamepad_provider(this);
 }
 
 void GamepadSharedMemoryReader::StartPollingIfNecessary() {

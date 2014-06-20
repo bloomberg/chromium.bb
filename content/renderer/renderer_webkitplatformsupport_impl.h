@@ -41,6 +41,7 @@ class DeviceOrientationEventPump;
 class QuotaMessageFilter;
 class RendererClipboardClient;
 class RenderView;
+class RendererGamepadProvider;
 class ThreadSafeSender;
 class WebClipboardImpl;
 class WebDatabaseObserverImpl;
@@ -148,6 +149,10 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual void setBatteryStatusListener(
       blink::WebBatteryStatusListener* listener);
 
+  void set_gamepad_provider(RendererGamepadProvider* provider) {
+    gamepad_provider_ = provider;
+  }
+
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
   // SetSandboxEnabledForTesting(false) _before_ creating any instances
@@ -156,17 +161,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   //
   // Returns the previous |enable| value.
   static bool SetSandboxEnabledForTesting(bool enable);
-
-  // Set WebGamepads to return when sampleGamepads() is invoked.
-  static void SetMockGamepadsForTesting(const blink::WebGamepads& pads);
-
-  // Notifies blink::WebGamepadListener about a new gamepad if a listener
-  // has been set via setGamepadListener.
-  static void MockGamepadConnected(int index, const blink::WebGamepad& pad);
-
-  // Notifies blink::WebGamepadListener that a gamepad has been disconnected if
-  // a listener has been set via setGamepadListener.
-  static void MockGamepadDisconnected(int index, const blink::WebGamepad& pad);
 
   // Set WebDeviceMotionData to return when setDeviceMotionListener is invoked.
   static void SetMockDeviceMotionDataForTesting(
@@ -235,6 +229,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_ptr<blink::WebScrollbarBehavior> web_scrollbar_behavior_;
 
   scoped_ptr<BatteryStatusDispatcher> battery_status_dispatcher_;
+
+  RendererGamepadProvider* gamepad_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebKitPlatformSupportImpl);
 };

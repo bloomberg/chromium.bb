@@ -26,6 +26,7 @@ namespace content {
 
 class PageState;
 class RenderFrame;
+class RendererGamepadProvider;
 class RenderView;
 class WebTestProxyBase;
 
@@ -44,15 +45,8 @@ void EnableRendererLayoutTestMode();
 void EnableWebTestProxyCreation(
     const base::Callback<void(RenderView*, WebTestProxyBase*)>& callback);
 
-// Sets the WebGamepads that should be returned by
-// WebKitPlatformSupport::sampleGamepads().
-void SetMockGamepads(const blink::WebGamepads& pads);
-
-// Notifies blink about a new gamepad.
-void MockGamepadConnected(int index, const blink::WebGamepad& pad);
-
-// Notifies blink that a gamepad has been disconnected.
-void MockGamepadDisconnected(int index, const blink::WebGamepad& pad);
+// Sets gamepad provider to be used for layout tests.
+void SetMockGamepadProvider(RendererGamepadProvider* provider);
 
 // Sets WebDeviceMotionData that should be used when registering
 // a listener through WebKitPlatformSupport::setDeviceMotionListener().

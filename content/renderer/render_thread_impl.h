@@ -192,6 +192,11 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
     layout_test_mode_ = layout_test_mode;
   }
 
+  RendererWebKitPlatformSupportImpl* webkit_platform_support() const {
+    DCHECK(webkit_platform_support_);
+    return webkit_platform_support_.get();
+  }
+
   IPC::ForwardingMessageFilter* compositor_output_surface_filter() const {
     return compositor_output_surface_filter_.get();
   }

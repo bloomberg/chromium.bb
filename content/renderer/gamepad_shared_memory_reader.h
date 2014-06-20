@@ -9,21 +9,27 @@
 #include "base/memory/shared_memory.h"
 #include "content/common/gamepad_messages.h"
 #include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/renderer_gamepad_provider.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
-
-namespace blink { class WebGamepadListener; }
 
 namespace content {
 
 struct GamepadHardwareBuffer;
+class RendererWebKitPlatformSupportImpl;
 
-class GamepadSharedMemoryReader : public RenderProcessObserver {
+class GamepadSharedMemoryReader
+    : public RenderProcessObserver,
+      public RendererGamepadProvider {
  public:
-  GamepadSharedMemoryReader();
+  GamepadSharedMemoryReader(
+      RendererWebKitPlatformSupportImpl* webkit_platform_support);
   virtual ~GamepadSharedMemoryReader();
 
-  void SampleGamepads(blink::WebGamepads& gamepads);
-  void SetGamepadListener(blink::WebGamepadListener* listener);
+  // RendererGamepadProvider implementation.
+  virtual void SampleGamepads(
+      blink::WebGamepads& gamepads) OVERRIDE;
+  virtual void SetGamepadListener(
+      blink::WebGamepadListener* listener) OVERRIDE;
 
   // RenderProcessObserver implementation.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;

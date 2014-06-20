@@ -405,9 +405,6 @@ void RenderThreadImpl::Init() {
 
   AddFilter((new EmbeddedWorkerContextMessageFilter())->GetFilter());
 
-  gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader());
-  AddObserver(gamepad_shared_memory_reader_.get());
-
   GetContentClient()->renderer()->RenderThreadStarted();
 
   InitSkiaEventTracer();
@@ -791,6 +788,10 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   compositor_output_surface_filter_ =
       CompositorOutputSurface::CreateFilter(output_surface_loop.get());
   AddFilter(compositor_output_surface_filter_.get());
+
+  gamepad_shared_memory_reader_.reset(
+      new GamepadSharedMemoryReader(webkit_platform_support_.get()));
+  AddObserver(gamepad_shared_memory_reader_.get());
 
   RenderThreadImpl::RegisterSchemes();
 

@@ -10,6 +10,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "third_party/WebKit/public/platform/WebGamepadListener.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "v8/include/v8.h"
@@ -136,7 +137,9 @@ void GamepadControllerBindings::SetAxisData(int index, int axis, double data) {
     controller_->SetAxisData(index, axis, data);
 }
 
-GamepadController::GamepadController() : delegate_(NULL), weak_factory_(this) {
+GamepadController::GamepadController()
+    : listener_(NULL),
+      weak_factory_(this) {
   Reset();
 }
 
@@ -151,7 +154,16 @@ void GamepadController::Install(WebFrame* frame) {
 }
 
 void GamepadController::SetDelegate(WebTestDelegate* delegate) {
-  delegate_ = delegate;
+  delegate->setGamepadProvider(this);
+}
+
+void GamepadController::SampleGamepads(blink::WebGamepads& gamepads) {
+  memcpy(&gamepads, &gamepads_, sizeof(blink::WebGamepads));
+}
+
+void GamepadController::SetGamepadListener(
+    blink::WebGamepadListener* listener) {
+  listener_ = listener;
 }
 
 void GamepadController::Connect(int index) {
@@ -163,16 +175,15 @@ void GamepadController::Connect(int index) {
     if (gamepads_.items[i].connected)
       gamepads_.length = i + 1;
   }
-  if (delegate_)
-    delegate_->setGamepadData(gamepads_);
 }
 
 void GamepadController::DispatchConnected(int index) {
-  if (index < 0 || index >= static_cast<int>(WebGamepads::itemsLengthCap))
+  if (index < 0 || index >= static_cast<int>(WebGamepads::itemsLengthCap)
+      || !gamepads_.items[index].connected)
     return;
   const WebGamepad& pad = gamepads_.items[index];
-  if (pad.connected && delegate_)
-    delegate_->didConnectGamepad(index, pad);
+  if (listener_)
+    listener_->didConnectGamepad(index, pad);
 }
 
 void GamepadController::Disconnect(int index) {
@@ -185,10 +196,8 @@ void GamepadController::Disconnect(int index) {
     if (gamepads_.items[i].connected)
       gamepads_.length = i + 1;
   }
-  if (delegate_) {
-    delegate_->setGamepadData(gamepads_);
-    delegate_->didDisconnectGamepad(index, pad);
-  }
+  if (listener_)
+    listener_->didDisconnectGamepad(index, pad);
 }
 
 void GamepadController::SetId(int index, const std::string& src) {
@@ -198,8 +207,6 @@ void GamepadController::SetId(int index, const std::string& src) {
   memset(gamepads_.items[index].id, 0, sizeof(gamepads_.items[index].id));
   for (unsigned i = 0; *p && i < WebGamepad::idLengthCap - 1; ++i)
     gamepads_.items[index].id[i] = *p++;
-  if (delegate_)
-    delegate_->setGamepadData(gamepads_);
 }
 
 void GamepadController::SetButtonCount(int index, int buttons) {
@@ -208,8 +215,6 @@ void GamepadController::SetButtonCount(int index, int buttons) {
   if (buttons < 0 || buttons >= static_cast<int>(WebGamepad::buttonsLengthCap))
     return;
   gamepads_.items[index].buttonsLength = buttons;
-  if (delegate_)
-    delegate_->setGamepadData(gamepads_);
 }
 
 void GamepadController::SetButtonData(int index, int button, double data) {
@@ -219,8 +224,6 @@ void GamepadController::SetButtonData(int index, int button, double data) {
     return;
   gamepads_.items[index].buttons[button].value = data;
   gamepads_.items[index].buttons[button].pressed = data > 0.1f;
-  if (delegate_)
-    delegate_->setGamepadData(gamepads_);
 }
 
 void GamepadController::SetAxisCount(int index, int axes) {
@@ -229,8 +232,6 @@ void GamepadController::SetAxisCount(int index, int axes) {
   if (axes < 0 || axes >= static_cast<int>(WebGamepad::axesLengthCap))
     return;
   gamepads_.items[index].axesLength = axes;
-  if (delegate_)
-    delegate_->setGamepadData(gamepads_);
 }
 
 void GamepadController::SetAxisData(int index, int axis, double data) {
@@ -239,8 +240,6 @@ void GamepadController::SetAxisData(int index, int axis, double data) {
   if (axis < 0 || axis >= static_cast<int>(WebGamepad::axesLengthCap))
     return;
   gamepads_.items[index].axes[axis] = data;
-  if (delegate_)
-    delegate_->setGamepadData(gamepads_);
 }
 
 }  // namespace content

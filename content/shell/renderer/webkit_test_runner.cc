@@ -201,20 +201,9 @@ void WebKitTestRunner::setEditCommand(const std::string& name,
   render_view()->SetEditCommandForNextKeyEvent(name, value);
 }
 
-void WebKitTestRunner::setGamepadData(const WebGamepads& gamepads) {
-  SetMockGamepads(gamepads);
-}
-
-void WebKitTestRunner::didConnectGamepad(
-    int index,
-    const blink::WebGamepad& gamepad) {
-  MockGamepadConnected(index, gamepad);
-}
-
-void WebKitTestRunner::didDisconnectGamepad(
-    int index,
-    const blink::WebGamepad& gamepad) {
-  MockGamepadDisconnected(index, gamepad);
+void WebKitTestRunner::setGamepadProvider(
+    RendererGamepadProvider* provider) {
+  SetMockGamepadProvider(provider);
 }
 
 void WebKitTestRunner::setDeviceMotionData(const WebDeviceMotionData& data) {
