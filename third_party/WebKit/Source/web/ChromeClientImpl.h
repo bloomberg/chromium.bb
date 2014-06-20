@@ -182,6 +182,7 @@ public:
     virtual void didCancelCompositionOnSelectionChange() OVERRIDE;
     virtual void willSetInputMethodState() OVERRIDE;
     virtual void didUpdateTextOfFocusedElementByNonUserInput() OVERRIDE;
+    virtual void showImeIfNeeded() OVERRIDE;
 
     virtual bool usesGpuRasterization() OVERRIDE;
 

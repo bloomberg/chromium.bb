@@ -92,6 +92,8 @@
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
@@ -101,6 +103,7 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "wtf/BitVector.h"
 #include "wtf/HashFunctions.h"
@@ -2101,6 +2104,12 @@ void Element::focus(bool restorePreviousSelection, FocusType type)
 
     cancelFocusAppearanceUpdate();
     updateFocusAppearance(restorePreviousSelection);
+
+    if (UserGestureIndicator::processingUserGesture()) {
+        // Programmatically invoking focus() should bring up the keyboard in
+        // the context of a user gesture.
+        document().page()->chrome().client().showImeIfNeeded();
+    }
 }
 
 void Element::updateFocusAppearance(bool /*restorePreviousSelection*/)

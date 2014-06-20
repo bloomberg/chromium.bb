@@ -828,6 +828,12 @@ void ChromeClientImpl::didUpdateTextOfFocusedElementByNonUserInput()
         m_webView->client()->didUpdateTextOfFocusedElementByNonUserInput();
 }
 
+void ChromeClientImpl::showImeIfNeeded()
+{
+    if (m_webView->client())
+        m_webView->client()->showImeIfNeeded();
+}
+
 void ChromeClientImpl::handleKeyboardEventOnTextField(HTMLInputElement& inputElement, KeyboardEvent& event)
 {
     if (!m_webView->autofillClient())

@@ -237,6 +237,7 @@ public:
     virtual void didCancelCompositionOnSelectionChange() { }
     virtual void willSetInputMethodState() { }
     virtual void didUpdateTextOfFocusedElementByNonUserInput() { }
+    virtual void showImeIfNeeded() { }
 
     virtual bool usesGpuRasterization() = 0;
 

@@ -177,6 +177,9 @@ public:
     // modified by script, not by user input.
     virtual void didUpdateTextOfFocusedElementByNonUserInput() { }
 
+    // Request the browser to show the IME for current input type.
+    virtual void showImeIfNeeded() { }
+
 protected:
     ~WebWidgetClient() { }
 };

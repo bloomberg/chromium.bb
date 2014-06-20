@@ -272,6 +272,7 @@
       'tests/FrameLoaderClientImplTest.cpp',
       'tests/FrameTestHelpers.cpp',
       'tests/FrameTestHelpers.h',
+      'tests/ImeOnFocusTest.cpp',
       'tests/KeyboardTest.cpp',
       'tests/LinkHighlightTest.cpp',
       'tests/ListenerLeakTest.cpp',
