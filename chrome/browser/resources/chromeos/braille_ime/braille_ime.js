@@ -23,6 +23,10 @@
  *   Sent when the user typed a braille cell using the standard keyboard.
  *   ChromeVox treats this similarly to entering braille input using the
  *   braille display.
+ * {type: 'backspace', requestId: string}
+ *   Sent when the user presses the backspace key.
+ *   ChromeVox must respond with a {@code keyEventHandled} message
+ *   with the same request id.
  *
  * Sent from ChromeVox to this IME:
  * {type: 'replaceText', contextID: number, deleteBefore: number,
@@ -31,6 +35,10 @@
  *   and inserts {@code newText}.  {@code contextID} identifies the text field
  *   to apply the update to (no change will happen if focus has moved to a
  *   different field).
+ * {type: 'keyEventHandled', requestId: string, result: boolean}
+ *   Response to a {@code backspace} message indicating whether the
+ *   backspace was handled by ChromeVox or should be allowed to propagate
+ *   through the normal event handling pipeline.
  */
 
 /**
@@ -132,7 +140,8 @@ BrailleIme.prototype = {
     chrome.input.ime.onBlur.addListener(this.onBlur_.bind(this));
     chrome.input.ime.onInputContextUpdate.addListener(
         this.onInputContextUpdate_.bind(this));
-    chrome.input.ime.onKeyEvent.addListener(this.onKeyEvent_.bind(this));
+    chrome.input.ime.onKeyEvent.addListener(this.onKeyEvent_.bind(this),
+                                            ['async']);
     chrome.input.ime.onReset.addListener(this.onReset_.bind(this));
     chrome.input.ime.onMenuItemActivated.addListener(
         this.onMenuItemActivated_.bind(this));
@@ -203,13 +212,14 @@ BrailleIme.prototype = {
    * Called by the system when this IME is active and a key event is generated.
    * @param {string} engineID Engine ID, should be 'braille'.
    * @param {!ChromeKeyboardEvent} event The keyboard event.
-   * @return {boolean} Whether the event was handled by this IME (true) or
-   *     should be allowed to propagate.
    * @private
    */
   onKeyEvent_: function(engineID, event) {
     this.log_('onKeyEvent', engineID + ', ' + JSON.stringify(event));
-    return this.processKey_(event);
+    var result = this.processKey_(event);
+    if (result !== undefined) {
+      chrome.input.ime.keyEventHandled(event.requestId, result);
+    }
   },
 
   /**
@@ -262,12 +272,20 @@ BrailleIme.prototype = {
   /**
    * Handles a qwerty key on the home row as a braille key.
    * @param {!ChromeKeyboardEvent} event Keyboard event.
-   * @return {boolean} Whether the key event was handled or not.
+   * @return {boolean|undefined} Whether the event was handled, or
+   *     {@code undefined} if handling was delegated to ChromeVox.
    * @private
    */
   processKey_: function(event) {
     if (!this.useStandardKeyboard_) {
       return false;
+    }
+    if (event.code === 'Backspace' && event.type === 'keydown') {
+      this.pressed_ = 0;
+      this.accumulated_ = 0;
+      this.sendToChromeVox_(
+          {type: 'backspace', requestId: event.requestId});
+      return undefined;
     }
     var dot = this.CODE_TO_DOT_[event.code];
     if (!dot || event.altKey || event.ctrlKey || event.shiftKey ||
@@ -335,6 +353,15 @@ BrailleIme.prototype = {
             (message);
         this.replaceText_(message.contextID, message.deleteBefore,
                           message.newText);
+        break;
+      case 'keyEventHandled':
+        message =
+            /** @type {{requestId: string, result: boolean}} */ (message);
+        chrome.input.ime.keyEventHandled(message.requestId, message.result);
+        break;
+      default:
+        console.error('Unknown message from ChromeVox: ' +
+            JSON.stringify(message));
         break;
     }
   },

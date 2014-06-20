@@ -91,6 +91,13 @@ BrailleImeUnitTest.prototype = {
     chrome.input.ime = chrome.input.ime || {};
     chrome.runtime = chrome.runtime || {};
     localStorage = {};
+    this.lastSentKeyRequestId_ = 0;
+    this.lastHandledKeyRequestId_ = undefined;
+    this.lastHandledKeyResult_ = undefined;
+    chrome.input.ime.keyEventHandled = function(requestId, result) {
+      this.lastHandledKeyRequestId_ = Number(requestId);
+      this.lastHandledKeyResult_ = result;
+    }.bind(this);
     this.createIme();
   },
 
@@ -122,20 +129,25 @@ BrailleImeUnitTest.prototype = {
     this.port.messages.length = 0;
   },
 
-  sendKeyDown: function(code, extra) {
-    var event = {code: code, type: 'keydown'};
+  sendKeyEvent_: function(type, code, extra) {
+    var event = {type: type,
+                 code: code,
+                 requestId: (++this.lastSentKeyRequestId_) + ''};
     for (var key in extra) {
       event[key] = extra[key];
     }
-    return this.onKeyEvent.dispatch(ENGINE_ID, event);
+    this.onKeyEvent.dispatch(ENGINE_ID, event);
+    if (this.lastSentKeyRequestId_ === this.lastHandledKeyRequestId_) {
+      return this.lastHandledKeyResult_;
+    }
+  },
+
+  sendKeyDown: function(code, extra) {
+    return this.sendKeyEvent_('keydown', code, extra);
   },
 
   sendKeyUp: function(code, extra) {
-    var event = {code: code, type: 'keyup'};
-    for (var key in extra) {
-      event[key] = extra[key];
-    }
-    return this.onKeyEvent.dispatch(ENGINE_ID, event);
+    return this.sendKeyEvent_('keyup', code, extra);
   },
 };
 
@@ -199,6 +211,25 @@ TEST_F('BrailleImeUnitTest', 'KeysWhenStandardKeysEnabled', function() {
              eqJSON([{type: 'brailleDots', dots: 0x03},
                      {type: 'brailleDots', dots: 0x09},
                      {type: 'brailleDots', dots: 0}]));
+});
+
+TEST_F('BrailleImeUnitTest', 'TestBackspaceKey', function() {
+  this.activateIme();
+  // Enable standard keyboard feature.
+  assertFalse(this.menuItems[0].checked);
+  this.onMenuItemActivated.dispatch(ENGINE_ID, this.menuItems[0].id);
+  assertTrue(this.menuItems[0].checked);
+
+  expectEquals(undefined, this.sendKeyDown('Backspace'));
+  assertThat(this.port.messages,
+             eqJSON([{type: 'backspace',
+                      requestId: this.lastSentKeyRequestId_ + ''}]));
+  this.port.onMessage.dispatch(
+      {type: 'keyEventHandled',
+       requestId: this.lastSentKeyRequestId_ + '',
+       result: true});
+  expectEquals(this.lastSentKeyRequestId_, this.lastHandledKeyRequestId_);
+  expectTrue(this.lastHandledKeyResult_);
 });
 
 TEST_F('BrailleImeUnitTest', 'UseStandardKeyboardSettingPreserved', function() {

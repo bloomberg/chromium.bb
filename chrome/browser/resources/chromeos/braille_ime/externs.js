@@ -42,6 +42,12 @@ chrome.input.ime.commitText = function(parameters, opt_callback) {};
 chrome.input.ime.deleteSurroundingText = function(parameters, opt_callback) {};
 
 /**
+ * @param {string} requestId
+ * @param {boolean} response
+ */
+chrome.input.ime.keyEventHandled = function(requestId, response) {};
+
+/**
  * @param {{engineID: string, items: Array.<chrome.input.ime.MenuItem>}}
  *     parameters
  * @param {function()=} opt_callback
@@ -143,6 +149,9 @@ ChromeKeyboardEvent.prototype.shiftKey;
 
 /** @type {boolean} */
 ChromeKeyboardEvent.prototype.capsLock;
+
+/** @type {string} */
+ChromeKeyboardEvent.prototype.requestId;
 
 /**
  * @constructor
