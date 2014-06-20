@@ -84,11 +84,6 @@ class LocalToRemoteSyncer : public SyncTask {
                             google_apis::GDataErrorCode error,
                             scoped_ptr<google_apis::FileResource> entry);
 
-  void DidDeleteForUploadNewFile(scoped_ptr<SyncTaskToken> token,
-                                 SyncStatusCode status);
-  void DidDeleteForCreateFolder(scoped_ptr<SyncTaskToken> token,
-                                SyncStatusCode status);
-
   void UploadNewFile(scoped_ptr<SyncTaskToken> token);
   void DidUploadNewFile(scoped_ptr<SyncTaskToken> token,
                         google_apis::GDataErrorCode error,

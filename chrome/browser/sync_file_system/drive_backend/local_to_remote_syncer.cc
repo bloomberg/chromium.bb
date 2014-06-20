@@ -177,7 +177,7 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
     remote_file_tracker_ = active_ancestor_tracker.Pass();
     target_path_ = active_ancestor_path;
     token->RecordLog("Detected non-folder file in its path.");
-    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::DidDeleteForCreateFolder,
+    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::CompleteWithRetryStatus,
                                 weak_ptr_factory_.GetWeakPtr(),
                                 base::Passed(&token)));
     return;
@@ -318,7 +318,7 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     // Non-conflicting local file update to existing remote *folder*.
     // Assuming this case as local folder deletion + local file creation, delete
     // the remote folder and upload the file.
-    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::DidDeleteForUploadNewFile,
+    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::CompleteWithRetryStatus,
                                 weak_ptr_factory_.GetWeakPtr(),
                                 base::Passed(&token)));
     return;
@@ -329,7 +329,7 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     // Non-conflicting local folder creation to existing remote *file*.
     // Assuming this case as local file deletion + local folder creation, delete
     // the remote file and create a remote folder.
-    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::DidDeleteForCreateFolder,
+    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::CompleteWithRetryStatus,
                                 weak_ptr_factory_.GetWeakPtr(),
                                 base::Passed(&token)));
     return;
@@ -539,40 +539,6 @@ void LocalToRemoteSyncer::DidGetRemoteMetadata(
       base::Bind(&LocalToRemoteSyncer::CompleteWithRetryStatus,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&token)));
-}
-
-void LocalToRemoteSyncer::DidDeleteForUploadNewFile(
-    scoped_ptr<SyncTaskToken> token,
-    SyncStatusCode status) {
-  if (status == SYNC_STATUS_HAS_CONFLICT) {
-    UpdateRemoteMetadata(
-        remote_file_tracker_->file_id(),
-        token.Pass());
-    return;
-  }
-
-  if (status != SYNC_STATUS_OK) {
-    SyncCompleted(token.Pass(), status);
-    return;
-  }
-
-  UploadNewFile(token.Pass());
-}
-
-void LocalToRemoteSyncer::DidDeleteForCreateFolder(
-    scoped_ptr<SyncTaskToken> token,
-    SyncStatusCode status) {
-  if (status == SYNC_STATUS_HAS_CONFLICT) {
-    UpdateRemoteMetadata(remote_file_tracker_->file_id(), token.Pass());
-    return;
-  }
-
-  if (status != SYNC_STATUS_OK) {
-    SyncCompleted(token.Pass(), status);
-    return;
-  }
-
-  CreateRemoteFolder(token.Pass());
 }
 
 void LocalToRemoteSyncer::UploadNewFile(scoped_ptr<SyncTaskToken> token) {
