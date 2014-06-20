@@ -447,24 +447,6 @@
         }],
       ],
     }],
-    ['test_isolation_mode != "noop"', {
-      'targets': [
-        {
-          'target_name': 'nacl_loader_unittests_run',
-          'type': 'none',
-          'dependencies': [
-            'nacl_loader_unittests',
-          ],
-          'includes': [
-            '../build/isolate.gypi',
-            'nacl_loader_unittests.isolate',
-          ],
-          'sources': [
-            'nacl_loader_unittests.isolate',
-          ],
-        },
-      ],
-    }],
   ],
   'targets': [
     {
