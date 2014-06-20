@@ -114,7 +114,8 @@ BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
 }
 
 void BitmapFetcherService::Prefetch(const GURL& url) {
-  EnsureFetcherForUrl(url);
+  if (url.is_valid())
+    EnsureFetcherForUrl(url);
 }
 
 chrome::BitmapFetcher* BitmapFetcherService::CreateFetcher(const GURL& url) {

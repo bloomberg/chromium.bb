@@ -28,6 +28,7 @@ class SuggestionDeletionHandler;
 class TemplateURL;
 
 namespace base {
+class DictionaryValue;
 class ListValue;
 class Value;
 }
@@ -433,6 +434,9 @@ class BaseSearchProvider : public AutocompleteProvider,
   bool ParseSuggestResults(const base::Value& root_val,
                            bool is_keyword_result,
                            Results* results);
+
+  // Prefetches any images in Answers results.
+  void PrefetchAnswersImages(const base::DictionaryValue* answers_json);
 
   // Called at the end of ParseSuggestResults to rank the |results|.
   virtual void SortResults(bool is_keyword,

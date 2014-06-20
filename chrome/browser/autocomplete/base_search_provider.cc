@@ -13,6 +13,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
@@ -924,6 +926,7 @@ bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
           const base::DictionaryValue* answer_json = NULL;
           if (suggestion_detail->GetDictionary("ansa", &answer_json)) {
             match_type = AutocompleteMatchType::SEARCH_SUGGEST_ANSWER;
+            PrefetchAnswersImages(answer_json);
             std::string contents;
             base::JSONWriter::Write(answer_json, &contents);
             answer_contents = base::UTF8ToUTF16(contents);
@@ -944,6 +947,33 @@ bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
   }
   SortResults(is_keyword_result, relevances, results);
   return true;
+}
+
+void BaseSearchProvider::PrefetchAnswersImages(
+    const base::DictionaryValue* answer_json) {
+  DCHECK(answer_json);
+  const base::ListValue* lines = NULL;
+  answer_json->GetList("l", &lines);
+  if (!lines || lines->GetSize() == 0)
+    return;
+
+  BitmapFetcherService* image_service =
+      BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
+  DCHECK(image_service);
+
+  for (size_t line = 0; line < lines->GetSize(); ++line) {
+    const base::DictionaryValue* imageLine = NULL;
+    lines->GetDictionary(line, &imageLine);
+    if (!imageLine)
+      continue;
+    const base::DictionaryValue* imageData = NULL;
+    imageLine->GetDictionary("i", &imageData);
+    if (!imageData)
+      continue;
+    std::string imageUrl;
+    imageData->GetString("d", &imageUrl);
+    image_service->Prefetch(GURL(imageUrl));
+  }
 }
 
 void BaseSearchProvider::SortResults(bool is_keyword,
