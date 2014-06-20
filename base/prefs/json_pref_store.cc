@@ -37,21 +37,23 @@ class FileThreadDeserializer
         origin_loop_proxy_(base::MessageLoopProxy::current()) {
   }
 
-  void Start(const base::FilePath& path) {
+  void Start(const base::FilePath& path,
+             const base::FilePath& alternate_path) {
     DCHECK(origin_loop_proxy_->BelongsToCurrentThread());
     // TODO(gab): This should use PostTaskAndReplyWithResult instead of using
     // the |error_| member to pass data across tasks.
     sequenced_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&FileThreadDeserializer::ReadFileAndReport,
-                   this, path));
+                   this, path, alternate_path));
   }
 
   // Deserializes JSON on the sequenced task runner.
-  void ReadFileAndReport(const base::FilePath& path) {
+  void ReadFileAndReport(const base::FilePath& path,
+                         const base::FilePath& alternate_path) {
     DCHECK(sequenced_task_runner_->RunsTasksOnCurrentThread());
 
-    value_.reset(DoReading(path, &error_, &no_dir_));
+    value_.reset(DoReading(path, alternate_path, &error_, &no_dir_));
 
     origin_loop_proxy_->PostTask(
         FROM_HERE,
@@ -65,8 +67,14 @@ class FileThreadDeserializer
   }
 
   static base::Value* DoReading(const base::FilePath& path,
+                                const base::FilePath& alternate_path,
                                 PersistentPrefStore::PrefReadError* error,
                                 bool* no_dir) {
+    if (!base::PathExists(path) && !alternate_path.empty() &&
+        base::PathExists(alternate_path)) {
+      base::Move(alternate_path, path);
+    }
+
     int error_code;
     std::string error_msg;
     JSONFileValueSerializer serializer(path);
@@ -167,6 +175,22 @@ JsonPrefStore::JsonPrefStore(const base::FilePath& filename,
       read_error_(PREF_READ_ERROR_NONE) {
 }
 
+JsonPrefStore::JsonPrefStore(const base::FilePath& filename,
+                             const base::FilePath& alternate_filename,
+                             base::SequencedTaskRunner* sequenced_task_runner,
+                             scoped_ptr<PrefFilter> pref_filter)
+    : path_(filename),
+      alternate_path_(alternate_filename),
+      sequenced_task_runner_(sequenced_task_runner),
+      prefs_(new base::DictionaryValue()),
+      read_only_(false),
+      writer_(filename, sequenced_task_runner),
+      pref_filter_(pref_filter.Pass()),
+      initialized_(false),
+      filtering_in_progress_(false),
+      read_error_(PREF_READ_ERROR_NONE) {
+}
+
 bool JsonPrefStore::GetValue(const std::string& key,
                              const base::Value** result) const {
   base::Value* tmp = NULL;
@@ -252,7 +276,8 @@ PersistentPrefStore::PrefReadError JsonPrefStore::ReadPrefs() {
   PrefReadError error;
   bool no_dir;
   scoped_ptr<base::Value> value(
-      FileThreadDeserializer::DoReading(path_, &error, &no_dir));
+      FileThreadDeserializer::DoReading(path_, alternate_path_, &error,
+                                        &no_dir));
   OnFileRead(value.Pass(), error, no_dir);
   return filtering_in_progress_ ? PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE :
                                   error;
@@ -271,7 +296,7 @@ void JsonPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
   // in the end.
   scoped_refptr<FileThreadDeserializer> deserializer(
       new FileThreadDeserializer(this, sequenced_task_runner_.get()));
-  deserializer->Start(path_);
+  deserializer->Start(path_, alternate_path_);
 }
 
 void JsonPrefStore::CommitPendingWrite() {

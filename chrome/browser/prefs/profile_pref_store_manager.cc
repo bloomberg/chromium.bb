@@ -130,8 +130,11 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
       new JsonPrefStore(GetPrefFilePathFromProfilePath(profile_path_),
                         io_task_runner,
                         unprotected_pref_hash_filter.PassAs<PrefFilter>()));
+  // TODO(gab): Remove kDeprecatedProtectedPreferencesFilename as an alternate
+  // file in M40+.
   scoped_refptr<JsonPrefStore> protected_pref_store(new JsonPrefStore(
-      profile_path_.Append(chrome::kProtectedPreferencesFilename),
+      profile_path_.Append(chrome::kSecurePreferencesFilename),
+      profile_path_.Append(chrome::kProtectedPreferencesFilenameDeprecated),
       io_task_runner,
       protected_pref_hash_filter.PassAs<PrefFilter>()));
 

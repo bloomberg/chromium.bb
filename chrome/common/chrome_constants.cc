@@ -178,13 +178,15 @@ const base::FilePath::CharType kNewTabThumbnailsFilename[] =
     FPL("Top Thumbnails");
 const base::FilePath::CharType kOBCertFilename[] = FPL("Origin Bound Certs");
 const base::FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
-const base::FilePath::CharType kProtectedPreferencesFilename[] =
+const base::FilePath::CharType kProtectedPreferencesFilenameDeprecated[] =
     FPL("Protected Preferences");
 const base::FilePath::CharType kReadmeFilename[] = FPL("README");
 const base::FilePath::CharType kResetPromptMementoFilename[] =
     FPL("Reset Prompt Memento");
 const base::FilePath::CharType kSafeBrowsingBaseFilename[] =
     FPL("Safe Browsing");
+const base::FilePath::CharType kSecurePreferencesFilename[] =
+    FPL("Secure Preferences");
 const base::FilePath::CharType kServiceStateFileName[] = FPL("Service State");
 const base::FilePath::CharType kShortcutsDatabaseName[] = FPL("Shortcuts");
 const base::FilePath::CharType kSingletonCookieFilename[] =

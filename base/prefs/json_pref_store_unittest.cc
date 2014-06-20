@@ -44,7 +44,7 @@ class InterceptingPrefFilter : public PrefFilter {
 
   bool has_intercepted_prefs() const { return intercepted_prefs_ != NULL; }
 
-  // Finalize an intercepted read, handing |intercept_prefs_| back to its
+  // Finalize an intercepted read, handing |intercepted_prefs_| back to its
   // JsonPrefStore.
   void ReleasePrefs();
 
@@ -115,6 +115,23 @@ TEST_F(JsonPrefStoreTest, NonExistentFile) {
   ASSERT_FALSE(PathExists(bogus_input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
       bogus_input_file,
+      message_loop_.message_loop_proxy().get(),
+      scoped_ptr<PrefFilter>());
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
+            pref_store->ReadPrefs());
+  EXPECT_FALSE(pref_store->ReadOnly());
+}
+
+// Test fallback behavior for a nonexistent file and alternate file.
+TEST_F(JsonPrefStoreTest, NonExistentFileAndAlternateFile) {
+  base::FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
+  base::FilePath bogus_alternate_input_file =
+      data_dir_.AppendASCII("read_alternate.txt");
+  ASSERT_FALSE(PathExists(bogus_input_file));
+  ASSERT_FALSE(PathExists(bogus_alternate_input_file));
+  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
+      bogus_input_file,
+      bogus_alternate_input_file,
       message_loop_.message_loop_proxy().get(),
       scoped_ptr<PrefFilter>());
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
@@ -454,6 +471,191 @@ TEST_F(JsonPrefStoreTest, ReadAsyncWithInterceptor) {
   }
 
   pref_store->RemoveObserver(&mock_observer);
+
+  // The JSON file looks like this:
+  // {
+  //   "homepage": "http://www.cnn.com",
+  //   "some_directory": "/usr/local/",
+  //   "tabs": {
+  //     "new_windows_in_tabs": true,
+  //     "max_tabs": 20
+  //   }
+  // }
+
+  RunBasicJsonPrefStoreTest(
+      pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
+}
+
+TEST_F(JsonPrefStoreTest, AlternateFile) {
+  ASSERT_TRUE(
+      base::CopyFile(data_dir_.AppendASCII("read.json"),
+                     temp_dir_.path().AppendASCII("alternate.json")));
+
+  // Test that the alternate file is moved to the main file and read as-is from
+  // there.
+  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath alternate_input_file =
+      temp_dir_.path().AppendASCII("alternate.json");
+  ASSERT_FALSE(PathExists(input_file));
+  ASSERT_TRUE(PathExists(alternate_input_file));
+  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
+      input_file,
+      alternate_input_file,
+      message_loop_.message_loop_proxy().get(),
+      scoped_ptr<PrefFilter>());
+
+  ASSERT_FALSE(PathExists(input_file));
+  ASSERT_TRUE(PathExists(alternate_input_file));
+  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, pref_store->ReadPrefs());
+
+  ASSERT_TRUE(PathExists(input_file));
+  ASSERT_FALSE(PathExists(alternate_input_file));
+
+  EXPECT_FALSE(pref_store->ReadOnly());
+  EXPECT_TRUE(pref_store->IsInitializationComplete());
+
+  // The JSON file looks like this:
+  // {
+  //   "homepage": "http://www.cnn.com",
+  //   "some_directory": "/usr/local/",
+  //   "tabs": {
+  //     "new_windows_in_tabs": true,
+  //     "max_tabs": 20
+  //   }
+  // }
+
+  RunBasicJsonPrefStoreTest(
+      pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
+}
+
+TEST_F(JsonPrefStoreTest, AlternateFileIgnoredWhenMainFileExists) {
+  ASSERT_TRUE(
+      base::CopyFile(data_dir_.AppendASCII("read.json"),
+                     temp_dir_.path().AppendASCII("write.json")));
+  ASSERT_TRUE(
+      base::CopyFile(data_dir_.AppendASCII("invalid.json"),
+                     temp_dir_.path().AppendASCII("alternate.json")));
+
+  // Test that the alternate file is ignored and that the read occurs from the
+  // existing main file. There is no attempt at even deleting the alternate
+  // file as this scenario should never happen in normal user-data-dirs.
+  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath alternate_input_file =
+      temp_dir_.path().AppendASCII("alternate.json");
+  ASSERT_TRUE(PathExists(input_file));
+  ASSERT_TRUE(PathExists(alternate_input_file));
+  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
+      input_file,
+      alternate_input_file,
+      message_loop_.message_loop_proxy().get(),
+      scoped_ptr<PrefFilter>());
+
+  ASSERT_TRUE(PathExists(input_file));
+  ASSERT_TRUE(PathExists(alternate_input_file));
+  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, pref_store->ReadPrefs());
+
+  ASSERT_TRUE(PathExists(input_file));
+  ASSERT_TRUE(PathExists(alternate_input_file));
+
+  EXPECT_FALSE(pref_store->ReadOnly());
+  EXPECT_TRUE(pref_store->IsInitializationComplete());
+
+  // The JSON file looks like this:
+  // {
+  //   "homepage": "http://www.cnn.com",
+  //   "some_directory": "/usr/local/",
+  //   "tabs": {
+  //     "new_windows_in_tabs": true,
+  //     "max_tabs": 20
+  //   }
+  // }
+
+  RunBasicJsonPrefStoreTest(
+      pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
+}
+
+TEST_F(JsonPrefStoreTest, AlternateFileDNE) {
+  ASSERT_TRUE(
+      base::CopyFile(data_dir_.AppendASCII("read.json"),
+                     temp_dir_.path().AppendASCII("write.json")));
+
+  // Test that the basic read works fine when an alternate file is specified but
+  // does not exist.
+  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath alternate_input_file =
+      temp_dir_.path().AppendASCII("alternate.json");
+  ASSERT_TRUE(PathExists(input_file));
+  ASSERT_FALSE(PathExists(alternate_input_file));
+  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
+      input_file,
+      alternate_input_file,
+      message_loop_.message_loop_proxy().get(),
+      scoped_ptr<PrefFilter>());
+
+  ASSERT_TRUE(PathExists(input_file));
+  ASSERT_FALSE(PathExists(alternate_input_file));
+  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, pref_store->ReadPrefs());
+
+  ASSERT_TRUE(PathExists(input_file));
+  ASSERT_FALSE(PathExists(alternate_input_file));
+
+  EXPECT_FALSE(pref_store->ReadOnly());
+  EXPECT_TRUE(pref_store->IsInitializationComplete());
+
+  // The JSON file looks like this:
+  // {
+  //   "homepage": "http://www.cnn.com",
+  //   "some_directory": "/usr/local/",
+  //   "tabs": {
+  //     "new_windows_in_tabs": true,
+  //     "max_tabs": 20
+  //   }
+  // }
+
+  RunBasicJsonPrefStoreTest(
+      pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
+}
+
+TEST_F(JsonPrefStoreTest, BasicAsyncWithAlternateFile) {
+  ASSERT_TRUE(
+      base::CopyFile(data_dir_.AppendASCII("read.json"),
+                     temp_dir_.path().AppendASCII("alternate.json")));
+
+  // Test that the alternate file is moved to the main file and read as-is from
+  // there even when the read is made asynchronously.
+  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath alternate_input_file =
+      temp_dir_.path().AppendASCII("alternate.json");
+  ASSERT_FALSE(PathExists(input_file));
+  ASSERT_TRUE(PathExists(alternate_input_file));
+  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
+      input_file,
+      alternate_input_file,
+      message_loop_.message_loop_proxy().get(),
+      scoped_ptr<PrefFilter>());
+
+  ASSERT_FALSE(PathExists(input_file));
+  ASSERT_TRUE(PathExists(alternate_input_file));
+
+  {
+    MockPrefStoreObserver mock_observer;
+    pref_store->AddObserver(&mock_observer);
+
+    MockReadErrorDelegate* mock_error_delegate = new MockReadErrorDelegate;
+    pref_store->ReadPrefsAsync(mock_error_delegate);
+
+    EXPECT_CALL(mock_observer, OnInitializationCompleted(true)).Times(1);
+    EXPECT_CALL(*mock_error_delegate,
+                OnError(PersistentPrefStore::PREF_READ_ERROR_NONE)).Times(0);
+    RunLoop().RunUntilIdle();
+    pref_store->RemoveObserver(&mock_observer);
+
+    EXPECT_FALSE(pref_store->ReadOnly());
+    EXPECT_TRUE(pref_store->IsInitializationComplete());
+  }
+
+  ASSERT_TRUE(PathExists(input_file));
+  ASSERT_FALSE(PathExists(alternate_input_file));
 
   // The JSON file looks like this:
   // {
