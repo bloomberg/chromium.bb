@@ -9,7 +9,9 @@ self.onmessage = function(e) {
 var testTargets = [
     'other.html',
     'http://',
-    'http://www.example.com/foo'
+    'http://www.example.com/foo',
+    'fetch-status.php?status=200',
+    'fetch-status.php?status=404'
 ];
 
 function doNextFetchTest(port) {
@@ -22,8 +24,8 @@ function doNextFetchTest(port) {
     }
     var target = testTargets.shift();
     fetch(target)
-    .then(function() {
-        port.postMessage('Resolved: ' + target);
+    .then(function(response) {
+        port.postMessage('Resolved: ' + target + ' [' + response.status + ']' + response.statusText);
         doNextFetchTest(port);
     }).catch(function(e) {
         port.postMessage('Rejected: ' + target + ' : '+ e.message);

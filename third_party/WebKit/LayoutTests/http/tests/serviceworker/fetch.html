@@ -18,9 +18,11 @@ test.step(function() {
 
     var result = [];
     var expected = [
-        'Resolved: other.html',
+        'Resolved: other.html [200]OK',
         'Rejected: http:// : Invalid URL',
         'Rejected: http://www.example.com/foo : Failed to fetch',
+        'Resolved: fetch-status.php?status=200 [200]OK',
+        'Resolved: fetch-status.php?status=404 [404]Not Found',
     ];
 
     function onMessage(e) {

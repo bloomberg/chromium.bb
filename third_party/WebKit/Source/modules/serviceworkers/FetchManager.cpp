@@ -13,6 +13,7 @@
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "modules/serviceworkers/Response.h"
+#include "modules/serviceworkers/ResponseInit.h"
 #include "platform/network/ResourceRequest.h"
 #include "wtf/HashSet.h"
 
@@ -75,11 +76,15 @@ void FetchManager::Loader::didFinishLoading(unsigned long, double)
         blobData->appendFile(filePath);
         // FIXME: Set the ContentType correctly.
     }
-    Dictionary options;
+    ResponseInit responseInit;
+    // FIXME: We may have to filter the status when we support CORS.
+    // http://fetch.spec.whatwg.org/#concept-filtered-response-opaque
+    responseInit.status = m_response.httpStatusCode();
+    responseInit.statusText = m_response.httpStatusText();
     // FIXME: fill options.
     RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), m_downloadedBlobLength));
     // FIXME: Handle response status correctly.
-    m_resolver->resolve(Response::create(blob.get(), options));
+    m_resolver->resolve(Response::create(blob.get(), responseInit));
     notifyFinished();
 }
 

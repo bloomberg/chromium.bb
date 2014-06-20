@@ -12,6 +12,11 @@
 namespace WebCore {
 
 struct ResponseInit {
+    ResponseInit()
+        : status(200)
+        , statusText("OK")
+    {
+    }
     explicit ResponseInit(const Dictionary& options)
         : status(200)
         , statusText("OK")

@@ -22,7 +22,8 @@ struct ResponseInit;
 
 class Response FINAL : public ScriptWrappable, public RefCounted<Response> {
 public:
-    static PassRefPtr<Response> create(Blob* body, const Dictionary& responseInit);
+    static PassRefPtr<Response> create(Blob*, const Dictionary&);
+    static PassRefPtr<Response> create(Blob*, const ResponseInit&);
     ~Response() { };
 
     unsigned short status() const { return m_status; }

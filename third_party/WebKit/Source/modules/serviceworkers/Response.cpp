@@ -15,11 +15,16 @@ namespace WebCore {
 
 PassRefPtr<Response> Response::create(Blob* body, const Dictionary& responseInit)
 {
+    return create(body, ResponseInit(responseInit));
+}
+
+PassRefPtr<Response> Response::create(Blob* body, const ResponseInit& responseInit)
+{
     RefPtr<BlobDataHandle> blobDataHandle = body ? body->blobDataHandle() : nullptr;
 
     // FIXME: Maybe append or override content-length and content-type headers using the blob. The spec will clarify what to do:
     // https://github.com/slightlyoff/ServiceWorker/issues/192
-    return adoptRef(new Response(blobDataHandle.release(), ResponseInit(responseInit)));
+    return adoptRef(new Response(blobDataHandle.release(), responseInit));
 }
 
 PassRefPtr<HeaderMap> Response::headers() const
@@ -43,7 +48,6 @@ Response::Response(PassRefPtr<BlobDataHandle> blobDataHandle, const ResponseInit
     , m_blobDataHandle(blobDataHandle)
 {
     ScriptWrappable::init(this);
-
     if (!m_headers)
         m_headers = HeaderMap::create();
 }
