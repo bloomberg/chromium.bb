@@ -596,7 +596,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     RuleMatchingBehavior matchingBehavior)
 {
     ASSERT(document().frame());
-    ASSERT(documentSettings());
+    ASSERT(document().settings());
     ASSERT(!hasPendingAuthorStyleSheets());
     ASSERT(!m_needCollectFeatures);
 
@@ -695,7 +695,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const RenderStyle& elementStyle, RenderStyle* parentStyle, const StyleKeyframe* keyframe, const AtomicString& animationName)
 {
     ASSERT(document().frame());
-    ASSERT(documentSettings());
+    ASSERT(document().settings());
     ASSERT(!hasPendingAuthorStyleSheets());
 
     if (element == document().documentElement())
@@ -806,7 +806,7 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
 bool StyleResolver::pseudoStyleForElementInternal(Element& element, const PseudoStyleRequest& pseudoStyleRequest, RenderStyle* parentStyle, StyleResolverState& state)
 {
     ASSERT(document().frame());
-    ASSERT(documentSettings());
+    ASSERT(document().settings());
     ASSERT(pseudoStyleRequest.pseudoId != FIRST_LINE_INHERITED);
 
     StyleResolverParentScope::ensureParentStackIsPushed();

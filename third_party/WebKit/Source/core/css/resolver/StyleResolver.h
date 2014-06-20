@@ -281,7 +281,6 @@ private:
     void matchPageRules(MatchResult&, RuleSet*, bool isLeftPage, bool isFirstPage, const String& pageName);
     void matchPageRulesForList(WillBeHeapVector<RawPtrWillBeMember<StyleRulePage> >& matchedRules, const WillBeHeapVector<RawPtrWillBeMember<StyleRulePage> >&, bool isLeftPage, bool isFirstPage, const String& pageName);
     void collectViewportRules();
-    Settings* documentSettings() { return m_document.settings(); }
 
     bool isLeftPage(int pageIndex) const;
     bool isRightPage(int pageIndex) const { return !isLeftPage(pageIndex); }
