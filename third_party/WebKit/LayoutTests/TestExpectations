@@ -960,9 +960,6 @@ crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359960 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359961 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
-crbug.com/385540 editing/execCommand/indent-pre.html [ NeedsRebaseline ]
-crbug.com/385540 fast/text/delete-hard-break-character.html [ NeedsRebaseline ]
-
 crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
 
 crbug.com/362047 [ Mac Linux ] mhtml/mhtml_in_iframe.html [ Crash Pass ]
