@@ -29,6 +29,7 @@ class UIThreadSearchTermsData : public SearchTermsData {
   virtual std::string GetSuggestClient() const OVERRIDE;
   virtual std::string GetSuggestRequestIdentifier() const OVERRIDE;
   virtual std::string NTPIsThemedParam() const OVERRIDE;
+  virtual std::string GoogleImageSearchSource() const OVERRIDE;
 
   // Used by tests to override the value for the Google base URL.  Passing the
   // empty string cancels this override.

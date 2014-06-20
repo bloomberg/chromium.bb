@@ -26,6 +26,7 @@ class TestSearchTermsData : public SearchTermsData {
   virtual base::string16 GetRlzParameterValue(
       bool from_app_list) const OVERRIDE;
   virtual std::string GetSearchClient() const OVERRIDE;
+  virtual std::string GoogleImageSearchSource() const OVERRIDE;
 
   void set_google_base_url(const std::string& google_base_url) {
     google_base_url_ = google_base_url;
@@ -57,6 +58,10 @@ base::string16 TestSearchTermsData::GetRlzParameterValue(
 
 std::string TestSearchTermsData::GetSearchClient() const {
   return search_client_;
+}
+
+std::string TestSearchTermsData::GoogleImageSearchSource() const {
+  return "google_image_search_source";
 }
 
 // TemplateURLTest ------------------------------------------------------------
@@ -254,6 +259,10 @@ TEST_F(TemplateURLTest, URLRefTestImageURLWithPOST) {
             EXPECT_EQ(
                 base::IntToString(search_args.image_original_size.width()),
                 i->second);
+            break;
+          case TemplateURLRef::GOOGLE_IMAGE_SEARCH_SOURCE:
+            EXPECT_EQ("sbisrc", i->first);
+            EXPECT_EQ(search_terms_data.GoogleImageSearchSource(), i->second);
             break;
           case TemplateURLRef::GOOGLE_IMAGE_THUMBNAIL:
             EXPECT_EQ("image_content", i->first);

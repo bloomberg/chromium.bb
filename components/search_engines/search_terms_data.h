@@ -56,6 +56,10 @@ class SearchTermsData {
   // non-empty for UIThreadSearchTermsData.
   virtual std::string NTPIsThemedParam() const;
 
+  // Returns the value to use for replacements of type
+  // GOOGLE_IMAGE_SEARCH_SOURCE.
+  virtual std::string GoogleImageSearchSource() const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchTermsData);
 };

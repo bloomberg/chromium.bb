@@ -24,7 +24,6 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/search_engines/search_terms_data.h"
@@ -167,23 +166,6 @@ std::string FindSearchTermsKey(const std::string& params) {
     }
   }
   return std::string();
-}
-
-// Returns the string to use for replacements of type
-// GOOGLE_IMAGE_SEARCH_SOURCE.
-std::string GetGoogleImageSearchSource() {
-  chrome::VersionInfo version_info;
-  if (version_info.is_valid()) {
-    std::string version(version_info.Name() + " " + version_info.Version());
-    if (version_info.IsOfficialBuild())
-      version += " (Official)";
-    version += " " + version_info.OSType();
-    std::string modifier(version_info.GetVersionStringModifier());
-    if (!modifier.empty())
-      version += " " + modifier;
-    return version;
-  }
-  return "unknown";
 }
 
 bool IsTemplateParameterString(const std::string& param) {
@@ -593,7 +575,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(
         Replacement(TemplateURLRef::GOOGLE_IMAGE_ORIGINAL_WIDTH, start));
   } else if (parameter == kGoogleImageSearchSource) {
-    url->insert(start, GetGoogleImageSearchSource());
+    replacements->push_back(
+        Replacement(TemplateURLRef::GOOGLE_IMAGE_SEARCH_SOURCE, start));
   } else if (parameter == kGoogleImageThumbnailParameter) {
     replacements->push_back(
         Replacement(TemplateURLRef::GOOGLE_IMAGE_THUMBNAIL, start));
@@ -1111,6 +1094,12 @@ std::string TemplateURLRef::HandleReplacements(
               base::IntToString(search_terms_args.image_original_size.height()),
               *i, &url);
         }
+        break;
+
+      case GOOGLE_IMAGE_SEARCH_SOURCE:
+        HandleReplacement(
+            std::string(), search_terms_data.GoogleImageSearchSource(), *i,
+            &url);
         break;
 
       default:

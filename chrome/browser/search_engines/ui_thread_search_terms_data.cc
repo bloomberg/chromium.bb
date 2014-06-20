@@ -18,6 +18,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/google/core/browser/google_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -141,6 +142,24 @@ std::string UIThreadSearchTermsData::NTPIsThemedParam() const {
 #endif  // defined(ENABLE_THEMES)
 
   return std::string();
+}
+
+// It's acutally OK to call this method on any thread, but it's currently placed
+// in UIThreadSearchTermsData since SearchTermsData cannot depend on
+// VersionInfo.
+std::string UIThreadSearchTermsData::GoogleImageSearchSource() const {
+  chrome::VersionInfo version_info;
+  if (version_info.is_valid()) {
+    std::string version(version_info.Name() + " " + version_info.Version());
+    if (version_info.IsOfficialBuild())
+      version += " (Official)";
+    version += " " + version_info.OSType();
+    std::string modifier(version_info.GetVersionStringModifier());
+    if (!modifier.empty())
+      version += " " + modifier;
+    return version;
+  }
+  return "unknown";
 }
 
 // static
