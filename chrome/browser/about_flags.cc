@@ -408,6 +408,16 @@ const Experiment::Choice kExtensionContentVerificationChoices[] = {
     extensions::switches::kExtensionContentVerificationEnforceStrict },
 };
 
+#if defined(OS_ANDROID)
+const Experiment::Choice kAnswersInSuggestChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableAnswersInSuggest, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableAnswersInSuggest, ""}
+};
+#endif
+
 // Using independent flags (instead of flag=value flags) to be able to
 // associate the version with a FieldTrial. FieldTrials don't currently support
 // flag=value flags.
@@ -1916,11 +1926,11 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_ANDROID)
   {
-    "enable-answers-in-suggest",
+    "answers-in-suggest",
     IDS_FLAGS_ENABLE_ANSWERS_IN_SUGGEST_NAME,
     IDS_FLAGS_ENABLE_ANSWERS_IN_SUGGEST_DESCRIPTION,
     kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kEnableAnswersInSuggest)
+    MULTI_VALUE_TYPE(kAnswersInSuggestChoices)
   },
 #endif
   {
