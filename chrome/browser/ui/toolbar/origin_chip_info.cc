@@ -81,13 +81,17 @@ int StringForChromeHost(const GURL& url) {
 
 }  // namespace
 
-OriginChipInfo::OriginChipInfo(
-    extensions::IconImage::Observer* owner,
-    Profile* profile)
+OriginChipInfo::OriginChipInfo(extensions::IconImage::Observer* owner,
+                               Profile* profile)
     : owner_(owner),
-      profile_(profile) {}
+      profile_(profile),
+      security_level_(ToolbarModel::NONE),
+      is_url_malware_(false),
+      icon_(IDR_PRODUCT_LOGO_16) {
+}
 
-OriginChipInfo::~OriginChipInfo() {}
+OriginChipInfo::~OriginChipInfo() {
+}
 
 bool OriginChipInfo::Update(const content::WebContents* web_contents,
                             const ToolbarModel* toolbar_model) {
