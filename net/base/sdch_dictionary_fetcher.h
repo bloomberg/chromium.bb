@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 // Note that this sort of calling can't be done in the /net directory, as it has
 // no concept of the HTTP cache (which is only visible at the browser level).
 
-#ifndef CHROME_BROWSER_NET_SDCH_DICTIONARY_FETCHER_H_
-#define CHROME_BROWSER_NET_SDCH_DICTIONARY_FETCHER_H_
+#ifndef NET_BASE_SDCH_DICTIONARY_FETCHER_H_
+#define NET_BASE_SDCH_DICTIONARY_FETCHER_H_
 
 #include <queue>
 #include <set>
@@ -20,20 +20,20 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace net {
+
 class URLFetcher;
 class URLRequestContextGetter;
-}  // namespace net
 
-class SdchDictionaryFetcher
-    : public net::URLFetcherDelegate,
-      public net::SdchFetcher,
+class NET_EXPORT SdchDictionaryFetcher
+    : public URLFetcherDelegate,
+      public SdchFetcher,
       public base::NonThreadSafe {
  public:
   // Consumer must guarantee that the SdchManager pointer outlives
   // this object.  The current implementation guarantees this by
   // the SdchManager owning this object.
-  SdchDictionaryFetcher(net::SdchManager* manager,
-                        net::URLRequestContextGetter* context);
+  SdchDictionaryFetcher(SdchManager* manager,
+                        URLRequestContextGetter* context);
   virtual ~SdchDictionaryFetcher();
 
   // Implementation of SdchFetcher class.
@@ -54,17 +54,17 @@ class SdchDictionaryFetcher
   // in the  |fetch_queue_|.
   void StartFetching();
 
-  // Implementation of net::URLFetcherDelegate. Called after transmission
+  // Implementation of URLFetcherDelegate. Called after transmission
   // completes (either successfully or with failure).
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
-  net::SdchManager* const manager_;
+  SdchManager* const manager_;
 
   // A queue of URLs that are being used to download dictionaries.
   std::queue<GURL> fetch_queue_;
   // The currently outstanding URL fetch of a dicitonary.
   // If this is null, then there is no outstanding request.
-  scoped_ptr<net::URLFetcher> current_fetch_;
+  scoped_ptr<URLFetcher> current_fetch_;
 
   // Always spread out the dictionary fetches, so that they don't steal
   // bandwidth from the actual page load.  Create delayed tasks to spread out
@@ -89,9 +89,11 @@ class SdchDictionaryFetcher
 
   // Store the system_url_request_context_getter to use it when we start
   // fetching.
-  scoped_refptr<net::URLRequestContextGetter> context_;
+  scoped_refptr<URLRequestContextGetter> context_;
 
   DISALLOW_COPY_AND_ASSIGN(SdchDictionaryFetcher);
 };
 
-#endif  // CHROME_BROWSER_NET_SDCH_DICTIONARY_FETCHER_H_
+}  // namespace net
+
+#endif  // NET_BASE_SDCH_DICTIONARY_FETCHER_H_

@@ -253,6 +253,8 @@
       'base/priority_queue.h',
       'base/request_priority.cc',
       'base/request_priority.h',
+      'base/sdch_dictionary_fetcher.cc',
+      'base/sdch_dictionary_fetcher.h',
       'base/sdch_manager.cc',
       'base/sdch_manager.h',
       'base/static_cookie_policy.cc',

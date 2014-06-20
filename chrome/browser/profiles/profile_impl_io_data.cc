@@ -26,7 +26,6 @@
 #include "chrome/browser/net/cookie_store_util.h"
 #include "chrome/browser/net/http_server_properties_manager.h"
 #include "chrome/browser/net/predictor.h"
-#include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/net/sqlite_server_bound_cert_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -43,6 +42,7 @@
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/common/constants.h"
 #include "net/base/cache_type.h"
+#include "net/base/sdch_dictionary_fetcher.h"
 #include "net/base/sdch_manager.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
@@ -534,7 +534,7 @@ void ProfileImplIOData::InitializeInternal(
   // Setup the SDCHManager for this profile.
   sdch_manager_.reset(new net::SdchManager);
   sdch_manager_->set_sdch_fetcher(
-      new SdchDictionaryFetcher(
+      new net::SdchDictionaryFetcher(
           sdch_manager_.get(),
           // SdchDictionaryFetcher takes a reference to the Getter, and
           // hence implicitly takes ownership.

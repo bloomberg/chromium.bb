@@ -19,7 +19,6 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -29,6 +28,7 @@
 #include "content/public/browser/resource_context.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "net/base/sdch_dictionary_fetcher.h"
 #include "net/base/sdch_manager.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
@@ -256,7 +256,7 @@ void OffTheRecordProfileIOData::InitializeInternal(
   // Setup the SDCHManager for this profile.
   sdch_manager_.reset(new net::SdchManager);
   sdch_manager_->set_sdch_fetcher(
-      new SdchDictionaryFetcher(
+      new net::SdchDictionaryFetcher(
           sdch_manager_.get(),
           // SdchDictionaryFetcher takes a reference to the Getter, and
           // hence implicitly takes ownership.

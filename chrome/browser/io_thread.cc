@@ -36,7 +36,6 @@
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
-#include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"

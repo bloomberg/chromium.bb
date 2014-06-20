@@ -40,7 +40,7 @@ namespace net {
 // A browser may register a fetcher that is used by the dictionary managers to
 // get data from a specified URL.  This allows us to use very high level browser
 // functionality in this base (when the functionaity can be provided).
-class SdchFetcher {
+class NET_EXPORT SdchFetcher {
  public:
   SdchFetcher() {}
   virtual ~SdchFetcher() {}
