@@ -28,12 +28,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    GarbageCollected,
-    NoInterfaceObject
-] interface Key {
-    readonly attribute DOMString type;
-    readonly attribute boolean extractable;
-    readonly attribute KeyAlgorithm algorithm;
-    readonly attribute DOMString[] usages;
+#ifndef CryptoKey_h
+#define CryptoKey_h
+
+#include "bindings/v8/ScriptWrappable.h"
+#include "modules/crypto/NormalizeAlgorithm.h"
+#include "platform/heap/Handle.h"
+#include "public/platform/WebCryptoAlgorithm.h"
+#include "public/platform/WebCryptoKey.h"
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
+
+namespace WebCore {
+
+class CryptoResult;
+class KeyAlgorithm;
+
+class CryptoKey : public GarbageCollectedFinalized<CryptoKey>, public ScriptWrappable {
+public:
+    static CryptoKey* create(const blink::WebCryptoKey& key)
+    {
+        return new CryptoKey(key);
+    }
+
+    ~CryptoKey();
+
+    String type() const;
+    bool extractable() const;
+    KeyAlgorithm* algorithm();
+    Vector<String> usages() const;
+
+    const blink::WebCryptoKey& key() const { return m_key; }
+
+    // If the key cannot be used with the indicated algorithm, returns false
+    // and completes the CryptoResult with an error.
+    bool canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm&, blink::WebCryptoOperation, CryptoResult*) const;
+
+    // On failure, these return false and complete the CryptoResult with an error.
+    static bool parseFormat(const String&, blink::WebCryptoKeyFormat&, CryptoResult*);
+    static bool parseUsageMask(const Vector<String>&, blink::WebCryptoKeyUsageMask&, CryptoResult*);
+
+    void trace(Visitor*);
+
+protected:
+    explicit CryptoKey(const blink::WebCryptoKey&);
+
+    const blink::WebCryptoKey m_key;
+    Member<KeyAlgorithm> m_algorithm;
 };
+
+} // namespace WebCore
+
+#endif

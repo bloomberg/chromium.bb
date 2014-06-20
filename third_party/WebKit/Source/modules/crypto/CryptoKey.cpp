@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "modules/crypto/Key.h"
+#include "modules/crypto/CryptoKey.h"
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -61,8 +61,9 @@ struct KeyUsageMapping {
     const char* const name;
 };
 
-// The order of this array is the same order that will appear in Key.usages. It
-// must be kept ordered as described by the Web Crypto spec.
+// The order of this array is the same order that will appear in
+// CryptoKey.usages. It must be kept ordered as described by the Web Crypto
+// spec.
 const KeyUsageMapping keyUsageMappings[] = {
     { blink::WebCryptoKeyUsageEncrypt, "encrypt" },
     { blink::WebCryptoKeyUsageDecrypt, "decrypt" },
@@ -126,27 +127,27 @@ blink::WebCryptoKeyUsageMask toKeyUsage(blink::WebCryptoOperation operation)
 
 } // namespace
 
-Key::~Key()
+CryptoKey::~CryptoKey()
 {
 }
 
-Key::Key(const blink::WebCryptoKey& key)
+CryptoKey::CryptoKey(const blink::WebCryptoKey& key)
     : m_key(key)
 {
     ScriptWrappable::init(this);
 }
 
-String Key::type() const
+String CryptoKey::type() const
 {
     return keyTypeToString(m_key.type());
 }
 
-bool Key::extractable() const
+bool CryptoKey::extractable() const
 {
     return m_key.extractable();
 }
 
-KeyAlgorithm* Key::algorithm()
+KeyAlgorithm* CryptoKey::algorithm()
 {
     if (!m_algorithm)
         m_algorithm = KeyAlgorithm::create(m_key.algorithm());
@@ -157,7 +158,7 @@ KeyAlgorithm* Key::algorithm()
 //        instead is return the same (immutable) array. (Javascript callers can
 //        distinguish this by doing an == test on the arrays and seeing they are
 //        different).
-Vector<String> Key::usages() const
+Vector<String> CryptoKey::usages() const
 {
     Vector<String> result;
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(keyUsageMappings); ++i) {
@@ -168,7 +169,7 @@ Vector<String> Key::usages() const
     return result;
 }
 
-bool Key::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, blink::WebCryptoOperation op, CryptoResult* result) const
+bool CryptoKey::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, blink::WebCryptoOperation op, CryptoResult* result) const
 {
     if (!(m_key.usages() & toKeyUsage(op))) {
         result->completeWithError(blink::WebCryptoErrorTypeInvalidAccess, "key.usages does not permit this operation");
@@ -183,7 +184,7 @@ bool Key::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, blin
     return true;
 }
 
-bool Key::parseFormat(const String& formatString, blink::WebCryptoKeyFormat& format, CryptoResult* result)
+bool CryptoKey::parseFormat(const String& formatString, blink::WebCryptoKeyFormat& format, CryptoResult* result)
 {
     // There are few enough values that testing serially is fast enough.
     if (formatString == "raw") {
@@ -207,7 +208,7 @@ bool Key::parseFormat(const String& formatString, blink::WebCryptoKeyFormat& for
     return false;
 }
 
-bool Key::parseUsageMask(const Vector<String>& usages, blink::WebCryptoKeyUsageMask& mask, CryptoResult* result)
+bool CryptoKey::parseUsageMask(const Vector<String>& usages, blink::WebCryptoKeyUsageMask& mask, CryptoResult* result)
 {
     mask = 0;
     for (size_t i = 0; i < usages.size(); ++i) {
@@ -221,7 +222,7 @@ bool Key::parseUsageMask(const Vector<String>& usages, blink::WebCryptoKeyUsageM
     return true;
 }
 
-void Key::trace(Visitor* visitor)
+void CryptoKey::trace(Visitor* visitor)
 {
     visitor->trace(m_algorithm);
 }

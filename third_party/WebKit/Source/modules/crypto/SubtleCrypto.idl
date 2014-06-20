@@ -31,7 +31,7 @@
 // http://www.w3.org/TR/WebCryptoAPI/#subtlecrypto-interface
 
 typedef DOMString KeyFormat;
-typedef DOMString KeyUsage; // from Key interface
+typedef DOMString KeyUsage; // from CryptoKey interface
 
 // FIXME: use below; needs support for union types http://crbug.com/240176
 typedef (ArrayBuffer or ArrayBufferView) CryptoOperationData;
@@ -40,17 +40,17 @@ typedef (ArrayBuffer or ArrayBufferView) CryptoOperationData;
     GarbageCollected,
     NoInterfaceObject,
 ] interface SubtleCrypto {
-    [CallWith=ScriptState] Promise encrypt(Dictionary algorithm, Key key, ArrayBuffer data);
-    [CallWith=ScriptState] Promise encrypt(Dictionary algorithm, Key key, ArrayBufferView data);
+    [CallWith=ScriptState] Promise encrypt(Dictionary algorithm, CryptoKey key, ArrayBuffer data);
+    [CallWith=ScriptState] Promise encrypt(Dictionary algorithm, CryptoKey key, ArrayBufferView data);
 
-    [CallWith=ScriptState] Promise decrypt(Dictionary algorithm, Key key, ArrayBuffer data);
-    [CallWith=ScriptState] Promise decrypt(Dictionary algorithm, Key key, ArrayBufferView data);
+    [CallWith=ScriptState] Promise decrypt(Dictionary algorithm, CryptoKey key, ArrayBuffer data);
+    [CallWith=ScriptState] Promise decrypt(Dictionary algorithm, CryptoKey key, ArrayBufferView data);
 
-    [CallWith=ScriptState] Promise sign(Dictionary algorithm, Key key, ArrayBuffer data);
-    [CallWith=ScriptState] Promise sign(Dictionary algorithm, Key key, ArrayBufferView data);
+    [CallWith=ScriptState] Promise sign(Dictionary algorithm, CryptoKey key, ArrayBuffer data);
+    [CallWith=ScriptState] Promise sign(Dictionary algorithm, CryptoKey key, ArrayBufferView data);
 
-    // FIXME: should be: Promise verify(Dictionary algorithm, Key key, CryptoOperationData signature, CryptoOperationData data);
-    [CallWith=ScriptState, Custom, ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, object signature, object data);
+    // FIXME: should be: Promise verify(Dictionary algorithm, CryptoKey key, CryptoOperationData signature, CryptoOperationData data);
+    [CallWith=ScriptState, Custom, ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, CryptoKey key, object signature, object data);
 
     [CallWith=ScriptState] Promise digest(Dictionary algorithm, ArrayBuffer data);
     [CallWith=ScriptState] Promise digest(Dictionary algorithm, ArrayBufferView data);
@@ -61,10 +61,10 @@ typedef (ArrayBuffer or ArrayBufferView) CryptoOperationData;
     [CallWith=ScriptState] Promise importKey(KeyFormat format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, KeyUsage[] keyUsages);
     [CallWith=ScriptState] Promise importKey(KeyFormat format, Dictionary keyData, Dictionary algorithm, boolean extractable, KeyUsage[] keyUsages);
 
-    [CallWith=ScriptState] Promise exportKey(KeyFormat format, Key key);
+    [CallWith=ScriptState] Promise exportKey(KeyFormat format, CryptoKey key);
 
-    [CallWith=ScriptState] Promise wrapKey(KeyFormat format, Key key, Key wrappingKey, Dictionary wrapAlgorithm);
+    [CallWith=ScriptState] Promise wrapKey(KeyFormat format, CryptoKey key, CryptoKey wrappingKey, Dictionary wrapAlgorithm);
 
-    [CallWith=ScriptState] Promise unwrapKey(KeyFormat format, ArrayBuffer wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, KeyUsage[] keyUsages);
-    [CallWith=ScriptState] Promise unwrapKey(KeyFormat format, ArrayBufferView wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, KeyUsage[] keyUsages);
+    [CallWith=ScriptState] Promise unwrapKey(KeyFormat format, ArrayBuffer wrappedKey, CryptoKey unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, KeyUsage[] keyUsages);
+    [CallWith=ScriptState] Promise unwrapKey(KeyFormat format, ArrayBufferView wrappedKey, CryptoKey unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, KeyUsage[] keyUsages);
 };

@@ -61,7 +61,7 @@ crypto.subtle.importKey("jwk", publicKeyJSON, importAlgorithm, extractable, ["wr
     return crypto.subtle.unwrapKey("raw", wrappedKey, privateKey, wrapAlgorithm, {name:"aes-cbc"}, extractable, ["encrypt", "decrypt"]);
 }).then(function(result) {
     unwrappedKey = result;
-    shouldBe("unwrappedKey.toString()", "'[object Key]'");
+    shouldBe("unwrappedKey.toString()", "'[object CryptoKey]'");
     shouldBe("unwrappedKey.type", "'secret'");
     shouldBe("unwrappedKey.extractable", "true");
     shouldBe("unwrappedKey.algorithm.name", "'AES-CBC'");
@@ -84,7 +84,7 @@ crypto.subtle.importKey("jwk", publicKeyJSON, importAlgorithm, extractable, ["wr
     return crypto.subtle.unwrapKey("jwk", wrappedKey, privateKey, wrapAlgorithm, {name:"aes-cbc"}, extractable, ["encrypt", "decrypt"]);
 }).then(function(result) {
     unwrappedKey = result;
-    shouldBe("unwrappedKey.toString()", "'[object Key]'");
+    shouldBe("unwrappedKey.toString()", "'[object CryptoKey]'");
     shouldBe("unwrappedKey.type", "'secret'");
     shouldBe("unwrappedKey.extractable", "true");
     shouldBe("unwrappedKey.algorithm.name", "'AES-CBC'");

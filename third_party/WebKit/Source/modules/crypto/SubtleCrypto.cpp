@@ -33,8 +33,8 @@
 
 #include "bindings/v8/Dictionary.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/crypto/CryptoKey.h"
 #include "modules/crypto/CryptoResultImpl.h"
-#include "modules/crypto/Key.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "platform/JSONValues.h"
 #include "public/platform/Platform.h"
@@ -56,7 +56,7 @@ static bool ensureNotNull(const ArrayPiece& x, const char* paramName, CryptoResu
     return true;
 }
 
-static bool ensureNotNull(Key* key, const char* paramName, CryptoResult* result)
+static bool ensureNotNull(CryptoKey* key, const char* paramName, CryptoResult* result)
 {
     if (!key) {
         String message = String("Invalid ") + paramName + String(" argument");
@@ -86,7 +86,7 @@ static bool canAccessWebCrypto(ScriptState* scriptState, CryptoResult* result)
     return true;
 }
 
-static ScriptPromise startCryptoOperation(ScriptState* scriptState, const Dictionary& rawAlgorithm, Key* key, blink::WebCryptoOperation operationType, const ArrayPiece& signature, const ArrayPiece& dataBuffer)
+static ScriptPromise startCryptoOperation(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, blink::WebCryptoOperation operationType, const ArrayPiece& signature, const ArrayPiece& dataBuffer)
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
@@ -193,22 +193,22 @@ SubtleCrypto::SubtleCrypto()
     ScriptWrappable::init(this);
 }
 
-ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& data)
+ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const ArrayPiece& data)
 {
     return startCryptoOperation(scriptState, rawAlgorithm, key, blink::WebCryptoOperationEncrypt, ArrayPiece(), data);
 }
 
-ScriptPromise SubtleCrypto::decrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& data)
+ScriptPromise SubtleCrypto::decrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const ArrayPiece& data)
 {
     return startCryptoOperation(scriptState, rawAlgorithm, key, blink::WebCryptoOperationDecrypt, ArrayPiece(), data);
 }
 
-ScriptPromise SubtleCrypto::sign(ScriptState* scriptState, const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& data)
+ScriptPromise SubtleCrypto::sign(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const ArrayPiece& data)
 {
     return startCryptoOperation(scriptState, rawAlgorithm, key, blink::WebCryptoOperationSign, ArrayPiece(), data);
 }
 
-ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& signature, const ArrayPiece& data)
+ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const ArrayPiece& signature, const ArrayPiece& data)
 {
     return startCryptoOperation(scriptState, rawAlgorithm, key, blink::WebCryptoOperationVerify, signature, data);
 }
@@ -227,7 +227,7 @@ ScriptPromise SubtleCrypto::generateKey(ScriptState* scriptState, const Dictiona
         return promise;
 
     blink::WebCryptoKeyUsageMask keyUsages;
-    if (!Key::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
+    if (!CryptoKey::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
         return promise;
 
     blink::WebCryptoAlgorithm algorithm;
@@ -250,7 +250,7 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
         return promise;
 
     blink::WebCryptoKeyFormat format;
-    if (!Key::parseFormat(rawFormat, format, result.get()))
+    if (!CryptoKey::parseFormat(rawFormat, format, result.get()))
         return promise;
 
     if (format == blink::WebCryptoKeyFormatJwk) {
@@ -259,7 +259,7 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
     }
 
     blink::WebCryptoKeyUsageMask keyUsages;
-    if (!Key::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
+    if (!CryptoKey::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
         return promise;
 
     blink::WebCryptoAlgorithm algorithm;
@@ -279,11 +279,11 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
         return promise;
 
     blink::WebCryptoKeyFormat format;
-    if (!Key::parseFormat(rawFormat, format, result.get()))
+    if (!CryptoKey::parseFormat(rawFormat, format, result.get()))
         return promise;
 
     blink::WebCryptoKeyUsageMask keyUsages;
-    if (!Key::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
+    if (!CryptoKey::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
         return promise;
 
     if (format != blink::WebCryptoKeyFormatJwk) {
@@ -303,7 +303,7 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
     return promise;
 }
 
-ScriptPromise SubtleCrypto::exportKey(ScriptState* scriptState, const String& rawFormat, Key* key)
+ScriptPromise SubtleCrypto::exportKey(ScriptState* scriptState, const String& rawFormat, CryptoKey* key)
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
@@ -315,7 +315,7 @@ ScriptPromise SubtleCrypto::exportKey(ScriptState* scriptState, const String& ra
         return promise;
 
     blink::WebCryptoKeyFormat format;
-    if (!Key::parseFormat(rawFormat, format, result.get()))
+    if (!CryptoKey::parseFormat(rawFormat, format, result.get()))
         return promise;
 
     if (!key->extractable()) {
@@ -327,7 +327,7 @@ ScriptPromise SubtleCrypto::exportKey(ScriptState* scriptState, const String& ra
     return promise;
 }
 
-ScriptPromise SubtleCrypto::wrapKey(ScriptState* scriptState, const String& rawFormat, Key* key, Key* wrappingKey, const Dictionary& rawWrapAlgorithm)
+ScriptPromise SubtleCrypto::wrapKey(ScriptState* scriptState, const String& rawFormat, CryptoKey* key, CryptoKey* wrappingKey, const Dictionary& rawWrapAlgorithm)
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
@@ -342,7 +342,7 @@ ScriptPromise SubtleCrypto::wrapKey(ScriptState* scriptState, const String& rawF
         return promise;
 
     blink::WebCryptoKeyFormat format;
-    if (!Key::parseFormat(rawFormat, format, result.get()))
+    if (!CryptoKey::parseFormat(rawFormat, format, result.get()))
         return promise;
 
     blink::WebCryptoAlgorithm wrapAlgorithm;
@@ -361,7 +361,7 @@ ScriptPromise SubtleCrypto::wrapKey(ScriptState* scriptState, const String& rawF
     return promise;
 }
 
-ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& rawFormat, const ArrayPiece& wrappedKey, Key* unwrappingKey, const Dictionary& rawUnwrapAlgorithm, const Dictionary& rawUnwrappedKeyAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
+ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& rawFormat, const ArrayPiece& wrappedKey, CryptoKey* unwrappingKey, const Dictionary& rawUnwrapAlgorithm, const Dictionary& rawUnwrappedKeyAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
@@ -375,11 +375,11 @@ ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& ra
         return promise;
 
     blink::WebCryptoKeyFormat format;
-    if (!Key::parseFormat(rawFormat, format, result.get()))
+    if (!CryptoKey::parseFormat(rawFormat, format, result.get()))
         return promise;
 
     blink::WebCryptoKeyUsageMask keyUsages;
-    if (!Key::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
+    if (!CryptoKey::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
         return promise;
 
     blink::WebCryptoAlgorithm unwrapAlgorithm;

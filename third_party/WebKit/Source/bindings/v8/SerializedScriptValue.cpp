@@ -36,8 +36,8 @@
 #include "bindings/core/v8/V8FileList.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
+#include "bindings/modules/v8/V8CryptoKey.h"
 #include "bindings/modules/v8/V8DOMFileSystem.h"
-#include "bindings/modules/v8/V8Key.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/WorkerScriptController.h"
@@ -1347,7 +1347,7 @@ private:
 
     bool writeCryptoKey(v8::Handle<v8::Value> value)
     {
-        Key* key = V8Key::toNative(value.As<v8::Object>());
+        CryptoKey* key = V8CryptoKey::toNative(value.As<v8::Object>());
         if (!key)
             return false;
         return m_writer.writeCryptoKey(key->key());
@@ -1571,7 +1571,7 @@ Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, Stat
             return writeDOMFileSystem(value, next);
         else if (V8FileList::hasInstance(value, isolate()))
             return writeFileList(value, next);
-        else if (V8Key::hasInstance(value, isolate())) {
+        else if (V8CryptoKey::hasInstance(value, isolate())) {
             if (!writeCryptoKey(value))
                 return handleError(DataCloneError, "Couldn't serialize key data", next);
         } else if (V8ImageData::hasInstance(value, isolate()))
@@ -2278,7 +2278,7 @@ private:
             return false;
         }
 
-        *value = toV8(Key::create(key), m_scriptState->context()->Global(), isolate());
+        *value = toV8(CryptoKey::create(key), m_scriptState->context()->Global(), isolate());
         return true;
     }
 
