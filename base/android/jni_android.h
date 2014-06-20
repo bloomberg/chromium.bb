@@ -8,6 +8,8 @@
 #include <jni.h>
 #include <sys/types.h>
 
+#include <string>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/atomicops.h"
 #include "base/base_export.h"
@@ -25,10 +27,17 @@ struct RegistrationMethod {
   bool (*func)(JNIEnv* env);
 };
 
-// Attach the current thread to the VM (if necessary) and return the JNIEnv*.
+// Attaches the current thread to the VM (if necessary) and return the JNIEnv*.
 BASE_EXPORT JNIEnv* AttachCurrentThread();
 
-// Detach the current thread from VM if it is attached.
+// Same to AttachCurrentThread except that thread name will be set to
+// |thread_name| if it is the first call. Otherwise, thread_name won't be
+// changed. AttachCurrentThread() doesn't regard underlying platform thread
+// name, but just resets it to "Thread-???". This function should be called
+// right after new thread is created if it is important to keep thread name.
+BASE_EXPORT JNIEnv* AttachCurrentThreadWithName(const std::string& thread_name);
+
+// Detaches the current thread from VM if it is attached.
 BASE_EXPORT void DetachFromVM();
 
 // Initializes the global JVM. It is not necessarily called before

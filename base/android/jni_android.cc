@@ -81,6 +81,18 @@ JNIEnv* AttachCurrentThread() {
   return env;
 }
 
+JNIEnv* AttachCurrentThreadWithName(const std::string& thread_name) {
+  DCHECK(g_jvm);
+  JavaVMAttachArgs args;
+  args.version = JNI_VERSION_1_2;
+  args.name = thread_name.c_str();
+  args.group = NULL;
+  JNIEnv* env = NULL;
+  jint ret = g_jvm->AttachCurrentThread(&env, &args);
+  DCHECK_EQ(JNI_OK, ret);
+  return env;
+}
+
 void DetachFromVM() {
   // Ignore the return value, if the thread is not attached, DetachCurrentThread
   // will fail. But it is ok as the native thread may never be attached.

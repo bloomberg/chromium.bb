@@ -16,6 +16,10 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread_delegate.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -218,6 +222,15 @@ MSVC_POP_WARNING()
 MSVC_ENABLE_OPTIMIZE();
 
 void BrowserThreadImpl::Run(base::MessageLoop* message_loop) {
+#if defined(OS_ANDROID)
+  // Not to reset thread name to "Thread-???" by VM, attach VM with thread name.
+  // Though it may create unnecessary VM thread objects, keeping thread name
+  // gives more benefit in debugging in the platform.
+  if (!thread_name().empty()) {
+    base::android::AttachCurrentThreadWithName(thread_name());
+  }
+#endif
+
   BrowserThread::ID thread_id = ID_COUNT;
   if (!GetCurrentThreadIdentifier(&thread_id))
     return Thread::Run(message_loop);
