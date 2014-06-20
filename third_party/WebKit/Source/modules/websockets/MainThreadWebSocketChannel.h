@@ -57,6 +57,7 @@ class SocketStreamError;
 class WebSocketChannelClient;
 
 class MainThreadWebSocketChannel FINAL : public WebSocketChannel, public SocketStreamHandleClient, public FileReaderLoaderClient {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MainThreadWebSocketChannel);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     // You can specify the source file and the line number information
@@ -96,6 +97,8 @@ public:
     virtual void didReceiveData() OVERRIDE;
     virtual void didFinishLoading() OVERRIDE;
     virtual void didFail(FileError::ErrorCode) OVERRIDE;
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     MainThreadWebSocketChannel(Document*, WebSocketChannelClient*, const String&, unsigned);
@@ -199,10 +202,10 @@ private:
         ChannelClosed
     };
 
-    Document* m_document;
-    WebSocketChannelClient* m_client;
-    OwnPtr<WebSocketHandshake> m_handshake;
-    RefPtr<SocketStreamHandle> m_handle;
+    RawPtrWillBeMember<Document> m_document;
+    RawPtrWillBeMember<WebSocketChannelClient> m_client;
+    OwnPtrWillBeMember<WebSocketHandshake> m_handshake;
+    RefPtrWillBeMember<SocketStreamHandle> m_handle;
     Vector<char> m_buffer;
 
     Timer<MainThreadWebSocketChannel> m_resumeTimer;

@@ -45,7 +45,7 @@ PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> ThreadableWebSoc
 
 void ThreadableWebSocketChannelClientWrapper::clearClient()
 {
-    m_client = 0;
+    m_client = nullptr;
 }
 
 void ThreadableWebSocketChannelClientWrapper::didConnect(const String& subprotocol, const String& extensions)
@@ -88,6 +88,11 @@ void ThreadableWebSocketChannelClientWrapper::didReceiveMessageError()
 {
     if (m_client)
         m_client->didReceiveMessageError();
+}
+
+void ThreadableWebSocketChannelClientWrapper::trace(Visitor* visitor)
+{
+    visitor->trace(m_client);
 }
 
 } // namespace WebCore

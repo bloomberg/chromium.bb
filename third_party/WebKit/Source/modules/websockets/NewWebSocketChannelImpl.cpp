@@ -125,7 +125,7 @@ NewWebSocketChannelImpl::NewWebSocketChannelImpl(ExecutionContext* context, WebS
 
 NewWebSocketChannelImpl::~NewWebSocketChannelImpl()
 {
-    abortAsyncOperations();
+    ASSERT(!m_blobLoader);
 }
 
 bool NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
@@ -265,7 +265,7 @@ void NewWebSocketChannelImpl::disconnect()
     }
     abortAsyncOperations();
     m_handle.clear();
-    m_client = 0;
+    m_client = nullptr;
     m_identifier = 0;
 }
 
@@ -375,7 +375,7 @@ void NewWebSocketChannelImpl::handleDidClose(bool wasClean, unsigned short code,
         return;
     }
     WebSocketChannelClient* client = m_client;
-    m_client = 0;
+    m_client = nullptr;
     WebSocketChannelClient::ClosingHandshakeCompletionStatus status =
         wasClean ? WebSocketChannelClient::ClosingHandshakeComplete : WebSocketChannelClient::ClosingHandshakeIncomplete;
     client->didClose(status, code, reason);
@@ -546,6 +546,7 @@ void NewWebSocketChannelImpl::didFailLoadingBlob(FileError::ErrorCode errorCode)
 void NewWebSocketChannelImpl::trace(Visitor* visitor)
 {
     visitor->trace(m_blobLoader);
+    visitor->trace(m_client);
     WebSocketChannel::trace(visitor);
 }
 

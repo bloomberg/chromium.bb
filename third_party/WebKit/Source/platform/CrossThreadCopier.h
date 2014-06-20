@@ -109,6 +109,14 @@ namespace WebCore {
         }
     };
 
+    template<typename T> struct CrossThreadCopierBase<false, false, false, WeakMember<T>*> {
+        typedef WeakMember<T>* Type;
+        static Type copy(Type ptr)
+        {
+            return ptr;
+        }
+    };
+
     template<> struct CrossThreadCopierBase<false, false, false, KURL> {
         typedef KURL Type;
         PLATFORM_EXPORT static Type copy(const KURL&);
@@ -136,7 +144,7 @@ namespace WebCore {
 
     template<typename T> struct CrossThreadCopierBase<false, false, true, T> {
         typedef typename WTF::RemovePointer<T>::Type TypeWithoutPointer;
-        typedef PassRefPtrWillBeRawPtr<TypeWithoutPointer> Type;
+        typedef RawPtr<TypeWithoutPointer> Type;
         static Type copy(const T& ptr)
         {
             return ptr;

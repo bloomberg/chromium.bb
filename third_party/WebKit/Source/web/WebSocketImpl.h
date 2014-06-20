@@ -47,7 +47,8 @@ namespace blink {
 class WebDocument;
 class WebURL;
 
-class WebSocketImpl FINAL : public WebSocket, public WebCore::WebSocketChannelClient {
+class WebSocketImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<WebSocketImpl>, public WebSocket, public WebCore::WebSocketChannelClient {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebSocketImpl)
 public:
     WebSocketImpl(const WebDocument&, WebSocketClient*);
     virtual ~WebSocketImpl();
@@ -75,8 +76,10 @@ public:
     virtual void didStartClosingHandshake() OVERRIDE;
     virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
 
+    virtual void trace(WebCore::Visitor*) OVERRIDE;
+
 private:
-    RefPtrWillBePersistent<WebCore::WebSocketChannel> m_private;
+    RefPtrWillBeMember<WebCore::WebSocketChannel> m_private;
     WebSocketClient* m_client;
     BinaryType m_binaryType;
     WebString m_subprotocol;

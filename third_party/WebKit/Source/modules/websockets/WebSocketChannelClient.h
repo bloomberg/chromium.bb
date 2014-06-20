@@ -31,6 +31,7 @@
 #ifndef WebSocketChannelClient_h
 #define WebSocketChannelClient_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -51,6 +52,7 @@ public:
         ClosingHandshakeComplete
     };
     virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short /* code */, const String& /* reason */) { }
+    virtual void trace(Visitor*) { }
 
 protected:
     WebSocketChannelClient() { }

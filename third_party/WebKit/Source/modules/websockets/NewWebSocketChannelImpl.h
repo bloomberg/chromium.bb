@@ -154,7 +154,7 @@ private:
 
     // m_client can be deleted while this channel is alive, but this class
     // expects that disconnect() is called before the deletion.
-    WebSocketChannelClient* m_client;
+    RawPtrWillBeMember<WebSocketChannelClient> m_client;
     KURL m_url;
     // m_identifier > 0 means calling scriptContextExecution() returns a Document.
     unsigned long m_identifier;

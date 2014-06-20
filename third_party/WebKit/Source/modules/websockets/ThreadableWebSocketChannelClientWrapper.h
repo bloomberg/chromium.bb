@@ -54,12 +54,12 @@ public:
     void didClose(WebSocketChannelClient::ClosingHandshakeCompletionStatus, unsigned short code, const String& reason);
     void didReceiveMessageError();
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
     ThreadableWebSocketChannelClientWrapper(WebSocketChannelClient*);
 
-    WebSocketChannelClient* m_client;
+    RawPtrWillBeMember<WebSocketChannelClient> m_client;
 };
 
 } // namespace WebCore

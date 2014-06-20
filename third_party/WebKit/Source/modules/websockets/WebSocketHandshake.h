@@ -33,6 +33,7 @@
 
 #include "modules/websockets/WebSocketExtensionDispatcher.h"
 #include "modules/websockets/WebSocketExtensionProcessor.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/network/WebSocketHandshakeResponse.h"
 #include "platform/weborigin/KURL.h"
@@ -43,8 +44,9 @@ namespace WebCore {
 
 class Document;
 
-class WebSocketHandshake {
-    WTF_MAKE_NONCOPYABLE(WebSocketHandshake); WTF_MAKE_FAST_ALLOCATED;
+class WebSocketHandshake : public NoBaseWillBeGarbageCollectedFinalized<WebSocketHandshake> {
+    WTF_MAKE_NONCOPYABLE(WebSocketHandshake);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     // This enum is reused for histogram. When this needs to be modified, add a
     // new enum for histogram and convert mode values into values in the new
@@ -97,6 +99,8 @@ public:
 
     static String getExpectedWebSocketAccept(const String& secWebSocketKey);
 
+    void trace(Visitor*);
+
 private:
     KURL httpURLForAuthenticationAndCookies() const;
 
@@ -110,7 +114,7 @@ private:
     KURL m_url;
     String m_clientProtocol;
     bool m_secure;
-    Document* m_document;
+    RawPtrWillBeMember<Document> m_document;
 
     Mode m_mode;
 

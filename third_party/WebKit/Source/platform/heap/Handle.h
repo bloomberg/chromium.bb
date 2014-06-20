@@ -800,6 +800,7 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define PassOwnPtrWillBeRawPtr WTF::RawPtr
 #define WeakPtrWillBeMember WebCore::Member
 #define WeakPtrWillBeRawPtr WTF::RawPtr
+#define WeakPtrWillBeMember WebCore::Member
 #define WeakPtrWillBeWeakMember WebCore::WeakMember
 #define NoBaseWillBeGarbageCollected WebCore::GarbageCollected
 #define NoBaseWillBeGarbageCollectedFinalized WebCore::GarbageCollectedFinalized
@@ -918,6 +919,7 @@ template class PLATFORM_EXPORT DummyBase<void>;
 #define PassOwnPtrWillBeRawPtr WTF::PassOwnPtr
 #define WeakPtrWillBeMember WTF::WeakPtr
 #define WeakPtrWillBeRawPtr WTF::WeakPtr
+#define WeakPtrWillBeMember WTF::WeakPtr
 #define WeakPtrWillBeWeakMember WTF::WeakPtr
 #define NoBaseWillBeGarbageCollected WebCore::DummyBase
 #define NoBaseWillBeGarbageCollectedFinalized WebCore::DummyBase

@@ -102,7 +102,7 @@ bool MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
         m_document->addConsoleMessage(JSMessageSource, WarningMessageLevel, message);
     }
 
-    m_handshake = adoptPtr(new WebSocketHandshake(url, protocol, m_document));
+    m_handshake = adoptPtrWillBeNoop(new WebSocketHandshake(url, protocol, m_document));
     m_handshake->reset();
     m_handshake->addExtensionProcessor(m_perMessageDeflate.createExtensionProcessor());
     m_handshake->addExtensionProcessor(m_deflateFramer.createExtensionProcessor());
@@ -175,7 +175,7 @@ void MainThreadWebSocketChannel::clearDocument()
 {
     if (m_handshake)
         m_handshake->clearDocument();
-    m_document = 0;
+    m_document = nullptr;
 }
 
 void MainThreadWebSocketChannel::disconnectHandle()
@@ -231,7 +231,7 @@ void MainThreadWebSocketChannel::disconnect()
 
     clearDocument();
 
-    m_client = 0;
+    m_client = nullptr;
     disconnectHandle();
 }
 
@@ -289,7 +289,7 @@ void MainThreadWebSocketChannel::didCloseSocketStream(SocketStreamHandle* handle
         abortOutgoingFrameQueue();
     if (m_handle) {
         WebSocketChannelClient* client = m_client;
-        m_client = 0;
+        m_client = nullptr;
         clearDocument();
         m_handle = nullptr;
         if (client)
@@ -865,6 +865,16 @@ bool MainThreadWebSocketChannel::sendFrame(WebSocketFrame::OpCode opCode, const 
 
     m_perMessageDeflate.resetDeflateBuffer();
     return m_handle->send(frameData.data(), frameData.size());
+}
+
+void MainThreadWebSocketChannel::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+    visitor->trace(m_client);
+    visitor->trace(m_handshake);
+    visitor->trace(m_handle);
+    WebSocketChannel::trace(visitor);
+    SocketStreamHandleClient::trace(visitor);
 }
 
 } // namespace WebCore

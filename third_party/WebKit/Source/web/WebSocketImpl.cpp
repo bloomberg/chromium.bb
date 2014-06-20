@@ -66,7 +66,9 @@ WebSocketImpl::WebSocketImpl(const WebDocument& document, WebSocketClient* clien
 
 WebSocketImpl::~WebSocketImpl()
 {
+#if !ENABLE(OILPAN)
     m_private->disconnect();
+#endif
 }
 
 WebSocket::BinaryType WebSocketImpl::binaryType() const
@@ -204,6 +206,12 @@ void WebSocketImpl::didClose(ClosingHandshakeCompletionStatus status, unsigned s
 
     // FIXME: Deprecate this call.
     m_client->didClose(m_bufferedAmount - m_bufferedAmountAfterClose, static_cast<WebSocketClient::ClosingHandshakeCompletionStatus>(status), code, WebString(reason));
+}
+
+void WebSocketImpl::trace(WebCore::Visitor* visitor)
+{
+    visitor->trace(m_private);
+    WebCore::WebSocketChannelClient::trace(visitor);
 }
 
 } // namespace blink
