@@ -133,6 +133,11 @@ class UserManager {
   virtual const UserList& GetUsers() const = 0;
 
   // Returns list of users admitted for logging in into multi-profile session.
+  // Users that have a policy that prevents them from being added to the
+  // multi-profile session will still be part of this list as long as they
+  // are regular users (i.e. not a public session/supervised etc.).
+  // Returns an empty list in case when primary user is not a regular one or
+  // has a policy that prohibids it to be part of multi-profile session.
   virtual UserList GetUsersAdmittedForMultiProfile() const = 0;
 
   // Returns a list of users who are currently logged in.

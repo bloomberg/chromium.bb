@@ -300,6 +300,7 @@ html[dir=rtl] .user-type-icon-area {
   background-image: url('chrome://theme/IDR_KIOSK_APP_USER_POD_ICON');
 }
 
+.bubble-shown,
 .user-type-icon-area.policy:hover ~ .user-type-bubble {
   opacity: 1;
   visibility: visible;

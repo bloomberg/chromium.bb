@@ -974,6 +974,10 @@ cr.define('cr.ui.login', function() {
   DisplayManager.clearErrors = function() {
     $('bubble').hide();
     this.errorMessageWasShownForTesting_ = false;
+
+    var bubbles = document.querySelectorAll('.bubble-shown');
+    for (var i = 0; i < bubbles.length; ++i)
+      bubbles[i].classList.remove('bubble-shown');
   };
 
   /**

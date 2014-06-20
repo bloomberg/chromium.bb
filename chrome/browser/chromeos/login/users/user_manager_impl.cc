@@ -324,7 +324,6 @@ UserList UserManagerImpl::GetUsersAdmittedForMultiProfile() const {
   }
 
   UserList result;
-  int num_users_allowed = 0;
   const UserList& users = GetUsers();
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
     if ((*it)->GetType() == User::USER_TYPE_REGULAR && !(*it)->is_logged_in()) {
@@ -343,16 +342,9 @@ UserList UserManagerImpl::GetUsersAdmittedForMultiProfile() const {
           check == MultiProfileUserController::NOT_ALLOWED_POLICY_FORBIDS ||
           check == MultiProfileUserController::NOT_ALLOWED_OWNER_AS_SECONDARY) {
         result.push_back(*it);
-        if (check == MultiProfileUserController::ALLOWED)
-          num_users_allowed++;
       }
     }
   }
-
-  // We only show multi-profiles sign in UI if there's at least one user that
-  // is allowed to be added to the session.
-  if (!num_users_allowed)
-    result.clear();
 
   return result;
 }

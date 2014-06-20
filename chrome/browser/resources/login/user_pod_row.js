@@ -363,6 +363,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets user type bubble like multi-profiles policy restriction message.
+     * @type {!HTMLDivElement}
+     */
+    get userTypeBubbleElement() {
+      return this.querySelector('.user-type-bubble');
+    },
+
+    /**
      * Gets user type icon.
      * @type {!HTMLDivElement}
      */
@@ -525,12 +533,9 @@ cr.define('login', function() {
     },
 
     customizeUserPodPerUserType: function() {
-      var isMultiProfilesUI =
-          (Oobe.getInstance().displayType == DISPLAY_TYPE.USER_ADDING);
-
       if (this.user_.locallyManagedUser && !this.user_.isDesktopUser) {
         this.setUserPodIconType('supervised');
-      } else if (isMultiProfilesUI && !this.user_.isMultiProfilesAllowed) {
+      } else if (this.multiProfilesPolicyApplied) {
         // Mark user pod as not focusable which in addition to the grayed out
         // filter makes it look in disabled state.
         this.classList.add('not-focusable');
@@ -564,6 +569,17 @@ cr.define('login', function() {
     set user(userDict) {
       this.user_ = userDict;
       this.update();
+    },
+
+    /**
+     * Returns true if multi-profiles sign in is currently active and this
+     * user pod is restricted per policy.
+     * @type {boolean}
+     */
+    get multiProfilesPolicyApplied() {
+      var isMultiProfilesUI =
+        (Oobe.getInstance().displayType == DISPLAY_TYPE.USER_ADDING);
+      return isMultiProfilesUI && !this.user_.isMultiProfilesAllowed;
     },
 
     /**
@@ -622,6 +638,8 @@ cr.define('login', function() {
         this.actionBoxAreaElement.classList.add('hovered');
         this.classList.add('hovered');
       } else {
+        if (this.multiProfilesPolicyApplied)
+          this.userTypeBubbleElement.classList.remove('bubble-shown');
         this.actionBoxAreaElement.classList.remove('hovered');
         this.classList.remove('hovered');
       }
@@ -752,6 +770,11 @@ cr.define('login', function() {
       if (this.user.locallyManagedUser && !this.user.isDesktopUser) {
         this.showSupervisedUserSigninWarning();
       } else {
+        // Special case for multi-profiles sign in. We show users even if they
+        // are not allowed per policy. Restrict those users from starting GAIA.
+        if (this.multiProfilesPolicyApplied)
+          return;
+
         this.parentNode.showSigninUI(this.user.emailAddress);
       }
     },
@@ -897,6 +920,9 @@ cr.define('login', function() {
         } else if (this.isAuthTypeUserClick) {
           this.parentNode.setActivatedPod(this);
         }
+
+        if (this.multiProfilesPolicyApplied)
+          this.userTypeBubbleElement.classList.add('bubble-shown');
 
         // Prevent default so that we don't trigger 'focus' event.
         e.preventDefault();
@@ -1963,6 +1989,9 @@ cr.define('login', function() {
      */
     focusPod: function(podToFocus, opt_force) {
       if (this.isFocused(podToFocus) && !opt_force) {
+        // Calling focusPod w/o podToFocus means reset.
+        if (!podToFocus)
+          Oobe.clearErrors();
         this.keyboardActivated_ = false;
         return;
       }
