@@ -85,59 +85,70 @@ cr.define('gpu', function() {
         'gpu_compositing': 'Compositing',
         'webgl': 'WebGL',
         'multisampling': 'WebGL multisampling',
-        'flash_3d': 'Flash 3D',
+        'flash_3d': 'Flash',
         'flash_stage3d': 'Flash Stage3D',
         'flash_stage3d_baseline': 'Flash Stage3D Baseline profile',
         'texture_sharing': 'Texture Sharing',
         'video_decode': 'Video Decode',
         'video_encode': 'Video Encode',
-        // GPU Switching
-        'gpu_switching': 'GPU Switching',
         'panel_fitting': 'Panel Fitting',
         'rasterization': 'Rasterization',
-      };
-      var statusLabelMap = {
-        'disabled_software': 'Software only. Hardware acceleration disabled.',
-        'disabled_software_animated': 'Software animated.',
-        'disabled_software_multithreaded': 'Software only, multi-threaded',
-        'disabled_off': 'Unavailable. Hardware acceleration disabled.',
-        'software': 'Software rendered. Hardware acceleration not enabled.',
-        'unavailable_off': 'Unavailable. Hardware acceleration unavailable',
-        'unavailable_software':
-            'Software only, hardware acceleration unavailable',
-        'unavailable_software_threaded':
-            'Software only and threaded. Hardware acceleration unavailable.',
-        'enabled_readback': 'Hardware accelerated, but at reduced performance',
-        'enabled_force': 'Hardware accelerated',
-        'enabled_threaded': 'Hardware accelerated and threaded.',
-        'enabled': 'Hardware accelerated',
-        'accelerated': 'Accelerated',
-        'accelerated_threaded': 'Accelerated and threaded',
-        // GPU Switching
-        'gpu_switching_automatic': 'Automatic switching',
-        'gpu_switching_force_discrete': 'Always on discrete GPU',
-        'gpu_switching_force_integrated': 'Always on integrated GPU',
+        'threaded_rasterization': 'Threaded Rasterization',
       };
 
-      var statusClassMap = {
-        'disabled_software': 'feature-yellow',
-        'disabled_software_animated': 'feature-yellow',
-        'disabled_software_multithreaded': 'feature-yellow',
-        'disabled_off': 'feature-red',
-        'software': 'feature-yellow',
-        'unavailable_off': 'feature-red',
-        'unavailable_software': 'feature-yellow',
-        'unavailable_software_threaded': 'feature-yellow',
-        'enabled_force': 'feature-green',
-        'enabled_readback': 'feature-yellow',
-        'enabled_threaded': 'feature-green',
-        'enabled': 'feature-green',
-        'accelerated': 'feature-green',
-        'accelerated_threaded': 'feature-green',
-        // GPU Switching
-        'gpu_switching_automatic': 'feature-green',
-        'gpu_switching_force_discrete': 'feature-red',
-        'gpu_switching_force_integrated': 'feature-red',
+      var statusMap =  {
+        'disabled_software': {
+          'label': 'Software only. Hardware acceleration disabled',
+          'class': 'feature-yellow'
+        },
+        'disabled_software_threaded': {
+          'label': 'Software only, threaded. Hardware acceleration disabled',
+          'class': 'feature-yellow'
+        },
+        'disabled_off': {
+          'label': 'Disabled',
+          'class': 'feature-red'
+        },
+        'disabled_off_ok': {
+          'label': 'Disabled',
+          'class': 'feature-yellow'
+        },
+        'unavailable_software': {
+          'label': 'Software only, hardware acceleration unavailable',
+          'class': 'feature-yellow'
+        },
+        'unavailable_software_threaded': {
+          'label': 'Software only, threaded. Hardware acceleration unavailable',
+          'class': 'feature-yellow'
+        },
+        'unavailable_off': {
+          'label': 'Unavailable',
+          'class': 'feature-red'
+        },
+        'unavailable_off_ok': {
+          'label': 'Unavailable',
+          'class': 'feature-yellow'
+        },
+        'enabled_readback': {
+          'label': 'Hardware accelerated but at reduced performance',
+          'class': 'feature-yellow'
+        },
+        'enabled_force': {
+          'label': 'Hardware accelerated on all pages',
+          'class': 'feature-green'
+        },
+        'enabled_threaded': {
+          'label': 'Hardware accelerated and threaded',
+          'class': 'feature-green'
+        },
+        'enabled': {
+          'label': 'Hardware accelerated',
+          'class': 'feature-green'
+        },
+        'enabled_on': {
+          'label': 'Enabled',
+          'class': 'feature-green'
+        }
       };
 
       // GPU info, basic
@@ -169,12 +180,15 @@ cr.define('gpu', function() {
             featureEl.appendChild(nameEl);
 
             var statusEl = document.createElement('span');
-            if (!statusLabelMap[featureStatus])
-              console.log('Missing statusLabel for', featureStatus);
-            if (!statusClassMap[featureStatus])
-              console.log('Missing statusClass for', featureStatus);
-            statusEl.textContent = statusLabelMap[featureStatus];
-            statusEl.className = statusClassMap[featureStatus];
+            var statusInfo = statusMap[featureStatus];
+            if (!statusInfo) {
+              console.log('Missing status for ', featureStatus);
+              statusEl.textContent = 'Unknown';
+              statusEl.className = 'feature-red';
+            } else {
+              statusEl.textContent = statusInfo['label'];
+              statusEl.className = statusInfo['class'];
+            }
             featureEl.appendChild(statusEl);
 
             featureStatusList.appendChild(featureEl);

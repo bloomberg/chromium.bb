@@ -37,10 +37,11 @@ static bool IsGpuRasterizationBlacklisted() {
 const char* kGpuCompositingFeatureName = "gpu_compositing";
 const char* kWebGLFeatureName = "webgl";
 const char* kRasterizationFeatureName = "rasterization";
+const char* kThreadedRasterizationFeatureName = "threaded_rasterization";
 
 struct GpuFeatureInfo {
   std::string name;
-  uint32 blocked;
+  bool blocked;
   bool disabled;
   std::string disabled_description;
   bool fallback_to_software;
@@ -84,7 +85,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           command_line.HasSwitch(switches::kDisableFlash3d),
           "Using 3d in flash has been disabled, either via about:flags or"
           " command line.",
-          false
+          true
       },
       {
           "flash_stage3d",
@@ -92,7 +93,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           command_line.HasSwitch(switches::kDisableFlashStage3d),
           "Using Stage3d in Flash has been disabled, either via about:flags or"
           " command line.",
-          false
+          true
       },
       {
           "flash_stage3d_baseline",
@@ -102,7 +103,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           command_line.HasSwitch(switches::kDisableFlashStage3d),
           "Using Stage3d Baseline profile in Flash has been disabled, either"
           " via about:flags or command line.",
-          false
+          true
       },
       {
           "video_decode",
@@ -140,10 +141,19 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           !IsGpuRasterizationEnabled() && !IsForceGpuRasterizationEnabled(),
           !IsGpuRasterizationEnabled() && !IsForceGpuRasterizationEnabled() &&
           !IsGpuRasterizationBlacklisted(),
-          "Accelerated rasterization has not been enabled or"
-          " is not supported by the current system.",
+          "Accelerated rasterization has been disabled, either via about:flags"
+          " or command line.",
           true
+      },
+      {
+          kThreadedRasterizationFeatureName,
+          false,
+          !IsImplSidePaintingEnabled(),
+          "Threaded rasterization has not been enabled or"
+          " is not supported by the current system.",
+          false
       }
+
   };
   DCHECK(index < arraysize(kGpuFeatureInfo));
   *eof = (index == arraysize(kGpuFeatureInfo) - 1);
@@ -268,25 +278,18 @@ base::Value* GetFeatureStatus() {
     std::string status;
     if (gpu_feature_info.disabled) {
       status = "disabled";
-      if (gpu_feature_info.name == kRasterizationFeatureName) {
-        if (IsImplSidePaintingEnabled())
-          status += "_software_multithreaded";
-        else
-          status += "_software";
-      } else {
-        if (gpu_feature_info.fallback_to_software)
-          status += "_software";
-        else
-          status += "_off";
-      }
-    } else if (manager->ShouldUseSwiftShader()) {
-      status = "unavailable_software";
-    } else if (gpu_feature_info.blocked ||
-               gpu_access_blocked) {
-      status = "unavailable";
       if (gpu_feature_info.fallback_to_software)
         status += "_software";
       else
+        status += "_off";
+      if (gpu_feature_info.name == kThreadedRasterizationFeatureName)
+        status += "_ok";
+    } else if (gpu_feature_info.blocked ||
+               gpu_access_blocked) {
+      status = "unavailable";
+      if (gpu_feature_info.fallback_to_software) {
+        status += "_software";
+      } else
         status += "_off";
     } else {
       status = "enabled";
@@ -297,11 +300,19 @@ base::Value* GetFeatureStatus() {
         if (IsForceGpuRasterizationEnabled())
           status += "_force";
       }
+      if (gpu_feature_info.name == kThreadedRasterizationFeatureName)
+        status += "_on";
     }
     if (gpu_feature_info.name == kGpuCompositingFeatureName) {
       if (IsThreadedCompositingEnabled())
         status += "_threaded";
     }
+    if (gpu_feature_info.name == kWebGLFeatureName &&
+        (gpu_feature_info.blocked || gpu_access_blocked) &&
+        manager->ShouldUseSwiftShader()) {
+      status = "unavailable_software";
+    }
+
     feature_status_dict->SetString(
         gpu_feature_info.name.c_str(), status.c_str());
   }
