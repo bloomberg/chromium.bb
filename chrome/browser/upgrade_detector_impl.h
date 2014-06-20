@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "base/version.h"
 #include "chrome/browser/upgrade_detector.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -14,6 +15,11 @@ template <typename T> struct DefaultSingletonTraits;
 class UpgradeDetectorImpl : public UpgradeDetector {
  public:
   virtual ~UpgradeDetectorImpl();
+
+  // Returns the currently installed Chrome version, which may be newer than the
+  // one currently running. Not supported on Android, iOS or ChromeOS. Must be
+  // run on a thread where I/O operations are allowed (e.g. FILE thread).
+  static base::Version GetCurrentlyInstalledVersion();
 
   // Returns the singleton instance.
   static UpgradeDetectorImpl* GetInstance();

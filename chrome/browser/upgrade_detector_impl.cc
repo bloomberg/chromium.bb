@@ -20,7 +20,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/common/chrome_switches.h"
@@ -149,6 +148,44 @@ void DetectUpdatability(const base::Closure& callback_task,
 }
 #endif  // defined(OS_WIN)
 
+// Gets the currently installed version. On Windows, if |critical_update| is not
+// NULL, also retrieves the critical update version info if available.
+base::Version GetCurrentlyInstalledVersionImpl(Version* critical_update) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  Version installed_version;
+#if defined(OS_WIN)
+  // Get the version of the currently *installed* instance of Chrome,
+  // which might be newer than the *running* instance if we have been
+  // upgraded in the background.
+  bool system_install = IsSystemInstall();
+
+  // TODO(tommi): Check if using the default distribution is always the right
+  // thing to do.
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  InstallUtil::GetChromeVersion(dist, system_install, &installed_version);
+  if (critical_update && installed_version.IsValid()) {
+    InstallUtil::GetCriticalUpdateVersion(dist, system_install,
+                                          critical_update);
+  }
+#elif defined(OS_MACOSX)
+  installed_version =
+      Version(base::UTF16ToASCII(keystone_glue::CurrentlyInstalledVersion()));
+#elif defined(OS_POSIX)
+  // POSIX but not Mac OS X: Linux, etc.
+  CommandLine command_line(*CommandLine::ForCurrentProcess());
+  command_line.AppendSwitch(switches::kProductVersion);
+  std::string reply;
+  if (!base::GetAppOutput(command_line, &reply)) {
+    DLOG(ERROR) << "Failed to get current file version";
+    return installed_version;
+  }
+
+  installed_version = Version(reply);
+#endif
+  return installed_version;
+}
+
 }  // namespace
 
 UpgradeDetectorImpl::UpgradeDetectorImpl()
@@ -252,7 +289,12 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
 UpgradeDetectorImpl::~UpgradeDetectorImpl() {
 }
 
-// Static
+// static
+base::Version UpgradeDetectorImpl::GetCurrentlyInstalledVersion() {
+  return GetCurrentlyInstalledVersionImpl(NULL);
+}
+
+// static
 // This task checks the currently running version of Chrome against the
 // installed version. If the installed version is newer, it calls back
 // UpgradeDetectorImpl::UpgradeDetected using a weak pointer so that it can
@@ -261,39 +303,9 @@ void UpgradeDetectorImpl::DetectUpgradeTask(
     base::WeakPtr<UpgradeDetectorImpl> upgrade_detector) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  Version installed_version;
   Version critical_update;
-
-#if defined(OS_WIN)
-  // Get the version of the currently *installed* instance of Chrome,
-  // which might be newer than the *running* instance if we have been
-  // upgraded in the background.
-  bool system_install = IsSystemInstall();
-
-  // TODO(tommi): Check if using the default distribution is always the right
-  // thing to do.
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  InstallUtil::GetChromeVersion(dist, system_install, &installed_version);
-
-  if (installed_version.IsValid()) {
-    InstallUtil::GetCriticalUpdateVersion(dist, system_install,
-                                          &critical_update);
-  }
-#elif defined(OS_MACOSX)
-  installed_version =
-      Version(base::UTF16ToASCII(keystone_glue::CurrentlyInstalledVersion()));
-#elif defined(OS_POSIX)
-  // POSIX but not Mac OS X: Linux, etc.
-  CommandLine command_line(*CommandLine::ForCurrentProcess());
-  command_line.AppendSwitch(switches::kProductVersion);
-  std::string reply;
-  if (!base::GetAppOutput(command_line, &reply)) {
-    DLOG(ERROR) << "Failed to get current file version";
-    return;
-  }
-
-  installed_version = Version(reply);
-#endif
+  Version installed_version =
+      GetCurrentlyInstalledVersionImpl(&critical_update);
 
   // Get the version of the currently *running* instance of Chrome.
   chrome::VersionInfo version_info;
@@ -436,9 +448,9 @@ void UpgradeDetectorImpl::NotifyOnUpgrade() {
     // second.
     const int kUnstableThreshold = 1;
 
-    if (is_critical_or_outdated)
+    if (is_critical_or_outdated) {
       set_upgrade_notification_stage(UPGRADE_ANNOYANCE_CRITICAL);
-    else if (time_passed >= kUnstableThreshold) {
+    } else if (time_passed >= kUnstableThreshold) {
       set_upgrade_notification_stage(UPGRADE_ANNOYANCE_LOW);
 
       // That's as high as it goes.

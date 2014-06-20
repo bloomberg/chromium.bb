@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/time/time.h"
 #include "chrome/browser/metrics/variations/variations_request_scheduler.h"
@@ -26,12 +27,16 @@
 class PrefService;
 class PrefRegistrySimple;
 
-namespace user_prefs {
-class PrefRegistrySyncable;
+namespace base {
+class Version;
 }
 
 namespace metrics {
 class MetricsStateManager;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 namespace chrome_variations {
@@ -145,6 +150,11 @@ class VariationsService
   // ResourceRequestAllowedNotifier::Observer implementation:
   virtual void OnResourceRequestsAllowed() OVERRIDE;
 
+  // Performs a variations seed simulation with the given |seed| and |version|
+  // and logs the simulation results as histograms.
+  void PerformSimulationWithVersion(scoped_ptr<VariationsSeed> seed,
+                                    const base::Version& version);
+
   // Record the time of the most recent successful fetch.
   void RecordLastFetchTime();
 
@@ -192,6 +202,8 @@ class VariationsService
   // Helper that handles synchronizing Variations with the Registry.
   VariationsRegistrySyncer registry_syncer_;
 #endif
+
+  base::WeakPtrFactory<VariationsService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsService);
 };
