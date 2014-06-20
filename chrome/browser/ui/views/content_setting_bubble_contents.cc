@@ -306,6 +306,7 @@ void ContentSettingBubbleContents::Init() {
       views::MenuButton* menu_button = new views::MenuButton(
           NULL, base::UTF8ToUTF16((i->second.selected_device.name)),
           this, true);
+      menu_button->SetStyle(views::Button::STYLE_BUTTON);
       menu_button->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       menu_button->set_animate_on_state_change(false);
 
