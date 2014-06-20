@@ -12,7 +12,7 @@ OmniboxLog::OmniboxLog(
     size_t selected_index,
     bool is_paste_and_go,
     SessionID::id_type tab_id,
-    AutocompleteInput::PageClassification current_page_classification,
+    metrics::OmniboxEventProto::PageClassification current_page_classification,
     base::TimeDelta elapsed_time_since_user_first_modified_omnibox,
     size_t completed_length,
     base::TimeDelta elapsed_time_since_last_change_to_default_match,

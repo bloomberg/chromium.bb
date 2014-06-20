@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "url/gurl.h"
 #include "url/url_parse.h"
@@ -17,56 +18,6 @@
 // The user input for an autocomplete query.  Allows copying.
 class AutocompleteInput {
  public:
-  typedef metrics::OmniboxInputType::Type Type;
-
-  // The type of page currently displayed.
-  // Warning: when adding an element to this enum, please add it at the end
-  // and update omnibox_event.proto::PageClassification and
-  // omnibox_edit_model.cc::ClassifyPage() too.
-  enum PageClassification {
-    // An invalid URL; shouldn't happen.
-    INVALID_SPEC = 0,
-
-    // chrome://newtab/.  This can be either the built-in version or a
-    // replacement new tab page from an extension.  Note that when Instant
-    // Extended is enabled, the new tab page will be reported as either
-    // INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS or
-    // INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS below,
-    // unless an extension is replacing the new tab page, in which case
-    // it will still be reported as NTP.
-    NTP = 1,
-
-    // about:blank.
-    BLANK = 2,
-
-    // The user's home page.  Note that if the home page is set to any
-    // of the new tab page versions or to about:blank, then we'll
-    // classify the page into those categories, not HOME_PAGE.
-    HOME_PAGE = 3,
-
-    // The catch-all entry of everything not included somewhere else
-    // on this list.
-    OTHER = 4,
-
-    // The user is on a search result page that's doing search term
-    // replacement, meaning the search terms should've appeared in the omnibox
-    // before the user started editing it, not the URL of the page.
-    SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT = 6,
-
-    // The new tab page in which this omnibox interaction first started
-    // with the user having focus in the omnibox.
-    INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS = 7,
-
-    // The new tab page in which this omnibox interaction first started
-    // with the user having focus in the fakebox.
-    INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS = 8,
-
-    // The user is on a search result page that's not doing search term
-    // replacement, meaning the URL of the page should've appeared in the
-    // omnibox before the user started editing it, not the search terms.
-    SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT = 9
-  };
-
   AutocompleteInput();
   // |text| and |cursor_position| represent the input query and location of
   // the cursor with the query respectively.  |cursor_position| may be set to
@@ -111,7 +62,8 @@ class AutocompleteInput {
                     size_t cursor_position,
                     const base::string16& desired_tld,
                     const GURL& current_url,
-                    PageClassification current_page_classification,
+                    metrics::OmniboxEventProto::PageClassification
+                        current_page_classification,
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,
                     bool allow_exact_keyword_match,
@@ -120,22 +72,24 @@ class AutocompleteInput {
 
   // If type is |FORCED_QUERY| and |text| starts with '?', it is removed.
   // Returns number of leading characters removed.
-  static size_t RemoveForcedQueryStringIfNecessary(Type type,
-                                                   base::string16* text);
+  static size_t RemoveForcedQueryStringIfNecessary(
+      metrics::OmniboxInputType::Type type,
+      base::string16* text);
 
   // Converts |type| to a string representation.  Used in logging.
-  static std::string TypeToString(Type type);
+  static std::string TypeToString(metrics::OmniboxInputType::Type type);
 
   // Parses |text| and returns the type of input this will be interpreted as.
   // The components of the input are stored in the output parameter |parts|, if
   // it is non-NULL. The scheme is stored in |scheme| if it is non-NULL. The
   // canonicalized URL is stored in |canonicalized_url|; however, this URL is
   // not guaranteed to be valid, especially if the parsed type is, e.g., QUERY.
-  static Type Parse(const base::string16& text,
-                    const base::string16& desired_tld,
-                    url::Parsed* parts,
-                    base::string16* scheme,
-                    GURL* canonicalized_url);
+  static metrics::OmniboxInputType::Type Parse(
+      const base::string16& text,
+      const base::string16& desired_tld,
+      url::Parsed* parts,
+      base::string16* scheme,
+      GURL* canonicalized_url);
 
   // Parses |text| and fill |scheme| and |host| by the positions of them.
   // The results are almost as same as the result of Parse(), but if the scheme
@@ -180,12 +134,13 @@ class AutocompleteInput {
 
   // The type of page that is currently behind displayed and how it is
   // displayed (e.g., with search term replacement or without).
-  AutocompleteInput::PageClassification current_page_classification() const {
+  metrics::OmniboxEventProto::PageClassification current_page_classification()
+      const {
     return current_page_classification_;
   }
 
   // The type of input supplied.
-  Type type() const { return type_; }
+  metrics::OmniboxInputType::Type type() const { return type_; }
 
   // Returns parsed URL components.
   const url::Parsed& parts() const { return parts_; }
@@ -226,8 +181,8 @@ class AutocompleteInput {
   base::string16 text_;
   size_t cursor_position_;
   GURL current_url_;
-  AutocompleteInput::PageClassification current_page_classification_;
-  Type type_;
+  metrics::OmniboxEventProto::PageClassification current_page_classification_;
+  metrics::OmniboxInputType::Type type_;
   url::Parsed parts_;
   base::string16 scheme_;
   GURL canonicalized_url_;

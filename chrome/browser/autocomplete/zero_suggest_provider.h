@@ -19,6 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/base_search_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 
 class TemplateURLService;
 
@@ -134,7 +135,7 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   // The type of page the user is viewing (a search results page doing search
   // term replacement, an arbitrary URL, etc.).
-  AutocompleteInput::PageClassification current_page_classification_;
+  metrics::OmniboxEventProto::PageClassification current_page_classification_;
 
   // Copy of OmniboxEditModel::permanent_text_.
   base::string16 permanent_text_;

@@ -10,7 +10,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -30,6 +29,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
@@ -370,7 +370,7 @@ void BrowserTabStripController::CreateNewTabWithLocation(
   // a search query if necessary.
   AutocompleteMatch match;
   AutocompleteClassifierFactory::GetForProfile(profile())->Classify(
-      location, false, false, AutocompleteInput::BLANK, &match, NULL);
+      location, false, false, metrics::OmniboxEventProto::BLANK, &match, NULL);
   if (match.destination_url.is_valid())
     model_->delegate()->AddTabAt(match.destination_url, -1, true);
 }

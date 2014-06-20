@@ -56,6 +56,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/navigation_controller.h"
@@ -67,6 +68,7 @@
 #include "ui/gfx/image/image.h"
 #include "url/url_util.h"
 
+using metrics::OmniboxEventProto;
 using predictors::AutocompleteActionPredictor;
 
 
@@ -1426,31 +1428,31 @@ bool OmniboxEditModel::IsSpaceCharForAcceptingKeyword(wchar_t c) {
   }
 }
 
-AutocompleteInput::PageClassification OmniboxEditModel::ClassifyPage() const {
+OmniboxEventProto::PageClassification OmniboxEditModel::ClassifyPage() const {
   if (!delegate_->CurrentPageExists())
-    return AutocompleteInput::OTHER;
+    return OmniboxEventProto::OTHER;
   if (delegate_->IsInstantNTP()) {
     // Note that we treat OMNIBOX as the source if focus_source_ is INVALID,
     // i.e., if input isn't actually in progress.
     return (focus_source_ == FAKEBOX) ?
-        AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS :
-        AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
+        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS :
+        OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
   }
   const GURL& gurl = delegate_->GetURL();
   if (!gurl.is_valid())
-    return AutocompleteInput::INVALID_SPEC;
+    return OmniboxEventProto::INVALID_SPEC;
   const std::string& url = gurl.spec();
   if (url == chrome::kChromeUINewTabURL)
-    return AutocompleteInput::NTP;
+    return OmniboxEventProto::NTP;
   if (url == url::kAboutBlankURL)
-    return AutocompleteInput::BLANK;
+    return OmniboxEventProto::BLANK;
   if (url == profile()->GetPrefs()->GetString(prefs::kHomePage))
-    return AutocompleteInput::HOME_PAGE;
+    return OmniboxEventProto::HOME_PAGE;
   if (controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(true))
-    return AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
+    return OmniboxEventProto::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
   if (delegate_->IsSearchResultsPage())
-    return AutocompleteInput::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
-  return AutocompleteInput::OTHER;
+    return OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
+  return OmniboxEventProto::OTHER;
 }
 
 void OmniboxEditModel::ClassifyStringForPasteAndGo(

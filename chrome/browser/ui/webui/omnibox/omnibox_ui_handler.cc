@@ -22,6 +22,7 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "content/public/browser/web_ui.h"
 #include "mojo/common/common_type_converters.h"
 
@@ -172,7 +173,7 @@ void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
       cursor_position,
       base::string16(),  // user's desired tld (top-level domain)
       GURL(),
-      static_cast<AutocompleteInput::PageClassification>(
+      static_cast<metrics::OmniboxEventProto::PageClassification>(
           page_classification),
       prevent_inline_autocomplete,
       prefer_keyword,

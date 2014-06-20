@@ -25,6 +25,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -189,7 +191,7 @@ class HistoryURLProviderTest : public testing::Test,
                bool prevent_inline_autocomplete,
                const UrlAndLegalDefault* expected_urls,
                size_t num_results,
-               AutocompleteInput::Type* identified_input_type);
+               metrics::OmniboxInputType::Type* identified_input_type);
 
   // A version of the above without the final |type| output parameter.
   void RunTest(const base::string16 text,
@@ -197,7 +199,7 @@ class HistoryURLProviderTest : public testing::Test,
                bool prevent_inline_autocomplete,
                const UrlAndLegalDefault* expected_urls,
                size_t num_results) {
-    AutocompleteInput::Type type;
+    metrics::OmniboxInputType::Type type;
     return RunTest(text, desired_tld, prevent_inline_autocomplete,
                    expected_urls, num_results, &type);
   }
@@ -278,9 +280,9 @@ void HistoryURLProviderTest::RunTest(
     bool prevent_inline_autocomplete,
     const UrlAndLegalDefault* expected_urls,
     size_t num_results,
-    AutocompleteInput::Type* identified_input_type) {
+    metrics::OmniboxInputType::Type* identified_input_type) {
   AutocompleteInput input(text, base::string16::npos, desired_tld, GURL(),
-                          AutocompleteInput::INVALID_SPEC,
+                          metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, false, true, true);
   *identified_input_type = input.type();
   autocomplete_->Start(input, false);
@@ -559,8 +561,8 @@ TEST_F(HistoryURLProviderTest, EmptyVisits) {
 
   AutocompleteInput input(ASCIIToUTF16("p"), base::string16::npos,
                           base::string16(), GURL(),
-                          AutocompleteInput::INVALID_SPEC, false, false, true,
-                          true);
+                          metrics::OmniboxEventProto::INVALID_SPEC, false,
+                          false, true, true);
   autocomplete_->Start(input, false);
   // HistoryURLProvider shouldn't be done (waiting on async results).
   EXPECT_FALSE(autocomplete_->done());
@@ -601,8 +603,8 @@ TEST_F(HistoryURLProviderTestNoDB, NavigateWithoutDB) {
 TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
   AutocompleteInput input(ASCIIToUTF16("slash "), base::string16::npos,
                           base::string16(), GURL(),
-                          AutocompleteInput::INVALID_SPEC, false, false,
-                          true, true);
+                          metrics::OmniboxEventProto::INVALID_SPEC, false,
+                          false, true, true);
   autocomplete_->Start(input, false);
   if (!autocomplete_->done())
     base::MessageLoop::current()->Run();
@@ -667,7 +669,7 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithRefs) {
   struct TestCase {
     const char* input;
     int relevance;
-    AutocompleteInput::Type type;
+    metrics::OmniboxInputType::Type type;
   } test_cases[] = {
     { "gooey", 1410, metrics::OmniboxInputType::UNKNOWN },
     { "gooey/", 1410, metrics::OmniboxInputType::URL },
@@ -682,7 +684,7 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithRefs) {
     SCOPED_TRACE(test_cases[i].input);
     const UrlAndLegalDefault output[] = {
         {url_fixer::FixupURL(test_cases[i].input, std::string()).spec(), true}};
-    AutocompleteInput::Type type;
+    metrics::OmniboxInputType::Type type;
     ASSERT_NO_FATAL_FAILURE(
         RunTest(ASCIIToUTF16(test_cases[i].input),
                 base::string16(), false, output, arraysize(output), &type));
@@ -777,7 +779,7 @@ TEST_F(HistoryURLProviderTest, CrashDueToFixup) {
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     AutocompleteInput input(ASCIIToUTF16(test_cases[i]), base::string16::npos,
                             base::string16(), GURL(),
-                            AutocompleteInput::INVALID_SPEC,
+                            metrics::OmniboxEventProto::INVALID_SPEC,
                             false, false, true, true);
     autocomplete_->Start(input, false);
     if (!autocomplete_->done())
@@ -895,8 +897,8 @@ TEST_F(HistoryURLProviderTest, SuggestExactInput) {
     AutocompleteInput input(ASCIIToUTF16(test_cases[i].input),
                             base::string16::npos, base::string16(),
                             GURL("about:blank"),
-                            AutocompleteInput::INVALID_SPEC, false, false, true,
-                            true);
+                            metrics::OmniboxEventProto::INVALID_SPEC, false,
+                            false, true, true);
     AutocompleteMatch match(autocomplete_->SuggestExactInput(
         input.text(), input.canonicalized_url(), test_cases[i].trim_http));
     EXPECT_EQ(ASCIIToUTF16(test_cases[i].contents), match.contents);

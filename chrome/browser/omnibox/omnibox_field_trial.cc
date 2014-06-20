@@ -14,13 +14,15 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/variations/variation_ids.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/metrics_util.h"
 #include "components/variations/variations_associated_data.h"
+
+using metrics::OmniboxEventProto;
 
 namespace {
 
@@ -308,7 +310,7 @@ bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial() {
 }
 
 bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
-    AutocompleteInput::PageClassification current_page_classification,
+    OmniboxEventProto::PageClassification current_page_classification,
     int* max_relevance) {
   // The value of the rule is a string that encodes an integer containing
   // the max relevance.
@@ -323,19 +325,19 @@ bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
 }
 
 bool OmniboxFieldTrial::SearchHistoryPreventInlining(
-    AutocompleteInput::PageClassification current_page_classification) {
+    OmniboxEventProto::PageClassification current_page_classification) {
   return OmniboxFieldTrial::GetValueForRuleInContext(
       kSearchHistoryRule, current_page_classification) == "PreventInlining";
 }
 
 bool OmniboxFieldTrial::SearchHistoryDisable(
-    AutocompleteInput::PageClassification current_page_classification) {
+    OmniboxEventProto::PageClassification current_page_classification) {
   return OmniboxFieldTrial::GetValueForRuleInContext(
       kSearchHistoryRule, current_page_classification) == "Disable";
 }
 
 void OmniboxFieldTrial::GetDemotionsByType(
-    AutocompleteInput::PageClassification current_page_classification,
+    OmniboxEventProto::PageClassification current_page_classification,
     DemotionMultipliers* demotions_by_type) {
   demotions_by_type->clear();
   std::string demotion_rule = OmniboxFieldTrial::GetValueForRuleInContext(
@@ -345,7 +347,7 @@ void OmniboxFieldTrial::GetDemotionsByType(
   // only for the fakebox-focus context.
   if (demotion_rule.empty() &&
       (current_page_classification ==
-       AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS))
+       OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS))
     demotion_rule = "1:61,2:61,3:61,4:61,12:61";
 
   // The value of the DemoteByType rule is a comma-separated list of
@@ -484,12 +486,12 @@ const char OmniboxFieldTrial::kHUPNewScoringVisitedCountScoreBucketsParam[] =
 // (kBundledExperimentFieldTrialName), each experiment group comes with a
 // list of parameters in the form:
 //   key=<Rule>:
-//       <AutocompleteInput::PageClassification (as an int)>:
+//       <OmniboxEventProto::PageClassification (as an int)>:
 //       <whether Instant Extended is enabled (as a 1 or 0)>
 //     (note that there are no linebreaks in keys; this format is for
 //      presentation only>
 //   value=<arbitrary string>
-// Both the AutocompleteInput::PageClassification and the Instant Extended
+// Both the OmniboxEventProto::PageClassification and the Instant Extended
 // entries can be "*", which means this rule applies for all values of the
 // matching portion of the context.
 // One example parameter is
@@ -512,7 +514,7 @@ const char OmniboxFieldTrial::kHUPNewScoringVisitedCountScoreBucketsParam[] =
 // and failing that it returns the empty string.
 std::string OmniboxFieldTrial::GetValueForRuleInContext(
     const std::string& rule,
-    AutocompleteInput::PageClassification page_classification) {
+    OmniboxEventProto::PageClassification page_classification) {
   VariationParams params;
   if (!chrome_variations::GetVariationParams(kBundledExperimentFieldTrialName,
                                              &params)) {

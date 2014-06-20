@@ -163,7 +163,7 @@ void SearchProvider::UpdateMatchContentsClass(const base::string16& input_text,
 
 // static
 int SearchProvider::CalculateRelevanceForKeywordVerbatim(
-    AutocompleteInput::Type type,
+    metrics::OmniboxInputType::Type type,
     bool prefer_keyword) {
   // This function is responsible for scoring verbatim query matches
   // for non-extension keywords.  KeywordProvider::CalculateRelevance()

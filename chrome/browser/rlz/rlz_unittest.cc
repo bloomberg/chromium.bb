@@ -8,13 +8,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -239,7 +239,7 @@ void RlzLibTest::SimulateOmniboxUsage() {
   AutocompleteResult empty_result;
   OmniboxLog dummy(base::string16(), false, metrics::OmniboxInputType::INVALID,
                    true, 0, false, -1,
-                   AutocompleteInput::INVALID_SPEC,
+                   metrics::OmniboxEventProto::INVALID_SPEC,
                    base::TimeDelta::FromSeconds(0), 0,
                    base::TimeDelta::FromSeconds(0),
                    AutocompleteResult());

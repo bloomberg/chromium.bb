@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
@@ -31,7 +32,7 @@ void AdjustCursorPositionIfNecessary(size_t num_leading_chars_removed,
 
 AutocompleteInput::AutocompleteInput()
     : cursor_position_(base::string16::npos),
-      current_page_classification_(AutocompleteInput::INVALID_SPEC),
+      current_page_classification_(metrics::OmniboxEventProto::INVALID_SPEC),
       type_(metrics::OmniboxInputType::INVALID),
       prevent_inline_autocomplete_(false),
       prefer_keyword_(false),
@@ -44,7 +45,7 @@ AutocompleteInput::AutocompleteInput(
     size_t cursor_position,
     const base::string16& desired_tld,
     const GURL& current_url,
-    AutocompleteInput::PageClassification current_page_classification,
+    metrics::OmniboxEventProto::PageClassification current_page_classification,
     bool prevent_inline_autocomplete,
     bool prefer_keyword,
     bool allow_exact_keyword_match,
@@ -99,7 +100,7 @@ AutocompleteInput::~AutocompleteInput() {
 
 // static
 size_t AutocompleteInput::RemoveForcedQueryStringIfNecessary(
-    AutocompleteInput::Type type,
+    metrics::OmniboxInputType::Type type,
     base::string16* text) {
   if ((type != metrics::OmniboxInputType::FORCED_QUERY) || text->empty() ||
       (*text)[0] != L'?')
@@ -110,7 +111,8 @@ size_t AutocompleteInput::RemoveForcedQueryStringIfNecessary(
 }
 
 // static
-std::string AutocompleteInput::TypeToString(AutocompleteInput::Type type) {
+std::string AutocompleteInput::TypeToString(
+    metrics::OmniboxInputType::Type type) {
   switch (type) {
     case metrics::OmniboxInputType::INVALID:      return "invalid";
     case metrics::OmniboxInputType::UNKNOWN:      return "unknown";
@@ -124,7 +126,7 @@ std::string AutocompleteInput::TypeToString(AutocompleteInput::Type type) {
 }
 
 // static
-AutocompleteInput::Type AutocompleteInput::Parse(
+metrics::OmniboxInputType::Type AutocompleteInput::Parse(
     const base::string16& text,
     const base::string16& desired_tld,
     url::Parsed* parts,
@@ -219,7 +221,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
         url::Parsed http_parts;
         base::string16 http_scheme;
         GURL http_canonicalized_url;
-        AutocompleteInput::Type http_type =
+        metrics::OmniboxInputType::Type http_type =
             Parse(http_scheme_prefix + text, desired_tld, &http_parts,
                   &http_scheme, &http_canonicalized_url);
         DCHECK_EQ(std::string(url::kHttpScheme),
@@ -530,7 +532,7 @@ void AutocompleteInput::Clear() {
   text_.clear();
   cursor_position_ = base::string16::npos;
   current_url_ = GURL();
-  current_page_classification_ = AutocompleteInput::INVALID_SPEC;
+  current_page_classification_ = metrics::OmniboxEventProto::INVALID_SPEC;
   type_ = metrics::OmniboxInputType::INVALID;
   parts_ = url::Parsed();
   scheme_.clear();

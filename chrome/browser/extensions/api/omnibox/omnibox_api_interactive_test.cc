@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/omnibox/omnibox_api_testbase.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 
 
 // Tests that the autocomplete popup doesn't reopen after accepting input for
@@ -43,7 +44,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
   autocomplete_controller->Start(
       AutocompleteInput(base::ASCIIToUTF16("keyword command"),
                         base::string16::npos, base::string16(), GURL(),
-                        AutocompleteInput::NTP, true, false, true, true));
+                        metrics::OmniboxEventProto::NTP, true, false, true,
+                        true));
   location_bar->AcceptInput();
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());

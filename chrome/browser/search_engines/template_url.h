@@ -12,7 +12,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_id.h"
 #include "ui/gfx/size.h"
@@ -111,7 +112,7 @@ class TemplateURLRef {
     base::string16 original_query;
 
     // The type the original input query was identified as.
-    AutocompleteInput::Type input_type;
+    metrics::OmniboxInputType::Type input_type;
 
     // The optional assisted query stats, aka AQS, used for logging purposes.
     // This string contains impressions of all autocomplete matches shown
@@ -137,7 +138,7 @@ class TemplateURLRef {
     std::string current_page_url;
 
     // Which omnibox the user used to type the prefix.
-    AutocompleteInput::PageClassification page_classification;
+    metrics::OmniboxEventProto::PageClassification page_classification;
 
     // True for searches issued with the bookmark bar pref set to shown.
     bool bookmark_bar_pinned;

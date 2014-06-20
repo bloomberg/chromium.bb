@@ -15,6 +15,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -112,7 +113,8 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
   std::string url("http://www.cnn.com");
   AutocompleteInput input(
       base::ASCIIToUTF16(url), base::string16::npos, base::string16(),
-      GURL(url), AutocompleteInput::INVALID_SPEC, true, false, true, true);
+      GURL(url), metrics::OmniboxEventProto::INVALID_SPEC, true, false, true,
+      true);
 
   provider_->Start(input, false);
 
@@ -141,7 +143,8 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
   std::string url("http://www.cnn.com");
   AutocompleteInput input(
       base::ASCIIToUTF16(url), base::string16::npos, base::string16(),
-      GURL(url), AutocompleteInput::INVALID_SPEC, true, false, true, true);
+      GURL(url), metrics::OmniboxEventProto::INVALID_SPEC, true, false, true,
+      true);
 
   // Set up the pref to cache the response from the previous run.
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"
@@ -187,7 +190,8 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   std::string url("http://www.cnn.com");
   AutocompleteInput input(
       base::ASCIIToUTF16(url), base::string16::npos, base::string16(),
-      GURL(url), AutocompleteInput::INVALID_SPEC, true, false, true, true);
+      GURL(url), metrics::OmniboxEventProto::INVALID_SPEC, true, false, true,
+      true);
 
   // Set up the pref to cache the response from the previous run.
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"

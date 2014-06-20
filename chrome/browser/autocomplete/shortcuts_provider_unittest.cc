@@ -30,6 +30,7 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/common/extension.h"
@@ -360,7 +361,7 @@ void ShortcutsProviderTest::RunTest(
     base::string16 top_result_inline_autocompletion) {
   base::MessageLoop::current()->RunUntilIdle();
   AutocompleteInput input(text, base::string16::npos, base::string16(), GURL(),
-                          AutocompleteInput::INVALID_SPEC,
+                          metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, false, true, true);
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->done());

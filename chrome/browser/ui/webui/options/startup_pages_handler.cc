@@ -16,6 +16,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/web_ui.h"
@@ -236,7 +237,7 @@ void StartupPagesHandler::RequestAutocompleteSuggestions(
 
   autocomplete_controller_->Start(AutocompleteInput(
       input, base::string16::npos, base::string16(), GURL(),
-      AutocompleteInput::INVALID_SPEC, true, false, false, true));
+      metrics::OmniboxEventProto::INVALID_SPEC, true, false, false, true));
 }
 
 void StartupPagesHandler::OnResultChanged(bool default_match_changed) {

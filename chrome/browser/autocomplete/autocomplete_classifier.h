@@ -9,8 +9,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 
 class AutocompleteController;
 struct AutocompleteMatch;
@@ -46,7 +46,8 @@ class AutocompleteClassifier : public KeyedService {
   void Classify(const base::string16& text,
                 bool prefer_keyword,
                 bool allow_exact_keyword_match,
-                AutocompleteInput::PageClassification page_classification,
+                metrics::OmniboxEventProto::PageClassification
+                    page_classification,
                 AutocompleteMatch* match,
                 GURL* alternate_nav_url);
 

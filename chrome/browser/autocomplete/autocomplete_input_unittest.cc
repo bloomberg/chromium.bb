@@ -8,15 +8,18 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_parse.h"
 
 using base::ASCIIToUTF16;
+using metrics::OmniboxEventProto;
 
 TEST(AutocompleteInputTest, InputType) {
   struct test_data {
     const base::string16 input;
-    const AutocompleteInput::Type type;
+    const metrics::OmniboxInputType::Type type;
   } input_cases[] = {
     { base::string16(), metrics::OmniboxInputType::INVALID },
     { ASCIIToUTF16("?"), metrics::OmniboxInputType::FORCED_QUERY },
@@ -139,7 +142,7 @@ TEST(AutocompleteInputTest, InputType) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
-                            AutocompleteInput::INVALID_SPEC, true, false, true,
+                            OmniboxEventProto::INVALID_SPEC, true, false, true,
                             true);
     EXPECT_EQ(input_cases[i].type, input.type());
   }
@@ -148,7 +151,7 @@ TEST(AutocompleteInputTest, InputType) {
 TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
   struct test_data {
     const base::string16 input;
-    const AutocompleteInput::Type type;
+    const metrics::OmniboxInputType::Type type;
     const std::string spec;  // Unused if not a URL.
   } input_cases[] = {
     { ASCIIToUTF16("401k"), metrics::OmniboxInputType::URL,
@@ -169,7 +172,7 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
                             ASCIIToUTF16("com"), GURL(),
-                            AutocompleteInput::INVALID_SPEC, true, false, true,
+                            OmniboxEventProto::INVALID_SPEC, true, false, true,
                             true);
     EXPECT_EQ(input_cases[i].type, input.type());
     if (input_cases[i].type == metrics::OmniboxInputType::URL)
@@ -182,7 +185,7 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
 TEST(AutocompleteInputTest, InputCrash) {
   AutocompleteInput input(base::WideToUTF16(L"\uff65@s"), base::string16::npos,
                           base::string16(), GURL(),
-                          AutocompleteInput::INVALID_SPEC, true, false,
+                          OmniboxEventProto::INVALID_SPEC, true, false,
                           true, true);
 }
 
@@ -226,7 +229,7 @@ TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
                                                    &host);
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
-                            AutocompleteInput::INVALID_SPEC, true,
+                            OmniboxEventProto::INVALID_SPEC, true,
                             false, true, true);
     EXPECT_EQ(input_cases[i].scheme.begin, scheme.begin);
     EXPECT_EQ(input_cases[i].scheme.len, scheme.len);
@@ -265,7 +268,7 @@ TEST(AutocompleteInputTest, InputTypeWithCursorPosition) {
     AutocompleteInput input(input_cases[i].input,
                             input_cases[i].cursor_position,
                             base::string16(), GURL(),
-                            AutocompleteInput::INVALID_SPEC,
+                            OmniboxEventProto::INVALID_SPEC,
                             true, false, true, true);
     EXPECT_EQ(input_cases[i].normalized_input, input.text());
     EXPECT_EQ(input_cases[i].normalized_cursor_position,

@@ -11,6 +11,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -81,7 +82,7 @@ void KeywordProviderTest::RunTest(
     SCOPED_TRACE(keyword_cases[i].input);
     AutocompleteInput input(keyword_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
-                            AutocompleteInput::INVALID_SPEC, true,
+                            metrics::OmniboxEventProto::INVALID_SPEC, true,
                             false, true, true);
     kw_provider_->Start(input, false);
     EXPECT_TRUE(kw_provider_->done());
@@ -323,8 +324,8 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     AutocompleteInput input(ASCIIToUTF16(cases[i].text),
                             cases[i].cursor_position, base::string16(), GURL(),
-                            AutocompleteInput::INVALID_SPEC, false, false,
-                            cases[i].allow_exact_keyword_match, true);
+                            metrics::OmniboxEventProto::INVALID_SPEC, false,
+                            false, cases[i].allow_exact_keyword_match, true);
     const TemplateURL* url =
         KeywordProvider::GetSubstitutingTemplateURLForInput(model_.get(),
                                                             &input);

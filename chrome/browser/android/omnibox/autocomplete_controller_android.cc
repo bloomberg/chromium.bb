@@ -36,6 +36,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -51,6 +52,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
+using metrics::OmniboxEventProto;
 
 namespace {
 
@@ -89,7 +91,7 @@ ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile) : controller_(
       base::string16::npos,
       base::string16(),
       GURL(fake_request_source),
-      AutocompleteInput::INVALID_SPEC,
+      OmniboxEventProto::INVALID_SPEC,
       false,
       false,
       true,
@@ -142,8 +144,8 @@ void AutocompleteControllerAndroid::Start(JNIEnv* env,
   if (j_desired_tld != NULL)
     desired_tld = ConvertJavaStringToUTF16(env, j_desired_tld);
   base::string16 text = ConvertJavaStringToUTF16(env, j_text);
-  AutocompleteInput::PageClassification page_classification =
-      AutocompleteInput::OTHER;
+  OmniboxEventProto::PageClassification page_classification =
+      OmniboxEventProto::OTHER;
   input_ = AutocompleteInput(text,
                              base::string16::npos,
                              desired_tld,
@@ -212,7 +214,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
     jobject j_web_contents) {
   base::string16 url = ConvertJavaStringToUTF16(env, j_current_url);
   const GURL current_url = GURL(url);
-  AutocompleteInput::PageClassification current_page_classification =
+  OmniboxEventProto::PageClassification current_page_classification =
       ClassifyPage(current_url, is_query_in_omnibox, focused_from_fakebox);
   const base::TimeTicks& now(base::TimeTicks::Now());
   content::WebContents* web_contents =
@@ -397,41 +399,41 @@ void AutocompleteControllerAndroid::NotifySuggestionsReceived(
                                                     j_autocomplete_result);
 }
 
-AutocompleteInput::PageClassification
+OmniboxEventProto::PageClassification
 AutocompleteControllerAndroid::ClassifyPage(const GURL& gurl,
                                             bool is_query_in_omnibox,
                                             bool focused_from_fakebox) const {
   if (!gurl.is_valid())
-    return AutocompleteInput::INVALID_SPEC;
+    return OmniboxEventProto::INVALID_SPEC;
 
   const std::string& url = gurl.spec();
 
   if (gurl.SchemeIs(content::kChromeUIScheme) &&
       gurl.host() == chrome::kChromeUINewTabHost) {
-    return AutocompleteInput::NTP;
+    return OmniboxEventProto::NTP;
   }
 
   if (url == chrome::kChromeUINativeNewTabURL) {
     return focused_from_fakebox ?
-        AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS :
-        AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
+        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS :
+        OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
   }
 
   if (url == url::kAboutBlankURL)
-    return AutocompleteInput::BLANK;
+    return OmniboxEventProto::BLANK;
 
   if (url == profile_->GetPrefs()->GetString(prefs::kHomePage))
-    return AutocompleteInput::HOME_PAGE;
+    return OmniboxEventProto::HOME_PAGE;
 
   if (is_query_in_omnibox)
-    return AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
+    return OmniboxEventProto::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
 
   bool is_search_url = TemplateURLServiceFactory::GetForProfile(profile_)->
       IsSearchResultsPageFromDefaultSearchProvider(gurl);
   if (is_search_url)
-    return AutocompleteInput::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
+    return OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
 
-  return AutocompleteInput::OTHER;
+  return OmniboxEventProto::OTHER;
 }
 
 ScopedJavaLocalRef<jobject>
@@ -530,7 +532,7 @@ static jstring QualifyPartialURLQuery(
       query_string,
       false,
       false,
-      AutocompleteInput::INVALID_SPEC,
+      OmniboxEventProto::INVALID_SPEC,
       &match,
       NULL);
   if (!match.destination_url.is_valid())

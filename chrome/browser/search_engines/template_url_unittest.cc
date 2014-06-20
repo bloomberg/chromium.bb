@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/search_engines/search_terms_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -614,7 +615,7 @@ TEST_F(TemplateURLTest, ReplaceCursorPosition) {
 TEST_F(TemplateURLTest, ReplaceInputType) {
   struct TestData {
     const base::string16 search_term;
-    AutocompleteInput::Type input_type;
+    metrics::OmniboxInputType::Type input_type;
     const std::string url;
     const std::string expected_result;
   } test_data[] = {
@@ -1317,13 +1318,13 @@ TEST_F(TemplateURLTest, ReplacePageClassification) {
                                                         search_terms_data_);
   EXPECT_EQ("http://www.google.com/?q=foo", result);
 
-  search_terms_args.page_classification = AutocompleteInput::NTP;
+  search_terms_args.page_classification = metrics::OmniboxEventProto::NTP;
   result = url.url_ref().ReplaceSearchTerms(search_terms_args,
                                             search_terms_data_);
   EXPECT_EQ("http://www.google.com/?pgcl=1&q=foo", result);
 
   search_terms_args.page_classification =
-      AutocompleteInput::HOME_PAGE;
+      metrics::OmniboxEventProto::HOME_PAGE;
   result = url.url_ref().ReplaceSearchTerms(search_terms_args,
                                             search_terms_data_);
   EXPECT_EQ("http://www.google.com/?pgcl=3&q=foo", result);

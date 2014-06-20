@@ -138,8 +138,9 @@ class SearchProvider : public BaseSearchProvider {
 
   // Calculates the relevance score for the keyword verbatim result (if the
   // input matches one of the profile's keyword).
-  static int CalculateRelevanceForKeywordVerbatim(AutocompleteInput::Type type,
-                                                  bool prefer_keyword);
+  static int CalculateRelevanceForKeywordVerbatim(
+      metrics::OmniboxInputType::Type type,
+      bool prefer_keyword);
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,

@@ -190,7 +190,7 @@ TemplateURLRef::SearchTermsArgs::SearchTermsArgs(
       accepted_suggestion(NO_SUGGESTIONS_AVAILABLE),
       cursor_position(base::string16::npos),
       omnibox_start_margin(-1),
-      page_classification(AutocompleteInput::INVALID_SPEC),
+      page_classification(metrics::OmniboxEventProto::INVALID_SPEC),
       bookmark_bar_pinned(false),
       append_extra_query_params(false),
       force_instant_results(false),
@@ -993,7 +993,7 @@ std::string TemplateURLRef::HandleReplacements(
 
       case GOOGLE_PAGE_CLASSIFICATION:
         if (search_terms_args.page_classification !=
-            AutocompleteInput::INVALID_SPEC) {
+            metrics::OmniboxEventProto::INVALID_SPEC) {
           HandleReplacement(
               "pgcl", base::IntToString(search_terms_args.page_classification),
               *i, &url);

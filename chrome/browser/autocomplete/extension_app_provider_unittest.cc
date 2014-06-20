@@ -11,6 +11,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -90,7 +91,7 @@ void ExtensionAppProviderTest::RunTest(
   for (int i = 0; i < num_cases; ++i) {
     AutocompleteInput input(keyword_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
-                            AutocompleteInput::INVALID_SPEC, true,
+                            metrics::OmniboxEventProto::INVALID_SPEC, true,
                             false, true, true);
     app_provider_->Start(input, false);
     EXPECT_TRUE(app_provider_->done());
@@ -141,7 +142,7 @@ TEST_F(ExtensionAppProviderTest, CreateMatchSanitize) {
 
   AutocompleteInput input(ASCIIToUTF16("Test"), base::string16::npos,
                           base::string16(), GURL(),
-                          AutocompleteInput::INVALID_SPEC, true, true,
+                          metrics::OmniboxEventProto::INVALID_SPEC, true, true,
                           true, false);
   base::string16 url(ASCIIToUTF16("http://example.com"));
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {

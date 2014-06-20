@@ -31,6 +31,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/autocomplete/url_prefix.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/url_fixer/url_fixer.h"
@@ -42,6 +43,8 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
+
+using metrics::OmniboxEventProto;
 
 namespace {
 
@@ -588,7 +591,7 @@ scoped_ptr<base::Value> BaseSearchProvider::DeserializeJsonData(
 bool BaseSearchProvider::ZeroSuggestEnabled(
     const GURL& suggest_url,
     const TemplateURL* template_url,
-    AutocompleteInput::PageClassification page_classification,
+    OmniboxEventProto::PageClassification page_classification,
     Profile* profile) {
   if (!OmniboxFieldTrial::InZeroSuggestFieldTrial())
     return false;
@@ -602,9 +605,9 @@ bool BaseSearchProvider::ZeroSuggestEnabled(
   // TODO(hfung): Experiment with showing MostVisited zero suggest on NTP
   // under the conditions described in crbug.com/305366.
   if ((page_classification ==
-       AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS) ||
+       OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS) ||
       (page_classification ==
-       AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS))
+       OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS))
     return false;
 
   // Don't run if there's no profile or in incognito mode.
@@ -633,7 +636,7 @@ bool BaseSearchProvider::CanSendURL(
     const GURL& current_page_url,
     const GURL& suggest_url,
     const TemplateURL* template_url,
-    AutocompleteInput::PageClassification page_classification,
+    OmniboxEventProto::PageClassification page_classification,
     Profile* profile) {
   if (!ZeroSuggestEnabled(suggest_url, template_url, page_classification,
                           profile))

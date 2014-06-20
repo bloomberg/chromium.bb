@@ -11,6 +11,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/common/url_constants.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -37,7 +38,7 @@ class BuiltinProviderTest : public testing::Test {
           "case %" PRIuS ": %s", i, base::UTF16ToUTF8(cases[i].input).c_str()));
       const AutocompleteInput input(cases[i].input, base::string16::npos,
                                     base::string16(), GURL(),
-                                    AutocompleteInput::INVALID_SPEC,
+                                    metrics::OmniboxEventProto::INVALID_SPEC,
                                     true, false, true, true);
       provider_->Start(input, false);
       EXPECT_TRUE(provider_->done());

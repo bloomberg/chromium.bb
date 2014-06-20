@@ -9,12 +9,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using metrics::OmniboxEventProto;
 
 class OmniboxFieldTrialTest : public testing::Test {
  public:
@@ -52,7 +54,7 @@ class OmniboxFieldTrialTest : public testing::Test {
   static void ExpectRuleValue(
       const std::string& rule_value,
       const std::string& rule,
-      AutocompleteInput::PageClassification page_classification);
+      OmniboxEventProto::PageClassification page_classification);
 
  private:
   scoped_ptr<base::FieldTrialList> field_trial_list_;
@@ -75,7 +77,7 @@ void OmniboxFieldTrialTest::VerifyDemotion(
 void OmniboxFieldTrialTest::ExpectRuleValue(
     const std::string& rule_value,
     const std::string& rule,
-    AutocompleteInput::PageClassification page_classification) {
+    OmniboxEventProto::PageClassification page_classification) {
   EXPECT_EQ(rule_value,
             OmniboxFieldTrial::GetValueForRuleInContext(
                 rule, page_classification));
@@ -210,16 +212,16 @@ TEST_F(OmniboxFieldTrialTest, GetDemotionsByTypeWithFallback) {
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
   OmniboxFieldTrial::DemotionMultipliers demotions_by_type;
   OmniboxFieldTrial::GetDemotionsByType(
-      AutocompleteInput::NTP, &demotions_by_type);
+      OmniboxEventProto::NTP, &demotions_by_type);
   ASSERT_EQ(2u, demotions_by_type.size());
   VerifyDemotion(demotions_by_type, AutocompleteMatchType::HISTORY_URL, 0.5);
   VerifyDemotion(demotions_by_type, AutocompleteMatchType::HISTORY_TITLE, 0.0);
   OmniboxFieldTrial::GetDemotionsByType(
-      AutocompleteInput::HOME_PAGE, &demotions_by_type);
+      OmniboxEventProto::HOME_PAGE, &demotions_by_type);
   ASSERT_EQ(1u, demotions_by_type.size());
   VerifyDemotion(demotions_by_type, AutocompleteMatchType::NAVSUGGEST, 1.0);
   OmniboxFieldTrial::GetDemotionsByType(
-      AutocompleteInput::BLANK, &demotions_by_type);
+      OmniboxEventProto::BLANK, &demotions_by_type);
   ASSERT_EQ(1u, demotions_by_type.size());
   VerifyDemotion(demotions_by_type, AutocompleteMatchType::HISTORY_URL, 0.25);
 }
@@ -255,82 +257,82 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
     // Tests with Instant Extended enabled.
     // Tests for rule 1.
     ExpectRuleValue("rule1-4-1-value",
-                    "rule1", AutocompleteInput::OTHER);    // exact match
+                    "rule1", OmniboxEventProto::OTHER);    // exact match
     ExpectRuleValue("rule1-*-1-value",
-                    "rule1", AutocompleteInput::BLANK);    // partial fallback
+                    "rule1", OmniboxEventProto::BLANK);    // partial fallback
     ExpectRuleValue("rule1-*-1-value",
                     "rule1",
-                    AutocompleteInput::NTP);               // partial fallback
+                    OmniboxEventProto::NTP);               // partial fallback
 
     // Tests for rule 2.
     ExpectRuleValue("rule2-1-*-value",
                     "rule2",
-                    AutocompleteInput::NTP);               // partial fallback
+                    OmniboxEventProto::NTP);               // partial fallback
     ExpectRuleValue("rule2-*-*-value",
-                    "rule2", AutocompleteInput::OTHER);    // global fallback
+                    "rule2", OmniboxEventProto::OTHER);    // global fallback
 
     // Tests for rule 3.
     ExpectRuleValue("rule3-*-*-value",
                     "rule3",
-                    AutocompleteInput::HOME_PAGE);         // global fallback
+                    OmniboxEventProto::HOME_PAGE);         // global fallback
     ExpectRuleValue("rule3-*-*-value",
                     "rule3",
-                    AutocompleteInput::OTHER);             // global fallback
+                    OmniboxEventProto::OTHER);             // global fallback
 
     // Tests for rule 4.
     ExpectRuleValue("",
                     "rule4",
-                    AutocompleteInput::BLANK);             // no global fallback
+                    OmniboxEventProto::BLANK);             // no global fallback
     ExpectRuleValue("",
                     "rule4",
-                    AutocompleteInput::HOME_PAGE);         // no global fallback
+                    OmniboxEventProto::HOME_PAGE);         // no global fallback
 
     // Tests for rule 5 (a missing rule).
     ExpectRuleValue("",
-                    "rule5", AutocompleteInput::OTHER);    // no rule at all
+                    "rule5", OmniboxEventProto::OTHER);    // no rule at all
   } else {
     // Tests for rule 1.
     ExpectRuleValue("rule1-1-0-value",
-                    "rule1", AutocompleteInput::NTP);      // exact match
+                    "rule1", OmniboxEventProto::NTP);      // exact match
     ExpectRuleValue("rule1-1-0-value",
-                    "rule1", AutocompleteInput::NTP);      // exact match
+                    "rule1", OmniboxEventProto::NTP);      // exact match
     ExpectRuleValue("rule1-*-*-value",
-                    "rule1", AutocompleteInput::BLANK);    // fallback to global
+                    "rule1", OmniboxEventProto::BLANK);    // fallback to global
     ExpectRuleValue("rule1-3-0-value",
                     "rule1",
-                    AutocompleteInput::HOME_PAGE);         // exact match
+                    OmniboxEventProto::HOME_PAGE);         // exact match
     ExpectRuleValue("rule1-4-*-value",
-                    "rule1", AutocompleteInput::OTHER);    // partial fallback
+                    "rule1", OmniboxEventProto::OTHER);    // partial fallback
     ExpectRuleValue("rule1-*-*-value",
                     "rule1",
-                    AutocompleteInput::                    // fallback to global
+                    OmniboxEventProto::                    // fallback to global
                     SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT);
     // Tests for rule 2.
     ExpectRuleValue("rule2-*-0-value",
                     "rule2",
-                    AutocompleteInput::HOME_PAGE);         // partial fallback
+                    OmniboxEventProto::HOME_PAGE);         // partial fallback
     ExpectRuleValue("rule2-*-0-value",
-                    "rule2", AutocompleteInput::OTHER);    // partial fallback
+                    "rule2", OmniboxEventProto::OTHER);    // partial fallback
 
     // Tests for rule 3.
     ExpectRuleValue("rule3-*-*-value",
                     "rule3",
-                    AutocompleteInput::HOME_PAGE);         // fallback to global
+                    OmniboxEventProto::HOME_PAGE);         // fallback to global
     ExpectRuleValue("rule3-*-*-value",
-                    "rule3", AutocompleteInput::OTHER);    // fallback to global
+                    "rule3", OmniboxEventProto::OTHER);    // fallback to global
 
     // Tests for rule 4.
     ExpectRuleValue("",
-                    "rule4", AutocompleteInput::BLANK);    // no global fallback
+                    "rule4", OmniboxEventProto::BLANK);    // no global fallback
     ExpectRuleValue("",
                     "rule4",
-                    AutocompleteInput::HOME_PAGE);         // no global fallback
+                    OmniboxEventProto::HOME_PAGE);         // no global fallback
     ExpectRuleValue("rule4-4-0-value",
-                    "rule4", AutocompleteInput::OTHER);    // exact match
+                    "rule4", OmniboxEventProto::OTHER);    // exact match
 
     // Tests for rule 5 (a missing rule).
     ExpectRuleValue("",
-                    "rule5", AutocompleteInput::OTHER);    // no rule at all
+                    "rule5", OmniboxEventProto::OTHER);    // no rule at all
   }
 }
 

@@ -36,6 +36,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -262,7 +263,7 @@ void HistoryQuickProviderTest::RunTest(const base::string16 text,
   SCOPED_TRACE(text);  // Minimal hint to query being run.
   base::MessageLoop::current()->RunUntilIdle();
   AutocompleteInput input(text, base::string16::npos, base::string16(),
-                          GURL(), AutocompleteInput::INVALID_SPEC,
+                          GURL(), metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, false, true, true);
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->done());

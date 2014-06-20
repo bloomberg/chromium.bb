@@ -15,6 +15,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -111,7 +112,7 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
       const AutocompleteResult& autocomplete_result);
 
   // Classifies the type of page we are on.
-  AutocompleteInput::PageClassification ClassifyPage(
+  metrics::OmniboxEventProto::PageClassification ClassifyPage(
       const GURL& gurl,
       bool is_query_in_omnibox,
       bool focused_from_fakebox) const;

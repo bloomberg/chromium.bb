@@ -30,6 +30,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -138,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
     omnibox_view->model()->SetInputInProgress(true);
     autocomplete_controller->Start(AutocompleteInput(
         base::ASCIIToUTF16("chrome"), base::string16::npos, base::string16(),
-        GURL(), AutocompleteInput::NTP, true, false, true, false));
+        GURL(), metrics::OmniboxEventProto::NTP, true, false, true, false));
 
     EXPECT_TRUE(autocomplete_controller->done());
     EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());

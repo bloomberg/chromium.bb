@@ -12,6 +12,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -51,7 +52,7 @@ void HomePageOverlayHandler::RequestAutocompleteSuggestions(
 
   autocomplete_controller_->Start(AutocompleteInput(
       input, base::string16::npos, base::string16(), GURL(),
-      AutocompleteInput::INVALID_SPEC, true, false, false, true));
+      metrics::OmniboxEventProto::INVALID_SPEC, true, false, false, true));
 }
 
 void HomePageOverlayHandler::OnResultChanged(bool default_match_changed) {

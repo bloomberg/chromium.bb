@@ -20,9 +20,12 @@
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/common/autocomplete_match_type.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using metrics::OmniboxEventProto;
 
 namespace {
 
@@ -176,7 +179,7 @@ void AutocompleteResultTest::RunCopyOldMatchesTest(
     const TestData* expected, size_t expected_size) {
   AutocompleteInput input(base::ASCIIToUTF16("a"), base::string16::npos,
                           base::string16(), GURL(),
-                          AutocompleteInput::INVALID_SPEC, false, false, false,
+                          OmniboxEventProto::INVALID_SPEC, false, false, false,
                           true);
 
   ACMatches last_matches;
@@ -212,7 +215,7 @@ TEST_F(AutocompleteResultTest, Swap) {
   match.allowed_to_be_default_match = true;
   AutocompleteInput input(base::ASCIIToUTF16("a"), base::string16::npos,
                           base::string16(), GURL(),
-                          AutocompleteInput::INVALID_SPEC, false, false, false,
+                          OmniboxEventProto::INVALID_SPEC, false, false, false,
                           true);
   matches.push_back(match);
   r1.AppendMatches(matches);
@@ -295,7 +298,7 @@ TEST_F(AutocompleteResultTest, SortAndCullEmptyDestinationURLs) {
   result.AppendMatches(matches);
   AutocompleteInput input(base::string16(), base::string16::npos,
                           base::string16(), GURL(),
-                          AutocompleteInput::INVALID_SPEC, false, false, false,
+                          OmniboxEventProto::INVALID_SPEC, false, false, false,
                           true);
   result.SortAndCull(input, test_util_.profile());
 
@@ -341,7 +344,7 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
   result.AppendMatches(matches);
   AutocompleteInput input(base::string16(), base::string16::npos,
                           base::string16(), GURL(),
-                          AutocompleteInput::INVALID_SPEC, false, false, false,
+                          OmniboxEventProto::INVALID_SPEC, false, false, false,
                           true);
   result.SortAndCull(input, test_util_.profile());
 
@@ -393,7 +396,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
   result.AppendMatches(matches);
   AutocompleteInput input(base::string16(), base::string16::npos,
                           base::string16(), GURL(),
-                          AutocompleteInput::INVALID_SPEC, false, false, false,
+                          OmniboxEventProto::INVALID_SPEC, false, false, false,
                           true);
   result.SortAndCull(input, test_util_.profile());
 
@@ -447,7 +450,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
   result.AppendMatches(matches);
   AutocompleteInput input(base::string16(), base::string16::npos,
                           base::string16(), GURL(),
-                          AutocompleteInput::HOME_PAGE, false, false, false,
+                          OmniboxEventProto::HOME_PAGE, false, false, false,
                           true);
   result.SortAndCull(input, test_util_.profile());
 
@@ -492,7 +495,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDupsAndDemotionsByType) {
     result.AppendMatches(matches);
     AutocompleteInput input(
         base::string16(), base::string16::npos, base::string16(), GURL(),
-        AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS, false,
+        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS, false,
         false, false, true);
     result.SortAndCull(input, test_util_.profile());
 
@@ -530,7 +533,7 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
-                            AutocompleteInput::HOME_PAGE, false, false, false,
+                            OmniboxEventProto::HOME_PAGE, false, false, false,
                             true);
     result.SortAndCull(input, test_util_.profile());
     AssertResultMatches(result, data, 4);
@@ -546,7 +549,7 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
-                            AutocompleteInput::HOME_PAGE, false, false, false,
+                            OmniboxEventProto::HOME_PAGE, false, false, false,
                             true);
     result.SortAndCull(input, test_util_.profile());
     ASSERT_EQ(4U, result.size());
@@ -577,7 +580,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
-                            AutocompleteInput::HOME_PAGE, false, false, false,
+                            OmniboxEventProto::HOME_PAGE, false, false, false,
                             true);
     result.SortAndCull(input, test_util_.profile());
     AssertResultMatches(result, data, 4);
@@ -602,7 +605,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
-                            AutocompleteInput::HOME_PAGE, false, false, false,
+                            OmniboxEventProto::HOME_PAGE, false, false, false,
                             true);
     result.SortAndCull(input, test_util_.profile());
     ASSERT_EQ(4U, result.size());
@@ -623,7 +626,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
-                            AutocompleteInput::HOME_PAGE, false, false, false,
+                            OmniboxEventProto::HOME_PAGE, false, false, false,
                             true);
     result.SortAndCull(input, test_util_.profile());
     AssertResultMatches(result, data, 4);
@@ -639,7 +642,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
-                            AutocompleteInput::HOME_PAGE, false, false, false,
+                            OmniboxEventProto::HOME_PAGE, false, false, false,
                             true);
     result.SortAndCull(input, test_util_.profile());
     ASSERT_EQ(4U, result.size());
@@ -659,7 +662,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
-                            AutocompleteInput::HOME_PAGE, false, false, false,
+                            OmniboxEventProto::HOME_PAGE, false, false, false,
                             true);
     result.SortAndCull(input, test_util_.profile());
     ASSERT_EQ(4U, result.size());
@@ -684,7 +687,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
-                            AutocompleteInput::HOME_PAGE, false, false, false,
+                            OmniboxEventProto::HOME_PAGE, false, false, false,
                             true);
     result.SortAndCull(input, test_util_.profile());
     AssertResultMatches(result, data, 4);
@@ -705,7 +708,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
     result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
                             base::string16(), GURL(),
-                            AutocompleteInput::HOME_PAGE, false, false, false,
+                            OmniboxEventProto::HOME_PAGE, false, false, false,
                             true);
     result.SortAndCull(input, test_util_.profile());
     ASSERT_EQ(4U, result.size());

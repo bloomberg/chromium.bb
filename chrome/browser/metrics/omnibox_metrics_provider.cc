@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
@@ -70,34 +69,6 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
   }
   NOTREACHED();
   return OmniboxEventProto::Suggestion::UNKNOWN_RESULT_TYPE;
-}
-
-OmniboxEventProto::PageClassification AsOmniboxEventPageClassification(
-    AutocompleteInput::PageClassification page_classification) {
-  switch (page_classification) {
-    case AutocompleteInput::INVALID_SPEC:
-      return OmniboxEventProto::INVALID_SPEC;
-    case AutocompleteInput::NTP:
-      return OmniboxEventProto::NTP;
-    case AutocompleteInput::BLANK:
-      return OmniboxEventProto::BLANK;
-    case AutocompleteInput::HOME_PAGE:
-      return OmniboxEventProto::HOME_PAGE;
-    case AutocompleteInput::OTHER:
-      return OmniboxEventProto::OTHER;
-    case AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT:
-      return OmniboxEventProto::
-          SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
-    case AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS:
-      return OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
-    case AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS:
-      return OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS;
-    case AutocompleteInput::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT:
-      return OmniboxEventProto::
-          SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
-  }
-  NOTREACHED();
-  return OmniboxEventProto::INVALID_SPEC;
 }
 
 }  // namespace
@@ -167,7 +138,7 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
         log.elapsed_time_since_last_change_to_default_match.InMilliseconds());
   }
   omnibox_event->set_current_page_classification(
-      AsOmniboxEventPageClassification(log.current_page_classification));
+      log.current_page_classification);
   omnibox_event->set_input_type(log.input_type);
   // We consider a paste-and-search/paste-and-go action to have a closed popup
   // (as explained in omnibox_event.proto) even if it was not, because such

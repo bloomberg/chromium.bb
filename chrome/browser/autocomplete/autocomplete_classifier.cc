@@ -9,6 +9,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "url/gurl.h"
 
 // static
@@ -37,7 +38,7 @@ void AutocompleteClassifier::Classify(
     const base::string16& text,
     bool prefer_keyword,
     bool allow_exact_keyword_match,
-    AutocompleteInput::PageClassification page_classification,
+    metrics::OmniboxEventProto::PageClassification page_classification,
     AutocompleteMatch* match,
     GURL* alternate_nav_url) {
   DCHECK(!inside_classify_);

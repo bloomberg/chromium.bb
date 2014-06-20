@@ -9,9 +9,9 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 
 class AutocompleteResult;
@@ -27,7 +27,8 @@ struct OmniboxLog {
       size_t selected_index,
       bool is_paste_and_go,
       SessionID::id_type tab_id,
-      AutocompleteInput::PageClassification current_page_classification,
+      metrics::OmniboxEventProto::PageClassification
+          current_page_classification,
       base::TimeDelta elapsed_time_since_user_first_modified_omnibox,
       size_t completed_length,
       base::TimeDelta elapsed_time_since_last_change_to_default_match,
@@ -61,7 +62,7 @@ struct OmniboxLog {
 
   // The type of page (e.g., new tab page, regular web page) that the
   // user was viewing before going somewhere with the omnibox.
-  AutocompleteInput::PageClassification current_page_classification;
+  metrics::OmniboxEventProto::PageClassification current_page_classification;
 
   // The amount of time since the user first began modifying the text
   // in the omnibox.  If at some point after modifying the text, the

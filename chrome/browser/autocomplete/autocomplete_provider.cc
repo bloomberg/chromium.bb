@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -223,4 +224,3 @@ size_t AutocompleteProvider::TrimHttpPrefix(base::string16* url) {
   url->erase(scheme_pos, prefix_end - scheme_pos);
   return (scheme_pos == 0) ? prefix_end : 0;
 }
-

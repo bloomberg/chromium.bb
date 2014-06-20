@@ -16,7 +16,10 @@
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/autocomplete_match_type.h"
+#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+
+using metrics::OmniboxEventProto;
 
 namespace {
 
@@ -25,7 +28,7 @@ namespace {
 class CompareWithDemoteByType {
  public:
   CompareWithDemoteByType(
-      AutocompleteInput::PageClassification current_page_classification);
+      OmniboxEventProto::PageClassification current_page_classification);
 
   // Returns the relevance score of |match| demoted appropriately by
   // |demotions_by_type_|.
@@ -40,7 +43,7 @@ class CompareWithDemoteByType {
 };
 
 CompareWithDemoteByType::CompareWithDemoteByType(
-    AutocompleteInput::PageClassification current_page_classification) {
+    OmniboxEventProto::PageClassification current_page_classification) {
   OmniboxFieldTrial::GetDemotionsByType(current_page_classification,
                                         &demotions_);
 }
@@ -69,7 +72,7 @@ bool CompareWithDemoteByType::operator()(const AutocompleteMatch& elem1,
 class DestinationSort {
  public:
   DestinationSort(
-      AutocompleteInput::PageClassification current_page_classification);
+      OmniboxEventProto::PageClassification current_page_classification);
   bool operator()(const AutocompleteMatch& elem1,
                   const AutocompleteMatch& elem2);
 
@@ -78,7 +81,7 @@ class DestinationSort {
 };
 
 DestinationSort::DestinationSort(
-    AutocompleteInput::PageClassification current_page_classification) :
+    OmniboxEventProto::PageClassification current_page_classification) :
     demote_by_type_(current_page_classification) {}
 
 bool DestinationSort::operator()(const AutocompleteMatch& elem1,
@@ -364,7 +367,7 @@ GURL AutocompleteResult::ComputeAlternateNavUrl(
 }
 
 void AutocompleteResult::DedupMatchesByDestination(
-      AutocompleteInput::PageClassification page_classification,
+      OmniboxEventProto::PageClassification page_classification,
       bool set_duplicate_matches,
       ACMatches* matches) {
   DestinationSort destination_sort(page_classification);
@@ -423,7 +426,7 @@ bool AutocompleteResult::HasMatchByDestination(const AutocompleteMatch& match,
 }
 
 void AutocompleteResult::MergeMatchesByProvider(
-    AutocompleteInput::PageClassification page_classification,
+    OmniboxEventProto::PageClassification page_classification,
     const ACMatches& old_matches,
     const ACMatches& new_matches) {
   if (new_matches.size() >= old_matches.size())
