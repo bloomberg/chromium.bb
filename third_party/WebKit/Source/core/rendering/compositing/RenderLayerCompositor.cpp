@@ -214,18 +214,6 @@ void RenderLayerCompositor::updateIfNeededRecursive()
 void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType updateType)
 {
     ASSERT(updateType != CompositingUpdateNone);
-
-    // FIXME: This function should only set dirty bits. We shouldn't
-    // enable compositing mode here.
-    // We check needsLayout here because we don't know if we need to enable
-    // compositing mode until layout is up-to-date because we need to know
-    // if this frame scrolls.
-    //
-    // NOTE: CastStreamingApiTestWithPixelOutput.RtpStreamError triggers
-    // an ASSERT when this code is removed.
-    if (!m_renderView.needsLayout())
-        enableCompositingModeIfNeeded();
-
     m_pendingUpdateType = std::max(m_pendingUpdateType, updateType);
     page()->animator().scheduleVisualUpdate();
     lifecycle().ensureStateAtMost(DocumentLifecycle::LayoutClean);
