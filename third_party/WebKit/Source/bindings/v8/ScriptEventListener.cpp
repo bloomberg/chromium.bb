@@ -38,6 +38,7 @@
 #include "bindings/v8/V8WindowShell.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
+#include "core/dom/QualifiedName.h"
 #include "core/events/EventListener.h"
 #include "core/frame/LocalFrame.h"
 #include <v8.h>

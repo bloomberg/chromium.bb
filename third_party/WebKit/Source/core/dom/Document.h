@@ -39,9 +39,7 @@
 #include "core/dom/DocumentSupplementable.h"
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/IconURL.h"
 #include "core/dom/MutationObserver.h"
-#include "core/dom/QualifiedName.h"
 #include "core/dom/TextLinkColors.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/UserActionElementSet.h"
@@ -50,7 +48,6 @@
 #include "core/html/CollectionType.h"
 #include "core/page/FocusType.h"
 #include "core/page/PageVisibilityState.h"
-#include "core/rendering/HitTestRequest.h"
 #include "platform/Length.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -141,6 +138,7 @@ class NodeIterator;
 class Page;
 class PlatformMouseEvent;
 class ProcessingInstruction;
+class QualifiedName;
 class Range;
 class RegisteredEventListener;
 class RenderView;
@@ -174,6 +172,7 @@ class WebGLRenderingContext;
 class XMLHttpRequest;
 
 struct AnnotatedRegionValue;
+struct IconURL;
 
 typedef int ExceptionCode;
 
