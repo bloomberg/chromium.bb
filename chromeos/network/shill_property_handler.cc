@@ -244,26 +244,10 @@ void ShillPropertyHandler::ManagerPropertiesCallback(
     return;
   }
   NET_LOG_EVENT("ManagerPropertiesCallback", "Success");
-  const base::Value* update_service_value = NULL;
-  const base::Value* update_service_complete_value = NULL;
   for (base::DictionaryValue::Iterator iter(properties);
        !iter.IsAtEnd(); iter.Advance()) {
-    // Defer updating Services until all other properties have been updated.
-    if (iter.key() == shill::kServicesProperty)
-      update_service_value = &iter.value();
-    else if (iter.key() == shill::kServiceCompleteListProperty)
-      update_service_complete_value = &iter.value();
-    else
-      ManagerPropertyChanged(iter.key(), iter.value());
+    ManagerPropertyChanged(iter.key(), iter.value());
   }
-  // Update Service lists after other Manager properties. Update
-  // ServiceCompleteList first so that Services (visible) entries already exist.
-  if (update_service_complete_value) {
-    ManagerPropertyChanged(shill::kServiceCompleteListProperty,
-                           *update_service_complete_value);
-  }
-  if (update_service_value)
-    ManagerPropertyChanged(shill::kServicesProperty, *update_service_value);
 
   CheckPendingStateListUpdates("");
 }
@@ -279,12 +263,6 @@ void ShillPropertyHandler::CheckPendingStateListUpdates(
       pending_updates_[ManagedState::MANAGED_TYPE_DEVICE].size() == 0) {
     listener_->ManagedStateListChanged(ManagedState::MANAGED_TYPE_DEVICE);
   }
-  // For emitted Services updates only, we also need to signal that the list
-  // changed in case the visibility changed.
-  if (key == shill::kServicesProperty &&
-      pending_updates_[ManagedState::MANAGED_TYPE_NETWORK].size() == 0) {
-    listener_->ManagedStateListChanged(ManagedState::MANAGED_TYPE_NETWORK);
-  }
 }
 
 void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
@@ -297,16 +275,10 @@ void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
   } else if (key == shill::kServicesProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
     if (vlist) {
-      // Update the visibility of networks in ServiceCompleteList. Note that
-      // this relies on Shill emitting changes to ServiceCompleteList before
-      // changes to Services. TODO(stevenjb): Eliminate this and rely on
-      // Service.Visible instead.
-      listener_->UpdateVisibleNetworks(*vlist);
-
-      // UpdateObserved used to use kServiceWatchListProperty for TYPE_NETWORK,
-      // however that prevents us from receiving Strength updates from inactive
-      // networks. The overhead for observing all services is not unreasonable
-      // (and we limit the max number of observed services to kMaxObserved).
+      // We only use the Services property to determine which networks we
+      // observe. This is more convenient and reliable than waiting to revceive
+      // the Visible property of each kServiceCompleteList entry. We limit the
+      // number of observed networks to kMaxObserved.
       UpdateObserved(ManagedState::MANAGED_TYPE_NETWORK, *vlist);
     }
   } else if (key == shill::kServiceCompleteListProperty) {
@@ -314,9 +286,8 @@ void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
     if (vlist) {
       listener_->UpdateManagedList(ManagedState::MANAGED_TYPE_NETWORK, *vlist);
       UpdateProperties(ManagedState::MANAGED_TYPE_NETWORK, *vlist);
+      UpdateObserved(ManagedState::MANAGED_TYPE_NETWORK, *vlist);
     }
-  } else if (key == shill::kServiceWatchListProperty) {
-    // Currently we ignore the watch list.
   } else if (key == shill::kDevicesProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
     if (vlist) {

@@ -50,9 +50,6 @@ class CHROMEOS_EXPORT ShillPropertyHandler
     virtual void UpdateManagedList(ManagedState::ManagedType type,
                                    const base::ListValue& entries) = 0;
 
-    // Called when the entries in the visible network list have changed.
-    virtual void UpdateVisibleNetworks(const base::ListValue& entries) = 0;
-
     // Called when the properties for a managed state have changed.
     virtual void UpdateManagedStateProperties(
         ManagedState::ManagedType type,

@@ -82,6 +82,8 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetIntegerValue(key, value, &signal_strength_);
   } else if (key == shill::kStateProperty) {
     return GetStringValue(key, value, &connection_state_);
+  } else if (key == shill::kVisibleProperty) {
+    return GetBooleanValue(key, value, &visible_);
   } else if (key == shill::kConnectableProperty) {
     return GetBooleanValue(key, value, &connectable_);
   } else if (key == shill::kErrorProperty) {

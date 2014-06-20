@@ -134,8 +134,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Returns true if |name_| changes.
   bool UpdateName(const base::DictionaryValue& properties);
 
-  void set_visible(bool visible) { visible_ = visible; }
-
   // Set to true if the network is a member of Manager.Services.
   bool visible_;
 

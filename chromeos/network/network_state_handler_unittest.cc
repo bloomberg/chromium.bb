@@ -45,6 +45,7 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
       : handler_(handler),
         device_list_changed_count_(0),
         device_count_(0),
+        network_list_changed_count_(0),
         network_count_(0),
         default_network_change_count_(0) {
   }
@@ -71,6 +72,7 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
       default_network_ = "";
       default_network_connection_state_ = "";
     }
+    ++network_list_changed_count_;
   }
 
   virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE {
@@ -95,6 +97,7 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
 
   size_t device_list_changed_count() { return device_list_changed_count_; }
   size_t device_count() { return device_count_; }
+  size_t network_list_changed_count() { return network_list_changed_count_; }
   size_t network_count() { return network_count_; }
   size_t default_network_change_count() {
     return default_network_change_count_;
@@ -103,6 +106,7 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
     DVLOG(1) << "=== RESET CHANGE COUNTS ===";
     default_network_change_count_ = 0;
     device_list_changed_count_ = 0;
+    network_list_changed_count_ = 0;
   }
   std::string default_network() { return default_network_; }
   std::string default_network_connection_state() {
@@ -126,6 +130,7 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
   NetworkStateHandler* handler_;
   size_t device_list_changed_count_;
   size_t device_count_;
+  size_t network_list_changed_count_;
   size_t network_count_;
   size_t default_network_change_count_;
   std::string default_network_;
@@ -324,6 +329,29 @@ TEST_F(NetworkStateHandlerTest, GetNetworkList) {
                                                0 /* no limit */,
                                                &networks);
   EXPECT_EQ(1u, networks.size());
+}
+
+TEST_F(NetworkStateHandlerTest, NetworkListChanged) {
+  size_t stub_network_count = test_observer_->network_count();
+  // Set up two additional visible networks.
+  const std::string wifi3 = "/service/wifi3";
+  const std::string wifi4 = "/service/wifi4";
+  service_test_->SetServiceProperties(
+      wifi3, "wifi3_guid", "wifi3",
+      shill::kTypeWifi, shill::kStateIdle, true /* visible */);
+  service_test_->SetServiceProperties(
+      wifi4, "wifi4_guid", "wifi4",
+      shill::kTypeWifi, shill::kStateIdle, true /* visible */);
+  // Add the services to the Manager. Only notify when the second service is
+  // added.
+  manager_test_->AddManagerService(wifi3, false);
+  manager_test_->AddManagerService(wifi4, true);
+  UpdateManagerProperties();
+  // Expect two service updates and one list update.
+  EXPECT_EQ(stub_network_count + 2, test_observer_->network_count());
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(wifi3));
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(wifi4));
+  EXPECT_EQ(1u, test_observer_->network_list_changed_count());
 }
 
 TEST_F(NetworkStateHandlerTest, GetVisibleNetworks) {

@@ -308,10 +308,10 @@ void FakeShillServiceClient::AddService(const std::string& service_path,
                                         const std::string& name,
                                         const std::string& type,
                                         const std::string& state,
-                                        bool add_to_visible_list) {
+                                        bool visible) {
   AddServiceWithIPConfig(service_path, "" /* guid */, name,
                          type, state, "" /* ipconfig_path */,
-                         add_to_visible_list);
+                         visible);
 }
 
 void FakeShillServiceClient::AddServiceWithIPConfig(
@@ -321,11 +321,36 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
     const std::string& type,
     const std::string& state,
     const std::string& ipconfig_path,
-    bool add_to_visible_list) {
-  std::string device_path =
-      DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface()->
-      GetDevicePathForType(type);
+    bool visible) {
+  base::DictionaryValue* properties = SetServiceProperties(
+      service_path, guid, name, type, state, visible);
 
+  std::string profile_path;
+  if (properties->GetStringWithoutPathExpansion(shill::kProfileProperty,
+                                                &profile_path) &&
+      !profile_path.empty()) {
+    DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface()->
+        UpdateService(profile_path, service_path);
+  }
+
+  if (!ipconfig_path.empty()) {
+    properties->SetWithoutPathExpansion(
+        shill::kIPConfigProperty,
+        new base::StringValue(ipconfig_path));
+  }
+
+  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      AddManagerService(service_path, true);
+}
+
+
+base::DictionaryValue* FakeShillServiceClient::SetServiceProperties(
+    const std::string& service_path,
+    const std::string& guid,
+    const std::string& name,
+    const std::string& type,
+    const std::string& state,
+    bool visible) {
   base::DictionaryValue* properties =
       GetModifiableServiceProperties(service_path, true);
   connect_behavior_.erase(service_path);
@@ -355,6 +380,9 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
   properties->SetWithoutPathExpansion(
       shill::kNameProperty,
       new base::StringValue(name));
+  std::string device_path =
+      DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface()->
+      GetDevicePathForType(type);
   properties->SetWithoutPathExpansion(
       shill::kDeviceProperty,
       new base::StringValue(device_path));
@@ -366,25 +394,13 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
       new base::StringValue(state));
   properties->SetWithoutPathExpansion(
       shill::kVisibleProperty,
-      new base::FundamentalValue(add_to_visible_list));
-  if (!ipconfig_path.empty()) {
-    properties->SetWithoutPathExpansion(
-        shill::kIPConfigProperty,
-        new base::StringValue(ipconfig_path));
-  }
+      new base::FundamentalValue(visible));
   if (type == shill::kTypeWifi) {
     properties->SetWithoutPathExpansion(
         shill::kSecurityProperty,
         new base::StringValue(shill::kSecurityNone));
   }
-
-  if (!profile_path.empty()) {
-    DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface()->
-        UpdateService(profile_path, service_path);
-  }
-
-  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-      AddManagerService(service_path);
+  return properties;
 }
 
 void FakeShillServiceClient::RemoveService(const std::string& service_path) {

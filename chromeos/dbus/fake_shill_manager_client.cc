@@ -64,12 +64,6 @@ void AppendServicesForType(
     properties->GetString(shill::kTypeProperty, &type);
     if (type != match_type)
       continue;
-    if (!technology_enabled) {
-      std::string profile;
-      properties->GetString(shill::kProfileProperty, &profile);
-      if (profile.empty())
-        continue;
-    }
     bool visible = false;
     if (technology_enabled)
       properties->GetBoolean(shill::kVisibleProperty, &visible);
@@ -462,16 +456,14 @@ void FakeShillManagerClient::SetManagerProperty(const std::string& key,
 }
 
 void FakeShillManagerClient::AddManagerService(
-    const std::string& service_path) {
+    const std::string& service_path,
+    bool notify_observers) {
   DVLOG(2) << "AddManagerService: " << service_path;
   GetListProperty(shill::kServiceCompleteListProperty)->AppendIfNotPresent(
       base::Value::CreateStringValue(service_path));
   SortManagerServices(false);
-  CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);
-  // SortManagerServices will add the service to Services if it is visible.
-  const base::ListValue* services = GetListProperty(shill::kServicesProperty);
-  if (services->Find(base::StringValue(service_path)) != services->end())
-    CallNotifyObserversPropertyChanged(shill::kServicesProperty);
+  if (notify_observers)
+    CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);
 }
 
 void FakeShillManagerClient::RemoveManagerService(
@@ -481,18 +473,12 @@ void FakeShillManagerClient::RemoveManagerService(
   GetListProperty(shill::kServiceCompleteListProperty)->Remove(
       service_path_value, NULL);
   CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);
-  if (GetListProperty(shill::kServicesProperty)->Remove(
-          service_path_value, NULL)) {
-    CallNotifyObserversPropertyChanged(shill::kServicesProperty);
-  }
 }
 
 void FakeShillManagerClient::ClearManagerServices() {
   DVLOG(1) << "ClearManagerServices";
   GetListProperty(shill::kServiceCompleteListProperty)->Clear();
-  GetListProperty(shill::kServicesProperty)->Clear();
   CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);
-  CallNotifyObserversPropertyChanged(shill::kServicesProperty);
 }
 
 void FakeShillManagerClient::ServiceStateChanged(
@@ -514,8 +500,6 @@ void FakeShillManagerClient::SortManagerServices(bool notify) {
                                         shill::kTypeWimax,
                                         shill::kTypeVPN};
 
-  base::ListValue* service_list = GetListProperty(shill::kServicesProperty);
-  scoped_ptr<base::ListValue> prev_service_list(service_list->DeepCopy());
   base::ListValue* complete_list =
       GetListProperty(shill::kServiceCompleteListProperty);
   if (complete_list->empty())
@@ -533,26 +517,16 @@ void FakeShillManagerClient::SortManagerServices(bool notify) {
                           &inactive_services,
                           &disabled_services);
   }
-  service_list->Clear();
   complete_list->Clear();
-  for (size_t i = 0; i < active_services.size(); ++i) {
+  for (size_t i = 0; i < active_services.size(); ++i)
     complete_list->AppendString(active_services[i]);
-    service_list->AppendString(active_services[i]);
-  }
-  for (size_t i = 0; i < inactive_services.size(); ++i) {
+  for (size_t i = 0; i < inactive_services.size(); ++i)
     complete_list->AppendString(inactive_services[i]);
-    service_list->AppendString(inactive_services[i]);
-  }
-  for (size_t i = 0; i < disabled_services.size(); ++i) {
+  for (size_t i = 0; i < disabled_services.size(); ++i)
     complete_list->AppendString(disabled_services[i]);
-  }
 
-  if (notify) {
-    if (!service_list->Equals(prev_service_list.get()))
-      CallNotifyObserversPropertyChanged(shill::kServicesProperty);
-    if (!complete_list->Equals(prev_complete_list.get()))
-      CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);
-  }
+  if (notify && !complete_list->Equals(prev_complete_list.get()))
+    CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);
 
   // Set the first active service as the Default service.
   std::string new_default_service;
@@ -815,6 +789,9 @@ void FakeShillManagerClient::PassStubProperties(
     const DictionaryValueCallback& callback) const {
   scoped_ptr<base::DictionaryValue> stub_properties(
       stub_properties_.DeepCopy());
+  stub_properties->SetWithoutPathExpansion(
+      shill::kServiceCompleteListProperty,
+      GetEnabledServiceList(shill::kServiceCompleteListProperty));
   callback.Run(DBUS_METHOD_CALL_SUCCESS, *stub_properties);
 }
 
@@ -842,6 +819,13 @@ void FakeShillManagerClient::NotifyObserversPropertyChanged(
   base::Value* value = NULL;
   if (!stub_properties_.GetWithoutPathExpansion(property, &value)) {
     LOG(ERROR) << "Notify for unknown property: " << property;
+    return;
+  }
+  if (property == shill::kServiceCompleteListProperty) {
+    scoped_ptr<base::ListValue> services(GetEnabledServiceList(property));
+    FOR_EACH_OBSERVER(ShillPropertyChangedObserver,
+                      observer_list_,
+                      OnPropertyChanged(property, *(services.get())));
     return;
   }
   FOR_EACH_OBSERVER(ShillPropertyChangedObserver,
@@ -891,6 +875,33 @@ void FakeShillManagerClient::SetTechnologyEnabled(
   SortManagerServices(true);
 }
 
+base::ListValue* FakeShillManagerClient::GetEnabledServiceList(
+    const std::string& property) const {
+  base::ListValue* new_service_list = new base::ListValue;
+  const base::ListValue* service_list;
+  if (stub_properties_.GetListWithoutPathExpansion(property, &service_list)) {
+    ShillServiceClient::TestInterface* service_client =
+        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+    for (base::ListValue::const_iterator iter = service_list->begin();
+         iter != service_list->end(); ++iter) {
+      std::string service_path;
+      if (!(*iter)->GetAsString(&service_path))
+        continue;
+      const base::DictionaryValue* properties =
+          service_client->GetServiceProperties(service_path);
+      if (!properties) {
+        LOG(ERROR) << "Properties not found for service: " << service_path;
+        continue;
+      }
+      std::string type;
+      properties->GetString(shill::kTypeProperty, &type);
+      if (TechnologyEnabled(type))
+        new_service_list->Append((*iter)->DeepCopy());
+    }
+  }
+  return new_service_list;
+}
+
 void FakeShillManagerClient::ScanCompleted(const std::string& device_path,
                                            const base::Closure& callback) {
   if (!device_path.empty()) {
@@ -901,7 +912,6 @@ void FakeShillManagerClient::ScanCompleted(const std::string& device_path,
   }
   DVLOG(2) << "ScanCompleted";
   CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);
-  CallNotifyObserversPropertyChanged(shill::kServicesProperty);
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 

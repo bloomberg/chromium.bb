@@ -136,7 +136,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Like ConnectedNetworkByType() but returns any matching visible network or
   // NULL. Mostly useful for mobile networks where there is generally only one
   // network. Note: O(N).
-  const NetworkState* FirstNetworkByType(const NetworkTypePattern& type) const;
+  const NetworkState* FirstNetworkByType(const NetworkTypePattern& type);
 
   // Returns the aa:bb formatted hardware (MAC) address for the first connected
   // network matching |type|, or an empty string if none is connected.
@@ -145,10 +145,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // Convenience method to call GetNetworkListByType(visible=true).
   void GetVisibleNetworkListByType(const NetworkTypePattern& type,
-                                   NetworkStateList* list) const;
+                                   NetworkStateList* list);
 
   // Convenience method for GetVisibleNetworkListByType(Default).
-  void GetVisibleNetworkList(NetworkStateList* list) const;
+  void GetVisibleNetworkList(NetworkStateList* list);
 
   // Sets |list| to contain the list of networks with matching |type| and the
   // following properties:
@@ -157,12 +157,14 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // |limit| - if > 0 limits the number of results.
   // The returned list contains a copy of NetworkState pointers which should not
   // be stored or used beyond the scope of the calling function (i.e. they may
-  // later become invalid, but only on the UI thread).
+  // later become invalid, but only on the UI thread). SortNetworkList() will be
+  // called if necessary to provide the states in a convenient order (see
+  // SortNetworkList for details).
   void GetNetworkListByType(const NetworkTypePattern& type,
                             bool configured_only,
                             bool visible_only,
                             int limit,
-                            NetworkStateList* list) const;
+                            NetworkStateList* list);
 
   // Finds and returns the NetworkState associated with |service_path| or NULL
   // if not found. If |configured_only| is true, only returns saved entries
@@ -220,7 +222,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // EAP parameters used by the ethernet with |service_path|. If |service_path|
   // doesn't refer to an ethernet service or if the ethernet service is not
   // connected using EAP, returns NULL.
-  const NetworkState* GetEAPForEthernet(const std::string& service_path) const;
+  const NetworkState* GetEAPForEthernet(const std::string& service_path);
 
   const std::string& default_network_path() const {
     return default_network_path_;
@@ -243,11 +245,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // entries that are no longer in the list.
   virtual void UpdateManagedList(ManagedState::ManagedType type,
                                  const base::ListValue& entries) OVERRIDE;
-
-  // Updates the visibility of entries in |network_list_|. This should not
-  // contain entries that are not in |network_list_|. Any such entries will be
-  // ignored with an error message.
-  virtual void UpdateVisibleNetworks(const base::ListValue& entries) OVERRIDE;
 
   // The list of profiles changed (i.e. a user has logged in). Re-request
   // properties for all services since they may have changed.
@@ -290,8 +287,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // Called by |shill_property_handler_| when the service or device list has
   // changed and all entries have been updated. This updates the list and
-  // notifies observers. If |type| == TYPE_NETWORK this also calls
-  // CheckDefaultNetworkChanged().
+  // notifies observers.
   virtual void ManagedStateListChanged(
       ManagedState::ManagedType type) OVERRIDE;
 
@@ -310,6 +306,18 @@ class CHROMEOS_EXPORT NetworkStateHandler
   typedef std::map<std::string, std::string> SpecifierGuidMap;
   friend class NetworkStateHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, NetworkStateHandlerStub);
+
+  // Sorts the network list. Called when all network updates have been received,
+  // or when the network list is requested but the list is in an unsorted state.
+  // Networks are sorted as follows, maintaining the existing relative ordering:
+  // * Connected or connecting networks (should be listed first by Shill)
+  // * Visible non-wifi networks
+  // * Visible wifi networks
+  // * Hidden (wifi) networks
+  void SortNetworkList();
+
+  // Updates UMA stats. Called once after all requested networks are updated.
+  void UpdateNetworkStats();
 
   // NetworkState specific method for UpdateManagedStateProperties which
   // notifies observers.
@@ -362,6 +370,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // List of managed network states
   ManagedStateList network_list_;
+
+  // Set to true when the network list is sorted, cleared when network updates
+  // arrive. Used to trigger sorting when needed.
+  bool network_list_sorted_;
 
   // List of managed device states
   ManagedStateList device_list_;

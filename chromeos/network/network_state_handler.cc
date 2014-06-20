@@ -56,7 +56,8 @@ std::string GetLogName(const ManagedState* state) {
 const char NetworkStateHandler::kDefaultCheckPortalList[] =
     "ethernet,wifi,cellular";
 
-NetworkStateHandler::NetworkStateHandler() {
+NetworkStateHandler::NetworkStateHandler()
+    : network_list_sorted_(false) {
 }
 
 NetworkStateHandler::~NetworkStateHandler() {
@@ -186,6 +187,7 @@ const NetworkState* NetworkStateHandler::DefaultNetwork() const {
 
 const NetworkState* NetworkStateHandler::ConnectedNetworkByType(
     const NetworkTypePattern& type) const {
+  // Active networks are always listed first by Shill so no need to sort.
   for (ManagedStateList::const_iterator iter = network_list_.begin();
        iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
@@ -202,6 +204,7 @@ const NetworkState* NetworkStateHandler::ConnectedNetworkByType(
 
 const NetworkState* NetworkStateHandler::ConnectingNetworkByType(
     const NetworkTypePattern& type) const {
+  // Active networks are always listed first by Shill so no need to sort.
   for (ManagedStateList::const_iterator iter = network_list_.begin();
        iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
@@ -217,7 +220,9 @@ const NetworkState* NetworkStateHandler::ConnectingNetworkByType(
 }
 
 const NetworkState* NetworkStateHandler::FirstNetworkByType(
-    const NetworkTypePattern& type) const {
+    const NetworkTypePattern& type) {
+  if (!network_list_sorted_)
+    SortNetworkList();  // Sort to ensure visible networks are listed first.
   for (ManagedStateList::const_iterator iter = network_list_.begin();
        iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
@@ -225,7 +230,7 @@ const NetworkState* NetworkStateHandler::FirstNetworkByType(
     if (!network->update_received())
       continue;
     if (!network->visible())
-      continue;
+      break;
     if (network->Matches(type))
       return network;
   }
@@ -247,7 +252,7 @@ std::string NetworkStateHandler::FormattedHardwareAddressForType(
 
 void NetworkStateHandler::GetVisibleNetworkListByType(
     const NetworkTypePattern& type,
-    NetworkStateList* list) const {
+    NetworkStateList* list) {
   GetNetworkListByType(type,
                        false /* configured_only */,
                        true /* visible_only */,
@@ -255,7 +260,7 @@ void NetworkStateHandler::GetVisibleNetworkListByType(
                        list);
 }
 
-void NetworkStateHandler::GetVisibleNetworkList(NetworkStateList* list) const {
+void NetworkStateHandler::GetVisibleNetworkList(NetworkStateList* list) {
   GetVisibleNetworkListByType(NetworkTypePattern::Default(), list);
 }
 
@@ -263,10 +268,13 @@ void NetworkStateHandler::GetNetworkListByType(const NetworkTypePattern& type,
                                                bool configured_only,
                                                bool visible_only,
                                                int limit,
-                                               NetworkStateList* list) const {
+                                               NetworkStateList* list) {
   DCHECK(list);
   list->clear();
   int count = 0;
+  // Sort the network list if necessary.
+  if (!network_list_sorted_)
+    SortNetworkList();
   for (ManagedStateList::const_iterator iter = network_list_.begin();
        iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
@@ -371,7 +379,7 @@ void NetworkStateHandler::SetCheckPortalList(
 }
 
 const NetworkState* NetworkStateHandler::GetEAPForEthernet(
-    const std::string& service_path) const {
+    const std::string& service_path) {
   const NetworkState* network = GetNetworkState(service_path);
   if (!network) {
     NET_LOG_ERROR("GetEAPForEthernet", "Unknown service path " + service_path);
@@ -464,34 +472,6 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
   STLDeleteContainerPairSecondPointers(managed_map.begin(), managed_map.end());
 }
 
-void NetworkStateHandler::UpdateVisibleNetworks(
-    const base::ListValue& entries) {
-  NET_LOG_DEBUG(base::StringPrintf("UpdateVisibleNetworks"),
-                base::StringPrintf("%" PRIuS, entries.GetSize()));
-  // Create a map of all networks and clear the visible state.
-  ManagedStateList* network_list =
-      GetManagedList(ManagedState::MANAGED_TYPE_NETWORK);
-  typedef std::map<std::string, NetworkState*> NetworkMap;
-  NetworkMap network_map;
-  for (ManagedStateList::iterator iter = network_list->begin();
-       iter != network_list->end(); ++iter) {
-    NetworkState* network = (*iter)->AsNetworkState();
-    network_map[network->path()] = network;
-    network->set_visible(false);
-  }
-  // Look up each entry and set the associated network to visible.
-  for (base::ListValue::const_iterator iter = entries.begin();
-       iter != entries.end(); ++iter) {
-    std::string path;
-    (*iter)->GetAsString(&path);
-    NetworkMap::iterator found = network_map.find(path);
-    if (found != network_map.end())
-      found->second->set_visible(true);
-    else
-      NET_LOG_DEBUG("Visible network not in list", path);
-  }
-}
-
 void NetworkStateHandler::ProfileListChanged() {
   NET_LOG_EVENT("ProfileListChanged", "Re-Requesting Network Properties");
   for (ManagedStateList::iterator iter = network_list_.begin();
@@ -544,6 +524,9 @@ void NetworkStateHandler::UpdateNetworkStateProperties(
       network_property_updated = true;
   }
   network_property_updated |= network->InitialPropertiesReceived(properties);
+  UpdateGuid(network);
+  network_list_sorted_ = false;
+
   // Notify observers of NetworkState changes.
   if (network_property_updated || network->update_requested()) {
     // Signal connection state changed after all properties have been updated.
@@ -552,7 +535,6 @@ void NetworkStateHandler::UpdateNetworkStateProperties(
     NET_LOG_EVENT("NetworkPropertiesUpdated", GetLogName(network));
     NotifyNetworkPropertiesUpdated(network);
   }
-  UpdateGuid(network);
 }
 
 void NetworkStateHandler::UpdateNetworkServiceProperty(
@@ -569,7 +551,8 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   if (!changed)
     return;
 
-  if (key == shill::kStateProperty) {
+  if (key == shill::kStateProperty || key == shill::kVisibleProperty) {
+    network_list_sorted_ = false;
     if (ConnectionStateChanged(network, prev_connection_state)) {
       OnNetworkConnectionStateChanged(network);
       // If the connection state changes, other properties such as IPConfig
@@ -691,28 +674,13 @@ void NetworkStateHandler::TechnologyListChanged() {
 void NetworkStateHandler::ManagedStateListChanged(
     ManagedState::ManagedType type) {
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
+    SortNetworkList();
+    UpdateNetworkStats();
     // Notify observers that the list of networks has changed.
     NET_LOG_EVENT("NOTIFY:NetworkListChanged",
                   base::StringPrintf("Size:%" PRIuS, network_list_.size()));
     FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                       NetworkListChanged());
-    // Update UMA stats.
-    size_t shared = 0, unshared = 0, visible = 0;
-    for (ManagedStateList::iterator iter = network_list_.begin();
-         iter != network_list_.end(); ++iter) {
-      NetworkState* network = (*iter)->AsNetworkState();
-      if (network->visible())
-        ++visible;
-      if (network->IsInProfile()) {
-        if (network->IsPrivate())
-          ++unshared;
-        else
-          ++shared;
-      }
-    }
-    UMA_HISTOGRAM_COUNTS_100("Networks.Visible", visible);
-    UMA_HISTOGRAM_COUNTS_100("Networks.RememberedShared", shared);
-    UMA_HISTOGRAM_COUNTS_100("Networks.RememberedUnshared", unshared);
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     std::string devices;
     for (ManagedStateList::const_iterator iter = device_list_.begin();
@@ -726,6 +694,65 @@ void NetworkStateHandler::ManagedStateListChanged(
   } else {
     NOTREACHED();
   }
+}
+
+void NetworkStateHandler::SortNetworkList() {
+  bool listing_active_networks = true;
+  ManagedStateList active, non_wifi_visible, wifi_visible, hidden, new_networks;
+  for (ManagedStateList::iterator iter = network_list_.begin();
+       iter != network_list_.end(); ++iter) {
+    NetworkState* network = (*iter)->AsNetworkState();
+    if (!network->update_received()) {
+      new_networks.push_back(network);
+      continue;
+    }
+    if (network->IsConnectedState() || network->IsConnectingState()) {
+      active.push_back(network);
+      if (!listing_active_networks) {
+        NET_LOG_ERROR("Active network follows inactive network",
+                      GetLogName(network));
+      }
+      continue;
+    }
+    listing_active_networks = false;
+    if (network->visible()) {
+      if (NetworkTypePattern::WiFi().MatchesType(network->type()))
+        wifi_visible.push_back(network);
+      else
+        non_wifi_visible.push_back(network);
+    } else {
+      hidden.push_back(network);
+    }
+  }
+  network_list_.clear();
+  network_list_.insert(network_list_.end(), active.begin(), active.end());
+  network_list_.insert(
+      network_list_.end(), non_wifi_visible.begin(), non_wifi_visible.end());
+  network_list_.insert(
+      network_list_.end(), wifi_visible.begin(), wifi_visible.end());
+  network_list_.insert(network_list_.end(), hidden.begin(), hidden.end());
+  network_list_.insert(
+      network_list_.end(), new_networks.begin(), new_networks.end());
+  network_list_sorted_ = true;
+}
+
+void NetworkStateHandler::UpdateNetworkStats() {
+  size_t shared = 0, unshared = 0, visible = 0;
+  for (ManagedStateList::iterator iter = network_list_.begin();
+       iter != network_list_.end(); ++iter) {
+    NetworkState* network = (*iter)->AsNetworkState();
+    if (network->visible())
+      ++visible;
+    if (network->IsInProfile()) {
+      if (network->IsPrivate())
+        ++unshared;
+      else
+        ++shared;
+    }
+  }
+  UMA_HISTOGRAM_COUNTS_100("Networks.Visible", visible);
+  UMA_HISTOGRAM_COUNTS_100("Networks.RememberedShared", shared);
+  UMA_HISTOGRAM_COUNTS_100("Networks.RememberedUnshared", unshared);
 }
 
 void NetworkStateHandler::DefaultNetworkServiceChanged(

@@ -48,14 +48,23 @@ class CHROMEOS_EXPORT ShillServiceClient : public DBusClient {
                             const std::string& name,
                             const std::string& type,
                             const std::string& state,
-                            bool add_to_visible_list) = 0;
+                            bool visible) = 0;
     virtual void AddServiceWithIPConfig(const std::string& service_path,
                                         const std::string& guid,
                                         const std::string& name,
                                         const std::string& type,
                                         const std::string& state,
                                         const std::string& ipconfig_path,
-                                        bool add_to_visible_list) = 0;
+                                        bool visible) = 0;
+    // Sets the properties for a service but does not add it to the Manager
+    // or Profile. Returns the properties for the service.
+    virtual base::DictionaryValue* SetServiceProperties(
+        const std::string& service_path,
+        const std::string& guid,
+        const std::string& name,
+        const std::string& type,
+        const std::string& state,
+        bool visible) = 0;
 
     // Removes a Service to the Manager and Service stubs.
     virtual void RemoveService(const std::string& service_path) = 0;

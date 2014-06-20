@@ -47,11 +47,6 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     UpdateEntries(GetTypeString(type), entries);
   }
 
-  virtual void UpdateVisibleNetworks(const base::ListValue& entries) OVERRIDE {
-    VLOG(1) << "UpdateVisibleNetworks: " << entries.GetSize();
-    UpdateEntries(shill::kServicesProperty, entries);
-  }
-
   virtual void UpdateManagedStateProperties(
       ManagedState::ManagedType type,
       const std::string& path,
@@ -305,7 +300,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerStub) {
             listener_->entries(shill::kDevicesProperty).size());
   const size_t kNumShillManagerClientStubImplServices = 4;
   EXPECT_EQ(kNumShillManagerClientStubImplServices,
-            listener_->entries(shill::kServicesProperty).size());
+            listener_->entries(shill::kServiceCompleteListProperty).size());
 
   EXPECT_EQ(0, listener_->errors());
 }
@@ -368,7 +363,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerDevicePropertyChanged) {
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
   const size_t kNumShillManagerClientStubImplServices = 4;
   EXPECT_EQ(kNumShillManagerClientStubImplServices,
-            listener_->entries(shill::kServicesProperty).size());
+            listener_->entries(shill::kServiceCompleteListProperty).size());
 
   // Add a service.
   listener_->reset_list_updates();
@@ -378,7 +373,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
   // Add should trigger a service list update and update entries.
   EXPECT_EQ(1, listener_->list_updates(shill::kServiceCompleteListProperty));
   EXPECT_EQ(kNumShillManagerClientStubImplServices + 1,
-            listener_->entries(shill::kServicesProperty).size());
+            listener_->entries(shill::kServiceCompleteListProperty).size());
   // Service receives an initial property update.
   EXPECT_EQ(1, listener_->initial_property_updates(
       shill::kServiceCompleteListProperty)[kTestServicePath]);
@@ -394,8 +389,8 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
   EXPECT_EQ(1, listener_->property_updates(
       shill::kServiceCompleteListProperty)[kTestServicePath]);
 
-  // Change the visibility of a service. This will signal two service list
-  // updates, one for the complete list and one for the visible list.
+  // Change the visibility of a service. This will trigger a service list
+  // updates.
   listener_->reset_list_updates();
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(kTestServicePath),
@@ -403,7 +398,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
       base::FundamentalValue(false),
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(2, listener_->list_updates(shill::kServiceCompleteListProperty));
+  EXPECT_EQ(1, listener_->list_updates(shill::kServiceCompleteListProperty));
 
   // Remove a service. This will update the entries and signal a service list
   // update.
@@ -412,7 +407,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
   message_loop_.RunUntilIdle();
   EXPECT_EQ(1, listener_->list_updates(shill::kServiceCompleteListProperty));
   EXPECT_EQ(kNumShillManagerClientStubImplServices,
-            listener_->entries(shill::kServicesProperty).size());
+            listener_->entries(shill::kServiceCompleteListProperty).size());
 
   EXPECT_EQ(0, listener_->errors());
 }
@@ -480,16 +475,15 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServiceList) {
   AddServiceToProfile(shill::kTypeWifi, kTestServicePath1, false /* visible */);
   message_loop_.RunUntilIdle();
 
-  // Update the Manager properties. This should trigger a single list update
-  // and a single initial property update.
+  // Update the Manager properties. This should trigger a single list update,
+  // an initial property update, and a regular property update.
   listener_->reset_list_updates();
   shill_property_handler_->UpdateManagerProperties();
   message_loop_.RunUntilIdle();
   EXPECT_EQ(1, listener_->list_updates(shill::kServiceCompleteListProperty));
   EXPECT_EQ(1, listener_->initial_property_updates(
       shill::kServiceCompleteListProperty)[kTestServicePath1]);
-
-  EXPECT_EQ(0, listener_->property_updates(
+  EXPECT_EQ(1, listener_->property_updates(
       shill::kServiceCompleteListProperty)[kTestServicePath1]);
 
   // Add a new entry to the services and the profile; should also trigger a

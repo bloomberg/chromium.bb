@@ -93,7 +93,8 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   virtual void ClearProperties() OVERRIDE;
   virtual void SetManagerProperty(const std::string& key,
                                   const base::Value& value) OVERRIDE;
-  virtual void AddManagerService(const std::string& service_path) OVERRIDE;
+  virtual void AddManagerService(const std::string& service_path,
+                                 bool notify_observers) OVERRIDE;
   virtual void RemoveManagerService(const std::string& service_path) OVERRIDE;
   virtual void ClearManagerServices() OVERRIDE;
   virtual void ServiceStateChanged(const std::string& service_path,
@@ -108,9 +109,6 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   static const char kFakeEthernetNetworkPath[];
 
  private:
-  // |property| should be kServicesProperty or kServiceCompleteListProperty.
-  void SortServiceList(const std::string& property);
-
   void SetDefaultProperties();
   void PassStubProperties(const DictionaryValueCallback& callback) const;
   void PassStubGeoNetworks(const DictionaryValueCallback& callback) const;
@@ -121,6 +119,7 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   void SetTechnologyEnabled(const std::string& type,
                             const base::Closure& callback,
                             bool enabled);
+  base::ListValue* GetEnabledServiceList(const std::string& property) const;
   void ScanCompleted(const std::string& device_path,
                      const base::Closure& callback);
 
