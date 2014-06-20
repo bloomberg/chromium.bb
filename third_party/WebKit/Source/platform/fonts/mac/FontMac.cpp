@@ -112,6 +112,9 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
 
     if (font->platformData().orientation() == Vertical)
         y += SkFloatToScalar(font->fontMetrics().floatAscent(IdeographicBaseline) - font->fontMetrics().floatAscent());
+
+    // FIXME: implement a no-vertical-advances fast path like FontHarfBuzz has.
+
     // FIXME: text rendering speed:
     // Android has code in their WebCore fork to special case when the
     // GlyphBuffer has no advances other than the defaults. In that case the

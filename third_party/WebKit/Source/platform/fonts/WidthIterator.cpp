@@ -106,10 +106,10 @@ static inline float applyFontTransforms(GlyphBuffer* glyphBuffer, unsigned& last
         return 0;
 
     unsigned glyphBufferSize = glyphBuffer->size();
-    if (glyphBuffer->size() <= lastGlyphCount + 1)
+    if (glyphBufferSize <= lastGlyphCount + 1)
         return 0;
 
-    FloatSize* advances = glyphBuffer->advances(0);
+    const FloatSize* advances = glyphBuffer->advances(0);
     float widthDifference = 0;
     for (unsigned i = lastGlyphCount; i < glyphBufferSize; ++i)
         widthDifference -= advances[i].width();
@@ -118,8 +118,8 @@ static inline float applyFontTransforms(GlyphBuffer* glyphBuffer, unsigned& last
         int spaceOffset = charactersTreatedAsSpace[i].first;
         const OriginalAdvancesForCharacterTreatedAsSpace& originalAdvances = charactersTreatedAsSpace[i].second;
         if (spaceOffset && !originalAdvances.characterIsSpace)
-            glyphBuffer->advances(spaceOffset - 1)->setWidth(originalAdvances.advanceBeforeCharacter);
-        glyphBuffer->advances(spaceOffset)->setWidth(originalAdvances.advanceAtCharacter);
+            glyphBuffer->setAdvanceWidth(spaceOffset - 1, originalAdvances.advanceBeforeCharacter);
+        glyphBuffer->setAdvanceWidth(spaceOffset, originalAdvances.advanceAtCharacter);
     }
     charactersTreatedAsSpace.clear();
 

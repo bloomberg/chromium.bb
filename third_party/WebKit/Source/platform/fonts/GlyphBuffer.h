@@ -40,18 +40,20 @@ class SimpleFontData;
 
 class GlyphBuffer {
 public:
+    GlyphBuffer() : m_hasVerticalAdvances(false) { }
+
     bool isEmpty() const { return m_fontData.isEmpty(); }
     unsigned size() const { return m_fontData.size(); }
+    bool hasVerticalAdvances() const { return m_hasVerticalAdvances; }
 
     void clear()
     {
         m_fontData.clear();
         m_glyphs.clear();
         m_advances.clear();
+        m_hasVerticalAdvances = false;
     }
 
-    Glyph* glyphs(unsigned from) { return m_glyphs.data() + from; }
-    FloatSize* advances(unsigned from) { return m_advances.data() + from; }
     const Glyph* glyphs(unsigned from) const { return m_glyphs.data() + from; }
     const FloatSize* advances(unsigned from) const { return m_advances.data() + from; }
 
@@ -69,7 +71,9 @@ public:
 
     void add(Glyph glyph, const SimpleFontData* font, float width)
     {
-        add(glyph, font, FloatSize(width, 0));
+        m_fontData.append(font);
+        m_glyphs.append(glyph);
+        m_advances.append(FloatSize(width, 0));
     }
 
     void add(Glyph glyph, const SimpleFontData* font, const FloatSize& advance)
@@ -77,6 +81,8 @@ public:
         m_fontData.append(font);
         m_glyphs.append(glyph);
         m_advances.append(advance);
+        if (advance.height())
+            m_hasVerticalAdvances = true;
     }
 
     void reverse()
@@ -84,6 +90,11 @@ public:
         m_fontData.reverse();
         m_glyphs.reverse();
         m_advances.reverse();
+    }
+
+    void setAdvanceWidth(unsigned index, float newWidth)
+    {
+        m_advances[index].setWidth(newWidth);
     }
 
     void expandLastAdvance(float width)
@@ -97,6 +108,7 @@ private:
     Vector<const SimpleFontData*, 2048> m_fontData;
     Vector<Glyph, 2048> m_glyphs;
     Vector<FloatSize, 2048> m_advances;
+    bool m_hasVerticalAdvances;
 };
 
 }
