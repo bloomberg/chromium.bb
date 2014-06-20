@@ -324,7 +324,9 @@ bool ContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
   return false;
 }
 
-bool ContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs() {
+bool ContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
+    BrowserContext* browser_context,
+    const GURL& url) {
   return false;
 }
 

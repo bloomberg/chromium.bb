@@ -161,7 +161,8 @@ class PluginService {
 #endif
 
   // Returns true iff PPAPI "dev channel" methods are supported.
-  virtual bool PpapiDevChannelSupported() = 0;
+  virtual bool PpapiDevChannelSupported(BrowserContext* browser_context,
+                                        const GURL& document_url) = 0;
 };
 
 }  // namespace content

@@ -45,6 +45,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
  public:
   // manifest_url: the URL of the manifest of the Native Client plugin being
   // executed.
+  // permissions: PPAPI permissions, to control access to private APIs.
   // render_view_id: RenderView routing id, to control access to private APIs.
   // permission_bits: controls which interfaces the NaCl plugin can use.
   // uses_irt: whether the launched process should use the IRT.
@@ -60,6 +61,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // off_the_record: was the process launched from an incognito renderer?
   // profile_directory: is the path of current profile directory.
   NaClProcessHost(const GURL& manifest_url,
+                  ppapi::PpapiPermissions permissions,
                   int render_view_id,
                   uint32 permission_bits,
                   bool uses_irt,

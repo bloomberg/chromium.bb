@@ -232,7 +232,11 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
     : profile_data_directory_(profile_data_directory),
       is_broker_(false) {
   uint32 base_permissions = info.permissions;
-  if (GetContentClient()->browser()->IsPluginAllowedToUseDevChannelAPIs())
+
+  // We don't have to do any whitelisting for APIs in this process host, so
+  // don't bother passing a browser context or document url here.
+  if (GetContentClient()->browser()->IsPluginAllowedToUseDevChannelAPIs(
+          NULL, GURL()))
     base_permissions |= ppapi::PERMISSION_DEV_CHANNEL;
   permissions_ = ppapi::PpapiPermissions::GetForCommandLine(base_permissions);
 

@@ -51,6 +51,7 @@ NaClLaunchParams::NaClLaunchParams(const NaClLaunchParams& l) {
   render_view_id = l.render_view_id;
   permission_bits = l.permission_bits;
   uses_irt = l.uses_irt;
+  uses_nonsfi_mode = l.uses_nonsfi_mode;
   enable_dyncode_syscalls = l.enable_dyncode_syscalls;
   enable_exception_handling = l.enable_exception_handling;
   enable_crash_throttling = l.enable_crash_throttling;

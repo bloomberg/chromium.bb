@@ -280,6 +280,14 @@ namespace {
 base::LazyInstance<std::string> g_io_thread_application_locale;
 
 #if defined(ENABLE_PLUGINS)
+// TODO(teravest): Add renderer-side API-specific checking for these APIs so
+// that blanket permission isn't granted to all dev channel APIs for these.
+// http://crbug.com/386743
+const char* const kPredefinedAllowedDevChannelOrigins[] = {
+  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/383937
+  "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see crbug.com/383937
+};
+
 const char* const kPredefinedAllowedFileHandleOrigins[] = {
   "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/234789
   "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see crbug.com/234789
@@ -642,6 +650,8 @@ namespace chrome {
 ChromeContentBrowserClient::ChromeContentBrowserClient()
     : prerender_tracker_(NULL) {
 #if defined(ENABLE_PLUGINS)
+  for (size_t i = 0; i < arraysize(kPredefinedAllowedDevChannelOrigins); ++i)
+    allowed_dev_channel_origins_.insert(kPredefinedAllowedDevChannelOrigins[i]);
   for (size_t i = 0; i < arraysize(kPredefinedAllowedFileHandleOrigins); ++i)
     allowed_file_handle_origins_.insert(kPredefinedAllowedFileHandleOrigins[i]);
   for (size_t i = 0; i < arraysize(kPredefinedAllowedSocketOrigins); ++i)
@@ -2808,8 +2818,6 @@ bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
     extension_set = extensions::ExtensionSystem::Get(profile)->
         extension_service()->extensions();
   }
-  // TODO(teravest): Populate allowed_file_handle_origins_ when FileIO is moved
-  // from the renderer to the browser.
   return IsExtensionOrSharedModuleWhitelisted(url, extension_set,
                                               allowed_file_handle_origins_) ||
          IsHostAllowedByCommandLine(url, extension_set,
@@ -2819,12 +2827,28 @@ bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
 #endif
 }
 
-bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs() {
+bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
 #if defined(ENABLE_PLUGINS)
   // Allow access for tests.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePepperTesting)) {
     return true;
+  }
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  const extensions::ExtensionSet* extension_set = NULL;
+  if (profile) {
+    extension_set = extensions::ExtensionSystem::Get(profile)->
+        extension_service()->extensions();
+  }
+
+  // Allow access for whitelisted applications.
+  if (IsExtensionOrSharedModuleWhitelisted(url,
+                                           extension_set,
+                                           allowed_dev_channel_origins_)) {
+      return true;
   }
 
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();

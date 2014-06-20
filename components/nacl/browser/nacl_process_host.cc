@@ -38,6 +38,8 @@
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -228,16 +230,6 @@ bool ShareHandleToSelLdr(
   return true;
 }
 
-ppapi::PpapiPermissions GetNaClPermissions(uint32 permission_bits) {
-  // Only allow NaCl plugins to request certain permissions. We don't want
-  // a compromised renderer to be able to start a nacl plugin with e.g. Flash
-  // permissions which may expand the surface area of the sandbox.
-  uint32 masked_bits = permission_bits & ppapi::PERMISSION_DEV;
-  if (content::PluginService::GetInstance()->PpapiDevChannelSupported())
-    masked_bits |= ppapi::PERMISSION_DEV_CHANNEL;
-  return ppapi::PpapiPermissions::GetForCommandLine(masked_bits);
-}
-
 }  // namespace
 
 namespace nacl {
@@ -257,6 +249,7 @@ unsigned NaClProcessHost::keepalive_throttle_interval_milliseconds_ =
     ppapi::kKeepaliveThrottleIntervalDefaultMilliseconds;
 
 NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
+                                 ppapi::PpapiPermissions permissions,
                                  int render_view_id,
                                  uint32 permission_bits,
                                  bool uses_irt,
@@ -267,7 +260,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
                                  bool off_the_record,
                                  const base::FilePath& profile_directory)
     : manifest_url_(manifest_url),
-      permissions_(GetNaClPermissions(permission_bits)),
+      permissions_(permissions),
 #if defined(OS_WIN)
       process_launched_by_broker_(false),
 #endif

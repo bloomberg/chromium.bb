@@ -10,12 +10,55 @@
 #include "components/nacl/browser/nacl_process_host.h"
 #include "components/nacl/browser/pnacl_host.h"
 #include "components/nacl/common/nacl_host_messages.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "url/gurl.h"
 
 namespace nacl {
+
+namespace {
+
+ppapi::PpapiPermissions GetNaClPermissions(
+    uint32 permission_bits,
+    content::BrowserContext* browser_context,
+    const GURL& document_url) {
+  // Only allow NaCl plugins to request certain permissions. We don't want
+  // a compromised renderer to be able to start a nacl plugin with e.g. Flash
+  // permissions which may expand the surface area of the sandbox.
+  uint32 masked_bits = permission_bits & ppapi::PERMISSION_DEV;
+  if (content::PluginService::GetInstance()->PpapiDevChannelSupported(
+          browser_context, document_url))
+    masked_bits |= ppapi::PERMISSION_DEV_CHANNEL;
+  return ppapi::PpapiPermissions::GetForCommandLine(masked_bits);
+}
+
+
+ppapi::PpapiPermissions GetPpapiPermissions(uint32 permission_bits,
+                                            int render_process_id,
+                                            int render_view_id) {
+  // We get the URL from WebContents from the RenderViewHost, since we don't
+  // have a BrowserPpapiHost yet.
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id);
+  content::RenderViewHost* view_host =
+      content::RenderViewHost::FromID(render_process_id, render_view_id);
+  GURL document_url;
+  content::WebContents* contents =
+      content::WebContents::FromRenderViewHost(view_host);
+  if (contents)
+    document_url = contents->GetLastCommittedURL();
+  return GetNaClPermissions(permission_bits,
+                            host->GetBrowserContext(),
+                            document_url);
+}
+
+}  // namespace
 
 NaClHostMessageFilter::NaClHostMessageFilter(
     int render_process_id,
@@ -72,8 +115,35 @@ net::HostResolver* NaClHostMessageFilter::GetHostResolver() {
 void NaClHostMessageFilter::OnLaunchNaCl(
     const nacl::NaClLaunchParams& launch_params,
     IPC::Message* reply_msg) {
+  // PNaCl hack
+  if (!launch_params.enable_dyncode_syscalls) {
+    uint32 perms = launch_params.permission_bits & ppapi::PERMISSION_DEV;
+    LaunchNaClContinuation(
+        launch_params,
+        reply_msg,
+        ppapi::PpapiPermissions(perms));
+    return;
+  }
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&GetPpapiPermissions,
+                 launch_params.permission_bits,
+                 render_process_id_,
+                 launch_params.render_view_id),
+      base::Bind(&NaClHostMessageFilter::LaunchNaClContinuation,
+                 this,
+                 launch_params,
+                 reply_msg));
+}
+
+void NaClHostMessageFilter::LaunchNaClContinuation(
+    const nacl::NaClLaunchParams& launch_params,
+    IPC::Message* reply_msg,
+    ppapi::PpapiPermissions permissions) {
   NaClProcessHost* host = new NaClProcessHost(
       GURL(launch_params.manifest_url),
+      permissions,
       launch_params.render_view_id,
       launch_params.permission_bits,
       launch_params.uses_irt,

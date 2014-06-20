@@ -852,9 +852,11 @@ bool PluginServiceImpl::IsPluginWindow(HWND window) {
 }
 #endif
 
-bool PluginServiceImpl::PpapiDevChannelSupported() {
+bool PluginServiceImpl::PpapiDevChannelSupported(
+    BrowserContext* browser_context,
+    const GURL& document_url) {
   return content::GetContentClient()->browser()->
-      IsPluginAllowedToUseDevChannelAPIs();
+      IsPluginAllowedToUseDevChannelAPIs(browser_context, document_url);
 }
 
 }  // namespace content

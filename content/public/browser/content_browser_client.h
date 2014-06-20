@@ -641,7 +641,9 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& url);
 
   // Returns true if dev channel APIs are available for plugins.
-  virtual bool IsPluginAllowedToUseDevChannelAPIs();
+  virtual bool IsPluginAllowedToUseDevChannelAPIs(
+      BrowserContext* browser_context,
+      const GURL& url);
 
   // Returns a special cookie store to use for a given render process, or NULL
   // if the default cookie store should be used
