@@ -76,7 +76,6 @@ private:
     virtual void unregisterWithDispatcher() OVERRIDE;
     virtual bool hasLastData() OVERRIDE;
     virtual void didUpdateData() OVERRIDE;
-    virtual void pageVisibilityChanged() OVERRIDE;
 
     // DOMWindowLifecycleObserver
     virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) OVERRIDE;

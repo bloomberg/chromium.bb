@@ -228,14 +228,4 @@ void NavigatorGamepad::didRemoveAllEventListeners(LocalDOMWindow*)
     m_hasEventListener = false;
 }
 
-void NavigatorGamepad::pageVisibilityChanged()
-{
-    // We inform the embedder whether it needs to provide gamepad data for us.
-    // In this sense it is irrelevant whether we need an event listener hence there is no check here.
-    if (page()->visibilityState() == PageVisibilityStateVisible)
-        startUpdating();
-    else
-        stopUpdating();
-}
-
 } // namespace WebCore
