@@ -4,30 +4,24 @@
 
 #include "skia/ext/skia_utils_win.h"
 
+#include <stddef.h>
 #include <windows.h>
 
 #include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkTypes.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 
 namespace {
 
-template <bool>
-struct CompileAssert {
-};
-
-#undef COMPILE_ASSERT
-#define COMPILE_ASSERT(expr, msg) \
-  typedef CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
-
-COMPILE_ASSERT(SK_OFFSETOF(RECT, left) == SK_OFFSETOF(SkIRect, fLeft), o1);
-COMPILE_ASSERT(SK_OFFSETOF(RECT, top) == SK_OFFSETOF(SkIRect, fTop), o2);
-COMPILE_ASSERT(SK_OFFSETOF(RECT, right) == SK_OFFSETOF(SkIRect, fRight), o3);
-COMPILE_ASSERT(SK_OFFSETOF(RECT, bottom) == SK_OFFSETOF(SkIRect, fBottom), o4);
-COMPILE_ASSERT(sizeof(RECT().left) == sizeof(SkIRect().fLeft), o5);
-COMPILE_ASSERT(sizeof(RECT().top) == sizeof(SkIRect().fTop), o6);
-COMPILE_ASSERT(sizeof(RECT().right) == sizeof(SkIRect().fRight), o7);
-COMPILE_ASSERT(sizeof(RECT().bottom) == sizeof(SkIRect().fBottom), o8);
-COMPILE_ASSERT(sizeof(RECT) == sizeof(SkIRect), o9);
+SK_COMPILE_ASSERT(offsetof(RECT, left) == offsetof(SkIRect, fLeft), o1);
+SK_COMPILE_ASSERT(offsetof(RECT, top) == offsetof(SkIRect, fTop), o2);
+SK_COMPILE_ASSERT(offsetof(RECT, right) == offsetof(SkIRect, fRight), o3);
+SK_COMPILE_ASSERT(offsetof(RECT, bottom) == offsetof(SkIRect, fBottom), o4);
+SK_COMPILE_ASSERT(sizeof(RECT().left) == sizeof(SkIRect().fLeft), o5);
+SK_COMPILE_ASSERT(sizeof(RECT().top) == sizeof(SkIRect().fTop), o6);
+SK_COMPILE_ASSERT(sizeof(RECT().right) == sizeof(SkIRect().fRight), o7);
+SK_COMPILE_ASSERT(sizeof(RECT().bottom) == sizeof(SkIRect().fBottom), o8);
+SK_COMPILE_ASSERT(sizeof(RECT) == sizeof(SkIRect), o9);
 
 }  // namespace
 
