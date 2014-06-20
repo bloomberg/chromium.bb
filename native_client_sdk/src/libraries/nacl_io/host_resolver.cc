@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS
+#endif
+
 #include "nacl_io/host_resolver.h"
 
 #include <assert.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -231,7 +236,7 @@ int HostResolver::getaddrinfo(const char* node,
   if (service != NULL) {
     char* cp;
     port = strtol(service, &cp, 10);
-    if (port > 0 && port <= 65535 && *cp == '\0') {
+    if (port >= 0 && port <= UINT16_MAX && *cp == '\0') {
       port = htons(port);
     } else {
       return EAI_SERVICE;
