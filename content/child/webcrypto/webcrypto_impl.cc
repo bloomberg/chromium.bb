@@ -171,11 +171,7 @@ struct BaseState {
       : origin_thread(GetCurrentBlinkThread()), result(result) {}
 
   bool cancelled() {
-#ifdef WEBCRYPTO_RESULT_HAS_CANCELLED
     return result.cancelled();
-#else
-    return false;
-#endif
   }
 
   scoped_refptr<base::TaskRunner> origin_thread;
