@@ -13,3 +13,12 @@ function MockFileEntry(volumeId, fullPath) {
   this.volumeId = volumeId;
   this.fullPath = fullPath;
 }
+
+/**
+ * Returns fake URL.
+ *
+ * @return {string} Fake URL.
+ */
+MockFileEntry.prototype.toURL = function() {
+  return 'filesystem:' + this.volumeId + this.fullPath;
+};

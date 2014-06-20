@@ -46,9 +46,10 @@
  *   var size = (cached && cached.size) || UNKNOWN_SIZE;
  * }
  *
+ * @param {Array.<MetadataProvider>} providers Metadata providers.
  * @constructor
  */
-function MetadataCache() {
+function MetadataCache(providers) {
   /**
    * Map from Entry (using Entry.toURL) to metadata. Metadata contains
    * |properties| - an hierarchical object of values, and an object for each
@@ -61,7 +62,7 @@ function MetadataCache() {
    * List of metadata providers.
    * @private
    */
-  this.providers_ = [];
+  this.providers_ = providers;
 
   /**
    * List of observers added. Each one is an object with fields:
@@ -81,9 +82,13 @@ function MetadataCache() {
   /**
    * Time of first get query of the current batch. Items updated later than this
    * will not be evicted.
+   *
+   * @type {Date}
    * @private
    */
   this.lastBatchStart_ = new Date();
+
+  Object.seal(this);
 }
 
 /**
@@ -114,13 +119,13 @@ MetadataCache.EVICTION_THRESHOLD_MARGIN = 500;
  * @return {MetadataCache!} The cache with all providers.
  */
 MetadataCache.createFull = function(volumeManager) {
-  var cache = new MetadataCache();
   // DriveProvider should be prior to FileSystemProvider, because it covers
   // FileSystemProvider for files in Drive.
-  cache.providers_.push(new DriveProvider(volumeManager));
-  cache.providers_.push(new FilesystemProvider());
-  cache.providers_.push(new ContentProvider());
-  return cache;
+  return new MetadataCache([
+    new DriveProvider(volumeManager),
+    new FilesystemProvider(),
+    new ContentProvider()
+  ]);
 };
 
 /**
