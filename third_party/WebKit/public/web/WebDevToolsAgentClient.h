@@ -46,12 +46,8 @@ public:
     virtual void sendMessageToInspectorFrontend(const WebString&) { }
     virtual void sendDebuggerOutput(const WebString&) { }
 
-    // Returns the identifier of the entity hosting this agent.
-    // FIXME: remove once migrated to debuggerId().
-    virtual int hostIdentifier() { return -1; }
-
     // Returns unique identifier of the entity within process.
-    virtual int debuggerId() { return hostIdentifier(); }
+    virtual int debuggerId() { return -1; }
 
     // Save the agent state in order to pass it later into WebDevToolsAgent::reattach
     // if the same client is reattached to another agent.

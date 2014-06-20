@@ -84,8 +84,6 @@ public:
     virtual bool handleInputEvent(WebCore::Page*, const WebInputEvent&) OVERRIDE;
 
     // WebDevToolsAgent implementation.
-    virtual void attach() OVERRIDE;
-    virtual void reattach(const WebString& savedState) OVERRIDE;
     virtual void attach(const WebString& hostId) OVERRIDE;
     virtual void reattach(const WebString& hostId, const WebString& savedState) OVERRIDE;
     virtual void detach() OVERRIDE;

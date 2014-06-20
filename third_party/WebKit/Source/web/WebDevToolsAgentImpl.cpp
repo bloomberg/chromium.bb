@@ -226,16 +226,6 @@ WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
         blink::Platform::current()->currentThread()->removeTaskObserver(this);
 }
 
-void WebDevToolsAgentImpl::attach()
-{
-    attach("");
-}
-
-void WebDevToolsAgentImpl::reattach(const WebString& savedState)
-{
-    reattach("", savedState);
-}
-
 void WebDevToolsAgentImpl::attach(const WebString& hostId)
 {
     if (m_attached)
