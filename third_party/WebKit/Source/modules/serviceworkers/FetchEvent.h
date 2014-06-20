@@ -25,10 +25,13 @@ public:
     virtual ~FetchEvent() { }
 
     Request* request() const;
+    bool isReload() const;
 
     void respondWith(ScriptState*, const ScriptValue&);
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
+
+    void setIsReload(bool);
 
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -39,6 +42,7 @@ protected:
 private:
     RefPtr<RespondWithObserver> m_observer;
     RefPtr<Request> m_request;
+    bool m_isReload;
 };
 
 } // namespace WebCore

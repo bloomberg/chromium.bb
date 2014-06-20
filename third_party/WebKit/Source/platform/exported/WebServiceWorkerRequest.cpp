@@ -9,9 +9,14 @@ namespace blink {
 
 class WebServiceWorkerRequestPrivate : public RefCounted<WebServiceWorkerRequestPrivate> {
 public:
+    WebServiceWorkerRequestPrivate()
+        : isReload(false)
+    {
+    }
     WebURL url;
     WebString method;
     HashMap<String, String> headers;
+    bool isReload;
 };
 
 WebServiceWorkerRequest::WebServiceWorkerRequest()
@@ -57,6 +62,16 @@ void WebServiceWorkerRequest::setHeader(const WebString& key, const WebString& v
 const HashMap<String, String>& WebServiceWorkerRequest::headers() const
 {
     return m_private->headers;
+}
+
+void WebServiceWorkerRequest::setIsReload(bool isReload)
+{
+    m_private->isReload = isReload;
+}
+
+bool WebServiceWorkerRequest::isReload() const
+{
+    return m_private->isReload;
 }
 
 } // namespace blink

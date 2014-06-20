@@ -44,6 +44,9 @@ public:
 
     void setHeader(const WebString& key, const WebString& value);
 
+    void setIsReload(bool);
+    bool isReload() const;
+
 #if INSIDE_BLINK
     const HashMap<String, String>& headers() const;
 #endif

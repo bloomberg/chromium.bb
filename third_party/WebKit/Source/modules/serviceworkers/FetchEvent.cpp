@@ -26,6 +26,11 @@ Request* FetchEvent::request() const
     return m_request.get();
 }
 
+bool FetchEvent::isReload() const
+{
+    return m_isReload;
+}
+
 void FetchEvent::respondWith(ScriptState* scriptState, const ScriptValue& value)
 {
     m_observer->respondWith(scriptState, value);
@@ -36,7 +41,13 @@ const AtomicString& FetchEvent::interfaceName() const
     return EventNames::FetchEvent;
 }
 
+void FetchEvent::setIsReload(bool isReload)
+{
+    m_isReload = isReload;
+}
+
 FetchEvent::FetchEvent()
+    : m_isReload(false)
 {
     ScriptWrappable::init(this);
 }
@@ -45,6 +56,7 @@ FetchEvent::FetchEvent(PassRefPtr<RespondWithObserver> observer, PassRefPtr<Requ
     : Event(EventTypeNames::fetch, /*canBubble=*/false, /*cancelable=*/true)
     , m_observer(observer)
     , m_request(request)
+    , m_isReload(false)
 {
     ScriptWrappable::init(this);
 }
