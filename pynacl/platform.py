@@ -115,6 +115,13 @@ ARCH_DICT = dict([(arch3264_name, arch_name)
 def GetArch3264(machine=None):
   if machine is None:
     machine = lib.platform.machine()
+    # platform.machine is based on running kernel. It's possible to use 64-bit
+    # kernel with 32-bit userland, e.g. to give linker slightly more memory.
+    # Distinguish between different userland bitness by querying
+    # the python binary.
+    if (ARCH3264_DICT.get(machine) == ARCH3264_X86_64 and
+            lib.platform.architecture()[0] == '32bit'):
+      machine = 'ia32'
 
   machine = machine.lower()
   assert machine in ARCH3264_DICT, "Unrecognized arch machine: %s" % machine
