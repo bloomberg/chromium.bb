@@ -421,10 +421,13 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     EXPECT_EQ(chromeos::User::USER_TYPE_PUBLIC_ACCOUNT, user->GetType());
   }
 
-  base::FilePath GetCacheDirectoryForAccountID(const std::string& account_id) {
+  base::FilePath GetExtensionCacheDirectoryForAccountID(
+      const std::string& account_id) {
     base::FilePath extension_cache_root_dir;
-    PathService::Get(chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS,
-                     &extension_cache_root_dir);
+    if (!PathService::Get(chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS,
+                          &extension_cache_root_dir)) {
+      ADD_FAILURE();
+    }
     return extension_cache_root_dir.Append(
         base::HexEncode(account_id.c_str(), account_id.size()));
   }
@@ -432,7 +435,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   base::FilePath GetCacheCRXFile(const std::string& account_id,
                                  const std::string& id,
                                  const std::string& version) {
-    return GetCacheDirectoryForAccountID(account_id)
+    return GetExtensionCacheDirectoryForAccountID(account_id)
         .Append(base::StringPrintf("%s-%s.crx", id.c_str(), version.c_str()));
   }
 
@@ -764,7 +767,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   // Pre-populate the device local account's extension cache with a hosted app
   // and an extension.
   EXPECT_TRUE(base::CreateDirectory(
-      GetCacheDirectoryForAccountID(kAccountId1)));
+      GetExtensionCacheDirectoryForAccountID(kAccountId1)));
   base::FilePath test_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
   const base::FilePath cached_hosted_app =

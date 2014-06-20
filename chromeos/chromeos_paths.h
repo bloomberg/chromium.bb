@@ -38,11 +38,11 @@ enum {
   DIR_DEVICE_LOCAL_ACCOUNT_EXTERNAL_DATA,  // Directory where external data
                                            // referenced by policies is cached
                                            // for device-local accounts.
-  DIR_DEVICE_LOCAL_ACCOUNT_COMPONENT_POLICY,  // Directory where policy for the
-                                              // components of device-local
-                                              // account is stored. Currently
-                                              // this is used for policy for
-                                              // extensions.
+  DIR_DEVICE_LOCAL_ACCOUNT_COMPONENT_POLICY,  // Directory where policy for
+                                              // components is stored for
+                                              // device-local accounts.
+                                              // Currently this is used for
+                                              // policy for extensions.
   PATH_END
 };
 

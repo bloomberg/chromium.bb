@@ -443,10 +443,12 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self.server.UpdateStateKeys(token_info['device_token'],
                                   key_update_request.server_backed_state_key)
 
-    # If this is a publicaccount request then get the username now and use it
-    # in every PolicyFetchResponse produced. This is required to validate
-    # policy for extensions in public accounts.
-    username = self.server.GetPolicies().get('policy_user', None)
+    # If this is a |publicaccount| request, get the |username| now and use
+    # it in every PolicyFetchResponse produced. This is required to validate
+    # policy for extensions in device-local accounts.
+    # Unfortunately, the |username| can't be obtained from |msg| because that
+    # requires interacting with GAIA.
+    username = None
     for request in msg.policy_request.request:
       if request.policy_type == 'google/chromeos/publicaccount':
         username = request.settings_entity_id
@@ -461,7 +463,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
               'google/chrome/user',
               'google/ios/user')):
         fetch_response = response.policy_response.response.add()
-        self.ProcessCloudPolicy(request, token_info, fetch_response)
+        self.ProcessCloudPolicy(request, token_info, fetch_response, username)
       elif request.policy_type == 'google/chrome/extension':
         self.ProcessCloudPolicyForExtensions(
             request, response.policy_response, token_info, username)
@@ -637,7 +639,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       settings.__getattribute__(field.name).CopyFrom(policy_message)
 
   def ProcessCloudPolicyForExtensions(self, request, response, token_info,
-                                      username):
+                                      username=None):
     """Handles a request for policy for extensions.
 
     A request for policy for extensions is slightly different from the other
@@ -649,7 +651,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       response: The DevicePolicyResponse message for the response. Multiple
       PolicyFetchResponses will be appended to this message.
       token_info: The token extracted from the request.
-      username: The username for the response.
+      username: The username for the response. May be None.
     """
     # Send one PolicyFetchResponse for each extension that has
     # configuration data at the server.
@@ -760,8 +762,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     if username:
       policy_data.username = username
-    elif msg.policy_type == 'google/chromeos/publicaccount':
-      policy_data.username = msg.settings_entity_id
     else:
       # For regular user/device policy, there is no way for the testserver to
       # know the user name belonging to the GAIA auth token we received (short

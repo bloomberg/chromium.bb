@@ -11,7 +11,50 @@
 #include "components/policy/core/common/schema_registry.h"
 #include "content/public/browser/browser_context.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/chromeos/login/users/user.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
+#endif
+
 namespace policy {
+
+#if defined(OS_CHROMEOS)
+namespace {
+
+DeviceLocalAccountPolicyBroker* GetBroker(content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+
+  if (chromeos::ProfileHelper::IsSigninProfile(profile))
+    return NULL;
+
+  if (!chromeos::UserManager::IsInitialized()) {
+    // Bail out in unit tests that don't have a UserManager.
+    return NULL;
+  }
+
+  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  chromeos::User* user = user_manager->GetUserByProfile(profile);
+  if (!user)
+    return NULL;
+
+  BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  DeviceLocalAccountPolicyService* service =
+      connector->GetDeviceLocalAccountPolicyService();
+  if (!service)
+    return NULL;
+
+  return service->GetBrokerForUser(user->email());
+}
+
+}  // namespace
+#endif  // OS_CHROMEOS
 
 // static
 SchemaRegistryServiceFactory* SchemaRegistryServiceFactory::GetInstance() {
@@ -60,7 +103,23 @@ SchemaRegistryServiceFactory::CreateForContextInternal(
     CombinedSchemaRegistry* global_registry) {
   DCHECK(!context->IsOffTheRecord());
   DCHECK(registries_.find(context) == registries_.end());
-  scoped_ptr<SchemaRegistry> registry(new SchemaRegistry);
+
+  scoped_ptr<SchemaRegistry> registry;
+
+#if defined(OS_CHROMEOS)
+  DeviceLocalAccountPolicyBroker* broker = GetBroker(context);
+  if (broker) {
+    // The SchemaRegistry for a device-local account is owned by its
+    // DeviceLocalAccountPolicyBroker, which uses the registry to fetch and
+    // cache policy even if there is no active session for that account.
+    // Use a ForwardingSchemaRegistry that wraps this SchemaRegistry.
+    registry.reset(new ForwardingSchemaRegistry(broker->schema_registry()));
+  }
+#endif
+
+  if (!registry)
+    registry.reset(new SchemaRegistry);
+
   scoped_ptr<SchemaRegistryService> service(new SchemaRegistryService(
       registry.Pass(), chrome_schema, global_registry));
   registries_[context] = service.get();

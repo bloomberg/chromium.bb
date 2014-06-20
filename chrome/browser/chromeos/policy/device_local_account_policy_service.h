@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -21,6 +22,8 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/component_cloud_policy_service.h"
+#include "components/policy/core/common/schema_registry.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -44,8 +47,12 @@ class DeviceManagementService;
 
 // The main switching central that downloads, caches, refreshes, etc. policy for
 // a single device-local account.
-class DeviceLocalAccountPolicyBroker {
+class DeviceLocalAccountPolicyBroker
+    : public CloudPolicyStore::Observer,
+      public ComponentCloudPolicyService::Delegate {
  public:
+  // |policy_update_callback| will be invoked to notify observers that the
+  // policy for |account| has been updated.
   // |task_runner| is the runner for policy refresh tasks.
   DeviceLocalAccountPolicyBroker(
       const DeviceLocalAccount& account,
@@ -53,8 +60,9 @@ class DeviceLocalAccountPolicyBroker {
       scoped_ptr<DeviceLocalAccountPolicyStore> store,
       scoped_refptr<DeviceLocalAccountExternalDataManager>
           external_data_manager,
+      const base::Closure& policy_updated_callback,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
-  ~DeviceLocalAccountPolicyBroker();
+  virtual ~DeviceLocalAccountPolicyBroker();
 
   // Initialize the broker, loading its |store_|.
   void Initialize();
@@ -74,6 +82,12 @@ class DeviceLocalAccountPolicyBroker {
     return external_data_manager_;
   }
 
+  ComponentCloudPolicyService* component_policy_service() const {
+    return component_policy_service_.get();
+  }
+
+  SchemaRegistry* schema_registry() { return &schema_registry_; }
+
   // Fire up the cloud connection for fetching policy for the account from the
   // cloud if this is an enterprise-managed device.
   void ConnectIfPossible(
@@ -88,20 +102,28 @@ class DeviceLocalAccountPolicyBroker {
   // empty string if the policy is not present.
   std::string GetDisplayName() const;
 
-  // Returns a directory where component policy for this account can be cached.
-  // The DeviceLocalAccountPolicyService takes care of cleaning up caches of
-  // accounts that have been removed.
-  base::FilePath GetComponentPolicyCachePath() const;
+  // CloudPolicyStore::Observer:
+  virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
+
+  // ComponentCloudPolicyService::Delegate:
+  virtual void OnComponentCloudPolicyUpdated() OVERRIDE;
 
  private:
+  void CreateComponentCloudPolicyService(
+      const scoped_refptr<net::URLRequestContextGetter>& request_context);
+
   const std::string account_id_;
   const std::string user_id_;
   const base::FilePath component_policy_cache_path_;
+  SchemaRegistry schema_registry_;
   const scoped_ptr<DeviceLocalAccountPolicyStore> store_;
   scoped_refptr<DeviceLocalAccountExternalDataManager> external_data_manager_;
   scoped_refptr<chromeos::DeviceLocalAccountExternalPolicyLoader>
       extension_loader_;
   CloudPolicyCore core_;
+  scoped_ptr<ComponentCloudPolicyService> component_policy_service_;
+  base::Closure policy_update_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountPolicyBroker);
 };
@@ -110,7 +132,7 @@ class DeviceLocalAccountPolicyBroker {
 // The actual policy blobs are brokered by session_manager (to prevent file
 // manipulation), and we're making signature checks on the policy blobs to
 // ensure they're issued by the device owner.
-class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
+class DeviceLocalAccountPolicyService {
  public:
   // Interface for interested parties to observe policy changes.
   class Observer {
@@ -122,9 +144,6 @@ class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
 
     // The list of accounts has been updated.
     virtual void OnDeviceLocalAccountsChanged() = 0;
-
-    // The given |broker| is about to be destroyed.
-    virtual void OnBrokerShutdown(DeviceLocalAccountPolicyBroker* broker) {}
   };
 
   DeviceLocalAccountPolicyService(
@@ -153,14 +172,8 @@ class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
   // |user_id|.
   bool IsPolicyAvailableForUser(const std::string& user_id);
 
-  scoped_refptr<net::URLRequestContextGetter> request_context() const;
-
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-
-  // CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
-  virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
 
  private:
   typedef std::map<std::string, DeviceLocalAccountPolicyBroker*>
@@ -203,6 +216,9 @@ class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
   // Find the broker for a given |store|. Returns NULL if |store| is unknown.
   DeviceLocalAccountPolicyBroker* GetBrokerForStore(CloudPolicyStore* store);
 
+  // Notifies the |observers_| that the policy for |user_id| has changed.
+  void NotifyPolicyUpdated(const std::string& user_id);
+
   ObserverList<Observer, true> observers_;
 
   chromeos::SessionManagerClient* session_manager_client_;
@@ -220,12 +236,12 @@ class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
 
   // Orphaned extension caches are removed at startup. This tracks the status of
   // that process.
-  enum OrphanCacheDeletionState {
+  enum OrphanExtensionCacheDeletionState {
     NOT_STARTED,
     IN_PROGRESS,
     DONE,
   };
-  OrphanCacheDeletionState orphan_cache_deletion_state_;
+  OrphanExtensionCacheDeletionState orphan_extension_cache_deletion_state_;
 
   // Account IDs whose extension cache directories are busy, either because a
   // broker for the account has not shut down completely yet or because the
@@ -242,8 +258,8 @@ class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
   const scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
       local_accounts_subscription_;
 
-  // Path to the directory that contains the cached policies for components
-  // for device local accounts.
+  // Path to the directory that contains the cached policy for components
+  // for device-local accounts.
   base::FilePath component_policy_cache_root_;
 
   base::WeakPtrFactory<DeviceLocalAccountPolicyService> weak_factory_;

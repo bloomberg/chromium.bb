@@ -14,8 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "components/policy/core/common/cloud/component_cloud_policy_service.h"
-#include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 
 namespace policy {
@@ -26,11 +24,11 @@ class PolicyMap;
 // DeviceLocalAccountPolicyService. Note that this implementation keeps
 // functioning when the device-local account disappears from
 // DeviceLocalAccountPolicyService. The current policy will be kept in that case
-// and RefreshPolicies becomes a no-op.
+// and RefreshPolicies becomes a no-op. Policies for any installed extensions
+// will be kept as well in that case.
 class DeviceLocalAccountPolicyProvider
     : public ConfigurationPolicyProvider,
-      public DeviceLocalAccountPolicyService::Observer,
-      public ComponentCloudPolicyService::Delegate {
+      public DeviceLocalAccountPolicyService::Observer {
  public:
   DeviceLocalAccountPolicyProvider(
       const std::string& user_id,
@@ -46,23 +44,16 @@ class DeviceLocalAccountPolicyProvider
       DeviceLocalAccountPolicyService* service);
 
   // ConfigurationPolicyProvider:
-  virtual void Init(SchemaRegistry* registry) OVERRIDE;
   virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
   virtual void RefreshPolicies() OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
 
   // DeviceLocalAccountPolicyService::Observer:
   virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
   virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
-  virtual void OnBrokerShutdown(
-      DeviceLocalAccountPolicyBroker* broker) OVERRIDE;
-
-  // ComponentCloudPolicyService::Delegate:
-  virtual void OnComponentCloudPolicyUpdated() OVERRIDE;
 
  private:
   // Returns the broker for |user_id_| or NULL if not available.
-  DeviceLocalAccountPolicyBroker* GetBroker();
+  DeviceLocalAccountPolicyBroker* GetBroker() const;
 
   // Handles completion of policy refreshes and triggers the update callback.
   // |success| is true if the policy refresh was successful.
@@ -71,10 +62,6 @@ class DeviceLocalAccountPolicyProvider
   // Unless |waiting_for_policy_refresh_|, calls UpdatePolicy(), using the
   // policy from the broker if available or keeping the current policy.
   void UpdateFromBroker();
-
-  // Creates the |component_policy_service_| if it hasn't been created yet
-  // and all the dependencies are in place.
-  void MaybeCreateComponentPolicyService();
 
   const std::string user_id_;
   scoped_refptr<DeviceLocalAccountExternalDataManager> external_data_manager_;
@@ -88,8 +75,6 @@ class DeviceLocalAccountPolicyProvider
 
   bool store_initialized_;
   bool waiting_for_policy_refresh_;
-
-  scoped_ptr<ComponentCloudPolicyService> component_policy_service_;
 
   base::WeakPtrFactory<DeviceLocalAccountPolicyProvider> weak_factory_;
 
