@@ -14,6 +14,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index.h"
+#include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_interface.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -468,9 +469,9 @@ class MetadataDatabaseTest : public testing::Test {
     metadata_database_->db_ = metadata_database_2->db_.Pass();
 
     const MetadataDatabaseIndex* on_memory =
-        metadata_database_->index_.get();
+        static_cast<MetadataDatabaseIndex*>(metadata_database_->index_.get());
     const MetadataDatabaseIndex* reloaded =
-        metadata_database_2->index_.get();
+        static_cast<MetadataDatabaseIndex*>(metadata_database_2->index_.get());
 
     {
       SCOPED_TRACE("Expect equivalent service_metadata");

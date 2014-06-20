@@ -12,21 +12,15 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
-#include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
+#include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_interface.h"
+#include "chrome/browser/sync_file_system/drive_backend/tracker_id_set.h"
 
 namespace sync_file_system {
 namespace drive_backend {
 
-struct ParentIDAndTitle {
-  int64 parent_id;
-  std::string title;
-
-  ParentIDAndTitle();
-  ParentIDAndTitle(int64 parent_id, const std::string& title);
-};
-
-bool operator==(const ParentIDAndTitle& left, const ParentIDAndTitle& right);
-bool operator<(const ParentIDAndTitle& left, const ParentIDAndTitle& right);
+class FileMetadata;
+class FileTracker;
+struct DatabaseContents;
 
 }  // namespace drive_backend
 }  // namespace sync_file_system
@@ -52,78 +46,40 @@ inline size_t hash_value(
 namespace sync_file_system {
 namespace drive_backend {
 
-class FileMetadata;
-class FileTracker;
-struct DatabaseContents;
-
-// Maintains indexes of MetadataDatabase.  This class doesn't modify database
-// entries on memory nor on disk.
-class MetadataDatabaseIndex {
+// Maintains indexes of MetadataDatabase on memory.
+class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
  public:
   explicit MetadataDatabaseIndex(DatabaseContents* content);
-  ~MetadataDatabaseIndex();
+  virtual ~MetadataDatabaseIndex();
 
-  // Returns FileMetadata identified by |file_id| if exists, otherwise returns
-  // NULL.
-  const FileMetadata* GetFileMetadata(const std::string& file_id) const;
-
-  // Returns FileTracker identified by |tracker_id| if exists, otherwise returns
-  // NULL.
-  const FileTracker* GetFileTracker(int64 tracker_id) const;
-
-  // Stores |metadata| and updates indexes.
-  // This overwrites existing FileMetadata for the same |file_id|.
-  void StoreFileMetadata(scoped_ptr<FileMetadata> metadata);
-
-  // Stores |tracker| and updates indexes.
-  // This overwrites existing FileTracker for the same |tracker_id|.
-  void StoreFileTracker(scoped_ptr<FileTracker> tracker);
-
-  // Removes FileMetadata identified by |file_id| from indexes.
-  void RemoveFileMetadata(const std::string& file_id);
-
-  // Removes FileTracker identified by |tracker_id| from indexes.
-  void RemoveFileTracker(int64 tracker_id);
-
-  // Returns a set of FileTracker that have |file_id| as its own.
-  TrackerIDSet GetFileTrackerIDsByFileID(const std::string& file_id) const;
-
-  // Returns an app-root tracker identified by |app_id|.  Returns 0 if not
-  // found.
-  int64 GetAppRootTracker(const std::string& app_id) const;
-
-  // Returns a set of FileTracker that have |parent_tracker_id| and |title|.
-  TrackerIDSet GetFileTrackerIDsByParentAndTitle(
+  // MetadataDatabaseIndexInterface overrides.
+  virtual const FileMetadata* GetFileMetadata(
+      const std::string& file_id) const OVERRIDE;
+  virtual const FileTracker* GetFileTracker(int64 tracker_id) const OVERRIDE;
+  virtual void StoreFileMetadata(scoped_ptr<FileMetadata> metadata) OVERRIDE;
+  virtual void StoreFileTracker(scoped_ptr<FileTracker> tracker) OVERRIDE;
+  virtual void RemoveFileMetadata(const std::string& file_id) OVERRIDE;
+  virtual void RemoveFileTracker(int64 tracker_id) OVERRIDE;
+  virtual TrackerIDSet GetFileTrackerIDsByFileID(
+      const std::string& file_id) const OVERRIDE;
+  virtual int64 GetAppRootTracker(const std::string& app_id) const OVERRIDE;
+  virtual TrackerIDSet GetFileTrackerIDsByParentAndTitle(
       int64 parent_tracker_id,
-      const std::string& title) const;
-
-  std::vector<int64> GetFileTrackerIDsByParent(int64 parent_tracker_id) const;
-
-  // Returns the |file_id| of a file that has multiple trackers.
-  std::string PickMultiTrackerFileID() const;
-
-  // Returns a pair of |parent_tracker_id| and |title| that has multiple file
-  // at the path.
-  ParentIDAndTitle PickMultiBackingFilePath() const;
-
-  // Returns a FileTracker whose |dirty| is set and which isn't demoted.
-  // Returns 0 if not found.
-  int64 PickDirtyTracker() const;
-
-  // Demotes a dirty tracker.
-  void DemoteDirtyTracker(int64 tracker_id);
-
-  bool HasDemotedDirtyTracker() const;
-
-  // Promotes all demoted dirty trackers to normal dirty trackers.
-  void PromoteDemotedDirtyTrackers();
-
-  size_t CountDirtyTracker() const;
-  size_t CountFileMetadata() const;
-  size_t CountFileTracker() const;
-  std::vector<std::string> GetRegisteredAppIDs() const;
-  std::vector<int64> GetAllTrackerIDs() const;
-  std::vector<std::string> GetAllMetadataIDs() const;
+      const std::string& title) const OVERRIDE;
+  virtual std::vector<int64> GetFileTrackerIDsByParent(
+      int64 parent_tracker_id) const OVERRIDE;
+  virtual std::string PickMultiTrackerFileID() const OVERRIDE;
+  virtual ParentIDAndTitle PickMultiBackingFilePath() const OVERRIDE;
+  virtual int64 PickDirtyTracker() const OVERRIDE;
+  virtual void DemoteDirtyTracker(int64 tracker_id) OVERRIDE;
+  virtual bool HasDemotedDirtyTracker() const OVERRIDE;
+  virtual void PromoteDemotedDirtyTrackers() OVERRIDE;
+  virtual size_t CountDirtyTracker() const OVERRIDE;
+  virtual size_t CountFileMetadata() const OVERRIDE;
+  virtual size_t CountFileTracker() const OVERRIDE;
+  virtual std::vector<std::string> GetRegisteredAppIDs() const OVERRIDE;
+  virtual std::vector<int64> GetAllTrackerIDs() const OVERRIDE;
+  virtual std::vector<std::string> GetAllMetadataIDs() const OVERRIDE;
 
  private:
   typedef base::ScopedPtrHashMap<std::string, FileMetadata> MetadataByID;

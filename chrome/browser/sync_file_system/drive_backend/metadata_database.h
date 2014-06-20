@@ -50,7 +50,7 @@ namespace drive_backend {
 class FileDetails;
 class FileMetadata;
 class FileTracker;
-class MetadataDatabaseIndex;
+class MetadataDatabaseIndexInterface;
 class ServiceMetadata;
 
 struct DatabaseContents {
@@ -436,7 +436,7 @@ class MetadataDatabase {
   scoped_ptr<ServiceMetadata> service_metadata_;
   int64 largest_known_change_id_;
 
-  scoped_ptr<MetadataDatabaseIndex> index_;
+  scoped_ptr<MetadataDatabaseIndexInterface> index_;
 
   base::WeakPtrFactory<MetadataDatabase> weak_ptr_factory_;
 

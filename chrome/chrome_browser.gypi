@@ -2359,6 +2359,7 @@
         'browser/sync_file_system/drive_backend/metadata_database.h',
         'browser/sync_file_system/drive_backend/metadata_database_index.cc',
         'browser/sync_file_system/drive_backend/metadata_database_index.h',
+        'browser/sync_file_system/drive_backend/metadata_database_index_interface.h',
         'browser/sync_file_system/drive_backend/metadata_db_migration_util.cc',
         'browser/sync_file_system/drive_backend/metadata_db_migration_util.h',
         'browser/sync_file_system/drive_backend/register_app_task.cc',
