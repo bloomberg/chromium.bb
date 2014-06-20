@@ -817,7 +817,6 @@ crbug.com/246077 [ Linux ] virtual/android/fullscreen/parent-flow-inline-with-bl
 # Skia suppressions
 crbug.com/383435 virtual/gpu/canvas/philip/tests/2d.shadow.enable.blur.html [ NeedsRebaseline ]
 crbug.com/383435 virtual/gpu/fast/canvas/canvas-createPattern-fillRect-shadow.html [ NeedsRebaseline ]
-crbug.com/383435 virtual/gpu/fast/canvas/canvas-draw-canvas-on-canvas-shadow.html [ NeedsRebaseline ]
 crbug.com/383435 virtual/gpu/fast/canvas/canvas-drawImage-shadow.html [ NeedsRebaseline ]
 crbug.com/383435 virtual/gpu/fast/canvas/canvas-fillRect-gradient-shadow.html [ NeedsRebaseline ]
 crbug.com/383435 virtual/gpu/fast/canvas/canvas-fillRect-shadow.html [ NeedsRebaseline ]
