@@ -566,10 +566,17 @@ bool InitTargetServices(sandbox::TargetServices* target_services) {
 bool ShouldUseDirectWrite() {
   // If the flag is currently on, and we're on Win7 or above, we enable
   // DirectWrite. Skia does not require the additions to DirectWrite in QFE
-  // 2670838, so a Win7 check is sufficient. We do not currently attempt to
-  // support Vista, where SP2 and the Platform Update are required.
+  // 2670838, but a simple 'better than XP' check is not enough.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return false;
+
+  base::win::OSInfo::VersionNumber os_version =
+      base::win::OSInfo::GetInstance()->version_number();
+  if ((os_version.major == 6) && (os_version.minor == 1)) {
+    // We can't use DirectWrite for pre-release versions of Windows 7.
+    if (os_version.build < 7600)
+      return false;
+  }
 
   // If forced off, don't use it.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
