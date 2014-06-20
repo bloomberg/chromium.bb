@@ -151,7 +151,6 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   const ManagedTileState& managed_state() const { return managed_state_; }
   RasterMode DetermineRasterModeForResolution(TileResolution resolution) const;
 
-  TileManager* tile_manager_;
   scoped_refptr<PicturePileImpl> picture_pile_;
   gfx::Rect tile_size_;
   gfx::Rect content_rect_;

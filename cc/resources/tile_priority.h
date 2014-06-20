@@ -122,11 +122,6 @@ enum TileMemoryLimitPolicy {
 
   // You're the only thing in town. Go crazy.
   ALLOW_ANYTHING = 3,  // Venti.
-
-  NUM_TILE_MEMORY_LIMIT_POLICIES = 4,
-
-  // NOTE: Be sure to update TreePriorityAsValue and kBinPolicyMap when adding
-  // or reordering fields.
 };
 scoped_ptr<base::Value> TileMemoryLimitPolicyAsValue(
     TileMemoryLimitPolicy policy);
@@ -135,8 +130,6 @@ enum TreePriority {
   SAME_PRIORITY_FOR_BOTH_TREES,
   SMOOTHNESS_TAKES_PRIORITY,
   NEW_CONTENT_TAKES_PRIORITY
-
-  // Be sure to update TreePriorityAsValue when adding new fields.
 };
 scoped_ptr<base::Value> TreePriorityAsValue(TreePriority prio);
 
@@ -156,17 +149,6 @@ class GlobalStateThatImpactsTilePriority {
   size_t num_resources_limit;
 
   TreePriority tree_priority;
-
-  bool operator==(const GlobalStateThatImpactsTilePriority& other) const {
-    return memory_limit_policy == other.memory_limit_policy &&
-           soft_memory_limit_in_bytes == other.soft_memory_limit_in_bytes &&
-           hard_memory_limit_in_bytes == other.hard_memory_limit_in_bytes &&
-           num_resources_limit == other.num_resources_limit &&
-           tree_priority == other.tree_priority;
-  }
-  bool operator!=(const GlobalStateThatImpactsTilePriority& other) const {
-    return !(*this == other);
-  }
 
   scoped_ptr<base::Value> AsValue() const;
 };

@@ -22,17 +22,12 @@ class MemoryHistory {
   struct Entry {
     Entry()
         : total_budget_in_bytes(0),
-          bytes_allocated(0),
-          bytes_unreleasable(0),
-          bytes_over(0) {}
+          total_bytes_used(0),
+          had_enough_memory(false) {}
 
     size_t total_budget_in_bytes;
-    size_t bytes_allocated;
-    size_t bytes_unreleasable;
-    size_t bytes_over;
-    size_t bytes_total() const {
-      return bytes_allocated + bytes_unreleasable + bytes_over;
-    }
+    size_t total_bytes_used;
+    bool had_enough_memory;
   };
 
   void SaveEntry(const Entry& entry);

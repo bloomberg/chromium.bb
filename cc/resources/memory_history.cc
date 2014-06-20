@@ -24,7 +24,7 @@ void MemoryHistory::GetMinAndMax(size_t* min, size_t* max) const {
   *max = 0;
 
   for (RingBufferType::Iterator it = ring_buffer_.Begin(); it; ++it) {
-    size_t bytes_total = it->bytes_total();
+    size_t bytes_total = it->total_bytes_used;
 
     if (bytes_total < *min)
       *min = bytes_total;
