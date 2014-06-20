@@ -78,7 +78,24 @@ struct wl_event_queue {
 struct wl_display {
 	struct wl_proxy proxy;
 	struct wl_connection *connection;
+
+	/* errno of the last wl_display error */
 	int last_error;
+
+	/* When display gets an error event from some object, it stores
+	 * information about it here, so that client can get this
+	 * information afterwards */
+	struct {
+		/* Code of the error. It can be compared to
+		 * the interface's errors enumeration. */
+		uint32_t code;
+		/* interface (protocol) in which the error occurred */
+		const struct wl_interface *interface;
+		/* id of the proxy that caused the error. There's no warranty
+		 * that the proxy is still valid. It's up to client how it will
+		 * use it */
+		uint32_t id;
+	} protocol_error;
 	int fd;
 	pthread_t display_thread;
 	struct wl_map objects;
@@ -96,6 +113,14 @@ struct wl_display {
 
 static int debug_client = 0;
 
+/**
+ * This function is called for local errors (no memory, server hung up)
+ *
+ * \param display
+ * \param error    error value (EINVAL, EFAULT, ...)
+ *
+ * \note this function is called with display mutex locked
+ */
 static void
 display_fatal_error(struct wl_display *display, int error)
 {
@@ -105,7 +130,7 @@ display_fatal_error(struct wl_display *display, int error)
 		return;
 
 	if (!error)
-		error = 1;
+		error = EFAULT;
 
 	display->last_error = error;
 
@@ -113,11 +138,56 @@ display_fatal_error(struct wl_display *display, int error)
 		pthread_cond_broadcast(&iter->cond);
 }
 
+/**
+ * This function is called for error events
+ * and indicates that in some object an error occured.
+ * Difference between this function and display_fatal_error()
+ * is that this one handles errors that will come by wire,
+ * whereas display_fatal_error() is called for local errors.
+ *
+ * \param display
+ * \param code    error code
+ * \param id      id of the object that generated the error
+ * \param intf    protocol interface
+ */
 static void
-wl_display_fatal_error(struct wl_display *display, int error)
+display_protocol_error(struct wl_display *display, uint32_t code,
+		       uint32_t id, const struct wl_interface *intf)
 {
+	struct wl_event_queue *iter;
+	int err;
+
+	if (display->last_error)
+		return;
+
+	/* set correct errno */
+	if (wl_interface_equal(intf, &wl_display_interface)) {
+		switch (code) {
+		case WL_DISPLAY_ERROR_INVALID_OBJECT:
+		case WL_DISPLAY_ERROR_INVALID_METHOD:
+			err = EINVAL;
+			break;
+		case WL_DISPLAY_ERROR_NO_MEMORY:
+			err = ENOMEM;
+			break;
+		default:
+			err = EFAULT;
+		}
+	} else {
+		err = EPROTO;
+	}
+
 	pthread_mutex_lock(&display->mutex);
-	display_fatal_error(display, error);
+
+	display->last_error = err;
+
+	display->protocol_error.code = code;
+	display->protocol_error.id = id;
+	display->protocol_error.interface = intf;
+
+	wl_list_for_each(iter, &display->event_queue_list, link)
+		pthread_cond_broadcast(&iter->cond);
+
 	pthread_mutex_unlock(&display->mutex);
 }
 
@@ -579,25 +649,12 @@ display_handle_error(void *data,
 		     uint32_t code, const char *message)
 {
 	struct wl_proxy *proxy = object;
-	int err;
 
 	wl_log("%s@%u: error %d: %s\n",
 	       proxy->object.interface->name, proxy->object.id, code, message);
 
-	switch (code) {
-	case WL_DISPLAY_ERROR_INVALID_OBJECT:
-	case WL_DISPLAY_ERROR_INVALID_METHOD:
-		err = EINVAL;
-		break;
-	case WL_DISPLAY_ERROR_NO_MEMORY:
-		err = ENOMEM;
-		break;
-	default:
-		err = EFAULT;
-		break;
-	}
-
-	wl_display_fatal_error(display, err);
+	display_protocol_error(display, code, proxy->object.id,
+			       proxy->object.interface);
 }
 
 static void
@@ -1485,6 +1542,50 @@ wl_display_get_error(struct wl_display *display)
 
 	return ret;
 }
+
+/**
+ * Retrieves the information about a protocol error:
+ *
+ * \param display    The Wayland display
+ * \param interface  if not NULL, stores the interface where the error occurred
+ * \param id         if not NULL, stores the object id that generated
+ *                   the error. There's no guarantee the object is
+ *                   still valid; the client must know if it deleted the object.
+ * \return           The error code as defined in the interface specification.
+ *
+ * \code
+ * int err = wl_display_get_error(display);
+ *
+ * if (err == EPROTO) {
+ *        code = wl_display_get_protocol_error(display, &interface, &id);
+ *        handle_error(code, interface, id);
+ * }
+ *
+ * ...
+ *
+ *  \endcode
+ */
+WL_EXPORT uint32_t
+wl_display_get_protocol_error(struct wl_display *display,
+			      const struct wl_interface **interface,
+			      uint32_t *id)
+{
+	uint32_t ret;
+
+	pthread_mutex_lock(&display->mutex);
+
+	ret = display->protocol_error.code;
+
+	if (interface)
+		*interface = display->protocol_error.interface;
+	if (id)
+		*id = display->protocol_error.id;
+
+	pthread_mutex_unlock(&display->mutex);
+
+	return ret;
+}
+
 
 /** Send all buffered requests on the display to the server
  *

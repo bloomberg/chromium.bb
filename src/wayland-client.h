@@ -161,6 +161,9 @@ int wl_display_dispatch_queue_pending(struct wl_display *display,
 				      struct wl_event_queue *queue);
 int wl_display_dispatch_pending(struct wl_display *display);
 int wl_display_get_error(struct wl_display *display);
+uint32_t wl_display_get_protocol_error(struct wl_display *display,
+				       const struct wl_interface **interface,
+				       uint32_t *id);
 
 int wl_display_flush(struct wl_display *display);
 int wl_display_roundtrip(struct wl_display *display);

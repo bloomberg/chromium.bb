@@ -51,7 +51,7 @@ nodist_libwayland_server_la_SOURCES =		\
 
 libwayland_client_la_CFLAGS = $(FFI_CFLAGS) $(GCC_CFLAGS) -pthread
 libwayland_client_la_LIBADD = $(FFI_LIBS) libwayland-util.la -lrt -lm
-libwayland_client_la_LDFLAGS = -version-info 2:0:2
+libwayland_client_la_LDFLAGS = -version-info 3:0:3
 libwayland_client_la_SOURCES =			\
 	src/wayland-client.c
 
