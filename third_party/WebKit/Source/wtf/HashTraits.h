@@ -39,6 +39,11 @@ namespace WTF {
 
     template<bool isInteger, typename T> struct GenericHashTraitsBase;
 
+    enum ShouldWeakPointersBeMarkedStrongly {
+        WeakPointersActStrong,
+        WeakPointersActWeak
+    };
+
     template<typename T> struct GenericHashTraitsBase<false, T> {
         // The emptyValueIsZero flag is used to optimize allocation of empty hash tables with zeroed memory.
         static const bool emptyValueIsZero = false;
@@ -64,8 +69,6 @@ namespace WTF {
             static const bool value = NeedsTracing<T>::value;
         };
         static const WeakHandlingFlag weakHandlingFlag = IsWeak<T>::value ? WeakHandlingInCollections : NoWeakHandlingInCollections;
-        template<typename Visitor>
-        static bool shouldRemoveFromCollection(Visitor*, T&) { return false; }
     };
 
     // Default integer traits disallow both 0 and -1 as keys (max value instead of -1 for unsigned).
@@ -278,12 +281,6 @@ namespace WTF {
 
         static void constructDeletedValue(TraitType& slot) { KeyTraits::constructDeletedValue(slot.key); }
         static bool isDeletedValue(const TraitType& value) { return KeyTraits::isDeletedValue(value.key); }
-        template<typename Visitor>
-        static bool shouldRemoveFromCollection(Visitor* visitor, TraitType& pair)
-        {
-            return KeyTraits::shouldRemoveFromCollection(visitor, pair.key)
-                || ValueTraits::shouldRemoveFromCollection(visitor, pair.value);
-        }
     };
 
     template<typename Key, typename Value>
@@ -294,6 +291,16 @@ namespace WTF {
         static const bool emptyValueIsZero = false;
         static T emptyValue() { return reinterpret_cast<T>(1); }
     };
+
+    // This is for tracing inside collections that have special support for weak
+    // pointers. The trait has a trace method which returns true if there are weak
+    // pointers to things that have not (yet) been marked live. Returning true
+    // indicates that the entry in the collection may yet be removed by weak
+    // handling. Default implementation for non-weak types is to use the regular
+    // non-weak TraceTrait. Default implementation for types with weakness is to
+    // call traceInCollection on the type's trait.
+    template<WeakHandlingFlag weakHandlingFlag, ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
+    struct TraceInCollectionTrait;
 
 } // namespace WTF
 

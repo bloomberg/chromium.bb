@@ -492,6 +492,13 @@ namespace WTF {
             vector[i] = *it;
     }
 
+#if !ENABLE(OILPAN)
+template<typename T, typename U, typename V, typename W, typename X>
+struct NeedsTracing<HashMap<T, U, V, W, X> > {
+    static const bool value = false;
+};
+#endif
+
 } // namespace WTF
 
 using WTF::HashMap;

@@ -62,6 +62,7 @@ typedef void (*FinalizationCallback)(void*);
 typedef void (*VisitorCallback)(Visitor*, void* self);
 typedef VisitorCallback TraceCallback;
 typedef VisitorCallback WeakPointerCallback;
+typedef VisitorCallback EphemeronCallback;
 
 // ThreadAffinity indicates which threads objects can be used on. We
 // distinguish between objects that can be used on the main thread

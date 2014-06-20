@@ -621,7 +621,7 @@ protected:
 
     T* m_raw;
 
-    template<bool x, WTF::WeakHandlingFlag y, ShouldWeakPointersBeMarkedStrongly z, typename U, typename V> friend struct CollectionBackingTraceTrait;
+    template<bool x, WTF::WeakHandlingFlag y, WTF::ShouldWeakPointersBeMarkedStrongly z, typename U, typename V> friend struct CollectionBackingTraceTrait;
     friend class Visitor;
 };
 
@@ -1071,11 +1071,13 @@ template<typename T> struct HashTraits<WebCore::WeakMember<T> > : SimpleClassHas
 
     static PeekOutType peek(const WebCore::WeakMember<T>& value) { return value; }
     static PassOutType passOut(const WebCore::WeakMember<T>& value) { return value; }
-    static bool shouldRemoveFromCollection(WebCore::Visitor* visitor, WebCore::WeakMember<T>& value) { return !visitor->isAlive(value); }
-    static void traceInCollection(WebCore::Visitor* visitor, WebCore::WeakMember<T>& weakMember, WebCore::ShouldWeakPointersBeMarkedStrongly strongify)
+    static bool traceInCollection(WebCore::Visitor* visitor, WebCore::WeakMember<T>& weakMember, ShouldWeakPointersBeMarkedStrongly strongify)
     {
-        if (strongify == WebCore::WeakPointersActStrong)
+        if (strongify == WeakPointersActStrong) {
             visitor->trace(reinterpret_cast<WebCore::Member<T>&>(weakMember)); // Strongified visit.
+            return false;
+        }
+        return !visitor->isAlive(weakMember);
     }
 };
 
@@ -1127,53 +1129,6 @@ template<typename T> inline T* getPtr(const WebCore::Member<T>& p)
 {
     return p.get();
 }
-
-template<typename T, typename U>
-struct NeedsTracing<std::pair<T, U> > {
-    static const bool value = NeedsTracing<T>::value || NeedsTracing<U>::value || IsWeak<T>::value || IsWeak<U>::value;
-};
-
-template<typename T>
-struct NeedsTracing<OwnPtr<T> > {
-    static const bool value = NeedsTracing<T>::value;
-};
-
-// We define specialization of the NeedsTracing trait for off heap collections
-// since we don't support tracing them.
-template<typename T, size_t N>
-struct NeedsTracing<Vector<T, N> > {
-    static const bool value = false;
-};
-
-template<typename T, size_t N>
-struct NeedsTracing<Deque<T, N> > {
-    static const bool value = false;
-};
-
-template<typename T, typename U, typename V>
-struct NeedsTracing<HashCountedSet<T, U, V> > {
-    static const bool value = false;
-};
-
-template<typename T, typename U, typename V>
-struct NeedsTracing<HashSet<T, U, V> > {
-    static const bool value = false;
-};
-
-template<typename T, size_t U, typename V>
-struct NeedsTracing<ListHashSet<T, U, V> > {
-    static const bool value = false;
-};
-
-template<typename T, typename U, typename V>
-struct NeedsTracing<LinkedHashSet<T, U, V> > {
-    static const bool value = false;
-};
-
-template<typename T, typename U, typename V, typename W, typename X>
-struct NeedsTracing<HashMap<T, U, V, W, X> > {
-    static const bool value = false;
-};
 
 template<typename T, size_t inlineCapacity>
 struct NeedsTracing<ListHashSetNode<T, WebCore::HeapListHashSetAllocator<T, inlineCapacity> > *> {

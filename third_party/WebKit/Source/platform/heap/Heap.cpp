@@ -1277,15 +1277,13 @@ CallbackStack::~CallbackStack()
 
 void CallbackStack::clearUnused()
 {
-    ASSERT(m_current == &(m_buffer[0]));
     for (size_t i = 0; i < bufferSize; i++)
         m_buffer[i] = Item(0, 0);
 }
 
-void CallbackStack::assertIsEmpty()
+bool CallbackStack::isEmpty()
 {
-    ASSERT(m_current == &(m_buffer[0]));
-    ASSERT(!m_next);
+    return m_current == &(m_buffer[0]) && !m_next;
 }
 
 bool CallbackStack::popAndInvokeCallback(CallbackStack** first, Visitor* visitor)
@@ -1312,6 +1310,37 @@ bool CallbackStack::popAndInvokeCallback(CallbackStack** first, Visitor* visitor
     callback(visitor, item->object());
 
     return true;
+}
+
+void CallbackStack::invokeCallbacks(CallbackStack** first, Visitor* visitor)
+{
+    CallbackStack* stack = 0;
+    // The first block is the only one where new ephemerons are added, so we
+    // call the callbacks on that last, to catch any new ephemerons discovered
+    // in the callbacks.
+    // However, if enough ephemerons were added, we may have a new block that
+    // has been prepended to the chain. This will be very rare, but we can
+    // handle the situation by starting again and calling all the callbacks
+    // a second time.
+    while (stack != *first) {
+        stack = *first;
+        stack->invokeOldestCallbacks(visitor);
+    }
+}
+
+void CallbackStack::invokeOldestCallbacks(Visitor* visitor)
+{
+    // Recurse first (bufferSize at a time) so we get to the newly added entries
+    // last.
+    if (m_next)
+        m_next->invokeOldestCallbacks(visitor);
+
+    // This loop can tolerate entries being added by the callbacks after
+    // iteration starts.
+    for (unsigned i = 0; m_buffer + i < m_current; i++) {
+        Item& item = m_buffer[i];
+        item.callback()(visitor, item.object());
+    }
 }
 
 class MarkingVisitor : public Visitor {
@@ -1398,6 +1427,11 @@ public:
     virtual void registerWeakMembers(const void* closure, const void* containingObject, WeakPointerCallback callback) OVERRIDE
     {
         Heap::pushWeakObjectPointerCallback(const_cast<void*>(closure), const_cast<void*>(containingObject), callback);
+    }
+
+    virtual void registerWeakTable(const void* closure, EphemeronCallback callback)
+    {
+        Heap::registerWeakTable(const_cast<void*>(closure), callback);
     }
 
     virtual bool isMarked(const void* objectPointer) OVERRIDE
@@ -1531,6 +1565,7 @@ void Heap::init()
     ThreadState::init();
     CallbackStack::init(&s_markingStack);
     CallbackStack::init(&s_weakCallbackStack);
+    CallbackStack::init(&s_ephemeronStack);
     s_heapDoesNotContainCache = new HeapDoesNotContainCache();
     s_markingVisitor = new MarkingVisitor();
 }
@@ -1555,6 +1590,7 @@ void Heap::doShutdown()
     s_heapDoesNotContainCache = 0;
     CallbackStack::shutdown(&s_weakCallbackStack);
     CallbackStack::shutdown(&s_markingStack);
+    CallbackStack::shutdown(&s_ephemeronStack);
     ThreadState::shutdown();
 }
 
@@ -1679,6 +1715,12 @@ bool Heap::popAndInvokeWeakPointerCallback(Visitor* visitor)
     return s_weakCallbackStack->popAndInvokeCallback(&s_weakCallbackStack, visitor);
 }
 
+void Heap::registerWeakTable(void* table, EphemeronCallback callback)
+{
+    CallbackStack::Item* slot = s_ephemeronStack->allocateEntry(&s_ephemeronStack);
+    *slot = CallbackStack::Item(table, callback);
+}
+
 void Heap::prepareForGC()
 {
     ASSERT(ThreadState::isAnyThreadInGC());
@@ -1716,8 +1758,20 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
     prepareForGC();
 
     ThreadState::visitRoots(s_markingVisitor);
-    // Recursively mark all objects that are reachable from the roots.
-    while (popAndInvokeTraceCallback(s_markingVisitor)) { }
+
+    // Ephemeron fixed point loop.
+    do {
+        // Recursively mark all objects that are reachable from the roots.
+        while (popAndInvokeTraceCallback(s_markingVisitor)) { }
+
+        // Mark any strong pointers that have now become reachable in ephemeron
+        // maps.
+        CallbackStack::invokeCallbacks(&s_ephemeronStack, s_markingVisitor);
+
+        // Rerun loop if ephemeron processing queued more objects for tracing.
+    } while (!s_markingStack->isEmpty());
+
+    CallbackStack::clear(&s_ephemeronStack);
 
     // Call weak callbacks on objects that may now be pointing to dead
     // objects.
@@ -1725,7 +1779,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
 
     // It is not permitted to trace pointers of live objects in the weak
     // callback phase, so the marking stack should still be empty here.
-    s_markingStack->assertIsEmpty();
+    ASSERT(s_markingStack->isEmpty());
 
 #if ENABLE(GC_TRACING)
     static_cast<MarkingVisitor*>(s_markingVisitor)->reportStats();
@@ -1811,6 +1865,7 @@ template class ThreadHeap<HeapObjectHeader>;
 Visitor* Heap::s_markingVisitor;
 CallbackStack* Heap::s_markingStack;
 CallbackStack* Heap::s_weakCallbackStack;
+CallbackStack* Heap::s_ephemeronStack;
 HeapDoesNotContainCache* Heap::s_heapDoesNotContainCache;
 bool Heap::s_shutdownCalled = false;
 bool Heap::s_lastGCWasConservative = false;

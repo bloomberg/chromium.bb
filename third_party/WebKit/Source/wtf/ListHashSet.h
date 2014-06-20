@@ -1003,6 +1003,13 @@ namespace WTF {
         m_impl.trace(visitor);
     }
 
+#if !ENABLE(OILPAN)
+    template<typename T, size_t U, typename V>
+    struct NeedsTracing<ListHashSet<T, U, V> > {
+        static const bool value = false;
+    };
+#endif
+
 } // namespace WTF
 
 using WTF::ListHashSet;

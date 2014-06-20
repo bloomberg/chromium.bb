@@ -147,6 +147,12 @@ namespace WTF {
             vector[i] = (*it).key;
     }
 
+#if !ENABLE(OILPAN)
+    template<typename T, typename U, typename V>
+    struct NeedsTracing<HashCountedSet<T, U, V> > {
+        static const bool value = false;
+    };
+#endif
 
 } // namespace WTF
 

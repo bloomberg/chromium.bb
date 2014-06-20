@@ -325,11 +325,6 @@ struct LinkedHashSetTraits : public SimpleClassHashTraits<LinkedHashSetNode<Valu
         static const bool value = ValueTraits::template NeedsTracingLazily<>::value;
     };
     static const WeakHandlingFlag weakHandlingFlag = ValueTraits::weakHandlingFlag;
-    template<typename Visitor>
-    static bool shouldRemoveFromCollection(Visitor* visitor, LinkedHashSetNode<Value>& node)
-    {
-        return ValueTraits::shouldRemoveFromCollection(visitor, node.m_value);
-    }
 };
 
 template<typename LinkedHashSetType>
@@ -709,6 +704,13 @@ void deleteAllValues(const LinkedHashSet<ValueType, T, U>& set)
     for (iterator it = set.begin(); it != end; ++it)
         delete *it;
 }
+
+#if !ENABLE(OILPAN)
+template<typename T, typename U, typename V>
+struct NeedsTracing<LinkedHashSet<T, U, V> > {
+    static const bool value = false;
+};
+#endif
 
 }
 

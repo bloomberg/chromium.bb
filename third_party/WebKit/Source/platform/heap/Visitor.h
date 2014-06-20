@@ -66,12 +66,7 @@ template<typename T> class Member;
 template<typename T> class WeakMember;
 class Visitor;
 
-enum ShouldWeakPointersBeMarkedStrongly {
-    WeakPointersActStrong,
-    WeakPointersActWeak
-};
-
-template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits> struct CollectionBackingTraceTrait;
+template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits> struct CollectionBackingTraceTrait;
 
 // The TraceMethodDelegate is used to convert a trace method for type T to a TraceCallback.
 // This allows us to pass a type's trace method as a parameter to the PersistentNode
@@ -265,7 +260,7 @@ public:
     }
 
     template<typename T>
-    void traceInCollection(T& t, ShouldWeakPointersBeMarkedStrongly strongify)
+    void traceInCollection(T& t, WTF::ShouldWeakPointersBeMarkedStrongly strongify)
     {
         HashTraits<T>::traceInCollection(this, t, strongify);
     }
@@ -427,6 +422,8 @@ public:
         registerWeakCell(reinterpret_cast<void**>(cell), &handleWeakCell<T>);
     }
 
+    virtual void registerWeakTable(const void*, EphemeronCallback) = 0;
+
     virtual bool isMarked(const void*) = 0;
 
     template<typename T> inline bool isAlive(T* obj)
@@ -492,7 +489,7 @@ struct OffHeapCollectionTraceTrait<WTF::HashSet<T, HashFunctions, Traits, WTF::D
             HashSet& iterSet = const_cast<HashSet&>(set);
             for (typename HashSet::iterator it = iterSet.begin(), end = iterSet.end(); it != end; ++it) {
                 const T& t = *it;
-                CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActWeak, T, Traits>::trace(visitor, const_cast<T&>(t));
+                CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WTF::WeakPointersActWeak, T, Traits>::trace(visitor, const_cast<T&>(t));
             }
         }
         COMPILE_ASSERT(Traits::weakHandlingFlag == WTF::NoWeakHandlingInCollections, WeakOffHeapCollectionsConsideredDangerous0);
@@ -538,8 +535,8 @@ struct OffHeapCollectionTraceTrait<WTF::HashMap<Key, Value, HashFunctions, KeyTr
         if (WTF::ShouldBeTraced<KeyTraits>::value || WTF::ShouldBeTraced<ValueTraits>::value) {
             HashMap& iterMap = const_cast<HashMap&>(map);
             for (typename HashMap::iterator it = iterMap.begin(), end = iterMap.end(); it != end; ++it) {
-                CollectionBackingTraceTrait<WTF::ShouldBeTraced<KeyTraits>::value, KeyTraits::weakHandlingFlag, WeakPointersActWeak, typename HashMap::KeyType, KeyTraits>::trace(visitor, it->key);
-                CollectionBackingTraceTrait<WTF::ShouldBeTraced<ValueTraits>::value, ValueTraits::weakHandlingFlag, WeakPointersActWeak, typename HashMap::MappedType, ValueTraits>::trace(visitor, it->value);
+                CollectionBackingTraceTrait<WTF::ShouldBeTraced<KeyTraits>::value, KeyTraits::weakHandlingFlag, WTF::WeakPointersActWeak, typename HashMap::KeyType, KeyTraits>::trace(visitor, it->key);
+                CollectionBackingTraceTrait<WTF::ShouldBeTraced<ValueTraits>::value, ValueTraits::weakHandlingFlag, WTF::WeakPointersActWeak, typename HashMap::MappedType, ValueTraits>::trace(visitor, it->value);
             }
         }
         COMPILE_ASSERT(KeyTraits::weakHandlingFlag == WTF::NoWeakHandlingInCollections, WeakOffHeapCollectionsConsideredDangerous1);

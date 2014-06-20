@@ -272,6 +272,13 @@ namespace WTF {
             vector[i] = *it;
     }
 
+#if !ENABLE(OILPAN)
+    template<typename T, typename U, typename V>
+    struct NeedsTracing<HashSet<T, U, V> > {
+        static const bool value = false;
+    };
+#endif
+
 } // namespace WTF
 
 using WTF::HashSet;

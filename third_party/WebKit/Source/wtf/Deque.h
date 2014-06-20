@@ -531,6 +531,13 @@ namespace WTF {
             Allocator::markNoTracing(visitor, m_buffer.buffer());
     }
 
+#if !ENABLE(OILPAN)
+    template<typename T, size_t N>
+    struct NeedsTracing<Deque<T, N> > {
+        static const bool value = false;
+    };
+#endif
+
 } // namespace WTF
 
 using WTF::Deque;

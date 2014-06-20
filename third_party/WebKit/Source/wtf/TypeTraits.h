@@ -22,6 +22,8 @@
 #ifndef TypeTraits_h
 #define TypeTraits_h
 
+#include <utility>
+
 namespace WTF {
 
     // The following are provided in this file:
@@ -330,6 +332,18 @@ template<typename Traits>
 class ShouldBeTraced {
 public:
     static const bool value = Traits::template NeedsTracingLazily<>::value;
+};
+
+template<typename T, typename U>
+struct NeedsTracing<std::pair<T, U> > {
+    static const bool value = NeedsTracing<T>::value || NeedsTracing<U>::value || IsWeak<T>::value || IsWeak<U>::value;
+};
+
+template<typename T>class OwnPtr;
+
+template<typename T>
+struct NeedsTracing<OwnPtr<T> > {
+    static const bool value = NeedsTracing<T>::value;
 };
 
 } // namespace WTF

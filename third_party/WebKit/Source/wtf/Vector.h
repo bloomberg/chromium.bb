@@ -1198,6 +1198,13 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             Allocator::markNoTracing(visitor, buffer());
     }
 
+#if !ENABLE(OILPAN)
+    template<typename T, size_t N>
+    struct NeedsTracing<Vector<T, N> > {
+        static const bool value = false;
+    };
+#endif
+
 } // namespace WTF
 
 using WTF::Vector;

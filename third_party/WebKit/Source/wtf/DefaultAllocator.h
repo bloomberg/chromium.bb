@@ -113,6 +113,11 @@ public:
         ASSERT_NOT_REACHED();
     }
 
+    static void registerWeakTable(...)
+    {
+        ASSERT_NOT_REACHED();
+    }
+
     template<typename T, typename Traits>
     static void trace(...)
     {
