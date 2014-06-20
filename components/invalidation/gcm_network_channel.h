@@ -93,9 +93,9 @@ class INVALIDATION_EXPORT_PRIVATE GCMNetworkChannel
                           const std::string& token);
   void OnIncomingMessage(const std::string& message,
                          const std::string& echo_token);
-  void OnConnectionStateChanged(
-      GCMNetworkChannelDelegate::ConnectionState connection_state);
-
+  void OnConnectionStateChanged(bool online);
+  void UpdateGcmChannelState(bool online);
+  void UpdateHttpChannelState(bool online);
   // Base64 encoding/decoding with URL safe alphabet.
   // http://tools.ietf.org/html/rfc4648#page-7
   static void Base64EncodeURLSafe(const std::string& input,
@@ -124,6 +124,11 @@ class INVALIDATION_EXPORT_PRIVATE GCMNetworkChannel
   // cacheinvalidation client receives echo_token with incoming message from
   // GCM and shuld include it in headers with outgoing message over http.
   std::string echo_token_;
+
+  // State of gcm and http channels. GCMNetworkChannel will only report
+  // INVALIDATIONS_ENABLED if both channels are online.
+  bool gcm_channel_online_;
+  bool http_channel_online_;
 
   GCMNetworkChannelDiagnostic diagnostic_info_;
 

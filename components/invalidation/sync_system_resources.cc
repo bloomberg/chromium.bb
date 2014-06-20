@@ -132,7 +132,7 @@ void SyncInvalidationScheduler::RunPostedTask(invalidation::Closure* task) {
 }
 
 SyncNetworkChannel::SyncNetworkChannel()
-    : invalidator_state_(DEFAULT_INVALIDATION_ERROR),
+    : last_network_status_(false),
       received_messages_count_(0) {}
 
 SyncNetworkChannel::~SyncNetworkChannel() {
@@ -146,7 +146,7 @@ void SyncNetworkChannel::SetMessageReceiver(
 
 void SyncNetworkChannel::AddNetworkStatusReceiver(
     invalidation::NetworkStatusCallback* network_status_receiver) {
-  network_status_receiver->Run(invalidator_state_ == INVALIDATIONS_ENABLED);
+  network_status_receiver->Run(last_network_status_);
   network_status_receivers_.push_back(network_status_receiver);
 }
 
@@ -178,18 +178,21 @@ scoped_ptr<SyncNetworkChannel> SyncNetworkChannel::CreateGCMNetworkChannel(
       request_context_getter, delegate.Pass()));
 }
 
-void SyncNetworkChannel::NotifyStateChange(InvalidatorState invalidator_state) {
-  // Remember state for future NetworkStatusReceivers.
-  invalidator_state_ = invalidator_state;
+void SyncNetworkChannel::NotifyNetworkStatusChange(bool online) {
+  // Remember network state for future NetworkStatusReceivers.
+  last_network_status_ = online;
   // Notify NetworkStatusReceivers in cacheinvalidation.
   for (NetworkStatusReceiverList::const_iterator it =
            network_status_receivers_.begin();
        it != network_status_receivers_.end(); ++it) {
-    (*it)->Run(invalidator_state_ == INVALIDATIONS_ENABLED);
+    (*it)->Run(online);
   }
-  // Notify observers.
+}
+
+void SyncNetworkChannel::NotifyChannelStateChange(
+    InvalidatorState invalidator_state) {
   FOR_EACH_OBSERVER(Observer, observers_,
-                    OnNetworkChannelStateChanged(invalidator_state_));
+                    OnNetworkChannelStateChanged(invalidator_state));
 }
 
 bool SyncNetworkChannel::DeliverIncomingMessage(const std::string& message) {

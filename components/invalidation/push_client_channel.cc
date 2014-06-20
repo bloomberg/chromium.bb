@@ -70,12 +70,14 @@ void PushClientChannel::SendMessage(const std::string& message) {
 }
 
 void PushClientChannel::OnNotificationsEnabled() {
-  NotifyStateChange(INVALIDATIONS_ENABLED);
+  NotifyNetworkStatusChange(true);
+  NotifyChannelStateChange(INVALIDATIONS_ENABLED);
 }
 
 void PushClientChannel::OnNotificationsDisabled(
     notifier::NotificationsDisabledReason reason) {
-  NotifyStateChange(FromNotifierReason(reason));
+  NotifyNetworkStatusChange(false);
+  NotifyChannelStateChange(FromNotifierReason(reason));
 }
 
 void PushClientChannel::OnIncomingNotification(

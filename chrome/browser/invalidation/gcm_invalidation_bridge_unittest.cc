@@ -47,8 +47,7 @@ class CustomFakeGCMDriver : public gcm::FakeGCMDriver {
 class GCMInvalidationBridgeTest : public ::testing::Test {
  protected:
   GCMInvalidationBridgeTest()
-      : connection_state_(
-            syncer::GCMNetworkChannelDelegate::CONNECTION_STATE_OFFLINE) {}
+      : connection_online_(false) {}
 
   virtual ~GCMInvalidationBridgeTest() {}
 
@@ -92,9 +91,8 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
     request_token_errors_.push_back(error);
   }
 
-  void ConnectionStateChanged(
-      syncer::GCMNetworkChannelDelegate::ConnectionState connection_state) {
-    connection_state_ = connection_state;
+  void ConnectionStateChanged(bool online) {
+    connection_online_ = online;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -105,7 +103,7 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
   std::vector<std::string> issued_tokens_;
   std::vector<GoogleServiceAuthError> request_token_errors_;
   std::string registration_id_;
-  syncer::GCMNetworkChannelDelegate::ConnectionState connection_state_;
+  bool connection_online_;
 
   scoped_ptr<GCMInvalidationBridge> bridge_;
   scoped_ptr<syncer::GCMNetworkChannelDelegate> delegate_;
@@ -154,16 +152,13 @@ TEST_F(GCMInvalidationBridgeTest, Register) {
 }
 
 TEST_F(GCMInvalidationBridgeTest, ConnectionState) {
-  EXPECT_EQ(syncer::GCMNetworkChannelDelegate::CONNECTION_STATE_OFFLINE,
-            connection_state_);
+  EXPECT_FALSE(connection_online_);
   bridge_->OnConnected(net::IPEndPoint());
   RunLoop();
-  EXPECT_EQ(syncer::GCMNetworkChannelDelegate::CONNECTION_STATE_ONLINE,
-            connection_state_);
+  EXPECT_TRUE(connection_online_);
   bridge_->OnDisconnected();
   RunLoop();
-  EXPECT_EQ(syncer::GCMNetworkChannelDelegate::CONNECTION_STATE_OFFLINE,
-            connection_state_);
+  EXPECT_FALSE(connection_online_);
 }
 
 }  // namespace

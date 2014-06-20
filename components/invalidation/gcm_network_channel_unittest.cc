@@ -250,6 +250,8 @@ TEST_F(GCMNetworkChannelTest, HappyCase) {
                                          net::HTTP_NO_CONTENT,
                                          net::URLRequestStatus::SUCCESS);
 
+  // Emulate gcm connection state to be online.
+  delegate()->connection_state_callback.Run(true);
   // After construction GCMNetworkChannel should have called Register.
   EXPECT_FALSE(delegate()->register_callback.is_null());
   // Return valid registration id.
@@ -410,7 +412,7 @@ TEST_F(GCMNetworkChannelTest, Base64EncodeDecode) {
   EXPECT_EQ(input, plain);
 }
 
-TEST_F(GCMNetworkChannelTest, HttpTransientError) {
+TEST_F(GCMNetworkChannelTest, ChannelState) {
   EXPECT_FALSE(delegate()->message_callback.is_null());
   // POST will fail.
   url_fetcher_factory()->SetFakeResponse(GURL("http://test.url.com"),
@@ -418,6 +420,7 @@ TEST_F(GCMNetworkChannelTest, HttpTransientError) {
                                          net::HTTP_SERVICE_UNAVAILABLE,
                                          net::URLRequestStatus::SUCCESS);
 
+  delegate()->connection_state_callback.Run(true);
   delegate()->register_callback.Run("registration.id", gcm::GCMClient::SUCCESS);
 
   network_channel()->SendMessage("abra.cadabra");
@@ -428,25 +431,29 @@ TEST_F(GCMNetworkChannelTest, HttpTransientError) {
   EXPECT_EQ(url_fetchers_created_count(), 1);
   // Failing HTTP POST should cause TRANSIENT_INVALIDATION_ERROR.
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, get_last_invalidator_state());
-  // Network change to CONNECTION_NONE shouldn't affect invalidator state.
-  network_channel()->OnNetworkChanged(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
-  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, get_last_invalidator_state());
-  // Network change to something else should trigger retry.
-  network_channel()->OnNetworkChanged(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
-  EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
-  network_channel()->OnNetworkChanged(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
-  EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
-}
 
-TEST_F(GCMNetworkChannelTest, GcmConnectionState) {
-  delegate()->connection_state_callback.Run(
-      GCMNetworkChannelDelegate::CONNECTION_STATE_OFFLINE);
+  // Setup POST to succeed.
+  url_fetcher_factory()->SetFakeResponse(GURL("http://test.url.com"),
+                                         "",
+                                         net::HTTP_NO_CONTENT,
+                                         net::URLRequestStatus::SUCCESS);
+  network_channel()->SendMessage("abra.cadabra");
+  EXPECT_FALSE(delegate()->request_token_callback.is_null());
+  delegate()->request_token_callback.Run(
+      GoogleServiceAuthError::AuthErrorNone(), "access.token");
+  RunLoopUntilIdle();
+  EXPECT_EQ(url_fetchers_created_count(), 2);
+  // Successful post should set invalidator state to enabled.
+  EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
+  // Network changed event shouldn't affect invalidator state.
+  network_channel()->OnNetworkChanged(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
+
+  // GCM connection state should affect invalidator state.
+  delegate()->connection_state_callback.Run(false);
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, get_last_invalidator_state());
-  delegate()->connection_state_callback.Run(
-      GCMNetworkChannelDelegate::CONNECTION_STATE_ONLINE);
+  delegate()->connection_state_callback.Run(true);
   EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
 }
 

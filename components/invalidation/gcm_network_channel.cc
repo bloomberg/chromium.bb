@@ -107,6 +107,8 @@ GCMNetworkChannel::GCMNetworkChannel(
     : request_context_getter_(request_context_getter),
       delegate_(delegate.Pass()),
       register_backoff_entry_(new net::BackoffEntry(&kRegisterBackoffPolicy)),
+      gcm_channel_online_(false),
+      http_channel_online_(false),
       diagnostic_info_(this),
       weak_factory_(this) {
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
@@ -195,10 +197,8 @@ void GCMNetworkChannel::OnGetTokenComplete(
     // sending message and at that time we'll retry requesting access token.
     DVLOG(1) << "RequestAccessToken failed: " << error.ToString();
     RecordOutgoingMessageStatus(ACCESS_TOKEN_FAILURE);
-    // Message won't get sent because of connection failure. Let's retry once
-    // connection is restored.
-    if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED)
-      NotifyStateChange(TRANSIENT_INVALIDATION_ERROR);
+    // Message won't get sent. Notify that http channel doesn't work.
+    UpdateHttpChannelState(false);
     cached_message_.clear();
     return;
   }
@@ -243,12 +243,14 @@ void GCMNetworkChannel::OnURLFetchComplete(const net::URLFetcher* source) {
        fetcher->GetResponseCode() != net::HTTP_NO_CONTENT)) {
     DVLOG(1) << "URLFetcher failure";
     RecordOutgoingMessageStatus(POST_FAILURE);
-    NotifyStateChange(TRANSIENT_INVALIDATION_ERROR);
+    // POST failed. Notify that http channel doesn't work.
+    UpdateHttpChannelState(false);
     return;
   }
 
   RecordOutgoingMessageStatus(OUTGOING_MESSAGE_SUCCESS);
-  NotifyStateChange(INVALIDATIONS_ENABLED);
+  // Successfully sent message. Http channel works.
+  UpdateHttpChannelState(true);
   DVLOG(2) << "URLFetcher success";
 }
 
@@ -277,6 +279,7 @@ void GCMNetworkChannel::OnIncomingMessage(const std::string& message,
   }
   DVLOG(2) << "Deliver incoming message";
   RecordIncomingMessageStatus(INCOMING_MESSAGE_SUCCESS);
+  UpdateGcmChannelState(true);
   DeliverIncomingMessage(android_message.message());
 #else
   // This code shouldn't be invoked on Android.
@@ -284,30 +287,36 @@ void GCMNetworkChannel::OnIncomingMessage(const std::string& message,
 #endif
 }
 
-void GCMNetworkChannel::OnConnectionStateChanged(
-    GCMNetworkChannelDelegate::ConnectionState connection_state) {
-  switch (connection_state) {
-    case GCMNetworkChannelDelegate::CONNECTION_STATE_OFFLINE: {
-      NotifyStateChange(TRANSIENT_INVALIDATION_ERROR);
-      break;
-    }
-    case GCMNetworkChannelDelegate::CONNECTION_STATE_ONLINE: {
-      NotifyStateChange(INVALIDATIONS_ENABLED);
-      break;
-    }
-    default: {
-      NOTREACHED();
-      break;
-    }
-  }
+void GCMNetworkChannel::OnConnectionStateChanged(bool online) {
+  UpdateGcmChannelState(online);
 }
 
 void GCMNetworkChannel::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType connection_type) {
   // Network connection is restored. Let's notify cacheinvalidations so it has
   // chance to retry.
-  if (connection_type != net::NetworkChangeNotifier::CONNECTION_NONE)
-    NotifyStateChange(INVALIDATIONS_ENABLED);
+  NotifyNetworkStatusChange(
+      connection_type != net::NetworkChangeNotifier::CONNECTION_NONE);
+}
+
+void GCMNetworkChannel::UpdateGcmChannelState(bool online) {
+  if (gcm_channel_online_ == online)
+    return;
+  gcm_channel_online_ = online;
+  InvalidatorState channel_state = TRANSIENT_INVALIDATION_ERROR;
+  if (gcm_channel_online_ && http_channel_online_)
+    channel_state = INVALIDATIONS_ENABLED;
+  NotifyChannelStateChange(channel_state);
+}
+
+void GCMNetworkChannel::UpdateHttpChannelState(bool online) {
+  if (http_channel_online_ == online)
+    return;
+  http_channel_online_ = online;
+  InvalidatorState channel_state = TRANSIENT_INVALIDATION_ERROR;
+  if (gcm_channel_online_ && http_channel_online_)
+    channel_state = INVALIDATIONS_ENABLED;
+  NotifyChannelStateChange(channel_state);
 }
 
 GURL GCMNetworkChannel::BuildUrl(const std::string& registration_id) {

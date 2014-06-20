@@ -58,7 +58,7 @@ class GCMInvalidationBridge::Core : public syncer::GCMNetworkChannelDelegate,
   void OnIncomingMessage(const std::string& message,
                          const std::string& echo_token);
 
-  void OnConnectionStateChanged(ConnectionState connection_state);
+  void OnConnectionStateChanged(bool online);
 
  private:
   base::WeakPtr<GCMInvalidationBridge> bridge_;
@@ -149,10 +149,9 @@ void GCMInvalidationBridge::Core::OnIncomingMessage(
   message_callback_.Run(message, echo_token);
 }
 
-void GCMInvalidationBridge::Core::OnConnectionStateChanged(
-    ConnectionState connection_state) {
+void GCMInvalidationBridge::Core::OnConnectionStateChanged(bool online) {
   if (!connection_state_callback_.is_null()) {
-    connection_state_callback_.Run(connection_state);
+    connection_state_callback_.Run(online);
   }
 }
 
@@ -286,6 +285,12 @@ void GCMInvalidationBridge::SubscribeForIncomingMessages() {
 
   DCHECK(!subscribed_for_incoming_messages_);
   gcm_driver_->AddAppHandler(kInvalidationsAppId, this);
+  core_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMInvalidationBridge::Core::OnConnectionStateChanged,
+                 core_,
+                 gcm_driver_->IsConnected()));
+
   subscribed_for_incoming_messages_ = true;
 }
 
@@ -330,9 +335,8 @@ void GCMInvalidationBridge::OnSendError(
 void GCMInvalidationBridge::OnConnected(const net::IPEndPoint& ip_endpoint) {
   core_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMInvalidationBridge::Core::OnConnectionStateChanged,
-                 core_,
-                 syncer::GCMNetworkChannelDelegate::CONNECTION_STATE_ONLINE));
+      base::Bind(
+          &GCMInvalidationBridge::Core::OnConnectionStateChanged, core_, true));
 }
 
 void GCMInvalidationBridge::OnDisconnected() {
@@ -340,7 +344,7 @@ void GCMInvalidationBridge::OnDisconnected() {
       FROM_HERE,
       base::Bind(&GCMInvalidationBridge::Core::OnConnectionStateChanged,
                  core_,
-                 syncer::GCMNetworkChannelDelegate::CONNECTION_STATE_OFFLINE));
+                 false));
 }
 
 

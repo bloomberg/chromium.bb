@@ -143,8 +143,17 @@ class INVALIDATION_EXPORT_PRIVATE SyncNetworkChannel
   int GetReceivedMessagesCount() const;
 
  protected:
-  // Subclass should notify about connection state through NotifyStateChange.
-  void NotifyStateChange(InvalidatorState invalidator_state);
+  // Subclass should call NotifyNetworkStatusChange to notify about network
+  // changes. This triggers cacheinvalidation to try resending failed message
+  // ahead of schedule when client comes online or IP address changes.
+  void NotifyNetworkStatusChange(bool online);
+
+  // Subclass should notify about connection state through
+  // NotifyChannelStateChange. If communication doesn't work and it is possible
+  // that invalidations from server will not reach this client then channel
+  // should call this function with TRANSIENT_INVALIDATION_ERROR.
+  void NotifyChannelStateChange(InvalidatorState invalidator_state);
+
   // Subclass should call DeliverIncomingMessage for message to reach
   // invalidations library.
   bool DeliverIncomingMessage(const std::string& message);
@@ -157,8 +166,8 @@ class INVALIDATION_EXPORT_PRIVATE SyncNetworkChannel
   scoped_ptr<invalidation::MessageCallback> incoming_receiver_;
   NetworkStatusReceiverList network_status_receivers_;
 
-  // Last channel state for new network status receivers.
-  InvalidatorState invalidator_state_;
+  // Last network status for new network status receivers.
+  bool last_network_status_;
 
   int received_messages_count_;
 

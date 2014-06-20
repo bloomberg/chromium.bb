@@ -181,7 +181,8 @@ class TestSyncNetworkChannel : public SyncNetworkChannel {
   TestSyncNetworkChannel() {}
   virtual ~TestSyncNetworkChannel() {}
 
-  using SyncNetworkChannel::NotifyStateChange;
+  using SyncNetworkChannel::NotifyNetworkStatusChange;
+  using SyncNetworkChannel::NotifyChannelStateChange;
   using SyncNetworkChannel::DeliverIncomingMessage;
 
   virtual void SendMessage(const std::string& message) OVERRIDE {
@@ -233,15 +234,21 @@ class SyncNetworkChannelTest
   bool connected_;
 };
 
-// Simulate network channel state change. It should propagate to observer.
-TEST_F(SyncNetworkChannelTest, OnNetworkChannelStateChanged) {
+// Simulate channel state change. It should propagate to observer.
+TEST_F(SyncNetworkChannelTest, ChannelStateChange) {
   EXPECT_EQ(DEFAULT_INVALIDATION_ERROR, last_invalidator_state_);
-  EXPECT_FALSE(connected_);
-  network_channel_.NotifyStateChange(INVALIDATIONS_ENABLED);
+  network_channel_.NotifyChannelStateChange(INVALIDATIONS_ENABLED);
   EXPECT_EQ(INVALIDATIONS_ENABLED, last_invalidator_state_);
-  EXPECT_TRUE(connected_);
-  network_channel_.NotifyStateChange(INVALIDATION_CREDENTIALS_REJECTED);
+  network_channel_.NotifyChannelStateChange(INVALIDATION_CREDENTIALS_REJECTED);
   EXPECT_EQ(INVALIDATION_CREDENTIALS_REJECTED, last_invalidator_state_);
+}
+
+// Simulate network state change. It should propagate to cacheinvalidations.
+TEST_F(SyncNetworkChannelTest, NetworkStateChange) {
+  EXPECT_FALSE(connected_);
+  network_channel_.NotifyNetworkStatusChange(true);
+  EXPECT_TRUE(connected_);
+  network_channel_.NotifyNetworkStatusChange(false);
   EXPECT_FALSE(connected_);
 }
 
