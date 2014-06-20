@@ -300,6 +300,8 @@ def _InstallBinaries(options, deleted={}):
           archive.extract(entry.filename, fulldir)
           md5 = _Md5(fullpath)
           contents[relpath] = md5
+          if sys.platform == 'cygwin':
+            os.chmod(fullpath, os.stat(fullpath).st_mode | stat.S_IXUSR)
 
   return state
 
@@ -359,7 +361,7 @@ def _ParseCommandLine():
 def main():
   # We only care about Windows platforms, as the Syzygy binaries aren't used
   # elsewhere.
-  if sys.platform != 'win32':
+  if sys.platform not in ('win32', 'cygwin'):
     return
 
   options = _ParseCommandLine()
