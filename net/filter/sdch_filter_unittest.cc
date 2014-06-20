@@ -394,12 +394,15 @@ TEST_F(SdchFilterTest, DictionaryAddOnce) {
 
   const std::string kSampleDomain2 = "sdchtest2.com";
 
-  // Construct a second SDCH dictionary from a VCDIFF dictionary.
-  std::string dictionary2(NewSdchDictionary(kSampleDomain2));
+  // Don't test adding a second dictionary if our limits are tight.
+  if (SdchManager::kMaxDictionaryCount > 1) {
+    // Construct a second SDCH dictionary from a VCDIFF dictionary.
+    std::string dictionary2(NewSdchDictionary(kSampleDomain2));
 
-  std::string url_string2 = "http://" + kSampleDomain2;
-  GURL url2(url_string2);
-  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary2, url2));
+    std::string url_string2 = "http://" + kSampleDomain2;
+    GURL url2(url_string2);
+    EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary2, url2));
+  }
 }
 
 TEST_F(SdchFilterTest, BasicDictionary) {
@@ -634,6 +637,11 @@ TEST_F(SdchFilterTest, CrossDomainDictionaryUse) {
 }
 
 TEST_F(SdchFilterTest, DictionaryPathValidation) {
+  // Can't test path distinction between dictionaries if we aren't allowed
+  // more than one dictionary.
+  if (SdchManager::kMaxDictionaryCount <= 1)
+    return;
+
   // Construct a valid SDCH dictionary from a VCDIFF dictionary.
   const std::string kSampleDomain = "sdchtest.com";
   std::string dictionary(NewSdchDictionary(kSampleDomain));
@@ -683,6 +691,11 @@ TEST_F(SdchFilterTest, DictionaryPathValidation) {
 }
 
 TEST_F(SdchFilterTest, DictionaryPortValidation) {
+  // Can't test port distinction between dictionaries if we aren't allowed
+  // more than one dictionary.
+  if (SdchManager::kMaxDictionaryCount <= 1)
+    return;
+
   // Construct a valid SDCH dictionary from a VCDIFF dictionary.
   const std::string kSampleDomain = "sdchtest.com";
   std::string dictionary(NewSdchDictionary(kSampleDomain));

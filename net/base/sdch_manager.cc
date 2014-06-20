@@ -17,10 +17,17 @@ namespace net {
 
 //------------------------------------------------------------------------------
 // static
-const size_t SdchManager::kMaxDictionarySize = 1000000;
 
+// Adjust SDCH limits downwards for mobile.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+// static
+const size_t SdchManager::kMaxDictionaryCount = 1;
+const size_t SdchManager::kMaxDictionarySize = 150 * 1000;
+#else
 // static
 const size_t SdchManager::kMaxDictionaryCount = 20;
+const size_t SdchManager::kMaxDictionarySize = 1000 * 1000;
+#endif
 
 // static
 bool SdchManager::g_sdch_enabled_ = true;
