@@ -62,6 +62,7 @@ class GraphicsContext;
 class GraphicsLayer;
 class GraphicsLayerFactory;
 class Image;
+class JSONObject;
 class ScrollableArea;
 class TextStream;
 
@@ -222,7 +223,7 @@ public:
     blink::WebLayer* platformLayer() const;
 
     typedef HashMap<int, int> RenderingContextMap;
-    void dumpLayer(TextStream&, int indent, LayerTreeFlags, RenderingContextMap&) const;
+    PassRefPtrWillBeRawPtr<JSONObject> layerTreeAsJSON(LayerTreeFlags, RenderingContextMap&) const;
 
     int paintCount() const { return m_paintCount; }
 
@@ -285,8 +286,6 @@ private:
     void setReplicatedLayer(GraphicsLayer* layer) { m_replicatedLayer = layer; }
 
     int incrementPaintCount() { return ++m_paintCount; }
-
-    void dumpProperties(TextStream&, int indent, LayerTreeFlags, RenderingContextMap&) const;
 
     // Helper functions used by settors to keep layer's the state consistent.
     void updateChildList();

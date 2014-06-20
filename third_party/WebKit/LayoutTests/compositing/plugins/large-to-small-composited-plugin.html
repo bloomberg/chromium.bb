@@ -32,13 +32,7 @@
           // Need to wait for compositing layers to be updated.
           window.setTimeout(function() {
               if (window.testRunner) {
-                  var layers = window.internals.layerTreeAsText(document);
-                  var result;
-                  if (layers == "")
-                    result = "PASS: no layers found";
-                  else
-                    result = "FAIL: found layers " + layers;
-                  document.getElementById('result').innerHTML = result;
+                  document.getElementById('result').textContent = window.internals.layerTreeAsText(document);
                   testRunner.notifyDone();
               }
           }, 0);

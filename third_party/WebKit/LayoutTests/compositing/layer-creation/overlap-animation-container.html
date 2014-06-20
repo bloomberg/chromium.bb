@@ -79,7 +79,7 @@
         var layerText = window.internals.layerTreeAsText(document);
         // The animation can progress before the start event is handled, so remove the
         // effects as they can vary.
-        layerText = layerText.replace(/\[[^)]+/g, '...');
+        layerText = layerText.replace(/\[.*,.*,.*,.*\]/g, '[...]');
         layerTrees = "Before:\n" + layerText;
       }
 
@@ -91,7 +91,7 @@
         var layerText = window.internals.layerTreeAsText(document);
         // The animation can progress before the start event is handled, so remove the
         // effects as they can vary.
-        layerText = layerText.replace(/\[[^)]+/g, '...');
+        layerText = layerText.replace(/\[.*,.*,.*,.*\]/g, '[...]');
         layerTrees += "\nAfter:\n" + layerText;
         layersElement.style.display = "block";
         layersElement.innerText = layerTrees;

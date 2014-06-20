@@ -83,12 +83,18 @@ public:
     virtual PassRefPtr<JSONArray> asArray();
 
     String toJSONString() const;
+    String toPrettyJSONString() const;
     virtual void writeJSON(StringBuilder* output) const;
+    virtual void prettyWriteJSON(StringBuilder* output) const;
 
 protected:
     explicit JSONValue(Type type) : m_type(type) { }
+    virtual void prettyWriteJSONInternal(StringBuilder* output, int depth) const;
 
 private:
+    friend class JSONObjectBase;
+    friend class JSONArrayBase;
+
     Type m_type;
 };
 
@@ -164,6 +170,8 @@ public:
     virtual PassRefPtr<JSONObject> asObject() OVERRIDE;
     JSONObject* openAccessors();
 
+    virtual void writeJSON(StringBuilder* output) const OVERRIDE;
+
 protected:
     virtual ~JSONObjectBase();
 
@@ -193,7 +201,7 @@ protected:
 
     void remove(const String& name);
 
-    virtual void writeJSON(StringBuilder* output) const OVERRIDE;
+    virtual void prettyWriteJSONInternal(StringBuilder* output, int depth) const OVERRIDE;
 
     iterator begin() { return m_data.begin(); }
     iterator end() { return m_data.end(); }
@@ -252,6 +260,8 @@ public:
 
     unsigned length() const { return m_data.size(); }
 
+    virtual void writeJSON(StringBuilder* output) const OVERRIDE;
+
 protected:
     virtual ~JSONArrayBase();
 
@@ -267,7 +277,7 @@ protected:
 
     PassRefPtr<JSONValue> get(size_t index);
 
-    virtual void writeJSON(StringBuilder* output) const OVERRIDE;
+    virtual void prettyWriteJSONInternal(StringBuilder* output, int depth) const OVERRIDE;
 
     iterator begin() { return m_data.begin(); }
     iterator end() { return m_data.end(); }

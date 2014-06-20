@@ -81,7 +81,7 @@
         var layerText = window.internals.layerTreeAsText(document);
         // The animation can progress before the start event is handled, so remove the
         // effects as they can vary.
-        layerText = layerText.replace(/\[[^)]+/g, '...');
+        layerText = layerText.replace(/\[.*,.*,.*,.*\]/g, '[...]');
         layersElement.innerText = layerText;
         layersElement.style.display = "block";
         testRunner.notifyDone();
