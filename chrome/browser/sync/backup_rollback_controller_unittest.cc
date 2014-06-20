@@ -17,7 +17,7 @@ using ::testing::Return;
 
 namespace {
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(ENABLE_PRE_SYNC_BACKUP)
 
 class MockSigninManagerWrapper : public ManagedUserSigninManagerWrapper {
  public:

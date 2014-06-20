@@ -73,7 +73,7 @@ class BackupModeChecker {
   base::TimeTicks expiration_;
 };
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(ENABLE_PRE_SYNC_BACKUP)
 #define MAYBE_TestBackupRollback TestBackupRollback
 #else
 #define MAYBE_TestBackupRollback DISABLED_TestBackupRollback

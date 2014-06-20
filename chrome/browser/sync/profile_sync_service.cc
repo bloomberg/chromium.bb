@@ -311,7 +311,7 @@ void ProfileSyncService::Initialize() {
 
   backup_rollback_controller_.Start(backup_start_delay_);
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(ENABLE_PRE_SYNC_BACKUP)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSyncDisableBackup)) {
     profile_->GetIOTaskRunner()->PostDelayedTask(

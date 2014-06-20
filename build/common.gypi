@@ -418,6 +418,9 @@
       # Whether one-click signin is enabled or not.
       'enable_one_click_signin%': 0,
 
+      # Whether to back up data before sync.
+      'enable_pre_sync_backup%': 0,
+
       # Enable Chrome browser extensions
       'enable_extensions%': 1,
 
@@ -679,6 +682,7 @@
 
         ['OS=="win" or OS=="mac" or (OS=="linux" and chromeos==0)', {
           'enable_one_click_signin%': 1,
+          'enable_pre_sync_backup%': 1,
         }],
 
         ['OS=="android"', {
@@ -1045,6 +1049,7 @@
     'use_third_party_translations%': '<(use_third_party_translations)',
     'remoting%': '<(remoting)',
     'enable_one_click_signin%': '<(enable_one_click_signin)',
+    'enable_pre_sync_backup%': '<(enable_pre_sync_backup)',
     'enable_webrtc%': '<(enable_webrtc)',
     'chromium_win_pch%': '<(chromium_win_pch)',
     'configuration_policy%': '<(configuration_policy)',
@@ -2462,6 +2467,9 @@
       }],
       ['enable_one_click_signin==1', {
         'defines': ['ENABLE_ONE_CLICK_SIGNIN'],
+      }],
+      ['enable_pre_sync_backup==1', {
+        'defines': ['ENABLE_PRE_SYNC_BACKUP'],
       }],
       ['use_xi2_mt!=0 and use_x11==1', {
         'defines': ['USE_XI2_MT=<(use_xi2_mt)'],

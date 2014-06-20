@@ -487,7 +487,7 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
   EXPECT_EQ(syncer::CONNECTION_OK, token_status.connection_status);
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(ENABLE_PRE_SYNC_BACKUP)
 void QuitLoop() {
   base::MessageLoop::current()->Quit();
 }
