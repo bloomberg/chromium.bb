@@ -252,9 +252,15 @@ void AudioSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
     // This is to avoid aggresive resend.
     duplicate_ack_counter_ = 0;
 
+    base::TimeDelta rtt;
+    base::TimeDelta avg_rtt;
+    base::TimeDelta min_rtt;
+    base::TimeDelta max_rtt;
+    rtcp_.Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt);
+
     // A NACK is also used to cancel pending re-transmissions.
     transport_sender_->ResendPackets(
-        true, cast_feedback.missing_frames_and_packets_, true);
+        true, cast_feedback.missing_frames_and_packets_, false, min_rtt);
   }
 
   const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
@@ -280,7 +286,8 @@ void AudioSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
       latest_acked_frame_id_++;
       missing_frames_and_packets[latest_acked_frame_id_] = missing;
     }
-    transport_sender_->ResendPackets(true, missing_frames_and_packets, true);
+    transport_sender_->ResendPackets(
+        true, missing_frames_and_packets, true, base::TimeDelta());
     latest_acked_frame_id_ = cast_feedback.ack_frame_id_;
   }
 }
@@ -313,10 +320,16 @@ void AudioSender::ResendForKickstart() {
       std::make_pair(last_sent_frame_id_, missing));
   last_send_time_ = cast_environment_->Clock()->NowTicks();
 
+  base::TimeDelta rtt;
+  base::TimeDelta avg_rtt;
+  base::TimeDelta min_rtt;
+  base::TimeDelta max_rtt;
+  rtcp_.Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt);
+
   // Sending this extra packet is to kick-start the session. There is
   // no need to optimize re-transmission for this case.
-  transport_sender_->ResendPackets(true, missing_frames_and_packets,
-                                   false);
+  transport_sender_->ResendPackets(
+      true, missing_frames_and_packets, false, min_rtt);
 }
 
 }  // namespace cast

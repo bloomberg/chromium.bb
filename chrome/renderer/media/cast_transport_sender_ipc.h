@@ -48,7 +48,8 @@ class CastTransportSenderIPC
   virtual void ResendPackets(
       bool is_audio,
       const media::cast::transport::MissingFramesAndPacketsMap& missing_packets,
-      bool cancel_rtx_if_not_in_list)
+      bool cancel_rtx_if_not_in_list,
+      base::TimeDelta dedupe_window)
       OVERRIDE;
 
   void OnReceivedPacket(const media::cast::transport::Packet& packet);

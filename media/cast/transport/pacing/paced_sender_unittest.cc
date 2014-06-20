@@ -129,7 +129,7 @@ TEST_F(PacedSenderTest, PassThroughRtcp) {
   SendPacketVector packets = CreateSendPacketVector(kSize1, 1, true);
 
   EXPECT_TRUE(paced_sender_->SendPackets(packets));
-  EXPECT_TRUE(paced_sender_->ResendPackets(packets));
+  EXPECT_TRUE(paced_sender_->ResendPackets(packets, base::TimeDelta()));
 
   mock_transport_.AddExpectedSize(kSize2, 1);
   Packet tmp(kSize2, kValue);
@@ -202,7 +202,7 @@ TEST_F(PacedSenderTest, PaceWithNack) {
   EXPECT_TRUE(paced_sender_->SendPackets(first_frame_packets));
 
   // Add first NACK request.
-  EXPECT_TRUE(paced_sender_->ResendPackets(nack_packets));
+  EXPECT_TRUE(paced_sender_->ResendPackets(nack_packets, base::TimeDelta()));
 
   // Check that we get the first NACK burst.
   mock_transport_.AddExpectedSize(kNackSize, 10);
@@ -211,7 +211,7 @@ TEST_F(PacedSenderTest, PaceWithNack) {
   task_runner_->RunTasks();
 
   // Add second NACK request.
-  EXPECT_TRUE(paced_sender_->ResendPackets(nack_packets));
+  EXPECT_TRUE(paced_sender_->ResendPackets(nack_packets, base::TimeDelta()));
 
   // Check that we get the next NACK burst.
   mock_transport_.AddExpectedSize(kNackSize, 10);

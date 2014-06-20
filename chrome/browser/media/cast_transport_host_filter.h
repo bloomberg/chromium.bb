@@ -54,7 +54,8 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
       int32 channel_id,
       bool is_audio,
       const media::cast::MissingFramesAndPacketsMap& missing_packets,
-      bool cancel_rtx_if_not_in_list);
+      bool cancel_rtx_if_not_in_list,
+      base::TimeDelta dedupe_window);
   void OnNew(
       int32 channel_id,
       const net::IPEndPoint& remote_end_point);

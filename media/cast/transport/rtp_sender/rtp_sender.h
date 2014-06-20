@@ -51,7 +51,8 @@ class RtpSender {
   void SendFrame(const EncodedFrame& frame);
 
   void ResendPackets(const MissingFramesAndPacketsMap& missing_packets,
-                     bool cancel_rtx_if_not_in_list);
+                     bool cancel_rtx_if_not_in_list,
+                     base::TimeDelta dedupe_window);
 
   size_t send_packet_count() const {
     return packetizer_ ? packetizer_->send_packet_count() : 0;

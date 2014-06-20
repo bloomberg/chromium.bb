@@ -79,11 +79,13 @@ void CastTransportSenderIPC::SendRtcpFromRtpSender(
 void CastTransportSenderIPC::ResendPackets(
     bool is_audio,
     const media::cast::MissingFramesAndPacketsMap& missing_packets,
-    bool cancel_rtx_if_not_in_list) {
+    bool cancel_rtx_if_not_in_list,
+    base::TimeDelta dedupe_window) {
   Send(new CastHostMsg_ResendPackets(channel_id_,
                                      is_audio,
                                      missing_packets,
-                                     cancel_rtx_if_not_in_list));
+                                     cancel_rtx_if_not_in_list,
+                                     dedupe_window));
 }
 
 void CastTransportSenderIPC::OnReceivedPacket(

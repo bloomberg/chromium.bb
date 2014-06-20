@@ -179,11 +179,13 @@ void CastTransportHostFilter::OnResendPackets(
     int32 channel_id,
     bool is_audio,
     const media::cast::MissingFramesAndPacketsMap& missing_packets,
-    bool cancel_rtx_if_not_in_list) {
+    bool cancel_rtx_if_not_in_list,
+    base::TimeDelta dedupe_window) {
   media::cast::transport::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
-    sender->ResendPackets(is_audio, missing_packets, cancel_rtx_if_not_in_list);
+    sender->ResendPackets(
+        is_audio, missing_packets, cancel_rtx_if_not_in_list, dedupe_window);
   } else {
     DVLOG(1)
         << "CastTransportHostFilter::OnResendPackets on non-existing channel";

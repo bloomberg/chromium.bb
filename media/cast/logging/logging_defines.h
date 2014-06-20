@@ -32,6 +32,7 @@ enum CastLoggingEvent {
   // Sender side packet events.
   PACKET_SENT_TO_NETWORK,
   PACKET_RETRANSMITTED,
+  PACKET_RTX_REJECTED,
   // Receiver side packet events.
   PACKET_RECEIVED,
   kNumOfLoggingEvents = PACKET_RECEIVED

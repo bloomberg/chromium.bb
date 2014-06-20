@@ -96,11 +96,14 @@ class CastTransportSender : public base::NonThreadSafe {
   // frame to be re-transmitted.
   // If |cancel_rtx_if_not_in_list| is used as an optimization to cancel
   // pending re-transmission requests of packets not listed in
-  // |missing_packets|.
+  // |missing_packets|. If the requested packet(s) were sent recently
+  // (how long is specified by |dedupe_window|) then this re-transmit
+  // will be ignored.
   virtual void ResendPackets(
       bool is_audio,
       const MissingFramesAndPacketsMap& missing_packets,
-      bool cancel_rtx_if_not_in_list) = 0;
+      bool cancel_rtx_if_not_in_list,
+      base::TimeDelta dedupe_window) = 0;
 };
 
 }  // namespace transport

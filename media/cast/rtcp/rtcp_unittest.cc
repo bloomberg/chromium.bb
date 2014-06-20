@@ -104,7 +104,8 @@ class LocalRtcpTransport : public transport::PacedPacketSender {
   }
 
   virtual bool ResendPackets(
-      const transport::SendPacketVector& packets) OVERRIDE {
+      const transport::SendPacketVector& packets,
+      base::TimeDelta dedupe_window) OVERRIDE {
     return false;
   }
 

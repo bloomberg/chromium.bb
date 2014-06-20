@@ -212,9 +212,10 @@ class CastTransportSenderWrapper : public transport::CastTransportSender {
   virtual void ResendPackets(
       bool is_audio,
       const MissingFramesAndPacketsMap& missing_packets,
-      bool cancel_rtx_if_not_in_list) OVERRIDE {
+      bool cancel_rtx_if_not_in_list,
+      base::TimeDelta dedupe_window) OVERRIDE {
     transport_->ResendPackets(
-        is_audio, missing_packets, cancel_rtx_if_not_in_list);
+        is_audio, missing_packets, cancel_rtx_if_not_in_list, dedupe_window);
   }
 
  private:

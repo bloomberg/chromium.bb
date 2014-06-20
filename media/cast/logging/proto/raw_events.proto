@@ -66,6 +66,7 @@ enum EventType {
   PACKET_SENT_TO_NETWORK = 36;
   PACKET_RETRANSMITTED = 37;
   PACKET_RECEIVED = 38;
+  PACKET_RTX_REJECTED = 39;
 }
 
 // Contains information independent of the stream that describes the system

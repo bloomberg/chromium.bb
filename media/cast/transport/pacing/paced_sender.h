@@ -41,7 +41,8 @@ typedef std::vector<std::pair<PacketKey, PacketRef> > SendPacketVector;
 class PacedPacketSender {
  public:
   virtual bool SendPackets(const SendPacketVector& packets) = 0;
-  virtual bool ResendPackets(const SendPacketVector& packets) = 0;
+  virtual bool ResendPackets(const SendPacketVector& packets,
+                             base::TimeDelta dedupe_window) = 0;
   virtual bool SendRtcpPacket(uint32 ssrc, PacketRef packet) = 0;
   virtual void CancelSendingPacket(const PacketKey& packet_key) = 0;
 
@@ -72,14 +73,15 @@ class PacedSender : public PacedPacketSender,
 
   // PacedPacketSender implementation.
   virtual bool SendPackets(const SendPacketVector& packets) OVERRIDE;
-  virtual bool ResendPackets(const SendPacketVector& packets) OVERRIDE;
+  virtual bool ResendPackets(const SendPacketVector& packets,
+                             base::TimeDelta dedupe_window) OVERRIDE;
   virtual bool SendRtcpPacket(uint32 ssrc, PacketRef packet) OVERRIDE;
   virtual void CancelSendingPacket(const PacketKey& packet_key) OVERRIDE;
 
  private:
   // Actually sends the packets to the transport.
   void SendStoredPackets();
-  void LogPacketEvent(const Packet& packet, bool retransmit);
+  void LogPacketEvent(const Packet& packet, CastLoggingEvent event);
 
   enum PacketType {
     PacketType_RTCP,
@@ -108,7 +110,8 @@ class PacedSender : public PacedPacketSender,
   // Returns the next packet to send. RTCP packets have highest priority,
   // resend packets have second highest priority and then comes everything
   // else.
-  PacketRef GetNextPacket(PacketType* packet_type);
+  PacketRef GetNextPacket(PacketType* packet_type,
+                          PacketKey* packet_key);
 
   base::TickClock* const clock_;  // Not owned by this class.
   LoggingImpl* const logging_;    // Not owned by this class.
@@ -117,6 +120,8 @@ class PacedSender : public PacedPacketSender,
   uint32 audio_ssrc_;
   uint32 video_ssrc_;
   std::map<PacketKey, std::pair<PacketType, PacketRef> > packet_list_;
+  std::map<PacketKey, base::TimeTicks> sent_time_;
+  std::map<PacketKey, base::TimeTicks> sent_time_buffer_;
 
   // Maximum burst size for the next three bursts.
   size_t max_burst_size_;

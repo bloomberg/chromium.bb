@@ -76,7 +76,8 @@ void RtpSender::SendFrame(const EncodedFrame& frame) {
 
 void RtpSender::ResendPackets(
     const MissingFramesAndPacketsMap& missing_frames_and_packets,
-    bool cancel_rtx_if_not_in_list) {
+    bool cancel_rtx_if_not_in_list,
+    base::TimeDelta dedupe_window) {
   DCHECK(storage_);
   // Iterate over all frames in the list.
   for (MissingFramesAndPacketsMap::const_iterator it =
@@ -130,7 +131,7 @@ void RtpSender::ResendPackets(
         transport_->CancelSendingPacket(it->first);
       }
     }
-    transport_->ResendPackets(packets_to_resend);
+    transport_->ResendPackets(packets_to_resend, dedupe_window);
   }
 }
 
