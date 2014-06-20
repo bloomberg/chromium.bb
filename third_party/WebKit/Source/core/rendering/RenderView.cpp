@@ -119,8 +119,7 @@ bool RenderView::isChildAllowed(RenderObject* child, RenderStyle*) const
 
 static bool canCenterDialog(const RenderStyle* style)
 {
-    // FIXME: We must center for FixedPosition as well.
-    return style->position() == AbsolutePosition && style->hasAutoTopAndBottom();
+    return (style->position() == AbsolutePosition || style->position() == FixedPosition) && style->hasAutoTopAndBottom();
 }
 
 void RenderView::positionDialog(RenderBox* box)
@@ -140,9 +139,8 @@ void RenderView::positionDialog(RenderBox* box)
         return;
     }
     FrameView* frameView = document().view();
-    int scrollTop = frameView->scrollOffset().height();
+    LayoutUnit top = (box->style()->position() == FixedPosition) ? 0 : frameView->scrollOffset().height();
     int visibleHeight = frameView->visibleContentRect(IncludeScrollbars).height();
-    LayoutUnit top = scrollTop;
     if (box->height() < visibleHeight)
         top += (visibleHeight - box->height()) / 2;
     box->setY(top);
