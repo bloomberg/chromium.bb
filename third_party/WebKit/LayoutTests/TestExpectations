@@ -814,20 +814,6 @@ crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-002.html [ Skip ]
 
 crbug.com/246077 [ Linux ] virtual/android/fullscreen/parent-flow-inline-with-block-child.html [ Failure ]
 
-# Skia suppressions
-crbug.com/383435 virtual/gpu/canvas/philip/tests/2d.shadow.enable.blur.html [ NeedsRebaseline ]
-crbug.com/383435 virtual/gpu/fast/canvas/canvas-createPattern-fillRect-shadow.html [ NeedsRebaseline ]
-crbug.com/383435 virtual/gpu/fast/canvas/canvas-drawImage-shadow.html [ NeedsRebaseline ]
-crbug.com/383435 virtual/gpu/fast/canvas/canvas-fillRect-gradient-shadow.html [ NeedsRebaseline ]
-crbug.com/383435 virtual/gpu/fast/canvas/canvas-fillRect-shadow.html [ NeedsRebaseline ]
-crbug.com/383435 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
-crbug.com/383435 virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ NeedsRebaseline ]
-crbug.com/383435 virtual/gpu/fast/canvas/canvas-scale-fillPath-shadow.html [ NeedsRebaseline ]
-crbug.com/383435 virtual/gpu/fast/canvas/canvas-scale-fillRect-shadow.html [ NeedsRebaseline ]
-crbug.com/383435 virtual/gpu/fast/canvas/canvas-scale-shadowBlur.html [ NeedsRebaseline ]
-crbug.com/383435 virtual/gpu/fast/canvas/canvas-shadow.html [ NeedsRebaseline ]
-crbug.com/383435 virtual/gpu/fast/canvas/canvas-transforms-fillRect-shadow.html [ NeedsRebaseline ]
-
 crbug.com/338475 crbug.com/307777 [ Android ] css1/cascade/important.html [ Failure Timeout ]
 crbug.com/338475 crbug.com/307777 [ Android ] css1/classification/list_style.html [ Failure Timeout ]
 crbug.com/338475 [ Android ] css1/classification/list_style_position.html [ Failure ]
