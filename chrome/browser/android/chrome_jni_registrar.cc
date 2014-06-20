@@ -22,6 +22,7 @@
 #include "chrome/browser/android/logo_bridge.h"
 #include "chrome/browser/android/most_visited_sites.h"
 #include "chrome/browser/android/new_tab_page_prefs.h"
+#include "chrome/browser/android/omnibox/answers_image_bridge.h"
 #include "chrome/browser/android/omnibox/autocomplete_controller_android.h"
 #include "chrome/browser/android/omnibox/omnibox_prerender.h"
 #include "chrome/browser/android/password_authentication_manager.h"
@@ -97,6 +98,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "AccountManagementScreenHelper", AccountManagementScreenHelper::Register },
   { "AndroidProfileOAuth2TokenService",
     AndroidProfileOAuth2TokenService::Register },
+  { "AnswersImageBridge", RegisterAnswersImageBridge },
   { "AppBannerManager", banners::RegisterAppBannerManager },
   { "ApplicationLifetime", RegisterApplicationLifetimeAndroid },
   { "AutocompleteControllerAndroid", RegisterAutocompleteControllerAndroid },
@@ -176,7 +178,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid },
 #if defined(ENABLE_PRINTING) && !defined(ENABLE_FULL_PRINTING)
   { "PrintingContext",
-      printing::PrintingContextAndroid::RegisterPrintingContext},
+    printing::PrintingContextAndroid::RegisterPrintingContext},
 #endif
 };
 
