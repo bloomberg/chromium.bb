@@ -219,12 +219,6 @@ void IdentityAPI::OnAccountRemoved(const AccountIds& ids) {}
 
 void IdentityAPI::OnAccountSignInChanged(const AccountIds& ids,
                                          bool is_signed_in) {
-  const std::string primary_account_id = GetPrimaryAccountId(browser_context_);
-  if (primary_account_id != ids.account_key &&
-      !switches::IsExtensionsMultiAccount()) {
-    return;
-  }
-
   api::identity::AccountInfo account_info;
   account_info.id = ids.gaia;
 
