@@ -177,10 +177,10 @@ void CloudExternalDataPolicyObserverTest::SetUp() {
       new DeviceLocalAccountPolicyService(&device_settings_test_helper_,
                                           &device_settings_service_,
                                           &cros_settings_,
-                                          loop_.message_loop_proxy(),
-                                          loop_.message_loop_proxy(),
-                                          loop_.message_loop_proxy(),
-                                          loop_.message_loop_proxy(),
+                                          base::MessageLoopProxy::current(),
+                                          base::MessageLoopProxy::current(),
+                                          base::MessageLoopProxy::current(),
+                                          base::MessageLoopProxy::current(),
                                           NULL));
   url_fetcher_factory_.set_remove_fetcher_on_delete(true);
 

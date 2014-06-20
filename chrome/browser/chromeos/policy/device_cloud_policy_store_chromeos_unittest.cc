@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
@@ -36,11 +37,12 @@ class DeviceCloudPolicyStoreChromeOSTest
  protected:
   DeviceCloudPolicyStoreChromeOSTest()
       : fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
-        install_attributes_(new EnterpriseInstallAttributes(
-            fake_cryptohome_client_.get())),
-        store_(new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
-                                                  install_attributes_.get(),
-                                                  loop_.message_loop_proxy())) {
+        install_attributes_(
+            new EnterpriseInstallAttributes(fake_cryptohome_client_.get())),
+        store_(new DeviceCloudPolicyStoreChromeOS(
+            &device_settings_service_,
+            install_attributes_.get(),
+            base::MessageLoopProxy::current())) {
     fake_cryptohome_client_->Init(NULL /* no dbus::Bus */);
   }
 
@@ -103,7 +105,7 @@ class DeviceCloudPolicyStoreChromeOSTest
     store_.reset(
         new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
                                            install_attributes_.get(),
-                                           loop_.message_loop_proxy()));
+                                           base::MessageLoopProxy::current()));
   }
 
   scoped_ptr<chromeos::FakeCryptohomeClient> fake_cryptohome_client_;

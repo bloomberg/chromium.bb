@@ -203,9 +203,7 @@ ScopedDeviceSettingsTestHelper::~ScopedDeviceSettingsTestHelper() {
 }
 
 DeviceSettingsTestBase::DeviceSettingsTestBase()
-    : ui_thread_(content::BrowserThread::UI, &loop_),
-      file_thread_(content::BrowserThread::FILE, &loop_),
-      user_manager_(new FakeUserManager()),
+    : user_manager_(new FakeUserManager()),
       user_manager_enabler_(user_manager_),
       owner_key_util_(new MockOwnerKeyUtil()),
       fake_dbus_thread_manager_(new FakeDBusThreadManager()) {
@@ -221,7 +219,7 @@ void DeviceSettingsTestBase::SetUp() {
   chromeos::DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager_);
 
   NetworkHandler::Initialize();
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   device_policy_.payload().mutable_metrics_enabled()->set_metrics_enabled(
       false);

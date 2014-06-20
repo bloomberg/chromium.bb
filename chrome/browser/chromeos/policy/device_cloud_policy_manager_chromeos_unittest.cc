@@ -69,7 +69,7 @@ class DeviceCloudPolicyManagerChromeOSTest
  protected:
   DeviceCloudPolicyManagerChromeOSTest()
       : state_keys_broker_(&fake_session_manager_client_,
-                           loop_.message_loop_proxy()),
+                           base::MessageLoopProxy::current()),
         store_(NULL) {
     EXPECT_CALL(mock_statistics_provider_,
                 GetMachineStatistic(_, _))
@@ -97,13 +97,14 @@ class DeviceCloudPolicyManagerChromeOSTest
     // DBusThreadManager is set up in DeviceSettingsTestBase::SetUp().
     install_attributes_.reset(new EnterpriseInstallAttributes(
         chromeos::DBusThreadManager::Get()->GetCryptohomeClient()));
-    store_ = new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
-                                                install_attributes_.get(),
-                                                loop_.message_loop_proxy());
+    store_ =
+        new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
+                                           install_attributes_.get(),
+                                           base::MessageLoopProxy::current());
     manager_.reset(new DeviceCloudPolicyManagerChromeOS(
         make_scoped_ptr(store_),
-        loop_.message_loop_proxy(),
-        loop_.message_loop_proxy(),
+        base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current(),
         install_attributes_.get(),
         &state_keys_broker_));
 
@@ -114,7 +115,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     // OAuth tokens, then writes the token to local state, encrypting it
     // first with methods in CryptohomeTokenEncryptor.
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        loop_.message_loop_proxy());
+        base::MessageLoopProxy::current());
     TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
         request_context_getter_.get());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);

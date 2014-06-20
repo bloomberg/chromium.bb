@@ -22,7 +22,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TestingProfile;
@@ -179,9 +179,7 @@ class DeviceSettingsTestBase : public testing::Test {
 
   void InitOwner(const std::string& user_id, bool tpm_is_ready);
 
-  base::MessageLoopForUI loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   policy::DevicePolicyBuilder device_policy_;
 

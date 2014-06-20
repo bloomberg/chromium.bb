@@ -159,12 +159,11 @@ void DeviceLocalAccountPolicyServiceTestBase::CreatePolicyService() {
       &device_settings_test_helper_,
       &device_settings_service_,
       &cros_settings_,
-      loop_.message_loop_proxy(),
+      base::MessageLoopProxy::current(),
       extension_cache_task_runner_,
-      loop_.message_loop_proxy(),
-      loop_.message_loop_proxy(),
-      new net::TestURLRequestContextGetter(
-          base::MessageLoop::current()->message_loop_proxy())));
+      base::MessageLoopProxy::current(),
+      base::MessageLoopProxy::current(),
+      new net::TestURLRequestContextGetter(base::MessageLoopProxy::current())));
 }
 
 void DeviceLocalAccountPolicyServiceTestBase::
