@@ -24,6 +24,8 @@ class DevToolsTracingHandler : public DevToolsProtocol::Handler {
   explicit DevToolsTracingHandler(Target target);
   virtual ~DevToolsTracingHandler();
 
+  void OnClientDetached();
+
  private:
   void BeginReadingRecordingResult(const base::FilePath& path);
   void ReadRecordingResult(const scoped_refptr<base::RefCountedString>& result);
@@ -37,6 +39,10 @@ class DevToolsTracingHandler : public DevToolsProtocol::Handler {
       scoped_refptr<DevToolsProtocol::Command> command);
 
   TracingController::Options TraceOptionsFromString(const std::string& options);
+
+  void DisableRecording(
+      const TracingController::TracingFileResultCallback& callback =
+          TracingController::TracingFileResultCallback());
 
   base::WeakPtrFactory<DevToolsTracingHandler> weak_factory_;
   scoped_ptr<base::Timer> buffer_usage_poll_timer_;

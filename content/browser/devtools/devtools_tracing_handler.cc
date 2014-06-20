@@ -200,12 +200,21 @@ void DevToolsTracingHandler::OnBufferUsage(float usage) {
 scoped_refptr<DevToolsProtocol::Response>
 DevToolsTracingHandler::OnEnd(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  buffer_usage_poll_timer_.reset();
-  TracingController::GetInstance()->DisableRecording(
-      base::FilePath(),
+  DisableRecording(
       base::Bind(&DevToolsTracingHandler::BeginReadingRecordingResult,
                  weak_factory_.GetWeakPtr()));
   return command->SuccessResponse(NULL);
+}
+
+void DevToolsTracingHandler::DisableRecording(
+    const TracingController::TracingFileResultCallback& callback) {
+  buffer_usage_poll_timer_.reset();
+  TracingController::GetInstance()->DisableRecording(base::FilePath(),
+                                                     callback);
+}
+
+void DevToolsTracingHandler::OnClientDetached() {
+    DisableRecording();
 }
 
 }  // namespace content

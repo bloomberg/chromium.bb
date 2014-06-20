@@ -261,6 +261,7 @@ void RenderViewDevToolsAgentHost::OnClientDetached() {
   power_save_blocker_.reset();
 #endif
   overrides_handler_->OnClientDetached();
+  tracing_handler_->OnClientDetached();
   ClientDetachedFromRenderer();
 }
 
