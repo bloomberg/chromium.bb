@@ -34,6 +34,10 @@ void ServiceWorkerUnregisterJob::Start() {
                  weak_factory_.GetWeakPtr()));
 }
 
+void ServiceWorkerUnregisterJob::Abort() {
+  CompleteInternal(SERVICE_WORKER_ERROR_ABORT);
+}
+
 bool ServiceWorkerUnregisterJob::Equals(ServiceWorkerRegisterJobBase* job) {
   if (job->GetType() != GetType())
     return false;
@@ -70,12 +74,17 @@ void ServiceWorkerUnregisterJob::DeleteExistingRegistration(
 }
 
 void ServiceWorkerUnregisterJob::Complete(ServiceWorkerStatusCode status) {
+  CompleteInternal(status);
+  context_->job_coordinator()->FinishJob(pattern_, this);
+}
+
+void ServiceWorkerUnregisterJob::CompleteInternal(
+    ServiceWorkerStatusCode status) {
   for (std::vector<UnregistrationCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end();
        ++it) {
     it->Run(status);
   }
-  context_->job_coordinator()->FinishJob(pattern_, this);
 }
 
 }  // namespace content

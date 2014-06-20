@@ -40,6 +40,7 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
 
   // ServiceWorkerRegisterJobBase implementation:
   virtual void Start() OVERRIDE;
+  virtual void Abort() OVERRIDE;
   virtual bool Equals(ServiceWorkerRegisterJobBase* job) OVERRIDE;
   virtual RegistrationJobType GetType() OVERRIDE;
 
@@ -48,6 +49,7 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
   void Complete(ServiceWorkerStatusCode status);
+  void CompleteInternal(ServiceWorkerStatusCode status);
 
   // The ServiceWorkerStorage object should always outlive this.
   base::WeakPtr<ServiceWorkerContextCore> context_;

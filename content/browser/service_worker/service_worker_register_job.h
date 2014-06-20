@@ -53,6 +53,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
 
   // ServiceWorkerRegisterJobBase implementation:
   virtual void Start() OVERRIDE;
+  virtual void Abort() OVERRIDE;
   virtual bool Equals(ServiceWorkerRegisterJobBase* job) OVERRIDE;
   virtual RegistrationJobType GetType() OVERRIDE;
 
@@ -70,7 +71,8 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
      INSTALL,
      STORE,
      ACTIVATE,
-     COMPLETE
+     COMPLETE,
+     ABORT,
   };
 
   // Holds internal state of ServiceWorkerRegistrationJob, to compel use of the
@@ -103,6 +105,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void ActivateAndContinue();
   void OnActivateFinished(ServiceWorkerStatusCode status);
   void Complete(ServiceWorkerStatusCode status);
+  void CompleteInternal(ServiceWorkerStatusCode status);
 
   void ResolvePromise(ServiceWorkerStatusCode status,
                       ServiceWorkerRegistration* registration,

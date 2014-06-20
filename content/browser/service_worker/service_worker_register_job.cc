@@ -38,7 +38,8 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       weak_factory_(this) {}
 
 ServiceWorkerRegisterJob::~ServiceWorkerRegisterJob() {
-  DCHECK(!context_ || phase_ == INITIAL || phase_ == COMPLETE)
+  DCHECK(!context_ ||
+         phase_ == INITIAL || phase_ == COMPLETE || phase_ == ABORT)
       << "Jobs should only be interrupted during shutdown.";
 }
 
@@ -62,6 +63,13 @@ void ServiceWorkerRegisterJob::Start() {
       base::Bind(
           &ServiceWorkerRegisterJob::HandleExistingRegistrationAndContinue,
           weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerRegisterJob::Abort() {
+  SetPhase(ABORT);
+  CompleteInternal(SERVICE_WORKER_ERROR_ABORT);
+  // Don't have to call FinishJob() because the caller takes care of removing
+  // the jobs from the queue.
 }
 
 bool ServiceWorkerRegisterJob::Equals(ServiceWorkerRegisterJobBase* job) {
@@ -130,6 +138,8 @@ void ServiceWorkerRegisterJob::SetPhase(Phase phase) {
       break;
     case COMPLETE:
       DCHECK(phase_ != INITIAL && phase_ != COMPLETE) << phase_;
+      break;
+    case ABORT:
       break;
   }
   phase_ = phase;
@@ -359,6 +369,12 @@ void ServiceWorkerRegisterJob::OnActivateFinished(
 }
 
 void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
+  CompleteInternal(status);
+  context_->job_coordinator()->FinishJob(pattern_, this);
+}
+
+void ServiceWorkerRegisterJob::CompleteInternal(
+    ServiceWorkerStatusCode status) {
   SetPhase(COMPLETE);
   if (status != SERVICE_WORKER_OK) {
     if (registration() && registration()->waiting_version()) {
@@ -380,7 +396,6 @@ void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
     context_->storage()->NotifyDoneInstallingRegistration(
         registration(), pending_version(), status);
   }
-  context_->job_coordinator()->FinishJob(pattern_, this);
 }
 
 void ServiceWorkerRegisterJob::ResolvePromise(

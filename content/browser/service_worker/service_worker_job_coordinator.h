@@ -35,7 +35,11 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
       const GURL& pattern,
       const ServiceWorkerUnregisterJob::UnregistrationCallback& callback);
 
-  // Jobs are removed whenever they are finished or canceled.
+  // Calls ServiceWorkerRegisterJobBase::Abort() on all jobs and removes them.
+  void AbortAll();
+
+  // Removes the job. A job that was not aborted must call FinishJob when it is
+  // done.
   void FinishJob(const GURL& pattern, ServiceWorkerRegisterJobBase* job);
 
  private:
@@ -55,6 +59,9 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
 
     bool empty() { return jobs_.empty(); }
 
+    // Aborts all jobs in the queue and removes them.
+    void AbortAll();
+
     // Marks that the browser is shutting down, so jobs may be destroyed before
     // finishing.
     void ClearForShutdown();
@@ -68,7 +75,7 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
   // The ServiceWorkerContextCore object should always outlive the
   // job coordinator, the core owns the coordinator.
   base::WeakPtr<ServiceWorkerContextCore> context_;
-  RegistrationJobMap jobs_;
+  RegistrationJobMap job_queues_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerJobCoordinator);
 };

@@ -41,6 +41,12 @@ void ServiceWorkerJobCoordinator::JobQueue::Pop(
     jobs_.front()->Start();
 }
 
+void ServiceWorkerJobCoordinator::JobQueue::AbortAll() {
+  for (size_t i = 0; i < jobs_.size(); ++i)
+    jobs_[i]->Abort();
+  STLDeleteElements(&jobs_);
+}
+
 void ServiceWorkerJobCoordinator::JobQueue::ClearForShutdown() {
   STLDeleteElements(&jobs_);
 }
@@ -52,14 +58,14 @@ ServiceWorkerJobCoordinator::ServiceWorkerJobCoordinator(
 
 ServiceWorkerJobCoordinator::~ServiceWorkerJobCoordinator() {
   if (!context_) {
-    for (RegistrationJobMap::iterator it = jobs_.begin(); it != jobs_.end();
-         ++it) {
+    for (RegistrationJobMap::iterator it = job_queues_.begin();
+         it != job_queues_.end(); ++it) {
       it->second.ClearForShutdown();
     }
-    jobs_.clear();
+    job_queues_.clear();
   }
-  DCHECK(jobs_.empty()) << "Destroying ServiceWorkerJobCoordinator with "
-                        << jobs_.size() << " job queues";
+  DCHECK(job_queues_.empty()) << "Destroying ServiceWorkerJobCoordinator with "
+                              << job_queues_.size() << " job queues";
 }
 
 void ServiceWorkerJobCoordinator::Register(
@@ -70,7 +76,8 @@ void ServiceWorkerJobCoordinator::Register(
   scoped_ptr<ServiceWorkerRegisterJobBase> job(
       new ServiceWorkerRegisterJob(context_, pattern, script_url));
   ServiceWorkerRegisterJob* queued_job =
-      static_cast<ServiceWorkerRegisterJob*>(jobs_[pattern].Push(job.Pass()));
+      static_cast<ServiceWorkerRegisterJob*>(
+          job_queues_[pattern].Push(job.Pass()));
   queued_job->AddCallback(callback, source_process_id);
 }
 
@@ -80,17 +87,26 @@ void ServiceWorkerJobCoordinator::Unregister(
   scoped_ptr<ServiceWorkerRegisterJobBase> job(
       new ServiceWorkerUnregisterJob(context_, pattern));
   ServiceWorkerUnregisterJob* queued_job =
-      static_cast<ServiceWorkerUnregisterJob*>(jobs_[pattern].Push(job.Pass()));
+      static_cast<ServiceWorkerUnregisterJob*>(
+          job_queues_[pattern].Push(job.Pass()));
   queued_job->AddCallback(callback);
+}
+
+void ServiceWorkerJobCoordinator::AbortAll() {
+  for (RegistrationJobMap::iterator it = job_queues_.begin();
+       it != job_queues_.end(); ++it) {
+    it->second.AbortAll();
+  }
+  job_queues_.clear();
 }
 
 void ServiceWorkerJobCoordinator::FinishJob(const GURL& pattern,
                                             ServiceWorkerRegisterJobBase* job) {
-  RegistrationJobMap::iterator pending_jobs = jobs_.find(pattern);
-  DCHECK(pending_jobs != jobs_.end()) << "Deleting non-existent job.";
+  RegistrationJobMap::iterator pending_jobs = job_queues_.find(pattern);
+  DCHECK(pending_jobs != job_queues_.end()) << "Deleting non-existent job.";
   pending_jobs->second.Pop(job);
   if (pending_jobs->second.empty())
-    jobs_.erase(pending_jobs);
+    job_queues_.erase(pending_jobs);
 }
 
 }  // namespace content

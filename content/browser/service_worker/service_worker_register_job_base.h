@@ -18,6 +18,10 @@ class ServiceWorkerRegisterJobBase {
   // Starts the job. This method should be called once and only once per job.
   virtual void Start() = 0;
 
+  // Aborts the job. This method should be called once and only once per job.
+  // It can be called regardless of whether Start() was called.
+  virtual void Abort() = 0;
+
   // Returns true if this job is identical to |job| for the purpose of
   // collapsing them together in a ServiceWorkerJobCoordinator queue.
   // Registration jobs are equal if they are for the same pattern and script
