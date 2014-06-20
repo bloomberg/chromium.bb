@@ -137,13 +137,6 @@ bool DataReductionProxyParams::Init(
     return false;
   }
 
-  if (allowed || alt_allowed) {
-    if (key_.empty()) {
-      DVLOG(1) << "Invalid key: <empty>";
-      return false;
-    }
-  }
-
   if (fallback_allowed_ && !allowed_) {
     DVLOG(1) << "The data reduction proxy fallback cannot be allowed if "
         << "the data reduction proxy is not allowed";

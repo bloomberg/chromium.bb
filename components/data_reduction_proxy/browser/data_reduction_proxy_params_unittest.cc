@@ -200,27 +200,6 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
               kFlagProbeURL);
 }
 
-TEST_F(DataReductionProxyParamsTest, FlagsNoKey) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxy, kFlagOrigin);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyFallback, kFlagFallbackOrigin);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionSSLProxy, kFlagSSLOrigin);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyAlt, kFlagAltOrigin);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyAltFallback, kFlagAltFallbackOrigin);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyProbeURL, kFlagProbeURL);
-  TestDataReductionProxyParams params(
-      DataReductionProxyParams::kAllowed |
-      DataReductionProxyParams::kFallbackAllowed |
-      DataReductionProxyParams::kAlternativeAllowed |
-      DataReductionProxyParams::kPromoAllowed, HAS_EVERYTHING);
-  EXPECT_FALSE(params.init_result());
-}
-
 TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
   const struct {
     bool allowed;
@@ -231,7 +210,7 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
     bool expected_result;
   } tests[]  = {
     { true, true, true, true, HAS_NOTHING, true },
-    { true, true, true, true, HAS_KEY, false },
+    { true, true, true, true, HAS_KEY, true },
     { true, true, true, true, HAS_DEV_ORIGIN, true },
     { true, true, true, true, HAS_ORIGIN, true },
     { true, true, true, true, HAS_ORIGIN | HAS_DEV_ORIGIN, false },
@@ -242,7 +221,7 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
     { true, true, true, true, HAS_PROBE_URL, false },
 
     { true, false, true, true, HAS_NOTHING, true },
-    { true, false, true, true, HAS_KEY, false },
+    { true, false, true, true, HAS_KEY, true },
     { true, false, true, true, HAS_ORIGIN | HAS_DEV_ORIGIN, false },
     { true, false, true, true, HAS_FALLBACK_ORIGIN, true },
     { true, false, true, true, HAS_SSL_ORIGIN, false },
@@ -251,7 +230,7 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
     { true, false, true, true, HAS_PROBE_URL, false },
 
     { true, true, false, true, HAS_NOTHING, true },
-    { true, true, false, true, HAS_KEY, false },
+    { true, true, false, true, HAS_KEY, true },
     { true, true, false, true, HAS_ORIGIN | HAS_DEV_ORIGIN, false },
     { true, true, false, true, HAS_FALLBACK_ORIGIN, false },
     { true, true, false, true, HAS_SSL_ORIGIN, true },
@@ -259,7 +238,7 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
     { true, true, false, true, HAS_ALT_FALLBACK_ORIGIN, true },
     { true, true, false, true, HAS_PROBE_URL, false },
 
-    { true, false, false, true, HAS_KEY, false },
+    { true, false, false, true, HAS_KEY, true },
     { true, false, false, true, HAS_ORIGIN | HAS_DEV_ORIGIN, false },
     { true, false, false, true, HAS_FALLBACK_ORIGIN, true },
     { true, false, false, true, HAS_SSL_ORIGIN, true },
