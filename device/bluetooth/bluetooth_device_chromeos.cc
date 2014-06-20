@@ -18,6 +18,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
+#include "device/bluetooth/bluetooth_gatt_connection_chromeos.h"
 #include "device/bluetooth/bluetooth_pairing_chromeos.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_chromeos.h"
 #include "device/bluetooth/bluetooth_socket.h"
@@ -453,8 +454,13 @@ void BluetoothDeviceChromeOS::ConnectToService(
 void BluetoothDeviceChromeOS::CreateGattConnection(
       const GattConnectionCallback& callback,
       const ConnectErrorCallback& error_callback) {
-  // TODO(armansito): Implement.
-  error_callback.Run(ERROR_UNSUPPORTED_DEVICE);
+  // TODO(armansito): Until there is a way to create a reference counted GATT
+  // connection in bluetoothd, simply do a regular connect.
+  Connect(NULL,
+          base::Bind(&BluetoothDeviceChromeOS::OnCreateGattConnection,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback),
+          error_callback);
 }
 
 void BluetoothDeviceChromeOS::StartConnectionMonitor(
@@ -566,6 +572,14 @@ void BluetoothDeviceChromeOS::OnConnect(bool after_pairing,
                               UMA_PAIRING_RESULT_COUNT);
 
   callback.Run();
+}
+
+void BluetoothDeviceChromeOS::OnCreateGattConnection(
+    const GattConnectionCallback& callback) {
+  scoped_ptr<device::BluetoothGattConnection> conn(
+      new BluetoothGattConnectionChromeOS(
+          adapter_, GetAddress(), object_path_));
+  callback.Run(conn.Pass());
 }
 
 void BluetoothDeviceChromeOS::OnConnectError(

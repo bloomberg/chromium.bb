@@ -119,6 +119,7 @@ class BluetoothDeviceChromeOS
                        const ConnectErrorCallback& error_callback);
   void OnConnect(bool after_pairing,
                  const base::Closure& callback);
+  void OnCreateGattConnection(const GattConnectionCallback& callback);
   void OnConnectError(bool after_pairing,
                       const ConnectErrorCallback& error_callback,
                       const std::string& error_name,

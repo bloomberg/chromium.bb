@@ -293,7 +293,8 @@ void FakeBluetoothDeviceClient::Connect(
   }
 
   if (properties->paired.value() != true &&
-      object_path != dbus::ObjectPath(kConnectUnpairablePath)) {
+      object_path != dbus::ObjectPath(kConnectUnpairablePath) &&
+      object_path != dbus::ObjectPath(kLowEnergyPath)) {
     // Must be paired.
     error_callback.Run(bluetooth_device::kErrorFailed, "Not paired");
     return;

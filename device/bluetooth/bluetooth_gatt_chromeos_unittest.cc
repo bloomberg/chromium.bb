@@ -17,6 +17,7 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -25,6 +26,7 @@
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
 using device::BluetoothGattCharacteristic;
+using device::BluetoothGattConnection;
 using device::BluetoothGattDescriptor;
 using device::BluetoothGattService;
 using device::BluetoothUUID;
@@ -341,6 +343,7 @@ class BluetoothGattChromeOSTest : public testing::Test {
 
   virtual void TearDown() {
     adapter_ = NULL;
+    gatt_conn_.reset();
     DBusThreadManager::Shutdown();
   }
 
@@ -366,7 +369,16 @@ class BluetoothGattChromeOSTest : public testing::Test {
     last_read_value_ = value;
   }
 
+  void GattConnectionCallback(scoped_ptr<BluetoothGattConnection> conn) {
+    ++success_callback_count_;
+    gatt_conn_ = conn.Pass();
+  }
+
   void ErrorCallback() {
+    ++error_callback_count_;
+  }
+
+  void ConnectErrorCallback(BluetoothDevice::ConnectErrorCode error) {
     ++error_callback_count_;
   }
 
@@ -378,12 +390,88 @@ class BluetoothGattChromeOSTest : public testing::Test {
   FakeBluetoothGattCharacteristicClient*
       fake_bluetooth_gatt_characteristic_client_;
   FakeBluetoothGattDescriptorClient* fake_bluetooth_gatt_descriptor_client_;
+  scoped_ptr<device::BluetoothGattConnection> gatt_conn_;
   scoped_refptr<BluetoothAdapter> adapter_;
 
   int success_callback_count_;
   int error_callback_count_;
   std::vector<uint8> last_read_value_;
 };
+
+TEST_F(BluetoothGattChromeOSTest, GattConnection) {
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kLowEnergyAddress);
+  ASSERT_TRUE(device);
+  ASSERT_FALSE(device->IsConnected());
+  ASSERT_FALSE(gatt_conn_.get());
+  ASSERT_EQ(0, success_callback_count_);
+  ASSERT_EQ(0, error_callback_count_);
+
+  device->CreateGattConnection(
+      base::Bind(&BluetoothGattChromeOSTest::GattConnectionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ConnectErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(1, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_TRUE(device->IsConnected());
+  ASSERT_TRUE(gatt_conn_.get());
+  EXPECT_TRUE(gatt_conn_->IsConnected());
+  EXPECT_EQ(FakeBluetoothDeviceClient::kLowEnergyAddress,
+            gatt_conn_->GetDeviceAddress());
+
+  gatt_conn_->Disconnect(
+      base::Bind(&BluetoothGattChromeOSTest::SuccessCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(2, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_TRUE(device->IsConnected());
+  EXPECT_FALSE(gatt_conn_->IsConnected());
+
+  device->CreateGattConnection(
+      base::Bind(&BluetoothGattChromeOSTest::GattConnectionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ConnectErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(3, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_TRUE(device->IsConnected());
+  ASSERT_TRUE(gatt_conn_.get());
+  EXPECT_TRUE(gatt_conn_->IsConnected());
+
+  device->Disconnect(
+      base::Bind(&BluetoothGattChromeOSTest::SuccessCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(4, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  ASSERT_TRUE(gatt_conn_.get());
+  EXPECT_FALSE(gatt_conn_->IsConnected());
+
+  device->CreateGattConnection(
+      base::Bind(&BluetoothGattChromeOSTest::GattConnectionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattChromeOSTest::ConnectErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(5, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_TRUE(device->IsConnected());
+  EXPECT_TRUE(gatt_conn_->IsConnected());
+
+  fake_bluetooth_device_client_->RemoveDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+  ASSERT_TRUE(gatt_conn_.get());
+  EXPECT_FALSE(gatt_conn_->IsConnected());
+}
 
 TEST_F(BluetoothGattChromeOSTest, GattServiceAddedAndRemoved) {
   // Create a fake LE device. We store the device pointer here because this is a
