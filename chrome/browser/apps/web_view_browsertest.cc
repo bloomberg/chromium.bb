@@ -1276,13 +1276,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagerNewWebView) {
 // the main browser window to a page that sets a cookie and loads an app with
 // multiple webview tags. Each tag sets a cookie and the test checks the proper
 // storage isolation is enforced.
-// This test is disabled due to being flaky. http://crbug.com/294196
-#if defined(OS_WIN)
-#define MAYBE_CookieIsolation DISABLED_CookieIsolation
-#else
-#define MAYBE_CookieIsolation CookieIsolation
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_CookieIsolation) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   const std::string kExpire =
       "var expire = new Date(Date.now() + 24 * 60 * 60 * 1000);";
@@ -1433,7 +1427,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_StoragePersistence) {
 
 // This is the post-reset portion of the StoragePersistence test.  See
 // PRE_StoragePersistence for main comment.
-IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_StoragePersistence) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, StoragePersistence) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // We don't care where the main browser is on this test.
@@ -1492,18 +1486,11 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_StoragePersistence) {
   EXPECT_EQ("persist2=true", cookie_value);
 }
 
-#if defined(OS_WIN)
-// This test is very flaky on Win Aura, Win XP, Win 7. http://crbug.com/248873
-#define MAYBE_DOMStorageIsolation DISABLED_DOMStorageIsolation
-#else
-#define MAYBE_DOMStorageIsolation DOMStorageIsolation
-#endif
-
 // This tests DOM storage isolation for packaged apps with webview tags. It
 // loads an app with multiple webview tags and each tag sets DOM storage
 // entries, which the test checks to ensure proper storage isolation is
 // enforced.
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_DOMStorageIsolation) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   GURL regular_url = embedded_test_server()->GetURL("/title1.html");
 
@@ -1587,17 +1574,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_DOMStorageIsolation) {
   EXPECT_STREQ("badval", output.c_str());
 }
 
-// See crbug.com/248500
-#if defined(OS_WIN)
-#define MAYBE_IndexedDBIsolation DISABLED_IndexedDBIsolation
-#else
-#define MAYBE_IndexedDBIsolation IndexedDBIsolation
-#endif
-
 // This tests IndexedDB isolation for packaged apps with webview tags. It loads
 // an app with multiple webview tags and each tag creates an IndexedDB record,
 // which the test checks to ensure proper storage isolation is enforced.
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_IndexedDBIsolation) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   GURL regular_url = embedded_test_server()->GetURL("/title1.html");
 
