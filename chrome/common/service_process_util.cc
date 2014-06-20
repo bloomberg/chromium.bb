@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/service_process_util.h"
+
 #include <algorithm>
 
 #include "base/command_line.h"
@@ -18,8 +20,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/service_process_util.h"
+#include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "content/public/common/content_paths.h"
+#include "google_apis/gaia/gaia_switches.h"
+#include "ui/base/ui_base_switches.h"
 
 #if !defined(OS_MACOSX)
 
@@ -151,8 +155,40 @@ bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
 
 #endif  // !OS_MACOSX
 
+scoped_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
+  base::FilePath exe_path;
+  PathService::Get(content::CHILD_PROCESS_EXE, &exe_path);
+  DCHECK(!exe_path.empty()) << "Unable to get service process binary name.";
+  scoped_ptr<base::CommandLine> command_line(new base::CommandLine(exe_path));
+  command_line->AppendSwitchASCII(switches::kProcessType,
+                                  switches::kServiceProcess);
+  static const char* const kSwitchesToCopy[] = {
+    switches::kCloudPrintSetupProxy,
+    switches::kCloudPrintURL,
+    switches::kCloudPrintXmppEndpoint,
+#if defined(OS_WIN)
+    switches::kEnableCloudPrintXps,
+#endif
+    switches::kEnableLogging,
+    switches::kIgnoreUrlFetcherCertRequests,
+    switches::kLang,
+    switches::kLoggingLevel,
+    switches::kLsoUrl,
+    switches::kNoServiceAutorun,
+    switches::kUserDataDir,
+    switches::kV,
+    switches::kVModule,
+    switches::kWaitForDebugger,
+  };
+
+  command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
+                                 kSwitchesToCopy,
+                                 arraysize(kSwitchesToCopy));
+  return command_line.Pass();
+}
+
 ServiceProcessState::ServiceProcessState() : state_(NULL) {
-  CreateAutoRunCommandLine();
+  autorun_command_line_ = CreateServiceProcessCommandLine();
   CreateState();
 }
 
@@ -247,21 +283,3 @@ IPC::ChannelHandle ServiceProcessState::GetServiceProcessChannel() {
 }
 
 #endif  // !OS_MACOSX
-
-void ServiceProcessState::CreateAutoRunCommandLine() {
-  base::FilePath exe_path;
-  PathService::Get(content::CHILD_PROCESS_EXE, &exe_path);
-  DCHECK(!exe_path.empty()) << "Unable to get service process binary name.";
-  autorun_command_line_.reset(new CommandLine(exe_path));
-  autorun_command_line_->AppendSwitchASCII(switches::kProcessType,
-                                           switches::kServiceProcess);
-
-  // The user data directory is the only other flag we currently want to
-  // possibly store.
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  base::FilePath user_data_dir =
-    browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
-  if (!user_data_dir.empty())
-    autorun_command_line_->AppendSwitchPath(switches::kUserDataDir,
-                                            user_data_dir);
-}

@@ -74,6 +74,9 @@ bool GetServiceProcessData(std::string* version, base::ProcessId* pid);
 bool ForceServiceProcessShutdown(const std::string& version,
                                  base::ProcessId process_id);
 
+// Creates command-line to run the service process.
+scoped_ptr<base::CommandLine> CreateServiceProcessCommandLine();
+
 // This is a class that is used by the service process to signal events and
 // share data with external clients. This class lives in this file because the
 // internal data structures and mechanisms used by the utility methods above
@@ -128,10 +131,6 @@ class ServiceProcessState {
 
   // Tear down the platform specific state.
   void TearDownState();
-
-  // Initializes the command-line that can be used to autorun the service
-  // process.
-  void CreateAutoRunCommandLine();
 
   // An opaque object that maintains state. The actual definition of this is
   // platform dependent.

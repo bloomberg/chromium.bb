@@ -18,18 +18,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/upgrade_detector.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/common/service_process_util.h"
-#include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/child_process_host.h"
-#include "google_apis/gaia/gaia_switches.h"
-#include "ui/base/ui_base_switches.h"
 
 using content::BrowserThread;
-using content::ChildProcessHost;
 
 // ServiceProcessControl implementation.
 ServiceProcessControl::ServiceProcessControl() {
@@ -118,47 +112,9 @@ void ServiceProcessControl::Launch(const base::Closure& success_task,
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents", SERVICE_EVENT_LAUNCH,
                             SERVICE_EVENT_MAX);
 
-  // A service process should have a different mechanism for starting, but now
-  // we start it as if it is a child process.
-
-#if defined(OS_LINUX)
-  int flags = ChildProcessHost::CHILD_ALLOW_SELF;
-#else
-  int flags = ChildProcessHost::CHILD_NORMAL;
-#endif
-
-  base::FilePath exe_path = ChildProcessHost::GetChildPath(flags);
-  if (exe_path.empty())
-    NOTREACHED() << "Unable to get service process binary name.";
-
-  CommandLine* cmd_line = new CommandLine(exe_path);
-  cmd_line->AppendSwitchASCII(switches::kProcessType,
-                              switches::kServiceProcess);
-
-  static const char* const kSwitchesToCopy[] = {
-    switches::kCloudPrintSetupProxy,
-    switches::kCloudPrintURL,
-    switches::kCloudPrintXmppEndpoint,
-#if defined(OS_WIN)
-    switches::kEnableCloudPrintXps,
-#endif
-    switches::kEnableLogging,
-    switches::kIgnoreUrlFetcherCertRequests,
-    switches::kLang,
-    switches::kLoggingLevel,
-    switches::kLsoUrl,
-    switches::kNoServiceAutorun,
-    switches::kUserDataDir,
-    switches::kV,
-    switches::kVModule,
-    switches::kWaitForDebugger,
-  };
-  cmd_line->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
-                             kSwitchesToCopy,
-                             arraysize(kSwitchesToCopy));
-
+  scoped_ptr<base::CommandLine> cmd_line(CreateServiceProcessCommandLine());
   // And then start the process asynchronously.
-  launcher_ = new Launcher(this, cmd_line);
+  launcher_ = new Launcher(this, cmd_line.Pass());
   launcher_->Run(base::Bind(&ServiceProcessControl::OnProcessLaunched,
                             base::Unretained(this)));
 }
@@ -356,10 +312,11 @@ ServiceProcessControl* ServiceProcessControl::GetInstance() {
   return Singleton<ServiceProcessControl>::get();
 }
 
-ServiceProcessControl::Launcher::Launcher(ServiceProcessControl* process,
-                                          CommandLine* cmd_line)
+ServiceProcessControl::Launcher::Launcher(
+    ServiceProcessControl* process,
+    scoped_ptr<base::CommandLine> cmd_line)
     : process_(process),
-      cmd_line_(cmd_line),
+      cmd_line_(cmd_line.Pass()),
       launched_(false),
       retry_count_(0),
       process_handle_(base::kNullProcessHandle) {
