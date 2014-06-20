@@ -409,7 +409,11 @@ public:
 
     // SmartClip support ---------------------------------------------------
 
+    // FIXME: This should be removed when the chromium side patch lands
+    // http://codereview.chromium.org/260623004
     virtual WebString getSmartClipData(WebRect) = 0;
+
+    virtual void getSmartClipData(WebRect, WebString&, WebRect&) = 0;
 
 
     // Popup menu ----------------------------------------------------------

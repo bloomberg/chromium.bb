@@ -50,7 +50,8 @@ public:
     {
     }
 
-    String toString();
+    IntRect rect() const;
+    const String& clipData() const;
 
 private:
     bool m_isEmpty;
