@@ -50,12 +50,11 @@ public:
 
     virtual ~SVGLengthList();
 
-    PassRefPtr<SVGLengthList> clone();
-
     void setValueAsString(const String&, ExceptionState&);
 
     // SVGPropertyBase:
     virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual PassRefPtr<SVGLengthList> clone() OVERRIDE;
     virtual String valueAsString() const OVERRIDE;
 
     virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;

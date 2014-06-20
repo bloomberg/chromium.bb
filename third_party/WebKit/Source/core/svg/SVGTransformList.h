@@ -58,8 +58,6 @@ public:
 
     // SVGPropertyBase:
     virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
-    PassRefPtr<SVGTransformList> clone();
-
     virtual String valueAsString() const OVERRIDE;
     void setValueAsString(const String&, ExceptionState&);
     bool parse(const UChar*& ptr, const UChar* end);

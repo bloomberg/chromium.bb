@@ -101,13 +101,6 @@ void SVGStringList::parseInternal(const CharType*& ptr, const CharType* end)
     }
 }
 
-PassRefPtr<SVGStringList> SVGStringList::clone()
-{
-    RefPtr<SVGStringList> svgStringList = create();
-    svgStringList->m_values = m_values;
-    return svgStringList.release();
-}
-
 void SVGStringList::setValueAsString(const String& data, ExceptionState&)
 {
     // FIXME: Add more error checking and reporting.

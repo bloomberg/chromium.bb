@@ -74,13 +74,6 @@ bool SVGTransformList::concatenate(AffineTransform& result) const
     return true;
 }
 
-PassRefPtr<SVGTransformList> SVGTransformList::clone()
-{
-    RefPtr<SVGTransformList> svgTransformList = SVGTransformList::create();
-    svgTransformList->deepCopy(this);
-    return svgTransformList.release();
-}
-
 namespace {
 
 template<typename CharType>

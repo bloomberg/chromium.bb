@@ -74,7 +74,6 @@ public:
     void replaceItem(const String&, size_t, ExceptionState&);
 
     // SVGPropertyBase:
-    PassRefPtr<SVGStringList> clone();
     void setValueAsString(const String&, ExceptionState&);
     virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
     virtual String valueAsString() const OVERRIDE;

@@ -53,6 +53,7 @@ public:
     {
         return adoptRef(new SVGPathSegList(contextElement, role));
     }
+    static PassRefPtr<SVGPathSegList> create() { ASSERT_NOT_REACHED(); return nullptr; }
 
     virtual ~SVGPathSegList();
 
@@ -130,8 +131,8 @@ public:
     PassRefPtr<ItemPropertyType> appendItem(PassRefPtr<ItemPropertyType> passItem);
 
     // SVGPropertyBase:
-    PassRefPtr<SVGPathSegList> clone();
     virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual PassRefPtr<SVGPathSegList> clone() OVERRIDE;
     virtual String valueAsString() const OVERRIDE;
     void setValueAsString(const String&, ExceptionState&);
 

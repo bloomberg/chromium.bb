@@ -50,8 +50,6 @@ public:
 
     virtual ~SVGNumberList();
 
-    PassRefPtr<SVGNumberList> clone();
-
     void setValueAsString(const String&, ExceptionState&);
 
     // SVGPropertyBase:

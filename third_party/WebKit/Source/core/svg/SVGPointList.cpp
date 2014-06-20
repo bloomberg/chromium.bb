@@ -44,13 +44,6 @@ SVGPointList::~SVGPointList()
 {
 }
 
-PassRefPtr<SVGPointList> SVGPointList::clone()
-{
-    RefPtr<SVGPointList> svgPointList = SVGPointList::create();
-    svgPointList->deepCopy(this);
-    return svgPointList.release();
-}
-
 PassRefPtr<SVGPropertyBase> SVGPointList::cloneForAnimation(const String& value) const
 {
     RefPtr<SVGPointList> svgPointList = SVGPointList::create();

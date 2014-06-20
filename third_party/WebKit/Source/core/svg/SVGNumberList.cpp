@@ -43,13 +43,6 @@ SVGNumberList::~SVGNumberList()
 {
 }
 
-PassRefPtr<SVGNumberList> SVGNumberList::clone()
-{
-    RefPtr<SVGNumberList> svgNumberList = SVGNumberList::create();
-    svgNumberList->deepCopy(this);
-    return svgNumberList.release();
-}
-
 PassRefPtr<SVGPropertyBase> SVGNumberList::cloneForAnimation(const String& value) const
 {
     RefPtr<SVGNumberList> svgNumberList = SVGNumberList::create();

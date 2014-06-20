@@ -128,6 +128,13 @@ public:
         return !length();
     }
 
+    virtual PassRefPtr<Derived> clone()
+    {
+        RefPtr<Derived> svgList = Derived::create();
+        svgList->deepCopy(static_cast<Derived*>(this));
+        return svgList.release();
+    }
+
     // SVGList*Property DOM spec:
 
     size_t length() const
