@@ -613,7 +613,7 @@ void PolicyUIHandler::SendPolicyNames() const {
   Profile* profile = Profile::FromWebUI(web_ui());
   policy::SchemaRegistry* registry =
       policy::SchemaRegistryServiceFactory::GetForContext(
-          profile->GetOriginalProfile());
+          profile->GetOriginalProfile())->registry();
   scoped_refptr<policy::SchemaMap> schema_map = registry->schema_map();
 
   // Add Chrome policy names.

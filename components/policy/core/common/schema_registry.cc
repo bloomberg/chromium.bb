@@ -10,6 +10,8 @@ namespace policy {
 
 SchemaRegistry::Observer::~Observer() {}
 
+SchemaRegistry::InternalObserver::~InternalObserver() {}
+
 SchemaRegistry::SchemaRegistry() : schema_map_(new SchemaMap) {
   for (int i = 0; i < POLICY_DOMAIN_SIZE; ++i)
     domains_ready_[i] = false;
@@ -18,7 +20,11 @@ SchemaRegistry::SchemaRegistry() : schema_map_(new SchemaMap) {
 #endif
 }
 
-SchemaRegistry::~SchemaRegistry() {}
+SchemaRegistry::~SchemaRegistry() {
+  FOR_EACH_OBSERVER(InternalObserver,
+                    internal_observers_,
+                    OnSchemaRegistryShuttingDown(this));
+}
 
 void SchemaRegistry::RegisterComponent(const PolicyNamespace& ns,
                                        const Schema& schema) {
@@ -77,13 +83,17 @@ void SchemaRegistry::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void SchemaRegistry::AddInternalObserver(InternalObserver* observer) {
+  internal_observers_.AddObserver(observer);
+}
+
+void SchemaRegistry::RemoveInternalObserver(InternalObserver* observer) {
+  internal_observers_.RemoveObserver(observer);
+}
+
 void SchemaRegistry::Notify(bool has_new_schemas) {
   FOR_EACH_OBSERVER(
       Observer, observers_, OnSchemaRegistryUpdated(has_new_schemas));
-}
-
-bool SchemaRegistry::HasObservers() const {
-  return observers_.might_have_observers();
 }
 
 CombinedSchemaRegistry::CombinedSchemaRegistry()
@@ -100,20 +110,11 @@ CombinedSchemaRegistry::~CombinedSchemaRegistry() {}
 void CombinedSchemaRegistry::Track(SchemaRegistry* registry) {
   registries_.insert(registry);
   registry->AddObserver(this);
+  registry->AddInternalObserver(this);
   // Recombine the maps only if the |registry| has any components other than
   // POLICY_DOMAIN_CHROME.
   if (registry->schema_map()->HasComponents())
     Combine(true);
-}
-
-void CombinedSchemaRegistry::Untrack(SchemaRegistry* registry) {
-  registry->RemoveObserver(this);
-  if (registries_.erase(registry) != 0) {
-    if (registry->schema_map()->HasComponents())
-      Combine(false);
-  } else {
-    NOTREACHED();
-  }
 }
 
 void CombinedSchemaRegistry::RegisterComponents(
@@ -146,6 +147,18 @@ void CombinedSchemaRegistry::OnSchemaRegistryReady() {
   // Ignore.
 }
 
+void CombinedSchemaRegistry::OnSchemaRegistryShuttingDown(
+    SchemaRegistry* registry) {
+  registry->RemoveObserver(this);
+  registry->RemoveInternalObserver(this);
+  if (registries_.erase(registry) != 0) {
+    if (registry->schema_map()->HasComponents())
+      Combine(false);
+  } else {
+    NOTREACHED();
+  }
+}
+
 void CombinedSchemaRegistry::Combine(bool has_new_schemas) {
   // If two registries publish a Schema for the same component then it's
   // undefined which version gets in the combined registry.
@@ -173,6 +186,55 @@ void CombinedSchemaRegistry::Combine(bool has_new_schemas) {
   }
   schema_map_ = new SchemaMap(map);
   Notify(has_new_schemas);
+}
+
+ForwardingSchemaRegistry::ForwardingSchemaRegistry(SchemaRegistry* wrapped)
+    : wrapped_(wrapped) {
+  schema_map_ = wrapped_->schema_map();
+  wrapped_->AddObserver(this);
+  wrapped_->AddInternalObserver(this);
+  // This registry is always ready.
+  for (int i = 0; i < POLICY_DOMAIN_SIZE; ++i)
+    SetReady(static_cast<PolicyDomain>(i));
+}
+
+ForwardingSchemaRegistry::~ForwardingSchemaRegistry() {
+  if (wrapped_) {
+    wrapped_->RemoveObserver(this);
+    wrapped_->RemoveInternalObserver(this);
+  }
+}
+
+void ForwardingSchemaRegistry::RegisterComponents(
+    PolicyDomain domain,
+    const ComponentMap& components) {
+  if (wrapped_)
+    wrapped_->RegisterComponents(domain, components);
+  // Ignore otherwise.
+}
+
+void ForwardingSchemaRegistry::UnregisterComponent(const PolicyNamespace& ns) {
+  if (wrapped_)
+    wrapped_->UnregisterComponent(ns);
+  // Ignore otherwise.
+}
+
+void ForwardingSchemaRegistry::OnSchemaRegistryUpdated(bool has_new_schemas) {
+  schema_map_ = wrapped_->schema_map();
+  Notify(has_new_schemas);
+}
+
+void ForwardingSchemaRegistry::OnSchemaRegistryReady() {
+  // Ignore.
+}
+
+void ForwardingSchemaRegistry::OnSchemaRegistryShuttingDown(
+    SchemaRegistry* registry) {
+  DCHECK_EQ(wrapped_, registry);
+  wrapped_->RemoveObserver(this);
+  wrapped_->RemoveInternalObserver(this);
+  wrapped_ = NULL;
+  // Keep serving the same |schema_map_|.
 }
 
 }  // namespace policy

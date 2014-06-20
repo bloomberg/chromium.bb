@@ -6,30 +6,30 @@
 #define CHROME_BROWSER_POLICY_SCHEMA_REGISTRY_SERVICE_H_
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/policy/core/common/schema_registry.h"
 
 namespace policy {
 
+class CombinedSchemaRegistry;
 class Schema;
+class SchemaRegistry;
 
-// A SchemaRegistry that is also a KeyedService, and is associated
-// with a Profile.
-class SchemaRegistryService : public SchemaRegistry, public KeyedService {
+// A KeyedService associated with a Profile that contains a SchemaRegistry.
+class SchemaRegistryService : public KeyedService {
  public:
-  // This SchemaRegistry will initially contain only the |chrome_schema|, if
+  // This |registry| will initially contain only the |chrome_schema|, if
   // it's valid. The optional |global_registry| must outlive this, and will
-  // track this registry.
-  SchemaRegistryService(const Schema& chrome_schema,
+  // track |registry|.
+  SchemaRegistryService(scoped_ptr<SchemaRegistry> registry,
+                        const Schema& chrome_schema,
                         CombinedSchemaRegistry* global_registry);
   virtual ~SchemaRegistryService();
 
-  // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  SchemaRegistry* registry() const { return registry_.get(); }
 
  private:
-  CombinedSchemaRegistry* global_registry_;
+  scoped_ptr<SchemaRegistry> registry_;
 
   DISALLOW_COPY_AND_ASSIGN(SchemaRegistryService);
 };

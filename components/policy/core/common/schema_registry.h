@@ -43,6 +43,16 @@ class POLICY_EXPORT SchemaRegistry : public base::NonThreadSafe {
     virtual ~Observer();
   };
 
+  // This observer is only meant to be used by subclasses.
+  class POLICY_EXPORT InternalObserver {
+   public:
+    // Invoked when |registry| is about to be destroyed.
+    virtual void OnSchemaRegistryShuttingDown(SchemaRegistry* registry) = 0;
+
+   protected:
+    virtual ~InternalObserver();
+  };
+
   SchemaRegistry();
   virtual ~SchemaRegistry();
 
@@ -69,7 +79,8 @@ class POLICY_EXPORT SchemaRegistry : public base::NonThreadSafe {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  bool HasObservers() const;
+  void AddInternalObserver(InternalObserver* observer);
+  void RemoveInternalObserver(InternalObserver* observer);
 
  protected:
   void Notify(bool has_new_schemas);
@@ -78,29 +89,34 @@ class POLICY_EXPORT SchemaRegistry : public base::NonThreadSafe {
 
  private:
   ObserverList<Observer, true> observers_;
+  ObserverList<InternalObserver, true> internal_observers_;
   bool domains_ready_[POLICY_DOMAIN_SIZE];
 
   DISALLOW_COPY_AND_ASSIGN(SchemaRegistry);
 };
 
 // A registry that combines the maps of other registries.
-class POLICY_EXPORT CombinedSchemaRegistry : public SchemaRegistry,
-                                             public SchemaRegistry::Observer {
+class POLICY_EXPORT CombinedSchemaRegistry
+    : public SchemaRegistry,
+      public SchemaRegistry::Observer,
+      public SchemaRegistry::InternalObserver {
  public:
   CombinedSchemaRegistry();
   virtual ~CombinedSchemaRegistry();
 
   void Track(SchemaRegistry* registry);
-  void Untrack(SchemaRegistry* registry);
 
+  // SchemaRegistry:
   virtual void RegisterComponents(PolicyDomain domain,
                                   const ComponentMap& components) OVERRIDE;
-
   virtual void UnregisterComponent(const PolicyNamespace& ns) OVERRIDE;
 
+  // SchemaRegistry::Observer:
   virtual void OnSchemaRegistryUpdated(bool has_new_schemas) OVERRIDE;
-
   virtual void OnSchemaRegistryReady() OVERRIDE;
+
+  // SchemaRegistry::InternalObserver:
+  virtual void OnSchemaRegistryShuttingDown(SchemaRegistry* registry) OVERRIDE;
 
  private:
   void Combine(bool has_new_schemas);
@@ -109,6 +125,35 @@ class POLICY_EXPORT CombinedSchemaRegistry : public SchemaRegistry,
   scoped_refptr<SchemaMap> own_schema_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CombinedSchemaRegistry);
+};
+
+// A registry that wraps another schema registry.
+class POLICY_EXPORT ForwardingSchemaRegistry
+    : public SchemaRegistry,
+      public SchemaRegistry::Observer,
+      public SchemaRegistry::InternalObserver {
+ public:
+  // This registry will stop updating its SchemaMap when |wrapped| is
+  // destroyed.
+  explicit ForwardingSchemaRegistry(SchemaRegistry* wrapped);
+  virtual ~ForwardingSchemaRegistry();
+
+  // SchemaRegistry:
+  virtual void RegisterComponents(PolicyDomain domain,
+                                  const ComponentMap& components) OVERRIDE;
+  virtual void UnregisterComponent(const PolicyNamespace& ns) OVERRIDE;
+
+  // SchemaRegistry::Observer:
+  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) OVERRIDE;
+  virtual void OnSchemaRegistryReady() OVERRIDE;
+
+  // SchemaRegistry::InternalObserver:
+  virtual void OnSchemaRegistryShuttingDown(SchemaRegistry* registry) OVERRIDE;
+
+ private:
+  SchemaRegistry* wrapped_;
+
+  DISALLOW_COPY_AND_ASSIGN(ForwardingSchemaRegistry);
 };
 
 }  // namespace policy

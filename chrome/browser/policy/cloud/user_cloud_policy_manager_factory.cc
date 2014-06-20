@@ -160,7 +160,8 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
       base::MessageLoopProxy::current(),
       file_task_runner,
       io_task_runner));
-  manager->Init(SchemaRegistryServiceFactory::GetForContext(context));
+  manager->Init(
+      SchemaRegistryServiceFactory::GetForContext(context)->registry());
   manager_wrappers_[context] = new ManagerWrapper(manager.get());
   return manager.Pass();
 }

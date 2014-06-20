@@ -4,31 +4,26 @@
 
 #include "chrome/browser/policy/schema_registry_service.h"
 
-#include "base/logging.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema.h"
+#include "components/policy/core/common/schema_registry.h"
 
 namespace policy {
 
 SchemaRegistryService::SchemaRegistryService(
+    scoped_ptr<SchemaRegistry> registry,
     const Schema& chrome_schema,
     CombinedSchemaRegistry* global_registry)
-    : global_registry_(global_registry) {
-  if (chrome_schema.valid())
-    RegisterComponent(PolicyNamespace(POLICY_DOMAIN_CHROME, ""), chrome_schema);
-  SetReady(POLICY_DOMAIN_CHROME);
-  if (global_registry_)
-    global_registry->Track(this);
+    : registry_(registry.Pass()) {
+  if (chrome_schema.valid()) {
+    registry_->RegisterComponent(PolicyNamespace(POLICY_DOMAIN_CHROME, ""),
+                                 chrome_schema);
+  }
+  registry_->SetReady(POLICY_DOMAIN_CHROME);
+  if (global_registry)
+    global_registry->Track(registry_.get());
 }
 
 SchemaRegistryService::~SchemaRegistryService() {}
-
-void SchemaRegistryService::Shutdown() {
-  if (global_registry_) {
-    global_registry_->Untrack(this);
-    global_registry_ = NULL;
-  }
-  DCHECK(!HasObservers());
-}
 
 }  // namespace policy

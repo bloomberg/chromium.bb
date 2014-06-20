@@ -107,8 +107,8 @@ class ManagedValueStoreCache::ExtensionTracker
 ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(Profile* profile)
     : profile_(profile),
       extension_registry_observer_(this),
-      schema_registry_(
-          policy::SchemaRegistryServiceFactory::GetForContext(profile)),
+      schema_registry_(policy::SchemaRegistryServiceFactory::GetForContext(
+                           profile)->registry()),
       weak_factory_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   // Load schemas when the extension system is ready. It might be ready now.
@@ -291,7 +291,7 @@ void ManagedValueStoreCache::OnPolicyServiceInitialized(
   // The PolicyService now has all the initial policies ready. Send policy
   // for all the managed extensions to their backing stores now.
   policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(profile_);
+      policy::SchemaRegistryServiceFactory::GetForContext(profile_)->registry();
   const policy::ComponentMap* map = registry->schema_map()->GetComponents(
       policy::POLICY_DOMAIN_EXTENSIONS);
   if (!map)

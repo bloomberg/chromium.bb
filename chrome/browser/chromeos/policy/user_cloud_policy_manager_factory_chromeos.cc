@@ -209,7 +209,8 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
     manager->EnableWildcardLoginCheck(username);
   }
 
-  manager->Init(SchemaRegistryServiceFactory::GetForContext(profile));
+  manager->Init(
+      SchemaRegistryServiceFactory::GetForContext(profile)->registry());
   manager->Connect(g_browser_process->local_state(),
                    device_management_service,
                    g_browser_process->system_request_context(),

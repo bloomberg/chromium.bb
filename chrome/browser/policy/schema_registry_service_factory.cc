@@ -60,10 +60,11 @@ SchemaRegistryServiceFactory::CreateForContextInternal(
     CombinedSchemaRegistry* global_registry) {
   DCHECK(!context->IsOffTheRecord());
   DCHECK(registries_.find(context) == registries_.end());
-  SchemaRegistryService* registry =
-      new SchemaRegistryService(chrome_schema, global_registry);
-  registries_[context] = registry;
-  return make_scoped_ptr(registry);
+  scoped_ptr<SchemaRegistry> registry(new SchemaRegistry);
+  scoped_ptr<SchemaRegistryService> service(new SchemaRegistryService(
+      registry.Pass(), chrome_schema, global_registry));
+  registries_[context] = service.get();
+  return service.Pass();
 }
 
 void SchemaRegistryServiceFactory::BrowserContextShutdown(

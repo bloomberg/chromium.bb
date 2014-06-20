@@ -91,7 +91,8 @@ ProfilePolicyConnectorFactory::CreateForProfileInternal(
   CloudPolicyManager* user_cloud_policy_manager = NULL;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  schema_registry = SchemaRegistryServiceFactory::GetForContext(profile);
+  schema_registry =
+      SchemaRegistryServiceFactory::GetForContext(profile)->registry();
 
 #if defined(OS_CHROMEOS)
   chromeos::User* user = NULL;

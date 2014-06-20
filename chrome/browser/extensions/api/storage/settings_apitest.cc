@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ExtensionsSchemas) {
   message_.clear();
 
   policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(profile);
+      policy::SchemaRegistryServiceFactory::GetForContext(profile)->registry();
   ASSERT_TRUE(registry);
   EXPECT_FALSE(registry->schema_map()->GetSchema(policy::PolicyNamespace(
       policy::POLICY_DOMAIN_EXTENSIONS, kManagedStorageExtensionId)));
