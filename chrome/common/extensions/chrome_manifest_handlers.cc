@@ -35,7 +35,6 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/common/api/sockets/sockets_manifest_handler.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
-#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/requirements_info.h"
 
 namespace extensions {
@@ -56,7 +55,6 @@ void RegisterChromeManifestHandlers() {
   (new ExternallyConnectableHandler)->Register();
   (new FileBrowserHandlerParser)->Register();
   (new HomepageURLHandler)->Register();
-  (new IconsHandler)->Register();
 #if defined(OS_CHROMEOS)
   (new InputComponentsHandler)->Register();
 #endif

@@ -7,7 +7,10 @@
 #include "apps/shell/browser/shell_extension_system.h"
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
+#include "extensions/browser/extension_icon_image.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 
@@ -17,8 +20,6 @@ namespace athena {
 
 namespace {
 
-const int kIconSize = 64;
-
 ShellExtensionSystem* GetShellExtensionSystem(
     content::BrowserContext* context) {
   return static_cast<ShellExtensionSystem*>(
@@ -27,7 +28,10 @@ ShellExtensionSystem* GetShellExtensionSystem(
 
 gfx::ImageSkia CreateFlatColorImage(SkColor color) {
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, kIconSize, kIconSize);
+  bitmap.setConfig(
+      SkBitmap::kARGB_8888_Config,
+      extension_misc::EXTENSION_ICON_MEDIUM,
+      extension_misc::EXTENSION_ICON_MEDIUM);
   bitmap.allocPixels();
   bitmap.eraseColor(color);
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
@@ -67,9 +71,16 @@ class AppItem : public app_list::AppListItem {
           content::BrowserContext* browser_context)
       : app_list::AppListItem(extension->id()),
         extension_(extension),
-        browser_context_(browser_context) {
-    // TODO(mukai): componentize extension_icon_image and use it.
-    SetIcon(CreateFlatColorImage(SK_ColorBLACK), false);
+        browser_context_(browser_context),
+        icon_image_(browser_context_,
+                    extension.get(),
+                    extensions::IconsInfo::GetIcons(extension.get()),
+                    extension_misc::EXTENSION_ICON_MEDIUM,
+                    // TODO(mukai): better default icon
+                    CreateFlatColorImage(SK_ColorBLACK),
+                    NULL) {
+    icon_image_.image_skia().EnsureRepsForSupportedScales();
+    SetIcon(icon_image_.image_skia(), false);
     SetName(extension->name());
   }
 
@@ -83,6 +94,7 @@ class AppItem : public app_list::AppListItem {
 
   scoped_refptr<extensions::Extension> extension_;
   content::BrowserContext* browser_context_;
+  extensions::IconImage icon_image_;
 
   DISALLOW_COPY_AND_ASSIGN(AppItem);
 };
