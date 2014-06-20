@@ -41,15 +41,10 @@ config("core_include_dirs") {
   include_dirs = [
     "..",
     "../..",
-    # FIXME: Remove these once core scripts generates qualified
+    # FIXME: Remove two lines below once core scripts generates qualified
     # includes correctly: http://crbug.com/358074
-    blink_modules_output_dir,
     bindings_core_v8_output_dir,
     bindings_modules_v8_output_dir,
-    # FIXME: MediaQueryListListener.cpp includes
-    # "gen/blink/bindings/core/v8/V8MediaQueryList.h" relative to "gen/blink"
-    # which is busted. This file (and any other ones that do a similar thing)
-    # should be fixed and this can be removed.
     "$root_gen_dir/blink",
   ]
   if (is_android && use_openmax_dl_fft) {

@@ -31,13 +31,13 @@
 #include "config.h"
 #include "bindings/core/v8/V8Event.h"
 
-#include "EventModulesHeaders.h"
-#include "EventModulesInterfaces.h"
 #include "bindings/core/v8/V8DataTransfer.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/clipboard/Clipboard.h"
 #include "core/events/ClipboardEvent.h"
 #include "core/events/Event.h"
+#include "modules/EventModulesHeaders.h"
+#include "modules/EventModulesInterfaces.h"
 
 namespace WebCore {
 

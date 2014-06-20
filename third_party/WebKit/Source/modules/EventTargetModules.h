@@ -5,10 +5,10 @@
 #ifndef EventTargetModules_h
 #define EventTargetModules_h
 
-#include "EventModulesNames.h"
-#include "EventTargetModulesInterfaces.h"
-#include "EventTargetModulesNames.h"
 #include "core/events/EventTarget.h"
+#include "modules/EventModulesNames.h"
+#include "modules/EventTargetModulesInterfaces.h"
+#include "modules/EventTargetModulesNames.h"
 
 namespace WebCore {
 

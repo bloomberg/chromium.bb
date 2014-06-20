@@ -5,11 +5,11 @@
 #include "config.h"
 #include "InitModules.h"
 
-#include "EventModulesFactory.h"
-#include "EventModulesNames.h"
-#include "EventTargetModulesNames.h"
 #include "core/EventTypeNames.h"
 #include "core/dom/Document.h"
+#include "modules/EventModulesFactory.h"
+#include "modules/EventModulesNames.h"
+#include "modules/EventTargetModulesNames.h"
 
 namespace WebCore {
 

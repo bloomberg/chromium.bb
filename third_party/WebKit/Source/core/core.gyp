@@ -35,8 +35,6 @@
     '../build/scripts/scripts.gypi',
     '../bindings/core/core.gypi',  # core can depend on bindings/core, but not on bindings
     'core.gypi',
-    '../modules/modules_generated.gypi', # FIXME: Required by <(blink_modules_output_dir) below.
-    '../platform/platform_generated.gypi', # FIXME: Required by <(blink_platform_output_dir) below.
   ],
 
   'variables': {
@@ -44,12 +42,10 @@
 
     'webcore_include_dirs': [
       '..',  # WebKit/Source
-      # FIXME: Remove these once core scripts generate qualified
+      # FIXME: Remove the following two lines once core scripts generate qualified
       # includes correctly: http://crbug.com/380054
-      '<(blink_modules_output_dir)',
       '<(bindings_core_v8_output_dir)',
       '<(bindings_modules_v8_output_dir)',
-      # Needed to include the generated binding headers.
       '<(SHARED_INTERMEDIATE_DIR)/blink',  # gen/blink
     ],
 
