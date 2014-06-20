@@ -140,6 +140,7 @@ void BrowserChildProcessHostImpl::Launch(
   static const char* kForwardSwitches[] = {
     switches::kDisableLogging,
     switches::kEnableLogging,
+    switches::kIPCConnectionTimeout,
     switches::kLoggingLevel,
     switches::kTraceToConsole,
     switches::kV,

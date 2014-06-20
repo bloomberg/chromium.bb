@@ -19,6 +19,7 @@
 #include "base/message_loop/timer_slack.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -289,11 +290,21 @@ void ChildThread::Init() {
     channel_->AddFilter(new SuicideOnChannelErrorFilter());
 #endif
 
+  int connection_timeout = kConnectionTimeoutS;
+  std::string connection_override =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kIPCConnectionTimeout);
+  if (!connection_override.empty()) {
+    int temp;
+    if (base::StringToInt(connection_override, &temp))
+      connection_timeout = temp;
+  }
+
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ChildThread::EnsureConnected,
                  channel_connected_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kConnectionTimeoutS));
+      base::TimeDelta::FromSeconds(connection_timeout));
 
 #if defined(OS_ANDROID)
   {

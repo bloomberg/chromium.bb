@@ -604,6 +604,10 @@ const char kIgnoreGpuBlacklist[]            = "ignore-gpu-blacklist";
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";
 
+// Overrides the timeout, in seconds, that a child process waits for a
+// connection from the browser before killing itself.
+const char kIPCConnectionTimeout[]          = "ipc-connection-timeout";
+
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 

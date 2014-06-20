@@ -9,7 +9,9 @@
 #include "base/debug/stack_trace.h"
 #include "base/i18n/icu_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
+#include "base/test/test_timeouts.h"
 #include "content/public/app/content_main.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -156,6 +158,12 @@ BrowserTestBase::~BrowserTestBase() {
 
 void BrowserTestBase::SetUp() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+  // Override the child process connection timeout since tests can exceed that
+  // when sharded.
+  command_line->AppendSwitchASCII(
+      switches::kIPCConnectionTimeout,
+      base::IntToString(TestTimeouts::action_max_timeout().InSeconds()));
 
   // The tests assume that file:// URIs can freely access other file:// URIs.
   command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
