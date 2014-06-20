@@ -121,10 +121,6 @@ void DevToolsAgent::sendMessageToInspectorFrontend(
                                                          message.utf8()));
 }
 
-int DevToolsAgent::hostIdentifier() {
-  return routing_id();
-}
-
 int DevToolsAgent::debuggerId() {
   return routing_id();
 }
