@@ -83,9 +83,14 @@ class TabStripModelObserverBridge;
         parentWindow:(NSWindow*)parentWindow
           anchoredAt:(NSPoint)anchoredAt;
 
-// Creates an autoreleased separator view with a given frame. The height of the
-// frame is ignored.
-- (NSBox*)separatorWithFrame:(NSRect)frame;
+// Creates an autoreleased horizontal separator view with a given frame. The
+// height of the frame is ignored.
+- (NSBox*)horizontalSeparatorWithFrame:(NSRect)frame;
+
+// Creates an autoreleased vertical separator view with a given frame. The
+// width of frame is ignored.
+- (NSBox*)verticalSeparatorWithFrame:(NSRect)frame;
+
 
 @end
 

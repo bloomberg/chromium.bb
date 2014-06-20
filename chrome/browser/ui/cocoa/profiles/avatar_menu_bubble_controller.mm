@@ -224,7 +224,7 @@ const CGFloat kSupervisedUserSpacing = 26.0;
     [contentView addSubview:newButton];
     yOffset += NSHeight([newButton frame]) + kVerticalSpacing;
 
-    NSBox* separator = [self separatorWithFrame:
+    NSBox* separator = [self horizontalSeparatorWithFrame:
         NSMakeRect(10, yOffset, NSWidth([contentView frame]) - 20, 0)];
     [separator setAutoresizingMask:NSViewWidthSizable];
     [contentView addSubview:separator];
@@ -262,7 +262,7 @@ const CGFloat kSupervisedUserSpacing = 26.0;
   [contentView addSubview:newButton];
   yOffset += NSHeight([newButton frame]) + kVerticalSpacing;
 
-  NSBox* separator = [self separatorWithFrame:
+  NSBox* separator = [self horizontalSeparatorWithFrame:
       NSMakeRect(10, yOffset, NSWidth([contentView frame]) - 20, 0)];
   [separator setAutoresizingMask:NSViewWidthSizable];
   [contentView addSubview:separator];
@@ -288,7 +288,7 @@ const CGFloat kSupervisedUserSpacing = 26.0;
   [contentView addSubview:info];
   yOffset += NSHeight([info frame]) + kVerticalSpacing;
 
-  separator = [self separatorWithFrame:
+  separator = [self horizontalSeparatorWithFrame:
       NSMakeRect(10, yOffset, NSWidth([contentView frame]) - 20, 0)];
   [separator setAutoresizingMask:NSViewWidthSizable];
   [contentView addSubview:separator];

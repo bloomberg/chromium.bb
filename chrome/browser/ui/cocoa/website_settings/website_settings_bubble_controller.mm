@@ -808,8 +808,8 @@ NSColor* IdentityVerifiedTextColor() {
   CGFloat width = NSWidth([view frame]) - 2 * kFramePadding;
 
   // Use an arbitrary position; it will be adjusted in performLayout.
-  NSBox* spacer =
-      [self separatorWithFrame:NSMakeRect(kFramePadding, 0, width, 0)];
+  NSBox* spacer = [self horizontalSeparatorWithFrame:NSMakeRect(
+      kFramePadding, 0, width, 0)];
   [view addSubview:spacer];
   return spacer;
 }

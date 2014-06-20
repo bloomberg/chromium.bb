@@ -392,16 +392,21 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
   // and one option buttons view.
   EXPECT_EQ(5U, [subviews count]);
 
-  // There should be two buttons in the option buttons view.
+  // There should be two buttons and a separator in the option buttons view.
   NSArray* buttonSubviews = [[subviews objectAtIndex:0] subviews];
-  const SEL buttonSelectors[] = { @selector(showUserManager:),
-                                  @selector(lockProfile:) };
-  EXPECT_EQ(2U, [buttonSubviews count]);
-  for (NSUInteger i = 0; i < [buttonSubviews count]; ++i) {
-    NSButton* button = static_cast<NSButton*>([buttonSubviews objectAtIndex:i]);
-    EXPECT_EQ(buttonSelectors[i], [button action]);
-    EXPECT_EQ(controller(), [button target]);
-  }
+  EXPECT_EQ(3U, [buttonSubviews count]);
+
+  NSButton* notYouButton =
+      static_cast<NSButton*>([buttonSubviews objectAtIndex:0]);
+  EXPECT_EQ(@selector(showUserManager:), [notYouButton action]);
+  EXPECT_EQ(controller(), [notYouButton target]);
+
+  EXPECT_TRUE([[buttonSubviews objectAtIndex:1] isKindOfClass:[NSBox class]]);
+
+  NSButton* lockButton =
+      static_cast<NSButton*>([buttonSubviews objectAtIndex:2]);
+  EXPECT_EQ(@selector(lockProfile:), [lockButton action]);
+  EXPECT_EQ(controller(), [lockButton target]);
 
   // There should be a separator.
   EXPECT_TRUE([[subviews objectAtIndex:1] isKindOfClass:[NSBox class]]);

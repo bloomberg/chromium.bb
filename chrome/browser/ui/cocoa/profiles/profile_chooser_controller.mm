@@ -339,6 +339,62 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   DISALLOW_COPY_AND_ASSIGN(ActiveProfileObserverBridge);
 };
 
+// Custom button cell that adds a left padding before the button image, and
+// a custom spacing between the button image and title.
+@interface CustomPaddingImageButtonCell : NSButtonCell {
+ @private
+  // Padding added to the left margin of the button.
+  int leftMarginSpacing_;
+  // Spacing between the cell image and title.
+  int imageTitleSpacing_;
+}
+
+- (id)initWithLeftMarginSpacing:(int)leftMarginSpacing
+              imageTitleSpacing:(int)imageTitleSpacing;
+@end
+
+@implementation CustomPaddingImageButtonCell
+- (id)initWithLeftMarginSpacing:(int)leftMarginSpacing
+              imageTitleSpacing:(int)imageTitleSpacing {
+  if ((self = [super init])) {
+    leftMarginSpacing_ = leftMarginSpacing;
+    imageTitleSpacing_ = imageTitleSpacing;
+  }
+  return self;
+}
+
+- (NSRect)drawTitle:(NSAttributedString*)title
+          withFrame:(NSRect)frame
+             inView:(NSView*)controlView {
+  NSRect marginRect;
+  NSDivideRect(frame, &marginRect, &frame, leftMarginSpacing_, NSMinXEdge);
+
+  // The title frame origin isn't aware of the left margin spacing added
+  // in -drawImage, so it must be added when drawing the title as well.
+  if ([self imagePosition] == NSImageLeft)
+    NSDivideRect(frame, &marginRect, &frame, imageTitleSpacing_, NSMinXEdge);
+
+  return [super drawTitle:title withFrame:frame inView:controlView];
+}
+
+- (void)drawImage:(NSImage*)image
+        withFrame:(NSRect)frame
+           inView:(NSView*)controlView {
+  if ([self imagePosition] == NSImageLeft)
+    frame.origin.x = leftMarginSpacing_;
+  [super drawImage:image withFrame:frame inView:controlView];
+}
+
+- (NSSize)cellSize {
+  NSSize buttonSize = [super cellSize];
+  buttonSize.width += leftMarginSpacing_;
+  if ([self imagePosition] == NSImageLeft)
+    buttonSize.width += imageTitleSpacing_;
+  return buttonSize;
+}
+
+@end
+
 // A custom button that has a transparent backround.
 @interface TransparentBackgroundButton : NSButton
 @end
@@ -354,7 +410,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-  NSColor* backgroundColor = [NSColor colorWithCalibratedWhite:1 alpha:0.4f];
+  NSColor* backgroundColor = [NSColor colorWithCalibratedWhite:1 alpha:0.6f];
   [backgroundColor setFill];
   NSRectFillUsingOperation(dirtyRect, NSCompositeSourceAtop);
   [super drawRect:dirtyRect];
@@ -464,7 +520,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 @end
 
 // A custom text control that turns into a textfield for editing when clicked.
-@interface EditableProfileNameButton : HoverImageButton<NSTextFieldDelegate> {
+@interface EditableProfileNameButton : HoverImageButton {
  @private
   base::scoped_nsobject<NSTextField> profileNameTextField_;
   Profile* profile_;  // Weak.
@@ -480,8 +536,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 // Called when the button is clicked.
 - (void)showEditableView:(id)sender;
 
-// Called when the user presses "Enter" in the textfield.
-- (void)controlTextDidEndEditing:(NSNotification *)obj;
+// Called when enter is pressed in the text field.
+- (void)saveProfileName:(id)sender;
+
 @end
 
 @implementation EditableProfileNameButton
@@ -494,12 +551,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     profile_ = profile;
     controller_ = controller;
 
-    [self setBordered:NO];
-    [self setFont:[NSFont labelFontOfSize:kTitleFontSize]];
-    [self setAlignment:NSCenterTextAlignment];
-    [[self cell] setLineBreakMode:NSLineBreakByTruncatingTail];
-    [self setTitle:profileName];
-
     if (editingAllowed) {
       // Show an "edit" pencil icon when hovering over. In the default state,
       // we need to create an empty placeholder of the correct size, so that
@@ -507,6 +558,15 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
       NSImage* hoverImage = rb->GetNativeImageNamed(
           IDR_ICON_PROFILES_EDIT_HOVER).AsNSImage();
+
+      // In order to center the button title, we need to add a left padding of
+      // the same width as the pencil icon.
+      base::scoped_nsobject<CustomPaddingImageButtonCell> cell(
+          [[CustomPaddingImageButtonCell alloc]
+              initWithLeftMarginSpacing:[hoverImage size].width
+                      imageTitleSpacing:0]);
+      [self setCell:cell.get()];
+
       NSImage* placeholder = [[NSImage alloc] initWithSize:[hoverImage size]];
       [self setDefaultImage:placeholder];
       [self setHoverImage:hoverImage];
@@ -531,19 +591,24 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [[profileNameTextField_ cell] setWraps:NO];
       [[profileNameTextField_ cell] setLineBreakMode:
           NSLineBreakByTruncatingTail];
-      [profileNameTextField_ setDelegate:self];
       [self addSubview:profileNameTextField_];
+      [profileNameTextField_ setTarget:self];
+      [profileNameTextField_ setAction:@selector(saveProfileName:)];
 
       // Hide the textfield until the user clicks on the button.
       [profileNameTextField_ setHidden:YES];
     }
+
+    [self setBordered:NO];
+    [self setFont:[NSFont labelFontOfSize:kTitleFontSize]];
+    [self setAlignment:NSCenterTextAlignment];
+    [[self cell] setLineBreakMode:NSLineBreakByTruncatingTail];
+    [self setTitle:profileName];
   }
   return self;
 }
 
-// NSTextField objects send an NSNotification to a delegate if
-// it implements this method:
-- (void)controlTextDidEndEditing:(NSNotification *)obj {
+- (void)saveProfileName:(id)sender {
   NSString* text = [profileNameTextField_ stringValue];
   // Empty profile names are not allowed, and are treated as a cancel.
   if ([text length] > 0) {
@@ -553,61 +618,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     [self setTitle:text];
   }
   [profileNameTextField_ setHidden:YES];
-  [profileNameTextField_ resignFirstResponder];
 }
 
 - (void)showEditableView:(id)sender {
   [profileNameTextField_ setHidden:NO];
-  [profileNameTextField_ becomeFirstResponder];
-}
-
-@end
-
-// Custom button cell that adds a left padding before the button image, and
-// a custom spacing between the button image and title.
-@interface CustomPaddingImageButtonCell : NSButtonCell {
- @private
-  // Padding between the left margin of the button and the cell image.
-  int leftMarginSpacing_;
-  // Spacing between the cell image and title.
-  int imageTitleSpacing_;
-}
-
-- (id)initWithLeftMarginSpacing:(int)leftMarginSpacing
-              imageTitleSpacing:(int)imageTitleSpacing;
-@end
-
-@implementation CustomPaddingImageButtonCell
-- (id)initWithLeftMarginSpacing:(int)leftMarginSpacing
-              imageTitleSpacing:(int)imageTitleSpacing {
-  if ((self = [super init])) {
-    leftMarginSpacing_ = leftMarginSpacing;
-    imageTitleSpacing_ = imageTitleSpacing;
-  }
-  return self;
-}
-
-- (NSRect)drawTitle:(NSAttributedString*)title
-          withFrame:(NSRect)frame
-             inView:(NSView*)controlView {
-  // The title frame origin isn't aware of the left margin spacing added
-  // in -drawImage, so it must be added when drawing the title as well.
-  frame.origin.x += leftMarginSpacing_ + imageTitleSpacing_;
-  frame.size.width -= (imageTitleSpacing_ + leftMarginSpacing_);
-  return [super drawTitle:title withFrame:frame inView:controlView];
-}
-
-- (void)drawImage:(NSImage*)image
-       withFrame:(NSRect)frame
-          inView:(NSView*)controlView {
-  frame.origin.x = leftMarginSpacing_;
-  [super drawImage:image withFrame:frame inView:controlView];
-}
-
-- (NSSize)cellSize {
-  NSSize buttonSize = [super cellSize];
-  buttonSize.width += leftMarginSpacing_ + imageTitleSpacing_;
-  return buttonSize;
+  [[self window] makeFirstResponder:profileNameTextField_];
 }
 
 @end
@@ -1006,8 +1021,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     currentProfileView = [self createGuestProfileView];
 
   // |yOffset| is the next position at which to draw in |container|
-  // coordinates.
-  CGFloat yOffset = 0;
+  // coordinates. Add a pixel offset so that the bottom option buttons don't
+  // overlap the bubble's rounded corners.
+  CGFloat yOffset = 1;
 
   // Option buttons. Only available with the new profile management flag.
   if (switches::IsNewProfileManagement()) {
@@ -1017,7 +1033,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     [container addSubview:optionsView];
     rect.origin.y = NSMaxY([optionsView frame]);
 
-    NSBox* separator = [self separatorWithFrame:rect];
+    NSBox* separator = [self horizontalSeparatorWithFrame:rect];
     [container addSubview:separator];
     yOffset = NSMaxY([separator frame]);
   }
@@ -1031,8 +1047,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [container addSubview:otherProfileView];
       yOffset = NSMaxY([otherProfileView frame]);
 
-      NSBox* separator =
-          [self separatorWithFrame:NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
+      NSBox* separator = [self horizontalSeparatorWithFrame:NSMakeRect(
+          0, yOffset, kFixedMenuWidth, 0)];
       [container addSubview:separator];
       yOffset = NSMaxY([separator frame]);
     }
@@ -1047,8 +1063,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     yOffset = NSMaxY([disclaimerContainer frame]);
     yOffset += kSmallVerticalSpacing;
 
-    NSBox* separator =
-        [self separatorWithFrame:NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
+    NSBox* separator = [self horizontalSeparatorWithFrame:NSMakeRect(
+        0, yOffset, kFixedMenuWidth, 0)];
     [container addSubview:separator];
     yOffset = NSMaxY([separator frame]);
   }
@@ -1059,7 +1075,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     [container addSubview:currentProfileAccountsView];
     yOffset = NSMaxY([currentProfileAccountsView frame]);
 
-    NSBox* accountsSeparator = [self separatorWithFrame:
+    NSBox* accountsSeparator = [self horizontalSeparatorWithFrame:
         NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
     [container addSubview:accountsSeparator];
     yOffset = NSMaxY([accountsSeparator frame]);
@@ -1446,7 +1462,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (NSView*)createOptionsViewWithRect:(NSRect)rect
                           enableLock:(BOOL)enableLock {
-  int widthOfLockButton = enableLock? 2 * kHorizontalSpacing + 12 : 0;
+  int widthOfLockButton = enableLock ? 2 * kHorizontalSpacing + 14 : 0;
   NSRect viewRect = NSMakeRect(0, 0,
                                rect.size.width - widthOfLockButton,
                                kBlueButtonHeight + kVerticalSpacing);
@@ -1468,6 +1484,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   if (enableLock) {
     viewRect.origin.x = NSMaxX([notYouButton frame]);
+    NSBox* separator = [self verticalSeparatorWithFrame:viewRect];
+    [container addSubview:separator];
+
+    viewRect.origin.x = NSMaxX([separator frame]);
     viewRect.size.width = widthOfLockButton;
     NSButton* lockButton =
         [self hoverButtonWithRect:viewRect
@@ -1607,7 +1627,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   yOffset = NSMaxY([webview frame]);
 
   // Adds the title card.
-  NSBox* separator = [self separatorWithFrame:
+  NSBox* separator = [self horizontalSeparatorWithFrame:
       NSMakeRect(0, yOffset, kFixedGaiaViewWidth, 0)];
   [container addSubview:separator];
   yOffset = NSMaxY([separator frame]) + kSmallVerticalSpacing;
@@ -1678,7 +1698,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   yOffset = NSMaxY([contentView frame]) + kVerticalSpacing;
 
   // Adds the title card.
-  NSBox* separator = [self separatorWithFrame:
+  NSBox* separator = [self horizontalSeparatorWithFrame:
       NSMakeRect(0, yOffset, kFixedAccountRemovalViewWidth, 0)];
   [container addSubview:separator];
   yOffset = NSMaxY([separator frame]) + kSmallVerticalSpacing;
@@ -1729,7 +1749,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   yOffset = NSMaxY([contentLabel frame]) + kVerticalSpacing;
 
   // Adds the title card.
-  NSBox* separator = [self separatorWithFrame:
+  NSBox* separator = [self horizontalSeparatorWithFrame:
       NSMakeRect(0, yOffset, kFixedEndPreviewViewWidth, 0)];
   [container addSubview:separator];
   yOffset = NSMaxY([separator frame]) + kSmallVerticalSpacing;

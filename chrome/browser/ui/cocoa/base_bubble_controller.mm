@@ -148,8 +148,17 @@
   anchorOffset_.y -= anchor_.y;
 }
 
-- (NSBox*)separatorWithFrame:(NSRect)frame {
+- (NSBox*)horizontalSeparatorWithFrame:(NSRect)frame {
   frame.size.height = 1.0;
+  base::scoped_nsobject<NSBox> spacer([[NSBox alloc] initWithFrame:frame]);
+  [spacer setBoxType:NSBoxSeparator];
+  [spacer setBorderType:NSLineBorder];
+  [spacer setAlphaValue:0.2];
+  return [spacer.release() autorelease];
+}
+
+- (NSBox*)verticalSeparatorWithFrame:(NSRect)frame {
+  frame.size.width = 1.0;
   base::scoped_nsobject<NSBox> spacer([[NSBox alloc] initWithFrame:frame]);
   [spacer setBoxType:NSBoxSeparator];
   [spacer setBorderType:NSLineBorder];
