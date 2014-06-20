@@ -36,7 +36,7 @@ protected:
 
 private:
     // Inherited from PageLifecycleObserver.
-    virtual void pageVisibilityChanged() OVERRIDE FINAL;
+    virtual void pageVisibilityChanged() OVERRIDE;
 
     void oneShotCallback(Timer<DeviceEventControllerBase>*);
 
