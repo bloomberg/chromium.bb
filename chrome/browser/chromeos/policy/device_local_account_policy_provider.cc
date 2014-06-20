@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
@@ -15,9 +14,6 @@
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
-#include "components/policy/core/common/policy_switches.h"
-#include "content/public/browser/browser_thread.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
 
 namespace policy {
@@ -98,19 +94,10 @@ DeviceLocalAccountPolicyProvider::Create(
   return provider.Pass();
 }
 
-void DeviceLocalAccountPolicyProvider::Init(SchemaRegistry* schema_registry) {
-  ConfigurationPolicyProvider::Init(schema_registry);
-  MaybeCreateComponentPolicyService();
-}
-
 bool DeviceLocalAccountPolicyProvider::IsInitializationComplete(
     PolicyDomain domain) const {
   if (domain == POLICY_DOMAIN_CHROME)
     return store_initialized_;
-  if (ComponentCloudPolicyService::SupportsDomain(domain) &&
-      component_policy_service_) {
-    return component_policy_service_->is_initialized();
-  }
   return true;
 }
 
@@ -126,34 +113,13 @@ void DeviceLocalAccountPolicyProvider::RefreshPolicies() {
   }
 }
 
-void DeviceLocalAccountPolicyProvider::Shutdown() {
-  component_policy_service_.reset();
-  ConfigurationPolicyProvider::Shutdown();
-}
-
 void DeviceLocalAccountPolicyProvider::OnPolicyUpdated(
     const std::string& user_id) {
-  if (user_id == user_id_) {
-    MaybeCreateComponentPolicyService();
+  if (user_id == user_id_)
     UpdateFromBroker();
-  }
 }
 
 void DeviceLocalAccountPolicyProvider::OnDeviceLocalAccountsChanged() {
-  MaybeCreateComponentPolicyService();
-  UpdateFromBroker();
-}
-
-void DeviceLocalAccountPolicyProvider::OnBrokerShutdown(
-    DeviceLocalAccountPolicyBroker* broker) {
-  if (broker->user_id() == user_id_) {
-    // The |component_policy_service_| relies on the broker's CloudPolicyCore,
-    // so destroy it if the broker is going away.
-    component_policy_service_.reset();
-  }
-}
-
-void DeviceLocalAccountPolicyProvider::OnComponentCloudPolicyUpdated() {
   UpdateFromBroker();
 }
 
@@ -187,9 +153,6 @@ void DeviceLocalAccountPolicyProvider::UpdateFromBroker() {
     bundle->CopyFrom(policies());
   }
 
-  if (component_policy_service_)
-    bundle->MergeFrom(component_policy_service_->policy());
-
   // Apply overrides.
   if (chrome_policy_overrides_) {
     PolicyMap& chrome_policy =
@@ -204,37 +167,6 @@ void DeviceLocalAccountPolicyProvider::UpdateFromBroker() {
   }
 
   UpdatePolicy(bundle.Pass());
-}
-
-void DeviceLocalAccountPolicyProvider::MaybeCreateComponentPolicyService() {
-  if (component_policy_service_)
-    return;  // Already started.
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableComponentCloudPolicy)) {
-    // Disabled via the command line.
-    return;
-  }
-
-  DeviceLocalAccountPolicyBroker* broker = GetBroker();
-  if (!broker || !schema_registry())
-    return;  // Missing broker or not initialized yet.
-
-  scoped_ptr<ResourceCache> resource_cache(
-      new ResourceCache(broker->GetComponentPolicyCachePath(),
-                        content::BrowserThread::GetMessageLoopProxyForThread(
-                            content::BrowserThread::FILE)));
-
-  component_policy_service_.reset(new ComponentCloudPolicyService(
-      this,
-      schema_registry(),
-      broker->core(),
-      resource_cache.Pass(),
-      service_->request_context(),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::IO)));
 }
 
 }  // namespace policy

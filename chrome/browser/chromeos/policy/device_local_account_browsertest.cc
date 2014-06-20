@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
@@ -32,6 +33,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_path_override.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -309,6 +311,15 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
                                 PolicyBuilder::kFakeDeviceId);
     ASSERT_TRUE(test_server_.Start());
 
+    ASSERT_TRUE(extension_cache_root_dir_.CreateUniqueTempDir());
+    extension_cache_root_dir_override_.reset(new base::ScopedPathOverride(
+        chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS,
+        extension_cache_root_dir_.path()));
+    ASSERT_TRUE(external_data_cache_dir_.CreateUniqueTempDir());
+    external_data_cache_dir_override_.reset(new base::ScopedPathOverride(
+        chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTERNAL_DATA,
+        external_data_cache_dir_.path()));
+
     BrowserList::AddObserver(this);
 
     DevicePolicyCrosBrowserTest::SetUp();
@@ -422,11 +433,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   }
 
   base::FilePath GetCacheDirectoryForAccountID(const std::string& account_id) {
-    base::FilePath extension_cache_root_dir;
-    PathService::Get(chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS,
-                     &extension_cache_root_dir);
-    return extension_cache_root_dir.Append(
-        base::HexEncode(account_id.c_str(), account_id.size()));
+    return extension_cache_root_dir_.path()
+        .Append(base::HexEncode(account_id.c_str(), account_id.size()));
   }
 
   base::FilePath GetCacheCRXFile(const std::string& account_id,
@@ -451,6 +459,11 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   LocalPolicyTestServer test_server_;
 
  private:
+  base::ScopedTempDir extension_cache_root_dir_;
+  base::ScopedTempDir external_data_cache_dir_;
+  scoped_ptr<base::ScopedPathOverride> extension_cache_root_dir_override_;
+  scoped_ptr<base::ScopedPathOverride> external_data_cache_dir_override_;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountTest);
 };
 

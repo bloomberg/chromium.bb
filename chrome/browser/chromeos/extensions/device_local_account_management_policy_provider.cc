@@ -65,9 +65,6 @@ const char* kPublicSessionWhitelist[] = {
   "dhmdaeekeihmajjnmichlhiffffdbpde",  // Store.app demo
   "jeabmjjifhfcejonjjhccaeigpnnjaak",  // TweetDeck demo
   "pbdihpaifchmclcmkfdgffnnpfbobefh",  // YouTube demo
-
-  // Testing extensions:
-  "ongnjlefhnoajpbodoldndkbkdgfomlp",  // Show Managed Storage
 };
 
 }  // namespace

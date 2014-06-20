@@ -14,8 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "components/policy/core/common/cloud/component_cloud_policy_service.h"
-#include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 
 namespace policy {
@@ -29,8 +27,7 @@ class PolicyMap;
 // and RefreshPolicies becomes a no-op.
 class DeviceLocalAccountPolicyProvider
     : public ConfigurationPolicyProvider,
-      public DeviceLocalAccountPolicyService::Observer,
-      public ComponentCloudPolicyService::Delegate {
+      public DeviceLocalAccountPolicyService::Observer {
  public:
   DeviceLocalAccountPolicyProvider(
       const std::string& user_id,
@@ -46,19 +43,12 @@ class DeviceLocalAccountPolicyProvider
       DeviceLocalAccountPolicyService* service);
 
   // ConfigurationPolicyProvider:
-  virtual void Init(SchemaRegistry* registry) OVERRIDE;
   virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
   virtual void RefreshPolicies() OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
 
   // DeviceLocalAccountPolicyService::Observer:
   virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
   virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
-  virtual void OnBrokerShutdown(
-      DeviceLocalAccountPolicyBroker* broker) OVERRIDE;
-
-  // ComponentCloudPolicyService::Delegate:
-  virtual void OnComponentCloudPolicyUpdated() OVERRIDE;
 
  private:
   // Returns the broker for |user_id_| or NULL if not available.
@@ -72,10 +62,6 @@ class DeviceLocalAccountPolicyProvider
   // policy from the broker if available or keeping the current policy.
   void UpdateFromBroker();
 
-  // Creates the |component_policy_service_| if it hasn't been created yet
-  // and all the dependencies are in place.
-  void MaybeCreateComponentPolicyService();
-
   const std::string user_id_;
   scoped_refptr<DeviceLocalAccountExternalDataManager> external_data_manager_;
 
@@ -88,8 +74,6 @@ class DeviceLocalAccountPolicyProvider
 
   bool store_initialized_;
   bool waiting_for_policy_refresh_;
-
-  scoped_ptr<ComponentCloudPolicyService> component_policy_service_;
 
   base::WeakPtrFactory<DeviceLocalAccountPolicyProvider> weak_factory_;
 

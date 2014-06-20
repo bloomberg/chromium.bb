@@ -443,14 +443,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self.server.UpdateStateKeys(token_info['device_token'],
                                   key_update_request.server_backed_state_key)
 
-    # If this is a publicaccount request then get the username now and use it
-    # in every PolicyFetchResponse produced. This is required to validate
-    # policy for extensions in public accounts.
-    username = self.server.GetPolicies().get('policy_user', None)
-    for request in msg.policy_request.request:
-      if request.policy_type == 'google/chromeos/publicaccount':
-        username = request.settings_entity_id
-
     response = dm.DeviceManagementResponse()
     for request in msg.policy_request.request:
       if (request.policy_type in
@@ -464,7 +456,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.ProcessCloudPolicy(request, token_info, fetch_response)
       elif request.policy_type == 'google/chrome/extension':
         self.ProcessCloudPolicyForExtensions(
-            request, response.policy_response, token_info, username)
+            request, response.policy_response, token_info)
       else:
         fetch_response.error_code = 400
         fetch_response.error_message = 'Invalid policy_type'
@@ -636,8 +628,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self.SetProtobufMessageField(policy_message, field_descriptor, value)
       settings.__getattribute__(field.name).CopyFrom(policy_message)
 
-  def ProcessCloudPolicyForExtensions(self, request, response, token_info,
-                                      username):
+  def ProcessCloudPolicyForExtensions(self, request, response, token_info):
     """Handles a request for policy for extensions.
 
     A request for policy for extensions is slightly different from the other
@@ -649,7 +640,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       response: The DevicePolicyResponse message for the response. Multiple
       PolicyFetchResponses will be appended to this message.
       token_info: The token extracted from the request.
-      username: The username for the response.
     """
     # Send one PolicyFetchResponse for each extension that has
     # configuration data at the server.
@@ -659,13 +649,13 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       # type in the response.
       request.settings_entity_id = settings_entity_id
       fetch_response = response.response.add()
-      self.ProcessCloudPolicy(request, token_info, fetch_response, username)
+      self.ProcessCloudPolicy(request, token_info, fetch_response)
       # Don't do key rotations for these messages.
       fetch_response.ClearField('new_public_key')
       fetch_response.ClearField('new_public_key_signature')
       fetch_response.ClearField('new_public_key_verification_signature')
 
-  def ProcessCloudPolicy(self, msg, token_info, response, username=None):
+  def ProcessCloudPolicy(self, msg, token_info, response):
     """Handles a cloud policy request. (New protocol for policy requests.)
 
     Encodes the policy into protobuf representation, signs it and constructs
@@ -676,7 +666,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       token_info: The token extracted from the request.
       response: A PolicyFetchResponse message that should be filled with the
                 response data.
-      username: The username for the response. May be None.
     """
 
     if msg.machine_id:
@@ -757,10 +746,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     if signing_key:
       policy_data.public_key_version = current_key_index + 1
-
-    if username:
-      policy_data.username = username
-    elif msg.policy_type == 'google/chromeos/publicaccount':
+    if msg.policy_type == 'google/chromeos/publicaccount':
       policy_data.username = msg.settings_entity_id
     else:
       # For regular user/device policy, there is no way for the testserver to
@@ -974,8 +960,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       ],
       dm.DeviceRegisterRequest.DEVICE: [
           'google/chromeos/device',
-          'google/chromeos/publicaccount',
-          'google/chrome/extension'
+          'google/chromeos/publicaccount'
       ],
       dm.DeviceRegisterRequest.ANDROID_BROWSER: [
           'google/android/user'

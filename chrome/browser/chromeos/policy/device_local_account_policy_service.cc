@@ -9,12 +9,12 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -31,7 +31,6 @@
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/system_policy_request_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/device_management_backend.pb.h"
@@ -73,26 +72,29 @@ scoped_ptr<CloudPolicyClient> CreateClient(
 }
 
 // Get the subdirectory of the cache directory in which force-installed
-// extensions are cached for |account_id|. This is also used for the
-// component policy cache.
-std::string EncodeAccountId(const std::string& account_id) {
+// extensions are cached for |account_id|.
+std::string GetCacheSubdirectoryForAccountID(const std::string& account_id) {
   return base::HexEncode(account_id.c_str(), account_id.size());
 }
 
 // Cleans up the cache directory by removing subdirectories that are not found
 // in |subdirectories_to_keep|. Only caches whose cache directory is found in
 // |subdirectories_to_keep| may be running while the clean-up is in progress.
-void DeleteOrphanedCaches(
-    const base::FilePath& cache_root_dir,
+void DeleteOrphanedExtensionCaches(
     const std::set<std::string>& subdirectories_to_keep) {
+  base::FilePath cache_root_dir;
+  CHECK(PathService::Get(chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS,
+                         &cache_root_dir));
   base::FileEnumerator enumerator(cache_root_dir,
                                   false,
                                   base::FileEnumerator::DIRECTORIES);
   for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
     const std::string subdirectory(path.BaseName().MaybeAsASCII());
-    if (!ContainsKey(subdirectories_to_keep, subdirectory))
+    if (subdirectories_to_keep.find(subdirectory) ==
+        subdirectories_to_keep.end()) {
       base::DeleteFile(path, true);
+    }
   }
 }
 
@@ -103,8 +105,8 @@ void DeleteObsoleteExtensionCache(const std::string& account_id_to_delete) {
   base::FilePath cache_root_dir;
   CHECK(PathService::Get(chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS,
                          &cache_root_dir));
-  const base::FilePath path =
-      cache_root_dir.Append(EncodeAccountId(account_id_to_delete));
+  const base::FilePath path = cache_root_dir
+      .Append(GetCacheSubdirectoryForAccountID(account_id_to_delete));
   if (base::DirectoryExists(path))
     base::DeleteFile(path, true);
 }
@@ -113,13 +115,11 @@ void DeleteObsoleteExtensionCache(const std::string& account_id_to_delete) {
 
 DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
     const DeviceLocalAccount& account,
-    const base::FilePath& component_policy_cache_path,
     scoped_ptr<DeviceLocalAccountPolicyStore> store,
     scoped_refptr<DeviceLocalAccountExternalDataManager> external_data_manager,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : account_id_(account.account_id),
       user_id_(account.user_id),
-      component_policy_cache_path_(component_policy_cache_path),
       store_(store.Pass()),
       external_data_manager_(external_data_manager),
       core_(PolicyNamespaceKey(dm_protocol::kChromePublicAccountPolicyType,
@@ -130,7 +130,9 @@ DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
   CHECK(PathService::Get(chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS,
                          &cache_root_dir));
   extension_loader_ = new chromeos::DeviceLocalAccountExternalPolicyLoader(
-      store_.get(), cache_root_dir.Append(EncodeAccountId(account.account_id)));
+      store_.get(),
+      cache_root_dir.Append(
+          GetCacheSubdirectoryForAccountID(account.account_id)));
 }
 
 DeviceLocalAccountPolicyBroker::~DeviceLocalAccountPolicyBroker() {
@@ -180,11 +182,6 @@ std::string DeviceLocalAccountPolicyBroker::GetDisplayName() const {
   return display_name;
 }
 
-base::FilePath DeviceLocalAccountPolicyBroker::GetComponentPolicyCachePath()
-    const {
-  return component_policy_cache_path_;
-}
-
 DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
     chromeos::SessionManagerClient* session_manager_client,
     chromeos::DeviceSettingsService* device_settings_service,
@@ -210,8 +207,6 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
                          UpdateAccountListIfNonePending,
                      base::Unretained(this)))),
       weak_factory_(this) {
-  CHECK(PathService::Get(chromeos::DIR_DEVICE_LOCAL_ACCOUNT_COMPONENT_POLICY,
-                         &component_policy_cache_root_));
   external_data_service_.reset(new DeviceLocalAccountExternalDataService(
       this,
       external_data_service_backend_task_runner,
@@ -258,11 +253,6 @@ bool DeviceLocalAccountPolicyService::IsPolicyAvailableForUser(
     const std::string& user_id) {
   DeviceLocalAccountPolicyBroker* broker = GetBrokerForUser(user_id);
   return broker && broker->core()->store()->is_managed();
-}
-
-scoped_refptr<net::URLRequestContextGetter>
-DeviceLocalAccountPolicyService::request_context() const {
-  return request_context_;
 }
 
 void DeviceLocalAccountPolicyService::AddObserver(Observer* observer) {
@@ -424,7 +414,6 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
                                                              store.get());
       broker.reset(new DeviceLocalAccountPolicyBroker(
           *it,
-          component_policy_cache_root_.Append(EncodeAccountId(it->account_id)),
           store.Pass(),
           external_data_manager,
           base::MessageLoopProxy::current()));
@@ -443,7 +432,16 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
       policy_brokers_[it->user_id]->Initialize();
     }
 
-    subdirectories_to_keep.insert(EncodeAccountId(it->account_id));
+    if (orphan_cache_deletion_state_ == NOT_STARTED) {
+      subdirectories_to_keep.insert(
+          GetCacheSubdirectoryForAccountID(it->account_id));
+    }
+  }
+
+  std::set<std::string> obsolete_account_ids;
+  for (PolicyBrokerMap::const_iterator it = old_policy_brokers.begin();
+       it != old_policy_brokers.end(); ++it) {
+    obsolete_account_ids.insert(it->second->account_id());
   }
 
   if (orphan_cache_deletion_state_ == NOT_STARTED) {
@@ -455,17 +453,12 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
     // orphaned cache directories not found in |subdirectories_to_keep| from the
     // cache directory.
     orphan_cache_deletion_state_ = IN_PROGRESS;
-
-    base::FilePath cache_root_dir;
-    CHECK(PathService::Get(chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS,
-                           &cache_root_dir));
     extension_cache_task_runner_->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(
-            &DeleteOrphanedCaches, cache_root_dir, subdirectories_to_keep),
-        base::Bind(
-            &DeviceLocalAccountPolicyService::OnOrphanedExtensionCachesDeleted,
-            weak_factory_.GetWeakPtr()));
+        base::Bind(&DeleteOrphanedExtensionCaches, subdirectories_to_keep),
+        base::Bind(&DeviceLocalAccountPolicyService::
+                       OnOrphanedExtensionCachesDeleted,
+                   weak_factory_.GetWeakPtr()));
 
     // Start the extension caches for all brokers. These belong to accounts in
     // |account_ids| and are not affected by the clean-up.
@@ -483,16 +476,6 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
     }
   }
 
-  // Purge the component policy caches of any accounts that have been removed.
-  // Do this only after any obsolete brokers have been destroyed.
-  // TODO(joaodasilva): for now this must be posted to the FILE thread,
-  // to avoid racing with the ComponentCloudPolicyStore. Use a task runner
-  // once that class supports another background thread too.
-  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-                                   base::Bind(&DeleteOrphanedCaches,
-                                              component_policy_cache_root_,
-                                              subdirectories_to_keep));
-
   FOR_EACH_OBSERVER(Observer, observers_, OnDeviceLocalAccountsChanged());
 }
 
@@ -509,7 +492,6 @@ void DeviceLocalAccountPolicyService::DeleteBrokers(PolicyBrokerMap* map) {
           weak_factory_.GetWeakPtr(),
           it->second->account_id()));
     }
-    FOR_EACH_OBSERVER(Observer, observers_, OnBrokerShutdown(it->second));
     delete it->second;
   }
   map->clear();
