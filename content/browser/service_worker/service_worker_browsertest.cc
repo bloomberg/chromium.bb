@@ -119,7 +119,8 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
   typedef ServiceWorkerBrowserTest self;
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kEnableServiceWorker);
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

@@ -93,12 +93,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (!command_line.HasSwitch(switches::kEnableSpeechRecognition))
     WebRuntimeFeatures::enableScriptedSpeech(false);
-#endif
 
-  if (command_line.HasSwitch(switches::kEnableServiceWorker))
-    WebRuntimeFeatures::enableServiceWorker(true);
-
-#if defined(OS_ANDROID)
   // WebAudio is enabled by default on ARM and X86, if the MediaCodec
   // API is available.
   WebRuntimeFeatures::enableWebAudio(

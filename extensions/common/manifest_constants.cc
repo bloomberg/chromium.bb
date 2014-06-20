@@ -717,8 +717,8 @@ const char kScriptBadgeTitleIgnored[] =
     "default_title specified in script_badge manifest section will not be "
     "used.";
 const char kServiceWorkerRequiresFlag[] =
-    "Service worker features require --enable-service-worker command-line "
-    "flag.";
+    "Service worker features require "
+    "--enable-experimental-web-platform-features command-line flag.";
 const char kUnrecognizedManifestKey[] = "Unrecognized manifest key '*'.";
 const char kUnrecognizedManifestProperty[] =
     "Unrecognized property '*' of manifest key '*'.";

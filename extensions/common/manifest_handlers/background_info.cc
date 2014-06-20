@@ -140,7 +140,7 @@ bool BackgroundInfo::LoadServiceWorkerScript(const Extension* extension,
     return true;
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableServiceWorker)) {
+          ::switches::kEnableExperimentalWebPlatformFeatures)) {
     *error = ASCIIToUTF16(errors::kServiceWorkerRequiresFlag);
     return false;
   }

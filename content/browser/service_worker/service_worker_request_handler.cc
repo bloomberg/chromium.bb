@@ -58,8 +58,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     int process_id,
     int provider_id,
     ResourceType::Type resource_type) {
-  if (!ServiceWorkerUtils::IsFeatureEnabled() ||
-      !IsSchemeAndMethodSupported(request)) {
+  if (!IsSchemeAndMethodSupported(request)) {
     return;
   }
 

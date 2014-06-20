@@ -24,10 +24,6 @@ class ServiceWorkerUtils {
     return ResourceType::IsServiceWorker(type);
   }
 
-  // Returns true if the feature is enabled (or not disabled) by command-line
-  // flag.
-  static bool IsFeatureEnabled();
-
   // A helper for creating a do-nothing status callback.
   static void NoOpStatusCallback(ServiceWorkerStatusCode status) {}
 

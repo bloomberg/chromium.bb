@@ -25,21 +25,21 @@ class ExtensionManifestServiceWorkerTest : public ExtensionManifestTest {
 
   void AddServiceWorkerCommandLineSwitch() {
     CHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableServiceWorker));
+        switches::kEnableExperimentalWebPlatformFeatures));
     CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableServiceWorker);
+        switches::kEnableExperimentalWebPlatformFeatures);
   }
 
   // "app.service_worker" is restricted to trunk in _manifest_features.json.
   extensions::ScopedCurrentChannel trunk_channel_;
 };
 
-// Checks that a service_worker key is ignored without enable-service-worker
-// switch. When service workers are enabled by default please remove this
-// test.
+// Checks that a service_worker key is ignored without
+// enable-experimental-web-platform-features switch. When service workers are
+// enabled by default please remove this test.
 TEST_F(ExtensionManifestServiceWorkerTest, ServiceWorkerCommandLineRequired) {
   CHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableServiceWorker));
+      ::switches::kEnableExperimentalWebPlatformFeatures));
   LoadFromStringAndExpectError(
       "{"
       "  'name': '',"

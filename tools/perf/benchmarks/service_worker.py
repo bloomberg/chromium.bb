@@ -10,8 +10,7 @@ from telemetry.page import page_measurement
 class _ServiceWorkerMeasurement(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
-        '--enable-experimental-web-platform-features',
-        '--enable-service-worker'
+        '--enable-experimental-web-platform-features'
       ])
 
   def MeasurePage(self, _, tab, results):

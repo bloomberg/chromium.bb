@@ -14,13 +14,6 @@
 namespace content {
 
 // static
-bool ServiceWorkerUtils::IsFeatureEnabled() {
-  static bool enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableServiceWorker);
-  return enabled;
-}
-
-// static
 bool ServiceWorkerUtils::ScopeMatches(const GURL& scope, const GURL& url) {
   DCHECK(!scope.has_ref());
   DCHECK(!url.has_ref());

@@ -100,22 +100,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host_;
 };
 
-TEST_F(ServiceWorkerDispatcherHostTest, DisabledCausesError) {
-  DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableServiceWorker));
-
-  dispatcher_host_->OnMessageReceived(
-      ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, -1, GURL(), GURL()));
-
-  // TODO(alecflett): Pump the message loop when this becomes async.
-  ASSERT_EQ(1UL, dispatcher_host_->ipc_sink()->message_count());
-  EXPECT_TRUE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
-      ServiceWorkerMsg_ServiceWorkerRegistrationError::ID));
-}
-
-// TODO(falken): Enable this test when we remove the
-// --enable-service-worker-flag (see crbug.com/352581)
-TEST_F(ServiceWorkerDispatcherHostTest, DISABLED_RegisterSameOrigin) {
+TEST_F(ServiceWorkerDispatcherHostTest, RegisterSameOrigin) {
   const int64 kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
       kRenderProcessId, kProviderId, context()->AsWeakPtr(), NULL));
@@ -141,9 +126,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DISABLED_RegisterSameOrigin) {
            ServiceWorkerMsg_ServiceWorkerRegistered::ID);
 }
 
-// TODO(falken): Enable this test when we remove the
-// --enable-service-worker-flag (see crbug.com/352581)
-TEST_F(ServiceWorkerDispatcherHostTest, DISABLED_UnregisterSameOrigin) {
+TEST_F(ServiceWorkerDispatcherHostTest, UnregisterSameOrigin) {
   const int64 kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
       kRenderProcessId, kProviderId, context()->AsWeakPtr(), NULL));
@@ -159,35 +142,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DISABLED_UnregisterSameOrigin) {
              ServiceWorkerMsg_ServiceWorkerUnregistered::ID);
 }
 
-// Disable this since now we cache command-line switch in
-// ServiceWorkerUtils::IsFeatureEnabled() and this could be flaky depending
-// on testing order. (crbug.com/352581)
-// TODO(kinuko): Just remove DisabledCausesError test above and enable
-// this test when we remove the --enable-service-worker flag.
-TEST_F(ServiceWorkerDispatcherHostTest, DISABLED_Enabled) {
-  DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableServiceWorker));
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableServiceWorker);
-
-  dispatcher_host_->OnMessageReceived(
-      ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, -1, GURL(), GURL()));
-  base::RunLoop().RunUntilIdle();
-
-  // TODO(alecflett): Pump the message loop when this becomes async.
-  ASSERT_EQ(2UL, dispatcher_host_->ipc_sink()->message_count());
-  EXPECT_TRUE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
-      EmbeddedWorkerMsg_StartWorker::ID));
-  EXPECT_TRUE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
-      ServiceWorkerMsg_ServiceWorkerRegistered::ID));
-}
-
 TEST_F(ServiceWorkerDispatcherHostTest, EarlyContextDeletion) {
-  DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableServiceWorker));
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableServiceWorker);
-
   helper_->ShutdownContext();
 
   // Let the shutdown reach the simulated IO thread.
