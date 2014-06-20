@@ -80,6 +80,8 @@ gfx::Image CreateImage(int width, int height) {
 }
 
 bool IsEqual(const gfx::Image& img1, const gfx::Image& img2) {
+  img1.AsImageSkia().EnsureRepsForSupportedScales();
+  img2.AsImageSkia().EnsureRepsForSupportedScales();
   std::vector<gfx::ImageSkiaRep> img1_reps = img1.AsImageSkia().image_reps();
   gfx::ImageSkia image_skia2 = img2.AsImageSkia();
   if (image_skia2.image_reps().size() != img1_reps.size())
