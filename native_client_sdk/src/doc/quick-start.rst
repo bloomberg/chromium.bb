@@ -9,8 +9,8 @@ To get started with Native Client:
 #. Read the :doc:`Technical Overview <overview>` to understand what Native
    Client is, how a Native Client application is structured and to get a feel
    for what you need to do to port existing code.
-#. Play with some of the applications in the :doc:`Application Gallery
-   <community/application-gallery>` to see what others have done so far.
+#. Play with some of the applications in the `Application Gallery
+   <community/application-gallery>`_ to see what others have done so far.
 #. Go through the :doc:`Getting Started Tutorial <devguide/tutorial/tutorial-part1>`. The
    tutorial walks you through how to get Native Client set up for the first
    time and check for browser version compatibility.
