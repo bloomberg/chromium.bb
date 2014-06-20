@@ -243,22 +243,12 @@ TEST_F(ImageTest, MultiResolutionPNGToImageSkia) {
   scales.push_back(1.0f);
   scales.push_back(2.0f);
   gfx::ImageSkia image_skia = image.AsImageSkia();
+  EXPECT_TRUE(gt::ImageSkiaStructureMatches(image_skia, kSize1x, kSize1x,
+                                            scales));
   EXPECT_TRUE(gt::IsEqual(bytes1x,
       image_skia.GetRepresentation(1.0f).sk_bitmap()));
   EXPECT_TRUE(gt::IsEqual(bytes2x,
       image_skia.GetRepresentation(2.0f).sk_bitmap()));
-  EXPECT_TRUE(gt::ImageSkiaStructureMatches(image_skia, kSize1x, kSize1x,
-                                            scales));
-
-  gfx::ImageSkiaRep rep_1_6x = image_skia.GetRepresentation(1.6f);
-  ASSERT_FALSE(rep_1_6x.is_null());
-  ASSERT_EQ(1.6f, rep_1_6x.scale());
-  EXPECT_EQ("40x40", rep_1_6x.pixel_size().ToString());
-
-  gfx::ImageSkiaRep rep_0_8x = image_skia.GetRepresentation(0.8f);
-  ASSERT_FALSE(rep_0_8x.is_null());
-  ASSERT_EQ(0.8f, rep_0_8x.scale());
-  EXPECT_EQ("20x20", rep_0_8x.pixel_size().ToString());
 }
 
 TEST_F(ImageTest, MultiResolutionPNGToPlatform) {
