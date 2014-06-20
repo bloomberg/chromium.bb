@@ -2713,9 +2713,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="CloudPrint.XmppPingTry">
   <owner>vitalybuka@chromium.org</owner>
-  <summary>
-    Number of tries before successfull ping. 99 means giving up.
-  </summary>
+  <summary>Number of tries before successful ping. 99 means giving up.</summary>
 </histogram>
 
 <histogram name="Compositing.CopyFromSurfaceTime" units="ms">
@@ -28520,6 +28518,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SoftwareReporter.ExitCode" enum="SwReporterExitCode">
+  <owner>mad@chromium.org</owner>
+  <summary>The exit code from the execution of the software reporter.</summary>
+</histogram>
+
+<histogram name="SoftwareReporter.Step" enum="SwReporterStep">
+  <owner>mad@chromium.org</owner>
+  <summary>
+    The registration and execution steps for the software reporter.
+  </summary>
+</histogram>
+
 <histogram name="SpellCheck.SpellingService.Enabled" enum="BooleanEnabled">
   <owner>groby@chromium.org</owner>
   <owner>rlp@chromium.org</owner>
@@ -44836,6 +44846,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Failure"/>
   <int value="2" label="Cancelled"/>
   <int value="3" label="Attempted"/>
+</enum>
+
+<enum name="SwReporterExitCode" type="int">
+  <int value="0" label="Success / Found"/>
+  <int value="1" label="Failed"/>
+  <int value="2" label="Nothing Found"/>
+</enum>
+
+<enum name="SwReporterStep" type="int">
+  <int value="0" label="Explicit request"/>
+  <int value="1" label="Startup retry"/>
+  <int value="2" label="Retried too many times"/>
+  <int value="3" label="Start execution"/>
+  <int value="4" label="Failed to start"/>
+  <int value="5" label="Registry exit code"/>
 </enum>
 
 <enum name="SyncAuthError" type="int">

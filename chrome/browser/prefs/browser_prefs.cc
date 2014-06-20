@@ -4,6 +4,8 @@
 
 #include "chrome/browser/prefs/browser_prefs.h"
 
+#include <string>
+
 #include "base/debug/trace_event.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -185,6 +187,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
+#include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -329,6 +332,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_WIN)
   app_metro_launch::RegisterPrefs(registry);
+  component_updater::RegisterPrefsForSwReporter(registry);
   password_manager::PasswordManager::RegisterLocalPrefs(registry);
 #endif
 

@@ -356,14 +356,14 @@ void AutomaticProfileResetterDelegateImpl::RunProfileSettingsReset(
     old_settings_snapshot.reset(new ResettableSettingsSnapshot(profile_));
     old_settings_snapshot->RequestShortcuts(base::Closure());
   }
-  profile_resetter_->Reset(
-      resettable_aspects_,
-      brandcoded_defaults_.Pass(),
-      base::Bind(&AutomaticProfileResetterDelegateImpl::
-                     OnProfileSettingsResetCompleted,
-                 AsWeakPtr(),
-                 completion,
-                 base::Passed(&old_settings_snapshot)));
+  profile_resetter_->Reset(resettable_aspects_,
+                           brandcoded_defaults_.Pass(),
+                           send_feedback,
+                           base::Bind(&AutomaticProfileResetterDelegateImpl::
+                                          OnProfileSettingsResetCompleted,
+                                      AsWeakPtr(),
+                                      completion,
+                                      base::Passed(&old_settings_snapshot)));
 }
 
 void AutomaticProfileResetterDelegateImpl::

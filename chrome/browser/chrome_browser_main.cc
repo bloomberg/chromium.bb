@@ -165,6 +165,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_util_win.h"
 #include "chrome/browser/chrome_browser_main_win.h"
+#include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #include "chrome/browser/first_run/try_chrome_dialog_view.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/ui/network_profile_bubble.h"
@@ -405,6 +406,10 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
 
 #if defined(CLD2_DYNAMIC_MODE) && defined(CLD2_IS_COMPONENT)
   RegisterCldComponent(cus);
+#endif
+
+#if defined(OS_WIN)
+  ExecutePendingSwReporter(cus, g_browser_process->local_state());
 #endif
 
   cus->Start();

@@ -474,6 +474,8 @@
         'browser/component_updater/ppapi_utils.h',
         'browser/component_updater/recovery_component_installer.cc',
         'browser/component_updater/recovery_component_installer.h',
+        'browser/component_updater/sw_reporter_installer_win.cc',
+        'browser/component_updater/sw_reporter_installer_win.h',
         'browser/component_updater/swiftshader_component_installer.cc',
         'browser/component_updater/swiftshader_component_installer.h',
         'browser/component_updater/update_checker.cc',
