@@ -92,14 +92,14 @@ enum PageshowEventPersistence {
 
     enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
-    class LocalDOMWindow FINAL : public RefCountedWillBeRefCountedGarbageCollected<LocalDOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public DOMWindowBase64, public FrameDestructionObserver, public WillBeHeapSupplementable<LocalDOMWindow>, public LifecycleContext<LocalDOMWindow> {
+    class LocalDOMWindow FINAL : public RefCountedWillBeGarbageCollectedFinalized<LocalDOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public DOMWindowBase64, public FrameDestructionObserver, public WillBeHeapSupplementable<LocalDOMWindow>, public LifecycleContext<LocalDOMWindow> {
         WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
-        REFCOUNTED_EVENT_TARGET(LocalDOMWindow);
+        DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCounted<LocalDOMWindow>);
     public:
         static PassRefPtrWillBeRawPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
         static PassRefPtrWillBeRawPtr<LocalDOMWindow> create(LocalFrame& frame)
         {
-            return adoptRefWillBeRefCountedGarbageCollected(new LocalDOMWindow(frame));
+            return adoptRefWillBeNoop(new LocalDOMWindow(frame));
         }
         virtual ~LocalDOMWindow();
 
