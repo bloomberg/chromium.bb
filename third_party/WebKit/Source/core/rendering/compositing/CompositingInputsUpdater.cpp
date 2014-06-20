@@ -22,6 +22,15 @@ CompositingInputsUpdater::~CompositingInputsUpdater()
 {
 }
 
+static bool hasStackingContextBeforeAncestor(const RenderLayer* child, const RenderLayer* ancestor)
+{
+    for (RenderLayer* current = child->parent(); current && current != ancestor; current = current->parent()) {
+        if (current->stackingNode()->isStackingContext())
+            return true;
+    }
+    return false;
+}
+
 void CompositingInputsUpdater::update(RenderLayer* layer, UpdateType updateType, AncestorInfo info)
 {
     if (!layer->childNeedsCompositingInputsUpdate() && updateType != ForceUpdate)
@@ -57,10 +66,25 @@ void CompositingInputsUpdater::update(RenderLayer* layer, UpdateType updateType,
             properties.transformAncestor = parent->hasTransform() ? parent : parent->compositingInputs().transformAncestor;
             properties.filterAncestor = parent->hasFilter() ? parent : parent->compositingInputs().filterAncestor;
 
-            if (layer->renderer()->isOutOfFlowPositioned() && info.ancestorScrollingLayer && !layer->subtreeIsInvisible()) {
+            if (info.ancestorScrollingLayer) {
                 const RenderObject* container = layer->renderer()->containingBlock();
-                const RenderObject* scroller = info.ancestorScrollingLayer->renderer();
-                properties.isUnclippedDescendant = scroller != container && scroller->isDescendantOf(container);
+
+                if (layer->renderer()->isOutOfFlowPositioned() && !layer->subtreeIsInvisible()) {
+                    const RenderObject* scroller = info.ancestorScrollingLayer->renderer();
+                    properties.isUnclippedDescendant = scroller != container && scroller->isDescendantOf(container);
+                }
+
+                const RenderLayer* containerLayer = container->enclosingLayer();
+                if (!containerLayer->stackingNode()->isStackingContext()) {
+                    const RenderLayer* scrollParent = containerLayer->scrollsOverflow() ? containerLayer : containerLayer->compositingInputs().inheritedScrollParent;
+
+                    // We need to ensure that there's no stacking context between us and our scroll parent.
+                    // Sadly, we may have jumped over this stacking context since we're operating in terms
+                    // of containing blocks. This walk should be short, though, since we're only going as
+                    // far as the first stacking context.
+                    if (scrollParent && !hasStackingContextBeforeAncestor(layer, scrollParent))
+                        properties.inheritedScrollParent = scrollParent;
+                }
             }
         }
 

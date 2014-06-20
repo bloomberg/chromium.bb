@@ -1621,44 +1621,6 @@ void RenderLayer::convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutR
     rect.move(-delta.x(), -delta.y());
 }
 
-RenderLayer* RenderLayer::scrollParent() const
-{
-    ASSERT(compositor()->acceleratedCompositingForOverflowScrollEnabled());
-
-    // Normal flow elements will be parented under the main scrolling layer, so
-    // we don't need a scroll parent/child relationship to get them to scroll.
-    if (stackingNode()->isNormalFlowOnly())
-        return 0;
-
-    // A layer scrolls with its containing block. So to find the overflow scrolling layer
-    // that we scroll with respect to, we must ascend the layer tree until we reach the
-    // first overflow scrolling div at or above our containing block. I will refer to this
-    // layer as our 'scrolling ancestor'.
-    //
-    // Now, if we reside in a normal flow list, then we will naturally scroll with our scrolling
-    // ancestor, and we need not be composited. If, on the other hand, we reside in a z-order
-    // list, and on our walk upwards to our scrolling ancestor we find no layer that is a stacking
-    // context, then we know that in the stacking tree, we will not be in the subtree rooted at
-    // our scrolling ancestor, and we will therefore not scroll with it. In this case, we must
-    // be a composited layer since the compositor will need to take special measures to ensure
-    // that we scroll with our scrolling ancestor and it cannot do this if we do not promote.
-
-    RenderLayer* scrollParent = ancestorScrollingLayer();
-    if (!scrollParent || scrollParent->stackingNode()->isStackingContext())
-        return 0;
-
-    // If we hit a stacking context on our way up to the ancestor scrolling layer, it will already
-    // be composited due to an overflow scrolling parent, so we don't need to.
-    for (RenderLayer* ancestor = parent(); ancestor && ancestor != scrollParent; ancestor = ancestor->parent()) {
-        if (ancestor->stackingNode()->isStackingContext()) {
-            scrollParent = 0;
-            break;
-        }
-    }
-
-    return scrollParent;
-}
-
 RenderLayer* RenderLayer::clipParent() const
 {
     if (compositingReasons() & CompositingReasonOutOfFlowClipping && !compositor()->clippedByNonAncestorInStackingTree(this)) {

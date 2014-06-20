@@ -332,7 +332,13 @@ public:
 
     bool clipsCompositingDescendantsWithBorderRadius() const;
 
-    RenderLayer* scrollParent() const;
+    RenderLayer* scrollParent() const
+    {
+        if (stackingNode()->isNormalFlowOnly())
+            return 0;
+        return const_cast<RenderLayer*>(compositingInputs().inheritedScrollParent);
+    }
+
     RenderLayer* clipParent() const;
 
     // Computes the position of the given render object in the space of |repaintContainer|.
@@ -448,6 +454,7 @@ public:
             : opacityAncestor(0)
             , transformAncestor(0)
             , filterAncestor(0)
+            , inheritedScrollParent(0)
             , isUnclippedDescendant(false)
         { }
 
@@ -455,6 +462,7 @@ public:
         const RenderLayer* opacityAncestor;
         const RenderLayer* transformAncestor;
         const RenderLayer* filterAncestor;
+        const RenderLayer* inheritedScrollParent;
         unsigned isUnclippedDescendant : 1;
     };
 
