@@ -68,6 +68,7 @@ extern const char kDebugPackedApps[];
 extern const char kDiagnostics[];
 extern const char kDiagnosticsFormat[];
 extern const char kDiagnosticsRecovery[];
+extern const char kDisableAnswersInSuggest[];
 extern const char kDisableAsyncDns[];
 extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kDisableBackgroundNetworking[];

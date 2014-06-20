@@ -647,8 +647,7 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
   search_term_args.input_type = input.type();
   search_term_args.cursor_position = input.cursor_position();
   search_term_args.page_classification = input.current_page_classification();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAnswersInSuggest))
+  if (OmniboxFieldTrial::EnableAnswersInSuggest())
     search_term_args.session_token = GetSessionToken();
   GURL suggest_url(template_url->suggestions_url_ref().ReplaceSearchTerms(
       search_term_args,

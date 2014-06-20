@@ -206,6 +206,9 @@ const char kDiagnosticsFormat[]             = "diagnostics-format";
 // Tells the diagnostics mode to do the requested recovery step(s).
 const char kDiagnosticsRecovery[]           = "diagnostics-recovery";
 
+// Disables the experimental Answers in Suggest feature.
+const char kDisableAnswersInSuggest[]       = "disable-answers-in-suggest";
+
 // Disables the experimental asynchronous DNS client.
 const char kDisableAsyncDns[]               = "disable-async-dns";
 
@@ -420,7 +423,7 @@ extern const char kEasyUnlockAppPath[]      = "easy-unlock-app-path";
 extern const char kEnableAccessRequestNotifications[] =
     "enable-access-request-notifications";
 
-// Enable Answers in Suggest.
+// Enables the experimental Answers in Suggest feature.
 const char kEnableAnswersInSuggest[]        = "enable-answers-in-suggest";
 
 // If set, the app list will be enabled as if enabled from CWS.

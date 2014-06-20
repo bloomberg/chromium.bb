@@ -282,6 +282,16 @@ class OmniboxFieldTrial {
   static bool DisableInlining();
 
   // ---------------------------------------------------------
+  // For the AnswersInSuggest experiment that's part of the bundled omnibox
+  // field trial.
+
+  // Returns true if the AnswersInSuggest feature should be enabled causing
+  // query responses such as current weather conditions or stock quotes
+  // to be provided in the Omnibox suggestion list. Considers both the
+  // field trial state as well as the overriding command-line flags.
+  static bool EnableAnswersInSuggest();
+
+  // ---------------------------------------------------------
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.
@@ -296,6 +306,7 @@ class OmniboxFieldTrial {
   static const char kZeroSuggestVariantRule[];
   static const char kBookmarksIndexURLsRule[];
   static const char kDisableInliningRule[];
+  static const char kAnswersInSuggestRule[];
 
   // Parameter names used by the HUP new scoring experiments.
   static const char kHUPNewScoringEnabledParam[];

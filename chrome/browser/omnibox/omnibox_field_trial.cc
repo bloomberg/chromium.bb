@@ -7,6 +7,7 @@
 #include <cmath>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -15,6 +16,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/variations/variation_ids.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/metrics_util.h"
@@ -431,6 +433,18 @@ bool OmniboxFieldTrial::DisableInlining() {
       kDisableInliningRule) == "true";
 }
 
+bool OmniboxFieldTrial::EnableAnswersInSuggest() {
+  const CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kDisableAnswersInSuggest))
+    return false;
+  if (cl->HasSwitch(switches::kEnableAnswersInSuggest))
+    return true;
+
+  return chrome_variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kAnswersInSuggestRule) == "true";
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kShortcutsScoringMaxRelevanceRule[] =
@@ -446,6 +460,7 @@ const char OmniboxFieldTrial::kZeroSuggestRule[] = "ZeroSuggest";
 const char OmniboxFieldTrial::kZeroSuggestVariantRule[] = "ZeroSuggestVariant";
 const char OmniboxFieldTrial::kBookmarksIndexURLsRule[] = "BookmarksIndexURLs";
 const char OmniboxFieldTrial::kDisableInliningRule[] = "DisableInlining";
+const char OmniboxFieldTrial::kAnswersInSuggestRule[] = "AnswersInSuggest";
 
 const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
     "HUPExperimentalScoringEnabled";

@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/google/google_profile_helper.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sync/glue/device_info.h"
@@ -114,12 +115,8 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
   sync_pb::SyncEnums::DeviceType device_type =
       browser_sync::DeviceInfo::GetLocalDeviceType();
   if (device_type == sync_pb::SyncEnums_DeviceType_TYPE_PHONE) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableAnswersInSuggest)) {
-      return "chrome-mobile-ext-ansg";
-    } else {
-      return "chrome-mobile-ext";
-    }
+    return OmniboxFieldTrial::EnableAnswersInSuggest() ?
+        "chrome-mobile-ext-ansg" : "chrome-mobile-ext";
   }
   return "chrome-ext";
 #else

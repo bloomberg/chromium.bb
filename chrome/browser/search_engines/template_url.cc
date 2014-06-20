@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -629,8 +630,7 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == kGoogleSearchFieldtrialParameter) {
     replacements->push_back(Replacement(GOOGLE_SEARCH_FIELDTRIAL_GROUP, start));
   } else if (parameter == kGoogleSearchVersion) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableAnswersInSuggest))
+    if (OmniboxFieldTrial::EnableAnswersInSuggest())
       url->insert(start, "gs_rn=42&");
   } else if (parameter == kGoogleSessionToken) {
     replacements->push_back(Replacement(GOOGLE_SESSION_TOKEN, start));
