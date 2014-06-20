@@ -59,7 +59,13 @@ void LockWindowState::OnWMEvent(wm::WindowState* window_state,
     case wm::WM_EVENT_SHOW_INACTIVE:
       return;
     case wm::WM_EVENT_SET_BOUNDS:
-      UpdateBounds(window_state);
+      if (window_state->IsMaximized() || window_state->IsFullscreen()) {
+        UpdateBounds(window_state);
+      } else {
+        const ash::wm::SetBoundsEvent* bounds_event =
+            static_cast<const ash::wm::SetBoundsEvent*>(event);
+        window_state->SetBoundsConstrained(bounds_event->requested_bounds());
+      }
       break;
     case wm::WM_EVENT_ADDED_TO_WORKSPACE:
       if (current_state_type_ != wm::WINDOW_STATE_TYPE_MAXIMIZED &&
@@ -154,6 +160,9 @@ wm::WindowStateType LockWindowState::GetMaximizedOrCenteredWindowType(
 }
 
 void LockWindowState::UpdateBounds(wm::WindowState* window_state) {
+  if (!window_state->IsMaximized() && !window_state->IsFullscreen())
+    return;
+
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
   gfx::Rect keyboard_bounds;

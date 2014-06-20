@@ -1040,7 +1040,7 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = background_bounds();
-  params.show_state = ui::SHOW_STATE_MAXIMIZED;
+  params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent =
       ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),

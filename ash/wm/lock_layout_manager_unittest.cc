@@ -18,6 +18,7 @@
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
 namespace test {
@@ -25,6 +26,36 @@ namespace test {
 namespace {
 
 const int kVirtualKeyboardHeight = 100;
+
+// A login implementation of WidgetDelegate.
+class LoginTestWidgetDelegate : public views::WidgetDelegate {
+ public:
+  explicit LoginTestWidgetDelegate(views::Widget* widget) : widget_(widget) {
+  }
+  virtual ~LoginTestWidgetDelegate() {}
+
+  // Overridden from WidgetDelegate:
+  virtual void DeleteDelegate() OVERRIDE {
+    delete this;
+  }
+  virtual views::Widget* GetWidget() OVERRIDE {
+    return widget_;
+  }
+  virtual const views::Widget* GetWidget() const OVERRIDE {
+    return widget_;
+  }
+  virtual bool CanActivate() const OVERRIDE {
+    return true;
+  }
+  virtual bool ShouldAdvanceFocusToTopLevelWidget() const OVERRIDE {
+    return true;
+  }
+
+ private:
+  views::Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoginTestWidgetDelegate);
+};
 
 }  // namespace
 
@@ -45,13 +76,18 @@ class LockLayoutManagerTest : public AshTestBase {
     AshTestBase::TearDown();
   }
 
-  aura::Window* CreateTestLoginWindowWithBounds(const gfx::Rect& bounds) {
+  aura::Window* CreateTestLoginWindow(views::Widget::InitParams params,
+                                      bool use_delegate) {
     aura::Window* parent = Shell::GetPrimaryRootWindowController()->
         GetContainer(ash::kShellWindowId_LockScreenContainer);
-    views::Widget* widget =
-        views::Widget::CreateWindowWithParentAndBounds(NULL, parent, bounds);
+    params.parent = parent;
+    views::Widget* widget = new views::Widget;
+    if (use_delegate)
+      params.delegate = new LoginTestWidgetDelegate(widget);
+    widget->Init(params);
     widget->Show();
-    return widget->GetNativeView();
+    aura::Window* window = widget->GetNativeView();
+    return window;
   }
 
   // Show or hide the keyboard.
@@ -78,30 +114,87 @@ class LockLayoutManagerTest : public AshTestBase {
   }
 };
 
-TEST_F(LockLayoutManagerTest, WindowBoundsAreEqualToScreen) {
+TEST_F(LockLayoutManagerTest, NorwmalWindowBoundsArePreserved) {
   gfx::Rect screen_bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
 
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW);
+  const gfx::Rect bounds = gfx::Rect(10, 10, 300, 300);
+  widget_params.bounds = bounds;
   scoped_ptr<aura::Window> window(
-      CreateTestLoginWindowWithBounds(gfx::Rect(10, 10, 300, 300)));
-  EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
+      CreateTestLoginWindow(widget_params, false /* use_delegate */));
+  EXPECT_EQ(bounds.ToString(), window->GetBoundsInScreen().ToString());
 
   gfx::Rect work_area =
       ScreenUtil::GetDisplayWorkAreaBoundsInParent(window.get());
   window->SetBounds(work_area);
 
-  // Usually work_area takes Shelf into account but that doesn't affect
-  // LockScreen container windows.
-  EXPECT_NE(work_area.ToString(), window->GetBoundsInScreen().ToString());
-  EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
+  EXPECT_EQ(work_area.ToString(), window->GetBoundsInScreen().ToString());
+  EXPECT_NE(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
 
-  window->SetBounds(gfx::Rect(100, 100, 200, 200));
-  EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
+  const gfx::Rect bounds2 = gfx::Rect(100, 100, 200, 200);
+  window->SetBounds(bounds2);
+  EXPECT_EQ(bounds2.ToString(), window->GetBoundsInScreen().ToString());
+}
+
+TEST_F(LockLayoutManagerTest, MaximizedFullscreenWindowBoundsAreEqualToScreen) {
+  gfx::Rect screen_bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
+
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
+  const gfx::Rect bounds = gfx::Rect(10, 10, 300, 300);
+  widget_params.bounds = bounds;
+  // Maximized TYPE_WINDOW_FRAMELESS windows needs a delegate defined otherwise
+  // it won't get initial SetBounds event.
+  scoped_ptr<aura::Window> maximized_window(
+      CreateTestLoginWindow(widget_params, true /* use_delegate */));
+
+  widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
+  widget_params.delegate = NULL;
+  scoped_ptr<aura::Window> fullscreen_window(
+      CreateTestLoginWindow(widget_params, false  /* use_delegate */));
+
+  EXPECT_EQ(screen_bounds.ToString(),
+            maximized_window->GetBoundsInScreen().ToString());
+  EXPECT_EQ(screen_bounds.ToString(),
+            fullscreen_window->GetBoundsInScreen().ToString());
+
+  gfx::Rect work_area =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(maximized_window.get());
+  maximized_window->SetBounds(work_area);
+
+  EXPECT_NE(work_area.ToString(),
+            maximized_window->GetBoundsInScreen().ToString());
+  EXPECT_EQ(screen_bounds.ToString(),
+            maximized_window->GetBoundsInScreen().ToString());
+
+  work_area =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(fullscreen_window.get());
+  fullscreen_window->SetBounds(work_area);
+  EXPECT_NE(work_area.ToString(),
+            fullscreen_window->GetBoundsInScreen().ToString());
+  EXPECT_EQ(screen_bounds.ToString(),
+            fullscreen_window->GetBoundsInScreen().ToString());
+
+  const gfx::Rect bounds2 = gfx::Rect(100, 100, 200, 200);
+  maximized_window->SetBounds(bounds2);
+  fullscreen_window->SetBounds(bounds2);
+  EXPECT_EQ(screen_bounds.ToString(),
+            maximized_window->GetBoundsInScreen().ToString());
+  EXPECT_EQ(screen_bounds.ToString(),
+            fullscreen_window->GetBoundsInScreen().ToString());
 }
 
 TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   gfx::Rect screen_bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
 
-  scoped_ptr<aura::Window> window(CreateTestLoginWindowWithBounds(gfx::Rect()));
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
+  scoped_ptr<aura::Window> window(
+      CreateTestLoginWindow(widget_params, false /* use_delegate */));
+
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
 
   // When virtual keyboard overscroll is enabled keyboard bounds should not
@@ -134,10 +227,16 @@ TEST_F(LockLayoutManagerTest, MultipleMonitors) {
     return;
 
   UpdateDisplay("300x400,400x500");
+  gfx::Rect screen_bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
-  gfx::Rect screen_bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
-  scoped_ptr<aura::Window> window(CreateTestLoginWindowWithBounds(gfx::Rect()));
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
+  scoped_ptr<aura::Window> window(
+      CreateTestLoginWindow(widget_params, false /* use_delegate */));
+  window->SetProperty(aura::client::kCanMaximizeKey, true);
+
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
 
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
