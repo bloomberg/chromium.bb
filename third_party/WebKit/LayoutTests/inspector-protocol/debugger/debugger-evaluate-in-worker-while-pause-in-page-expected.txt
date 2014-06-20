@@ -1,0 +1,6 @@
+Started worker
+Paused on 'debugger;'
+Worker created
+didConnectToWorker
+Successfully evaluated, result: 2
+

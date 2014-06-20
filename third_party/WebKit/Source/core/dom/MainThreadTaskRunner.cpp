@@ -36,14 +36,16 @@ namespace WebCore {
 struct PerformTaskContext {
     WTF_MAKE_NONCOPYABLE(PerformTaskContext); WTF_MAKE_FAST_ALLOCATED;
 public:
-    PerformTaskContext(WeakPtr<MainThreadTaskRunner> runner, PassOwnPtr<ExecutionContextTask> task)
+    PerformTaskContext(WeakPtr<MainThreadTaskRunner> runner, PassOwnPtr<ExecutionContextTask> task, bool isInspectorTask)
         : m_runner(runner)
         , m_task(task)
+        , m_isInspectorTask(isInspectorTask)
     {
     }
 
     WeakPtr<MainThreadTaskRunner> m_runner;
     OwnPtr<ExecutionContextTask> m_task;
+    bool m_isInspectorTask;
 
     static void didReceiveTask(void* untypedContext);
 };
@@ -58,7 +60,7 @@ void PerformTaskContext::didReceiveTask(void* untypedContext)
     MainThreadTaskRunner* runner = self->m_runner.get();
     if (!runner)
         return;
-    runner->perform(self->m_task.release());
+    runner->perform(self->m_task.release(), self->m_isInspectorTask);
 }
 
 MainThreadTaskRunner::MainThreadTaskRunner(ExecutionContext* context)
@@ -75,12 +77,17 @@ MainThreadTaskRunner::~MainThreadTaskRunner()
 
 void MainThreadTaskRunner::postTask(PassOwnPtr<ExecutionContextTask> task)
 {
-    callOnMainThread(PerformTaskContext::didReceiveTask, new PerformTaskContext(m_weakFactory.createWeakPtr(), task));
+    callOnMainThread(PerformTaskContext::didReceiveTask, new PerformTaskContext(m_weakFactory.createWeakPtr(), task, false));
 }
 
-void MainThreadTaskRunner::perform(PassOwnPtr<ExecutionContextTask> task)
+void MainThreadTaskRunner::postInspectorTask(PassOwnPtr<ExecutionContextTask> task)
 {
-    if (m_context->tasksNeedSuspension() || !m_pendingTasks.isEmpty()) {
+    callOnMainThread(PerformTaskContext::didReceiveTask, new PerformTaskContext(m_weakFactory.createWeakPtr(), task, true));
+}
+
+void MainThreadTaskRunner::perform(PassOwnPtr<ExecutionContextTask> task, bool isInspectorTask)
+{
+    if (!isInspectorTask && (m_context->tasksNeedSuspension() || !m_pendingTasks.isEmpty())) {
         m_pendingTasks.append(task);
         return;
     }

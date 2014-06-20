@@ -5074,6 +5074,11 @@ void Document::postTask(PassOwnPtr<ExecutionContextTask> task)
     m_taskRunner->postTask(task);
 }
 
+void Document::postInspectorTask(const Closure& closure)
+{
+    m_taskRunner->postInspectorTask(CallClosureTask::create(closure));
+}
+
 void Document::tasksWereSuspended()
 {
     scriptRunner()->suspend();

@@ -32,6 +32,7 @@
 #include "core/workers/WorkerObjectProxy.h"
 
 #include "bindings/v8/SerializedScriptValue.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerMessagingProxy.h"
 #include "platform/NotImplemented.h"
@@ -76,7 +77,8 @@ void WorkerObjectProxy::reportConsoleMessage(MessageSource source, MessageLevel 
 
 void WorkerObjectProxy::postMessageToPageInspector(const String& message)
 {
-    m_executionContext->postTask(bind(&WorkerMessagingProxy::postMessageToPageInspector, m_messagingProxy, message.isolatedCopy()));
+    if (m_executionContext->isDocument())
+        toDocument(m_executionContext)->postInspectorTask(bind(&WorkerMessagingProxy::postMessageToPageInspector, m_messagingProxy, message.isolatedCopy()));
 }
 
 void WorkerObjectProxy::updateInspectorStateCookie(const String&)

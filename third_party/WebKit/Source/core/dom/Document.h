@@ -870,6 +870,7 @@ public:
 
     // FIXME(crbug.com/305497): This should be removed once LocalDOMWindow is an ExecutionContext.
     virtual void postTask(PassOwnPtr<ExecutionContextTask>) OVERRIDE; // Executes the task on context's thread asynchronously.
+    void postInspectorTask(const Closure&);
 
     virtual void tasksWereSuspended() OVERRIDE FINAL;
     virtual void tasksWereResumed() OVERRIDE FINAL;

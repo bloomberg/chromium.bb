@@ -51,7 +51,9 @@ public:
     ~MainThreadTaskRunner();
 
     void postTask(PassOwnPtr<ExecutionContextTask>); // Executes the task on context's thread asynchronously.
-    void perform(PassOwnPtr<ExecutionContextTask>);
+    void postInspectorTask(PassOwnPtr<ExecutionContextTask>);
+    void perform(PassOwnPtr<ExecutionContextTask>, bool);
+
     void suspend();
     void resume();
 
