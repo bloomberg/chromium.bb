@@ -16,11 +16,11 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <sys/syscall.h>
 #include <unistd.h>
 
 #if defined(__linux__)
 # include <linux/futex.h>
+# include <sys/syscall.h>
 #endif
 
 #include "native_client/src/include/elf32.h"
@@ -79,6 +79,45 @@ void _start(void *info);
 #endif
 static __thread void *g_tls_value;
 
+/*
+ * When the host is NaCl (i.e., for NaCl newlib based nonsfi_loader),
+ * the following structs/macros are not defined. We just map to NaCl
+ * newlib's.
+ */
+#if defined(__native_client__)
+# define nacl_abi_timespec timespec
+# define nacl_abi_timeval timeval
+# define nacl_abi_tv_sec tv_sec
+# define nacl_abi_tv_usec tv_usec
+# define nacl_abi_stat stat
+# define nacl_abi_st_dev st_dev
+# define nacl_abi_st_ino st_ino
+# define nacl_abi_st_mode st_mode
+# define nacl_abi_st_nlink st_nlink
+# define nacl_abi_st_uid st_uid
+# define nacl_abi_st_gid st_gid
+# define nacl_abi_st_rdev st_rdev
+# define nacl_abi_st_size st_size
+# define nacl_abi_st_blksize st_blksize
+# define nacl_abi_st_blocks st_blocks
+# define nacl_abi_st_atime st_atime
+# define nacl_abi_st_atimensec st_atimensec
+# define nacl_abi_st_mtime st_mtime
+# define nacl_abi_st_mtimensec st_mtimensec
+# define nacl_abi_st_ctime st_ctime
+# define nacl_abi_st_ctimensec st_ctimensec
+# define nacl_abi_off_t off_t
+# define NACL_ABI_PROT_MASK PROT_MASK
+# define NACL_ABI_PROT_READ PROT_READ
+# define NACL_ABI_PROT_WRITE PROT_WRITE
+# define NACL_ABI_PROT_EXEC PROT_EXEC
+# define NACL_ABI_MAP_SHARED MAP_SHARED
+# define NACL_ABI_MAP_PRIVATE MAP_PRIVATE
+# define NACL_ABI_MAP_FIXED MAP_FIXED
+# define NACL_ABI_MAP_ANON MAP_ANONYMOUS
+# define NACL_ABI__SC_PAGESIZE _SC_PAGESIZE
+# define NACL_ABI__SC_NPROCESSORS_ONLN _SC_NPROCESSORS_ONLN
+#endif
 
 /*
  * The IRT functions in irt.h are declared as taking "struct timespec"
@@ -313,9 +352,12 @@ static void *tls_get(void) {
   return g_tls_value;
 }
 
+/* For newlib based nonsfi_loader, we use the one defined in pnacl_irt.c. */
+#if !defined(__native_client__)
 void *__nacl_read_tp(void) {
   return g_tls_value;
 }
+#endif
 
 struct thread_args {
   void (*start_func)(void);

@@ -7,13 +7,16 @@ Import('env')
 
 # We could build nonsfi_loader on Mac OS X, but for now we are only testing
 # this on Linux.
-if not env.Bit('linux'):
+if not env.Bit('linux') and not env.Bit('nonsfi_nacl'):
   Return()
 
 # Since we are only targeting Unix, not Windows/MSVC, we can use C99
 # language features.
 env.FilterOut(CFLAGS='-Wdeclaration-after-statement')
 
+extra_libs = ['irt_nonsfi', 'platform']
+if env['NACL_BUILD_FAMILY'] == 'UNTRUSTED':
+  extra_libs.append('${NONIRT_LIBS}')
 env.ComponentProgram('nonsfi_loader',
                      ['elf_loader.c'],
-                     EXTRA_LIBS=['irt_nonsfi', 'platform'])
+                     EXTRA_LIBS=extra_libs)

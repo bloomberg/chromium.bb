@@ -4,10 +4,8 @@
  * found in the LICENSE file.
  */
 
-#include <elf.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <link.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,10 +13,12 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "native_client/src/include/elf.h"
 #include "native_client/src/nonsfi/irt/irt_interfaces.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
+#define ElfW(type) Elf32_ ## type
 
 /*
  * Note that Non-SFI NaCl uses a 4k page size (in order to allow loading

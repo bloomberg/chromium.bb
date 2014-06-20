@@ -332,6 +332,11 @@ def SetUpArgumentBits(env):
       'nonsfi_loader instead of sel_ldr, and it tells the PNaCl toolchain '
       'to translate pexes to Non-SFI nexes.')
 
+  BitFromArgument(env, 'use_newlib_nonsfi_loader', default=True,
+    desc='Test nonsfi_loader linked against NaCl newlib instead of the one '
+      'linked against host libc. This flag makes sense only with '
+      'nonsfi_nacl=1.')
+
   BitFromArgument(env, 'browser_headless', default=False,
     desc='Where possible, set up a dummy display to run the browser on '
       'when running browser tests.  On Linux, this runs the browser through '
@@ -1294,6 +1299,10 @@ pre_base_env.AddMethod(AddBootstrap)
 
 
 def GetNonSfiLoader(env):
+  if env.Bit('use_newlib_nonsfi_loader'):
+    return nacl_env.GetTranslatedNexe(nacl_env.File(
+        '${STAGING_DIR}/${PROGPREFIX}nonsfi_loader${PROGSUFFIX}'))
+
   if 'TRUSTED_ENV' not in env:
     return None
   return env['TRUSTED_ENV'].File(
@@ -3155,7 +3164,9 @@ if not nacl_env.Bit('nacl_glibc'):
 nacl_env.Append(
     BUILD_SCONSCRIPTS = [
     ####  ALPHABETICALLY SORTED ####
+    'src/nonsfi/irt/build.scons',
     'src/nonsfi/linux/nacl.scons',
+    'src/nonsfi/loader/build.scons',
     'src/shared/gio/nacl.scons',
     'src/shared/imc/nacl.scons',
     'src/shared/ldr/nacl.scons',

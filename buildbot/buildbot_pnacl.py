@@ -81,13 +81,7 @@ def BuildScriptX86(status, context):
     with Step('nonsfi_tests', status, halt_on_fail=False):
       # TODO(mseaborn): Enable more tests here when they pass.
       tests = ['run_' + test + '_test_irt' for test in
-               ['hello_world', 'float', 'malloc_realloc_calloc_free',
-                'dup', 'syscall', 'getpid']]
-      # Using skip_nonstable_bitcode=1 here disables the tests for
-      # zero-cost C++ exception handling, which don't pass for Non-SFI
-      # mode yet because we don't build libgcc_eh for Non-SFI mode.
-      tests.extend(['toolchain_tests_irt',
-                    'skip_nonstable_bitcode=1'])
+               ['hello_world', 'float', 'malloc_realloc_calloc_free']]
       # Extra non-IRT-using test to run for x86-32
       tests.extend(['run_clock_get_test',
                     'run_dup_test',
@@ -99,6 +93,20 @@ def BuildScriptX86(status, context):
                     'run_thread_test'])
       SCons(context, parallel=True, mode=irt_mode,
             args=flags_run + ['nonsfi_nacl=1'] + tests)
+
+    # Test nonsfi_loader linked against host's libc.
+    with Step('nonsfi_tests_host_libc', status, halt_on_fail=False):
+      tests = ['run_' + test + '_test_irt' for test in
+               ['hello_world', 'float', 'malloc_realloc_calloc_free',
+                'dup', 'syscall', 'getpid']]
+      # Using skip_nonstable_bitcode=1 here disables the tests for
+      # zero-cost C++ exception handling, which don't pass for Non-SFI
+      # mode yet because we don't build libgcc_eh for Non-SFI mode.
+      tests.extend(['toolchain_tests_irt',
+                    'skip_nonstable_bitcode=1'])
+      SCons(context, parallel=True, mode=irt_mode,
+            args=(flags_run + ['nonsfi_nacl=1', 'use_newlib_nonsfi_loader=0'] +
+                  tests))
 
   # Test unsandboxed mode.
   if ((context.Linux() or context.Mac()) and
