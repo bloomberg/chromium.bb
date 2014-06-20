@@ -20,7 +20,16 @@ cvox2.global.accessibility =
 cvox2.Background = function() {
   // Only needed with unmerged ChromeVox classic loaded before.
   cvox2.global.accessibility.setAccessibilityEnabled(false);
-  chrome.automation.getDesktop(this.onGotDesktop.bind(this));
+
+  // Register listeners for ...
+  // Desktop.
+  chrome.automation.getDesktop(this.onGotTree.bind(this));
+
+  // Tabs.
+  chrome.tabs.onUpdated.addListener(this.onTabUpdated.bind(this));
+
+  // Keyboard events (currently Messages from content script).
+  chrome.extension.onConnect.addListener(this.onConnect.bind(this));
 };
 
 cvox2.Background.prototype = {
@@ -32,54 +41,58 @@ cvox2.Background.prototype = {
   PORT_ID: 'chromevox2',
 
   /**
-   * Waits until a desktop automation tree becomes available.
-   * Thereafter, registers a simple exploration mode for the desktop tree.
-   * @param {AutomationTree} tree The desktop automation tree.
+   * Handles chrome.extension.onConnect.
+   * @param {Object} port The port.
    */
-  onGotDesktop: function(tree) {
-    if (!tree.root) {
-      window.setTimeout(this.onGotDesktop, 500);
+  onConnect: function(port) {
+    if (port.name != this.PORT_ID)
       return;
-    }
-    chrome.extension.onConnect.addListener(function(port) {
-      if (port.name != this.PORT_ID)
-        return;
-      var cur = tree.root;
-      port.onMessage.addListener(function(message) {
-        switch (message.keydown) {
-          case 37:
-            cur = cur.previousSibling() || cur;
-            break;
-          case 38:
-            cur = cur.parent() || cur;
-            break;
-          case 39:
-            cur = cur.nextSibling() || cur;
-            break;
-          case 40:
-            cur = cur.firstChild() || cur;
-            break;
-        }
-        var index = 1;
-        if (cur.parent())
-          index = cur.parent().children().indexOf(cur) + 1;
-        var name = '';
-        if (cur.attributes && cur.attributes['ax_attr_name'])
-          name = cur.attributes['ax_attr_name'];
-        var utterance = index + ' ' + name + cur.role;
-        chrome.tts.speak(String(utterance), {lang: 'en-US'});
-      });
-    }.bind(this));
+    port.onMessage.addListener(this.onMessage.bind(this));
+  },
 
+  /**
+   * Dispatches messages to specific handlers.
+   * @param {Object} message The message.
+   */
+  onMessage: function(message) {
+    if (message.keyDown)
+      this.onKeyDown(message);
+  },
+
+  /**
+   * Handles key down messages from the content script.
+   * @param {Object} message The key down message.
+   */
+  onKeyDown: function(message) {
+    // TODO(dtseng): Implement.
+  },
+
+  /**
+   * Handles chrome.tabs.onUpdate.
+   * @param {number} tabId The tab id.
+   * @param {Object.<string, (string|boolean)>} changeInfo Information about
+   * the updated tab.
+   */
+  onTabUpdated: function(tabId, changeInfo) {
+    chrome.automation.getTree(this.onGotTree.bind(this));
+  },
+
+  /**
+   * Handles all setup once a new automation tree appears.
+   * @param {AutomationTree} tree The new automation tree.
+   */
+  onGotTree: function(root) {
     // Register all automation event listeners.
-    tree.root.addEventListener('focus', this.onDesktopEvent.bind(this), true);
+    root.addEventListener(chrome.automation.EventType.focus,
+                          this.onAutomationEvent.bind(this),
+                          true);
   },
 
   /**
    * A generic handler for all desktop automation events.
    * @param {AutomationEvent} evt The event.
    */
-  onDesktopEvent: function(evt) {
+  onAutomationEvent: function(evt) {
     var output = evt.target.attributes.name + ' ' + evt.target.role;
     cvox.ChromeVox.tts.speak(output);
     cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(output));
