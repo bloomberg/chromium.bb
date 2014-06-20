@@ -102,10 +102,6 @@ base::Value* NetLogQuicStreamFrameCallback(const QuicStreamFrame* frame,
 base::Value* NetLogQuicAckFrameCallback(const QuicAckFrame* frame,
                                         NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  base::DictionaryValue* sent_info = new base::DictionaryValue();
-  dict->Set("sent_info", sent_info);
-  sent_info->SetString("least_unacked",
-                       base::Uint64ToString(frame->sent_info.least_unacked));
   base::DictionaryValue* received_info = new base::DictionaryValue();
   dict->Set("received_info", received_info);
   received_info->SetString(
