@@ -4,6 +4,7 @@
 
 #include "athena/screen/public/screen_manager.h"
 
+#include "athena/common/fill_layout_manager.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/screen/background_controller.h"
 #include "athena/screen/screen_accelerator_handler.h"
@@ -20,43 +21,6 @@ namespace athena {
 namespace {
 
 ScreenManager* instance = NULL;
-
-// TODO(oshima): There seems to be a couple of private implementation which does
-// the same.
-// Consider consolidating and reuse it.
-class FillLayoutManager : public aura::LayoutManager {
- public:
-  explicit FillLayoutManager(aura::Window* container) : container_(container) {
-    DCHECK(container_);
-  }
-
-  // aura::LayoutManager:
-  virtual void OnWindowResized() OVERRIDE {
-    gfx::Rect full_bounds = gfx::Rect(container_->bounds().size());
-    for (aura::Window::Windows::const_iterator iter =
-             container_->children().begin();
-         iter != container_->children().end();
-         ++iter) {
-      SetChildBoundsDirect(*iter, full_bounds);
-    }
-  }
-  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
-    SetChildBoundsDirect(child, (gfx::Rect(container_->bounds().size())));
-  }
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {}
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {}
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) OVERRIDE {}
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) OVERRIDE {
-    // Ignore SetBounds request.
-  }
-
- private:
-  aura::Window* container_;
-
-  DISALLOW_COPY_AND_ASSIGN(FillLayoutManager);
-};
 
 class AthenaWindowTreeClient : public aura::client::WindowTreeClient {
  public:

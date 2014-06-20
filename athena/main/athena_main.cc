@@ -14,6 +14,8 @@
 #include "athena/main/athena_launcher.h"
 #include "athena/main/placeholder.h"
 #include "athena/main/url_search_provider.h"
+#include "athena/virtual_keyboard/public/virtual_keyboard_bindings.h"
+#include "athena/virtual_keyboard/public/virtual_keyboard_manager.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "content/public/app/content_main.h"
@@ -56,6 +58,8 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
         new athena::ContentAppModelBuilder(context));
     athena::HomeCard::Get()->RegisterSearchProvider(
         new athena::UrlSearchProvider(context));
+    athena::VirtualKeyboardManager::Create(context);
+
     CreateTestPages(context);
   }
 
@@ -82,7 +86,9 @@ class AthenaRendererMainDelegate : public apps::ShellRendererMainDelegate {
   // apps::ShellRendererMainDelegate:
   virtual void OnThreadStarted(content::RenderThread* thread) OVERRIDE {}
 
-  virtual void OnViewCreated(content::RenderView* render_view) OVERRIDE {}
+  virtual void OnViewCreated(content::RenderView* render_view) OVERRIDE {
+    athena::VirtualKeyboardBindings::Create(render_view);
+  }
 
   DISALLOW_COPY_AND_ASSIGN(AthenaRendererMainDelegate);
 };

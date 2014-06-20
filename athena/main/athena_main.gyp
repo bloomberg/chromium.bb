@@ -17,6 +17,7 @@
         '../../skia/skia.gyp:skia',
         '../../ui/accessibility/accessibility.gyp:ax_gen',
         '../../ui/app_list/app_list.gyp:app_list',
+        '../../ui/keyboard/keyboard.gyp:keyboard',
         '../../ui/views/views.gyp:views',
         '../../url/url.gyp:url_lib',
       ],
