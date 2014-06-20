@@ -31,14 +31,20 @@
 namespace {
 
 // Spacing constant for outer margin. This is added to the
-// bubble margin itself to equalize the margins at 20px.
-const int kBubbleOuterMargin = 12;
+// bubble margin itself to equalize the margins at 13px.
+const int kBubbleOuterMargin = 5;
 
-// Spacing between major items should be 10px.
-const int kItemMajorSpacing = 10;
+// Spacing between major items should be 9px.
+const int kItemMajorSpacing = 9;
 
 // Button border size, draws inside the spacing distance.
 const int kButtonBorderSize = 2;
+
+// (Square) pixel size of icon.
+const int kIconSize = 18;
+
+// Number of pixels to indent the permission request labels.
+const int kPermissionIndentSpacing = 12;
 
 }  // namespace
 
@@ -162,7 +168,6 @@ int CustomizeAllowComboboxModel::GetDefaultIndex() const {
 
 ///////////////////////////////////////////////////////////////////////////////
 // View implementation for the permissions bubble.
-
 class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
                                       public views::ButtonListener,
                                       public views::ComboboxListener,
@@ -182,6 +187,7 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
   // BubbleDelegateView:
   virtual bool ShouldShowCloseButton() const OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
+  virtual const gfx::FontList& GetTitleFontList() const OVERRIDE;
   virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
@@ -229,8 +235,6 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, kBubbleOuterMargin, 0, kItemMajorSpacing));
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
   // TODO(gbillock): account for different requests from different hosts.
   hostname_ = requests[0]->GetRequestingHostname().host();
 
@@ -252,13 +256,15 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
 
     views::View* label_container = new views::View();
     label_container->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 5));
+        new views::BoxLayout(views::BoxLayout::kHorizontal,
+                             kPermissionIndentSpacing,
+                             0, kBubbleOuterMargin));
     views::ImageView* icon = new views::ImageView();
     icon->SetImage(bundle.GetImageSkiaNamed(requests.at(index)->GetIconID()));
+    icon->SetImageSize(gfx::Size(kIconSize, kIconSize));
     label_container->AddChildView(icon);
     views::Label* label =
         new views::Label(requests.at(index)->GetMessageTextFragment());
-    label->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_container->AddChildView(label);
     row_layout->AddView(label_container);
@@ -316,7 +322,6 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   if (requests.size() == 1) {
     views::LabelButton* allow_button = new views::LabelButton(this, allow_text);
     allow_button->SetStyle(views::Button::STYLE_BUTTON);
-    allow_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
     button_layout->AddView(allow_button);
     allow_ = allow_button;
   } else {
@@ -331,7 +336,6 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   base::string16 deny_text = l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
   views::LabelButton* deny_button = new views::LabelButton(this, deny_text);
   deny_button->SetStyle(views::Button::STYLE_BUTTON);
-  deny_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   button_layout->AddView(deny_button);
   deny_ = deny_button;
 
@@ -354,6 +358,11 @@ bool PermissionsBubbleDelegateView::ShouldShowCloseButton() const {
 
 bool PermissionsBubbleDelegateView::ShouldShowWindowTitle() const {
   return true;
+}
+
+const gfx::FontList& PermissionsBubbleDelegateView::GetTitleFontList() const {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetFontList(ui::ResourceBundle::BaseFont);
 }
 
 base::string16 PermissionsBubbleDelegateView::GetWindowTitle() const {
