@@ -43,7 +43,6 @@ function selectFirstListItem(windowId) {
  * @return {Promise} Promise to be fulfilled on success.
  */
 function createNewFolder(windowId, path, initialEntrySet) {
-  var newFoloderListItemId = null;
   return Promise.resolve(
   ).then(function() {
     // Push Ctrl + E.
@@ -63,7 +62,6 @@ function createNewFolder(windowId, path, initialEntrySet) {
     // Ensure that only the new directory is selected and being renamed.
     chrome.test.assertEq(1, elements.length);
     chrome.test.assertTrue('renaming' in elements[0].attributes);
-    newFoloderListItemId = elements[0].attributes['id'];
   }).then(function() {
     // Type new folder name.
     return callRemoteTestUtil(
@@ -85,18 +83,26 @@ function createNewFolder(windowId, path, initialEntrySet) {
                         {ignoreLastModifiedTime: true});
   }).then(function() {
     // Wait until the new created folder is selected.
-    return waitForElement(
-        windowId,
-        'div.detail-table > list > li[selected]#' + newFoloderListItemId);
-  }).then(function() {
-    // Ensure that the created directory is the only one selected directory.
-    return callRemoteTestUtil(
-        'queryAllElements',
-        windowId,
-        ['div.detail-table > list > li[selected]']);
-  }).then(function(elements) {
-    chrome.test.assertEq(1, elements.length);
-    chrome.test.assertEq(newFoloderListItemId, elements[0].attributes['id']);
+    var nameSpanQuery = 'div.detail-table > list > ' +
+                        'li[selected]:not([renaming]) span.entry-name';
+
+    return repeatUntil(function() {
+      var selectedNameRetrievePromise = callRemoteTestUtil(
+            'queryAllElements',
+            windowId,
+            ['div.detail-table > list > li[selected] span.entry-name']);
+
+      return selectedNameRetrievePromise.then(function(elements) {
+        if (elements.length !== 1) {
+          return pending('Selection is not ready (elements: %j)', elements);
+        } else if (elements[0].text !== 'Test Folder Name') {
+          return pending('Selected item is wrong. (actual: %s)',
+                         elements[0].text);
+        } else {
+          return true;
+        }
+      });
+    });
   });
 };
 
