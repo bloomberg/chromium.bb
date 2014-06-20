@@ -207,7 +207,7 @@ void URLLoaderImpl::ReadMore() {
 
   uint32_t num_bytes;
   if (!pending_write_->BeginWrite(&num_bytes))
-    CHECK(false);  // Oops!
+    CHECK(false);  // Oops! TODO(darin): crbug/386877: The pipe might be full!
   if (num_bytes > static_cast<uint32_t>(std::numeric_limits<int>::max()))
     CHECK(false);  // Oops!
 

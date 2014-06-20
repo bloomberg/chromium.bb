@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/examples/html_viewer/blink_platform_impl.h"
+#include "mojo/examples/html_viewer/html_document_view.h"
 #include "mojo/public/cpp/application/application.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
@@ -9,6 +11,7 @@
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 
 namespace mojo {
 namespace examples {
@@ -25,34 +28,7 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
   virtual void Navigate(
       uint32_t node_id,
       navigation::NavigationDetailsPtr navigation_details,
-      navigation::ResponseDetailsPtr response_details) OVERRIDE {
-    printf("In HTMLViewer, rendering url: %s\n",
-           response_details->response->url.data());
-    printf("HTML: \n");
-    for (;;) {
-      char buf[512];
-      uint32_t num_bytes = sizeof(buf);
-      MojoResult result = ReadDataRaw(
-          response_details->response_body_stream.get(),
-          buf,
-          &num_bytes,
-          MOJO_READ_DATA_FLAG_NONE);
-      if (result == MOJO_RESULT_SHOULD_WAIT) {
-        Wait(response_details->response_body_stream.get(),
-             MOJO_HANDLE_SIGNAL_READABLE,
-             MOJO_DEADLINE_INDEFINITE);
-      } else if (result == MOJO_RESULT_OK) {
-        fwrite(buf, num_bytes, 1, stdout);
-      } else {
-        break;
-      }
-    }
-    printf("\n>>>> EOF <<<<\n\n");
-
-    UpdateView();
-  }
-
-  void UpdateView();
+      navigation::ResponseDetailsPtr response_details) OVERRIDE;
 
   HTMLViewer* viewer_;
 
@@ -60,16 +36,28 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
 };
 
 class HTMLViewer : public Application,
-                   public view_manager::ViewManagerDelegate  {
+                   public view_manager::ViewManagerDelegate {
  public:
-  HTMLViewer() : content_view_(NULL) {}
-  virtual ~HTMLViewer() {}
+  HTMLViewer() : document_view_(NULL) {
+  }
+  virtual ~HTMLViewer() {
+    blink::shutdown();
+  }
+
+  void Load(URLResponsePtr response,
+            ScopedDataPipeConsumerHandle response_body_stream) {
+    // Need to wait for OnRootAdded.
+    response_ = response.Pass();
+    response_body_stream_ = response_body_stream.Pass();
+    MaybeLoad();
+  }
 
  private:
-  friend class NavigatorImpl;
-
   // Overridden from Application:
   virtual void Initialize() OVERRIDE {
+    blink_platform_impl_.reset(new BlinkPlatformImpl(this));
+    blink::initialize(blink_platform_impl_.get());
+
     AddService<NavigatorImpl>(this);
     view_manager::ViewManager::Create(this, this);
   }
@@ -77,18 +65,34 @@ class HTMLViewer : public Application,
   // Overridden from view_manager::ViewManagerDelegate:
   virtual void OnRootAdded(view_manager::ViewManager* view_manager,
                            view_manager::Node* root) OVERRIDE {
-    content_view_ = view_manager::View::Create(view_manager);
-    root->SetActiveView(content_view_);
-    content_view_->SetColor(SK_ColorRED);
+    document_view_ = new HTMLDocumentView(view_manager);
+    document_view_->AttachToNode(root);
+    MaybeLoad();
   }
 
-  view_manager::View* content_view_;
+  void MaybeLoad() {
+    if (document_view_ && response_.get())
+      document_view_->Load(response_.Pass(), response_body_stream_.Pass());
+  }
+
+  scoped_ptr<BlinkPlatformImpl> blink_platform_impl_;
+
+  // TODO(darin): Figure out proper ownership of this instance.
+  HTMLDocumentView* document_view_;
+  URLResponsePtr response_;
+  ScopedDataPipeConsumerHandle response_body_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLViewer);
 };
 
-void NavigatorImpl::UpdateView() {
-  viewer_->content_view_->SetColor(SK_ColorGREEN);
+void NavigatorImpl::Navigate(
+    uint32_t node_id,
+    navigation::NavigationDetailsPtr navigation_details,
+    navigation::ResponseDetailsPtr response_details) {
+  printf("In HTMLViewer, rendering url: %s\n",
+      response_details->response->url.data());
+  viewer_->Load(response_details->response.Pass(),
+                response_details->response_body_stream.Pass());
 }
 
 }

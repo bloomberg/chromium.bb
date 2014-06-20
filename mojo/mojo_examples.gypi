@@ -95,7 +95,10 @@
       'target_name': 'mojo_html_viewer',
       'type': 'shared_library',
       'dependencies': [
+        '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
+        '../third_party/WebKit/public/blink.gyp:blink',
+        '../url/url.gyp:url_lib',
         'mojo_application',
         'mojo_cpp_bindings',
         'mojo_environment_chromium',
@@ -106,8 +109,21 @@
         'mojo_utility',
         'mojo_view_manager_lib',
       ],
+      'include_dirs': [
+        'third_party/WebKit'
+      ],
       'sources': [
+        'examples/html_viewer/blink_platform_impl.cc',
+        'examples/html_viewer/blink_platform_impl.h',
         'examples/html_viewer/html_viewer.cc',
+        'examples/html_viewer/html_document_view.cc',
+        'examples/html_viewer/html_document_view.h',
+        'examples/html_viewer/webmimeregistry_impl.cc',
+        'examples/html_viewer/webmimeregistry_impl.h',
+        'examples/html_viewer/webthread_impl.cc',
+        'examples/html_viewer/webthread_impl.h',
+        'examples/html_viewer/weburlloader_impl.cc',
+        'examples/html_viewer/weburlloader_impl.h',
         'public/cpp/application/lib/mojo_main_chromium.cc',
       ],
     },
