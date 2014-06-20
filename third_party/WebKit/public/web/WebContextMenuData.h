@@ -117,6 +117,9 @@ struct WebContextMenuData {
     // Whether spell checking is enabled.
     bool isSpellCheckingEnabled;
 
+    // Suggested filename for saving file.
+    WebString suggestedFilename;
+
     // The editable (possibily) misspelled word.
     WebString misspelledWord;
 

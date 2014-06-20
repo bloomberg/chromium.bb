@@ -43,6 +43,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -370,6 +371,12 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
 
     // Filter out custom menu elements and add them into the data.
     populateCustomMenuItems(defaultMenu, &data);
+
+    // Extract suggested filename for saving file.
+    if (isHTMLAnchorElement(r.URLElement())) {
+        HTMLAnchorElement* anchor = toHTMLAnchorElement(r.URLElement());
+        data.suggestedFilename = anchor->fastGetAttribute(HTMLNames::downloadAttr);
+    }
 
     data.node = r.innerNonSharedNode();
 
