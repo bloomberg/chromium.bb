@@ -199,7 +199,7 @@ class DestructionObserver : public NodeObserver, public ViewObserver {
       NodeObserver::DispositionChangePhase phase) OVERRIDE {
     if (phase != NodeObserver::DISPOSITION_CHANGED)
       return;
-    std::set<Id>::const_iterator it = nodes_->find(node->id());
+    std::set<Id>::iterator it = nodes_->find(node->id());
     if (it != nodes_->end())
       nodes_->erase(it);
     if (CanQuit())
@@ -212,7 +212,7 @@ class DestructionObserver : public NodeObserver, public ViewObserver {
       ViewObserver::DispositionChangePhase phase) OVERRIDE {
     if (phase != ViewObserver::DISPOSITION_CHANGED)
       return;
-    std::set<Id>::const_iterator it = views_->find(view->id());
+    std::set<Id>::iterator it = views_->find(view->id());
     if (it != views_->end())
       views_->erase(it);
     if (CanQuit())
