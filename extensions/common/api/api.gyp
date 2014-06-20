@@ -20,18 +20,27 @@
         'chromium_code': 1,
         'non_compiled_schema_files': [
         ],
-        # TODO: Eliminate these on Android. See crbug.com/305852.
-        'schema_files': [
-          'dns.idl',
-          'extensions_manifest_types.json',
-          'runtime.json',
-          'socket.idl',
-          'sockets_tcp.idl',
-          'sockets_tcp_server.idl',
-          'sockets_udp.idl',
-          'storage.json',
-          'test.json',
-          'usb.idl',
+        'conditions': [
+          ['enable_extensions==1', {
+            'schema_files': [
+              'dns.idl',
+              'extensions_manifest_types.json',
+              'runtime.json',
+              'socket.idl',
+              'sockets_tcp.idl',
+              'sockets_tcp_server.idl',
+              'sockets_udp.idl',
+              'storage.json',
+              'test.json',
+              'usb.idl',
+            ],
+          }, {
+            # TODO: Eliminate these on Android. See crbug.com/305852.
+            'schema_files': [
+              'extensions_manifest_types.json',
+              'runtime.json',
+            ],
+          }],
         ],
         'cc_dir': 'extensions/common/api',
         'root_namespace': 'extensions::core_api',
