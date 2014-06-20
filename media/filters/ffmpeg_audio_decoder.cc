@@ -210,7 +210,6 @@ void FFmpegAudioDecoder::DecodeBuffer(
   DCHECK_NE(state_, kUninitialized);
   DCHECK_NE(state_, kDecodeFinished);
   DCHECK_NE(state_, kError);
-
   DCHECK(buffer);
 
   // Make sure we are notified if http://crbug.com/49709 returns.  Issue also
