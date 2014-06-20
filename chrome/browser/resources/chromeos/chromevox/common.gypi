@@ -11,6 +11,8 @@
     'js_root_flags': [
       '-r', '.',
       '-r', '<(closure_goog_dir)',
+      '-x', 'testing',
+      '-x', '_test.js',
     ],
     'path_rewrite_flags': [
       '-w', '<(closure_goog_dir):closure',

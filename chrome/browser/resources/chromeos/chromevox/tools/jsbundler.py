@@ -144,7 +144,7 @@ class PathRewriter():
 
 
 def ReadSources(roots=[], source_files=[], need_source_text=False,
-                path_rewriter=PathRewriter()):
+                path_rewriter=PathRewriter(), exclude=[]):
   '''Reads all source specified on the command line, including sources
   included by --root options.
   '''
@@ -161,6 +161,8 @@ def ReadSources(roots=[], source_files=[], need_source_text=False,
   sources = {}
   for root in roots:
     for name in treescan.ScanTreeForJsFiles(root):
+      if any((r.search(name) for r in exclude)):
+        continue
       EnsureSourceLoaded(name, sources)
   for path in source_files:
     if need_source_text:
@@ -301,6 +303,10 @@ def CreateOptionParser():
                     default='list', metavar='MODE',
                     help=("Otput mode. One of 'list', 'html', 'bundle', " +
                           "'compressed_bundle' or 'copy'."))
+  parser.add_option('-x', '--exclude', action='append', default=[],
+                    help=('Exclude files whose full path contains a match for '
+                          'the given regular expression.  Does not apply to '
+                          'filenames given as arguments.'))
   return parser
 
 
@@ -310,8 +316,9 @@ def main():
     Die('At least one top-level source file must be specified.')
   will_output_source_text = options.mode in ('bundle', 'compressed_bundle')
   path_rewriter = PathRewriter(options.prefix_map)
+  exclude = [re.compile(r) for r in options.exclude]
   sources = ReadSources(options.roots, args, will_output_source_text,
-                        path_rewriter)
+                        path_rewriter, exclude)
   if will_output_source_text:
     _MarkAsCompiled(sources)
   bundle = Bundle()

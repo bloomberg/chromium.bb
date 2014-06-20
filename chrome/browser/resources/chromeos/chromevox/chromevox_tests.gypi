@@ -8,6 +8,7 @@
   ],
   'variables': {
     'chromevox_test_deps_js_file': '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/chromevox/test_deps.js',
+    'chromevox_test_messages_js_file': '<(PRODUCT_DIR)/test_data/chrome/browser/resources/chromeos/chromevox/host/testing/test_messages.js',
   },
   'targets': [
     {
@@ -122,6 +123,7 @@
         '<(DEPTH)/chrome/browser/extensions/browsertest_util.h',
 
         'common/aria_util_test.js',
+        'common/braille_util_test.js',
         'common/command_store_test.js',
         'common/cursor_selection_test.js',
         'common/editable_text_area_shadow_test.js',
@@ -140,6 +142,32 @@
       ],
     },  # target chromevox_tests
     {
+      'target_name': 'chromevox_test_messages_js',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'test_messages_js',
+          'message': 'Generate <(_target_name)',
+          'variables': {
+            'english_messages_file': '<(chromevox_dest_dir)/_locales/en/messages.json',
+          },
+          'inputs': [
+            'tools/generate_test_messages.py',
+            '<(english_messages_file)',
+          ],
+          'outputs': [
+            '<(chromevox_test_messages_js_file)',
+          ],
+          'action': [
+            'python',
+            'tools/generate_test_messages.py',
+            '-o', '<(chromevox_test_messages_js_file)',
+            '<(english_messages_file)',
+          ],
+        },
+      ],
+    },  # target chromevox_test_messages_js
+    {
       'target_name': 'chromevox_test_deps_js',
       'type': 'none',
       'actions': [
@@ -152,6 +180,7 @@
             'depswriter_path': 'tools/generate_deps.py',
             'js_files': [
               '<!@(python tools/find_js_files.py . <(DEPTH)/<(closure_dir))',
+              '<(chromevox_test_messages_js_file)',
             ],
           },
           'inputs': [
@@ -165,12 +194,16 @@
             'python',
             '<(depswriter_path)',
             '-w', '<(DEPTH)/<(closure_dir):<(closure_dir)',
+            '-w', '<(PRODUCT_DIR)/test_data:',
             '-w', ':chrome/browser/resources/chromeos/chromevox',
             '-o', '<(chromevox_test_deps_js_file)',
             '<@(js_files)',
           ],
         },
       ],
-    },
+      'dependencies': [
+        'chromevox_test_messages_js',
+      ],
+    },  # target chromevox_test_deps_js
   ],
 }

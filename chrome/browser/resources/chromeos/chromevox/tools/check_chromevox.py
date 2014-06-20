@@ -14,6 +14,7 @@ compiled.  A useful argument list is the output of the command
 
 import optparse
 import os
+import re
 import sys
 
 from multiprocessing import pool
@@ -75,7 +76,8 @@ def CheckChromeVox(changed_files=None):
                    _CHROME_SOURCE_DIR,
                    'chrome/third_party/chromevox/third_party/closure-library/'
                    'closure/goog'))]
-  sources = ReadSources(roots, need_source_text=True)
+  sources = ReadSources(roots, need_source_text=True,
+                        exclude=[re.compile('testing')])
   work_pool = pool.Pool(len(_TOP_LEVEL_SCRIPTS))
   try:
     results = []
