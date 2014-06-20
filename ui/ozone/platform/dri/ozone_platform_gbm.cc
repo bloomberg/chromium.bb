@@ -5,11 +5,10 @@
 #include "ui/ozone/platform/dri/ozone_platform_gbm.h"
 
 #include <dlfcn.h>
-#include <stdlib.h>
 #include <gbm.h>
+#include <stdlib.h>
 
 #include "base/at_exit.h"
-#include "ui/base/cursor/ozone/cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/ozone/ozone_platform.h"
@@ -19,6 +18,7 @@
 #include "ui/ozone/platform/dri/scanout_surface.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/virtual_terminal_manager.h"
+#include "ui/ozone/public/cursor_factory_ozone.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
@@ -69,7 +69,7 @@ class OzonePlatformGbm : public OzonePlatform {
   virtual ~OzonePlatformGbm() {}
 
   // OzonePlatform:
-  virtual gfx::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
+  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
     return surface_factory_ozone_.get();
   }
   virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {

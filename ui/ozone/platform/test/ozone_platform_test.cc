@@ -6,12 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "ui/base/cursor/ozone/cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
-#include "ui/gfx/ozone/impl/file_surface_factory.h"
 #include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/ozone_switches.h"
+#include "ui/ozone/platform/test/file_surface_factory.h"
+#include "ui/ozone/public/cursor_factory_ozone.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
@@ -31,7 +31,7 @@ class OzonePlatformTest : public OzonePlatform {
   virtual ~OzonePlatformTest() {}
 
   // OzonePlatform:
-  virtual gfx::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
+  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
     return surface_factory_ozone_.get();
   }
   virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {
@@ -55,7 +55,7 @@ class OzonePlatformTest : public OzonePlatform {
 
   virtual void InitializeUI() OVERRIDE {
     device_manager_ = CreateDeviceManager();
-    surface_factory_ozone_.reset(new gfx::FileSurfaceFactory(file_path_));
+    surface_factory_ozone_.reset(new FileSurfaceFactory(file_path_));
     event_factory_ozone_.reset(
         new EventFactoryEvdev(NULL, device_manager_.get()));
     cursor_factory_ozone_.reset(new CursorFactoryOzone());
@@ -65,7 +65,7 @@ class OzonePlatformTest : public OzonePlatform {
 
  private:
   scoped_ptr<DeviceManager> device_manager_;
-  scoped_ptr<gfx::FileSurfaceFactory> surface_factory_ozone_;
+  scoped_ptr<FileSurfaceFactory> surface_factory_ozone_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
   base::FilePath file_path_;

@@ -2,23 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_SURFACE_OZONE_EGL_H_
-#define UI_GFX_OZONE_SURFACE_OZONE_EGL_H_
+#ifndef UI_OZONE_PUBLIC_SURFACE_OZONE_EGL_H_
+#define UI_OZONE_PUBLIC_SURFACE_OZONE_EGL_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/gfx_export.h"
+#include "ui/ozone/ozone_base_export.h"
 
 namespace gfx {
-
 class Size;
 class VSyncProvider;
+}
+
+namespace ui {
 
 // The platform-specific part of an EGL surface.
 //
 // This class owns any bits that the ozone implementation needs freed when
 // the EGL surface is destroyed.
-class GFX_EXPORT SurfaceOzoneEGL {
+class OZONE_BASE_EXPORT SurfaceOzoneEGL {
  public:
   virtual ~SurfaceOzoneEGL() {}
 
@@ -42,6 +44,6 @@ class GFX_EXPORT SurfaceOzoneEGL {
   virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() = 0;
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_OZONE_SURFACE_OZONE_EGL_H_
+#endif  // UI_OZONE_PUBLIC_SURFACE_OZONE_EGL_H_

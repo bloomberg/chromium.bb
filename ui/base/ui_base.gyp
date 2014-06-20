@@ -136,8 +136,6 @@
         'cursor/image_cursors.h',
         'cursor/ozone/bitmap_cursor_factory_ozone.cc',
         'cursor/ozone/bitmap_cursor_factory_ozone.h',
-        'cursor/ozone/cursor_factory_ozone.cc',
-        'cursor/ozone/cursor_factory_ozone.h',
         'default_theme_provider.cc',
         'default_theme_provider.h',
         'default_theme_provider_mac.mm',
@@ -371,6 +369,11 @@
         ['use_aura==0 or OS!="linux"', {
           'sources!': [
             'resource/resource_bundle_auralinux.cc',
+          ],
+        }],
+        ['use_ozone==1', {
+          'dependencies': [
+            '../ozone/ozone.gyp:ozone_base',
           ],
         }],
         ['use_aura==1 and OS=="win"', {

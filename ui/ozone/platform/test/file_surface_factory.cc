@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/impl/file_surface_factory.h"
+#include "ui/ozone/platform/test/file_surface_factory.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -12,16 +12,15 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/ozone/surface_ozone_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/ozone/public/surface_ozone_canvas.h"
 
-namespace gfx {
+namespace ui {
 
 namespace {
 
-void WriteDataToFile(const base::FilePath& location,
-                     const SkBitmap& bitmap) {
+void WriteDataToFile(const base::FilePath& location, const SkBitmap& bitmap) {
   std::vector<unsigned char> png_data;
   gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, true, &png_data);
   base::WriteFile(location,
@@ -35,10 +34,9 @@ class FileSurface : public SurfaceOzoneCanvas {
   virtual ~FileSurface() {}
 
   // SurfaceOzoneCanvas overrides:
-  virtual void ResizeCanvas(const Size& viewport_size) OVERRIDE {
-    surface_ = skia::AdoptRef(SkSurface::NewRaster(
-        SkImageInfo::MakeN32Premul(viewport_size.width(),
-                                   viewport_size.height())));
+  virtual void ResizeCanvas(const gfx::Size& viewport_size) OVERRIDE {
+    surface_ = skia::AdoptRef(SkSurface::NewRaster(SkImageInfo::MakeN32Premul(
+        viewport_size.width(), viewport_size.height())));
   }
   virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE {
     return skia::SharePtr(surface_->getCanvas());
@@ -65,37 +63,36 @@ class FileSurface : public SurfaceOzoneCanvas {
 
 }  // namespace
 
-FileSurfaceFactory::FileSurfaceFactory(
-    const base::FilePath& dump_location)
+FileSurfaceFactory::FileSurfaceFactory(const base::FilePath& dump_location)
     : location_(dump_location) {
-  CHECK(!base::DirectoryExists(location_))
-      << "Location cannot be a directory (" << location_.value() << ")";
+  CHECK(!base::DirectoryExists(location_)) << "Location cannot be a directory ("
+                                           << location_.value() << ")";
   CHECK(!base::PathExists(location_) || base::PathIsWritable(location_));
 }
 
-FileSurfaceFactory::~FileSurfaceFactory() {}
+FileSurfaceFactory::~FileSurfaceFactory() {
+}
 
-SurfaceFactoryOzone::HardwareState
-FileSurfaceFactory::InitializeHardware() {
+SurfaceFactoryOzone::HardwareState FileSurfaceFactory::InitializeHardware() {
   return INITIALIZED;
 }
 
 void FileSurfaceFactory::ShutdownHardware() {
 }
 
-AcceleratedWidget FileSurfaceFactory::GetAcceleratedWidget() {
+gfx::AcceleratedWidget FileSurfaceFactory::GetAcceleratedWidget() {
   return 1;
 }
 
 scoped_ptr<SurfaceOzoneCanvas> FileSurfaceFactory::CreateCanvasForWidget(
-      gfx::AcceleratedWidget w) {
+    gfx::AcceleratedWidget w) {
   return make_scoped_ptr<SurfaceOzoneCanvas>(new FileSurface(location_));
 }
 
 bool FileSurfaceFactory::LoadEGLGLES2Bindings(
-      AddGLLibraryCallback add_gl_library,
-      SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
+    AddGLLibraryCallback add_gl_library,
+    SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
   return false;
 }
 
-}  // namespace gfx
+}  // namespace ui

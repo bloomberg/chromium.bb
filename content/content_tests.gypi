@@ -915,7 +915,7 @@
         }],
         ['use_ozone==1', {
           'dependencies': [
-            '../ui/gfx/ozone/gfx_ozone.gyp:gfx_ozone',
+            '../ui/ozone/ozone.gyp:ozone_base',
           ],
         }],
       ],

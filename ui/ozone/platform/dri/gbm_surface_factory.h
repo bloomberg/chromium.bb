@@ -25,7 +25,7 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
-  virtual scoped_ptr<gfx::SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
+  virtual scoped_ptr<ui::SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget w) OVERRIDE;
   virtual gfx::NativeBufferOzone CreateNativeBuffer(
       gfx::Size size,

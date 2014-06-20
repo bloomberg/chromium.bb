@@ -2,16 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_CURSOR_OZONE_CURSOR_FACTORY_OZONE_H_
-#define UI_BASE_CURSOR_OZONE_CURSOR_FACTORY_OZONE_H_
+#ifndef UI_OZONE_PUBLIC_CURSOR_FACTORY_OZONE_H_
+#define UI_OZONE_PUBLIC_CURSOR_FACTORY_OZONE_H_
 
-#include "ui/base/cursor/cursor.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/ozone_base_export.h"
+
+namespace gfx {
+class Point;
+}
 
 namespace ui {
 
-class UI_BASE_EXPORT CursorFactoryOzone {
+typedef void* PlatformCursor;
+
+class OZONE_BASE_EXPORT CursorFactoryOzone {
  public:
   CursorFactoryOzone();
   virtual ~CursorFactoryOzone();
@@ -49,6 +54,6 @@ class UI_BASE_EXPORT CursorFactoryOzone {
   static CursorFactoryOzone* impl_;  // not owned
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_BASE_CURSOR_OZONE_CURSOR_FACTORY_OZONE_H_
+#endif  // UI_OZONE_PUBLIC_CURSOR_FACTORY_OZONE_H_

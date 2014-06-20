@@ -12,13 +12,13 @@
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/ozone/surface_ozone_canvas.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_vsync_provider.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
+#include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace ui {
 
@@ -42,7 +42,7 @@ void UpdateCursorImage(DriSurface* cursor, const SkBitmap& image) {
   canvas->drawBitmapRectToRect(image, &damage, damage);
 }
 
-class DriSurfaceAdapter : public gfx::SurfaceOzoneCanvas {
+class DriSurfaceAdapter : public ui::SurfaceOzoneCanvas {
  public:
   DriSurfaceAdapter(const base::WeakPtr<HardwareDisplayController>& controller);
   virtual ~DriSurfaceAdapter();
@@ -128,8 +128,7 @@ DriSurfaceFactory::~DriSurfaceFactory() {
     ShutdownHardware();
 }
 
-gfx::SurfaceFactoryOzone::HardwareState
-DriSurfaceFactory::InitializeHardware() {
+ui::SurfaceFactoryOzone::HardwareState DriSurfaceFactory::InitializeHardware() {
   if (state_ != UNINITIALIZED)
     return state_;
 
@@ -163,13 +162,13 @@ gfx::AcceleratedWidget DriSurfaceFactory::GetAcceleratedWidget() {
   return ++allocated_widgets_;
 }
 
-scoped_ptr<gfx::SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
+scoped_ptr<ui::SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget w) {
   CHECK(state_ == INITIALIZED);
   // Initial cursor set.
   ResetCursor(w);
 
-  return scoped_ptr<gfx::SurfaceOzoneCanvas>(
+  return scoped_ptr<ui::SurfaceOzoneCanvas>(
       new DriSurfaceAdapter(screen_manager_->GetDisplayController(w)));
 }
 

@@ -9,8 +9,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/ozone/surface_factory_ozone.h"
 #include "ui/ozone/ozone_export.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 
 typedef struct _drmModeModeInfo drmModeModeInfo;
 
@@ -28,7 +28,7 @@ class ScreenManager;
 // SurfaceFactoryOzone implementation on top of DRM/KMS using dumb buffers.
 // This implementation is used in conjunction with the software rendering
 // path.
-class OZONE_EXPORT DriSurfaceFactory : public gfx::SurfaceFactoryOzone {
+class OZONE_EXPORT DriSurfaceFactory : public ui::SurfaceFactoryOzone {
  public:
   static const gfx::AcceleratedWidget kDefaultWidgetHandle;
 
@@ -41,7 +41,7 @@ class OZONE_EXPORT DriSurfaceFactory : public gfx::SurfaceFactoryOzone {
 
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
 
-  virtual scoped_ptr<gfx::SurfaceOzoneCanvas> CreateCanvasForWidget(
+  virtual scoped_ptr<ui::SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget w) OVERRIDE;
 
   virtual bool LoadEGLGLES2Bindings(

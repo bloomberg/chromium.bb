@@ -11,9 +11,6 @@
 
 namespace ui {
 class Compositor;
-}
-
-namespace gfx {
 class SurfaceOzoneCanvas;
 }
 
@@ -36,7 +33,7 @@ class CONTENT_EXPORT SoftwareOutputDeviceOzone
  private:
   ui::Compositor* compositor_;
 
-  scoped_ptr<gfx::SurfaceOzoneCanvas> surface_ozone_;
+  scoped_ptr<ui::SurfaceOzoneCanvas> surface_ozone_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceOzone);
 };

@@ -4,15 +4,15 @@
 
 #include "content/browser/compositor/overlay_candidate_validator_ozone.h"
 
-#include "ui/gfx/ozone/overlay_candidates_ozone.h"
+#include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace content {
 
-static gfx::SurfaceFactoryOzone::BufferFormat GetOzoneFormat(
+static ui::SurfaceFactoryOzone::BufferFormat GetOzoneFormat(
     cc::ResourceFormat overlay_format) {
   switch (overlay_format) {
     case cc::RGBA_8888:
-      return gfx::SurfaceFactoryOzone::RGBA_8888;
+      return ui::SurfaceFactoryOzone::RGBA_8888;
     case cc::RGBA_4444:
     case cc::BGRA_8888:
     case cc::LUMINANCE_8:
@@ -21,20 +21,21 @@ static gfx::SurfaceFactoryOzone::BufferFormat GetOzoneFormat(
       break;
   }
   NOTREACHED();
-  return gfx::SurfaceFactoryOzone::UNKNOWN;
+  return ui::SurfaceFactoryOzone::UNKNOWN;
 }
 
 OverlayCandidateValidatorOzone::OverlayCandidateValidatorOzone(
     gfx::AcceleratedWidget widget,
-    gfx::OverlayCandidatesOzone* overlay_candidates)
-    : widget_(widget), overlay_candidates_(overlay_candidates) {}
+    ui::OverlayCandidatesOzone* overlay_candidates)
+    : widget_(widget), overlay_candidates_(overlay_candidates) {
+}
 
 OverlayCandidateValidatorOzone::~OverlayCandidateValidatorOzone() {}
 
 void OverlayCandidateValidatorOzone::CheckOverlaySupport(
     cc::OverlayCandidateList* surfaces) {
   DCHECK_GE(2U, surfaces->size());
-  gfx::OverlayCandidatesOzone::OverlaySurfaceCandidateList ozone_surface_list;
+  ui::OverlayCandidatesOzone::OverlaySurfaceCandidateList ozone_surface_list;
   ozone_surface_list.resize(surfaces->size());
 
   for (size_t i = 0; i < surfaces->size(); i++) {

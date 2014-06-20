@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_OVERLAY_CANDIDATES_OZONE_H_
-#define UI_GFX_OZONE_OVERLAY_CANDIDATES_OZONE_H_
+#ifndef UI_OZONE_PUBLIC_OVERLAY_CANDIDATES_OZONE_H_
+#define UI_OZONE_PUBLIC_OVERLAY_CANDIDATES_OZONE_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ui/gfx/gfx_export.h"
-#include "ui/gfx/ozone/surface_factory_ozone.h"
 #include "ui/gfx/rect_f.h"
+#include "ui/ozone/ozone_base_export.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 
-namespace gfx {
+namespace ui {
 
 // This class can be used to answer questions about possible overlay
 // configurations for a particular output device. We get an instance of this
 // class from SurfaceFactoryOzone given an AcceleratedWidget.
-class GFX_EXPORT OverlayCandidatesOzone {
+class OZONE_BASE_EXPORT OverlayCandidatesOzone {
  public:
   struct OverlaySurfaceCandidate {
     OverlaySurfaceCandidate();
@@ -51,6 +51,6 @@ class GFX_EXPORT OverlayCandidatesOzone {
   virtual ~OverlayCandidatesOzone();
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_OZONE_OVERLAY_CANDIDATES_OZONE_H_
+#endif  // UI_OZONE_PUBLIC_OVERLAY_CANDIDATES_OZONE_H_

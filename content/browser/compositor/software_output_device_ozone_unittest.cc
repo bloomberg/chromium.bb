@@ -10,21 +10,21 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/context_factories_for_test.h"
-#include "ui/gfx/ozone/surface_factory_ozone.h"
-#include "ui/gfx/ozone/surface_ozone_canvas.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
+#include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace {
 
-class MockSurfaceOzone : public gfx::SurfaceOzoneCanvas {
+class MockSurfaceOzone : public ui::SurfaceOzoneCanvas {
  public:
   MockSurfaceOzone() {}
   virtual ~MockSurfaceOzone() {}
 
-  // gfx::SurfaceOzoneCanvas overrides:
+  // ui::SurfaceOzoneCanvas overrides:
   virtual void ResizeCanvas(const gfx::Size& size) OVERRIDE {
     surface_ = skia::AdoptRef(SkSurface::NewRaster(
         SkImageInfo::MakeN32Premul(size.width(), size.height())));
@@ -43,7 +43,7 @@ class MockSurfaceOzone : public gfx::SurfaceOzoneCanvas {
   DISALLOW_COPY_AND_ASSIGN(MockSurfaceOzone);
 };
 
-class MockSurfaceFactoryOzone : public gfx::SurfaceFactoryOzone {
+class MockSurfaceFactoryOzone : public ui::SurfaceFactoryOzone {
  public:
   MockSurfaceFactoryOzone() {}
   virtual ~MockSurfaceFactoryOzone() {}
@@ -59,9 +59,9 @@ class MockSurfaceFactoryOzone : public gfx::SurfaceFactoryOzone {
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE {
     return false;
   }
-  virtual scoped_ptr<gfx::SurfaceOzoneCanvas> CreateCanvasForWidget(
+  virtual scoped_ptr<ui::SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) OVERRIDE {
-    return make_scoped_ptr<gfx::SurfaceOzoneCanvas>(new MockSurfaceOzone());
+    return make_scoped_ptr<ui::SurfaceOzoneCanvas>(new MockSurfaceOzone());
   }
 
  private:
@@ -85,7 +85,7 @@ class SoftwareOutputDeviceOzoneTest : public testing::Test {
  private:
   scoped_ptr<ui::Compositor> compositor_;
   scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<gfx::SurfaceFactoryOzone> surface_factory_;
+  scoped_ptr<ui::SurfaceFactoryOzone> surface_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceOzoneTest);
 };
@@ -106,7 +106,7 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
 
   const gfx::Size size(500, 400);
   compositor_.reset(new ui::Compositor(
-      gfx::SurfaceFactoryOzone::GetInstance()->GetAcceleratedWidget(),
+      ui::SurfaceFactoryOzone::GetInstance()->GetAcceleratedWidget(),
       context_factory));
   compositor_->SetScaleAndSize(1.0f, size);
 

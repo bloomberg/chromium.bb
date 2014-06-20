@@ -4,11 +4,11 @@
 
 #include "ui/ozone/platform/caca/ozone_platform_caca.h"
 
-#include "ui/base/cursor/ozone/cursor_factory_ozone.h"
 #include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/platform/caca/caca_connection.h"
 #include "ui/ozone/platform/caca/caca_event_factory.h"
 #include "ui/ozone/platform/caca/caca_surface_factory.h"
+#include "ui/ozone/public/cursor_factory_ozone.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
@@ -25,7 +25,7 @@ class OzonePlatformCaca : public OzonePlatform {
   virtual ~OzonePlatformCaca() {}
 
   // OzonePlatform:
-  virtual gfx::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
+  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
     return surface_factory_ozone_.get();
   }
   virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {

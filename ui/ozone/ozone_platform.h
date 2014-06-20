@@ -8,15 +8,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/ozone/ozone_export.h"
 
-namespace gfx {
-class SurfaceFactoryOzone;
-}
-
 namespace ui {
 
 class CursorFactoryOzone;
 class EventFactoryOzone;
 class NativeDisplayDelegate;
+class SurfaceFactoryOzone;
 class TouchscreenDeviceManager;
 
 // Base class for Ozone platform implementations.
@@ -50,7 +47,7 @@ class OZONE_EXPORT OzonePlatform {
   // Factory getters to override in subclasses. The returned objects will be
   // injected into the appropriate layer at startup. Subclasses should not
   // inject these objects themselves. Ownership is retained by OzonePlatform.
-  virtual gfx::SurfaceFactoryOzone* GetSurfaceFactoryOzone() = 0;
+  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() = 0;
   virtual ui::EventFactoryOzone* GetEventFactoryOzone() = 0;
   virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() = 0;
 #if defined(OS_CHROMEOS)

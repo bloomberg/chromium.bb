@@ -5,9 +5,9 @@
 #include "ui/base/cursor/cursor_loader_ozone.h"
 
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/cursor/ozone/cursor_factory_ozone.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/ozone/public/cursor_factory_ozone.h"
 
 namespace ui {
 

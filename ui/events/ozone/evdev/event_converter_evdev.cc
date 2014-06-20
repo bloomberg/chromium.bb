@@ -5,7 +5,7 @@
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 
 #include "ui/events/event.h"
-#include "ui/events/ozone/event_factory_ozone.h"
+#include "ui/ozone/public/event_factory_ozone.h"
 
 namespace ui {
 

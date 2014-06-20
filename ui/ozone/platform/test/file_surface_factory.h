@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_IMPL_FILE_SURFACE_FACTORY_H_
-#define UI_GFX_OZONE_IMPL_FILE_SURFACE_FACTORY_H_
+#ifndef UI_OZONE_PLATFORM_TEST_FILE_SURFACE_FACTORY_H_
+#define UI_OZONE_PLATFORM_TEST_FILE_SURFACE_FACTORY_H_
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/ozone/surface_factory_ozone.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 
-namespace gfx {
+namespace ui {
 
-class GFX_EXPORT FileSurfaceFactory : public SurfaceFactoryOzone {
+class OZONE_BASE_EXPORT FileSurfaceFactory : public SurfaceFactoryOzone {
  public:
   explicit FileSurfaceFactory(const base::FilePath& dump_location);
   virtual ~FileSurfaceFactory();
@@ -21,7 +21,7 @@ class GFX_EXPORT FileSurfaceFactory : public SurfaceFactoryOzone {
   // SurfaceFactoryOzone:
   virtual HardwareState InitializeHardware() OVERRIDE;
   virtual void ShutdownHardware() OVERRIDE;
-  virtual AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
+  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget w) OVERRIDE;
   virtual bool LoadEGLGLES2Bindings(
@@ -33,6 +33,6 @@ class GFX_EXPORT FileSurfaceFactory : public SurfaceFactoryOzone {
   DISALLOW_COPY_AND_ASSIGN(FileSurfaceFactory);
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_OZONE_IMPL_FILE_SURFACE_FACTORY_H_
+#endif  // UI_OZONE_PLATFORM_TEST_FILE_SURFACE_FACTORY_H_

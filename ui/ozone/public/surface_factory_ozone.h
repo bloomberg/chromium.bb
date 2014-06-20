@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_SURFACE_LNUX_FACTORY_OZONE_H_
-#define UI_GFX_OZONE_SURFACE_LNUX_FACTORY_OZONE_H_
+#ifndef UI_OZONE_PUBLIC_SURFACE_FACTORY_OZONE_H_
+#define UI_OZONE_PUBLIC_SURFACE_FACTORY_OZONE_H_
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/native_library.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/rect.h"
+#include "ui/ozone/ozone_base_export.h"
 
 class SkBitmap;
 class SkCanvas;
 
-namespace gfx {
-class VSyncProvider;
+namespace ui {
+
+typedef intptr_t NativeBufferOzone;
 class OverlayCandidatesOzone;
 class SurfaceOzoneCanvas;
 class SurfaceOzoneEGL;
-typedef intptr_t NativeBufferOzone;
 
 // The Ozone interface allows external implementations to hook into Chromium to
 // provide a system specific implementation. The Ozone interface supports two
@@ -56,7 +56,7 @@ typedef intptr_t NativeBufferOzone;
 //
 // The remaining functions are not covered since they are needed in both drawing
 // modes (See comments bellow for descriptions).
-class GFX_EXPORT SurfaceFactoryOzone {
+class OZONE_BASE_EXPORT SurfaceFactoryOzone {
  public:
   // Describes the state of the hardware after initialization.
   enum HardwareState {
@@ -74,7 +74,7 @@ class GFX_EXPORT SurfaceFactoryOzone {
     RGB_888,
   };
 
-  typedef void*(*GLGetProcAddressProc)(const char* name);
+  typedef void* (*GLGetProcAddressProc)(const char* name);
   typedef base::Callback<void(base::NativeLibrary)> AddGLLibraryCallback;
   typedef base::Callback<void(GLGetProcAddressProc)>
       SetGLGetProcAddressProcCallback;
@@ -108,14 +108,14 @@ class GFX_EXPORT SurfaceFactoryOzone {
   // platform must support creation of SurfaceOzoneEGL from the GPU process
   // using only the handle contained in gfx::AcceleratedWidget.
   virtual scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
-        gfx::AcceleratedWidget widget);
+      gfx::AcceleratedWidget widget);
 
   // Create SurfaceOzoneCanvas for the specified gfx::AcceleratedWidget.
   //
   // Note: The platform must support creation of SurfaceOzoneCanvas from the
   // Browser Process using only the handle contained in gfx::AcceleratedWidget.
   virtual scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
-        gfx::AcceleratedWidget widget);
+      gfx::AcceleratedWidget widget);
 
   // Sets up GL bindings for the native surface. Takes two callback parameters
   // that allow Ozone to register the GL bindings.
@@ -131,7 +131,7 @@ class GFX_EXPORT SurfaceFactoryOzone {
   virtual const int32* GetEGLSurfaceProperties(const int32* desired_list);
 
   // Get the hal struct to check for overlay support.
-  virtual gfx::OverlayCandidatesOzone* GetOverlayCandidates(
+  virtual OverlayCandidatesOzone* GetOverlayCandidates(
       gfx::AcceleratedWidget w);
 
   // Sets the overlay plane to switch to at the next page flip.
@@ -146,18 +146,18 @@ class GFX_EXPORT SurfaceFactoryOzone {
   virtual void ScheduleOverlayPlane(gfx::AcceleratedWidget w,
                                     int plane_z_order,
                                     gfx::OverlayTransform plane_transform,
-                                    gfx::NativeBufferOzone buffer,
+                                    ui::NativeBufferOzone buffer,
                                     const gfx::Rect& display_bounds,
                                     gfx::RectF crop_rect);
 
   // Cleate a single native buffer to be used for overlay planes.
-  virtual gfx::NativeBufferOzone CreateNativeBuffer(gfx::Size size,
-                                                    BufferFormat format);
+  virtual ui::NativeBufferOzone CreateNativeBuffer(gfx::Size size,
+                                                   BufferFormat format);
 
  private:
-  static SurfaceFactoryOzone* impl_; // not owned
+  static SurfaceFactoryOzone* impl_;  // not owned
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_OZONE_SURFACE_LNUX_FACTORY_OZONE_H_
+#endif  // UI_OZONE_PUBLIC_SURFACE_FACTORY_OZONE_H_

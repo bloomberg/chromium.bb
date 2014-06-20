@@ -25,8 +25,6 @@
       'device/device_manager_manual.h',
       'device/udev/device_manager_udev.cc',
       'device/udev/device_manager_udev.h',
-      'event_factory_ozone.cc',
-      'event_factory_ozone.h',
       'events_ozone_export.h',
     ],
     'conditions': [
@@ -47,6 +45,7 @@
     'dependencies': [
       '../../../base/base.gyp:base',
       '../../gfx/gfx.gyp:gfx',
+      '../../ozone/ozone.gyp:ozone_base',
       '../platform/events_platform.gyp:events_platform',
       'events_ozone',
     ],

@@ -48,7 +48,7 @@
 #elif defined(USE_OZONE)
 #include "content/browser/compositor/overlay_candidate_validator_ozone.h"
 #include "content/browser/compositor/software_output_device_ozone.h"
-#include "ui/gfx/ozone/surface_factory_ozone.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 #elif defined(USE_X11)
 #include "content/browser/compositor/software_output_device_x11.h"
 #elif defined(OS_MACOSX)
@@ -121,8 +121,8 @@ scoped_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
 scoped_ptr<cc::OverlayCandidateValidator> CreateOverlayCandidateValidator(
     gfx::AcceleratedWidget widget) {
 #if defined(USE_OZONE)
-  gfx::OverlayCandidatesOzone* overlay_candidates =
-      gfx::SurfaceFactoryOzone::GetInstance()->GetOverlayCandidates(widget);
+  ui::OverlayCandidatesOzone* overlay_candidates =
+      ui::SurfaceFactoryOzone::GetInstance()->GetOverlayCandidates(widget);
   if (overlay_candidates && CommandLine::ForCurrentProcess()->HasSwitch(
                                 switches::kEnableHardwareOverlays)) {
     return scoped_ptr<cc::OverlayCandidateValidator>(

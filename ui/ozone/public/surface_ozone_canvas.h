@@ -2,26 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_SURFACE_OZONE_CANVAS_H_
-#define UI_GFX_OZONE_SURFACE_OZONE_CANVAS_H_
+#ifndef UI_OZONE_PUBLIC_SURFACE_OZONE_CANVAS_H_
+#define UI_OZONE_PUBLIC_SURFACE_OZONE_CANVAS_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "skia/ext/refptr.h"
-#include "ui/gfx/gfx_export.h"
+#include "ui/ozone/ozone_base_export.h"
 
 class SkCanvas;
 
 namespace gfx {
-
 class Size;
 class VSyncProvider;
+}
+
+namespace ui {
 
 // The platform-specific part of an software output. The class is intended
 // for use when no EGL/GLES2 acceleration is possible.
 // This class owns any bits that the ozone implementation needs freed when
 // the software output is destroyed.
-class GFX_EXPORT SurfaceOzoneCanvas {
+class OZONE_BASE_EXPORT SurfaceOzoneCanvas {
  public:
   virtual ~SurfaceOzoneCanvas() {}
 
@@ -49,6 +51,6 @@ class GFX_EXPORT SurfaceOzoneCanvas {
   virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() = 0;
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_OZONE_SURFACE_OZONE_CANVAS_H_
+#endif  // UI_OZONE_PUBLIC_SURFACE_OZONE_CANVAS_H_

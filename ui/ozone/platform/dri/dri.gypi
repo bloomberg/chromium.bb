@@ -29,7 +29,6 @@
         '../events/ozone/events_ozone.gyp:events_ozone_evdev',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
-        '../gfx/ozone/gfx_ozone.gyp:gfx_ozone',
       ],
       'defines': [
         'OZONE_IMPLEMENTATION',
@@ -73,13 +72,11 @@
         '../../build/linux/system.gyp:dridrm',
         '../../skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx_geometry',
-        '../gfx/ozone/gfx_ozone.gyp:gfx_ozone',
       ],
       'export_dependent_settings': [
         '../../build/linux/system.gyp:dridrm',
         '../../skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx_geometry',
-        '../gfx/ozone/gfx_ozone.gyp:gfx_ozone',
       ],
       'direct_dependent_settings': {
         'sources': [

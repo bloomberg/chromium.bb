@@ -26,8 +26,8 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_switches.h"
-#include "ui/events/ozone/event_factory_ozone.h"
 #include "ui/gfx/screen.h"
+#include "ui/ozone/public/event_factory_ozone.h"
 
 namespace {
 

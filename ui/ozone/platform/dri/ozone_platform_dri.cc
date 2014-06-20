@@ -62,7 +62,7 @@ class OzonePlatformDri : public OzonePlatform {
   virtual ~OzonePlatformDri() {}
 
   // OzonePlatform:
-  virtual gfx::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
+  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
     return surface_factory_ozone_.get();
   }
   virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {

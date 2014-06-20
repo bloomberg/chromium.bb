@@ -14,8 +14,8 @@
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
-#include "ui/events/ozone/event_factory_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/ozone/public/event_factory_ozone.h"
 
 namespace ui {
 

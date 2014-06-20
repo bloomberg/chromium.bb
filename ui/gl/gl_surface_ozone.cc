@@ -7,12 +7,12 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/ozone/surface_factory_ozone.h"
-#include "ui/gfx/ozone/surface_ozone_egl.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
+#include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace gfx {
 
@@ -21,7 +21,7 @@ namespace {
 // A thin wrapper around GLSurfaceEGL that owns the EGLNativeWindow
 class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
  public:
-  GLSurfaceOzoneEGL(scoped_ptr<SurfaceOzoneEGL> ozone_surface)
+  GLSurfaceOzoneEGL(scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface)
       : NativeViewGLSurfaceEGL(ozone_surface->GetNativeWindow()),
         ozone_surface_(ozone_surface.Pass()) {}
 
@@ -44,7 +44,7 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
   }
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
-  scoped_ptr<SurfaceOzoneEGL> ozone_surface_;
+  scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceOzoneEGL);
 };
@@ -55,8 +55,8 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
 bool GLSurface::InitializeOneOffInternal() {
   switch (GetGLImplementation()) {
     case kGLImplementationEGLGLES2:
-      if (gfx::SurfaceFactoryOzone::GetInstance()->InitializeHardware() !=
-          gfx::SurfaceFactoryOzone::INITIALIZED) {
+      if (ui::SurfaceFactoryOzone::GetInstance()->InitializeHardware() !=
+          ui::SurfaceFactoryOzone::INITIALIZED) {
         LOG(ERROR) << "Ozone failed to initialize hardware";
         return false;
       }
@@ -86,8 +86,9 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
   }
   DCHECK(GetGLImplementation() == kGLImplementationEGLGLES2);
   if (window != kNullAcceleratedWidget) {
-    scoped_ptr<SurfaceOzoneEGL> surface_ozone =
-        SurfaceFactoryOzone::GetInstance()->CreateEGLSurfaceForWidget(window);
+    scoped_ptr<ui::SurfaceOzoneEGL> surface_ozone =
+        ui::SurfaceFactoryOzone::GetInstance()->CreateEGLSurfaceForWidget(
+            window);
     if (!surface_ozone)
       return NULL;
 
@@ -136,7 +137,7 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
 }
 
 EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay() {
-  return SurfaceFactoryOzone::GetInstance()->GetNativeDisplay();
+  return ui::SurfaceFactoryOzone::GetInstance()->GetNativeDisplay();
 }
 
 }  // namespace gfx

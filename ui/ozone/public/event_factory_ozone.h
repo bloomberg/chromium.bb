@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_OZONE_EVENT_FACTORY_OZONE_H_
-#define UI_EVENTS_OZONE_EVENT_FACTORY_OZONE_H_
+#ifndef UI_OZONE_PUBLIC_EVENT_FACTORY_OZONE_H_
+#define UI_OZONE_PUBLIC_EVENT_FACTORY_OZONE_H_
 
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_libevent.h"
-#include "ui/events/ozone/events_ozone_export.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/ozone_base_export.h"
 
 namespace gfx {
 class PointF;
@@ -25,7 +25,7 @@ class Event;
 // Ozone presumes that the set of file descriptors can vary at runtime so this
 // class supports dynamically adding and removing |EventConverterOzone|
 // instances as necessary.
-class EVENTS_OZONE_EXPORT EventFactoryOzone {
+class OZONE_BASE_EXPORT EventFactoryOzone {
  public:
   EventFactoryOzone();
   virtual ~EventFactoryOzone();
@@ -47,4 +47,4 @@ class EVENTS_OZONE_EXPORT EventFactoryOzone {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_OZONE_EVENT_FACTORY_OZONE_H_
+#endif  // UI_OZONE_PUBLIC_EVENT_FACTORY_OZONE_H_

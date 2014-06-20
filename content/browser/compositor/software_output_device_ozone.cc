@@ -5,18 +5,18 @@
 #include "content/browser/compositor/software_output_device_ozone.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/compositor/compositor.h"
-#include "ui/gfx/ozone/surface_factory_ozone.h"
-#include "ui/gfx/ozone/surface_ozone_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
+#include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace content {
 
 SoftwareOutputDeviceOzone::SoftwareOutputDeviceOzone(ui::Compositor* compositor)
     : compositor_(compositor) {
-  gfx::SurfaceFactoryOzone* factory = gfx::SurfaceFactoryOzone::GetInstance();
+  ui::SurfaceFactoryOzone* factory = ui::SurfaceFactoryOzone::GetInstance();
 
-  if (factory->InitializeHardware() != gfx::SurfaceFactoryOzone::INITIALIZED)
+  if (factory->InitializeHardware() != ui::SurfaceFactoryOzone::INITIALIZED)
     LOG(FATAL) << "Failed to initialize hardware in OZONE";
 
   surface_ozone_ = factory->CreateCanvasForWidget(compositor_->widget());

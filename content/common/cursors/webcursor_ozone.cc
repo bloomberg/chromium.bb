@@ -7,7 +7,7 @@
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_util.h"
-#include "ui/base/cursor/ozone/cursor_factory_ozone.h"
+#include "ui/ozone/public/cursor_factory_ozone.h"
 
 namespace content {
 

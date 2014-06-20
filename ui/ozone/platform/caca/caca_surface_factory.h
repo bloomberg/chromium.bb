@@ -8,7 +8,7 @@
 #include <caca.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/ozone/surface_factory_ozone.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace gfx {
 class SurfaceOzone;
@@ -18,19 +18,19 @@ namespace ui {
 
 class CacaConnection;
 
-class CacaSurfaceFactory : public gfx::SurfaceFactoryOzone {
+class CacaSurfaceFactory : public ui::SurfaceFactoryOzone {
  public:
   CacaSurfaceFactory(CacaConnection* connection);
   virtual ~CacaSurfaceFactory();
 
-  // gfx::SurfaceFactoryOzone overrides:
+  // ui::SurfaceFactoryOzone overrides:
   virtual HardwareState InitializeHardware() OVERRIDE;
   virtual void ShutdownHardware() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
-  virtual scoped_ptr<gfx::SurfaceOzoneCanvas> CreateCanvasForWidget(
+  virtual scoped_ptr<ui::SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) OVERRIDE;
 
  private:

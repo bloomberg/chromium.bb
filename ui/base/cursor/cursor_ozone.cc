@@ -4,7 +4,7 @@
 
 #include "ui/base/cursor/cursor.h"
 
-#include "ui/base/cursor/ozone/cursor_factory_ozone.h"
+#include "ui/ozone/public/cursor_factory_ozone.h"
 
 namespace ui {
 

@@ -7,10 +7,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "ui/gfx/ozone/surface_ozone_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/platform/caca/caca_connection.h"
+#include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace ui {
 
@@ -18,14 +18,14 @@ namespace {
 
 const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 
-class CacaSurface : public gfx::SurfaceOzoneCanvas {
+class CacaSurface : public ui::SurfaceOzoneCanvas {
  public:
   CacaSurface(CacaConnection* connection);
   virtual ~CacaSurface();
 
   bool Initialize();
 
-  // gfx::SurfaceOzoneCanvas overrides:
+  // ui::SurfaceOzoneCanvas overrides:
   virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE;
   virtual void ResizeCanvas(const gfx::Size& viewport_size) OVERRIDE;
   virtual void PresentCanvas(const gfx::Rect& damage) OVERRIDE;
@@ -111,7 +111,7 @@ CacaSurfaceFactory::~CacaSurfaceFactory() {
     ShutdownHardware();
 }
 
-gfx::SurfaceFactoryOzone::HardwareState
+ui::SurfaceFactoryOzone::HardwareState
 CacaSurfaceFactory::InitializeHardware() {
   connection_->Initialize();
   state_ = INITIALIZED;
@@ -134,14 +134,14 @@ bool CacaSurfaceFactory::LoadEGLGLES2Bindings(
   return false;
 }
 
-scoped_ptr<gfx::SurfaceOzoneCanvas> CacaSurfaceFactory::CreateCanvasForWidget(
+scoped_ptr<ui::SurfaceOzoneCanvas> CacaSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
   CHECK_EQ(INITIALIZED, state_);
   CHECK_EQ(kDefaultWidgetHandle, widget);
 
   scoped_ptr<CacaSurface> canvas(new CacaSurface(connection_));
   CHECK(canvas->Initialize());
-  return canvas.PassAs<gfx::SurfaceOzoneCanvas>();
+  return canvas.PassAs<ui::SurfaceOzoneCanvas>();
 }
 
 }  // namespace ui

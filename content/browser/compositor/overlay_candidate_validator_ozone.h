@@ -10,7 +10,7 @@
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace gfx {
+namespace ui {
 class OverlayCandidatesOzone;
 }
 
@@ -21,7 +21,7 @@ class CONTENT_EXPORT OverlayCandidateValidatorOzone
  public:
   OverlayCandidateValidatorOzone(
       gfx::AcceleratedWidget widget,
-      gfx::OverlayCandidatesOzone* overlay_candidates);
+      ui::OverlayCandidatesOzone* overlay_candidates);
   virtual ~OverlayCandidateValidatorOzone();
 
   // cc::OverlayCandidateValidator implementation.
@@ -29,7 +29,7 @@ class CONTENT_EXPORT OverlayCandidateValidatorOzone
 
  private:
   gfx::AcceleratedWidget widget_;
-  gfx::OverlayCandidatesOzone* overlay_candidates_;
+  ui::OverlayCandidatesOzone* overlay_candidates_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayCandidateValidatorOzone);
 };

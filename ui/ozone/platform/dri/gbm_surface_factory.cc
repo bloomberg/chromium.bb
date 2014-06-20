@@ -8,19 +8,19 @@
 #include <gbm.h>
 
 #include "base/files/file_path.h"
-#include "ui/gfx/ozone/surface_ozone_egl.h"
 #include "ui/ozone/platform/dri/buffer_data.h"
 #include "ui/ozone/platform/dri/dri_vsync_provider.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/scanout_surface.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
+#include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace ui {
 
 namespace {
 
-class GbmSurfaceAdapter : public gfx::SurfaceOzoneEGL {
+class GbmSurfaceAdapter : public ui::SurfaceOzoneEGL {
  public:
   GbmSurfaceAdapter(const base::WeakPtr<HardwareDisplayController>& controller);
   virtual ~GbmSurfaceAdapter();
@@ -143,12 +143,12 @@ bool GbmSurfaceFactory::LoadEGLGLES2Bindings(
   return true;
 }
 
-scoped_ptr<gfx::SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
+scoped_ptr<ui::SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget w) {
   CHECK(state_ == INITIALIZED);
   ResetCursor(w);
 
-  return scoped_ptr<gfx::SurfaceOzoneEGL>(
+  return scoped_ptr<ui::SurfaceOzoneEGL>(
       new GbmSurfaceAdapter(screen_manager_->GetDisplayController(w)));
 }
 

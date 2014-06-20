@@ -10,8 +10,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "ui/gfx/ozone/surface_factory_ozone.h"
-#include "ui/gfx/ozone/surface_ozone_canvas.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
@@ -20,6 +18,8 @@
 #include "ui/ozone/platform/dri/test/mock_dri_surface.h"
 #include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
 #include "ui/ozone/platform/dri/test/mock_surface_generator.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
+#include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace {
 
@@ -109,16 +109,16 @@ void DriSurfaceFactoryTest::TearDown() {
 
 TEST_F(DriSurfaceFactoryTest, FailInitialization) {
   dri_->fail_init();
-  EXPECT_EQ(gfx::SurfaceFactoryOzone::FAILED, factory_->InitializeHardware());
+  EXPECT_EQ(ui::SurfaceFactoryOzone::FAILED, factory_->InitializeHardware());
 }
 
 TEST_F(DriSurfaceFactoryTest, SuccessfulInitialization) {
-  EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
+  EXPECT_EQ(ui::SurfaceFactoryOzone::INITIALIZED,
             factory_->InitializeHardware());
 }
 
 TEST_F(DriSurfaceFactoryTest, SuccessfulWidgetRealization) {
-  EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
+  EXPECT_EQ(ui::SurfaceFactoryOzone::INITIALIZED,
             factory_->InitializeHardware());
 
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
@@ -128,13 +128,13 @@ TEST_F(DriSurfaceFactoryTest, SuccessfulWidgetRealization) {
 }
 
 TEST_F(DriSurfaceFactoryTest, CheckNativeSurfaceContents) {
-  EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
+  EXPECT_EQ(ui::SurfaceFactoryOzone::INITIALIZED,
             factory_->InitializeHardware());
 
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(ui::DriSurfaceFactory::kDefaultWidgetHandle, w);
 
-  scoped_ptr<gfx::SurfaceOzoneCanvas> surface =
+  scoped_ptr<ui::SurfaceOzoneCanvas> surface =
       factory_->CreateCanvasForWidget(w);
 
   surface->ResizeCanvas(
@@ -161,13 +161,13 @@ TEST_F(DriSurfaceFactoryTest, CheckNativeSurfaceContents) {
 }
 
 TEST_F(DriSurfaceFactoryTest, SetCursorImage) {
-  EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
+  EXPECT_EQ(ui::SurfaceFactoryOzone::INITIALIZED,
             factory_->InitializeHardware());
 
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(ui::DriSurfaceFactory::kDefaultWidgetHandle, w);
 
-  scoped_ptr<gfx::SurfaceOzoneCanvas> surf = factory_->CreateCanvasForWidget(w);
+  scoped_ptr<ui::SurfaceOzoneCanvas> surf = factory_->CreateCanvasForWidget(w);
   EXPECT_TRUE(surf);
 
   SkBitmap image;

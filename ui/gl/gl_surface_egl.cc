@@ -34,7 +34,7 @@ extern "C" {
 #endif
 
 #if defined (USE_OZONE)
-#include "ui/gfx/ozone/surface_factory_ozone.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 #endif
 
 #if !defined(EGL_FIXED_SIZE_ANGLE)
@@ -129,7 +129,7 @@ bool GLSurfaceEGL::InitializeOneOff() {
 
 #if defined(USE_OZONE)
   const EGLint* config_attribs =
-      SurfaceFactoryOzone::GetInstance()->GetEGLSurfaceProperties(
+      ui::SurfaceFactoryOzone::GetInstance()->GetEGLSurfaceProperties(
           kConfigAttribs);
 #else
   const EGLint* config_attribs = kConfigAttribs;
