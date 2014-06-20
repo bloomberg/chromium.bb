@@ -1173,7 +1173,7 @@ TEST_F(BookmarkModelTest, GetMostRecentlyAddedUserNodeForURLSkipsManagedNodes) {
 
   // Having a more recent managed node doesn't count either.
   const BookmarkNode* managed = model_->AddURL(managed_parent, 0, title, url);
-  EXPECT_GT(managed->date_added(), user->date_added());
+  EXPECT_GE(managed->date_added(), user->date_added());
   EXPECT_EQ(user, model_->GetMostRecentlyAddedUserNodeForURL(url));
 }
 
