@@ -73,6 +73,13 @@ function test()
             pane._setBreakpoint("listener:click");
             InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
             InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+        },
+
+        function tearDown(next)
+        {
+            WebInspector.panels.sources.sidebarPanes.xhrBreakpoints._removeBreakpoint("foo");
+            WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints._removeBreakpoint("listener:click");
+            next();
         }
     ]);
 }

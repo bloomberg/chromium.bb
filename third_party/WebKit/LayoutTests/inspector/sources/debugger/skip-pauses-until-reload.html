@@ -111,10 +111,11 @@ function test()
         InspectorTest.waitUntilPausedNextTime(didPauseAfterReload);
         InspectorTest.reloadPage(didReloadPage);
     }
+
     function didReloadPage()
     {
         InspectorTest.addResult("PASS: Reloaded without hitting breakpoints.");
-        InspectorTest.completeDebuggerTest();
+        completeTest();
     }
 
     function didPauseAfterReload(callFrames)
@@ -123,6 +124,13 @@ function test()
         InspectorTest.captureStackTrace(callFrames);
         InspectorTest.waitUntilPausedNextTime(didPauseAfterReload);
         InspectorTest.resumeExecution();
+    }
+
+    function completeTest()
+    {
+        var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+        pane._removeBreakpoint("listener:click");
+        InspectorTest.completeDebuggerTest();
     }
 }; 
 

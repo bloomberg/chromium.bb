@@ -25,3 +25,5 @@ Call stack:
     4)  (:1)
 Paused on a "click" Event Listener.
 
+Running: tearDown
+
