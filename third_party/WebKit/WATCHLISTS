@@ -274,6 +274,10 @@
       'filepath': 'Source/modules/battery/' \
                   '|LayoutTests/battery-status/'
     },
+    'device_light': {
+      'filepath': 'Source/modules/device_light/' \
+                  '|LayoutTests/fast/dom/DeviceLight/'
+    },
   },
 
   'WATCHLISTS': {
@@ -390,5 +394,6 @@
     'css_flexbox': [ 'cbiesinger@chromium.org' ],
     'battery_status': [ 'timvolodine@chromium.org' ],
     'out_of_process_frames': [ 'dcheng@chromium.org' ],
+    'device_light': [ 'timvolodine@chromium.org' ],
   },
 }
