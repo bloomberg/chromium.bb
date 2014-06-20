@@ -1721,7 +1721,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableStreamlinedHostedApps,
       switches::kEnableWatchdog,
       switches::kEnableWebBasedSignin,
-      switches::kMemoryProfiling,
       switches::kMessageLoopHistogrammer,
       switches::kOutOfProcessPdf,
       switches::kPlaybackMode,
@@ -1748,15 +1747,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    arraysize(kSwitchNames));
   } else if (process_type == switches::kPluginProcess) {
-    static const char* const kSwitchNames[] = {
 #if defined(OS_CHROMEOS)
+    static const char* const kSwitchNames[] = {
       chromeos::switches::kLoginProfile,
-#endif
-      switches::kMemoryProfiling,
     };
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    arraysize(kSwitchNames));
+#endif
   } else if (process_type == switches::kZygoteProcess) {
     static const char* const kSwitchNames[] = {
       // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.

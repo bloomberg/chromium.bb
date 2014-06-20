@@ -832,10 +832,6 @@ const char kManualEnhancedBookmarksOptout[] =
 // Forces the maximum disk space to be used by the media cache, in bytes.
 const char kMediaCacheSize[]                = "media-cache-size";
 
-// Enables dynamic loading of the Memory Profiler DLL, which will trace all
-// memory allocations during the run.
-const char kMemoryProfiling[]               = "memory-profile";
-
 // Enables histograming of tasks served by MessageLoop. See
 // about:histograms/Loop for results, which show frequency of messages on each
 // thread, including APC count, object signalling count, etc.

@@ -47,7 +47,6 @@
 #include "base/strings/string_util.h"
 #include "chrome/common/child_process_logging.h"
 #include "sandbox/win/src/sandbox.h"
-#include "tools/memory_watcher/memory_watcher.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #endif
 
@@ -134,15 +133,6 @@ extern int ServiceProcessMain(const content::MainFunctionParams&);
 namespace {
 
 #if defined(OS_WIN)
-const wchar_t kProfilingDll[] = L"memory_watcher.dll";
-
-// Load the memory profiling DLL.  All it needs to be activated
-// is to be loaded.  Return true on success, false otherwise.
-bool LoadMemoryProfiler() {
-  HMODULE prof_module = LoadLibrary(kProfilingDll);
-  return prof_module != NULL;
-}
-
 // Early versions of Chrome incorrectly registered a chromehtml: URL handler,
 // which gives us nothing but trouble. Avoid launching chrome this way since
 // some apps fail to properly escape arguments.
@@ -224,16 +214,6 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
     base::AdjustOOMScore(base::GetCurrentProcId(), score);
 }
 #endif  // defined(OS_LINUX)
-
-// Enable the heap profiler if the appropriate command-line switch is
-// present, bailing out of the app we can't.
-void EnableHeapProfiler(const CommandLine& command_line) {
-#if defined(OS_WIN)
-  if (command_line.HasSwitch(switches::kMemoryProfiling))
-    if (!LoadMemoryProfiler())
-      exit(-1);
-#endif
-}
 
 // Returns true if this subprocess type needs the ResourceBundle initialized
 // and resources loaded.
@@ -671,9 +651,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
   stats_counter_timer_.reset(new base::StatsCounterTimer("Chrome.Init"));
   startup_timer_.reset(new base::StatsScope<base::StatsCounterTimer>
                        (*stats_counter_timer_));
-
-  // Enable the heap profiler as early as possible!
-  EnableHeapProfiler(command_line);
 
   // Enable Message Loop related state asap.
   if (command_line.HasSwitch(switches::kMessageLoopHistogrammer))

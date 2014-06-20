@@ -236,7 +236,6 @@ extern const char kSupervisedUserSyncToken[];
 extern const char kManualEnhancedBookmarks[];
 extern const char kManualEnhancedBookmarksOptout[];
 extern const char kMediaCacheSize[];
-extern const char kMemoryProfiling[];
 extern const char kMessageLoopHistogrammer[];
 extern const char kMetricsRecordingOnly[];
 extern const char kNetLogLevel[];
