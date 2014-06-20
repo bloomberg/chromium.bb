@@ -49,10 +49,6 @@ namespace {
 // Acts like the > operator for URLInfo classes.
 bool CompareHistoryMatch(const history::HistoryMatch& a,
                          const history::HistoryMatch& b) {
-  // A promoted match is better than non-promoted.
-  if (a.promoted != b.promoted)
-    return a.promoted;
-
   // A URL that has been typed at all is better than one that has never been
   // typed.  (Note "!"s on each side)
   if (!a.url_info.typed_count() != !b.url_info.typed_count())
@@ -150,7 +146,7 @@ double CalculateRelevanceUsingScoreBuckets(
 // |old_relevance| score and |scoring_params|.  The new relevance score is
 // guaranteed to be less than or equal to |old_relevance|.  In other words, this
 // function can only demote a score, never boost it.  Returns |old_relevance| if
-// experimental scoring is disabled or if |match.promoted| is true.
+// experimental scoring is disabled.
 int CalculateRelevanceScoreUsingScoringParams(
     const history::HistoryMatch& match,
     int old_relevance,
@@ -232,16 +228,14 @@ bool CreateOrPromoteMatch(const history::URLRow& info,
 
 // Returns whether |match| is suitable for inline autocompletion.
 bool CanPromoteMatchForInlineAutocomplete(const history::HistoryMatch& match) {
-  // We can promote this match if it's been marked for promotion or typed at
-  // least n times, where n == 1 for "simple" (host-only) URLs and n == 2 for
-  // others.  We set a higher bar for these long URLs because it's less likely
-  // that users will want to visit them again.  Even though we don't increment
-  // the typed_count for pasted-in URLs, if the user manually edits the URL or
-  // types some long thing in by hand, we wouldn't want to immediately start
-  // autocompleting it.
-  return match.promoted ||
-      (match.url_info.typed_count() &&
-       ((match.url_info.typed_count() > 1) || match.IsHostOnly()));
+  // We can promote this match if it's been typed at least n times, where n == 1
+  // for "simple" (host-only) URLs and n == 2 for others.  We set a higher bar
+  // for these long URLs because it's less likely that users will want to visit
+  // them again.  Even though we don't increment the typed_count for pasted-in
+  // URLs, if the user manually edits the URL or types some long thing in by
+  // hand, we wouldn't want to immediately start autocompleting it.
+  return match.url_info.typed_count() &&
+      ((match.url_info.typed_count() > 1) || match.IsHostOnly());
 }
 
 // Given the user's |input| and a |match| created from it, reduce the match's
@@ -417,8 +411,9 @@ HistoryURLProviderParams::HistoryURLProviderParams(
       trim_http(trim_http),
       what_you_typed_match(what_you_typed_match),
       failed(false),
+      exact_suggestion_is_in_history(false),
+      promote_type(NEITHER),
       languages(languages),
-      dont_suggest_exact_input(false),
       default_search_provider(default_search_provider ?
           new TemplateURL(default_search_provider->data()) : NULL),
       search_terms_data(new SearchTermsDataSnapshot(search_terms_data)) {
@@ -527,14 +522,12 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // autocomplete behavior here.
   if (url_db) {
     DoAutocomplete(NULL, url_db, params.get());
-    // params->matches now has the matches we should expose to the provider.
-    // Pass 2 expects a "clean slate" set of matches.
     matches_.clear();
-    matches_.swap(params->matches);
+    PromoteMatchIfNecessary(*params);
     UpdateStarredStateOfMatches();
-    // Reset the WYT match in |params| so that both passes get the same input
-    // state, since DoAutocomplete() may have modified it.
-    params->what_you_typed_match = what_you_typed_match;
+    // NOTE: We don't reset |params| here since at least the |promote_type|
+    // field on it will be read by the second pass -- see comments in
+    // DoAutocomplete().
   }
 
   // Pass 2: Ask the history service to call us back on the history thread,
@@ -689,9 +682,8 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
                                         history::URLDatabase* db,
                                         HistoryURLProviderParams* params) {
   // Get the matching URLs from the DB.
+  params->matches.clear();
   history::URLRows url_matches;
-  history::HistoryMatches history_matches;
-
   const URLPrefixes& prefixes = URLPrefix::GetURLPrefixes();
   for (URLPrefixes::const_iterator i(prefixes.begin()); i != prefixes.end();
        ++i) {
@@ -712,15 +704,15 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
       const URLPrefix* best_prefix = URLPrefix::BestURLPrefix(
           base::UTF8ToUTF16(j->url().spec()), base::string16());
       DCHECK(best_prefix);
-      history_matches.push_back(history::HistoryMatch(
+      params->matches.push_back(history::HistoryMatch(
           *j, i->prefix.length(), !i->num_components,
           i->num_components >= best_prefix->num_components));
     }
   }
 
   // Create sorted list of suggestions.
-  CullPoorMatches(*params, &history_matches);
-  SortAndDedupMatches(&history_matches);
+  CullPoorMatches(params);
+  SortAndDedupMatches(&params->matches);
 
   // Try to create a shorter suggestion from the best match.
   // We allow the what you typed match to be displayed when there's a reasonable
@@ -737,77 +729,68 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
        (classifier.type() == VisitClassifier::UNVISITED_INTRANET) ||
        !params->trim_http ||
        (AutocompleteInput::NumNonHostComponents(params->input.parts()) > 0));
-  PromoteOrCreateShorterSuggestion(db, *params, have_what_you_typed_match,
-                                   &history_matches);
+  const bool have_shorter_suggestion_suitable_for_inline_autocomplete =
+      PromoteOrCreateShorterSuggestion(db, have_what_you_typed_match, params);
 
-  // Try to promote a match as an exact/inline autocomplete match.  This also
-  // moves it to the front of |history_matches|, so skip over it when
-  // converting the rest of the matches.
-  size_t first_match = 1;
-  size_t exact_suggestion = 0;
-  // Checking params->what_you_typed_match.is_history_what_you_typed_match tells
-  // us whether SuggestExactInput() succeeded in constructing a valid match.
-  if (params->what_you_typed_match.is_history_what_you_typed_match &&
-      (!backend || !params->dont_suggest_exact_input) &&
-      FixupExactSuggestion(db, classifier, params, &history_matches)) {
-    // Got an exact match for the user's input.  Treat it as the best match
-    // regardless of the input type.
-    exact_suggestion = 1;
-    params->matches.push_back(params->what_you_typed_match);
-  } else if (params->prevent_inline_autocomplete ||
-      history_matches.empty() ||
-      !PromoteMatchForInlineAutocomplete(history_matches.front(), params)) {
-    // Failed to promote any URLs for inline autocompletion.  Use the What You
-    // Typed match, if we have it.
-    first_match = 0;
-    if (have_what_you_typed_match)
-      params->matches.push_back(params->what_you_typed_match);
+  // Check whether what the user typed appears in history.
+  const bool can_check_history_for_exact_match =
+      // Checking what_you_typed_match.is_history_what_you_typed_match tells us
+      // whether SuggestExactInput() succeeded in constructing a valid match.
+      params->what_you_typed_match.is_history_what_you_typed_match &&
+      // Additionally, in the case where the user has typed "foo.com" and
+      // visited (but not typed) "foo/", and the input is "foo", the first pass
+      // will fall into the FRONT_HISTORY_MATCH case for "foo.com" but the
+      // second pass can suggest the exact input as a better URL.  Since we need
+      // both passes to agree, and since during the first pass there's no way to
+      // know about "foo/", ensure that if the promote type was set to
+      // FRONT_HISTORY_MATCH during the first pass, the second pass will not
+      // consider the exact suggestion to be in history and therefore will not
+      // suggest the exact input as a better match.  (Note that during the first
+      // pass, this conditional will always succeed since |promote_type| is
+      // initialized to NEITHER.)
+      (params->promote_type != HistoryURLProviderParams::FRONT_HISTORY_MATCH);
+  params->exact_suggestion_is_in_history = can_check_history_for_exact_match &&
+      FixupExactSuggestion(db, classifier, params);
+
+  // If we succeeded in fixing up the exact match based on the user's history,
+  // we should treat it as the best match regardless of input type.  If not,
+  // then we check whether there's an inline autocompletion we can create from
+  // this input, so we can promote that as the best match.
+  if (params->exact_suggestion_is_in_history) {
+    params->promote_type = HistoryURLProviderParams::WHAT_YOU_TYPED_MATCH;
+  } else if (!params->prevent_inline_autocomplete && !params->matches.empty() &&
+      (have_shorter_suggestion_suitable_for_inline_autocomplete ||
+       CanPromoteMatchForInlineAutocomplete(params->matches[0]))) {
+    params->promote_type = HistoryURLProviderParams::FRONT_HISTORY_MATCH;
+  } else {
+    // Failed to promote any URLs.  Use the What You Typed match, if we have it.
+    params->promote_type = have_what_you_typed_match ?
+        HistoryURLProviderParams::WHAT_YOU_TYPED_MATCH :
+        HistoryURLProviderParams::NEITHER;
   }
 
-  // This is the end of the synchronous pass.
-  if (!backend)
-    return;
-
-  // Determine relevancy of highest scoring match, if any.
-  int relevance = -1;
-  for (ACMatches::const_iterator it = params->matches.begin();
-       it != params->matches.end(); ++it) {
-    relevance = std::max(relevance, it->relevance);
-  }
-
-  if (cull_redirects_) {
+  const size_t max_results =
+      kMaxMatches + (params->exact_suggestion_is_in_history ? 1 : 0);
+  if (backend && cull_redirects_) {
     // Remove redirects and trim list to size.  We want to provide up to
     // kMaxMatches results plus the What You Typed result, if it was added to
-    // |history_matches| above.
-    CullRedirects(backend, &history_matches, kMaxMatches + exact_suggestion);
-  } else {
+    // params->matches above.
+    CullRedirects(backend, &params->matches, max_results);
+  } else if (params->matches.size() > max_results) {
     // Simply trim the list to size.
-    if (history_matches.size() > kMaxMatches + exact_suggestion)
-      history_matches.resize(kMaxMatches + exact_suggestion);
+    params->matches.resize(max_results);
   }
+}
 
-  // Convert the history matches to autocomplete matches.
-  for (size_t i = first_match; i < history_matches.size(); ++i) {
-    const history::HistoryMatch& match = history_matches[i];
-    DCHECK(!have_what_you_typed_match ||
-           (match.url_info.url() !=
-            GURL(params->matches.front().destination_url)));
-    // If we've assigned a score already, all later matches score one
-    // less than the previous match.
-    relevance = (relevance > 0) ?
-        (relevance - 1) :
-        CalculateRelevance(NORMAL,
-                           static_cast<int>(history_matches.size() - 1 - i));
-    AutocompleteMatch ac_match = HistoryMatchToACMatch(*params, match,
-        NORMAL, relevance);
-    // The experimental scoring must not change the top result's score.
-    if (!params->matches.empty()) {
-      relevance = CalculateRelevanceScoreUsingScoringParams(match, relevance,
-                                                            scoring_params_);
-      ac_match.relevance = relevance;
-    }
-    params->matches.push_back(ac_match);
-  }
+void HistoryURLProvider::PromoteMatchIfNecessary(
+    const HistoryURLProviderParams& params) {
+  if (params.promote_type == HistoryURLProviderParams::NEITHER)
+    return;
+  matches_.push_back(
+      (params.promote_type == HistoryURLProviderParams::WHAT_YOU_TYPED_MATCH) ?
+          params.what_you_typed_match :
+          HistoryMatchToACMatch(params, 0, INLINE_AUTOCOMPLETE,
+                                CalculateRelevance(INLINE_AUTOCOMPLETE, 0)));
 }
 
 void HistoryURLProvider::QueryComplete(
@@ -827,7 +810,32 @@ void HistoryURLProvider::QueryComplete(
   // Don't modify |matches_| if the query failed, since it might have a default
   // match in it, whereas |params->matches| will be empty.
   if (!params->failed) {
-    matches_.swap(params->matches);
+    matches_.clear();
+    PromoteMatchIfNecessary(*params);
+
+    // Determine relevance of highest scoring match, if any.
+    int relevance = matches_.empty() ?
+        CalculateRelevance(NORMAL,
+                           static_cast<int>(params->matches.size() - 1)) :
+        matches_[0].relevance;
+
+    // Convert the history matches to autocomplete matches.  If we promoted the
+    // first match, skip over it.
+    const size_t first_match =
+        (params->exact_suggestion_is_in_history ||
+         (params->promote_type ==
+             HistoryURLProviderParams::FRONT_HISTORY_MATCH)) ? 1 : 0;
+    for (size_t i = first_match; i < params->matches.size(); ++i) {
+      // All matches score one less than the previous match.
+      --relevance;
+      // The experimental scoring must not change the top result's score.
+      if (!matches_.empty()) {
+        relevance = CalculateRelevanceScoreUsingScoringParams(
+            params->matches[i], relevance, scoring_params_);
+      }
+      matches_.push_back(HistoryMatchToACMatch(*params, i, NORMAL, relevance));
+    }
+
     UpdateStarredStateOfMatches();
   }
 
@@ -838,10 +846,7 @@ void HistoryURLProvider::QueryComplete(
 bool HistoryURLProvider::FixupExactSuggestion(
     history::URLDatabase* db,
     const VisitClassifier& classifier,
-    HistoryURLProviderParams* params,
-    history::HistoryMatches* matches) const {
-  DCHECK(matches != NULL);
-
+    HistoryURLProviderParams* params) const {
   MatchType type = INLINE_AUTOCOMPLETE;
   switch (classifier.type()) {
     case VisitClassifier::INVALID:
@@ -904,12 +909,12 @@ bool HistoryURLProvider::FixupExactSuggestion(
   // DoAutocomplete() will fall back on this match if inline autocompletion
   // fails.  This matches how we react to never-visited URL inputs in the non-
   // intranet case.
-  if (type == UNVISITED_INTRANET && !matches->empty())
+  if (type == UNVISITED_INTRANET && !params->matches.empty())
     return false;
 
   // Put it on the front of the HistoryMatches for redirect culling.
   CreateOrPromoteMatch(classifier.url_row(), base::string16::npos, false,
-                       matches, true, true);
+                       &params->matches, true, true);
   return true;
 }
 
@@ -934,38 +939,18 @@ bool HistoryURLProvider::CanFindIntranetURL(
   return registry_length == 0 && db->IsTypedHost(host);
 }
 
-bool HistoryURLProvider::PromoteMatchForInlineAutocomplete(
-    const history::HistoryMatch& match,
-    HistoryURLProviderParams* params) {
-  if (!CanPromoteMatchForInlineAutocomplete(match))
-    return false;
-
-  // In the case where the user has typed "foo.com" and visited (but not typed)
-  // "foo/", and the input is "foo", we can reach here for "foo.com" during the
-  // first pass but have the second pass suggest the exact input as a better
-  // URL.  Since we need both passes to agree, and since during the first pass
-  // there's no way to know about "foo/", make reaching this point prevent any
-  // future pass from suggesting the exact input as a better match.
-  params->dont_suggest_exact_input = true;
-  params->matches.push_back(HistoryMatchToACMatch(
-      *params, match, INLINE_AUTOCOMPLETE,
-      CalculateRelevance(INLINE_AUTOCOMPLETE, 0)));
-  return true;
-}
-
-void HistoryURLProvider::PromoteOrCreateShorterSuggestion(
+bool HistoryURLProvider::PromoteOrCreateShorterSuggestion(
     history::URLDatabase* db,
-    const HistoryURLProviderParams& params,
     bool have_what_you_typed_match,
-    history::HistoryMatches* matches) {
-  if (matches->empty())
-    return;  // No matches, nothing to do.
+    HistoryURLProviderParams* params) {
+  if (params->matches.empty())
+    return false;  // No matches, nothing to do.
 
   // Determine the base URL from which to search, and whether that URL could
   // itself be added as a match.  We can add the base iff it's not "effectively
   // the same" as any "what you typed" match.
-  const history::HistoryMatch& match = matches->front();
-  GURL search_base = ConvertToHostOnly(match, params.input.text());
+  const history::HistoryMatch& match = params->matches[0];
+  GURL search_base = ConvertToHostOnly(match, params->input.text());
   bool can_add_search_base_to_matches = !have_what_you_typed_match;
   if (search_base.is_empty()) {
     // Search from what the user typed when we couldn't reduce the best match
@@ -976,16 +961,16 @@ void HistoryURLProvider::PromoteOrCreateShorterSuggestion(
     // "http://www.google.com/".
     // TODO: this should be cleaned up, and is probably incorrect for IDN.
     std::string new_match = match.url_info.url().possibly_invalid_spec().
-        substr(0, match.input_location + params.input.text().length());
+        substr(0, match.input_location + params->input.text().length());
     search_base = GURL(new_match);
     if (search_base.is_empty())
-      return;  // Can't construct a valid URL from which to start a search.
+      return false;  // Can't construct a URL from which to start a search.
   } else if (!can_add_search_base_to_matches) {
     can_add_search_base_to_matches =
-        (search_base !=  params.what_you_typed_match.destination_url);
+        (search_base != params->what_you_typed_match.destination_url);
   }
   if (search_base == match.url_info.url())
-    return;  // Couldn't shorten |match|, so no range of URLs to search over.
+    return false;  // Couldn't shorten |match|, so no URLs to search over.
 
   // Search the DB for short URLs between our base and |match|.
   history::URLRow info(search_base);
@@ -1004,7 +989,7 @@ void HistoryURLProvider::PromoteOrCreateShorterSuggestion(
           match.url_info.url().possibly_invalid_spec(), min_visit_count,
           min_typed_count, can_add_search_base_to_matches, &info)) {
     if (!can_add_search_base_to_matches)
-      return;  // Couldn't find anything and can't add the search base, bail.
+      return false;  // Couldn't find anything and can't add the search base.
 
     // Try to get info on the search base itself.  Promote it to the top if the
     // original best match isn't good enough to autocomplete.
@@ -1013,27 +998,26 @@ void HistoryURLProvider::PromoteOrCreateShorterSuggestion(
   }
 
   // Promote or add the desired URL to the list of matches.
-  bool ensure_can_inline =
+  const bool ensure_can_inline =
       promote && CanPromoteMatchForInlineAutocomplete(match);
-  ensure_can_inline &= CreateOrPromoteMatch(info, match.input_location,
-      match.match_in_scheme, matches, create_shorter_match_, promote);
-  if (ensure_can_inline)
-    matches->front().promoted = true;
+  return CreateOrPromoteMatch(info, match.input_location, match.match_in_scheme,
+                              &params->matches, create_shorter_match_,
+                              promote) &&
+      ensure_can_inline;
 }
 
 void HistoryURLProvider::CullPoorMatches(
-    const HistoryURLProviderParams& params,
-    history::HistoryMatches* matches) const {
+    HistoryURLProviderParams* params) const {
   const base::Time& threshold(history::AutocompleteAgeThreshold());
-  for (history::HistoryMatches::iterator i(matches->begin());
-       i != matches->end(); ) {
+  for (history::HistoryMatches::iterator i(params->matches.begin());
+       i != params->matches.end(); ) {
     if (RowQualifiesAsSignificant(i->url_info, threshold) &&
-        !(params.default_search_provider &&
-            params.default_search_provider->IsSearchURL(
-                i->url_info.url(), *params.search_terms_data.get()))) {
+        (!params->default_search_provider ||
+         !params->default_search_provider->IsSearchURL(
+             i->url_info.url(), *params->search_terms_data))) {
       ++i;
     } else {
-      i = matches->erase(i);
+      i = params->matches.erase(i);
     }
   }
 }
@@ -1100,9 +1084,15 @@ size_t HistoryURLProvider::RemoveSubsequentMatchesOf(
 
 AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
     const HistoryURLProviderParams& params,
-    const history::HistoryMatch& history_match,
+    size_t match_number,
     MatchType match_type,
     int relevance) {
+  // The FormattedStringWithEquivalentMeaning() call below requires callers to
+  // be on the UI thread.
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI) ||
+      !content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI));
+
+  const history::HistoryMatch& history_match = params.matches[match_number];
   const history::URLRow& info = history_match.url_info;
   AutocompleteMatch match(this, relevance,
       !!info.visit_count(), AutocompleteMatchType::HISTORY_URL);

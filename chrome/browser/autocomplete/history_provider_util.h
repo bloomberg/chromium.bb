@@ -50,10 +50,6 @@ struct HistoryMatch {
   // "x", no scheme in our prefix list (or "www.") begins with x, so all
   // matches are, vacuously, "innermost matches".
   bool innermost_match;
-
-  // When sorting, all promoted matches should appear before all non-promoted
-  // matches, regardless of other properties of the match.
-  bool promoted;
 };
 typedef std::deque<HistoryMatch> HistoryMatches;
 
