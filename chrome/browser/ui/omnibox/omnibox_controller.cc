@@ -30,15 +30,24 @@ namespace {
 //
 // The SearchProvider may mark some suggestions to be prefetched based on
 // instructions from the suggest server. If such a match ranks sufficiently
-// highly, we'll return it.
+// highly or if kAllowPrefetchNonDefaultMatch field trial is enabled, we'll
+// return it.
 //
-// We only care about matches that are the default or the very first entry in
-// the dropdown (which can happen for non-default matches only if we're hiding
-// a top verbatim match) or the second entry in the dropdown (which can happen
-// for non-default matches when a top verbatim match is shown); for other
-// matches, we think the likelihood of the user selecting them is low enough
-// that prefetching isn't worth doing.
+// If the kAllowPrefetchNonDefaultMatch field trial is enabled we return the
+// prefetch suggestion even if it is not the default match. Otherwise we only
+// care about matches that are the default or the very first entry in the
+// dropdown (which can happen for non-default matches only if we're hiding a top
+// verbatim match) or the second entry in the dropdown (which can happen for
+// non-default matches when a top verbatim match is shown); for other matches,
+// we think the likelihood of the user selecting them is low enough that
+// prefetching isn't worth doing.
 const AutocompleteMatch* GetMatchToPrefetch(const AutocompleteResult& result) {
+  if (chrome::ShouldAllowPrefetchNonDefaultMatch()) {
+    const AutocompleteResult::const_iterator prefetch_match = std::find_if(
+        result.begin(), result.end(), SearchProvider::ShouldPrefetch);
+    return prefetch_match != result.end() ? &(*prefetch_match) : NULL;
+  }
+
   // If the default match should be prefetched, do that.
   const AutocompleteResult::const_iterator default_match(
       result.default_match());
@@ -46,8 +55,8 @@ const AutocompleteMatch* GetMatchToPrefetch(const AutocompleteResult& result) {
       SearchProvider::ShouldPrefetch(*default_match))
     return &(*default_match);
 
-  // Otherwise, if the top match is a verbatim match and the very next match is
-  // prefetchable, fetch that.
+  // Otherwise, if the top match is a verbatim match and the very next match
+  // is prefetchable, fetch that.
   if ((result.ShouldHideTopMatch() ||
        result.TopMatchIsStandaloneVerbatimMatch()) &&
       (result.size() > 1) &&
@@ -86,27 +95,12 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
   if (default_match_changed) {
     // The default match has changed, we need to let the OmniboxEditModel know
     // about new inline autocomplete text (blue highlight).
-    const AutocompleteResult& result = this->result();
-    const AutocompleteResult::const_iterator match(result.default_match());
-    if (match != result.end()) {
+    const AutocompleteResult::const_iterator match(result().default_match());
+    if (match != result().end()) {
       current_match_ = *match;
       if (!prerender::IsOmniboxEnabled(profile_))
         DoPreconnect(*match);
       omnibox_edit_model_->OnCurrentMatchChanged();
-
-      if (chrome::IsInstantExtendedAPIEnabled()) {
-        InstantSuggestion prefetch_suggestion;
-        const AutocompleteMatch* match_to_prefetch = GetMatchToPrefetch(result);
-        if (match_to_prefetch) {
-          prefetch_suggestion.text = match_to_prefetch->contents;
-          prefetch_suggestion.metadata =
-              SearchProvider::GetSuggestMetadata(*match_to_prefetch);
-        }
-        // Send the prefetch suggestion unconditionally to the InstantPage. If
-        // there is no suggestion to prefetch, we need to send a blank query to
-        // clear the prefetched results.
-        omnibox_edit_model_->SetSuggestionToPrefetch(prefetch_suggestion);
-      }
     } else {
       InvalidateCurrentMatch();
       popup_->OnResultChanged();
@@ -121,6 +115,22 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
     // Accept the temporary text as the user text, because it makes little sense
     // to have temporary text when the popup is closed.
     omnibox_edit_model_->AcceptTemporaryTextAsUserText();
+  }
+
+  if (chrome::IsInstantExtendedAPIEnabled() &&
+     ((default_match_changed && result().default_match() != result().end()) ||
+      (chrome::ShouldAllowPrefetchNonDefaultMatch() && !result().empty()))) {
+    InstantSuggestion prefetch_suggestion;
+    const AutocompleteMatch* match_to_prefetch = GetMatchToPrefetch(result());
+    if (match_to_prefetch) {
+      prefetch_suggestion.text = match_to_prefetch->contents;
+      prefetch_suggestion.metadata =
+          SearchProvider::GetSuggestMetadata(*match_to_prefetch);
+    }
+    // Send the prefetch suggestion unconditionally to the InstantPage. If
+    // there is no suggestion to prefetch, we need to send a blank query to
+    // clear the prefetched results.
+    omnibox_edit_model_->SetSuggestionToPrefetch(prefetch_suggestion);
   }
 }
 
