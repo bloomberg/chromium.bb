@@ -17,6 +17,10 @@
         display: inline-block;
       }
 
+      .floatleft {
+        float: left;
+      }
+
       *[draggable=true] {
         width: 100px;
         height: 100px;
@@ -29,7 +33,14 @@
     <div class="container inline-block static">
       display: inline-block; position: static;
       <div draggable="true">Drag Me</div>
-      If the drag-icon follow the mouse pointer while dragging the above green div, the test passes.
+      If the drag-icon follows the mouse pointer while dragging the above green block, the test passes.
     </div>
+
+    <div class="container" style="overflow:hidden">
+        greybox overflow:hidden; greenbox float:left;<br>
+        <div class="floatleft" draggable="true">Drag Me</div>
+        If the drag-icon follows the mouse pointer while dragging the green block to the left, the test passes.
+    </div>
+
   </body>
 </html>

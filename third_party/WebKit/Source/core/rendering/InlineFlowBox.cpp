@@ -1143,12 +1143,17 @@ void InlineFlowBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         return;
 
     PaintPhase paintPhase = paintInfo.phase == PaintPhaseChildOutlines ? PaintPhaseOutline : paintInfo.phase;
-    PaintInfo childInfo(paintInfo);
-    childInfo.phase = paintPhase;
-    childInfo.updatePaintingRootForChildren(&renderer());
 
     // Paint our children.
     if (paintPhase != PaintPhaseSelfOutline) {
+        PaintInfo childInfo(paintInfo);
+        childInfo.phase = paintPhase;
+
+        if (childInfo.paintingRoot && childInfo.paintingRoot->isDescendantOf(&renderer()))
+            childInfo.paintingRoot = 0;
+        else
+            childInfo.updatePaintingRootForChildren(&renderer());
+
         for (InlineBox* curr = firstChild(); curr; curr = curr->nextOnLine()) {
             if (curr->renderer().isText() || !curr->boxModelObject()->hasSelfPaintingLayer())
                 curr->paint(childInfo, paintOffset, lineTop, lineBottom);

@@ -5508,22 +5508,28 @@ TEST_F(WebFrameTest, ReloadBypassingCache)
     EXPECT_EQ(WebURLRequest::ReloadBypassingCache, frame->dataSource()->request().cachePolicy());
 }
 
+static void nodeImageTestValidation(const WebCore::IntSize& referenceBitmapSize, WebCore::DragImage* dragImage)
+{
+    // Prepare the reference bitmap.
+    SkBitmap bitmap;
+    ASSERT_TRUE(bitmap.allocN32Pixels(referenceBitmapSize.width(), referenceBitmapSize.height()));
+    SkCanvas canvas(bitmap);
+    canvas.drawColor(SK_ColorGREEN);
+
+    EXPECT_EQ(referenceBitmapSize.width(), dragImage->size().width());
+    EXPECT_EQ(referenceBitmapSize.height(), dragImage->size().height());
+    const SkBitmap& dragBitmap = dragImage->bitmap();
+    SkAutoLockPixels lockPixel(dragBitmap);
+    EXPECT_EQ(0, memcmp(bitmap.getPixels(), dragBitmap.getPixels(), bitmap.getSize()));
+}
+
 TEST_F(WebFrameTest, NodeImageTestCSSTransform)
 {
     FrameTestHelpers::WebViewHelper webViewHelper;
     OwnPtr<WebCore::DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-css-transform"));
     EXPECT_TRUE(dragImage);
 
-    SkBitmap bitmap;
-    ASSERT_TRUE(bitmap.allocN32Pixels(40, 40));
-    SkCanvas canvas(bitmap);
-    canvas.drawColor(SK_ColorGREEN);
-
-    EXPECT_EQ(40, dragImage->size().width());
-    EXPECT_EQ(40, dragImage->size().height());
-    const SkBitmap& dragBitmap = dragImage->bitmap();
-    SkAutoLockPixels lockPixel(dragBitmap);
-    EXPECT_EQ(0, memcmp(bitmap.getPixels(), dragBitmap.getPixels(), bitmap.getSize()));
+    nodeImageTestValidation(WebCore::IntSize(40, 40), dragImage.get());
 }
 
 TEST_F(WebFrameTest, NodeImageTestCSS3DTransform)
@@ -5532,16 +5538,25 @@ TEST_F(WebFrameTest, NodeImageTestCSS3DTransform)
     OwnPtr<WebCore::DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-css-3dtransform"));
     EXPECT_TRUE(dragImage);
 
-    SkBitmap bitmap;
-    ASSERT_TRUE(bitmap.allocN32Pixels(20, 40));
-    SkCanvas canvas(bitmap);
-    canvas.drawColor(SK_ColorGREEN);
+    nodeImageTestValidation(WebCore::IntSize(20, 40), dragImage.get());
+}
 
-    EXPECT_EQ(20, dragImage->size().width());
-    EXPECT_EQ(40, dragImage->size().height());
-    const SkBitmap& dragBitmap = dragImage->bitmap();
-    SkAutoLockPixels lockPixel(dragBitmap);
-    EXPECT_EQ(0, memcmp(bitmap.getPixels(), dragBitmap.getPixels(), bitmap.getSize()));
+TEST_F(WebFrameTest, NodeImageTestInlineBlock)
+{
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    OwnPtr<WebCore::DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-inlineblock"));
+    EXPECT_TRUE(dragImage);
+
+    nodeImageTestValidation(WebCore::IntSize(40, 40), dragImage.get());
+}
+
+TEST_F(WebFrameTest, NodeImageTestFloatLeft)
+{
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    OwnPtr<WebCore::DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-float-left-overflow-hidden"));
+    EXPECT_TRUE(dragImage);
+
+    nodeImageTestValidation(WebCore::IntSize(40, 40), dragImage.get());
 }
 
 class BrandColorTestWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
