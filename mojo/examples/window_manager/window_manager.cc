@@ -113,9 +113,9 @@ class WindowManager : public Application,
     if (event->action == ui::ET_MOUSE_RELEASED) {
       std::string app_url;
       if (event->flags & ui::EF_LEFT_MOUSE_BUTTON)
-        app_url = "mojo:mojo_embedded_app";
+        app_url = "mojo://mojo_embedded_app";
       else if (event->flags & ui::EF_RIGHT_MOUSE_BUTTON)
-        app_url = "mojo:mojo_nesting_app";
+        app_url = "mojo://mojo_nesting_app";
       DCHECK(!app_url.empty());
 
       Node* node = view_manager_->GetNodeById(parent_node_id_);
@@ -149,16 +149,12 @@ class WindowManager : public Application,
 
   // Overridden from LauncherClient:
   virtual void OnLaunch(
-      const mojo::String& handler_url, mojo::URLResponsePtr response,
-      mojo::ScopedDataPipeConsumerHandle response_body_stream) OVERRIDE {
+      const mojo::String& requested_url, const mojo::String& handler_url,
+      navigation::ResponseDetailsPtr response) OVERRIDE {
     navigation::NavigationDetailsPtr nav_details(
         navigation::NavigationDetails::New());
-    nav_details->url = response->url;
-    navigation::ResponseDetailsPtr response_details(
-        navigation::ResponseDetails::New());
-    response_details->response = response.Pass();
-    response_details->response_body_stream = response_body_stream.Pass();
-    CreateWindow(handler_url, nav_details.Pass(), response_details.Pass());
+    nav_details->url = requested_url;
+    CreateWindow(handler_url, nav_details.Pass(), response.Pass());
   }
 
   void CreateLauncherUI() {

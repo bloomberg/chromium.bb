@@ -258,7 +258,7 @@
       ],
       'dependencies': [
         'mojo_cpp_bindings',
-        'mojo_network_bindings',
+        'mojo_navigation_bindings',
       ],
     },
     {
@@ -266,6 +266,7 @@
       'type': 'shared_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../url/url.gyp:url_lib',
         'mojo_application',
         'mojo_cpp_bindings',
         'mojo_environment_chromium',

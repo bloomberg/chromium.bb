@@ -10,6 +10,7 @@
 #include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
+#include "url/gurl.h"
 
 namespace mojo {
 namespace launcher {
@@ -117,8 +118,19 @@ class LauncherApp : public Application {
   DISALLOW_COPY_AND_ASSIGN(LauncherApp);
 };
 
-void LauncherConnection::Launch(const String& url) {
-  new LaunchInstance(app_, client(), url);
+void LauncherConnection::Launch(const String& url_string) {
+  GURL url(url_string.To<std::string>());
+
+  // For Mojo URLs, the handler can always be found at the origin.
+  // TODO(aa): Return error for invalid URL?
+  if (url.is_valid() && url.SchemeIs("mojo")) {
+    client()->OnLaunch(url_string,
+                       url.GetOrigin().spec(),
+                       navigation::ResponseDetailsPtr());
+    return;
+  }
+
+  new LaunchInstance(app_, client(), url_string);
 }
 
 LaunchInstance::LaunchInstance(LauncherApp* app,
@@ -145,8 +157,12 @@ void LaunchInstance::OnReceivedResponse(URLResponsePtr response) {
   std::string content_type = GetContentType(response->headers);
   std::string handler_url = app_->GetHandlerForContentType(content_type);
   if (!handler_url.empty()) {
-    client_->OnLaunch(handler_url, response.Pass(),
-                      response_body_stream_.Pass());
+    navigation::ResponseDetailsPtr nav_response(
+        navigation::ResponseDetails::New());
+    nav_response->response = response.Pass();
+    nav_response->response_body_stream = response_body_stream_.Pass();
+    client_->OnLaunch(nav_response->response->url, handler_url,
+                      nav_response.Pass());
   }
 }
 
