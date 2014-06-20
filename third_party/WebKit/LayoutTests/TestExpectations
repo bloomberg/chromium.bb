@@ -1129,9 +1129,3 @@ crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/context-lost-restored.h
 crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/context-lost.html [ Failure ]
 crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/WebGLContextEvent.html [ Failure ]
 
-Bug(eae) fast/text/justify-ideograph-complex.html [ NeedsRebaseline ]
-Bug(eae) fast/text/justify-ideograph-simple.html [ NeedsRebaseline ]
-Bug(eae) media/track/track-cue-rendering-vertical.html [ NeedsRebaseline ]
-Bug(eae) virtual/antialiasedtext/fast/text/justify-ideograph-complex.html [ NeedsRebaseline ]
-Bug(eae) virtual/antialiasedtext/fast/text/justify-ideograph-simple.html [ NeedsRebaseline ]
-
