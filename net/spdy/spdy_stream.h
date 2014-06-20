@@ -301,9 +301,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Called by the SpdySession when a frame carrying request headers opening a
   // push stream is received. Stream transits to STATE_RESERVED_REMOTE state.
-  // Returns a status code; if it is an error, the stream was closed by this
-  // function.
-  int OnPushPromiseHeadersReceived(const SpdyHeaderBlock& headers);
+  void OnPushPromiseHeadersReceived(const SpdyHeaderBlock& headers);
 
   // Called by the SpdySession when response data has been received
   // for this stream.  This callback may be called multiple times as
@@ -405,6 +403,11 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // Returns whether or not this stream is fully open: that request and
   // response headers are complete, and it is not in a half-closed state.
   bool IsOpen() const;
+
+  // Returns whether the stream is reserved by remote endpoint: server has sent
+  // intended request headers for a pushed stream, but haven't started response
+  // yet.
+  bool IsReservedRemote() const;
 
   // Returns the protocol used by this stream. Always between
   // kProtoSPDYMinimumVersion and kProtoSPDYMaximumVersion.

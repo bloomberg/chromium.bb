@@ -122,10 +122,9 @@ void SpdyStream::SetDelegate(Delegate* delegate) {
   CHECK(delegate);
   delegate_ = delegate;
 
-  // TODO(baranovich): allow STATE_RESERVED_REMOTE when push promises will be
-  // implemented.
   CHECK(io_state_ == STATE_IDLE ||
-        io_state_ == STATE_HALF_CLOSED_LOCAL_UNCLAIMED);
+        io_state_ == STATE_HALF_CLOSED_LOCAL_UNCLAIMED ||
+        io_state_ == STATE_RESERVED_REMOTE);
 
   if (io_state_ == STATE_HALF_CLOSED_LOCAL_UNCLAIMED) {
     DCHECK_EQ(type_, SPDY_PUSH_STREAM);
@@ -419,13 +418,12 @@ int SpdyStream::OnInitialResponseHeadersReceived(
       // Push streams transition to a locally half-closed state upon headers.
       // We must continue to buffer data while waiting for a call to
       // SetDelegate() (which may not ever happen).
-      // TODO(baranovich): For HTTP 2 push streams, delegate may be set before
-      // receiving response headers when PUSH_PROMISE will be implemented.
-      // TODO(baranovich): In HTTP 2 additional HEADERS frames are not allowed.
-      // Set |response_headers_status_| to RESPONSE_HEADERS_ARE_COMPLETE.
       CHECK_EQ(io_state_, STATE_RESERVED_REMOTE);
-      DCHECK(!delegate_);
-      io_state_ = STATE_HALF_CLOSED_LOCAL_UNCLAIMED;
+      if (!delegate_) {
+        io_state_ = STATE_HALF_CLOSED_LOCAL_UNCLAIMED;
+      } else {
+        io_state_ = STATE_HALF_CLOSED_LOCAL;
+      }
       break;
   }
 
@@ -455,7 +453,7 @@ int SpdyStream::OnAdditionalResponseHeadersReceived(
   return MergeWithResponseHeaders(additional_response_headers);
 }
 
-int SpdyStream::OnPushPromiseHeadersReceived(const SpdyHeaderBlock& headers) {
+void SpdyStream::OnPushPromiseHeadersReceived(const SpdyHeaderBlock& headers) {
   CHECK(!request_headers_.get());
   CHECK_EQ(io_state_, STATE_IDLE);
   CHECK_EQ(type_, SPDY_PUSH_STREAM);
@@ -463,7 +461,6 @@ int SpdyStream::OnPushPromiseHeadersReceived(const SpdyHeaderBlock& headers) {
 
   io_state_ = STATE_RESERVED_REMOTE;
   request_headers_.reset(new SpdyHeaderBlock(headers));
-  return OK;
 }
 
 void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
@@ -731,6 +728,10 @@ bool SpdyStream::IsIdle() const {
 
 bool SpdyStream::IsOpen() const {
   return io_state_ == STATE_OPEN;
+}
+
+bool SpdyStream::IsReservedRemote() const {
+  return io_state_ == STATE_RESERVED_REMOTE;
 }
 
 NextProto SpdyStream::GetProtocol() const {

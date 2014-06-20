@@ -611,6 +611,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // possible.
   void ProcessPendingStreamRequests();
 
+  bool TryCreatePushStream(SpdyStreamId stream_id,
+                           SpdyStreamId associated_stream_id,
+                           SpdyPriority priority,
+                           const SpdyHeaderBlock& headers);
+
   // Close the stream pointed to by the given iterator. Note that that
   // stream may hold the last reference to the session.
   void CloseActiveStreamIterator(ActiveStreamMap::iterator it, int status);

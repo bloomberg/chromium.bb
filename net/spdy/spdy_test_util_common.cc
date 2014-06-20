@@ -998,21 +998,44 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
                                            int stream_id,
                                            int associated_stream_id,
                                            const char* url) {
-  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock());
-  (*headers)["hello"] = "bye";
-  (*headers)[GetStatusKey()] = "200 OK";
-  if (include_version_header()) {
-    (*headers)[GetVersionKey()] = "HTTP/1.1";
+  if (spdy_version() < SPDY4) {
+    SpdySynStreamIR syn_stream(stream_id);
+    syn_stream.set_associated_to_stream_id(associated_stream_id);
+    syn_stream.SetHeader("hello", "bye");
+    syn_stream.SetHeader(GetStatusKey(), "200 OK");
+    syn_stream.SetHeader(GetVersionKey(), "HTTP/1.1");
+    AddUrlToHeaderBlock(url, syn_stream.mutable_name_value_block());
+    AppendToHeaderBlock(extra_headers,
+                        extra_header_count,
+                        syn_stream.mutable_name_value_block());
+    return CreateFramer(false)->SerializeFrame(syn_stream);
+  } else {
+    SpdyPushPromiseIR push_promise(associated_stream_id, stream_id);
+    AddUrlToHeaderBlock(url, push_promise.mutable_name_value_block());
+    scoped_ptr<SpdyFrame> push_promise_frame(
+        CreateFramer(false)->SerializeFrame(push_promise));
+
+    // Use SynStreamIR to create HEADERS+PRIORITY. Direct creation breaks
+    // framer.
+    SpdySynStreamIR headers(stream_id);
+    SetPriority(LOWEST, &headers);
+    headers.SetHeader("hello", "bye");
+    headers.SetHeader(GetStatusKey(), "200 OK");
+    AppendToHeaderBlock(
+        extra_headers, extra_header_count, headers.mutable_name_value_block());
+    scoped_ptr<SpdyFrame> headers_frame(
+        CreateFramer(false)->SerializeFrame(headers));
+
+    int joint_data_size = push_promise_frame->size() + headers_frame->size();
+    scoped_ptr<char[]> data(new char[joint_data_size]);
+    const SpdyFrame* frames[2] = {
+        push_promise_frame.get(), headers_frame.get(),
+    };
+    int combined_size =
+        CombineFrames(frames, arraysize(frames), data.get(), joint_data_size);
+    DCHECK_EQ(combined_size, joint_data_size);
+    return new SpdyFrame(data.release(), joint_data_size, true);
   }
-  AddUrlToHeaderBlock(url, headers.get());
-  AppendToHeaderBlock(extra_headers, extra_header_count, headers.get());
-  return ConstructSpdyControlFrame(headers.Pass(),
-                                   false,
-                                   stream_id,
-                                   LOWEST,
-                                   SYN_STREAM,
-                                   CONTROL_FLAG_NONE,
-                                   associated_stream_id);
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
@@ -1022,22 +1045,63 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
                                            const char* url,
                                            const char* status,
                                            const char* location) {
-  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock());
-  (*headers)["hello"] = "bye";
-  (*headers)[GetStatusKey()] = status;
-  if (include_version_header()) {
-    (*headers)[GetVersionKey()] = "HTTP/1.1";
+  if (spdy_version() < SPDY4) {
+    SpdySynStreamIR syn_stream(stream_id);
+    syn_stream.set_associated_to_stream_id(associated_stream_id);
+    syn_stream.SetHeader("hello", "bye");
+    syn_stream.SetHeader(GetStatusKey(), status);
+    syn_stream.SetHeader(GetVersionKey(), "HTTP/1.1");
+    syn_stream.SetHeader("location", location);
+    AddUrlToHeaderBlock(url, syn_stream.mutable_name_value_block());
+    AppendToHeaderBlock(extra_headers,
+                        extra_header_count,
+                        syn_stream.mutable_name_value_block());
+    return CreateFramer(false)->SerializeFrame(syn_stream);
+  } else {
+    SpdyPushPromiseIR push_promise(associated_stream_id, stream_id);
+    AddUrlToHeaderBlock(url, push_promise.mutable_name_value_block());
+    scoped_ptr<SpdyFrame> push_promise_frame(
+        CreateFramer(false)->SerializeFrame(push_promise));
+
+    // Use SynStreamIR to create HEADERS+PRIORITY. Direct creation breaks
+    // framer.
+    SpdySynStreamIR headers(stream_id);
+    SetPriority(LOWEST, &headers);
+    headers.SetHeader("hello", "bye");
+    headers.SetHeader(GetStatusKey(), status);
+    headers.SetHeader("location", location);
+    AppendToHeaderBlock(
+        extra_headers, extra_header_count, headers.mutable_name_value_block());
+    scoped_ptr<SpdyFrame> headers_frame(
+        CreateFramer(false)->SerializeFrame(headers));
+
+    int joint_data_size = push_promise_frame->size() + headers_frame->size();
+    scoped_ptr<char[]> data(new char[joint_data_size]);
+    const SpdyFrame* frames[2] = {
+        push_promise_frame.get(), headers_frame.get(),
+    };
+    int combined_size =
+        CombineFrames(frames, arraysize(frames), data.get(), joint_data_size);
+    DCHECK_EQ(combined_size, joint_data_size);
+    return new SpdyFrame(data.release(), joint_data_size, true);
   }
-  (*headers)["location"] = location;
-  AddUrlToHeaderBlock(url, headers.get());
-  AppendToHeaderBlock(extra_headers, extra_header_count, headers.get());
-  return ConstructSpdyControlFrame(headers.Pass(),
-                                   false,
-                                   stream_id,
-                                   LOWEST,
-                                   SYN_STREAM,
-                                   CONTROL_FLAG_NONE,
-                                   associated_stream_id);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructInitialSpdyPushFrame(
+    scoped_ptr<SpdyHeaderBlock> headers,
+    int stream_id,
+    int associated_stream_id) {
+  if (spdy_version() < SPDY4) {
+    SpdySynStreamIR syn_stream(stream_id);
+    syn_stream.set_associated_to_stream_id(associated_stream_id);
+    SetPriority(LOWEST, &syn_stream);
+    syn_stream.set_name_value_block(*headers);
+    return CreateFramer(false)->SerializeFrame(syn_stream);
+  } else {
+    SpdyPushPromiseIR push_promise(associated_stream_id, stream_id);
+    push_promise.set_name_value_block(*headers);
+    return CreateFramer(false)->SerializeFrame(push_promise);
+  }
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyPushHeaders(

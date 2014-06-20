@@ -235,6 +235,19 @@ base::Value* NetLogSpdyGoAwayCallback(SpdyStreamId last_stream_id,
   return dict;
 }
 
+base::Value* NetLogSpdyPushPromiseReceivedCallback(
+    const SpdyHeaderBlock* headers,
+    SpdyStreamId stream_id,
+    SpdyStreamId promised_stream_id,
+    NetLog::LogLevel log_level) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->Set("headers",
+            SpdyHeaderBlockToListValue(*headers, log_level).release());
+  dict->SetInteger("id", stream_id);
+  dict->SetInteger("promised_stream_id", promised_stream_id);
+  return dict;
+}
+
 // Helper function to return the total size of an array of objects
 // with .size() member functions.
 template <typename T, size_t N> size_t GetTotalSize(const T (&arr)[N]) {
@@ -501,7 +514,8 @@ SpdySession::ActiveStreamInfo::ActiveStreamInfo()
 
 SpdySession::ActiveStreamInfo::ActiveStreamInfo(SpdyStream* stream)
     : stream(stream),
-      waiting_for_syn_reply(stream->type() != SPDY_PUSH_STREAM) {}
+      waiting_for_syn_reply(stream->type() != SPDY_PUSH_STREAM) {
+}
 
 SpdySession::ActiveStreamInfo::~ActiveStreamInfo() {}
 
@@ -543,12 +557,12 @@ SpdySession::SpdySession(
       read_state_(READ_STATE_DO_READ),
       write_state_(WRITE_STATE_IDLE),
       error_on_close_(OK),
-      max_concurrent_streams_(initial_max_concurrent_streams == 0 ?
-                              kInitialMaxConcurrentStreams :
-                              initial_max_concurrent_streams),
-      max_concurrent_streams_limit_(max_concurrent_streams_limit == 0 ?
-                                    kMaxConcurrentStreamLimit :
-                                    max_concurrent_streams_limit),
+      max_concurrent_streams_(initial_max_concurrent_streams == 0
+                                  ? kInitialMaxConcurrentStreams
+                                  : initial_max_concurrent_streams),
+      max_concurrent_streams_limit_(max_concurrent_streams_limit == 0
+                                        ? kMaxConcurrentStreamLimit
+                                        : max_concurrent_streams_limit),
       streams_initiated_count_(0),
       streams_pushed_count_(0),
       streams_pushed_and_claimed_count_(0),
@@ -565,9 +579,9 @@ SpdySession::SpdySession(
       send_connection_header_prefix_(false),
       flow_control_state_(FLOW_CONTROL_NONE),
       stream_initial_send_window_size_(kSpdyStreamInitialWindowSize),
-      stream_initial_recv_window_size_(stream_initial_recv_window_size == 0 ?
-                                       kDefaultInitialRecvWindowSize :
-                                       stream_initial_recv_window_size),
+      stream_initial_recv_window_size_(stream_initial_recv_window_size == 0
+                                           ? kDefaultInitialRecvWindowSize
+                                           : stream_initial_recv_window_size),
       session_send_window_size_(0),
       session_recv_window_size_(0),
       session_unacked_recv_window_bytes_(0),
@@ -580,8 +594,7 @@ SpdySession::SpdySession(
       protocol_(default_protocol),
       connection_at_risk_of_loss_time_(
           base::TimeDelta::FromSeconds(kDefaultConnectionAtRiskOfLossSeconds)),
-      hung_interval_(
-          base::TimeDelta::FromSeconds(kHungIntervalSeconds)),
+      hung_interval_(base::TimeDelta::FromSeconds(kHungIntervalSeconds)),
       trusted_spdy_proxy_(trusted_spdy_proxy),
       time_func_(time_func),
       weak_factory_(this) {
@@ -2084,6 +2097,12 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
                               const SpdyHeaderBlock& headers) {
   CHECK(in_io_loop_);
 
+  if (GetProtocolVersion() >= SPDY4) {
+    DCHECK_EQ(0u, associated_stream_id);
+    OnHeaders(stream_id, fin, headers);
+    return;
+  }
+
   base::Time response_time = base::Time::Now();
   base::TimeTicks recv_first_byte_time = time_func_();
 
@@ -2095,140 +2114,21 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
                    stream_id, associated_stream_id));
   }
 
-  // Server-initiated streams should have even sequence numbers.
-  if ((stream_id & 0x1) != 0) {
-    LOG(WARNING) << "Received invalid OnSyn stream id " << stream_id;
-    return;
-  }
-
-  if (IsStreamActive(stream_id)) {
-    LOG(WARNING) << "Received OnSyn for active stream " << stream_id;
-    return;
-  }
-
-  RequestPriority request_priority =
-      ConvertSpdyPriorityToRequestPriority(priority, GetProtocolVersion());
-
-  if (availability_state_ == STATE_GOING_AWAY) {
-    // TODO(akalin): This behavior isn't in the SPDY spec, although it
-    // probably should be.
-    EnqueueResetStreamFrame(stream_id, request_priority,
-                            RST_STREAM_REFUSED_STREAM,
-                            "OnSyn received when going away");
-    return;
-  }
-
-  // TODO(jgraettinger): SpdyFramer simulates OnSynStream() from HEADERS
-  // frames, which don't convey associated stream ID. Disable this check
-  // for now, and re-enable when PUSH_PROMISE is implemented properly.
-  if (associated_stream_id == 0 && GetProtocolVersion() < SPDY4) {
-    std::string description = base::StringPrintf(
-        "Received invalid OnSyn associated stream id %d for stream %d",
-        associated_stream_id, stream_id);
-    EnqueueResetStreamFrame(stream_id, request_priority,
-                            RST_STREAM_REFUSED_STREAM, description);
-    return;
-  }
-
-  streams_pushed_count_++;
-
-  // TODO(mbelshe): DCHECK that this is a GET method?
-
-  // Verify that the response had a URL for us.
-  GURL gurl = GetUrlFromHeaderBlock(headers, GetProtocolVersion(), true);
-  if (!gurl.is_valid()) {
-    EnqueueResetStreamFrame(
-        stream_id, request_priority, RST_STREAM_PROTOCOL_ERROR,
-        "Pushed stream url was invalid: " + gurl.spec());
-    return;
-  }
-
-  // Verify we have a valid stream association.
-  ActiveStreamMap::iterator associated_it =
-      active_streams_.find(associated_stream_id);
-  // TODO(jgraettinger): (See PUSH_PROMISE comment above).
-  if (GetProtocolVersion() < SPDY4 && associated_it == active_streams_.end()) {
-    EnqueueResetStreamFrame(
-        stream_id, request_priority, RST_STREAM_INVALID_STREAM,
-        base::StringPrintf(
-            "Received OnSyn with inactive associated stream %d",
-            associated_stream_id));
-    return;
-  }
-
-  // Check that the SYN advertises the same origin as its associated stream.
-  // Bypass this check if and only if this session is with a SPDY proxy that
-  // is trusted explicitly via the --trusted-spdy-proxy switch.
-  if (trusted_spdy_proxy_.Equals(host_port_pair())) {
-    // Disallow pushing of HTTPS content.
-    if (gurl.SchemeIs("https")) {
-      EnqueueResetStreamFrame(
-          stream_id, request_priority, RST_STREAM_REFUSED_STREAM,
-          base::StringPrintf(
-              "Rejected push of Cross Origin HTTPS content %d",
-              associated_stream_id));
-    }
-  } else if (GetProtocolVersion() < SPDY4) {
-    // TODO(jgraettinger): (See PUSH_PROMISE comment above).
-    GURL associated_url(associated_it->second.stream->GetUrlFromHeaders());
-    if (associated_url.GetOrigin() != gurl.GetOrigin()) {
-      EnqueueResetStreamFrame(
-          stream_id, request_priority, RST_STREAM_REFUSED_STREAM,
-          base::StringPrintf(
-              "Rejected Cross Origin Push Stream %d",
-              associated_stream_id));
-      return;
-    }
-  }
-
-  // There should not be an existing pushed stream with the same path.
-  PushedStreamMap::iterator pushed_it =
-      unclaimed_pushed_streams_.lower_bound(gurl);
-  if (pushed_it != unclaimed_pushed_streams_.end() &&
-      pushed_it->first == gurl) {
-    EnqueueResetStreamFrame(
-        stream_id, request_priority, RST_STREAM_PROTOCOL_ERROR,
-        "Received duplicate pushed stream with url: " +
-        gurl.spec());
-    return;
-  }
-
-  scoped_ptr<SpdyStream> stream(
-      new SpdyStream(SPDY_PUSH_STREAM, GetWeakPtr(), gurl,
-                     request_priority,
-                     stream_initial_send_window_size_,
-                     stream_initial_recv_window_size_,
-                     net_log_));
-  stream->set_stream_id(stream_id);
-  stream->IncrementRawReceivedBytes(last_compressed_frame_len_);
-  last_compressed_frame_len_ = 0;
-
-  DeleteExpiredPushedStreams();
-  PushedStreamMap::iterator inserted_pushed_it =
-      unclaimed_pushed_streams_.insert(
-          pushed_it,
-          std::make_pair(gurl, PushedStreamInfo(stream_id, time_func_())));
-  DCHECK(inserted_pushed_it != pushed_it);
-
-  InsertActivatedStream(stream.Pass());
-
-  ActiveStreamMap::iterator active_it = active_streams_.find(stream_id);
-  if (active_it == active_streams_.end()) {
-    NOTREACHED();
-    return;
-  }
-
-  // Parse the headers.
-
   // Split headers to simulate push promise and response.
   SpdyHeaderBlock request_headers;
   SpdyHeaderBlock response_headers;
   SplitPushedHeadersToRequestAndResponse(
       headers, GetProtocolVersion(), &request_headers, &response_headers);
 
-  if (active_it->second.stream->OnPushPromiseHeadersReceived(request_headers) !=
-      OK)
+  if (!TryCreatePushStream(
+          stream_id, associated_stream_id, priority, request_headers))
     return;
+
+  ActiveStreamMap::iterator active_it = active_streams_.find(stream_id);
+  if (active_it == active_streams_.end()) {
+    NOTREACHED();
+    return;
+  }
 
   if (OnInitialResponseHeadersReceived(response_headers,
                                        response_time,
@@ -2348,6 +2248,9 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
   stream->IncrementRawReceivedBytes(last_compressed_frame_len_);
   last_compressed_frame_len_ = 0;
 
+  base::Time response_time = base::Time::Now();
+  base::TimeTicks recv_first_byte_time = time_func_();
+
   if (it->second.waiting_for_syn_reply) {
     if (GetProtocolVersion() < SPDY4) {
       const std::string& error =
@@ -2356,10 +2259,11 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
       ResetStreamIterator(it, RST_STREAM_PROTOCOL_ERROR, error);
       return;
     }
-    base::Time response_time = base::Time::Now();
-    base::TimeTicks recv_first_byte_time = time_func_();
 
     it->second.waiting_for_syn_reply = false;
+    ignore_result(OnInitialResponseHeadersReceived(
+        headers, response_time, recv_first_byte_time, stream));
+  } else if (it->second.stream->IsReservedRemote()) {
     ignore_result(OnInitialResponseHeadersReceived(
         headers, response_time, recv_first_byte_time, stream));
   } else {
@@ -2521,10 +2425,172 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
   }
 }
 
+bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
+                                      SpdyStreamId associated_stream_id,
+                                      SpdyPriority priority,
+                                      const SpdyHeaderBlock& headers) {
+  // Server-initiated streams should have even sequence numbers.
+  if ((stream_id & 0x1) != 0) {
+    LOG(WARNING) << "Received invalid push stream id " << stream_id;
+    return false;
+  }
+
+  if (IsStreamActive(stream_id)) {
+    LOG(WARNING) << "Received push for active stream " << stream_id;
+    return false;
+  }
+
+  RequestPriority request_priority =
+      ConvertSpdyPriorityToRequestPriority(priority, GetProtocolVersion());
+
+  if (availability_state_ == STATE_GOING_AWAY) {
+    // TODO(akalin): This behavior isn't in the SPDY spec, although it
+    // probably should be.
+    EnqueueResetStreamFrame(stream_id,
+                            request_priority,
+                            RST_STREAM_REFUSED_STREAM,
+                            "push stream request received when going away");
+    return false;
+  }
+
+  if (associated_stream_id == 0) {
+    // In SPDY4 0 stream id in PUSH_PROMISE frame leads to framer error and
+    // session going away. We should never get here.
+    CHECK_GT(SPDY4, GetProtocolVersion());
+    std::string description = base::StringPrintf(
+        "Received invalid associated stream id %d for pushed stream %d",
+        associated_stream_id,
+        stream_id);
+    EnqueueResetStreamFrame(
+        stream_id, request_priority, RST_STREAM_REFUSED_STREAM, description);
+    return false;
+  }
+
+  streams_pushed_count_++;
+
+  // TODO(mbelshe): DCHECK that this is a GET method?
+
+  // Verify that the response had a URL for us.
+  GURL gurl = GetUrlFromHeaderBlock(headers, GetProtocolVersion(), true);
+  if (!gurl.is_valid()) {
+    EnqueueResetStreamFrame(stream_id,
+                            request_priority,
+                            RST_STREAM_PROTOCOL_ERROR,
+                            "Pushed stream url was invalid: " + gurl.spec());
+    return false;
+  }
+
+  // Verify we have a valid stream association.
+  ActiveStreamMap::iterator associated_it =
+      active_streams_.find(associated_stream_id);
+  if (associated_it == active_streams_.end()) {
+    EnqueueResetStreamFrame(
+        stream_id,
+        request_priority,
+        RST_STREAM_INVALID_STREAM,
+        base::StringPrintf("Received push for inactive associated stream %d",
+                           associated_stream_id));
+    return false;
+  }
+
+  // Check that the pushed stream advertises the same origin as its associated
+  // stream. Bypass this check if and only if this session is with a SPDY proxy
+  // that is trusted explicitly via the --trusted-spdy-proxy switch.
+  if (trusted_spdy_proxy_.Equals(host_port_pair())) {
+    // Disallow pushing of HTTPS content.
+    if (gurl.SchemeIs("https")) {
+      EnqueueResetStreamFrame(
+          stream_id,
+          request_priority,
+          RST_STREAM_REFUSED_STREAM,
+          base::StringPrintf("Rejected push of Cross Origin HTTPS content %d",
+                             associated_stream_id));
+    }
+  } else {
+    GURL associated_url(associated_it->second.stream->GetUrlFromHeaders());
+    if (associated_url.GetOrigin() != gurl.GetOrigin()) {
+      EnqueueResetStreamFrame(
+          stream_id,
+          request_priority,
+          RST_STREAM_REFUSED_STREAM,
+          base::StringPrintf("Rejected Cross Origin Push Stream %d",
+                             associated_stream_id));
+      return false;
+    }
+  }
+
+  // There should not be an existing pushed stream with the same path.
+  PushedStreamMap::iterator pushed_it =
+      unclaimed_pushed_streams_.lower_bound(gurl);
+  if (pushed_it != unclaimed_pushed_streams_.end() &&
+      pushed_it->first == gurl) {
+    EnqueueResetStreamFrame(
+        stream_id,
+        request_priority,
+        RST_STREAM_PROTOCOL_ERROR,
+        "Received duplicate pushed stream with url: " + gurl.spec());
+    return false;
+  }
+
+  scoped_ptr<SpdyStream> stream(new SpdyStream(SPDY_PUSH_STREAM,
+                                               GetWeakPtr(),
+                                               gurl,
+                                               request_priority,
+                                               stream_initial_send_window_size_,
+                                               stream_initial_recv_window_size_,
+                                               net_log_));
+  stream->set_stream_id(stream_id);
+
+  // In spdy4/http2 PUSH_PROMISE arrives on associated stream.
+  if (associated_it != active_streams_.end() && GetProtocolVersion() >= SPDY4) {
+    associated_it->second.stream->IncrementRawReceivedBytes(
+        last_compressed_frame_len_);
+  } else {
+    stream->IncrementRawReceivedBytes(last_compressed_frame_len_);
+  }
+
+  last_compressed_frame_len_ = 0;
+
+  DeleteExpiredPushedStreams();
+  PushedStreamMap::iterator inserted_pushed_it =
+      unclaimed_pushed_streams_.insert(
+          pushed_it,
+          std::make_pair(gurl, PushedStreamInfo(stream_id, time_func_())));
+  DCHECK(inserted_pushed_it != pushed_it);
+
+  InsertActivatedStream(stream.Pass());
+
+  ActiveStreamMap::iterator active_it = active_streams_.find(stream_id);
+  if (active_it == active_streams_.end()) {
+    NOTREACHED();
+    return false;
+  }
+
+  active_it->second.stream->OnPushPromiseHeadersReceived(headers);
+  DCHECK(active_it->second.stream->IsReservedRemote());
+  return true;
+}
+
 void SpdySession::OnPushPromise(SpdyStreamId stream_id,
                                 SpdyStreamId promised_stream_id,
                                 const SpdyHeaderBlock& headers) {
-  // TODO(akalin): Handle PUSH_PROMISE frames.
+  CHECK(in_io_loop_);
+
+  if (net_log_.IsLogging()) {
+    net_log_.AddEvent(NetLog::TYPE_SPDY_SESSION_RECV_PUSH_PROMISE,
+                      base::Bind(&NetLogSpdyPushPromiseReceivedCallback,
+                                 &headers,
+                                 stream_id,
+                                 promised_stream_id));
+  }
+
+  // Any priority will do.
+  // TODO(baranovich): pass parent stream id priority?
+  if (!TryCreatePushStream(promised_stream_id, stream_id, 0, headers))
+    return;
+
+  base::StatsCounter push_requests("spdy.pushed_streams");
+  push_requests.Increment();
 }
 
 void SpdySession::SendStreamWindowUpdate(SpdyStreamId stream_id,

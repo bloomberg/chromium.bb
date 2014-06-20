@@ -3091,10 +3091,11 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushMultipleDataFrameInterrupted) {
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
   if (spdy_util_.spdy_version() == SPDY4) {
-    // TODO(jgraettinger): We don't support associated stream
-    // checks in SPDY4 yet.
+    // PUSH_PROMISE with stream id 0 is connection-level error.
+    // TODO(baranovich): Test session going away.
     return;
   }
+
   scoped_ptr<SpdyFrame> stream1_syn(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> stream1_body(
@@ -3156,11 +3157,6 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID9) {
-  if (spdy_util_.spdy_version() == SPDY4) {
-    // TODO(jgraettinger): We don't support associated stream
-    // checks in SPDY4 yet.
-    return;
-  }
   scoped_ptr<SpdyFrame> stream1_syn(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> stream1_body(
@@ -3239,15 +3235,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushNoURL) {
   (*incomplete_headers)["hello"] = "bye";
   (*incomplete_headers)[spdy_util_.GetStatusKey()] = "200 OK";
   (*incomplete_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
-  scoped_ptr<SpdyFrame> stream2_syn(
-      spdy_util_.ConstructSpdyControlFrame(incomplete_headers.Pass(),
-                                           false,
-                                           2,  // Stream ID
-                                           LOWEST,
-                                           SYN_STREAM,
-                                           CONTROL_FLAG_NONE,
-                                           // Associated stream ID
-                                           1));
+  scoped_ptr<SpdyFrame> stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
+      incomplete_headers.Pass(), 2, 1));
   MockRead reads[] = {
     CreateMockRead(*stream1_reply, 2),
     CreateMockRead(*stream2_syn, 3),
@@ -5205,13 +5194,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithHeaders) {
   spdy_util_.AddUrlToHeaderBlock(
       "http://www.google.com/foo.dat", initial_headers.get());
   scoped_ptr<SpdyFrame> stream2_syn(
-      spdy_util_.ConstructSpdyControlFrame(initial_headers.Pass(),
-                                           false,
-                                           2,
-                                           LOWEST,
-                                           SYN_STREAM,
-                                           CONTROL_FLAG_NONE,
-                                           1));
+      spdy_util_.ConstructInitialSpdyPushFrame(initial_headers.Pass(), 2, 1));
 
   scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
   (*late_headers)["hello"] = "bye";
@@ -5274,13 +5257,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
   spdy_util_.AddUrlToHeaderBlock(
       "http://www.google.com/foo.dat", initial_headers.get());
   scoped_ptr<SpdyFrame> stream2_syn(
-      spdy_util_.ConstructSpdyControlFrame(initial_headers.Pass(),
-                                           false,
-                                           2,
-                                           LOWEST,
-                                           SYN_STREAM,
-                                           CONTROL_FLAG_NONE,
-                                           1));
+      spdy_util_.ConstructInitialSpdyPushFrame(initial_headers.Pass(), 2, 1));
 
   scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
   (*late_headers)["hello"] = "bye";
@@ -5397,17 +5374,14 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   };
 
   scoped_ptr<SpdyHeaderBlock> initial_headers(new SpdyHeaderBlock());
-  (*initial_headers)["alpha"] = "beta";
+  if (spdy_util_.spdy_version() < SPDY4) {
+    // In SPDY4 PUSH_PROMISE headers won't show up in the response headers.
+    (*initial_headers)["alpha"] = "beta";
+  }
   spdy_util_.AddUrlToHeaderBlock(
       "http://www.google.com/foo.dat", initial_headers.get());
   scoped_ptr<SpdyFrame> stream2_syn(
-      spdy_util_.ConstructSpdyControlFrame(initial_headers.Pass(),
-                                           false,
-                                           2,
-                                           LOWEST,
-                                           SYN_STREAM,
-                                           CONTROL_FLAG_NONE,
-                                           1));
+      spdy_util_.ConstructInitialSpdyPushFrame(initial_headers.Pass(), 2, 1));
 
   scoped_ptr<SpdyHeaderBlock> middle_headers(new SpdyHeaderBlock());
   (*middle_headers)["hello"] = "bye";
@@ -5515,7 +5489,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   EXPECT_EQ("HTTP/1.1 200 OK", response2.headers->GetStatusLine());
 
   // Verify we got all the headers from all header blocks.
-  EXPECT_TRUE(response2.headers->HasHeaderValue("alpha", "beta"));
+  if (spdy_util_.spdy_version() < SPDY4)
+    EXPECT_TRUE(response2.headers->HasHeaderValue("alpha", "beta"));
   EXPECT_TRUE(response2.headers->HasHeaderValue("hello", "bye"));
   EXPECT_TRUE(response2.headers->HasHeaderValue("status", "200"));
 
@@ -5541,13 +5516,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
   spdy_util_.AddUrlToHeaderBlock(
       "http://www.google.com/foo.dat", initial_headers.get());
   scoped_ptr<SpdyFrame> stream2_syn(
-      spdy_util_.ConstructSpdyControlFrame(initial_headers.Pass(),
-                                           false,
-                                           2,
-                                           LOWEST,
-                                           SYN_STREAM,
-                                           CONTROL_FLAG_NONE,
-                                           1));
+      spdy_util_.ConstructInitialSpdyPushFrame(initial_headers.Pass(), 2, 1));
 
   scoped_ptr<SpdyHeaderBlock> middle_headers(new SpdyHeaderBlock());
   (*middle_headers)["hello"] = "bye";
@@ -5744,11 +5713,6 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyWithLateHeaders) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
-  if (spdy_util_.spdy_version() == SPDY4) {
-    // TODO(jgraettinger): We don't support associated stream
-    // checks in SPDY4 yet.
-    return;
-  }
   // In this test we want to verify that we can't accidentally push content
   // which can't be pushed by this content server.
   // This test assumes that:

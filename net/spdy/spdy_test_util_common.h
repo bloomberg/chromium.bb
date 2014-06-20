@@ -457,6 +457,10 @@ class SpdyTestUtil {
                                const char* status,
                                const char* location);
 
+  SpdyFrame* ConstructInitialSpdyPushFrame(scoped_ptr<SpdyHeaderBlock> headers,
+                                           int stream_id,
+                                           int associated_stream_id);
+
   SpdyFrame* ConstructSpdyPushHeaders(int stream_id,
                                       const char* const extra_headers[],
                                       int extra_header_count);

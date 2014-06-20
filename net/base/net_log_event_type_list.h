@@ -1210,6 +1210,15 @@ EVENT_TYPE(SPDY_SESSION_SEND_DATA)
 //   }
 EVENT_TYPE(SPDY_SESSION_RECV_DATA)
 
+// This event is sent for a receiving SPDY PUSH_PROMISE frame.
+// The following parameters are attached:
+//   {
+//     "headers": <The list of header:value pairs>,
+//     "id": <The stream id>,
+//     "promised_stream_id": <The stream id>,
+//   }
+EVENT_TYPE(SPDY_SESSION_RECV_PUSH_PROMISE)
+
 // A stream is stalled by the session send window being closed.
 EVENT_TYPE(SPDY_SESSION_STREAM_STALLED_BY_SESSION_SEND_WINDOW)
 
