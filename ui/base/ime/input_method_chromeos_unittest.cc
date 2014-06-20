@@ -673,6 +673,8 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_SingleUnderline) {
   // Single underline represents as black thin line.
   EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
   EXPECT_FALSE(composition_text.underlines[0].thick);
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
+            composition_text.underlines[0].background_color);
 }
 
 TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_DoubleUnderline) {
@@ -703,6 +705,8 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_DoubleUnderline) {
   // Double underline represents as black thick line.
   EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
   EXPECT_TRUE(composition_text.underlines[0].thick);
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
+            composition_text.underlines[0].background_color);
 }
 
 TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_ErrorUnderline) {
@@ -758,6 +762,8 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_Selection) {
             composition_text.underlines[0].end_offset);
   EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
   EXPECT_TRUE(composition_text.underlines[0].thick);
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
+            composition_text.underlines[0].background_color);
 }
 
 TEST_F(InputMethodChromeOSTest,
@@ -790,6 +796,8 @@ TEST_F(InputMethodChromeOSTest,
             composition_text.underlines[0].end_offset);
   EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
   EXPECT_TRUE(composition_text.underlines[0].thick);
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
+            composition_text.underlines[0].background_color);
 }
 
 TEST_F(InputMethodChromeOSTest,
@@ -822,6 +830,8 @@ TEST_F(InputMethodChromeOSTest,
             composition_text.underlines[0].end_offset);
   EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
   EXPECT_TRUE(composition_text.underlines[0].thick);
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
+            composition_text.underlines[0].background_color);
 }
 
 TEST_F(InputMethodChromeOSTest, SurroundingText_NoSelectionTest) {

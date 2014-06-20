@@ -760,11 +760,11 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
 
   // Focused segment
   composition_text.underlines.push_back(
-      ui::CompositionUnderline(0, 3, 0xff000000, true));
+      ui::CompositionUnderline(0, 3, 0xff000000, true, 0x78563412));
 
-  // Non-focused segment
+  // Non-focused segment, with different background color.
   composition_text.underlines.push_back(
-      ui::CompositionUnderline(3, 4, 0xff000000, false));
+      ui::CompositionUnderline(3, 4, 0xff000000, false, 0xefcdab90));
 
   const ui::CompositionUnderlines& underlines = composition_text.underlines;
 
@@ -790,6 +790,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
       EXPECT_EQ(underlines[i].end_offset, params.b[i].endOffset);
       EXPECT_EQ(underlines[i].color, params.b[i].color);
       EXPECT_EQ(underlines[i].thick, params.b[i].thick);
+      EXPECT_EQ(underlines[i].background_color, params.b[i].backgroundColor);
     }
     // highlighted range
     EXPECT_EQ(4, params.c) << "Should be the same to the caret pos";

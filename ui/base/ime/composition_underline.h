@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace ui {
@@ -15,34 +16,43 @@ namespace ui {
 // third_party/WebKit/public/web/WebCompositionUnderline.h
 struct CompositionUnderline {
   CompositionUnderline()
-    : start_offset(0),
-      end_offset(0),
-      color(0),
-      thick(false) {}
+      : start_offset(0),
+        end_offset(0),
+        color(SK_ColorTRANSPARENT),
+        thick(false),
+        background_color(SK_ColorTRANSPARENT) {}
 
-  CompositionUnderline(unsigned s, unsigned e, SkColor c, bool t)
-    : start_offset(s),
-      end_offset(e),
-      color(c),
-      thick(t) {}
+  // TODO(huangs): remove this constructor.
+  CompositionUnderline(uint32 s, uint32 e, SkColor c, bool t)
+      : start_offset(s),
+        end_offset(e),
+        color(c),
+        thick(t),
+        background_color(SK_ColorTRANSPARENT) {}
+
+  CompositionUnderline(uint32 s, uint32 e, SkColor c, bool t, SkColor bc)
+      : start_offset(s),
+        end_offset(e),
+        color(c),
+        thick(t),
+        background_color(bc) {}
 
   bool operator==(const CompositionUnderline& rhs) const {
     return (this->start_offset == rhs.start_offset) &&
-        (this->end_offset == rhs.end_offset) &&
-        (this->color == rhs.color) &&
-        (this->thick == rhs.thick);
+           (this->end_offset == rhs.end_offset) && (this->color == rhs.color) &&
+           (this->thick == rhs.thick) &&
+           (this->background_color == rhs.background_color);
   }
 
   bool operator!=(const CompositionUnderline& rhs) const {
     return !(*this == rhs);
   }
 
-  // Though use of unsigned is discouraged, we use it here to make sure it's
-  // identical to blink::WebCompositionUnderline.
-  unsigned start_offset;
-  unsigned end_offset;
+  uint32 start_offset;
+  uint32 end_offset;
   SkColor color;
   bool thick;
+  SkColor background_color;
 };
 
 typedef std::vector<CompositionUnderline> CompositionUnderlines;

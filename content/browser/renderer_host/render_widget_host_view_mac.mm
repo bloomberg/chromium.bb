@@ -278,8 +278,12 @@ void ExtractUnderlines(
         color = WebColorFromNSColor(
             [colorAttr colorUsingColorSpaceName:NSDeviceRGBColorSpace]);
       }
-      underlines->push_back(blink::WebCompositionUnderline(
-          range.location, NSMaxRange(range), color, [style intValue] > 1));
+      underlines->push_back(
+          blink::WebCompositionUnderline(range.location,
+                                         NSMaxRange(range),
+                                         color,
+                                         [style intValue] > 1,
+                                         SK_ColorTRANSPARENT));
     }
     i = range.location + range.length;
   }
@@ -3594,8 +3598,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     ExtractUnderlines(string, &underlines_);
   } else {
     // Use a thin black underline by default.
-    underlines_.push_back(
-        blink::WebCompositionUnderline(0, length, SK_ColorBLACK, false));
+    underlines_.push_back(blink::WebCompositionUnderline(
+        0, length, SK_ColorBLACK, false, SK_ColorTRANSPARENT));
   }
 
   // If we are handling a key down event, then SetComposition() will be

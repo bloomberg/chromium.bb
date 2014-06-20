@@ -42,8 +42,12 @@ class ImeAdapterAndroid {
                              long timestamp_ms,
                              int native_key_code,
                              int unicode_char);
-  void SetComposingText(JNIEnv*, jobject, jstring text, int new_cursor_pos);
-  void CommitText(JNIEnv*, jobject, jstring text);
+  void SetComposingText(JNIEnv*,
+                        jobject obj,
+                        jobject text,
+                        jstring text_str,
+                        int new_cursor_pos);
+  void CommitText(JNIEnv*, jobject, jstring text_str);
   void FinishComposingText(JNIEnv* env, jobject);
   void AttachImeAdapter(JNIEnv*, jobject java_object);
   void SetEditableSelectionOffsets(JNIEnv*, jobject, int start, int end);

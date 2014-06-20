@@ -216,8 +216,7 @@ public class AdapterInputConnection extends BaseInputConnection {
         if (maybePerformEmptyCompositionWorkaround(text)) return true;
         super.setComposingText(text, newCursorPosition);
         updateSelectionIfRequired();
-        return mImeAdapter.checkCompositionQueueAndCallNative(text.toString(),
-                newCursorPosition, false);
+        return mImeAdapter.checkCompositionQueueAndCallNative(text, newCursorPosition, false);
     }
 
     /**
@@ -229,8 +228,8 @@ public class AdapterInputConnection extends BaseInputConnection {
         if (maybePerformEmptyCompositionWorkaround(text)) return true;
         super.commitText(text, newCursorPosition);
         updateSelectionIfRequired();
-        return mImeAdapter.checkCompositionQueueAndCallNative(text.toString(),
-                newCursorPosition, text.length() > 0);
+        return mImeAdapter.checkCompositionQueueAndCallNative(text, newCursorPosition,
+                text.length() > 0);
     }
 
     /**

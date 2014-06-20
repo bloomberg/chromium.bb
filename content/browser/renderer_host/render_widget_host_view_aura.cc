@@ -1331,10 +1331,12 @@ void RenderWidgetHostViewAura::SetCompositionText(
   for (std::vector<ui::CompositionUnderline>::const_iterator it =
            composition.underlines.begin();
        it != composition.underlines.end(); ++it) {
-    underlines.push_back(blink::WebCompositionUnderline(it->start_offset,
-                                                        it->end_offset,
-                                                        it->color,
-                                                        it->thick));
+    underlines.push_back(
+        blink::WebCompositionUnderline(static_cast<unsigned>(it->start_offset),
+                                       static_cast<unsigned>(it->end_offset),
+                                       it->color,
+                                       it->thick,
+                                       it->background_color));
   }
 
   // TODO(suzhe): due to a bug of webkit, we can't use selection range with

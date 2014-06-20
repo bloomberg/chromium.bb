@@ -608,9 +608,11 @@ void InputMethodChromeOS::ExtractCompositionText(
       const uint32 end = underline_attributes[i].end_index;
       if (start >= end)
         continue;
-      CompositionUnderline underline(
-          char16_offsets[start], char16_offsets[end],
-          SK_ColorBLACK, false /* thick */);
+      CompositionUnderline underline(char16_offsets[start],
+                                     char16_offsets[end],
+                                     SK_ColorBLACK,
+                                     false /* thick */,
+                                     SK_ColorTRANSPARENT);
       if (underline_attributes[i].type ==
           chromeos::CompositionText::COMPOSITION_TEXT_UNDERLINE_DOUBLE)
         underline.thick = true;
@@ -625,9 +627,11 @@ void InputMethodChromeOS::ExtractCompositionText(
   if (text.selection_start() < text.selection_end()) {
     const uint32 start = text.selection_start();
     const uint32 end = text.selection_end();
-    CompositionUnderline underline(
-        char16_offsets[start], char16_offsets[end],
-        SK_ColorBLACK, true /* thick */);
+    CompositionUnderline underline(char16_offsets[start],
+                                   char16_offsets[end],
+                                   SK_ColorBLACK,
+                                   true /* thick */,
+                                   SK_ColorTRANSPARENT);
     out_composition->underlines.push_back(underline);
 
     // If the cursor is at start or end of this underline, then we treat
@@ -645,7 +649,7 @@ void InputMethodChromeOS::ExtractCompositionText(
   // Use a black thin underline by default.
   if (out_composition->underlines.empty()) {
     out_composition->underlines.push_back(CompositionUnderline(
-        0, length, SK_ColorBLACK, false /* thick */));
+        0, length, SK_ColorBLACK, false /* thick */, SK_ColorTRANSPARENT));
   }
 }
 

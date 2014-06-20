@@ -28,6 +28,7 @@ struct Underline {
   unsigned end_offset;
   uint32 color;
   bool thick;
+  uint32 background_color;
 };
 
 struct TestData {
@@ -37,64 +38,59 @@ struct TestData {
 };
 
 const TestData kTestData[] = {
-  // Normal case
-  { "One Two Three",
-    { { PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 0, 3 },
-      { PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_DOUBLE, 4, 7 },
-      { PANGO_ATTR_BACKGROUND, 0, 4, 7 },
-      { PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 8, 13 },
-      { 0, 0, 0, 0 } },
-    { { 0, 3, SK_ColorBLACK, false },
-      { 4, 7, SK_ColorBLACK, true },
-      { 8, 13, SK_ColorBLACK, false },
-      { 0, 0, 0, false } }
-  },
+    // Normal case
+    {"One Two Three",
+     {{PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 0, 3},
+      {PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_DOUBLE, 4, 7},
+      {PANGO_ATTR_BACKGROUND, 0, 4, 7},
+      {PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 8, 13},
+      {0, 0, 0, 0}},
+     {{0, 3, SK_ColorBLACK, false, SK_ColorTRANSPARENT},
+      {4, 7, SK_ColorBLACK, true, SK_ColorTRANSPARENT},
+      {8, 13, SK_ColorBLACK, false, SK_ColorTRANSPARENT},
+      {0, 0, 0, false, SK_ColorTRANSPARENT}}},
 
-  // Offset overflow.
-  { "One Two Three",
-    { { PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 0, 3 },
-      { PANGO_ATTR_BACKGROUND, 0, 4, 7 },
-      { PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 8, 20 },
-      { 0, 0, 0, 0 } },
-    { { 0, 3, SK_ColorBLACK, false },
-      { 4, 7, SK_ColorBLACK, true },
-      { 8, 13, SK_ColorBLACK, false },
-      { 0, 0, 0, false} }
-  },
+    // Offset overflow.
+    {"One Two Three",
+     {{PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 0, 3},
+      {PANGO_ATTR_BACKGROUND, 0, 4, 7},
+      {PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 8, 20},
+      {0, 0, 0, 0}},
+     {{0, 3, SK_ColorBLACK, false, SK_ColorTRANSPARENT},
+      {4, 7, SK_ColorBLACK, true, SK_ColorTRANSPARENT},
+      {8, 13, SK_ColorBLACK, false, SK_ColorTRANSPARENT},
+      {0, 0, 0, false, SK_ColorTRANSPARENT}}},
 
-  // Error underline.
-  { "One Two Three",
-    { { PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 0, 3 },
-      { PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_ERROR, 4, 7 },
-      { PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 8, 13 },
-      { 0, 0, 0, 0 } },
-    { { 0, 3, SK_ColorBLACK, false },
-      { 4, 7, SK_ColorRED, false },
-      { 8, 13, SK_ColorBLACK, false },
-      { 0, 0, 0, false} }
-  },
+    // Error underline.
+    {"One Two Three",
+     {{PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 0, 3},
+      {PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_ERROR, 4, 7},
+      {PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 8, 13},
+      {0, 0, 0, 0}},
+     {{0, 3, SK_ColorBLACK, false, SK_ColorTRANSPARENT},
+      {4, 7, SK_ColorRED, false, SK_ColorTRANSPARENT},
+      {8, 13, SK_ColorBLACK, false, SK_ColorTRANSPARENT},
+      {0, 0, 0, false, SK_ColorTRANSPARENT}}},
 
-  // Default underline.
-  { "One Two Three",
-    { { 0, 0, 0, 0 } },
-    { { 0, 13, SK_ColorBLACK, false },
-      { 0, 0, 0, false } }
-  },
+    // Default underline.
+    {"One Two Three",
+     {{0, 0, 0, 0}},
+     {{0, 13, SK_ColorBLACK, false, SK_ColorTRANSPARENT},
+      {0, 0, 0, false, SK_ColorTRANSPARENT}}},
 
-  // Unicode, including non-BMP characters: "123你好𠀀𠀁一丁 456"
-  { "123\xE4\xBD\xA0\xE5\xA5\xBD\xF0\xA0\x80\x80\xF0\xA0\x80\x81\xE4\xB8\x80"
-    "\xE4\xB8\x81 456",
-    { { PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 0, 3 },
-      { PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 3, 5 },
-      { PANGO_ATTR_BACKGROUND, 0, 5, 7 },
-      { PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 7, 13 },
-      { 0, 0, 0, 0 } },
-    { { 0, 3, SK_ColorBLACK, false },
-      { 3, 5, SK_ColorBLACK, false },
-      { 5, 9, SK_ColorBLACK, true },
-      { 9, 15, SK_ColorBLACK, false },
-      { 0, 0, 0, false } }
-  },
+    // Unicode, including non-BMP characters: "123你好𠀀𠀁一丁 456"
+    {"123\xE4\xBD\xA0\xE5\xA5\xBD\xF0\xA0\x80\x80\xF0\xA0\x80\x81\xE4\xB8\x80"
+     "\xE4\xB8\x81 456",
+     {{PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 0, 3},
+      {PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 3, 5},
+      {PANGO_ATTR_BACKGROUND, 0, 5, 7},
+      {PANGO_ATTR_UNDERLINE, PANGO_UNDERLINE_SINGLE, 7, 13},
+      {0, 0, 0, 0}},
+     {{0, 3, SK_ColorBLACK, false, SK_ColorTRANSPARENT},
+      {3, 5, SK_ColorBLACK, false, SK_ColorTRANSPARENT},
+      {5, 9, SK_ColorBLACK, true, SK_ColorTRANSPARENT},
+      {9, 15, SK_ColorBLACK, false, SK_ColorTRANSPARENT},
+      {0, 0, 0, false, SK_ColorTRANSPARENT}}},
 };
 
 void CompareUnderline(const Underline& a,
@@ -103,6 +99,7 @@ void CompareUnderline(const Underline& a,
   EXPECT_EQ(a.end_offset, b.end_offset);
   EXPECT_EQ(a.color, b.color);
   EXPECT_EQ(a.thick, b.thick);
+  EXPECT_EQ(a.background_color, b.background_color);
 }
 
 TEST(CompositionTextUtilPangoTest, ExtractCompositionText) {
