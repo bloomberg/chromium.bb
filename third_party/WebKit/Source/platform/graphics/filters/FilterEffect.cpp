@@ -370,7 +370,7 @@ void FilterEffect::copyUnmultipliedImage(Uint8ClampedArray* destination, const I
     if (!m_unmultipliedImageResult) {
         // We prefer a conversion from the image buffer.
         if (m_imageBufferResult)
-            m_unmultipliedImageResult = m_imageBufferResult->getUnmultipliedImageData(IntRect(IntPoint(), m_absolutePaintRect.size()));
+            m_unmultipliedImageResult = m_imageBufferResult->getImageData(Unmultiplied, IntRect(IntPoint(), m_absolutePaintRect.size()));
         else {
             ASSERT(isFilterSizeValid(m_absolutePaintRect));
             m_unmultipliedImageResult = Uint8ClampedArray::createUninitialized(m_absolutePaintRect.width() * m_absolutePaintRect.height() * 4);
@@ -404,7 +404,7 @@ void FilterEffect::copyPremultipliedImage(Uint8ClampedArray* destination, const 
     if (!m_premultipliedImageResult) {
         // We prefer a conversion from the image buffer.
         if (m_imageBufferResult)
-            m_premultipliedImageResult = m_imageBufferResult->getPremultipliedImageData(IntRect(IntPoint(), m_absolutePaintRect.size()));
+            m_premultipliedImageResult = m_imageBufferResult->getImageData(Premultiplied, IntRect(IntPoint(), m_absolutePaintRect.size()));
         else {
             ASSERT(isFilterSizeValid(m_absolutePaintRect));
             m_premultipliedImageResult = Uint8ClampedArray::createUninitialized(m_absolutePaintRect.width() * m_absolutePaintRect.height() * 4);

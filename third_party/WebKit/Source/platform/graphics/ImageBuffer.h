@@ -100,10 +100,9 @@ public:
     // or return CopyBackingStore if it doesn't.
     static BackingStoreCopy fastCopyImageMode();
 
-    PassRefPtr<Uint8ClampedArray> getUnmultipliedImageData(const IntRect&) const;
-    PassRefPtr<Uint8ClampedArray> getPremultipliedImageData(const IntRect&) const;
+    PassRefPtr<Uint8ClampedArray> getImageData(Multiply, const IntRect&) const;
 
-    void putByteArray(Multiply multiplied, Uint8ClampedArray*, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint);
+    void putByteArray(Multiply, Uint8ClampedArray*, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint);
 
     String toDataURL(const String& mimeType, const double* quality = 0) const;
     AffineTransform baseTransform() const { return AffineTransform(); }
