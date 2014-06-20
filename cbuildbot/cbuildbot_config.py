@@ -2087,6 +2087,10 @@ _release.add_config('link-release',
 _release.add_config('link_freon-release',
   boards=['link_freon'],
   useflags=_release['useflags'] + ['highdpi'],
+  hw_tests=[],
+  # This build doesn't generate signed images, so don't try to release them.
+  paygen=False,
+  signer_tests=False,
 )
 
 _release.add_config('lumpy-release',
