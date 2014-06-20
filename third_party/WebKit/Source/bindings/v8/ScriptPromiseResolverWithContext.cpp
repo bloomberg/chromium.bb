@@ -15,7 +15,7 @@ ScriptPromiseResolverWithContext::ScriptPromiseResolverWithContext(ScriptState* 
     , m_scriptState(scriptState)
     , m_mode(Default)
     , m_timer(this, &ScriptPromiseResolverWithContext::onTimerFired)
-    , m_resolver(ScriptPromiseResolver::create(m_scriptState.get()))
+    , m_resolver(scriptState)
 #if ASSERTION_ENABLED
     , m_isPromiseCalled(false)
 #endif
@@ -68,10 +68,10 @@ void ScriptPromiseResolverWithContext::resolveOrRejectImmediately()
         // at the end of every task (rather than just the main thread).
         V8RecursionScope scope(m_scriptState->isolate(), m_scriptState->executionContext());
         if (m_state == Resolving) {
-            m_resolver->resolve(m_value.newLocal(m_scriptState->isolate()));
+            m_resolver.resolve(m_value.newLocal(m_scriptState->isolate()));
         } else {
             ASSERT(m_state == Rejecting);
-            m_resolver->reject(m_value.newLocal(m_scriptState->isolate()));
+            m_resolver.reject(m_value.newLocal(m_scriptState->isolate()));
         }
     }
     clear();
@@ -83,7 +83,6 @@ void ScriptPromiseResolverWithContext::clear()
         return;
     ResolutionState state = m_state;
     m_state = ResolvedOrRejected;
-    m_resolver.clear();
     m_value.clear();
     if (m_mode == KeepAliveWhilePending) {
         // |ref| was called in |keepAliveWhilePending|.

@@ -7,7 +7,6 @@
 
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -70,7 +69,7 @@ public:
 #if ASSERT_ENABLED
         m_isPromiseCalled = true;
 #endif
-        return m_resolver ? m_resolver->promise() : ScriptPromise();
+        return m_resolver.promise();
     }
 
     ScriptState* scriptState() const { return m_scriptState.get(); }
@@ -90,6 +89,7 @@ protected:
     explicit ScriptPromiseResolverWithContext(ScriptState*);
 
 private:
+    typedef ScriptPromise::InternalResolver Resolver;
     enum ResolutionState {
         Pending,
         Resolving,
@@ -132,7 +132,7 @@ private:
     const RefPtr<ScriptState> m_scriptState;
     LifetimeMode m_mode;
     Timer<ScriptPromiseResolverWithContext> m_timer;
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    Resolver m_resolver;
     ScopedPersistent<v8::Value> m_value;
 #if ASSERT_ENABLED
     // True if promise() is called.

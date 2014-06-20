@@ -31,7 +31,6 @@
 #include "config.h"
 #include "InstallEvent.h"
 
-#include "bindings/v8/ScriptPromiseResolver.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/NotImplemented.h"
 #include "wtf/RefPtr.h"
@@ -61,10 +60,7 @@ ScriptPromise InstallEvent::reloadAll(ScriptState* scriptState)
     notImplemented();
 
     // For now this just returns a promise which is already rejected.
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-    resolver->reject(ScriptValue(scriptState, v8::Null(scriptState->isolate())));
-    return promise;
+    return ScriptPromise::reject(scriptState, v8::Null(scriptState->isolate()));
 }
 
 const AtomicString& InstallEvent::interfaceName() const

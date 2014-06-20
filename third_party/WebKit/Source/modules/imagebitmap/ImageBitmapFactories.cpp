@@ -32,17 +32,16 @@
 #include "modules/imagebitmap/ImageBitmapFactories.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
+#include "core/frame/ImageBitmap.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/ImageBitmap.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/BitmapImage.h"
@@ -68,7 +67,7 @@ static IntSize sizeFor(HTMLVideoElement* video)
 
 static ScriptPromise fulfillImageBitmap(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ImageBitmap> imageBitmap)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (imageBitmap) {
         resolver->resolve(imageBitmap);

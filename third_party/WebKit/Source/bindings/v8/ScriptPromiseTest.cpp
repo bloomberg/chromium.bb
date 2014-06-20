@@ -32,7 +32,6 @@
 #include "bindings/v8/ScriptPromise.h"
 
 #include "bindings/v8/ScriptFunction.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/DOMException.h"
@@ -87,6 +86,7 @@ public:
     v8::Isolate* isolate() const { return m_scope.isolate(); }
 
 protected:
+    typedef ScriptPromise::InternalResolver Resolver;
     V8TestingScope m_scope;
 };
 
@@ -100,8 +100,8 @@ TEST_F(ScriptPromiseTest, constructFromNonPromise)
 
 TEST_F(ScriptPromiseTest, thenResolve)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState());
-    ScriptPromise promise = resolver->promise();
+    Resolver resolver(scriptState());
+    ScriptPromise promise = resolver.promise();
     String onFulfilled, onRejected;
     promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
 
@@ -110,7 +110,7 @@ TEST_F(ScriptPromiseTest, thenResolve)
     EXPECT_EQ(String(), onRejected);
 
     isolate()->RunMicrotasks();
-    resolver->resolve("hello");
+    resolver.resolve(v8String(isolate(), "hello"));
 
     EXPECT_EQ(String(), onFulfilled);
     EXPECT_EQ(String(), onRejected);
@@ -123,10 +123,10 @@ TEST_F(ScriptPromiseTest, thenResolve)
 
 TEST_F(ScriptPromiseTest, resolveThen)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState());
-    ScriptPromise promise = resolver->promise();
+    Resolver resolver(scriptState());
+    ScriptPromise promise = resolver.promise();
     String onFulfilled, onRejected;
-    resolver->resolve("hello");
+    resolver.resolve(v8String(isolate(), "hello"));
     promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
@@ -141,8 +141,8 @@ TEST_F(ScriptPromiseTest, resolveThen)
 
 TEST_F(ScriptPromiseTest, thenReject)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState());
-    ScriptPromise promise = resolver->promise();
+    Resolver resolver(scriptState());
+    ScriptPromise promise = resolver.promise();
     String onFulfilled, onRejected;
     promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
 
@@ -151,7 +151,7 @@ TEST_F(ScriptPromiseTest, thenReject)
     EXPECT_EQ(String(), onRejected);
 
     isolate()->RunMicrotasks();
-    resolver->reject("hello");
+    resolver.reject(v8String(isolate(), "hello"));
 
     EXPECT_EQ(String(), onFulfilled);
     EXPECT_EQ(String(), onRejected);
@@ -164,10 +164,10 @@ TEST_F(ScriptPromiseTest, thenReject)
 
 TEST_F(ScriptPromiseTest, rejectThen)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState());
-    ScriptPromise promise = resolver->promise();
+    Resolver resolver(scriptState());
+    ScriptPromise promise = resolver.promise();
     String onFulfilled, onRejected;
-    resolver->reject("hello");
+    resolver.reject(v8String(isolate(), "hello"));
     promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
@@ -182,7 +182,7 @@ TEST_F(ScriptPromiseTest, rejectThen)
 
 TEST_F(ScriptPromiseTest, castPromise)
 {
-    ScriptPromise promise = ScriptPromiseResolver::create(scriptState())->promise();
+    ScriptPromise promise = Resolver(scriptState()).promise();
     ScriptPromise newPromise = ScriptPromise::cast(scriptState(), promise.v8Value());
 
     ASSERT_FALSE(promise.isEmpty());

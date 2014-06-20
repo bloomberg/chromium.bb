@@ -266,7 +266,6 @@
 
     [RaisesException] void setShouldRevealPassword(Element element, boolean reveal);
 
-    [CallWith=ScriptState] Promise createPromise();
     [CallWith=ScriptState] Promise createResolvedPromise(any value);
     [CallWith=ScriptState] Promise createRejectedPromise(any reason);
     [CallWith=ExecutionContext] Promise addOneToPromise(Promise promise);

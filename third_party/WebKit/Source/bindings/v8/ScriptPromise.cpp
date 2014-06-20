@@ -31,7 +31,6 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromise.h"
 
-#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/DOMException.h"
 
@@ -50,6 +49,39 @@ struct WithScriptState {
 };
 
 } // namespace
+
+ScriptPromise::InternalResolver::InternalResolver(ScriptState* scriptState)
+    : m_resolver(scriptState, v8::Promise::Resolver::New(scriptState->isolate())) { }
+
+v8::Local<v8::Promise> ScriptPromise::InternalResolver::v8Promise() const
+{
+    if (m_resolver.isEmpty())
+        return v8::Local<v8::Promise>();
+    return m_resolver.v8Value().As<v8::Promise::Resolver>()->GetPromise();
+}
+
+ScriptPromise ScriptPromise::InternalResolver::promise() const
+{
+    if (m_resolver.isEmpty())
+        return ScriptPromise();
+    return ScriptPromise(m_resolver.scriptState(), v8Promise());
+}
+
+void ScriptPromise::InternalResolver::resolve(v8::Local<v8::Value> value)
+{
+    if (m_resolver.isEmpty())
+        return;
+    m_resolver.v8Value().As<v8::Promise::Resolver>()->Resolve(value);
+    m_resolver.clear();
+}
+
+void ScriptPromise::InternalResolver::reject(v8::Local<v8::Value> value)
+{
+    if (m_resolver.isEmpty())
+        return;
+    m_resolver.v8Value().As<v8::Promise::Resolver>()->Reject(value);
+    m_resolver.clear();
+}
 
 ScriptPromise::ScriptPromise(ScriptState* scriptState, v8::Handle<v8::Value> value)
     : m_scriptState(scriptState)
@@ -105,9 +137,9 @@ ScriptPromise ScriptPromise::cast(ScriptState* scriptState, v8::Handle<v8::Value
     if (value->IsPromise()) {
         return ScriptPromise(scriptState, value);
     }
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-    resolver->resolve(value);
+    InternalResolver resolver(scriptState);
+    ScriptPromise promise = resolver.promise();
+    resolver.resolve(value);
     return promise;
 }
 
@@ -120,9 +152,9 @@ ScriptPromise ScriptPromise::reject(ScriptState* scriptState, v8::Handle<v8::Val
 {
     if (value.IsEmpty())
         return ScriptPromise();
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-    resolver->reject(value);
+    InternalResolver resolver(scriptState);
+    ScriptPromise promise = resolver.promise();
+    resolver.reject(value);
     return promise;
 }
 

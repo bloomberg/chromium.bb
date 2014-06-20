@@ -71,8 +71,6 @@
             'ScriptProfiler.h',
             'ScriptPromise.cpp',
             'ScriptPromise.h',
-            'ScriptPromiseResolver.cpp',
-            'ScriptPromiseResolver.h',
             'ScriptPromiseResolverWithContext.cpp',
             'ScriptPromiseResolverWithContext.h',
             'ScriptRegexp.cpp',
@@ -158,7 +156,6 @@
         ],
         'bindings_v8_unittest_files': [
             'IDBBindingUtilitiesTest.cpp',
-            'ScriptPromiseResolverTest.cpp',
             'ScriptPromiseTest.cpp',
         ],
     },

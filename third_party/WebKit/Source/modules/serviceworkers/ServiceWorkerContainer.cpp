@@ -146,7 +146,7 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ScriptState* scrip
 ScriptPromise ServiceWorkerContainer::ready(ScriptState* scriptState)
 {
     if (m_controller.get()) {
-        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+        RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
         ScriptPromise promise = resolver->promise();
         resolver->resolve(m_controller.get());
         return promise;

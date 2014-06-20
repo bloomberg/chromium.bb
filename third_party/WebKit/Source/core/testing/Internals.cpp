@@ -31,7 +31,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptFunction.h"
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8ThrowException.h"
 #include "core/InternalRuntimeFlags.h"
@@ -2296,14 +2296,9 @@ private:
 
 } // namespace
 
-ScriptPromise Internals::createPromise(ScriptState* scriptState)
-{
-    return ScriptPromiseResolver::create(scriptState)->promise();
-}
-
 ScriptPromise Internals::createResolvedPromise(ScriptState* scriptState, ScriptValue value)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
     ScriptPromise promise = resolver->promise();
     resolver->resolve(value);
     return promise;
@@ -2311,7 +2306,7 @@ ScriptPromise Internals::createResolvedPromise(ScriptState* scriptState, ScriptV
 
 ScriptPromise Internals::createRejectedPromise(ScriptState* scriptState, ScriptValue value)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
     ScriptPromise promise = resolver->promise();
     resolver->reject(value);
     return promise;

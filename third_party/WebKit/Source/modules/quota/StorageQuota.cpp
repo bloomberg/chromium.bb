@@ -32,7 +32,6 @@
 #include "modules/quota/StorageQuota.h"
 
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/ExceptionCode.h"
@@ -105,7 +104,7 @@ ScriptPromise StorageQuota::requestPersistentQuota(ScriptState* scriptState, uns
 {
     StorageQuotaClient* client = StorageQuotaClient::from(scriptState->executionContext());
     if (!client) {
-        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+        RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
         ScriptPromise promise = resolver->promise();
         resolver->reject(DOMError::create(NotSupportedError));
         return promise;

@@ -10,7 +10,7 @@
 description('Test Promise constructor inside Blink.');
 
 var resolve;
-var promise = window.internals.createPromise();
+var promise = window.internals.createResolvedPromise(undefined);
 
 debug('constructor = ' + promise.constructor);
 debug('then = ' + promise.then);

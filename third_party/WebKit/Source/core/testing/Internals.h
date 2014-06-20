@@ -303,7 +303,6 @@ public:
 
     void setShouldRevealPassword(Element*, bool, ExceptionState&);
 
-    ScriptPromise createPromise(ScriptState*);
     ScriptPromise createResolvedPromise(ScriptState*, ScriptValue);
     ScriptPromise createRejectedPromise(ScriptState*, ScriptValue);
     ScriptPromise addOneToPromise(ExecutionContext*, ScriptPromise);
