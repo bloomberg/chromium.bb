@@ -308,6 +308,15 @@ class GitWrapper(SCMWrapper):
       files = self._Capture(['ls-files']).splitlines()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
+  def _DisableHooks(self):
+    hook_dir = os.path.join(self.checkout_path, '.git', 'hooks')
+    if not os.path.isdir(hook_dir):
+      return
+    for f in os.listdir(hook_dir):
+      if not f.endswith('.sample') and not f.endswith('.disabled'):
+        os.rename(os.path.join(hook_dir, f),
+                  os.path.join(hook_dir, f + '.disabled'))
+
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
 
@@ -337,6 +346,9 @@ class GitWrapper(SCMWrapper):
       managed = False
     if not revision:
       revision = default_rev
+
+    if managed:
+      self._DisableHooks()
 
     if gclient_utils.IsDateRevision(revision):
       # Date-revisions only work on git-repositories if the reflog hasn't
@@ -796,11 +808,8 @@ class GitWrapper(SCMWrapper):
       # git clone doesn't seem to insert a newline properly before printing
       # to stdout
       self.Print('')
-    template_path = os.path.join(
-        os.path.dirname(THIS_FILE_PATH), 'git-templates')
     cfg = gclient_utils.DefaultIndexPackConfig(url)
-    clone_cmd = cfg + [
-        'clone', '--no-checkout', '--progress', '--template=%s' % template_path]
+    clone_cmd = cfg + ['clone', '--no-checkout', '--progress']
     if self.cache_dir:
       clone_cmd.append('--shared')
     if options.verbose:

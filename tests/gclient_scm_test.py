@@ -1322,6 +1322,8 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
   def testUpdateNoDotGit(self):
     options = self.Options()
 
+    gclient_scm.os.path.isdir(
+        os.path.join(self.base_path, '.git', 'hooks')).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
@@ -1350,6 +1352,8 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
   def testUpdateConflict(self):
     options = self.Options()
 
+    gclient_scm.os.path.isdir(
+        os.path.join(self.base_path, '.git', 'hooks')).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
