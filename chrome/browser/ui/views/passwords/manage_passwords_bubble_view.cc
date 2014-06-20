@@ -57,13 +57,14 @@ enum ColumnSetType {
 void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
   views::ColumnSet* column_set = layout->AddColumnSet(type);
   column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
+  int full_width = kDesiredBubbleWidth - (2 * views::kPanelHorizMargin);
   switch (type) {
     case SINGLE_VIEW_COLUMN_SET:
       column_set->AddColumn(views::GridLayout::FILL,
                             views::GridLayout::FILL,
                             0,
-                            views::GridLayout::USE_PREF,
-                            0,
+                            views::GridLayout::FIXED,
+                            full_width,
                             0);
       break;
 
@@ -199,12 +200,84 @@ void ManagePasswordsBubbleView::PendingView::OnPerformAction(
   switch (refuse_combobox_->selected_index()) {
     case SavePasswordRefusalComboboxModel::INDEX_NOPE:
       parent_->model()->OnNopeClicked();
+      parent_->Close();
       break;
     case SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE:
-      parent_->model()->OnNeverForThisSiteClicked();
+      parent_->NotifyNeverForThisSiteClicked();
       break;
   }
-  parent_->Close();
+}
+
+// ManagePasswordsBubbleView::ConfirmNeverView ---------------------------------
+
+ManagePasswordsBubbleView::ConfirmNeverView::ConfirmNeverView(
+    ManagePasswordsBubbleView* parent)
+    : parent_(parent) {
+  views::GridLayout* layout = new views::GridLayout(this);
+  layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
+  SetLayoutManager(layout);
+
+  // Title row.
+  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
+  views::Label* title_label = new views::Label(l10n_util::GetStringUTF16(
+      IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TITLE));
+  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_label->SetMultiLine(true);
+  title_label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::MediumFont));
+  layout->StartRowWithPadding(
+      0, SINGLE_VIEW_COLUMN_SET, 0, views::kRelatedControlSmallVerticalSpacing);
+  layout->AddView(title_label);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+
+  // Confirmation text.
+  views::Label* confirmation = new views::Label(l10n_util::GetStringUTF16(
+      IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TEXT));
+  confirmation->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  confirmation->SetMultiLine(true);
+  confirmation->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::SmallFont));
+  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+  layout->AddView(confirmation);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
+
+  // Confirm and undo buttons.
+  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
+  layout->StartRowWithPadding(
+      0, DOUBLE_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
+
+  confirm_button_ = new views::LabelButton(
+      this,
+      l10n_util::GetStringUTF16(
+          IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_BUTTON));
+  confirm_button_->SetStyle(views::Button::STYLE_BUTTON);
+  confirm_button_->SetFontList(
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::SmallFont));
+  layout->AddView(confirm_button_);
+
+  undo_button_ =
+      new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_CANCEL));
+  undo_button_->SetStyle(views::Button::STYLE_BUTTON);
+  undo_button_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::SmallFont));
+  layout->AddView(undo_button_);
+
+  // Extra padding for visual awesomeness.
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+}
+
+ManagePasswordsBubbleView::ConfirmNeverView::~ConfirmNeverView() {
+}
+
+void ManagePasswordsBubbleView::ConfirmNeverView::ButtonPressed(
+    views::Button* sender,
+    const ui::Event& event) {
+  DCHECK(sender == confirm_button_ || sender == undo_button_);
+  if (sender == confirm_button_)
+    parent_->NotifyConfirmedNeverForThisSite();
+  else
+    parent_->NotifyUndoNeverForThisSite();
 }
 
 // ManagePasswordsBubbleView::ManageView --------------------------------------
@@ -417,7 +490,8 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
       BubbleDelegateView(anchor_view,
                          anchor_view ? views::BubbleBorder::TOP_RIGHT
                                      : views::BubbleBorder::NONE),
-      anchor_view_(anchor_view) {
+      anchor_view_(anchor_view),
+      never_save_passwords_(false) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(2, 0, 2, 0));
   set_notify_enter_exit_on_child(true);
@@ -453,12 +527,7 @@ void ManagePasswordsBubbleView::Init() {
   SetLayoutManager(layout);
   SetFocusable(true);
 
-  if (password_manager::ui::IsPendingState(model()->state()))
-    AddChildView(new PendingView(this));
-  else if (model()->state() == password_manager::ui::BLACKLIST_STATE)
-    AddChildView(new BlacklistedView(this));
-  else
-    AddChildView(new ManageView(this));
+  Refresh();
 }
 
 void ManagePasswordsBubbleView::WindowClosing() {
@@ -466,4 +535,39 @@ void ManagePasswordsBubbleView::WindowClosing() {
   // |manage_passwords_bubble_| may have already been reset.
   if (manage_passwords_bubble_ == this)
     manage_passwords_bubble_ = NULL;
+}
+
+void ManagePasswordsBubbleView::Refresh() {
+  RemoveAllChildViews(true);
+  if (password_manager::ui::IsPendingState(model()->state())) {
+    if (never_save_passwords_)
+      AddChildView(new ConfirmNeverView(this));
+    else
+      AddChildView(new PendingView(this));
+  } else if (model()->state() == password_manager::ui::BLACKLIST_STATE) {
+    AddChildView(new BlacklistedView(this));
+  } else {
+    AddChildView(new ManageView(this));
+  }
+  GetLayoutManager()->Layout(this);
+}
+
+void ManagePasswordsBubbleView::NotifyNeverForThisSiteClicked() {
+  if (model()->best_matches().empty()) {
+    // Skip confirmation if there are no existing passwords for this site.
+    NotifyConfirmedNeverForThisSite();
+  } else {
+    never_save_passwords_ = true;
+    Refresh();
+  }
+}
+
+void ManagePasswordsBubbleView::NotifyConfirmedNeverForThisSite() {
+  model()->OnNeverForThisSiteClicked();
+  Close();
+}
+
+void ManagePasswordsBubbleView::NotifyUndoNeverForThisSite() {
+  never_save_passwords_ = false;
+  Refresh();
 }

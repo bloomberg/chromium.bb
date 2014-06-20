@@ -68,6 +68,24 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
     scoped_ptr<views::Combobox> refuse_combobox_;
   };
 
+  // A view offering the user the ability to undo her decision to never save
+  // passwords for a particular site.
+  class ConfirmNeverView : public views::View, public views::ButtonListener {
+   public:
+    explicit ConfirmNeverView(ManagePasswordsBubbleView* parent);
+    virtual ~ConfirmNeverView();
+
+   private:
+    // views::ButtonListener:
+    virtual void ButtonPressed(views::Button* sender,
+                               const ui::Event& event) OVERRIDE;
+
+    ManagePasswordsBubbleView* parent_;
+
+    views::LabelButton* confirm_button_;
+    views::LabelButton* undo_button_;
+  };
+
   // A view offering the user a list of her currently saved credentials
   // for the current page, along with a "Manage passwords" link and a
   // "Done" button.
@@ -135,6 +153,22 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // Close the bubble.
   void Close();
 
+  // Refreshes the bubble's state: called to display a confirmation screen after
+  // a user selects "Never for this site", for instance.
+  void Refresh();
+
+  // Called from PendingView if the user clicks on "Never for this site" in
+  // order to display a confirmation screen.
+  void NotifyNeverForThisSiteClicked();
+
+  // Called from ConfirmNeverView if the user confirms her intention to never
+  // save passwords, and remove existing passwords, for a site.
+  void NotifyConfirmedNeverForThisSite();
+
+  // Called from ConfirmNeverView if the user clicks on "Undo" in order to
+  // undo the action and refresh to PendingView.
+  void NotifyUndoNeverForThisSite();
+
   // views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
@@ -145,6 +179,10 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   static ManagePasswordsBubbleView* manage_passwords_bubble_;
 
   ManagePasswordsIconView* anchor_view_;
+
+  // If true upon destruction, the user has confirmed that she never wants to
+  // save passwords for a particular site.
+  bool never_save_passwords_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleView);
 };
