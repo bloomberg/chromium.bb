@@ -51,7 +51,7 @@ button:hover {
 }
 
 #details p:not(:first-of-type) {
-  margin-top: 39px;
+  margin-top: 20px;
 }
 
 #error-code {
@@ -211,7 +211,7 @@ h2 {
   button,
   [dir='rtl'] button {
     float: none;
-    height: auto;
+    font-size: 1em;
     width: 100%;
   }
 
@@ -240,5 +240,9 @@ h2 {
 
   .nav-wrapper {
     margin-top: 30px;
+  }
+
+  .small-link {
+    font-size: 1em;
   }
 }

@@ -1301,7 +1301,9 @@ void SafeBrowsingBlockingPageV3::PopulateMalwareLoadTimeData(
       "heading", l10n_util::GetStringUTF16(IDS_MALWARE_V3_HEADING));
   load_time_data->SetString(
       "primaryParagraph",
-      l10n_util::GetStringUTF16(IDS_MALWARE_V3_PRIMARY_PARAGRAPH));
+      l10n_util::GetStringFUTF16(
+          IDS_MALWARE_V3_PRIMARY_PARAGRAPH,
+          base::UTF8ToUTF16(url_.host())));
   if (trial_condition_ == kCondV3History) {
     load_time_data->SetString(
         "explanationParagraph",
