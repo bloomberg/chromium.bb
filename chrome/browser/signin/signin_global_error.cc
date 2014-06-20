@@ -101,7 +101,7 @@ void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
   if (switches::IsNewAvatarMenu()) {
     browser->window()->ShowAvatarBubbleFromAvatarButton(
         BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
-        signin::GAIA_SERVICE_TYPE_NONE);
+        signin::ManageAccountsParams());
   } else {
     chrome::ShowSingletonTab(
         browser,

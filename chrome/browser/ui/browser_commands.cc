@@ -1047,7 +1047,7 @@ void ShowAppMenu(Browser* browser) {
 void ShowAvatarMenu(Browser* browser) {
   browser->window()->ShowAvatarBubbleFromAvatarButton(
       BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-      signin::GAIA_SERVICE_TYPE_NONE);
+      signin::ManageAccountsParams());
 }
 
 void OpenUpdateChromeDialog(Browser* browser) {

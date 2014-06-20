@@ -36,7 +36,7 @@ bool PrincipalsPrivateShowAvatarBubbleFunction::RunSyncSafe() {
   if (browser) {
     browser->window()->ShowAvatarBubbleFromAvatarButton(
         BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT,
-        signin::GAIA_SERVICE_TYPE_NONE);
+        signin::ManageAccountsParams());
   }
   return true;
 }

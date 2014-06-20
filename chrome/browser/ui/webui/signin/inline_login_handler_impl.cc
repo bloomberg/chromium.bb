@@ -385,7 +385,7 @@ void InlineLoginHandlerImpl::CloseTab(bool show_account_management) {
     if (show_account_management) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
             BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT,
-            signin::GAIA_SERVICE_TYPE_NONE);
+            signin::ManageAccountsParams());
     }
   }
 }

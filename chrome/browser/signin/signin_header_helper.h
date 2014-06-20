@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SIGNIN_SIGNIN_HEADER_HELPER_H_
 #define CHROME_BROWSER_SIGNIN_SIGNIN_HEADER_HELPER_H_
 
+#include <string>
+
 namespace net {
 class URLRequest;
 }
@@ -41,7 +43,23 @@ enum GAIAServiceType {
 
 // Struct describing the paramters received in the manage account header.
 struct ManageAccountsParams {
+  // The requested service type such as "ADDSESSION".
   GAIAServiceType service_type;
+  // The prefilled email.
+  std::string email;
+  // Whether |email| is a saml account.
+  bool is_saml;
+  // The continue URL after the requested service is completed successfully.
+  // Defaults to the current URL if empty.
+  std::string continue_url;
+  // Whether the continue URL should be loaded in the same tab.
+  bool is_same_tab;
+  // The child id associated with the web content of the request.
+  int child_id;
+  // The route id associated with the web content of the request.
+  int route_id;
+
+  ManageAccountsParams();
 };
 
 // Adds X-Chrome-Connected header to all Gaia requests from a connected profile,
@@ -54,14 +72,6 @@ bool AppendMirrorRequestHeaderIfPossible(
     ProfileIOData* io_data,
     int child_id,
     int route_id);
-
-// Returns the parameters contained in the X-Chrome-Manage-Accounts response
-// header.
-// If the request does not have a response header or if the header contains
-// garbage, then |service_type| is set to |GAIA_SERVICE_TYPE_NONE|.
-// Must be called on IO thread.
-ManageAccountsParams GetManageAccountsParams(net::URLRequest* request,
-                                             ProfileIOData* io_data);
 
 // Looks for the X-Chrome-Manage-Accounts response header, and if found,
 // tries to show the avatar bubble in the browser identified by the

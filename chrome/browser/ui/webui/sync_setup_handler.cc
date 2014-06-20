@@ -529,7 +529,7 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
     if (switches::IsNewProfileManagement()) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
-          signin::GAIA_SERVICE_TYPE_NONE);
+          signin::ManageAccountsParams());
     } else {
       url = signin::GetReauthURL(browser->profile(),
                                  error_controller->error_account_id());
@@ -538,7 +538,7 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
     if (switches::IsNewProfileManagement()) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
-          signin::GAIA_SERVICE_TYPE_NONE);
+          signin::ManageAccountsParams());
     } else {
       url = signin::GetPromoURL(signin::SOURCE_SETTINGS, true);
     }

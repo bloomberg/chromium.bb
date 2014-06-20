@@ -445,7 +445,7 @@ bool ProfileChooserView::close_on_deactivate_for_testing_ = true;
 // static
 void ProfileChooserView::ShowBubble(
     profiles::BubbleViewMode view_mode,
-    signin::GAIAServiceType service_type,
+    const signin::ManageAccountsParams& manage_accounts_params,
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow,
     views::BubbleBorder::BubbleAlignment border_alignment,
@@ -454,7 +454,7 @@ void ProfileChooserView::ShowBubble(
     return;
 
   profile_bubble_ = new ProfileChooserView(anchor_view, arrow, browser,
-                                           view_mode, service_type);
+      view_mode, manage_accounts_params.service_type);
   views::BubbleDelegateView::CreateBubble(profile_bubble_);
   profile_bubble_->set_close_on_deactivate(close_on_deactivate_for_testing_);
   profile_bubble_->SetAlignment(border_alignment);

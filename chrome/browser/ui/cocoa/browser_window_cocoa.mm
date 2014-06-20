@@ -706,14 +706,15 @@ void BrowserWindowCocoa::ShowAvatarBubble(WebContents* web_contents,
 }
 
 void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
-    AvatarBubbleMode mode, signin::GAIAServiceType service_type) {
+    AvatarBubbleMode mode,
+    const signin::ManageAccountsParams& manage_accounts_params) {
   AvatarBaseController* controller = [controller_ avatarButtonController];
   NSView* anchor = [controller buttonView];
   if ([anchor isHiddenOrHasHiddenAncestor])
     anchor = [[controller_ toolbarController] wrenchButton];
   [controller showAvatarBubble:anchor
                       withMode:mode
-               withServiceType:service_type];
+               withServiceType:manage_accounts_params.service_type];
 }
 
 void BrowserWindowCocoa::ShowPasswordGenerationBubble(

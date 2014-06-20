@@ -363,7 +363,7 @@ class BrowserView : public BrowserWindow,
   virtual void ShowAvatarBubble(content::WebContents* web_contents,
                                 const gfx::Rect& rect) OVERRIDE;
   virtual void ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode,
-      signin::GAIAServiceType service_type) OVERRIDE;
+      const signin::ManageAccountsParams& manage_accounts_params) OVERRIDE;
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& rect,
       const autofill::PasswordForm& form,

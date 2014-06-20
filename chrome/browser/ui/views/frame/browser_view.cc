@@ -2378,10 +2378,10 @@ void BrowserView::ShowAvatarBubble(WebContents* web_contents,
 
 void BrowserView::ShowAvatarBubbleFromAvatarButton(
     AvatarBubbleMode mode,
-    signin::GAIAServiceType service_type) {
+    const signin::ManageAccountsParams& manage_accounts_params) {
   views::BubbleBorder::Arrow arrow = views::BubbleBorder::TOP_RIGHT;
   views::BubbleBorder::BubbleAlignment alignment =
-    views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR;
+      views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR;
   views::View* anchor_view = frame_->GetAvatarMenuButton();
   if (!anchor_view)
     anchor_view = toolbar_->app_menu();
@@ -2411,8 +2411,8 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
         view_mode = profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
         break;
     }
-    ProfileChooserView::ShowBubble(view_mode, service_type, anchor_view, arrow,
-                                   alignment, browser());
+    ProfileChooserView::ShowBubble(view_mode, manage_accounts_params,
+        anchor_view, arrow, alignment, browser());
   } else {
     gfx::Point origin;
     views::View::ConvertPointToScreen(anchor_view, &origin);

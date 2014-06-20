@@ -108,7 +108,7 @@ bool AvatarLabel::OnMousePressed(const ui::MouseEvent& event) {
 
   browser_view_->ShowAvatarBubbleFromAvatarButton(
       BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-      signin::GAIA_SERVICE_TYPE_NONE);
+      signin::ManageAccountsParams());
   return true;
 }
 

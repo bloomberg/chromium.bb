@@ -289,7 +289,7 @@ void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
   if (sender == new_avatar_button()) {
     browser_view()->ShowAvatarBubbleFromAvatarButton(
         BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-        signin::GAIA_SERVICE_TYPE_NONE);
+        signin::ManageAccountsParams());
   }
 }
 

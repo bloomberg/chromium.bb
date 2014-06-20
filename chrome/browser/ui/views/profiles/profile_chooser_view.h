@@ -51,12 +51,13 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // call this function when the button is clicked and if the bubble isn't
   // showing it will appear while if it is showing, nothing will happen here and
   // the existing bubble will auto-close due to focus loss.
-  static void ShowBubble(profiles::BubbleViewMode view_mode,
-                         signin::GAIAServiceType service_type,
-                         views::View* anchor_view,
-                         views::BubbleBorder::Arrow arrow,
-                         views::BubbleBorder::BubbleAlignment border_alignment,
-                         Browser* browser);
+  static void ShowBubble(
+      profiles::BubbleViewMode view_mode,
+      const signin::ManageAccountsParams& manage_accounts_params,
+      views::View* anchor_view,
+      views::BubbleBorder::Arrow arrow,
+      views::BubbleBorder::BubbleAlignment border_alignment,
+      Browser* browser);
   static bool IsShowing();
   static void Hide();
 

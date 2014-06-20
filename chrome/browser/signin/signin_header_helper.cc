@@ -38,6 +38,12 @@ const char kGaiaIdAttrName[] = "id";
 const char kProfileModeAttrName[] = "mode";
 const char kEnableAccountConsistencyAttrName[] = "enable_account_consistency";
 
+const char kServiceTypeAttrName[] = "action";
+const char kEmailAttrName[] = "email";
+const char kIsSamlAttrName[] = "is_saml";
+const char kContinueUrlAttrName[] = "continue_url";
+const char kIsSameTabAttrName[] = "is_same_tab";
+
 // Determines the service type that has been passed from GAIA in the header.
 signin::GAIAServiceType GetGAIAServiceTypeFromHeader(
     const std::string& header_value) {
@@ -69,12 +75,40 @@ MirrorResponseHeaderDictionary ParseMirrorResponseHeader(
     std::string field(*i);
     std::vector<std::string> tokens;
     if (Tokenize(field, "=", &tokens) != 2) {
-      DLOG(WARNING) << "Unexpected GAIA header filed '" << field << "'.";
+      DLOG(WARNING) << "Unexpected GAIA header field '" << field << "'.";
       continue;
     }
     dictionary[tokens[0]] = tokens[1];
   }
   return dictionary;
+}
+
+// Returns the parameters contained in the X-Chrome-Manage-Accounts response
+// header.
+signin::ManageAccountsParams BuildManageAccountsParams(
+    const std::string& header_value) {
+  signin::ManageAccountsParams params;
+  MirrorResponseHeaderDictionary header_dictionary =
+      ParseMirrorResponseHeader(header_value);
+  MirrorResponseHeaderDictionary::const_iterator it = header_dictionary.begin();
+  for (; it != header_dictionary.end(); ++it) {
+    const std::string key_name(it->first);
+    if (key_name == kServiceTypeAttrName) {
+      params.service_type =
+          GetGAIAServiceTypeFromHeader(header_dictionary[kServiceTypeAttrName]);
+    } else if (key_name == kEmailAttrName) {
+      params.email = header_dictionary[kEmailAttrName];
+    } else if (key_name == kIsSamlAttrName) {
+      params.is_saml = header_dictionary[kIsSamlAttrName] == "true";
+    } else if (key_name == kContinueUrlAttrName) {
+      params.continue_url = header_dictionary[kContinueUrlAttrName];
+    } else if (key_name == kIsSameTabAttrName) {
+      params.is_same_tab = header_dictionary[kIsSameTabAttrName] == "true";
+    } else {
+      DLOG(WARNING) << "Unexpected GAIA header attribute '" << key_name << "'.";
+    }
+  }
+  return params;
 }
 
 #if !defined(OS_IOS)
@@ -112,7 +146,7 @@ void ProcessMirrorHeaderUIThread(
         bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT;
     }
     browser->window()->ShowAvatarBubbleFromAvatarButton(
-        bubble_mode, service_type);
+        bubble_mode, manage_accounts_params);
   }
 #else  // defined(OS_ANDROID)
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {
@@ -140,6 +174,15 @@ bool IsDriveOrigin(const GURL& url) {
 } // empty namespace
 
 namespace signin {
+
+ManageAccountsParams::ManageAccountsParams() :
+    service_type(GAIA_SERVICE_TYPE_NONE),
+    email(""),
+    is_saml(false),
+    continue_url(""),
+    is_same_tab(false),
+    child_id(0),
+    route_id(0) {}
 
 bool AppendMirrorRequestHeaderIfPossible(
     net::URLRequest* request,
@@ -198,31 +241,6 @@ bool AppendMirrorRequestHeaderIfPossible(
   return true;
 }
 
-ManageAccountsParams GetManageAccountsParams(net::URLRequest* request,
-                                             ProfileIOData* io_data) {
-  ManageAccountsParams params;
-  params.service_type = GAIA_SERVICE_TYPE_NONE;
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
-    return params;
-
-  std::string header_value;
-  if (!request->response_headers()->GetNormalizedHeader(
-          kChromeManageAccountsHeader, &header_value)) {
-    return params;
-  }
-
-  DCHECK(switches::IsNewProfileManagement() && !io_data->IsOffTheRecord());
-
-  MirrorResponseHeaderDictionary header_dictionary =
-      ParseMirrorResponseHeader(header_value);
-  if (header_dictionary.count("action")) {
-    params.service_type =
-        GetGAIAServiceTypeFromHeader(header_dictionary["action"]);
-  }
-  return params;
-}
-
 void ProcessMirrorResponseHeaderIfExists(
     net::URLRequest* request,
     ProfileIOData* io_data,
@@ -232,10 +250,22 @@ void ProcessMirrorResponseHeaderIfExists(
   NOTREACHED();
 #else
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  ManageAccountsParams params = GetManageAccountsParams(request, io_data);
+  if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
+    return;
+
+  std::string header_value;
+  if (!request->response_headers()->GetNormalizedHeader(
+          kChromeManageAccountsHeader, &header_value)) {
+    return;
+  }
+
+  DCHECK(switches::IsNewProfileManagement() && !io_data->IsOffTheRecord());
+  ManageAccountsParams params(BuildManageAccountsParams(header_value));
   if (params.service_type == GAIA_SERVICE_TYPE_NONE)
     return;
 
+  params.child_id = child_id;
+  params.route_id = route_id;
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(ProcessMirrorHeaderUIThread, child_id, route_id, params));
