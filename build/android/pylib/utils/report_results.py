@@ -90,7 +90,7 @@ def LogFull(results, test_type, test_package, annotation=None,
   logging.critical('*' * 80)
   logging.critical('Summary')
   logging.critical('*' * 80)
-  for line in results.GetLongForm().splitlines():
+  for line in results.GetGtestForm().splitlines():
     logging.critical(line)
   logging.critical('*' * 80)
 

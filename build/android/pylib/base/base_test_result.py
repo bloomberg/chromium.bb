@@ -88,16 +88,28 @@ class TestRunResults(object):
             s.append(log)
     return '\n'.join(s)
 
-  def GetLongForm(self):
-    """Get the long string representation of this object."""
+  def GetGtestForm(self):
+    """Get the gtest string representation of this object."""
     s = []
-    s.append('ALL (%d tests)' % len(self._results))
-    for test_type in ResultType.GetTypes():
-      tests = sorted(self._GetType(test_type))
-      if test_type == ResultType.PASS:
-        s.append('%s (%d tests)' % (test_type, len(tests)))
-      else:
-        s.append('%s (%d tests): %s' % (test_type, len(tests), tests))
+    plural = lambda n, s, p: '%d %s' % (n, p if n != 1 else s)
+    tests = lambda n: plural(n, 'test', 'tests')
+
+    s.append('[==========] %s ran.' % (tests(len(self.GetAll()))))
+    s.append('[  PASSED  ] %s.' % (tests(len(self.GetPass()))))
+
+    not_passed = self.GetNotPass()
+    if len(not_passed) > 0:
+      s.append('[  FAILED  ] %s, listed below:' % tests(len(self.GetNotPass())))
+      for t in self.GetFail():
+        s.append('[  FAILED  ] %s' % str(t))
+      for t in self.GetCrash():
+        s.append('[  FAILED  ] %s (CRASHED)' % str(t))
+      for t in self.GetTimeout():
+        s.append('[  FAILED  ] %s (TIMEOUT)' % str(t))
+      for t in self.GetUnknown():
+        s.append('[  FAILED  ] %s (UNKNOWN)' % str(t))
+      s.append('')
+      s.append(plural(len(not_passed), 'FAILED TEST', 'FAILED TESTS'))
     return '\n'.join(s)
 
   def GetShortForm(self):
