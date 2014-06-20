@@ -262,14 +262,12 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
     applied_widget_rect_.set_height(original_size_.height());
 
   if (params_.fitToView && !original_size_.IsEmpty()) {
-    int width_with_gutter =
-        std::max(original_size_.width() - 2 * params_.viewInsets.width, 1);
-    int height_with_gutter =
-        std::max(original_size_.height() - 2 * params_.viewInsets.height, 1);
+    int original_width = std::max(original_size_.width(), 1);
+    int original_height = std::max(original_size_.height(), 1);
     float width_ratio =
-        static_cast<float>(applied_widget_rect_.width()) / width_with_gutter;
+        static_cast<float>(applied_widget_rect_.width()) / original_width;
     float height_ratio =
-        static_cast<float>(applied_widget_rect_.height()) / height_with_gutter;
+        static_cast<float>(applied_widget_rect_.height()) / original_height;
     float ratio = std::max(1.0f, std::max(width_ratio, height_ratio));
     scale_ = 1.f / ratio;
 
@@ -279,8 +277,8 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
     offset_.set_y(
         (original_size_.height() - scale_ * applied_widget_rect_.height()) / 2);
   } else {
-    scale_ = 1.f;
-    offset_.SetPoint(0, 0);
+    scale_ = params_.scale;
+    offset_.SetPoint(params_.offset.x, params_.offset.y);
   }
 
   if (params_.screenPosition == WebDeviceEmulationParams::Desktop) {
