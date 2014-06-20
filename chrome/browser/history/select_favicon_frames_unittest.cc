@@ -7,21 +7,20 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/layout.h"
 #include "ui/gfx/image/image_skia.h"
 
 using std::vector;
 
 namespace {
 
-vector<ui::ScaleFactor> Scale1x() {
-  return vector<ui::ScaleFactor>(1, ui::SCALE_FACTOR_100P);
+vector<float> FaviconScale1x() {
+  return vector<float>(1, 1.0f);
 }
 
-vector<ui::ScaleFactor> Scale1x2x() {
-  vector<ui::ScaleFactor> scales;
-  scales.push_back(ui::SCALE_FACTOR_100P);
-  scales.push_back(ui::SCALE_FACTOR_200P);
+vector<float> FaviconScale1x2x() {
+  vector<float> scales;
+  scales.push_back(1.0f);
+  scales.push_back(2.0f);
   return scales;
 }
 
@@ -41,10 +40,10 @@ SkBitmap MakeBitmap(SkColor color, int w, int h) {
   return bitmap;
 }
 
-SkColor GetColor(const gfx::ImageSkia& image, ui::ScaleFactor factor,
+SkColor GetColor(const gfx::ImageSkia& image, float scale,
                  int x = -1, int y = -1) {
   const SkBitmap& bitmap =
-      image.GetRepresentation(ui::GetScaleForScaleFactor(factor)).sk_bitmap();
+      image.GetRepresentation(scale).sk_bitmap();
   if (x == -1)
     x = bitmap.width() / 2;
   if (y == -1)
@@ -56,11 +55,11 @@ SkColor GetColor(const gfx::ImageSkia& image, ui::ScaleFactor factor,
 }
 
 SkColor GetColor1x(const gfx::ImageSkia& image) {
-  return GetColor(image, ui::SCALE_FACTOR_100P);
+  return GetColor(image, 1.0f);
 }
 
 SkColor GetColor2x(const gfx::ImageSkia& image) {
-  return GetColor(image, ui::SCALE_FACTOR_200P);
+  return GetColor(image, 2.0f);
 }
 
 TEST(SelectFaviconFramesTest, ZeroSizePicksLargest) {
@@ -70,7 +69,7 @@ TEST(SelectFaviconFramesTest, ZeroSizePicksLargest) {
   bitmaps.push_back(MakeBitmap(SK_ColorBLUE, 32, 32));
 
   gfx::ImageSkia image = SelectFaviconFrames(bitmaps,
-      SizesFromBitmaps(bitmaps), Scale1x(), 0, NULL);
+      SizesFromBitmaps(bitmaps), FaviconScale1x(), 0, NULL);
   EXPECT_EQ(1u, image.image_reps().size());
   ASSERT_TRUE(image.HasRepresentation(1.0f));
   EXPECT_EQ(48, image.width());
@@ -86,7 +85,7 @@ TEST(SelectFaviconFramesTest, _16From16) {
   bitmaps.push_back(MakeBitmap(SK_ColorBLUE, 17, 17));
 
   gfx::ImageSkia image = SelectFaviconFrames(bitmaps,
-      SizesFromBitmaps(bitmaps), Scale1x(), 16, NULL);
+      SizesFromBitmaps(bitmaps), FaviconScale1x(), 16, NULL);
   EXPECT_EQ(1u, image.image_reps().size());
   ASSERT_TRUE(image.HasRepresentation(1.0f));
   EXPECT_EQ(16, image.width());
@@ -101,7 +100,7 @@ TEST(SelectFaviconFramesTest, _16From17) {
 
   // Should resample from the bigger candidate.
   gfx::ImageSkia image = SelectFaviconFrames(bitmaps,
-      SizesFromBitmaps(bitmaps), Scale1x(), 16, NULL);
+      SizesFromBitmaps(bitmaps), FaviconScale1x(), 16, NULL);
   EXPECT_EQ(1u, image.image_reps().size());
   ASSERT_TRUE(image.HasRepresentation(1.0f));
   EXPECT_EQ(16, image.width());
@@ -117,7 +116,7 @@ TEST(SelectFaviconFramesTest, _16From15) {
   // If nothing else is available, should resample from the next smaller
   // candidate.
   gfx::ImageSkia image = SelectFaviconFrames(bitmaps,
-      SizesFromBitmaps(bitmaps), Scale1x(), 16, NULL);
+      SizesFromBitmaps(bitmaps), FaviconScale1x(), 16, NULL);
   EXPECT_EQ(1u, image.image_reps().size());
   ASSERT_TRUE(image.HasRepresentation(1.0f));
   EXPECT_EQ(16, image.width());
@@ -130,7 +129,7 @@ TEST(SelectFaviconFramesTest, _16From16_Scale2x_32_From_16) {
   bitmaps.push_back(MakeBitmap(SK_ColorGREEN, 16, 16));
 
   gfx::ImageSkia image = SelectFaviconFrames(bitmaps,
-      SizesFromBitmaps(bitmaps), Scale1x2x(), 16, NULL);
+      SizesFromBitmaps(bitmaps), FaviconScale1x2x(), 16, NULL);
   EXPECT_EQ(2u, image.image_reps().size());
   ASSERT_TRUE(image.HasRepresentation(1.0f));
   ASSERT_TRUE(image.HasRepresentation(2.0f));
@@ -146,7 +145,7 @@ TEST(SelectFaviconFramesTest, _16From16_Scale2x_32_From_32) {
   bitmaps.push_back(MakeBitmap(SK_ColorBLUE, 32, 32));
 
   gfx::ImageSkia image = SelectFaviconFrames(bitmaps,
-      SizesFromBitmaps(bitmaps), Scale1x2x(), 16, NULL);
+      SizesFromBitmaps(bitmaps), FaviconScale1x2x(), 16, NULL);
   EXPECT_EQ(2u, image.image_reps().size());
   ASSERT_TRUE(image.HasRepresentation(1.0f));
   ASSERT_TRUE(image.HasRepresentation(2.0f));
@@ -161,14 +160,14 @@ TEST(SelectFaviconFramesTest, ExactMatchBetterThanLargeBitmap) {
   vector<SkBitmap> bitmaps1;
   bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 48, 48));
   SelectFaviconFrames(bitmaps1,
-      SizesFromBitmaps(bitmaps1), Scale1x2x(), 16, &score1);
+      SizesFromBitmaps(bitmaps1), FaviconScale1x2x(), 16, &score1);
 
   float score2;
   vector<SkBitmap> bitmaps2;
   bitmaps2.push_back(MakeBitmap(SK_ColorGREEN, 16, 16));
   bitmaps2.push_back(MakeBitmap(SK_ColorGREEN, 32, 32));
   SelectFaviconFrames(bitmaps2,
-      SizesFromBitmaps(bitmaps2), Scale1x2x(), 16, &score2);
+      SizesFromBitmaps(bitmaps2), FaviconScale1x2x(), 16, &score2);
 
   EXPECT_GT(score2, score1);
 }
@@ -178,25 +177,25 @@ TEST(SelectFaviconFramesTest, UpsampleABitBetterThanHugeBitmap) {
   vector<SkBitmap> bitmaps1;
   bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 128, 128));
   SelectFaviconFrames(bitmaps1,
-      SizesFromBitmaps(bitmaps1), Scale1x2x(), 16, &score1);
+      SizesFromBitmaps(bitmaps1), FaviconScale1x2x(), 16, &score1);
 
   float score2;
   vector<SkBitmap> bitmaps2;
   bitmaps2.push_back(MakeBitmap(SK_ColorGREEN, 24, 24));
   SelectFaviconFrames(bitmaps2,
-      SizesFromBitmaps(bitmaps2), Scale1x2x(), 16, &score2);
+      SizesFromBitmaps(bitmaps2), FaviconScale1x2x(), 16, &score2);
 
   float score3;
   vector<SkBitmap> bitmaps3;
   bitmaps3.push_back(MakeBitmap(SK_ColorGREEN, 16, 16));
   SelectFaviconFrames(bitmaps3,
-      SizesFromBitmaps(bitmaps3), Scale1x2x(), 16, &score3);
+      SizesFromBitmaps(bitmaps3), FaviconScale1x2x(), 16, &score3);
 
   float score4;
   vector<SkBitmap> bitmaps4;
   bitmaps4.push_back(MakeBitmap(SK_ColorGREEN, 15, 15));
   SelectFaviconFrames(bitmaps4,
-      SizesFromBitmaps(bitmaps4), Scale1x2x(), 16, &score4);
+      SizesFromBitmaps(bitmaps4), FaviconScale1x2x(), 16, &score4);
 
   EXPECT_GT(score2, score1);
   EXPECT_GT(score3, score1);
@@ -208,13 +207,13 @@ TEST(SelectFaviconFramesTest, DownsamplingBetterThanUpsampling) {
   vector<SkBitmap> bitmaps1;
   bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 8, 8));
   SelectFaviconFrames(bitmaps1,
-      SizesFromBitmaps(bitmaps1), Scale1x(), 16, &score1);
+      SizesFromBitmaps(bitmaps1), FaviconScale1x(), 16, &score1);
 
   float score2;
   vector<SkBitmap> bitmaps2;
   bitmaps2.push_back(MakeBitmap(SK_ColorGREEN, 24, 24));
   SelectFaviconFrames(bitmaps2,
-      SizesFromBitmaps(bitmaps2), Scale1x(), 16, &score2);
+      SizesFromBitmaps(bitmaps2), FaviconScale1x(), 16, &score2);
 
   EXPECT_GT(score2, score1);
 }
@@ -224,13 +223,13 @@ TEST(SelectFaviconFramesTest, DownsamplingLessIsBetter) {
   vector<SkBitmap> bitmaps1;
   bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 34, 34));
   SelectFaviconFrames(bitmaps1,
-      SizesFromBitmaps(bitmaps1), Scale1x2x(), 16, &score1);
+      SizesFromBitmaps(bitmaps1), FaviconScale1x2x(), 16, &score1);
 
   float score2;
   vector<SkBitmap> bitmaps2;
   bitmaps2.push_back(MakeBitmap(SK_ColorGREEN, 33, 33));
   SelectFaviconFrames(bitmaps2,
-      SizesFromBitmaps(bitmaps2), Scale1x2x(), 16, &score2);
+      SizesFromBitmaps(bitmaps2), FaviconScale1x2x(), 16, &score2);
 
   EXPECT_GT(score2, score1);
 }
@@ -240,13 +239,13 @@ TEST(SelectFaviconFramesTest, UpsamplingLessIsBetter) {
   vector<SkBitmap> bitmaps1;
   bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 8, 8));
   SelectFaviconFrames(bitmaps1,
-      SizesFromBitmaps(bitmaps1), Scale1x2x(), 16, &score1);
+      SizesFromBitmaps(bitmaps1), FaviconScale1x2x(), 16, &score1);
 
   float score2;
   vector<SkBitmap> bitmaps2;
   bitmaps2.push_back(MakeBitmap(SK_ColorGREEN, 9, 9));
   SelectFaviconFrames(bitmaps2,
-      SizesFromBitmaps(bitmaps2), Scale1x2x(), 16, &score2);
+      SizesFromBitmaps(bitmaps2), FaviconScale1x2x(), 16, &score2);
 
   EXPECT_GT(score2, score1);
 }
@@ -259,14 +258,14 @@ TEST(SelectFaviconFramesTest, ScoreDeterminedByOriginalSizes) {
   vector<gfx::Size> sizes1;
   sizes1.push_back(gfx::Size(256, 256));
   float score1;
-  SelectFaviconFrames(bitmaps1, sizes1, Scale1x(), 16, &score1);
+  SelectFaviconFrames(bitmaps1, sizes1, FaviconScale1x(), 16, &score1);
 
   vector<SkBitmap> bitmaps2;
   bitmaps2.push_back(MakeBitmap(SK_ColorGREEN, 15, 15));
   vector<gfx::Size> sizes2;
   sizes2.push_back(gfx::Size(15, 15));
   float score2;
-  SelectFaviconFrames(bitmaps2, sizes2, Scale1x(), 16, &score2);
+  SelectFaviconFrames(bitmaps2, sizes2, FaviconScale1x(), 16, &score2);
 
   EXPECT_GT(score2, score1);
 }

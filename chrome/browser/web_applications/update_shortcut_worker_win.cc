@@ -106,10 +106,8 @@ void UpdateShortcutWorker::DidDownloadFavicon(
   requested_sizes_in_pixel.push_back(requested_size);
 
   std::vector<size_t> closest_indices;
-  SelectFaviconFrameIndices(original_sizes,
-                            requested_sizes_in_pixel,
-                            &closest_indices,
-                            NULL);
+  SelectFaviconFrameIndices(
+      original_sizes, requested_sizes_in_pixel, &closest_indices, NULL);
 
   SkBitmap bitmap;
   if (!bitmaps.empty()) {

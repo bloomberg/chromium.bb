@@ -768,11 +768,10 @@ int CountFoldersWithTitlesMatching(int profile, const std::string& title) {
 gfx::Image CreateFavicon(SkColor color) {
   const int dip_width = 16;
   const int dip_height = 16;
-  std::vector<ui::ScaleFactor> favicon_scale_factors =
-      favicon_base::GetFaviconScaleFactors();
+  std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
   gfx::ImageSkia favicon;
-  for (size_t i = 0; i < favicon_scale_factors.size(); ++i) {
-    float scale = ui::GetScaleForScaleFactor(favicon_scale_factors[i]);
+  for (size_t i = 0; i < favicon_scales.size(); ++i) {
+    float scale = favicon_scales[i];
     int pixel_width = dip_width * scale;
     int pixel_height = dip_height * scale;
     SkBitmap bmp;

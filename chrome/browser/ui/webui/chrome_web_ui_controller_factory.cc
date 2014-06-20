@@ -596,27 +596,32 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
   std::vector<favicon_base::FaviconRawBitmapResult>* favicon_bitmap_results =
       new std::vector<favicon_base::FaviconRawBitmapResult>();
 
-  // Assume that GetFaviconResourceBytes() returns favicons which are
-  // |gfx::kFaviconSize| x |gfx::kFaviconSize| DIP.
-  std::vector<ui::ScaleFactor> scale_factors =
-      favicon_base::GetFaviconScaleFactors();
+  // Use ui::GetSupportedScaleFactors instead of
+  // favicon_base::GetFaviconScales() because chrome favicons comes from
+  // resources.
+  std::vector<ui::ScaleFactor> resource_scale_factors =
+      ui::GetSupportedScaleFactors();
+
   std::vector<gfx::Size> candidate_sizes;
-  for (size_t i = 0; i < scale_factors.size(); ++i) {
-    float scale = ui::GetScaleForScaleFactor(scale_factors[i]);
+  for (size_t i = 0; i < resource_scale_factors.size(); ++i) {
+    float scale = ui::GetScaleForScaleFactor(resource_scale_factors[i]);
+    // Assume that GetFaviconResourceBytes() returns favicons which are
+    // |gfx::kFaviconSize| x |gfx::kFaviconSize| DIP.
     int candidate_edge_size =
-        static_cast<int>(gfx::kFaviconSize * scale  + 0.5f);
+        static_cast<int>(gfx::kFaviconSize * scale + 0.5f);
     candidate_sizes.push_back(
         gfx::Size(candidate_edge_size, candidate_edge_size));
   }
   std::vector<size_t> selected_indices;
-  SelectFaviconFrameIndices(candidate_sizes,
-                            desired_sizes_in_pixel,
-                            &selected_indices,
-                            NULL);
+  SelectFaviconFrameIndices(
+      candidate_sizes, desired_sizes_in_pixel, &selected_indices, NULL);
   for (size_t i = 0; i < selected_indices.size(); ++i) {
     size_t selected_index = selected_indices[i];
-    scoped_refptr<base::RefCountedMemory> bitmap(GetFaviconResourceBytes(
-        url, scale_factors[selected_index]));
+    ui::ScaleFactor selected_resource_scale =
+        resource_scale_factors[selected_index];
+
+    scoped_refptr<base::RefCountedMemory> bitmap(
+        GetFaviconResourceBytes(url, selected_resource_scale));
     if (bitmap.get() && bitmap->size()) {
       favicon_base::FaviconRawBitmapResult bitmap_result;
       bitmap_result.bitmap_data = bitmap;

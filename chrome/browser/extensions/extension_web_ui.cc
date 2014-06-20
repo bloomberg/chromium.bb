@@ -424,23 +424,22 @@ void ExtensionWebUI::GetFaviconForURL(
   // resources. Load image reps for all supported scale factors (in addition to
   // 1x) immediately instead of in an as needed fashion to be consistent with
   // how favicons are requested for chrome:// and page URLs.
-  const std::vector<ui::ScaleFactor>& scale_factors =
-      favicon_base::GetFaviconScaleFactors();
+  const std::vector<float>& favicon_scales = favicon_base::GetFaviconScales();
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
-  for (size_t i = 0; i < scale_factors.size(); ++i) {
-    float scale = ui::GetScaleForScaleFactor(scale_factors[i]);
+  for (size_t i = 0; i < favicon_scales.size(); ++i) {
+    float scale = favicon_scales[i];
     int pixel_size = static_cast<int>(gfx::kFaviconSize * scale);
     extensions::ExtensionResource icon_resource =
         extensions::IconsInfo::GetIconResource(extension,
                                                pixel_size,
                                                ExtensionIconSet::MATCH_BIGGER);
 
-    info_list.push_back(
-        extensions::ImageLoader::ImageRepresentation(
-            icon_resource,
-            extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
-            gfx::Size(pixel_size, pixel_size),
-            scale_factors[i]));
+    ui::ScaleFactor resource_scale_factor = ui::GetSupportedScaleFactor(scale);
+    info_list.push_back(extensions::ImageLoader::ImageRepresentation(
+        icon_resource,
+        extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
+        gfx::Size(pixel_size, pixel_size),
+        resource_scale_factor));
   }
 
   // LoadImagesAsync actually can run callback synchronously. We want to force

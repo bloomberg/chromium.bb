@@ -38,7 +38,7 @@ bool ParseFaviconPath(const std::string& path,
   parsed->is_icon_url = false;
   parsed->url = "";
   parsed->size_in_dip = gfx::kFaviconSize;
-  parsed->scale_factor = 1.0f;
+  parsed->device_scale_factor = 1.0f;
   parsed->path_index = -1;
 
   if (path.empty())
@@ -77,13 +77,13 @@ bool ParseFaviconPath(const std::string& path,
       parsed->size_in_dip = gfx::kFaviconSize;
     }
     if (!scale_str.empty())
-      webui::ParseScaleFactor(scale_str, &parsed->scale_factor);
+      webui::ParseScaleFactor(scale_str, &parsed->device_scale_factor);
 
     // Return the default favicon (as opposed to a resized favicon) for
     // favicon sizes which are not cached by the favicon service.
     // Currently the favicon service caches:
     // - favicons of sizes "gfx::kFaviconSize * scale factor" px of type FAVICON
-    //   where scale factor is one of FaviconUtil::GetFaviconScaleFactors().
+    //   where scale factor is one of FaviconUtil::GetFaviconScales().
     // - the largest TOUCH_ICON / TOUCH_PRECOMPOSED_ICON
     if (parsed->size_in_dip != gfx::kFaviconSize &&
         icon_types == favicon_base::FAVICON)

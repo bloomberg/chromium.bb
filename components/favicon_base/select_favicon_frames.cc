@@ -88,9 +88,7 @@ size_t GetCandidateIndexWithBestScore(
                candidate_sizes[i].height() >= desired_size) {
       score = desired_size / average_edge * 0.01f + 0.15f;
     } else {
-      score = std::min(1.0f, average_edge / desired_size) *
-                  0.01f +
-              0.1f;
+      score = std::min(1.0f, average_edge / desired_size) * 0.01f + 0.1f;
     }
 
     if (candidate_index == std::numeric_limits<size_t>::max() ||
@@ -140,8 +138,8 @@ void GetCandidateIndicesWithBestScores(
     return;
   }
 
-  std::vector<int>::const_iterator zero_size_it = std::find(
-      desired_sizes.begin(), desired_sizes.end(), 0);
+  std::vector<int>::const_iterator zero_size_it =
+      std::find(desired_sizes.begin(), desired_sizes.end(), 0);
   if (zero_size_it != desired_sizes.end()) {
     // Just return the biggest image available.
     SelectionResult result;
@@ -159,10 +157,8 @@ void GetCandidateIndicesWithBestScores(
     float score;
     SelectionResult result;
     result.desired_size = desired_sizes[i];
-    result.index = GetCandidateIndexWithBestScore(candidate_sizes,
-                                                  result.desired_size,
-                                                  &score,
-                                                  &result.resize_method);
+    result.index = GetCandidateIndexWithBestScore(
+        candidate_sizes, result.desired_size, &score, &result.resize_method);
     results->push_back(result);
     total_score += score;
   }
@@ -194,20 +190,19 @@ SkBitmap GetResizedBitmap(const SkBitmap& source_bitmap,
 
 const float kSelectFaviconFramesInvalidScore = -1.0f;
 
-gfx::ImageSkia SelectFaviconFrames(
-    const std::vector<SkBitmap>& bitmaps,
-    const std::vector<gfx::Size>& original_sizes,
-    const std::vector<ui::ScaleFactor>& scale_factors,
-    int desired_size_in_dip,
-    float* match_score) {
+gfx::ImageSkia SelectFaviconFrames(const std::vector<SkBitmap>& bitmaps,
+                                   const std::vector<gfx::Size>& original_sizes,
+                                   const std::vector<float>& favicon_scales,
+                                   int desired_size_in_dip,
+                                   float* match_score) {
   std::vector<int> desired_sizes;
   std::map<int, float> scale_map;
   if (desired_size_in_dip == 0) {
     desired_sizes.push_back(0);
     scale_map[0] = 1.0f;
   } else {
-    for (size_t i = 0; i < scale_factors.size(); ++i) {
-      float scale = ui::GetScaleForScaleFactor(scale_factors[i]);
+    for (size_t i = 0; i < favicon_scales.size(); ++i) {
+      float scale = favicon_scales[i];
       int desired_size = ceil(desired_size_in_dip * scale);
       desired_sizes.push_back(desired_size);
       scale_map[desired_size] = scale;
@@ -221,12 +216,11 @@ gfx::ImageSkia SelectFaviconFrames(
   gfx::ImageSkia multi_image;
   for (size_t i = 0; i < results.size(); ++i) {
     const SelectionResult& result = results[i];
-    SkBitmap resized_bitmap = GetResizedBitmap(bitmaps[result.index],
-                                               result.desired_size,
-                                               result.resize_method);
+    SkBitmap resized_bitmap = GetResizedBitmap(
+        bitmaps[result.index], result.desired_size, result.resize_method);
 
-    std::map<int, float>::const_iterator it = scale_map.find(
-        result.desired_size);
+    std::map<int, float>::const_iterator it =
+        scale_map.find(result.desired_size);
     DCHECK(it != scale_map.end());
     float scale = it->second;
     multi_image.AddRepresentation(gfx::ImageSkiaRep(resized_bitmap, scale));
@@ -234,11 +228,10 @@ gfx::ImageSkia SelectFaviconFrames(
   return multi_image;
 }
 
-void SelectFaviconFrameIndices(
-    const std::vector<gfx::Size>& frame_pixel_sizes,
-    const std::vector<int>& desired_sizes,
-    std::vector<size_t>* best_indices,
-    float* match_score) {
+void SelectFaviconFrameIndices(const std::vector<gfx::Size>& frame_pixel_sizes,
+                               const std::vector<int>& desired_sizes,
+                               std::vector<size_t>* best_indices,
+                               float* match_score) {
   std::vector<SelectionResult> results;
   GetCandidateIndicesWithBestScores(
       frame_pixel_sizes, desired_sizes, match_score, &results);

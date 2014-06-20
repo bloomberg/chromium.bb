@@ -25,19 +25,18 @@
 #include "ui/base/webui/web_ui_util.h"
 
 FaviconSource::IconRequest::IconRequest()
-    : size_in_dip(gfx::kFaviconSize),
-      scale_factor(ui::SCALE_FACTOR_NONE) {
+    : size_in_dip(gfx::kFaviconSize), device_scale_factor(1.0f) {
 }
 
 FaviconSource::IconRequest::IconRequest(
     const content::URLDataSource::GotDataCallback& cb,
     const GURL& path,
     int size,
-    ui::ScaleFactor scale)
+    float scale)
     : callback(cb),
       request_path(path),
       size_in_dip(size),
-      scale_factor(scale) {
+      device_scale_factor(scale) {
 }
 
 FaviconSource::IconRequest::~IconRequest() {
@@ -79,8 +78,6 @@ void FaviconSource::StartDataRequest(
 
   GURL url(parsed.url);
 
-  ui::ScaleFactor scale_factor =
-      ui::GetSupportedScaleFactor(parsed.scale_factor);
   if (parsed.is_icon_url) {
     // TODO(michaelbai): Change GetRawFavicon to support combination of
     // IconType.
@@ -88,21 +85,24 @@ void FaviconSource::StartDataRequest(
         url,
         favicon_base::FAVICON,
         parsed.size_in_dip,
-        scale_factor,
-        base::Bind(&FaviconSource::OnFaviconDataAvailable,
-                   base::Unretained(this),
-                   IconRequest(
-                       callback, url, parsed.size_in_dip, scale_factor)),
+        parsed.device_scale_factor,
+        base::Bind(
+            &FaviconSource::OnFaviconDataAvailable,
+            base::Unretained(this),
+            IconRequest(
+                callback, url, parsed.size_in_dip, parsed.device_scale_factor)),
         &cancelable_task_tracker_);
   } else {
     // Intercept requests for prepopulated pages.
     for (size_t i = 0; i < arraysize(history::kPrepopulatedPages); i++) {
       if (url.spec() ==
           l10n_util::GetStringUTF8(history::kPrepopulatedPages[i].url_id)) {
+        ui::ScaleFactor resource_scale_factor =
+            ui::GetSupportedScaleFactor(parsed.device_scale_factor);
         callback.Run(
             ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
                 history::kPrepopulatedPages[i].favicon_id,
-                scale_factor));
+                resource_scale_factor));
         return;
       }
     }
@@ -110,11 +110,12 @@ void FaviconSource::StartDataRequest(
     favicon_service->GetRawFaviconForPageURL(
         FaviconService::FaviconForPageURLParams(
             url, icon_types_, parsed.size_in_dip),
-        scale_factor,
+        parsed.device_scale_factor,
         base::Bind(
             &FaviconSource::OnFaviconDataAvailable,
             base::Unretained(this),
-            IconRequest(callback, url, parsed.size_in_dip, scale_factor)),
+            IconRequest(
+                callback, url, parsed.size_in_dip, parsed.device_scale_factor)),
         &cancelable_task_tracker_);
   }
 }
@@ -167,8 +168,7 @@ void FaviconSource::OnFaviconDataAvailable(
 
 void FaviconSource::SendDefaultResponse(
     const content::URLDataSource::GotDataCallback& callback) {
-  SendDefaultResponse(
-      IconRequest(callback, GURL(), 16, ui::SCALE_FACTOR_100P));
+  SendDefaultResponse(IconRequest(callback, GURL(), 16, 1.0f));
 }
 
 void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {
@@ -192,9 +192,11 @@ void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {
       default_favicons_[favicon_index].get();
 
   if (!default_favicon) {
-    default_favicon = ResourceBundle::GetSharedInstance()
-        .LoadDataResourceBytesForScale(resource_id,
-                                       icon_request.scale_factor);
+    ui::ScaleFactor resource_scale_factor =
+        ui::GetSupportedScaleFactor(icon_request.device_scale_factor);
+    default_favicon =
+        ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+            resource_id, resource_scale_factor);
     default_favicons_[favicon_index] = default_favicon;
   }
 

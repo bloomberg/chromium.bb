@@ -88,13 +88,13 @@ class FaviconSource : public content::URLDataSource {
     IconRequest(const content::URLDataSource::GotDataCallback& cb,
                 const GURL& path,
                 int size,
-                ui::ScaleFactor scale);
+                float scale);
     ~IconRequest();
 
     content::URLDataSource::GotDataCallback callback;
     GURL request_path;
     int size_in_dip;
-    ui::ScaleFactor scale_factor;
+    float device_scale_factor;
   };
 
   // Called when the favicon data is missing to perform additional checks to
