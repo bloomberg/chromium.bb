@@ -27,6 +27,15 @@ jclass g_Example_clazz = NULL;
 static void Test(JNIEnv* env, jclass jcaller,
     jobject t);
 
+static void Test2(JNIEnv* env, jclass jcaller,
+    jobject t);
+
+static void Test3(JNIEnv* env, jclass jcaller,
+    jobject t);
+
+static void Test4(JNIEnv* env, jclass jcaller,
+    jobject t);
+
 // Step 2: method stubs.
 
 // Step 3: RegisterNatives.
@@ -34,9 +43,24 @@ static void Test(JNIEnv* env, jclass jcaller,
 static const JNINativeMethod kMethodsExample[] = {
     { "nativeTest",
 "("
-"Lorg/test2/org/chromium/example2/Test;"
+"Lorg/test2/Test;"
 ")"
 "V", reinterpret_cast<void*>(Test) },
+    { "nativeTest2",
+"("
+"Lorg/chromium/example3/PrefixFoo;"
+")"
+"V", reinterpret_cast<void*>(Test2) },
+    { "nativeTest3",
+"("
+"Lorg/test3/Test;"
+")"
+"V", reinterpret_cast<void*>(Test3) },
+    { "nativeTest4",
+"("
+"Lorg/test3/TestBar$Inner;"
+")"
+"V", reinterpret_cast<void*>(Test4) },
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {

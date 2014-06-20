@@ -837,13 +837,22 @@ public boolean add(E);
 
     import org.chromium.example2.Test;
 
+    import org.chromium.example3.PrefixFoo;
+    import org.chromium.example3.Prefix;
+    import org.chromium.example3.Bar$Inner;
+
     class Example {
       private static native void nativeTest(Test t);
+      private static native void nativeTest2(PrefixFoo t);
+      private static native void nativeTest3(Prefix t);
+      private static native void nativeTest4(Bar$Inner t);
     }
     """
     jni_generator.JniParams.SetJarJarMappings(
         """rule org.chromium.example.** com.test.@1
-        rule org.chromium.example2.** org.test2.@0""")
+        rule org.chromium.example2.** org.test2.@1
+        rule org.chromium.example3.Prefix org.test3.Test
+        rule org.chromium.example3.Bar$** org.test3.TestBar$@1""")
     jni_from_java = jni_generator.JNIFromJavaSource(
         test_data, 'org/chromium/example/jni_generator/Example', TestOptions())
     jni_generator.JniParams.SetJarJarMappings('')

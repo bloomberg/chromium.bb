@@ -50,6 +50,8 @@
     },
     {
       'target_name': 'ui_strings_grd',
+       # The android_webview/Android.mk file depends on this target directly.
+      'android_unmangled_name': 1,
       'type': 'none',
       'variables': {
         'grd_file': '../../ui/android/java/strings/android_ui_strings.grd',
