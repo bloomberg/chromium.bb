@@ -927,7 +927,6 @@
     ],
     # NOTE: these are legacy unit tests, do not add more!
     'platform_web_unittest_files': [
-      'fonts/opentype/OpenTypeSanitizerTest.cpp',
       'graphics/BitmapImageTest.cpp',
       'graphics/Canvas2DLayerBridgeTest.cpp',
       'graphics/Canvas2DLayerManagerTest.cpp',

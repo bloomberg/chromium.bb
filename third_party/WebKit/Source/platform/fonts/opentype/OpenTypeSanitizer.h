@@ -31,14 +31,13 @@
 #ifndef OpenTypeSanitizer_h
 #define OpenTypeSanitizer_h
 
-#include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
 
 class SharedBuffer;
 
-class PLATFORM_EXPORT OpenTypeSanitizer {
+class OpenTypeSanitizer {
 public:
     explicit OpenTypeSanitizer(SharedBuffer* buffer)
         : m_buffer(buffer)
