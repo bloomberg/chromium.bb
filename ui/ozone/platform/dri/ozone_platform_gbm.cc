@@ -19,6 +19,8 @@
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/virtual_terminal_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
+#include "ui/ozone/public/gpu_platform_support.h"
+#include "ui/ozone/public/gpu_platform_support_host.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
@@ -79,7 +81,7 @@ class OzonePlatformGbm : public OzonePlatform {
     return cursor_factory_ozone_.get();
   }
   virtual GpuPlatformSupport* GetGpuPlatformSupport() OVERRIDE {
-    return gpu_platform_support_.get()
+    return gpu_platform_support_.get();
   }
   virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() OVERRIDE {
     return gpu_platform_support_host_.get();

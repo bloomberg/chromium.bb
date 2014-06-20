@@ -133,6 +133,7 @@
           'dependencies': [
             '../events/ozone/events_ozone.gyp:events_ozone',
             '../ozone/ozone.gyp:ozone',
+            '../ozone/ozone.gyp:ozone_base',
           ],
         }],
       ],

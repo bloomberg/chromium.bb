@@ -152,7 +152,7 @@ scoped_ptr<ui::SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
       new GbmSurfaceAdapter(screen_manager_->GetDisplayController(w)));
 }
 
-gfx::NativeBufferOzone GbmSurfaceFactory::CreateNativeBuffer(
+ui::NativeBufferOzone GbmSurfaceFactory::CreateNativeBuffer(
     gfx::Size size,
     BufferFormat format) {
   uint32_t gbm_format = 0;
@@ -181,7 +181,7 @@ gfx::NativeBufferOzone GbmSurfaceFactory::CreateNativeBuffer(
   BufferData* data = BufferData::CreateData(drm_, buffer_object);
   DCHECK(data) << "Failed to associate the buffer with the controller";
 
-  return reinterpret_cast<gfx::NativeBufferOzone>(buffer_object);
+  return reinterpret_cast<ui::NativeBufferOzone>(buffer_object);
 }
 
 }  // namespace ui

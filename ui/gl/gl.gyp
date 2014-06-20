@@ -298,6 +298,7 @@
         ['use_ozone==1', {
           'dependencies': [
             '../ozone/ozone.gyp:ozone',
+            '../ozone/ozone.gyp:ozone_base',
           ],
         }],
         ['OS=="android" and android_webview_build==0', {
