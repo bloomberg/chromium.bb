@@ -55,7 +55,6 @@ var DEADLINE_INDEFINITE;
 var HANDLE_SIGNAL_NONE;
 var HANDLE_SIGNAL_READABLE;
 var HANDLE_SIGNAL_WRITABLE;
-var HANDLE_SIGNAL_EVERYTHING;
 
 /*
  * MojoWriteMessageFlags: Used to specify different modes to |writeMessage()|.
