@@ -7,22 +7,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/search_engines/search_terms_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(ENABLE_RLZ)
-#include "chrome/browser/google/google_brand.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/search_engines/ui_thread_search_terms_data_android.h"
-#endif
 
 using base::ASCIIToUTF16;
 
@@ -34,9 +23,20 @@ class TestSearchTermsData : public SearchTermsData {
   explicit TestSearchTermsData(const std::string& google_base_url);
 
   virtual std::string GoogleBaseURLValue() const OVERRIDE;
+  virtual base::string16 GetRlzParameterValue(
+      bool from_app_list) const OVERRIDE;
+  virtual std::string GetSearchClient() const OVERRIDE;
+
+  void set_google_base_url(const std::string& google_base_url) {
+    google_base_url_ = google_base_url;
+  }
+  void set_search_client(const std::string& search_client) {
+    search_client_ = search_client;
+  }
 
  private:
   std::string google_base_url_;
+  std::string search_client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSearchTermsData);
 };
@@ -49,15 +49,25 @@ std::string TestSearchTermsData::GoogleBaseURLValue() const {
   return google_base_url_;
 }
 
+base::string16 TestSearchTermsData::GetRlzParameterValue(
+    bool from_app_list) const {
+  return ASCIIToUTF16(
+      from_app_list ? "rlz_parameter_from_app_list" : "rlz_parameter");
+}
+
+std::string TestSearchTermsData::GetSearchClient() const {
+  return search_client_;
+}
+
 // TemplateURLTest ------------------------------------------------------------
 
 class TemplateURLTest : public testing::Test {
  public:
-  TemplateURLTest() : search_terms_data_(NULL) {}
+  TemplateURLTest() : search_terms_data_("http://www.google.com/") {}
   void CheckSuggestBaseURL(const std::string& base_url,
                            const std::string& base_suggest_url) const;
 
-  UIThreadSearchTermsData search_terms_data_;
+  TestSearchTermsData search_terms_data_;
 };
 
 void TemplateURLTest::CheckSuggestBaseURL(
@@ -449,7 +459,7 @@ TEST_F(TemplateURLTest, ReplaceSearchTerms) {
     ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
     std::string expected_result = test_data[i].expected_result;
     ReplaceSubstringsAfterOffset(&expected_result, 0, "{language}",
-        g_browser_process->GetApplicationLocale());
+                                 search_terms_data_.GetApplicationLocale());
     GURL result(url.url_ref().ReplaceSearchTerms(
         TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("X")),
         search_terms_data_));
@@ -527,13 +537,13 @@ TEST_F(TemplateURLTest, ReplaceAssistedQueryStats) {
     // No {google:baseURL} and protocol is HTTP, we must not substitute AQS.
     { ASCIIToUTF16("foo"),
       "chrome.0.0l6",
-      "",
+      "http://www.google.com",
       "http://foo?{searchTerms}{google:assistedQueryStats}",
       "http://foo/?foo" },
     // A non-Google search provider with HTTPS should allow AQS.
     { ASCIIToUTF16("foo"),
       "chrome.0.0l6",
-      "",
+      "https://www.google.com",
       "https://foo?{searchTerms}{google:assistedQueryStats}",
       "https://foo/?fooaqs=chrome.0.0l6&" },
   };
@@ -546,7 +556,7 @@ TEST_F(TemplateURLTest, ReplaceAssistedQueryStats) {
     ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
     TemplateURLRef::SearchTermsArgs search_terms_args(test_data[i].search_term);
     search_terms_args.assisted_query_stats = test_data[i].aqs;
-    UIThreadSearchTermsData::SetGoogleBaseURL(test_data[i].base_url);
+    search_terms_data_.set_google_base_url(test_data[i].base_url);
     GURL result(url.url_ref().ReplaceSearchTerms(search_terms_args,
                                                  search_terms_data_));
     ASSERT_TRUE(result.is_valid());
@@ -575,7 +585,6 @@ TEST_F(TemplateURLTest, ReplaceCursorPosition) {
       "{google:baseURL}?{searchTerms}&{google:cursorPosition}",
       "http://www.google.com/?foo&cp=15&" },
   };
-  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
@@ -613,7 +622,6 @@ TEST_F(TemplateURLTest, ReplaceInputType) {
       "{google:baseURL}?{searchTerms}&{google:inputType}",
       "http://www.google.com/?foo&oit=5&" },
   };
-  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
@@ -651,7 +659,6 @@ TEST_F(TemplateURLTest, ReplaceCurrentPageUrl) {
       "{google:baseURL}?{searchTerms}&{google:currentPageUrl}",
       "http://www.google.com/?foo&url=http%3A%2F%2Fg.com%2F%2B-%2F*%26%3D&" },
   };
-  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
@@ -706,18 +713,7 @@ TEST_F(TemplateURLTest, Suggestions) {
 }
 
 TEST_F(TemplateURLTest, RLZ) {
-  base::string16 rlz_string;
-#if defined(ENABLE_RLZ)
-  std::string brand;
-  if (google_brand::GetBrand(&brand) && !brand.empty() &&
-      !google_brand::IsOrganic(brand)) {
-    RLZTracker::GetAccessPointRlz(RLZTracker::ChromeOmnibox(), &rlz_string);
-  }
-#elif defined(OS_ANDROID)
-  SearchTermsDataAndroid::rlz_parameter_value_.Get() =
-      ASCIIToUTF16("android_test");
-  rlz_string = SearchTermsDataAndroid::rlz_parameter_value_.Get();
-#endif
+  base::string16 rlz_string = search_terms_data_.GetRlzParameterValue(false);
 
   TemplateURLData data;
   data.SetURL("http://bar/?{google:RLZ}{searchTerms}");
@@ -727,23 +723,12 @@ TEST_F(TemplateURLTest, RLZ) {
   GURL result(url.url_ref().ReplaceSearchTerms(
       TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("x")), search_terms_data_));
   ASSERT_TRUE(result.is_valid());
-  std::string expected_url = "http://bar/?";
-  if (!rlz_string.empty())
-    expected_url += "rlz=" + base::UTF16ToUTF8(rlz_string) + "&";
-  expected_url += "x";
-  EXPECT_EQ(expected_url, result.spec());
+  EXPECT_EQ("http://bar/?rlz=" + base::UTF16ToUTF8(rlz_string) + "&x",
+            result.spec());
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST_F(TemplateURLTest, RLZFromAppList) {
-  base::string16 rlz_string;
-#if defined(ENABLE_RLZ)
-  std::string brand;
-  if (google_brand::GetBrand(&brand) && !brand.empty() &&
-      !google_brand::IsOrganic(brand)) {
-    RLZTracker::GetAccessPointRlz(RLZTracker::ChromeAppList(), &rlz_string);
-  }
-#endif
+  base::string16 rlz_string = search_terms_data_.GetRlzParameterValue(true);
 
   TemplateURLData data;
   data.SetURL("http://bar/?{google:RLZ}{searchTerms}");
@@ -754,13 +739,9 @@ TEST_F(TemplateURLTest, RLZFromAppList) {
   args.from_app_list = true;
   GURL result(url.url_ref().ReplaceSearchTerms(args, search_terms_data_));
   ASSERT_TRUE(result.is_valid());
-  std::string expected_url = "http://bar/?";
-  if (!rlz_string.empty())
-    expected_url += "rlz=" + base::UTF16ToUTF8(rlz_string) + "&";
-  expected_url += "x";
-  EXPECT_EQ(expected_url, result.spec());
+  EXPECT_EQ("http://bar/?rlz=" + base::UTF16ToUTF8(rlz_string) + "&x",
+            result.spec());
 }
-#endif
 
 TEST_F(TemplateURLTest, HostAndSearchTermKey) {
   struct TestData {
@@ -915,13 +896,12 @@ TEST_F(TemplateURLTest, ParseURLNestedParameter) {
   EXPECT_TRUE(valid);
 }
 
-#if defined(OS_ANDROID)
 TEST_F(TemplateURLTest, SearchClient) {
   const std::string base_url_str("http://google.com/?");
   const std::string terms_str("{searchTerms}&{google:searchClient}");
   const std::string full_url_str = base_url_str + terms_str;
   const base::string16 terms(ASCIIToUTF16(terms_str));
-  UIThreadSearchTermsData::SetGoogleBaseURL(base_url_str);
+  search_terms_data_.set_google_base_url(base_url_str);
 
   TemplateURLData data;
   data.SetURL(full_url_str);
@@ -937,13 +917,12 @@ TEST_F(TemplateURLTest, SearchClient) {
   EXPECT_EQ("http://google.com/?foobar&", result.spec());
 
   // Check that the URL is correct when a client is present.
-  SearchTermsDataAndroid::search_client_.Get() = "android_test";
+  search_terms_data_.set_search_client("search_client");
   GURL result_2(url.url_ref().ReplaceSearchTerms(search_terms_args,
                                                  search_terms_data_));
   ASSERT_TRUE(result_2.is_valid());
-  EXPECT_EQ("http://google.com/?foobar&client=android_test&", result_2.spec());
+  EXPECT_EQ("http://google.com/?foobar&client=search_client&", result_2.spec());
 }
-#endif
 
 TEST_F(TemplateURLTest, GetURLNoInstantURL) {
   TemplateURLData data;
@@ -1254,7 +1233,6 @@ TEST_F(TemplateURLTest, ReplaceSearchTermsInURL) {
 
 // Test the |suggest_query_params| field of SearchTermsArgs.
 TEST_F(TemplateURLTest, SuggestQueryParams) {
-  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
   TemplateURLData data;
   // Pick a URL with replacements before, during, and after the query, to ensure
   // we don't goof up any of them.
@@ -1284,7 +1262,6 @@ TEST_F(TemplateURLTest, SuggestQueryParams) {
 
 // Test the |append_extra_query_params| field of SearchTermsArgs.
 TEST_F(TemplateURLTest, ExtraQueryParams) {
-  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
   TemplateURLData data;
   // Pick a URL with replacements before, during, and after the query, to ensure
   // we don't goof up any of them.
@@ -1319,7 +1296,6 @@ TEST_F(TemplateURLTest, ExtraQueryParams) {
 
 // Tests replacing pageClassification.
 TEST_F(TemplateURLTest, ReplacePageClassification) {
-  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
   data.SetURL("{google:baseURL}?{google:pageClassification}q={searchTerms}");
@@ -1380,7 +1356,6 @@ TEST_F(TemplateURLTest, IsSearchResults) {
 }
 
 TEST_F(TemplateURLTest, ReflectsBookmarkBarPinned) {
-  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
   data.SetURL("{google:baseURL}?{google:bookmarkBarPinned}q={searchTerms}");
@@ -1411,7 +1386,7 @@ TEST_F(TemplateURLTest, ReflectsBookmarkBarPinned) {
 
 TEST_F(TemplateURLTest, AnswersHasVersion) {
   TemplateURLData data;
-  UIThreadSearchTermsData::SetGoogleBaseURL("http://bar/");
+  search_terms_data_.set_google_base_url("http://bar/");
   data.SetURL("http://bar/search?q={searchTerms}&{google:searchVersion}xssi=t");
 
   TemplateURL url(data);
@@ -1430,7 +1405,7 @@ TEST_F(TemplateURLTest, AnswersHasVersion) {
 
 TEST_F(TemplateURLTest, SessionToken) {
   TemplateURLData data;
-  UIThreadSearchTermsData::SetGoogleBaseURL("http://bar/");
+  search_terms_data_.set_google_base_url("http://bar/");
   data.SetURL("http://bar/search?q={searchTerms}&{google:sessionToken}xssi=t");
 
   TemplateURL url(data);
@@ -1449,7 +1424,7 @@ TEST_F(TemplateURLTest, SessionToken) {
 
 TEST_F(TemplateURLTest, ContextualSearchParameters) {
   TemplateURLData data;
-  UIThreadSearchTermsData::SetGoogleBaseURL("http://bar/");
+  search_terms_data_.set_google_base_url("http://bar/");
   data.SetURL("http://bar/_/contextualsearch?"
               "{google:contextualSearchVersion}"
               "{google:contextualSearchContextData}");
