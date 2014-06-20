@@ -17,10 +17,11 @@
 namespace aura {
 
 // static
-TestScreen* TestScreen::Create() {
+TestScreen* TestScreen::Create(const gfx::Size& size) {
+  const gfx::Size kDefaultSize(800, 600);
   // Use (0,0) because the desktop aura tests are executed in
   // native environment where the display's origin is (0,0).
-  return new TestScreen(gfx::Rect(0, 0, 800, 600));
+  return new TestScreen(gfx::Rect(size.IsEmpty() ? kDefaultSize : size));
 }
 
 // static

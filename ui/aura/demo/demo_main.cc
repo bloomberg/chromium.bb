@@ -129,7 +129,8 @@ int DemoMain() {
 
   aura::Env::CreateInstance(true);
   aura::Env::GetInstance()->set_context_factory(context_factory.get());
-  scoped_ptr<aura::TestScreen> test_screen(aura::TestScreen::Create());
+  scoped_ptr<aura::TestScreen> test_screen(
+      aura::TestScreen::Create(gfx::Size()));
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen.get());
   scoped_ptr<aura::WindowTreeHost> host(
       test_screen->CreateHostForPrimaryDisplay());

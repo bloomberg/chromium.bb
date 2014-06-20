@@ -224,15 +224,15 @@ void ShellDesktopController::OnHostCloseRequested(
 }
 
 void ShellDesktopController::CreateRootWindow() {
-  test_screen_.reset(aura::TestScreen::Create());
-  // TODO(jamescook): Replace this with a real Screen implementation.
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
-  // TODO(mukai): Set up input method.
-
   // Set up basic pieces of ui::wm.
   gfx::Size size = GetPrimaryDisplaySize();
   if (size.IsEmpty())
     size = gfx::Size(1280, 720);
+
+  test_screen_.reset(aura::TestScreen::Create(size));
+  // TODO(jamescook): Replace this with a real Screen implementation.
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
+  // TODO(mukai): Set up input method.
 
   host_.reset(aura::WindowTreeHost::Create(gfx::Rect(size)));
   host_->InitHost();

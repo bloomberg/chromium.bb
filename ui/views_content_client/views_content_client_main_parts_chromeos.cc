@@ -62,11 +62,12 @@ ViewsContentClientMainPartsChromeOS::ViewsContentClientMainPartsChromeOS(
 void ViewsContentClientMainPartsChromeOS::PreMainMessageLoopRun() {
   ViewsContentClientMainPartsAura::PreMainMessageLoopRun();
 
-  gfx::Screen::SetScreenInstance(
-      gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
+  gfx::Size host_size(800, 600);
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
+                                 aura::TestScreen::Create(host_size));
   // Set up basic pieces of views::corewm.
-  wm_test_helper_.reset(new ::wm::WMTestHelper(gfx::Size(800, 600),
-                                               content::GetContextFactory()));
+  wm_test_helper_.reset(
+      new ::wm::WMTestHelper(host_size, content::GetContextFactory()));
   // Ensure the X window gets mapped.
   wm_test_helper_->host()->Show();
 

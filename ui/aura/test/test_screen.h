@@ -23,7 +23,9 @@ class WindowTreeHost;
 class TestScreen : public gfx::Screen,
                    public WindowObserver {
  public:
-  static TestScreen* Create();
+  // Creates a gfx::Screen of the specified size. If no size is specified, then
+  // creates a 800x600 screen. |size| is in physical pixels.
+  static TestScreen* Create(const gfx::Size& size);
   // Creates a TestScreen that uses fullscreen for the display.
   static TestScreen* CreateFullscreen();
   virtual ~TestScreen();

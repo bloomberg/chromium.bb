@@ -109,7 +109,7 @@ class SyncErrorNotifierTest : public AshTestBase  {
     // Set up a desktop screen for Windows to hold native widgets, used when
     // adding desktop widgets (i.e., message center notifications).
 #if defined(OS_WIN)
-    aura::TestScreen* test_screen = aura::TestScreen::Create();
+    aura::TestScreen* test_screen = aura::TestScreen::Create(gfx::Size());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen);
     gfx::Screen::SetScreenTypeDelegate(new ScreenTypeDelegateDesktop);
 #endif
