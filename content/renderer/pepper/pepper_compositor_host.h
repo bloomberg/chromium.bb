@@ -44,18 +44,17 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
  private:
   virtual ~PepperCompositorHost();
 
-  void ImageReleased(int32_t id,
-                     const scoped_ptr<base::SharedMemory>& shared_memory,
-                     uint32_t sync_point,
-                     bool is_lost);
-  void ResourceReleased(int32_t id,
-                        uint32_t sync_point,
-                        bool is_lost);
-  void SendCommitLayersReplyIfNecessary();
   void UpdateLayer(const scoped_refptr<cc::Layer>& layer,
                    const ppapi::CompositorLayerData* old_layer,
                    const ppapi::CompositorLayerData* new_layer,
                    scoped_ptr<base::SharedMemory> image_shm);
+  void ResourceReleased(int32_t id,
+                        uint32_t sync_point,
+                        bool is_lost);
+  void ImageReleased(int32_t id,
+                     const scoped_ptr<base::SharedMemory>& shared_memory,
+                     uint32_t sync_point,
+                     bool is_lost);
 
   // ResourceMessageHandler overrides:
   virtual int32_t OnResourceMessageReceived(

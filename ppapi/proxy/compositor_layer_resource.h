@@ -22,7 +22,7 @@ class PPAPI_PROXY_EXPORT CompositorLayerResource
       public thunk::PPB_CompositorLayer_API {
  public:
   // Release callback for texture or image layer.
-  typedef base::Callback<void(int32_t, uint32_t, bool)> ReleaseCallback;
+  typedef base::Callback<void(uint32_t, bool)> ReleaseCallback;
 
   CompositorLayerResource(Connection connection,
                           PP_Instance instance,

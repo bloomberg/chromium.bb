@@ -1877,7 +1877,7 @@ void PepperPluginInstanceImpl::UpdateFlashFullscreenState(
     return;
   }
 
-  UpdateLayer(false);
+  UpdateLayer();
 
   bool old_plugin_focus = PluginHasFocus();
   flash_fullscreen_ = flash_fullscreen;
@@ -2016,7 +2016,7 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
 #endif
 }
 
-void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
+void PepperPluginInstanceImpl::UpdateLayer() {
   if (!container_)
     return;
 
@@ -2031,8 +2031,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
   bool want_texture_layer = want_3d_layer || want_2d_layer;
   bool want_compositor_layer = !!bound_compositor_;
 
-  if (!device_changed &&
-      (want_texture_layer == !!texture_layer_.get()) &&
+  if ((want_texture_layer == !!texture_layer_.get()) &&
       (want_3d_layer == layer_is_hardware_) &&
       (want_compositor_layer == !!compositor_layer_) &&
       layer_bound_to_fullscreen_ == !!fullscreen_container_) {
@@ -2273,7 +2272,7 @@ PP_Bool PepperPluginInstanceImpl::BindGraphics(PP_Instance instance,
 
   // Special-case clearing the current device.
   if (!device) {
-    UpdateLayer(true);
+    UpdateLayer();
     InvalidateRect(gfx::Rect());
     return PP_TRUE;
   }
@@ -2309,13 +2308,13 @@ PP_Bool PepperPluginInstanceImpl::BindGraphics(PP_Instance instance,
   if (compositor) {
     if (compositor->BindToInstance(this)) {
       bound_compositor_ = compositor;
-      UpdateLayer(true);
+      UpdateLayer();
       return PP_TRUE;
     }
   } else if (graphics_2d) {
     if (graphics_2d->BindToInstance(this)) {
       bound_graphics_2d_platform_ = graphics_2d;
-      UpdateLayer(true);
+      UpdateLayer();
       return PP_TRUE;
     }
   } else if (graphics_3d) {
@@ -2324,7 +2323,7 @@ PP_Bool PepperPluginInstanceImpl::BindGraphics(PP_Instance instance,
     if (graphics_3d->pp_instance() == pp_instance() &&
         graphics_3d->BindToInstance(true)) {
       bound_graphics_3d_ = graphics_3d;
-      UpdateLayer(true);
+      UpdateLayer();
       return PP_TRUE;
     }
   }
@@ -3095,7 +3094,7 @@ bool PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
     DCHECK(!fullscreen_container_);
     fullscreen_container_ =
         render_frame_->CreatePepperFullscreenContainer(this);
-    UpdateLayer(false);
+    UpdateLayer();
   } else {
     DCHECK(fullscreen_container_);
     fullscreen_container_->Destroy();

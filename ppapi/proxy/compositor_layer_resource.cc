@@ -32,16 +32,10 @@ void OnTextureReleased(
     const ScopedPPResource& context,
     uint32_t texture,
     const scoped_refptr<TrackedCallback>& release_callback,
-    int32_t result,
     uint32_t sync_point,
     bool is_lost) {
   if (!TrackedCallback::IsPending(release_callback))
     return;
-
-  if (result != PP_OK) {
-    release_callback->Run(result);
-    return;
-  }
 
   do {
     if (!sync_point)
@@ -65,12 +59,11 @@ void OnImageReleased(
     const ScopedPPResource& layer,
     const ScopedPPResource& image,
     const scoped_refptr<TrackedCallback>& release_callback,
-    int32_t result,
     uint32_t sync_point,
     bool is_lost) {
   if (!TrackedCallback::IsPending(release_callback))
     return;
-  release_callback->Run(result);
+  release_callback->Run(PP_OK);
 }
 
 }  // namespace
@@ -111,6 +104,7 @@ int32_t CompositorLayerResource::SetColor(float red,
 
   if (!size)
     return PP_ERROR_BADARGUMENT;
+
 
   data_.color->red = clamp(red);
   data_.color->green = clamp(green);
@@ -213,11 +207,6 @@ int32_t CompositorLayerResource::SetImage(
   data_.image->source_rect.point = PP_MakeFloatPoint(0.0f, 0.0f);
   data_.image->source_rect.size = source_size_;
 
-  // If the PP_Resource of this layer is released by the plugin, the
-  // release_callback will be aborted immediately, but the texture or image
-  // in this layer may still being used by chromium compositor. So we have to
-  // use ScopedPPResource to keep this resource alive until the texture or image
-  // is released by the chromium compositor.
   release_callback_ = base::Bind(
       &OnImageReleased,
       ScopedPPResource(pp_resource()), // Keep layer alive.
@@ -344,7 +333,7 @@ bool CompositorLayerResource::SetType(LayerType type) {
 int32_t CompositorLayerResource::CheckForSetTextureAndImage(
     LayerType type,
     const scoped_refptr<TrackedCallback>& release_callback) {
-  if (!compositor_)
+ if (!compositor_)
     return PP_ERROR_BADRESOURCE;
 
   if (compositor_->IsInProgress())

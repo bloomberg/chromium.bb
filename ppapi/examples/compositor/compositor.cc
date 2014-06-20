@@ -72,7 +72,6 @@ class DemoInstance : public pp::Instance, public pp::Graphics3DClient {
   void InitGL(int32_t result);
   GLuint PrepareFramebuffer();
   pp::ImageData PrepareImage();
-  void PrepareLayers(int32_t frame);
   void Paint(int32_t result, int32_t frame);
   void OnTextureReleased(int32_t result, GLuint texture);
   void OnImageReleased(int32_t result, const pp::ImageData& image);
@@ -107,7 +106,8 @@ DemoInstance::DemoInstance(PP_Instance instance)
       context_(NULL),
       fbo_(0),
       rbo_(0),
-      rebuild_layers_(true),
+      compositor_(this),
+      rebuild_layers_(false),
       total_resource_(0),
       cube_(new SpinningCube()) {
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
@@ -147,7 +147,11 @@ bool DemoInstance::HandleInputEvent(const pp::InputEvent& event) {
 void DemoInstance::Graphics3DContextLost() {
   fbo_ = 0;
   rbo_ = 0;
-  rebuild_layers_ = true;
+  compositor_.ResetLayers();
+  color_layer_ = pp::CompositorLayer();
+  stable_texture_layer_ = pp::CompositorLayer();
+  texture_layer_ = pp::CompositorLayer();
+  image_layer_ = pp::CompositorLayer();
   total_resource_ -= static_cast<int32_t>(textures_.size());
   textures_.clear();
   delete context_;
@@ -256,12 +260,14 @@ pp::ImageData DemoInstance::PrepareImage() {
 
 void DemoInstance::Paint(int32_t result, int32_t frame) {
   assert(result == PP_OK);
+
   if (result != PP_OK || !context_)
     return;
 
+  int32_t rv;
+
   if (rebuild_layers_) {
-    compositor_ = pp::Compositor(this);
-    assert(BindGraphics(compositor_));
+    compositor_.ResetLayers();
     color_layer_ = pp::CompositorLayer();
     stable_texture_layer_ = pp::CompositorLayer();
     texture_layer_ = pp::CompositorLayer();
@@ -270,21 +276,6 @@ void DemoInstance::Paint(int32_t result, int32_t frame) {
     rebuild_layers_ = false;
   }
 
-  PrepareLayers(frame);
-
-  int32_t rv = compositor_.CommitLayers(
-      callback_factory_.NewCallback(&DemoInstance::Paint, ++frame));
-  assert(rv == PP_OK_COMPLETIONPENDING);
-
-  pp::VarDictionary dict;
-  dict.Set("total_resource", total_resource_);
-  size_t free_resource = textures_.size() + images_.size();
-  dict.Set("free_resource", static_cast<int32_t>(free_resource));
-  PostMessage(dict);
-}
-
-void DemoInstance::PrepareLayers(int32_t frame) {
-  int32_t rv;
   float factor_sin = sin(M_PI / 180 * frame);
   float factor_cos = cos(M_PI / 180 * frame);
   {
@@ -404,23 +395,26 @@ void DemoInstance::PrepareLayers(int32_t frame) {
     rv = texture_layer_.SetPremultipliedAlpha(PP_FALSE);
     assert(rv == PP_OK);
   }
+
+  rv = compositor_.CommitLayers(
+      callback_factory_.NewCallback(&DemoInstance::Paint, ++frame));
+  assert(rv == PP_OK_COMPLETIONPENDING);
+
+  pp::VarDictionary dict;
+  dict.Set(pp::Var("total_resource"), pp::Var(total_resource_));
+  dict.Set(pp::Var("free_resource"),
+      pp::Var((int32_t)(textures_.size() + images_.size())));
+  PostMessage(dict);
 }
 
 void DemoInstance::OnTextureReleased(int32_t result, GLuint texture) {
-  if (result == PP_OK) {
+  if (result == PP_OK)
     textures_.push_back(texture);
-  } else {
-    glDeleteTextures(1, &texture);
-    total_resource_--;
-  }
 }
 
 void DemoInstance::OnImageReleased(int32_t result, const pp::ImageData& image) {
-  if (result == PP_OK) {
+  if (result == PP_OK)
     images_.push_back(image);
-  } else {
-    total_resource_--;
-  }
 }
 
 // This object is the global object representing this plugin library as long

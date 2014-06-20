@@ -1208,16 +1208,6 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_FlashMessageLoop) {
   RUN_FLASH_MESSAGE_LOOP_SUBTESTS;
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)
-// These tests fail with the test compositor which is what's used by default for
-// browser tests on Windows Aura. Renable when the software compositor is
-// available.
-#define MAYBE_Compositor DISABLED_Compositor
-#else  // defined(OS_WIN) && defined(USE_AURA)
-#define MAYBE_Compositor Compositor
-#endif  // defined(OS_WIN) && defined(USE_AURA)
-TEST_PPAPI_NACL(MAYBE_Compositor)
-
 TEST_PPAPI_NACL(MediaStreamAudioTrack)
 
 TEST_PPAPI_NACL(MediaStreamVideoTrack)
