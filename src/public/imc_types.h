@@ -16,7 +16,7 @@
  * ABI is implicitly defined.
  */
 
-#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
+#include "native_client/src/trusted/service_runtime/nacl_size_t.h"
 
 #ifdef __cplusplus
 extern "C" {

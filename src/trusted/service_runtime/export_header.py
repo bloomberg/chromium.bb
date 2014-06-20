@@ -34,26 +34,11 @@ def ProcessStream(instr, outstr):
          r'/include/([^"]*)"')
   cinc = re.compile(inc)
 
-  nostrip_beg = r'^#define NACL_NO_STRIP'
-  cnostrip_beg = re.compile(nostrip_beg)
-
-  nostrip_end = r'^#undef NACL_NO_STRIP'
-  cnostrip_end = re.compile(nostrip_end)
-
-  nostrip = False
-
   for line in instr:
     if cinc.search(line):
       print >>outstr, cinc.sub(r'#include <\1>', line)
     else:
-      if nostrip:
-        if cnostrip_end.search(line):
-          nostrip = False
-        print >>outstr, line,
-      else:
-        if cnostrip_beg.search(line):
-          nostrip = True
-        print >>outstr, cpat.sub(r'\1', line),
+      print >>outstr, cpat.sub(r'\1', line),
     # endif
   # endfor
 # enddef

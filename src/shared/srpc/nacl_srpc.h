@@ -20,7 +20,7 @@
 #include <stdio.h>
 
 #include "native_client/src/include/nacl_base.h"
-#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
+#include "native_client/src/trusted/service_runtime/nacl_size_t.h"
 
 /*
  * TODO(sehr) break this file into separate files for sdk and service_runtime
