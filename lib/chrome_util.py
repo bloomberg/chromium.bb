@@ -321,7 +321,7 @@ _COPY_PATHS_APP_SHELL = (
   Path('icudtl.dat', cond=C.GypSet('icu_use_data_file_flag')),
   Path('libffmpegsumo.so', exe=True, optional=True),
   Path('libosmesa.so', exe=True, optional=True),
-  Path('libpdf.so', exe=True),
+  Path('libpdf.so', exe=True, optional=True),
 )
 
 _COPY_PATHS_CHROME = (
