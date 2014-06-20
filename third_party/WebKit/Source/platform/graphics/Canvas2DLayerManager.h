@@ -49,7 +49,6 @@ private:
     // internal methods
     void freeMemoryIfNecessary();
     void addLayerToList(Canvas2DLayerBridge*);
-    void removeLayerFromList(Canvas2DLayerBridge*);
     virtual void willProcessTask() OVERRIDE;
     virtual void didProcessTask() OVERRIDE;
 

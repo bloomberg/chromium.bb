@@ -149,13 +149,6 @@ void Canvas2DLayerManager::freeMemoryIfNecessary()
     }
 }
 
-void Canvas2DLayerManager::removeLayerFromList(Canvas2DLayerBridge* layer)
-{
-    ASSERT(isInList(layer));
-    ASSERT(!layer->hasTransientResources());
-
-}
-
 bool Canvas2DLayerManager::isInList(Canvas2DLayerBridge* layer) const
 {
     return layer->prev() || m_layerList.head() == layer;
