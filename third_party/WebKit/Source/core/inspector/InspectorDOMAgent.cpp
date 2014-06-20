@@ -1190,6 +1190,9 @@ PassOwnPtr<HighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObjec
     bool showRulers = false; // Default: false (do not show rulers).
     highlightInspectorObject->getBoolean("showRulers", &showRulers);
     highlightConfig->showRulers = showRulers;
+    bool showExtensionLines = false; // Default: false (do not show extension lines).
+    highlightInspectorObject->getBoolean("showExtensionLines", &showExtensionLines);
+    highlightConfig->showExtensionLines = showExtensionLines;
     highlightConfig->content = parseConfigColor("contentColor", highlightInspectorObject);
     highlightConfig->contentOutline = parseConfigColor("contentOutlineColor", highlightInspectorObject);
     highlightConfig->padding = parseConfigColor("paddingColor", highlightInspectorObject);

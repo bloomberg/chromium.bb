@@ -466,6 +466,7 @@ static PassRefPtr<JSONObject> buildObjectForHighlight(const Highlight& highlight
         array->pushArray(buildArrayForQuad(highlight.quads[i]));
     object->setArray("quads", array.release());
     object->setBoolean("showRulers", highlight.showRulers);
+    object->setBoolean("showExtensionLines", highlight.showExtensionLines);
     object->setString("contentColor", highlight.contentColor.serialized());
     object->setString("contentOutlineColor", highlight.contentOutlineColor.serialized());
     object->setString("paddingColor", highlight.paddingColor.serialized());

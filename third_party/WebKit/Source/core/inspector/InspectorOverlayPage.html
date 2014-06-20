@@ -658,13 +658,13 @@ function drawNodeHighlight(highlight)
         }
     }
 
-    var rulerAtRight = minX < 20 && maxX + 20 < width;
-    var rulerAtBottom = minY < 20 && maxY + 20 < height;
+    var rulerAtRight = highlight.showRulers && minX < 20 && maxX + 20 < width;
+    var rulerAtBottom = highlight.showRulers && minY < 20 && maxY + 20 < height;
 
-    if (highlight.showRulers) {
+    if (highlight.showRulers)
         _drawGrid(rulerAtRight, rulerAtBottom);
+    if (highlight.showExtensionLines)
         _drawRulers(highlight, rulerAtRight, rulerAtBottom);
-    }
     if (highlight.elementInfo && highlight.elementInfo.shapeOutsideInfo)
         drawShapeHighlight(highlight.elementInfo.shapeOutsideInfo);
     _drawElementTitle(highlight);

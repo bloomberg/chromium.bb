@@ -68,6 +68,7 @@ public:
     Color eventTarget;
     bool showInfo;
     bool showRulers;
+    bool showExtensionLines;
 };
 
 enum HighlightType {
@@ -91,6 +92,7 @@ struct Highlight {
         marginColor = highlightConfig.margin;
         eventTargetColor = highlightConfig.eventTarget;
         showRulers = highlightConfig.showRulers;
+        showExtensionLines = highlightConfig.showExtensionLines;
     }
 
     Color contentColor;
@@ -105,6 +107,7 @@ struct Highlight {
     HighlightType type;
     Vector<FloatQuad> quads;
     bool showRulers;
+    bool showExtensionLines;
 };
 
 class InspectorOverlay {
