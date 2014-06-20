@@ -413,7 +413,6 @@ crbug.com/378610 [ Win7 ] fast/selectors/shadow-host-div-with-span.html [ ImageO
 crbug.com/378610 [ Win7 ] fast/selectors/shadow-host-div-with-text.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/sub-pixel/file-upload-control-at-fractional-offset.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
-crbug.com/378610 [ Win7 ] virtual/antialiasedtext/fast/text/international/complex-text-missing-glyph-fallback.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/writing-mode/table-vertical-child-width.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/text/alt-glyph-for-surrogate-pair.svg [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/text/tspan-outline.html [ ImageOnlyFailure ]
