@@ -36,11 +36,7 @@ class AnswersImageObserverAndroid : public BitmapFetcherService::Observer {
   // AnswersImageObserver:
   virtual void OnImageChanged(BitmapFetcherService::RequestId request_id,
                               const SkBitmap& answers_image) OVERRIDE {
-    // An empty image signals a completed request.
-    if (answers_image.empty()) {
-      delete this;
-      return;
-    }
+    DCHECK(!answers_image.empty());
 
     JNIEnv* env = base::android::AttachCurrentThread();
     ScopedJavaLocalRef<jobject> java_bitmap =

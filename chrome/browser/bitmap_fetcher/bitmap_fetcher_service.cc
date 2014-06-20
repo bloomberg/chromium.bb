@@ -45,10 +45,6 @@ BitmapFetcherRequest::BitmapFetcherRequest(
 }
 
 BitmapFetcherRequest::~BitmapFetcherRequest() {
-  SkBitmap empty_bitmap;
-
-  // OnImageChanged with an empty bitmap signifies a completed request.
-  observer_->OnImageChanged(request_id_, empty_bitmap);
 }
 
 void BitmapFetcherRequest::NotifyImageChanged(const SkBitmap& bitmap) {

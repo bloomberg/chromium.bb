@@ -10,18 +10,24 @@
 
 namespace {
 
+class TestNotificationInterface {
+ public:
+  virtual ~TestNotificationInterface() {}
+  virtual void OnImageChanged() = 0;
+  virtual void OnRequestFinished() = 0;
+};
+
 class TestObserver : public BitmapFetcherService::Observer {
  public:
-  explicit TestObserver(BitmapFetcherService::Observer* target)
-      : target_(target) {}
-  virtual ~TestObserver() {}
+  explicit TestObserver(TestNotificationInterface* target) : target_(target) {}
+  virtual ~TestObserver() { target_->OnRequestFinished(); }
 
   virtual void OnImageChanged(BitmapFetcherService::RequestId request_id,
                               const SkBitmap& answers_image) OVERRIDE {
-    target_->OnImageChanged(request_id, answers_image);
+    target_->OnImageChanged();
   }
 
-  BitmapFetcherService::Observer* target_;
+  TestNotificationInterface* target_;
 };
 
 class TestService : public BitmapFetcherService {
@@ -40,7 +46,7 @@ class TestService : public BitmapFetcherService {
 }  // namespace
 
 class BitmapFetcherServiceTest : public testing::Test,
-                                 public BitmapFetcherService::Observer {
+                                 public TestNotificationInterface {
  public:
   virtual void SetUp() OVERRIDE {
     service_.reset(new TestService(&profile_));
@@ -58,13 +64,9 @@ class BitmapFetcherServiceTest : public testing::Test,
   }
   size_t cache_size() { return service_->cache_.size(); }
 
-  virtual void OnImageChanged(BitmapFetcherService::RequestId request_id,
-                              const SkBitmap& answers_image) OVERRIDE {
-    if (answers_image.empty())
-      requestsFinished_++;
-    else
-      imagesChanged_++;
-  }
+  virtual void OnImageChanged() OVERRIDE { imagesChanged_++; }
+
+  virtual void OnRequestFinished() OVERRIDE { requestsFinished_++; }
 
   // Simulate finishing a URL fetch and decode for the given fetcher.
   void CompleteFetch(const GURL& url) {
