@@ -3380,7 +3380,6 @@
             'animation/EffectInputTest.cpp',
             'animation/InterpolableValueTest.cpp',
             'animation/InterpolationEffectTest.cpp',
-            'animation/InterpolableValueTest.cpp',
             'animation/KeyframeEffectModelTest.cpp',
             'animation/TimingCalculationsTest.cpp',
             'animation/TimingInputTest.cpp',

@@ -282,6 +282,12 @@ source_set("remaining") {
       "rendering/RenderThemeChromiumSkia.h",
     ]
     libs += [ "Carbon.framework" ]
+    # Some Mac-specific parts of WebKit won't compile without having this
+    # prefix header injected.
+    cflags = [
+      "-include",
+      rebase_path("WebCorePrefixMac.h", root_build_dir),
+    ]
   } else {  # !is_mac
     sources -= [
       "editing/SmartReplaceCF.cpp",
@@ -299,6 +305,43 @@ source_set("remaining") {
 # GYP version: //third_party/WebKit/Source/core/core.gyp:webcore_rendering
 source_set("rendering") {
   # The files that go here are currently in "remaining".
+}
+
+# GYP version: WebKit/Source/core/core.gyp:webcore_testing
+
+source_set("testing") {
+  configs += [
+    "//third_party/WebKit/Source:inside_blink",
+    "//third_party/WebKit/Source:config",
+  ]
+
+  deps = [
+    ":core",
+  ]
+
+  sources = webcore_testing_files
+  sources += [
+    "$bindings_core_v8_output_dir/V8GCObservation.cpp",
+    "$bindings_core_v8_output_dir/V8GCObservation.h",
+    "$bindings_core_v8_output_dir/V8MallocStatistics.cpp",
+    "$bindings_core_v8_output_dir/V8MallocStatistics.h",
+    "$bindings_core_v8_output_dir/V8TypeConversions.cpp",
+    "$bindings_core_v8_output_dir/V8TypeConversions.h",
+    "$bindings_core_v8_output_dir/V8Internals.cpp",
+    "$bindings_core_v8_output_dir/V8Internals.h",
+    "$bindings_core_v8_output_dir/V8InternalProfilers.cpp",
+    "$bindings_core_v8_output_dir/V8InternalProfilers.h",
+    "$bindings_core_v8_output_dir/V8InternalSettings.cpp",
+    "$bindings_core_v8_output_dir/V8InternalSettings.h",
+    "$bindings_core_v8_output_dir/V8InternalSettingsGenerated.cpp",
+    "$bindings_core_v8_output_dir/V8InternalSettingsGenerated.h",
+    "$bindings_core_v8_output_dir/V8InternalRuntimeFlags.cpp",
+    "$bindings_core_v8_output_dir/V8InternalRuntimeFlags.h",
+    "$bindings_core_v8_output_dir/V8LayerRect.cpp",
+    "$bindings_core_v8_output_dir/V8LayerRect.h",
+    "$bindings_core_v8_output_dir/V8LayerRectList.cpp",
+    "$bindings_core_v8_output_dir/V8LayerRectList.h",
+  ]
 }
 
 # GYP version: //third_party/WebKit/Source/core/core.gyp:webcore_generated

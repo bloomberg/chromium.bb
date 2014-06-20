@@ -3,16 +3,20 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//third_party/WebKit/Source/config.gni")
+import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/build/make_file_arrays.gni")
+import("//third_party/WebKit/Source/config.gni")
+import("//third_party/WebKit/Source/core/core.gni")
+import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/WebKit/Source/platform/platform.gni")
 
 visibility = "//third_party/WebKit/*"
-
 web_gypi = exec_script(
     "//build/gypi_to_gn.py",
     [ rebase_path("web.gypi") ],
     "scope",
     [ "web.gypi" ])
+
 
 component("web") {
   output_name = "blink_web"
@@ -43,6 +47,67 @@ component("web") {
   ]
 
   sources = web_gypi.web_files
+
+  if (!use_default_render_theme) {
+    sources -= [ "default/WebRenderTheme.cpp" ]
+  }
+}
+
+source_set("test_support") {
+  if (!is_component_build) {
+    deps = [
+      "//skia",
+      "//third_party/WebKit/Source/core:testing",
+      "//third_party/WebKit/Source/modules:modules_testing",
+      "//third_party/WebKit/Source/wtf",
+    ]
+
+    sources = [ "WebTestingSupport.cpp" ]
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
+      "//third_party/WebKit/Source:config",
+    ]
+  }
+}
+
+# TODO(GYP): Enable when //content/test:test_support added
+if (false) {
+test("webkit_unit_tests") {
+  deps = [
+    ":test_support",
+    ":web",
+    "//base",
+    "//base/test:test_support",
+    "//base:i18n",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/Source/wtf:unittest_helpers",
+    "//third_party/libwebp",
+    "//third_party/zlib",
+    "//url",
+    "//v8",
+# "//content/test:test_support",
+# webkit_unit_test_resources
+   ]
+
+  sources = [ "tests/RunAllTests.cpp" ]
+
+  if (is_component_build) {
+    defines = [ "BLINK_DLL_UNITTEST" ]
+  } else {
+    deps += [ "//third_party/WebKit/Source/core" ]
+
+    configs += [ "//third_party/WebKit/Source:inside_blink" ]
+
+    sources += web_gypi.web_unittest_files
+    sources += bindings_unittest_files
+    sources += core_unittest_files
+    sources += modules_unittest_files
+    sources += platform_web_unittest_files
+  }
+}
 }
 
 make_file_arrays("picker_common") {
