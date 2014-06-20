@@ -7,6 +7,7 @@
 #include "base/single_thread_task_runner.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_defines.h"
+#include "net/base/net_util.h"
 
 namespace media {
 namespace cast {
@@ -65,6 +66,11 @@ CastTransportSenderImpl::CastTransportSenderImpl(
                             raw_events_callback_interval,
                             this,
                             &CastTransportSenderImpl::SendRawEvents);
+  }
+  if (transport_) {
+    // The default DSCP value for cast is AF41. Which gives it a higher
+    // priority over other traffic.
+    transport_->SetDscp(net::DSCP_AF41);
   }
 }
 

@@ -54,6 +54,7 @@ UdpTransport::UdpTransport(
       send_pending_(false),
       receive_pending_(false),
       client_connected_(false),
+      next_dscp_value_(net::DSCP_NO_CHANGE),
       status_callback_(status_callback),
       weak_factory_(this) {
   DCHECK(!IsEmpty(local_end_point) || !IsEmpty(remote_end_point));
@@ -86,6 +87,11 @@ void UdpTransport::StartReceiving(
   }
 
   ScheduleReceiveNextPacket();
+}
+
+void UdpTransport::SetDscp(net::DiffServCodePoint dscp) {
+  DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
+  next_dscp_value_ = dscp;
 }
 
 void UdpTransport::ScheduleReceiveNextPacket() {
@@ -160,6 +166,16 @@ bool UdpTransport::SendPacket(PacketRef packet, const base::Closure& cb) {
   if (send_pending_) {
     VLOG(1) << "Cannot send because of pending IO.";
     return true;
+  }
+
+  if (next_dscp_value_ != net::DSCP_NO_CHANGE) {
+    int result = udp_socket_->SetDiffServCodePoint(next_dscp_value_);
+    if (result != net::OK) {
+      LOG(ERROR) << "Unable to set DSCP: " << next_dscp_value_
+                 << " to socket; Error: " << result;
+    }
+    // Don't change DSCP in next send.
+    next_dscp_value_ = net::DSCP_NO_CHANGE;
   }
 
   scoped_refptr<net::IOBuffer> buf =

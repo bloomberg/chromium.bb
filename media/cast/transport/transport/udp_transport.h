@@ -12,6 +12,7 @@
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_sender.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/net_util.h"
 #include "net/udp/udp_socket.h"
 
 namespace net {
@@ -46,6 +47,10 @@ class UdpTransport : public PacketSender {
   // Start receiving packets. Packets are submitted to |packet_receiver|.
   void StartReceiving(const PacketReceiverCallback& packet_receiver);
 
+  // Set a new DSCP value to the socket. The value will be set right before
+  // the next send.
+  void SetDscp(net::DiffServCodePoint dscp);
+
   // PacketSender implementations.
   virtual bool SendPacket(PacketRef packet,
                           const base::Closure& cb) OVERRIDE;
@@ -72,6 +77,7 @@ class UdpTransport : public PacketSender {
   bool send_pending_;
   bool receive_pending_;
   bool client_connected_;
+  net::DiffServCodePoint next_dscp_value_;
   scoped_ptr<Packet> next_packet_;
   scoped_refptr<net::WrappedIOBuffer> recv_buf_;
   net::IPEndPoint recv_addr_;
