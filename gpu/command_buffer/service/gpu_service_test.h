@@ -25,6 +25,7 @@ class GpuServiceTest : public testing::Test {
   virtual ~GpuServiceTest();
 
  protected:
+  void SetUpWithGLVersion(const char* gl_version, const char* gl_extensions);
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 

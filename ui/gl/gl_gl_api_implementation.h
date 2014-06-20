@@ -17,6 +17,7 @@ namespace gfx {
 
 class GLContext;
 class GLSurface;
+struct GLVersionInfo;
 
 void InitializeStaticGLBindingsGL();
 void InitializeDynamicGLBindingsGL(GLContext* context);
@@ -29,6 +30,7 @@ void ClearGLBindingsGL();
 void SetGLToRealGLApi();
 void SetGLApi(GLApi* api);
 void SetGLApiToNoContext();
+const GLVersionInfo* GetGLVersionInfo();
 
 class GLApiBase : public GLApi {
  public:

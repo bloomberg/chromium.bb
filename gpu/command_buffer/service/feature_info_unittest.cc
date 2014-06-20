@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
 
@@ -46,6 +47,7 @@ class FeatureInfoTest : public GpuServiceTest {
 
   void SetupInitExpectationsWithGLVersion(
       const char* extensions, const char* renderer, const char* version) {
+    GpuServiceTest::SetUpWithGLVersion(version, extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         gl_.get(), extensions, renderer, version);
     info_ = new FeatureInfo();
@@ -53,11 +55,13 @@ class FeatureInfoTest : public GpuServiceTest {
   }
 
   void SetupWithCommandLine(const CommandLine& command_line) {
+    GpuServiceTest::SetUp();
     info_ = new FeatureInfo(command_line);
   }
 
   void SetupInitExpectationsWithCommandLine(
       const char* extensions, const CommandLine& command_line) {
+    GpuServiceTest::SetUpWithGLVersion("2.0", extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         gl_.get(), extensions, "", "");
     info_ = new FeatureInfo(command_line);
@@ -65,11 +69,16 @@ class FeatureInfoTest : public GpuServiceTest {
   }
 
   void SetupWithoutInit() {
+    GpuServiceTest::SetUp();
     info_ = new FeatureInfo();
   }
 
  protected:
-  virtual void TearDown() {
+  virtual void SetUp() OVERRIDE {
+    // Do nothing here, since we are using the explicit Setup*() functions.
+  }
+
+  virtual void TearDown() OVERRIDE {
     info_ = NULL;
     GpuServiceTest::TearDown();
   }
@@ -310,6 +319,7 @@ TEST_F(FeatureInfoTest, InitializeNoExtensions) {
       GL_DEPTH24_STENCIL8_OES));
   EXPECT_FALSE(info_->validators()->equation.IsValid(GL_MIN_EXT));
   EXPECT_FALSE(info_->validators()->equation.IsValid(GL_MAX_EXT));
+  EXPECT_FALSE(info_->feature_flags().chromium_sync_query);
 }
 
 TEST_F(FeatureInfoTest, InitializeWithANGLE) {
@@ -1007,16 +1017,13 @@ TEST_F(FeatureInfoTest, InitializeWithES3) {
   EXPECT_TRUE(
       info_->validators()->texture_internal_format.IsValid(GL_DEPTH_STENCIL));
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_DEPTH_STENCIL));
+  EXPECT_TRUE(info_->feature_flags().chromium_sync_query);
+  EXPECT_TRUE(gfx::GLFence::IsSupported());
 }
 
 TEST_F(FeatureInfoTest, InitializeWithoutSamplers) {
   SetupInitExpectationsWithGLVersion("", "", "OpenGL GL 3.0");
   EXPECT_FALSE(info_->feature_flags().enable_samplers);
-}
-
-TEST_F(FeatureInfoTest, InitializeWithES3AndFences) {
-  SetupInitExpectationsWithGLVersion("EGL_KHR_fence_sync", "", "OpenGL ES 3.0");
-  EXPECT_TRUE(info_->feature_flags().use_async_readpixels);
 }
 
 TEST_F(FeatureInfoTest, ParseDriverBugWorkaroundsSingle) {
@@ -1041,6 +1048,28 @@ TEST_F(FeatureInfoTest, ParseDriverBugWorkaroundsMultiple) {
   EXPECT_TRUE(info_->workarounds().exit_on_context_lost);
   EXPECT_EQ(1024, info_->workarounds().max_cube_map_texture_size);
   EXPECT_EQ(4096, info_->workarounds().max_texture_size);
+}
+
+TEST_F(FeatureInfoTest, InitializeWithARBSync) {
+  SetupInitExpectations("GL_ARB_sync");
+  EXPECT_TRUE(info_->feature_flags().chromium_sync_query);
+  EXPECT_TRUE(gfx::GLFence::IsSupported());
+}
+
+TEST_F(FeatureInfoTest, InitializeWithNVFence) {
+  SetupInitExpectations("GL_NV_fence");
+  EXPECT_TRUE(info_->feature_flags().chromium_sync_query);
+  EXPECT_TRUE(gfx::GLFence::IsSupported());
+}
+
+TEST_F(FeatureInfoTest, ARBSyncDisabled) {
+  CommandLine command_line(0, NULL);
+  command_line.AppendSwitchASCII(
+      switches::kGpuDriverBugWorkarounds,
+      base::IntToString(gpu::DISABLE_ARB_SYNC));
+  SetupInitExpectationsWithCommandLine("GL_ARB_sync", command_line);
+  EXPECT_FALSE(info_->feature_flags().chromium_sync_query);
+  EXPECT_FALSE(gfx::GLFence::IsSupported());
 }
 
 }  // namespace gles2

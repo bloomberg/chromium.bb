@@ -21,7 +21,8 @@ GpuServiceTest::~GpuServiceTest() {
   DCHECK(ran_teardown_);
 }
 
-void GpuServiceTest::SetUp() {
+void GpuServiceTest::SetUpWithGLVersion(const char* gl_version,
+                                        const char* gl_extensions) {
   testing::Test::SetUp();
 
   gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
@@ -30,10 +31,14 @@ void GpuServiceTest::SetUp() {
   ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 
   context_ = new gfx::GLContextStubWithExtensions;
-  context_->AddExtensionsString(NULL);
-  context_->SetGLVersionString("3.0");
+  context_->AddExtensionsString(gl_extensions);
+  context_->SetGLVersionString(gl_version);
   gfx::GLSurface::InitializeDynamicMockBindingsForTests(context_);
   ran_setup_ = true;
+}
+
+void GpuServiceTest::SetUp() {
+  SetUpWithGLVersion("2.0", NULL);
 }
 
 void GpuServiceTest::TearDown() {

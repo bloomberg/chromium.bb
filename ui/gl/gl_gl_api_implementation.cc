@@ -288,6 +288,10 @@ void SetGLApiToNoContext() {
   SetGLApi(g_no_context_gl);
 }
 
+const GLVersionInfo* GetGLVersionInfo() {
+  return g_version_info;
+}
+
 void InitializeDynamicGLBindingsGL(GLContext* context) {
   g_driver_gl.InitializeCustomDynamicBindings(context);
   DCHECK(context && context->IsCurrent(NULL) && !g_version_info);

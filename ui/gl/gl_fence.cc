@@ -7,11 +7,14 @@
 #include "base/compiler_specific.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_version_info.h"
+
+namespace gfx {
 
 namespace {
 
-class GLFenceNVFence: public gfx::GLFence {
+class GLFenceNVFence: public GLFence {
  public:
   GLFenceNVFence(bool flush) {
     // What if either of these GL calls fails? TestFenceNV will return true.
@@ -29,7 +32,7 @@ class GLFenceNVFence: public gfx::GLFence {
     if (flush) {
       glFlush();
     } else {
-      flush_event_ = gfx::GLContext::GetCurrent()->SignalFlush();
+      flush_event_ = GLContext::GetCurrent()->SignalFlush();
     }
   }
 
@@ -55,17 +58,17 @@ class GLFenceNVFence: public gfx::GLFence {
   }
 
   GLuint fence_;
-  scoped_refptr<gfx::GLContext::FlushEvent> flush_event_;
+  scoped_refptr<GLContext::FlushEvent> flush_event_;
 };
 
-class GLFenceARBSync: public gfx::GLFence {
+class GLFenceARBSync: public GLFence {
  public:
   GLFenceARBSync(bool flush) {
     sync_ = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     if (flush) {
       glFlush();
     } else {
-      flush_event_ = gfx::GLContext::GetCurrent()->SignalFlush();
+      flush_event_ = GLContext::GetCurrent()->SignalFlush();
     }
   }
 
@@ -102,11 +105,11 @@ class GLFenceARBSync: public gfx::GLFence {
   }
 
   GLsync sync_;
-  scoped_refptr<gfx::GLContext::FlushEvent> flush_event_;
+  scoped_refptr<GLContext::FlushEvent> flush_event_;
 };
 
 #if !defined(OS_MACOSX)
-class EGLFenceSync : public gfx::GLFence {
+class EGLFenceSync : public GLFence {
  public:
   EGLFenceSync(bool flush) {
     display_ = eglGetCurrentDisplay();
@@ -114,7 +117,7 @@ class EGLFenceSync : public gfx::GLFence {
     if (flush) {
       glFlush();
     } else {
-      flush_event_ = gfx::GLContext::GetCurrent()->SignalFlush();
+      flush_event_ = GLContext::GetCurrent()->SignalFlush();
     }
   }
 
@@ -152,36 +155,47 @@ class EGLFenceSync : public gfx::GLFence {
 
   EGLSyncKHR sync_;
   EGLDisplay display_;
-  scoped_refptr<gfx::GLContext::FlushEvent> flush_event_;
+  scoped_refptr<GLContext::FlushEvent> flush_event_;
 };
 #endif // !OS_MACOSX
 
 // static
-gfx::GLFence* CreateFence(bool flush) {
-  DCHECK(gfx::GLContext::GetCurrent())
+GLFence* CreateFence(bool flush) {
+  DCHECK(GLContext::GetCurrent())
       << "Trying to create fence with no context";
 
+  scoped_ptr<GLFence> fence;
   // Prefer ARB_sync which supports server-side wait.
-  if (gfx::g_driver_gl.ext.b_GL_ARB_sync ||
-      gfx::GLContext::GetCurrent()->GetVersionInfo()->is_es3)
-    return new GLFenceARBSync(flush);
+  if (g_driver_gl.ext.b_GL_ARB_sync ||
+      GetGLVersionInfo()->is_es3) {
+    fence.reset(new GLFenceARBSync(flush));
 #if !defined(OS_MACOSX)
-  if (gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync)
-    return new EGLFenceSync(flush);
+  } else if (g_driver_egl.ext.b_EGL_KHR_fence_sync) {
+    fence.reset(new EGLFenceSync(flush));
 #endif
-  if (gfx::g_driver_gl.ext.b_GL_NV_fence)
-    return new GLFenceNVFence(flush);
-  return NULL;
+  } else if (g_driver_gl.ext.b_GL_NV_fence) {
+    fence.reset(new GLFenceNVFence(flush));
+  }
+
+  DCHECK_EQ(!!fence.get(), GLFence::IsSupported());
+  return fence.release();
 }
 
 }  // namespace
-
-namespace gfx {
 
 GLFence::GLFence() {
 }
 
 GLFence::~GLFence() {
+}
+
+bool GLFence::IsSupported() {
+  DCHECK(GetGLVersionInfo());
+  return g_driver_gl.ext.b_GL_ARB_sync || GetGLVersionInfo()->is_es3 ||
+#if !defined(OS_MACOSX)
+         g_driver_egl.ext.b_EGL_KHR_fence_sync ||
+#endif
+         g_driver_gl.ext.b_GL_NV_fence;
 }
 
 GLFence* GLFence::Create() {

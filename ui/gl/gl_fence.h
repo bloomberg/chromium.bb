@@ -15,6 +15,7 @@ class GL_EXPORT GLFence {
   GLFence();
   virtual ~GLFence();
 
+  static bool IsSupported();
   static GLFence* Create();
 
   // Creates a fence that is not guaranteed to signal until the current context
