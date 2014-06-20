@@ -356,7 +356,8 @@ foundRight:
       return;
     canvas_->save();
     canvas_->concat(inverse);
-    canvas_->drawBitmap(subset, bounds.fLeft, bounds.fTop);
+    canvas_->drawBitmap(subset, bounds.x() + bitmapOffset_.x(),
+                                bounds.y() + bitmapOffset_.y());
     canvas_->restore();
   }
   CGContextRelease(cgContext_);
@@ -364,18 +365,35 @@ foundRight:
 }
 
 CGContextRef SkiaBitLocker::cgContext() {
+  SkIRect clip_bounds;
+  if (!canvas_->getClipDeviceBounds(&clip_bounds))
+    return 0;  // the clip is empty, nothing to draw
+
   SkBaseDevice* device = canvas_->getTopDevice();
   DCHECK(device);
   if (!device)
     return 0;
+
   releaseIfNeeded(); // This flushes any prior bitmap use
+
+  // remember the top/left, in case we need to compose this later
+  bitmapOffset_.set(clip_bounds.x(), clip_bounds.y());
+
+  // Now make clip_bounds be relative to the current layer/device
+  clip_bounds.offset(-device->getOrigin());
+
   const SkBitmap& deviceBits = device->accessBitmap(true);
-  useDeviceBits_ = deviceBits.getPixels();
+
+  // Only draw directly if we have pixels, and we're only rect-clipped.
+  // If not, we allocate an offscreen and draw into that, relying on the
+  // compositing step to apply skia's clip.
+  useDeviceBits_ = deviceBits.getPixels() && canvas_->isClipRect();
   if (useDeviceBits_) {
-    bitmap_ = deviceBits;
+    if (!deviceBits.extractSubset(&bitmap_, clip_bounds))
+      return 0;
     bitmap_.lockPixels();
   } else {
-    if (!bitmap_.allocN32Pixels(deviceBits.width(), deviceBits.height()))
+    if (!bitmap_.allocN32Pixels(clip_bounds.width(), clip_bounds.height()))
       return 0;
     bitmap_.eraseColor(0);
   }
@@ -385,44 +403,13 @@ CGContextRef SkiaBitLocker::cgContext() {
     bitmap_.height(), 8, bitmap_.rowBytes(), colorSpace, 
     kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
 
-  // Apply device matrix.
-  CGAffineTransform contentsTransform = CGAffineTransformMakeScale(1, -1);
-  contentsTransform = CGAffineTransformTranslate(contentsTransform, 0,
-      -device->height());
-  CGContextConcatCTM(cgContext_, contentsTransform);
+  SkMatrix matrix = canvas_->getTotalMatrix();
+  matrix.postTranslate(-SkIntToScalar(bitmapOffset_.x()),
+                       -SkIntToScalar(bitmapOffset_.y()));
+  matrix.postScale(1, -1);
+  matrix.postTranslate(0, SkIntToScalar(bitmap_.height()));
 
-  const SkIPoint& pt = device->getOrigin();
-  // Skip applying the clip when not writing directly to device.
-  // They're applied in the offscreen case when the bitmap is drawn.
-  if (useDeviceBits_) {
-      // Apply clip in device coordinates.
-      CGMutablePathRef clipPath = CGPathCreateMutable();
-      const SkRegion& clipRgn = canvas_->getTotalClip();
-      if (clipRgn.isEmpty()) {
-        // CoreGraphics does not consider a newly created path to be empty.
-        // Explicitly set it to empty so the subsequent drawing is clipped out.
-        // It would be better to make the CGContext hidden if there was a CG
-        // call that does that.
-        CGPathAddRect(clipPath, 0, CGRectMake(0, 0, 0, 0));
-      }
-      SkRegion::Iterator iter(clipRgn);
-      const SkIPoint& pt = device->getOrigin();
-      for (; !iter.done(); iter.next()) {
-        SkIRect skRect = iter.rect();
-        skRect.offset(-pt);
-        CGRect cgRect = SkIRectToCGRect(skRect);
-        CGPathAddRect(clipPath, 0, cgRect);
-      }
-      CGContextAddPath(cgContext_, clipPath);
-      CGContextClip(cgContext_);
-      CGPathRelease(clipPath);
-  }
-
-  // Apply content matrix.
-  SkMatrix skMatrix = canvas_->getTotalMatrix();
-  skMatrix.postTranslate(-SkIntToScalar(pt.fX), -SkIntToScalar(pt.fY));
-  CGAffineTransform affine = SkMatrixToCGAffineTransform(skMatrix);
-  CGContextConcatCTM(cgContext_, affine);
+  CGContextConcatCTM(cgContext_, SkMatrixToCGAffineTransform(matrix));
   
   return cgContext_;
 }
