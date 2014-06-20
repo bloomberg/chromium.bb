@@ -29,8 +29,6 @@ public class ContentView extends FrameLayout
 
     protected final ContentViewCore mContentViewCore;
 
-    private final int[] mLocationInWindow = new int[2];
-
     /**
      * Creates an instance of a ContentView.
      * @param context The Context the view is running in, through which it can
@@ -78,15 +76,6 @@ public class ContentView extends FrameLayout
         super.onSizeChanged(w, h, ow, oh);
         mContentViewCore.onSizeChanged(w, h, ow, oh);
         TraceEvent.end();
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-        if (changed) {
-            getLocationInWindow(mLocationInWindow);
-            mContentViewCore.onLocationInWindowChanged(mLocationInWindow[0], mLocationInWindow[1]);
-        }
     }
 
     @Override

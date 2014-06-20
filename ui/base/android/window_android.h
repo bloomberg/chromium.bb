@@ -36,6 +36,10 @@ class UI_BASE_EXPORT WindowAndroid {
     content_offset_ = content_offset;
   }
 
+  gfx::Vector2dF content_offset() const {
+    return content_offset_;
+  }
+
   // Compositor callback relay.
   void OnCompositingDidCommit();
 

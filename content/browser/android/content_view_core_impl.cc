@@ -394,11 +394,8 @@ void ContentViewCoreImpl::UpdateFrameInfo(
     return;
 
   if (window_android_) {
-    gfx::Vector2dF window_offset(
-        Java_ContentViewCore_getLocationInWindowX(env, obj.obj()),
-        Java_ContentViewCore_getLocationInWindowY(env, obj.obj()));
     window_android_->set_content_offset(
-        gfx::ScaleVector2d(content_offset, dpi_scale_) + window_offset);
+        gfx::ScaleVector2d(content_offset, dpi_scale_));
   }
 
   Java_ContentViewCore_updateFrameInfo(
