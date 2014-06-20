@@ -15,7 +15,6 @@ CompositingInputsUpdater::CompositingInputsUpdater(RenderLayer* rootRenderLayer)
     : m_geometryMap(UseTransforms)
     , m_rootRenderLayer(rootRenderLayer)
 {
-    rootRenderLayer->updateDescendantDependentFlags();
 }
 
 CompositingInputsUpdater::~CompositingInputsUpdater()

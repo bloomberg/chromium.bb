@@ -353,9 +353,6 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
     RenderLayerCompositor* compositor = this->compositor();
     RenderObject* renderer = this->renderer();
 
-    m_owningLayer.updateDescendantDependentFlags();
-    m_owningLayer.stackingNode()->updateZOrderLists();
-
     bool layerConfigChanged = false;
     setBackgroundLayerPaintsFixedRootBackground(compositor->needsFixedRootBackgroundLayer(&m_owningLayer));
 
@@ -611,8 +608,6 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
     // Set opacity, if it is not animating.
     if (!renderer()->style()->isRunningOpacityAnimationOnCompositor())
         updateOpacity(renderer()->style());
-
-    m_owningLayer.updateDescendantDependentFlags();
 
     // We compute everything relative to the enclosing compositing layer.
     IntRect ancestorCompositingBounds;
