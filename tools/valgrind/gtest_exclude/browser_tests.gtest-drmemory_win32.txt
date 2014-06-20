@@ -10,12 +10,15 @@
 # and we only select subset to run
 # A*
 Act*
+Adv*
+All*
 AppA*
 AppL*
 AppW*
 Autof*.Do*
+Autof*.Hi*
 Autof*Edit*
-AutofillTest.P*
+AutofillTest.*
 # B*
 BackgroundApp*.R*
 Bluetooth*
@@ -33,9 +36,18 @@ Clear*
 Click*
 Com*
 ChromeC*
+ChromeR*
 Con*UITest.*
+Con*.Re*
 # D*
-E*
+Dec*
+Dev*
+DnsP*
+DoNot*
+Down*Ext*.*
+DownloadTest.*
+Drive*
+# E*
 F*
 G*
 H*
