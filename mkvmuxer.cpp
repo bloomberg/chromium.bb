@@ -65,14 +65,14 @@ IMkvWriter::IMkvWriter() {}
 
 IMkvWriter::~IMkvWriter() {}
 
-bool WriteEbmlHeader(IMkvWriter* writer) {
+bool WriteEbmlHeader(IMkvWriter* writer, uint64 doc_type_version) {
   // Level 0
   uint64 size = EbmlElementSize(kMkvEBMLVersion, 1ULL);
   size += EbmlElementSize(kMkvEBMLReadVersion, 1ULL);
   size += EbmlElementSize(kMkvEBMLMaxIDLength, 4ULL);
   size += EbmlElementSize(kMkvEBMLMaxSizeLength, 8ULL);
   size += EbmlElementSize(kMkvDocType, "webm");
-  size += EbmlElementSize(kMkvDocTypeVersion, 2ULL);
+  size += EbmlElementSize(kMkvDocTypeVersion, doc_type_version);
   size += EbmlElementSize(kMkvDocTypeReadVersion, 2ULL);
 
   if (!WriteEbmlMasterElement(writer, kMkvEBML, size))
@@ -87,7 +87,7 @@ bool WriteEbmlHeader(IMkvWriter* writer) {
     return false;
   if (!WriteEbmlElement(writer, kMkvDocType, "webm"))
     return false;
-  if (!WriteEbmlElement(writer, kMkvDocTypeVersion, 2ULL))
+  if (!WriteEbmlElement(writer, kMkvDocTypeVersion, doc_type_version))
     return false;
   if (!WriteEbmlElement(writer, kMkvDocTypeReadVersion, 2ULL))
     return false;
@@ -2003,6 +2003,8 @@ Segment::Segment()
       output_cues_(true),
       payload_pos_(0),
       size_position_(0),
+      doc_type_version_(kDefaultDocTypeVersion),
+      doc_type_version_written_(0),
       writer_cluster_(NULL),
       writer_cues_(NULL),
       writer_header_(NULL) {
@@ -2201,11 +2203,23 @@ bool Segment::Finalize() {
       if (size_position_ == -1)
         return false;
 
-      const int64 pos = writer_header_->Position();
       const int64 segment_size = MaxOffset();
-
       if (segment_size < 1)
         return false;
+
+      const int64 pos = writer_header_->Position();
+      UpdateDocTypeVersion();
+      if (doc_type_version_ != doc_type_version_written_) {
+        if (writer_header_->Position(0))
+          return false;
+
+        if (!WriteEbmlHeader(writer_header_, doc_type_version_))
+          return false;
+        if (writer_header_->Position() != ebml_header_size_)
+          return false;
+
+        doc_type_version_written_ = doc_type_version_;
+      }
 
       if (writer_header_->Position(size_position_))
         return false;
@@ -2444,6 +2458,9 @@ bool Segment::AddFrameWithDiscardPadding(const uint8* frame, uint64 length,
   if (!tracks_.GetTrackByNumber(track_number))
     return false;
 
+  if (discard_padding != 0)
+    doc_type_version_ = 4;
+
   // If the segment has a video track hold onto audio frames to make sure the
   // audio that is associated with the start time of a video key-frame is
   // muxed into the same cluster.
@@ -2654,9 +2671,13 @@ Track* Segment::GetTrackByNumber(uint64 track_number) const {
 }
 
 bool Segment::WriteSegmentHeader() {
+  UpdateDocTypeVersion();
+
   // TODO(fgalligan): Support more than one segment.
-  if (!WriteEbmlHeader(writer_header_))
+  if (!WriteEbmlHeader(writer_header_, doc_type_version_))
     return false;
+  doc_type_version_written_ = doc_type_version_;
+  ebml_header_size_ = static_cast<int32>(writer_header_->Position());
 
   // Write "unknown" (-1) as segment size value. If mode is kFile, Segment
   // will write over duration when the file is finalized.
@@ -2929,6 +2950,18 @@ bool Segment::CheckHeaderInfo() {
   return true;
 }
 
+void Segment::UpdateDocTypeVersion() {
+  for (uint32 index = 0; index < tracks_.track_entries_size(); ++index) {
+    const Track* track = tracks_.GetTrackByIndex(index);
+    if (track == NULL) break;
+    if ((track->codec_delay() || track->seek_pre_roll()) &&
+        doc_type_version_ < 4) {
+      doc_type_version_ = 4;
+      break;
+    }
+  }
+}
+
 bool Segment::UpdateChunkName(const char* ext, char** name) const {
   if (!name || !ext)
     return false;
@@ -3026,6 +3059,9 @@ int Segment::WriteFramesAll() {
     const uint64 frame_timecode = frame_timestamp / timecode_scale;
 
     if (frame->discard_padding() != 0) {
+      // TODO(jzern): using the Segment:: variants here would limit the places
+      // where doc_type_version_ needs to be updated.
+      doc_type_version_ = 4;
       if (!cluster->AddFrameWithDiscardPadding(
               frame->frame(), frame->length(), frame->discard_padding(),
               frame->track_number(), frame_timecode, frame->is_key())) {
@@ -3086,6 +3122,7 @@ bool Segment::WriteFramesLessThan(uint64 timestamp) {
       const int64 discard_padding = frame_prev->discard_padding();
 
       if (discard_padding != 0) {
+        doc_type_version_ = 4;
         if (!cluster->AddFrameWithDiscardPadding(
                 frame_prev->frame(), frame_prev->length(), discard_padding,
                 frame_prev->track_number(), frame_timecode,
