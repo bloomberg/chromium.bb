@@ -15,9 +15,10 @@ namespace base {
 class BASE_EXPORT ElapsedTimer {
  public:
   ElapsedTimer();
+  virtual ~ElapsedTimer() {}
 
   // Returns the time elapsed since object construction.
-  TimeDelta Elapsed() const;
+  virtual TimeDelta Elapsed() const;
 
  private:
   TimeTicks begin_;

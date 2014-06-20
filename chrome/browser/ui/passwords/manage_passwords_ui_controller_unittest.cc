@@ -6,6 +6,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/statistics_delta_reader.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
@@ -22,6 +23,26 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+const int64 kSlowNavigationDelayInMS = 2000;
+const int64 kQuickNavigationDelayInMS = 500;
+
+class MockElapsedTimer : public base::ElapsedTimer {
+ public:
+  MockElapsedTimer() {}
+  virtual base::TimeDelta Elapsed() const OVERRIDE { return delta_; }
+
+  void Advance(int64 ms) { delta_ = base::TimeDelta::FromMilliseconds(ms); }
+
+ private:
+  base::TimeDelta delta_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockElapsedTimer);
+};
+
+}  // namespace
 
 class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -97,6 +118,54 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmitted) {
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, mock.state());
+}
+
+TEST_F(ManagePasswordsUIControllerTest, QuickNavigations) {
+  password_manager::StubPasswordManagerClient client;
+  password_manager::StubPasswordManagerDriver driver;
+  password_manager::PasswordFormManager* test_form_manager =
+      new password_manager::PasswordFormManager(
+          NULL, &client, &driver, test_form(), false);
+  controller()->OnPasswordSubmitted(test_form_manager);
+  ManagePasswordsIconMock mock;
+  controller()->UpdateIconAndBubbleState(&mock);
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, mock.state());
+
+  // Fake-navigate within a second. We expect the bubble's state to persist
+  // if a navigation occurs too quickly for a user to reasonably have been
+  // able to interact with the bubble. This happens on `accounts.google.com`,
+  // for instance.
+  scoped_ptr<MockElapsedTimer> timer(new MockElapsedTimer());
+  timer->Advance(kQuickNavigationDelayInMS);
+  controller()->SetTimer(timer.release());
+  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
+                                     content::FrameNavigateParams());
+  controller()->UpdateIconAndBubbleState(&mock);
+
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, mock.state());
+}
+
+TEST_F(ManagePasswordsUIControllerTest, SlowNavigations) {
+  password_manager::StubPasswordManagerClient client;
+  password_manager::StubPasswordManagerDriver driver;
+  password_manager::PasswordFormManager* test_form_manager =
+      new password_manager::PasswordFormManager(
+          NULL, &client, &driver, test_form(), false);
+  controller()->OnPasswordSubmitted(test_form_manager);
+  ManagePasswordsIconMock mock;
+  controller()->UpdateIconAndBubbleState(&mock);
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, mock.state());
+
+  // Fake-navigate after a second. We expect the bubble's state to be reset
+  // if a navigation occurs after this limit.
+  scoped_ptr<MockElapsedTimer> timer(new MockElapsedTimer());
+  timer->Advance(kSlowNavigationDelayInMS);
+  controller()->SetTimer(timer.release());
+  controller()->DidNavigateMainFrame(content::LoadCommittedDetails(),
+                                     content::FrameNavigateParams());
+  controller()->UpdateIconAndBubbleState(&mock);
+
+  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, mock.state());
 }
 
 TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedToNonWebbyURL) {

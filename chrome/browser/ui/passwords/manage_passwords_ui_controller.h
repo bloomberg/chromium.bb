@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -91,6 +93,11 @@ class ManagePasswordsUIController
   explicit ManagePasswordsUIController(
       content::WebContents* web_contents);
 
+  // content::WebContentsObserver:
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
+
   // All previously stored credentials for a specific site. Set by
   // OnPasswordSubmitted(), OnPasswordAutofilled(), or
   // OnBlacklistBlockedAutofill(). Protected, not private, so we can mess with
@@ -106,6 +113,11 @@ class ManagePasswordsUIController
   // the value in tests.
   password_manager::ui::State state_;
 
+  // Used to measure the amount of time on a page; if it's less than some
+  // reasonable limit, then don't close the bubble upon navigation. We create
+  // (and destroy) the timer in DidNavigateMainFrame.
+  scoped_ptr<base::ElapsedTimer> timer_;
+
  private:
   friend class content::WebContentsUserData<ManagePasswordsUIController>;
 
@@ -119,9 +131,6 @@ class ManagePasswordsUIController
   void UpdateBubbleAndIconVisibility();
 
   // content::WebContentsObserver:
-  virtual void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
   virtual void WebContentsDestroyed() OVERRIDE;
 
   // Set by OnPasswordSubmitted() when the user submits a form containing login

@@ -171,10 +171,19 @@ void ManagePasswordsUIController::UnblacklistSite() {
 void ManagePasswordsUIController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  // Don't react to in-page (fragment) navigations.
   if (details.is_in_page)
     return;
+
+  // Don't do anything if a navigation occurs before a user could reasonably
+  // interact with the password bubble.
+  if (timer_ && timer_->Elapsed() < base::TimeDelta::FromSeconds(1))
+    return;
+
+  // Otherwise, reset the password manager and the timer.
   state_ = password_manager::ui::INACTIVE_STATE;
   UpdateBubbleAndIconVisibility();
+  timer_.reset(new base::ElapsedTimer());
 }
 
 const autofill::PasswordForm& ManagePasswordsUIController::

@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
+#include "content/public/browser/navigation_details.h"
 
 namespace content {
 class WebContents;
@@ -47,8 +48,12 @@ class ManagePasswordsUIControllerMock
   }
   void SetState(password_manager::ui::State state) { state_ = state; }
 
+  void SetTimer(base::ElapsedTimer* timer) { timer_.reset(timer); }
+
   // True if this controller is installed on |web_contents()|.
   bool IsInstalled() const;
+
+  using ManagePasswordsUIController::DidNavigateMainFrame;
 
  private:
   bool navigated_to_settings_page_;
