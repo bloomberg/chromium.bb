@@ -102,13 +102,12 @@ void UpdateShortcutWorker::DidDownloadFavicon(
     const GURL& image_url,
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_sizes) {
-  std::vector<ui::ScaleFactor> scale_factors;
-  scale_factors.push_back(ui::SCALE_FACTOR_100P);
+  std::vector<int> requested_sizes_in_pixel;
+  requested_sizes_in_pixel.push_back(requested_size);
 
   std::vector<size_t> closest_indices;
   SelectFaviconFrameIndices(original_sizes,
-                            scale_factors,
-                            requested_size,
+                            requested_sizes_in_pixel,
                             &closest_indices,
                             NULL);
 

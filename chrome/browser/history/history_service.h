@@ -37,7 +37,6 @@
 #include "content/public/common/page_transition_types.h"
 #include "sql/init_status.h"
 #include "sync/api/syncable_service.h"
-#include "ui/base/layout.h"
 
 #if defined(OS_ANDROID)
 class AndroidHistoryProviderService;
@@ -645,37 +644,35 @@ class HistoryService : public CancelableRequestProvider,
   // FaviconService.
 
   // Used by FaviconService to get the favicon bitmaps from the history backend
-  // which most closely match |desired_size_in_dip| x |desired_size_in_dip| and
-  // |desired_scale_factors| for |icon_types|. If |desired_size_in_dip| is 0,
-  // the largest favicon bitmap for |icon_types| is returned. The returned
-  // FaviconBitmapResults will have at most one result for each of
-  // |desired_scale_factors|. If a favicon bitmap is determined to be the best
-  // candidate for multiple scale factors there will be less results.
+  // whose edge sizes most closely match |desired_sizes| for |icon_types|. If
+  // |desired_sizes| has a '0' entry, the largest favicon bitmap for
+  // |icon_types| is returned. The returned FaviconBitmapResults will have at
+  // most one result for each entry in |desired_sizes|. If a favicon bitmap is
+  // determined to be the best candidate for multiple |desired_sizes| there will
+  // be fewer results.
   // If |icon_types| has several types, results for only a single type will be
   // returned in the priority of TOUCH_PRECOMPOSED_ICON, TOUCH_ICON, and
   // FAVICON.
   base::CancelableTaskTracker::TaskId GetFavicons(
       const std::vector<GURL>& icon_urls,
       int icon_types,
-      int desired_size_in_dip,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      const std::vector<int>& desired_sizes,
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);
 
   // Used by the FaviconService to get favicons mapped to |page_url| for
-  // |icon_types| which most closely match |desired_size_in_dip| and
-  // |desired_scale_factors|. If |desired_size_in_dip| is 0, the largest favicon
-  // bitmap for |icon_types| is returned. The returned FaviconBitmapResults will
-  // have at most one result for each of |desired_scale_factors|. If a favicon
-  // bitmap is determined to be the best candidate for multiple scale factors
-  // there will be less results. If |icon_types| has several types, results for
-  // only a single type will be returned in the priority of
-  // TOUCH_PRECOMPOSED_ICON, TOUCH_ICON, and FAVICON.
+  // |icon_types| whose edge sizes most closely match |desired_sizes|. If
+  // |desired_sizes| has a '0' entry, the largest favicon bitmap for
+  // |icon_types| is returned. The returned FaviconBitmapResults will have at
+  // most one result for each entry in |desired_sizes|. If a favicon bitmap is
+  // determined to be the best candidate for multiple |desired_sizes| there
+  // will be fewer results. If |icon_types| has several types, results for only
+  // a single type will be returned in the priority of TOUCH_PRECOMPOSED_ICON,
+  // TOUCH_ICON, and FAVICON.
   base::CancelableTaskTracker::TaskId GetFaviconsForURL(
       const GURL& page_url,
       int icon_types,
-      int desired_size_in_dip,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      const std::vector<int>& desired_sizes,
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);
 
@@ -698,13 +695,12 @@ class HistoryService : public CancelableRequestProvider,
       base::CancelableTaskTracker* tracker);
 
   // Used by the FaviconService to get the favicon bitmap which most closely
-  // matches |desired_size_in_dip| and |desired_scale_factor| from the favicon
-  // with |favicon_id| from the history backend. If |desired_size_in_dip| is 0,
-  // the largest favicon bitmap for |favicon_id| is returned.
+  // matches |desired_size| from the favicon with |favicon_id| from the history
+  // backend. If |desired_size| is 0, the largest favicon bitmap for
+  // |favicon_id| is returned.
   base::CancelableTaskTracker::TaskId GetFaviconForID(
       favicon_base::FaviconID favicon_id,
-      int desired_size_in_dip,
-      ui::ScaleFactor desired_scale_factor,
+      int desired_size,
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);
 
@@ -723,16 +719,14 @@ class HistoryService : public CancelableRequestProvider,
   //    Sample new mappings to |page_url|: { ICON_URL3 }
   // |icon_types| can only have multiple IconTypes if
   // |icon_types| == TOUCH_ICON | TOUCH_PRECOMPOSED_ICON.
-  // The favicon bitmaps which most closely match |desired_size_in_dip|
-  // and |desired_scale_factors| from the favicons which were just mapped
-  // to |page_url| are returned. If |desired_size_in_dip| is 0, the
-  // largest favicon bitmap is returned.
+  // The favicon bitmaps whose edge sizes most closely match |desired_sizes|
+  // from the favicons which were just mapped to |page_url| are returned. If
+  // |desired_sizes| has a '0' entry, the largest favicon bitmap is returned.
   base::CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
       const GURL& page_url,
       const std::vector<GURL>& icon_urls,
       int icon_types,
-      int desired_size_in_dip,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      const std::vector<int>& desired_sizes,
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);
 

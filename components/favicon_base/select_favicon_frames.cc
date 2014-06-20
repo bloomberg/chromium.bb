@@ -4,7 +4,10 @@
 
 #include "components/favicon_base/select_favicon_frames.h"
 
+#include <algorithm>
+#include <cmath>
 #include <limits>
+#include <map>
 #include <set>
 
 #include "skia/ext/image_operations.h"
@@ -47,21 +50,16 @@ SkBitmap SampleNearestNeighbor(const SkBitmap& contents, int desired_size) {
 enum ResizeMethod { NONE, SAMPLE_NEAREST_NEIGHBOUR, LANCZOS };
 
 size_t GetCandidateIndexWithBestScore(
-    const std::vector<gfx::Size>& candidate_sizes_in_pixel,
-    ui::ScaleFactor scale_factor,
-    int desired_size_in_dip,
+    const std::vector<gfx::Size>& candidate_sizes,
+    int desired_size,
     float* score,
     ResizeMethod* resize_method) {
-  DCHECK_NE(desired_size_in_dip, 0);
-
-  float scale = ui::GetScaleForScaleFactor(scale_factor);
-  int desired_size_in_pixel =
-      static_cast<int>(desired_size_in_dip * scale + 0.5f);
+  DCHECK_NE(desired_size, 0);
 
   // Try to find an exact match.
-  for (size_t i = 0; i < candidate_sizes_in_pixel.size(); ++i) {
-    if (candidate_sizes_in_pixel[i].width() == desired_size_in_pixel &&
-        candidate_sizes_in_pixel[i].height() == desired_size_in_pixel) {
+  for (size_t i = 0; i < candidate_sizes.size(); ++i) {
+    if (candidate_sizes[i].width() == desired_size &&
+        candidate_sizes[i].height() == desired_size) {
       *score = 1;
       *resize_method = NONE;
       return i;
@@ -69,31 +67,28 @@ size_t GetCandidateIndexWithBestScore(
   }
 
   // Huge favicon bitmaps often have a completely different visual style from
-  // smaller favicon bitmaps. Avoid these favicon bitmaps when a favicon of
-  // gfx::kFaviconSize DIP is requested.
-  const int kHugeEdgeSizeInPixel = desired_size_in_pixel * 8;
+  // smaller favicon bitmaps. Avoid them.
+  const int kHugeEdgeSize = desired_size * 8;
 
   // Order of preference:
-  // 1) Bitmaps with width and height smaller than |kHugeEdgeSizeInPixel|.
+  // 1) Bitmaps with width and height smaller than |kHugeEdgeSize|.
   // 2) Bitmaps which need to be scaled down instead of up.
   // 3) Bitmaps which do not need to be scaled as much.
   size_t candidate_index = std::numeric_limits<size_t>::max();
   float candidate_score = 0;
-  for (size_t i = 0; i < candidate_sizes_in_pixel.size(); ++i) {
-    float average_edge_in_pixel = (candidate_sizes_in_pixel[i].width() +
-                                   candidate_sizes_in_pixel[i].height()) /
-                                  2.0f;
+  for (size_t i = 0; i < candidate_sizes.size(); ++i) {
+    float average_edge =
+        (candidate_sizes[i].width() + candidate_sizes[i].height()) / 2.0f;
 
     float score = 0;
-    if (candidate_sizes_in_pixel[i].width() >= kHugeEdgeSizeInPixel ||
-        candidate_sizes_in_pixel[i].height() >= kHugeEdgeSizeInPixel) {
-      score =
-          std::min(1.0f, desired_size_in_pixel / average_edge_in_pixel) * 0.01f;
-    } else if (candidate_sizes_in_pixel[i].width() >= desired_size_in_pixel &&
-               candidate_sizes_in_pixel[i].height() >= desired_size_in_pixel) {
-      score = desired_size_in_pixel / average_edge_in_pixel * 0.01f + 0.15f;
+    if (candidate_sizes[i].width() >= kHugeEdgeSize ||
+        candidate_sizes[i].height() >= kHugeEdgeSize) {
+      score = std::min(1.0f, desired_size / average_edge) * 0.01f;
+    } else if (candidate_sizes[i].width() >= desired_size &&
+               candidate_sizes[i].height() >= desired_size) {
+      score = desired_size / average_edge * 0.01f + 0.15f;
     } else {
-      score = std::min(1.0f, average_edge_in_pixel / desired_size_in_pixel) *
+      score = std::min(1.0f, average_edge / desired_size) *
                   0.01f +
               0.1f;
     }
@@ -108,12 +103,11 @@ size_t GetCandidateIndexWithBestScore(
 
   // Integer multiples are built using nearest neighbor sampling. Otherwise,
   // Lanczos scaling is used.
-  const gfx::Size& candidate_size_in_pixel =
-      candidate_sizes_in_pixel[candidate_index];
-  if (candidate_size_in_pixel.IsEmpty()) {
+  const gfx::Size& candidate_size = candidate_sizes[candidate_index];
+  if (candidate_size.IsEmpty()) {
     *resize_method = NONE;
-  } else if (desired_size_in_pixel % candidate_size_in_pixel.width() == 0 &&
-             desired_size_in_pixel % candidate_size_in_pixel.height() == 0) {
+  } else if (desired_size % candidate_size.width() == 0 &&
+             desired_size % candidate_size.height() == 0) {
     *resize_method = SAMPLE_NEAREST_NEIGHBOUR;
   } else {
     *resize_method = LANCZOS;
@@ -121,14 +115,14 @@ size_t GetCandidateIndexWithBestScore(
   return candidate_index;
 }
 
-// Represents the index of the best candidate for a |scale_factor| from the
+// Represents the index of the best candidate for |desired_size| from the
 // |candidate_sizes| passed into GetCandidateIndicesWithBestScores().
 struct SelectionResult {
   // index in |candidate_sizes| of the best candidate.
   size_t index;
 
-  // The ScaleFactor for which |index| is the best candidate.
-  ui::ScaleFactor scale_factor;
+  // The desired size for which |index| is the best candidate.
+  int desired_size;
 
   // How the bitmap data that the bitmap with |candidate_sizes[index]| should
   // be resized for displaying in the UI.
@@ -137,21 +131,22 @@ struct SelectionResult {
 
 void GetCandidateIndicesWithBestScores(
     const std::vector<gfx::Size>& candidate_sizes,
-    const std::vector<ui::ScaleFactor>& scale_factors,
-    int desired_size,
+    const std::vector<int>& desired_sizes,
     float* match_score,
     std::vector<SelectionResult>* results) {
-  if (candidate_sizes.empty()) {
+  if (candidate_sizes.empty() || desired_sizes.empty()) {
     if (match_score)
       *match_score = 0.0f;
     return;
   }
 
-  if (desired_size == 0) {
+  std::vector<int>::const_iterator zero_size_it = std::find(
+      desired_sizes.begin(), desired_sizes.end(), 0);
+  if (zero_size_it != desired_sizes.end()) {
     // Just return the biggest image available.
     SelectionResult result;
     result.index = BiggestCandidate(candidate_sizes);
-    result.scale_factor = ui::SCALE_FACTOR_100P;
+    result.desired_size = 0;
     result.resize_method = NONE;
     results->push_back(result);
     if (match_score)
@@ -160,13 +155,12 @@ void GetCandidateIndicesWithBestScores(
   }
 
   float total_score = 0;
-  for (size_t i = 0; i < scale_factors.size(); ++i) {
+  for (size_t i = 0; i < desired_sizes.size(); ++i) {
     float score;
     SelectionResult result;
-    result.scale_factor = scale_factors[i];
+    result.desired_size = desired_sizes[i];
     result.index = GetCandidateIndexWithBestScore(candidate_sizes,
-                                                  result.scale_factor,
-                                                  desired_size,
+                                                  result.desired_size,
                                                   &score,
                                                   &result.resize_method);
     results->push_back(result);
@@ -174,29 +168,24 @@ void GetCandidateIndicesWithBestScores(
   }
 
   if (match_score)
-    *match_score = total_score / scale_factors.size();
+    *match_score = total_score / desired_sizes.size();
 }
 
 // Resize |source_bitmap| using |resize_method|.
 SkBitmap GetResizedBitmap(const SkBitmap& source_bitmap,
-                          int desired_size_in_dip,
-                          ui::ScaleFactor scale_factor,
+                          int desired_size,
                           ResizeMethod resize_method) {
-  float scale = ui::GetScaleForScaleFactor(scale_factor);
-  int desired_size_in_pixel =
-      static_cast<int>(desired_size_in_dip * scale + 0.5f);
-
   switch (resize_method) {
     case NONE:
       return source_bitmap;
     case SAMPLE_NEAREST_NEIGHBOUR:
-      return SampleNearestNeighbor(source_bitmap, desired_size_in_pixel);
+      return SampleNearestNeighbor(source_bitmap, desired_size);
     case LANCZOS:
       return skia::ImageOperations::Resize(
           source_bitmap,
           skia::ImageOperations::RESIZE_LANCZOS3,
-          desired_size_in_pixel,
-          desired_size_in_pixel);
+          desired_size,
+          desired_size);
   }
   return source_bitmap;
 }
@@ -209,34 +198,50 @@ gfx::ImageSkia SelectFaviconFrames(
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_sizes,
     const std::vector<ui::ScaleFactor>& scale_factors,
-    int desired_size,
+    int desired_size_in_dip,
     float* match_score) {
+  std::vector<int> desired_sizes;
+  std::map<int, float> scale_map;
+  if (desired_size_in_dip == 0) {
+    desired_sizes.push_back(0);
+    scale_map[0] = 1.0f;
+  } else {
+    for (size_t i = 0; i < scale_factors.size(); ++i) {
+      float scale = ui::GetScaleForScaleFactor(scale_factors[i]);
+      int desired_size = ceil(desired_size_in_dip * scale);
+      desired_sizes.push_back(desired_size);
+      scale_map[desired_size] = scale;
+    }
+  }
+
   std::vector<SelectionResult> results;
   GetCandidateIndicesWithBestScores(
-      original_sizes, scale_factors, desired_size, match_score, &results);
+      original_sizes, desired_sizes, match_score, &results);
 
   gfx::ImageSkia multi_image;
   for (size_t i = 0; i < results.size(); ++i) {
     const SelectionResult& result = results[i];
     SkBitmap resized_bitmap = GetResizedBitmap(bitmaps[result.index],
-                                               desired_size,
-                                               result.scale_factor,
+                                               result.desired_size,
                                                result.resize_method);
-    multi_image.AddRepresentation(gfx::ImageSkiaRep(
-        resized_bitmap, ui::GetScaleForScaleFactor(result.scale_factor)));
+
+    std::map<int, float>::const_iterator it = scale_map.find(
+        result.desired_size);
+    DCHECK(it != scale_map.end());
+    float scale = it->second;
+    multi_image.AddRepresentation(gfx::ImageSkiaRep(resized_bitmap, scale));
   }
   return multi_image;
 }
 
 void SelectFaviconFrameIndices(
     const std::vector<gfx::Size>& frame_pixel_sizes,
-    const std::vector<ui::ScaleFactor>& scale_factors,
-    int desired_size,
+    const std::vector<int>& desired_sizes,
     std::vector<size_t>* best_indices,
     float* match_score) {
   std::vector<SelectionResult> results;
   GetCandidateIndicesWithBestScores(
-      frame_pixel_sizes, scale_factors, desired_size, match_score, &results);
+      frame_pixel_sizes, desired_sizes, match_score, &results);
 
   std::set<size_t> already_added;
   for (size_t i = 0; i < results.size(); ++i) {

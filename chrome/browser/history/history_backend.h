@@ -23,7 +23,6 @@
 #include "chrome/browser/history/visit_tracker.h"
 #include "components/search_engines/template_url_id.h"
 #include "sql/init_status.h"
-#include "ui/base/layout.h"
 
 class TestingProfile;
 class TypedUrlSyncableService;
@@ -222,8 +221,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void GetFavicons(
       const std::vector<GURL>& icon_urls,
       int icon_types,
-      int desired_size_in_dip,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      const std::vector<int>& desired_sizes,
       std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
 
   void GetLargestFaviconForURL(
@@ -235,22 +233,19 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void GetFaviconsForURL(
       const GURL& page_url,
       int icon_types,
-      int desired_size_in_dip,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      const std::vector<int>& desired_sizes,
       std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
 
   void GetFaviconForID(
       favicon_base::FaviconID favicon_id,
-      int desired_size_in_dip,
-      ui::ScaleFactor desired_scale_factor,
+      int desired_size,
       std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
 
   void UpdateFaviconMappingsAndFetch(
       const GURL& page_url,
       const std::vector<GURL>& icon_urls,
       int icon_types,
-      int desired_size_in_dip,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      const std::vector<int>& desired_sizes,
       std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
 
   void MergeFavicon(const GURL& page_url,
@@ -658,8 +653,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       const GURL* page_url,
       const std::vector<GURL>& icon_urls,
       int icon_types,
-      int desired_size_in_dip,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      const std::vector<int>& desired_sizes,
       std::vector<favicon_base::FaviconRawBitmapResult>* results);
 
   // Set the favicon bitmaps for |icon_id|.
@@ -693,36 +687,34 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Returns true if there are favicons for |page_url| and one of the types in
   // |icon_types|.
-  // |favicon_bitmap_results| is set to the favicon bitmaps which most closely
-  // match |desired_size_in_dip| and |desired_scale_factors|. If
-  // |desired_size_in_dip| is 0, the largest favicon bitmap with one of the icon
-  // types in |icon_types| is returned. If |icon_types| contains multiple icon
-  // types and there are several matched icon types in the database, results
-  // will only be returned for a single icon type in the priority of
-  // TOUCH_PRECOMPOSED_ICON, TOUCH_ICON, and FAVICON. See the comment for
+  // |favicon_bitmap_results| is set to the favicon bitmaps whose edge sizes
+  // most closely match |desired_sizes|. If |desired_sizes| has a '0' entry, the
+  // largest favicon bitmap with one of the icon types in |icon_types| is
+  // returned. If |icon_types| contains multiple icon types and there are
+  // several matched icon types in the database, results will only be returned
+  // for a single icon type in the priority of TOUCH_PRECOMPOSED_ICON,
+  // TOUCH_ICON, and FAVICON. See the comment for
   // GetFaviconResultsForBestMatch() for more details on how
   // |favicon_bitmap_results| is constructed.
   bool GetFaviconsFromDB(
       const GURL& page_url,
       int icon_types,
-      const int desired_size_in_dip,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      const std::vector<int>& desired_sizes,
       std::vector<favicon_base::FaviconRawBitmapResult>*
           favicon_bitmap_results);
 
-  // Returns the favicon bitmaps which most closely match |desired_size_in_dip|
-  // and |desired_scale_factors| in |favicon_bitmap_results|. If
-  // |desired_size_in_dip| is 0, only the largest favicon bitmap is returned.
-  // Goodness is computed via SelectFaviconBitmapIDs(). It is computed on a
-  // per favicon id basis, thus all |favicon_bitmap_results| are guaranteed to
-  // be for the same FaviconID. |favicon_bitmap_results| will have at most one
-  // entry for each desired scale factor. There will be less entries if the same
-  // favicon bitmap is the best result for multiple scale factors.
+  // Returns the favicon bitmaps whose edge sizes most closely match
+  // |desired_sizes| in |favicon_bitmap_results|. If |desired_sizes| has a '0'
+  // entry, only the largest favicon bitmap is returned. Goodness is computed
+  // via SelectFaviconFrameIndices(). It is computed on a per FaviconID basis,
+  // thus all |favicon_bitmap_results| are guaranteed to be for the same
+  // FaviconID. |favicon_bitmap_results| will have at most one entry for each
+  // desired edge size. There will be fewer entries if the same favicon bitmap
+  // is the best result for multiple edge sizes.
   // Returns true if there were no errors.
   bool GetFaviconBitmapResultsForBestMatch(
       const std::vector<favicon_base::FaviconID>& candidate_favicon_ids,
-      int desired_size_in_dip,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      const std::vector<int>& desired_sizes,
       std::vector<favicon_base::FaviconRawBitmapResult>*
           favicon_bitmap_results);
 

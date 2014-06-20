@@ -225,7 +225,7 @@ class FaviconService : public KeyedService {
   // and GetFaviconForPageURL().
   base::CancelableTaskTracker::TaskId GetFaviconForPageURLImpl(
       const FaviconForPageURLParams& params,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      const std::vector<int>& desired_sizes_in_pixel,
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);
 
@@ -245,8 +245,7 @@ class FaviconService : public KeyedService {
   // |callback|.
   void RunFaviconRawBitmapCallbackWithBitmapResults(
       const favicon_base::FaviconRawBitmapCallback& callback,
-      int desired_size_in_dip,
-      ui::ScaleFactor desired_scale_factor,
+      int desired_size_in_pixel,
       const std::vector<favicon_base::FaviconRawBitmapResult>&
           favicon_bitmap_results);
 

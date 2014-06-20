@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/create_application_shortcut_view.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -497,15 +498,13 @@ void CreateUrlApplicationShortcutView::DidDownloadFavicon(
   SkBitmap image;
 
   if (!bitmaps.empty()) {
-    std::vector<ui::ScaleFactor> scale_factors;
-    ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactor(
-        ui::GetScaleFactorForNativeView(
-            web_contents_->GetRenderViewHost()->GetView()->GetNativeView()));
-    scale_factors.push_back(scale_factor);
+    std::vector<int> requested_sizes_in_pixel;
+    float scale = ui::GetScaleFactorForNativeView(
+        web_contents_->GetRenderViewHost()->GetView()->GetNativeView());
+    requested_sizes_in_pixel.push_back(ceil(requested_size * scale));
     std::vector<size_t> closest_indices;
     SelectFaviconFrameIndices(original_bitmap_sizes,
-                              scale_factors,
-                              requested_size,
+                              requested_sizes_in_pixel,
                               &closest_indices,
                               NULL);
     size_t closest_index = closest_indices[0];

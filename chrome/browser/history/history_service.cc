@@ -547,8 +547,7 @@ void HistoryService::AddPagesWithDetails(const history::URLRows& info,
 base::CancelableTaskTracker::TaskId HistoryService::GetFavicons(
     const std::vector<GURL>& icon_urls,
     int icon_types,
-    int desired_size_in_dip,
-    const std::vector<ui::ScaleFactor>& desired_scale_factors,
+    const std::vector<int>& desired_sizes,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -562,8 +561,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFavicons(
                  history_backend_.get(),
                  icon_urls,
                  icon_types,
-                 desired_size_in_dip,
-                 desired_scale_factors,
+                 desired_sizes,
                  results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
@@ -571,8 +569,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFavicons(
 base::CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
     const GURL& page_url,
     int icon_types,
-    int desired_size_in_dip,
-    const std::vector<ui::ScaleFactor>& desired_scale_factors,
+    const std::vector<int>& desired_sizes,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -586,8 +583,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
                  history_backend_.get(),
                  page_url,
                  icon_types,
-                 desired_size_in_dip,
-                 desired_scale_factors,
+                 desired_sizes,
                  results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
@@ -616,8 +612,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetLargestFaviconForURL(
 
 base::CancelableTaskTracker::TaskId HistoryService::GetFaviconForID(
     favicon_base::FaviconID favicon_id,
-    int desired_size_in_dip,
-    ui::ScaleFactor desired_scale_factor,
+    int desired_size,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -630,8 +625,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconForID(
       base::Bind(&HistoryBackend::GetFaviconForID,
                  history_backend_.get(),
                  favicon_id,
-                 desired_size_in_dip,
-                 desired_scale_factor,
+                 desired_size,
                  results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
@@ -641,8 +635,7 @@ HistoryService::UpdateFaviconMappingsAndFetch(
     const GURL& page_url,
     const std::vector<GURL>& icon_urls,
     int icon_types,
-    int desired_size_in_dip,
-    const std::vector<ui::ScaleFactor>& desired_scale_factors,
+    const std::vector<int>& desired_sizes,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -657,8 +650,7 @@ HistoryService::UpdateFaviconMappingsAndFetch(
                  page_url,
                  icon_urls,
                  icon_types,
-                 desired_size_in_dip,
-                 desired_scale_factors,
+                 desired_sizes,
                  results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }

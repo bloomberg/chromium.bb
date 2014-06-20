@@ -36,7 +36,7 @@ class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
   void GetFaviconForURL(
       Profile* profile,
       const GURL& page_url,
-      const std::vector<ui::ScaleFactor>& scale_factors,
+      const std::vector<int>& desired_sizes_in_pixel,
       const favicon_base::FaviconResultsCallback& callback) const;
 
   static ChromeWebUIControllerFactory* GetInstance();

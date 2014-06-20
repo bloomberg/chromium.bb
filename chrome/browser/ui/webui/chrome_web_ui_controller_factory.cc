@@ -62,6 +62,8 @@
 #include "components/dom_distiller/core/dom_distiller_constants.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/webui/dom_distiller_ui.h"
+#include "components/favicon_base/favicon_util.h"
+#include "components/favicon_base/select_favicon_frames.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"
@@ -570,7 +572,7 @@ WebUIController* ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
 void ChromeWebUIControllerFactory::GetFaviconForURL(
     Profile* profile,
     const GURL& page_url,
-    const std::vector<ui::ScaleFactor>& scale_factors,
+    const std::vector<int>& desired_sizes_in_pixel,
     const favicon_base::FaviconResultsCallback& callback) const {
   // Before determining whether page_url is an extension url, we must handle
   // overrides. This changes urls in |kChromeUIScheme| to extension urls, and
@@ -594,9 +596,27 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
   std::vector<favicon_base::FaviconRawBitmapResult>* favicon_bitmap_results =
       new std::vector<favicon_base::FaviconRawBitmapResult>();
 
+  // Assume that GetFaviconResourceBytes() returns favicons which are
+  // |gfx::kFaviconSize| x |gfx::kFaviconSize| DIP.
+  std::vector<ui::ScaleFactor> scale_factors =
+      favicon_base::GetFaviconScaleFactors();
+  std::vector<gfx::Size> candidate_sizes;
   for (size_t i = 0; i < scale_factors.size(); ++i) {
+    float scale = ui::GetScaleForScaleFactor(scale_factors[i]);
+    int candidate_edge_size =
+        static_cast<int>(gfx::kFaviconSize * scale  + 0.5f);
+    candidate_sizes.push_back(
+        gfx::Size(candidate_edge_size, candidate_edge_size));
+  }
+  std::vector<size_t> selected_indices;
+  SelectFaviconFrameIndices(candidate_sizes,
+                            desired_sizes_in_pixel,
+                            &selected_indices,
+                            NULL);
+  for (size_t i = 0; i < selected_indices.size(); ++i) {
+    size_t selected_index = selected_indices[i];
     scoped_refptr<base::RefCountedMemory> bitmap(GetFaviconResourceBytes(
-          url, scale_factors[i]));
+        url, scale_factors[selected_index]));
     if (bitmap.get() && bitmap->size()) {
       favicon_base::FaviconRawBitmapResult bitmap_result;
       bitmap_result.bitmap_data = bitmap;
@@ -604,12 +624,7 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
       bitmap_result.icon_type = favicon_base::FAVICON;
       favicon_bitmap_results->push_back(bitmap_result);
 
-      // Assume that |bitmap| is |gfx::kFaviconSize| x |gfx::kFaviconSize|
-      // DIP.
-      float scale = ui::GetScaleForScaleFactor(scale_factors[i]);
-      int edge_pixel_size =
-          static_cast<int>(gfx::kFaviconSize * scale + 0.5f);
-      bitmap_result.pixel_size = gfx::Size(edge_pixel_size, edge_pixel_size);
+      bitmap_result.pixel_size = candidate_sizes[selected_index];
     }
   }
 
