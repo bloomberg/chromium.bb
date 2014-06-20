@@ -9,6 +9,11 @@
 #include "chrome/common/extensions/api/guest_view_internal.h"
 #include "extensions/common/permissions/permissions_data.h"
 
+namespace {
+const char* kWebViewPermissionRequiredError =
+    "\"webview\" permission is required for allocating instance ID.";
+}  // namespace
+
 namespace extensions {
 
 GuestViewInternalAllocateInstanceIdFunction::
@@ -18,9 +23,14 @@ GuestViewInternalAllocateInstanceIdFunction::
 bool GuestViewInternalAllocateInstanceIdFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(!args_->GetSize());
 
-  // Check if we have "webview" permission.
-  CHECK(GetExtension()->permissions_data()->HasAPIPermission(
-            APIPermission::kWebView));
+
+  if (!GetExtension()->permissions_data()->HasAPIPermission(
+          APIPermission::kWebView)) {
+    LOG(ERROR) << kWebViewPermissionRequiredError;
+    error_ = kWebViewPermissionRequiredError;
+    SendResponse(false);
+    return false;
+  }
 
   int instanceId = GuestViewManager::FromBrowserContext(browser_context())
                        ->GetNextInstanceID();
