@@ -21,7 +21,7 @@ function test() {
   indexedDBTest(upgradeCallback, openCallback);
 }
 
-var numObjectsWrittenToDb = 500;
+var numObjectsWrittenToDb = 5;
 var numTransactions = 0;
 var numTransactionErrors = 0;
 var numTransactionAborts = 0;
@@ -110,7 +110,8 @@ var tests = {
     objectStore = transaction.objectStore('storeName');
   },
   get: function() {
-    testXhr("/corrupt/test/corruptdb?storeName", function() {
+    testXhr("/corrupt/test/fail?class=LevelDBTransaction&method=Get&instNum=1",
+            function() {
       tests.testCommon('readonly');
       request = objectStore.get('key-0');
       request.onsuccess = unexpectedSuccessCallback;
