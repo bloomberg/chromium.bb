@@ -14,6 +14,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/public/common/url_utils.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProviderClient.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
@@ -78,6 +79,17 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
     const GURL& script_url,
     WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks) {
   DCHECK(callbacks);
+
+  if (pattern.possibly_invalid_spec().size() > GetMaxURLChars() ||
+      script_url.possibly_invalid_spec().size() > GetMaxURLChars()) {
+    scoped_ptr<WebServiceWorkerProvider::WebServiceWorkerCallbacks>
+        owned_callbacks(callbacks);
+    scoped_ptr<WebServiceWorkerError> error(new WebServiceWorkerError(
+        WebServiceWorkerError::ErrorTypeSecurity, "URL too long"));
+    callbacks->onError(error.release());
+    return;
+  }
+
   int request_id = pending_callbacks_.Add(callbacks);
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_RegisterServiceWorker(
       CurrentWorkerId(), request_id, provider_id, pattern, script_url));
@@ -88,6 +100,16 @@ void ServiceWorkerDispatcher::UnregisterServiceWorker(
     const GURL& pattern,
     WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks) {
   DCHECK(callbacks);
+
+  if (pattern.possibly_invalid_spec().size() > GetMaxURLChars()) {
+    scoped_ptr<WebServiceWorkerProvider::WebServiceWorkerCallbacks>
+        owned_callbacks(callbacks);
+    scoped_ptr<WebServiceWorkerError> error(new WebServiceWorkerError(
+        WebServiceWorkerError::ErrorTypeSecurity, "URL too long"));
+    callbacks->onError(error.release());
+    return;
+  }
+
   int request_id = pending_callbacks_.Add(callbacks);
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_UnregisterServiceWorker(
       CurrentWorkerId(), request_id, provider_id, pattern));
@@ -215,7 +237,7 @@ void ServiceWorkerDispatcher::OnRegistrationError(
   if (!callbacks)
     return;
 
-  scoped_ptr<WebServiceWorkerError>  error(
+  scoped_ptr<WebServiceWorkerError> error(
       new WebServiceWorkerError(error_type, message));
   callbacks->onError(error.release());
   pending_callbacks_.Remove(request_id);
