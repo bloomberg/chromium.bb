@@ -1876,6 +1876,8 @@
         'browser/safe_browsing/malware_details_cache.h',
         'browser/safe_browsing/malware_details_history.cc',
         'browser/safe_browsing/malware_details_history.h',
+        'browser/safe_browsing/path_sanitizer.cc',
+        'browser/safe_browsing/path_sanitizer.h',
         'browser/safe_browsing/pe_image_reader_win.cc',
         'browser/safe_browsing/pe_image_reader_win.h',
         'browser/safe_browsing/ping_manager.cc',
