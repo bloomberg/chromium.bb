@@ -120,7 +120,6 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
   virtual void setShowDebugBorders(bool show);
   virtual void setContinuousPaintingEnabled(bool enabled);
   virtual void setShowScrollBottleneckRects(bool show);
-  virtual bool usesGpuRasterization() OVERRIDE;
 
   // cc::LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE;

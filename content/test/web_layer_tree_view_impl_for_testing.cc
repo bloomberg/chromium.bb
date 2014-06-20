@@ -167,8 +167,4 @@ void WebLayerTreeViewImplForTesting::clearViewportLayers() {
                                            scoped_refptr<cc::Layer>());
 }
 
-bool WebLayerTreeViewImplForTesting::usesGpuRasterization() {
-  return false;
-}
-
 }  // namespace content
