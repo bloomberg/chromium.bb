@@ -83,6 +83,21 @@ static jstring FixupUrl(JNIEnv* env,
       NULL;
 }
 
+static jboolean IsGooglePropertyUrl(JNIEnv* env, jclass clazz, jstring url) {
+  const GURL gurl = GURL(ConvertJavaStringToUTF8(env, url));
+  if (gurl.is_empty() || !gurl.is_valid())
+    return false;
+  return
+      google_util::IsGoogleDomainUrl(
+          gurl,
+          google_util::ALLOW_SUBDOMAIN,
+          google_util::DISALLOW_NON_STANDARD_PORTS) ||
+      google_util::IsYoutubeDomainUrl(
+          gurl,
+          google_util::ALLOW_SUBDOMAIN,
+          google_util::DISALLOW_NON_STANDARD_PORTS);
+}
+
 // Register native methods
 bool RegisterUrlUtilities(JNIEnv* env) {
   return RegisterNativesImpl(env);
