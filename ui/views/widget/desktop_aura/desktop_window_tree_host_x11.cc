@@ -1180,9 +1180,27 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
   if (!ui::GetAtomArrayProperty(xwindow_, "_NET_WM_STATE", &atom_list))
     return;
 
+  bool was_minimized = IsMinimized();
+
   window_properties_.clear();
   std::copy(atom_list.begin(), atom_list.end(),
             inserter(window_properties_, window_properties_.begin()));
+
+  // Propagate the window minimization information to the content window, so
+  // the render side can update its visibility properly. OnWMStateUpdated() is
+  // called by PropertyNofify event from DispatchEvent() when the browser is
+  // minimized or shown from minimized state. On Windows, this is realized by
+  // calling OnHostResized() with an empty size. In particular,
+  // HWNDMessageHandler::GetClientAreaBounds() returns an empty size when the
+  // window is minimized. On Linux, returning empty size in GetBounds() or
+  // SetBounds() does not work.
+  bool is_minimized = IsMinimized();
+  if (is_minimized != was_minimized) {
+    if (is_minimized)
+      content_window_->Hide();
+    else
+      content_window_->Show();
+  }
 
   if (restored_bounds_.IsEmpty()) {
     DCHECK(!IsFullscreen());

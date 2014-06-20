@@ -367,4 +367,82 @@ TEST_F(DesktopWindowTreeHostX11Test, WindowManagerTogglesFullscreen) {
             widget->GetWindowBoundsInScreen().ToString());
 }
 
+// Tests that the minimization information is propagated to the content window.
+TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.native_widget = new DesktopNativeWidgetAura(&widget);
+  widget.Init(params);
+  widget.Show();
+  ui::X11EventSource::GetInstance()->DispatchXEvents();
+
+  XID xid = widget.GetNativeWindow()->GetHost()->GetAcceleratedWidget();
+  Display* display = gfx::GetXDisplay();
+
+  // Minimize by sending _NET_WM_STATE_HIDDEN
+  {
+    const char* kAtomsToCache[] = {
+        "_NET_WM_STATE",
+        "_NET_WM_STATE_HIDDEN",
+        NULL
+    };
+
+    ui::X11AtomCache atom_cache(display, kAtomsToCache);
+
+    std::vector< ::Atom> atom_list;
+    atom_list.push_back(atom_cache.GetAtom("_NET_WM_STATE_HIDDEN"));
+    ui::SetAtomArrayProperty(xid, "_NET_WM_STATE", "ATOM", atom_list);
+
+    XEvent xevent;
+    memset(&xevent, 0, sizeof(xevent));
+    xevent.type = PropertyNotify;
+    xevent.xproperty.type = PropertyNotify;
+    xevent.xproperty.send_event = 1;
+    xevent.xproperty.display = display;
+    xevent.xproperty.window = xid;
+    xevent.xproperty.atom = atom_cache.GetAtom("_NET_WM_STATE");
+    xevent.xproperty.state = 0;
+    XSendEvent(display, DefaultRootWindow(display), False,
+        SubstructureRedirectMask | SubstructureNotifyMask,
+        &xevent);
+
+    WMStateWaiter waiter(xid, "_NET_WM_STATE_HIDDEN", true);
+    waiter.Wait();
+  }
+  EXPECT_FALSE(widget.GetNativeWindow()->IsVisible());
+
+  // Show from minimized by sending _NET_WM_STATE_FOCUSED
+  {
+    const char* kAtomsToCache[] = {
+        "_NET_WM_STATE",
+        "_NET_WM_STATE_FOCUSED",
+        NULL
+    };
+
+    ui::X11AtomCache atom_cache(display, kAtomsToCache);
+
+    std::vector< ::Atom> atom_list;
+    atom_list.push_back(atom_cache.GetAtom("_NET_WM_STATE_FOCUSED"));
+    ui::SetAtomArrayProperty(xid, "_NET_WM_STATE", "ATOM", atom_list);
+
+    XEvent xevent;
+    memset(&xevent, 0, sizeof(xevent));
+    xevent.type = PropertyNotify;
+    xevent.xproperty.type = PropertyNotify;
+    xevent.xproperty.send_event = 1;
+    xevent.xproperty.display = display;
+    xevent.xproperty.window = xid;
+    xevent.xproperty.atom = atom_cache.GetAtom("_NET_WM_STATE");
+    xevent.xproperty.state = 0;
+    XSendEvent(display, DefaultRootWindow(display), False,
+        SubstructureRedirectMask | SubstructureNotifyMask,
+        &xevent);
+
+    WMStateWaiter waiter(xid, "_NET_WM_STATE_FOCUSED", true);
+    waiter.Wait();
+  }
+  EXPECT_TRUE(widget.GetNativeWindow()->IsVisible());
+}
+
 }  // namespace views
