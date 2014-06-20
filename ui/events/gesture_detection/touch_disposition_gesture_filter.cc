@@ -17,16 +17,16 @@ COMPILE_ASSERT(ET_GESTURE_TYPE_END - ET_GESTURE_TYPE_START < 32,
 
 GestureEventData CreateGesture(EventType type,
                                int motion_event_id,
-                               const base::TimeTicks& timestamp,
-                               const gfx::PointF& location) {
-  GestureEventDetails details(type, 0, 0);
-  return GestureEventData(details,
+                               const GestureEventDataPacket& packet) {
+  return GestureEventData(GestureEventDetails(type, 0, 0),
                           motion_event_id,
-                          timestamp,
-                          location.x(),
-                          location.y(),
+                          packet.timestamp(),
+                          packet.touch_location().x(),
+                          packet.touch_location().y(),
+                          packet.raw_touch_location().x(),
+                          packet.raw_touch_location().y(),
                           1,
-                          gfx::RectF(location.x(), location.y(), 0, 0));
+                          gfx::RectF(packet.touch_location(), gfx::SizeF()));
 }
 
 enum RequiredTouches {
@@ -269,14 +269,7 @@ void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
     case ET_GESTURE_TAP:
       DCHECK(needs_tap_ending_event_);
       if (needs_show_press_event_) {
-        GestureEventData show_press_event(ET_GESTURE_SHOW_PRESS,
-                                          event.motion_event_id,
-                                          event.time,
-                                          event.x,
-                                          event.y,
-                                          event.details.touch_points(),
-                                          event.details.bounding_box_f());
-        SendGesture(show_press_event);
+        SendGesture(GestureEventData(ET_GESTURE_SHOW_PRESS, event));
         DCHECK(!needs_show_press_event_);
       }
       needs_tap_ending_event_ = false;
@@ -317,8 +310,7 @@ void TouchDispositionGestureFilter::CancelTapIfNecessary() {
 
   SendGesture(CreateGesture(ET_GESTURE_TAP_CANCEL,
                             ending_event_motion_event_id_,
-                            packet_being_sent_->timestamp(),
-                            packet_being_sent_->touch_location()));
+                            *packet_being_sent_));
   DCHECK(!needs_tap_ending_event_);
 }
 
@@ -329,8 +321,7 @@ void TouchDispositionGestureFilter::CancelFlingIfNecessary() {
 
   SendGesture(CreateGesture(ET_SCROLL_FLING_CANCEL,
                             ending_event_motion_event_id_,
-                            packet_being_sent_->timestamp(),
-                            packet_being_sent_->touch_location()));
+                            *packet_being_sent_));
   DCHECK(!needs_fling_ending_event_);
 }
 
@@ -341,8 +332,7 @@ void TouchDispositionGestureFilter::EndScrollIfNecessary() {
 
   SendGesture(CreateGesture(ET_GESTURE_SCROLL_END,
                             ending_event_motion_event_id_,
-                            packet_being_sent_->timestamp(),
-                            packet_being_sent_->touch_location()));
+                            *packet_being_sent_));
   DCHECK(!needs_scroll_ending_event_);
 }
 

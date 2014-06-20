@@ -238,6 +238,8 @@ WebGestureEvent CreateWebGestureEventFromGestureEventData(
   WebGestureEvent gesture;
   gesture.x = data.x;
   gesture.y = data.y;
+  gesture.globalX = data.raw_x;
+  gesture.globalY = data.raw_y;
   gesture.timeStampSeconds = (data.time - base::TimeTicks()).InSecondsF();
   gesture.sourceDevice = blink::WebGestureDeviceTouchscreen;
 

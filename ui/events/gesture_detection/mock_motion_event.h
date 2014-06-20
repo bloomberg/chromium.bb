@@ -72,10 +72,12 @@ struct MockMotionEvent : public MotionEvent {
   void ReleasePoint();
   void CancelPoint();
   void SetTouchMajor(float new_touch_major);
+  void SetRawOffset(float raw_offset_x, float raw_offset_y);
 
   MotionEvent::Action action;
   size_t pointer_count;
   gfx::PointF points[MAX_POINTERS];
+  gfx::Vector2dF raw_offset;
   base::TimeTicks time;
   float touch_major;
   int id;

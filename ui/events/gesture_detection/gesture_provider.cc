@@ -47,6 +47,8 @@ GestureEventData CreateGesture(const GestureEventDetails& details,
                                base::TimeTicks time,
                                float x,
                                float y,
+                               float raw_x,
+                               float raw_y,
                                size_t touch_point_count,
                                const gfx::RectF& bounding_box) {
   return GestureEventData(details,
@@ -54,7 +56,9 @@ GestureEventData CreateGesture(const GestureEventDetails& details,
                           time,
                           x,
                           y,
-                          static_cast<int>(touch_point_count),
+                          raw_x,
+                          raw_y,
+                          touch_point_count,
                           bounding_box);
 }
 
@@ -63,37 +67,36 @@ GestureEventData CreateGesture(EventType type,
                                base::TimeTicks time,
                                float x,
                                float y,
+                               float raw_x,
+                               float raw_y,
                                size_t touch_point_count,
                                const gfx::RectF& bounding_box) {
-  return GestureEventData(type,
+  return GestureEventData(GestureEventDetails(type, 0, 0),
                           motion_event_id,
                           time,
                           x,
                           y,
-                          static_cast<int>(touch_point_count),
+                          raw_x,
+                          raw_y,
+                          touch_point_count,
                           bounding_box);
 }
 
 GestureEventData CreateGesture(const GestureEventDetails& details,
                                const MotionEvent& event) {
-  return CreateGesture(details,
-                       event.GetId(),
-                       event.GetEventTime(),
-                       event.GetX(),
-                       event.GetY(),
-                       event.GetPointerCount(),
-                       GetBoundingBox(event));
+  return GestureEventData(details,
+                          event.GetId(),
+                          event.GetEventTime(),
+                          event.GetX(),
+                          event.GetY(),
+                          event.GetRawX(),
+                          event.GetRawY(),
+                          event.GetPointerCount(),
+                          GetBoundingBox(event));
 }
 
-GestureEventData CreateGesture(EventType type,
-                               const MotionEvent& event) {
-  return CreateGesture(type,
-                       event.GetId(),
-                       event.GetEventTime(),
-                       event.GetX(),
-                       event.GetY(),
-                       event.GetPointerCount(),
-                       GetBoundingBox(event));
+GestureEventData CreateGesture(EventType type, const MotionEvent& event) {
+  return CreateGesture(GestureEventDetails(type, 0, 0), event);
 }
 
 GestureEventDetails CreateTapGestureDetails(EventType type) {
@@ -154,13 +157,7 @@ class GestureProvider::ScaleGestureListenerImpl
                           const MotionEvent& e) OVERRIDE {
     if (!pinch_event_sent_)
       return;
-    provider_->Send(CreateGesture(ET_GESTURE_PINCH_END,
-                                  e.GetId(),
-                                  detector.GetEventTime(),
-                                  0,
-                                  0,
-                                  e.GetPointerCount(),
-                                  GetBoundingBox(e)));
+    provider_->Send(CreateGesture(ET_GESTURE_PINCH_END, e));
     pinch_event_sent_ = false;
   }
 
@@ -175,6 +172,8 @@ class GestureProvider::ScaleGestureListenerImpl
                                     detector.GetEventTime(),
                                     detector.GetFocusX(),
                                     detector.GetFocusY(),
+                                    detector.GetFocusX() + e.GetRawOffsetX(),
+                                    detector.GetFocusY() + e.GetRawOffsetY(),
                                     e.GetPointerCount(),
                                     GetBoundingBox(e)));
     }
@@ -206,6 +205,8 @@ class GestureProvider::ScaleGestureListenerImpl
                                   detector.GetEventTime(),
                                   detector.GetFocusX(),
                                   detector.GetFocusY(),
+                                  detector.GetFocusX() + e.GetRawOffsetX(),
+                                  detector.GetFocusY() + e.GetRawOffsetY(),
                                   e.GetPointerCount(),
                                   GetBoundingBox(e)));
     return true;
@@ -345,19 +346,26 @@ class GestureProvider::GestureListenerImpl
                                     e2.GetEventTime(),
                                     e1.GetX(),
                                     e1.GetY(),
+                                    e1.GetRawX(),
+                                    e1.GetRawY(),
                                     e2.GetPointerCount(),
                                     GetBoundingBox(e2)));
     }
 
     if (distance_x || distance_y) {
       const gfx::RectF bounding_box = GetBoundingBox(e2);
+      const gfx::PointF center = bounding_box.CenterPoint();
+      const gfx::PointF raw_center =
+          center + gfx::Vector2dF(e2.GetRawOffsetX(), e2.GetRawOffsetY());
       GestureEventDetails scroll_details(
           ET_GESTURE_SCROLL_UPDATE, -distance_x, -distance_y);
       provider_->Send(CreateGesture(scroll_details,
                                     e2.GetId(),
                                     e2.GetEventTime(),
-                                    bounding_box.CenterPoint().x(),
-                                    bounding_box.CenterPoint().y(),
+                                    center.x(),
+                                    center.y(),
+                                    raw_center.x(),
+                                    raw_center.y(),
                                     e2.GetPointerCount(),
                                     bounding_box));
     }
@@ -402,6 +410,8 @@ class GestureProvider::GestureListenerImpl
                                   e2.GetEventTime(),
                                   e1.GetX(),
                                   e1.GetY(),
+                                  e1.GetRawX(),
+                                  e1.GetRawY(),
                                   e2.GetPointerCount(),
                                   GetBoundingBox(e2)));
     return true;
@@ -671,25 +681,13 @@ void GestureProvider::Send(GestureEventData gesture) {
     case ET_GESTURE_SCROLL_END:
       DCHECK(touch_scroll_in_progress_);
       if (pinch_in_progress_)
-        Send(CreateGesture(ET_GESTURE_PINCH_END,
-                           gesture.motion_event_id,
-                           gesture.time,
-                           gesture.x,
-                           gesture.y,
-                           gesture.details.touch_points(),
-                           gesture.details.bounding_box()));
+        Send(GestureEventData(ET_GESTURE_PINCH_END, gesture));
       touch_scroll_in_progress_ = false;
       break;
     case ET_GESTURE_PINCH_BEGIN:
       DCHECK(!pinch_in_progress_);
       if (!touch_scroll_in_progress_)
-        Send(CreateGesture(ET_GESTURE_SCROLL_BEGIN,
-                           gesture.motion_event_id,
-                           gesture.time,
-                           gesture.x,
-                           gesture.y,
-                           gesture.details.touch_points(),
-                           gesture.details.bounding_box()));
+        Send(GestureEventData(ET_GESTURE_SCROLL_BEGIN, gesture));
       pinch_in_progress_ = true;
       break;
     case ET_GESTURE_PINCH_END:
@@ -741,11 +739,14 @@ void GestureProvider::OnTouchEventHandlingBegin(const MotionEvent& event) {
       break;
     case MotionEvent::ACTION_POINTER_DOWN:
       if (gesture_begin_end_types_enabled_) {
+        const int action_index = event.GetActionIndex();
         Send(CreateGesture(ET_GESTURE_BEGIN,
                            event.GetId(),
                            event.GetEventTime(),
-                           event.GetX(event.GetActionIndex()),
-                           event.GetY(event.GetActionIndex()),
+                           event.GetX(action_index),
+                           event.GetY(action_index),
+                           event.GetRawX(action_index),
+                           event.GetRawY(action_index),
                            event.GetPointerCount(),
                            GetBoundingBox(event)));
       }
@@ -775,6 +776,8 @@ void GestureProvider::OnTouchEventHandlingEnd(const MotionEvent& event) {
                              event.GetEventTime(),
                              event.GetX(i),
                              event.GetY(i),
+                             event.GetRawX(i),
+                             event.GetRawY(i),
                              event.GetPointerCount() - i,
                              bounding_box));
         }

@@ -62,6 +62,8 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   float GetY() const { return GetY(0); }
   float GetRawX() const { return GetRawX(0); }
   float GetRawY() const { return GetRawY(0); }
+  float GetRawOffsetX() const { return GetRawX() - GetX(); }
+  float GetRawOffsetY() const { return GetRawY() - GetY(); }
   float GetTouchMajor() const { return GetTouchMajor(0); }
   float GetPressure() const { return GetPressure(0); }
 };

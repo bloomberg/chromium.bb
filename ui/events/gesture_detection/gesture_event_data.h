@@ -20,16 +20,11 @@ struct GESTURE_DETECTION_EXPORT GestureEventData {
                    base::TimeTicks time,
                    float x,
                    float y,
-                   int touch_point_count,
+                   float raw_x,
+                   float raw_y,
+                   size_t touch_point_count,
                    const gfx::RectF& bounding_box);
-
-  GestureEventData(EventType type,
-                   int motion_event_id,
-                   base::TimeTicks time,
-                   float x,
-                   float y,
-                   int touch_point_count,
-                   const gfx::RectF& bounding_box);
+  GestureEventData(EventType type, const GestureEventData&);
 
   EventType type() const { return details.type(); }
 
@@ -38,6 +33,8 @@ struct GESTURE_DETECTION_EXPORT GestureEventData {
   base::TimeTicks time;
   float x;
   float y;
+  float raw_x;
+  float raw_y;
 
  private:
   friend class GestureEventDataPacket;

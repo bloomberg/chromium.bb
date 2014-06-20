@@ -44,18 +44,21 @@ class GESTURE_DETECTION_EXPORT GestureEventDataPacket {
   const GestureEventData& gesture(size_t i) const { return gestures_[i]; }
   size_t gesture_count() const { return gesture_count_; }
   GestureSource gesture_source() const { return gesture_source_; }
-  gfx::PointF touch_location() const { return touch_location_; }
+  const gfx::PointF& touch_location() const { return touch_location_; }
+  const gfx::PointF& raw_touch_location() const { return raw_touch_location_; }
 
  private:
   GestureEventDataPacket(base::TimeTicks timestamp,
                          GestureSource source,
-                         gfx::PointF touch_location);
+                         const gfx::PointF& touch_location,
+                         const gfx::PointF& raw_touch_location);
 
   enum { kMaxGesturesPerTouch = 5 };
   base::TimeTicks timestamp_;
   GestureEventData gestures_[kMaxGesturesPerTouch];
   size_t gesture_count_;
   gfx::PointF touch_location_;
+  gfx::PointF raw_touch_location_;
   GestureSource gesture_source_;
 };
 

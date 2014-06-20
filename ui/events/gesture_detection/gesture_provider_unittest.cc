@@ -736,6 +736,8 @@ TEST_F(GestureProviderTest, DoubleTapDragZoomBasic) {
 TEST_F(GestureProviderTest, ScrollUpdateValues) {
   const float delta_x = 16;
   const float delta_y = 84;
+  const float raw_offset_x = 17.3f;
+  const float raw_offset_y = 13.7f;
 
   const base::TimeTicks event_time = TimeTicks::Now();
 
@@ -755,6 +757,7 @@ TEST_F(GestureProviderTest, ScrollUpdateValues) {
                             MotionEvent::ACTION_MOVE,
                             kFakeCoordX - delta_x,
                             kFakeCoordY - delta_y);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
 
   // Make sure the reported gesture event has all the expected details.
@@ -764,6 +767,8 @@ TEST_F(GestureProviderTest, ScrollUpdateValues) {
   EXPECT_EQ(event_time + kOneMicrosecond * 2, gesture.time);
   EXPECT_EQ(kFakeCoordX - delta_x, gesture.x);
   EXPECT_EQ(kFakeCoordY - delta_y, gesture.y);
+  EXPECT_EQ(kFakeCoordX - delta_x + raw_offset_x, gesture.raw_x);
+  EXPECT_EQ(kFakeCoordY - delta_y + raw_offset_y, gesture.raw_y);
   EXPECT_EQ(1, gesture.details.touch_points());
 
   // No horizontal delta because of snapping.
@@ -1416,6 +1421,8 @@ TEST_F(GestureProviderTest, FixedPageScaleDuringDoubleTapDragZoom) {
 TEST_F(GestureProviderTest, PinchZoom) {
   base::TimeTicks event_time = base::TimeTicks::Now();
   const float touch_slop = GetTouchSlop();
+  const float raw_offset_x = 3.2f;
+  const float raw_offset_y = 4.3f;
   int motion_event_id = 0;
 
   gesture_provider_->SetDoubleTapSupportForPageEnabled(false);
@@ -1428,8 +1435,13 @@ TEST_F(GestureProviderTest, PinchZoom) {
   MockMotionEvent event =
       ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
   event.SetId(++motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+  EXPECT_EQ(kFakeCoordX, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(kFakeCoordY, GetMostRecentGestureEvent().y);
+  EXPECT_EQ(kFakeCoordX + raw_offset_x, GetMostRecentGestureEvent().raw_x);
+  EXPECT_EQ(kFakeCoordY + raw_offset_y, GetMostRecentGestureEvent().raw_y);
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
   EXPECT_EQ(BoundsForSingleMockTouchAtLocation(kFakeCoordX, kFakeCoordY),
             GetMostRecentGestureEvent().details.bounding_box());
@@ -1444,6 +1456,7 @@ TEST_F(GestureProviderTest, PinchZoom) {
                             secondary_coord_x,
                             secondary_coord_y);
   event.SetId(++motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
 
   gesture_provider_->OnTouchEvent(event);
   EXPECT_EQ(1U, GetReceivedGestureCount());
@@ -1460,6 +1473,7 @@ TEST_F(GestureProviderTest, PinchZoom) {
                             secondary_coord_x,
                             secondary_coord_y);
   event.SetId(++motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
 
   // Toggling double-tap support should not take effect until the next sequence.
   gesture_provider_->SetDoubleTapSupportForPageEnabled(false);
@@ -1473,6 +1487,10 @@ TEST_F(GestureProviderTest, PinchZoom) {
 
   EXPECT_EQ((kFakeCoordX + secondary_coord_x) / 2, GetReceivedGesture(3).x);
   EXPECT_EQ((kFakeCoordY + secondary_coord_y) / 2, GetReceivedGesture(3).y);
+  EXPECT_EQ((kFakeCoordX + secondary_coord_x) / 2 + raw_offset_x,
+            GetReceivedGesture(3).raw_x);
+  EXPECT_EQ((kFakeCoordY + secondary_coord_y) / 2 + raw_offset_y,
+            GetReceivedGesture(3).raw_y);
 
   EXPECT_EQ(
       gfx::RectF(kFakeCoordX - kMockTouchRadius,
@@ -1832,11 +1850,14 @@ TEST_F(GestureProviderTest, DoubleTapDragZoomCancelledOnSecondaryPointerDown) {
 TEST_F(GestureProviderTest, GestureBeginAndEnd) {
   EnableBeginEndTypes();
   base::TimeTicks event_time = base::TimeTicks::Now();
+  const float raw_offset_x = 7.5f;
+  const float raw_offset_y = 5.7f;
 
   EXPECT_EQ(0U, GetReceivedGestureCount());
   MockMotionEvent event =
       ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN, 1, 1);
   event.pointer_count = 1;
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_BEGIN, GetReceivedGesture(0).type());
   EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
@@ -1844,6 +1865,8 @@ TEST_F(GestureProviderTest, GestureBeginAndEnd) {
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
   EXPECT_EQ(1, GetMostRecentGestureEvent().x);
   EXPECT_EQ(1, GetMostRecentGestureEvent().y);
+  EXPECT_EQ(1 + raw_offset_x, GetMostRecentGestureEvent().raw_x);
+  EXPECT_EQ(1 + raw_offset_y, GetMostRecentGestureEvent().raw_y);
   EXPECT_EQ(gfx::RectF(1 - kMockTouchRadius,
                        1 - kMockTouchRadius,
                        kMockTouchRadius * 2,
@@ -1853,35 +1876,45 @@ TEST_F(GestureProviderTest, GestureBeginAndEnd) {
   event = ObtainMotionEvent(
       event_time, MotionEvent::ACTION_POINTER_DOWN, 1, 1, 2, 2);
   event.pointer_count = 2;
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_BEGIN, GetMostRecentGestureEventType());
   EXPECT_EQ(3U, GetReceivedGestureCount());
   EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
   EXPECT_EQ(2, GetMostRecentGestureEvent().x);
   EXPECT_EQ(2, GetMostRecentGestureEvent().y);
+  EXPECT_EQ(2 + raw_offset_x, GetMostRecentGestureEvent().raw_x);
+  EXPECT_EQ(2 + raw_offset_y, GetMostRecentGestureEvent().raw_y);
 
   event = ObtainMotionEvent(
       event_time, MotionEvent::ACTION_POINTER_DOWN, 1, 1, 2, 2, 3, 3);
   event.pointer_count = 3;
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_BEGIN, GetMostRecentGestureEventType());
   EXPECT_EQ(4U, GetReceivedGestureCount());
   EXPECT_EQ(3, GetMostRecentGestureEvent().details.touch_points());
   EXPECT_EQ(3, GetMostRecentGestureEvent().x);
   EXPECT_EQ(3, GetMostRecentGestureEvent().y);
+  EXPECT_EQ(3 + raw_offset_x, GetMostRecentGestureEvent().raw_x);
+  EXPECT_EQ(3 + raw_offset_y, GetMostRecentGestureEvent().raw_y);
 
   event = ObtainMotionEvent(
       event_time, MotionEvent::ACTION_POINTER_UP, 1, 1, 2, 2, 3, 3);
   event.pointer_count = 2;
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
   EXPECT_EQ(5U, GetReceivedGestureCount());
   EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
   EXPECT_EQ(1, GetMostRecentGestureEvent().x);
   EXPECT_EQ(1, GetMostRecentGestureEvent().y);
+  EXPECT_EQ(1 + raw_offset_x, GetMostRecentGestureEvent().raw_x);
+  EXPECT_EQ(1 + raw_offset_y, GetMostRecentGestureEvent().raw_y);
 
   event = ObtainMotionEvent(
       event_time, MotionEvent::ACTION_POINTER_DOWN, 2, 2, 3, 3, 4, 4);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
   event.pointer_count = 3;
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_BEGIN, GetMostRecentGestureEventType());
@@ -1889,36 +1922,47 @@ TEST_F(GestureProviderTest, GestureBeginAndEnd) {
   EXPECT_EQ(3, GetMostRecentGestureEvent().details.touch_points());
   EXPECT_EQ(4, GetMostRecentGestureEvent().x);
   EXPECT_EQ(4, GetMostRecentGestureEvent().y);
+  EXPECT_EQ(4 + raw_offset_x, GetMostRecentGestureEvent().raw_x);
+  EXPECT_EQ(4 + raw_offset_y, GetMostRecentGestureEvent().raw_y);
 
   event = ObtainMotionEvent(
       event_time, MotionEvent::ACTION_POINTER_UP, 2, 2, 3, 3, 4, 4);
   event.pointer_count = 2;
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
   EXPECT_EQ(7U, GetReceivedGestureCount());
   EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
   EXPECT_EQ(2, GetMostRecentGestureEvent().x);
   EXPECT_EQ(2, GetMostRecentGestureEvent().y);
+  EXPECT_EQ(2 + raw_offset_x, GetMostRecentGestureEvent().raw_x);
+  EXPECT_EQ(2 + raw_offset_y, GetMostRecentGestureEvent().raw_y);
 
   event =
       ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_UP, 3, 3, 4, 4);
   event.pointer_count = 1;
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
   EXPECT_EQ(8U, GetReceivedGestureCount());
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
   EXPECT_EQ(3, GetMostRecentGestureEvent().x);
   EXPECT_EQ(3, GetMostRecentGestureEvent().y);
+  EXPECT_EQ(3 + raw_offset_x, GetMostRecentGestureEvent().raw_x);
+  EXPECT_EQ(3 + raw_offset_y, GetMostRecentGestureEvent().raw_y);
 
 
   event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP, 4, 4);
   event.pointer_count = 1;
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
   EXPECT_EQ(9U, GetReceivedGestureCount());
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
   EXPECT_EQ(4, GetMostRecentGestureEvent().x);
   EXPECT_EQ(4, GetMostRecentGestureEvent().y);
+  EXPECT_EQ(4 + raw_offset_x, GetMostRecentGestureEvent().raw_x);
+  EXPECT_EQ(4 + raw_offset_y, GetMostRecentGestureEvent().raw_y);
 }
 
 // Verify that gesture begin and gesture end events are dispatched correctly

@@ -13,37 +13,38 @@ GestureEventData::GestureEventData(const GestureEventDetails& details,
                                    base::TimeTicks time,
                                    float x,
                                    float y,
-                                   int touch_point_count,
+                                   float raw_x,
+                                   float raw_y,
+                                   size_t touch_point_count,
                                    const gfx::RectF& bounding_box)
     : details(details),
       motion_event_id(motion_event_id),
       time(time),
       x(x),
-      y(y) {
+      y(y),
+      raw_x(raw_x),
+      raw_y(raw_y) {
   DCHECK_GE(motion_event_id, 0);
-  DCHECK_NE(0, touch_point_count);
-  this->details.set_touch_points(touch_point_count);
+  DCHECK_NE(0U, touch_point_count);
+  this->details.set_touch_points(static_cast<int>(touch_point_count));
   this->details.set_bounding_box(bounding_box);
 }
 
 GestureEventData::GestureEventData(EventType type,
-                                   int motion_event_id,
-                                   base::TimeTicks time,
-                                   float x,
-                                   float y,
-                                   int touch_point_count,
-                                   const gfx::RectF& bounding_box)
-    : details(GestureEventDetails(type, 0, 0)),
-      motion_event_id(motion_event_id),
-      time(time),
-      x(x),
-      y(y) {
-  DCHECK_GE(motion_event_id, 0);
-  details.set_touch_points(touch_point_count);
-  details.set_bounding_box(bounding_box);
+                                   const GestureEventData& other)
+    : details(type, 0, 0),
+      motion_event_id(other.motion_event_id),
+      time(other.time),
+      x(other.x),
+      y(other.y),
+      raw_x(other.raw_x),
+      raw_y(other.raw_y) {
+  details.set_touch_points(other.details.touch_points());
+  details.set_bounding_box(other.details.bounding_box_f());
 }
 
-GestureEventData::GestureEventData() : x(0), y(0) {
+GestureEventData::GestureEventData()
+    : motion_event_id(0), x(0), y(0), raw_x(0), raw_y(0) {
 }
 
 }  //  namespace ui

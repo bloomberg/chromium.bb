@@ -101,11 +101,11 @@ float MockMotionEvent::GetY(size_t pointer_index) const {
 }
 
 float MockMotionEvent::GetRawX(size_t pointer_index) const {
-  return GetX(pointer_index);
+  return GetX(pointer_index) + raw_offset.x();
 }
 
 float MockMotionEvent::GetRawY(size_t pointer_index) const {
-  return GetY(pointer_index);
+  return GetY(pointer_index) + raw_offset.y();
 }
 
 float MockMotionEvent::GetTouchMajor(size_t pointer_index) const {
@@ -194,6 +194,11 @@ void MockMotionEvent::CancelPoint() {
 
 void MockMotionEvent::SetTouchMajor(float new_touch_major) {
   touch_major = new_touch_major;
+}
+
+void MockMotionEvent::SetRawOffset(float raw_offset_x, float raw_offset_y) {
+  raw_offset.set_x(raw_offset_x);
+  raw_offset.set_y(raw_offset_y);
 }
 
 }  // namespace ui
