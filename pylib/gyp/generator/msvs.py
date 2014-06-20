@@ -3287,8 +3287,8 @@ def _GenerateActionsForMSBuild(spec, actions_to_add):
     # get too long. See also _AddActions: cygwin's setup_env mustn't be called
     # for every invocation or the command that sets the PATH will grow too
     # long.
-    command = (
-        '\r\nif %errorlevel% neq 0 exit /b %errorlevel%\r\n'.join(commands))
+    command = '\r\n'.join([c + '\r\nif %errorlevel% neq 0 exit /b %errorlevel%'
+                           for c in commands])
     _AddMSBuildAction(spec,
                       primary_input,
                       inputs,
