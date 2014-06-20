@@ -43,7 +43,6 @@ public:
     {
     }
 
-    // FIXME: This should use String instead of Vector<UChar>.
     bool m_hasPublicIdentifier;
     bool m_hasSystemIdentifier;
     WTF::Vector<UChar> m_publicIdentifier;
