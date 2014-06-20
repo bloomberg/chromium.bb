@@ -231,7 +231,7 @@ if (ffmpeg_branding == "Chrome" || ffmpeg_branding == "ChromeOS") {
   ]
 }
 
-if (cpu_arch == "ia32" || cpu_arch == "x64") {
+if (cpu_arch == "x86" || cpu_arch == "x64") {
   ffmpeg_c_sources += [
     "libavcodec/x86/constants.c",
     "libavcodec/x86/fft_init.c",

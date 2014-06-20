@@ -163,7 +163,7 @@ if (build_ffmpegsumo) {
       # Turn off valgrind build option that breaks ffmpeg builds.
       # TODO(ajwong): The gyp file had special removals for
       # debug_extra_cflags and release_extra_cflags. Do we care?
-      cflags -= [ "-fno-omit-frame-pointer" ]
+#cflags -= [ "-fno-omit-frame-pointer" ]
     } else if (cpu_arch == "arm") {
       # TODO(ihf): See the long comment in build_ffmpeg.sh
       # We want to be consistent with CrOS and have configured
@@ -251,7 +251,7 @@ if (build_ffmpegsumo) {
         # and butterflies still exist...as do rainbows, sunshine,
         # tulips, etc., etc...but not kittens. Those went away
         # with this flag.
-        ldflags += [
+        ldflags = [
           "-Wl,-read_only_relocs,suppress",
         ]
       }
@@ -269,7 +269,7 @@ if (build_ffmpegsumo) {
 #              'xcode_settings': {
 #                'DYLIB_INSTALL_NAME_BASE': '@loader_path',
 #              }
-      lib_dirs += [ target_gen_dir ]
+      lib_dirs = [ target_gen_dir ]
     } else if (is_win) {
 # TODO(ajwong):
 # Original conditional
