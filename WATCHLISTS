@@ -299,6 +299,11 @@
     'ftp': {
       'filepath': 'ftp',
     },
+    'gcm': {
+      'filepath': 'chrome/browser/services/gcm/|'\
+                  'components/gcm_driver/|'\
+                  'google_apis/gcm/',
+    },
     'geolocation': {
       'filepath': 'chrome/browser/geolocation/|'\
                   'content/browser/geolocation|'\
@@ -548,7 +553,7 @@
       'filepath': 'content/browser/streams/',
     },
     'sync': {
-      'filepath': 'chrome/browser/sync/|sync/',
+      'filepath': 'chrome/browser/sync/|sync/|components/sync_driver/',
     },
     'syncfs': {
       'filepath': 'sync_file_system',
@@ -798,6 +803,7 @@
                    'yoshiki+watch@chromium.org'],
     'filesapp': ['mtomasz+watch@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
+    'gcm': ['zea+watch@chromium.org'],
     'geolocation': ['mvanouwerkerk@chromium.org'],
     'gfx_geometry': ['cc-bugs@chromium.org'],
     'gfx_image': ['rsesek+watch@chromium.org'],
@@ -893,7 +899,8 @@
     'streams': ['zork+watch@chromium.org'],
     'sync': ['haitaol+watch@chromium.org',
              'tim+watch@chromium.org',
-             'maniscalco+watch@chromium.org'],
+             'maniscalco+watch@chromium.org',
+             'zea+watch@chromium.org'],
     'syncfs': ['kinuko+fileapi@chromium.org',
                'nhiroki@chromium.org',
                'tzik@chromium.org'],
