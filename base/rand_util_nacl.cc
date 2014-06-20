@@ -12,7 +12,6 @@
 namespace {
 
 void GetRandomBytes(void* output, size_t num_bytes) {
-  CHECK_EQ(0, nacl_secure_random_init());
   char* output_ptr = static_cast<char*>(output);
   while (num_bytes > 0) {
     size_t nread;
