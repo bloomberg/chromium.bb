@@ -86,7 +86,7 @@ include_rules = [
   "+ui/gfx",
   "+ui/gl",
   "+ui/native_theme",
-  "+ui/ozone/public",
+  "+ui/ozone",
   "+ui/shell_dialogs",
   "+ui/snapshot",
   "+ui/surface",

@@ -16,6 +16,8 @@
 #include "ui/ozone/ozone_switches.h"
 #include "ui/ozone/platform/test/file_surface_factory.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
+#include "ui/ozone/public/gpu_platform_support.h"
+#include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
 #if defined(OS_CHROMEOS)
@@ -244,6 +246,12 @@ class OzonePlatformEgltest : public OzonePlatform {
   virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
     return cursor_factory_ozone_.get();
   }
+  virtual GpuPlatformSupport* GetGpuPlatformSupport() OVERRIDE {
+    return gpu_platform_support_.get();
+  }
+  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() OVERRIDE {
+    return gpu_platform_support_host_.get();
+  }
 
 #if defined(OS_CHROMEOS)
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
@@ -263,10 +271,12 @@ class OzonePlatformEgltest : public OzonePlatform {
     event_factory_ozone_.reset(
         new EventFactoryEvdev(NULL, device_manager_.get()));
     cursor_factory_ozone_.reset(new CursorFactoryOzone());
+    gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }
 
   virtual void InitializeGPU() OVERRIDE {
     surface_factory_ozone_.reset(new SurfaceFactoryEgltest(&eglplatform_shim_));
+    gpu_platform_support_.reset(CreateStubGpuPlatformSupport());
   }
 
  private:
@@ -275,6 +285,8 @@ class OzonePlatformEgltest : public OzonePlatform {
   scoped_ptr<SurfaceFactoryEgltest> surface_factory_ozone_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
+  scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
+  scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
 
   bool shim_initialized_;
 

@@ -15,6 +15,8 @@ class EventFactoryOzone;
 class NativeDisplayDelegate;
 class SurfaceFactoryOzone;
 class TouchscreenDeviceManager;
+class GpuPlatformSupport;
+class GpuPlatformSupportHost;
 
 // Base class for Ozone platform implementations.
 //
@@ -50,6 +52,8 @@ class OZONE_EXPORT OzonePlatform {
   virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() = 0;
   virtual ui::EventFactoryOzone* GetEventFactoryOzone() = 0;
   virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() = 0;
+  virtual ui::GpuPlatformSupport* GetGpuPlatformSupport() = 0;
+  virtual ui::GpuPlatformSupportHost* GetGpuPlatformSupportHost() = 0;
 #if defined(OS_CHROMEOS)
   virtual scoped_ptr<ui::NativeDisplayDelegate>
       CreateNativeDisplayDelegate() = 0;
