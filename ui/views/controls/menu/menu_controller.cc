@@ -39,6 +39,7 @@
 
 #if defined(OS_WIN)
 #include "ui/base/win/internal_constants.h"
+#include "ui/gfx/win/dpi.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
 
@@ -2051,12 +2052,16 @@ void MenuController::RepostEvent(SubmenuView* source,
   gfx::NativeWindow window = screen->GetWindowAtScreenPoint(screen_loc);
 
 #if defined(OS_WIN)
+  // Convert screen_loc to pixels for the Win32 API's like WindowFromPoint,
+  // PostMessage/SendMessage to work correctly. These API's expect the
+  // coordinates to be in pixels.
   // PostMessage() to metro windows isn't allowed (access will be denied). Don't
   // try to repost with Win32 if the window under the mouse press is in metro.
   if (!ViewsDelegate::views_delegate ||
       !ViewsDelegate::views_delegate->IsWindowInMetro(window)) {
+    gfx::Point screen_loc_pixels = gfx::win::DIPToScreenPoint(screen_loc);
     HWND target_window = window ? HWNDForNativeWindow(window) :
-                                  WindowFromPoint(screen_loc.ToPOINT());
+                                  WindowFromPoint(screen_loc_pixels.ToPOINT());
     HWND source_window = HWNDForNativeView(native_view);
     if (!target_window || !source_window ||
         GetWindowThreadProcessId(source_window, NULL) !=
@@ -2070,7 +2075,7 @@ void MenuController::RepostEvent(SubmenuView* source,
 
     // Determine whether the click was in the client area or not.
     // NOTE: WM_NCHITTEST coordinates are relative to the screen.
-    LPARAM coords = MAKELPARAM(screen_loc.x(), screen_loc.y());
+    LPARAM coords = MAKELPARAM(screen_loc_pixels.x(), screen_loc_pixels.y());
     LRESULT nc_hit_result = SendMessage(target_window, WM_NCHITTEST, 0, coords);
     const bool client_area = nc_hit_result == HTCLIENT;
 
@@ -2090,8 +2095,8 @@ void MenuController::RepostEvent(SubmenuView* source,
       return;
     }
 
-    int window_x = screen_loc.x();
-    int window_y = screen_loc.y();
+    int window_x = screen_loc_pixels.x();
+    int window_y = screen_loc_pixels.y();
     if (client_area) {
       POINT pt = { window_x, window_y };
       ScreenToClient(target_window, &pt);

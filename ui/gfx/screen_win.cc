@@ -76,7 +76,8 @@ gfx::NativeWindow ScreenWin::GetWindowUnderCursor() {
 }
 
 gfx::NativeWindow ScreenWin::GetWindowAtScreenPoint(const gfx::Point& point) {
-  return GetNativeWindowFromHWND(WindowFromPoint(point.ToPOINT()));
+  gfx::Point point_in_pixels = gfx::win::DIPToScreenPoint(point);
+  return GetNativeWindowFromHWND(WindowFromPoint(point_in_pixels.ToPOINT()));
 }
 
 int ScreenWin::GetNumDisplays() const {
