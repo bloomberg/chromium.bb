@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/search/search_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -183,6 +184,22 @@ void SearchTabHelper::OmniboxFocusChanged(OmniboxFocusState state,
   // a spurious oninputend when the user accepts a match in the omnibox.
   if (web_contents_->GetController().GetPendingEntry() == NULL) {
     ipc_router_.SetInputInProgress(IsInputInProgress());
+
+    InstantSearchPrerenderer* prerenderer =
+        InstantSearchPrerenderer::GetForProfile(profile());
+    if (!prerenderer || !chrome::ShouldPrerenderInstantUrlOnOmniboxFocus())
+      return;
+
+    if (state == OMNIBOX_FOCUS_NONE) {
+      prerenderer->Cancel();
+      return;
+    }
+
+    if (!IsSearchResultsPage()) {
+      prerenderer->Init(
+          web_contents_->GetController().GetSessionStorageNamespaceMap(),
+          web_contents_->GetContainerBounds().size());
+    }
   }
 }
 
@@ -226,6 +243,18 @@ void SearchTabHelper::Submit(const base::string16& text) {
 
 void SearchTabHelper::OnTabActivated() {
   ipc_router_.OnTabActivated();
+
+  OmniboxView* omnibox_view = GetOmniboxView();
+  if (chrome::ShouldPrerenderInstantUrlOnOmniboxFocus() && omnibox_view &&
+      omnibox_view->model()->has_focus()) {
+    InstantSearchPrerenderer* prerenderer =
+        InstantSearchPrerenderer::GetForProfile(profile());
+    if (prerenderer && !IsSearchResultsPage()) {
+      prerenderer->Init(
+          web_contents_->GetController().GetSessionStorageNamespaceMap(),
+          web_contents_->GetContainerBounds().size());
+    }
+  }
 }
 
 void SearchTabHelper::OnTabDeactivated() {
