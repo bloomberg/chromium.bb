@@ -1461,6 +1461,67 @@ TEST_F(AutofillDialogControllerTest, BillingVsShippingStreetAddress) {
             form_structure()->field(2)->value);
 }
 
+// Test asking for different pieces of the name.
+TEST_F(AutofillDialogControllerTest, NamePieces) {
+  const char* const attributes[] = {
+      "shipping name",
+      "billing name",
+      "billing given-name",
+      "billing family-name",
+      "billing additional-name",
+      "cc-csc"
+  };
+
+  FormData form_data;
+  for (size_t i = 0; i < arraysize(attributes); ++i) {
+    FormFieldData field;
+    field.autocomplete_attribute.assign(attributes[i]);
+    form_data.fields.push_back(field);
+  }
+
+  SetUpControllerWithFormData(form_data);
+  SwitchToAutofill();
+
+  // Billing.
+  AutofillProfile test_profile(test::GetVerifiedProfile());
+  test_profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("Fabian Jackson von Nacho"));
+  controller()->GetTestingManager()->AddTestingProfile(&test_profile);
+
+  // Credit card.
+  CreditCard credit_card(test::GetVerifiedCreditCard());
+  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
+
+  // Make shipping name different from billing.
+  AutofillProfile test_profile2(test::GetVerifiedProfile2());
+  test_profile2.SetRawInfo(NAME_FULL, ASCIIToUTF16("Don Ford"));
+  controller()->GetTestingManager()->AddTestingProfile(&test_profile2);
+  ui::MenuModel* shipping_model =
+      controller()->MenuModelForSection(SECTION_SHIPPING);
+  shipping_model->ActivatedAt(2);
+
+  controller()->OnAccept();
+
+  EXPECT_EQ(NAME_FULL, form_structure()->field(0)->Type().GetStorableType());
+  EXPECT_EQ(ASCIIToUTF16("Don Ford"),
+            form_structure()->field(0)->value);
+
+  EXPECT_EQ(NAME_FULL, form_structure()->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ASCIIToUTF16("Fabian Jackson von Nacho"),
+            form_structure()->field(1)->value);
+
+  EXPECT_EQ(NAME_FIRST, form_structure()->field(2)->Type().GetStorableType());
+  EXPECT_EQ(ASCIIToUTF16("Fabian"),
+            form_structure()->field(2)->value);
+
+  EXPECT_EQ(NAME_LAST, form_structure()->field(3)->Type().GetStorableType());
+  EXPECT_EQ(ASCIIToUTF16("von Nacho"),
+            form_structure()->field(3)->value);
+
+  EXPECT_EQ(NAME_MIDDLE, form_structure()->field(4)->Type().GetStorableType());
+  EXPECT_EQ(ASCIIToUTF16("Jackson"),
+            form_structure()->field(4)->value);
+}
+
 TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
   for (size_t i = 0; i < 2; ++i) {
     SCOPED_TRACE(testing::Message() << "Case " << i);

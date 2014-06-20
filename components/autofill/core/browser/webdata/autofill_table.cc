@@ -167,8 +167,10 @@ scoped_ptr<CreditCard> CreditCardFromStatement(const sql::Statement& s) {
   return credit_card.Pass();
 }
 
-bool AddAutofillProfileNamesToProfile(sql::Connection* db,
-                                      AutofillProfile* profile) {
+// Obsolete version of AddAutofillProfileNamesToProfile, but still needed
+// for MigrateToVersion37MergeAndCullOlderProfiles().
+bool AddAutofillProfileNamesToProfileForVersion37(sql::Connection* db,
+                                                  AutofillProfile* profile) {
   sql::Statement s(db->GetUniqueStatement(
       "SELECT guid, first_name, middle_name, last_name "
       "FROM autofill_profile_names "
@@ -193,6 +195,38 @@ bool AddAutofillProfileNamesToProfile(sql::Connection* db,
   profile->SetRawMultiInfo(NAME_FIRST, first_names);
   profile->SetRawMultiInfo(NAME_MIDDLE, middle_names);
   profile->SetRawMultiInfo(NAME_LAST, last_names);
+  return true;
+}
+
+bool AddAutofillProfileNamesToProfile(sql::Connection* db,
+                                      AutofillProfile* profile) {
+  sql::Statement s(db->GetUniqueStatement(
+      "SELECT guid, first_name, middle_name, last_name, full_name "
+      "FROM autofill_profile_names "
+      "WHERE guid=?"));
+  s.BindString(0, profile->guid());
+
+  if (!s.is_valid())
+    return false;
+
+  std::vector<base::string16> first_names;
+  std::vector<base::string16> middle_names;
+  std::vector<base::string16> last_names;
+  std::vector<base::string16> full_names;
+  while (s.Step()) {
+    DCHECK_EQ(profile->guid(), s.ColumnString(0));
+    first_names.push_back(s.ColumnString16(1));
+    middle_names.push_back(s.ColumnString16(2));
+    last_names.push_back(s.ColumnString16(3));
+    full_names.push_back(s.ColumnString16(4));
+  }
+  if (!s.Succeeded())
+    return false;
+
+  profile->SetRawMultiInfo(NAME_FIRST, first_names);
+  profile->SetRawMultiInfo(NAME_MIDDLE, middle_names);
+  profile->SetRawMultiInfo(NAME_LAST, last_names);
+  profile->SetRawMultiInfo(NAME_FULL, full_names);
   return true;
 }
 
@@ -242,6 +276,38 @@ bool AddAutofillProfilePhonesToProfile(sql::Connection* db,
   return true;
 }
 
+// Obsolete version of AddAutofillProfileNames needed for
+// MigrateToVersion33ProfilesBasedOnFirstName() and
+// MigrateToVersion37MergeAndCullOlderProfiles().
+bool AddAutofillProfileNamesForVersion3x(
+    const AutofillProfile& profile,
+    sql::Connection* db) {
+  std::vector<base::string16> first_names;
+  profile.GetRawMultiInfo(NAME_FIRST, &first_names);
+  std::vector<base::string16> middle_names;
+  profile.GetRawMultiInfo(NAME_MIDDLE, &middle_names);
+  std::vector<base::string16> last_names;
+  profile.GetRawMultiInfo(NAME_LAST, &last_names);
+  DCHECK_EQ(first_names.size(), middle_names.size());
+  DCHECK_EQ(first_names.size(), last_names.size());
+
+  for (size_t i = 0; i < first_names.size(); ++i) {
+    // Add the new name.
+    sql::Statement s(db->GetUniqueStatement(
+        "INSERT INTO autofill_profile_names"
+        " (guid, first_name, middle_name, last_name) "
+        "VALUES (?,?,?,?)"));
+    s.BindString(0, profile.guid());
+    s.BindString16(1, first_names[i]);
+    s.BindString16(2, middle_names[i]);
+    s.BindString16(3, last_names[i]);
+
+    if (!s.Run())
+      return false;
+  }
+  return true;
+}
+
 bool AddAutofillProfileNames(const AutofillProfile& profile,
                              sql::Connection* db) {
   std::vector<base::string16> first_names;
@@ -250,19 +316,23 @@ bool AddAutofillProfileNames(const AutofillProfile& profile,
   profile.GetRawMultiInfo(NAME_MIDDLE, &middle_names);
   std::vector<base::string16> last_names;
   profile.GetRawMultiInfo(NAME_LAST, &last_names);
+  std::vector<base::string16> full_names;
+  profile.GetRawMultiInfo(NAME_FULL, &full_names);
   DCHECK_EQ(first_names.size(), middle_names.size());
-  DCHECK_EQ(middle_names.size(), last_names.size());
+  DCHECK_EQ(first_names.size(), last_names.size());
+  DCHECK_EQ(first_names.size(), full_names.size());
 
   for (size_t i = 0; i < first_names.size(); ++i) {
     // Add the new name.
     sql::Statement s(db->GetUniqueStatement(
-      "INSERT INTO autofill_profile_names"
-      " (guid, first_name, middle_name, last_name) "
-      "VALUES (?,?,?,?)"));
+        "INSERT INTO autofill_profile_names"
+        " (guid, first_name, middle_name, last_name, full_name) "
+        "VALUES (?,?,?,?,?)"));
     s.BindString(0, profile.guid());
     s.BindString16(1, first_names[i]);
     s.BindString16(2, middle_names[i]);
     s.BindString16(3, last_names[i]);
+    s.BindString16(4, full_names[i]);
 
     if (!s.Run())
       return false;
@@ -447,6 +517,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 56:
       *update_compatible_version = true;
       return MigrateToVersion56AddProfileLanguageCodeForFormatting();
+    case 57:
+      *update_compatible_version = true;
+      return MigrateToVersion57AddFullNameField();
   }
   return true;
 }
@@ -1292,7 +1365,8 @@ bool AutofillTable::InitProfileNamesTable() {
                       "guid VARCHAR, "
                       "first_name VARCHAR, "
                       "middle_name VARCHAR, "
-                      "last_name VARCHAR)")) {
+                      "last_name VARCHAR, "
+                      "full_name VARCHAR)")) {
       NOTREACHED();
       return false;
     }
@@ -1865,8 +1939,11 @@ bool AutofillTable::MigrateToVersion33ProfilesBasedOnFirstName() {
         return false;
 
       // Add the other bits: names, emails, and phone numbers.
-      if (!AddAutofillProfilePieces(profile, db_))
+      if (!AddAutofillProfileNamesForVersion3x(profile, db_) ||
+          !AddAutofillProfileEmails(profile, db_) ||
+          !AddAutofillProfilePhones(profile, db_)) {
         return false;
+      }
     }  // endwhile
     if (!s.Succeeded())
       return false;
@@ -2005,7 +2082,7 @@ bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
     profile->set_origin(s.ColumnString(index++));
 
     // Get associated name info.
-    AddAutofillProfileNamesToProfile(db_, profile.get());
+    AddAutofillProfileNamesToProfileForVersion37(db_, profile.get());
 
     // Get associated email info.
     AddAutofillProfileEmailsToProfile(db_, profile.get());
@@ -2073,8 +2150,11 @@ bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
     if (!s.Run())
       return false;
 
-    if (!AddAutofillProfilePieces(*iter, db_))
+    if (!AddAutofillProfileNamesForVersion3x(*iter, db_) ||
+        !AddAutofillProfileEmails(*iter, db_) ||
+        !AddAutofillProfilePhones(*iter, db_)) {
       return false;
+    }
   }
 
   return true;
@@ -2270,6 +2350,11 @@ bool AutofillTable::MigrateToVersion55MergeAutofillDatesTable() {
 bool AutofillTable::MigrateToVersion56AddProfileLanguageCodeForFormatting() {
   return db_->Execute("ALTER TABLE autofill_profiles "
                       "ADD COLUMN language_code VARCHAR");
+}
+
+bool AutofillTable::MigrateToVersion57AddFullNameField() {
+  return db_->Execute("ALTER TABLE autofill_profile_names "
+                      "ADD COLUMN full_name VARCHAR");
 }
 
 }  // namespace autofill

@@ -134,8 +134,8 @@ scoped_ptr<AutofillProfile> ConstructCompleteProfile() {
       new AutofillProfile(kGuid1, kHttpsOrigin));
 
   std::vector<base::string16> names;
-  names.push_back(ASCIIToUTF16("John K. Doe"));
-  names.push_back(ASCIIToUTF16("Jane Luise Smith"));
+  names.push_back(ASCIIToUTF16("John K. Doe, Jr."));
+  names.push_back(ASCIIToUTF16("Jane Luise Smith MD"));
   profile->SetRawMultiInfo(NAME_FULL, names);
 
   std::vector<base::string16> emails;
@@ -180,10 +180,12 @@ syncer::SyncData ConstructCompleteSyncData() {
   specifics->add_name_first("John");
   specifics->add_name_middle("K.");
   specifics->add_name_last("Doe");
+  specifics->add_name_full("John K. Doe, Jr.");
 
   specifics->add_name_first("Jane");
   specifics->add_name_middle("Luise");
   specifics->add_name_last("Smith");
+  specifics->add_name_full("Jane Luise Smith MD");
 
   specifics->add_email_address("user@example.com");
   specifics->add_email_address("superuser@example.org");
@@ -446,6 +448,7 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataEmptyOrigins) {
   autofill_specifics->add_name_first("John");
   autofill_specifics->add_name_middle(std::string());
   autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_name_full("John");
   autofill_specifics->add_email_address(std::string());
   autofill_specifics->add_phone_home_whole_number(std::string());
   autofill_specifics->set_address_home_line1("1 1st st");
@@ -854,6 +857,7 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataEmptyStreetAddress) {
   autofill_specifics->add_name_first(std::string());
   autofill_specifics->add_name_middle(std::string());
   autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_name_full(std::string());
   autofill_specifics->add_email_address(std::string());
   autofill_specifics->add_phone_home_whole_number(std::string());
   autofill_specifics->set_address_home_line1("123 Example St.");
@@ -889,6 +893,7 @@ TEST_F(AutofillProfileSyncableServiceTest, EmptySyncPreservesOrigin) {
   autofill_specifics->add_name_first("John");
   autofill_specifics->add_name_middle(std::string());
   autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_name_full("John");
   autofill_specifics->add_email_address(std::string());
   autofill_specifics->add_phone_home_whole_number(std::string());
   EXPECT_FALSE(autofill_specifics->has_origin());
@@ -930,6 +935,7 @@ TEST_F(AutofillProfileSyncableServiceTest, NoLanguageCodeNoSync) {
   autofill_specifics->add_name_first(std::string());
   autofill_specifics->add_name_middle(std::string());
   autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_name_full(std::string());
   autofill_specifics->add_email_address(std::string());
   autofill_specifics->add_phone_home_whole_number(std::string());
   EXPECT_FALSE(autofill_specifics->has_address_home_language_code());
@@ -966,6 +972,7 @@ TEST_F(AutofillProfileSyncableServiceTest, SyncUpdatesEmptyLanguageCode) {
   autofill_specifics->add_name_first(std::string());
   autofill_specifics->add_name_middle(std::string());
   autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_name_full(std::string());
   autofill_specifics->add_email_address(std::string());
   autofill_specifics->add_phone_home_whole_number(std::string());
   autofill_specifics->set_address_home_language_code("en");
@@ -1008,6 +1015,7 @@ TEST_F(AutofillProfileSyncableServiceTest, SyncUpdatesIncorrectLanguageCode) {
   autofill_specifics->add_name_first(std::string());
   autofill_specifics->add_name_middle(std::string());
   autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_name_full(std::string());
   autofill_specifics->add_email_address(std::string());
   autofill_specifics->add_phone_home_whole_number(std::string());
   autofill_specifics->set_address_home_language_code("en");
@@ -1051,6 +1059,7 @@ TEST_F(AutofillProfileSyncableServiceTest, EmptySyncPreservesLanguageCode) {
   autofill_specifics->add_name_first("John");
   autofill_specifics->add_name_middle(std::string());
   autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_name_full("John");
   autofill_specifics->add_email_address(std::string());
   autofill_specifics->add_phone_home_whole_number(std::string());
   EXPECT_FALSE(autofill_specifics->has_address_home_language_code());
@@ -1094,6 +1103,78 @@ TEST_F(AutofillProfileSyncableServiceTest, LanguageCodePropagates) {
   EXPECT_EQ(kGuid1, specifics.guid());
   EXPECT_EQ(kHttpsOrigin, specifics.origin());
   EXPECT_EQ("en", specifics.address_home_language_code());
+}
+
+// Missing full name field should not generate sync events.
+TEST_F(AutofillProfileSyncableServiceTest, NoFullNameNoSync) {
+  std::vector<AutofillProfile*> profiles_from_web_db;
+
+  // Local autofill profile has an empty full name.
+  AutofillProfile profile(kGuid1, kHttpsOrigin);
+  profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
+  profiles_from_web_db.push_back(new AutofillProfile(profile));
+
+  // Remote data does not have a full name.
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AutofillProfileSpecifics* autofill_specifics =
+      specifics.mutable_autofill_profile();
+  autofill_specifics->set_guid(profile.guid());
+  autofill_specifics->set_origin(profile.origin());
+  autofill_specifics->add_name_first(std::string("John"));
+  autofill_specifics->add_name_middle(std::string());
+  autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_email_address(std::string());
+  autofill_specifics->add_phone_home_whole_number(std::string());
+
+  syncer::SyncDataList data_list;
+  data_list.push_back(
+      syncer::SyncData::CreateLocalData(
+          profile.guid(), profile.guid(), specifics));
+
+  // Expect no changes to local and remote data.
+  MockAutofillProfileSyncableService::DataBundle expected_empty_bundle;
+  syncer::SyncChangeList expected_empty_change_list;
+
+  MergeDataAndStartSyncing(profiles_from_web_db, data_list,
+                           expected_empty_bundle, expected_empty_change_list);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
+}
+
+TEST_F(AutofillProfileSyncableServiceTest, EmptySyncPreservesFullName) {
+  std::vector<AutofillProfile*> profiles_from_web_db;
+
+  // Local autofill profile has a full name.
+  AutofillProfile profile(kGuid1, kHttpsOrigin);
+  profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("John Jacob Smith, Jr"));
+  profiles_from_web_db.push_back(new AutofillProfile(profile));
+
+  // Remote data does not have a full name value.
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AutofillProfileSpecifics* autofill_specifics =
+      specifics.mutable_autofill_profile();
+  autofill_specifics->set_guid(profile.guid());
+  autofill_specifics->set_origin(profile.origin());
+  autofill_specifics->add_name_first(std::string("John"));
+  autofill_specifics->add_name_middle(std::string("Jacob"));
+  autofill_specifics->add_name_last(std::string("Smith"));
+
+  syncer::SyncDataList data_list;
+  data_list.push_back(
+      syncer::SyncData::CreateLocalData(
+          profile.guid(), profile.guid(), specifics));
+
+  // Expect local autofill profile to still have the same full name after sync.
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
+  AutofillProfile expected_profile(profile.guid(), profile.origin());
+  expected_profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("John Jacob Smith, Jr"));
+  expected_bundle.profiles_to_update.push_back(&expected_profile);
+
+  // Expect no changes to remote data.
+  syncer::SyncChangeList expected_empty_change_list;
+
+  MergeDataAndStartSyncing(profiles_from_web_db, data_list,
+                           expected_bundle, expected_empty_change_list);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
 }
 
 }  // namespace autofill

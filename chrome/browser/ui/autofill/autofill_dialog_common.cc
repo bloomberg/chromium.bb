@@ -43,6 +43,10 @@ bool ServerTypeEncompassesFieldType(ServerFieldType type,
     return autofill_type.GetStorableType() == ADDRESS_HOME_STREET_ADDRESS;
   }
 
+  // First, middle and last name are parsed from full name.
+  if (field_type.group() == NAME || field_type.group() == NAME_BILLING)
+    return autofill_type.GetStorableType() == NAME_FULL;
+
   return autofill_type.GetStorableType() == server_type;
 }
 

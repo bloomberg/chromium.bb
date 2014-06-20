@@ -37,25 +37,21 @@ class NameInfo : public FormGroup {
   virtual void GetSupportedTypes(
       ServerFieldTypeSet* supported_types) const OVERRIDE;
 
-  // Returns the full name, which can include up to the first, middle, and last
-  // name.
+  // Returns the full name, which is either |full_|, or if |full_| is empty,
+  // is composed of given, middle and family.
   base::string16 FullName() const;
 
   // Returns the middle initial if |middle_| is non-empty.  Returns an empty
   // string otherwise.
   base::string16 MiddleInitial() const;
 
-  const base::string16& first() const { return first_; }
-  const base::string16& middle() const { return middle_; }
-  const base::string16& last() const { return last_; }
-
-  // Sets |first_|, |middle_|, and |last_| to the tokenized |full|.
-  // It is tokenized on a space only.
+  // Sets |given_|, |middle_|, and |family_| to the tokenized |full|.
   void SetFullName(const base::string16& full);
 
-  base::string16 first_;
+  base::string16 given_;
   base::string16 middle_;
-  base::string16 last_;
+  base::string16 family_;
+  base::string16 full_;
 };
 
 class EmailInfo : public FormGroup {

@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FillProfileCrazyCharacters) {
   SetProfiles(&profiles);
   ASSERT_EQ(profiles.size(), personal_data_manager()->GetProfiles().size());
   for (size_t i = 0; i < profiles.size(); ++i)
-    ASSERT_EQ(profiles[i], *personal_data_manager()->GetProfiles()[i]);
+    EXPECT_EQ(profiles[i], *personal_data_manager()->GetProfiles()[i]);
 
   std::vector<CreditCard> cards;
   CreditCard card1;
@@ -430,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FillProfileCrazyCharacters) {
   SetCards(&cards);
   ASSERT_EQ(cards.size(), personal_data_manager()->GetCreditCards().size());
   for (size_t i = 0; i < cards.size(); ++i)
-    ASSERT_EQ(cards[i], *personal_data_manager()->GetCreditCards()[i]);
+    EXPECT_EQ(cards[i], *personal_data_manager()->GetCreditCards()[i]);
 }
 
 // Test filling in invalid values for profiles are saved as-is. Phone

@@ -84,6 +84,7 @@ struct FormFieldData;
 //   first_name
 //   middle_name
 //   last_name
+//   full_name
 //
 // autofill_profile_emails
 //                      This table contains the multi-valued email fields
@@ -284,6 +285,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion54AddI18nFieldsAndRemoveDeprecatedFields();
   bool MigrateToVersion55MergeAutofillDatesTable();
   bool MigrateToVersion56AddProfileLanguageCodeForFormatting();
+  bool MigrateToVersion57AddFullNameField();
 
   // Max data length saved in the table;
   static const size_t kMaxDataLength;

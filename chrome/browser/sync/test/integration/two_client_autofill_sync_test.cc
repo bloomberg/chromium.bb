@@ -335,11 +335,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MaxLength) {
   base::string16 max_length_string(AutofillTable::kMaxDataLength, '.');
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
-                AutofillType(autofill::NAME_FIRST),
-                max_length_string);
-  UpdateProfile(0,
-                GetAllProfiles(0)[0]->guid(),
-                AutofillType(autofill::NAME_LAST),
+                AutofillType(autofill::NAME_FULL),
                 max_length_string);
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),

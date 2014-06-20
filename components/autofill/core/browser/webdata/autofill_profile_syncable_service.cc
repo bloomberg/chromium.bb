@@ -332,6 +332,12 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
                                 specifics.name_middle(), profile) || diff;
   diff = UpdateMultivaluedField(NAME_LAST,
                                 specifics.name_last(), profile) || diff;
+  // Older versions don't have a separate full name; don't overwrite full name
+  // in this case.
+  if (specifics.name_full().size() > 0) {
+    diff = UpdateMultivaluedField(NAME_FULL,
+                                  specifics.name_full(), profile) || diff;
+  }
   diff = UpdateMultivaluedField(EMAIL_ADDRESS,
                                 specifics.email_address(), profile) || diff;
   diff = UpdateMultivaluedField(PHONE_HOME_WHOLE_NUMBER,
@@ -399,6 +405,7 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
   specifics->clear_name_first();
   specifics->clear_name_middle();
   specifics->clear_name_last();
+  specifics->clear_name_full();
   specifics->clear_email_address();
   specifics->clear_phone_home_whole_number();
 
@@ -419,6 +426,11 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
   profile.GetRawMultiInfo(NAME_LAST, &values);
   for (size_t i = 0; i < values.size(); ++i) {
     specifics->add_name_last(LimitData(UTF16ToUTF8(values[i])));
+  }
+
+  profile.GetRawMultiInfo(NAME_FULL, &values);
+  for (size_t i = 0; i < values.size(); ++i) {
+    specifics->add_name_full(LimitData(UTF16ToUTF8(values[i])));
   }
 
   specifics->set_address_home_line1(

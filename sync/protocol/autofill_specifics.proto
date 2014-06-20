@@ -25,6 +25,7 @@ message AutofillProfileSpecifics {
   repeated string name_first = 2;
   repeated string name_middle = 3;
   repeated string name_last = 4;
+  repeated string name_full = 21;
   repeated string email_address = 5;
   optional string company_name = 6;
 

@@ -256,7 +256,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 56;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 57;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -2668,5 +2668,68 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion55ToCurrent) {
 
     // No more entries expected.
     ASSERT_FALSE(s_profiles.Step());
+  }
+}
+
+// Tests that migrating from version 56 to version 57 adds the full_name
+// column to autofill_profile_names table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion56ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_56.sql")));
+
+  // Verify pre-conditions. These are expectations for version 56 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    EXPECT_FALSE(
+        connection.DoesColumnExist("autofill_profile_names", "full_name"));
+
+    // Verify the starting data.
+    sql::Statement s_names(
+        connection.GetUniqueStatement(
+            "SELECT guid, first_name, middle_name, last_name "
+            "FROM autofill_profile_names"));
+    ASSERT_TRUE(s_names.Step());
+    EXPECT_EQ("B41FE6E0-B13E-2A2A-BF0B-29FCE2C3ADBD", s_names.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16("Jon"), s_names.ColumnString16(1));
+    EXPECT_EQ(base::string16(), s_names.ColumnString16(2));
+    EXPECT_EQ(ASCIIToUTF16("Smith"), s_names.ColumnString16(3));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions. These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // The full_name column should have been added to autofill_profile_names
+    // table.
+    EXPECT_TRUE(
+        connection.DoesColumnExist("autofill_profile_names", "full_name"));
+
+    // Data should have been preserved. Full name should have been set to the
+    // empty string.
+    sql::Statement s_names(
+        connection.GetUniqueStatement(
+            "SELECT guid, first_name, middle_name, last_name, full_name "
+            "FROM autofill_profile_names"));
+
+    ASSERT_TRUE(s_names.Step());
+    EXPECT_EQ("B41FE6E0-B13E-2A2A-BF0B-29FCE2C3ADBD", s_names.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16("Jon"), s_names.ColumnString16(1));
+    EXPECT_EQ(base::string16(), s_names.ColumnString16(2));
+    EXPECT_EQ(ASCIIToUTF16("Smith"), s_names.ColumnString16(3));
+    EXPECT_EQ(base::string16(), s_names.ColumnString16(4));
+
+    // No more entries expected.
+    ASSERT_FALSE(s_names.Step());
   }
 }

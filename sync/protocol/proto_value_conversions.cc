@@ -441,6 +441,7 @@ base::DictionaryValue* AutofillProfileSpecificsToValue(
   SET_STR_REP(name_first);
   SET_STR_REP(name_middle);
   SET_STR_REP(name_last);
+  SET_STR_REP(name_full);
   SET_STR_REP(email_address);
   SET_STR(company_name);
 

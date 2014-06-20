@@ -16,6 +16,130 @@
 
 namespace autofill {
 
+namespace {
+
+const char* const name_prefixes[] = {
+    "1lt", "1st", "2lt", "2nd", "3rd", "admiral", "capt", "captain", "col",
+    "cpt", "dr", "gen", "general", "lcdr", "lt", "ltc", "ltg", "ltjg", "maj",
+    "major", "mg", "mr", "mrs", "ms", "pastor", "prof", "rep", "reverend",
+    "rev", "sen", "st" };
+
+const char* const name_suffixes[] = {
+    "b.a", "ba", "d.d.s", "dds", "i", "ii", "iii", "iv", "ix", "jr", "m.a",
+    "m.d", "ma", "md", "ms", "ph.d", "phd", "sr", "v", "vi", "vii", "viii",
+    "x" };
+
+const char* const family_name_prefixes[] = {
+    "d'", "de", "del", "der", "di", "la", "le", "mc", "san", "st", "ter",
+    "van", "von" };
+
+// Returns true if |set| contains |element|, modulo a final period.
+bool ContainsString(const char* const set[],
+                    size_t set_size,
+                    const base::string16& element) {
+  if (!base::IsStringASCII(element))
+    return false;
+
+  base::string16 trimmed_element;
+  base::TrimString(element, base::ASCIIToUTF16("."), &trimmed_element);
+
+  for (size_t i = 0; i < set_size; ++i) {
+    if (LowerCaseEqualsASCII(trimmed_element, set[i]))
+      return true;
+  }
+
+  return false;
+}
+
+// Removes common name prefixes from |name_tokens|.
+void StripPrefixes(std::vector<base::string16>* name_tokens) {
+  std::vector<base::string16>::iterator iter = name_tokens->begin();
+  while(iter != name_tokens->end()) {
+    if (!ContainsString(name_prefixes, arraysize(name_prefixes), *iter))
+      break;
+    ++iter;
+  }
+
+  std::vector<base::string16> copy_vector;
+  copy_vector.assign(iter, name_tokens->end());
+  *name_tokens = copy_vector;
+}
+
+// Removes common name suffixes from |name_tokens|.
+void StripSuffixes(std::vector<base::string16>* name_tokens) {
+  while(!name_tokens->empty()) {
+    if (!ContainsString(name_suffixes, arraysize(name_suffixes),
+                        name_tokens->back())) {
+      break;
+    }
+    name_tokens->pop_back();
+  }
+}
+
+struct NameParts {
+  base::string16 given;
+  base::string16 middle;
+  base::string16 family;
+};
+
+// TODO(estade): This does Western name splitting. It should do different
+// splitting based on the app locale.
+NameParts SplitName(const base::string16& name) {
+  std::vector<base::string16> name_tokens;
+  Tokenize(name, base::ASCIIToUTF16(" ,"), &name_tokens);
+
+  StripPrefixes(&name_tokens);
+
+  // Don't assume "Ma" is a suffix in John Ma.
+  if (name_tokens.size() > 2)
+    StripSuffixes(&name_tokens);
+
+  NameParts parts;
+
+  if (name_tokens.empty()) {
+    // Bad things have happened; just assume the whole thing is a given name.
+    parts.given = name;
+    return parts;
+  }
+
+  // Only one token, assume given name.
+  if (name_tokens.size() == 1) {
+    parts.given = name_tokens[0];
+    return parts;
+  }
+
+  // 2 or more tokens. Grab the family, which is the last word plus any
+  // recognizable family prefixes.
+  std::vector<base::string16> reverse_family_tokens;
+  reverse_family_tokens.push_back(name_tokens.back());
+  name_tokens.pop_back();
+  while (name_tokens.size() >= 1 &&
+         ContainsString(family_name_prefixes,
+                        arraysize(family_name_prefixes),
+                        name_tokens.back())) {
+    reverse_family_tokens.push_back(name_tokens.back());
+    name_tokens.pop_back();
+  }
+
+  std::vector<base::string16> family_tokens(reverse_family_tokens.rbegin(),
+                                            reverse_family_tokens.rend());
+  parts.family = JoinString(family_tokens, base::char16(' '));
+
+  // Take the last remaining token as the middle name (if there are at least 2
+  // tokens).
+  if (name_tokens.size() >= 2) {
+    parts.middle = name_tokens.back();
+    name_tokens.pop_back();
+  }
+
+  // Remainder is given name.
+  parts.given = JoinString(name_tokens, base::char16(' '));
+
+  return parts;
+}
+
+}  // namespace
+
 NameInfo::NameInfo() {}
 
 NameInfo::NameInfo(const NameInfo& info) : FormGroup() {
@@ -28,16 +152,17 @@ NameInfo& NameInfo::operator=(const NameInfo& info) {
   if (this == &info)
     return *this;
 
-  first_ = info.first_;
+  given_ = info.given_;
   middle_ = info.middle_;
-  last_ = info.last_;
+  family_ = info.family_;
+  full_ = info.full_;
   return *this;
 }
 
 bool NameInfo::EqualsIgnoreCase(const NameInfo& info) {
-  return (StringToLowerASCII(first_) == StringToLowerASCII(info.first_) &&
+  return (StringToLowerASCII(given_) == StringToLowerASCII(info.given_) &&
           StringToLowerASCII(middle_) == StringToLowerASCII(info.middle_) &&
-          StringToLowerASCII(last_) == StringToLowerASCII(info.last_));
+          StringToLowerASCII(family_) == StringToLowerASCII(info.family_));
 }
 
 void NameInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
@@ -52,13 +177,13 @@ base::string16 NameInfo::GetRawInfo(ServerFieldType type) const {
   DCHECK_EQ(NAME, AutofillType(type).group());
   switch (type) {
     case NAME_FIRST:
-      return first();
+      return given_;
 
     case NAME_MIDDLE:
-      return middle();
+      return middle_;
 
     case NAME_LAST:
-      return last();
+      return family_;
 
     case NAME_MIDDLE_INITIAL:
       return MiddleInitial();
@@ -73,9 +198,14 @@ base::string16 NameInfo::GetRawInfo(ServerFieldType type) const {
 
 void NameInfo::SetRawInfo(ServerFieldType type, const base::string16& value) {
   DCHECK_EQ(NAME, AutofillType(type).group());
+
+  // Always clear out the full name if we're making a change.
+  if (value != GetRawInfo(type))
+    full_.clear();
+
   switch (type) {
     case NAME_FIRST:
-      first_ = value;
+      given_ = value;
       break;
 
     case NAME_MIDDLE:
@@ -84,10 +214,12 @@ void NameInfo::SetRawInfo(ServerFieldType type, const base::string16& value) {
       break;
 
     case NAME_LAST:
-      last_ = value;
+      family_ = value;
       break;
 
     case NAME_FULL:
+      // TODO(estade): this should just set |full_|; only SetInfo should attempt
+      // to be smart. http://crbug.com/384640
       SetFullName(value);
       break;
 
@@ -97,15 +229,18 @@ void NameInfo::SetRawInfo(ServerFieldType type, const base::string16& value) {
 }
 
 base::string16 NameInfo::FullName() const {
+  if (!full_.empty())
+    return full_;
+
   std::vector<base::string16> full_name;
-  if (!first_.empty())
-    full_name.push_back(first_);
+  if (!given_.empty())
+    full_name.push_back(given_);
 
   if (!middle_.empty())
     full_name.push_back(middle_);
 
-  if (!last_.empty())
-    full_name.push_back(last_);
+  if (!family_.empty())
+    full_name.push_back(family_);
 
   return JoinString(full_name, ' ');
 }
@@ -114,34 +249,32 @@ base::string16 NameInfo::MiddleInitial() const {
   if (middle_.empty())
     return base::string16();
 
-  base::string16 middle_name(middle());
+  base::string16 middle_name(middle_);
   base::string16 initial;
   initial.push_back(middle_name[0]);
   return initial;
 }
 
 void NameInfo::SetFullName(const base::string16& full) {
-  // Clear the names.
-  first_ = base::string16();
-  middle_ = base::string16();
-  last_ = base::string16();
+  // Hack: don't do anything if this wouldn't change the full, concatenated
+  // name. Otherwise when unpickling data from the database, "First|Middle|"
+  // will get parsed as "First||Middle".
+  // TODO(estade): we should be able to remove this when fixing the TODO in
+  // SetRawInfo. http://crbug.com/384640
+  if (FullName() == full)
+    return;
 
-  std::vector<base::string16> full_name_tokens;
-  Tokenize(full, base::ASCIIToUTF16(" "), &full_name_tokens);
+  full_ = full;
 
-  // There are four possibilities: empty; first name; first and last names;
-  // first, middle (possibly multiple strings) and then the last name.
-  if (full_name_tokens.size() > 0) {
-    first_ = full_name_tokens[0];
-    if (full_name_tokens.size() > 1) {
-      last_ = full_name_tokens.back();
-      if (full_name_tokens.size() > 2) {
-        full_name_tokens.erase(full_name_tokens.begin());
-        full_name_tokens.pop_back();
-        middle_ = JoinString(full_name_tokens, ' ');
-      }
-    }
-  }
+  // If |full| is empty, leave the other name parts alone. This might occur
+  // due to a migrated database with an empty |full_name| value.
+  if (full.empty())
+    return;
+
+  NameParts parts = SplitName(full);
+  given_ = parts.given;
+  middle_ = parts.middle;
+  family_ = parts.family;
 }
 
 EmailInfo::EmailInfo() {}
