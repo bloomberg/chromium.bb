@@ -10,6 +10,8 @@
     'SYNC_IMPLEMENTATION',
   ],
   'sources': [
+    # NOTE: If you add a file to this list, also add it to
+    # sync/protocol/BUILD.gn
     'protocol/app_notification_specifics.proto',
     'protocol/app_setting_specifics.proto',
     'protocol/app_specifics.proto',

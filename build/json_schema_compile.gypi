@@ -17,6 +17,8 @@
   },
   'rules': [
     {
+      # GN version: //build/json_schema.gni
+      #             (json_schema_compile template)
       'rule_name': 'genapi',
       'msvs_external_rule': 1,
       'extension': 'json',

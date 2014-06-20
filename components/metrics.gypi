@@ -79,6 +79,8 @@
     },
     {
       # Protobuf compiler / generator for UMA (User Metrics Analysis).
+      #
+      # GN version: //component/metrics/proto:proto
       'target_name': 'component_metrics_proto',
       'type': 'static_library',
       'sources': [

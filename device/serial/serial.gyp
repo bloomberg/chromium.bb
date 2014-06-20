@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //device/serial
       'target_name': 'device_serial',
       'type': 'static_library',
       'include_dirs': [

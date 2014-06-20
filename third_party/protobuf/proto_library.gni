@@ -4,22 +4,41 @@
 
 # Compile a protocol buffer.
 #
-# The 'proto_in_dir' variable is the path to the directory containing the
-# .proto files. If left out, it defaults to '.'.
+# Protobuf parameters:
 #
-# The 'proto_out_dir' variable specifies the path suffix that output files are
-# generated under.  Targets that gyp-depend on my_proto_lib will be able to
-# include the resulting proto headers with an include like:
-#   #include "dir/for/my_proto_lib/foo.pb.h"
-# If undefined, this defaults to matching the input directory.
+#   proto_in_dir (optional)
+#       The path to the directory containing the .proto files. If left out, it
+#       defaults to '.'.
 #
-# If you need to add an EXPORT macro to a protobuf's C++ header, set the
-# 'cc_generator_options' variable with the value: 'dllexport_decl=FOO_EXPORT:'
-# e.g. 'dllexport_decl=BASE_EXPORT:'
+#   proto_out_dir (optional)
+#       Specifies the path suffix that output files are generated under.
+#       Targets that gyp-depend on my_proto_lib will be able to include the
+#       resulting proto headers with an include like:
+#         #include "dir/for/my_proto_lib/foo.pb.h"
+#       If undefined, this defaults to matching the input directory.
 #
-# It is likely you also need to #include a file for the above EXPORT macro to
-# work. You can do so with the 'cc_include' variable.
-# e.g. 'base/base_export.h'
+#   cc_generator_options (optional)
+#       List of extra flags passed to the protocol compiler.  If you need to
+#       add an EXPORT macro to a protobuf's C++ header, set the
+#       'cc_generator_options' variable with the value:
+#       'dllexport_decl=FOO_EXPORT:' (note trailing colon).
+#
+#       It is likely you also need to #include a file for the above EXPORT
+#       macro to work. See cc_include.
+#
+#   cc_include (optional)
+#       String listing an extra include that should be passed.
+#       Example: cc_include = "foo/bar.h"
+#
+# Parameters for compiling the generated code:
+#
+#   defines (optional)
+#       Defines to supply to the source set that compiles the generated source
+#       code.
+#
+#   extra_configs (optional)
+#       A list of config labels that will be appended to the configs applying
+#       to the source set.
 #
 # Example:
 #  proto_library("mylib") {
@@ -114,6 +133,13 @@ template("proto_library") {
     }
 
     sources = get_target_outputs(":$action_name")
+
+    if (defined(invoker.defines)) {
+      defines = invoker.defines
+    }
+    if (defined(invoker.extra_configs)) {
+      configs += invoker.extra_configs
+    }
 
     direct_dependent_configs = [ "//third_party/protobuf:using_proto" ]
 

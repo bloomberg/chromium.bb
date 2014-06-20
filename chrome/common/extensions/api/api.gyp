@@ -9,135 +9,127 @@
   # .gypi reader can not process conditions and does not know about targets,
   # etc., it just reads Python dictionaries.
   #
-  # In addition, the GN build treats .idl files and .json files separately,
-  # since they run through different scripts. If you add a new category, also
-  # add it to the BUILD.gn file in this directory.
+  # If you add a new category, also add it to the BUILD.gn file in this
+  # directory.
   'variables': {
     # These duplicate other lists and are the only ones used on Android. They
     # should be eliminated. See crbug.com/305852.
-    'android_schema_files_idl': [
-      'file_system.idl',
-      'sync_file_system.idl',
-      'tab_capture.idl',
-    ],
-    'android_schema_files_json': [
+    'android_schema_files': [
       'activity_log_private.json',
       'events.json',
+      'file_system.idl',
       'manifest_types.json',
       'permissions.json',
+      'sync_file_system.idl',
+      'tab_capture.idl',
       'tabs.json',
       'types.json',
-      'webview.json',
       'web_navigation.json',
+      'webview.json',
       'windows.json',
     ],
 
     # These are used everywhere except Android.
-    'main_schema_files_idl': [
+    'main_schema_files': [
+      'accessibility_private.json',
+      'activity_log_private.json',
       'alarms.idl',
       'app_current_window_internal.idl',
       'app_window.idl',
       'audio.idl',
-      'automation_internal.idl',
       'automation.idl',
+      'automation_internal.idl',
       'autotest_private.idl',
       'bluetooth.idl',
       'bluetooth_low_energy.idl',
+      'bluetooth_private.json',
       'bluetooth_socket.idl',
-      'browser.idl',
+      'bookmark_manager_private.json',
+      'bookmarks.json',
       'braille_display_private.idl',
+      'browser.idl',
       'cast_channel.idl',
+      'cloud_print_private.json',
+      'command_line_private.json',
+      'content_settings.json',
+      'context_menus_internal.json',
+      'context_menus.json',
+      'cookies.json',
+      'debugger.json',
+      'desktop_capture.json',
       'developer_private.idl',
       'dial.idl',
       'downloads.idl',
       'downloads_internal.idl',
+      'echo_private.json',
+      'enterprise_platform_keys_private.json',
+      'events.json',
       'feedback_private.idl',
       'file_browser_private.idl',
       'file_browser_private_internal.idl',
       'file_system.idl',
       'file_system_provider.idl',
       'file_system_provider_internal.idl',
+      'font_settings.json',
       'gcd_private.idl',
+      'gcm.json',
+      'guest_view_internal.json',
       'hangouts_private.idl',
       'hid.idl',
+      'history.json',
       'hotword_private.idl',
+      'i18n.json',
       'identity.idl',
       'identity_private.idl',
+      'idle.json',
       'image_writer_private.idl',
+      'input_ime.json',
       'location.idl',
+      'management.json',
+      'manifest_types.json',
       'mdns.idl',
       'media_galleries.idl',
       'media_galleries_private.idl',
+      'metrics_private.json',
+      'networking_private.json',
       'notifications.idl',
+      'omnibox.json',
+      'page_capture.json',
+      'permissions.json',
       'power.idl',
+      'preferences_private.json',
       'push_messaging.idl',
+      'reading_list_private.json',
       'screenlock_private.idl',
       'serial.idl',
+      'sessions.json',
       'signed_in_devices.idl',
       'streams_private.idl',
-      'sync_file_system.idl',
       'synced_notifications_private.idl',
+      'sync_file_system.idl',
       'system_cpu.idl',
       'system_display.idl',
       'system_indicator.idl',
       'system_memory.idl',
       'system_network.idl',
+      'system_private.json',
       'system_storage.idl',
       'tab_capture.idl',
-      # Despite the name, this API does not rely on any
-      # WebRTC-specific bits and as such does not belong in
-      # the enable_webrtc=0 section below.
-      'webrtc_audio_private.idl',
-      'webrtc_logging_private.idl',
-    ],
-    'main_schema_files_json': [
-      'accessibility_private.json',
-      'activity_log_private.json',
-      'bluetooth_private.json',
-      'bookmark_manager_private.json',
-      'bookmarks.json',
-      'cloud_print_private.json',
-      'command_line_private.json',
-      'content_settings.json',
-      'context_menus.json',
-      'context_menus_internal.json',
-      'cookies.json',
-      'debugger.json',
-      'desktop_capture.json',
-      'echo_private.json',
-      'enterprise_platform_keys_private.json',
-      'events.json',
-      'font_settings.json',
-      'gcm.json',
-      'guest_view_internal.json',
-      'history.json',
-      'i18n.json',
-      'idle.json',
-      'input_ime.json',
-      'management.json',
-      'manifest_types.json',
-      'metrics_private.json',
-      'networking_private.json',
-      'omnibox.json',
-      'page_capture.json',
-      'permissions.json',
-      'preferences_private.json',
-      'reading_list_private.json',
-      'sessions.json',
-      'system_private.json',
       'tabs.json',
       'terminal_private.json',
       'types.json',
       'virtual_keyboard_private.json',
       'web_navigation.json',
       'web_request.json',
+      # Despite the name, this API does not rely on any
+      # WebRTC-specific bits and as such does not belong in
+      # the enable_webrtc=0 section below.
+      'webrtc_audio_private.idl',
+      'webrtc_logging_private.idl',
       'webstore_private.json',
       'webview.json',
       'windows.json',
     ],
-    # The non-compiled shcema files don't need to be separated out by type
-    # since they're only given to the bundle script which doesn't care about
-    # type.
     'main_non_compiled_schema_files': [
       'browsing_data.json',
       'chromeos_info_private.json',
@@ -152,25 +144,23 @@
     ],
 
     # ChromeOS-specific schemas.
-    'chromeos_schema_files_idl': [
+    'chromeos_schema_files': [
+      'accessibility_features.json',
       'diagnostics.idl',
       'enterprise_platform_keys.idl',
       'enterprise_platform_keys_internal.idl',
-      'log_private.idl',
-      'webcam_private.idl',
-    ],
-    'chromeos_schema_files_json': [
-      'accessibility_features.json',
       'file_browser_handler_internal.json',
       'first_run_private.json',
+      'log_private.idl',
       'wallpaper.json',
       'wallpaper_private.json',
+      'webcam_private.idl',
     ],
-    'chromeos_branded_schema_files_idl': [
+    'chromeos_branded_schema_files': [
       'ledger/ledger.idl',
     ],
 
-    'webrtc_schema_files_idl': [
+    'webrtc_schema_files': [
       'cast_streaming_rtp_stream.idl',
       'cast_streaming_session.idl',
       'cast_streaming_udp_transport.idl',
@@ -178,6 +168,7 @@
   },
   'targets': [
     {
+      # GN version: //chrome/common/extensions/api:api
       'target_name': 'chrome_api',
       'type': 'static_library',
       'sources': [
@@ -199,32 +190,29 @@
               '<@(main_non_compiled_schema_files)',
             ],
             'schema_files': [
-              '<@(main_schema_files_idl)',
-              '<@(main_schema_files_json)',
+              '<@(main_schema_files)',
             ],
           }, {  # OS=="android"
             'non_compiled_schema_files': [
             ],
             'schema_files': [
               # These should be eliminated. See crbug.com/305852.
-              '<@(android_schema_files_idl)',
-              '<@(android_schema_files_json)',
+              '<@(android_schema_files)',
             ],
           }],
           ['chromeos==1', {
             'schema_files': [
-              '<@(chromeos_schema_files_idl)',
-              '<@(chromeos_schema_files_json)',
+              '<@(chromeos_schema_files)',
             ],
           }],
           ['enable_webrtc==1', {
             'schema_files': [
-              '<@(webrtc_schema_files_idl)',
+              '<@(webrtc_schema_files)',
             ],
           }],
           ['branding=="Chrome" and chromeos==1', {
             'schema_files': [
-              '<@(chromeos_branded_schema_files_idl)',
+              '<@(chromeos_branded_schema_files)',
             ],
           }],
         ],
@@ -232,6 +220,12 @@
         'root_namespace': 'extensions::api',
       },
       'dependencies': [
+        # Different APIs include some headers crom chrome/common that in turn
+        # include generated headers from these targets.
+        # TODO(brettw) this should be made unnecessary if possible.
+        '<(DEPTH)/components/components.gyp:component_metrics_proto',
+        '<(DEPTH)/device/serial/serial.gyp:device_serial',
+
         '<(DEPTH)/content/content.gyp:content_browser',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/sync/sync.gyp:sync',

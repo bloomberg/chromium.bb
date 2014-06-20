@@ -4,7 +4,7 @@
 
 # Collection of all components. You wouldn't link to this, but this is rather
 # to reference the files so they can be compiled by the build system.
-group("all") {
+group("all_components") {
   visibility = "//:*"  # Only for the root targets to bring in.
 
   deps = [

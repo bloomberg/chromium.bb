@@ -22,6 +22,7 @@ group("root") {
     "//apps/common/api:apps_api",
     "//cc",
     "//chrome/common",
+    "//components:all_components",
     "//content",
     "//crypto",
     "//extensions/common/api:extensions_api",

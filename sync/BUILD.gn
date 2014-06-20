@@ -1,0 +1,13 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# TODO(GYP) This exists as a stub to compile the sync protobuf so dependent
+# targets will compile. This target will have to be written completely for
+# such things to link, however.
+group("sync") {
+  deps = [
+    "//sync/protocol",
+  ]
+}
+

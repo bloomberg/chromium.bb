@@ -59,6 +59,7 @@
   # anything to be done in this file (instead of a higher-level .gyp file).
   'targets': [
     {
+      # GN version: //third_party/adobe/flash:flapper_version_h
       'target_name': 'flapper_version_h',
       'type': 'none',
       'copies': [{
@@ -67,6 +68,7 @@
       }],
     },
     {
+      # GN version: //third_party/adobe/flash:flapper_binaries
       'target_name': 'flapper_binaries',
       'type': 'none',
       'copies': [{

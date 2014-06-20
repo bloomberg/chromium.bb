@@ -63,6 +63,26 @@ static_library("common") {
     "//ui/resources:resources",
     "//url",
   ]
+
+  if (!is_ios) {
+    deps += [
+      #'<(DEPTH)/apps/common/api/api.gyp:apps_api',  TODO(GYP)
+      "//chrome/common/extensions/api",
+      #'<(DEPTH)/components/components.gyp:autofill_core_common',  TODO(GYP)
+      #'<(DEPTH)/components/components.gyp:autofill_content_common',  TODO(GYP)
+      #'<(DEPTH)/components/components.gyp:password_manager_core_common',  TODO(GYP)
+      #'<(DEPTH)/components/components.gyp:signin_core_common',  TODO(GYP)
+      #'<(DEPTH)/components/components.gyp:translate_content_common',  TODO(GYP)
+      #'<(DEPTH)/components/nacl.gyp:nacl_common',  TODO(GYP)
+      "//components/visitedlink/common",
+      #'<(DEPTH)/extensions/common/api/api.gyp:extensions_api',  TODO(GYP)
+      #'<(DEPTH)/extensions/extensions.gyp:extensions_common',  TODO(GYP)
+      "//ipc",
+      "//third_party/adobe/flash:flapper_version_h",
+      "//third_party/re2",
+      "//third_party/widevine/cdm:version_h",
+    ]
+  }
 }
 
 if (is_linux) {
