@@ -149,6 +149,7 @@ bool ExternalMountPoints::CrackVirtualPath(
     const base::FilePath& virtual_path,
     std::string* mount_name,
     FileSystemType* type,
+    std::string* cracked_id,
     base::FilePath* path,
     FileSystemMountOption* mount_option) const {
   DCHECK(mount_name);
@@ -294,18 +295,20 @@ FileSystemURL ExternalMountPoints::CrackFileSystemURL(
 
   std::string mount_name;
   FileSystemType cracked_type;
+  std::string cracked_id;
   base::FilePath cracked_path;
   FileSystemMountOption cracked_mount_option;
 
   if (!CrackVirtualPath(virtual_path, &mount_name, &cracked_type,
-                        &cracked_path, &cracked_mount_option)) {
+                        &cracked_id, &cracked_path, &cracked_mount_option)) {
     return FileSystemURL();
   }
 
   return FileSystemURL(
       url.origin(), url.mount_type(), url.virtual_path(),
       !url.filesystem_id().empty() ? url.filesystem_id() : mount_name,
-      cracked_type, cracked_path, mount_name, cracked_mount_option);
+      cracked_type, cracked_path,
+      cracked_id.empty() ? mount_name : cracked_id, cracked_mount_option);
 }
 
 bool ExternalMountPoints::ValidateNewMountPoint(const std::string& mount_name,

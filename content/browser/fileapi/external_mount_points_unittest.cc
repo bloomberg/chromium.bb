@@ -456,11 +456,13 @@ TEST(ExternalMountPointsTest, CrackVirtualPath) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     std::string cracked_name;
     fileapi::FileSystemType cracked_type;
+    std::string cracked_id;
     base::FilePath cracked_path;
     fileapi::FileSystemMountOption cracked_option;
     EXPECT_EQ(kTestCases[i].expect_valid,
               mount_points->CrackVirtualPath(base::FilePath(kTestCases[i].path),
-                  &cracked_name, &cracked_type, &cracked_path, &cracked_option))
+                  &cracked_name, &cracked_type, &cracked_id, &cracked_path,
+                  &cracked_option))
         << "Test case index: " << i;
 
     if (!kTestCases[i].expect_valid)
@@ -473,6 +475,9 @@ TEST(ExternalMountPointsTest, CrackVirtualPath) {
         << "Test case index: " << i;
     EXPECT_EQ(kTestCases[i].expect_name, cracked_name)
         << "Test case index: " << i;
+    // As of now we don't mount other filesystems with non-empty filesystem_id
+    // onto external mount points.
+    EXPECT_TRUE(cracked_id.empty()) << "Test case index: " << i;
   }
 }
 
@@ -493,13 +498,16 @@ TEST(ExternalMountPointsTest, MountOption) {
 
   std::string name;
   fileapi::FileSystemType type;
+  std::string cracked_id;
   fileapi::FileSystemMountOption option;
   base::FilePath path;
   EXPECT_TRUE(mount_points->CrackVirtualPath(
-      base::FilePath(FPL("nosync/file")), &name, &type, &path, &option));
+      base::FilePath(FPL("nosync/file")), &name, &type, &cracked_id, &path,
+      &option));
   EXPECT_EQ(fileapi::COPY_SYNC_OPTION_NO_SYNC, option.copy_sync_option());
   EXPECT_TRUE(mount_points->CrackVirtualPath(
-      base::FilePath(FPL("sync/file")), &name, &type, &path, &option));
+      base::FilePath(FPL("sync/file")), &name, &type, &cracked_id, &path,
+      &option));
   EXPECT_EQ(fileapi::COPY_SYNC_OPTION_SYNC, option.copy_sync_option());
 }
 

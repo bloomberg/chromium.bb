@@ -145,7 +145,8 @@ std::string RegisterFileSystem(WebContents* web_contents,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(web_contents->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   std::string file_system_id = isolated_context()->RegisterFileSystemForPath(
-      fileapi::kFileSystemTypeNativeLocal, path, registered_name);
+      fileapi::kFileSystemTypeNativeLocal, std::string(), path,
+      registered_name);
 
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();

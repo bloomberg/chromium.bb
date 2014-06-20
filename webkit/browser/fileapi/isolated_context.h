@@ -93,12 +93,13 @@ class WEBKIT_STORAGE_BROWSER_EXPORT IsolatedContext : public MountPoints {
   std::string RegisterDraggedFileSystem(const FileInfoSet& files);
 
   // Registers a new isolated filesystem for a given |path| of filesystem
-  // |type| filesystem and returns a new filesystem ID.
+  // |type| filesystem with |filesystem_id| and returns a new filesystem ID.
   // |path| must be an absolute path which has no parent references ('..').
   // If |register_name| is non-null and has non-empty string the path is
   // registered as the given |register_name|, otherwise it is populated
   // with the name internally assigned to the path.
   std::string RegisterFileSystemForPath(FileSystemType type,
+                                        const std::string& filesystem_id,
                                         const base::FilePath& path,
                                         std::string* register_name);
 
@@ -148,6 +149,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT IsolatedContext : public MountPoints {
       const base::FilePath& virtual_path,
       std::string* filesystem_id,
       FileSystemType* type,
+      std::string* cracked_id,
       base::FilePath* path,
       FileSystemMountOption* mount_option) const OVERRIDE;
   virtual FileSystemURL CrackURL(const GURL& url) const OVERRIDE;

@@ -528,7 +528,7 @@ RuntimeGetPackageDirectoryEntryFunction::Run() {
   std::string relative_path = kPackageDirectoryPath;
   base::FilePath path = extension_->path();
   std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
-      fileapi::kFileSystemTypeNativeLocal, path, &relative_path);
+      fileapi::kFileSystemTypeNativeLocal, std::string(), path, &relative_path);
 
   int renderer_id = render_view_host_->GetProcess()->GetID();
   content::ChildProcessSecurityPolicy* policy =

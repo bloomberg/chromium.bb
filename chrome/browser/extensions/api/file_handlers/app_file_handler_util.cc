@@ -299,7 +299,7 @@ GrantedFileEntry CreateFileEntry(
   DCHECK(isolated_context);
 
   result.filesystem_id = isolated_context->RegisterFileSystemForPath(
-      fileapi::kFileSystemTypeNativeForPlatformApp, path,
+      fileapi::kFileSystemTypeNativeForPlatformApp, std::string(), path,
       &result.registered_name);
 
   content::ChildProcessSecurityPolicy* policy =
@@ -368,8 +368,10 @@ bool ValidateFileEntryAndGetPath(
       .Append(relative_path);
   fileapi::FileSystemType type;
   fileapi::FileSystemMountOption mount_option;
+  std::string cracked_id;
   if (!context->CrackVirtualPath(
-          virtual_path, &filesystem_id, &type, file_path, &mount_option)) {
+          virtual_path, &filesystem_id, &type, &cracked_id, file_path,
+          &mount_option)) {
     *error = kInvalidParameters;
     return false;
   }

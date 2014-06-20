@@ -138,7 +138,7 @@ class NativeMediaFileUtilTest : public testing::Test {
         content::CreateAllowFileAccessOptions());
 
     filesystem_id_ = isolated_context()->RegisterFileSystemForPath(
-        fileapi::kFileSystemTypeNativeMedia, root_path(), NULL);
+        fileapi::kFileSystemTypeNativeMedia, std::string(), root_path(), NULL);
 
     isolated_context()->AddReference(filesystem_id_);
   }

@@ -47,6 +47,7 @@ class TransientFileUtilTest : public testing::Test {
     std::string name = "tmp";
     std::string fsid = isolated_context->RegisterFileSystemForPath(
         fileapi::kFileSystemTypeForTransientFile,
+        std::string(),
         *file_path,
         &name);
     ASSERT_TRUE(!fsid.empty());

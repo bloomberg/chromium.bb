@@ -96,12 +96,13 @@ void FileSystemBackend::ResolveURL(const fileapi::FileSystemURL& url,
                                    const OpenFileSystemCallback& callback) {
   std::string id;
   fileapi::FileSystemType type;
+  std::string cracked_id;
   base::FilePath path;
   fileapi::FileSystemMountOption option;
   if (!mount_points_->CrackVirtualPath(
-           url.virtual_path(), &id, &type, &path, &option) &&
+           url.virtual_path(), &id, &type, &cracked_id, &path, &option) &&
       !system_mount_points_->CrackVirtualPath(
-           url.virtual_path(), &id, &type, &path, &option)) {
+           url.virtual_path(), &id, &type, &cracked_id, &path, &option)) {
     // Not under a mount point, so return an error, since the root is not
     // accessible.
     GURL root_url = GURL(fileapi::GetExternalFileSystemRootURIString(
@@ -188,12 +189,13 @@ void FileSystemBackend::GrantFileAccessToExtension(
 
   std::string id;
   fileapi::FileSystemType type;
+  std::string cracked_id;
   base::FilePath path;
   fileapi::FileSystemMountOption option;
-  if (!mount_points_->CrackVirtualPath(virtual_path,
-                                       &id, &type, &path, &option) &&
-      !system_mount_points_->CrackVirtualPath(virtual_path,
-                                              &id, &type, &path, &option)) {
+  if (!mount_points_->CrackVirtualPath(virtual_path, &id, &type, &cracked_id,
+                                       &path, &option) &&
+      !system_mount_points_->CrackVirtualPath(virtual_path, &id, &type,
+                                              &cracked_id, &path, &option)) {
     return;
   }
 
@@ -278,7 +280,8 @@ fileapi::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
 bool FileSystemBackend::SupportsStreaming(
     const fileapi::FileSystemURL& url) const {
   return url.type() == fileapi::kFileSystemTypeDrive ||
-         url.type() == fileapi::kFileSystemTypeProvided;
+         url.type() == fileapi::kFileSystemTypeProvided ||
+         url.type() == fileapi::kFileSystemTypeDeviceMediaAsFileStorage;
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>

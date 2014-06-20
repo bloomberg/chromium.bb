@@ -73,6 +73,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT ExternalMountPoints
       const base::FilePath& virtual_path,
       std::string* mount_name,
       FileSystemType* type,
+      std::string* cracked_id,
       base::FilePath* path,
       FileSystemMountOption* mount_option) const OVERRIDE;
   virtual FileSystemURL CrackURL(const GURL& url) const OVERRIDE;

@@ -199,6 +199,7 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   std::string isolated_id =
       fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
           fileapi::kFileSystemTypeNativeForPlatformApp,
+          std::string(),
           GetDriveMountPointPath(&profile).AppendASCII("bar/buz"),
           &isolated_name);
   EXPECT_EQ(

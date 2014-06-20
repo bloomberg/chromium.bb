@@ -764,7 +764,8 @@ void RenderViewHostImpl::DragTargetDragEnter(
 
     std::string register_name;
     std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
-        file_system_url.type(), file_system_url.path(), &register_name);
+        file_system_url.type(), file_system_url.filesystem_id(),
+        file_system_url.path(), &register_name);
     policy->GrantReadFileSystem(renderer_id, filesystem_id);
 
     // Note: We are using the origin URL provided by the sender here. It may be

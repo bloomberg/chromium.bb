@@ -117,6 +117,7 @@ std::string PepperIsolatedFileSystemMessageFilter::CreateCrxFileSystem(
   std::string kFirstLevelDirectory("crxfs");
   return fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
       fileapi::kFileSystemTypeNativeLocal,
+      std::string(),
       extension->path(),
       &kFirstLevelDirectory);
 }
