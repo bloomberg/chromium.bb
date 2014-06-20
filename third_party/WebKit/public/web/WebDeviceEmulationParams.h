@@ -31,9 +31,6 @@ struct WebDeviceEmulationParams {
     // Whether emulated view should be scaled down if necessary to fit into available space.
     bool fitToView;
 
-    // Insets of emulated view inside available view space, in fit to view mode.
-    WebSize viewInsets;
-
     // Offset of emulated view inside available space, not in fit to view mode.
     WebFloatPoint offset;
 

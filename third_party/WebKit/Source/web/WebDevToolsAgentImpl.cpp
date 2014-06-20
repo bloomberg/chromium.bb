@@ -363,7 +363,7 @@ bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputE
     return false;
 }
 
-void WebDevToolsAgentImpl::setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool emulateViewport, bool fitWindow)
+void WebDevToolsAgentImpl::setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool emulateViewport, bool fitWindow, float scale, float offsetX, float offsetY)
 {
     if (!m_deviceMetricsEnabled) {
         m_deviceMetricsEnabled = true;
@@ -379,7 +379,8 @@ void WebDevToolsAgentImpl::setDeviceMetricsOverride(int width, int height, float
     params.deviceScaleFactor = deviceScaleFactor;
     params.viewSize = WebSize(width, height);
     params.fitToView = fitWindow;
-    params.viewInsets = WebSize(0, 0);
+    params.scale = scale;
+    params.offset = WebFloatPoint(offsetX, offsetY);
     m_client->enableDeviceEmulation(params);
 }
 

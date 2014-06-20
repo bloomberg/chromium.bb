@@ -56,7 +56,7 @@ public:
 
     virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
 
-    virtual void setDeviceMetricsOverride(int, int, float, bool, bool) OVERRIDE;
+    virtual void setDeviceMetricsOverride(int, int, float, bool, bool, float, float, float) OVERRIDE;
     virtual void clearDeviceMetricsOverride() OVERRIDE;
     virtual void setTouchEventEmulationEnabled(bool) OVERRIDE;
 
