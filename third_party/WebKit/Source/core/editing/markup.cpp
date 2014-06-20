@@ -976,11 +976,23 @@ static inline void removeElementPreservingChildren(PassRefPtrWillBeRawPtr<Docume
     fragment->removeChild(element);
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> createContextualFragment(const String& markup, HTMLElement* element, ParserContentPolicy parserContentPolicy, ExceptionState& exceptionState)
+static inline bool isSupportedContainer(Element* element)
 {
     ASSERT(element);
-    if (element->ieForbidsInsertHTML() || element->hasLocalName(colTag) || element->hasLocalName(colgroupTag) || element->hasLocalName(framesetTag)
+    if (!element->isHTMLElement())
+        return true;
+
+    if (element->hasLocalName(colTag) || element->hasLocalName(colgroupTag) || element->hasLocalName(framesetTag)
         || element->hasLocalName(headTag) || element->hasLocalName(styleTag) || element->hasLocalName(titleTag)) {
+        return false;
+    }
+    return !toHTMLElement(element)->ieForbidsInsertHTML();
+}
+
+PassRefPtrWillBeRawPtr<DocumentFragment> createContextualFragment(const String& markup, Element* element, ParserContentPolicy parserContentPolicy, ExceptionState& exceptionState)
+{
+    ASSERT(element);
+    if (!isSupportedContainer(element)) {
         exceptionState.throwDOMException(NotSupportedError, "The range's container is '" + element->localName() + "', which is not supported.");
         return nullptr;
     }
