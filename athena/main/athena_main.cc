@@ -21,7 +21,12 @@
 #include "ui/wm/core/visibility_controller.h"
 
 namespace {
-const std::string kAppSwitch = "app";
+const char kAppSwitch[] = "app";
+
+// We want to load the sample calculator app by default, for a while. Expecting
+// to run athena_main at src/
+const char kDefaultAppPath[] =
+    "chrome/common/extensions/docs/examples/apps/calculator/app";
 }  // namespace
 
 class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
@@ -32,9 +37,13 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
   // apps::ShellBrowserMainDelegate:
   virtual void Start(content::BrowserContext* context) OVERRIDE {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(kAppSwitch)) {
-      base::FilePath app_dir(command_line->GetSwitchValueNative(kAppSwitch));
-      base::FilePath app_absolute_dir = base::MakeAbsoluteFilePath(app_dir);
+    base::FilePath app_dir = base::FilePath::FromUTF8Unsafe(
+        command_line->HasSwitch(kAppSwitch) ?
+        command_line->GetSwitchValueNative(kAppSwitch) :
+        kDefaultAppPath);
+
+    base::FilePath app_absolute_dir = base::MakeAbsoluteFilePath(app_dir);
+    if (base::DirectoryExists(app_absolute_dir)) {
       extensions::ShellExtensionSystem* extension_system =
           static_cast<extensions::ShellExtensionSystem*>(
               extensions::ExtensionSystem::Get(context));
