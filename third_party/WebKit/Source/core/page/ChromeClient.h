@@ -239,8 +239,6 @@ public:
     virtual void didUpdateTextOfFocusedElementByNonUserInput() { }
     virtual void showImeIfNeeded() { }
 
-    virtual bool usesGpuRasterization() = 0;
-
 protected:
     virtual ~ChromeClient() { }
 };

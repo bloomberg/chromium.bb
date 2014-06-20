@@ -141,9 +141,6 @@ public:
 
     // Toggles scroll bottleneck rects on the HUD layer
     virtual void setShowScrollBottleneckRects(bool) { }
-
-    // FIXME: make pure virtual once the cc-side patch is in
-    virtual bool usesGpuRasterization() { return false; };
 };
 
 } // namespace blink

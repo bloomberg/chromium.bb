@@ -161,9 +161,6 @@ public:
     virtual void annotatedRegionsChanged() OVERRIDE { }
     virtual bool paintCustomOverhangArea(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&) OVERRIDE { return false; }
     virtual String acceptLanguages() OVERRIDE;
-
-    virtual bool usesGpuRasterization() OVERRIDE { return false; }
-
 };
 
 class EmptyFrameLoaderClient FINAL : public FrameLoaderClient {

@@ -42,7 +42,6 @@
 #include "core/html/canvas/WebGLContextAttributes.h"
 #include "core/html/canvas/WebGLContextEvent.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
-#include "core/page/ChromeClient.h"
 #include "core/rendering/RenderHTMLCanvas.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -435,9 +434,8 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     if (!settings || !settings->accelerated2dCanvasEnabled())
         return false;
 
-    // Do not use acceleration for small canvases, unless GPU rasterization is available.
-    // GPU raterization is a heuristic to avoid difficult content & whitelist targeted content.
-    if (!(document().frame() && document().frame()->chromeClient().usesGpuRasterization()) && size.width() * size.height() < settings->minimumAccelerated2dCanvasSize())
+    // Do not use acceleration for small canvas.
+    if (size.width() * size.height() < settings->minimumAccelerated2dCanvasSize())
         return false;
 
     if (!blink::Platform::current()->canAccelerate2dCanvas())

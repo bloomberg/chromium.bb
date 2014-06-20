@@ -184,8 +184,6 @@ public:
     virtual void didUpdateTextOfFocusedElementByNonUserInput() OVERRIDE;
     virtual void showImeIfNeeded() OVERRIDE;
 
-    virtual bool usesGpuRasterization() OVERRIDE;
-
 private:
     virtual bool isChromeClientImpl() const OVERRIDE { return true; }
 
