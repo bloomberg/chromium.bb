@@ -50,3 +50,6 @@ per-file accessibility_node_data.*=dtseng@chromium.org
 per-file websocket.*=ricea@chromium.org
 per-file websocket.*=tyoshino@chromium.org
 per-file websocket.*=yhirano@chromium.org
+
+# Compositor
+per-file cc_messages_unittest.cc=danakj@chromium.org
