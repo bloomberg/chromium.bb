@@ -20,6 +20,14 @@
 #include "chrome/browser/android/chromium_application.h"
 #endif  // OS_ANDROID
 
+#if defined(OS_WIN)
+namespace {
+
+bool g_parental_control_on = false;
+
+} // empty namespace
+#endif  // OS_WIN
+
 // static
 bool IncognitoModePrefs::IntToAvailability(int in_value,
                                            Availability* out_value) {
@@ -102,3 +110,20 @@ bool IncognitoModePrefs::ArePlatformParentalControlsEnabled() {
   return false;
 #endif
 }
+
+#if defined(OS_WIN)
+void IncognitoModePrefs::InitializePlatformParentalControls() {
+  g_parental_control_on = base::win::IsParentalControlActivityLoggingOn();
+}
+#endif // OS_WIN
+
+bool IncognitoModePrefs::ArePlatformParentalControlsEnabledCached() {
+#if defined(OS_WIN)
+  return g_parental_control_on;
+#elif defined(OS_ANDROID)
+  return chrome::android::ChromiumApplication::AreParentalControlsEnabled();
+#else
+  return false;
+#endif
+}
+

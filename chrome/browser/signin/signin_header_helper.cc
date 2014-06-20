@@ -224,9 +224,9 @@ bool AppendMirrorRequestHeaderIfPossible(
   std::string account_id(io_data->google_services_account_id()->GetValue());
 
   int profile_mode_mask = PROFILE_MODE_DEFAULT;
-  // TODO(guohui): Needs to check for parent control as well.
   if (io_data->incognito_availibility()->GetValue() ==
-          IncognitoModePrefs::DISABLED) {
+          IncognitoModePrefs::DISABLED ||
+      IncognitoModePrefs::ArePlatformParentalControlsEnabledCached()) {
     profile_mode_mask |= PROFILE_MODE_INCOGNITO_DISABLED;
   }
 

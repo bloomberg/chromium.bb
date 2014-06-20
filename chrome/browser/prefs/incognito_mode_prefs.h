@@ -63,6 +63,17 @@ class IncognitoModePrefs {
   // open new windows.
   static bool CanOpenBrowser(Profile* profile);
 
+  // Returns whether parental controls have been enabled on the platform. This
+  // method simply returns a cached value and thus the result may be stale. May
+  // be called on any thread.
+  static bool ArePlatformParentalControlsEnabledCached();
+
+#if defined(OS_WIN)
+  // Initializes the parental control settings. Must be called on UI thread and
+  // before |ArePlatformParentalControlsEnabled|.
+  static void InitializePlatformParentalControls();
+#endif // OS_WIN
+
  private:
   // Returns whether parental controls have been enabled on the platform, which
   // if enabled will overrule the Availability as configured in prefs.
