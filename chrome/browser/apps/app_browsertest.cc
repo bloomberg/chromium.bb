@@ -1041,13 +1041,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ComponentAppBackgroundPage) {
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 }
 
-// Flakes on Windows: http://crbug.com/171450
-#if defined(OS_WIN)
-#define MAYBE_Messaging DISABLED_Messaging
-#else
-#define MAYBE_Messaging Messaging
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_Messaging) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Messaging) {
   ExtensionApiTest::ResultCatcher result_catcher;
   LoadAndLaunchPlatformApp("messaging/app2", "Launched");
   LoadAndLaunchPlatformApp("messaging/app1", "Launched");
