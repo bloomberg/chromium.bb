@@ -296,6 +296,23 @@ class OmniboxFieldTrial {
   static bool EnableAnswersInSuggest();
 
   // ---------------------------------------------------------
+  // For the AddUWYTMatchEvenIfPromotedURLs experiment that's part of the
+  // bundled omnibox field trial.
+
+  // Returns true if HistoryURL Provider should add the URL-what-you-typed match
+  // (if valid and reasonable) even if the provider has good inline
+  // autocompletions to offer.  Normally HistoryURL does not add the UWYT match
+  // if there are good inline autocompletions, as the user could simply hit
+  // backspace to delete the completion and get the what-you-typed match.
+  // However, in the disable inlining experiment this interaction is a lot more
+  // difficult.  The user will have to select a not-inlined suggestion and
+  // backspace (possibly a lot) to get back to the what-you-typed match.
+  // This mode is intended to alleviate the pain by always ensuring that
+  // the UWYT match appears somewhere on the list of suggestions.  Returns
+  // false if the experiment isn't active.
+  static bool AddUWYTMatchEvenIfPromotedURLs();
+
+  // ---------------------------------------------------------
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.
@@ -311,6 +328,7 @@ class OmniboxFieldTrial {
   static const char kBookmarksIndexURLsRule[];
   static const char kDisableInliningRule[];
   static const char kAnswersInSuggestRule[];
+  static const char kAddUWYTMatchEvenIfPromotedURLsRule[];
 
   // Parameter names used by the HUP new scoring experiments.
   static const char kHUPNewScoringEnabledParam[];

@@ -447,6 +447,12 @@ bool OmniboxFieldTrial::EnableAnswersInSuggest() {
       kAnswersInSuggestRule) == "true";
 }
 
+bool OmniboxFieldTrial::AddUWYTMatchEvenIfPromotedURLs() {
+  return chrome_variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kAddUWYTMatchEvenIfPromotedURLsRule) == "true";
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kShortcutsScoringMaxRelevanceRule[] =
@@ -463,6 +469,8 @@ const char OmniboxFieldTrial::kZeroSuggestVariantRule[] = "ZeroSuggestVariant";
 const char OmniboxFieldTrial::kBookmarksIndexURLsRule[] = "BookmarksIndexURLs";
 const char OmniboxFieldTrial::kDisableInliningRule[] = "DisableInlining";
 const char OmniboxFieldTrial::kAnswersInSuggestRule[] = "AnswersInSuggest";
+const char OmniboxFieldTrial::kAddUWYTMatchEvenIfPromotedURLsRule[] =
+    "AddUWYTMatchEvenIfPromotedURLs";
 
 const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
     "HUPExperimentalScoringEnabled";

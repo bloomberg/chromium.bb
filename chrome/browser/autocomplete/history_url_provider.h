@@ -156,6 +156,12 @@ struct HistoryURLProviderParams {
   // this to.  See comments in DoAutocomplete().
   PromoteType promote_type;
 
+  // True if we should consider adding the what you typed match.  This
+  // decision is often already summarized in |promote_type| by whether it
+  // says to promote the what you typed match.  As such, this variable is
+  // only useful when |promote_type| is FRONT_HISTORY_MATCH.
+  bool have_what_you_typed_match;
+
   // Languages we should pass to gfx::GetCleanStringFromUrl.
   std::string languages;
 
@@ -245,8 +251,10 @@ class HistoryURLProvider : public HistoryProvider {
 
   // May promote either the what you typed match or first history match in
   // params->matches to the front of |matches_|, depending on the value of
-  // params->promote_type.
-  void PromoteMatchIfNecessary(const HistoryURLProviderParams& params);
+  // params->promote_type.  Also, depending on a field trial state, if it
+  // promotes the first history match, it may decide to append the what you
+  // typed matche immediately after.
+  void PromoteMatchesIfNecessary(const HistoryURLProviderParams& params);
 
   // Dispatches the results to the autocomplete controller. Called on the
   // main thread by ExecuteWithDB when the results are available.
