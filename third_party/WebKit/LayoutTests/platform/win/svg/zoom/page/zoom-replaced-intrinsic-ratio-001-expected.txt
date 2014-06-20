@@ -16,14 +16,14 @@ layer at (0,0) size 800x476
           text run at (0,-1) width 14: "      "
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (1,194.09) size 138.88x9.25
-      RenderTable at (1,258.89) size 139x46
-        RenderTableSection (anonymous) at (0,0) size 139x46
-          RenderTableRow (anonymous) at (0,0) size 139x46
-            RenderTableCell {P} at (0,0) size 139x46 [r=0 c=0 rs=1 cs=1]
-      RenderTable {TABLE} at (1,360.44) size 139x46
-        RenderTableSection {TBODY} at (0,0) size 139x46
-          RenderTableRow {TR} at (0,0) size 139x46
-            RenderTableCell {TD} at (0,0) size 139x46 [r=0 c=0 rs=1 cs=1]
+      RenderTable at (1,258.89) size 138x46
+        RenderTableSection (anonymous) at (0,0) size 138x46
+          RenderTableRow (anonymous) at (0,0) size 138x46
+            RenderTableCell {P} at (0,0) size 138x46 [r=0 c=0 rs=1 cs=1]
+      RenderTable {TABLE} at (1,360.44) size 138x46
+        RenderTableSection {TBODY} at (0,0) size 138x46
+          RenderTableRow {TR} at (0,0) size 138x46
+            RenderTableCell {TD} at (0,0) size 138x46 [r=0 c=0 rs=1 cs=1]
       RenderBlock (floating) {P} at (1,461.98) size 138.88x9.25
 layer at (15,134) size 121x44
   RenderEmbeddedObject {OBJECT} at (9.25,-0.25) size 120.38x44 [bgcolor=#FF0000] [border: (9px solid #0000FF)]
