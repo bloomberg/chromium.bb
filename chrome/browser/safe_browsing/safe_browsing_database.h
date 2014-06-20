@@ -418,35 +418,32 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // |prefix_miss_cache_|, |csd_whitelist_|.
   base::Lock lookup_lock_;
 
+  // The base filename passed to Init(), used to generate the store and prefix
+  // set filenames used to store data on disk.
+  base::FilePath filename_base_;
+
   // Underlying persistent store for chunk data.
   // For browsing related (phishing and malware URLs) chunks and prefixes.
-  base::FilePath browse_filename_;
   scoped_ptr<SafeBrowsingStore> browse_store_;
 
   // For download related (download URL and binary hash) chunks and prefixes.
-  base::FilePath download_filename_;
   scoped_ptr<SafeBrowsingStore> download_store_;
 
   // For the client-side phishing detection whitelist chunks and full-length
   // hashes.  This list only contains 256 bit hashes.
-  base::FilePath csd_whitelist_filename_;
   scoped_ptr<SafeBrowsingStore> csd_whitelist_store_;
 
   // For the download whitelist chunks and full-length hashes.  This list only
   // contains 256 bit hashes.
-  base::FilePath download_whitelist_filename_;
   scoped_ptr<SafeBrowsingStore> download_whitelist_store_;
 
   // For extension IDs.
-  base::FilePath extension_blacklist_filename_;
   scoped_ptr<SafeBrowsingStore> extension_blacklist_store_;
 
   // For side-effect free whitelist.
-  base::FilePath side_effect_free_whitelist_filename_;
   scoped_ptr<SafeBrowsingStore> side_effect_free_whitelist_store_;
 
   // For IP blacklist.
-  base::FilePath ip_blacklist_filename_;
   scoped_ptr<SafeBrowsingStore> ip_blacklist_store_;
 
   SBWhitelist csd_whitelist_;
@@ -478,11 +475,9 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   bool change_detected_;
 
   // Used to check if a prefix was in the browse database.
-  base::FilePath browse_prefix_set_filename_;
   scoped_ptr<safe_browsing::PrefixSet> browse_prefix_set_;
 
   // Used to check if a prefix was in the browse database.
-  base::FilePath side_effect_free_whitelist_prefix_set_filename_;
   scoped_ptr<safe_browsing::PrefixSet> side_effect_free_whitelist_prefix_set_;
 };
 
