@@ -88,6 +88,7 @@ public:
     // For WorkerThreadableWebSocketChannel.
     virtual SendResult send(PassOwnPtr<Vector<char> >) = 0;
 
+    // Do not call |send| after calling this method.
     virtual void close(int code, const String& reason) = 0;
 
     // Log the reason text and close the connection. Will call didClose().
@@ -103,6 +104,7 @@ public:
     // respectively, if you can't / needn't provide the information.
     virtual void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber) = 0;
 
+    // Do not call any methods after calling this method.
     virtual void disconnect() = 0; // Will suppress didClose().
 
     virtual void suspend() = 0;

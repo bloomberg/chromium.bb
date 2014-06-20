@@ -99,6 +99,7 @@ private:
         MessageTypeBlob,
         MessageTypeArrayBuffer,
         MessageTypeVector,
+        MessageTypeClose,
     };
 
     struct Message {
@@ -106,6 +107,7 @@ private:
         explicit Message(PassRefPtr<BlobDataHandle>);
         explicit Message(PassRefPtr<ArrayBuffer>);
         explicit Message(PassOwnPtr<Vector<char> >);
+        Message(unsigned short code, const String& reason);
 
         MessageType type;
 
@@ -113,6 +115,8 @@ private:
         RefPtr<BlobDataHandle> blobDataHandle;
         RefPtr<ArrayBuffer> arrayBuffer;
         OwnPtr<Vector<char> > vectorData;
+        unsigned short code;
+        String reason;
     };
 
     struct ReceivedMessage {

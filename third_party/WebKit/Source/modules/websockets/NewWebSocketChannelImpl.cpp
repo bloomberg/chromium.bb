@@ -233,7 +233,8 @@ void NewWebSocketChannelImpl::close(int code, const String& reason)
     WTF_LOG(Network, "NewWebSocketChannelImpl %p close(%d, %s)", this, code, reason.utf8().data());
     ASSERT(m_handle);
     unsigned short codeToSend = static_cast<unsigned short>(code == CloseEventCodeNotSpecified ? CloseEventCodeNoStatusRcvd : code);
-    m_handle->close(codeToSend, reason);
+    m_messages.append(adoptPtr(new Message(codeToSend, reason)));
+    sendInternal();
 }
 
 void NewWebSocketChannelImpl::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
@@ -295,6 +296,11 @@ NewWebSocketChannelImpl::Message::Message(PassOwnPtr<Vector<char> > vectorData)
     : type(MessageTypeVector)
     , vectorData(vectorData) { }
 
+NewWebSocketChannelImpl::Message::Message(unsigned short code, const String& reason)
+    : type(MessageTypeClose)
+    , code(code)
+    , reason(reason) { }
+
 void NewWebSocketChannelImpl::sendInternal()
 {
     ASSERT(m_handle);
@@ -338,6 +344,13 @@ void NewWebSocketChannelImpl::sendInternal()
             m_sentSizeOfTopMessage += size;
             m_sendingQuota -= size;
             consumedBufferedAmount += size;
+            break;
+        }
+        case MessageTypeClose: {
+            // No message should be sent from now on.
+            ASSERT(m_messages.size() == 1);
+            m_handle->close(message->code, message->reason);
+            final = true;
             break;
         }
         }
