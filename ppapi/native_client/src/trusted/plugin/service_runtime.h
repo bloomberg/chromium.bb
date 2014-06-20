@@ -34,7 +34,6 @@ class DescWrapper;
 
 namespace plugin {
 
-class OpenManifestEntryAsyncCallback;
 class Plugin;
 class SrpcClient;
 class ServiceRuntime;
@@ -69,20 +68,16 @@ struct OpenManifestEntryResource {
  public:
   OpenManifestEntryResource(const std::string& target_url,
                             struct NaClFileInfo* finfo,
-                            bool* op_complete,
-                            OpenManifestEntryAsyncCallback* callback)
+                            bool* op_complete)
       : url(target_url),
         file_info(finfo),
-        op_complete_ptr(op_complete),
-        callback(callback) {}
+        op_complete_ptr(op_complete) {}
   ~OpenManifestEntryResource();
-  void MaybeRunCallback(int32_t pp_error);
 
   std::string url;
   struct NaClFileInfo* file_info;
   PP_NaClFileInfo pp_file_info;
   bool* op_complete_ptr;
-  OpenManifestEntryAsyncCallback* callback;
 };
 
 // Do not invoke from the main thread, since the main methods will
@@ -121,15 +116,6 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   virtual int64_t RequestQuotaForWrite(nacl::string file_id,
                                        int64_t offset,
                                        int64_t bytes_to_write);
-
-  // This is a sibling of OpenManifestEntry. While OpenManifestEntry is
-  // a sync function and must be called on a non-main thread,
-  // OpenManifestEntryAsync must be called on the main thread. Upon completion
-  // (even on error), callback will be invoked. The caller has responsibility
-  // to keep the memory passed to info until callback is invoked.
-  void OpenManifestEntryAsync(const nacl::string& key,
-                              struct NaClFileInfo* info,
-                              OpenManifestEntryAsyncCallback* callback);
 
  protected:
   virtual void OpenManifestEntry_MainThreadContinuation(

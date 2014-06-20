@@ -156,14 +156,6 @@ interface PPP_ManifestService {
 
   /* Called when PPAPI initialization in the NaCl plugin is finished. */
   PP_Bool StartupInitializationComplete([inout] mem_t user_data);
-
-  /* Called when irt_open_resource() is invoked in the NaCl plugin.
-   * Upon completion, callback will be invoked with given callback_user_data
-   * and the result file handle (or PP_kInvalidFileHandle on error). */
-  PP_Bool OpenResource([inout] mem_t user_data,
-                       [in] str_t entry_key,
-                       [in] PP_OpenResourceCompletionCallback callback,
-                       [inout] mem_t callback_user_data);
 };
 
 /* Corresponds to NaClFileInfo in

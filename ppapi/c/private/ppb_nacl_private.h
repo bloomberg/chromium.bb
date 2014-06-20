@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Jun 13 15:14:51 2014. */
+/* From private/ppb_nacl_private.idl modified Wed Jun 18 19:15:01 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -194,13 +194,6 @@ struct PPP_ManifestService_1_0 {
   PP_Bool (*Quit)(void* user_data);
   /* Called when PPAPI initialization in the NaCl plugin is finished. */
   PP_Bool (*StartupInitializationComplete)(void* user_data);
-  /* Called when irt_open_resource() is invoked in the NaCl plugin.
-   * Upon completion, callback will be invoked with given callback_user_data
-   * and the result file handle (or PP_kInvalidFileHandle on error). */
-  PP_Bool (*OpenResource)(void* user_data,
-                          const char* entry_key,
-                          PP_OpenResourceCompletionCallback callback,
-                          void* callback_user_data);
 };
 
 typedef struct PPP_ManifestService_1_0 PPP_ManifestService;

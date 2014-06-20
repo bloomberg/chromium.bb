@@ -51,41 +51,6 @@
 
 namespace plugin {
 
-class OpenManifestEntryAsyncCallback {
- public:
-  OpenManifestEntryAsyncCallback(PP_OpenResourceCompletionCallback callback,
-                                 void* callback_user_data)
-      : callback_(callback), callback_user_data_(callback_user_data) {
-  }
-
-  ~OpenManifestEntryAsyncCallback() {
-    if (callback_)
-      callback_(callback_user_data_, PP_kInvalidFileHandle);
-  }
-
-  void Run(int32_t pp_error) {
-#if defined(OS_WIN)
-    // Currently, this is used only for non-SFI mode, and now the mode is not
-    // supported on windows.
-    // TODO(hidehiko): Support it on Windows when we switch to use
-    // ManifestService also in SFI-mode.
-    NACL_NOTREACHED();
-#elif defined(OS_POSIX)
-    // On posix, PlatformFile is the file descriptor.
-    callback_(callback_user_data_, (pp_error == PP_OK) ? info_.desc : -1);
-    callback_ = NULL;
-#endif
-  }
-
-  NaClFileInfo* mutable_info() { return &info_; }
-
- private:
-  NaClFileInfo info_;
-  PP_OpenResourceCompletionCallback callback_;
-  void* callback_user_data_;
-  DISALLOW_COPY_AND_ASSIGN(OpenManifestEntryAsyncCallback);
-};
-
 namespace {
 
 class ManifestService {
@@ -116,25 +81,6 @@ class ManifestService {
     return true;
   }
 
-  bool OpenResource(const char* entry_key,
-                    PP_OpenResourceCompletionCallback callback,
-                    void* callback_user_data) {
-    // Release this instance if the ServiceRuntime is already destructed.
-    if (anchor_->is_abandoned()) {
-      callback(callback_user_data, PP_kInvalidFileHandle);
-      delete this;
-      return false;
-    }
-
-    OpenManifestEntryAsyncCallback* open_manifest_callback =
-        new OpenManifestEntryAsyncCallback(callback, callback_user_data);
-    plugin_reverse_->OpenManifestEntryAsync(
-        entry_key,
-        open_manifest_callback->mutable_info(),
-        open_manifest_callback);
-    return true;
-  }
-
   static PP_Bool QuitTrampoline(void* user_data) {
     return PP_FromBool(static_cast<ManifestService*>(user_data)->Quit());
   }
@@ -142,15 +88,6 @@ class ManifestService {
   static PP_Bool StartupInitializationCompleteTrampoline(void* user_data) {
     return PP_FromBool(static_cast<ManifestService*>(user_data)->
                        StartupInitializationComplete());
-  }
-
-  static PP_Bool OpenResourceTrampoline(
-      void* user_data,
-      const char* entry_key,
-      PP_OpenResourceCompletionCallback callback,
-      void* callback_user_data) {
-    return PP_FromBool(static_cast<ManifestService*>(user_data)->OpenResource(
-        entry_key, callback, callback_user_data));
   }
 
  private:
@@ -165,22 +102,11 @@ class ManifestService {
 const PPP_ManifestService kManifestServiceVTable = {
   &ManifestService::QuitTrampoline,
   &ManifestService::StartupInitializationCompleteTrampoline,
-  &ManifestService::OpenResourceTrampoline,
 };
 
 }  // namespace
 
 OpenManifestEntryResource::~OpenManifestEntryResource() {
-  MaybeRunCallback(PP_ERROR_ABORTED);
-}
-
-void OpenManifestEntryResource::MaybeRunCallback(int32_t pp_error) {
-  if (!callback)
-    return;
-
-  callback->Run(pp_error);
-  delete callback;
-  callback = NULL;
 }
 
 PluginReverseInterface::PluginReverseInterface(
@@ -243,7 +169,7 @@ bool PluginReverseInterface::OpenManifestEntry(nacl::string url_key,
   // the main thread before this function can return. The pointers it contains
   // to stack variables will not leak.
   OpenManifestEntryResource* to_open =
-      new OpenManifestEntryResource(url_key, info, &op_complete, NULL);
+      new OpenManifestEntryResource(url_key, info, &op_complete);
   CHECK(to_open != NULL);
   NaClLog(4, "PluginReverseInterface::OpenManifestEntry: %s\n",
           url_key.c_str());
@@ -293,16 +219,6 @@ bool PluginReverseInterface::OpenManifestEntry(nacl::string url_key,
   return true;
 }
 
-void PluginReverseInterface::OpenManifestEntryAsync(
-    const nacl::string& entry_key,
-    struct NaClFileInfo* info,
-    OpenManifestEntryAsyncCallback* callback) {
-  bool op_complete = false;
-  OpenManifestEntryResource to_open(
-      entry_key, info, &op_complete, callback);
-  OpenManifestEntry_MainThreadContinuation(&to_open, PP_OK);
-}
-
 // Transfer point from OpenManifestEntry() which runs on the main thread
 // (Some PPAPI actions -- like StreamAsFile -- can only run on the main thread).
 // OpenManifestEntry() is waiting on a condvar for this continuation to
@@ -334,7 +250,6 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
       p->file_info->desc = -1;  // but failed.
       NaClXCondVarBroadcast(&cv_);
     }
-    p->MaybeRunCallback(PP_OK);
     return;
   }
   nacl::string mapped_url = pp::Var(pp_mapped_url).AsString();
@@ -354,7 +269,6 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
       p->file_info->desc = -1;  // but failed.
       NaClXCondVarBroadcast(&cv_);
     }
-    p->MaybeRunCallback(PP_OK);
     return;
   }
 
@@ -362,9 +276,6 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
   // to create another instance.
   OpenManifestEntryResource* open_cont = new OpenManifestEntryResource(*p);
   open_cont->url = mapped_url;
-  // Callback is now delegated from p to open_cont. So, here we manually clear
-  // complete callback.
-  p->callback = NULL;
 
   pp::CompletionCallback stream_cc = WeakRefNewCallback(
       anchor_,
@@ -403,7 +314,6 @@ void PluginReverseInterface::StreamAsFile_MainThreadContinuation(
     *p->op_complete_ptr = true;
     NaClXCondVarBroadcast(&cv_);
   }
-  p->MaybeRunCallback(PP_OK);
 }
 
 bool PluginReverseInterface::CloseManifestEntry(int32_t desc) {
