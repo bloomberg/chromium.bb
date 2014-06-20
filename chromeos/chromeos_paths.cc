@@ -41,6 +41,9 @@ const base::FilePath::CharType kDeviceLocalAccountExtensionDir[] =
 const base::FilePath::CharType kDeviceLocalAccountExternalDataDir[] =
     FILE_PATH_LITERAL("/var/cache/device_local_account_external_policy_data");
 
+const base::FilePath::CharType kDeviceLocalAccountComponentPolicy[] =
+    FILE_PATH_LITERAL("/var/cache/device_local_account_component_policy");
+
 bool PathProvider(int key, base::FilePath* result) {
   switch (key) {
     case FILE_DEFAULT_APP_ORDER:
@@ -66,6 +69,9 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
     case DIR_DEVICE_LOCAL_ACCOUNT_EXTERNAL_DATA:
       *result = base::FilePath(kDeviceLocalAccountExternalDataDir);
+      break;
+    case DIR_DEVICE_LOCAL_ACCOUNT_COMPONENT_POLICY:
+      *result = base::FilePath(kDeviceLocalAccountComponentPolicy);
       break;
     default:
       return false;
@@ -99,6 +105,15 @@ void RegisterStubPathOverrides(const base::FilePath& stubs_dir) {
       parent.AppendASCII("stub_install_attributes.pb"),
       is_absolute,
       create);
+  PathService::Override(
+      DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS,
+      parent.AppendASCII("stub_device_local_account_extensions"));
+  PathService::Override(
+      DIR_DEVICE_LOCAL_ACCOUNT_EXTERNAL_DATA,
+      parent.AppendASCII("stub_device_local_account_external_data"));
+  PathService::Override(
+      DIR_DEVICE_LOCAL_ACCOUNT_COMPONENT_POLICY,
+      parent.AppendASCII("stub_device_local_account_component_policy"));
 }
 
 }  // namespace chromeos
