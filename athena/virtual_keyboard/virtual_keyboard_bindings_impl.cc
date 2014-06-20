@@ -106,6 +106,17 @@ class VKBindings : public gin::Wrappable<VKBindings> {
       return;
     chrome->Set(gin::StringToSymbol(isolate, "virtualKeyboardPrivate"),
                 controller.ToV8());
+
+    const std::string kInputBoxFocusedEvent =
+        "chrome.virtualKeyboardPrivate.onTextInputBoxFocused = {};"
+        "chrome.virtualKeyboardPrivate.onTextInputBoxFocused.addListener = "
+        "   function(callback) { "
+        "     window.setTimeout(function() {"
+        "       callback({type: 'text'});"
+        "     }, 100);"
+        "   };";
+    render_view->GetMainRenderFrame()->ExecuteJavaScript(
+        base::UTF8ToUTF16(kInputBoxFocusedEvent));
   }
 
  private:
