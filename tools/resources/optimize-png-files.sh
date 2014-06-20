@@ -18,6 +18,7 @@
 
 readonly ALL_DIRS="
 ash/resources
+chrome/android/java/res
 chrome/app/theme
 chrome/browser/resources
 chrome/renderer/resources
