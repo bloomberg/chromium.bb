@@ -39,10 +39,10 @@ size=4 clientWidth=32
 size=5 clientWidth=40
 size=10 clientWidth=80
 size=20 clientWidth=160
-size=50 clientWidth=399.96875
-size=100 clientWidth=799.9375
-size=500 clientWidth=3999.65625
-size=1000 clientWidth=7999.3125
+size=50 clientWidth=400
+size=100 clientWidth=800
+size=500 clientWidth=4000
+size=1000 clientWidth=7999
 
 textarea
 cols=1 clientWidth=25
@@ -59,17 +59,17 @@ cols=1000 clientWidth=8017
 
 Helvetica
 input
-size=1 clientWidth=7.421875
-size=2 clientWidth=14.828125
-size=3 clientWidth=22.25
-size=4 clientWidth=29.65625
-size=5 clientWidth=37.078125
-size=10 clientWidth=74.140625
-size=20 clientWidth=148.28125
-size=50 clientWidth=370.6875
-size=100 clientWidth=741.359375
-size=500 clientWidth=3706.75
-size=1000 clientWidth=7413.5
+size=1 clientWidth=7
+size=2 clientWidth=15
+size=3 clientWidth=22
+size=4 clientWidth=30
+size=5 clientWidth=37
+size=10 clientWidth=74
+size=20 clientWidth=148
+size=50 clientWidth=371
+size=100 clientWidth=741
+size=500 clientWidth=3707
+size=1000 clientWidth=7414
 
 textarea
 cols=1 clientWidth=25
@@ -86,16 +86,16 @@ cols=1000 clientWidth=7431
 
 Monaco
 input
-size=1 clientWidth=6.671875
-size=2 clientWidth=13.34375
+size=1 clientWidth=7
+size=2 clientWidth=13
 size=3 clientWidth=20
-size=4 clientWidth=26.671875
-size=5 clientWidth=33.328125
-size=10 clientWidth=66.65625
-size=20 clientWidth=133.3125
-size=50 clientWidth=333.25
-size=100 clientWidth=666.5
-size=500 clientWidth=3332.5
+size=4 clientWidth=27
+size=5 clientWidth=33
+size=10 clientWidth=67
+size=20 clientWidth=133
+size=50 clientWidth=333
+size=100 clientWidth=667
+size=500 clientWidth=3333
 size=1000 clientWidth=6665
 
 textarea
@@ -113,16 +113,16 @@ cols=1000 clientWidth=6682
 
 Times
 input
-size=1 clientWidth=6.671875
-size=2 clientWidth=13.34375
+size=1 clientWidth=7
+size=2 clientWidth=13
 size=3 clientWidth=20
-size=4 clientWidth=26.671875
-size=5 clientWidth=33.328125
-size=10 clientWidth=66.65625
-size=20 clientWidth=133.3125
-size=50 clientWidth=333.25
-size=100 clientWidth=666.5
-size=500 clientWidth=3332.5
+size=4 clientWidth=27
+size=5 clientWidth=33
+size=10 clientWidth=67
+size=20 clientWidth=133
+size=50 clientWidth=333
+size=100 clientWidth=667
+size=500 clientWidth=3333
 size=1000 clientWidth=6665
 
 textarea

@@ -7,13 +7,13 @@ Scrolling right to 50
 scrollLeft: 50
 
 Zooming in
-scrollHeight: 999.9999602635718
-scrollWidth: 999.9999602635718
+scrollHeight: 1000
+scrollWidth: 1000
 scrollTop: 0
-scrollLeft: 49.99999801317858
+scrollLeft: 49
 
 Scrolling down to 100
-scrollTop: 99.99999602635717
+scrollTop: 99
 
 Zooming back out
 scrollTop: 100
