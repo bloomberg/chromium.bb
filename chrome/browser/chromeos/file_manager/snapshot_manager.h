@@ -1,0 +1,64 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_SNAPSHOT_MANAGER_H_
+#define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_SNAPSHOT_MANAGER_H_
+
+#include <vector>
+
+#include "base/callback_forward.h"
+#include "base/files/file.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+
+class Profile;
+
+namespace base {
+class FilePath;
+}  // namespace base
+
+namespace webkit_blob {
+class ShareableFileReference;
+}  // namespace webkit_blob
+
+namespace file_manager {
+
+// Utility class for creating a snapshot of a file system file on local disk.
+// The class wraps the underlying implementation of fileapi's CreateSnapshotFile
+// and prolongs the lifetime of snapshot files so that the client code that just
+// accepts file paths works without problems.
+class SnapshotManager {
+ public:
+  // The callback type for CreateManagedSnapshot.
+  typedef base::Callback<void(const base::FilePath&)> LocalPathCallback;
+
+  explicit SnapshotManager(Profile* profile);
+  ~SnapshotManager();
+
+  // Creates a snapshot file copy of a file system file |absolute_file_path| and
+  // returns back to |callback|. Returns empty path for failure.
+  void CreateManagedSnapshot(const base::FilePath& absolute_file_path,
+                             const LocalPathCallback& callback);
+
+ private:
+  // Part of CreateManagedSnapshot.
+  void OnCreateSnapshotFile(
+      const LocalPathCallback& callback,
+      base::File::Error result,
+      const base::File::Info& file_info,
+      const base::FilePath& platform_path,
+      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+
+  Profile* profile_;
+  std::vector<scoped_refptr<webkit_blob::ShareableFileReference> > file_refs_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate the weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<SnapshotManager> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(SnapshotManager);
+};
+
+}  // namespace file_manager
+
+#endif  // CHROME_BROWSER_CHROMEOS_FILE_MANAGER_SNAPSHOT_MANAGER_H_

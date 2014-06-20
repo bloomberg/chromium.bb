@@ -38,6 +38,7 @@ class BrowserContext;
 namespace file_manager {
 
 class MountedDiskMonitor;
+class SnapshotManager;
 class VolumeManagerObserver;
 
 // Identifiers for volume types managed by Chrome OS file manager.
@@ -202,6 +203,8 @@ class VolumeManager : public KeyedService,
   virtual void OnRemovableStorageDetached(
       const storage_monitor::StorageInfo& info) OVERRIDE;
 
+  SnapshotManager* snapshot_manager() { return snapshot_manager_.get(); }
+
  private:
   void OnStorageMonitorInitialized();
   void OnPrivetVolumesAvailable(
@@ -222,6 +225,7 @@ class VolumeManager : public KeyedService,
   chromeos::file_system_provider::Service*
       file_system_provider_service_;  // Not owned by this class.
   std::map<std::string, VolumeInfo> mounted_volumes_;
+  scoped_ptr<SnapshotManager> snapshot_manager_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/mounted_disk_monitor.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/file_manager/snapshot_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
@@ -256,6 +257,7 @@ VolumeManager::VolumeManager(
       mounted_disk_monitor_(
           new MountedDiskMonitor(power_manager_client, disk_mount_manager)),
       file_system_provider_service_(file_system_provider_service),
+      snapshot_manager_(new SnapshotManager(profile_)),
       weak_ptr_factory_(this) {
   DCHECK(disk_mount_manager);
 }
@@ -403,6 +405,7 @@ void VolumeManager::Initialize() {
 void VolumeManager::Shutdown() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
+  snapshot_manager_.reset();
   pref_change_registrar_.RemoveAll();
   disk_mount_manager_->RemoveObserver(this);
   if (storage_monitor::StorageMonitor::GetInstance())

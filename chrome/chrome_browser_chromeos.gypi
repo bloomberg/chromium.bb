@@ -368,6 +368,8 @@
         'browser/chromeos/file_manager/path_util.h',
         'browser/chromeos/file_manager/select_file_dialog_util.cc',
         'browser/chromeos/file_manager/select_file_dialog_util.h',
+        'browser/chromeos/file_manager/snapshot_manager.cc',
+        'browser/chromeos/file_manager/snapshot_manager.h',
         'browser/chromeos/file_manager/url_util.cc',
         'browser/chromeos/file_manager/url_util.h',
         'browser/chromeos/file_manager/volume_manager.cc',

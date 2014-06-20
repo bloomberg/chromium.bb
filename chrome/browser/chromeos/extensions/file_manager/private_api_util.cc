@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/file_manager/snapshot_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
@@ -72,9 +73,8 @@ void GetFileNativeLocalPathForOpening(Profile* profile,
     return;
   }
 
-  // TODO(kinaba) crbug.com/383207 implement this.
-  NOTREACHED();
-  callback.Run(base::FilePath());
+  VolumeManager::Get(profile)->snapshot_manager()->CreateManagedSnapshot(
+      path, callback);
 }
 
 // Gets a resolved local file path of a non native |path| for file saving.
