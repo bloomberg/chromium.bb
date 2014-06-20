@@ -5529,7 +5529,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable XPS in Google Cloud Print
         </message>
         <message name="IDS_FLAGS_ENABLE_CLOUD_PRINT_XPS_DESCRIPTION">
-          Fallback to XPS. By default Google Cloud Print uses CDD.
+          XPS enables advanced options for classic printers connected to the Cloud Print with Chrome. Printers must be re-connected after changing this flag.
         </message>
       </if>
       <message name="IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_NAME">
