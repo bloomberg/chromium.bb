@@ -160,26 +160,6 @@ function JavaScriptFunction()
     this.rawScopes;
 }
 
-// http://code.google.com/p/v8/wiki/JavaScriptStackTraceApi
-/**
- * @constructor
- */
-function CallSite()
-{
-}
-/**
- * @return {string}
- */
-CallSite.prototype.getFileName = function() { }
-/**
- * @return {number}
- */
-CallSite.prototype.getLineNumber = function() { }
-/**
- * @return {number}
- */
-CallSite.prototype.getColumnNumber = function() { }
-
 // FIXME: Remove once ES6 is supported natively by JS compiler.
 
 /** @typedef {string} */
