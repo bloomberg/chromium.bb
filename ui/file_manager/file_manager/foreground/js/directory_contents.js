@@ -546,8 +546,11 @@ DirectoryContents.prototype.getDirectoryEntry = function() {
 /**
  * Start directory scan/search operation. Either 'scan-completed' or
  * 'scan-failed' event will be fired upon completion.
+ *
+ * @param {boolean} refresh True to refrech metadata, or false to use cached
+ *     one.
  */
-DirectoryContents.prototype.scan = function() {
+DirectoryContents.prototype.scan = function(refresh) {
   /**
    * Invoked when the scanning is completed successfully.
    * @this {DirectoryContents}
@@ -569,7 +572,7 @@ DirectoryContents.prototype.scan = function() {
   // TODO(hidehiko,mtomasz): this scan method must be called at most once.
   // Remove such a limitation.
   this.scanner_ = this.scannerFactory_();
-  this.scanner_.scan(this.onNewEntries_.bind(this),
+  this.scanner_.scan(this.onNewEntries_.bind(this, refresh),
                      completionCallback.bind(this),
                      errorCallback.bind(this));
 };
@@ -648,10 +651,13 @@ DirectoryContents.prototype.onScanError_ = function() {
 
 /**
  * Called when some chunk of entries are read by scanner.
+ *
+ * @param {boolean} refresh True to refresh metadata, or false to use cached
+ *     one.
  * @param {Array.<Entry>} entries The list of the scanned entries.
  * @private
  */
-DirectoryContents.prototype.onNewEntries_ = function(entries) {
+DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
   if (this.scanCancelled_)
     return;
 
@@ -689,7 +695,7 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
 
       var chunk = entriesFiltered.slice(i, i + MAX_CHUNK_SIZE);
       prefetchMetadataQueue.run(function(chunk, callbackInner) {
-        this.prefetchMetadata(chunk, function() {
+        this.prefetchMetadata(chunk, refresh, function() {
           if (!prefetchMetadataQueue.isCancelled()) {
             if (this.scanCancelled_)
               prefetchMetadataQueue.cancel();
@@ -712,10 +718,17 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
 
 /**
  * @param {Array.<Entry>} entries Files.
+ * @param {boolean} refresh True to refresh metadata, or false to use cached
+ *     one.
  * @param {function(Object)} callback Callback on done.
  */
-DirectoryContents.prototype.prefetchMetadata = function(entries, callback) {
-  this.context_.metadataCache.getLatest(entries, 'filesystem|drive', callback);
+DirectoryContents.prototype.prefetchMetadata =
+    function(entries, refresh, callback) {
+  var TYPES = 'filesystem|drive';
+  if (refresh)
+    this.context_.metadataCache.getLatest(entries, TYPES, callback);
+  else
+    this.context_.metadataCache.get(entries, TYPES, callback);
 };
 
 /**

@@ -170,7 +170,7 @@ DirectoryModel.prototype.onWatcherDirectoryChanged_ = function() {
   // Clear the metadata cache since something in this directory has changed.
   var directoryEntry = this.getCurrentDirEntry();
 
-  this.rescanSoon();
+  this.rescanSoon(true);
 };
 
 /**
@@ -178,7 +178,7 @@ DirectoryModel.prototype.onWatcherDirectoryChanged_ = function() {
  * @private
  */
 DirectoryModel.prototype.onFilterChanged_ = function() {
-  this.rescanSoon();
+  this.rescanSoon(false);
 };
 
 /**
@@ -252,17 +252,21 @@ DirectoryModel.prototype.setLeadEntry_ = function(value) {
 
 /**
  * Schedule rescan with short delay.
+ * @param {boolean} refresh True to refrech metadata, or false to use cached
+ *     one.
  */
-DirectoryModel.prototype.rescanSoon = function() {
-  this.scheduleRescan(SHORT_RESCAN_INTERVAL);
+DirectoryModel.prototype.rescanSoon = function(refresh) {
+  this.scheduleRescan(SHORT_RESCAN_INTERVAL, refresh);
 };
 
 /**
  * Schedule rescan with delay. Designed to handle directory change
  * notification.
+ * @param {boolean} refresh True to refrech metadata, or false to use cached
+ *     one.
  */
-DirectoryModel.prototype.rescanLater = function() {
-  this.scheduleRescan(SIMULTANEOUS_RESCAN_INTERVAL);
+DirectoryModel.prototype.rescanLater = function(refresh) {
+  this.scheduleRescan(SIMULTANEOUS_RESCAN_INTERVAL, refresh);
 };
 
 /**
@@ -270,8 +274,10 @@ DirectoryModel.prototype.rescanLater = function() {
  * nothing. File operation may cause a few notifications what should cause
  * a single refresh.
  * @param {number} delay Delay in ms after which the rescan will be performed.
+ * @param {boolean} refresh True to refrech metadata, or false to use cached
+ *     one.
  */
-DirectoryModel.prototype.scheduleRescan = function(delay) {
+DirectoryModel.prototype.scheduleRescan = function(delay, refresh) {
   if (this.rescanTime_) {
     if (this.rescanTime_ <= Date.now() + delay)
       return;
@@ -284,7 +290,7 @@ DirectoryModel.prototype.scheduleRescan = function(delay) {
   this.rescanTimeoutId_ = setTimeout(function() {
     this.rescanTimeoutId_ = null;
     if (sequence === this.changeDirectorySequence_)
-      this.rescan();
+      this.rescan(refresh);
   }.bind(this), delay);
 };
 
@@ -307,8 +313,11 @@ DirectoryModel.prototype.clearRescanTimeout_ = function() {
  * preserving the select element etc.
  *
  * This should be to scan the contents of current directory (or search).
+ *
+ * @param {boolean} refresh True to refrech metadata, or false to use cached
+ *     one.
  */
-DirectoryModel.prototype.rescan = function() {
+DirectoryModel.prototype.rescan = function(refresh) {
   this.clearRescanTimeout_();
   if (this.runningScan_) {
     this.pendingRescan_ = true;
@@ -328,6 +337,7 @@ DirectoryModel.prototype.rescan = function() {
   }).bind(this);
 
   this.scan_(dirContents,
+             refresh,
              successCallback, function() {}, function() {}, function() {});
 };
 
@@ -405,7 +415,7 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
   cr.dispatchSimpleEvent(this, 'scan-started');
   var fileList = this.getFileList();
   fileList.splice(0, fileList.length);
-  this.scan_(this.currentDirContents_,
+  this.scan_(this.currentDirContents_, false,
              onDone, onFailed, onUpdated, onCancelled);
 };
 
@@ -415,6 +425,8 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
  *
  * @param {DirectoryContents} dirContents DirectoryContents instance on which
  *     the scan will be run.
+ * @param {boolean} refresh True to refrech metadata, or false to use cached
+ *     one.
  * @param {function()} successCallback Callback on success.
  * @param {function()} failureCallback Callback on failure.
  * @param {function()} updatedCallback Callback on update. Only on the last
@@ -424,6 +436,7 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
  */
 DirectoryModel.prototype.scan_ = function(
     dirContents,
+    refresh,
     successCallback, failureCallback, updatedCallback, cancelledCallback) {
   var self = this;
 
@@ -434,7 +447,7 @@ DirectoryModel.prototype.scan_ = function(
    */
   var maybeRunPendingRescan = function() {
     if (this.pendingRescan_) {
-      this.rescanSoon();
+      this.rescanSoon(refresh);
       this.pendingRescan_ = false;
       return true;
     }
@@ -469,7 +482,7 @@ DirectoryModel.prototype.scan_ = function(
       return;
 
     if (this.scanFailures_ <= 1)
-      this.rescanLater();
+      this.rescanLater(refresh);
   }.bind(this);
 
   this.runningScan_ = dirContents;
@@ -478,7 +491,7 @@ DirectoryModel.prototype.scan_ = function(
   dirContents.addEventListener('scan-updated', updatedCallback);
   dirContents.addEventListener('scan-failed', onFailure);
   dirContents.addEventListener('scan-cancelled', cancelledCallback);
-  dirContents.scan();
+  dirContents.scan(refresh);
 };
 
 /**
@@ -537,14 +550,13 @@ DirectoryModel.prototype.onEntryChanged = function(kind, entry) {
 
   switch (kind) {
     case util.EntryChangedKind.CREATED:
-      // Refresh the cache.
-      this.metadataCache_.clear([entry], '*');
       entry.getParent(function(parentEntry) {
         if (!util.isSameEntry(this.getCurrentDirEntry(), parentEntry)) {
           // Do nothing if current directory changed during async operations.
           return;
         }
-        this.currentDirContents_.prefetchMetadata([entry], function() {
+        // Refresh the cache.
+        this.currentDirContents_.prefetchMetadata([entry], true, function() {
           if (!util.isSameEntry(this.getCurrentDirEntry(), parentEntry)) {
             // Do nothing if current directory changed during async operations.
             return;
@@ -601,7 +613,7 @@ DirectoryModel.prototype.findIndexByEntry_ = function(entry) {
  */
 DirectoryModel.prototype.onRenameEntry = function(
     oldEntry, newEntry, opt_callback) {
-  this.currentDirContents_.prefetchMetadata([newEntry], function() {
+  this.currentDirContents_.prefetchMetadata([newEntry], true, function() {
     // If the current directory is the old entry, then quietly change to the
     // new one.
     if (util.isSameEntry(oldEntry, this.getCurrentDirEntry()))

@@ -1872,7 +1872,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
       if (self.hostedButton.hasAttribute('checked') ===
           prefs.hostedFilesDisabled && self.isOnDrive()) {
-        self.directoryModel_.rescan();
+        self.directoryModel_.rescan(false);
       }
 
       if (!prefs.hostedFilesDisabled)
