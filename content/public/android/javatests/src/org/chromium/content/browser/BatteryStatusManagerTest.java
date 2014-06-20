@@ -28,6 +28,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
     @SmallTest
     public void testOnReceiveBatteryDischarging() {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
+        intent.putExtra(BatteryManager.EXTRA_PRESENT, true);
         intent.putExtra(BatteryManager.EXTRA_LEVEL, 10);
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
         intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_DISCHARGING);
@@ -42,6 +43,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
     @SmallTest
     public void testOnReceiveBatteryCharging() {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
+        intent.putExtra(BatteryManager.EXTRA_PRESENT, true);
         intent.putExtra(BatteryManager.EXTRA_LEVEL, 50);
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
         intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_CHARGING);
@@ -56,6 +58,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
     @SmallTest
     public void testOnReceiveBatteryFull() {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
+        intent.putExtra(BatteryManager.EXTRA_PRESENT, true);
         intent.putExtra(BatteryManager.EXTRA_LEVEL, 100);
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
         intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_FULL);
@@ -111,6 +114,11 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
 
         private void verifyCalls(String names) {
             assertEquals(mCalls, names);
+        }
+
+        @Override
+        protected boolean ignoreBatteryPresentState() {
+            return false;
         }
 
         @Override

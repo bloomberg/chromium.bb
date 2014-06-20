@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.util.Log;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -88,22 +89,42 @@ class BatteryStatusManager {
            return;
        }
 
+       boolean present = ignoreBatteryPresentState() ?
+               true : intent.getBooleanExtra(BatteryManager.EXTRA_PRESENT, false);
+
+       if (!present) {
+           // No battery, return default values.
+           gotBatteryStatus(true, 0, Double.POSITIVE_INFINITY, 1);
+           return;
+       }
+
        int current = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
        int max = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
        double level = (double)current / (double)max;
+       if (level < 0 || level > 1) {
+           // Sanity check, assume default value in this case.
+           level = 1.0;
+       }
 
        int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-       // by default assume a battery is present
-       boolean present = intent.getBooleanExtra(BatteryManager.EXTRA_PRESENT, true);
-       boolean charging = (present && status == BatteryManager.BATTERY_STATUS_DISCHARGING)
-               ? false : true;
+       boolean charging = !(status == BatteryManager.BATTERY_STATUS_DISCHARGING);
 
-       //TODO(timvolodine) : add proper projection for chargingTime, dischargingTime.
-       double chargingTime = (!present || status == BatteryManager.BATTERY_STATUS_FULL)
-               ? 0 : Double.POSITIVE_INFINITY;
+       // TODO(timvolodine) : add proper projection for chargingTime, dischargingTime.
+       double chargingTime = (status == BatteryManager.BATTERY_STATUS_FULL) ?
+               0 : Double.POSITIVE_INFINITY;
        double dischargingTime = Double.POSITIVE_INFINITY;
 
        gotBatteryStatus(charging, chargingTime, dischargingTime, level);
+    }
+
+    /**
+     * Returns whether the BatteryStatusManager should ignore the battery present state.
+     * It is required for some devices that incorrectly set the EXTRA_PRESENT property.
+     */
+    protected boolean ignoreBatteryPresentState() {
+        // BatteryManager.EXTRA_PRESENT appears to be unreliable on Galaxy Nexus,
+        // Android 4.2.1, it always reports false. See crbug.com/384348.
+        return Build.MODEL.equals("Galaxy Nexus");
     }
 
     protected void gotBatteryStatus(boolean charging, double chargingTime,
