@@ -134,6 +134,12 @@ class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
     avc3_and_aac_codecs_.push_back("avc3");
     avc3_and_aac_codecs_.push_back("mp4a.40.2");
 
+    avc1_extended_and_aac_codecs_.push_back("avc1.4D400C");
+    avc1_extended_and_aac_codecs_.push_back("mp4a.40.2");
+
+    avc3_extended_and_aac_codecs_.push_back("avc3.64001F");
+    avc3_extended_and_aac_codecs_.push_back("mp4a.40.2");
+
     unknown_codec_.push_back("foo");
 
     mixed_codecs_.push_back("vorbis");
@@ -175,6 +181,12 @@ class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
   }
   const CodecVector& avc3_and_aac_codecs() const {
     return avc3_and_aac_codecs_;
+  }
+  const CodecVector& avc1_extended_and_aac_codecs() const {
+    return avc1_extended_and_aac_codecs_;
+  }
+  const CodecVector& avc3_extended_and_aac_codecs() const {
+    return avc3_extended_and_aac_codecs_;
   }
   const CodecVector& unknown_codec() const { return unknown_codec_; }
   const CodecVector& mixed_codecs() const { return mixed_codecs_; }
@@ -293,6 +305,8 @@ class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
   CodecVector mp4a_invalid_no_extension_;
   CodecVector avc1_and_aac_codecs_;
   CodecVector avc3_and_aac_codecs_;
+  CodecVector avc1_extended_and_aac_codecs_;
+  CodecVector avc3_extended_and_aac_codecs_;
   CodecVector unknown_codec_;
   CodecVector mixed_codecs_;
   CodecVector vp8_invalid_extension_codec_;
@@ -515,9 +529,9 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest,
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_codec(), kPrefixedClearKey));
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", avc1_and_aac_codecs(), kPrefixedClearKey));
-  EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc3_codec(), kPrefixedClearKey));
+  EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
+      "video/mp4", avc1_and_aac_codecs(), kPrefixedClearKey));
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc3_and_aac_codecs(), kPrefixedClearKey));
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
@@ -528,6 +542,10 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest,
       "video/mp4", avc1_extended_codec(), kPrefixedClearKey));
   EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc3_extended_codec(), kPrefixedClearKey));
+  EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
+      "video/mp4", avc1_extended_and_aac_codecs(), kPrefixedClearKey));
+  EXPECT_PROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
+      "video/mp4", avc3_extended_and_aac_codecs(), kPrefixedClearKey));
 
   // Invalid codec format: profile parameter must be present after the period.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
@@ -557,9 +575,19 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest,
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", avc1_codec(), kPrefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc3_codec(), kPrefixedClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc1_extended_codec(), kPrefixedClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc3_extended_codec(), kPrefixedClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", avc1_and_aac_codecs(), kPrefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "audio/mp4", avc3_codec(), kPrefixedClearKey));
+      "audio/mp4", avc3_and_aac_codecs(), kPrefixedClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc1_extended_and_aac_codecs(), kPrefixedClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc3_extended_and_aac_codecs(), kPrefixedClearKey));
 
   // Invalid or Non-MP4 codec.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
@@ -713,9 +741,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_codec(), kExternalClearKey));
   EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", avc1_and_aac_codecs(), kExternalClearKey));
-  EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc3_codec(), kExternalClearKey));
+  EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
+      "video/mp4", avc1_and_aac_codecs(), kExternalClearKey));
   EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc3_and_aac_codecs(), kExternalClearKey));
   EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
@@ -726,6 +754,10 @@ IN_PROC_BROWSER_TEST_F(
       "video/mp4", avc1_extended_codec(), kExternalClearKey));
   EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc3_extended_codec(), kExternalClearKey));
+  EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
+      "video/mp4", avc1_extended_and_aac_codecs(), kExternalClearKey));
+  EXPECT_ECKPROPRIETARY(IsSupportedKeySystemWithMediaMimeType(
+      "video/mp4", avc3_extended_and_aac_codecs(), kExternalClearKey));
 
   // Invalid codec format: profile parameter must be present after the period.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
@@ -755,11 +787,19 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", avc1_codec(), kExternalClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "audio/mp4", avc1_and_aac_codecs(), kExternalClearKey));
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", avc3_codec(), kExternalClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc1_extended_codec(), kExternalClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc3_extended_codec(), kExternalClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc1_and_aac_codecs(), kExternalClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", avc3_and_aac_codecs(), kExternalClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc1_extended_and_aac_codecs(), kExternalClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc3_extended_and_aac_codecs(), kExternalClearKey));
 
   // Invalid or Non-MP4 codec.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
@@ -928,10 +968,10 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
       "video/mp4", no_codecs(), kWidevine));
   EXPECT_WVAVC1(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_codec(), kWidevine));
-  EXPECT_WVAVC1AAC(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", avc1_and_aac_codecs(), kWidevine));
   EXPECT_WVAVC1(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc3_codec(), kWidevine));
+  EXPECT_WVAVC1AAC(IsSupportedKeySystemWithMediaMimeType(
+      "video/mp4", avc1_and_aac_codecs(), kWidevine));
   EXPECT_WVAVC1AAC(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc3_and_aac_codecs(), kWidevine));
   EXPECT_WVAVC1AAC(IsSupportedKeySystemWithMediaMimeType(
@@ -942,6 +982,10 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
       "video/mp4", avc1_extended_codec(), kWidevineAlpha));
   EXPECT_WVAVC1(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc3_extended_codec(), kWidevineAlpha));
+  EXPECT_WVAVC1AAC(IsSupportedKeySystemWithMediaMimeType(
+      "video/mp4", avc1_extended_and_aac_codecs(), kWidevineAlpha));
+  EXPECT_WVAVC1AAC(IsSupportedKeySystemWithMediaMimeType(
+      "video/mp4", avc3_extended_and_aac_codecs(), kWidevineAlpha));
 
   // Invalid codec format: profile paramter must be present after the period.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
@@ -977,11 +1021,19 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", avc1_codec(), kWidevineAlpha));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "audio/mp4", avc1_and_aac_codecs(), kWidevineAlpha));
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", avc3_codec(), kWidevineAlpha));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc1_extended_codec(), kWidevineAlpha));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc3_extended_codec(), kWidevineAlpha));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc1_and_aac_codecs(), kWidevineAlpha));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", avc3_and_aac_codecs(), kWidevineAlpha));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc1_extended_and_aac_codecs(), kWidevineAlpha));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", avc3_extended_and_aac_codecs(), kWidevineAlpha));
 
   // Invalid or Non-MP4 codec.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
