@@ -509,16 +509,6 @@ void InputMethodEngine::FocusIn(
   if (!active_ || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
     return;
 
-  // Prevent sending events on password field to 3rd-party IME extensions.
-  // And also make sure the VK fallback to system VK.
-  // TODO(shuchen): for password field, forcibly switch/lock the IME to the XKB
-  // keyboard related to the current IME.
-  if (current_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD &&
-      !extension_ime_util::IsComponentExtensionIME(GetDescriptor().id())) {
-    EnableInputView(false);
-    return;
-  }
-
   context_id_ = next_context_id_;
   ++next_context_id_;
 
@@ -555,16 +545,7 @@ void InputMethodEngine::FocusOut() {
   if (!active_ || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
     return;
 
-  ui::TextInputType previous_input_type = current_input_type_;
   current_input_type_ = ui::TEXT_INPUT_TYPE_NONE;
-
-  // Prevent sending events on password field to 3rd-party IME extensions.
-  // And also make sure the VK restore to IME input view.
-  if (previous_input_type == ui::TEXT_INPUT_TYPE_PASSWORD &&
-      !extension_ime_util::IsComponentExtensionIME(GetDescriptor().id())) {
-    EnableInputView(true);
-    return;
-  }
 
   int context_id = context_id_;
   context_id_ = -1;

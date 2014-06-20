@@ -248,16 +248,16 @@ TEST_F(InputMethodEngineTest, TestSwitching_Password_3rd_Party) {
   FocusIn(ui::TEXT_INPUT_TYPE_PASSWORD);
   EXPECT_EQ(NONE, observer_->GetCallsBitmapAndReset());
   engine_->Enable();
-  EXPECT_EQ(ACTIVATE, observer_->GetCallsBitmapAndReset());
+  EXPECT_EQ(ACTIVATE | ONFOCUS, observer_->GetCallsBitmapAndReset());
   engine_->Disable();
   EXPECT_EQ(DEACTIVATED, observer_->GetCallsBitmapAndReset());
   // Focus change when enabled.
   engine_->Enable();
-  EXPECT_EQ(ACTIVATE, observer_->GetCallsBitmapAndReset());
+  EXPECT_EQ(ACTIVATE | ONFOCUS, observer_->GetCallsBitmapAndReset());
   engine_->FocusOut();
-  EXPECT_EQ(NONE, observer_->GetCallsBitmapAndReset());
+  EXPECT_EQ(ONBLUR, observer_->GetCallsBitmapAndReset());
   FocusIn(ui::TEXT_INPUT_TYPE_PASSWORD);
-  EXPECT_EQ(NONE, observer_->GetCallsBitmapAndReset());
+  EXPECT_EQ(ONFOCUS, observer_->GetCallsBitmapAndReset());
   engine_->Disable();
   EXPECT_EQ(DEACTIVATED, observer_->GetCallsBitmapAndReset());
 }
