@@ -10,7 +10,7 @@
 
 var ContextMenusSchema =
     requireNative('schema_registry').GetSchema('contextMenus');
-var CreateEvent = require('webView').CreateEvent;
+var CreateEvent = require('webViewEvents').CreateEvent;
 var EventBindings = require('event_bindings');
 var MessagingNatives = requireNative('messaging_natives');
 var WebView = require('webView').WebView;
@@ -245,7 +245,7 @@ WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
 };
 
 /** @private */
-WebViewInternal.prototype.setupExperimentalContextMenus_ = function() {
+WebViewInternal.prototype.setupExperimentalContextMenus = function() {
   var self = this;
   var createContextMenus = function() {
     return function() {

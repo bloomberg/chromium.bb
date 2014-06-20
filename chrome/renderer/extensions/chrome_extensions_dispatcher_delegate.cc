@@ -240,6 +240,7 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   // Note: webView not webview so that this doesn't interfere with the
   // chrome.webview API bindings.
   source_map->RegisterSource("webView", IDR_WEB_VIEW_JS);
+  source_map->RegisterSource("webViewEvents", IDR_WEB_VIEW_EVENTS_JS);
   source_map->RegisterSource("webViewExperimental",
                              IDR_WEB_VIEW_EXPERIMENTAL_JS);
   source_map->RegisterSource("webViewRequest",

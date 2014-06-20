@@ -256,7 +256,7 @@ void GuestViewBase::DispatchEvent(Event* event) {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
 
   extensions::EventFilteringInfo info;
-  info.SetInstanceID(guest_instance_id_);
+  info.SetInstanceID(view_instance_id_);
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(event->GetArguments().release());
 
