@@ -13,6 +13,7 @@ class PerfControl(object):
   """Provides methods for setting the performance mode of a device."""
   _SCALING_GOVERNOR_FMT = (
       '/sys/devices/system/cpu/cpu%d/cpufreq/scaling_governor')
+  _CPU_ONLINE_FMT = '/sys/devices/system/cpu/cpu%d/online'
   _KERNEL_MAX = '/sys/devices/system/cpu/kernel_max'
 
   def __init__(self, device):
@@ -25,13 +26,22 @@ class PerfControl(object):
     assert kernel_max, 'Unable to find %s' % PerfControl._KERNEL_MAX
     self._kernel_max = int(kernel_max[0])
     logging.info('Maximum CPU index: %d', self._kernel_max)
-    self._original_scaling_governor = \
-        self._device.old_interface.GetFileContents(
-            PerfControl._SCALING_GOVERNOR_FMT % 0,
-            log_result=False)[0]
+    self._have_mpdecision = self._device.old_interface.FileExistsOnDevice(
+        '/system/bin/mpdecision')
+
+  @property
+  def _NumCpuCores(self):
+    return self._kernel_max + 1
 
   def SetHighPerfMode(self):
+    # TODO(epenner): Enable on all devices (http://crbug.com/383566)
+    if 'Nexus 4' == self._device.old_interface.GetProductModel():
+      self._ForceAllCpusOnline(True)
+    self._SetScalingGovernorInternal('performance')
+
+  def SetPerfProfilingMode(self):
     """Sets the highest possible performance mode for the device."""
+    self._ForceAllCpusOnline(True)
     self._SetScalingGovernorInternal('performance')
 
   def SetDefaultPerfMode(self):
@@ -45,13 +55,10 @@ class PerfControl(object):
         'Nexus 10': 'interactive'
     }.get(product_model, 'ondemand')
     self._SetScalingGovernorInternal(governor_mode)
-
-  def RestoreOriginalPerfMode(self):
-    """Resets the original performance mode of the device."""
-    self._SetScalingGovernorInternal(self._original_scaling_governor)
+    self._ForceAllCpusOnline(False)
 
   def _SetScalingGovernorInternal(self, value):
-    for cpu in range(self._kernel_max + 1):
+    for cpu in range(self._NumCpuCores):
       scaling_governor_file = PerfControl._SCALING_GOVERNOR_FMT % cpu
       if self._device.old_interface.FileExistsOnDevice(scaling_governor_file):
         logging.info('Writing scaling governor mode \'%s\' -> %s',
@@ -59,37 +66,43 @@ class PerfControl(object):
         self._device.old_interface.SetProtectedFileContents(
             scaling_governor_file, value)
 
-  def ForceAllCpusOnline(self, force_online):
-    """Force all CPUs on a device to be online.
+  def _AllCpusAreOnline(self):
+    for cpu in range(self._NumCpuCores):
+      online_path = PerfControl._CPU_ONLINE_FMT % cpu
+      if self._device.old_interface.GetFileContents(online_path)[0] == '0':
+        return False
+    return True
 
-    Force every CPU core on an Android device to remain online, or return the
-    cores under system power management control. This is needed to work around
-    a bug in perf which makes it unable to record samples from CPUs that become
-    online when recording is already underway.
+  def _ForceAllCpusOnline(self, force_online):
+    """Enable all CPUs on a device.
 
-    Args:
-      force_online: True to set all CPUs online, False to return them under
-          system power management control.
+    Some vendors (or only Qualcomm?) hot-plug their CPUs, which can add noise
+    to measurements:
+    - In perf, samples are only taken for the CPUs that are online when the
+      measurement is started.
+    - The scaling governor can't be set for an offline CPU and frequency scaling
+      on newly enabled CPUs adds noise to both perf and tracing measurements.
+
+    It appears Qualcomm is the only vendor that hot-plugs CPUs, and on Qualcomm
+    this is done by "mpdecision".
+
     """
-    def ForceCpuOnline(online_path):
-      script = 'chmod 644 {0}; echo 1 > {0}; chmod 444 {0}'.format(online_path)
+    if self._have_mpdecision:
+      script = 'stop mpdecision' if force_online else 'start mpdecision'
       self._device.RunShellCommand(script, root=True)
-      return self._device.old_interface.GetFileContents(online_path)[0] == '1'
 
-    def ResetCpu(online_path):
-      self._device.RunShellCommand('chmod 644 %s' % online_path, root=True)
+    if not self._have_mpdecision and not self._AllCpusAreOnline():
+      logging.warning('Unexpected cpu hot plugging detected.')
 
-    def WaitFor(condition):
-      for _ in range(100):
-        if condition():
-          return
-        time.sleep(0.1)
-      raise RuntimeError('Timed out')
+    if not force_online:
+      return
 
-    cpu_online_files = self._device.RunShellCommand(
-        'ls -d /sys/devices/system/cpu/cpu[0-9]*/online')
-    for online_path in cpu_online_files:
-      if force_online:
-        WaitFor(lambda: ForceCpuOnline(online_path))
-      else:
-        ResetCpu(online_path)
+    for cpu in range(self._NumCpuCores):
+      online_path = PerfControl._CPU_ONLINE_FMT % cpu
+      self._device.old_interface.SetProtectedFileContents(
+          online_path, '1')
+
+    # Double check all cores stayed online.
+    time.sleep(0.25)
+    if not self._AllCpusAreOnline():
+      raise RuntimeError('Failed to force CPUs online')

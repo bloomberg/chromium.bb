@@ -58,7 +58,7 @@ class _PerfProfiler(object):
     if categories:
       cmd += ['--event', ','.join(categories)]
     self._perf_control = perf_control.PerfControl(self._device)
-    self._perf_control.ForceAllCpusOnline(True)
+    self._perf_control.SetPerfProfilingMode()
     self._perf_process = subprocess.Popen(cmd,
                                           stdout=self._log_file,
                                           stderr=subprocess.STDOUT)
@@ -67,7 +67,7 @@ class _PerfProfiler(object):
     perf_pids = self._device.old_interface.ExtractPid('perf')
     self._device.RunShellCommand('kill -SIGINT ' + ' '.join(perf_pids))
     self._perf_process.wait()
-    self._perf_control.ForceAllCpusOnline(False)
+    self._perf_control.SetDefaultPerfMode()
 
   def _FailWithLog(self, msg):
     self._log_file.seek(0)
