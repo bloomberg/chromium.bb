@@ -57,18 +57,19 @@ HidConnectionLinux::HidConnectionLinux(HidDeviceInfo device_info,
     base::File::Error file_error = device_file.error_details();
 
     if (file_error == base::File::FILE_ERROR_ACCESS_DENIED) {
+      VLOG(1) << "Access denied opening device read-write, trying read-only.";
+
       flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
 
-      base::File device_file(base::FilePath(dev_node), flags);
-      if (!device_file.IsValid()) {
-        LOG(ERROR) << device_file.error_details();
-        return;
-      }
-    } else {
-      LOG(ERROR) << file_error;
-      return;
+      device_file = base::File(base::FilePath(dev_node), flags);
     }
   }
+  if (!device_file.IsValid()) {
+    LOG(ERROR) << "Failed to open '" << dev_node << "': "
+        << base::File::ErrorToString(device_file.error_details());
+    return;
+  }
+
   if (fcntl(device_file.GetPlatformFile(), F_SETFL,
             fcntl(device_file.GetPlatformFile(), F_GETFL) | O_NONBLOCK)) {
     PLOG(ERROR) << "Failed to set non-blocking flag to device file.";

@@ -114,7 +114,7 @@ void HidServiceLinux::OnDeviceAdded(udev_device* device) {
 
   std::string dev_node;
   if (!FindHidrawDevNode(device, &dev_node)) {
-    LOG(ERROR) << "Cannot open HID device as hidraw device.";
+    LOG(ERROR) << "Cannot find device node for HID device.";
     return;
   }
 
@@ -122,7 +122,8 @@ void HidServiceLinux::OnDeviceAdded(udev_device* device) {
 
   base::File device_file(base::FilePath(dev_node), flags);
   if (!device_file.IsValid()) {
-    LOG(ERROR) << device_file.error_details();
+    LOG(ERROR) << "Cannot open '" << dev_node << "': "
+        << base::File::ErrorToString(device_file.error_details());
     return;
   }
 
