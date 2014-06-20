@@ -68,6 +68,13 @@ class CONTENT_EXPORT ContentViewCore {
       const gfx::Vector2dF& scroll_offset,
       float page_scale_factor)> UpdateFrameInfoCallback;
 
+  // Text surrounding selection.
+  virtual void RequestTextSurroundingSelection(
+      int max_length,
+      const base::Callback<void(const base::string16& content,
+                                int start_offset,
+                                int end_offset)>& callback) = 0;
+
  protected:
   virtual ~ContentViewCore() {};
 };

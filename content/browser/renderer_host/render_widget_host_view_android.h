@@ -224,6 +224,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void SetOverlayVideoMode(bool enabled);
 
+  typedef base::Callback<
+      void(const base::string16& content, int start_offset, int end_offset)>
+      TextSurroundingSelectionCallback;
+  void SetTextSurroundingSelectionCallback(
+      const TextSurroundingSelectionCallback& callback);
+
  private:
   void RunAckCallbacks();
 
@@ -282,7 +288,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void SetNeedsAnimate();
   bool Animate(base::TimeTicks frame_time);
-
 
   // The model object.
   RenderWidgetHostImpl* host_;
@@ -352,6 +357,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   };
 
   scoped_ptr<LastFrameInfo> last_frame_info_;
+
+  TextSurroundingSelectionCallback text_surrounding_selection_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };

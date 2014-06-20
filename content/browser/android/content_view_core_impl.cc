@@ -37,6 +37,7 @@
 #include "content/browser/screen_orientation/screen_orientation_dispatcher_host.h"
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
+#include "content/common/frame_messages.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -1570,6 +1571,23 @@ void ContentViewCoreImpl::SetBackgroundOpaque(JNIEnv* env, jobject jobj,
     jboolean opaque) {
   if (GetRenderWidgetHostViewAndroid())
     GetRenderWidgetHostViewAndroid()->SetBackgroundOpaque(opaque);
+}
+
+void ContentViewCoreImpl::RequestTextSurroundingSelection(
+    int max_length,
+    const base::Callback<
+        void(const base::string16& content, int start_offset, int end_offset)>&
+        callback) {
+  DCHECK(!callback.is_null());
+  RenderFrameHost* focused_frame = web_contents_->GetFocusedFrame();
+  if (!focused_frame)
+    return;
+  if (GetRenderWidgetHostViewAndroid()) {
+    GetRenderWidgetHostViewAndroid()->SetTextSurroundingSelectionCallback(
+        callback);
+    focused_frame->Send(new FrameMsg_TextSurroundingSelectionRequest(
+        focused_frame->GetRoutingID(), max_length));
+  }
 }
 
 void ContentViewCoreImpl::OnSmartClipDataExtracted(
