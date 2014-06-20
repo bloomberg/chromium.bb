@@ -28,6 +28,7 @@ class AppListMainView;
 class AppListModel;
 class AppListViewDelegate;
 class AppsContainerView;
+class ContentsSwitcherView;
 class PaginationModel;
 class SearchResultListView;
 class StartPageView;
@@ -48,10 +49,13 @@ class APP_LIST_EXPORT ContentsView : public views::View,
     NAMED_PAGE_START,
   };
 
-  ContentsView(AppListMainView* app_list_main_view,
-               AppListModel* model,
-               AppListViewDelegate* view_delegate);
+  ContentsView(AppListMainView* app_list_main_view);
   virtual ~ContentsView();
+
+  // Initialize the named (special) pages of the launcher. In the experimental
+  // launcher, should be called after set_contents_switcher_view(), or switcher
+  // buttons will not be created.
+  void InitNamedPages(AppListModel* model, AppListViewDelegate* view_delegate);
 
   // The app list gets closed and drag and drop operations need to be cancelled.
   void CancelDrag();
@@ -60,6 +64,11 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // operations outside the application list.
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);
+
+  void set_contents_switcher_view(
+      ContentsSwitcherView* contents_switcher_view) {
+    contents_switcher_view_ = contents_switcher_view;
+  }
 
   void ShowSearchResults(bool show);
   void ShowFolderContent(AppListFolderItem* folder);
@@ -114,14 +123,16 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void UpdatePageBounds();
 
   // Adds |view| as a new page to the end of the list of launcher pages. The
-  // view is inserted as a child of the ContentsView. There is no name
+  // view is inserted as a child of the ContentsView, and a button with
+  // |resource_id| is added to the ContentsSwitcherView. There is no name
   // associated with the page. Returns the index of the new page.
-  int AddLauncherPage(views::View* view);
+  int AddLauncherPage(views::View* view, int resource_id);
 
   // Adds |view| as a new page to the end of the list of launcher pages. The
-  // view is inserted as a child of the ContentsView. The page is associated
+  // view is inserted as a child of the ContentsView, and a button with
+  // |resource_id| is added to the ContentsSwitcherView. The page is associated
   // with the name |named_page|. Returns the index of the new page.
-  int AddLauncherPage(views::View* view, NamedPage named_page);
+  int AddLauncherPage(views::View* view, int resource_id, NamedPage named_page);
 
   // Gets the PaginationModel owned by the AppsGridView.
   // Note: This is different to |pagination_model_|, which manages top-level
@@ -138,6 +149,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   StartPageView* start_page_view_;
 
   AppListMainView* app_list_main_view_;     // Parent view, owns this.
+  // Sibling view, owned by |app_list_main_view_|.
+  ContentsSwitcherView* contents_switcher_view_;
 
   scoped_ptr<views::ViewModel> view_model_;
   // Maps NamedPage onto |view_model_| indices.

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "grit/ui_resources.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -14,8 +15,10 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
+#include "ui/app_list/views/contents_switcher_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/start_page_view.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
@@ -32,34 +35,39 @@ const double kFinishTransitionThreshold = 0.33;
 
 }  // namespace
 
-ContentsView::ContentsView(AppListMainView* app_list_main_view,
-                           AppListModel* model,
-                           AppListViewDelegate* view_delegate)
+ContentsView::ContentsView(AppListMainView* app_list_main_view)
     : search_results_view_(NULL),
       start_page_view_(NULL),
       app_list_main_view_(app_list_main_view),
+      contents_switcher_view_(NULL),
       view_model_(new views::ViewModel) {
-  DCHECK(model);
-
-  if (app_list::switches::IsExperimentalAppListEnabled()) {
-    start_page_view_ = new StartPageView(app_list_main_view, view_delegate);
-    AddLauncherPage(start_page_view_, NAMED_PAGE_START);
-  } else {
-    search_results_view_ =
-        new SearchResultListView(app_list_main_view, view_delegate);
-    AddLauncherPage(search_results_view_, NAMED_PAGE_SEARCH_RESULTS);
-    search_results_view_->SetResults(model->results());
-  }
-
-  apps_container_view_ = new AppsContainerView(app_list_main_view, model);
-  int apps_page_index = AddLauncherPage(apps_container_view_, NAMED_PAGE_APPS);
-
-  pagination_model_.SelectPage(apps_page_index, false);
   pagination_model_.AddObserver(this);
 }
 
 ContentsView::~ContentsView() {
   pagination_model_.RemoveObserver(this);
+}
+
+void ContentsView::InitNamedPages(AppListModel* model,
+                                  AppListViewDelegate* view_delegate) {
+  DCHECK(model);
+
+  if (app_list::switches::IsExperimentalAppListEnabled()) {
+    start_page_view_ = new StartPageView(app_list_main_view_, view_delegate);
+    AddLauncherPage(
+        start_page_view_, IDR_APP_LIST_SEARCH_ICON, NAMED_PAGE_START);
+  } else {
+    search_results_view_ =
+        new SearchResultListView(app_list_main_view_, view_delegate);
+    AddLauncherPage(search_results_view_, 0, NAMED_PAGE_SEARCH_RESULTS);
+    search_results_view_->SetResults(model->results());
+  }
+
+  apps_container_view_ = new AppsContainerView(app_list_main_view_, model);
+  int apps_page_index = AddLauncherPage(
+      apps_container_view_, IDR_APP_LIST_APPS_ICON, NAMED_PAGE_APPS);
+
+  pagination_model_.SelectPage(apps_page_index, false);
 }
 
 void ContentsView::CancelDrag() {
@@ -218,19 +226,23 @@ views::View* ContentsView::GetPageView(int index) {
 }
 
 void ContentsView::AddBlankPageForTesting() {
-  AddLauncherPage(new views::View);
+  AddLauncherPage(new views::View, 0);
 }
 
-int ContentsView::AddLauncherPage(views::View* view) {
+int ContentsView::AddLauncherPage(views::View* view, int resource_id) {
   int page_index = view_model_->view_size();
   AddChildView(view);
   view_model_->Add(view, page_index);
   pagination_model_.SetTotalPages(view_model_->view_size());
+  if (contents_switcher_view_)
+    contents_switcher_view_->AddSwitcherButton(resource_id, page_index);
   return page_index;
 }
 
-int ContentsView::AddLauncherPage(views::View* view, NamedPage named_page) {
-  int page_index = AddLauncherPage(view);
+int ContentsView::AddLauncherPage(views::View* view,
+                                  int resource_id,
+                                  NamedPage named_page) {
+  int page_index = AddLauncherPage(view, resource_id);
   named_page_to_view_.insert(std::pair<NamedPage, int>(named_page, page_index));
   return page_index;
 }

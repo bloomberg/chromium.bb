@@ -109,12 +109,15 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
 }
 
 void AppListMainView::AddContentsViews() {
-  contents_view_ = new ContentsView(this, model_, delegate_);
-  AddChildView(contents_view_);
+  contents_view_ = new ContentsView(this);
   if (app_list::switches::IsExperimentalAppListEnabled()) {
     contents_switcher_view_ = new ContentsSwitcherView(contents_view_);
-    AddChildView(contents_switcher_view_);
+    contents_view_->set_contents_switcher_view(contents_switcher_view_);
   }
+  contents_view_->InitNamedPages(model_, delegate_);
+  AddChildView(contents_view_);
+  if (contents_switcher_view_)
+    AddChildView(contents_switcher_view_);
 
   search_box_view_->set_contents_view(contents_view_);
 

@@ -22,11 +22,12 @@ class ContentsSwitcherView : public views::View, public views::ButtonListener {
 
   ContentsView* contents_view() const { return contents_view_; }
 
- private:
-  // Adds a switcher button using |resource_id| as the button's image and |tag|
-  // as the button's id.
-  void AddSwitcherButton(int resource_id, int tag);
+  // Adds a switcher button using |resource_id| as the button's image, which
+  // opens the page with index |page_index| in the ContentsView. |resource_id|
+  // is ignored if it is 0.
+  void AddSwitcherButton(int resource_id, int page_index);
 
+ private:
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
