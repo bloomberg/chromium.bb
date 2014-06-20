@@ -45171,6 +45171,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="14"
       label="DefaultSearchManager::kDefaultSearchProviderDataPrefName"/>
   <int value="15" label="prefs::kPreferenceResetTime"/>
+  <int value="16" label="prefs::kSafeBrowsingIncidentReportSent"/>
 </enum>
 
 <enum name="TranslateError" type="int">

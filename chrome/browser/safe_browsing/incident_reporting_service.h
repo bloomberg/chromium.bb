@@ -154,12 +154,6 @@ class IncidentReportingService : public content::NotificationObserver {
   void CollectDownloadDetails(
       ClientIncidentReport_DownloadDetails* download_details);
 
-  // Record the incidents that were reported for future pruning.
-  void RecordReportedIncidents();
-
-  // Prunes incidents that have previously been reported.
-  void PruneReportedIncidents(ClientIncidentReport* report);
-
   // Uploads an incident report if all data collection is complete. Incidents
   // originating from profiles that do not participate in safe browsing are
   // dropped.
@@ -172,8 +166,7 @@ class IncidentReportingService : public content::NotificationObserver {
   void OnKillSwitchResult(UploadContext* context, bool is_killswitch_on);
 
   // Performs processing for a report after succesfully receiving a response.
-  void HandleResponse(scoped_ptr<ClientIncidentReport> report,
-                      scoped_ptr<ClientIncidentResponse> response);
+  void HandleResponse(const UploadContext& context);
 
   // IncidentReportUploader::OnResultCallback implementation.
   void OnReportUploadResult(UploadContext* context,

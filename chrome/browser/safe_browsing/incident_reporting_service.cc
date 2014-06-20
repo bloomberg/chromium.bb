@@ -6,6 +6,9 @@
 
 #include <math.h>
 
+#include <algorithm>
+#include <vector>
+
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/process_info.h"
@@ -47,19 +50,17 @@ const int64 kDefaultUploadDelayMs = 1000 * 60;  // one minute
 void LogIncidentDataType(
     IncidentDisposition disposition,
     const ClientIncidentReport_IncidentData& incident_data) {
-  static const char kAcceptedMetric[] = "SBIRS.Incident";
-  static const char kDroppedMetric[] = "SBIRS.DroppedIncident";
-
   IncidentType type = TRACKED_PREFERENCE;
 
   // Add a switch statement once other types are supported.
   DCHECK(incident_data.has_tracked_preference());
 
   if (disposition == ACCEPTED) {
-    UMA_HISTOGRAM_ENUMERATION(kAcceptedMetric, type, NUM_INCIDENT_TYPES);
+    UMA_HISTOGRAM_ENUMERATION("SBIRS.Incident", type, NUM_INCIDENT_TYPES);
   } else {
     DCHECK_EQ(disposition, DROPPED);
-    UMA_HISTOGRAM_ENUMERATION(kDroppedMetric, type, NUM_INCIDENT_TYPES);
+    UMA_HISTOGRAM_ENUMERATION("SBIRS.DroppedIncident", type,
+                              NUM_INCIDENT_TYPES);
   }
 }
 
@@ -84,8 +85,14 @@ class IncidentReportingService::UploadContext {
   explicit UploadContext(scoped_ptr<ClientIncidentReport> report);
   ~UploadContext();
 
+  // The report being uploaded.
   scoped_ptr<ClientIncidentReport> report;
+
+  // The uploader in use. This is NULL until the CSD killswitch is checked.
   scoped_ptr<IncidentReportUploader> uploader;
+
+  // The set of profiles from which incidents in |report| originated.
+  std::vector<Profile*> profiles;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UploadContext);
@@ -239,6 +246,18 @@ void IncidentReportingService::OnProfileDestroyed(Profile* profile) {
   // No new incidents will be accepted for it.
   delete it->second;
   profiles_.erase(it);
+
+  // Remove the association with this profile from any pending uploads.
+  for (size_t i = 0; i < uploads_.size(); ++i) {
+    UploadContext* upload = uploads_[i];
+    std::vector<Profile*>::iterator it =
+        std::find(upload->profiles.begin(), upload->profiles.end(), profile);
+    if (it != upload->profiles.end()) {
+      *it = upload->profiles.back();
+      upload->profiles.resize(upload->profiles.size() - 1);
+      break;
+    }
+  }
 }
 
 void IncidentReportingService::AddIncident(
@@ -377,15 +396,6 @@ void IncidentReportingService::CollectDownloadDetails(
   // TODO(grt): collect download info; http://crbug.com/383042.
 }
 
-void IncidentReportingService::RecordReportedIncidents() {
-  // TODO(grt): store state about reported incidents.
-}
-
-void IncidentReportingService::PruneReportedIncidents(
-    ClientIncidentReport* report) {
-  // TODO(grt): remove previously reported incidents; http://crbug.com/383043.
-}
-
 void IncidentReportingService::UploadIfCollectionComplete() {
   DCHECK(report_);
   // Bail out if there are still outstanding collection tasks.
@@ -405,10 +415,15 @@ void IncidentReportingService::UploadIfCollectionComplete() {
     process->set_metrics_consent(g_browser_process->local_state()->GetBoolean(
         prefs::kMetricsReportingEnabled));
   }
+
   // Check for extended consent in any profile while collecting incidents.
   process->set_extended_consent(false);
   // Collect incidents across all profiles participating in safe browsing. Drop
   // incidents if the profile stopped participating before collection completed.
+  // Prune incidents if the profile has already submitted any incidents.
+  // Associate the participating profiles with the upload.
+  size_t prune_count = 0;
+  std::vector<Profile*> profiles;
   for (ProfileContextCollection::iterator scan = profiles_.begin();
        scan != profiles_.end();
        ++scan) {
@@ -421,7 +436,18 @@ void IncidentReportingService::UploadIfCollectionComplete() {
     ProfileContext* context = scan->second;
     if (context->incidents.empty())
       continue;
-    if (prefs->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+    if (!prefs->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+      for (size_t i = 0; i < context->incidents.size(); ++i) {
+        LogIncidentDataType(DROPPED, *context->incidents[i]);
+      }
+      context->incidents.clear();
+    } else if (prefs->GetBoolean(prefs::kSafeBrowsingIncidentReportSent)) {
+      // Prune all incidents.
+      // TODO(grt): Only prune previously submitted incidents;
+      // http://crbug.com/383043.
+      prune_count += context->incidents.size();
+      context->incidents.clear();
+    } else {
       for (size_t i = 0; i < context->incidents.size(); ++i) {
         ClientIncidentReport_IncidentData* incident = context->incidents[i];
         LogIncidentDataType(ACCEPTED, *incident);
@@ -429,35 +455,29 @@ void IncidentReportingService::UploadIfCollectionComplete() {
         report->mutable_incident()->AddAllocated(incident);
       }
       context->incidents.weak_clear();
-    } else {
-      for (size_t i = 0; i < context->incidents.size(); ++i) {
-        LogIncidentDataType(DROPPED, *context->incidents[i]);
-      }
-      context->incidents.clear();
+      profiles.push_back(scan->first);
     }
   }
 
-  const int original_count = report->incident_size();
-  // Abandon the request if all incidents were dropped.
-  if (!original_count)
+  const int count = report->incident_size();
+  // Abandon the request if all incidents were dropped with none pruned.
+  if (!count && !prune_count)
     return;
 
-  UMA_HISTOGRAM_COUNTS_100("SBIRS.IncidentCount", original_count);
+  UMA_HISTOGRAM_COUNTS_100("SBIRS.IncidentCount", count + prune_count);
 
-  PruneReportedIncidents(report.get());
-
-  int final_count = report->incident_size();
   {
-    double prune_pct = static_cast<double>(original_count - final_count);
-    prune_pct = prune_pct * 100.0 / original_count;
+    double prune_pct = static_cast<double>(prune_count);
+    prune_pct = prune_pct * 100.0 / (count + prune_count);
     prune_pct = round(prune_pct);
     UMA_HISTOGRAM_PERCENTAGE("SBIRS.PruneRatio", static_cast<int>(prune_pct));
   }
   // Abandon the report if all incidents were pruned.
-  if (!final_count)
+  if (!count)
     return;
 
   scoped_ptr<UploadContext> context(new UploadContext(report.Pass()));
+  context->profiles.swap(profiles);
   if (!database_manager_) {
     // No database manager during testing. Take ownership of the context and
     // continue processing.
@@ -511,10 +531,11 @@ void IncidentReportingService::OnKillSwitchResult(UploadContext* context,
   }
 }
 
-void IncidentReportingService::HandleResponse(
-    scoped_ptr<ClientIncidentReport> report,
-    scoped_ptr<ClientIncidentResponse> response) {
-  RecordReportedIncidents();
+void IncidentReportingService::HandleResponse(const UploadContext& context) {
+  for (size_t i = 0; i < context.profiles.size(); ++i) {
+    context.profiles[i]->GetPrefs()->SetBoolean(
+        prefs::kSafeBrowsingIncidentReportSent, true);
+  }
 }
 
 void IncidentReportingService::OnReportUploadResult(
@@ -536,7 +557,7 @@ void IncidentReportingService::OnReportUploadResult(
   uploads_.weak_erase(uploads_.end() - 1);
 
   if (result == IncidentReportUploader::UPLOAD_SUCCESS)
-    HandleResponse(upload->report.Pass(), response.Pass());
+    HandleResponse(*upload);
   // else retry?
 }
 
