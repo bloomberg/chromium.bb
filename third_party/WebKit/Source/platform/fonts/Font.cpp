@@ -786,9 +786,11 @@ FloatRect Font::pixelSnappedSelectionRect(float fromX, float toX, float y, float
     // Using roundf() rather than ceilf() for the right edge as a compromise to
     // ensure correct caret positioning.
     // Use LayoutUnit::epsilon() to ensure that values that cannot be stored as
-    // an integer are floored to n and not n-1 due to floating point imprecision.
+    // an integer are floored/rounded to n and not n-1/+1 due to floating point
+    // imprecision.
     float pixelAlignedX = floorf(fromX + LayoutUnit::epsilon());
-    return FloatRect(pixelAlignedX, y, roundf(toX) - pixelAlignedX, height);
+    FloatRect r(pixelAlignedX, y, roundf(toX + LayoutUnit::epsilon()) - pixelAlignedX, height);
+    return r;
 }
 
 FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint& point, int h, int from, int to, bool accountForGlyphBounds) const

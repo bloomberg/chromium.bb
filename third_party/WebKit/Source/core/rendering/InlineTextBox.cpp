@@ -802,7 +802,7 @@ void InlineTextBox::selectionStartEnd(int& sPos, int& ePos)
 
 void alignSelectionRectToDevicePixels(FloatRect& rect)
 {
-    float maxX = floorf(rect.maxX());
+    float maxX = roundf(rect.maxX());
     rect.setX(floorf(rect.x()));
     rect.setWidth(roundf(maxX - rect.x()));
 }
