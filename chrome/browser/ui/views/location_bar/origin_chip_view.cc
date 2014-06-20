@@ -144,9 +144,7 @@ OriginChipView::OriginChipView(LocationBarView* location_bar_view,
       location_bar_view_(location_bar_view),
       profile_(profile),
       showing_16x16_icon_(false),
-      fade_in_animation_(this),
-      security_level_(ToolbarModel::NONE),
-      url_malware_(false) {
+      fade_in_animation_(this) {
   EnableCanvasFlippingForRTLUI(true);
 
   scoped_refptr<SafeBrowsingService> sb_service =
@@ -176,9 +174,6 @@ OriginChipView::OriginChipView(LocationBarView* location_bar_view,
 
   fade_in_animation_.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
   fade_in_animation_.SetSlideDuration(175);
-
-  // Ensure various other members get initialized.
-  SetBorderImages(kNormalImages);
 }
 
 OriginChipView::~OriginChipView() {
