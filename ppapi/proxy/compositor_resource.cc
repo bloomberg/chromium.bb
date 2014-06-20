@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/thunk/enter.h"
 
 namespace ppapi {
 namespace proxy {
@@ -18,8 +19,25 @@ CompositorResource::CompositorResource(Connection connection,
   SendCreate(RENDERER, PpapiHostMsg_Compositor_Create());
 }
 
+bool CompositorResource::IsInProgress() const {
+  ProxyLock::AssertAcquiredDebugOnly();
+  return TrackedCallback::IsPending(commit_callback_);
+}
+
+int32_t CompositorResource::GenerateResourceId() const {
+  ProxyLock::AssertAcquiredDebugOnly();
+  return ++last_resource_id_;
+}
+
 CompositorResource::~CompositorResource() {
-  ResetLayersInternal();
+  ResetLayersInternal(true);
+
+  // Abort all release callbacks.
+  for (ReleaseCallbackMap::iterator it = release_callback_map_.begin();
+       it != release_callback_map_.end(); ++it) {
+    if (!it->second.is_null())
+      it->second.Run(PP_ERROR_ABORTED, 0, false);
+  }
 }
 
 thunk::PPB_Compositor_API* CompositorResource::AsPPB_Compositor_API() {
@@ -74,7 +92,8 @@ int32_t CompositorResource::CommitLayers(
 int32_t CompositorResource::ResetLayers() {
   if (IsInProgress())
     return PP_ERROR_INPROGRESS;
-  ResetLayersInternal();
+
+  ResetLayersInternal(false);
   return PP_OK;
 }
 
@@ -112,16 +131,16 @@ void CompositorResource::OnPluginMsgReleaseResource(
   ReleaseCallbackMap::iterator it = release_callback_map_.find(id);
   DCHECK(it != release_callback_map_.end()) <<
       "Can not found release_callback_ by id(" << id << ")!";
-  it->second.Run(sync_point, is_lost);
+  it->second.Run(PP_OK, sync_point, is_lost);
   release_callback_map_.erase(it);
 }
 
-void CompositorResource::ResetLayersInternal() {
+void CompositorResource::ResetLayersInternal(bool is_aborted) {
   for (LayerList::iterator it = layers_.begin();
        it != layers_.end(); ++it) {
     ReleaseCallback release_callback = (*it)->release_callback();
     if (!release_callback.is_null()) {
-      release_callback.Run(0, false);
+      release_callback.Run(is_aborted ? PP_ERROR_ABORTED : PP_OK, 0, false);
       (*it)->ResetReleaseCallback();
     }
     (*it)->Invalidate();

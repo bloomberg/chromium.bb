@@ -10,6 +10,7 @@
 #include "ppapi/proxy/compositor_layer_resource.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/thunk/ppb_compositor_api.h"
 
 namespace ppapi {
@@ -22,13 +23,9 @@ class PPAPI_PROXY_EXPORT CompositorResource
   CompositorResource(Connection connection,
                      PP_Instance instance);
 
-  bool IsInProgress() const {
-    return TrackedCallback::IsPending(commit_callback_);
-  }
+  bool IsInProgress() const;
 
-  int32_t GenerateResourceId() const {
-    return ++last_resource_id_;
-  }
+  int32_t GenerateResourceId() const;
 
  private:
   virtual ~CompositorResource();
@@ -54,7 +51,7 @@ class PPAPI_PROXY_EXPORT CompositorResource
       uint32_t sync_point,
       bool is_lost);
 
-  void ResetLayersInternal();
+  void ResetLayersInternal(bool is_aborted);
 
   // Callback for CommitLayers().
   scoped_refptr<TrackedCallback> commit_callback_;

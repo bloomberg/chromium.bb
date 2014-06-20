@@ -158,18 +158,41 @@ bool PepperCompositorHost::BindToInstance(
   if (bound_instance_ && new_instance)
     return false;  // Can't change a bound device.
   bound_instance_ = new_instance;
+  if (!bound_instance_)
+    SendCommitLayersReplyIfNecessary();
+
   return true;
 }
 
 void PepperCompositorHost::ViewInitiatedPaint() {
+  SendCommitLayersReplyIfNecessary();
+}
+
+void PepperCompositorHost::ViewFlushedPaint() {}
+
+void PepperCompositorHost::ImageReleased(
+    int32_t id,
+    const scoped_ptr<base::SharedMemory>& shared_memory,
+    uint32_t sync_point,
+    bool is_lost) {
+  ResourceReleased(id, sync_point, is_lost);
+}
+
+void PepperCompositorHost::ResourceReleased(int32_t id,
+                                            uint32_t sync_point,
+                                            bool is_lost) {
+  host()->SendUnsolicitedReply(
+      pp_resource(),
+      PpapiPluginMsg_Compositor_ReleaseResource(id, sync_point, is_lost));
+}
+
+void PepperCompositorHost::SendCommitLayersReplyIfNecessary() {
   if (!commit_layers_reply_context_.is_valid())
     return;
   host()->SendReply(commit_layers_reply_context_,
                     PpapiPluginMsg_Compositor_CommitLayersReply());
   commit_layers_reply_context_ = ppapi::host::ReplyMessageContext();
 }
-
-void PepperCompositorHost::ViewFlushedPaint() {}
 
 void PepperCompositorHost::UpdateLayer(
     const scoped_refptr<cc::Layer>& layer,
@@ -277,22 +300,6 @@ void PepperCompositorHost::UpdateLayer(
   NOTREACHED();
 }
 
-void PepperCompositorHost::ResourceReleased(int32_t id,
-                                            uint32_t sync_point,
-                                            bool is_lost) {
-  host()->SendUnsolicitedReply(
-      pp_resource(),
-      PpapiPluginMsg_Compositor_ReleaseResource(id, sync_point, is_lost));
-}
-
-void PepperCompositorHost::ImageReleased(
-    int32_t id,
-    const scoped_ptr<base::SharedMemory>& shared_memory,
-    uint32_t sync_point,
-    bool is_lost) {
-  ResourceReleased(id, sync_point, is_lost);
-}
-
 int32_t PepperCompositorHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     HostMessageContext* context) {
@@ -311,14 +318,8 @@ int32_t PepperCompositorHost::OnHostMsgCommitLayers(
     HostMessageContext* context,
     const std::vector<ppapi::CompositorLayerData>& layers,
     bool reset) {
-  // Do not support CommitLayers() on an unbounded compositor.
-  if (!bound_instance_)
-    return PP_ERROR_FAILED;
-
   if (commit_layers_reply_context_.is_valid())
     return PP_ERROR_INPROGRESS;
-
-  commit_layers_reply_context_ = context->MakeReplyMessageContext();
 
   scoped_ptr<scoped_ptr<base::SharedMemory>[]> image_shms;
   if (layers.size() > 0) {
@@ -373,6 +374,11 @@ int32_t PepperCompositorHost::OnHostMsgCommitLayers(
   if (layer_->layer_tree_host())
     layer_->layer_tree_host()->SetNeedsCommit();
 
+  // If the host is not bound to the instance, return PP_OK immediately.
+  if (!bound_instance_)
+    return PP_OK;
+
+  commit_layers_reply_context_ = context->MakeReplyMessageContext();
   return PP_OK_COMPLETIONPENDING;
 }
 
