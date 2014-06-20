@@ -362,6 +362,10 @@ void ProfileMetrics::LogProfileDesktopMenu(
   }
 }
 
+void ProfileMetrics::LogProfileDelete(bool profile_was_signed_in) {
+  UMA_HISTOGRAM_BOOLEAN("Profile.Delete", profile_was_signed_in);
+}
+
 #if defined(OS_ANDROID)
 void ProfileMetrics::LogProfileAndroidAccountManagementMenu(
     ProfileAndroidAccountManagementMenu metric,

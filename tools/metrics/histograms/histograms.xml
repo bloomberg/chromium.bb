@@ -22459,6 +22459,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Profile.Delete" enum="BooleanProfileSignedIn">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    The user used the settings page to delete a profile. Please note this
+    histogram tracks the user interaction, and not the actual delete of the
+    profile, which can happen much later. The parameter indicates if the profile
+    was signed in or not; true means the profile was signed in, false means the
+    profile was not signed in.
+  </summary>
+</histogram>
+
 <histogram name="Profile.DesktopMenu" enum="ProfileDesktopMenu">
   <owner>mlerman@chromium.org</owner>
   <summary>
@@ -33899,6 +33910,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanOrphan" type="int">
   <int value="0" label="Non-orphan"/>
   <int value="1" label="Orphan"/>
+</enum>
+
+<enum name="BooleanProfileSignedIn" type="int">
+  <int value="0" label="Profile was not Signed In"/>
+  <int value="1" label="Profile was Signed In"/>
 </enum>
 
 <enum name="BooleanRaced" type="int">

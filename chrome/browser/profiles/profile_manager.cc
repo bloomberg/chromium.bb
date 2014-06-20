@@ -1100,6 +1100,10 @@ void ProfileManager::FinishDeletingProfile(const base::FilePath& profile_dir) {
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           profile)->DisableForUser();
     }
+
+    bool profile_is_signed_in = !cache.GetUserNameOfProfileAtIndex(
+        cache.GetIndexOfProfileWithPath(profile_dir)).empty();
+    ProfileMetrics::LogProfileDelete(profile_is_signed_in);
   }
 
   QueueProfileDirectoryForDeletion(profile_dir);

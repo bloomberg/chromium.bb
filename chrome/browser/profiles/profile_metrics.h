@@ -158,6 +158,7 @@ class ProfileMetrics {
   static void LogProfileUpgradeEnrollment(ProfileUpgradeEnrollment metric);
   static void LogProfileDesktopMenu(ProfileDesktopMenu metric,
                                     signin::GAIAServiceType gaia_service);
+  static void LogProfileDelete(bool profile_was_signed_in);
 
 #if defined(OS_ANDROID)
   static void LogProfileAndroidAccountManagementMenu(
