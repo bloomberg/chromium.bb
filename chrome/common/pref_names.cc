@@ -1866,6 +1866,11 @@ const char kHotwordSearchEnabled[] = "hotword.search_enabled_2";
 // seconds of audio data before is sent back to improve voice search.
 const char kHotwordAudioLoggingEnabled[] = "hotword.audio_logging_enabled";
 
+// A string holding the locale information under which Hotword was installed.
+// It is used for comparison since the hotword voice search trigger must be
+// reinstalled to handle a new language.
+const char kHotwordPreviousLanguage[] = "hotword.previous_language";
+
 #if defined(OS_ANDROID)
 // Boolean that controls the global enabled-state of protected media identifier.
 const char kProtectedMediaIdentifierEnabled[] =

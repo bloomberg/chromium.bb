@@ -12,6 +12,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/pending_extension_manager.h"
+#include "chrome/browser/extensions/updater/extension_updater.h"
+#include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service_factory.h"
@@ -24,6 +27,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/one_shot_event.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -145,6 +149,17 @@ ExtensionService* GetExtensionService(Profile* profile) {
   return NULL;
 }
 
+std::string GetCurrentLocale(Profile* profile) {
+  std::string locale =
+#if defined(OS_CHROMEOS)
+      // On ChromeOS locale is per-profile.
+      profile->GetPrefs()->GetString(prefs::kApplicationLocale);
+#else
+      g_browser_process->GetApplicationLocale();
+#endif
+  return locale;
+}
+
 }  // namespace
 
 namespace hotword_internal {
@@ -157,14 +172,8 @@ const char kHotwordUnusablePrefName[] = "hotword.search_enabled";
 
 // static
 bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
-  std::string locale =
-#if defined(OS_CHROMEOS)
-      // On ChromeOS locale is per-profile.
-      profile->GetPrefs()->GetString(prefs::kApplicationLocale);
-#else
-      g_browser_process->GetApplicationLocale();
-#endif
-  std::string normalized_locale = l10n_util::NormalizeLocale(locale);
+  std::string normalized_locale =
+      l10n_util::NormalizeLocale(GetCurrentLocale(profile));
   StringToLowerASCII(&normalized_locale);
 
   for (size_t i = 0; i < arraysize(kSupportedLocales); i++) {
@@ -176,8 +185,12 @@ bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
 
 HotwordService::HotwordService(Profile* profile)
     : profile_(profile),
+      extension_registry_observer_(this),
       client_(NULL),
-      error_message_(0) {
+      error_message_(0),
+      reinstall_pending_(false),
+      weak_factory_(this) {
+  extension_registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
   // This will be called during profile initialization which is a good time
   // to check the user's hotword state.
   HotwordEnabled enabled_state = UNSET;
@@ -203,11 +216,14 @@ HotwordService::HotwordService(Profile* profile)
                  base::Unretained(this)));
 
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_WINDOW_READY,
                  content::NotificationService::AllSources());
+
+  extensions::ExtensionSystem::Get(profile_)->ready().Post(
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(
+          &HotwordService::MaybeReinstallHotwordExtension),
+                 weak_factory_.GetWeakPtr()));
 
   // Clear the old user pref because it became unusable.
   // TODO(rlp): Remove this code per crbug.com/358789.
@@ -223,25 +239,7 @@ HotwordService::~HotwordService() {
 void HotwordService::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED) {
-    const extensions::Extension* extension =
-        content::Details<const extensions::InstalledExtensionInfo>(details)
-              ->extension;
-    // Disabling the extension automatically on install should only occur
-    // if the user is in the field trial for auto-install which is gated
-    // by the IsHotwordAllowed check.
-    if (IsHotwordAllowed() &&
-        extension->id() == extension_misc::kHotwordExtensionId &&
-        !profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled)) {
-      DisableHotwordExtension(GetExtensionService(profile_));
-      // Once the extension is disabled, it will not be enabled until the
-      // user opts in at which point the pref registrar will take over
-      // enabling and disabling.
-      registrar_.Remove(this,
-                        chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
-                        content::Source<Profile>(profile_));
-    }
-  } else if (type == chrome::NOTIFICATION_BROWSER_WINDOW_READY) {
+  if (type == chrome::NOTIFICATION_BROWSER_WINDOW_READY) {
     // The microphone monitor must be initialized as the page is loading
     // so that the state of the microphone is available when the page
     // loads. The Ok Google Hotword setting will display an error if there
@@ -255,6 +253,123 @@ void HotwordService::Observe(int type,
     // makes use of the same audio device monitor.
     HotwordServiceFactory::GetInstance()->UpdateMicrophoneState();
   }
+}
+
+void HotwordService::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension) {
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (extension->id() != extension_misc::kHotwordExtensionId ||
+      profile_ != Profile::FromBrowserContext(browser_context) ||
+      !GetExtensionService(profile_))
+    return;
+
+  // If the extension wasn't uninstalled due to language change, don't try to
+  // reinstall it.
+  if (!reinstall_pending_)
+    return;
+
+  InstallHotwordExtensionFromWebstore();
+  SetPreviousLanguagePref();
+}
+
+void HotwordService::InstallHotwordExtensionFromWebstore() {
+#if defined(ENABLE_EXTENSIONS)
+  installer_ = new extensions::WebstoreStartupInstaller(
+      extension_misc::kHotwordExtensionId,
+      profile_,
+      false,
+      extensions::WebstoreStandaloneInstaller::Callback());
+  installer_->BeginInstall();
+#endif
+}
+
+void HotwordService::OnExtensionInstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension) {
+
+  if (extension->id() != extension_misc::kHotwordExtensionId ||
+      profile_ != Profile::FromBrowserContext(browser_context))
+    return;
+
+  // If the previous locale pref has never been set, set it now since
+  // the extension has been installed.
+  if (!profile_->GetPrefs()->HasPrefPath(prefs::kHotwordPreviousLanguage))
+    SetPreviousLanguagePref();
+
+  // If MaybeReinstallHotwordExtension already triggered an uninstall, we
+  // don't want to loop and trigger another uninstall-install cycle.
+  // However, if we arrived here via an uninstall-triggered-install (and in
+  // that case |reinstall_pending_| will be true) then we know install
+  // has completed and we can reset |reinstall_pending_|.
+  if (!reinstall_pending_)
+    MaybeReinstallHotwordExtension();
+  else
+    reinstall_pending_ = false;
+
+  // Now that the extension is installed, if the user has not selected
+  // the preference on, make sure it is turned off.
+  //
+  // Disabling the extension automatically on install should only occur
+  // if the user is in the field trial for auto-install which is gated
+  // by the IsHotwordAllowed check. The check for IsHotwordAllowed() here
+  // can be removed once it's known that few people have manually
+  // installed extension.
+  if (IsHotwordAllowed() &&
+      !profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled)) {
+    DisableHotwordExtension(GetExtensionService(profile_));
+  }
+}
+
+bool HotwordService::MaybeReinstallHotwordExtension() {
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  ExtensionService* extension_service = GetExtensionService(profile_);
+  if (!extension_service)
+    return false;
+
+  const extensions::Extension* extension = extension_service->GetExtensionById(
+      extension_misc::kHotwordExtensionId, true);
+  if (!extension)
+    return false;
+
+  // If the extension is currently pending, return and we'll check again
+  // after the install is finished.
+  extensions::PendingExtensionManager* pending_manager =
+      extension_service->pending_extension_manager();
+  if (pending_manager->IsIdPending(extension->id()))
+    return false;
+
+  // If there is already a pending request from HotwordService, don't try
+  // to uninstall either.
+  if (reinstall_pending_)
+    return false;
+
+  // Check if the current locale matches the previous. If they don't match,
+  // uninstall the extension.
+  if (!ShouldReinstallHotwordExtension())
+    return false;
+
+  // Ensure the call to OnExtensionUninstalled was triggered by a language
+  // change so it's okay to reinstall.
+  reinstall_pending_ = true;
+
+  return UninstallHotwordExtension(extension_service);
+}
+
+bool HotwordService::UninstallHotwordExtension(
+    ExtensionService* extension_service) {
+  base::string16 error;
+  if (!extension_service->UninstallExtension(
+          extension_misc::kHotwordExtensionId, true, &error)) {
+    LOG(WARNING) << "Cannot uninstall extension with id "
+                 << extension_misc::kHotwordExtensionId
+                 << ": " << error;
+    reinstall_pending_ = false;
+    return false;
+  }
+  return true;
 }
 
 bool HotwordService::IsServiceAvailable() {
@@ -370,4 +485,24 @@ void HotwordService::StopHotwordSession(HotwordClient* client) {
   if (event_service)
     event_service->OnHotwordSessionStopped();
 #endif
+}
+
+void HotwordService::SetPreviousLanguagePref() {
+  profile_->GetPrefs()->SetString(prefs::kHotwordPreviousLanguage,
+                                  GetCurrentLocale(profile_));
+}
+
+bool HotwordService::ShouldReinstallHotwordExtension() {
+  // If there is no previous locale pref, then this is the first install
+  // so no need to uninstall first.
+  if (!profile_->GetPrefs()->HasPrefPath(prefs::kHotwordPreviousLanguage))
+    return false;
+
+  std::string previous_locale =
+      profile_->GetPrefs()->GetString(prefs::kHotwordPreviousLanguage);
+  std::string locale = GetCurrentLocale(profile_);
+
+  // If it's a new locale, then the old extension should be uninstalled.
+  return locale != previous_locale &&
+      HotwordService::DoesHotwordSupportLanguage(profile_);
 }

@@ -103,6 +103,9 @@ void HotwordServiceFactory::RegisterProfilePrefs(
   prefs->RegisterBooleanPref(prefs::kHotwordAudioLoggingEnabled,
                              true,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kHotwordPreviousLanguage,
+                            std::string(),
+                            user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 KeyedService* HotwordServiceFactory::BuildServiceInstanceFor(
