@@ -108,6 +108,9 @@ class DesktopVideoCaptureMachine
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+  virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE;
+  virtual void OnWindowRemovingFromRootWindow(aura::Window* window,
+                                              aura::Window* new_root) OVERRIDE;
 
   // Implements ui::CompositorObserver.
   virtual void OnCompositingDidCommit(ui::Compositor* compositor) OVERRIDE {}
@@ -152,9 +155,6 @@ class DesktopVideoCaptureMachine
   // The window associated with the desktop.
   aura::Window* desktop_window_;
 
-  // The layer associated with the desktop.
-  ui::Layer* desktop_layer_;
-
   // The timer that kicks off period captures.
   base::Timer timer_;
 
@@ -181,7 +181,6 @@ class DesktopVideoCaptureMachine
 DesktopVideoCaptureMachine::DesktopVideoCaptureMachine(
     const DesktopMediaID& source)
     : desktop_window_(NULL),
-      desktop_layer_(NULL),
       timer_(true, true),
       window_id_(source) {}
 
@@ -196,9 +195,9 @@ bool DesktopVideoCaptureMachine::Start(
   if (!desktop_window_)
     return false;
 
-  // If the desktop layer is already destroyed then return failure.
-  desktop_layer_ = desktop_window_->layer();
-  if (!desktop_layer_)
+  // If the associated layer is already destroyed then return failure.
+  ui::Layer* layer = desktop_window_->layer();
+  if (!layer)
     return false;
 
   DCHECK(oracle_proxy.get());
@@ -212,11 +211,8 @@ bool DesktopVideoCaptureMachine::Start(
   desktop_window_->AddObserver(this);
 
   // Start observing compositor updates.
-  ui::Compositor* compositor = desktop_layer_->GetCompositor();
-  if (!compositor)
-    return false;
-
-  compositor->AddObserver(this);
+  if (desktop_window_->GetHost())
+    desktop_window_->GetHost()->compositor()->AddObserver(this);
 
   // Starts timer.
   timer_.Start(FROM_HERE, oracle_proxy_->capture_period(),
@@ -230,18 +226,12 @@ bool DesktopVideoCaptureMachine::Start(
 void DesktopVideoCaptureMachine::Stop(const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Stop observing window events.
+  // Stop observing compositor and window events.
   if (desktop_window_) {
+    if (desktop_window_->GetHost())
+      desktop_window_->GetHost()->compositor()->RemoveObserver(this);
     desktop_window_->RemoveObserver(this);
     desktop_window_ = NULL;
-  }
-
-  // Stop observing compositor updates.
-  if (desktop_layer_) {
-    ui::Compositor* compositor = desktop_layer_->GetCompositor();
-    if (compositor)
-      compositor->RemoveObserver(this);
-    desktop_layer_ = NULL;
   }
 
   // Stop timer.
@@ -254,9 +244,10 @@ void DesktopVideoCaptureMachine::Stop(const base::Closure& callback) {
 
 void DesktopVideoCaptureMachine::UpdateCaptureSize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (oracle_proxy_ && desktop_layer_) {
+  if (oracle_proxy_ && desktop_window_) {
+    ui::Layer* layer = desktop_window_->layer();
     oracle_proxy_->UpdateCaptureSize(ui::ConvertSizeToPixel(
-        desktop_layer_, desktop_layer_->bounds().size()));
+        layer, layer->bounds().size()));
   }
   ClearCursorState();
 }
@@ -264,8 +255,8 @@ void DesktopVideoCaptureMachine::UpdateCaptureSize() {
 void DesktopVideoCaptureMachine::Capture(bool dirty) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Do not capture if the desktop layer is already destroyed.
-  if (!desktop_layer_)
+  // Do not capture if the desktop window is already destroyed.
+  if (!desktop_window_)
     return;
 
   scoped_refptr<media::VideoFrame> frame;
@@ -286,7 +277,7 @@ void DesktopVideoCaptureMachine::Capture(bool dirty) {
                                gfx::Rect(desktop_window_->bounds().width(),
                                          desktop_window_->bounds().height()));
     request->set_area(window_rect);
-    desktop_layer_->RequestCopyOfOutput(request.Pass());
+    desktop_window_->layer()->RequestCopyOfOutput(request.Pass());
   }
 }
 
@@ -350,7 +341,7 @@ bool DesktopVideoCaptureMachine::ProcessCopyOutputResponse(
     const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
     scoped_ptr<cc::CopyOutputResult> result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (result->IsEmpty() || result->size().IsEmpty() || !desktop_layer_)
+  if (result->IsEmpty() || result->size().IsEmpty() || !desktop_window_)
     return false;
 
   if (capture_params_.requested_format.pixel_format ==
@@ -437,7 +428,7 @@ bool DesktopVideoCaptureMachine::ProcessCopyOutputResponse(
 
 gfx::Point DesktopVideoCaptureMachine::UpdateCursorState(
     const gfx::Rect& region_in_frame) {
-  const gfx::Rect desktop_bounds = desktop_layer_->bounds();
+  const gfx::Rect desktop_bounds = desktop_window_->layer()->bounds();
   gfx::NativeCursor cursor =
       desktop_window_->GetHost()->last_cursor();
   if (last_cursor_ != cursor) {
@@ -462,7 +453,7 @@ gfx::Point DesktopVideoCaptureMachine::UpdateCursorState(
   aura::client::GetScreenPositionClient(desktop_window_->GetRootWindow())->
       ConvertPointFromScreen(desktop_window_, &cursor_position);
   const gfx::Point hot_point_in_dip = ui::ConvertPointToDIP(
-      desktop_layer_, cursor_hot_point_);
+      desktop_window_->layer(), cursor_hot_point_);
   cursor_position.Offset(-desktop_bounds.x() - hot_point_in_dip.x(),
                          -desktop_bounds.y() - hot_point_in_dip.y());
   return gfx::Point(
@@ -495,6 +486,19 @@ void DesktopVideoCaptureMachine::OnWindowDestroyed(aura::Window* window) {
   Stop(base::Bind(&base::DoNothing));
 
   oracle_proxy_->ReportError("OnWindowDestroyed()");
+}
+
+void DesktopVideoCaptureMachine::OnWindowAddedToRootWindow(
+    aura::Window* window) {
+  DCHECK(window == desktop_window_);
+  window->GetHost()->compositor()->AddObserver(this);
+}
+
+void DesktopVideoCaptureMachine::OnWindowRemovingFromRootWindow(
+    aura::Window* window,
+    aura::Window* new_root) {
+  DCHECK(window == desktop_window_);
+  window->GetHost()->compositor()->RemoveObserver(this);
 }
 
 void DesktopVideoCaptureMachine::OnCompositingEnded(
