@@ -30,19 +30,15 @@ function testFunction() {
 }
 
 var test = function() {
-    InspectorTest.resumeExecution = function(callback) {
-        if (WebInspector.panels.sources.paused)
-            WebInspector.panels.sources.togglePause();
-        InspectorTest.waitUntilResumed(callback);
-    };
-
     InspectorTest.startDebuggerTest(step1, true);
 
-    function step1() {
+    function step1()
+    {
         InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
     }
 
-    function checkTopFrameFunction(callFrames, expectedName) {
+    function checkTopFrameFunction(callFrames, expectedName)
+    {
         var topFunctionName = callFrames[0].functionName;
         if (expectedName === topFunctionName)
             InspectorTest.addResult("PASS: Did step into event listener(" + expectedName + ").");
@@ -50,7 +46,8 @@ var test = function() {
             InspectorTest.addResult("FAIL: Unexpected top function: expected " + expectedName + ", found " + topFunctionName);
     }
 
-    function stepOverThenIn(name, callback) {
+    function stepOverThenIn(name, callback)
+    {
         InspectorTest.addResult("Stepping to " + name + "...");
         WebInspector.panels.sources._stepOverButton.element.click();
         InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, function() {
@@ -60,38 +57,46 @@ var test = function() {
         }));
     }
 
-    function step2() {
+    function step2()
+    {
         stepOverThenIn('constructor', step3);
     }
 
-    function step3(callFrames) {
+    function step3(callFrames)
+    {
         checkTopFrameFunction(callFrames, 'createdCallback');
         InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, step4));
     }
 
-    function step4() {
+    function step4()
+    {
         stepOverThenIn('setAttribute', step5);
     }
 
-    function step5(callFrames) {
+    function step5(callFrames)
+    {
         checkTopFrameFunction(callFrames, 'attributeChangedCallback');
         InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, step6));
     }
 
-    function step6() {
+    function step6()
+    {
         stepOverThenIn('attachedCallback', step7);
     }
 
-    function step7(callFrames) {
+    function step7(callFrames)
+    {
         checkTopFrameFunction(callFrames, 'attachedCallback');
         InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, step8));
     }
 
-    function step8() {
+    function step8()
+    {
         stepOverThenIn('detachedCallback', step9);
     }
 
-    function step9(callFrames) {
+    function step9(callFrames)
+    {
         checkTopFrameFunction(callFrames, 'detachedCallback');
         InspectorTest.completeDebuggerTest();
     }
