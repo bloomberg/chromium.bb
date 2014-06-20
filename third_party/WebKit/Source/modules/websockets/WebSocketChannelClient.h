@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class WebSocketChannelClient {
+class WebSocketChannelClient : public WillBeGarbageCollectedMixin {
 public:
     virtual ~WebSocketChannelClient() { }
     virtual void didConnect(const String& subprotocol, const String& extensions) { }
