@@ -19,10 +19,10 @@
 #include "android_webview/native/aw_resource.h"
 #include "android_webview/native/aw_settings.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
+#include "android_webview/native/aw_web_resource_response_impl.h"
 #include "android_webview/native/cookie_manager.h"
 #include "android_webview/native/external_video_surface_container_impl.h"
 #include "android_webview/native/input_stream_impl.h"
-#include "android_webview/native/intercepted_request_data_impl.h"
 #include "android_webview/native/java_browser_view_renderer_helper.h"
 #include "android_webview/native/permission/aw_permission_request.h"
 #include "base/android/jni_android.h"
@@ -53,7 +53,7 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
 #if defined(VIDEO_HOLE)
   { "ExternalVideoSurfaceContainer", RegisterExternalVideoSurfaceContainer },
 #endif
-  { "InterceptedRequestDataImpl", RegisterInterceptedRequestData },
+  { "AwWebResourceResponseImpl", RegisterAwWebResourceResponse },
   { "InputStream", RegisterInputStream },
   { "JavaBrowserViewRendererHelper", RegisterJavaBrowserViewRendererHelper },
 };

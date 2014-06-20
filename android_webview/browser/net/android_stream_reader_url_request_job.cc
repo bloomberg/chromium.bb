@@ -324,6 +324,10 @@ void AndroidStreamReaderURLRequestJob::HeadersComplete(
     }
   }
 
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(env);
+  delegate_->AppendResponseHeaders(env, headers);
+
   // Indicate that the response had been obtained via shouldInterceptRequest.
   headers->AddHeader(kResponseHeaderViaShouldInterceptRequest);
 

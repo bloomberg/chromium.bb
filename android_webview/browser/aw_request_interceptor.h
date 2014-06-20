@@ -19,7 +19,7 @@ class NetworkDelegate;
 
 namespace android_webview {
 
-class InterceptedRequestData;
+class AwWebResourceResponse;
 
 // This class allows the Java-side embedder to substitute the default
 // URLRequest of a given request for an alternative job that will read data
@@ -35,7 +35,7 @@ class AwRequestInterceptor : public net::URLRequestInterceptor {
       net::NetworkDelegate* network_delegate) const OVERRIDE;
 
  private:
-  scoped_ptr<InterceptedRequestData> QueryForInterceptedRequestData(
+  scoped_ptr<AwWebResourceResponse> QueryForAwWebResourceResponse(
       const GURL& location,
       net::URLRequest* request) const;
 

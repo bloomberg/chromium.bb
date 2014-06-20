@@ -20,7 +20,7 @@ import android.webkit.WebChromeClient;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsClientBridge;
 import org.chromium.android_webview.AwHttpAuthHandler;
-import org.chromium.android_webview.InterceptedRequestData;
+import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.JsPromptResultReceiver;
 import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.android_webview.permission.AwPermissionRequest;
@@ -66,7 +66,8 @@ public class NullContentsClient extends AwContentsClient {
     }
 
     @Override
-    public InterceptedRequestData shouldInterceptRequest(String url) {
+    public AwWebResourceResponse shouldInterceptRequest(
+            AwContentsClient.ShouldInterceptRequestParams params) {
         return null;
     }
 

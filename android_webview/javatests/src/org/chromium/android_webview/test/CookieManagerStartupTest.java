@@ -11,7 +11,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwCookieManager;
-import org.chromium.android_webview.InterceptedRequestData;
+import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.CookieUtils;
 import org.chromium.base.test.util.Feature;
@@ -120,7 +120,8 @@ public class CookieManagerStartupTest extends AwTestBase {
         String url = "http://www.example.com";
         TestAwContentsClient contentsClient = new TestAwContentsClient() {
             @Override
-            public InterceptedRequestData shouldInterceptRequest(String url) {
+            public AwWebResourceResponse shouldInterceptRequest(
+                    ShouldInterceptRequestParams params) {
                 (new AwCookieManager()).getCookie("www.example.com");
                 return null;
             }

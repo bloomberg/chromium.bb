@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_byte_range.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
 
@@ -93,6 +94,12 @@ class StreamReaderDelegate :
                           std::string* charset) OVERRIDE {
     return false;
   }
+
+  virtual void AppendResponseHeaders(
+      JNIEnv* env,
+      net::HttpResponseHeaders* headers) OVERRIDE {
+    // no-op
+  }
 };
 
 class NullStreamReaderDelegate : public StreamReaderDelegate {
@@ -105,6 +112,34 @@ class NullStreamReaderDelegate : public StreamReaderDelegate {
     return make_scoped_ptr<InputStream>(NULL);
   }
 };
+
+class HeaderAlteringStreamReaderDelegate : public NullStreamReaderDelegate {
+ public:
+  HeaderAlteringStreamReaderDelegate() {}
+
+  virtual void AppendResponseHeaders(
+      JNIEnv* env,
+      net::HttpResponseHeaders* headers) OVERRIDE {
+    headers->ReplaceStatusLine(kStatusLine);
+    std::string headerLine(kCustomHeaderName);
+    headerLine.append(": ");
+    headerLine.append(kCustomHeaderValue);
+    headers->AddHeader(headerLine);
+  }
+
+  static const int kResponseCode;
+  static const char* kStatusLine;
+  static const char* kCustomHeaderName;
+  static const char* kCustomHeaderValue;
+};
+
+const int HeaderAlteringStreamReaderDelegate::kResponseCode = 401;
+const char* HeaderAlteringStreamReaderDelegate::kStatusLine =
+    "HTTP/1.1 401 Gone";
+const char* HeaderAlteringStreamReaderDelegate::kCustomHeaderName =
+    "X-Test-Header";
+const char* HeaderAlteringStreamReaderDelegate::kCustomHeaderValue =
+    "TestHeaderValue";
 
 class MockInputStreamReader : public InputStreamReader {
  public:
@@ -243,6 +278,35 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadWithNullStream) {
   // A null input stream shouldn't result in an error. See crbug.com/180950.
   EXPECT_EQ(0, network_delegate_.error_count());
   EXPECT_EQ(404, req_->GetResponseCode());
+}
+
+TEST_F(AndroidStreamReaderURLRequestJobTest, ModifyHeadersAndStatus) {
+  SetUpTestJob(scoped_ptr<InputStreamReader>(),
+               make_scoped_ptr(new HeaderAlteringStreamReaderDelegate())
+                   .PassAs<AndroidStreamReaderURLRequestJob::Delegate>());
+  req_->Start();
+
+  // The TestDelegate will quit the message loop on request completion.
+  base::MessageLoop::current()->Run();
+
+  // The request_failed() method is named confusingly but all it checks is
+  // whether the request got as far as calling NotifyHeadersComplete.
+  EXPECT_FALSE(url_request_delegate_.request_failed());
+  EXPECT_EQ(1, network_delegate_.completed_requests());
+  // A null input stream shouldn't result in an error. See crbug.com/180950.
+  EXPECT_EQ(0, network_delegate_.error_count());
+  EXPECT_EQ(HeaderAlteringStreamReaderDelegate::kResponseCode,
+            req_->GetResponseCode());
+  EXPECT_EQ(HeaderAlteringStreamReaderDelegate::kStatusLine,
+            req_->response_headers()->GetStatusLine());
+  EXPECT_TRUE(req_->response_headers()->HasHeader(
+      HeaderAlteringStreamReaderDelegate::kCustomHeaderName));
+  std::string header_value;
+  EXPECT_TRUE(req_->response_headers()->EnumerateHeader(
+      NULL, HeaderAlteringStreamReaderDelegate::kCustomHeaderName,
+      &header_value));
+  EXPECT_EQ(HeaderAlteringStreamReaderDelegate::kCustomHeaderValue,
+            header_value);
 }
 
 TEST_F(AndroidStreamReaderURLRequestJobTest, ReadPartOfStream) {

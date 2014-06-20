@@ -23,3 +23,5 @@ M V EI: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.favicon()
 M V EI: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.thumbnail() may expose internal representation by returning ChromeBrowserProvider$BookmarkNode.mThumbnail  At ChromeBrowserProvider.java
 M V EI: org.chromium.content.browser.LoadUrlParams.getPostData() may expose internal representation by returning LoadUrlParams.mPostData  At LoadUrlParams.java
 M M LI: Incorrect lazy initialization of static field org.chromium.chrome.browser.sync.ProfileSyncService.sSyncSetupManager in org.chromium.chrome.browser.sync.ProfileSyncService.get(Context)  At ProfileSyncService.java
+M V EI: org.chromium.android_webview.AwWebResourceResponse.getResponseHeaderNames() may expose internal representation by returning AwWebResourceResponse.mResponseHeaderNames  At AwWebResourceResponse.java
+M V EI: org.chromium.android_webview.AwWebResourceResponse.getResponseHeaderValues() may expose internal representation by returning AwWebResourceResponse.mResponseHeaderValues  At AwWebResourceResponse.java

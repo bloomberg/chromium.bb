@@ -64,15 +64,12 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         });
     }
 
-    private String makeHtmlPageFrom(String headers, String body) {
-        return CommonResources.makeHtmlPageFrom("<title>" + TITLE + "</title> " + headers, body);
+    private String getTestPageCommonHeaders() {
+        return "<title>" + TITLE + "</title> ";
     }
 
-    private String getHtmlForPageWithSimpleLinkTo(String destination) {
-        return makeHtmlPageFrom("",
-                        "<a href=\"" + destination + "\" id=\"link\">" +
-                           "<img class=\"big\" />" +
-                        "</a>");
+    private String makeHtmlPageFrom(String headers, String body) {
+        return CommonResources.makeHtmlPageFrom(getTestPageCommonHeaders() + headers, body);
     }
 
     private String getHtmlForPageWithJsAssignLinkTo(String url) {
@@ -104,13 +101,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
                     method, timeout));
     }
 
-    private String getHtmlForPageWithSimplePostFormTo(String destination) {
-        return makeHtmlPageFrom("",
-                "<form action=\"" + destination + "\" method=\"post\">" +
-                  "<input type=\"submit\" value=\"post\" id=\"link\">" +
-                "</form>");
-    }
-
     private String addPageToTestServer(TestWebServer webServer, String httpPath, String html) {
         List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
         headers.add(Pair.create("Content-Type", "text/html"));
@@ -134,7 +124,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             contentsClient.getShouldOverrideUrlLoadingHelper();
 
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
+                CommonResources.makeHtmlPageWithSimpleLinkTo(DATA_URL), "text/html", false);
 
         assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
     }
@@ -217,7 +207,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         setShouldOverrideUrlLoadingReturnValueOnUiThread(shouldOverrideUrlLoadingHelper, true);
 
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
+                CommonResources.makeHtmlPageWithSimpleLinkTo(getTestPageCommonHeaders(),
+                    DATA_URL), "text/html", false);
 
         assertEquals(TITLE, getTitleOnUiThread(awContents));
     }
@@ -234,7 +225,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         OnPageStartedHelper onPageStartedHelper = contentsClient.getOnPageStartedHelper();
 
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
+                CommonResources.makeHtmlPageWithSimpleLinkTo(DATA_URL), "text/html", false);
 
         final int shouldOverrideUrlLoadingCallCount = shouldOverrideUrlLoadingHelper.getCallCount();
         final int onPageStartedCallCount = onPageStartedHelper.getCallCount();
@@ -259,7 +250,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         final int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
 
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
+                CommonResources.makeHtmlPageWithSimpleLinkTo(DATA_URL), "text/html", false);
 
         final int shouldOverrideUrlLoadingCallCount = shouldOverrideUrlLoadingHelper.getCallCount();
 
@@ -301,11 +292,11 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         final String anchorLinkPath = "/anchor_link.html";
         final String anchorLinkUrl = mWebServer.getResponseUrl(anchorLinkPath);
         addPageToTestServer(mWebServer, anchorLinkPath,
-                getHtmlForPageWithSimpleLinkTo(anchorLinkUrl + "#anchor"));
+                CommonResources.makeHtmlPageWithSimpleLinkTo(anchorLinkUrl + "#anchor"));
 
         if (useLoadData) {
             loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                    getHtmlForPageWithSimpleLinkTo("#anchor"), "text/html", false);
+                    CommonResources.makeHtmlPageWithSimpleLinkTo("#anchor"), "text/html", false);
         } else {
             loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), anchorLinkUrl);
         }
@@ -335,7 +326,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
         // We can't go to about:blank from here because we'd get a cross-origin error.
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
+                CommonResources.makeHtmlPageWithSimpleLinkTo(DATA_URL), "text/html", false);
 
         int callCount = shouldOverrideUrlLoadingHelper.getCallCount();
 
@@ -357,7 +348,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         final String httpPath = "/page_with_about_blank_navigation";
         final String httpPathOnServer = mWebServer.getResponseUrl(httpPath);
         addPageToTestServer(mWebServer, httpPath,
-                getHtmlForPageWithSimpleLinkTo(ABOUT_BLANK_URL));
+                CommonResources.makeHtmlPageWithSimpleLinkTo(ABOUT_BLANK_URL));
 
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 httpPathOnServer);
@@ -384,7 +375,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         final String httpPath = "/page_with_link_to_self.html";
         final String httpPathOnServer = mWebServer.getResponseUrl(httpPath);
         addPageToTestServer(mWebServer, httpPath,
-                getHtmlForPageWithSimpleLinkTo(httpPathOnServer));
+                CommonResources.makeHtmlPageWithSimpleLinkTo(httpPathOnServer));
 
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 httpPathOnServer);
@@ -454,7 +445,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                getHtmlForPageWithSimpleLinkTo(redirectTargetUrl), "text/html", false);
+                CommonResources.makeHtmlPageWithSimpleLinkTo(redirectTargetUrl), "text/html",
+                false);
 
         int callCount = shouldOverrideUrlLoadingHelper.getCallCount();
         clickOnLinkUsingJs(awContents, contentsClient);
@@ -477,11 +469,11 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         final String pageWithLinkToIgnorePath = "/page_with_link_to_ignore.html";
         final String pageWithLinkToIgnoreUrl = addPageToTestServer(mWebServer,
                 pageWithLinkToIgnorePath,
-                getHtmlForPageWithSimpleLinkTo(redirectTargetUrl));
+                CommonResources.makeHtmlPageWithSimpleLinkTo(redirectTargetUrl));
         final String synchronizationPath = "/sync.html";
         final String synchronizationUrl = addPageToTestServer(mWebServer,
                 synchronizationPath,
-                getHtmlForPageWithSimpleLinkTo(redirectTargetUrl));
+                CommonResources.makeHtmlPageWithSimpleLinkTo(redirectTargetUrl));
 
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 pageWithLinkToIgnoreUrl);
@@ -518,7 +510,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
                 contentsClient.getShouldOverrideUrlLoadingHelper();
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                getHtmlForPageWithSimpleLinkTo(dataUrl), "text/html", false);
+                CommonResources.makeHtmlPageWithSimpleLinkTo(dataUrl), "text/html", false);
 
         int callCount = shouldOverrideUrlLoadingHelper.getCallCount();
         clickOnLinkUsingJs(awContents, contentsClient);
@@ -541,7 +533,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
                 contentsClient.getShouldOverrideUrlLoadingHelper();
         final String unsupportedSchemeUrl = "foobar://resource/1";
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                getHtmlForPageWithSimpleLinkTo(unsupportedSchemeUrl), "text/html", false);
+                CommonResources.makeHtmlPageWithSimpleLinkTo(unsupportedSchemeUrl), "text/html",
+                false);
 
         int callCount = shouldOverrideUrlLoadingHelper.getCallCount();
         clickOnLinkUsingJs(awContents, contentsClient);
@@ -564,7 +557,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
         final String postLinkUrl = addPageToTestServer(mWebServer, "/page_with_post_link.html",
-                getHtmlForPageWithSimplePostFormTo(redirectTargetUrl));
+                CommonResources.makeHtmlPageWithSimplePostFormTo(redirectTargetUrl));
 
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), postLinkUrl);
 
@@ -603,7 +596,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
         final String postToGetRedirectUrl = mWebServer.setRedirect("/302.html", redirectTargetUrl);
         final String postLinkUrl = addPageToTestServer(mWebServer, "/page_with_post_link.html",
-                getHtmlForPageWithSimplePostFormTo(postToGetRedirectUrl));
+                CommonResources.makeHtmlPageWithSimplePostFormTo(postToGetRedirectUrl));
 
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), postLinkUrl);
 
@@ -702,7 +695,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         final AwContents awContents = testContainerView.getAwContents();
         final String pageWithLinkToRedirectUrl = addPageToTestServer(webServer,
                 "/page_with_link_to_redirect.html",
-                getHtmlForPageWithSimpleLinkTo(redirectUrl));
+                CommonResources.makeHtmlPageWithSimpleLinkTo(redirectUrl));
         enableJavaScriptOnUiThread(awContents);
 
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
@@ -813,7 +806,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             @Override
             public void run() {
                 awContents.loadUrl(LoadUrlParams.createLoadDataParams(
-                        getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false));
+                        CommonResources.makeHtmlPageWithSimpleLinkTo(DATA_URL), "text/html",
+                        false));
                 awContents.loadUrl(new LoadUrlParams(jsUrl));
             }
         });

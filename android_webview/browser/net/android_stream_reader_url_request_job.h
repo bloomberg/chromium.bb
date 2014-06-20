@@ -26,6 +26,7 @@ class TaskRunner;
 }
 
 namespace net {
+class HttpResponseHeaders;
 class HttpResponseInfo;
 class URLRequest;
 }
@@ -65,6 +66,9 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
         net::URLRequest* request,
         android_webview::InputStream* stream,
         std::string* charset) = 0;
+
+    virtual void AppendResponseHeaders(JNIEnv* env,
+                                       net::HttpResponseHeaders* headers) = 0;
 
     virtual ~Delegate() {}
   };

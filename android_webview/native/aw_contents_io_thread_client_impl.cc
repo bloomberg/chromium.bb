@@ -8,7 +8,8 @@
 #include <utility>
 
 #include "android_webview/common/devtools_instrumentation.h"
-#include "android_webview/native/intercepted_request_data_impl.h"
+#include "android_webview/native/aw_web_resource_response_impl.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/lazy_instance.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "jni/AwContentsIoThreadClient_jni.h"
+#include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
@@ -30,12 +32,15 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
+using base::android::ToJavaArrayOfStrings;
 using base::LazyInstance;
 using content::BrowserThread;
 using content::RenderFrameHost;
 using content::WebContents;
 using std::map;
 using std::pair;
+using std::string;
+using std::vector;
 
 namespace android_webview {
 
@@ -227,30 +232,57 @@ AwContentsIoThreadClientImpl::GetCacheMode() const {
           env, java_object_.obj()));
 }
 
-scoped_ptr<InterceptedRequestData>
+scoped_ptr<AwWebResourceResponse>
 AwContentsIoThreadClientImpl::ShouldInterceptRequest(
     const GURL& location,
     const net::URLRequest* request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (java_object_.is_null())
-    return scoped_ptr<InterceptedRequestData>();
+    return scoped_ptr<AwWebResourceResponse>();
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
   bool is_main_frame = info &&
       info->GetResourceType() == ResourceType::MAIN_FRAME;
+  bool has_user_gesture = info && info->HasUserGesture();
+
+  vector<string> headers_names;
+  vector<string> headers_values;
+  {
+    net::HttpRequestHeaders headers;
+    if (!request->GetFullRequestHeaders(&headers))
+      headers = request->extra_request_headers();
+    net::HttpRequestHeaders::Iterator headers_iterator(headers);
+    while (headers_iterator.GetNext()) {
+      headers_names.push_back(headers_iterator.name());
+      headers_values.push_back(headers_iterator.value());
+    }
+  }
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jstring_url =
       ConvertUTF8ToJavaString(env, location.spec());
+  ScopedJavaLocalRef<jstring> jstring_method =
+      ConvertUTF8ToJavaString(env, request->method());
+  ScopedJavaLocalRef<jobjectArray> jstringArray_headers_names =
+      ToJavaArrayOfStrings(env, headers_names);
+  ScopedJavaLocalRef<jobjectArray> jstringArray_headers_values =
+      ToJavaArrayOfStrings(env, headers_values);
   devtools_instrumentation::ScopedEmbedderCallbackTask embedder_callback(
       "shouldInterceptRequest");
   ScopedJavaLocalRef<jobject> ret =
       Java_AwContentsIoThreadClient_shouldInterceptRequest(
-          env, java_object_.obj(), jstring_url.obj(), is_main_frame);
+          env,
+          java_object_.obj(),
+          jstring_url.obj(),
+          is_main_frame,
+          has_user_gesture,
+          jstring_method.obj(),
+          jstringArray_headers_names.obj(),
+          jstringArray_headers_values.obj());
   if (ret.is_null())
-    return scoped_ptr<InterceptedRequestData>();
-  return scoped_ptr<InterceptedRequestData>(
-      new InterceptedRequestDataImpl(ret));
+    return scoped_ptr<AwWebResourceResponse>();
+  return scoped_ptr<AwWebResourceResponse>(
+      new AwWebResourceResponseImpl(ret));
 }
 
 bool AwContentsIoThreadClientImpl::ShouldBlockContentUrls() const {
@@ -295,9 +327,9 @@ bool AwContentsIoThreadClientImpl::ShouldBlockNetworkLoads() const {
 
 void AwContentsIoThreadClientImpl::NewDownload(
     const GURL& url,
-    const std::string& user_agent,
-    const std::string& content_disposition,
-    const std::string& mime_type,
+    const string& user_agent,
+    const string& content_disposition,
+    const string& mime_type,
     int64 content_length) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (java_object_.is_null())
@@ -323,9 +355,9 @@ void AwContentsIoThreadClientImpl::NewDownload(
       content_length);
 }
 
-void AwContentsIoThreadClientImpl::NewLoginRequest(const std::string& realm,
-                                                   const std::string& account,
-                                                   const std::string& args) {
+void AwContentsIoThreadClientImpl::NewLoginRequest(const string& realm,
+                                                   const string& account,
+                                                   const string& args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (java_object_.is_null())
     return;

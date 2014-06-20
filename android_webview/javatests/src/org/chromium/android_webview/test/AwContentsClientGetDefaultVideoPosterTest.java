@@ -10,8 +10,8 @@ import android.graphics.BitmapFactory;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 
+import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.DefaultVideoPosterRequestHandler;
-import org.chromium.android_webview.InterceptedRequestData;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
@@ -77,7 +77,7 @@ public class AwContentsClientGetDefaultVideoPosterTest extends AwTestBase {
                 new DefaultVideoPosterClient(getInstrumentation().getTargetContext());
         DefaultVideoPosterRequestHandler handler =
                 new DefaultVideoPosterRequestHandler(contentsClient);
-        InterceptedRequestData requestData =
+        AwWebResourceResponse requestData =
                 handler.shouldInterceptRequest(handler.getDefaultVideoPosterURL());
         assertTrue(requestData.getMimeType().equals("image/png"));
         Bitmap bitmap = BitmapFactory.decodeStream(requestData.getData());
@@ -94,7 +94,7 @@ public class AwContentsClientGetDefaultVideoPosterTest extends AwTestBase {
         NullContentsClient contentsClient = new NullContentsClient();
         DefaultVideoPosterRequestHandler handler =
                 new DefaultVideoPosterRequestHandler(contentsClient);
-        InterceptedRequestData requestData =
+        AwWebResourceResponse requestData =
                 handler.shouldInterceptRequest(handler.getDefaultVideoPosterURL());
         assertTrue(requestData.getMimeType().equals("image/png"));
         InputStream in = requestData.getData();

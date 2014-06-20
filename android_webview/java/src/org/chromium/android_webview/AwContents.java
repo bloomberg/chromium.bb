@@ -252,7 +252,7 @@ public class AwContents {
     private CleanupReference mCleanupReference;
 
     //--------------------------------------------------------------------------------------------
-    private class IoThreadClientImpl implements AwContentsIoThreadClient {
+    private class IoThreadClientImpl extends AwContentsIoThreadClient {
         // All methods are called on the IO thread.
 
         @Override
@@ -261,21 +261,22 @@ public class AwContents {
         }
 
         @Override
-        public InterceptedRequestData shouldInterceptRequest(final String url,
-                boolean isMainFrame) {
-            InterceptedRequestData interceptedRequestData;
+        public AwWebResourceResponse shouldInterceptRequest(
+                AwContentsClient.ShouldInterceptRequestParams params) {
+            String url = params.url;
+            AwWebResourceResponse awWebResourceResponse;
             // Return the response directly if the url is default video poster url.
-            interceptedRequestData = mDefaultVideoPosterRequestHandler.shouldInterceptRequest(url);
-            if (interceptedRequestData != null) return interceptedRequestData;
+            awWebResourceResponse = mDefaultVideoPosterRequestHandler.shouldInterceptRequest(url);
+            if (awWebResourceResponse != null) return awWebResourceResponse;
 
-            interceptedRequestData = mContentsClient.shouldInterceptRequest(url);
+            awWebResourceResponse = mContentsClient.shouldInterceptRequest(params);
 
-            if (interceptedRequestData == null) {
+            if (awWebResourceResponse == null) {
                 mContentsClient.getCallbackHelper().postOnLoadResource(url);
             }
 
-            if (isMainFrame && interceptedRequestData != null &&
-                    interceptedRequestData.getData() == null) {
+            if (params.isMainFrame && awWebResourceResponse != null &&
+                    awWebResourceResponse.getData() == null) {
                 // In this case the intercepted URLRequest job will simulate an empty response
                 // which doesn't trigger the onReceivedError callback. For WebViewClassic
                 // compatibility we synthesize that callback. http://crbug.com/180950
@@ -283,7 +284,7 @@ public class AwContents {
                         ErrorCodeConversionHelper.ERROR_UNKNOWN,
                         null /* filled in by the glue layer */, url);
             }
-            return interceptedRequestData;
+            return awWebResourceResponse;
         }
 
         @Override

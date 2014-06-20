@@ -77,6 +77,10 @@ class AndroidStreamReaderURLRequestJobDelegateImpl
                           InputStream* stream,
                           std::string* charset) OVERRIDE;
 
+  virtual void AppendResponseHeaders(
+      JNIEnv* env,
+      net::HttpResponseHeaders* headers) OVERRIDE;
+
   virtual ~AndroidStreamReaderURLRequestJobDelegateImpl();
 };
 
@@ -196,6 +200,12 @@ bool AndroidStreamReaderURLRequestJobDelegateImpl::GetCharset(
     std::string* charset) {
   // TODO: We should probably be getting this from the managed side.
   return false;
+}
+
+void AndroidStreamReaderURLRequestJobDelegateImpl::AppendResponseHeaders(
+    JNIEnv* env,
+    net::HttpResponseHeaders* headers) {
+  // no-op
 }
 
 // AndroidRequestInterceptorBase ----------------------------------------------
