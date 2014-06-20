@@ -344,6 +344,58 @@ bool ZipReader::ExtractCurrentEntryToFd(const int fd) {
 }
 #endif  // defined(OS_POSIX)
 
+bool ZipReader::ExtractCurrentEntryToString(
+    size_t max_read_bytes,
+    std::string* output) const {
+  DCHECK(output);
+  DCHECK(zip_file_);
+  DCHECK(max_read_bytes != 0);
+
+  if (current_entry_info()->is_directory()) {
+    output->clear();
+    return true;
+  }
+
+  const int open_result = unzOpenCurrentFile(zip_file_);
+  if (open_result != UNZ_OK)
+    return false;
+
+  // The original_size() is the best hint for the real size, so it saves
+  // doing reallocations for the common case when the uncompressed size is
+  // correct. However, we need to assume that the uncompressed size could be
+  // incorrect therefore this function needs to read as much data as possible.
+  std::string contents;
+  contents.reserve(std::min<size_t>(
+      max_read_bytes, current_entry_info()->original_size()));
+
+  bool success = true;  // This becomes false when something bad happens.
+  char buf[internal::kZipBufSize];
+  while (true) {
+    const int num_bytes_read = unzReadCurrentFile(zip_file_, buf,
+                                                  internal::kZipBufSize);
+    if (num_bytes_read == 0) {
+      // Reached the end of the file.
+      break;
+    } else if (num_bytes_read < 0) {
+      // If num_bytes_read < 0, then it's a specific UNZ_* error code.
+      success = false;
+      break;
+    } else if (num_bytes_read > 0) {
+      if (contents.size() + num_bytes_read > max_read_bytes) {
+        success = false;
+        break;
+      }
+      contents.append(buf, num_bytes_read);
+    }
+  }
+
+  unzCloseCurrentFile(zip_file_);
+  if (success)
+    output->swap(contents);
+
+  return success;
+}
+
 bool ZipReader::OpenInternal() {
   DCHECK(zip_file_);
 

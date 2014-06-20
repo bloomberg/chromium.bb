@@ -15,6 +15,7 @@
 #include "base/md5.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -532,6 +533,44 @@ TEST_F(ZipReaderTest, ExtractToFileAsync_Directory) {
   EXPECT_GE(0, listener.progress_calls());
 
   ASSERT_TRUE(base::DirectoryExists(target_file));
+}
+
+TEST_F(ZipReaderTest, ExtractCurrentEntryToString) {
+  // test_mismatch_size.zip contains files with names from 0.txt to 7.txt with
+  // sizes from 0 to 7 bytes respectively, being the contents of each file a
+  // substring of "0123456" starting at '0'.
+  base::FilePath test_zip_file =
+      test_data_dir_.AppendASCII("test_mismatch_size.zip");
+
+  ZipReader reader;
+  std::string contents;
+  ASSERT_TRUE(reader.Open(test_zip_file));
+
+  for (size_t i = 0; i < 8; i++) {
+    SCOPED_TRACE(base::StringPrintf("Processing %d.txt", static_cast<int>(i)));
+
+    base::FilePath file_name = base::FilePath::FromUTF8Unsafe(
+        base::StringPrintf("%d.txt", static_cast<int>(i)));
+    ASSERT_TRUE(reader.LocateAndOpenEntry(file_name));
+
+    if (i > 1) {
+      // Off by one byte read limit: must fail.
+      EXPECT_FALSE(reader.ExtractCurrentEntryToString(i - 1, &contents));
+    }
+
+    if (i > 0) {
+      // Exact byte read limit: must pass.
+      EXPECT_TRUE(reader.ExtractCurrentEntryToString(i, &contents));
+      EXPECT_EQ(i, contents.size());
+      EXPECT_EQ(0, memcmp(contents.c_str(), "0123456", i));
+    }
+
+    // More than necessary byte read limit: must pass.
+    EXPECT_TRUE(reader.ExtractCurrentEntryToString(16, &contents));
+    EXPECT_EQ(i, contents.size());
+    EXPECT_EQ(0, memcmp(contents.c_str(), "0123456", i));
+  }
+  reader.Close();
 }
 
 }  // namespace zip

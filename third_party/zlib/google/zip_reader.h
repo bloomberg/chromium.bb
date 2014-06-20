@@ -35,7 +35,7 @@ namespace zip {
 //     reader.AdvanceToNextEntry();
 //   }
 //
-// For simplicty, error checking is omitted in the example code above. The
+// For simplicity, error checking is omitted in the example code above. The
 // production code should check return values from all of these functions.
 //
 // This calls can also be used for random access of contents in a zip file
@@ -181,6 +181,21 @@ class ZipReader {
   // Does not close the file descriptor. Returns true on success.
   bool ExtractCurrentEntryToFd(int fd);
 #endif
+
+  // Extracts the current entry into memory. If the current entry is a directory
+  // the |output| parameter is set to the empty string. If the current entry is
+  // a file, the |output| parameter is filled with its contents. Returns true on
+  // success. OpenCurrentEntryInZip() must be called beforehand.
+  // Note: the |output| parameter can be filled with a big amount of data, avoid
+  // passing it around by value, but by reference or pointer.
+  // Note: the value returned by EntryInfo::original_size() cannot be
+  // trusted, so the real size of the uncompressed contents can be different.
+  // Use max_read_bytes to limit the ammount of memory used to carry the entry.
+  // If the real size of the uncompressed data is bigger than max_read_bytes
+  // then false is returned. |max_read_bytes| must be non-zero.
+  bool ExtractCurrentEntryToString(
+      size_t max_read_bytes,
+      std::string* output) const;
 
   // Returns the current entry info. Returns NULL if the current entry is
   // not yet opened. OpenCurrentEntryInZip() must be called beforehand.
