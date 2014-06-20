@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "8.5",
+  "version": "8.6",
   "entries": [
     {
       "id": 1,
@@ -1092,7 +1092,7 @@ LONG_STRING_CONST(
       "os": {
         "type": "win"
       },
-      "multi_gpu_style": "amd_switchable",
+      "multi_gpu_style": "amd_switchable_discrete",
       "features": [
         "accelerated_video_decode"
       ]

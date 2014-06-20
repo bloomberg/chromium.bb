@@ -87,6 +87,10 @@ int CompareLexicalNumberStrings(
 }
 
 const char kMultiGpuStyleStringAMDSwitchable[] = "amd_switchable";
+const char kMultiGpuStyleStringAMDSwitchableDiscrete[] =
+    "amd_switchable_discrete";
+const char kMultiGpuStyleStringAMDSwitchableIntegrated[] =
+    "amd_switchable_integrated";
 const char kMultiGpuStyleStringOptimus[] = "optimus";
 
 const char kMultiGpuCategoryStringPrimary[] = "primary";
@@ -1078,6 +1082,10 @@ GpuControlList::GpuControlListEntry::StringToMultiGpuStyle(
     return kMultiGpuStyleOptimus;
   if (style == kMultiGpuStyleStringAMDSwitchable)
     return kMultiGpuStyleAMDSwitchable;
+  if (style == kMultiGpuStyleStringAMDSwitchableIntegrated)
+    return kMultiGpuStyleAMDSwitchableIntegrated;
+  if (style == kMultiGpuStyleStringAMDSwitchableDiscrete)
+    return kMultiGpuStyleAMDSwitchableDiscrete;
   return kMultiGpuStyleNone;
 }
 
@@ -1197,6 +1205,22 @@ bool GpuControlList::GpuControlListEntry::Contains(
       break;
     case kMultiGpuStyleAMDSwitchable:
       if (!gpu_info.amd_switchable)
+        return false;
+      break;
+    case kMultiGpuStyleAMDSwitchableDiscrete:
+      if (!gpu_info.amd_switchable)
+        return false;
+      // The discrete GPU is always the primary GPU.
+      // This is guaranteed by GpuInfoCollector.
+      if (!gpu_info.gpu.active)
+        return false;
+      break;
+    case kMultiGpuStyleAMDSwitchableIntegrated:
+      if (!gpu_info.amd_switchable)
+        return false;
+      // Assume the integrated GPU is the first in the secondary GPU list.
+      if (gpu_info.secondary_gpus.size() == 0 ||
+          !gpu_info.secondary_gpus[0].active)
         return false;
       break;
     case kMultiGpuStyleNone:

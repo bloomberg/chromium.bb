@@ -12,6 +12,7 @@
 const char kOsVersion[] = "10.6.4";
 const uint32 kIntelVendorId = 0x8086;
 const uint32 kNvidiaVendorId = 0x10de;
+const uint32 kAmdVendorId = 0x10de;
 
 #define LONG_STRING_CONST(...) #__VA_ARGS__
 
@@ -446,6 +447,99 @@ TEST_F(GpuControlListTest, ExceptionWithoutVendorId) {
   features = control_list->MakeDecision(
       GpuControlList::kOsLinux, kOsVersion, gpu_info);
   EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
+}
+
+TEST_F(GpuControlListTest, AMDSwitchable) {
+  GPUInfo gpu_info;
+  gpu_info.amd_switchable = true;
+  gpu_info.gpu.vendor_id = kAmdVendorId;
+  gpu_info.gpu.device_id = 0x6760;
+  GPUInfo::GPUDevice integrated_gpu;
+  integrated_gpu.vendor_id = kIntelVendorId;
+  integrated_gpu.device_id = 0x0116;
+  gpu_info.secondary_gpus.push_back(integrated_gpu);
+
+  {  // amd_switchable_discrete entry
+    const std::string json= LONG_STRING_CONST(
+        {
+          "name": "gpu control list",
+          "version": "0.1",
+          "entries": [
+            {
+              "id": 1,
+              "os": {
+                "type": "win"
+              },
+              "multi_gpu_style": "amd_switchable_discrete",
+              "features": [
+                "test_feature_0"
+              ]
+            }
+          ]
+        }
+    );
+
+    scoped_ptr<GpuControlList> control_list(Create());
+    EXPECT_TRUE(control_list->LoadList(json, GpuControlList::kAllOs));
+
+    // Integrated GPU is active
+    gpu_info.gpu.active = false;
+    gpu_info.secondary_gpus[0].active = true;
+    std::set<int> features = control_list->MakeDecision(
+        GpuControlList::kOsWin, kOsVersion, gpu_info);
+    EXPECT_EMPTY_SET(features);
+
+    // Discrete GPU is active
+    gpu_info.gpu.active = true;
+    gpu_info.secondary_gpus[0].active = false;
+    features = control_list->MakeDecision(
+        GpuControlList::kOsWin, kOsVersion, gpu_info);
+    EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
+  }
+
+  {  // amd_switchable_integrated entry
+    const std::string json= LONG_STRING_CONST(
+        {
+          "name": "gpu control list",
+          "version": "0.1",
+          "entries": [
+            {
+              "id": 1,
+              "os": {
+                "type": "win"
+              },
+              "multi_gpu_style": "amd_switchable_integrated",
+              "features": [
+                "test_feature_0"
+              ]
+            }
+          ]
+        }
+    );
+
+    scoped_ptr<GpuControlList> control_list(Create());
+    EXPECT_TRUE(control_list->LoadList(json, GpuControlList::kAllOs));
+
+    // Discrete GPU is active
+    gpu_info.gpu.active = true;
+    gpu_info.secondary_gpus[0].active = false;
+    std::set<int> features = control_list->MakeDecision(
+        GpuControlList::kOsWin, kOsVersion, gpu_info);
+    EXPECT_EMPTY_SET(features);
+
+    // Integrated GPU is active
+    gpu_info.gpu.active = false;
+    gpu_info.secondary_gpus[0].active = true;
+    features = control_list->MakeDecision(
+        GpuControlList::kOsWin, kOsVersion, gpu_info);
+    EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
+
+    // For non AMD switchable
+    gpu_info.amd_switchable = false;
+    features = control_list->MakeDecision(
+        GpuControlList::kOsWin, kOsVersion, gpu_info);
+    EXPECT_EMPTY_SET(features);
+  }
 }
 
 }  // namespace gpu

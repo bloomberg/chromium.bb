@@ -324,6 +324,8 @@ class GPU_EXPORT GpuControlList {
     enum MultiGpuStyle {
       kMultiGpuStyleOptimus,
       kMultiGpuStyleAMDSwitchable,
+      kMultiGpuStyleAMDSwitchableIntegrated,
+      kMultiGpuStyleAMDSwitchableDiscrete,
       kMultiGpuStyleNone
     };
 

@@ -23,8 +23,12 @@
 //    "version" is a VERSION structure (defined below).
 // 3. "vendor_id" is a string.  0 is reserved.
 // 4. "device_id" is an array of strings.  0 is reserved.
-// 5. "multi_gpu_style" is a string, valid values include "optimus", and
-//    "amd_switchable".
+// 5. "multi_gpu_style" is a string, valid values include:
+//      a) "optimus": NVIDIA dual GPU
+//      b) "amd_switchable": AMD dual GPU
+//      c) "amd_switchable_integrated": AMD dual GPU, integrated GPU is active
+//      d) "amd_switchable_discrete": AMD dual GPU, discrete GPU is active
+//    c) and d) are only valid on Win, as on Mac we can switch GPU on the fly.
 // 6. "multi_gpu_category" is a string, valid values include "any", "primary",
 //    "secondary", and "active". If unspecified, the default value is "primary".
 //    See gpu_control_list.h for more details on the meanings of the strings.
