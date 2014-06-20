@@ -59,7 +59,6 @@ public:
 
     // WebEmbeddedWorker overrides.
     virtual void startWorkerContext(const WebEmbeddedWorkerStartData&) OVERRIDE;
-    virtual void resumeAfterDownload() OVERRIDE;
     virtual void terminateWorkerContext() OVERRIDE;
     virtual void resumeWorkerContext() OVERRIDE;
     virtual void attachDevTools() OVERRIDE;
@@ -81,7 +80,6 @@ private:
     virtual void didFinishDocumentLoad(WebLocalFrame*) OVERRIDE;
 
     void onScriptLoaderFinished();
-    void startWorkerThread();
 
     WebEmbeddedWorkerStartData m_workerStartData;
 
@@ -110,12 +108,6 @@ private:
     WebFrame* m_mainFrame;
 
     bool m_askedToTerminate;
-
-    enum {
-        DontPauseAfterDownload,
-        DoPauseAfterDownload,
-        IsPausedAfterDownload
-    } m_pauseAfterDownloadState;
 };
 
 } // namespace blink

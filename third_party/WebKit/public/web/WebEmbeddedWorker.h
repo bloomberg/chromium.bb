@@ -58,10 +58,6 @@ public:
     virtual void startWorkerContext(const WebEmbeddedWorkerStartData&) = 0;
     virtual void terminateWorkerContext() = 0;
 
-    // Resumes starting a worker startup that was paused via
-    // WebEmbeddedWorkerStartData.pauseAfterDownloadMode.
-    virtual void resumeAfterDownload() = 0;
-
     // Inspector related methods.
     virtual void resumeWorkerContext() = 0;
     virtual void attachDevTools() = 0;
