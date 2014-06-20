@@ -194,7 +194,6 @@
       'base/file_stream_context.h',
       'base/file_stream_context_posix.cc',
       'base/file_stream_context_win.cc',
-      'base/file_stream_whence.h',
       'base/filename_util.cc',
       'base/filename_util.h',
       'base/filename_util_icu.cc',

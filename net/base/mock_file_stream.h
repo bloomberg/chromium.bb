@@ -28,7 +28,7 @@ class MockFileStream : public net::FileStream {
   virtual ~MockFileStream();
 
   // FileStream methods.
-  virtual int Seek(net::Whence whence, int64 offset,
+  virtual int Seek(base::File::Whence whence, int64 offset,
                    const Int64CompletionCallback& callback) OVERRIDE;
   virtual int Read(IOBuffer* buf,
                    int buf_len,

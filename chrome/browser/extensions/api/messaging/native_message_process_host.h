@@ -8,6 +8,7 @@
 #include <queue>
 #include <string>
 
+#include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -151,8 +152,6 @@ class NativeMessageProcessHost
   scoped_ptr<net::FileStream> read_stream_;
 
 #if defined(OS_POSIX)
-  // TODO(rvargas): Remove these members, maybe merging the functionality to
-  // net::FileStream.
   base::PlatformFile read_file_;
   base::MessageLoopForIO::FileDescriptorWatcher read_watcher_;
 #endif  // !defined(OS_POSIX)

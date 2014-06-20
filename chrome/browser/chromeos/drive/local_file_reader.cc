@@ -52,7 +52,7 @@ void LocalFileReader::DidOpen(const net::CompletionCallback& callback,
   if (error != net::OK)
     return callback.Run(error);
 
-  int rv = file_stream_.Seek(net::FROM_BEGIN, offset,
+  int rv = file_stream_.Seek(base::File::FROM_BEGIN, offset,
                              Bind(&LocalFileReader::DidSeek,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback, offset));

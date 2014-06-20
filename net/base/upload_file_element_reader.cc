@@ -114,7 +114,7 @@ void UploadFileElementReader::OnOpenCompleted(
 
   if (range_offset_) {
     int result = file_stream_->Seek(
-        FROM_BEGIN, range_offset_,
+        base::File::FROM_BEGIN, range_offset_,
         base::Bind(&UploadFileElementReader::OnSeekCompleted,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback));

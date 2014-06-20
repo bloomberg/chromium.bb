@@ -33,7 +33,7 @@ MockFileStream::MockFileStream(
 MockFileStream::~MockFileStream() {
 }
 
-int MockFileStream::Seek(Whence whence, int64 offset,
+int MockFileStream::Seek(base::File::Whence whence, int64 offset,
                          const Int64CompletionCallback& callback) {
   Int64CompletionCallback wrapped_callback =
       base::Bind(&MockFileStream::DoCallback64,

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/kill.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -105,7 +104,7 @@ NativeMessageProcessHost::NativeMessageProcessHost(
       closed_(false),
       process_handle_(base::kNullProcessHandle),
 #if defined(OS_POSIX)
-      read_file_(base::kInvalidPlatformFileValue),
+      read_file_(-1),
 #endif
       read_pending_(false),
       write_pending_(false) {

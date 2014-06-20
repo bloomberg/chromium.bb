@@ -15,11 +15,6 @@
 
 namespace net {
 
-// Ensure that we can just use our Whence values directly.
-COMPILE_ASSERT(FROM_BEGIN == FILE_BEGIN, bad_whence_begin);
-COMPILE_ASSERT(FROM_CURRENT == FILE_CURRENT, bad_whence_current);
-COMPILE_ASSERT(FROM_END == FILE_END, bad_whence_end);
-
 namespace {
 
 void SetOffset(OVERLAPPED* overlapped, const LARGE_INTEGER& offset) {
@@ -57,16 +52,16 @@ FileStream::Context::Context(base::File file,
   memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
   if (file_.IsValid()) {
     // TODO(hashimoto): Check that file_ is async.
-    OnAsyncFileOpened();
+    OnFileOpened();
   }
 }
 
 FileStream::Context::~Context() {
 }
 
-int FileStream::Context::ReadAsync(IOBuffer* buf,
-                                   int buf_len,
-                                   const CompletionCallback& callback) {
+int FileStream::Context::Read(IOBuffer* buf,
+                              int buf_len,
+                              const CompletionCallback& callback) {
   DCHECK(!async_in_progress_);
 
   DWORD bytes_read;
@@ -87,9 +82,9 @@ int FileStream::Context::ReadAsync(IOBuffer* buf,
   return ERR_IO_PENDING;
 }
 
-int FileStream::Context::WriteAsync(IOBuffer* buf,
-                                    int buf_len,
-                                    const CompletionCallback& callback) {
+int FileStream::Context::Write(IOBuffer* buf,
+                               int buf_len,
+                               const CompletionCallback& callback) {
   DWORD bytes_written = 0;
   if (!WriteFile(file_.GetPlatformFile(), buf->data(), buf_len,
                  &bytes_written, &io_context_.overlapped)) {
@@ -106,29 +101,22 @@ int FileStream::Context::WriteAsync(IOBuffer* buf,
   return ERR_IO_PENDING;
 }
 
-void FileStream::Context::OnAsyncFileOpened() {
-  base::MessageLoopForIO::current()->RegisterIOHandler(file_.GetPlatformFile(),
-                                                       this);
-}
-
-FileStream::Context::IOResult FileStream::Context::SeekFileImpl(Whence whence,
-                                                                int64 offset) {
-  LARGE_INTEGER distance, res;
-  distance.QuadPart = offset;
-  DWORD move_method = static_cast<DWORD>(whence);
-  if (SetFilePointerEx(file_.GetPlatformFile(), distance, &res, move_method)) {
-    SetOffset(&io_context_.overlapped, res);
-    return IOResult(res.QuadPart, 0);
+FileStream::Context::IOResult FileStream::Context::SeekFileImpl(
+    base::File::Whence whence,
+    int64 offset) {
+  LARGE_INTEGER result;
+  result.QuadPart = file_.Seek(whence, offset);
+  if (result.QuadPart >= 0) {
+    SetOffset(&io_context_.overlapped, result);
+    return IOResult(result.QuadPart, 0);
   }
 
   return IOResult::FromOSError(GetLastError());
 }
 
-FileStream::Context::IOResult FileStream::Context::FlushFileImpl() {
-  if (FlushFileBuffers(file_.GetPlatformFile()))
-    return IOResult(OK, 0);
-
-  return IOResult::FromOSError(GetLastError());
+void FileStream::Context::OnFileOpened() {
+  base::MessageLoopForIO::current()->RegisterIOHandler(file_.GetPlatformFile(),
+                                                       this);
 }
 
 void FileStream::Context::IOCompletionIsPending(

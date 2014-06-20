@@ -106,7 +106,7 @@ void LocalFileStreamReader::DidOpenFileStream(
     return;
   }
   result = stream_impl_->Seek(
-      net::FROM_BEGIN, initial_offset_,
+      base::File::FROM_BEGIN, initial_offset_,
       base::Bind(&LocalFileStreamReader::DidSeekFileStream,
                  weak_factory_.GetWeakPtr(),
                  callback));

@@ -425,6 +425,23 @@ TEST(FileTest, WriteAtCurrentPosition) {
   EXPECT_EQ(std::string(buffer, buffer + kDataSize), std::string(kData));
 }
 
+TEST(FileTest, Seek) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath file_path = temp_dir.path().AppendASCII("seek_file");
+  File file(file_path,
+            base::File::FLAG_CREATE | base::File::FLAG_READ |
+                base::File::FLAG_WRITE);
+  ASSERT_TRUE(file.IsValid());
+
+  const int64 kOffset = 10;
+  EXPECT_EQ(kOffset, file.Seek(base::File::FROM_BEGIN, kOffset));
+  EXPECT_EQ(2 * kOffset, file.Seek(base::File::FROM_CURRENT, kOffset));
+  EXPECT_EQ(kOffset, file.Seek(base::File::FROM_CURRENT, -kOffset));
+  EXPECT_TRUE(file.SetLength(kOffset * 2));
+  EXPECT_EQ(kOffset, file.Seek(base::File::FROM_END, -kOffset));
+}
+
 #if defined(OS_WIN)
 TEST(FileTest, GetInfoForDirectory) {
   base::ScopedTempDir temp_dir;

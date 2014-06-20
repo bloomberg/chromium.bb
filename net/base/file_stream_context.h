@@ -33,7 +33,6 @@
 #include "base/task_runner.h"
 #include "net/base/completion_callback.h"
 #include "net/base/file_stream.h"
-#include "net/base/file_stream_whence.h"
 
 #if defined(OS_POSIX)
 #include <errno.h>
@@ -66,17 +65,13 @@ class FileStream::Context {
   ~Context();
 #endif
 
-  int ReadAsync(IOBuffer* buf,
-                int buf_len,
-                const CompletionCallback& callback);
+  int Read(IOBuffer* buf,
+           int buf_len,
+           const CompletionCallback& callback);
 
-  int WriteAsync(IOBuffer* buf,
-                 int buf_len,
-                 const CompletionCallback& callback);
-
-  ////////////////////////////////////////////////////////////////////////////
-  // Inline methods.
-  ////////////////////////////////////////////////////////////////////////////
+  int Write(IOBuffer* buf,
+            int buf_len,
+            const CompletionCallback& callback);
 
   const base::File& file() const { return file_; }
   bool async_in_progress() const { return async_in_progress_; }
@@ -90,23 +85,19 @@ class FileStream::Context {
   // not closed yet.
   void Orphan();
 
-  void OpenAsync(const base::FilePath& path,
-                 int open_flags,
-                 const CompletionCallback& callback);
+  void Open(const base::FilePath& path,
+            int open_flags,
+            const CompletionCallback& callback);
 
-  void CloseAsync(const CompletionCallback& callback);
+  void Close(const CompletionCallback& callback);
 
-  void SeekAsync(Whence whence,
-                 int64 offset,
-                 const Int64CompletionCallback& callback);
+  void Seek(base::File::Whence whence,
+            int64 offset,
+            const Int64CompletionCallback& callback);
 
-  void FlushAsync(const CompletionCallback& callback);
+  void Flush(const CompletionCallback& callback);
 
  private:
-  ////////////////////////////////////////////////////////////////////////////
-  // Platform-independent methods implemented in file_stream_context.cc.
-  ////////////////////////////////////////////////////////////////////////////
-
   struct IOResult {
     IOResult();
     IOResult(int64 result, int os_error);
@@ -129,9 +120,15 @@ class FileStream::Context {
     IOResult error_code;
   };
 
+  ////////////////////////////////////////////////////////////////////////////
+  // Platform-independent methods implemented in file_stream_context.cc.
+  ////////////////////////////////////////////////////////////////////////////
+
   OpenResult OpenFileImpl(const base::FilePath& path, int open_flags);
 
   IOResult CloseFileImpl();
+
+  IOResult FlushFileImpl();
 
   void OnOpenCompleted(const CompletionCallback& callback,
                        OpenResult open_result);
@@ -140,26 +137,10 @@ class FileStream::Context {
 
   Int64CompletionCallback IntToInt64(const CompletionCallback& callback);
 
-  // Called when asynchronous Open() or Seek()
-  // is completed. |result| contains the result or a network error code.
+  // Called when Open() or Seek() completes. |result| contains the result or a
+  // network error code.
   void OnAsyncCompleted(const Int64CompletionCallback& callback,
                         const IOResult& result);
-
-  ////////////////////////////////////////////////////////////////////////////
-  // Helper stuff which is platform-dependent but is used in the platform-
-  // independent code implemented in file_stream_context.cc. These helpers were
-  // introduced solely to implement as much of the Context methods as
-  // possible independently from platform.
-  ////////////////////////////////////////////////////////////////////////////
-
-#if defined(OS_WIN)
-  int GetLastErrno() { return GetLastError(); }
-  void OnAsyncFileOpened();
-#elif defined(OS_POSIX)
-  int GetLastErrno() { return errno; }
-  void OnAsyncFileOpened() {}
-  void CancelIo(base::PlatformFile) {}
-#endif
 
   ////////////////////////////////////////////////////////////////////////////
   // Platform-dependent methods implemented in
@@ -167,10 +148,9 @@ class FileStream::Context {
   ////////////////////////////////////////////////////////////////////////////
 
   // Adjusts the position from where the data is read.
-  IOResult SeekFileImpl(Whence whence, int64 offset);
+  IOResult SeekFileImpl(base::File::Whence whence, int64 offset);
 
-  // Flushes all data written to the stream.
-  IOResult FlushFileImpl();
+  void OnFileOpened();
 
 #if defined(OS_WIN)
   void IOCompletionIsPending(const CompletionCallback& callback, IOBuffer* buf);

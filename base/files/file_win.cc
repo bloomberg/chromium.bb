@@ -13,6 +13,11 @@
 
 namespace base {
 
+// Make sure our Whence mappings match the system headers.
+COMPILE_ASSERT(File::FROM_BEGIN   == FILE_BEGIN &&
+               File::FROM_CURRENT == FILE_CURRENT &&
+               File::FROM_END     == FILE_END, whence_matches_system);
+
 void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!IsValid());
@@ -119,8 +124,6 @@ void File::Close() {
 int64 File::Seek(Whence whence, int64 offset) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
-  if (offset < 0)
-    return -1;
 
   LARGE_INTEGER distance, res;
   distance.QuadPart = offset;

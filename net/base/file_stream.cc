@@ -30,12 +30,12 @@ int FileStream::Open(const base::FilePath& path, int open_flags,
   }
 
   DCHECK(open_flags & base::File::FLAG_ASYNC);
-  context_->OpenAsync(path, open_flags, callback);
+  context_->Open(path, open_flags, callback);
   return ERR_IO_PENDING;
 }
 
 int FileStream::Close(const CompletionCallback& callback) {
-  context_->CloseAsync(callback);
+  context_->Close(callback);
   return ERR_IO_PENDING;
 }
 
@@ -43,13 +43,13 @@ bool FileStream::IsOpen() const {
   return context_->file().IsValid();
 }
 
-int FileStream::Seek(Whence whence,
+int FileStream::Seek(base::File::Whence whence,
                      int64 offset,
                      const Int64CompletionCallback& callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  context_->SeekAsync(whence, offset, callback);
+  context_->Seek(whence, offset, callback);
   return ERR_IO_PENDING;
 }
 
@@ -62,7 +62,7 @@ int FileStream::Read(IOBuffer* buf,
   // read(..., 0) will return 0, which indicates end-of-file.
   DCHECK_GT(buf_len, 0);
 
-  return context_->ReadAsync(buf, buf_len, callback);
+  return context_->Read(buf, buf_len, callback);
 }
 
 int FileStream::Write(IOBuffer* buf,
@@ -71,17 +71,15 @@ int FileStream::Write(IOBuffer* buf,
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  // write(..., 0) will return 0, which indicates end-of-file.
-  DCHECK_GT(buf_len, 0);
-
-  return context_->WriteAsync(buf, buf_len, callback);
+  DCHECK_GE(buf_len, 0);
+  return context_->Write(buf, buf_len, callback);
 }
 
 int FileStream::Flush(const CompletionCallback& callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  context_->FlushAsync(callback);
+  context_->Flush(callback);
   return ERR_IO_PENDING;
 }
 

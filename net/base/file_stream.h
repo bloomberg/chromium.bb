@@ -12,7 +12,6 @@
 
 #include "base/files/file.h"
 #include "net/base/completion_callback.h"
-#include "net/base/file_stream_whence.h"
 #include "net/base/net_export.h"
 
 namespace base {
@@ -69,7 +68,7 @@ class NET_EXPORT FileStream {
   // relative to the start of the file.  Otherwise, an error code is returned.
   // It is invalid to request any asynchronous operations while there is an
   // in-flight asynchronous operation.
-  virtual int Seek(Whence whence, int64 offset,
+  virtual int Seek(base::File::Whence whence, int64 offset,
                    const Int64CompletionCallback& callback);
 
   // Call this method to read data from the current stream position

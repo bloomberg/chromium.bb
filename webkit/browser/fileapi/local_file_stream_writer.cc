@@ -153,7 +153,7 @@ void LocalFileStreamWriter::InitiateSeek(
     return;
   }
 
-  int result = stream_impl_->Seek(net::FROM_BEGIN, initial_offset_,
+  int result = stream_impl_->Seek(base::File::FROM_BEGIN, initial_offset_,
                                   base::Bind(&LocalFileStreamWriter::DidSeek,
                                              weak_factory_.GetWeakPtr(),
                                              error_callback,

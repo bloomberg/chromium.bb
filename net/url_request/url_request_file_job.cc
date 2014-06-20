@@ -265,7 +265,8 @@ void URLRequestFileJob::DidOpen(int result) {
   DCHECK_GE(remaining_bytes_, 0);
 
   if (remaining_bytes_ > 0 && byte_range_.first_byte_position() != 0) {
-    int rv = stream_->Seek(FROM_BEGIN, byte_range_.first_byte_position(),
+    int rv = stream_->Seek(base::File::FROM_BEGIN,
+                           byte_range_.first_byte_position(),
                            base::Bind(&URLRequestFileJob::DidSeek,
                                       weak_ptr_factory_.GetWeakPtr()));
     if (rv != ERR_IO_PENDING) {
