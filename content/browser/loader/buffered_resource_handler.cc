@@ -386,7 +386,7 @@ bool BufferedResourceHandler::UseAlternateNextHandler(
     scoped_refptr<net::IOBuffer> buf;
     int size = 0;
 
-    next_handler_->OnWillRead(&buf, &size, payload_for_old_handler.length());
+    next_handler_->OnWillRead(&buf, &size, -1);
     CHECK_GE(size, static_cast<int>(payload_for_old_handler.length()));
 
     memcpy(buf->data(), payload_for_old_handler.c_str(),
