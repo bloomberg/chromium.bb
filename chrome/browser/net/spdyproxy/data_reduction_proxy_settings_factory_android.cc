@@ -35,7 +35,7 @@ DataReductionProxySettingsFactoryAndroid::GetInstance() {
 DataReductionProxySettingsFactoryAndroid::
 DataReductionProxySettingsFactoryAndroid()
     : BrowserContextKeyedServiceFactory(
-        "ProfileSyncService",
+        "DataReductionProxySettingsAndroid",
         BrowserContextDependencyManager::GetInstance()) {
 }
 
