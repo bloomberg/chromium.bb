@@ -38,7 +38,7 @@ using namespace std;
 namespace WebCore {
 
 struct SameSizeAsRootInlineBox : public InlineFlowBox {
-    unsigned variables[5];
+    unsigned variables[6];
     void* pointers[4];
 };
 
@@ -55,6 +55,7 @@ RootInlineBox::RootInlineBox(RenderBlockFlow& block)
     , m_lineBottom(0)
     , m_lineTopWithLeading(0)
     , m_lineBottomWithLeading(0)
+    , m_selectionBottom(0)
 {
     setIsHorizontal(block.isHorizontalWritingMode());
 }
@@ -194,6 +195,7 @@ void RootInlineBox::adjustPosition(float dx, float dy)
     m_lineBottom += blockDirectionDelta;
     m_lineTopWithLeading += blockDirectionDelta;
     m_lineBottomWithLeading += blockDirectionDelta;
+    m_selectionBottom += blockDirectionDelta;
     if (hasEllipsisBox())
         ellipsisBox()->adjustPosition(dx, dy);
 }
@@ -238,17 +240,18 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
     LayoutUnit lineBottom = heightOfBlock;
     LayoutUnit lineTopIncludingMargins = heightOfBlock;
     LayoutUnit lineBottomIncludingMargins = heightOfBlock;
+    LayoutUnit selectionBottom = heightOfBlock;
     bool setLineTop = false;
     bool hasAnnotationsBefore = false;
     bool hasAnnotationsAfter = false;
-    placeBoxesInBlockDirection(heightOfBlock, maxHeight, maxAscent, noQuirksMode, lineTop, lineBottom, setLineTop,
+    placeBoxesInBlockDirection(heightOfBlock, maxHeight, maxAscent, noQuirksMode, lineTop, lineBottom, selectionBottom, setLineTop,
                                lineTopIncludingMargins, lineBottomIncludingMargins, hasAnnotationsBefore, hasAnnotationsAfter, baselineType());
     m_hasAnnotationsBefore = hasAnnotationsBefore;
     m_hasAnnotationsAfter = hasAnnotationsAfter;
 
     maxHeight = max<LayoutUnit>(0, maxHeight); // FIXME: Is this really necessary?
 
-    setLineTopBottomPositions(lineTop, lineBottom, heightOfBlock, heightOfBlock + maxHeight);
+    setLineTopBottomPositions(lineTop, lineBottom, heightOfBlock, heightOfBlock + maxHeight, selectionBottom);
     if (block().view()->layoutState()->isPaginated())
         setPaginatedLineWidth(block().availableLogicalWidthForContent());
 
@@ -450,7 +453,7 @@ LayoutUnit RootInlineBox::selectionTopAdjustedForPrecedingBlock() const
 
 LayoutUnit RootInlineBox::selectionBottom() const
 {
-    LayoutUnit selectionBottom = m_lineBottom;
+    LayoutUnit selectionBottom = m_selectionBottom;
 
     if (m_hasAnnotationsAfter)
         selectionBottom += !renderer().style()->isFlippedLinesWritingMode() ? computeUnderAnnotationAdjustment(m_lineBottom) : computeOverAnnotationAdjustment(m_lineBottom);

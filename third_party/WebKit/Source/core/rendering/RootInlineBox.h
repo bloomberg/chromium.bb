@@ -73,12 +73,13 @@ public:
     int blockDirectionPointInLine() const;
 
     LayoutUnit alignBoxesInBlockDirection(LayoutUnit heightOfBlock, GlyphOverflowAndFallbackFontsMap&, VerticalPositionCache&);
-    void setLineTopBottomPositions(LayoutUnit top, LayoutUnit bottom, LayoutUnit topWithLeading, LayoutUnit bottomWithLeading)
+    void setLineTopBottomPositions(LayoutUnit top, LayoutUnit bottom, LayoutUnit topWithLeading, LayoutUnit bottomWithLeading, LayoutUnit selectionBottom = LayoutUnit::min())
     {
         m_lineTop = top;
         m_lineBottom = bottom;
         m_lineTopWithLeading = topWithLeading;
         m_lineBottomWithLeading = bottomWithLeading;
+        m_selectionBottom = selectionBottom == LayoutUnit::min() ? bottom : selectionBottom;
     }
 
     virtual RenderLineBoxList* rendererLineBoxes() const OVERRIDE FINAL;
@@ -212,6 +213,8 @@ private:
 
     LayoutUnit m_lineTopWithLeading;
     LayoutUnit m_lineBottomWithLeading;
+
+    LayoutUnit m_selectionBottom;
 
     struct LineFragmentationData {
         WTF_MAKE_NONCOPYABLE(LineFragmentationData); WTF_MAKE_FAST_ALLOCATED;

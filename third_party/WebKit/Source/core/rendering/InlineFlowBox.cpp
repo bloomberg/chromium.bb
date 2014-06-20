@@ -598,7 +598,7 @@ void InlineFlowBox::computeLogicalBoxHeights(RootInlineBox* rootBox, LayoutUnit&
     }
 }
 
-void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHeight, int maxAscent, bool strictMode, LayoutUnit& lineTop, LayoutUnit& lineBottom, bool& setLineTop,
+void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHeight, int maxAscent, bool strictMode, LayoutUnit& lineTop, LayoutUnit& lineBottom, LayoutUnit& selectionBottom, bool& setLineTop,
                                                LayoutUnit& lineTopIncludingMargins, LayoutUnit& lineBottomIncludingMargins, bool& hasAnnotationsBefore, bool& hasAnnotationsAfter, FontBaseline baselineType)
 {
     bool isRootBox = isRootInlineBox();
@@ -643,7 +643,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
         LayoutUnit newLogicalTopIncludingMargins = newLogicalTop;
         LayoutUnit boxHeight = curr->logicalHeight();
         LayoutUnit boxHeightIncludingMargins = boxHeight;
-
+        LayoutUnit borderPaddingHeight = 0;
         if (curr->isText() || curr->isInlineFlowBox()) {
             const FontMetrics& fontMetrics = curr->renderer().style(isFirstLineStyle())->fontMetrics();
             newLogicalTop += curr->baselinePosition(baselineType) - fontMetrics.ascent(baselineType);
@@ -651,6 +651,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
                 RenderBoxModelObject& boxObject = toRenderBoxModelObject(curr->renderer());
                 newLogicalTop -= boxObject.style(isFirstLineStyle())->isHorizontalWritingMode() ? boxObject.borderTop() + boxObject.paddingTop() :
                     boxObject.borderRight() + boxObject.paddingRight();
+                borderPaddingHeight = boxObject.borderAndPaddingLogicalHeight();
             }
             newLogicalTopIncludingMargins = newLogicalTop;
         } else if (!curr->renderer().isBR()) {
@@ -701,6 +702,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
                 lineTop = min(lineTop, newLogicalTop);
                 lineTopIncludingMargins = min(lineTop, min(lineTopIncludingMargins, newLogicalTopIncludingMargins));
             }
+            selectionBottom = max(selectionBottom, newLogicalTop + boxHeight - borderPaddingHeight);
             lineBottom = max(lineBottom, newLogicalTop + boxHeight);
             lineBottomIncludingMargins = max(lineBottom, max(lineBottomIncludingMargins, newLogicalTopIncludingMargins + boxHeightIncludingMargins));
         }
@@ -708,7 +710,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
         // Adjust boxes to use their real box y/height and not the logical height (as dictated by
         // line-height).
         if (inlineFlowBox)
-            inlineFlowBox->placeBoxesInBlockDirection(top, maxHeight, maxAscent, strictMode, lineTop, lineBottom, setLineTop,
+            inlineFlowBox->placeBoxesInBlockDirection(top, maxHeight, maxAscent, strictMode, lineTop, lineBottom, selectionBottom, setLineTop,
                                                       lineTopIncludingMargins, lineBottomIncludingMargins, hasAnnotationsBefore, hasAnnotationsAfter, baselineType);
     }
 
@@ -722,6 +724,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
                 lineTop = min<LayoutUnit>(lineTop, pixelSnappedLogicalTop());
                 lineTopIncludingMargins = min(lineTop, lineTopIncludingMargins);
             }
+            selectionBottom = max<LayoutUnit>(selectionBottom, pixelSnappedLogicalBottom());
             lineBottom = max<LayoutUnit>(lineBottom, pixelSnappedLogicalBottom());
             lineBottomIncludingMargins = max(lineBottom, lineBottomIncludingMargins);
         }

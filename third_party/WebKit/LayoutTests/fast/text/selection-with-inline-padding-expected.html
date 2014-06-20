@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test paddings and selection for inline elements</title>
+        <style>
+            p > b, pre > b { padding: 0 10px; }
+        </style>
+    </head>
+    <body>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>
+            <b id="test">Sed dictum erat sit amet pharetra pretium.</b><br>
+            Nullam a est vitae orci tempus tincidunt nec at dolor.
+        </p>
+        <p>
+            Tests that selections do not include padding in the Y direction for
+            inline elements where it should be ignored.
+        </p>
+        <script>
+            var node = document.getElementById('test').firstChild;
+            var range = document.createRange();
+            range.setStart(node, 5);
+            range.setEnd(node, node.length - 5);
+            window.getSelection().addRange(range);
+        </script>
+    </body>
+</html>
