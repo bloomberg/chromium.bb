@@ -159,6 +159,9 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   int GetDisclosureArrowLeftPadding() const;
   int GetDisclosureArrowRightPadding() const;
 
+  // Returns the size of the disclosure arrow.
+  gfx::Size ArrowSize() const;
+
   // Handles the clicking event.
   void HandleClickEvent();
 

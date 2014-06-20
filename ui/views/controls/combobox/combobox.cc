@@ -218,14 +218,6 @@ void PaintArrowButton(
                         x, 0, arrow_button_images[0]->width(), height);
 }
 
-// Returns the size of the disclosure arrow.
-gfx::Size ArrowSize(const ui::NativeTheme* native_theme) {
-  ui::NativeTheme::ExtraParams ignored;
-  return native_theme->GetPartSize(ui::NativeTheme::kComboboxArrow,
-                                   ui::NativeTheme::kNormal,
-                                   ignored);
-}
-
 }  // namespace
 
 // static
@@ -361,7 +353,7 @@ void Combobox::Layout() {
     }
     case STYLE_ACTION: {
       arrow_button_width = GetDisclosureArrowLeftPadding() +
-          ArrowSize(GetNativeTheme()).width() +
+          ArrowSize().width() +
           GetDisclosureArrowRightPadding();
       text_button_width = width() - arrow_button_width;
       break;
@@ -419,7 +411,7 @@ gfx::Size Combobox::GetPreferredSize() const {
   gfx::Insets insets = GetInsets();
   int total_width = std::max(kMinComboboxWidth, content_size_.width()) +
       insets.width() + GetDisclosureArrowLeftPadding() +
-      ArrowSize(GetNativeTheme()).width() + GetDisclosureArrowRightPadding();
+      ArrowSize().width() + GetDisclosureArrowRightPadding();
   return gfx::Size(total_width, content_size_.height() + insets.height());
 }
 
@@ -663,7 +655,7 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
     selected_index_ = 0;
   base::string16 text = model()->GetItemAt(selected_index_);
 
-  gfx::Size arrow_size = ArrowSize(GetNativeTheme());
+  gfx::Size arrow_size = ArrowSize();
   int disclosure_arrow_offset = width() - arrow_size.width() -
       GetDisclosureArrowLeftPadding() - GetDisclosureArrowRightPadding();
 
@@ -848,6 +840,24 @@ int Combobox::GetDisclosureArrowRightPadding() const {
   }
   NOTREACHED();
   return 0;
+}
+
+gfx::Size Combobox::ArrowSize() const {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // TODO(estade): hack alert! This should always use GetNativeTheme(). For now
+  // STYLE_ACTION isn't properly themed so we have to override the NativeTheme
+  // behavior. See crbug.com/384071
+  const ui::NativeTheme* native_theme_for_arrow = style_ == STYLE_ACTION ?
+      ui::NativeTheme::instance() :
+      GetNativeTheme();
+#else
+  const ui::NativeTheme* native_theme_for_arrow = GetNativeTheme();
+#endif
+
+  ui::NativeTheme::ExtraParams ignored;
+  return native_theme_for_arrow->GetPartSize(ui::NativeTheme::kComboboxArrow,
+                                             ui::NativeTheme::kNormal,
+                                             ignored);
 }
 
 }  // namespace views
