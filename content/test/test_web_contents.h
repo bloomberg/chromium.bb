@@ -51,10 +51,6 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
     return GetRenderManager()->cross_navigation_pending_;
   }
 
-  // Overrides WebContentsImpl::ShouldTransitionCrossSite so that we can test
-  // both alternatives without using command-line switches.
-  bool ShouldTransitionCrossSite() { return transition_cross_site; }
-
   // Prevent interaction with views.
   virtual bool CreateRenderViewForRenderManager(
       RenderViewHost* render_view_host,
@@ -66,9 +62,6 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   // Returns a clone of this TestWebContents. The returned object is also a
   // TestWebContents. The caller owns the returned object.
   virtual WebContents* Clone() OVERRIDE;
-
-  // Set by individual tests.
-  bool transition_cross_site;
 
   // Allow mocking of the RenderViewHostDelegateView.
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;

@@ -26,7 +26,6 @@ namespace content {
 
 TestWebContents::TestWebContents(BrowserContext* browser_context)
     : WebContentsImpl(browser_context, NULL),
-      transition_cross_site(false),
       delegate_view_override_(NULL),
       expect_set_history_length_and_prune_(false),
       expect_set_history_length_and_prune_site_instance_(NULL),
