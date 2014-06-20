@@ -27,6 +27,7 @@
 #define DatabaseManager_h
 
 #include "modules/webdatabase/DatabaseBasicTypes.h"
+#include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"

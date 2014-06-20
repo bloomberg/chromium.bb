@@ -1187,7 +1187,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     template<typename T, size_t inlineCapacity, typename Allocator>
     void Vector<T, inlineCapacity, Allocator>::trace(typename Allocator::Visitor* visitor)
     {
-        COMPILE_ASSERT(Allocator::isGarbageCollected, Garbage_collector_must_be_enabled);
+        ASSERT(Allocator::isGarbageCollected); // Garbage collector must be enabled.
         const T* bufferBegin = buffer();
         const T* bufferEnd = buffer() + size();
         if (ShouldBeTraced<VectorTraits<T> >::value) {
