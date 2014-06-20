@@ -173,7 +173,6 @@ static const CGFloat kTabHorzMargin = 13;
       NSViewMinXMargin|NSViewWidthSizable|NSViewMaxXMargin|NSViewMinYMargin];
   [self addSubview:help_];
   [help_ setDelegate:self];
-  [help_ setAlignment:NSCenterTextAlignment];
 
   // Get the help text and link.
   size_t linkOffset = 0;
@@ -187,6 +186,7 @@ static const CGFloat kTabHorzMargin = 13;
                       font:font
               messageColor:[NSColor whiteColor]
                  linkColor:[NSColor whiteColor]];
+  [help_ setAlignment:NSCenterTextAlignment];
 }
 
 // Called when someone clicks on the embedded link.
