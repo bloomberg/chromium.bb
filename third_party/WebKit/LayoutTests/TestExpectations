@@ -1023,10 +1023,6 @@ crbug.com/374569 [ Win ] http/tests/navigation/beacon-cross-origin.html [ Pass F
 crbug.com/374572 svg/filters/feImage-target-reappend-to-document.svg [ Pass Failure ]
 crbug.com/374572 svg/dynamic-updates/SVGImageElement-svgdom-preserveAspectRatio-prop.html [ Pass ImageOnlyFailure ]
 
-Bug(eae) [ Win7 ] fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
-Bug(eae) [ Win7 ] virtual/antialiasedtext/fast/text/international/wrap-CJK-001.html [ NeedsRebaseline ]
-Bug(eae) [ Win7 ] virtual/antialiasedtext/fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
-
 crbug.com/371651 svg/custom/deep-dynamic-updates.svg [ Pass Failure ]
 crbug.com/371651 svg/custom/js-update-gradient.svg [ Pass Failure ]
 crbug.com/371651 svg/custom/js-update-pattern.svg [ Pass Failure ]
