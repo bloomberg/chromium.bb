@@ -90,8 +90,6 @@ public:
     void setLogicalOverflowRect(const LayoutRect&);
     LayoutUnit logicalTopVisualOverflow() const { return logicalOverflowRect().y(); }
     LayoutUnit logicalBottomVisualOverflow() const { return logicalOverflowRect().maxY(); }
-    LayoutUnit logicalLeftVisualOverflow() const { return logicalOverflowRect().x(); }
-    LayoutUnit logicalRightVisualOverflow() const { return logicalOverflowRect().maxX(); }
 
 #ifndef NDEBUG
     virtual void showBox(int = 0) const OVERRIDE;

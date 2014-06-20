@@ -475,10 +475,9 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
 
     ASSERT(paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseChildOutlines);
 
-    LayoutUnit logicalLeftSide = logicalLeftVisualOverflow();
-    LayoutUnit logicalRightSide = logicalRightVisualOverflow();
-    LayoutUnit logicalStart = logicalLeftSide + (isHorizontal() ? paintOffset.x() : paintOffset.y());
-    LayoutUnit logicalExtent = logicalRightSide - logicalLeftSide;
+    LayoutRect logicalVisualOverflow = logicalOverflowRect();
+    LayoutUnit logicalStart = logicalVisualOverflow.x() + (isHorizontal() ? paintOffset.x() : paintOffset.y());
+    LayoutUnit logicalExtent = logicalVisualOverflow.width();
 
     LayoutUnit paintEnd = isHorizontal() ? paintInfo.rect.maxX() : paintInfo.rect.maxY();
     LayoutUnit paintStart = isHorizontal() ? paintInfo.rect.x() : paintInfo.rect.y();

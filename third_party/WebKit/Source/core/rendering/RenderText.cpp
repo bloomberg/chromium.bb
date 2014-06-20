@@ -1555,8 +1555,9 @@ LayoutRect RenderText::linesVisualOverflowBoundingBox() const
     LayoutUnit logicalLeftSide = LayoutUnit::max();
     LayoutUnit logicalRightSide = LayoutUnit::min();
     for (InlineTextBox* curr = firstTextBox(); curr; curr = curr->nextTextBox()) {
-        logicalLeftSide = min(logicalLeftSide, curr->logicalLeftVisualOverflow());
-        logicalRightSide = max(logicalRightSide, curr->logicalRightVisualOverflow());
+        LayoutRect logicalVisualOverflow = curr->logicalOverflowRect();
+        logicalLeftSide = min(logicalLeftSide, logicalVisualOverflow.x());
+        logicalRightSide = max(logicalRightSide, logicalVisualOverflow.maxX());
     }
 
     LayoutUnit logicalTop = firstTextBox()->logicalTopVisualOverflow();
