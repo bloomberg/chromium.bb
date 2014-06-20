@@ -103,7 +103,9 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
         fontPlatformData = getFontPlatformData(description, arialStr);
     }
 
-    ASSERT(fontPlatformData);
+    // TODO(scottmg|eae): Trying to identify crashes in http://crbug.com/383542
+    if (!fontPlatformData)
+        CRASH();
     return fontDataFromFontPlatformData(fontPlatformData, shouldRetain);
 }
 

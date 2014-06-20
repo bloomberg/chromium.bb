@@ -128,7 +128,9 @@ const FontData* FontFallbackList::primaryFontData(const FontDescription& fontDes
             fontData = fontDataAt(fontDescription, 0);
             if (!fontData)
                 fontData = FontCache::fontCache()->getLastResortFallbackFont(fontDescription).get();
-            ASSERT(fontData);
+            // TODO(scottmg|eae): Trying to identify crashes in http://crbug.com/383542
+            if (!fontData)
+                CRASH();
             return fontData;
         }
 
