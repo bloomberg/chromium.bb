@@ -801,6 +801,16 @@ class PreCQLauncherStage(SyncStage):
     diff = datetime.timedelta(minutes=self.INFLIGHT_DELAY)
     return datetime.datetime.now() - self.inflight[change] > diff
 
+  @staticmethod
+  def _PrintPatchStatus(patch, status):
+    """Print a link to |patch| with |status| info."""
+    items = (
+        status,
+        os.path.basename(patch.project),
+        str(patch),
+    )
+    cros_build_lib.PrintBuildbotLink(' | '.join(items), patch.url)
+
   def GetPreCQStatus(self, pool, changes):
     """Get the Pre-CQ status of a list of changes.
 
@@ -883,8 +893,10 @@ class PreCQLauncherStage(SyncStage):
         busy.add(change)
         pool.UpdateCLStatus(PRE_CQ, change, self.STATUS_WAITING,
                             self._run.options.debug)
+        self._PrintPatchStatus(change, 'failed')
       elif status == self.STATUS_PASSED:
         passed.add(change)
+        self._PrintPatchStatus(change, 'passed')
 
     return busy, passed
 
@@ -900,6 +912,7 @@ class PreCQLauncherStage(SyncStage):
       cmd.append('--debug')
     for patch in plan:
       cmd += ['-g', cros_patch.AddPrefix(patch, patch.gerrit_number)]
+      self._PrintPatchStatus(patch, 'testing')
     cros_build_lib.RunCommand(cmd, cwd=self._build_root)
     for patch in plan:
       if pool.GetCLStatus(PRE_CQ, patch) != self.STATUS_PASSED:
