@@ -313,8 +313,7 @@ class AudioManagerAndroid {
 
         if (on) {
             if (mSavedAudioMode != AudioManager.MODE_INVALID) {
-                Log.wtf(TAG, "Audio mode has already been set");
-                return;
+                throw new IllegalStateException("Audio mode has already been set");
             }
 
             // Store the current audio mode the first time we try to
@@ -322,8 +321,9 @@ class AudioManagerAndroid {
             try {
                 mSavedAudioMode = mAudioManager.getMode();
             } catch (SecurityException e) {
-                Log.wtf(TAG, "getMode exception: ", e);
                 logDeviceInfo();
+                throw e;
+
             }
 
             // Store microphone mute state and speakerphone state so it can
@@ -334,8 +334,8 @@ class AudioManagerAndroid {
             try {
                 mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
             } catch (SecurityException e) {
-                Log.wtf(TAG, "setMode exception: ", e);
                 logDeviceInfo();
+                throw e;
             }
 
             // Start observing volume changes to detect when the
@@ -347,8 +347,7 @@ class AudioManagerAndroid {
 
         } else {
             if (mSavedAudioMode == AudioManager.MODE_INVALID) {
-                Log.wtf(TAG, "Audio mode has not yet been set");
-                return;
+                throw new IllegalStateException("Audio mode has not yet been set");
             }
 
             stopObservingVolumeChanges();
@@ -362,8 +361,8 @@ class AudioManagerAndroid {
             try {
                 mAudioManager.setMode(mSavedAudioMode);
             } catch (SecurityException e) {
-                Log.wtf(TAG, "setMode exception: ", e);
                 logDeviceInfo();
+                throw e;
             }
             mSavedAudioMode = AudioManager.MODE_INVALID;
         }
@@ -541,12 +540,12 @@ class AudioManagerAndroid {
     }
 
     /**
-     * Helper method for debugging purposes. Logs message if method is not
+     * Helper method for debugging purposes. Ensures that method is
      * called on same thread as this object was created on.
      */
     private void checkIfCalledOnValidThread() {
         if (DEBUG && !mNonThreadSafe.calledOnValidThread()) {
-            Log.wtf(TAG, "Method is not called on valid thread");
+            throw new IllegalStateException("Method is not called on valid thread");
         }
     }
 
@@ -655,35 +654,19 @@ class AudioManagerAndroid {
         if (runningOnJellyBeanMR2OrHigher()) {
             // Use BluetoothManager to get the BluetoothAdapter for
             // Android 4.3 and above.
-            try {
-                BluetoothManager btManager =
-                        (BluetoothManager)mContext.getSystemService(
-                                Context.BLUETOOTH_SERVICE);
-                btAdapter = btManager.getAdapter();
-            } catch (Exception e) {
-                Log.wtf(TAG, "BluetoothManager.getAdapter exception", e);
-                return false;
-            }
+            BluetoothManager btManager =
+                    (BluetoothManager)mContext.getSystemService(
+                            Context.BLUETOOTH_SERVICE);
+            btAdapter = btManager.getAdapter();
         } else {
             // Use static method for Android 4.2 and below to get the
             // BluetoothAdapter.
-            try {
-                btAdapter = BluetoothAdapter.getDefaultAdapter();
-            } catch (Exception e) {
-                Log.wtf(TAG, "BluetoothAdapter.getDefaultAdapter exception", e);
-                return false;
-            }
+            btAdapter = BluetoothAdapter.getDefaultAdapter();
         }
 
         int profileConnectionState;
-        try {
-            profileConnectionState = btAdapter.getProfileConnectionState(
+        profileConnectionState = btAdapter.getProfileConnectionState(
                 android.bluetooth.BluetoothProfile.HEADSET);
-        } catch (Exception e) {
-            Log.wtf(TAG, "BluetoothAdapter.getProfileConnectionState exception", e);
-            profileConnectionState =
-                android.bluetooth.BluetoothProfile.STATE_DISCONNECTED;
-        }
 
         // Ensure that Bluetooth is enabled and that a device which supports the
         // headset and handsfree profile is connected.
@@ -1088,8 +1071,8 @@ class AudioManagerAndroid {
 
                     // Ensure that the observer is activated during communication mode.
                     if (mAudioManager.getMode() != AudioManager.MODE_IN_COMMUNICATION) {
-                        Log.wtf(TAG, "Only enable SettingsObserver in COMM mode");
-                        return;
+                        throw new IllegalStateException(
+                                "Only enable SettingsObserver in COMM mode");
                     }
 
                     // Get stream volume for the voice stream and deliver callback if
@@ -1120,7 +1103,7 @@ class AudioManagerAndroid {
         try {
             mSettingsObserverThread.join();
         } catch (InterruptedException e) {
-            Log.wtf(TAG, "Thread.join() exception: ", e);
+            Log.e(TAG, "Thread.join() exception: ", e);
         }
         mSettingsObserverThread = null;
     }
