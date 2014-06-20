@@ -5679,15 +5679,6 @@
    fun:_ZN7WebCore34CanvasRenderingContext2DV8InternalL26getImageDataMethodCallbackERKN2v820FunctionCallbackInfoINS1_5ValueEEE
 }
 {
-   bug_309468
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN19TranslateBubbleView25CreateViewBeforeTranslateEv
-   fun:_ZN19TranslateBubbleView4InitEv
-   fun:_ZN5views18BubbleDelegateView12CreateBubbleEPS0_
-   fun:_ZN23TranslateBubbleViewTest5SetUpEv
-}
-{
    bug_309477
    Memcheck:Uninitialized
    fun:_ZN13WebTestRunner11EventSender5resetEv

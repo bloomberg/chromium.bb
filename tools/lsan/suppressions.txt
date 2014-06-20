@@ -74,9 +74,6 @@ leak:ppapi::proxy::PPP_Instance_Private_ProxyTest_PPPInstancePrivate_Test
 leak:gpu::gles2::GLES2DecoderImpl::DoBindRenderbuffer
 leak:gpu::gles2::GLES2DecoderImpl::DoRenderbufferStorage
 
-# Leak in unit_tests and browser_tests. http://crbug.com/309468
-leak:TranslateBubbleView::CreateViewBeforeTranslate()
-
 # http://crbug.com/318221
 leak:base::EnsureProcessTerminated
 
