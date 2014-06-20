@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "6.2",
+  "version": "6.3",
   "entries": [
     {
       "id": 1,
@@ -958,7 +958,7 @@ LONG_STRING_CONST(
         "type": "android",
         "version": {
           "op": "<=",
-          "value": "4.4.3"
+          "value": "4.4.4"
         }
       },
       "gl_vendor": {
@@ -1000,7 +1000,7 @@ LONG_STRING_CONST(
         "type": "android",
         "version": {
           "op": "<=",
-          "value": "4.4.3"
+          "value": "4.4.4"
         }
       },
       "gl_vendor": {
@@ -1019,7 +1019,7 @@ LONG_STRING_CONST(
         "type": "android",
         "version": {
           "op": "<=",
-          "value": "4.4.3"
+          "value": "4.4.4"
         }
       },
       "gl_vendor": {
@@ -1042,7 +1042,7 @@ LONG_STRING_CONST(
         "type": "android",
         "version": {
           "op": "<=",
-          "value": "4.4.3"
+          "value": "4.4.4"
         }
       },
       "gl_vendor": {
