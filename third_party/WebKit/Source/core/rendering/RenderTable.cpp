@@ -487,9 +487,6 @@ void RenderTable::layout()
 
         setLogicalHeight(logicalHeight() + borderAndPaddingBefore);
 
-        if (!isOutOfFlowPositioned())
-            updateLogicalHeight();
-
         LayoutUnit computedLogicalHeight = 0;
 
         Length logicalHeightLength = style()->logicalHeight();
@@ -544,8 +541,7 @@ void RenderTable::layout()
             layoutCaption(m_captions[i]);
         }
 
-        if (isOutOfFlowPositioned())
-            updateLogicalHeight();
+        updateLogicalHeight();
 
         // table can be containing block of positioned elements.
         // FIXME: Only pass true if width or height changed.

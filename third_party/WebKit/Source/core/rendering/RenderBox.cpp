@@ -2509,8 +2509,6 @@ void RenderBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
 
         // For tables, calculate margins only.
         if (isTable()) {
-            // FIXME: RenderTable::layout() calls updateLogicalHeight() when an empty table has no height yet, so auto margins can come out wrong here when
-            // we are perpendicular to our containing block.
             computeMarginsForDirection(flowDirection, cb, containingBlockLogicalWidthForContent(), computedValues.m_extent, computedValues.m_margins.m_before,
                 computedValues.m_margins.m_after, style()->marginBefore(), style()->marginAfter());
             return;
