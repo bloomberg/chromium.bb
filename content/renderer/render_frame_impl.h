@@ -458,6 +458,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnExtendSelectionAndDelete(int before, int after);
   void OnReload(bool ignore_cache);
   void OnTextSurroundingSelectionRequest(size_t max_length);
+  void OnAddStyleSheetByURL(const std::string& url);
 #if defined(OS_MACOSX)
   void OnCopyToFindPboard();
 #endif

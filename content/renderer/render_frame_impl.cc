@@ -710,6 +710,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(FrameMsg_TextSurroundingSelectionRequest,
                         OnTextSurroundingSelectionRequest)
+    IPC_MESSAGE_HANDLER(FrameMsg_AddStyleSheetByURL,
+                        OnAddStyleSheetByURL)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(InputMsg_CopyToFindPboard, OnCopyToFindPboard)
 #endif
@@ -1175,6 +1177,10 @@ void RenderFrameImpl::OnTextSurroundingSelectionRequest(size_t max_length) {
       surroundingText.textContent(),
       surroundingText.startOffsetInTextContent(),
       surroundingText.endOffsetInTextContent()));
+}
+
+void RenderFrameImpl::OnAddStyleSheetByURL(const std::string& url) {
+  frame_->addStyleSheetByURL(WebString::fromUTF8(url));
 }
 
 bool RenderFrameImpl::ShouldUpdateSelectionTextFromContextMenuParams(

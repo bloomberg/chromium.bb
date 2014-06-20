@@ -363,6 +363,10 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DeleteProxy)
 IPC_MESSAGE_ROUTED1(FrameMsg_TextSurroundingSelectionRequest,
                     size_t /* max_length */)
 
+// Tells the renderer to insert a link to the specified stylesheet. This is
+// needed to support navigation transitions.
+IPC_MESSAGE_ROUTED1(FrameMsg_AddStyleSheetByURL, std::string)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 

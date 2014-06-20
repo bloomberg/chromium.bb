@@ -1208,6 +1208,16 @@ void ContentViewCoreImpl::ClearHistory(JNIEnv* env, jobject obj) {
     web_contents_->GetController().PruneAllButLastCommitted();
 }
 
+void ContentViewCoreImpl::AddStyleSheetByURL(
+    JNIEnv* env, jobject obj, jstring url) {
+  if (!web_contents_)
+    return;
+
+  web_contents_->GetMainFrame()->Send(new FrameMsg_AddStyleSheetByURL(
+      web_contents_->GetMainFrame()->GetRoutingID(),
+      ConvertJavaStringToUTF8(env, url)));
+}
+
 void ContentViewCoreImpl::SetAllowJavascriptInterfacesInspection(
     JNIEnv* env,
     jobject obj,

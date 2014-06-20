@@ -1295,6 +1295,14 @@ public class ContentViewCore
         }
     }
 
+    /**
+     * Requests the renderer insert a link to the specified stylesheet in the
+     * main frame's document.
+     */
+    void addStyleSheetByURL(String url) {
+        nativeAddStyleSheetByURL(mNativeContentViewCore, url);
+    }
+
     /** Callback interface for evaluateJavaScript(). */
     public interface JavaScriptCallback {
         void handleJavaScriptResult(String jsonResult);
@@ -3174,6 +3182,9 @@ public class ContentViewCore
     private native void nativeSelectWordAroundCaret(long nativeContentViewCoreImpl);
 
     private native void nativeClearHistory(long nativeContentViewCoreImpl);
+
+    private native void nativeAddStyleSheetByURL(long nativeContentViewCoreImpl,
+            String stylesheetUrl);
 
     private native void nativeEvaluateJavaScript(long nativeContentViewCoreImpl,
             String script, JavaScriptCallback callback, boolean startRenderer);
