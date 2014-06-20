@@ -38,7 +38,8 @@ using namespace std;
 namespace WebCore {
 
 struct SameSizeAsRootInlineBox : public InlineFlowBox {
-    unsigned variables[6];
+    unsigned unsignedVariable;
+    LayoutUnit layoutVariables[5];
     void* pointers[4];
 };
 
