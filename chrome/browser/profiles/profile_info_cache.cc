@@ -554,6 +554,11 @@ void ProfileInfoCache::SetSupervisedUserIdOfProfileAtIndex(
   info->SetString(kSupervisedUserId, id);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
+
+  base::FilePath profile_path = GetPathOfProfileAtIndex(index);
+  FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                    observer_list_,
+                    OnProfileSupervisedUserIdChanged(profile_path));
 }
 
 void ProfileInfoCache::SetLocalAuthCredentialsOfProfileAtIndex(

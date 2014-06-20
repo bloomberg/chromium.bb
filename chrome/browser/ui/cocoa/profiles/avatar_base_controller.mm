@@ -91,6 +91,11 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
     [avatarController_ updateAvatarButtonAndLayoutParent:YES];
   }
 
+  virtual void OnProfileSupervisedUserIdChanged(
+      const base::FilePath& profile_path) OVERRIDE {
+    [avatarController_ updateAvatarButtonAndLayoutParent:YES];
+  }
+
   // SigninErrorController::Observer:
   virtual void OnErrorChanged() OVERRIDE {
     SigninErrorController* errorController =

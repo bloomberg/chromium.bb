@@ -151,6 +151,11 @@ void NewAvatarButton::OnProfileNameChanged(
   UpdateAvatarButtonAndRelayoutParent();
 }
 
+void NewAvatarButton::OnProfileSupervisedUserIdChanged(
+      const base::FilePath& profile_path) {
+  UpdateAvatarButtonAndRelayoutParent();
+}
+
 void NewAvatarButton::OnErrorChanged() {
   gfx::ImageSkia icon;
 
