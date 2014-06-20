@@ -8178,6 +8178,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="GoogleSearch.AccessPoint" enum="SearchAccessPoint">
+  <owner>kmadhusu@chromium.org</owner>
+  <summary>
+    Counts number of Google searches from various access points in the browser.
+  </summary>
+</histogram>
+
 <histogram name="GoogleUpdate.EffectivePolicy" enum="UpdatePolicy">
   <owner>gab@chromium.org</owner>
   <summary>
@@ -43656,6 +43663,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="SCT_STATUS_OK"/>
 </enum>
 
+<enum name="SearchAccessPoint" type="int">
+  <int value="0" label="Omnibox"/>
+  <int value="1" label="Omnibox Instant"/>
+  <int value="2" label="Direct Navigation"/>
+  <int value="3" label="Direct Navigation Instant"/>
+  <int value="4" label="Home Page"/>
+  <int value="5" label="Home Page Instant"/>
+  <int value="6" label="Search App"/>
+  <int value="7" label="Search App Instant"/>
+  <int value="8" label="Other"/>
+  <int value="9" label="Other Instant"/>
+</enum>
+
 <enum name="SearchEngine" type="int">
   <obsolete>
     Deprecated 8/2013. No longer generated.
@@ -46383,6 +46403,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="PLT.PT_RequestToStart"/>
   <affected-histogram name="PLT.PT_StartToCommit"/>
   <affected-histogram name="PLT.PT_StartToFinish"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="GoogleSearchVariations">
+  <owner>kmadhusu@chromium.org</owner>
+  <suffix name="_PrerenderDisabled"
+      label="Counts number of Google searches from various access points in
+             the Android Chrome browser when prerendering is disabled via
+             &quot;Bandwidth management&quot; settings or &quot;Privacy&quot;
+             settings. Only recorded on Android."/>
+  <suffix name="_PrerenderEnabled"
+      label="Counts number of Google searches from various access points in
+             the Android Chrome browser when prerendering is enabled via
+             &quot;Bandwidth management&quot; settings or &quot;Privacy&quot;
+             settings. Only recorded on Android."/>
+  <affected-histogram name="GoogleSearch.AccessPoint"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="GWSChromeJointExperiment">

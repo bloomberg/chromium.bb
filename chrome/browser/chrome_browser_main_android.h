@@ -7,6 +7,8 @@
 
 #include "chrome/browser/chrome_browser_main.h"
 
+class GoogleSearchCounterAndroid;
+
 namespace breakpad {
 class CrashDumpManager;
 }
@@ -19,6 +21,7 @@ class ChromeBrowserMainPartsAndroid : public ChromeBrowserMainParts {
 
   // content::BrowserMainParts overrides.
   virtual void PreProfileInit() OVERRIDE;
+  virtual void PostProfileInit() OVERRIDE;
   virtual void PreEarlyInitialization() OVERRIDE;
 
   // ChromeBrowserMainParts overrides.
@@ -27,6 +30,7 @@ class ChromeBrowserMainPartsAndroid : public ChromeBrowserMainParts {
  private:
   scoped_ptr<base::MessageLoop> main_message_loop_;
   scoped_ptr<breakpad::CrashDumpManager> crash_dump_manager_;
+  scoped_ptr<GoogleSearchCounterAndroid> search_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsAndroid);
 };

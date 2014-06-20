@@ -360,6 +360,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // recorded.
   void RecordNetworkBytes(Origin origin, bool used, int64 prerender_bytes);
 
+  // Returns whether prerendering is currently enabled for this manager.
+  bool IsEnabled() const;
+
   // Add to the running tally of bytes transferred over the network for this
   // profile if prerendering is currently enabled.
   void AddProfileNetworkBytesIfEnabled(int64 bytes);
@@ -660,9 +663,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       const GURL& url, Origin origin, uint8 experiment_id,
       FinalStatus final_status) const;
 
-  // Returns whether prerendering is currently enabled for this manager.
-  // Must be called on the UI thread.
-  bool IsEnabled() const;
 
   void CookieChanged(ChromeCookieDetails* details);
   void CookieChangedAnyCookiesLeftLookupResult(const std::string& domain_key,

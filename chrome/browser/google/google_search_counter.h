@@ -10,6 +10,10 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+namespace content {
+class NavigationEntry;
+}
+
 // A listener for counting Google searches from various search access points. No
 // actual search query content is observed. See GoogleSearchMetrics for more
 // details about these access points.
@@ -20,6 +24,21 @@ class GoogleSearchCounter : content::NotificationObserver {
 
   // Return the singleton instance of GoogleSearchCounter.
   static GoogleSearchCounter* GetInstance();
+
+  // Returns the Google search access point for the given |entry|. This method
+  // assumes that we have already verified that |entry|'s URL is a Google search
+  // URL.
+  GoogleSearchMetrics::AccessPoint GetGoogleSearchAccessPointForSearchNavEntry(
+      const content::NavigationEntry& entry) const;
+
+  // Returns true if |details| is valid and corresponds to a search results
+  // page.
+  bool ShouldRecordCommittedDetails(
+      const content::NotificationDetails& details) const;
+
+  const GoogleSearchMetrics* search_metrics() const {
+    return search_metrics_.get();
+  }
 
  private:
   friend struct DefaultSingletonTraits<GoogleSearchCounter>;

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_SEARCH_METRICS_H_
 #define COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_SEARCH_METRICS_H_
 
+#include "build/build_config.h"
+
 // A thin helper class used by parties interested in reporting Google search
 // metrics (mostly counts of searches from different access points). This class
 // partly exists to make testing easier.
@@ -31,6 +33,13 @@ class GoogleSearchMetrics {
 
   // Record a single Google search from source |ap|.
   virtual void RecordGoogleSearch(AccessPoint ap) const;
+
+#if defined(OS_ANDROID)
+  // Record a single Android Google search from source |ap|. |prerender_enabled|
+  // is set to true when prerendering is enabled via settings.
+  virtual void RecordAndroidGoogleSearch(AccessPoint ap,
+                                         bool prerender_enabled) const;
+#endif
 };
 
 #endif  // COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_SEARCH_METRICS_H_

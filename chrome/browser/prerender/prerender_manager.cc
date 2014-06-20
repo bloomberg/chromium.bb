@@ -1630,21 +1630,6 @@ void PrerenderManager::RecordFinalStatusWithoutCreatingPrerenderContents(
       final_status);
 }
 
-bool PrerenderManager::IsEnabled() const {
-  DCHECK(CalledOnValidThread());
-  if (!enabled_)
-    return false;
-  for (std::list<const PrerenderCondition*>::const_iterator it =
-           prerender_conditions_.begin();
-       it != prerender_conditions_.end();
-       ++it) {
-    const PrerenderCondition* condition = *it;
-    if (!condition->CanPrerender())
-      return false;
-  }
-  return true;
-}
-
 void PrerenderManager::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
@@ -1878,6 +1863,21 @@ void PrerenderManager::RecordNetworkBytes(Origin origin,
   DCHECK_GE(recent_profile_bytes, 0);
   histograms_->RecordNetworkBytes(
       origin, used, prerender_bytes, recent_profile_bytes);
+}
+
+bool PrerenderManager::IsEnabled() const {
+  DCHECK(CalledOnValidThread());
+  if (!enabled_)
+    return false;
+  for (std::list<const PrerenderCondition*>::const_iterator it =
+           prerender_conditions_.begin();
+       it != prerender_conditions_.end();
+       ++it) {
+    const PrerenderCondition* condition = *it;
+    if (!condition->CanPrerender())
+      return false;
+  }
+  return true;
 }
 
 void PrerenderManager::AddProfileNetworkBytesIfEnabled(int64 bytes) {

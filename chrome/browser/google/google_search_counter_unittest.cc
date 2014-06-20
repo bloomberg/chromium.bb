@@ -75,8 +75,11 @@ void GoogleSearchCounterTest::TestGoogleSearch(
   content::LoadCommittedDetails details;
   scoped_ptr<content::NavigationEntry> entry(
       content::NavigationEntry::Create());
-  if (is_omnibox)
-    entry->SetTransitionType(content::PAGE_TRANSITION_GENERATED);
+  if (is_omnibox) {
+    entry->SetTransitionType(content::PageTransitionFromInt(
+        content::PAGE_TRANSITION_GENERATED |
+            content::PAGE_TRANSITION_FROM_ADDRESS_BAR));
+  }
   entry->SetURL(GURL(url));
   details.entry = entry.get();
 

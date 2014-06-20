@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/path_service.h"
+#include "chrome/browser/google/google_search_counter_android.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/breakpad/app/breakpad_linux.h"
@@ -49,6 +50,11 @@ void ChromeBrowserMainPartsAndroid::PreProfileInit() {
   }
 
   ChromeBrowserMainParts::PreProfileInit();
+}
+
+void ChromeBrowserMainPartsAndroid::PostProfileInit() {
+  search_counter_.reset(new GoogleSearchCounterAndroid(profile()));
+  ChromeBrowserMainParts::PostProfileInit();
 }
 
 void ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
