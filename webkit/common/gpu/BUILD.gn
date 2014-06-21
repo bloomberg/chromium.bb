@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 component("gpu") {
+  output_name = "webkit_gpu"
+
   sources = [
     "context_provider_in_process.cc",
     "context_provider_in_process.h",
