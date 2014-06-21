@@ -10201,6 +10201,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.TimeToPipelineStarted" units="ms">
+  <obsolete>
+    Removed from code 2014/6/18.
+  </obsolete>
   <owner>scherkus@chromium.org</owner>
   <summary>
     Time in milliseconds from HTML5 media pipeline creation to playing event.

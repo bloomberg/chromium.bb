@@ -50,8 +50,7 @@ Pipeline::Pipeline(
       text_ended_(false),
       audio_buffering_state_(BUFFERING_HAVE_NOTHING),
       video_buffering_state_(BUFFERING_HAVE_NOTHING),
-      demuxer_(NULL),
-      creation_time_(default_tick_clock_.NowTicks()) {
+      demuxer_(NULL) {
   media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::PIPELINE_CREATED));
@@ -190,13 +189,6 @@ void Pipeline::SetErrorForTesting(PipelineStatus status) {
 }
 
 void Pipeline::SetState(State next_state) {
-  if (state_ != kPlaying && next_state == kPlaying &&
-      !creation_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES("Media.TimeToPipelineStarted",
-                        default_tick_clock_.NowTicks() - creation_time_);
-    creation_time_ = base::TimeTicks();
-  }
-
   DVLOG(1) << GetStateString(state_) << " -> " << GetStateString(next_state);
 
   state_ = next_state;

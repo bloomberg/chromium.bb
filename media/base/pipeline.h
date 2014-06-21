@@ -426,10 +426,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
 
   PipelineStatistics statistics_;
 
-  // Time of pipeline creation; is non-zero only until the pipeline first
-  // reaches "kStarted", at which point it is used & zeroed out.
-  base::TimeTicks creation_time_;
-
   scoped_ptr<SerialRunner> pending_callbacks_;
 
   base::ThreadChecker thread_checker_;
