@@ -7,7 +7,6 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/filter_operations.h"
 #include "content/public/common/common_param_traits.h"
-#include "content/public/common/content_switches.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "ui/gfx/transform.h"
