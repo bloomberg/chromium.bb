@@ -704,7 +704,12 @@ void RenderLayer::mapRectToRepaintBacking(const RenderObject* renderObject, cons
     // layer. This is because all layers that squash together need to repaint w.r.t. a single container that is
     // an ancestor of all of them, in order to properly take into account any local transforms etc.
     // FIXME: remove this special-case code that works around the repainting code structure.
-    renderObject->mapRectToPaintInvalidationBacking(transformedAncestor, rect);
+    renderObject->mapRectToPaintInvalidationBacking(repaintContainer, rect);
+
+    // |repaintContainer| may have a local 2D transform on it, so take that into account when mapping into the space of the
+    // transformed ancestor.
+    rect = LayoutRect(repaintContainer->localToContainerQuad(FloatRect(rect), transformedAncestor).boundingBox());
+
     rect.moveBy(-repaintContainer->groupedMapping()->squashingOffsetFromTransformedAncestor());
 }
 
