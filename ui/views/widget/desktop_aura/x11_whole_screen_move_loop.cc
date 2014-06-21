@@ -280,9 +280,6 @@ void X11WholeScreenMoveLoop::SetDragImage(const gfx::ImageSkia& image,
                                           gfx::Vector2dF offset) {
   drag_image_ = image;
   drag_offset_ = offset;
-  // Reset the Y offset, so that the drag-image is always just below the cursor,
-  // so that it is possible to see where the cursor is going.
-  drag_offset_.set_y(0.f);
 }
 
 bool X11WholeScreenMoveLoop::GrabPointerAndKeyboard(gfx::NativeCursor cursor) {
