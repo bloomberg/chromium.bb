@@ -120,6 +120,12 @@ void PingLoader::sendViolationReport(LocalFrame* frame, const KURL& reportURL, P
 
 void PingLoader::start(LocalFrame* frame, ResourceRequest& request, const FetchInitiatorInfo& initiatorInfo, StoredCredentials credentialsAllowed)
 {
+    if (!frame->loader().mixedContentChecker()->canRunInsecureContent(frame->document()->securityOrigin(), request.url()))
+        return;
+    Frame* top = frame->tree().top();
+    if (top != frame && !toLocalFrame(top)->loader().mixedContentChecker()->canRunInsecureContent(toLocalFrame(top)->document()->securityOrigin(), request.url()))
+        return;
+
     OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request, initiatorInfo, credentialsAllowed));
 
     // Leak the ping loader, since it will kill itself as soon as it receives a response.
