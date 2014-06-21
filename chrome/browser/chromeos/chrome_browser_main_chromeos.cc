@@ -730,11 +730,6 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   // Start the CrOS input device UMA watcher
   DeviceUMA::GetInstance();
 #endif
-  keyboard_event_rewriters_.reset(new EventRewriterController());
-  keyboard_event_rewriters_->AddEventRewriter(
-      scoped_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
-  keyboard_event_rewriters_->AddEventRewriter(
-      scoped_ptr<ui::EventRewriter>(new EventRewriter()));
 
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- immediately after ChildProcess::WaitForDebugger().
@@ -757,7 +752,13 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // These are dependent on the ash::Shell singleton already having been
   // initialized.
   power_button_observer_.reset(new PowerButtonObserver);
-  data_promo_notification_.reset(new DataPromoNotification()),
+  data_promo_notification_.reset(new DataPromoNotification());
+
+  keyboard_event_rewriters_.reset(new EventRewriterController());
+  keyboard_event_rewriters_->AddEventRewriter(
+      scoped_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
+  keyboard_event_rewriters_->AddEventRewriter(scoped_ptr<ui::EventRewriter>(
+      new EventRewriter(ash::Shell::GetInstance()->sticky_keys_controller())));
   keyboard_event_rewriters_->Init();
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();

@@ -10,6 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/event_rewriter.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
 class Event;
@@ -59,7 +61,7 @@ class StickyKeysHandler;
 // modifiers. Each handling or state is performed independently.
 //
 // StickyKeysController is disabled by default.
-class ASH_EXPORT StickyKeysController : public ui::EventHandler {
+class ASH_EXPORT StickyKeysController {
  public:
   StickyKeysController();
   virtual ~StickyKeysController();
@@ -69,24 +71,64 @@ class ASH_EXPORT StickyKeysController : public ui::EventHandler {
 
   void SetModifiersEnabled(bool mod3_enabled, bool altgr_enabled);
 
-  // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-
   // Returns the StickyKeyOverlay used by the controller. Ownership is not
   // passed.
   StickyKeysOverlay* GetOverlayForTest();
 
+  // Handles keyboard event. Returns an |EventRewriteStatus|, and may
+  // modify |flags|:
+  // - Returns ui::EVENT_REWRITE_DISCARD, and leaves |flags| untouched,
+  //   if the event is consumed (i.e. a sticky modifier press or release);
+  // - Returns ui::EVENT_REWRITE_REWRITTEN if the event needs to be modified
+  //   according to the returned |flags| (i.e. a sticky-modified key);
+  // - Returns ui::EVENT_REWRITE_DISPATCH_ANOTHER if the event needs to be
+  //   modified according to the returned |flags|, and there are delayed
+  //   modifier-up   events now to be retrieved using |NextDispatchEvent()|
+  //   (i.e. a sticky-modified key that ends a sticky state);
+  // - Otherwise returns ui::EVENT_REWRITE_CONTINUE and leaves |flags|
+  //   unchanged.
+  ui::EventRewriteStatus RewriteKeyEvent(const ui::KeyEvent& event,
+                                         ui::KeyboardCode key_code,
+                                         int* flags);
+
+  // Handles mouse event.
+  ui::EventRewriteStatus RewriteMouseEvent(const ui::MouseEvent& event,
+                                           int* flags);
+
+  // Handles scroll event.
+  ui::EventRewriteStatus RewriteScrollEvent(const ui::ScrollEvent& event,
+                                            int* flags);
+
+  // Obtains a pending modifier-up event. If the immediately previous
+  // call to |Rewrite...Event()| or |NextDispatchEvent()| returned
+  // ui::EVENT_REWRITE_DISPATCH_ANOTHER, this sets |new_event| and returns:
+  // - ui::EVENT_REWRITE_DISPATCH_ANOTHER if there is at least one more
+  //   pending modifier-up event;
+  // - ui::EVENT_REWRITE_REWRITE if this is the last or only modifier-up event;
+  // Otherwise, there is no pending modifier-up event, and this function
+  // returns ui::EVENT_REWRITE_CONTINUE and sets |new_event| to NULL.
+  ui::EventRewriteStatus NextDispatchEvent(scoped_ptr<ui::Event>* new_event);
+
  private:
   // Handles keyboard event. Returns true if Sticky key consumes keyboard event.
-  bool HandleKeyEvent(ui::KeyEvent* event);
+  // Adds to |mod_down_flags| any flag to be added to the key event.
+  // Sets |released| if any modifier is to be released after the key event.
+  bool HandleKeyEvent(const ui::KeyEvent& event,
+                      ui::KeyboardCode key_code,
+                      int* mod_down_flags,
+                      bool* released);
 
-  // Handles mouse event. Returns true if sticky key consumes mouse event.
-  bool HandleMouseEvent(ui::MouseEvent* event);
+  // Handles mouse event. Returns true if Sticky key consumes keyboard event.
+  // Sets |released| if any modifier is to be released after the key event.
+  bool HandleMouseEvent(const ui::MouseEvent& event,
+                        int* mod_down_flags,
+                        bool* released);
 
-  // Handles scroll event. Returns true if sticky key consumes scroll event.
-  bool HandleScrollEvent(ui::ScrollEvent* event);
+  // Handles scroll event. Returns true if Sticky key consumes keyboard event.
+  // Sets |released| if any modifier is to be released after the key event.
+  bool HandleScrollEvent(const ui::ScrollEvent& event,
+                         int* mod_down_flags,
+                         bool* released);
 
   // Updates the overlay UI with the current state of the sticky keys.
   void UpdateOverlay();
@@ -143,40 +185,35 @@ class ASH_EXPORT StickyKeysController : public ui::EventHandler {
 // is modified.
 class ASH_EXPORT StickyKeysHandler {
  public:
-  class StickyKeysHandlerDelegate {
-   public:
-    StickyKeysHandlerDelegate();
-    virtual ~StickyKeysHandlerDelegate();
-
-    // Dispatches keyboard event synchronously. |event| is an event that has
-    // been previously dispatched.
-    virtual void DispatchKeyEvent(ui::KeyEvent* event,
-                                  aura::Window* target) = 0;
-
-    // Dispatches mouse event synchronously. |event| is an event that has
-    // been previously dispatched.
-    virtual void DispatchMouseEvent(ui::MouseEvent* event,
-                                    aura::Window* target) = 0;
-
-    // Dispatches scroll event synchronously. |event| is an event that has
-    // been previously dispatched.
-    virtual void DispatchScrollEvent(ui::ScrollEvent* event,
-                                     aura::Window* target) = 0;
-  };
-
-  // This class takes an ownership of |delegate|.
-  StickyKeysHandler(ui::EventFlags modifier_flag,
-                    StickyKeysHandlerDelegate* delegate);
+  explicit StickyKeysHandler(ui::EventFlags modifier_flag);
   ~StickyKeysHandler();
 
-  // Handles key event. Returns true if key is consumed.
-  bool HandleKeyEvent(ui::KeyEvent* event);
+  // Handles keyboard event. Returns true if Sticky key consumes keyboard event.
+  // Sets its own modifier flag in |mod_down_flags| if it is active and needs
+  // to be added to the event, and sets |released| if releasing it.
+  bool HandleKeyEvent(const ui::KeyEvent& event,
+                      ui::KeyboardCode key_code,
+                      int* mod_down_flags,
+                      bool* released);
 
-  // Handles a mouse event. Returns true if mouse event is consumed.
-  bool HandleMouseEvent(ui::MouseEvent* event);
+  // Handles mouse event. Returns true if sticky key consumes mouse event.
+  // Sets its own modifier flag in |mod_down_flags| if it is active and needs
+  // to be added to the event, and sets |released| if releasing it.
+  bool HandleMouseEvent(const ui::MouseEvent& event,
+                        int* mod_down_flags,
+                        bool* released);
 
-  // Handles a scroll event. Returns true if scroll event is consumed.
-  bool HandleScrollEvent(ui::ScrollEvent* event);
+  // Handles scroll event. Returns true if sticky key consumes scroll event.
+  // Sets its own modifier flag in |mod_down_flags| if it is active and needs
+  // to be added to the event, and sets |released| if releasing it.
+  bool HandleScrollEvent(const ui::ScrollEvent& event,
+                         int* mod_down_flags,
+                         bool* released);
+
+  // Fetches a pending modifier-up event if one exists and the return
+  // parameter |new_event| is available (i.e. not set). Returns the number
+  // of pending events still remaining to be returned.
+  int GetModifierUpEvent(scoped_ptr<ui::Event>* new_event);
 
   // Returns current internal state.
   StickyKeyState current_state() const { return current_state_; }
@@ -192,40 +229,33 @@ class ASH_EXPORT StickyKeysHandler {
     OTHER_MODIFIER_UP,  // The modifier key but not monitored key is up.
   };
 
-  // Translates |event| to sticky keys event type.
-  KeyEventType TranslateKeyEvent(ui::KeyEvent* event);
+  // Translates event type and key code to sticky keys event type.
+  KeyEventType TranslateKeyEvent(ui::EventType type, ui::KeyboardCode key_code);
 
-  // Handles key event in DISABLED state.
-  bool HandleDisabledState(ui::KeyEvent* event);
+  // Handles key event in DISABLED state. Returns true if sticky keys
+  // consumes the keyboard event.
+  bool HandleDisabledState(const ui::KeyEvent& event,
+                           ui::KeyboardCode key_code);
 
-  // Handles key event in ENABLED state.
-  bool HandleEnabledState(ui::KeyEvent* event);
+  // Handles key event in ENABLED state. Returns true if sticky keys
+  // consumes the keyboard event.
+  bool HandleEnabledState(const ui::KeyEvent& event,
+                          ui::KeyboardCode key_code,
+                          int* mod_down_flags,
+                          bool* released);
 
-  // Handles key event in LOCKED state.
-  bool HandleLockedState(ui::KeyEvent* event);
-
-  // Dispatches |event| to its target and then dispatch a key released event
-  // for the modifier key. This function is required to ensure that the events
-  // are sent in the correct order when disabling sticky key after a key/mouse
-  // button press.
-  void DispatchEventAndReleaseModifier(ui::Event* event);
-
-  // Adds |modifier_flags_| to a native X11 event state mask.
-  void AppendNativeEventMask(unsigned int* state);
-
-  // Adds |modifier_flags_| into |event|.
-  void AppendModifier(ui::KeyEvent* event);
-  void AppendModifier(ui::MouseEvent* event);
-  void AppendModifier(ui::ScrollEvent* event);
+  // Handles key event in LOCKED state. Returns true if sticky keys
+  // consumes the keyboard event.
+  bool HandleLockedState(const ui::KeyEvent& event,
+                         ui::KeyboardCode key_code,
+                         int* mod_down_flags,
+                         bool* released);
 
   // The modifier flag to be monitored and appended to events.
   const ui::EventFlags modifier_flag_;
 
   // The current sticky key status.
   StickyKeyState current_state_;
-
-  // True if the received key event is sent by StickyKeyHandler.
-  bool event_from_myself_;
 
   // True if we received the TARGET_MODIFIER_DOWN event while in the DISABLED
   // state but before we receive the TARGET_MODIFIER_UP event. Normal
@@ -240,8 +270,6 @@ class ASH_EXPORT StickyKeysHandler {
 
   // The modifier up key event to be sent on non modifier key on ENABLED state.
   scoped_ptr<ui::KeyEvent> modifier_up_event_;
-
-  scoped_ptr<StickyKeysHandlerDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(StickyKeysHandler);
 };
