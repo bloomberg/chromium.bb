@@ -66,6 +66,7 @@
       ], # source
     },
     {
+      # GN version: //media/cast/logging/proto
       'target_name': 'cast_logging_proto',
       'type': 'static_library',
       'include_dirs': [

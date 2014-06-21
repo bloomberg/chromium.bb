@@ -2,10 +2,143 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
 import("//tools/grit/grit_rule.gni")
+
+gypi_values = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("../chrome_renderer.gypi") ],
+    "scope",
+    [ "../chrome_renderer.gypi" ])
 
 # GYP version: chrome/chrome_resources.gyp:chrome_resources
 # (generate_renderer_resources action)
 grit("resources") {
   source = "resources/renderer_resources.grd"
+}
+
+static_library("renderer") {
+  sources = rebase_path(gypi_values.chrome_renderer_sources, ".", "..")
+
+  defines = []
+
+  deps = [
+    "//base/allocator",
+    "//chrome/common",
+    "//chrome/common/net",
+    "//chrome:resources",
+    "//chrome:strings",
+    "//third_party/re2",
+    #"../components/components.gyp:autofill_content_renderer",  TODO(GYP)
+    #"../components/components.gyp:cdm_renderer",  TODO(GYP)
+    #"../components/components.gyp:data_reduction_proxy_common",  TODO(GYP)
+    #"../components/components.gyp:startup_metric_utils",  TODO(GYP)
+    #"../components/components.gyp:plugins_renderer",  TODO(GYP)
+    "//components/translate:translate_core_common",
+    #"../components/components.gyp:translate_core_language_detection",  TODO(GYP)
+    "//components/visitedlink/renderer",
+    "//content/public/renderer",
+    #"../extensions/extensions.gyp:extensions_renderer",  TODO(GYP)
+    #"../extensions/extensions_resources.gyp:extensions_resources",  TODO(GYP)
+    "//media/cast/logging/proto",
+    #"../media/cast/cast.gyp:cast_sender",  TODO(GYP)
+    #"../media/cast/cast.gyp:cast_transport",  TODO(GYP)
+    "//net",
+    "//skia",
+    "//third_party/WebKit/public:blink",
+    "//third_party/icu",
+    "//third_party/npapi",
+    "//third_party/widevine/cdm:version_h",
+    "//ui/surface",
+    "//webkit/child",
+    "//webkit/common",
+    "//webkit:resources",
+  ]
+
+  if (enable_nacl) {
+    deps += [
+      #'../components/nacl.gyp:nacl',  TODO(GYP)
+      #'../components/nacl.gyp:nacl_renderer',  TODO(GYP)
+    ]
+  }
+
+  if (enable_plugins) {
+    sources += rebase_path(gypi_values.chrome_renderer_plugin_sources,
+                           ".", "..")
+    deps += [
+      #'../ppapi/ppapi_internal.gyp:ppapi_host',  TODO(GYP
+      #'../ppapi/ppapi_internal.gyp:ppapi_proxy',  TODO(GYP
+      #'../ppapi/ppapi_internal.gyp:ppapi_ipc',  TODO(GYP
+      #'../ppapi/ppapi_internal.gyp:ppapi_shared',  TODO(GYP
+    ]
+  }
+
+  if (safe_browsing_mode == 1) {
+    sources += rebase_path(gypi_values.chrome_renderer_safe_browsing_sources,
+                           ".", "..")
+    defines += [ "FULL_SAFE_BROWSING" ]
+    deps += [
+      "//chrome/common/safe_browsing:proto",
+      "//third_party/smhasher:murmurhash3",
+    ]
+  }
+
+  if (enable_extensions) {
+    sources += rebase_path(gypi_values.chrome_renderer_extensions_sources,
+                           ".", "..")
+  }
+  if (enable_webrtc) {
+    sources += rebase_path(gypi_values.chrome_renderer_webrtc_sources,
+                           ".", "..")
+  }
+  if (enable_spellcheck) {
+    sources += rebase_path(gypi_values.chrome_renderer_spellchecker_sources,
+                           ".", "..")
+    # TODO(GYP) When hunspell is done, the extra defines can be removed.
+    #deps += [ "//third_party/hunspell" ]
+    defines += [ "HUNSPELL_STATIC", "HUNSPELL_CHROME_CLIENT", "OPENOFFICEORG" ]
+
+  }
+
+  if (enable_printing > 0) {
+    deps += [
+      #"//printing",   TODO(GYP)
+    ]
+    if (enable_printing == 1) {
+      sources += rebase_path(gypi_values.chrome_renderer_printing_sources,
+                             ".", "..")
+    }
+  }
+
+  if (is_mac) {
+    deps += [ "//third_party/mach_override" ]
+  }
+  if (is_win) {
+    deps += [
+      #'../chrome_elf/chrome_elf.gyp:chrome_elf',  TODO(GYP)
+      "//third_party/wtl",
+    ]
+  }
+  if (!is_android) {
+    sources += rebase_path(gypi_values.chrome_renderer_non_android_sources,
+                           ".", "..")
+  }
+  if (!is_ios) {
+    deps += [
+      # TODO(hclam): See crbug.com/298380 for details.
+      # We should isolate the APIs needed by the renderer.
+      "//chrome/common/extensions/api",
+    ]
+  }
+
+  # TODO(GYP)
+  #     ['win_pdf_metafile_for_printing==1', {
+  #       'sources': [
+  #         'renderer/printing/print_web_view_helper_pdf_win.cc',
+  #       ],
+  #     }, {
+  #       'sources': [
+  #         'renderer/printing/print_web_view_helper_win.cc',
+  #       ],
+  #     }],
 }

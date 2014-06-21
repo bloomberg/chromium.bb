@@ -26,7 +26,7 @@ group("all_components") {
     "//components/user_prefs",
     "//components/visitedlink/browser",
     "//components/visitedlink/common",
-    #"//components/visitedlink/renderer",  # Blocked on blink
+    "//components/visitedlink/renderer",  # Blocked on blink
   ]
 
   if (!is_ios) {
@@ -41,6 +41,7 @@ group("all_components") {
       "//components/user_prefs",  # Blocked on content.
       "//components/visitedlink/browser",  # Blocked on content.
       "//components/visitedlink/common",  # Blocked on content.
+      "//components/visitedlink/renderer",  # Blocked on blink
     ]
   }
 }

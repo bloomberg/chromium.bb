@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //apps/common/api:apps_api
       'target_name': 'apps_api',
       'type': 'static_library',
       'sources': [

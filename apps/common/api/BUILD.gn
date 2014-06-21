@@ -4,10 +4,11 @@
 
 import("//extensions/generated_extensions_api.gni")
 
+# GYP version: apps/common/api/api.gyp:apps_api
 generated_extensions_api("apps_api") {
   sources = [
     "app_runtime.idl",
   ]
-  root_namespace = "extensions::apps_api"
+  root_namespace = "apps::api"
   impl_dir = "//apps/browser/api"
 }

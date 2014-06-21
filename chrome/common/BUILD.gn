@@ -4,12 +4,11 @@
 
 import("//tools/grit/grit_rule.gni")
 
-# TODO(GYP) uncomment when this is used below.
-#gypi_values = exec_script(
-#    "//build/gypi_to_gn.py",
-#    [ rebase_path("../chrome_common.gypi") ],
-#    "scope",
-#    [ "../chrome_common.gypi" ])
+gypi_values = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("../chrome_common.gypi") ],
+    "scope",
+    [ "../chrome_common.gypi" ])
 
 # GYP version: chrome/chrome_resources.gyp:chrome_resources
 #              (generate_common_resources action)
@@ -25,8 +24,7 @@ grit("extensions_api_resources") {
 
 # GYP version: chrome/chrome_common.gyp:common
 static_library("common") {
-  # TODO(GYP) Uncomment when these compile.
-  #sources = rebase_path(gypi_values.chrome_common_sources, ".", "//chrome")
+  sources = rebase_path(gypi_values.chrome_common_sources, ".", "//chrome")
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
@@ -66,7 +64,7 @@ static_library("common") {
 
   if (!is_ios) {
     deps += [
-      #'<(DEPTH)/apps/common/api/api.gyp:apps_api',  TODO(GYP)
+      "//apps/common/api:apps_api",
       "//chrome/common/extensions/api",
       #'<(DEPTH)/components/components.gyp:autofill_core_common',  TODO(GYP)
       #'<(DEPTH)/components/components.gyp:autofill_content_common',  TODO(GYP)

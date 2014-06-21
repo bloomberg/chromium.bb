@@ -1,0 +1,22 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/protobuf/proto_library.gni")
+
+# GYP version: media/cast/cast.gyp:cast_logging_proto
+source_set("proto") {
+  sources = [
+    "proto_utils.cc",
+  ]
+  deps = [
+    ":cast_logging_proto",
+  ]
+}
+
+proto_library("cast_logging_proto") {
+  visibility = ":proto"
+  sources = [
+    "raw_events.proto",
+  ]
+}

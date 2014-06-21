@@ -22,6 +22,7 @@ group("root") {
     "//apps/common/api:apps_api",
     "//cc",
     "//chrome/common",
+    "//chrome/renderer",
     "//components:all_components",
     "//content",
     "//crypto",
@@ -124,6 +125,7 @@ group("root") {
     deps -= [
       "//cc",
       "//chrome/common",  # Blocked on content.
+      "//chrome/renderer",  # Blocked on content.
       "//content",
       "//extensions/common/api:extensions_api",
       "//pdf",  # Not compiled on Android in GYP yet, either.
