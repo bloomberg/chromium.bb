@@ -277,6 +277,16 @@ TEST(WeakPtrTest, InvalidateWeakPtrs) {
   factory.InvalidateWeakPtrs();
   EXPECT_EQ(NULL, ptr.get());
   EXPECT_FALSE(factory.HasWeakPtrs());
+
+  // Test that the factory can create new weak pointers after a
+  // InvalidateWeakPtrs call, and they remain valid until the next
+  // InvalidateWeakPtrs call.
+  WeakPtr<int> ptr2 = factory.GetWeakPtr();
+  EXPECT_EQ(&data, ptr2.get());
+  EXPECT_TRUE(factory.HasWeakPtrs());
+  factory.InvalidateWeakPtrs();
+  EXPECT_EQ(NULL, ptr2.get());
+  EXPECT_FALSE(factory.HasWeakPtrs());
 }
 
 TEST(WeakPtrTest, HasWeakPtrs) {
