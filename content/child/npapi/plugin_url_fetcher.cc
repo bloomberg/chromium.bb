@@ -213,7 +213,17 @@ bool PluginURLFetcher::OnReceivedRedirect(
   // It's unfortunate that this logic of when a redirect's method changes is
   // in url_request.cc, but weburlloader_impl.cc and this file have to duplicate
   // it instead of passing that information.
-  int response_code = info.headers->response_code();
+  int response_code;
+  if (info.headers) {
+    response_code = info.headers->response_code();
+  } else {
+    // A redirect may have NULL headers if it came from URLRequestRedirectJob.
+    //
+    // TODO(davidben): Get the actual response code from the browser. Either
+    // fake enough of headers to have a response code or pass it down as part of
+    // https://crbug.com/384609.
+    response_code = 307;
+  }
   method_ = net::URLRequest::ComputeMethodForRedirect(method_, response_code);
   GURL old_url = url_;
   url_ = new_url;
