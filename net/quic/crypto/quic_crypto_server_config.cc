@@ -85,6 +85,7 @@ struct ClientHelloInfo {
 
   // Errors from EvaluateClientHello.
   vector<uint32> reject_reasons;
+  COMPILE_ASSERT(sizeof(QuicTag) == sizeof(uint32), header_out_of_sync);
 };
 
 struct ValidateClientHelloResultCallback::Result {
@@ -153,8 +154,7 @@ class VerifyNonceIsValidAndUniqueCallback
     // TODO(rtenneti): Implement capturing of error from strike register.
     // Temporarily treat them as CLIENT_NONCE_UNKNOWN_FAILURE.
     if (!nonce_is_valid_and_unique) {
-      result_->info.reject_reasons.push_back(
-          static_cast<uint32>(CLIENT_NONCE_UNKNOWN_FAILURE));
+      result_->info.reject_reasons.push_back(CLIENT_NONCE_UNKNOWN_FAILURE);
     }
     done_cb_->Run(result_);
   }
@@ -901,11 +901,9 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   if (!requested_config.get()) {
     StringPiece requested_scid;
     if (client_hello.GetStringPiece(kSCID, &requested_scid)) {
-      info->reject_reasons.push_back(
-          static_cast<uint32>(SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE));
+      info->reject_reasons.push_back(SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE);
     } else {
-      info->reject_reasons.push_back(
-          static_cast<uint32>(SERVER_CONFIG_INCHOATE_HELLO_FAILURE));
+      info->reject_reasons.push_back(SERVER_CONFIG_INCHOATE_HELLO_FAILURE);
     }
     // No server config with the requested ID.
     helper.ValidationComplete(QUIC_NO_ERROR, "");
@@ -928,8 +926,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
 
   bool found_error = false;
   if (source_address_token_error != HANDSHAKE_OK) {
-    info->reject_reasons.push_back(
-        static_cast<uint32>(source_address_token_error));
+    info->reject_reasons.push_back(source_address_token_error);
     // No valid source address token.
     if (FLAGS_use_early_return_when_verifying_chlo) {
       helper.ValidationComplete(QUIC_NO_ERROR, "");
@@ -942,8 +939,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
       info->client_nonce.size() == kNonceSize) {
     info->client_nonce_well_formed = true;
   } else {
-    info->reject_reasons.push_back(
-        static_cast<uint32>(CLIENT_NONCE_INVALID_FAILURE));
+    info->reject_reasons.push_back(CLIENT_NONCE_INVALID_FAILURE);
     // Invalid client nonce.
     DVLOG(1) << "Invalid client nonce.";
     if (FLAGS_use_early_return_when_verifying_chlo) {
@@ -970,7 +966,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     if (server_nonce_error == HANDSHAKE_OK) {
       info->unique = true;
     } else {
-      info->reject_reasons.push_back(static_cast<uint32>(server_nonce_error));
+      info->reject_reasons.push_back(server_nonce_error);
       info->unique = false;
     }
     DVLOG(1) << "Using server nonce, unique: " << info->unique;
@@ -978,8 +974,8 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     return;
   }
 
-  // We want to contact strike register if there are no errors because it is
-  // a RPC call and is expensive.
+  // We want to contact strike register only if there are no errors because it
+  // is a RPC call and is expensive.
   if (found_error) {
     helper.ValidationComplete(QUIC_NO_ERROR, "");
     return;

@@ -100,6 +100,10 @@ const QuicTag kCFCW = TAG('C', 'F', 'C', 'W');   // Initial session/connection
                                                  // flow control receive window.
 const QuicTag kUAID = TAG('U', 'A', 'I', 'D');   // Client's User Agent ID.
 
+// Rejection tags
+const QuicTag kRREJ = TAG('R', 'R', 'E', 'J');   // Reasons for server sending
+                                                 // rejection message tag.
+
 // Server hello tags
 const QuicTag kCADR = TAG('C', 'A', 'D', 'R');   // Client IP address and port
 
@@ -113,9 +117,6 @@ const QuicTag kRSEQ = TAG('R', 'S', 'E', 'Q');   // Rejected sequence number
 
 // Universal tags
 const QuicTag kPAD  = TAG('P', 'A', 'D', '\0');  // Padding
-
-// Reasons for server sending rejection message tag.
-const QuicTag kRREJ = TAG('R', 'R', 'E', 'J');
 
 // These tags have a special form so that they appear either at the beginning
 // or the end of a handshake message. Since handshake messages are sorted by

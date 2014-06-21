@@ -587,8 +587,9 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
     }
   }
 
-  const QuicTag* reject_reasons;
+  const uint32* reject_reasons;
   size_t num_reject_reasons;
+  COMPILE_ASSERT(sizeof(QuicTag) == sizeof(uint32), header_out_of_sync);
   if (rej.GetTaglist(kRREJ, &reject_reasons,
                      &num_reject_reasons) == QUIC_NO_ERROR) {
 #if defined(DEBUG)
