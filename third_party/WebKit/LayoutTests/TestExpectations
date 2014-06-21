@@ -540,7 +540,6 @@ crbug.com/307781 [ Android ] svg/overflow/overflow-on-outermost-svg-element-in-x
 # Flaky timeouts on android
 crbug.com/307777 [ Android ] accessibility/aria-labelledby-on-input.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] compositing/backing/no-backing-foreground-layer.html [ Timeout Pass ]
-crbug.com/307777 [ Android ] compositing/contents-opaque/layer-transform.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] compositing/empty-render-surface-crasher.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] css3/masking/clip-path-reference-of-fake-clipPath.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] editing/style/query-typing-style.html [ Timeout Pass ]
