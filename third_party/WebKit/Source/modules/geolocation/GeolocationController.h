@@ -80,6 +80,8 @@ private:
     void startUpdatingIfNeeded();
     void stopUpdatingIfNeeded();
 
+    void detach();
+
     GeolocationClient* m_client;
     bool m_hasClientForTest;
 

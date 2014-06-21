@@ -83,19 +83,31 @@ void GeolocationController::stopUpdatingIfNeeded()
 GeolocationController::~GeolocationController()
 {
     ASSERT(m_observers.isEmpty());
-    if (page())
-        m_inspectorAgent->RemoveController(this);
+    detach();
+}
 
-    if (m_hasClientForTest)
+void GeolocationController::detach()
+{
+    if (page() && m_inspectorAgent) {
+        m_inspectorAgent->RemoveController(this);
+        m_inspectorAgent = 0;
+    }
+
+    if (m_hasClientForTest) {
         m_client->controllerForTestRemoved(this);
+        m_hasClientForTest = false;
+    }
 }
 
 // FIXME: Oilpan: Once GeolocationClient is on-heap m_client should be a strong
 // pointer and |willBeDestroyed| can potentially be removed from Supplement.
 void GeolocationController::willBeDestroyed()
 {
-    if (m_client)
+    detach();
+    if (m_client) {
         m_client->geolocationDestroyed();
+        m_client = 0;
+    }
 }
 
 void GeolocationController::persistentHostHasBeenDestroyed()
