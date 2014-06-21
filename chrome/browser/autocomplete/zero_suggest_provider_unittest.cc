@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -35,6 +36,8 @@ class ZeroSuggestProviderTest : public testing::Test,
   virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
 
   void ResetFieldTrialList();
+
+  void CreatePersonalizedFieldTrial();
 
   // Set up threads for testing; this needs to be instantiated before
   // |profile_|.
@@ -102,9 +105,19 @@ void ZeroSuggestProviderTest::ResetFieldTrialList() {
   chrome_variations::testing::ClearAllVariationParams();
 }
 
-TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
+void ZeroSuggestProviderTest::CreatePersonalizedFieldTrial() {
+  std::map<std::string, std::string> params;
+  params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = "true";
+  params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
+      "Personalized";
+  chrome_variations::AssociateVariationParams(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
   base::FieldTrialList::CreateFieldTrial(
-      "AutocompleteDynamicTrial_2", "EnableZeroSuggestPersonalizedExperiment");
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+}
+
+TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
+  CreatePersonalizedFieldTrial();
 
   // Ensure the cache is empty.
   PrefService* prefs = profile_.GetPrefs();
@@ -137,8 +150,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
 }
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
-  base::FieldTrialList::CreateFieldTrial(
-      "AutocompleteDynamicTrial_2", "EnableZeroSuggestPersonalizedExperiment");
+  CreatePersonalizedFieldTrial();
 
   std::string url("http://www.cnn.com");
   AutocompleteInput input(
@@ -184,8 +196,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
 }
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
-  base::FieldTrialList::CreateFieldTrial(
-      "AutocompleteDynamicTrial_2", "EnableZeroSuggestPersonalizedExperiment");
+  CreatePersonalizedFieldTrial();
 
   std::string url("http://www.cnn.com");
   AutocompleteInput input(

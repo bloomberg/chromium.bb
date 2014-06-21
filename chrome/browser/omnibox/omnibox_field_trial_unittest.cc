@@ -43,6 +43,16 @@ class OmniboxFieldTrialTest : public testing::Test {
     return trial;
   }
 
+  // Add a field trial disabling ZeroSuggest.
+  static void CreateDisableZeroSuggestTrial() {
+    std::map<std::string, std::string> params;
+    params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = "false";
+    chrome_variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
+    base::FieldTrialList::CreateFieldTrial(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+  }
+
   // EXPECTS that demotions[match_type] exists with value expected_value.
   static void VerifyDemotion(
       const OmniboxFieldTrial::DemotionMultipliers& demotions,
@@ -121,43 +131,19 @@ TEST_F(OmniboxFieldTrialTest, GetDisabledProviderTypes) {
 // Test if InZeroSuggestFieldTrial() properly parses various field trial
 // group names.
 TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
+  // Default ZeroSuggest setting depends on OS.
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
+  EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+#else
   EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+#endif
 
   {
-    SCOPED_TRACE("Valid group name, unsupported trial name.");
+    SCOPED_TRACE("Disable ZeroSuggest.");
     ResetFieldTrialList();
-    CreateTestTrial("UnsupportedTrialName", "EnableZeroSuggest");
+    CreateDisableZeroSuggestTrial();
     EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
-
-    ResetFieldTrialList();
-    CreateTestTrial("UnsupportedTrialName", "EnableZeroSuggest_Queries");
-    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
-
-    ResetFieldTrialList();
-    CreateTestTrial("UnsupportedTrialName", "EnableZeroSuggest_URLS");
-    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
-  }
-
-  {
-    SCOPED_TRACE("Valid trial name, unsupported group name.");
-    ResetFieldTrialList();
-    CreateTestTrial("AutocompleteDynamicTrial_2", "UnrelatedGroup");
-    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
-  }
-
-  {
-    SCOPED_TRACE("Valid field and group name.");
-    ResetFieldTrialList();
-    CreateTestTrial("AutocompleteDynamicTrial_2", "EnableZeroSuggest");
-    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
-
-    ResetFieldTrialList();
-    CreateTestTrial("AutocompleteDynamicTrial_2", "EnableZeroSuggest_Queries");
-    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
-
-    ResetFieldTrialList();
-    CreateTestTrial("AutocompleteDynamicTrial_3", "EnableZeroSuggest_URLs");
-    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
   }
 
   {

@@ -203,6 +203,9 @@ class SearchProviderTest : public testing::Test,
 
   void ResetFieldTrialList();
 
+  // Create a field trial, with ZeroSuggest activation based on |enabled|.
+  base::FieldTrial* CreateZeroSuggestFieldTrial(bool enabled);
+
   void ClearAllResults();
 
   // See description above class for details of these fields.
@@ -465,6 +468,17 @@ void SearchProviderTest::ResetFieldTrialList() {
   base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
       "AutocompleteDynamicTrial_0", "DefaultGroup");
   trial->group();
+}
+
+base::FieldTrial* SearchProviderTest::CreateZeroSuggestFieldTrial(
+    bool enabled) {
+  std::map<std::string, std::string> params;
+  params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = enabled ?
+      "true" : "false";
+  chrome_variations::AssociateVariationParams(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
+  return base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 }
 
 void SearchProviderTest::ClearAllResults() {
@@ -2900,9 +2914,7 @@ TEST_F(SearchProviderTest, CanSendURL) {
   TemplateURL google_template_url(template_url_data);
 
   // Create field trial.
-  base::FieldTrial* field_trial = base::FieldTrialList::CreateFieldTrial(
-      "AutocompleteDynamicTrial_2", "EnableZeroSuggest");
-  field_trial->group();
+  CreateZeroSuggestFieldTrial(true);
 
   // Not signed in.
   EXPECT_FALSE(SearchProvider::CanSendURL(
@@ -2920,13 +2932,13 @@ TEST_F(SearchProviderTest, CanSendURL) {
 
   // Not in field trial.
   ResetFieldTrialList();
+  CreateZeroSuggestFieldTrial(false);
   EXPECT_FALSE(SearchProvider::CanSendURL(
       GURL("http://www.google.com/search"),
       GURL("https://www.google.com/complete/search"), &google_template_url,
       metrics::OmniboxEventProto::OTHER, &profile_));
-  field_trial = base::FieldTrialList::CreateFieldTrial(
-      "AutocompleteDynamicTrial_2", "EnableZeroSuggest");
-  field_trial->group();
+  ResetFieldTrialList();
+  CreateZeroSuggestFieldTrial(true);
 
   // Invalid page URL.
   EXPECT_FALSE(SearchProvider::CanSendURL(
