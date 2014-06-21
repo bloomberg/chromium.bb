@@ -1907,7 +1907,7 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
                                  &on_demand_tile_raster_bitmap_,
                                  quad->content_rect,
                                  quad->contents_scale));
-  RunOnDemandRasterTask(on_demand_raster_task.get());
+  client_->RunOnDemandRasterTask(on_demand_raster_task.get());
 
   uint8_t* bitmap_pixels = NULL;
   SkBitmap on_demand_tile_raster_bitmap_dest;

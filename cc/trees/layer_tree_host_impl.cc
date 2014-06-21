@@ -216,6 +216,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     : client_(client),
       proxy_(proxy),
       use_gpu_rasterization_(false),
+      on_demand_task_graph_runner_(NULL),
       input_handler_client_(NULL),
       did_lock_scrolling_layer_(false),
       should_bubble_scrolls_(false),
@@ -1883,6 +1884,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
         DirectRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
                                        resource_provider_.get(),
                                        context_provider);
+    on_demand_task_graph_runner_ = &synchronous_task_graph_runner_;
   } else if (UseZeroCopyTextureUpload()) {
     resource_pool_ =
         ResourcePool::Create(resource_provider_.get(),
@@ -1893,6 +1895,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
         ImageRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
                                       RasterWorkerPool::GetTaskGraphRunner(),
                                       resource_provider_.get());
+    on_demand_task_graph_runner_ = RasterWorkerPool::GetTaskGraphRunner();
   } else if (UseOneCopyTextureUpload()) {
     // We need to create a staging resource pool when using copy rasterizer.
     staging_resource_pool_ =
@@ -1909,6 +1912,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
         RasterWorkerPool::GetTaskGraphRunner(),
         resource_provider_.get(),
         staging_resource_pool_.get());
+    on_demand_task_graph_runner_ = RasterWorkerPool::GetTaskGraphRunner();
   } else {
     resource_pool_ = ResourcePool::Create(
         resource_provider_.get(),
@@ -1920,6 +1924,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
         RasterWorkerPool::GetTaskGraphRunner(),
         resource_provider_.get(),
         transfer_buffer_memory_limit_);
+    on_demand_task_graph_runner_ = RasterWorkerPool::GetTaskGraphRunner();
   }
 
   tile_manager_ =
@@ -1931,6 +1936,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
 
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
   need_to_update_visible_tiles_before_draw_ = false;
+  on_demand_task_namespace_ = on_demand_task_graph_runner_->GetNamespaceToken();
 }
 
 void LayerTreeHostImpl::DestroyTileManager() {
@@ -2759,6 +2765,34 @@ scoped_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
 
 void LayerTreeHostImpl::SetFullRootLayerDamage() {
   SetViewportDamage(gfx::Rect(DrawViewportSize()));
+}
+
+void LayerTreeHostImpl::RunOnDemandRasterTask(Task* on_demand_raster_task) {
+  DCHECK(on_demand_task_graph_runner_);
+
+  // Construct a task graph that contains this single raster task.
+  TaskGraph graph;
+  graph.nodes.push_back(
+      TaskGraph::Node(on_demand_raster_task,
+                      RasterWorkerPool::kOnDemandRasterTaskPriority,
+                      0u));
+
+  // Schedule task and wait for task graph runner to finish running it.
+  on_demand_task_graph_runner_->ScheduleTasks(on_demand_task_namespace_,
+                                              &graph);
+
+  if (on_demand_task_graph_runner_ == &synchronous_task_graph_runner_)
+    on_demand_task_graph_runner_->RunUntilIdle();
+
+  on_demand_task_graph_runner_->WaitForTasksToFinishRunning(
+      on_demand_task_namespace_);
+
+  // Collect task now that it has finished running.
+  Task::Vector completed_tasks;
+  on_demand_task_graph_runner_->CollectCompletedTasks(on_demand_task_namespace_,
+                                                      &completed_tasks);
+  DCHECK_EQ(1u, completed_tasks.size());
+  DCHECK_EQ(completed_tasks[0], on_demand_raster_task);
 }
 
 void LayerTreeHostImpl::ScrollViewportBy(gfx::Vector2dF scroll_delta) {

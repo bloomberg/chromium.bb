@@ -46,15 +46,14 @@ class RasterTaskGraphRunner : public TaskGraphRunner,
 #endif
       workers_.push_back(worker.Pass());
     }
-
-    // Use index 0 for origin thread.
-    current_tls_.Set(new ThreadLocalState(0));
   }
 
   virtual ~RasterTaskGraphRunner() { NOTREACHED(); }
 
   size_t GetPictureCloneIndexForCurrentThread() {
-    return current_tls_.Get()->picture_clone_index;
+    // Use index 0 if called on non-raster thread.
+    ThreadLocalState* thread_local_state = current_tls_.Get();
+    return thread_local_state ? current_tls_.Get()->picture_clone_index : 0;
   }
 
  private:

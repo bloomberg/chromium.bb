@@ -54,6 +54,8 @@ class LayerTreeHostOnDemandRasterPixelTest : public LayerTreePixelTest {
     // Triggers pixel readback and ends the test.
     LayerTreePixelTest::SwapBuffersOnThread(host_impl, result);
   }
+
+  void RunOnDemandRasterPixelTest();
 };
 
 class BlueYellowLayerClient : public ContentLayerClient {
@@ -91,7 +93,7 @@ class BlueYellowLayerClient : public ContentLayerClient {
   gfx::Rect layer_rect_;
 };
 
-TEST_F(LayerTreeHostOnDemandRasterPixelTest, RasterPictureLayer) {
+void LayerTreeHostOnDemandRasterPixelTest::RunOnDemandRasterPixelTest() {
   // Use multiple colors in a single layer to prevent bypassing on-demand
   // rasterization if a single solid color is detected in picture analysis.
   gfx::Rect layer_rect(200, 200);
@@ -105,6 +107,23 @@ TEST_F(LayerTreeHostOnDemandRasterPixelTest, RasterPictureLayer) {
   RunPixelTest(GL_WITH_BITMAP,
                layer,
                base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
+}
+
+TEST_F(LayerTreeHostOnDemandRasterPixelTest, RasterPictureLayer) {
+  RunOnDemandRasterPixelTest();
+}
+
+class LayerTreeHostOnDemandRasterPixelTestWithGpuRasterizationForced
+    : public LayerTreeHostOnDemandRasterPixelTest {
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    LayerTreeHostOnDemandRasterPixelTest::InitializeSettings(settings);
+    settings->gpu_rasterization_forced = true;
+  }
+};
+
+TEST_F(LayerTreeHostOnDemandRasterPixelTestWithGpuRasterizationForced,
+       RasterPictureLayer) {
+  RunOnDemandRasterPixelTest();
 }
 
 }  // namespace

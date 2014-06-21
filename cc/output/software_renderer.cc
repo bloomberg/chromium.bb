@@ -395,7 +395,7 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
                                  current_canvas_,
                                  quad->content_rect,
                                  quad->contents_scale));
-  RunOnDemandRasterTask(on_demand_raster_task.get());
+  client_->RunOnDemandRasterTask(on_demand_raster_task.get());
 
   current_canvas_->setDrawFilter(NULL);
 }
