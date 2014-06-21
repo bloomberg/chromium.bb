@@ -2106,7 +2106,14 @@ public class ContentViewCore
             @Override
             public void onDestroyActionMode() {
                 mActionMode = null;
-                if (mUnselectAllOnActionModeDismiss) mImeAdapter.unselect();
+                if (mUnselectAllOnActionModeDismiss) {
+                    if (isSelectionEditable()) {
+                        int selectionEnd = Selection.getSelectionEnd(mEditable);
+                        mInputConnection.setSelection(selectionEnd, selectionEnd);
+                    } else {
+                        mImeAdapter.unselect();
+                    }
+                }
                 getContentViewClient().onContextualActionBarHidden();
             }
 

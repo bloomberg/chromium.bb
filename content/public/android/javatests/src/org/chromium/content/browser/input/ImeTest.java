@@ -11,6 +11,7 @@ import android.content.Context;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Editable;
+import android.text.Selection;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -140,6 +141,22 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForKeyboardStatus(true);
         assertEquals(5, mInputMethodManagerWrapper.getEditorInfo().initialSelStart);
         assertEquals(5, mInputMethodManagerWrapper.getEditorInfo().initialSelEnd);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testKeyboardNotDismissedAfterCopySelection() throws Exception {
+        commitText(mConnection, "Sample Text", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1,
+                "Sample Text", 11, 11, -1, -1);
+        DOMUtils.clickNode(this, mContentViewCore, "input_text");
+        assertWaitForKeyboardStatus(true);
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+        selectAll(mImeAdapter);
+        copy(mImeAdapter);
+        assertWaitForKeyboardStatus(true);
+        assertEquals(11, Selection.getSelectionEnd(mContentViewCore.getEditableForTest()));
+        assertEquals(11, Selection.getSelectionEnd(mContentViewCore.getEditableForTest()));
     }
 
     @SmallTest
