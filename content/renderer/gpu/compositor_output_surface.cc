@@ -149,11 +149,12 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
                    base::Passed(&frame->gl_frame_data),
                    base::Passed(&frame->software_frame_data));
 
-    if (context_provider_) {
-      gpu::gles2::GLES2Interface* context = context_provider_->ContextGL();
+    if (context_provider()) {
+      gpu::gles2::GLES2Interface* context = context_provider()->ContextGL();
       context->Flush();
       uint32 sync_point = context->InsertSyncPointCHROMIUM();
-      context_provider_->ContextSupport()->SignalSyncPoint(sync_point, closure);
+      context_provider()->ContextSupport()->SignalSyncPoint(sync_point,
+                                                            closure);
     } else {
       base::MessageLoopProxy::current()->PostTask(FROM_HERE, closure);
     }
@@ -170,9 +171,9 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   }
 
   if (frame->gl_frame_data) {
-    context_provider_->ContextGL()->ShallowFlushCHROMIUM();
+    context_provider()->ContextGL()->ShallowFlushCHROMIUM();
     ContextProviderCommandBuffer* provider_command_buffer =
-        static_cast<ContextProviderCommandBuffer*>(context_provider_.get());
+        static_cast<ContextProviderCommandBuffer*>(context_provider().get());
     CommandBufferProxyImpl* command_buffer_proxy =
         provider_command_buffer->GetCommandBufferProxy();
     DCHECK(command_buffer_proxy);
