@@ -687,13 +687,16 @@ void DesktopDragDropClientAuraX11::OnMouseReleased() {
     }
 
     if (negotiated_operation_ != ui::DragDropTypes::DRAG_NONE) {
+      // Start timer to end the move loop if the target takes too long to send
+      // an XdndFinished message. It is important that StartEndMoveLoopTimer()
+      // is called before SendXdndDrop() because SendXdndDrop()
+      // sends XdndFinished synchronously if the drop target is a Chrome
+      // window.
+      StartEndMoveLoopTimer();
+
       // We have negotiated an action with the other end.
       source_state_ = SOURCE_STATE_DROPPED;
       SendXdndDrop(source_current_window_);
-
-      // Start timer to end the move loop if the target takes too long to send
-      // an XdndFinished message.
-      StartEndMoveLoopTimer();
       return;
     }
   }
