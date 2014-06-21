@@ -167,9 +167,8 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
  protected:
   // Returns a test server URL, but with host 'www.example.com' so it matches
   // the web store app's extent that we set up via command line flags.
-  virtual GURL GetTestServerURL(const std::string& path) {
-    GURL url = test_server()->GetURL(
-        std::string("files/extensions/api_test/webstore_private/") + path);
+  GURL DoGetTestServerURL(const std::string& path) {
+    GURL url = test_server()->GetURL(path);
 
     // Replace the host with 'www.example.com' so it matches the web store
     // app's extent.
@@ -178,6 +177,11 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
     replace_host.SetHostStr(host_str);
 
     return url.ReplaceComponents(replace_host);
+  }
+
+  virtual GURL GetTestServerURL(const std::string& path) {
+    return DoGetTestServerURL(
+        std::string("files/extensions/api_test/webstore_private/") + path);
   }
 
   // Navigates to |page| and runs the Extension API test there. Any downloads
@@ -577,6 +581,41 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 
   // TODO(isherman): Also test the redirect back to the continue URL once
   // sign-in completes?
+}
+
+class EphemeralAppWebstorePrivateApiTest
+    : public ExtensionWebstorePrivateApiTest {
+ public:
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    ExtensionWebstorePrivateApiTest::SetUpInProcessBrowserTestFixture();
+
+    net::HostPortPair host_port = test_server()->host_port_pair();
+    std::string test_gallery_url = base::StringPrintf(
+        "http://www.example.com:%d/files/extensions/platform_apps/"
+        "ephemeral_launcher",
+        host_port.port());
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kAppsGalleryURL, test_gallery_url);
+  }
+
+  virtual GURL GetTestServerURL(const std::string& path) OVERRIDE {
+    return DoGetTestServerURL(
+        std::string("files/extensions/platform_apps/ephemeral_launcher/") +
+        path);
+  }
+};
+
+// Run tests when the --enable-ephemeral-apps switch is not enabled.
+IN_PROC_BROWSER_TEST_F(EphemeralAppWebstorePrivateApiTest,
+                       EphemeralAppsFeatureDisabled) {
+  ASSERT_TRUE(RunInstallTest("webstore_launch_disabled.html", "app.crx"));
+}
+
+// Run tests when the --enable-ephemeral-apps switch is enabled.
+IN_PROC_BROWSER_TEST_F(EphemeralAppWebstorePrivateApiTest, LaunchEphemeralApp) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableEphemeralApps);
+  ASSERT_TRUE(RunInstallTest("webstore_launch_app.html", "app.crx"));
 }
 
 }  // namespace extensions

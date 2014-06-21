@@ -11,9 +11,12 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "chrome/browser/about_flags.h"
+#include "chrome/browser/apps/ephemeral_app_launcher.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -59,6 +62,8 @@ namespace extensions {
 
 namespace BeginInstallWithManifest3 =
     api::webstore_private::BeginInstallWithManifest3;
+namespace GetEphemeralAppsEnabled =
+    api::webstore_private::GetEphemeralAppsEnabled;
 namespace CompleteInstall = api::webstore_private::CompleteInstall;
 namespace GetBrowserLogin = api::webstore_private::GetBrowserLogin;
 namespace GetIsLauncherEnabled = api::webstore_private::GetIsLauncherEnabled;
@@ -66,6 +71,8 @@ namespace GetStoreLogin = api::webstore_private::GetStoreLogin;
 namespace GetWebGLStatus = api::webstore_private::GetWebGLStatus;
 namespace InstallBundle = api::webstore_private::InstallBundle;
 namespace IsInIncognitoMode = api::webstore_private::IsInIncognitoMode;
+namespace LaunchEphemeralApp = api::webstore_private::LaunchEphemeralApp;
+namespace LaunchEphemeralAppResult = LaunchEphemeralApp::Results;
 namespace SignIn = api::webstore_private::SignIn;
 namespace SetStoreLogin = api::webstore_private::SetStoreLogin;
 
@@ -118,6 +125,7 @@ class PendingInstalls {
 
   bool InsertInstall(Profile* profile, const std::string& id);
   void EraseInstall(Profile* profile, const std::string& id);
+  bool ContainsInstall(Profile* profile, const std::string& id);
  private:
   typedef std::pair<Profile*, std::string> ProfileAndExtensionId;
   typedef std::vector<ProfileAndExtensionId> InstallList;
@@ -146,6 +154,10 @@ void PendingInstalls::EraseInstall(Profile* profile, const std::string& id) {
   InstallList::iterator it = FindInstall(profile, id);
   if (it != installs_.end())
     installs_.erase(it);
+}
+
+bool PendingInstalls::ContainsInstall(Profile* profile, const std::string& id) {
+  return FindInstall(profile, id) != installs_.end();
 }
 
 PendingInstalls::InstallList::iterator PendingInstalls::FindInstall(
@@ -581,12 +593,15 @@ bool WebstorePrivateCompleteInstallFunction::RunAsync() {
       app_list_service->AutoShowForProfile(GetProfile());
   }
 
-  // If the target extension has already been installed ephemerally, it can
-  // be promoted to a regular installed extension and downloading from the Web
-  // Store is not necessary.
+  // If the target extension has already been installed ephemerally and is
+  // up to date, it can be promoted to a regular installed extension and
+  // downloading from the Web Store is not necessary.
   const Extension* extension = ExtensionRegistry::Get(GetProfile())->
       GetExtensionById(params->expected_id, ExtensionRegistry::EVERYTHING);
-  if (extension && util::IsEphemeralApp(extension->id(), GetProfile())) {
+  if (extension && approval_->dummy_extension &&
+      util::IsEphemeralApp(extension->id(), GetProfile()) &&
+      extension->version()->CompareTo(
+          *approval_->dummy_extension->version()) >= 0) {
     ExtensionService* extension_service =
         ExtensionSystem::Get(GetProfile())->extension_service();
     extension_service->PromoteEphemeralApp(extension, false);
@@ -815,6 +830,132 @@ void WebstorePrivateSignInFunction::MergeSessionComplete(
 
   SigninManagerFactory::GetInstance()->RemoveObserver(this);
   Release();  // Balanced in RunAsync().
+}
+
+WebstorePrivateLaunchEphemeralAppFunction::
+    WebstorePrivateLaunchEphemeralAppFunction() {}
+
+WebstorePrivateLaunchEphemeralAppFunction::
+    ~WebstorePrivateLaunchEphemeralAppFunction() {}
+
+bool WebstorePrivateLaunchEphemeralAppFunction::RunAsync() {
+  // Check whether the browser window still exists.
+  content::WebContents* web_contents = GetAssociatedWebContents();
+  if (!web_contents) {
+    error_ = "aborted";
+    return false;
+  }
+
+  if (!user_gesture()) {
+    SetResult(LaunchEphemeralAppResult::RESULT_USER_GESTURE_REQUIRED,
+              "User gesture is required");
+    return false;
+  }
+
+  scoped_ptr<LaunchEphemeralApp::Params> params(
+      LaunchEphemeralApp::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // If a full install is in progress, do not install ephemerally.
+  if (g_pending_installs.Get().ContainsInstall(GetProfile(), params->id)) {
+    SetResult(LaunchEphemeralAppResult::RESULT_INSTALL_IN_PROGRESS,
+              "An install is already in progress");
+    return false;
+  }
+
+  AddRef();  // Balanced in OnLaunchComplete()
+
+  scoped_refptr<EphemeralAppLauncher> launcher =
+      EphemeralAppLauncher::CreateForWebContents(
+          params->id,
+          web_contents,
+          base::Bind(
+              &WebstorePrivateLaunchEphemeralAppFunction::OnLaunchComplete,
+              base::Unretained(this)));
+  launcher->Start();
+  return true;
+}
+
+void WebstorePrivateLaunchEphemeralAppFunction::OnLaunchComplete(
+    webstore_install::Result result, const std::string& error) {
+  // Translate between the EphemeralAppLauncher's error codes and the API
+  // error codes.
+  LaunchEphemeralAppResult::Result api_result =
+      LaunchEphemeralAppResult::RESULT_UNKNOWN_ERROR;
+  switch (result) {
+    case webstore_install::SUCCESS:
+      api_result = LaunchEphemeralAppResult::RESULT_SUCCESS;
+      break;
+    case webstore_install::UNKNOWN_ERROR:
+      api_result = LaunchEphemeralAppResult::RESULT_UNKNOWN_ERROR;
+      break;
+    case webstore_install::INVALID_ID:
+      api_result = LaunchEphemeralAppResult::RESULT_INVALID_ID;
+      break;
+    case webstore_install::NOT_PERMITTED:
+    case webstore_install::WEBSTORE_REQUEST_ERROR:
+    case webstore_install::INVALID_WEBSTORE_RESPONSE:
+    case webstore_install::INVALID_MANIFEST:
+    case webstore_install::ICON_ERROR:
+      api_result = LaunchEphemeralAppResult::RESULT_INSTALL_ERROR;
+      break;
+    case webstore_install::ABORTED:
+    case webstore_install::USER_CANCELLED:
+      api_result = LaunchEphemeralAppResult::RESULT_USER_CANCELLED;
+      break;
+    case webstore_install::BLACKLISTED:
+      api_result = LaunchEphemeralAppResult::RESULT_BLACKLISTED;
+      break;
+    case webstore_install::MISSING_DEPENDENCIES:
+    case webstore_install::REQUIREMENT_VIOLATIONS:
+      api_result = LaunchEphemeralAppResult::RESULT_MISSING_DEPENDENCIES;
+      break;
+    case webstore_install::BLOCKED_BY_POLICY:
+      api_result = LaunchEphemeralAppResult::RESULT_BLOCKED_BY_POLICY;
+      break;
+    case webstore_install::LAUNCH_FEATURE_DISABLED:
+      api_result = LaunchEphemeralAppResult::RESULT_FEATURE_DISABLED;
+      break;
+    case webstore_install::LAUNCH_UNSUPPORTED_EXTENSION_TYPE:
+      api_result = LaunchEphemeralAppResult::RESULT_UNSUPPORTED_EXTENSION_TYPE;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  SetResult(api_result, error);
+  Release();  // Matches AddRef() in RunAsync()
+}
+
+void WebstorePrivateLaunchEphemeralAppFunction::SetResult(
+    LaunchEphemeralAppResult::Result result, const std::string& error) {
+  if (result != LaunchEphemeralAppResult::RESULT_SUCCESS) {
+    if (error.empty()) {
+      error_ = base::StringPrintf(
+          "[%s]", LaunchEphemeralAppResult::ToString(result).c_str());
+    } else {
+      error_ = base::StringPrintf(
+          "[%s]: %s",
+          LaunchEphemeralAppResult::ToString(result).c_str(),
+          error.c_str());
+    }
+  }
+
+  results_ = LaunchEphemeralAppResult::Create(result);
+  SendResponse(result == LaunchEphemeralAppResult::RESULT_SUCCESS);
+}
+
+WebstorePrivateGetEphemeralAppsEnabledFunction::
+    WebstorePrivateGetEphemeralAppsEnabledFunction() {}
+
+WebstorePrivateGetEphemeralAppsEnabledFunction::
+    ~WebstorePrivateGetEphemeralAppsEnabledFunction() {}
+
+bool WebstorePrivateGetEphemeralAppsEnabledFunction::RunSync() {
+  results_ = GetEphemeralAppsEnabled::Results::Create(
+      EphemeralAppLauncher::IsFeatureEnabled());
+  return true;
 }
 
 }  // namespace extensions

@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
+#include "chrome/browser/extensions/webstore_install_result.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/extensions/api/webstore_private.h"
@@ -343,6 +344,43 @@ class WebstorePrivateSignInFunction : public ChromeAsyncExtensionFunction,
   // Tracks changes to sign-in state. Used to notify the page when an existing
   // in-progress sign-in completes, either with success or failure.
   scoped_ptr<SigninTracker> signin_tracker_;
+};
+
+class WebstorePrivateLaunchEphemeralAppFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.launchEphemeralApp",
+                             WEBSTOREPRIVATE_LAUNCHEPHEMERALAPP)
+
+  WebstorePrivateLaunchEphemeralAppFunction();
+
+ protected:
+  virtual ~WebstorePrivateLaunchEphemeralAppFunction();
+
+  // ExtensionFunction:
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+  void OnLaunchComplete(webstore_install::Result result,
+                        const std::string& error);
+  void SetResult(
+      api::webstore_private::LaunchEphemeralApp::Results::Result result,
+      const std::string& error);
+};
+
+class WebstorePrivateGetEphemeralAppsEnabledFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.getEphemeralAppsEnabled",
+                             WEBSTOREPRIVATE_GETEPHEMERALAPPSENABLED)
+
+  WebstorePrivateGetEphemeralAppsEnabledFunction();
+
+ protected:
+  virtual ~WebstorePrivateGetEphemeralAppsEnabledFunction();
+
+  // ExtensionFunction:
+  virtual bool RunSync() OVERRIDE;
 };
 
 }  // namespace extensions

@@ -853,6 +853,8 @@ enum HistogramValue {
   VIRTUALKEYBOARDPRIVATE_OPENSETTINGS,
   BLUETOOTHLOWENERGY_CONNECT,
   BLUETOOTHLOWENERGY_DISCONNECT,
+  WEBSTOREPRIVATE_GETEPHEMERALAPPSENABLED,
+  WEBSTOREPRIVATE_LAUNCHEPHEMERALAPP,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

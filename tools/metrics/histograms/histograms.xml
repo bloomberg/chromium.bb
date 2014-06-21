@@ -36667,6 +36667,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="792" label="VIRTUALKEYBOARDPRIVATE_OPENSETTINGS"/>
   <int value="793" label="BLUETOOTHLOWENERGY_CONNECT"/>
   <int value="794" label="BLUETOOTHLOWENERGY_DISCONNECT"/>
+  <int value="795" label="WEBSTOREPRIVATE_GETEPHEMERALAPPSENABLED"/>
+  <int value="796" label="WEBSTOREPRIVATE_LAUNCHEPHEMERALAPP"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
