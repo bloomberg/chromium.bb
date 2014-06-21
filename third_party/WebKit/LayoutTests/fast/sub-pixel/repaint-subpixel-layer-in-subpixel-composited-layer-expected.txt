@@ -1,111 +1,111 @@
 10.5px,12.5px,10.5px:
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 11.00 0.00)
-          (bounds 100.00 50.00)
-          (drawsContent 1)
-          (repaint rects
-            (rect 13.00 0.00 12.00 12.00)
-            (rect 11.00 0.00 12.00 12.00)
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [11, 0],
+          "bounds": [100, 50],
+          "drawsContent": true,
+          "repaintRects": [
+            [13, 0, 12, 12],
+            [11, 0, 12, 12]
+          ]
+        }
+      ]
+    }
+  ]
+}
 10.6px,12.4px,10.4px:
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 11.00 0.00)
-          (bounds 100.00 50.00)
-          (drawsContent 1)
-          (repaint rects
-            (rect 12.00 0.00 12.00 12.00)
-            (rect 10.00 0.00 12.00 12.00)
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [11, 0],
+          "bounds": [100, 50],
+          "drawsContent": true,
+          "repaintRects": [
+            [12, 0, 12, 12],
+            [10, 0, 12, 12]
+          ]
+        }
+      ]
+    }
+  ]
+}
 10.4px,12.6px,10.6px:
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 10.00 0.00)
-          (bounds 100.00 50.00)
-          (drawsContent 1)
-          (repaint rects
-            (rect 13.00 0.00 12.00 12.00)
-            (rect 11.00 0.00 12.00 12.00)
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [10, 0],
+          "bounds": [100, 50],
+          "drawsContent": true,
+          "repaintRects": [
+            [13, 0, 12, 12],
+            [11, 0, 12, 12]
+          ]
+        }
+      ]
+    }
+  ]
+}
 10.6px,12.6px,10.6px:
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 11.00 0.00)
-          (bounds 100.00 50.00)
-          (drawsContent 1)
-          (repaint rects
-            (rect 13.00 0.00 12.00 12.00)
-            (rect 11.00 0.00 12.00 12.00)
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [11, 0],
+          "bounds": [100, 50],
+          "drawsContent": true,
+          "repaintRects": [
+            [13, 0, 12, 12],
+            [11, 0, 12, 12]
+          ]
+        }
+      ]
+    }
+  ]
+}
 10.4px,12.4px,10.4px:
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 10.00 0.00)
-          (bounds 100.00 50.00)
-          (drawsContent 1)
-          (repaint rects
-            (rect 12.00 0.00 12.00 12.00)
-            (rect 10.00 0.00 12.00 12.00)
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [10, 0],
+          "bounds": [100, 50],
+          "drawsContent": true,
+          "repaintRects": [
+            [12, 0, 12, 12],
+            [10, 0, 12, 12]
+          ]
+        }
+      ]
+    }
+  ]
+}
 
