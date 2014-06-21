@@ -322,7 +322,7 @@
         }],
         ['safe_browsing==1', {
           'sources': [
-            '<@(safe_browsing_sources)',
+            '<@(chrome_renderer_safe_browsing_sources)',
           ],
           'defines': [
             'FULL_SAFE_BROWSING',
