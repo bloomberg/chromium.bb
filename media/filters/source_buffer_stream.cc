@@ -11,6 +11,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "media/base/audio_splicer.h"
+#include "media/filters/source_buffer_platform.h"
 
 namespace media {
 
@@ -333,11 +334,6 @@ static int kDefaultBufferDurationInMs = 125;
 static base::TimeDelta kSeekToStartFudgeRoom() {
   return base::TimeDelta::FromMilliseconds(1000);
 }
-// The maximum amount of data in bytes the stream will keep in memory.
-// 12MB: approximately 5 minutes of 320Kbps content.
-// 150MB: approximately 5 minutes of 4Mbps content.
-static int kDefaultAudioMemoryLimit = 12 * 1024 * 1024;
-static int kDefaultVideoMemoryLimit = 150 * 1024 * 1024;
 
 namespace media {
 
@@ -358,7 +354,7 @@ SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
       last_appended_buffer_is_keyframe_(false),
       last_output_buffer_timestamp_(kNoTimestamp()),
       max_interbuffer_distance_(kNoTimestamp()),
-      memory_limit_(kDefaultAudioMemoryLimit),
+      memory_limit_(kSourceBufferAudioMemoryLimit),
       config_change_pending_(false),
       splice_buffers_index_(0),
       pending_buffers_complete_(false),
@@ -384,7 +380,7 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
       last_appended_buffer_is_keyframe_(false),
       last_output_buffer_timestamp_(kNoTimestamp()),
       max_interbuffer_distance_(kNoTimestamp()),
-      memory_limit_(kDefaultVideoMemoryLimit),
+      memory_limit_(kSourceBufferVideoMemoryLimit),
       config_change_pending_(false),
       splice_buffers_index_(0),
       pending_buffers_complete_(false),
@@ -411,7 +407,7 @@ SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
       last_appended_buffer_is_keyframe_(false),
       last_output_buffer_timestamp_(kNoTimestamp()),
       max_interbuffer_distance_(kNoTimestamp()),
-      memory_limit_(kDefaultAudioMemoryLimit),
+      memory_limit_(kSourceBufferAudioMemoryLimit),
       config_change_pending_(false),
       splice_buffers_index_(0),
       pending_buffers_complete_(false),
