@@ -38,10 +38,6 @@ remoting.Identity = function(consentCallback) {
 /**
  * Call a function with an access token.
  *
- * TODO(jamiewalch): Currently, this results in a new GAIA token being minted
- * each time the function is called. Implement caching functionality unless
- * getAuthToken starts doing so itself.
- *
  * @param {function(string):void} onOk Function to invoke with access token if
  *     an access token was successfully retrieved.
  * @param {function(remoting.Error):void} onError Function to invoke with an
@@ -55,6 +51,24 @@ remoting.Identity.prototype.callWithToken = function(onOk, onError) {
         { 'interactive': false },
         this.onAuthComplete_.bind(this, false));
   }
+};
+
+/**
+ * Remove the cached auth token, if any.
+ *
+ * @param {function():void} onDone Completion callback.
+ * @return {void} Nothing.
+ */
+remoting.Identity.prototype.removeCachedAuthToken = function(onDone) {
+  /** @param {string} token */
+  var onToken = function(token) {
+    if (token) {
+      chrome.identity.removeCachedAuthToken({ 'token': token }, onDone);
+    } else {
+      onDone();
+    }
+  };
+  chrome.identity.getAuthToken({ 'interactive': false }, onToken);
 };
 
 /**

@@ -200,6 +200,11 @@ chrome.identity = {
   getAuthToken: function(parameters, callback) {},
   /**
    * @param {Object.<string>} parameters
+   * @param {function():void} callback
+   */
+  removeCachedAuthToken: function(parameters, callback) {},
+  /**
+   * @param {Object.<string>} parameters
    * @param {function(string):void} callback
    */
   launchWebAuthFlow: function(parameters, callback) {}
