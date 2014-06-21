@@ -155,4 +155,6 @@ void HitRegionManager::trace(Visitor* visitor)
     visitor->trace(m_hitRegionControlMap);
 }
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(HitRegionManager)
+
 } // namespace WebCore

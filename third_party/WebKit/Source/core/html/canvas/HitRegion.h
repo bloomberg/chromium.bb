@@ -26,7 +26,7 @@ public:
     Path path;
 };
 
-class HitRegion FINAL : public RefCountedWillBeGarbageCollected<HitRegion> {
+class HitRegion FINAL : public RefCountedWillBeGarbageCollectedFinalized<HitRegion> {
 public:
     static PassRefPtrWillBeRawPtr<HitRegion> create(const HitRegionOptions& options)
     {
@@ -56,10 +56,9 @@ private:
 
 class HitRegionManager FINAL : public NoBaseWillBeGarbageCollected<HitRegionManager> {
     WTF_MAKE_NONCOPYABLE(HitRegionManager);
-
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(HitRegionManager)
 public:
     static PassOwnPtrWillBeRawPtr<HitRegionManager> create() { return adoptPtrWillBeNoop(new HitRegionManager()); }
-    virtual ~HitRegionManager() { }
 
     void addHitRegion(PassRefPtrWillBeRawPtr<HitRegion>);
 
