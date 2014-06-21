@@ -96,8 +96,7 @@ define([
     var foo = new sample.Foo();
     expect(foo.name).toBe("Fooby");
     expect(foo.a).toBeTruthy();
-    // TODO(vtl): crbug.com/375845
-    // expect(foo.data).toBeNull();
+    expect(foo.data).toBeNull();
 
     var defaults = new sample.DefaultsTest();
     expect(defaults.a0).toBe(-12);
@@ -126,9 +125,7 @@ define([
     expect(defaults.a22).toBeTruthy();
     expect(defaults.a22.shape).toBe(imported.Shape.SHAPE_RECTANGLE);
     expect(defaults.a22.color).toBe(imported2.Color.COLOR_BLACK);
-    // TODO(vtl): crbug.com/375845
-    // expect(defaults.a21).toBeNull();
-    // expect(defaults.a22).toBeNull();
+    expect(defaults.a21).toBeNull();
   }
 
   function ServiceImpl() {

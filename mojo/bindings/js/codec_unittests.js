@@ -89,7 +89,7 @@ define([
     ];
 
     var messageName = 31;
-    var payloadSize = 304;
+    var payloadSize = 280;
 
     var builder = new codec.MessageBuilder(messageName, payloadSize);
     builder.encodeStruct(sample.Foo, foo);

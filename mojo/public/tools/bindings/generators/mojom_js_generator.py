@@ -41,7 +41,7 @@ def JavaScriptDefaultValue(field):
   if isinstance(field.kind, mojom.Struct):
     return "null"
   if isinstance(field.kind, mojom.Array):
-    return "[]"
+    return "null"
   if isinstance(field.kind, mojom.Interface) or \
      isinstance(field.kind, mojom.InterfaceRequest):
     return _kind_to_javascript_default_value[mojom.MSGPIPE]
