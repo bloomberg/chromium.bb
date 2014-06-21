@@ -24,8 +24,4 @@ class PixelExpectations(test_expectations.TestExpectations):
     # self.Fail('Pixel.Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
-    self.Fail('Pixel.Canvas2DRedBox', bug=384551)
-    self.Fail('Pixel.CSS3DBlueBox', bug=384551)
-    self.Fail('Pixel.WebGLGreenTriangle', bug=384551)
-
     pass
