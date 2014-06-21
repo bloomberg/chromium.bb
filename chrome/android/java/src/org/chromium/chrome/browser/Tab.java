@@ -281,6 +281,13 @@ public class Tab implements NavigationClient {
                         isMainFrame, validatedUrl, isErrorPage, isIframeSrcdoc);
             }
         }
+
+        @Override
+        public void didChangeBrandColor(int color) {
+            for (TabObserver observer : mObservers) {
+                observer.onDidChangeBrandColor(color);
+            }
+        }
     }
 
     /**

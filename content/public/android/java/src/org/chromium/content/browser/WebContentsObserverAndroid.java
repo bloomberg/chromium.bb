@@ -163,6 +163,14 @@ public abstract class WebContentsObserverAndroid {
     }
 
     /**
+     * Called when the brand color was changed.
+     * @param color the new color in ARGB format
+     */
+    @CalledByNative
+    public void didChangeBrandColor(int color) {
+    }
+
+    /**
      * Destroy the corresponding native object.
      */
     @CalledByNative

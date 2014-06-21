@@ -143,4 +143,9 @@ public interface TabObserver {
             Tab tab, long frameId, long parentFrameId, boolean isMainFrame, String validatedUrl,
             boolean isErrorPage, boolean isIframeSrcdoc);
 
+    /**
+     * Called when the brand color is changed
+     * @param color the new color in ARGB format.
+     */
+    public void onDidChangeBrandColor(int color);
 }

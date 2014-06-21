@@ -61,4 +61,7 @@ public class EmptyTabObserver implements TabObserver {
     public void onDidStartProvisionalLoadForFrame(Tab tab, long frameId, long parentFrameId,
             boolean isMainFrame, String validatedUrl, boolean isErrorPage,
             boolean isIframeSrcdoc) { }
+
+    @Override
+    public void onDidChangeBrandColor(int color) { }
 }
