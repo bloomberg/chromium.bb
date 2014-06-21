@@ -132,7 +132,7 @@ IdentityInternalsSingleTokenWebUITest.prototype = {
 TEST_F('IdentityInternalsSingleTokenWebUITest', 'getAllTokens', function() {
   var tokenListEntries = this.getTokens();
   expectEquals(1, tokenListEntries.length);
-  expectEquals('Store', this.getExtensionName(tokenListEntries[0]));
+  expectEquals('Web Store', this.getExtensionName(tokenListEntries[0]));
   expectEquals('ahfgeienlihckogmohjhadlkjgocpleb',
                this.getExtensionId(tokenListEntries[0]));
   expectEquals('store_token', this.getAccessToken(tokenListEntries[0]));

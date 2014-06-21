@@ -14074,7 +14074,7 @@ Do you accept?
 
     <!-- WebStore name experiment names -->
     <message name="IDS_WEBSTORE_NAME_STORE" desc="Name for the WebStore app in the app launcher.">
-      Store
+      Web Store
     </message>
     <message name="IDS_WEBSTORE_NAME_WEBSTORE" desc="Name for the WebStore app in the app launcher.">
       WebStore
