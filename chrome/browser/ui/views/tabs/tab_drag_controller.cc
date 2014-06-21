@@ -1095,6 +1095,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
 
     // Hide the tab so that the user doesn't see it animate closed.
     drag_data_[i].attached_tab->SetVisible(false);
+    drag_data_[i].attached_tab->set_detached();
 
     attached_model->DetachWebContentsAt(index);
 

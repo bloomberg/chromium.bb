@@ -371,6 +371,7 @@ Tab::Tab(TabController* controller)
     : controller_(controller),
       closing_(false),
       dragging_(false),
+      detached_(false),
       favicon_hiding_offset_(0),
       loading_animation_frame_(0),
       immersive_loading_step_(0),

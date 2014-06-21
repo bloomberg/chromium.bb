@@ -56,6 +56,11 @@ class Tab : public gfx::AnimationDelegate,
   void set_dragging(bool dragging) { dragging_ = dragging; }
   bool dragging() const { return dragging_; }
 
+  // Used to mark the tab as having been detached.  Once this has happened, the
+  // tab should be invisibly closed.  This is irreversible.
+  void set_detached() { detached_ = true; }
+  bool detached() const { return detached_; }
+
   // Sets the container all animations run from.
   void set_animation_container(gfx::AnimationContainer* container);
 
@@ -304,6 +309,9 @@ class Tab : public gfx::AnimationDelegate,
 
   // True if the tab is being dragged.
   bool dragging_;
+
+  // True if the tab has been detached.
+  bool detached_;
 
   // The offset used to animate the favicon location. This is used when the tab
   // crashes.

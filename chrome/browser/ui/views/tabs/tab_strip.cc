@@ -736,6 +736,10 @@ void TabStrip::SetTabData(int model_index, const TabRendererData& data) {
 }
 
 bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
+  // Detached tabs should always be invisible (as they close).
+  if (tab->detached())
+    return false;
+
   // When stacking tabs, all tabs should always be visible.
   if (stacked_layout_)
     return true;
