@@ -18,17 +18,6 @@
     'remoting_webapp_html',
   ],
   'conditions': [
-    ['webapp_type=="v2_pnacl"', {
-      'dependencies': [
-        'remoting_nacl.gyp:remoting_client_plugin_nacl',
-      ],
-      'variables': {
-        'extra_files': [
-          'webapp/remoting_client_pnacl.nmf',
-          '<(PRODUCT_DIR)/remoting_client_plugin_newlib.pexe',
-        ],
-      },
-    }],
     ['run_jscompile != 0', {
       'variables': {
         'success_stamp': '<(PRODUCT_DIR)/remoting_webapp_jscompile.stamp',

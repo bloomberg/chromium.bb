@@ -84,7 +84,10 @@ remoting.ClientPlugin = function(plugin, onExtensionMessage) {
   this.plugin.addEventListener('message', function(event) {
       that.handleMessage_(event.data);
     }, false);
-  window.setTimeout(this.showPluginForClickToPlay_.bind(this), 500);
+
+  if (remoting.settings.CLIENT_PLUGIN_TYPE == 'native') {
+    window.setTimeout(this.showPluginForClickToPlay_.bind(this), 500);
+  }
 };
 
 /**
