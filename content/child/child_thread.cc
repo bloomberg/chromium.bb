@@ -267,11 +267,16 @@ void ChildThread::Init() {
 
   channel_->AddFilter(histogram_message_filter_.get());
   channel_->AddFilter(sync_message_filter_.get());
-  channel_->AddFilter(new tracing::ChildTraceMessageFilter(
-      ChildProcess::current()->io_message_loop_proxy()));
   channel_->AddFilter(resource_message_filter_.get());
   channel_->AddFilter(quota_message_filter_->GetFilter());
   channel_->AddFilter(service_worker_message_filter_->GetFilter());
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
+    // In single process mode, browser-side tracing will cover the whole
+    // process including renderers.
+    channel_->AddFilter(new tracing::ChildTraceMessageFilter(
+        ChildProcess::current()->io_message_loop_proxy()));
+  }
 
   // In single process mode we may already have a power monitor
   if (!base::PowerMonitor::Get()) {
