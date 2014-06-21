@@ -10,7 +10,7 @@
 # and we only select subset to run
 # A*
 Act*
-Adv*
+Ad*
 All*
 AppA*
 AppL*
@@ -42,22 +42,27 @@ Con*.Re*
 # D*
 Dec*
 Dev*
-DnsP*
+Dns*
 DoNot*
 Down*Ext*.*
 DownloadTest.*
 Drive*
 # E*
+ECK*
 Ed*
 Ep*
 Er*
 Exe*
+Ext*.RSS*
 Ext*Api*
 Ext*Man*
 Ext*Ses*
 # F*
-G*
-H*
+FileSys*
+Find*
+Fl*
+# G*
+# H*
 I*
 J*
 K*
