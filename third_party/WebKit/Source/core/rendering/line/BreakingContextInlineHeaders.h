@@ -347,7 +347,7 @@ inline void BreakingContext::handleOutOfFlowPositioned(Vector<RenderBox*>& posit
     if (isInlineType || box->container()->isRenderInline()) {
         if (m_ignoringSpaces)
             m_lineMidpointState.ensureLineBoxInsideIgnoredSpaces(box);
-        m_trailingObjects.appendObjectIfNeeded(box);
+        m_trailingObjects.appendBoxIfNeeded(box);
     } else {
         positionedObjects.append(box);
     }
@@ -404,27 +404,25 @@ inline void BreakingContext::handleEmptyInline()
 
     RenderInline* flowBox = toRenderInline(m_current.object());
 
+    // Now that some inline flows have line boxes, if we are already ignoring spaces, we need
+    // to make sure that we stop to include this object and then start ignoring spaces again.
+    // If this object is at the start of the line, we need to behave like list markers and
+    // start ignoring spaces.
     bool requiresLineBox = alwaysRequiresLineBox(m_current.object());
     if (requiresLineBox || requiresLineBoxForContent(flowBox, m_lineInfo)) {
-        // An empty inline that only has line-height, vertical-align or font-metrics will
-        // not force linebox creation (and thus affect the height of the line) if the rest of the line is empty.
+        // An empty inline that only has line-height, vertical-align or font-metrics will only get a
+        // line box to affect the height of the line if the rest of the line is not empty.
         if (requiresLineBox)
             m_lineInfo.setEmpty(false, m_block, &m_width);
         if (m_ignoringSpaces) {
-            // If we are in a run of ignored spaces then ensure we get a linebox if lineboxes are eventually
-            // created for the line...
             m_trailingObjects.clear();
             m_lineMidpointState.ensureLineBoxInsideIgnoredSpaces(m_current.object());
         } else if (m_blockStyle->collapseWhiteSpace() && m_resolver.position().object() == m_current.object()
             && shouldSkipWhitespaceAfterStartObject(m_block, m_current.object(), m_lineMidpointState)) {
-            // If this object is at the start of the line, we need to behave like list markers and
-            // start ignoring spaces.
+            // Like with list markers, we start ignoring spaces to make sure that any
+            // additional spaces we see will be discarded.
             m_currentCharacterShouldCollapseIfPreWap = m_currentCharacterIsSpace = true;
             m_ignoringSpaces = true;
-        } else {
-            // If we are after a trailing space but aren't ignoring spaces yet then ensure we get a linebox
-            // if we encounter collapsible whitepace.
-            m_trailingObjects.appendObjectIfNeeded(m_current.object());
         }
     }
 
@@ -756,7 +754,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
                     // spaces. Create a midpoint to terminate the run
                     // before the second space.
                     m_lineMidpointState.startIgnoringSpaces(m_startOfIgnoredSpaces);
-                    m_trailingObjects.updateMidpointsForTrailingObjects(m_lineMidpointState, InlineIterator(), TrailingObjects::DoNotCollapseFirstSpace);
+                    m_trailingObjects.updateMidpointsForTrailingBoxes(m_lineMidpointState, InlineIterator(), TrailingObjects::DoNotCollapseFirstSpace);
                 }
             }
         } else if (m_ignoringSpaces) {

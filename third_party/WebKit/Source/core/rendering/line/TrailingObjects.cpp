@@ -28,7 +28,7 @@
 
 namespace WebCore {
 
-void TrailingObjects::updateMidpointsForTrailingObjects(LineMidpointState& lineMidpointState, const InlineIterator& lBreak, CollapseFirstSpaceOrNot collapseFirstSpace)
+void TrailingObjects::updateMidpointsForTrailingBoxes(LineMidpointState& lineMidpointState, const InlineIterator& lBreak, CollapseFirstSpaceOrNot collapseFirstSpace)
 {
     if (!m_whitespace)
         return;
@@ -46,13 +46,13 @@ void TrailingObjects::updateMidpointsForTrailingObjects(LineMidpointState& lineM
         // Now make sure every single trailingPositionedBox following the trailingSpaceMidpoint properly stops and starts
         // ignoring spaces.
         size_t currentMidpoint = trailingSpaceMidpoint + 1;
-        for (size_t i = 0; i < m_objects.size(); ++i) {
+        for (size_t i = 0; i < m_boxes.size(); ++i) {
             if (currentMidpoint >= lineMidpointState.numMidpoints()) {
                 // We don't have a midpoint for this box yet.
-                lineMidpointState.ensureLineBoxInsideIgnoredSpaces(m_objects[i]);
+                lineMidpointState.ensureLineBoxInsideIgnoredSpaces(m_boxes[i]);
             } else {
-                ASSERT(lineMidpointState.midpoints()[currentMidpoint].object() == m_objects[i]);
-                ASSERT(lineMidpointState.midpoints()[currentMidpoint + 1].object() == m_objects[i]);
+                ASSERT(lineMidpointState.midpoints()[currentMidpoint].object() == m_boxes[i]);
+                ASSERT(lineMidpointState.midpoints()[currentMidpoint + 1].object() == m_boxes[i]);
             }
             currentMidpoint += 2;
         }
@@ -64,8 +64,8 @@ void TrailingObjects::updateMidpointsForTrailingObjects(LineMidpointState& lineM
         unsigned pos = length >= 2 ? length - 2 : UINT_MAX;
         InlineIterator endMid(0, m_whitespace, pos);
         lineMidpointState.startIgnoringSpaces(endMid);
-        for (size_t i = 0; i < m_objects.size(); ++i) {
-            lineMidpointState.ensureLineBoxInsideIgnoredSpaces(m_objects[i]);
+        for (size_t i = 0; i < m_boxes.size(); ++i) {
+            lineMidpointState.ensureLineBoxInsideIgnoredSpaces(m_boxes[i]);
         }
     }
 }
