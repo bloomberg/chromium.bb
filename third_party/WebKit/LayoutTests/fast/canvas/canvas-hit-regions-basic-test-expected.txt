@@ -1,0 +1,31 @@
+Hit detection and mouse event tests
+PASS clickCanvas(100, 100) is 'face'
+PASS clickCanvas(200, 200) is 'nose'
+PASS clickCanvas(127, 242) is 'mouth'
+PASS clickCanvas(150, 125) is 'eye'
+PASS clickCanvas(250, 125) is 'eye'
+PASS clickCanvas(200, 125) is 'face'
+PASS clickCanvas(20, 10) is null
+
+NotSupportedError exception tests
+PASS context.addHitRegion() threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ id : '' }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ id : null }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ id : undefined }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ control : {} }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ control : null }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ control : undefined }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ id : '', control : {} }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ id : null, control : {} }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ id : undefined, control : {} }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ id : '', control : null }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ id : null, control : null }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ id : undefined, control : null }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ id : '', control : undefined }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ id : null, control : undefined }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+PASS context.addHitRegion({ id : undefined, control : undefined }) threw exception NotSupportedError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': Both id and control are null..
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

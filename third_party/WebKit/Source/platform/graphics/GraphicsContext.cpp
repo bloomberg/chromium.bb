@@ -38,6 +38,7 @@
 #include "platform/text/TextRunIterator.h"
 #include "platform/weborigin/KURL.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
+#include "third_party/skia/include/core/SkClipStack.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -1385,6 +1386,14 @@ void GraphicsContext::clipPath(const Path& pathToClip, WindRule clipRule)
     clipPath(path, AntiAliased);
 
     path.setFillType(previousFillType);
+}
+
+bool GraphicsContext::isClipMode() const
+{
+    if (contextDisabled())
+        return false;
+
+    return m_canvas->getClipStack()->getSaveCount() != 0;
 }
 
 void GraphicsContext::clipConvexPolygon(size_t numPoints, const FloatPoint* points, bool antialiased)

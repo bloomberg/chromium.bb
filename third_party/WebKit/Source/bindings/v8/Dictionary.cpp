@@ -27,6 +27,7 @@
 #include "bindings/v8/Dictionary.h"
 
 #include "bindings/core/v8/V8DOMError.h"
+#include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8MediaKeyError.h"
 #include "bindings/core/v8/V8MessagePort.h"
@@ -414,6 +415,16 @@ bool Dictionary::getWithUndefinedOrNullCheck(const String& key, String& value) c
 
     TOSTRING_DEFAULT(V8StringResource<>, stringValue, v8Value, false);
     value = stringValue;
+    return true;
+}
+
+bool Dictionary::getWithUndefinedOrNullCheck(const String& key, RefPtrWillBeMember<Element>& value) const
+{
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value) || WebCore::isUndefinedOrNull(v8Value))
+        return false;
+
+    value = V8Element::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 

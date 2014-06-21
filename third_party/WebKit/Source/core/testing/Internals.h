@@ -41,6 +41,7 @@
 
 namespace WebCore {
 
+class CanvasRenderingContext2D;
 class ClientRect;
 class ClientRectList;
 class DOMPoint;
@@ -320,6 +321,8 @@ public:
     void setNetworkStateNotifierTestOnly(bool);
     // Test must call setNetworkStateNotifierTestOnly(true) before calling setNetworkConnectionInfo.
     void setNetworkConnectionInfo(const String&, ExceptionState&);
+
+    unsigned countHitRegions(CanvasRenderingContext2D*);
 
 private:
     explicit Internals(Document*);

@@ -37,7 +37,6 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/CSSPropertyNames.h"
-#include "core/accessibility/AXObjectCache.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/StylePropertySet.h"
@@ -166,6 +165,7 @@ void CanvasRenderingContext2D::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_stateStack);
     visitor->trace(m_fetchedFonts);
+    visitor->trace(m_hitRegionManager);
 #endif
     CanvasRenderingContext::trace(visitor);
 }
@@ -1242,6 +1242,8 @@ void CanvasRenderingContext2D::clearRect(float x, float y, float width, float he
         context->setCompositeOperation(CompositeSourceOver);
     }
     context->clearRect(rect);
+    if (m_hitRegionManager)
+        m_hitRegionManager->removeHitRegionsInRect(rect, state().m_transform);
     if (saved)
         context->restore();
 
@@ -2355,6 +2357,87 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
     c->restore();
     validateStateStack();
     didDraw(dirtyRect);
+}
+
+void CanvasRenderingContext2D::addHitRegion(ExceptionState& exceptionState)
+{
+    addHitRegion(Dictionary(), exceptionState);
+}
+
+void CanvasRenderingContext2D::addHitRegion(const Dictionary& options, ExceptionState& exceptionState)
+{
+    HitRegionOptions passOptions;
+
+    options.getWithUndefinedOrNullCheck("id", passOptions.id);
+    options.getWithUndefinedOrNullCheck("control", passOptions.control);
+    if (passOptions.id.isEmpty() && !passOptions.control) {
+        exceptionState.throwDOMException(NotSupportedError, "Both id and control are null.");
+        return;
+    }
+
+    FloatRect clipBounds;
+    GraphicsContext* context = drawingContext();
+
+    if (m_path.isEmpty() || !context || !state().m_invertibleCTM
+        || !context->getTransformedClipBounds(&clipBounds)) {
+        exceptionState.throwDOMException(NotSupportedError, "The specified path has no pixels.");
+        return;
+    }
+
+    Path specifiedPath = m_path;
+    specifiedPath.transform(state().m_transform);
+
+    if (context->isClipMode()) {
+        // FIXME: The hit regions should take clipping region into account.
+        // However, we have no way to get the region from canvas state stack by now.
+        // See http://crbug.com/387057
+        exceptionState.throwDOMException(NotSupportedError, "The specified path has no pixels.");
+    }
+
+    passOptions.path = specifiedPath;
+    addHitRegionInternal(passOptions, exceptionState);
+}
+
+void CanvasRenderingContext2D::addHitRegionInternal(const HitRegionOptions& options, ExceptionState& exceptionState)
+{
+    if (!m_hitRegionManager)
+        m_hitRegionManager = HitRegionManager::create();
+
+    // Remove previous region (with id or control)
+    m_hitRegionManager->removeHitRegionById(options.id);
+    m_hitRegionManager->removeHitRegionByControl(options.control.get());
+
+    RefPtrWillBeRawPtr<HitRegion> hitRegion = HitRegion::create(options);
+    hitRegion->updateAccessibility(canvas());
+    m_hitRegionManager->addHitRegion(hitRegion.release());
+}
+
+void CanvasRenderingContext2D::removeHitRegion(const String& id)
+{
+    if (m_hitRegionManager)
+        m_hitRegionManager->removeHitRegionById(id);
+}
+
+void CanvasRenderingContext2D::clearHitRegions()
+{
+    if (m_hitRegionManager)
+        m_hitRegionManager->removeAllHitRegions();
+}
+
+HitRegion* CanvasRenderingContext2D::hitRegionAtPoint(const LayoutPoint& point)
+{
+    if (m_hitRegionManager)
+        return m_hitRegionManager->getHitRegionAtPoint(point);
+
+    return 0;
+}
+
+unsigned CanvasRenderingContext2D::hitRegionsCount() const
+{
+    if (m_hitRegionManager)
+        return m_hitRegionManager->getHitRegionsCount();
+
+    return 0;
 }
 
 } // namespace WebCore

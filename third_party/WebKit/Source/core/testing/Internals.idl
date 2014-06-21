@@ -282,4 +282,7 @@
     // before calling setNetworkConnectionInfo.
     void setNetworkStateNotifierTestOnly(boolean testOnly);
     [RaisesException] void setNetworkConnectionInfo(DOMString type);
+
+    // This function is for testing HitRegions on Canvas2D.
+    unsigned long countHitRegions(CanvasRenderingContext2D context);
 };

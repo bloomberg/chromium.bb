@@ -45,6 +45,7 @@ namespace WebCore {
 
 class ArrayValue;
 class DOMError;
+class Element;
 class LocalDOMWindow;
 class Gamepad;
 class MediaStream;
@@ -176,6 +177,7 @@ public:
     bool getOwnPropertyNames(Vector<String>&) const;
 
     bool getWithUndefinedOrNullCheck(const String&, String&) const;
+    bool getWithUndefinedOrNullCheck(const String&, RefPtrWillBeMember<Element>&) const;
 
     bool hasProperty(const String&) const;
 

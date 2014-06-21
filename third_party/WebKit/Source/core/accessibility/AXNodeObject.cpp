@@ -1247,8 +1247,28 @@ LayoutRect AXNodeObject::elementRect() const
     if (!m_explicitElementRect.isEmpty())
         return m_explicitElementRect;
 
-    // AXNodeObjects have no mechanism yet to return a size or position.
-    // For now, let's return the position of the ancestor that does have a position,
+    // FIXME: If there are a lot of elements in the canvas, it will be inefficient.
+    // We can avoid the inefficient calculations by using AXComputedObjectAttributeCache.
+    if (node()->parentElement()->isInCanvasSubtree()) {
+        LayoutRect rect;
+
+        for (Node* child = node()->firstChild(); child; child = child->nextSibling()) {
+            if (child->isHTMLElement()) {
+                if (AXObject* obj = axObjectCache()->get(child)) {
+                    if (rect.isEmpty())
+                        rect = obj->elementRect();
+                    else
+                        rect.unite(obj->elementRect());
+                }
+            }
+        }
+
+        if (!rect.isEmpty())
+            return rect;
+    }
+
+    // If this object doesn't have an explicit element rect or computable from its children,
+    // for now, let's return the position of the ancestor that does have a position,
     // and make it the width of that parent, and about the height of a line of text, so that it's clear the object is a child of the parent.
 
     LayoutRect boundingBox;

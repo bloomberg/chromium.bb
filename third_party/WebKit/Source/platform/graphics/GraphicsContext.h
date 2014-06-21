@@ -371,6 +371,7 @@ public:
     // the discipline is different.
     void canvasClip(const Path&, WindRule = RULE_EVENODD);
     void clipOut(const Path&);
+    bool isClipMode() const;
 
     // ---------- Transformation methods -----------------
     // Note that the getCTM method returns only the current transform from Blink's perspective,

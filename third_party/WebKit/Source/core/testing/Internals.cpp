@@ -79,6 +79,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/html/forms/FormController.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
@@ -2377,6 +2378,11 @@ void Internals::setNetworkConnectionInfo(const String& type, ExceptionState& exc
         return;
     }
     networkStateNotifier().setWebConnectionTypeForTest(webtype);
+}
+
+unsigned Internals::countHitRegions(CanvasRenderingContext2D* context)
+{
+    return context->hitRegionsCount();
 }
 
 } // namespace WebCore

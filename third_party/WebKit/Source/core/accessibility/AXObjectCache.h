@@ -197,6 +197,8 @@ public:
 
     bool nodeHasRole(Node*, const AtomicString& role);
 
+    void setCanvasObjectBounds(Element*, const LayoutRect&);
+
     AXComputedObjectAttributeCache* computedObjectAttributeCache() { return m_computedObjectAttributeCache.get(); }
 
 protected:

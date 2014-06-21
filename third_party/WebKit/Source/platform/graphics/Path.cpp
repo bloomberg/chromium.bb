@@ -482,6 +482,16 @@ void Path::translate(const FloatSize& size)
     m_path.offset(WebCoreFloatToSkScalar(size.width()), WebCoreFloatToSkScalar(size.height()));
 }
 
+bool Path::subtractPath(const Path& other)
+{
+    return Op(m_path, other.m_path, kDifference_PathOp, &m_path);
+}
+
+bool Path::intersectPath(const Path& other)
+{
+    return Op(m_path, other.m_path, kIntersect_PathOp, &m_path);
+}
+
 bool Path::unionPath(const Path& other)
 {
     return Op(m_path, other.m_path, kUnion_PathOp, &m_path);

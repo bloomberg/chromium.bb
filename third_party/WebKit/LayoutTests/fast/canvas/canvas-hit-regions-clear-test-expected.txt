@@ -1,0 +1,31 @@
+PASS internals.countHitRegions(context) is 0
+PASS internals.countHitRegions(context) is 1
+PASS internals.countHitRegions(context) is 2
+PASS clickCanvas(60, 60) is 'red'
+PASS clickCanvas(120, 120) is 'yellow'
+PASS internals.countHitRegions(context) is 2
+PASS clickCanvas(60, 60) is null
+PASS clickCanvas(120, 120) is 'yellow'
+PASS internals.countHitRegions(context) is 1
+PASS clickCanvas(120, 120) is null
+PASS clickCanvas(40, 40) is 'red'
+PASS internals.countHitRegions(context) is 1
+PASS clickCanvas(62, 62) is 'red'
+PASS clickCanvas(40, 40) is null
+PASS internals.countHitRegions(context) is 2
+PASS clickCanvas(40, 40) is 'yellow'
+PASS internals.countHitRegions(context) is 2
+PASS clickCanvas(40, 40) is null
+PASS clickCanvas(101, 1) is null
+PASS internals.countHitRegions(context) is 3
+PASS clickCanvas(101, 51) is 'blue'
+PASS internals.countHitRegions(context) is 2
+PASS clickCanvas(101, 51) is null
+PASS internals.countHitRegions(context) is 0
+PASS clickCanvas(62, 62) is null
+PASS internals.countHitRegions(context) is 0
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

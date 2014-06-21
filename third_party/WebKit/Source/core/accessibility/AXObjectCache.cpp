@@ -1018,4 +1018,13 @@ void AXObjectCache::handleScrollPositionChanged(RenderObject* renderObject)
     postPlatformNotification(getOrCreate(renderObject), AXScrollPositionChanged);
 }
 
+void AXObjectCache::setCanvasObjectBounds(Element* element, const LayoutRect& rect)
+{
+    AXObject* obj = getOrCreate(element);
+    if (!obj)
+        return;
+
+    obj->setElementRect(rect);
+}
+
 } // namespace WebCore

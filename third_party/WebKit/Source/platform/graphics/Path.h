@@ -143,6 +143,9 @@ public:
     void addPathForRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius);
     void addBeziersForRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius);
 
+    bool subtractPath(const Path&);
+    bool intersectPath(const Path&);
+
     // Updates the path to the union (inclusive-or) of itself with the given argument.
     bool unionPath(const Path& other);
 
