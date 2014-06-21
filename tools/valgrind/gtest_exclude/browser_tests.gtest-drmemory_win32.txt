@@ -48,7 +48,14 @@ Down*Ext*.*
 DownloadTest.*
 Drive*
 # E*
-F*
+Ed*
+Ep*
+Er*
+Exe*
+Ext*Api*
+Ext*Man*
+Ext*Ses*
+# F*
 G*
 H*
 I*
