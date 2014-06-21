@@ -9,19 +9,6 @@ namespace content {
 
 namespace indexed_db {
 
-enum TransactionMode {
-  TRANSACTION_READ_ONLY = 0,
-  TRANSACTION_READ_WRITE = 1,
-  TRANSACTION_VERSION_CHANGE = 2
-};
-
-enum CursorDirection {
-  CURSOR_NEXT = 0,
-  CURSOR_NEXT_NO_DUPLICATE = 1,
-  CURSOR_PREV = 2,
-  CURSOR_PREV_NO_DUPLICATE = 3,
-};
-
 enum CursorType {
   CURSOR_KEY_AND_VALUE = 0,
   CURSOR_KEY_ONLY

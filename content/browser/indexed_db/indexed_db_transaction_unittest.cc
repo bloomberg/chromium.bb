@@ -68,8 +68,9 @@ class IndexedDBTransactionTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(IndexedDBTransactionTest);
 };
 
-class IndexedDBTransactionTestMode : public IndexedDBTransactionTest,
-  public testing::WithParamInterface<indexed_db::TransactionMode> {
+class IndexedDBTransactionTestMode
+    : public IndexedDBTransactionTest,
+      public testing::WithParamInterface<blink::WebIDBTransactionMode> {
  public:
   IndexedDBTransactionTestMode() {}
  private:
@@ -84,7 +85,7 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
       id,
       new MockIndexedDBDatabaseCallbacks(),
       scope,
-      indexed_db::TRANSACTION_READ_WRITE,
+      blink::WebIDBTransactionModeReadWrite,
       db_,
       new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
   db_->TransactionCreated(transaction);
@@ -128,7 +129,7 @@ TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
       id,
       new MockIndexedDBDatabaseCallbacks(),
       scope,
-      indexed_db::TRANSACTION_READ_ONLY,
+      blink::WebIDBTransactionModeReadOnly,
       db_,
       new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
   db_->TransactionCreated(transaction);
@@ -179,7 +180,7 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
   EXPECT_TRUE(transaction->preemptive_task_queue_.empty());
 
   transaction->ScheduleTask(
-      IndexedDBDatabase::NORMAL_TASK,
+      blink::WebIDBTaskTypeNormal,
       base::Bind(&IndexedDBTransactionTest::DummyOperation,
                  base::Unretained(this)));
 
@@ -222,7 +223,7 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
       id,
       new MockIndexedDBDatabaseCallbacks(),
       scope,
-      indexed_db::TRANSACTION_VERSION_CHANGE,
+      blink::WebIDBTransactionModeVersionChange,
       db_,
       new IndexedDBFakeBackingStore::FakeTransaction(commit_failure));
 
@@ -241,7 +242,7 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   EXPECT_TRUE(transaction->preemptive_task_queue_.empty());
 
   transaction->ScheduleTask(
-      IndexedDBDatabase::PREEMPTIVE_TASK,
+      blink::WebIDBTaskTypePreemptive,
       base::Bind(&IndexedDBTransactionTest::DummyOperation,
                  base::Unretained(this)));
   transaction->AddPreemptiveEvent();
@@ -323,7 +324,7 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
   EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
 
   transaction->ScheduleTask(
-      IndexedDBDatabase::PREEMPTIVE_TASK,
+      blink::WebIDBTaskTypePreemptive,
       base::Bind(&IndexedDBTransactionTest::DummyOperation,
                  base::Unretained(this)));
   EXPECT_EQ(0, transaction->pending_preemptive_events_);
@@ -356,11 +357,9 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
             transaction->diagnostics().tasks_scheduled);
 }
 
-static const indexed_db::TransactionMode kTestModes[] = {
-  indexed_db::TRANSACTION_READ_ONLY,
-  indexed_db::TRANSACTION_READ_WRITE,
-  indexed_db::TRANSACTION_VERSION_CHANGE
-};
+static const blink::WebIDBTransactionMode kTestModes[] = {
+    blink::WebIDBTransactionModeReadOnly, blink::WebIDBTransactionModeReadWrite,
+    blink::WebIDBTransactionModeVersionChange};
 
 INSTANTIATE_TEST_CASE_P(IndexedDBTransactions,
                         IndexedDBTransactionTestMode,

@@ -19,7 +19,7 @@ namespace content {
 IndexedDBCursor::IndexedDBCursor(
     scoped_ptr<IndexedDBBackingStore::Cursor> cursor,
     indexed_db::CursorType cursor_type,
-    IndexedDBDatabase::TaskType task_type,
+    blink::WebIDBTaskType task_type,
     IndexedDBTransaction* transaction)
     : task_type_(task_type),
       cursor_type_(cursor_type),

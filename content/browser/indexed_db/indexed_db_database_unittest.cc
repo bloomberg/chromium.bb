@@ -143,7 +143,7 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
   database->CreateTransaction(transaction_id,
                               request->connection(),
                               scope,
-                              indexed_db::TRANSACTION_READ_ONLY);
+                              blink::WebIDBTransactionModeReadOnly);
 
   request->connection()->ForceClose();
 
@@ -251,7 +251,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
         transaction_id,
         callbacks_,
         std::set<int64>() /*scope*/,
-        indexed_db::TRANSACTION_VERSION_CHANGE,
+        blink::WebIDBTransactionModeVersionChange,
         db_,
         new IndexedDBFakeBackingStore::FakeTransaction(commit_success_));
     db_->TransactionCreated(transaction_);
@@ -396,7 +396,7 @@ TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
            &value,
            &handles,
            key.Pass(),
-           IndexedDBDatabase::ADD_ONLY,
+           blink::WebIDBPutModeAddOnly,
            request,
            index_keys);
 

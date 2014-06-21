@@ -1961,7 +1961,7 @@ leveldb::Status IndexedDBBackingStore::DeleteRange(
                             database_id,
                             object_store_id,
                             key_range,
-                            indexed_db::CURSOR_NEXT,
+                            blink::WebIDBCursorDirectionNext,
                             &s);
   if (!s.ok())
     return s;
@@ -1973,7 +1973,7 @@ leveldb::Status IndexedDBBackingStore::DeleteRange(
                             database_id,
                             object_store_id,
                             key_range,
-                            indexed_db::CURSOR_PREV,
+                            blink::WebIDBCursorDirectionPrev,
                             &s);
 
   if (!s.ok())
@@ -3573,7 +3573,7 @@ bool ObjectStoreCursorOptions(
     int64 database_id,
     int64 object_store_id,
     const IndexedDBKeyRange& range,
-    indexed_db::CursorDirection direction,
+    blink::WebIDBCursorDirection direction,
     IndexedDBBackingStore::Cursor::CursorOptions* cursor_options) {
   cursor_options->database_id = database_id;
   cursor_options->object_store_id = object_store_id;
@@ -3581,10 +3581,11 @@ bool ObjectStoreCursorOptions(
   bool lower_bound = range.lower().IsValid();
   bool upper_bound = range.upper().IsValid();
   cursor_options->forward =
-      (direction == indexed_db::CURSOR_NEXT_NO_DUPLICATE ||
-       direction == indexed_db::CURSOR_NEXT);
-  cursor_options->unique = (direction == indexed_db::CURSOR_NEXT_NO_DUPLICATE ||
-                            direction == indexed_db::CURSOR_PREV_NO_DUPLICATE);
+      (direction == blink::WebIDBCursorDirectionNextNoDuplicate ||
+       direction == blink::WebIDBCursorDirectionNext);
+  cursor_options->unique =
+      (direction == blink::WebIDBCursorDirectionNextNoDuplicate ||
+       direction == blink::WebIDBCursorDirectionPrevNoDuplicate);
 
   if (!lower_bound) {
     cursor_options->low_key =
@@ -3646,7 +3647,7 @@ bool IndexCursorOptions(
     int64 object_store_id,
     int64 index_id,
     const IndexedDBKeyRange& range,
-    indexed_db::CursorDirection direction,
+    blink::WebIDBCursorDirection direction,
     IndexedDBBackingStore::Cursor::CursorOptions* cursor_options) {
   DCHECK(transaction);
   if (!KeyPrefix::ValidIds(database_id, object_store_id, index_id))
@@ -3659,10 +3660,11 @@ bool IndexCursorOptions(
   bool lower_bound = range.lower().IsValid();
   bool upper_bound = range.upper().IsValid();
   cursor_options->forward =
-      (direction == indexed_db::CURSOR_NEXT_NO_DUPLICATE ||
-       direction == indexed_db::CURSOR_NEXT);
-  cursor_options->unique = (direction == indexed_db::CURSOR_NEXT_NO_DUPLICATE ||
-                            direction == indexed_db::CURSOR_PREV_NO_DUPLICATE);
+      (direction == blink::WebIDBCursorDirectionNextNoDuplicate ||
+       direction == blink::WebIDBCursorDirectionNext);
+  cursor_options->unique =
+      (direction == blink::WebIDBCursorDirectionNextNoDuplicate ||
+       direction == blink::WebIDBCursorDirectionPrevNoDuplicate);
 
   if (!lower_bound) {
     cursor_options->low_key =
@@ -3719,7 +3721,7 @@ IndexedDBBackingStore::OpenObjectStoreCursor(
     int64 database_id,
     int64 object_store_id,
     const IndexedDBKeyRange& range,
-    indexed_db::CursorDirection direction,
+    blink::WebIDBCursorDirection direction,
     leveldb::Status* s) {
   IDB_TRACE("IndexedDBBackingStore::OpenObjectStoreCursor");
   *s = leveldb::Status::OK();
@@ -3746,7 +3748,7 @@ IndexedDBBackingStore::OpenObjectStoreKeyCursor(
     int64 database_id,
     int64 object_store_id,
     const IndexedDBKeyRange& range,
-    indexed_db::CursorDirection direction,
+    blink::WebIDBCursorDirection direction,
     leveldb::Status* s) {
   IDB_TRACE("IndexedDBBackingStore::OpenObjectStoreKeyCursor");
   *s = leveldb::Status::OK();
@@ -3774,7 +3776,7 @@ IndexedDBBackingStore::OpenIndexKeyCursor(
     int64 object_store_id,
     int64 index_id,
     const IndexedDBKeyRange& range,
-    indexed_db::CursorDirection direction,
+    blink::WebIDBCursorDirection direction,
     leveldb::Status* s) {
   IDB_TRACE("IndexedDBBackingStore::OpenIndexKeyCursor");
   *s = leveldb::Status::OK();
@@ -3803,7 +3805,7 @@ IndexedDBBackingStore::OpenIndexCursor(
     int64 object_store_id,
     int64 index_id,
     const IndexedDBKeyRange& range,
-    indexed_db::CursorDirection direction,
+    blink::WebIDBCursorDirection direction,
     leveldb::Status* s) {
   IDB_TRACE("IndexedDBBackingStore::OpenIndexCursor");
   LevelDBTransaction* leveldb_transaction = transaction->transaction();

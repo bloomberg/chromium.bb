@@ -20,6 +20,7 @@
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "content/browser/indexed_db/list_set.h"
+#include "third_party/WebKit/public/platform/WebIDBTypes.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -37,17 +38,6 @@ struct IndexedDBValue;
 class CONTENT_EXPORT IndexedDBDatabase
     : NON_EXPORTED_BASE(public base::RefCounted<IndexedDBDatabase>) {
  public:
-  enum TaskType {
-    NORMAL_TASK = 0,
-    PREEMPTIVE_TASK
-  };
-
-  enum PutMode {
-    ADD_OR_UPDATE,
-    ADD_ONLY,
-    CURSOR_UPDATE
-  };
-
   // An index and corresponding set of keys
   typedef std::pair<int64, std::vector<IndexedDBKey> > IndexKeys;
 
@@ -91,7 +81,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   void CreateTransaction(int64 transaction_id,
                          IndexedDBConnection* connection,
                          const std::vector<int64>& object_store_ids,
-                         uint16 mode);
+                         blink::WebIDBTransactionMode mode);
   void Close(IndexedDBConnection* connection, bool forced);
   void ForceClose();
 
@@ -132,7 +122,7 @@ class CONTENT_EXPORT IndexedDBDatabase
            IndexedDBValue* value,
            ScopedVector<webkit_blob::BlobDataHandle>* handles,
            scoped_ptr<IndexedDBKey> key,
-           PutMode mode,
+           blink::WebIDBPutMode mode,
            scoped_refptr<IndexedDBCallbacks> callbacks,
            const std::vector<IndexKeys>& index_keys);
   void SetIndexKeys(int64 transaction_id,
@@ -146,9 +136,9 @@ class CONTENT_EXPORT IndexedDBDatabase
                   int64 object_store_id,
                   int64 index_id,
                   scoped_ptr<IndexedDBKeyRange> key_range,
-                  indexed_db::CursorDirection,
+                  blink::WebIDBCursorDirection,
                   bool key_only,
-                  TaskType task_type,
+                  blink::WebIDBTaskType task_type,
                   scoped_refptr<IndexedDBCallbacks> callbacks);
   void Count(int64 transaction_id,
              int64 object_store_id,

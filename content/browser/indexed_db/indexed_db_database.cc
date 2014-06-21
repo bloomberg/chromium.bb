@@ -271,7 +271,7 @@ void IndexedDBDatabase::CreateObjectStore(int64 transaction_id,
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
-  DCHECK_EQ(transaction->mode(), indexed_db::TRANSACTION_VERSION_CHANGE);
+  DCHECK_EQ(transaction->mode(), blink::WebIDBTransactionModeVersionChange);
 
   if (ContainsKey(metadata_.object_stores, object_store_id)) {
     DLOG(ERROR) << "Invalid object_store_id";
@@ -320,7 +320,7 @@ void IndexedDBDatabase::DeleteObjectStore(int64 transaction_id,
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
-  DCHECK_EQ(transaction->mode(), indexed_db::TRANSACTION_VERSION_CHANGE);
+  DCHECK_EQ(transaction->mode(), blink::WebIDBTransactionModeVersionChange);
 
   if (!ValidateObjectStoreId(object_store_id))
     return;
@@ -342,7 +342,7 @@ void IndexedDBDatabase::CreateIndex(int64 transaction_id,
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
-  DCHECK_EQ(transaction->mode(), indexed_db::TRANSACTION_VERSION_CHANGE);
+  DCHECK_EQ(transaction->mode(), blink::WebIDBTransactionModeVersionChange);
 
   if (!ValidateObjectStoreIdAndNewIndexId(object_store_id, index_id))
     return;
@@ -394,7 +394,7 @@ void IndexedDBDatabase::DeleteIndex(int64 transaction_id,
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
-  DCHECK_EQ(transaction->mode(), indexed_db::TRANSACTION_VERSION_CHANGE);
+  DCHECK_EQ(transaction->mode(), blink::WebIDBTransactionModeVersionChange);
 
   if (!ValidateObjectStoreIdAndIndexId(object_store_id, index_id))
     return;
@@ -535,7 +535,7 @@ void IndexedDBDatabase::GetOperation(
           id(),
           object_store_id,
           *key_range,
-          indexed_db::CURSOR_NEXT,
+          blink::WebIDBCursorDirectionNext,
           &s);
     } else if (cursor_type == indexed_db::CURSOR_KEY_ONLY) {
       // Index Value Retrieval Operation
@@ -545,7 +545,7 @@ void IndexedDBDatabase::GetOperation(
           object_store_id,
           index_id,
           *key_range,
-          indexed_db::CURSOR_NEXT,
+          blink::WebIDBCursorDirectionNext,
           &s);
     } else {
       // Index Referenced Value Retrieval Operation
@@ -555,7 +555,7 @@ void IndexedDBDatabase::GetOperation(
           object_store_id,
           index_id,
           *key_range,
-          indexed_db::CURSOR_NEXT,
+          blink::WebIDBCursorDirectionNext,
           &s);
     }
 
@@ -712,7 +712,7 @@ struct IndexedDBDatabase::PutOperationParams {
   IndexedDBValue value;
   ScopedVector<webkit_blob::BlobDataHandle> handles;
   scoped_ptr<IndexedDBKey> key;
-  IndexedDBDatabase::PutMode put_mode;
+  blink::WebIDBPutMode put_mode;
   scoped_refptr<IndexedDBCallbacks> callbacks;
   std::vector<IndexKeys> index_keys;
 
@@ -725,14 +725,14 @@ void IndexedDBDatabase::Put(int64 transaction_id,
                             IndexedDBValue* value,
                             ScopedVector<webkit_blob::BlobDataHandle>* handles,
                             scoped_ptr<IndexedDBKey> key,
-                            PutMode put_mode,
+                            blink::WebIDBPutMode put_mode,
                             scoped_refptr<IndexedDBCallbacks> callbacks,
                             const std::vector<IndexKeys>& index_keys) {
   IDB_TRACE1("IndexedDBDatabase::Put", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
-  DCHECK_NE(transaction->mode(), indexed_db::TRANSACTION_READ_ONLY);
+  DCHECK_NE(transaction->mode(), blink::WebIDBTransactionModeReadOnly);
 
   if (!ValidateObjectStoreId(object_store_id))
     return;
@@ -754,7 +754,7 @@ void IndexedDBDatabase::Put(int64 transaction_id,
 void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
                                      IndexedDBTransaction* transaction) {
   IDB_TRACE1("IndexedDBDatabase::PutOperation", "txn.id", transaction->id());
-  DCHECK_NE(transaction->mode(), indexed_db::TRANSACTION_READ_ONLY);
+  DCHECK_NE(transaction->mode(), blink::WebIDBTransactionModeReadOnly);
   bool key_was_generated = false;
 
   DCHECK(metadata_.object_stores.find(params->object_store_id) !=
@@ -764,7 +764,7 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
   DCHECK(object_store.auto_increment || params->key->IsValid());
 
   scoped_ptr<IndexedDBKey> key;
-  if (params->put_mode != IndexedDBDatabase::CURSOR_UPDATE &&
+  if (params->put_mode != blink::WebIDBPutModeCursorUpdate &&
       object_store.auto_increment && !params->key->IsValid()) {
     scoped_ptr<IndexedDBKey> auto_inc_key = GenerateKey(
         backing_store_.get(), transaction, id(), params->object_store_id);
@@ -783,7 +783,7 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
   DCHECK(key->IsValid());
 
   IndexedDBBackingStore::RecordIdentifier record_identifier;
-  if (params->put_mode == IndexedDBDatabase::ADD_ONLY) {
+  if (params->put_mode == blink::WebIDBPutModeAddOnly) {
     bool found = false;
     leveldb::Status s = backing_store_->KeyExistsInObjectStore(
         transaction->BackingStoreTransaction(),
@@ -865,7 +865,7 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
   }
 
   if (object_store.auto_increment &&
-      params->put_mode != IndexedDBDatabase::CURSOR_UPDATE &&
+      params->put_mode != blink::WebIDBPutModeCursorUpdate &&
       key->type() == WebIDBKeyTypeNumber) {
     leveldb::Status s = UpdateKeyGenerator(backing_store_.get(),
                                            transaction,
@@ -895,7 +895,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
-  DCHECK_EQ(transaction->mode(), indexed_db::TRANSACTION_VERSION_CHANGE);
+  DCHECK_EQ(transaction->mode(), blink::WebIDBTransactionModeVersionChange);
 
   // TODO(alecflett): This method could be asynchronous, but we need to
   // evaluate if it's worth the extra complexity.
@@ -970,10 +970,10 @@ void IndexedDBDatabase::SetIndexesReady(int64 transaction_id,
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
-  DCHECK_EQ(transaction->mode(), indexed_db::TRANSACTION_VERSION_CHANGE);
+  DCHECK_EQ(transaction->mode(), blink::WebIDBTransactionModeVersionChange);
 
   transaction->ScheduleTask(
-      IndexedDBDatabase::PREEMPTIVE_TASK,
+      blink::WebIDBTaskTypePreemptive,
       base::Bind(&IndexedDBDatabase::SetIndexesReadyOperation,
                  this,
                  index_ids.size()));
@@ -994,9 +994,9 @@ struct IndexedDBDatabase::OpenCursorOperationParams {
   int64 object_store_id;
   int64 index_id;
   scoped_ptr<IndexedDBKeyRange> key_range;
-  indexed_db::CursorDirection direction;
+  blink::WebIDBCursorDirection direction;
   indexed_db::CursorType cursor_type;
-  IndexedDBDatabase::TaskType task_type;
+  blink::WebIDBTaskType task_type;
   scoped_refptr<IndexedDBCallbacks> callbacks;
 
  private:
@@ -1008,9 +1008,9 @@ void IndexedDBDatabase::OpenCursor(
     int64 object_store_id,
     int64 index_id,
     scoped_ptr<IndexedDBKeyRange> key_range,
-    indexed_db::CursorDirection direction,
+    blink::WebIDBCursorDirection direction,
     bool key_only,
-    TaskType task_type,
+    blink::WebIDBTaskType task_type,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
   IDB_TRACE1("IndexedDBDatabase::OpenCursor", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
@@ -1043,14 +1043,14 @@ void IndexedDBDatabase::OpenCursorOperation(
   // until the indexing is complete. This can't happen any earlier
   // because we don't want to switch to early mode in case multiple
   // indexes are being created in a row, with Put()'s in between.
-  if (params->task_type == IndexedDBDatabase::PREEMPTIVE_TASK)
+  if (params->task_type == blink::WebIDBTaskTypePreemptive)
     transaction->AddPreemptiveEvent();
 
   leveldb::Status s;
   scoped_ptr<IndexedDBBackingStore::Cursor> backing_store_cursor;
   if (params->index_id == IndexedDBIndexMetadata::kInvalidId) {
     if (params->cursor_type == indexed_db::CURSOR_KEY_ONLY) {
-      DCHECK_EQ(params->task_type, IndexedDBDatabase::NORMAL_TASK);
+      DCHECK_EQ(params->task_type, blink::WebIDBTaskTypeNormal);
       backing_store_cursor = backing_store_->OpenObjectStoreKeyCursor(
           transaction->BackingStoreTransaction(),
           id(),
@@ -1068,7 +1068,7 @@ void IndexedDBDatabase::OpenCursorOperation(
           &s);
     }
   } else {
-    DCHECK_EQ(params->task_type, IndexedDBDatabase::NORMAL_TASK);
+    DCHECK_EQ(params->task_type, blink::WebIDBTaskTypeNormal);
     if (params->cursor_type == indexed_db::CURSOR_KEY_ONLY) {
       backing_store_cursor = backing_store_->OpenIndexKeyCursor(
           transaction->BackingStoreTransaction(),
@@ -1153,7 +1153,7 @@ void IndexedDBDatabase::CountOperation(
         id(),
         object_store_id,
         *key_range,
-        indexed_db::CURSOR_NEXT,
+        blink::WebIDBCursorDirectionNext,
         &s);
   } else {
     backing_store_cursor = backing_store_->OpenIndexKeyCursor(
@@ -1162,7 +1162,7 @@ void IndexedDBDatabase::CountOperation(
         object_store_id,
         index_id,
         *key_range,
-        indexed_db::CURSOR_NEXT,
+        blink::WebIDBCursorDirectionNext,
         &s);
   }
   if (!s.ok()) {
@@ -1197,7 +1197,7 @@ void IndexedDBDatabase::DeleteRange(
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
-  DCHECK_NE(transaction->mode(), indexed_db::TRANSACTION_READ_ONLY);
+  DCHECK_NE(transaction->mode(), blink::WebIDBTransactionModeReadOnly);
 
   if (!ValidateObjectStoreId(object_store_id))
     return;
@@ -1243,7 +1243,7 @@ void IndexedDBDatabase::Clear(int64 transaction_id,
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
-  DCHECK_NE(transaction->mode(), indexed_db::TRANSACTION_READ_ONLY);
+  DCHECK_NE(transaction->mode(), blink::WebIDBTransactionModeReadOnly);
 
   if (!ValidateObjectStoreId(object_store_id))
     return;
@@ -1347,7 +1347,7 @@ void IndexedDBDatabase::TransactionFinished(IndexedDBTransaction* transaction,
   DCHECK_EQ(transactions_[transaction->id()], transaction);
   transactions_.erase(transaction->id());
 
-  if (transaction->mode() == indexed_db::TRANSACTION_VERSION_CHANGE) {
+  if (transaction->mode() == blink::WebIDBTransactionModeVersionChange) {
     if (pending_second_half_open_) {
       if (committed) {
         DCHECK_EQ(pending_second_half_open_->version(), metadata_.int_version);
@@ -1448,7 +1448,7 @@ void IndexedDBDatabase::CreateTransaction(
     int64 transaction_id,
     IndexedDBConnection* connection,
     const std::vector<int64>& object_store_ids,
-    uint16 mode) {
+    blink::WebIDBTransactionMode mode) {
   IDB_TRACE1("IndexedDBDatabase::CreateTransaction", "txn.id", transaction_id);
   DCHECK(connections_.count(connection));
   DCHECK(transactions_.find(transaction_id) == transactions_.end());
@@ -1461,7 +1461,7 @@ void IndexedDBDatabase::CreateTransaction(
       transaction_id,
       connection->callbacks(),
       std::set<int64>(object_store_ids.begin(), object_store_ids.end()),
-      static_cast<indexed_db::TransactionMode>(mode),
+      mode,
       this,
       new IndexedDBBackingStore::Transaction(backing_store_)));
 }
@@ -1614,7 +1614,7 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
   CreateTransaction(transaction_id,
                     connection.get(),
                     object_store_ids,
-                    indexed_db::TRANSACTION_VERSION_CHANGE);
+                    blink::WebIDBTransactionModeVersionChange);
 
   transactions_[transaction_id]->ScheduleTask(
       base::Bind(&IndexedDBDatabase::VersionChangeOperation,

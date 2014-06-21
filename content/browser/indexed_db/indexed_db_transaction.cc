@@ -54,7 +54,7 @@ IndexedDBTransaction::IndexedDBTransaction(
     int64 id,
     scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
     const std::set<int64>& object_store_ids,
-    indexed_db::TransactionMode mode,
+    blink::WebIDBTransactionMode mode,
     IndexedDBDatabase* database,
     IndexedDBBackingStore::Transaction* backing_store_transaction)
     : id_(id),
@@ -86,7 +86,7 @@ IndexedDBTransaction::~IndexedDBTransaction() {
   DCHECK(abort_task_stack_.empty());
 }
 
-void IndexedDBTransaction::ScheduleTask(IndexedDBDatabase::TaskType type,
+void IndexedDBTransaction::ScheduleTask(blink::WebIDBTaskType type,
                                         Operation task) {
   DCHECK_NE(state_, COMMITTING);
   if (state_ == FINISHED)
@@ -94,7 +94,7 @@ void IndexedDBTransaction::ScheduleTask(IndexedDBDatabase::TaskType type,
 
   timeout_timer_.Stop();
   used_ = true;
-  if (type == IndexedDBDatabase::NORMAL_TASK) {
+  if (type == blink::WebIDBTaskTypeNormal) {
     task_queue_.push(task);
     ++diagnostics_.tasks_scheduled;
   } else {
@@ -370,7 +370,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
   // Otherwise, start a timer in case the front-end gets wedged and
   // never requests further activity. Read-only transactions don't
   // block other transactions, so don't time those out.
-  if (mode_ != indexed_db::TRANSACTION_READ_ONLY) {
+  if (mode_ != blink::WebIDBTransactionModeReadOnly) {
     timeout_timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromSeconds(kInactivityTimeoutPeriodSeconds),

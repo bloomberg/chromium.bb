@@ -163,7 +163,7 @@ IndexedDBFakeBackingStore::OpenObjectStoreKeyCursor(
     int64 database_id,
     int64 object_store_id,
     const IndexedDBKeyRange& key_range,
-    indexed_db::CursorDirection,
+    blink::WebIDBCursorDirection,
     leveldb::Status* s) {
   return scoped_ptr<IndexedDBBackingStore::Cursor>();
 }
@@ -173,7 +173,7 @@ IndexedDBFakeBackingStore::OpenObjectStoreCursor(
     int64 database_id,
     int64 object_store_id,
     const IndexedDBKeyRange& key_range,
-    indexed_db::CursorDirection,
+    blink::WebIDBCursorDirection,
     leveldb::Status* s) {
   return scoped_ptr<IndexedDBBackingStore::Cursor>();
 }
@@ -184,7 +184,7 @@ IndexedDBFakeBackingStore::OpenIndexKeyCursor(
     int64 object_store_id,
     int64 index_id,
     const IndexedDBKeyRange& key_range,
-    indexed_db::CursorDirection,
+    blink::WebIDBCursorDirection,
     leveldb::Status* s) {
   return scoped_ptr<IndexedDBBackingStore::Cursor>();
 }
@@ -195,7 +195,7 @@ IndexedDBFakeBackingStore::OpenIndexCursor(
     int64 object_store_id,
     int64 index_id,
     const IndexedDBKeyRange& key_range,
-    indexed_db::CursorDirection,
+    blink::WebIDBCursorDirection,
     leveldb::Status* s) {
   return scoped_ptr<IndexedDBBackingStore::Cursor>();
 }

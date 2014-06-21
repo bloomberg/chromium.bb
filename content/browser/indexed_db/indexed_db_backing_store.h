@@ -347,14 +347,14 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64 database_id,
       int64 object_store_id,
       const IndexedDBKeyRange& key_range,
-      indexed_db::CursorDirection,
+      blink::WebIDBCursorDirection,
       leveldb::Status*);
   virtual scoped_ptr<Cursor> OpenObjectStoreCursor(
       IndexedDBBackingStore::Transaction* transaction,
       int64 database_id,
       int64 object_store_id,
       const IndexedDBKeyRange& key_range,
-      indexed_db::CursorDirection,
+      blink::WebIDBCursorDirection,
       leveldb::Status*);
   virtual scoped_ptr<Cursor> OpenIndexKeyCursor(
       IndexedDBBackingStore::Transaction* transaction,
@@ -362,7 +362,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64 object_store_id,
       int64 index_id,
       const IndexedDBKeyRange& key_range,
-      indexed_db::CursorDirection,
+      blink::WebIDBCursorDirection,
       leveldb::Status*);
   virtual scoped_ptr<Cursor> OpenIndexCursor(
       IndexedDBBackingStore::Transaction* transaction,
@@ -370,7 +370,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64 object_store_id,
       int64 index_id,
       const IndexedDBKeyRange& key_range,
-      indexed_db::CursorDirection,
+      blink::WebIDBCursorDirection,
       leveldb::Status*);
 
   class BlobChangeRecord {

@@ -108,14 +108,14 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
       int64 database_id,
       int64 object_store_id,
       const IndexedDBKeyRange& key_range,
-      indexed_db::CursorDirection,
+      blink::WebIDBCursorDirection,
       leveldb::Status*) OVERRIDE;
   virtual scoped_ptr<Cursor> OpenObjectStoreCursor(
       Transaction* transaction,
       int64 database_id,
       int64 object_store_id,
       const IndexedDBKeyRange& key_range,
-      indexed_db::CursorDirection,
+      blink::WebIDBCursorDirection,
       leveldb::Status*) OVERRIDE;
   virtual scoped_ptr<Cursor> OpenIndexKeyCursor(
       Transaction* transaction,
@@ -123,14 +123,14 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
       int64 object_store_id,
       int64 index_id,
       const IndexedDBKeyRange& key_range,
-      indexed_db::CursorDirection,
+      blink::WebIDBCursorDirection,
       leveldb::Status*) OVERRIDE;
   virtual scoped_ptr<Cursor> OpenIndexCursor(Transaction* transaction,
                                              int64 database_id,
                                              int64 object_store_id,
                                              int64 index_id,
                                              const IndexedDBKeyRange& key_range,
-                                             indexed_db::CursorDirection,
+                                             blink::WebIDBCursorDirection,
                                              leveldb::Status*) OVERRIDE;
 
   class FakeTransaction : public IndexedDBBackingStore::Transaction {

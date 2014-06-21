@@ -664,15 +664,14 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
   IndexedDBValue value;
   value.bits = params.value;
   value.blob_info.swap(blob_info);
-  connection->database()->Put(
-      host_transaction_id,
-      params.object_store_id,
-      &value,
-      &scoped_handles,
-      make_scoped_ptr(new IndexedDBKey(params.key)),
-      static_cast<IndexedDBDatabase::PutMode>(params.put_mode),
-      callbacks,
-      params.index_keys);
+  connection->database()->Put(host_transaction_id,
+                              params.object_store_id,
+                              &value,
+                              &scoped_handles,
+                              make_scoped_ptr(new IndexedDBKey(params.key)),
+                              params.put_mode,
+                              callbacks,
+                              params.index_keys);
   TransactionIDToSizeMap* map =
       &parent_->database_dispatcher_host_->transaction_size_map_;
   // Size can't be big enough to overflow because it represents the
@@ -729,9 +728,9 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnOpenCursor(
       params.object_store_id,
       params.index_id,
       make_scoped_ptr(new IndexedDBKeyRange(params.key_range)),
-      static_cast<indexed_db::CursorDirection>(params.direction),
+      params.direction,
       params.key_only,
-      static_cast<IndexedDBDatabase::TaskType>(params.task_type),
+      params.task_type,
       callbacks);
 }
 
