@@ -161,8 +161,8 @@ void LaunchInstance::OnReceivedResponse(URLResponsePtr response) {
         navigation::ResponseDetails::New());
     nav_response->response = response.Pass();
     nav_response->response_body_stream = response_body_stream_.Pass();
-    client_->OnLaunch(nav_response->response->url, handler_url,
-                      nav_response.Pass());
+    String response_url = nav_response->response->url;
+    client_->OnLaunch(response_url, handler_url, nav_response.Pass());
   }
 }
 
