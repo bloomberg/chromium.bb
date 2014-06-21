@@ -204,22 +204,7 @@ bool MatchesAnySearchURL(const GURL& url,
   return false;
 }
 
-// Returns true if |contents| is rendered inside the Instant process for
-// |profile|.
-bool IsRenderedInInstantProcess(const content::WebContents* contents,
-                                Profile* profile) {
-  const content::RenderProcessHost* process_host =
-      contents->GetRenderProcessHost();
-  if (!process_host)
-    return false;
 
-  const InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile);
-  if (!instant_service)
-    return false;
-
-  return instant_service->IsInstantProcess(process_host->GetID());
-}
 
 // |url| should either have a secure scheme or have a non-HTTPS base URL that
 // the user specified using --google-base-url. (This allows testers to use
@@ -476,6 +461,21 @@ bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
          IsInstantExtendedAPIEnabled() &&
          (url.SchemeIs(chrome::kChromeSearchScheme) ||
           IsInstantURL(url, profile));
+}
+
+bool IsRenderedInInstantProcess(const content::WebContents* contents,
+                                Profile* profile) {
+  const content::RenderProcessHost* process_host =
+      contents->GetRenderProcessHost();
+  if (!process_host)
+    return false;
+
+  const InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile);
+  if (!instant_service)
+    return false;
+
+  return instant_service->IsInstantProcess(process_host->GetID());
 }
 
 bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile) {

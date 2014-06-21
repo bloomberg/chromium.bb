@@ -113,6 +113,14 @@ TEST_F(SearchIPCRouterPolicyTest, ProcessNavigateToURL) {
   EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldProcessNavigateToURL(true));
 }
 
+TEST_F(SearchIPCRouterPolicyTest, DoNotProcessNavigateToURL) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  EXPECT_FALSE(GetSearchIPCRouterPolicy()->ShouldProcessNavigateToURL(true));
+
+  NavigateAndCommitActiveTab(GURL("file://foo/bar"));
+  EXPECT_FALSE(GetSearchIPCRouterPolicy()->ShouldProcessNavigateToURL(true));
+}
+
 TEST_F(SearchIPCRouterPolicyTest, ProcessPasteIntoOmniboxMsg) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldProcessPasteIntoOmnibox(true));

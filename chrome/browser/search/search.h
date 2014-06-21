@@ -121,6 +121,11 @@ base::string16 GetSearchTerms(const content::WebContents* contents);
 // Returns true if |url| should be rendered in the Instant renderer process.
 bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile);
 
+// Returns true if |contents| is rendered inside the Instant process for
+// |profile|.
+bool IsRenderedInInstantProcess(const content::WebContents* contents,
+                                Profile* profile);
+
 // Returns true if the Instant |url| should use process per site.
 bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile);
 
