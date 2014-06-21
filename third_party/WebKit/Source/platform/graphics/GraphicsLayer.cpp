@@ -534,27 +534,27 @@ static bool compareFloatRects(const FloatRect& a, const FloatRect& b)
 }
 
 template <typename T>
-static PassRefPtrWillBeRawPtr<JSONArray> pointAsJSONArray(const T& point)
+static PassRefPtr<JSONArray> pointAsJSONArray(const T& point)
 {
-    RefPtrWillBeRawPtr<JSONArray> array = adoptRefWillBeNoop(new JSONArray);
+    RefPtr<JSONArray> array = adoptRef(new JSONArray);
     array->pushNumber(point.x());
     array->pushNumber(point.y());
     return array;
 }
 
 template <typename T>
-static PassRefPtrWillBeRawPtr<JSONArray> sizeAsJSONArray(const T& size)
+static PassRefPtr<JSONArray> sizeAsJSONArray(const T& size)
 {
-    RefPtrWillBeRawPtr<JSONArray> array = adoptRefWillBeNoop(new JSONArray);
+    RefPtr<JSONArray> array = adoptRef(new JSONArray);
     array->pushNumber(size.width());
     array->pushNumber(size.height());
     return array;
 }
 
 template <typename T>
-static PassRefPtrWillBeRawPtr<JSONArray> rectAsJSONArray(const T& rect)
+static PassRefPtr<JSONArray> rectAsJSONArray(const T& rect)
 {
-    RefPtrWillBeRawPtr<JSONArray> array = adoptRefWillBeNoop(new JSONArray);
+    RefPtr<JSONArray> array = adoptRef(new JSONArray);
     array->pushNumber(rect.x());
     array->pushNumber(rect.y());
     array->pushNumber(rect.width());
@@ -562,11 +562,11 @@ static PassRefPtrWillBeRawPtr<JSONArray> rectAsJSONArray(const T& rect)
     return array;
 }
 
-static PassRefPtrWillBeRawPtr<JSONArray> transformAsJSONArray(const TransformationMatrix& t)
+static PassRefPtr<JSONArray> transformAsJSONArray(const TransformationMatrix& t)
 {
-    RefPtrWillBeRawPtr<JSONArray> array = adoptRefWillBeNoop(new JSONArray);
+    RefPtr<JSONArray> array = adoptRef(new JSONArray);
     {
-        RefPtrWillBeRawPtr<JSONArray> row = adoptRefWillBeNoop(new JSONArray);
+        RefPtr<JSONArray> row = adoptRef(new JSONArray);
         row->pushNumber(t.m11());
         row->pushNumber(t.m12());
         row->pushNumber(t.m13());
@@ -574,7 +574,7 @@ static PassRefPtrWillBeRawPtr<JSONArray> transformAsJSONArray(const Transformati
         array->pushArray(row);
     }
     {
-        RefPtrWillBeRawPtr<JSONArray> row = adoptRefWillBeNoop(new JSONArray);
+        RefPtr<JSONArray> row = adoptRef(new JSONArray);
         row->pushNumber(t.m21());
         row->pushNumber(t.m22());
         row->pushNumber(t.m23());
@@ -582,7 +582,7 @@ static PassRefPtrWillBeRawPtr<JSONArray> transformAsJSONArray(const Transformati
         array->pushArray(row);
     }
     {
-        RefPtrWillBeRawPtr<JSONArray> row = adoptRefWillBeNoop(new JSONArray);
+        RefPtr<JSONArray> row = adoptRef(new JSONArray);
         row->pushNumber(t.m31());
         row->pushNumber(t.m32());
         row->pushNumber(t.m33());
@@ -590,7 +590,7 @@ static PassRefPtrWillBeRawPtr<JSONArray> transformAsJSONArray(const Transformati
         array->pushArray(row);
     }
     {
-        RefPtrWillBeRawPtr<JSONArray> row = adoptRefWillBeNoop(new JSONArray);
+        RefPtr<JSONArray> row = adoptRef(new JSONArray);
         row->pushNumber(t.m41());
         row->pushNumber(t.m42());
         row->pushNumber(t.m43());
@@ -607,9 +607,9 @@ static String pointerAsString(const void* ptr)
     return ts.release();
 }
 
-PassRefPtrWillBeRawPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, RenderingContextMap& renderingContextMap) const
+PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, RenderingContextMap& renderingContextMap) const
 {
-    RefPtrWillBeRawPtr<JSONObject> json = adoptRefWillBeNoop(new JSONObject);
+    RefPtr<JSONObject> json = adoptRef(new JSONObject);
 
     if (flags & LayerTreeIncludesDebugInfo) {
         json->setString("this", pointerAsString(this));
@@ -681,7 +681,7 @@ PassRefPtrWillBeRawPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags
     if ((flags & LayerTreeIncludesRepaintRects) && repaintRectMap().contains(this) && !repaintRectMap().get(this).isEmpty()) {
         Vector<FloatRect> repaintRectsCopy = repaintRectMap().get(this);
         std::sort(repaintRectsCopy.begin(), repaintRectsCopy.end(), &compareFloatRects);
-        RefPtrWillBeRawPtr<JSONArray> repaintRectsJSON = adoptRefWillBeNoop(new JSONArray);
+        RefPtr<JSONArray> repaintRectsJSON = adoptRef(new JSONArray);
         for (size_t i = 0; i < repaintRectsCopy.size(); ++i) {
             if (repaintRectsCopy[i].isEmpty())
                 continue;
@@ -691,7 +691,7 @@ PassRefPtrWillBeRawPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags
     }
 
     if ((flags & LayerTreeIncludesPaintingPhases) && m_paintingPhase) {
-        RefPtrWillBeRawPtr<JSONArray> paintingPhasesJSON = adoptRefWillBeNoop(new JSONArray);
+        RefPtr<JSONArray> paintingPhasesJSON = adoptRef(new JSONArray);
         if (m_paintingPhase & GraphicsLayerPaintBackground)
             paintingPhasesJSON->pushString("GraphicsLayerPaintBackground");
         if (m_paintingPhase & GraphicsLayerPaintForeground)
@@ -715,7 +715,7 @@ PassRefPtrWillBeRawPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags
     }
 
     if (flags & LayerTreeIncludesDebugInfo) {
-        RefPtrWillBeRawPtr<JSONArray> compositingReasonsJSON = adoptRefWillBeNoop(new JSONArray);
+        RefPtr<JSONArray> compositingReasonsJSON = adoptRef(new JSONArray);
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(compositingReasonStringMap); ++i) {
             if (m_debugInfo.compositingReasons() & compositingReasonStringMap[i].reason)
                 compositingReasonsJSON->pushString(compositingReasonStringMap[i].description);
@@ -724,7 +724,7 @@ PassRefPtrWillBeRawPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags
     }
 
     if (m_children.size()) {
-        RefPtrWillBeRawPtr<JSONArray> childrenJSON = adoptRefWillBeNoop(new JSONArray);
+        RefPtr<JSONArray> childrenJSON = adoptRef(new JSONArray);
         for (size_t i = 0; i < m_children.size(); i++)
             childrenJSON->pushObject(m_children[i]->layerTreeAsJSON(flags, renderingContextMap));
         json->setArray("children", childrenJSON);
@@ -736,7 +736,7 @@ PassRefPtrWillBeRawPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags
 String GraphicsLayer::layerTreeAsText(LayerTreeFlags flags) const
 {
     RenderingContextMap renderingContextMap;
-    RefPtrWillBeRawPtr<JSONObject> json = layerTreeAsJSON(flags, renderingContextMap);
+    RefPtr<JSONObject> json = layerTreeAsJSON(flags, renderingContextMap);
     return json->toPrettyJSONString();
 }
 

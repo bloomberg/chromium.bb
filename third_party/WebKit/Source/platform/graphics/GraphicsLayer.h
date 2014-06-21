@@ -223,7 +223,7 @@ public:
     blink::WebLayer* platformLayer() const;
 
     typedef HashMap<int, int> RenderingContextMap;
-    PassRefPtrWillBeRawPtr<JSONObject> layerTreeAsJSON(LayerTreeFlags, RenderingContextMap&) const;
+    PassRefPtr<JSONObject> layerTreeAsJSON(LayerTreeFlags, RenderingContextMap&) const;
 
     int paintCount() const { return m_paintCount; }
 
