@@ -140,6 +140,14 @@ float MockMotionEvent::GetHistoricalY(size_t pointer_index,
   return 0;
 }
 
+MotionEvent::ToolType MockMotionEvent::GetToolType(size_t pointer_index) const {
+  return MotionEvent::TOOL_TYPE_UNKNOWN;
+}
+
+int MockMotionEvent::GetButtonState() const {
+  return 0;
+}
+
 scoped_ptr<MotionEvent> MockMotionEvent::Clone() const {
   return scoped_ptr<MotionEvent>(new MockMotionEvent(*this));
 }

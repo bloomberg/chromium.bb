@@ -24,6 +24,21 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
     ACTION_POINTER_UP,
   };
 
+  enum ToolType {
+    TOOL_TYPE_UNKNOWN,
+    TOOL_TYPE_FINGER,
+    TOOL_TYPE_STYLUS,
+    TOOL_TYPE_MOUSE,
+  };
+
+  enum ButtonType {
+    BUTTON_PRIMARY = 1 << 0,
+    BUTTON_SECONDARY = 1 << 1,
+    BUTTON_TERTIARY = 1 << 2,
+    BUTTON_BACK = 1 << 3,
+    BUTTON_FORWARD = 1 << 4,
+  };
+
   // The implementer promises that |GetPointerId()| will never exceed this.
   enum { MAX_POINTER_ID = 31 };
 
@@ -53,6 +68,8 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
                                size_t historical_index) const = 0;
   virtual float GetHistoricalY(size_t pointer_index,
                                size_t historical_index) const = 0;
+  virtual ToolType GetToolType(size_t pointer_index) const = 0;
+  virtual int GetButtonState() const = 0;
 
   virtual scoped_ptr<MotionEvent> Clone() const = 0;
   virtual scoped_ptr<MotionEvent> Cancel() const = 0;

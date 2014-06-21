@@ -156,6 +156,16 @@ float MotionEventAura::GetHistoricalY(size_t pointer_index,
   return 0;
 }
 
+MotionEvent::ToolType MotionEventAura::GetToolType(size_t pointer_index) const {
+  NOTIMPLEMENTED();
+  return MotionEvent::TOOL_TYPE_UNKNOWN;
+}
+
+int MotionEventAura::GetButtonState() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 scoped_ptr<MotionEvent> MotionEventAura::Clone() const {
   return scoped_ptr<MotionEvent>(new MotionEventAura(pointer_count_,
                                                      last_touch_time_,

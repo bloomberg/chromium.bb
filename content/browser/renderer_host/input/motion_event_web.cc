@@ -143,6 +143,17 @@ float MotionEventWeb::GetHistoricalY(size_t pointer_index,
   return 0.f;
 }
 
+ui::MotionEvent::ToolType MotionEventWeb::GetToolType(
+    size_t pointer_index) const {
+  NOTIMPLEMENTED();
+  return TOOL_TYPE_UNKNOWN;
+}
+
+int MotionEventWeb::GetButtonState() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 scoped_ptr<ui::MotionEvent> MotionEventWeb::Clone() const {
   return scoped_ptr<MotionEvent>(new MotionEventWeb(event_));
 }

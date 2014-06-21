@@ -39,7 +39,10 @@ class MotionEventAndroid : public ui::MotionEvent {
                      jfloat touch_major_0_pixels,
                      jfloat touch_major_1_pixels,
                      jfloat raw_pos_x_pixels,
-                     jfloat raw_pos_y_pixels);
+                     jfloat raw_pos_y_pixels,
+                     jint android_tool_type_0,
+                     jint android_tool_type_1,
+                     jint android_button_state);
   virtual ~MotionEventAndroid();
 
   // ui::MotionEvent methods.
@@ -64,6 +67,8 @@ class MotionEventAndroid : public ui::MotionEvent {
                                size_t historical_index) const OVERRIDE;
   virtual float GetHistoricalY(size_t pointer_index,
                                size_t historical_index) const OVERRIDE;
+  virtual ToolType GetToolType(size_t pointer_index) const OVERRIDE;
+  virtual int GetButtonState() const OVERRIDE;
   virtual scoped_ptr<MotionEvent> Clone() const OVERRIDE;
   virtual scoped_ptr<MotionEvent> Cancel() const OVERRIDE;
 
@@ -110,6 +115,8 @@ class MotionEventAndroid : public ui::MotionEvent {
   int cached_pointer_ids_[MAX_POINTERS_TO_CACHE];
   float cached_touch_majors_[MAX_POINTERS_TO_CACHE];
   gfx::Vector2dF cached_raw_position_offset_;
+  ToolType cached_tool_types_[MAX_POINTERS_TO_CACHE];
+  int cached_button_state_;
 
   // Used to convert pixel coordinates from the Java-backed MotionEvent to
   // DIP coordinates cached/returned by the MotionEventAndroid.

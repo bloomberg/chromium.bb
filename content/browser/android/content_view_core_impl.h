@@ -114,7 +114,10 @@ class ContentViewCoreImpl : public ContentViewCore,
                         jfloat touch_major_0,
                         jfloat touch_major_1,
                         jfloat raw_pos_x,
-                        jfloat raw_pos_y);
+                        jfloat raw_pos_y,
+                        jint android_tool_type_0,
+                        jint android_tool_type_1,
+                        jint android_button_state);
   jboolean SendMouseMoveEvent(JNIEnv* env,
                               jobject obj,
                               jlong time_ms,

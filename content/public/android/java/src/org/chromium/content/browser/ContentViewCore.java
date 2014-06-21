@@ -1126,7 +1126,10 @@ public class ContentViewCore
                     pointerCount > 1 ? event.getY(1) : 0,
                     event.getPointerId(0), pointerCount > 1 ? event.getPointerId(1) : -1,
                     event.getTouchMajor(), pointerCount > 1 ? event.getTouchMajor(1) : 0,
-                    event.getRawX(), event.getRawY());
+                    event.getRawX(), event.getRawY(),
+                    event.getToolType(0),
+                    pointerCount > 1 ? event.getToolType(1) : MotionEvent.TOOL_TYPE_UNKNOWN,
+                    event.getButtonState());
 
             if (offset != null) offset.recycle();
             return consumed;
@@ -3160,7 +3163,8 @@ public class ContentViewCore
             float x0, float y0, float x1, float y1,
             int pointerId0, int pointerId1,
             float touchMajor0, float touchMajor1,
-            float rawX, float rawY);
+            float rawX, float rawY,
+            int androidToolType0, int androidToolType1, int androidButtonState);
 
     private native int nativeSendMouseMoveEvent(
             long nativeContentViewCoreImpl, long timeMs, float x, float y);
