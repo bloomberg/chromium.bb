@@ -1242,6 +1242,7 @@
       'base/net_log_unittest.h',
       'base/net_util_unittest.cc',
       'base/net_util_icu_unittest.cc',
+      'base/network_change_notifier_unittest.cc',
       'base/network_change_notifier_win_unittest.cc',
       'base/prioritized_dispatcher_unittest.cc',
       'base/priority_queue_unittest.cc',

@@ -200,8 +200,7 @@ NetworkChangeNotifierWin::RecomputeCurrentConnectionType() const {
   LOG_IF(ERROR, result != 0)
       << "WSALookupServiceEnd() failed with: " << result;
 
-  // TODO(droger): Return something more detailed than CONNECTION_UNKNOWN.
-  return found_connection ? NetworkChangeNotifier::CONNECTION_UNKNOWN :
+  return found_connection ? ConnectionTypeFromInterfaces() :
                             NetworkChangeNotifier::CONNECTION_NONE;
 }
 

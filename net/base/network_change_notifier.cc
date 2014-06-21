@@ -763,6 +763,36 @@ void NetworkChangeNotifier::SetDnsConfig(const DnsConfig& config) {
   NotifyObserversOfDNSChange();
 }
 
+// static
+NetworkChangeNotifier::ConnectionType
+NetworkChangeNotifier::ConnectionTypeFromInterfaces() {
+  NetworkInterfaceList interfaces;
+  if (!GetNetworkList(&interfaces, EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES))
+    return CONNECTION_UNKNOWN;
+  return ConnectionTypeFromInterfaceList(interfaces);
+}
+
+//static
+NetworkChangeNotifier::ConnectionType
+NetworkChangeNotifier::ConnectionTypeFromInterfaceList(
+    const NetworkInterfaceList& interfaces) {
+  bool first = true;
+  ConnectionType result = CONNECTION_UNKNOWN;
+  for (size_t i = 0; i < interfaces.size(); ++i) {
+#if defined(OS_WIN)
+    if (interfaces[i].friendly_name == "Teredo Tunneling Pseudo-Interface")
+      continue;
+#endif
+    if (first) {
+      first = false;
+      result = interfaces[i].type;
+    } else if (result != interfaces[i].type) {
+      return CONNECTION_UNKNOWN;
+    }
+  }
+  return result;
+}
+
 void NetworkChangeNotifier::NotifyObserversOfConnectionTypeChange() {
   if (g_network_change_notifier) {
     g_network_change_notifier->connection_type_observer_list_->Notify(
