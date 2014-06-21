@@ -382,7 +382,7 @@ def IsStringInt(string_to_check):
     return False
 
 
-def IsWindows():
+def IsWindowsHost():
   """Checks whether or not the script is running on Windows.
 
   Returns:
@@ -407,7 +407,7 @@ def Is64BitWindows():
   return platform in ['AMD64', 'I64']
 
 
-def IsLinux():
+def IsLinuxHost():
   """Checks whether or not the script is running on Linux.
 
   Returns:
@@ -416,7 +416,7 @@ def IsLinux():
   return sys.platform.startswith('linux')
 
 
-def IsMac():
+def IsMacHost():
   """Checks whether or not the script is running on Mac.
 
   Returns:
@@ -434,15 +434,16 @@ def GetZipFileName(build_revision=None, target_arch='ia32', patch_sha=None):
   """Gets the archive file name for the given revision."""
   def PlatformName():
     """Return a string to be used in paths for the platform."""
-    if IsWindows():
+    if IsWindowsHost():
       # Build archive for x64 is still stored with 'win32'suffix
       # (chromium_utils.PlatformName()).
       if Is64BitWindows() and target_arch == 'x64':
         return 'win32'
       return 'win32'
-    if IsLinux():
+    if IsLinuxHost():
+      # Android builds too are archived with full-build-linux* prefix.
       return 'linux'
-    if IsMac():
+    if IsMacHost():
       return 'mac'
     raise NotImplementedError('Unknown platform "%s".' % sys.platform)
 
@@ -454,22 +455,26 @@ def GetZipFileName(build_revision=None, target_arch='ia32', patch_sha=None):
   return '%s_%s.zip' % (base_name, build_revision)
 
 
-def GetRemoteBuildPath(build_revision, target_arch='ia32', patch_sha=None):
+def GetRemoteBuildPath(build_revision, target_platform='chromium',
+                       target_arch='ia32', patch_sha=None):
   """Compute the url to download the build from."""
-  def GetGSRootFolderName():
+  def GetGSRootFolderName(target_platform):
     """Gets Google Cloud Storage root folder names"""
-    if IsWindows():
+    if IsWindowsHost():
       if Is64BitWindows() and target_arch == 'x64':
         return 'Win x64 Builder'
       return 'Win Builder'
-    if IsLinux():
+    if IsLinuxHost():
+      if target_platform == 'android':
+        return 'android_perf_rel'
       return 'Linux Builder'
-    if IsMac():
+    if IsMacHost():
       return 'Mac Builder'
     raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
 
-  base_filename = GetZipFileName(build_revision, target_arch, patch_sha)
-  builder_folder = GetGSRootFolderName()
+  base_filename = GetZipFileName(
+      build_revision, target_arch, patch_sha)
+  builder_folder = GetGSRootFolderName(target_platform)
   return '%s/%s' % (builder_folder, base_filename)
 
 
@@ -529,10 +534,10 @@ def ExtractZip(filename, output_dir, verbose=True):
   # On Windows, try to use 7z if it is installed, otherwise fall back to python
   # zip module and pray we don't have files larger than 512MB to unzip.
   unzip_cmd = None
-  if ((IsMac() and os.path.getsize(filename) < 4 * 1024 * 1024 * 1024)
-      or IsLinux()):
+  if ((IsMacHost() and os.path.getsize(filename) < 4 * 1024 * 1024 * 1024)
+      or IsLinuxHost()):
     unzip_cmd = ['unzip', '-o']
-  elif IsWindows() and os.path.exists('C:\\Program Files\\7-Zip\\7z.exe'):
+  elif IsWindowsHost() and os.path.exists('C:\\Program Files\\7-Zip\\7z.exe'):
     unzip_cmd = ['C:\\Program Files\\7-Zip\\7z.exe', 'x', '-y']
 
   if unzip_cmd:
@@ -546,13 +551,13 @@ def ExtractZip(filename, output_dir, verbose=True):
     if result:
       raise IOError('unzip failed: %s => %s' % (str(command), result))
   else:
-    assert IsWindows() or IsMac()
+    assert IsWindowsHost() or IsMacHost()
     zf = zipfile.ZipFile(filename)
     for name in zf.namelist():
       if verbose:
         print 'Extracting %s' % name
       zf.extract(name, output_dir)
-      if IsMac():
+      if IsMacHost():
         # Restore permission bits.
         os.chmod(os.path.join(output_dir, name),
                  zf.getinfo(name).external_attr >> 16L)
@@ -570,7 +575,7 @@ def RunProcess(command):
     The return code of the call.
   """
   # On Windows, use shell=True to get PATH interpretation.
-  shell = IsWindows()
+  shell = IsWindowsHost()
   return subprocess.call(command, shell=shell)
 
 
@@ -595,7 +600,7 @@ def RunProcessAndRetrieveOutput(command, cwd=None):
     os.chdir(cwd)
 
   # On Windows, use shell=True to get PATH interpretation.
-  shell = IsWindows()
+  shell = IsWindowsHost()
   proc = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE)
   (output, _) = proc.communicate()
 
@@ -653,7 +658,7 @@ def SetBuildSystemDefault(build_system, use_goma):
       else:
         os.environ['GYP_GENERATORS'] = 'ninja'
 
-      if IsWindows():
+      if IsWindowsHost():
         os.environ['GYP_DEFINES'] = 'component=shared_library '\
             'incremental_chrome_dll=1 disable_nacl=1 fastbuild=1 '\
             'chromium_win_pch=0'
@@ -745,7 +750,7 @@ class Builder(object):
     Args:
         opts: Options parsed from command line.
     """
-    if IsWindows():
+    if IsWindowsHost():
       if not opts.build_preference:
         opts.build_preference = 'msvs'
 
@@ -784,7 +789,18 @@ class Builder(object):
     raise NotImplementedError()
 
   def GetBuildOutputDirectory(self, opts, src_dir=None):
-    raise NotImplementedError()
+    """Returns the path to the build directory, relative to the checkout root.
+
+      Assumes that the current working directory is the checkout root.
+    """
+    src_dir = src_dir or 'src'
+    if opts.build_preference == 'ninja' or IsLinuxHost():
+      return os.path.join(src_dir, 'out')
+    if IsMacHost():
+      return os.path.join(src_dir, 'xcodebuild')
+    if IsWindowsHost():
+      return os.path.join(src_dir, 'build')
+    raise NotImplementedError('Unexpected platform %s' % sys.platform)
 
 
 class DesktopBuilder(Builder):
@@ -815,25 +831,11 @@ class DesktopBuilder(Builder):
     elif opts.build_preference == 'ninja':
       build_success = BuildWithNinja(threads, targets, opts.target_build_type)
     elif opts.build_preference == 'msvs':
-      assert IsWindows(), 'msvs is only supported on Windows.'
+      assert IsWindowsHost(), 'msvs is only supported on Windows.'
       build_success = BuildWithVisualStudio(targets, opts.target_build_type)
     else:
       assert False, 'No build system defined.'
     return build_success
-
-  def GetBuildOutputDirectory(self, opts, src_dir=None):
-    """Returns the path to the build directory, relative to the checkout root.
-
-      Assumes that the current working directory is the checkout root.
-    """
-    src_dir = src_dir or 'src'
-    if opts.build_preference == 'ninja' or IsLinux():
-      return os.path.join(src_dir, 'out')
-    if IsMac():
-      return os.path.join(src_dir, 'xcodebuild')
-    if IsWindows():
-      return os.path.join(src_dir, 'build')
-    raise NotImplementedError('Unexpected platform %s' % sys.platform)
 
 
 class AndroidBuilder(Builder):
@@ -1571,14 +1573,16 @@ class BisectPerformanceMetrics(object):
       Downloaded archive file path if exists, otherwise None.
     """
     # Source archive file path on cloud storage using Git revision.
-    source_file = GetRemoteBuildPath(revision, target_arch, patch_sha)
+    source_file = GetRemoteBuildPath(
+        revision, self.opts.target_platform, target_arch, patch_sha)
     downloaded_archive = FetchFromCloudStorage(gs_bucket, source_file, out_dir)
     if not downloaded_archive:
       # Get SVN revision for the given SHA.
       svn_revision = self.source_control.SVNFindRev(revision)
       if svn_revision:
         # Source archive file path on cloud storage using SVN revision.
-        source_file = GetRemoteBuildPath(svn_revision, target_arch, patch_sha)
+        source_file = GetRemoteBuildPath(
+            svn_revision, self.opts.target_platform, target_arch, patch_sha)
         return FetchFromCloudStorage(gs_bucket, source_file, out_dir)
     return downloaded_archive
 
@@ -1723,23 +1727,26 @@ class BisectPerformanceMetrics(object):
       raise RuntimeError(
           'Failed to determine SVN revision for %s' % revision)
 
-    def GetBuilderNameAndBuildTime(target_arch='ia32'):
+    def GetBuilderNameAndBuildTime(target_platform, target_arch='ia32'):
       """Gets builder bot name and buildtime in seconds based on platform."""
       # Bot names should match the one listed in tryserver.chromium's
       # master.cfg which produces builds for bisect.
-      if IsWindows():
+      if IsWindowsHost():
         if Is64BitWindows() and target_arch == 'x64':
           return ('win_perf_bisect_builder', MAX_WIN_BUILD_TIME)
         return ('win_perf_bisect_builder', MAX_WIN_BUILD_TIME)
-      if IsLinux():
+      if IsLinuxHost():
+        if target_platform == 'android':
+          return ('android_perf_bisect_builder', MAX_LINUX_BUILD_TIME)
         return ('linux_perf_bisect_builder', MAX_LINUX_BUILD_TIME)
-      if IsMac():
+      if IsMacHost():
         return ('mac_perf_bisect_builder', MAX_MAC_BUILD_TIME)
       raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
     if not fetch_build:
       return False
 
-    bot_name, build_timeout = GetBuilderNameAndBuildTime(self.opts.target_arch)
+    bot_name, build_timeout = GetBuilderNameAndBuildTime(
+       self.opts.target_platform, self.opts.target_arch)
     builder_host = self.opts.builder_host
     builder_port = self.opts.builder_port
     # Create a unique ID for each build request posted to tryserver builders.
@@ -1774,7 +1781,8 @@ class BisectPerformanceMetrics(object):
 
   def IsDownloadable(self, depot):
     """Checks if build is downloadable based on target platform and depot."""
-    if self.opts.target_platform in ['chromium'] and self.opts.gs_bucket:
+    if (self.opts.target_platform in ['chromium', 'android'] and
+        self.opts.gs_bucket):
       return (depot == 'chromium' or
               'chromium' in DEPOT_DEPS_NAME[depot]['from'] or
               'v8' in DEPOT_DEPS_NAME[depot]['from'])
@@ -2190,7 +2198,7 @@ class BisectPerformanceMetrics(object):
     # For Windows platform set posix=False, to parse windows paths correctly.
     # On Windows, path separators '\' or '\\' are replace by '' when posix=True,
     # refer to http://bugs.python.org/issue1724822. By default posix=True.
-    args = shlex.split(command_to_run, posix=not IsWindows())
+    args = shlex.split(command_to_run, posix=not IsWindowsHost())
 
     if not self._GenerateProfileIfNecessary(args):
       err_text = 'Failed to generate profile for performance test.'
