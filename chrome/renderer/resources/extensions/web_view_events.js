@@ -291,7 +291,7 @@ WebViewEvents.prototype.setupEvent = function(name, info) {
 
 // Event handlers.
 WebViewEvents.prototype.handleContextMenu = function(e, webViewEvent) {
-  this.webViewInternal.maybeHandleContextMenu();
+  this.webViewInternal.maybeHandleContextMenu(e, webViewEvent);
 };
 
 WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
