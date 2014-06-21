@@ -327,6 +327,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidStartLoading(RenderFrameHost* render_frame_host,
                                bool to_different_document) OVERRIDE;
   virtual void SwappedOut(RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void DidDeferAfterResponseStarted() OVERRIDE;
+  virtual bool WillHandleDeferAfterResponseStarted() OVERRIDE;
   virtual void WorkerCrashed(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
                                const ContextMenuParams& params) OVERRIDE;
@@ -625,6 +627,10 @@ class CONTENT_EXPORT WebContentsImpl
   // Requests the renderer to select the region between two points in the
   // currently focused frame.
   void SelectRange(const gfx::Point& start, const gfx::Point& end);
+
+  // Notifies the main frame that it can continue navigation (if it was deferred
+  // immediately at first response).
+  void ResumeResponseDeferredAtStart();
 
  private:
   friend class TestNavigationObserver;

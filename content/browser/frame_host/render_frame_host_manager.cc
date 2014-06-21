@@ -357,6 +357,26 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   SwapOutOldPage();
 }
 
+void RenderFrameHostManager::OnDeferredAfterResponseStarted(
+    const GlobalRequestID& global_request_id,
+    RenderFrameHostImpl* pending_render_frame_host) {
+  DCHECK(!response_started_id_.get());
+
+  response_started_id_.reset(new GlobalRequestID(global_request_id));
+}
+
+void RenderFrameHostManager::ResumeResponseDeferredAtStart() {
+  DCHECK(response_started_id_.get());
+
+  RenderProcessHostImpl* process =
+      static_cast<RenderProcessHostImpl*>(render_frame_host_->GetProcess());
+  process->ResumeResponseDeferredAtStart(*response_started_id_);
+
+  render_frame_host_->SetHasPendingTransitionRequest(false);
+
+  response_started_id_.reset();
+}
+
 void RenderFrameHostManager::SwappedOut(
     RenderFrameHostImpl* render_frame_host) {
   // Make sure this is from our current RFH, and that we have a pending

@@ -1198,6 +1198,8 @@
       'browser/tracing/tracing_controller_impl.h',
       'browser/tracing/tracing_ui.cc',
       'browser/tracing/tracing_ui.h',
+      'browser/transition_request_manager.cc',
+      'browser/transition_request_manager.h',
       'browser/udev_linux.cc',
       'browser/udev_linux.h',
       'browser/user_metrics.cc',

@@ -97,6 +97,7 @@
 #include "webkit/common/webpreferences.h"
 
 #if defined(OS_ANDROID)
+#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/web_contents/web_contents_android.h"
@@ -3481,6 +3482,21 @@ void WebContentsImpl::SwappedOut(RenderFrameHost* rfh) {
     delegate_->SwappedOut(this);
 }
 
+void WebContentsImpl::DidDeferAfterResponseStarted() {
+#if defined(OS_ANDROID)
+  ContentViewCoreImpl::FromWebContents(this)->DidDeferAfterResponseStarted();
+#endif
+}
+
+bool WebContentsImpl::WillHandleDeferAfterResponseStarted() {
+#if defined(OS_ANDROID)
+  return ContentViewCoreImpl::FromWebContents(this)->
+      WillHandleDeferAfterResponseStarted();
+#else
+  return false;
+#endif
+}
+
 void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {
   if (delegate_ && delegate_->IsPopupOrPanel(this))
     delegate_->MoveContents(this, new_bounds);
@@ -4083,6 +4099,11 @@ void WebContentsImpl::OnPreferredSizeChanged(const gfx::Size& old_size) {
   const gfx::Size new_size = GetPreferredSize();
   if (new_size != old_size)
     delegate_->UpdatePreferredSize(this, new_size);
+}
+
+void WebContentsImpl::ResumeResponseDeferredAtStart() {
+  FrameTreeNode* node = frame_tree_.root();
+  node->render_manager()->ResumeResponseDeferredAtStart();
 }
 
 }  // namespace content

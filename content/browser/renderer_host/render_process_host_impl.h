@@ -263,6 +263,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
     ConnectTo(service_name, pipe.handle1.Pass());
   }
 
+  // Call this function to resume the navigation when it was deferred
+  // immediately after receiving response headers.
+  void ResumeResponseDeferredAtStart(const GlobalRequestID& request_id);
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)

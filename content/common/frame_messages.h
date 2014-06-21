@@ -627,3 +627,8 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_TextSurroundingSelectionResponse,
                     base::string16,  /* content */
                     size_t, /* startOffset */
                     size_t /* endOffset */)
+
+// Notifies the browser that the renderer has a pending navigation transition.
+IPC_MESSAGE_CONTROL2(FrameHostMsg_SetHasPendingTransitionRequest,
+                     int /* render_frame_id */,
+                     bool /* is_transition */)

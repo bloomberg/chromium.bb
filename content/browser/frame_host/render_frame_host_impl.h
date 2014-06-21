@@ -118,6 +118,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
       PageTransition page_transition,
       bool should_replace_current_entry);
 
+  // Called on the current RenderFrameHost when the network response is first
+  // receieved.
+  void OnDeferredAfterResponseStarted(const GlobalRequestID& global_request_id);
+
   // Tells the renderer that this RenderFrame is being swapped out for one in a
   // different renderer process.  It should run its unload handler, move to
   // a blank document and create a RenderFrameProxy to replace the RenderFrame.
@@ -166,6 +170,11 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   // Called when an HTML5 notification is closed.
   void NotificationClosed(int notification_id);
+
+  // Sets whether there is an outstanding transition request. This is called at
+  // the start of a provisional load for the main frame, and cleared when we
+  // hear the response or commit.
+  void SetHasPendingTransitionRequest(bool has_pending_request);
 
  protected:
   friend class RenderFrameHostFactory;

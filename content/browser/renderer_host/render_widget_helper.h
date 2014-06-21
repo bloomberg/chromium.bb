@@ -125,10 +125,11 @@ class RenderWidgetHelper
 
   // UI THREAD ONLY -----------------------------------------------------------
 
-  // These three functions provide the backend implementation of the
+  // These four functions provide the backend implementation of the
   // corresponding functions in RenderProcessHost. See those declarations
   // for documentation.
   void ResumeDeferredNavigation(const GlobalRequestID& request_id);
+  void ResumeResponseDeferredAtStart(const GlobalRequestID& request_id);
   bool WaitForBackingStoreMsg(int render_widget_id,
                               const base::TimeDelta& max_delay,
                               IPC::Message* msg);
@@ -218,6 +219,10 @@ class RenderWidgetHelper
   // Called on the IO thread to resume a paused navigation in the network
   // stack without transferring it to a new renderer process.
   void OnResumeDeferredNavigation(const GlobalRequestID& request_id);
+
+  // Called on the IO thread to resume a navigation paused immediately after
+  // receiving response headers.
+  void OnResumeResponseDeferredAtStart(const GlobalRequestID& request_id);
 
 #if defined(OS_POSIX)
   // Called on destruction to release all allocated transport DIBs

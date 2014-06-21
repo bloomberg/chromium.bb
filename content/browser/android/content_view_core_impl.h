@@ -229,11 +229,25 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void SetBackgroundOpaque(JNIEnv* env, jobject jobj, jboolean opaque);
 
+  // Notifies the main frame that it can continue navigation (if it was deferred
+  // immediately at first response).
+  void ResumeResponseDeferredAtStart(JNIEnv* env, jobject obj);
+
+  void SetHasPendingNavigationTransitionForTesting(JNIEnv* env, jobject obj);
+
   jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj);
 
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI
   // --------------------------------------------------------------------------
+
+  // This method is invoked when the request is deferred immediately after
+  // receiving response headers.
+  void DidDeferAfterResponseStarted();
+
+  // This method is invoked when a navigation transition is detected, to
+  // determine if the embedder intends to handle it.
+  bool WillHandleDeferAfterResponseStarted();
 
   void OnSmartClipDataExtracted(const base::string16& result);
 

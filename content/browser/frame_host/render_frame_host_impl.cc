@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/transition_request_manager.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -514,6 +515,17 @@ void RenderFrameHostImpl::OnCrossSiteResponse(
       should_replace_current_entry);
 }
 
+void RenderFrameHostImpl::OnDeferredAfterResponseStarted(
+    const GlobalRequestID& global_request_id) {
+  frame_tree_node_->render_manager()->OnDeferredAfterResponseStarted(
+      global_request_id, this);
+
+  if (GetParent() || !delegate_->WillHandleDeferAfterResponseStarted())
+    frame_tree_node_->render_manager()->ResumeResponseDeferredAtStart();
+  else
+    delegate_->DidDeferAfterResponseStarted();
+}
+
 void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {
   // TODO(creis): Move swapped out state to RFH.  Until then, only update it
   // when swapping out the main frame.
@@ -906,6 +918,19 @@ void RenderFrameHostImpl::DesktopNotificationPermissionRequestDone(
     int callback_context) {
   Send(new DesktopNotificationMsg_PermissionRequestDone(
       routing_id_, callback_context));
+}
+
+void RenderFrameHostImpl::SetHasPendingTransitionRequest(
+    bool has_pending_request) {
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(
+          &TransitionRequestManager::SetHasPendingTransitionRequest,
+          base::Unretained(TransitionRequestManager::GetInstance()),
+          GetProcess()->GetID(),
+          routing_id_,
+          has_pending_request));
 }
 
 }  // namespace content

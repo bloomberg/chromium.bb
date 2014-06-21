@@ -907,6 +907,11 @@ void RenderProcessHostImpl::ResumeDeferredNavigation(
   widget_helper_->ResumeDeferredNavigation(request_id);
 }
 
+void RenderProcessHostImpl::ResumeResponseDeferredAtStart(
+    const GlobalRequestID& request_id) {
+  widget_helper_->ResumeResponseDeferredAtStart(request_id);
+}
+
 void RenderProcessHostImpl::NotifyTimezoneChange() {
   Send(new ViewMsg_TimezoneChange());
 }

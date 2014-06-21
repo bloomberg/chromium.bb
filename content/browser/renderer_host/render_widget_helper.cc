@@ -136,6 +136,16 @@ void RenderWidgetHelper::ResumeDeferredNavigation(
                  request_id));
 }
 
+void RenderWidgetHelper::ResumeResponseDeferredAtStart(
+    const GlobalRequestID& request_id) {
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&RenderWidgetHelper::OnResumeResponseDeferredAtStart,
+                 this,
+                 request_id));
+}
+
 bool RenderWidgetHelper::WaitForBackingStoreMsg(
     int render_widget_id, const base::TimeDelta& max_delay, IPC::Message* msg) {
   base::TimeTicks time_start = base::TimeTicks::Now();
@@ -243,6 +253,11 @@ void RenderWidgetHelper::OnDispatchBackingStoreMsg(
 void RenderWidgetHelper::OnResumeDeferredNavigation(
     const GlobalRequestID& request_id) {
   resource_dispatcher_host_->ResumeDeferredNavigation(request_id);
+}
+
+void RenderWidgetHelper::OnResumeResponseDeferredAtStart(
+    const GlobalRequestID& request_id) {
+  resource_dispatcher_host_->ResumeResponseDeferredAtStart(request_id);
 }
 
 void RenderWidgetHelper::CreateNewWindow(

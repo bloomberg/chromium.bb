@@ -55,6 +55,13 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // The RenderFrameHost has been swapped out.
   virtual void SwappedOut(RenderFrameHost* render_frame_host) {}
 
+  // Notification that the navigation on the main frame is blocked waiting
+  // for transition to occur.
+  virtual void DidDeferAfterResponseStarted() {}
+
+  // Used to query whether the navigation transition will be handled.
+  virtual bool WillHandleDeferAfterResponseStarted();
+
   // Notification that a worker process has crashed.
   virtual void WorkerCrashed(RenderFrameHost* render_frame_host) {}
 

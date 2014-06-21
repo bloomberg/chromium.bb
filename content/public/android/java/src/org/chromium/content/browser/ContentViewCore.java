@@ -213,6 +213,23 @@ public class ContentViewCore
         public void onSmartClipDataExtracted(String result);
     }
 
+    /**
+     * An interface that allows the embedder to be notified of navigation transition
+     * related events and respond to them.
+     */
+    public interface NavigationTransitionDelegate {
+        /**
+         * Called when the navigation is deferred immediately after the response started.
+         */
+        public void didDeferAfterResponseStarted();
+
+        /**
+         * Called when a navigation transition has been detected, and we need to check
+         * if it's supported.
+         */
+        public boolean willHandleDeferAfterResponseStarted();
+    }
+
     private final Context mContext;
     private ViewGroup mContainerView;
     private InternalAccessDelegate mContainerViewInternals;
@@ -317,6 +334,8 @@ public class ContentViewCore
     private ViewAndroid mViewAndroid;
 
     private SmartClipDataListener mSmartClipDataListener = null;
+
+    private NavigationTransitionDelegate mNavigationTransitionDelegate = null;
 
     // This holds the state of editable text (e.g. contents of <input>, contenteditable) of
     // a focused element.
@@ -3020,6 +3039,29 @@ public class ContentViewCore
         }
     }
 
+    @CalledByNative
+    private void didDeferAfterResponseStarted() {
+        if (mNavigationTransitionDelegate != null ) {
+            mNavigationTransitionDelegate.didDeferAfterResponseStarted();
+        }
+    }
+
+    @CalledByNative
+    private boolean willHandleDeferAfterResponseStarted() {
+        if (mNavigationTransitionDelegate == null) return false;
+        return mNavigationTransitionDelegate.willHandleDeferAfterResponseStarted();
+    }
+
+    @VisibleForTesting
+    void setHasPendingNavigationTransitionForTesting() {
+        if (mNativeContentViewCore == 0) return;
+        nativeSetHasPendingNavigationTransitionForTesting(mNativeContentViewCore);
+    }
+
+    public void setNavigationTransitionDelegate(NavigationTransitionDelegate delegate) {
+        mNavigationTransitionDelegate = delegate;
+    }
+
     /**
      * Offer a long press gesture to the embedding View, primarily for WebView compatibility.
      *
@@ -3072,6 +3114,11 @@ public class ContentViewCore
     @Override
     public void onScreenOrientationChanged(int orientation) {
         sendOrientationChangeEvent(orientation);
+    }
+
+    public void resumeResponseDeferredAtStart() {
+        if (mNativeContentViewCore == 0) return;
+        nativeResumeResponseDeferredAtStart(mNativeContentViewCore);
     }
 
     private native WebContents nativeGetWebContentsAndroid(long nativeContentViewCoreImpl);
@@ -3235,4 +3282,9 @@ public class ContentViewCore
     private native void nativeExtractSmartClipData(long nativeContentViewCoreImpl,
             int x, int y, int w, int h);
     private native void nativeSetBackgroundOpaque(long nativeContentViewCoreImpl, boolean opaque);
+
+    private native void nativeResumeResponseDeferredAtStart(
+            long nativeContentViewCoreImpl);
+    private native void nativeSetHasPendingNavigationTransitionForTesting(
+            long nativeContentViewCoreImpl);
 }

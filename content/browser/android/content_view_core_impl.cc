@@ -36,6 +36,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/screen_orientation/screen_orientation_dispatcher_host.h"
 #include "content/browser/ssl/ssl_host_state.h"
+#include "content/browser/transition_request_manager.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/web_input_event_traits.h"
@@ -43,6 +44,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -1569,6 +1571,28 @@ void ContentViewCoreImpl::ExtractSmartClipData(JNIEnv* env,
       GetWebContents()->GetRoutingID(), rect));
 }
 
+void ContentViewCoreImpl::ResumeResponseDeferredAtStart(JNIEnv* env,
+                                                        jobject obj) {
+  static_cast<WebContentsImpl*>(GetWebContents())->
+      ResumeResponseDeferredAtStart();
+}
+
+void ContentViewCoreImpl::SetHasPendingNavigationTransitionForTesting(
+    JNIEnv* env,
+    jobject obj) {
+  RenderFrameHost* frame = static_cast<WebContentsImpl*>(GetWebContents())->
+      GetMainFrame();
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(
+          &TransitionRequestManager::SetHasPendingTransitionRequest,
+          base::Unretained(TransitionRequestManager::GetInstance()),
+          frame->GetProcess()->GetID(),
+          frame->GetRoutingID(),
+          true));
+}
+
 jint ContentViewCoreImpl::GetCurrentRenderProcessId(JNIEnv* env, jobject obj) {
   return GetRenderProcessIdFromRenderViewHost(
       web_contents_->GetRenderViewHost());
@@ -1595,6 +1619,24 @@ void ContentViewCoreImpl::RequestTextSurroundingSelection(
     focused_frame->Send(new FrameMsg_TextSurroundingSelectionRequest(
         focused_frame->GetRoutingID(), max_length));
   }
+}
+
+void ContentViewCoreImpl::DidDeferAfterResponseStarted() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(java_ref_.get(env));
+  if (obj.is_null())
+    return;
+  Java_ContentViewCore_didDeferAfterResponseStarted(env, obj.obj());
+}
+
+bool ContentViewCoreImpl::WillHandleDeferAfterResponseStarted() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return false;
+
+  return Java_ContentViewCore_willHandleDeferAfterResponseStarted(env,
+                                                                  obj.obj());
 }
 
 void ContentViewCoreImpl::OnSmartClipDataExtracted(

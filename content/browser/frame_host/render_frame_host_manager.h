@@ -220,6 +220,16 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
       PageTransition page_transition,
       bool should_replace_current_entry);
 
+  // Received a response from CrossSiteResourceHandler. If the navigation
+  // specifies a transition, this is called and the navigation will not resume
+  // until ResumeResponseDeferredAtStart.
+  void OnDeferredAfterResponseStarted(
+      const GlobalRequestID& global_request_id,
+      RenderFrameHostImpl* pending_render_frame_host);
+
+  // Resume navigation paused after receiving response headers.
+  void ResumeResponseDeferredAtStart();
+
   // The RenderFrameHost has been swapped out, so we should resume the pending
   // network response and allow the pending RenderFrameHost to commit.
   void SwappedOut(RenderFrameHostImpl* render_frame_host);
@@ -455,6 +465,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
 
   // Tracks information about any current pending cross-process navigation.
   scoped_ptr<PendingNavigationParams> pending_nav_params_;
+
+  // Tracks information about any navigation paused after receiving response
+  // headers.
+  scoped_ptr<GlobalRequestID> response_started_id_;
 
   // If either of these is non-NULL, the pending navigation is to a chrome:
   // page. The scoped_ptr is used if pending_web_ui_ != web_ui_, the WeakPtr is
