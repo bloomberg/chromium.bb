@@ -1,0 +1,9 @@
+Test that no timeupdate event fires during loading.
+
+EVENT(loadstart)
+EVENT(loadedmetadata)
+EVENT(loadeddata)
+EVENT(canplay)
+EVENT(canplaythrough)
+END OF TEST
+

@@ -1719,3 +1719,6 @@ crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/context-lost.html [ Fai
 crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/WebGLContextEvent.html [ Failure ]
 
 crbug.com/328961 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
+
+# Temporarily failing until Chromium side change lands.
+crbug.com/223476 media/video-no-timeupdate-before-playback.html [ Failure ]
