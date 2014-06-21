@@ -110,7 +110,7 @@ typedef unsigned MapCoordinatesFlags;
 
 enum InvalidationReason {
     InvalidationIncremental,
-    InvalidationSelfLayout,
+    InvalidationFull,
     InvalidationBorderFitLines,
     InvalidationBorderRadius,
     InvalidationBoundsChangeWithBackground,
@@ -831,7 +831,7 @@ public:
     void invalidatePaintRectangle(const LayoutRect&) const;
 
     // Invalidate the paint only if our old bounds and new bounds are different. The caller may pass in newBounds if they are known.
-    bool invalidatePaintAfterLayoutIfNeeded(const RenderLayerModelObject* paintInvalidationContainer, bool wasSelfLayout,
+    bool invalidatePaintAfterLayoutIfNeeded(const RenderLayerModelObject* paintInvalidationContainer, InvalidationReason,
         const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer,
         const LayoutRect* newBoundsPtr = 0, const LayoutPoint* newPositionFromPaintInvalidationContainer = 0);
 

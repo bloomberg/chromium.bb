@@ -473,10 +473,10 @@ void RenderFrameSet::layout()
     updateLayerTransformAfterLayout();
 
     if (doFullRepaint) {
-        invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds), InvalidationSelfLayout);
+        invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds), InvalidationFull);
         LayoutRect newBounds = boundsRectForPaintInvalidation(repaintContainer);
         if (newBounds != oldBounds)
-            invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds), InvalidationSelfLayout);
+            invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds), InvalidationFull);
     }
 
     clearNeedsLayout();

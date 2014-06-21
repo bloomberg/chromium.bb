@@ -86,7 +86,9 @@ void RenderLayerRepainter::repaintAfterLayout(bool shouldCheckForRepaint)
                     if (m_repaintRect != oldRepaintRect)
                         m_renderer.invalidatePaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_repaintRect), InvalidationLayer);
                 } else {
-                    m_renderer.invalidatePaintAfterLayoutIfNeeded(repaintContainer, m_renderer.selfNeedsLayout(), oldRepaintRect, oldOffset, &m_repaintRect, &m_offset);
+                    m_renderer.invalidatePaintAfterLayoutIfNeeded(repaintContainer,
+                        m_renderer.selfNeedsLayout() ? InvalidationFull : InvalidationIncremental,
+                        oldRepaintRect, oldOffset, &m_repaintRect, &m_offset);
                 }
             }
         }

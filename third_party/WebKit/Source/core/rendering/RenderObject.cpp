@@ -1588,8 +1588,8 @@ const char* RenderObject::invalidationReasonToString(InvalidationReason reason) 
     switch (reason) {
     case InvalidationIncremental:
         return "incremental";
-    case InvalidationSelfLayout:
-        return "self layout";
+    case InvalidationFull:
+        return "full";
     case InvalidationBorderFitLines:
         return "border fit lines";
     case InvalidationBorderRadius:
@@ -1639,7 +1639,7 @@ static PassRefPtr<JSONValue> jsonObjectForOldAndNewRects(const LayoutRect& oldRe
     return object.release();
 }
 
-bool RenderObject::invalidatePaintAfterLayoutIfNeeded(const RenderLayerModelObject* paintInvalidationContainer, bool wasSelfLayout,
+bool RenderObject::invalidatePaintAfterLayoutIfNeeded(const RenderLayerModelObject* paintInvalidationContainer, InvalidationReason invalidationReason,
     const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect* newBoundsPtr, const LayoutPoint* newLocationPtr)
 {
     RenderView* v = view();
@@ -1655,8 +1655,6 @@ bool RenderObject::invalidatePaintAfterLayoutIfNeeded(const RenderLayerModelObje
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::invalidatePaintAfterLayoutIfNeeded()",
         "object", this->debugName().ascii(),
         "info", TracedValue::fromJSONValue(jsonObjectForOldAndNewRects(oldBounds, newBounds)));
-
-    InvalidationReason invalidationReason = wasSelfLayout ? InvalidationSelfLayout : InvalidationIncremental;
 
     // Presumably a background or a border exists if border-fit:lines was specified.
     if (invalidationReason == InvalidationIncremental && style()->borderFit() == BorderFitLines)

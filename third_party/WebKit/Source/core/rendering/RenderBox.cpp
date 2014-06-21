@@ -1601,7 +1601,8 @@ void RenderBox::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInv
     const LayoutRect& newPaintInvalidationRect = previousPaintInvalidationRect();
     const LayoutPoint& newPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
     bool didFullPaintInvalidation = invalidatePaintAfterLayoutIfNeeded(&newPaintInvalidationContainer,
-        shouldDoFullPaintInvalidationAfterLayout(), oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer,
+        shouldDoFullPaintInvalidationAfterLayout() ? InvalidationFull : InvalidationIncremental,
+        oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer,
         &newPaintInvalidationRect, &newPositionFromPaintInvalidationContainer);
 
     if (!didFullPaintInvalidation)

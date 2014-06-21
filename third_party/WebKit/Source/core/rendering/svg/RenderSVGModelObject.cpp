@@ -160,7 +160,8 @@ void RenderSVGModelObject::invalidateTreeAfterLayout(const RenderLayerModelObjec
     const LayoutRect& newPaintInvalidationRect = previousPaintInvalidationRect();
     const LayoutPoint& newPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
     invalidatePaintAfterLayoutIfNeeded(containerForPaintInvalidation(),
-        shouldDoFullPaintInvalidationAfterLayout(), oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer,
+        shouldDoFullPaintInvalidationAfterLayout() ? InvalidationFull : InvalidationIncremental,
+        oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer,
         &newPaintInvalidationRect, &newPositionFromPaintInvalidationContainer);
 
     RenderObject::invalidateTreeAfterLayout(newPaintInvalidationContainer);
