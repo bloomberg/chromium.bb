@@ -15,10 +15,7 @@ All*
 AppA*
 AppL*
 AppW*
-Autof*.Do*
-Autof*.Hi*
-Autof*Edit*
-AutofillTest.*
+Autofill*
 # B*
 BackgroundApp*.R*
 Bluetooth*
@@ -39,6 +36,7 @@ ChromeC*
 ChromeR*
 Con*UITest.*
 Con*.Re*
+Context*
 # D*
 Dec*
 Dev*
@@ -57,16 +55,18 @@ Ext*.RSS*
 Ext*Api*
 Ext*Man*
 Ext*Ses*
+Ext*re*
 # F*
 FileSys*
 Find*
 Fl*
 # G*
 # H*
-I*
-J*
-K*
-L*
+Hot*
+# I*
+# J*
+# K*
+# L*
 M*
 N*
 O*
