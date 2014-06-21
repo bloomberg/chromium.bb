@@ -7,13 +7,13 @@
       (drawsContent 1)
       (children 1
         (GraphicsLayer
-          (children 2
+          (position 18.00 10.00)
+          (bounds 100.00 100.00)
+          (drawsContent 1)
+          (children 1
             (GraphicsLayer
-              (position 21.00 21.00)
-              (bounds 100.00 100.00)
-            )
-            (GraphicsLayer
-              (bounds 216.00 142.00)
+              (position 85.00 85.00)
+              (bounds 15.00 15.00)
               (drawsContent 1)
             )
           )

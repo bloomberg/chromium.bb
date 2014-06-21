@@ -3,112 +3,112 @@
 
 Initial
 
-(GraphicsLayer
-  (bounds 785.00 623.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 785.00 623.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 2
-        (GraphicsLayer
-          (position 18.00 10.00)
-          (bounds 749.00 144.00)
-        )
-        (GraphicsLayer
-          (position 14.00 314.00)
-          (bounds 757.00 152.00)
-          (contentsVisible 0)
-          (children 1
-            (GraphicsLayer
-              (position 24.00 24.00)
-              (bounds 100.00 100.00)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [785, 623],
+  "children": [
+    {
+      "bounds": [785, 623],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 10],
+          "bounds": [749, 144]
+        },
+        {
+          "position": [14, 314],
+          "bounds": [757, 152],
+          "contentsVisible": false,
+          "children": [
+            {
+              "position": [24, 24],
+              "bounds": [100, 100]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 After step 1
 
-(GraphicsLayer
-  (bounds 785.00 1048.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 785.00 1048.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 2
-        (GraphicsLayer
-          (position 18.00 10.00)
-          (bounds 749.00 144.00)
-          (children 1
-            (GraphicsLayer
-              (position 20.00 20.00)
-              (bounds 100.00 100.00)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 14.00 314.00)
-          (bounds 757.00 152.00)
-          (contentsVisible 0)
-          (children 1
-            (GraphicsLayer
-              (position 24.00 24.00)
-              (bounds 100.00 100.00)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [785, 1048],
+  "children": [
+    {
+      "bounds": [785, 1048],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 10],
+          "bounds": [749, 144],
+          "children": [
+            {
+              "position": [20, 20],
+              "bounds": [100, 100]
+            }
+          ]
+        },
+        {
+          "position": [14, 314],
+          "bounds": [757, 152],
+          "contentsVisible": false,
+          "children": [
+            {
+              "position": [24, 24],
+              "bounds": [100, 100]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 After step 2
 
-(GraphicsLayer
-  (bounds 785.00 1562.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 785.00 1562.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 3
-        (GraphicsLayer
-          (position 18.00 10.00)
-          (bounds 749.00 144.00)
-          (children 1
-            (GraphicsLayer
-              (position 20.00 20.00)
-              (bounds 100.00 100.00)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 14.00 160.00)
-          (bounds 757.00 152.00)
-          (drawsContent 1)
-          (children 1
-            (GraphicsLayer
-              (position 24.00 24.00)
-              (bounds 100.00 100.00)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 14.00 314.00)
-          (bounds 757.00 152.00)
-          (contentsVisible 0)
-          (children 1
-            (GraphicsLayer
-              (position 24.00 24.00)
-              (bounds 100.00 100.00)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [785, 1562],
+  "children": [
+    {
+      "bounds": [785, 1562],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 10],
+          "bounds": [749, 144],
+          "children": [
+            {
+              "position": [20, 20],
+              "bounds": [100, 100]
+            }
+          ]
+        },
+        {
+          "position": [14, 160],
+          "bounds": [757, 152],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [24, 24],
+              "bounds": [100, 100]
+            }
+          ]
+        },
+        {
+          "position": [14, 314],
+          "bounds": [757, 152],
+          "contentsVisible": false,
+          "children": [
+            {
+              "position": [24, 24],
+              "bounds": [100, 100]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

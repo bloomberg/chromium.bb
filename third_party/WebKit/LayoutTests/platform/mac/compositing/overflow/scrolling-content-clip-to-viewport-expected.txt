@@ -1,51 +1,52 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 2
-        (GraphicsLayer
-          (bounds 320.00 340.00)
-          (children 4
-            (GraphicsLayer
-              (bounds 305.00 325.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 305.00 1224.00)
-                  (shouldFlattenTransform 0)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 0.00 325.00)
-              (bounds 305.00 15.00)
-            )
-            (GraphicsLayer
-              (position 305.00 0.00)
-              (bounds 15.00 325.00)
-            )
-            (GraphicsLayer
-              (position 305.00 325.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 10.00 10.00)
-          (bounds 284.00 1204.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #C0C0C0)
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "bounds": [320, 340],
+          "children": [
+            {
+              "bounds": [305, 325],
+              "children": [
+                {
+                  "bounds": [305, 1224],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [0, 325],
+              "bounds": [305, 15]
+            },
+            {
+              "position": [305, 0],
+              "bounds": [15, 325]
+            },
+            {
+              "position": [305, 325],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [10, 10],
+          "bounds": [284, 1204],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        }
+      ]
+    }
+  ]
+}
 

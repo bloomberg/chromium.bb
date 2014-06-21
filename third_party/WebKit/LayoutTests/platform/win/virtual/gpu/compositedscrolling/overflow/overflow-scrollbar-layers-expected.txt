@@ -1,135 +1,136 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 4
-        (GraphicsLayer
-          (position 8.00 13.00)
-          (bounds 100.00 100.00)
-          (children 2
-            (GraphicsLayer
-              (bounds 85.00 100.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 85.00 200.00)
-                  (shouldFlattenTransform 0)
-                  (children 1
-                    (GraphicsLayer
-                      (children 1
-                        (GraphicsLayer
-                          (bounds 10.00 200.00)
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 85.00 0.00)
-              (bounds 15.00 100.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 13.00)
-          (bounds 100.00 100.00)
-          (children 2
-            (GraphicsLayer
-              (bounds 100.00 85.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 200.00 85.00)
-                  (shouldFlattenTransform 0)
-                  (children 1
-                    (GraphicsLayer
-                      (children 1
-                        (GraphicsLayer
-                          (bounds 200.00 10.00)
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 0.00 85.00)
-              (bounds 100.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 13.00)
-          (bounds 100.00 100.00)
-          (children 4
-            (GraphicsLayer
-              (bounds 85.00 85.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 200.00 200.00)
-                  (shouldFlattenTransform 0)
-                  (children 1
-                    (GraphicsLayer
-                      (children 1
-                        (GraphicsLayer
-                          (bounds 200.00 200.00)
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 0.00 85.00)
-              (bounds 85.00 15.00)
-              (drawsContent 1)
-            )
-            (GraphicsLayer
-              (position 85.00 0.00)
-              (bounds 15.00 85.00)
-              (drawsContent 1)
-            )
-            (GraphicsLayer
-              (position 85.00 85.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 13.00)
-          (bounds 100.00 100.00)
-          (drawsContent 1)
-          (children 2
-            (GraphicsLayer
-              (bounds 100.00 100.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 10.00 10.00)
-                  (drawsContent 1)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 85.00 85.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 13],
+          "bounds": [100, 100],
+          "children": [
+            {
+              "bounds": [85, 100],
+              "children": [
+                {
+                  "bounds": [85, 200],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [10, 200]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [85, 0],
+              "bounds": [15, 100],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [8, 13],
+          "bounds": [100, 100],
+          "children": [
+            {
+              "bounds": [100, 85],
+              "children": [
+                {
+                  "bounds": [200, 85],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [200, 10]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [0, 85],
+              "bounds": [100, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [8, 13],
+          "bounds": [100, 100],
+          "children": [
+            {
+              "bounds": [85, 85],
+              "children": [
+                {
+                  "bounds": [200, 200],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [200, 200]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [0, 85],
+              "bounds": [85, 15],
+              "drawsContent": true
+            },
+            {
+              "position": [85, 0],
+              "bounds": [15, 85],
+              "drawsContent": true
+            },
+            {
+              "position": [85, 85],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [8, 13],
+          "bounds": [100, 100],
+          "drawsContent": true,
+          "children": [
+            {
+              "bounds": [100, 100],
+              "children": [
+                {
+                  "bounds": [10, 10],
+                  "drawsContent": true,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [85, 85],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

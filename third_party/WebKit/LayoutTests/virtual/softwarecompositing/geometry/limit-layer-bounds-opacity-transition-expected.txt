@@ -1,28 +1,28 @@
 Test
 Fader
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 8.00 8.00)
-              (bounds 1.00 1.00)
-            )
-            (GraphicsLayer
-              (position -9992.00 -1.00)
-              (bounds 10100.00 100.00)
-              (drawsContent 1)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [1, 1]
+            },
+            {
+              "position": [-9992, -1],
+              "bounds": [10100, 100],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

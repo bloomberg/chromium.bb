@@ -1,33 +1,43 @@
 preserve-3d
 flat
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 2
-        (GraphicsLayer
-          (position 18.00 10.00)
-          (bounds 100.00 100.00)
-          (contentsOpaque 1)
-          (shouldFlattenTransform 0)
-          (3dRenderingContext 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
-          (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 1.00 1.00])
-        )
-        (GraphicsLayer
-          (position 18.00 120.00)
-          (bounds 100.00 100.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
-          (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 1.00 1.00])
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 10],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "shouldFlattenTransform": false,
+          "3dRenderingContext": 1,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF",
+          "transform": [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 1, 1]
+          ]
+        },
+        {
+          "position": [18, 120],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF",
+          "transform": [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 1, 1]
+          ]
+        }
+      ]
+    }
+  ]
+}
 

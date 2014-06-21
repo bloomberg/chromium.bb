@@ -1,38 +1,38 @@
-(GraphicsLayer
-  (children 1
-    (GraphicsLayer
-      (children 2
-        (GraphicsLayer
-          (bounds 785.00 600.00)
-          (children 2
-            (GraphicsLayer
-              (transformOrigin 0.00 0.00)
-              (bounds 785.00 600.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-            )
-            (GraphicsLayer
-              (children 1
-                (GraphicsLayer
-                  (bounds 785.00 3700.00)
-                  (children 1
-                    (GraphicsLayer
-                      (bounds 785.00 3700.00)
-                      (drawsContent 1)
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 785.00 0.00)
-          (bounds 15.00 600.00)
-          (contentsOpaque 1)
-        )
-      )
-    )
-  )
-)
+{
+  "children": [
+    {
+      "children": [
+        {
+          "bounds": [785, 600],
+          "children": [
+            {
+              "transformOrigin": [0, 0],
+              "bounds": [785, 600],
+              "contentsOpaque": true,
+              "drawsContent": true
+            },
+            {
+              "children": [
+                {
+                  "bounds": [785, 3700],
+                  "children": [
+                    {
+                      "bounds": [785, 3700],
+                      "drawsContent": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [785, 0],
+          "bounds": [15, 600],
+          "contentsOpaque": true
+        }
+      ]
+    }
+  ]
+}
 

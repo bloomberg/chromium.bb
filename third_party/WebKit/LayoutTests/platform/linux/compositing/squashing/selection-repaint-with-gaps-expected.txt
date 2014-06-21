@@ -1,63 +1,63 @@
 lorem ipsumlorem ipsumlorem ipsum
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 8.00 8.00)
-              (bounds 300.00 500.00)
-            )
-            (GraphicsLayer
-              (position 15.00 35.00)
-              (bounds 100.00 210.00)
-              (drawsContent 1)
-              (repaint rects
-                (rect 34.00 80.00 6.00 19.00)
-                (rect 0.00 80.00 35.00 39.00)
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 8.00 8.00)
-              (bounds 300.00 500.00)
-            )
-            (GraphicsLayer
-              (position 15.00 35.00)
-              (bounds 100.00 210.00)
-              (drawsContent 1)
-              (repaint rects
-                (rect 34.00 160.00 6.00 19.00)
-                (rect 34.00 80.00 6.00 39.00)
-                (rect 0.00 160.00 35.00 39.00)
-                (rect 0.00 119.00 100.00 11.00)
-                (rect 0.00 80.00 35.00 39.00)
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [300, 500]
+            },
+            {
+              "position": [15, 35],
+              "bounds": [100, 210],
+              "drawsContent": true,
+              "repaintRects": [
+                [34, 80, 6, 19],
+                [0, 80, 35, 39]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [300, 500]
+            },
+            {
+              "position": [15, 35],
+              "bounds": [100, 210],
+              "drawsContent": true,
+              "repaintRects": [
+                [34, 160, 6, 19],
+                [34, 80, 6, 39],
+                [0, 160, 35, 39],
+                [0, 119, 100, 11],
+                [0, 80, 35, 39]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

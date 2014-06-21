@@ -1,27 +1,27 @@
 Text here
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 129.00 29.00)
-              (bounds 100.00 100.00)
-            )
-            (GraphicsLayer
-              (position -871.00 8.00)
-              (bounds 1221.00 142.00)
-              (drawsContent 1)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [129, 29],
+              "bounds": [100, 100]
+            },
+            {
+              "position": [-871, 8],
+              "bounds": [1221, 142],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
