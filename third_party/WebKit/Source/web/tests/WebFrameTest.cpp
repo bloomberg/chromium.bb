@@ -5566,6 +5566,11 @@ public:
     {
     }
 
+    void reset()
+    {
+        m_didNotify = false;
+    }
+
     bool didNotify() const
     {
         return m_didNotify;
@@ -5585,9 +5590,26 @@ TEST_F(WebFrameTest, BrandColor)
     registerMockedHttpURLLoad("brand_color_test.html");
     FrameTestHelpers::WebViewHelper webViewHelper;
     BrandColorTestWebFrameClient client;
-    webViewHelper.initializeAndLoad(m_baseURL + "brand_color_test.html", false, &client);
+    webViewHelper.initializeAndLoad(m_baseURL + "brand_color_test.html", true, &client);
     EXPECT_TRUE(client.didNotify());
-    EXPECT_EQ(0xff0000ff, webViewHelper.webViewImpl()->mainFrameImpl()->document().brandColor());
+    WebLocalFrameImpl* frame = webViewHelper.webViewImpl()->mainFrameImpl();
+    EXPECT_EQ(0xff0000ff, frame->document().brandColor());
+    // Change color by rgb.
+    client.reset();
+    frame->executeScript(WebScriptSource("document.getElementById('bc1').setAttribute('content', 'rgb(0, 0, 0)');"));
+    EXPECT_TRUE(client.didNotify());
+    EXPECT_EQ(0xff000000, frame->document().brandColor());
+    // Change color by hsl.
+    client.reset();
+    frame->executeScript(WebScriptSource("document.getElementById('bc1').setAttribute('content', 'hsl(240,100%, 50%)');"));
+    EXPECT_TRUE(client.didNotify());
+    EXPECT_EQ(0xff0000ff, frame->document().brandColor());
+    // Change of second brand-color meta tag will not change frame's brand
+    // color.
+    client.reset();
+    frame->executeScript(WebScriptSource("document.getElementById('bc2').setAttribute('content', '#00FF00');"));
+    EXPECT_TRUE(client.didNotify());
+    EXPECT_EQ(0xff0000ff, frame->document().brandColor());
 }
 
 } // namespace

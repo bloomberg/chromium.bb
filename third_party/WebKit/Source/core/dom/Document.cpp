@@ -51,7 +51,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/StyleSheetList.h"
 #include "core/css/invalidation/StyleInvalidator.h"
-#include "core/css/parser/CSSPropertyParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/resolver/FontBuilder.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverStats.h"
@@ -4759,7 +4759,7 @@ Color Document::brandColor() const
 
     for (HTMLMetaElement* metaElement = head() ? Traversal<HTMLMetaElement>::firstChild(*head()) : 0; metaElement; metaElement = Traversal<HTMLMetaElement>::nextSibling(*metaElement)) {
         RGBA32 rgb;
-        if (equalIgnoringCase(metaElement->name(), "brand-color") && CSSPropertyParser::fastParseColor(rgb, metaElement->content().string().stripWhiteSpace(), true))
+        if (equalIgnoringCase(metaElement->name(), "brand-color") && BisonCSSParser::parseColor(rgb, metaElement->content().string().stripWhiteSpace(), true))
             return Color(rgb);
     }
     return Color();
