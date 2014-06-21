@@ -1,93 +1,57 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (paintingPhases
-    GraphicsLayerPaintBackground
-    GraphicsLayerPaintForeground
-    GraphicsLayerPaintMask
-  )
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (paintingPhases
-        GraphicsLayerPaintBackground
-        GraphicsLayerPaintForeground
-        GraphicsLayerPaintMask
-      )
-      (children 1
-        (GraphicsLayer
-          (position 8.00 8.00)
-          (bounds 102.00 102.00)
-          (drawsContent 1)
-          (paintingPhases
-            GraphicsLayerPaintBackground
-            GraphicsLayerPaintMask
-            GraphicsLayerPaintCompositedScroll
-          )
-          (children 4
-            (GraphicsLayer
-              (position 1.00 1.00)
-              (bounds 85.00 85.00)
-              (paintingPhases
-                GraphicsLayerPaintBackground
-                GraphicsLayerPaintForeground
-                GraphicsLayerPaintMask
-              )
-              (children 1
-                (GraphicsLayer
-                  (bounds 85.00 120.00)
-                  (shouldFlattenTransform 0)
-                  (drawsContent 1)
-                  (paintingPhases
-                    GraphicsLayerPaintForeground
-                    GraphicsLayerPaintOverflowContents
-                    GraphicsLayerPaintCompositedScroll
-                  )
-                  (children 1
-                    (GraphicsLayer
-                      (paintingPhases
-                        GraphicsLayerPaintForeground
-                        GraphicsLayerPaintOverflowContents
-                        GraphicsLayerPaintCompositedScroll
-                      )
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 1.00 86.00)
-              (bounds 85.00 15.00)
-              (paintingPhases
-                GraphicsLayerPaintBackground
-                GraphicsLayerPaintForeground
-                GraphicsLayerPaintMask
-              )
-            )
-            (GraphicsLayer
-              (position 86.00 1.00)
-              (bounds 15.00 85.00)
-              (paintingPhases
-                GraphicsLayerPaintBackground
-                GraphicsLayerPaintForeground
-                GraphicsLayerPaintMask
-              )
-            )
-            (GraphicsLayer
-              (position 86.00 86.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-              (paintingPhases
-                GraphicsLayerPaintBackground
-                GraphicsLayerPaintForeground
-                GraphicsLayerPaintMask
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "paintingPhases": ["GraphicsLayerPaintBackground", "GraphicsLayerPaintForeground", "GraphicsLayerPaintMask"],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintingPhases": ["GraphicsLayerPaintBackground", "GraphicsLayerPaintForeground", "GraphicsLayerPaintMask"],
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [102, 102],
+          "drawsContent": true,
+          "paintingPhases": ["GraphicsLayerPaintBackground", "GraphicsLayerPaintMask", "GraphicsLayerPaintCompositedScroll"],
+          "children": [
+            {
+              "position": [1, 1],
+              "bounds": [85, 85],
+              "paintingPhases": ["GraphicsLayerPaintBackground", "GraphicsLayerPaintForeground", "GraphicsLayerPaintMask"],
+              "children": [
+                {
+                  "bounds": [85, 120],
+                  "shouldFlattenTransform": false,
+                  "drawsContent": true,
+                  "paintingPhases": ["GraphicsLayerPaintForeground", "GraphicsLayerPaintOverflowContents", "GraphicsLayerPaintCompositedScroll"],
+                  "children": [
+                    {
+                      "paintingPhases": ["GraphicsLayerPaintForeground", "GraphicsLayerPaintOverflowContents", "GraphicsLayerPaintCompositedScroll"]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [1, 86],
+              "bounds": [85, 15],
+              "paintingPhases": ["GraphicsLayerPaintBackground", "GraphicsLayerPaintForeground", "GraphicsLayerPaintMask"]
+            },
+            {
+              "position": [86, 1],
+              "bounds": [15, 85],
+              "paintingPhases": ["GraphicsLayerPaintBackground", "GraphicsLayerPaintForeground", "GraphicsLayerPaintMask"]
+            },
+            {
+              "position": [86, 86],
+              "bounds": [15, 15],
+              "drawsContent": true,
+              "paintingPhases": ["GraphicsLayerPaintBackground", "GraphicsLayerPaintForeground", "GraphicsLayerPaintMask"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

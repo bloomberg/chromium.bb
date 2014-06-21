@@ -1,55 +1,56 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 8.00 8.00)
-          (bounds 200.00 200.00)
-          (children 4
-            (GraphicsLayer
-              (bounds 185.00 185.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 185.00 1200.00)
-                  (shouldFlattenTransform 0)
-                  (drawsContent 1)
-                  (repaint rects
-                    (rect 0.00 0.00 185.00 200.00)
-                    (rect 0.00 0.00 185.00 200.00)
-                  )
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 0.00 185.00)
-              (bounds 185.00 15.00)
-            )
-            (GraphicsLayer
-              (position 185.00 0.00)
-              (bounds 15.00 185.00)
-              (repaint rects
-                (rect 0.00 0.00 15.00 185.00)
-                (rect 0.00 0.00 15.00 185.00)
-                (rect 0.00 0.00 15.00 185.00)
-              )
-            )
-            (GraphicsLayer
-              (position 185.00 185.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [200, 200],
+          "children": [
+            {
+              "bounds": [185, 185],
+              "children": [
+                {
+                  "bounds": [185, 1200],
+                  "shouldFlattenTransform": false,
+                  "drawsContent": true,
+                  "repaintRects": [
+                    [0, 0, 185, 200],
+                    [0, 0, 185, 200]
+                  ],
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [0, 185],
+              "bounds": [185, 15]
+            },
+            {
+              "position": [185, 0],
+              "bounds": [15, 185],
+              "repaintRects": [
+                [0, 0, 15, 185],
+                [0, 0, 15, 185],
+                [0, 0, 15, 185]
+              ]
+            },
+            {
+              "position": [185, 185],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

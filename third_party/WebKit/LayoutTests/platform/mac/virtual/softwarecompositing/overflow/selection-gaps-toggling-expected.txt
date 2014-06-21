@@ -13,359 +13,360 @@ Lorem Ipsum
 
 *** iteration 1: ***
 
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 11
-        (GraphicsLayer
-          (position 8.00 62.00)
-          (bounds 300.00 500.00)
-          (children 4
-            (GraphicsLayer
-              (bounds 285.00 485.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 285.00 665.00)
-                  (shouldFlattenTransform 0)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 0.00 485.00)
-              (bounds 285.00 15.00)
-            )
-            (GraphicsLayer
-              (position 285.00 0.00)
-              (bounds 15.00 485.00)
-            )
-            (GraphicsLayer
-              (position 285.00 485.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 23.00 77.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 142.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 207.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 272.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 337.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 402.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 467.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 532.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 597.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 662.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 62],
+          "bounds": [300, 500],
+          "children": [
+            {
+              "bounds": [285, 485],
+              "children": [
+                {
+                  "bounds": [285, 665],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [0, 485],
+              "bounds": [285, 15]
+            },
+            {
+              "position": [285, 0],
+              "bounds": [15, 485]
+            },
+            {
+              "position": [285, 485],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [23, 77],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 142],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 207],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 272],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 337],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 402],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 467],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 532],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 597],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 662],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        }
+      ]
+    }
+  ]
+}
 
 
 *** iteration 2: ***
 
-(GraphicsLayer
-  (bounds 785.00 2358.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 785.00 2358.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 11
-        (GraphicsLayer
-          (position 8.00 62.00)
-          (bounds 300.00 500.00)
-          (children 4
-            (GraphicsLayer
-              (bounds 285.00 485.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 285.00 665.00)
-                  (shouldFlattenTransform 0)
-                  (children 1
-                    (GraphicsLayer
-                      (position 0.00 195.00)
-                      (bounds 285.00 15.00)
-                      (drawsContent 1)
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 0.00 485.00)
-              (bounds 285.00 15.00)
-            )
-            (GraphicsLayer
-              (position 285.00 0.00)
-              (bounds 15.00 485.00)
-            )
-            (GraphicsLayer
-              (position 285.00 485.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 23.00 77.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 142.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 207.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 272.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 337.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 402.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 467.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 532.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 597.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 662.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [785, 2373],
+  "children": [
+    {
+      "bounds": [785, 2373],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 62],
+          "bounds": [300, 500],
+          "children": [
+            {
+              "bounds": [285, 485],
+              "children": [
+                {
+                  "bounds": [285, 665],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+                      "position": [0, 195],
+                      "bounds": [285, 15],
+                      "drawsContent": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [0, 485],
+              "bounds": [285, 15]
+            },
+            {
+              "position": [285, 0],
+              "bounds": [15, 485]
+            },
+            {
+              "position": [285, 485],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [23, 77],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 142],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 207],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 272],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 337],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 402],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 467],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 532],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 597],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 662],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        }
+      ]
+    }
+  ]
+}
 
 
 *** iteration 3: ***
 
-(GraphicsLayer
-  (bounds 785.00 4173.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 785.00 4173.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 11
-        (GraphicsLayer
-          (position 8.00 62.00)
-          (bounds 300.00 500.00)
-          (children 4
-            (GraphicsLayer
-              (bounds 285.00 485.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 285.00 665.00)
-                  (shouldFlattenTransform 0)
-                  (children 1
-                    (GraphicsLayer
-                      (position 0.00 195.00)
-                      (bounds 285.00 15.00)
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 0.00 485.00)
-              (bounds 285.00 15.00)
-            )
-            (GraphicsLayer
-              (position 285.00 0.00)
-              (bounds 15.00 485.00)
-            )
-            (GraphicsLayer
-              (position 285.00 485.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 23.00 77.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 142.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 207.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 272.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 337.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 402.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 467.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 532.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 597.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-        (GraphicsLayer
-          (position 23.00 662.00)
-          (bounds 100.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFA500)
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [785, 4188],
+  "children": [
+    {
+      "bounds": [785, 4188],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 62],
+          "bounds": [300, 500],
+          "children": [
+            {
+              "bounds": [285, 485],
+              "children": [
+                {
+                  "bounds": [285, 665],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+                      "position": [0, 195],
+                      "bounds": [285, 15]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [0, 485],
+              "bounds": [285, 15]
+            },
+            {
+              "position": [285, 0],
+              "bounds": [15, 485]
+            },
+            {
+              "position": [285, 485],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [23, 77],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 142],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 207],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 272],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 337],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 402],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 467],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 532],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 597],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        },
+        {
+          "position": [23, 662],
+          "bounds": [100, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFA500"
+        }
+      ]
+    }
+  ]
+}
 

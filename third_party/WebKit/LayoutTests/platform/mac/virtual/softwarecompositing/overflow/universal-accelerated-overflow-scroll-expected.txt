@@ -1,892 +1,904 @@
-(GraphicsLayer
-  (bounds 785.00 2016.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 785.00 2016.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 48
-        (GraphicsLayer
-          (position 10.00 10.00)
-          (bounds 104.00 104.00)
-          (drawsContent 1)
-          (children 4
-            (GraphicsLayer
-              (position 2.00 2.00)
-              (bounds 85.00 85.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 85.00 144.00)
-                  (shouldFlattenTransform 0)
-                  (drawsContent 1)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 2.00 87.00)
-              (bounds 85.00 15.00)
-            )
-            (GraphicsLayer
-              (position 87.00 2.00)
-              (bounds 15.00 85.00)
-            )
-            (GraphicsLayer
-              (position 87.00 87.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 35.00 75.00)
-          (bounds 80.00 40.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 16.00 -15.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 16.00 41.00)
-              (bounds 75.00 24.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 130.00 10.00)
-          (bounds 104.00 104.00)
-          (drawsContent 1)
-          (children 4
-            (GraphicsLayer
-              (position 2.00 2.00)
-              (bounds 85.00 85.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 105.00 144.00)
-                  (shouldFlattenTransform 0)
-                  (drawsContent 1)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 2.00 87.00)
-              (bounds 85.00 15.00)
-            )
-            (GraphicsLayer
-              (position 87.00 2.00)
-              (bounds 15.00 85.00)
-            )
-            (GraphicsLayer
-              (position 87.00 87.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 157.00 18.00)
-              (bounds 80.00 40.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #808080)
-            )
-            (GraphicsLayer
-              (position 136.00 -15.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 250.00 10.00)
-          (bounds 104.00 104.00)
-          (drawsContent 1)
-          (children 4
-            (GraphicsLayer
-              (position 2.00 2.00)
-              (bounds 85.00 85.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 85.00 144.00)
-                  (shouldFlattenTransform 0)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 2.00 87.00)
-              (bounds 85.00 15.00)
-            )
-            (GraphicsLayer
-              (position 87.00 2.00)
-              (bounds 15.00 85.00)
-            )
-            (GraphicsLayer
-              (position 87.00 87.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 275.00 75.00)
-          (bounds 80.00 40.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 256.00 -15.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 256.00 41.00)
-              (bounds 75.00 24.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 370.00 10.00)
-          (bounds 104.00 104.00)
-          (drawsContent 1)
-          (children 4
-            (GraphicsLayer
-              (position 2.00 2.00)
-              (bounds 85.00 85.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 85.00 144.00)
-                  (shouldFlattenTransform 0)
-                  (drawsContent 1)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 2.00 87.00)
-              (bounds 85.00 15.00)
-            )
-            (GraphicsLayer
-              (position 87.00 2.00)
-              (bounds 15.00 85.00)
-            )
-            (GraphicsLayer
-              (position 87.00 87.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 395.00 75.00)
-          (bounds 80.00 40.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 376.00 -15.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 376.00 41.00)
-              (bounds 75.00 24.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 10.00 130.00)
-          (bounds 104.00 104.00)
-          (drawsContent 1)
-          (children 4
-            (GraphicsLayer
-              (position 2.00 2.00)
-              (bounds 85.00 85.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 105.00 144.00)
-                  (shouldFlattenTransform 0)
-                  (drawsContent 1)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 2.00 87.00)
-              (bounds 85.00 15.00)
-            )
-            (GraphicsLayer
-              (position 87.00 2.00)
-              (bounds 15.00 85.00)
-            )
-            (GraphicsLayer
-              (position 87.00 87.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 37.00 138.00)
-              (bounds 80.00 40.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #808080)
-            )
-            (GraphicsLayer
-              (position 16.00 105.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 130.00 130.00)
-          (bounds 104.00 104.00)
-          (drawsContent 1)
-          (children 4
-            (GraphicsLayer
-              (position 2.00 2.00)
-              (bounds 85.00 85.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 85.00 144.00)
-                  (shouldFlattenTransform 0)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 2.00 87.00)
-              (bounds 85.00 15.00)
-            )
-            (GraphicsLayer
-              (position 87.00 2.00)
-              (bounds 15.00 85.00)
-            )
-            (GraphicsLayer
-              (position 87.00 87.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 155.00 195.00)
-          (bounds 80.00 40.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 136.00 105.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 136.00 161.00)
-              (bounds 75.00 24.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 250.00 130.00)
-          (bounds 104.00 104.00)
-          (drawsContent 1)
-          (children 4
-            (GraphicsLayer
-              (position 2.00 2.00)
-              (bounds 85.00 85.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 105.00 144.00)
-                  (shouldFlattenTransform 0)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 2.00 87.00)
-              (bounds 85.00 15.00)
-            )
-            (GraphicsLayer
-              (position 87.00 2.00)
-              (bounds 15.00 85.00)
-            )
-            (GraphicsLayer
-              (position 87.00 87.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 277.00 138.00)
-              (bounds 80.00 40.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #808080)
-            )
-            (GraphicsLayer
-              (position 256.00 105.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 370.00 130.00)
-          (bounds 104.00 104.00)
-          (drawsContent 1)
-          (children 4
-            (GraphicsLayer
-              (position 2.00 2.00)
-              (bounds 85.00 85.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 105.00 144.00)
-                  (shouldFlattenTransform 0)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 2.00 87.00)
-              (bounds 85.00 15.00)
-            )
-            (GraphicsLayer
-              (position 87.00 2.00)
-              (bounds 15.00 85.00)
-            )
-            (GraphicsLayer
-              (position 87.00 87.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 397.00 138.00)
-              (bounds 80.00 40.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #808080)
-            )
-            (GraphicsLayer
-              (position 376.00 105.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 10.00 250.00)
-          (bounds 104.00 104.00)
-          (drawsContent 1)
-          (children 4
-            (GraphicsLayer
-              (position 2.00 2.00)
-              (bounds 85.00 85.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 85.00 144.00)
-                  (shouldFlattenTransform 0)
-                  (drawsContent 1)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 2.00 87.00)
-              (bounds 85.00 15.00)
-            )
-            (GraphicsLayer
-              (position 87.00 2.00)
-              (bounds 15.00 85.00)
-            )
-            (GraphicsLayer
-              (position 87.00 87.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 35.00 315.00)
-          (bounds 80.00 40.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 16.00 225.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 16.00 281.00)
-              (bounds 75.00 24.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 130.00 250.00)
-        )
-        (GraphicsLayer
-          (position 130.00 250.00)
-          (bounds 104.00 104.00)
-          (drawsContent 1)
-          (children 4
-            (GraphicsLayer
-              (position 2.00 2.00)
-              (bounds 85.00 85.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 85.00 144.00)
-                  (shouldFlattenTransform 0)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 2.00 87.00)
-              (bounds 85.00 15.00)
-            )
-            (GraphicsLayer
-              (position 87.00 2.00)
-              (bounds 15.00 85.00)
-            )
-            (GraphicsLayer
-              (position 87.00 87.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 155.00 315.00)
-          (bounds 80.00 40.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 136.00 225.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 136.00 281.00)
-              (bounds 75.00 24.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 250.00 250.00)
-        )
-        (GraphicsLayer
-          (position 250.00 250.00)
-          (bounds 104.00 104.00)
-          (drawsContent 1)
-          (children 4
-            (GraphicsLayer
-              (position 2.00 2.00)
-              (bounds 85.00 85.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 85.00 144.00)
-                  (shouldFlattenTransform 0)
-                  (drawsContent 1)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 2.00 87.00)
-              (bounds 85.00 15.00)
-            )
-            (GraphicsLayer
-              (position 87.00 2.00)
-              (bounds 15.00 85.00)
-            )
-            (GraphicsLayer
-              (position 87.00 87.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 275.00 315.00)
-          (bounds 80.00 40.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 256.00 225.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 256.00 281.00)
-              (bounds 75.00 24.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 370.00 250.00)
-        )
-        (GraphicsLayer
-          (position 370.00 250.00)
-          (bounds 104.00 104.00)
-          (drawsContent 1)
-          (children 4
-            (GraphicsLayer
-              (position 2.00 2.00)
-              (bounds 85.00 85.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 85.00 144.00)
-                  (shouldFlattenTransform 0)
-                  (children 1
-                    (GraphicsLayer
-                    )
-                  )
-                )
-              )
-            )
-            (GraphicsLayer
-              (position 2.00 87.00)
-              (bounds 85.00 15.00)
-            )
-            (GraphicsLayer
-              (position 87.00 2.00)
-              (bounds 15.00 85.00)
-            )
-            (GraphicsLayer
-              (position 87.00 87.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 395.00 315.00)
-          (bounds 80.00 40.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 376.00 225.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 376.00 281.00)
-              (bounds 75.00 24.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 375.00 20.00)
-              (bounds 50.00 100.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #008000)
-            )
-            (GraphicsLayer
-              (position 15.00 140.00)
-              (bounds 290.00 220.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 16.00 -43.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 16.00 13.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 136.00 -43.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 136.00 13.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 256.00 -43.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 256.00 13.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 376.00 -43.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 376.00 13.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 16.00 77.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 16.00 133.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 136.00 77.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 136.00 133.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 256.00 77.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 256.00 133.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 376.00 77.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 376.00 133.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 16.00 197.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 16.00 253.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 136.00 197.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 136.00 253.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 256.00 197.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 256.00 253.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 376.00 197.00)
-              (bounds 75.00 24.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 376.00 253.00)
-              (bounds 75.00 80.00)
-              (drawsContent 1)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [785, 2016],
+  "children": [
+    {
+      "bounds": [785, 2016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [10, 10],
+          "bounds": [104, 104],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "bounds": [85, 85],
+              "children": [
+                {
+                  "bounds": [85, 144],
+                  "shouldFlattenTransform": false,
+                  "drawsContent": true,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [2, 87],
+              "bounds": [85, 15]
+            },
+            {
+              "position": [87, 2],
+              "bounds": [15, 85]
+            },
+            {
+              "position": [87, 87],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [35, 75],
+          "bounds": [80, 40],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#808080"
+        },
+        {
+          "children": [
+            {
+              "position": [16, -15],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [16, 41],
+              "bounds": [75, 24],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [130, 10],
+          "bounds": [104, 104],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "bounds": [85, 85],
+              "children": [
+                {
+                  "bounds": [105, 144],
+                  "shouldFlattenTransform": false,
+                  "drawsContent": true,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [2, 87],
+              "bounds": [85, 15]
+            },
+            {
+              "position": [87, 2],
+              "bounds": [15, 85]
+            },
+            {
+              "position": [87, 87],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [157, 18],
+              "bounds": [80, 40],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#808080"
+            },
+            {
+              "position": [136, -15],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [250, 10],
+          "bounds": [104, 104],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "bounds": [85, 85],
+              "children": [
+                {
+                  "bounds": [85, 144],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [2, 87],
+              "bounds": [85, 15]
+            },
+            {
+              "position": [87, 2],
+              "bounds": [15, 85]
+            },
+            {
+              "position": [87, 87],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [275, 75],
+          "bounds": [80, 40],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#808080"
+        },
+        {
+          "children": [
+            {
+              "position": [256, -15],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [256, 41],
+              "bounds": [75, 24],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [370, 10],
+          "bounds": [104, 104],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "bounds": [85, 85],
+              "children": [
+                {
+                  "bounds": [85, 144],
+                  "shouldFlattenTransform": false,
+                  "drawsContent": true,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [2, 87],
+              "bounds": [85, 15]
+            },
+            {
+              "position": [87, 2],
+              "bounds": [15, 85]
+            },
+            {
+              "position": [87, 87],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [395, 75],
+          "bounds": [80, 40],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#808080"
+        },
+        {
+          "children": [
+            {
+              "position": [376, -15],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [376, 41],
+              "bounds": [75, 24],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [10, 130],
+          "bounds": [104, 104],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "bounds": [85, 85],
+              "children": [
+                {
+                  "bounds": [105, 144],
+                  "shouldFlattenTransform": false,
+                  "drawsContent": true,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [2, 87],
+              "bounds": [85, 15]
+            },
+            {
+              "position": [87, 2],
+              "bounds": [15, 85]
+            },
+            {
+              "position": [87, 87],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [37, 138],
+              "bounds": [80, 40],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#808080"
+            },
+            {
+              "position": [16, 105],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [130, 130],
+          "bounds": [104, 104],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "bounds": [85, 85],
+              "children": [
+                {
+                  "bounds": [85, 144],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [2, 87],
+              "bounds": [85, 15]
+            },
+            {
+              "position": [87, 2],
+              "bounds": [15, 85]
+            },
+            {
+              "position": [87, 87],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [155, 195],
+          "bounds": [80, 40],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#808080"
+        },
+        {
+          "children": [
+            {
+              "position": [136, 105],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [136, 161],
+              "bounds": [75, 24],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [250, 130],
+          "bounds": [104, 104],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "bounds": [85, 85],
+              "children": [
+                {
+                  "bounds": [105, 144],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [2, 87],
+              "bounds": [85, 15]
+            },
+            {
+              "position": [87, 2],
+              "bounds": [15, 85]
+            },
+            {
+              "position": [87, 87],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [277, 138],
+              "bounds": [80, 40],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#808080"
+            },
+            {
+              "position": [256, 105],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [370, 130],
+          "bounds": [104, 104],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "bounds": [85, 85],
+              "children": [
+                {
+                  "bounds": [105, 144],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [2, 87],
+              "bounds": [85, 15]
+            },
+            {
+              "position": [87, 2],
+              "bounds": [15, 85]
+            },
+            {
+              "position": [87, 87],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [397, 138],
+              "bounds": [80, 40],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#808080"
+            },
+            {
+              "position": [376, 105],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [10, 250],
+          "bounds": [104, 104],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "bounds": [85, 85],
+              "children": [
+                {
+                  "bounds": [85, 144],
+                  "shouldFlattenTransform": false,
+                  "drawsContent": true,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [2, 87],
+              "bounds": [85, 15]
+            },
+            {
+              "position": [87, 2],
+              "bounds": [15, 85]
+            },
+            {
+              "position": [87, 87],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [35, 315],
+          "bounds": [80, 40],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#808080"
+        },
+        {
+          "children": [
+            {
+              "position": [16, 225],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [16, 281],
+              "bounds": [75, 24],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [130, 250]
+        },
+        {
+          "position": [130, 250],
+          "bounds": [104, 104],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "bounds": [85, 85],
+              "children": [
+                {
+                  "bounds": [85, 144],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [2, 87],
+              "bounds": [85, 15]
+            },
+            {
+              "position": [87, 2],
+              "bounds": [15, 85]
+            },
+            {
+              "position": [87, 87],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [155, 315],
+          "bounds": [80, 40],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#808080"
+        },
+        {
+          "children": [
+            {
+              "position": [136, 225],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [136, 281],
+              "bounds": [75, 24],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [250, 250]
+        },
+        {
+          "position": [250, 250],
+          "bounds": [104, 104],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "bounds": [85, 85],
+              "children": [
+                {
+                  "bounds": [85, 144],
+                  "shouldFlattenTransform": false,
+                  "drawsContent": true,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [2, 87],
+              "bounds": [85, 15]
+            },
+            {
+              "position": [87, 2],
+              "bounds": [15, 85]
+            },
+            {
+              "position": [87, 87],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [275, 315],
+          "bounds": [80, 40],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#808080"
+        },
+        {
+          "children": [
+            {
+              "position": [256, 225],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [256, 281],
+              "bounds": [75, 24],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [370, 250]
+        },
+        {
+          "position": [370, 250],
+          "bounds": [104, 104],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "bounds": [85, 85],
+              "children": [
+                {
+                  "bounds": [85, 144],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "position": [2, 87],
+              "bounds": [85, 15]
+            },
+            {
+              "position": [87, 2],
+              "bounds": [15, 85]
+            },
+            {
+              "position": [87, 87],
+              "bounds": [15, 15],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [395, 315],
+          "bounds": [80, 40],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#808080"
+        },
+        {
+          "children": [
+            {
+              "position": [376, 225],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [376, 281],
+              "bounds": [75, 24],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [375, 20],
+              "bounds": [50, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#008000"
+            },
+            {
+              "position": [15, 140],
+              "bounds": [290, 220],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [16, -43],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [16, 13],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [136, -43],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [136, 13],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [256, -43],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [256, 13],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [376, -43],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [376, 13],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [16, 77],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [16, 133],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [136, 77],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [136, 133],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [256, 77],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [256, 133],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [376, 77],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [376, 133],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [16, 197],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [16, 253],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [136, 197],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [136, 253],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [256, 197],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [256, 253],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [376, 197],
+              "bounds": [75, 24],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [376, 253],
+              "bounds": [75, 80],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
