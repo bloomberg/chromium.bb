@@ -488,6 +488,77 @@ struct MyStruct {
      ('FIELD', 'double', 'a22', ast.Ordinal(None), '+.123E10')])])]
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
+  def testValidFixedSizeArray(self):
+    """Tests parsing a fixed size array."""
+    source = """\
+struct MyStruct {
+  int32[] normal_array;
+  int32[1] fixed_size_array_one_entry;
+  int32[10] fixed_size_array_ten_entries;
+};
+"""
+    expected = \
+[('MODULE',
+  '',
+  None,
+  [('STRUCT',
+    'MyStruct',
+    None,
+    [('FIELD', 'int32[]', 'normal_array', ast.Ordinal(None), None),
+     ('FIELD', 'int32[1]', 'fixed_size_array_one_entry',
+      ast.Ordinal(None), None),
+     ('FIELD', 'int32[10]', 'fixed_size_array_ten_entries',
+      ast.Ordinal(None), None)])])]
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
+
+  def testValidNestedArray(self):
+    """Tests parsing a nested array."""
+    source = """\
+struct MyStruct {
+  int32[][] nested_array;
+};
+"""
+    expected = \
+[('MODULE',
+  '',
+  None,
+  [('STRUCT',
+    'MyStruct',
+    None,
+    [('FIELD', 'int32[][]', 'nested_array', ast.Ordinal(None), None)])])]
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
+
+  def testInvalidFixedArraySize(self):
+    """Tests that invalid fixed array bounds are correctly detected."""
+    source1 = """\
+struct MyStruct {
+  int32[0] zero_size_array;
+};
+"""
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom: Error: Fixed array size 0 invalid$"):
+      parser.Parse(source1, "my_file.mojom")
+
+    source2 = """\
+struct MyStruct {
+  int32[999999999999] too_big_array;
+};
+"""
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom: Error: Fixed array size 999999999999 invalid$"):
+      parser.Parse(source2, "my_file.mojom")
+
+    source3 = """\
+struct MyStruct {
+  int32[abcdefg] not_a_number;
+};
+"""
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected 'abcdefg':"):
+      parser.Parse(source3, "my_file.mojom")
 
 if __name__ == "__main__":
   unittest.main()

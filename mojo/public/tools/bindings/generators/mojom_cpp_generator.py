@@ -54,7 +54,7 @@ def GetNameForKind(kind, internal = False):
 def GetCppType(kind):
   if isinstance(kind, mojom.Struct):
     return "%s_Data*" % GetNameForKind(kind, internal=True)
-  if isinstance(kind, mojom.Array):
+  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
     return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
   if isinstance(kind, mojom.Interface) or \
      isinstance(kind, mojom.InterfaceRequest):
@@ -75,7 +75,7 @@ def GetCppArrayArgWrapperType(kind):
     return GetNameForKind(kind)
   if isinstance(kind, mojom.Struct):
     return "%sPtr" % GetNameForKind(kind)
-  if isinstance(kind, mojom.Array):
+  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
     return "mojo::Array<%s> " % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
     raise Exception("Arrays of interfaces not yet supported!")
@@ -100,7 +100,7 @@ def GetCppResultWrapperType(kind):
     return GetNameForKind(kind)
   if isinstance(kind, mojom.Struct):
     return "%sPtr" % GetNameForKind(kind)
-  if isinstance(kind, mojom.Array):
+  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
     return "%sPtr" % GetNameForKind(kind)
@@ -125,7 +125,7 @@ def GetCppWrapperType(kind):
     return GetNameForKind(kind)
   if isinstance(kind, mojom.Struct):
     return "%sPtr" % GetNameForKind(kind)
-  if isinstance(kind, mojom.Array):
+  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
     return "mojo::ScopedMessagePipeHandle"
@@ -148,7 +148,7 @@ def GetCppWrapperType(kind):
 def GetCppConstWrapperType(kind):
   if isinstance(kind, mojom.Struct):
     return "%sPtr" % GetNameForKind(kind)
-  if isinstance(kind, mojom.Array):
+  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
     return "%sPtr" % GetNameForKind(kind)
@@ -176,7 +176,7 @@ def GetCppFieldType(kind):
   if isinstance(kind, mojom.Struct):
     return ("mojo::internal::StructPointer<%s_Data>" %
         GetNameForKind(kind, internal=True))
-  if isinstance(kind, mojom.Array):
+  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
     return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
   if isinstance(kind, mojom.Interface) or \
      isinstance(kind, mojom.InterfaceRequest):
@@ -236,11 +236,13 @@ class Generator(generator.Generator):
     "cpp_type": GetCppType,
     "cpp_wrapper_type": GetCppWrapperType,
     "default_value": DefaultValue,
+    "expected_array_size": generator.ExpectedArraySize,
     "expression_to_text": ExpressionToText,
     "get_name_for_kind": GetNameForKind,
     "get_pad": pack.GetPad,
     "has_callbacks": HasCallbacks,
     "should_inline": ShouldInlineStruct,
+    "is_array_kind": generator.IsArrayKind,
     "is_enum_kind": generator.IsEnumKind,
     "is_move_only_kind": generator.IsMoveOnlyKind,
     "is_handle_kind": generator.IsHandleKind,

@@ -27,8 +27,7 @@ struct Rect {
 };
 
 struct Transform {
-  // Should have exactly 16 entries.
-  float[] matrix;
+  float[16] matrix;
 };
 
 }

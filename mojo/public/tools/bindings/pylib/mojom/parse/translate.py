@@ -6,12 +6,15 @@
 
 
 import ast
+import re
 
 
 def _MapTree(func, tree, name):
   if not tree:
     return []
   return [func(subtree) for subtree in tree if subtree[0] == name]
+
+_FIXED_ARRAY_REGEXP = re.compile(r'\[[0-9]+\]')
 
 def _MapKind(kind):
   map_to_kind = { 'bool': 'b',
@@ -32,7 +35,16 @@ def _MapKind(kind):
                   'handle<message_pipe>': 'h:m',
                   'handle<shared_buffer>': 'h:s'}
   if kind.endswith('[]'):
-    return 'a:' + _MapKind(kind[0:len(kind)-2])
+    typename = kind[0:len(kind)-2]
+    if _FIXED_ARRAY_REGEXP.search(typename) != None:
+      raise Exception("Arrays of fixed sized arrays not supported")
+    return 'a:' + _MapKind(typename)
+  if kind.endswith(']'):
+    lbracket = kind.rfind('[')
+    typename = kind[0:lbracket]
+    if typename.find('[') != -1:
+      raise Exception("Fixed sized arrays of arrays not supported")
+    return 'a' + kind[lbracket+1:len(kind)-1] + ':' + _MapKind(typename)
   if kind.endswith('&'):
     return 'r:' + _MapKind(kind[0:len(kind)-1])
   if kind in map_to_kind:

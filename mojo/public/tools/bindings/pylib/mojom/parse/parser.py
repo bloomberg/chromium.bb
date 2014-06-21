@@ -34,6 +34,7 @@ from lexer import Lexer
 
 
 _MAX_ORDINAL_VALUE = 0xffffffff
+_MAX_ARRAY_SIZE = 0xffffffff
 
 
 def _ListFromConcat(*items):
@@ -193,6 +194,7 @@ class Parser(object):
   def p_typename(self, p):
     """typename : basictypename
                 | array
+                | fixed_array
                 | interfacerequest"""
     p[0] = p[1]
 
@@ -221,6 +223,15 @@ class Parser(object):
   def p_array(self, p):
     """array : typename LBRACKET RBRACKET"""
     p[0] = p[1] + "[]"
+
+  def p_fixed_array(self, p):
+    """fixed_array : typename LBRACKET INT_CONST_DEC RBRACKET"""
+    value = int(p[3])
+    if value == 0 or value > _MAX_ARRAY_SIZE:
+      raise ParseError(self.filename, "Fixed array size %d invalid" % value,
+                       lineno=p.lineno(1),
+                       snippet=self._GetSnippet(p.lineno(1)))
+    p[0] = p[1] + "[" + p[3] + "]"
 
   def p_interfacerequest(self, p):
     """interfacerequest : identifier AMP"""

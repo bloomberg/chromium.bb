@@ -34,7 +34,7 @@ class PackedField(object):
 
   @classmethod
   def GetSizeForKind(cls, kind):
-    if isinstance(kind, mojom.Array) or isinstance(kind, mojom.Struct):
+    if isinstance(kind, (mojom.Array, mojom.Struct, mojom.FixedArray)):
       return 8
     if isinstance(kind, mojom.Interface) or \
        isinstance(kind, mojom.InterfaceRequest):

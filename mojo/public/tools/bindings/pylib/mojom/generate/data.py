@@ -98,6 +98,11 @@ def KindFromData(kinds, data, scope):
   elif data.startswith('r:'):
     kind = mojom.InterfaceRequest()
     kind.kind = KindFromData(kinds, data[2:], scope)
+  elif data.startswith('a'):
+    colon = data.find(':')
+    length = int(data[1:colon])
+    kind = mojom.FixedArray(length)
+    kind.kind = KindFromData(kinds, data[colon+1:], scope)
   else:
     kind = mojom.Kind()
   kind.spec = data

@@ -21,7 +21,11 @@
   }
   if (!{{wrapper_type}}::Data_::Validate(
           mojo::internal::DecodePointerRaw(&object->{{name}}.offset),
-          bounds_checker)) {
+          bounds_checker
+{%-     if packed_field.field.kind|is_array_kind -%}
+          , {{packed_field.field.kind|expected_array_size}}
+{%-     endif -%}
+          )) {
     return false;
   }
 {%-     elif packed_field.field.kind|is_handle_kind %}

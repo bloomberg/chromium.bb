@@ -228,7 +228,11 @@ class Array_Data {
                                                         num_elements);
   }
 
-  static bool Validate(const void* data, BoundsChecker* bounds_checker) {
+  // If expected_num_elements is not zero, the actual number of elements in the
+  // header must match that value or the message is rejected.
+  static bool Validate(const void* data,
+                       BoundsChecker* bounds_checker,
+                       uint32_t expected_num_elements = 0) {
     if (!data)
       return true;
     if (!IsAligned(data)) {
@@ -242,6 +246,11 @@ class Array_Data {
     const ArrayHeader* header = static_cast<const ArrayHeader*>(data);
     if (header->num_bytes < (sizeof(Array_Data<T>) +
                              Traits::GetStorageSize(header->num_elements))) {
+      ReportValidationError(VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER);
+      return false;
+    }
+    if (expected_num_elements != 0 &&
+        header->num_elements != expected_num_elements) {
       ReportValidationError(VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER);
       return false;
     }
