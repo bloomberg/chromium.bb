@@ -131,7 +131,7 @@ typedef std::map<MediaGalleryPrefId, MediaGalleryPrefInfo>
 typedef std::set<MediaGalleryPrefId> MediaGalleryPrefIdSet;
 
 // A class to manage the media gallery preferences.  There is one instance per
-// user profile.
+// user profile. This class lives on the UI thread.
 class MediaGalleriesPreferences
     : public KeyedService,
       public storage_monitor::RemovableStorageObserver {

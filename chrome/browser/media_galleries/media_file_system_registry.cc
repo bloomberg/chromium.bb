@@ -280,13 +280,21 @@ class ExtensionGalleriesHost
   void GetMediaFileSystems(const MediaGalleryPrefIdSet& galleries,
                            const MediaGalleriesPrefInfoMap& galleries_info,
                            const MediaFileSystemsCallback& callback) {
+    // TODO(tommycli): Remove after fixing http://crbug.com/374330.
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
     // Extract all the device ids so we can make sure they are attached.
     MediaStorageUtil::DeviceIdSet* device_ids =
         new MediaStorageUtil::DeviceIdSet;
     for (std::set<MediaGalleryPrefId>::const_iterator id = galleries.begin();
          id != galleries.end();
          ++id) {
-      device_ids->insert(galleries_info.find(*id)->second.device_id);
+      MediaGalleriesPrefInfoMap::const_iterator info = galleries_info.find(*id);
+
+      // TODO(tommycli): Remove after fixing http://crbug.com/374330.
+      CHECK(info != galleries_info.end());
+
+      device_ids->insert(info->second.device_id);
     }
     MediaStorageUtil::FilterAttachedDevices(device_ids, base::Bind(
         &ExtensionGalleriesHost::GetMediaFileSystemsForAttachedDevices, this,
@@ -492,7 +500,8 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     const content::RenderViewHost* rvh,
     const extensions::Extension* extension,
     const MediaFileSystemsCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TODO(tommycli): Change to DCHECK after fixing http://crbug.com/374330.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Profile* profile =
       Profile::FromBrowserContext(rvh->GetProcess()->GetBrowserContext());

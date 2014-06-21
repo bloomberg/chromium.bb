@@ -1043,7 +1043,8 @@ MediaGalleryPrefIdSet MediaGalleriesPreferences::GalleriesForExtension(
     } else {
       MediaGalleriesPrefInfoMap::const_iterator gallery =
           known_galleries_.find(it->pref_id);
-      DCHECK(gallery != known_galleries_.end());
+      // TODO(tommycli): Change to DCHECK after fixing http://crbug.com/374330.
+      CHECK(gallery != known_galleries_.end());
       if (!gallery->second.IsBlackListedType()) {
         result.insert(it->pref_id);
       } else {
