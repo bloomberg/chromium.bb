@@ -90,7 +90,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
                                         database_task_runner,
                                         disk_cache_thread,
                                         quota_manager_proxy)),
-      embedded_worker_registry_(new EmbeddedWorkerRegistry(AsWeakPtr())),
+      embedded_worker_registry_(new EmbeddedWorkerRegistry(AsWeakPtr(), 0)),
       job_coordinator_(new ServiceWorkerJobCoordinator(AsWeakPtr())),
       next_handle_id_(0),
       observer_list_(observer_list) {

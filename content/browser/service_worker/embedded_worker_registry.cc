@@ -18,8 +18,11 @@
 namespace content {
 
 EmbeddedWorkerRegistry::EmbeddedWorkerRegistry(
-    base::WeakPtr<ServiceWorkerContextCore> context)
-    : context_(context), next_embedded_worker_id_(0) {
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    int64 initial_embedded_worker_id_)
+    : context_(context),
+      next_embedded_worker_id_(initial_embedded_worker_id_),
+      initial_embedded_worker_id_(initial_embedded_worker_id_) {
 }
 
 scoped_ptr<EmbeddedWorkerInstance> EmbeddedWorkerRegistry::CreateWorker() {
@@ -175,6 +178,14 @@ EmbeddedWorkerInstance* EmbeddedWorkerRegistry::GetWorker(
   if (found == worker_map_.end())
     return NULL;
   return found->second;
+}
+
+bool EmbeddedWorkerRegistry::CanHandle(int embedded_worker_id) const {
+  if (embedded_worker_id < initial_embedded_worker_id_ ||
+      next_embedded_worker_id_ <= embedded_worker_id) {
+    return false;
+  }
+  return true;
 }
 
 EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() {

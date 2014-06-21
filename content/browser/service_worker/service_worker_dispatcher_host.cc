@@ -345,37 +345,42 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
   RegisterServiceWorkerHandle(handle.Pass());
 }
 
-// TODO(nhiroki): These message handlers that take |embedded_worker_id| as an
-// input should check if the worker refers to the live context. If the context
-// was deleted, handle the messege gracefully (http://crbug.com/371675).
 void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(int embedded_worker_id) {
   if (!GetContext())
     return;
-  GetContext()->embedded_worker_registry()->OnWorkerScriptLoaded(
-      render_process_id_, embedded_worker_id);
+  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
+  if (!registry->CanHandle(embedded_worker_id))
+    return;
+  registry->OnWorkerScriptLoaded(render_process_id_, embedded_worker_id);
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerScriptLoadFailed(
     int embedded_worker_id) {
   if (!GetContext())
     return;
-  GetContext()->embedded_worker_registry()->OnWorkerScriptLoadFailed(
-      render_process_id_, embedded_worker_id);
+  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
+  if (!registry->CanHandle(embedded_worker_id))
+    return;
+  registry->OnWorkerScriptLoadFailed(render_process_id_, embedded_worker_id);
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerStarted(
     int thread_id, int embedded_worker_id) {
   if (!GetContext())
     return;
-  GetContext()->embedded_worker_registry()->OnWorkerStarted(
-      render_process_id_, thread_id, embedded_worker_id);
+  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
+  if (!registry->CanHandle(embedded_worker_id))
+    return;
+  registry->OnWorkerStarted(render_process_id_, thread_id, embedded_worker_id);
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerStopped(int embedded_worker_id) {
   if (!GetContext())
     return;
-  GetContext()->embedded_worker_registry()->OnWorkerStopped(
-      render_process_id_, embedded_worker_id);
+  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
+  if (!registry->CanHandle(embedded_worker_id))
+    return;
+  registry->OnWorkerStopped(render_process_id_, embedded_worker_id);
 }
 
 void ServiceWorkerDispatcherHost::OnReportException(
@@ -386,12 +391,14 @@ void ServiceWorkerDispatcherHost::OnReportException(
     const GURL& source_url) {
   if (!GetContext())
     return;
-  GetContext()->embedded_worker_registry()->OnReportException(
-      embedded_worker_id,
-      error_message,
-      line_number,
-      column_number,
-      source_url);
+  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
+  if (!registry->CanHandle(embedded_worker_id))
+    return;
+  registry->OnReportException(embedded_worker_id,
+                              error_message,
+                              line_number,
+                              column_number,
+                              source_url);
 }
 
 void ServiceWorkerDispatcherHost::OnReportConsoleMessage(
@@ -399,13 +406,15 @@ void ServiceWorkerDispatcherHost::OnReportConsoleMessage(
     const EmbeddedWorkerHostMsg_ReportConsoleMessage_Params& params) {
   if (!GetContext())
     return;
-  GetContext()->embedded_worker_registry()->OnReportConsoleMessage(
-      embedded_worker_id,
-      params.source_identifier,
-      params.message_level,
-      params.message,
-      params.line_number,
-      params.source_url);
+  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
+  if (!registry->CanHandle(embedded_worker_id))
+    return;
+  registry->OnReportConsoleMessage(embedded_worker_id,
+                                   params.source_identifier,
+                                   params.message_level,
+                                   params.message,
+                                   params.line_number,
+                                   params.source_url);
 }
 
 void ServiceWorkerDispatcherHost::OnIncrementServiceWorkerRefCount(

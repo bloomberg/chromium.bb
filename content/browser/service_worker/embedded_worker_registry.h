@@ -40,8 +40,8 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
 
-  explicit EmbeddedWorkerRegistry(
-      base::WeakPtr<ServiceWorkerContextCore> context);
+  EmbeddedWorkerRegistry(base::WeakPtr<ServiceWorkerContextCore> context,
+                         int64 initial_embedded_worker_id_);
 
   bool OnMessageReceived(const IPC::Message& message);
 
@@ -84,6 +84,9 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   // Returns an embedded worker instance for given |embedded_worker_id|.
   EmbeddedWorkerInstance* GetWorker(int embedded_worker_id);
 
+  // Returns true if |embedded_worker_id| is managed by this registry.
+  bool CanHandle(int embedded_worker_id) const;
+
  private:
   friend class base::RefCounted<EmbeddedWorkerRegistry>;
   friend class EmbeddedWorkerInstance;
@@ -109,6 +112,7 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   std::map<int, std::set<int> > worker_process_map_;
 
   int next_embedded_worker_id_;
+  const int initial_embedded_worker_id_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerRegistry);
 };
