@@ -2168,3 +2168,9 @@ name=bug_377728
 *!HunspellEngine::FillSuggestionList
 *!SpellcheckLanguage::SpellCheckWord
 *!SpellCheck::SpellCheckWord
+
+UNINITIALIZED READ
+name=bug_387373
+*!blink::WebEmbeddedWorkerImpl::startWorkerContext
+*!content::EmbeddedWorkerDispatcher::OnStartWorker
+*!EmbeddedWorkerMsg_StartWorker::Dispatch<>
