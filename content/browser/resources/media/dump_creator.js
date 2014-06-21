@@ -36,17 +36,23 @@ var DumpCreator = (function() {
         '<p>A diagnostic audio recording is used for analyzing audio' +
         ' problems. It contains the audio played out from the speaker and' +
         ' recorded from the microphone and is saved to the local disk.' +
-        ' Checking this box will enable the recording for an ongoing WebRTC' +
-        ' call and for future WebRTC calls. When the box is unchecked or this' +
-        ' page is closed, this recording functionality will be disabled for' +
-        ' future WebRTC calls, but an ongoing call will continue to record' +
-        ' until the call is ended. Only recording in one tab is supported.' +
-        ' If several tabs are running WebRTC calls, the resulting file will' +
-        ' be invalid. To restart the dump, the tab with the call being' +
-        ' recorded must be closed and recording disabled and enabled again.' +
-        ' When enabling, you select a file to save the dump to. Choose a' +
-        ' non-existing file name. Selecting an existing file will append to' +
-        ' it, not overwrite it, rendering the file invalid. </p>';
+        ' Checking this box will enable the recording for ongoing WebRTC' +
+        ' calls and for future WebRTC calls. When the box is unchecked or' +
+        ' this page is closed, all ongoing recordings will be stopped and' +
+        ' this recording functionality will be disabled for future WebRTC' +
+        ' calls. Recordings in multiple tabs is supported as well as multiple' +
+        ' recordings in the same tab. When enabling, you select a base' +
+        ' filename to save the dump(s) to. The base filename will have a' +
+        ' suffix appended to it as &lt;base filename&gt;.&lt;unique ID for' +
+        ' the render process&gt;.&lt;recording ID&gt;. If recordings are' +
+        ' disabled and then enabled using the same base filename, the' +
+        ' file(s) will be appended to and may become invalid. It is' +
+        ' recommended to choose a new base filename each time or move' +
+        ' the resulting files before enabling again. If track processing is' +
+        ' disabled (--disable-audio-track-processing): (1) Only one recording' +
+        ' per render process is supported. (2) When the box is unchecked or' +
+        ' this page is closed, ongoing recordings will continue until the' +
+        ' call ends or the page with the recording is closed.</p>';
 
     content.getElementsByTagName('a')[0].addEventListener(
         'click', this.onDownloadData_.bind(this));
