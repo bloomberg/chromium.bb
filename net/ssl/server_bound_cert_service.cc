@@ -516,9 +516,10 @@ void ServerBoundCertService::GotServerBoundCert(
     HandleResult(OK, server_identifier, key, cert);
     return;
   }
-  // Async lookup did not find a valid cert. If no request asked to create one,
-  // return the error directly.
-  if (!j->second->CreateIfMissing()) {
+  // Async lookup failed or the certificate was missing. Return the error
+  // directly, unless the certificate was missing and a request asked to create
+  // one.
+  if (err != ERR_FILE_NOT_FOUND || !j->second->CreateIfMissing()) {
     HandleResult(err, server_identifier, key, cert);
     return;
   }

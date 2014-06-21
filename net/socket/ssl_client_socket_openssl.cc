@@ -127,7 +127,6 @@ class SSLClientSocketOpenSSL::SSLContext {
     session_cache_.Reset(ssl_ctx_.get(), kDefaultSessionCacheConfig);
     SSL_CTX_set_cert_verify_callback(ssl_ctx_.get(), CertVerifyCallback, NULL);
     SSL_CTX_set_client_cert_cb(ssl_ctx_.get(), ClientCertCallback);
-    SSL_CTX_set_channel_id_cb(ssl_ctx_.get(), ChannelIDCallback);
     SSL_CTX_set_verify(ssl_ctx_.get(), SSL_VERIFY_PEER, NULL);
     // TODO(kristianm): Only select this if ssl_config_.next_proto is not empty.
     // It would be better if the callback were not a global setting,
@@ -148,12 +147,6 @@ class SSLClientSocketOpenSSL::SSLContext {
     SSLClientSocketOpenSSL* socket = GetInstance()->GetClientSocketFromSSL(ssl);
     CHECK(socket);
     return socket->ClientCertRequestCallback(ssl, x509, pkey);
-  }
-
-  static void ChannelIDCallback(SSL* ssl, EVP_PKEY** pkey) {
-    SSLClientSocketOpenSSL* socket = GetInstance()->GetClientSocketFromSSL(ssl);
-    CHECK(socket);
-    socket->ChannelIDRequestCallback(ssl, pkey);
   }
 
   static int CertVerifyCallback(X509_STORE_CTX *store_ctx, void *arg) {
@@ -358,7 +351,6 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       trying_cached_session_(false),
       next_handshake_state_(STATE_NONE),
       npn_status_(kNextProtoUnsupported),
-      channel_id_request_return_value_(ERR_UNEXPECTED),
       channel_id_xtn_negotiated_(false),
       net_log_(transport_->socket()->NetLog()) {}
 
@@ -476,6 +468,9 @@ void SSLClientSocketOpenSSL::Disconnect() {
   cert_authorities_.clear();
   cert_key_types_.clear();
   client_auth_cert_needed_ = false;
+
+  channel_id_xtn_negotiated_ = false;
+  channel_id_request_handle_.Cancel();
 }
 
 bool SSLClientSocketOpenSSL::IsConnected() const {
@@ -827,12 +822,14 @@ int SSLClientSocketOpenSSL::DoHandshake() {
     int ssl_error = SSL_get_error(ssl_, rv);
 
     if (ssl_error == SSL_ERROR_WANT_CHANNEL_ID_LOOKUP) {
-      // The server supports TLS channel id and the lookup is asynchronous.
-      // Retrieve the error from the call to |server_bound_cert_service_|.
-      net_error = channel_id_request_return_value_;
-    } else {
-      net_error = MapOpenSSLError(ssl_error, err_tracer);
+      // The server supports channel ID. Stop to look one up before returning to
+      // the handshake.
+      channel_id_xtn_negotiated_ = true;
+      GotoState(STATE_CHANNEL_ID_LOOKUP);
+      return OK;
     }
+
+    net_error = MapOpenSSLError(ssl_error, err_tracer);
 
     // If not done, stay in this state
     if (net_error == ERR_IO_PENDING) {
@@ -847,6 +844,57 @@ int SSLClientSocketOpenSSL::DoHandshake() {
     }
   }
   return net_error;
+}
+
+int SSLClientSocketOpenSSL::DoChannelIDLookup() {
+  GotoState(STATE_CHANNEL_ID_LOOKUP_COMPLETE);
+  return server_bound_cert_service_->GetOrCreateDomainBoundCert(
+      host_and_port_.host(),
+      &channel_id_private_key_,
+      &channel_id_cert_,
+      base::Bind(&SSLClientSocketOpenSSL::OnHandshakeIOComplete,
+                 base::Unretained(this)),
+      &channel_id_request_handle_);
+}
+
+int SSLClientSocketOpenSSL::DoChannelIDLookupComplete(int result) {
+  if (result < 0)
+    return result;
+
+  DCHECK_LT(0u, channel_id_private_key_.size());
+  // Decode key.
+  std::vector<uint8> encrypted_private_key_info;
+  std::vector<uint8> subject_public_key_info;
+  encrypted_private_key_info.assign(
+      channel_id_private_key_.data(),
+      channel_id_private_key_.data() + channel_id_private_key_.size());
+  subject_public_key_info.assign(
+      channel_id_cert_.data(),
+      channel_id_cert_.data() + channel_id_cert_.size());
+  scoped_ptr<crypto::ECPrivateKey> ec_private_key(
+      crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
+          ServerBoundCertService::kEPKIPassword,
+          encrypted_private_key_info,
+          subject_public_key_info));
+  if (!ec_private_key) {
+    LOG(ERROR) << "Failed to import Channel ID.";
+    return ERR_CHANNEL_ID_IMPORT_FAILED;
+  }
+
+  // Hand the key to OpenSSL. Check for error in case OpenSSL rejects the key
+  // type.
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+  int rv = SSL_set1_tls_channel_id(ssl_, ec_private_key->key());
+  if (!rv) {
+    LOG(ERROR) << "Failed to set Channel ID.";
+    int err = SSL_get_error(ssl_, rv);
+    return MapOpenSSLError(err, err_tracer);
+  }
+
+  // Return to the handshake.
+  set_channel_id_sent(true);
+  GotoState(STATE_HANDSHAKE);
+  return OK;
 }
 
 int SSLClientSocketOpenSSL::DoVerifyCert(int result) {
@@ -993,8 +1041,15 @@ int SSLClientSocketOpenSSL::DoHandshakeLoop(int last_io_result) {
       case STATE_HANDSHAKE:
         rv = DoHandshake();
         break;
+      case STATE_CHANNEL_ID_LOOKUP:
+        DCHECK_EQ(OK, rv);
+        rv = DoChannelIDLookup();
+       break;
+      case STATE_CHANNEL_ID_LOOKUP_COMPLETE:
+        rv = DoChannelIDLookupComplete(rv);
+        break;
       case STATE_VERIFY_CERT:
-        DCHECK(rv == OK);
+        DCHECK_EQ(OK, rv);
         rv = DoVerifyCert(rv);
        break;
       case STATE_VERIFY_CERT_COMPLETE:
@@ -1319,46 +1374,6 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
 
   // Send no client certificate.
   return 0;
-}
-
-void SSLClientSocketOpenSSL::ChannelIDRequestCallback(SSL* ssl,
-                                                      EVP_PKEY** pkey) {
-  DVLOG(3) << "OpenSSL ChannelIDRequestCallback called";
-  DCHECK_EQ(ssl, ssl_);
-  DCHECK(!*pkey);
-
-  channel_id_xtn_negotiated_ = true;
-  if (!channel_id_private_key_.size()) {
-    channel_id_request_return_value_ =
-        server_bound_cert_service_->GetOrCreateDomainBoundCert(
-            host_and_port_.host(),
-            &channel_id_private_key_,
-            &channel_id_cert_,
-            base::Bind(&SSLClientSocketOpenSSL::OnHandshakeIOComplete,
-                       base::Unretained(this)),
-            &channel_id_request_handle_);
-    if (channel_id_request_return_value_ != OK)
-      return;
-  }
-
-  // Decode key.
-  std::vector<uint8> encrypted_private_key_info;
-  std::vector<uint8> subject_public_key_info;
-  encrypted_private_key_info.assign(
-      channel_id_private_key_.data(),
-      channel_id_private_key_.data() + channel_id_private_key_.size());
-  subject_public_key_info.assign(
-      channel_id_cert_.data(),
-      channel_id_cert_.data() + channel_id_cert_.size());
-  scoped_ptr<crypto::ECPrivateKey> ec_private_key(
-      crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
-          ServerBoundCertService::kEPKIPassword,
-          encrypted_private_key_info,
-          subject_public_key_info));
-  if (!ec_private_key)
-    return;
-  set_channel_id_sent(true);
-  *pkey = EVP_PKEY_dup(ec_private_key->key());
 }
 
 int SSLClientSocketOpenSSL::CertVerifyCallback(X509_STORE_CTX* store_ctx) {

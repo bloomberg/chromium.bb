@@ -620,6 +620,38 @@ class FailingServerBoundCertStore : public ServerBoundCertStore {
   virtual void SetForceKeepSessionState() OVERRIDE {}
 };
 
+// A ServerBoundCertStore that asynchronously returns an error when asked for a
+// certificate.
+class AsyncFailingServerBoundCertStore : public ServerBoundCertStore {
+  virtual int GetServerBoundCert(const std::string& server_identifier,
+                                 base::Time* expiration_time,
+                                 std::string* private_key_result,
+                                 std::string* cert_result,
+                                 const GetCertCallback& callback) OVERRIDE {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, ERR_UNEXPECTED,
+                              server_identifier, base::Time(), "", ""));
+    return ERR_IO_PENDING;
+  }
+  virtual void SetServerBoundCert(const std::string& server_identifier,
+                                  base::Time creation_time,
+                                  base::Time expiration_time,
+                                  const std::string& private_key,
+                                  const std::string& cert) OVERRIDE {}
+  virtual void DeleteServerBoundCert(const std::string& server_identifier,
+                                     const base::Closure& completion_callback)
+      OVERRIDE {}
+  virtual void DeleteAllCreatedBetween(base::Time delete_begin,
+                                       base::Time delete_end,
+                                       const base::Closure& completion_callback)
+      OVERRIDE {}
+  virtual void DeleteAll(const base::Closure& completion_callback) OVERRIDE {}
+  virtual void GetAllServerBoundCerts(const GetCertListCallback& callback)
+      OVERRIDE {}
+  virtual int GetCertCount() OVERRIDE { return 0; }
+  virtual void SetForceKeepSessionState() OVERRIDE {}
+};
+
 class SSLClientSocketTest : public PlatformTest {
  public:
   SSLClientSocketTest()
@@ -881,6 +913,13 @@ class SSLClientSocketChannelIDTest : public SSLClientSocketTest {
   void EnableFailingChannelID() {
     cert_service_.reset(new ServerBoundCertService(
         new FailingServerBoundCertStore(), base::MessageLoopProxy::current()));
+    context_.server_bound_cert_service = cert_service_.get();
+  }
+
+  void EnableAsyncFailingChannelID() {
+    cert_service_.reset(new ServerBoundCertService(
+        new AsyncFailingServerBoundCertStore(),
+        base::MessageLoopProxy::current()));
     context_.server_bound_cert_service = cert_service_.get();
   }
 
@@ -2718,8 +2757,8 @@ TEST_F(SSLClientSocketChannelIDTest, SendChannelID) {
   EXPECT_FALSE(sock_->IsConnected());
 }
 
-// Connect to a server using channel id but without sending a key. It should
-// fail.
+// Connect to a server using Channel ID but failing to look up the Channel
+// ID. It should fail.
 TEST_F(SSLClientSocketChannelIDTest, FailingChannelID) {
   SpawnedTestServer::SSLOptions ssl_options;
 
@@ -2737,6 +2776,24 @@ TEST_F(SSLClientSocketChannelIDTest, FailingChannelID) {
   // error codes for now.
   // http://crbug.com/373670
   EXPECT_NE(OK, rv);
+  EXPECT_FALSE(sock_->IsConnected());
+}
+
+// Connect to a server using Channel ID but asynchronously failing to look up
+// the Channel ID. It should fail.
+TEST_F(SSLClientSocketChannelIDTest, FailingChannelIDAsync) {
+  SpawnedTestServer::SSLOptions ssl_options;
+
+  ASSERT_TRUE(ConnectToTestServer(ssl_options));
+
+  EnableAsyncFailingChannelID();
+  SSLConfig ssl_config = kDefaultSSLConfig;
+  ssl_config.channel_id_enabled = true;
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+
+  EXPECT_EQ(ERR_UNEXPECTED, rv);
   EXPECT_FALSE(sock_->IsConnected());
 }
 

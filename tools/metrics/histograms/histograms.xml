@@ -40723,6 +40723,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="358" label="QUIC_HANDSHAKE_FAILED"/>
   <int value="359" label="REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC"/>
   <int value="360" label="SPDY_INADEQUATE_TRANSPORT_SECURITY"/>
+  <int value="361" label="SPDY_FLOW_CONTROL_ERROR"/>
+  <int value="362" label="SPDY_FRAME_SIZE_ERROR"/>
+  <int value="363" label="SPDY_COMPRESSION_ERROR"/>
+  <int value="364" label="PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION"/>
   <int value="400" label="CACHE_MISS"/>
   <int value="401" label="CACHE_READ_FAILURE"/>
   <int value="402" label="CACHE_WRITE_FAILURE"/>
@@ -40756,6 +40760,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="712" label="PRIVATE_KEY_EXPORT_FAILED"/>
   <int value="713" label="SELF_SIGNED_CERT_GENERATION_FAILED"/>
   <int value="714" label="CERT_DATABASE_CHANGED"/>
+  <int value="715" label="CHANNEL_ID_IMPORT_FAILED"/>
   <int value="800" label="DNS_MALFORMED_RESPONSE"/>
   <int value="801" label="DNS_SERVER_REQUIRES_TCP"/>
   <int value="802" label="DNS_SERVER_FAILED"/>

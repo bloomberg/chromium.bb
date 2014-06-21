@@ -732,6 +732,9 @@ NET_ERROR(SELF_SIGNED_CERT_GENERATION_FAILED, -713)
 // The certificate database changed in some way.
 NET_ERROR(CERT_DATABASE_CHANGED, -714)
 
+// Failure to import Channel ID.
+NET_ERROR(CHANNEL_ID_IMPORT_FAILED, -715)
+
 // DNS error codes.
 
 // DNS resolver received a malformed response.
