@@ -67,6 +67,7 @@
       "test": "keyboard_unittests",
       "platforms": ["linux", "win"]
     },
+    "media_perftests",
     "media_unittests",
     "message_center_unittests",
     "mojo_apps_js_unittests",
