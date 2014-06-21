@@ -1,7 +1,8 @@
-<html>
-<body>
-<p>Navigate while an EventSource reconnect timer is waiting, then have the reconnect timer trigger before the page unloads. We pass if we don't crash.
+<!DOCTYPE HTML>
+<script src="/js-test-resources/js-test.js"></script>
 <script>
+description("Navigate while an EventSource reconnect timer is waiting, then have the reconnect timer trigger before the page unloads.");
+
 if (window.testRunner) {
     testRunner.waitUntilDone();
     testRunner.dumpAsText();
