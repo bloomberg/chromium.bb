@@ -5,9 +5,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/search_engines/default_search_manager.h"
 #include "chrome/browser/search_engines/default_search_policy_handler.h"
-#include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
+#include "components/search_engines/search_engines_pref_names.h"
 #include "policy/policy_constants.h"
 
 namespace {
