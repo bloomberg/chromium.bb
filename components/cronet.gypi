@@ -56,6 +56,41 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
+          'target_name': 'cronet_version',
+          'type': 'none',
+          # Because cronet_version generates a header, we must set the
+          # hard_dependency flag.
+          'hard_dependency': 1,
+          'actions': [
+            {
+              'action_name': 'cronet_version',
+              'variables': {
+                'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
+                'version_py_path': '<(DEPTH)/build/util/version.py',
+                'version_path': '<(DEPTH)/chrome/VERSION',
+                'template_input_path': 'cronet/android/java/src/org/chromium/net/Version.template',
+              },
+              'inputs': [
+                '<(template_input_path)',
+                '<(version_path)',
+                '<(lastchange_path)',
+              ],
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/templates/org/chromium/cronet/Version.java',
+              ],
+              'action': [
+                'python',
+                '<(version_py_path)',
+                '-f', '<(version_path)',
+                '-f', '<(lastchange_path)',
+                '<(template_input_path)',
+                '<@(_outputs)',
+              ],
+              'message': 'Generating version information',
+            },
+          ],
+        },
+        {
           'target_name': 'libcronet',
           'type': 'shared_library',
           'dependencies': [
@@ -68,6 +103,7 @@
             'cronet_url_request_context_config_list',
             'cronet_url_request_error_list',
             'cronet_url_request_priority_list',
+            'cronet_version',
             '../net/net.gyp:net',
           ],
           'sources': [
@@ -88,8 +124,6 @@
             'cronet/android/url_request_peer.h',
           ],
           'cflags': [
-            # TODO(mef): Figure out a good way to get version from chrome_version_info_posix.h.
-            '-DCHROMIUM_VERSION=\\"TBD\\"',
             '-DLOGGING=1',
             '-fdata-sections',
             '-ffunction-sections',

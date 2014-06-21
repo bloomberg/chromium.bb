@@ -11,6 +11,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.net.HttpUrlRequestFactory;
 import org.chromium.net.HttpUrlRequestFactoryConfig;
 
+import java.util.regex.Pattern;
+
 /**
  * Tests for {@link ChunkedWritableByteChannel}
  */
@@ -22,8 +24,9 @@ public class HttpUrlRequestFactoryTest extends InstrumentationTestCase {
         HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(
                 getInstrumentation().getContext(), config);
         assertNotNull("Factory should be created", factory);
-        assertTrue("Factory should not be legacy",
-                "HttpUrlConnection" != factory.getName());
+        assertTrue("Factory should be Chromium/n.n.n.n/r",
+                   Pattern.matches("Chromium/\\d+\\.\\d+\\.\\d+\\.\\d+@\\d+",
+                   factory.getName()));
     }
 
     @SmallTest
@@ -35,6 +38,8 @@ public class HttpUrlRequestFactoryTest extends InstrumentationTestCase {
         HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(
                 getInstrumentation().getContext(), config);
         assertNotNull("Factory should be created", factory);
-        assertEquals("HttpUrlConnection", factory.getName());
+        assertTrue("Factory should be HttpUrlConnection/n.n.n.n@r",
+                   Pattern.matches("HttpUrlConnection/\\d+\\.\\d+\\.\\d+\\.\\d+@\\d+",
+                   factory.getName()));
     }
 }

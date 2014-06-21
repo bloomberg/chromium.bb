@@ -12,10 +12,6 @@ namespace cronet {
 
 static const size_t kBufferSizeIncrement = 8192;
 
-// Fragment automatically inserted in the User-Agent header to indicate
-// that the request is coming from this network stack.
-static const char kUserAgentFragment[] = "; ChromiumJNI/";
-
 URLRequestPeer::URLRequestPeer(URLRequestContextPeer* context,
                                URLRequestPeerDelegate* delegate,
                                GURL url,
@@ -110,21 +106,12 @@ void URLRequestPeer::OnInitiateConnection() {
                              net::LOAD_DO_NOT_SEND_COOKIES);
   url_request_->set_method(method_);
   url_request_->SetExtraRequestHeaders(headers_);
-  std::string user_agent;
-  if (headers_.HasHeader(net::HttpRequestHeaders::kUserAgent)) {
-    headers_.GetHeader(net::HttpRequestHeaders::kUserAgent, &user_agent);
-  } else {
+  if (!headers_.HasHeader(net::HttpRequestHeaders::kUserAgent)) {
+    std::string user_agent;
     user_agent = context_->GetUserAgent(url_);
-  }
-  size_t pos = user_agent.find(')');
-  if (pos != std::string::npos) {
-    user_agent.insert(pos, context_->version());
-    user_agent.insert(pos, kUserAgentFragment);
-  }
-  url_request_->SetExtraRequestHeaderByName(
+    url_request_->SetExtraRequestHeaderByName(
       net::HttpRequestHeaders::kUserAgent, user_agent, true /* override */);
-
-  VLOG(context_->logging_level()) << "User agent: " << user_agent;
+  }
 
   if (upload_data_stream_) {
     url_request_->set_upload(make_scoped_ptr(upload_data_stream_.release()));

@@ -46,10 +46,10 @@ public class UrlRequestContext {
 
     /**
      * Returns the version of this network stack formatted as N.N.N.N/X where
-     * N.N.N.N is the version of Chromium and X is the version of the JNI layer.
+     * N.N.N.N is the version of Chromium and X is the revision number.
      */
     public static String getVersion() {
-        return nativeGetVersion();
+        return Version.getVersion();
     }
 
     /**
@@ -118,8 +118,6 @@ public class UrlRequestContext {
         }
         return loggingLevel;
     }
-
-    private static native String nativeGetVersion();
 
     // Returns an instance URLRequestContextPeer to be stored in
     // mUrlRequestContextPeer.

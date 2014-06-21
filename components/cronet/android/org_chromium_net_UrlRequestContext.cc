@@ -18,12 +18,7 @@
 #include "components/cronet/url_request_context_config.h"
 #include "jni/UrlRequestContext_jni.h"
 
-// Version of this build of Chromium NET.
-#define CHROMIUM_NET_VERSION "1"
-
 namespace {
-
-const char kVersion[] = CHROMIUM_VERSION "/" CHROMIUM_NET_VERSION;
 
 // Delegate of URLRequestContextPeer that delivers callbacks to the Java layer.
 class JniURLRequestContextPeerDelegate
@@ -58,10 +53,6 @@ namespace cronet {
 // Explicitly register static JNI functions.
 bool UrlRequestContextRegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
-}
-
-static jstring GetVersion(JNIEnv* env, jclass unused) {
-  return base::android::ConvertUTF8ToJavaString(env, kVersion).Release();
 }
 
 // Sets global user-agent to be used for all subsequent requests.
@@ -101,8 +92,7 @@ static jlong CreateRequestContextPeer(JNIEnv* env,
   URLRequestContextPeer* peer = new URLRequestContextPeer(
       new JniURLRequestContextPeerDelegate(env, object),
       user_agent_string,
-      logging_level,
-      kVersion);
+      logging_level);
   peer->AddRef();  // Hold onto this ref-counted object.
   peer->Initialize(context_config.Pass());
   return reinterpret_cast<jlong>(peer);

@@ -49,6 +49,9 @@ public final class UserAgent {
             builder.append(id);
         }
 
+        builder.append("; Cronet/");
+        builder.append(Version.CRONET_VERSION);
+
         builder.append(')');
 
         return builder.toString();

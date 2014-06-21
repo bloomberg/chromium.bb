@@ -115,12 +115,10 @@ namespace cronet {
 URLRequestContextPeer::URLRequestContextPeer(
     URLRequestContextPeerDelegate* delegate,
     std::string user_agent,
-    int logging_level,
-    const char* version) {
+    int logging_level) {
   delegate_ = delegate;
   user_agent_ = user_agent;
   logging_level_ = logging_level;
-  version_ = version;
 }
 
 void URLRequestContextPeer::Initialize(
