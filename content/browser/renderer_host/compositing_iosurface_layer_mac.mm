@@ -84,6 +84,9 @@ class CompositingIOSurfaceLayerHelper {
 }
 
 - (void)resetClient {
+  // Any acks that were waiting on this layer to draw will not occur, so ack
+  // them now to prevent blocking the renderer.
+  [self ackPendingFrame:true];
   client_ = NULL;
 }
 
