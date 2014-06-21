@@ -9,7 +9,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
@@ -49,13 +48,8 @@ public class ClientOnPageFinishedTest extends AwTestBase {
         assertEquals("data:text/html," + html, onPageFinishedHelper.getUrl());
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"AndroidWebView"})
-     *
-     * http://crbug.com/386300
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"AndroidWebView"})
     public void testOnPageFinishedCalledAfterError() throws Throwable {
         class LocalTestClient extends TestAwContentsClient {
             private boolean isOnReceivedErrorCalled = false;

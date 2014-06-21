@@ -73,7 +73,10 @@ public abstract class AwContentsClient {
         @Override
         public void didFailLoad(boolean isProvisionalLoad,
                 boolean isMainFrame, int errorCode, String description, String failingUrl) {
-            if (isMainFrame) {
+            String unreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();
+            boolean isErrorUrl =
+                    unreachableWebDataUrl != null && unreachableWebDataUrl.equals(failingUrl);
+            if (isMainFrame && !isErrorUrl) {
                 if (errorCode != NetError.ERR_ABORTED) {
                     // This error code is generated for the following reasons:
                     // - WebView.stopLoading is called,
