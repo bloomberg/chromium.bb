@@ -1,6 +1,0 @@
-Verify that a timeout ProgressEvent is dispatched and have the expected values.
-
-This is a testharness.js-based test.
-PASS Check that 'timeout' events are delivered and have expected values. 
-Harness: the test ran to completion.
-

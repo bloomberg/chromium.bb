@@ -79,13 +79,10 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_simpleRequest(true)
     , m_async(blockingBehavior == LoadAsynchronously)
     , m_timeoutTimer(this, &DocumentThreadableLoader::didTimeout)
-    , m_requestStartedSeconds(0.0)
 {
     ASSERT(client);
     // Setting an outgoing referer is only supported in the async code path.
     ASSERT(m_async || request.httpReferrer().isEmpty());
-
-    m_requestStartedSeconds = monotonicallyIncreasingTime();
 
     // Save any CORS simple headers on the request here. If this request redirects cross-origin, we cancel the old request
     // create a new one, and copy these headers.
@@ -150,26 +147,6 @@ DocumentThreadableLoader::~DocumentThreadableLoader()
 {
 }
 
-void DocumentThreadableLoader::overrideTimeout(unsigned long timeoutMilliseconds)
-{
-    if (!m_async)
-        return;
-    m_timeoutTimer.stop();
-    // At the time of this method's implementation, it is only ever called by
-    // XMLHttpRequest, when the timeout attribute is set after sending the
-    // request.
-    //
-    // The XHR request says to resolve the time relative to when the request
-    // was initially sent, however other uses of this method may need to
-    // behave differently, in which case this should be re-arranged somehow.
-    if (timeoutMilliseconds && m_requestStartedSeconds > 0.0) {
-        double elapsedTime = monotonicallyIncreasingTime() - m_requestStartedSeconds;
-        double nextFire = timeoutMilliseconds / 1000.0;
-        double resolvedTime = std::max(nextFire - elapsedTime, 0.0);
-        m_timeoutTimer.startOneShot(resolvedTime, FROM_HERE);
-    }
-}
-
 void DocumentThreadableLoader::cancel()
 {
     cancelWithError(ResourceError());
@@ -191,7 +168,6 @@ void DocumentThreadableLoader::cancelWithError(const ResourceError& error)
     }
     clearResource();
     m_client = 0;
-    m_requestStartedSeconds = 0.0;
 }
 
 void DocumentThreadableLoader::setDefersLoading(bool value)
@@ -209,7 +185,6 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
     if (!isAllowedByPolicy(request.url())) {
         m_client->didFailRedirectCheck();
         request = ResourceRequest();
-        m_requestStartedSeconds = 0.0;
         return;
     }
 
@@ -276,7 +251,6 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         m_client->didFailRedirectCheck();
     }
     request = ResourceRequest();
-    m_requestStartedSeconds = 0.0;
 }
 
 void DocumentThreadableLoader::dataSent(Resource* resource, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
@@ -388,10 +362,8 @@ void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier, 
         ASSERT(!m_sameOriginRequest);
         ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
         loadActualRequest();
-    } else {
+    } else
         m_client->didFinishLoading(identifier, finishTime);
-        m_requestStartedSeconds = 0.0;
-    }
 }
 
 void DocumentThreadableLoader::didTimeout(Timer<DocumentThreadableLoader>* timer)
@@ -428,7 +400,6 @@ void DocumentThreadableLoader::handlePreflightFailure(const String& url, const S
     m_actualRequest = nullptr;
 
     m_client->didFailAccessControlCheck(error);
-    m_requestStartedSeconds = 0.0;
 }
 
 void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, ResourceLoaderOptions resourceLoaderOptions)
@@ -474,7 +445,6 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
 
     if (!resource) {
         m_client->didFail(error);
-        m_requestStartedSeconds = 0.0; // Unnecessary for synchronous request, but for API consistency.
         return;
     }
 
@@ -490,7 +460,6 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
     // requested. Also comparing the request and response URLs as strings will fail if the requestURL still has its credentials.
     if (requestURL != response.url() && (!isAllowedByPolicy(response.url()) || !isAllowedRedirect(response.url()))) {
         m_client->didFailRedirectCheck();
-        m_requestStartedSeconds = 0.0; // Unnecessary for synchronous request, but for API consistency.
         return;
     }
 
