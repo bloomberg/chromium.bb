@@ -44,9 +44,6 @@ namespace WebCore { class CryptoResult; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
-// FIXME: Remove once chromium side rolls.
-#define WEBCRYPTO_RESULT_HAS_CANCELLED 1
-
 namespace blink {
 
 class WebArrayBuffer;
