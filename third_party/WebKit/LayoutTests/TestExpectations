@@ -415,8 +415,6 @@ crbug.com/378610 [ Win7 ] svg/text/alt-glyph-for-surrogate-pair.svg [ ImageOnlyF
 crbug.com/378610 [ Win7 ] svg/text/tspan-outline.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
-crbug.com/378610 [ Win7 ] virtual/antialiasedtext/fast/text/international/inline-block-with-mixed-direction-words.html [ ImageOnlyFailure ]
-crbug.com/378610 [ Win7 ] virtual/antialiasedtext/fast/text/international/text-overflow-ellipsis-bidi.html [ ImageOnlyFailure ]
 
 # Text tests that needs investigation or test changes (mostly due to precision).
 crbug.com/378610 [ Win7 ] fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Failure ]
