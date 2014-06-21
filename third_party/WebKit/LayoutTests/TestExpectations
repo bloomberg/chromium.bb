@@ -219,11 +219,11 @@ crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom.html [ ImageOnlyFailure Pass ]
 
 # Tests that have new baselines but are probably still failing on Linux Aura.
-#crbug.com/318980 [ Linux ] editing/selection/7152-1.html [ Pass ]
+crbug.com/318980 [ Linux ] editing/selection/7152-1.html [ Pass ]
 crbug.com/318980 [ Linux ] editing/selection/linux_selection_color.html [ Pass ]
 crbug.com/318980 [ Linux ] fast/forms/input-disabled-color.html [ Pass ]
 crbug.com/318980 [ Linux ] fast/ruby/select-ruby.html [ Pass ]
-#crbug.com/318980 [ Linux ] fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ Pass ]
+crbug.com/318980 [ Linux ] fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ Pass ]
 crbug.com/318980 [ Linux ] svg/W3C-SVG-1.1/text-tselect-02-f.svg [ Pass ]
 
 # ICU 52 requires rebaseline for these tests
@@ -307,7 +307,7 @@ crbug.com/237270 http/tests/images/jpeg-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout ]
 
-#crbug.com/317806 [ Mac XP ] fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ Pass ImageOnlyFailure ]
+crbug.com/317806 [ Mac XP ] fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ Pass ImageOnlyFailure ]
 
 crbug.com/341435 http/tests/images/image-with-origin-header.html [ Pass Timeout ]
 
@@ -427,9 +427,6 @@ crbug.com/378610 [ Win7 ] fast/text/decomposed-after-stacked-diacritics.html [ F
 crbug.com/378610 [ Win7 ] fast/text/glyph-reordering.html [ Failure ]
 crbug.com/378610 [ Win7 ] fast/text/line-breaks-after-ideographic-comma-or-full-stop-2.html [ Failure ]
 crbug.com/378610 [ Win7 ] fast/text/multiglyph-characters.html [ Failure ]
-
-crbug.com/382817 editing/selection/7152-1.html [ NeedsManualRebaseline ]
-crbug.com/382817 fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ NeedsManualRebaseline ]
 
 crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
 
