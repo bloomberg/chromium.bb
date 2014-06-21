@@ -302,7 +302,7 @@ void SearchProviderTest::RunTest(TestData* cases,
     AutocompleteInput input(cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
-                            prefer_keyword, true, true);
+                            prefer_keyword, true, true, &profile_);
     provider_->Start(input, false);
     matches = provider_->matches();
     base::string16 diagnostic_details =
@@ -349,7 +349,7 @@ void SearchProviderTest::QueryForInput(const base::string16& text,
   AutocompleteInput input(text, base::string16::npos, base::string16(), GURL(),
                           metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, prefer_keyword, true,
-                          true);
+                          true, &profile_);
   provider_->Start(input, false);
 
   // RunUntilIdle so that the task scheduled by SearchProvider to create the
@@ -897,7 +897,8 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
       AutocompleteProvider::TYPE_SEARCH);
   controller.Start(AutocompleteInput(
       ASCIIToUTF16("k t"), base::string16::npos, base::string16(), GURL(),
-      metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true));
+      metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true,
+      &profile_));
   const AutocompleteResult& result = controller.result();
 
   // There should be three matches, one for the keyword history, one for
@@ -2354,7 +2355,7 @@ TEST_F(SearchProviderTest, NavigationInline) {
     QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
     AutocompleteMatch match(
         provider_->NavigationToMatch(SearchProvider::NavigationResult(
-            *provider_.get(), GURL(cases[i].url),
+            *provider_.get(), &profile_, GURL(cases[i].url),
             AutocompleteMatchType::NAVSUGGEST, base::string16(), std::string(),
             false, 0, false, ASCIIToUTF16(cases[i].input), std::string())));
     EXPECT_EQ(ASCIIToUTF16(cases[i].inline_autocompletion),
@@ -2367,7 +2368,7 @@ TEST_F(SearchProviderTest, NavigationInline) {
     QueryForInput(ASCIIToUTF16(cases[i].input), true, false);
     AutocompleteMatch match_prevent_inline(
         provider_->NavigationToMatch(SearchProvider::NavigationResult(
-            *provider_.get(), GURL(cases[i].url),
+            *provider_.get(), &profile_, GURL(cases[i].url),
             AutocompleteMatchType::NAVSUGGEST, base::string16(), std::string(),
             false, 0, false, ASCIIToUTF16(cases[i].input), std::string())));
     EXPECT_EQ(ASCIIToUTF16(cases[i].inline_autocompletion),
@@ -2384,7 +2385,7 @@ TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
   const base::string16 input(ASCIIToUTF16("ht"));
   const base::string16 url(ASCIIToUTF16("http://a.com"));
   const SearchProvider::NavigationResult result(
-      *provider_.get(), GURL(url), AutocompleteMatchType::NAVSUGGEST,
+      *provider_.get(), &profile_, GURL(url), AutocompleteMatchType::NAVSUGGEST,
       base::string16(), std::string(), false, 0, false, input, std::string());
 
   // Check the offset and strings when inline autocompletion is allowed.
@@ -2408,7 +2409,7 @@ TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
   QueryForInput(ASCIIToUTF16("w"), false, false);
   AutocompleteMatch match(
       provider_->NavigationToMatch(SearchProvider::NavigationResult(
-          *provider_.get(), GURL("http://www.wow.com"),
+          *provider_.get(), &profile_, GURL("http://www.wow.com"),
           AutocompleteMatchType::NAVSUGGEST, base::string16(), std::string(),
           false, 0, false, ASCIIToUTF16("w"), std::string())));
   EXPECT_EQ(ASCIIToUTF16("ow.com"), match.inline_autocompletion);

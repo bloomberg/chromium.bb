@@ -245,7 +245,8 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           info.url(),
           net::FormatUrl(info.url(), languages_, format_types,
-                         net::UnescapeRule::SPACES, NULL, NULL, NULL));
+                         net::UnescapeRule::SPACES, NULL, NULL, NULL),
+          profile_);
   std::vector<size_t> offsets =
       OffsetsFromTermMatches(history_match.url_matches());
   base::OffsetAdjuster::Adjustments adjustments;

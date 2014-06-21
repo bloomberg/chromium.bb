@@ -362,7 +362,8 @@ void ShortcutsProviderTest::RunTest(
   base::MessageLoop::current()->RunUntilIdle();
   AutocompleteInput input(text, base::string16::npos, base::string16(), GURL(),
                           metrics::OmniboxEventProto::INVALID_SPEC,
-                          prevent_inline_autocomplete, false, true, true);
+                          prevent_inline_autocomplete, false, true, true,
+                          &profile_);
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->done());
 

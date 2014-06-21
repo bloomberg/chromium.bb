@@ -25,7 +25,8 @@ TEST(AutocompleteInputTest, InputType) {
     { ASCIIToUTF16("?"), metrics::OmniboxInputType::FORCED_QUERY },
     { ASCIIToUTF16("?foo"), metrics::OmniboxInputType::FORCED_QUERY },
     { ASCIIToUTF16("?foo bar"), metrics::OmniboxInputType::FORCED_QUERY },
-    { ASCIIToUTF16("?http://foo.com/bar"), metrics::OmniboxInputType::FORCED_QUERY },
+    { ASCIIToUTF16("?http://foo.com/bar"),
+      metrics::OmniboxInputType::FORCED_QUERY },
     { ASCIIToUTF16("foo"), metrics::OmniboxInputType::UNKNOWN },
     { ASCIIToUTF16("localhost"), metrics::OmniboxInputType::URL },
     { ASCIIToUTF16("foo.c"), metrics::OmniboxInputType::UNKNOWN },
@@ -143,7 +144,7 @@ TEST(AutocompleteInputTest, InputType) {
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             OmniboxEventProto::INVALID_SPEC, true, false, true,
-                            true);
+                            true, NULL);
     EXPECT_EQ(input_cases[i].type, input.type());
   }
 }
@@ -173,7 +174,7 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
                             ASCIIToUTF16("com"), GURL(),
                             OmniboxEventProto::INVALID_SPEC, true, false, true,
-                            true);
+                            true, NULL);
     EXPECT_EQ(input_cases[i].type, input.type());
     if (input_cases[i].type == metrics::OmniboxInputType::URL)
       EXPECT_EQ(input_cases[i].spec, input.canonicalized_url().spec());
@@ -186,7 +187,7 @@ TEST(AutocompleteInputTest, InputCrash) {
   AutocompleteInput input(base::WideToUTF16(L"\uff65@s"), base::string16::npos,
                           base::string16(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, true, false,
-                          true, true);
+                          true, true, NULL);
 }
 
 TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
@@ -224,13 +225,13 @@ TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     Component scheme, host;
-    AutocompleteInput::ParseForEmphasizeComponents(input_cases[i].input,
+    AutocompleteInput::ParseForEmphasizeComponents(input_cases[i].input, NULL,
                                                    &scheme,
                                                    &host);
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             OmniboxEventProto::INVALID_SPEC, true,
-                            false, true, true);
+                            false, true, true, NULL);
     EXPECT_EQ(input_cases[i].scheme.begin, scheme.begin);
     EXPECT_EQ(input_cases[i].scheme.len, scheme.len);
     EXPECT_EQ(input_cases[i].host.begin, host.begin);
@@ -269,7 +270,7 @@ TEST(AutocompleteInputTest, InputTypeWithCursorPosition) {
                             input_cases[i].cursor_position,
                             base::string16(), GURL(),
                             OmniboxEventProto::INVALID_SPEC,
-                            true, false, true, true);
+                            true, false, true, true, NULL);
     EXPECT_EQ(input_cases[i].normalized_input, input.text());
     EXPECT_EQ(input_cases[i].normalized_cursor_position,
               input.cursor_position());

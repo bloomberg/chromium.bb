@@ -121,7 +121,8 @@ base::string16 ToolbarModelImpl::GetFormattedURL(size_t* prefix_end) const {
   // the space.
   return AutocompleteInput::FormattedStringWithEquivalentMeaning(
       url, net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
-                          net::UnescapeRule::NORMAL, NULL, prefix_end, NULL));
+                          net::UnescapeRule::NORMAL, NULL, prefix_end, NULL),
+      profile);
 }
 
 base::string16 ToolbarModelImpl::GetCorpusNameForMobile() const {

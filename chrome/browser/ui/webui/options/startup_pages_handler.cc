@@ -237,7 +237,8 @@ void StartupPagesHandler::RequestAutocompleteSuggestions(
 
   autocomplete_controller_->Start(AutocompleteInput(
       input, base::string16::npos, base::string16(), GURL(),
-      metrics::OmniboxEventProto::INVALID_SPEC, true, false, false, true));
+      metrics::OmniboxEventProto::INVALID_SPEC, true, false, false, true,
+      Profile::FromWebUI(web_ui())));
 }
 
 void StartupPagesHandler::OnResultChanged(bool default_match_changed) {

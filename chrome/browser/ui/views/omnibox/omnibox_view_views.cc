@@ -561,10 +561,9 @@ void OmniboxViewViews::ShowImeIfNeeded() {
 }
 
 void OmniboxViewViews::OnMatchOpened(const AutocompleteMatch& match,
-                                     Profile* profile,
-                                     content::WebContents* web_contents) const {
+                                     content::WebContents* web_contents) {
   extensions::MaybeShowExtensionControlledSearchNotification(
-      profile, web_contents, match);
+      profile(), web_contents, match);
 }
 
 int OmniboxViewViews::GetOmniboxTextLength() const {
@@ -580,7 +579,8 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   // be treated as a search or a navigation, and is the same method the Paste
   // And Go system uses.
   url::Component scheme, host;
-  AutocompleteInput::ParseForEmphasizeComponents(text(), &scheme, &host);
+  AutocompleteInput::ParseForEmphasizeComponents(text(), profile(), &scheme,
+                                                 &host);
   bool grey_out_url = text().substr(scheme.begin, scheme.len) ==
       base::UTF8ToUTF16(extensions::kExtensionScheme);
   bool grey_base = model()->CurrentTextIsURL() &&

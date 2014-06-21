@@ -144,15 +144,10 @@ OmniboxProvider::OmniboxProvider(Profile* profile)
 OmniboxProvider::~OmniboxProvider() {}
 
 void OmniboxProvider::Start(const base::string16& query) {
-  controller_->Start(AutocompleteInput(query,
-                                       base::string16::npos,
-                                       base::string16(),
-                                       GURL(),
-                                       metrics::OmniboxEventProto::INVALID_SPEC,
-                                       false,
-                                       false,
-                                       true,
-                                       true));
+  controller_->Start(AutocompleteInput(
+      query, base::string16::npos, base::string16(), GURL(),
+      metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true,
+      profile_));
 }
 
 void OmniboxProvider::Stop() {

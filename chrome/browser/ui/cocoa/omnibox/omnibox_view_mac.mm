@@ -496,7 +496,7 @@ void OmniboxViewMac::ApplyTextAttributes(const base::string16& display_text,
 
   url::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(
-      display_text, &scheme, &host);
+      display_text, profile(), &scheme, &host);
   bool grey_out_url = display_text.substr(scheme.begin, scheme.len) ==
       base::UTF8ToUTF16(extensions::kExtensionScheme);
   if (model()->CurrentTextIsURL() &&

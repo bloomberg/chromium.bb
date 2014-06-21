@@ -235,11 +235,9 @@ class OmniboxView {
   // only ever return true on mobile ports.
   virtual bool IsIndicatingQueryRefinement() const;
 
-  // Called after a |match| has been opened for the given |profile| and
-  // |web_contents|.
+  // Called after a |match| has been opened for the given |web_contents|.
   virtual void OnMatchOpened(const AutocompleteMatch& match,
-                             Profile* profile,
-                             content::WebContents* web_contents) const;
+                             content::WebContents* web_contents);
 
   // Returns |text| with any leading javascript schemas stripped.
   static base::string16 StripJavascriptSchemas(const base::string16& text);
@@ -274,6 +272,7 @@ class OmniboxView {
   // Try to parse the current text as a URL and colorize the components.
   virtual void EmphasizeURLComponents() = 0;
 
+  Profile* profile() { return model_->profile(); }
   OmniboxEditController* controller() { return controller_; }
   const OmniboxEditController* controller() const { return controller_; }
 

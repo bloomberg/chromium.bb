@@ -248,9 +248,9 @@ class BaseSearchProvider : public AutocompleteProvider,
 
   class NavigationResult : public Result {
    public:
-    // |provider| is necessary to use StringForURLDisplay() in order to
-    // compute |formatted_url_|.
+    // |provider| and |profile| are both used to compute |formatted_url_|.
     NavigationResult(const AutocompleteProvider& provider,
+                     Profile* profile,
                      const GURL& url,
                      AutocompleteMatchType::Type type,
                      const base::string16& description,

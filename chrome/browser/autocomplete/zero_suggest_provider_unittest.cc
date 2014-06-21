@@ -124,10 +124,10 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
   prefs->SetString(prefs::kZeroSuggestCachedResults, std::string());
 
   std::string url("http://www.cnn.com");
-  AutocompleteInput input(
-      base::ASCIIToUTF16(url), base::string16::npos, base::string16(),
-      GURL(url), metrics::OmniboxEventProto::INVALID_SPEC, true, false, true,
-      true);
+  AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
+                          base::string16(), GURL(url),
+                          metrics::OmniboxEventProto::INVALID_SPEC, true, false,
+                          true, true, &profile_);
 
   provider_->Start(input, false);
 
@@ -153,10 +153,10 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
   CreatePersonalizedFieldTrial();
 
   std::string url("http://www.cnn.com");
-  AutocompleteInput input(
-      base::ASCIIToUTF16(url), base::string16::npos, base::string16(),
-      GURL(url), metrics::OmniboxEventProto::INVALID_SPEC, true, false, true,
-      true);
+  AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
+                          base::string16(), GURL(url),
+                          metrics::OmniboxEventProto::INVALID_SPEC, true, false,
+                          true, true, &profile_);
 
   // Set up the pref to cache the response from the previous run.
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"
@@ -199,10 +199,10 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   CreatePersonalizedFieldTrial();
 
   std::string url("http://www.cnn.com");
-  AutocompleteInput input(
-      base::ASCIIToUTF16(url), base::string16::npos, base::string16(),
-      GURL(url), metrics::OmniboxEventProto::INVALID_SPEC, true, false, true,
-      true);
+  AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
+                          base::string16(), GURL(url),
+                          metrics::OmniboxEventProto::INVALID_SPEC, true, false,
+                          true, true, &profile_);
 
   // Set up the pref to cache the response from the previous run.
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"

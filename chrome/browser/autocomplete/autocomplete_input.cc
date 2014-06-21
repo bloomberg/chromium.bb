@@ -6,6 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
@@ -49,7 +50,8 @@ AutocompleteInput::AutocompleteInput(
     bool prevent_inline_autocomplete,
     bool prefer_keyword,
     bool allow_exact_keyword_match,
-    bool want_asynchronous_matches)
+    bool want_asynchronous_matches,
+    Profile* profile)
     : cursor_position_(cursor_position),
       current_url_(current_url),
       current_page_classification_(current_page_classification),
@@ -68,7 +70,8 @@ AutocompleteInput::AutocompleteInput(
                                     &cursor_position_);
 
   GURL canonicalized_url;
-  type_ = Parse(text_, desired_tld, &parts_, &scheme_, &canonicalized_url);
+  type_ =
+      Parse(text_, desired_tld, profile, &parts_, &scheme_, &canonicalized_url);
 
   if (type_ == metrics::OmniboxInputType::INVALID)
     return;
@@ -129,6 +132,7 @@ std::string AutocompleteInput::TypeToString(
 metrics::OmniboxInputType::Type AutocompleteInput::Parse(
     const base::string16& text,
     const base::string16& desired_tld,
+    Profile* profile,
     url::Parsed* parts,
     base::string16* scheme,
     GURL* canonicalized_url) {
@@ -152,6 +156,7 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
   const base::string16 parsed_scheme(url_fixer::SegmentURL(text, parts));
   if (scheme)
     *scheme = parsed_scheme;
+  const std::string parsed_scheme_utf8(base::UTF16ToUTF8(parsed_scheme));
 
   // If we can't canonicalize the user's input, the rest of the autocomplete
   // system isn't going to be able to produce a navigable URL match for it.
@@ -164,10 +169,10 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
   if (!canonicalized_url->is_valid())
     return metrics::OmniboxInputType::QUERY;
 
-  if (LowerCaseEqualsASCII(parsed_scheme, url::kFileScheme)) {
+  if (LowerCaseEqualsASCII(parsed_scheme_utf8, url::kFileScheme)) {
     // A user might or might not type a scheme when entering a file URL.  In
-    // either case, |parsed_scheme| will tell us that this is a file URL, but
-    // |parts->scheme| might be empty, e.g. if the user typed "C:\foo".
+    // either case, |parsed_scheme_utf8| will tell us that this is a file URL,
+    // but |parts->scheme| might be empty, e.g. if the user typed "C:\foo".
     return metrics::OmniboxInputType::URL;
   }
 
@@ -178,31 +183,41 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
   // (e.g. "ftp" or "view-source") but I'll wait to spend the effort on that
   // until I run into some cases that really need it.
   if (parts->scheme.is_nonempty() &&
-      !LowerCaseEqualsASCII(parsed_scheme, url::kHttpScheme) &&
-      !LowerCaseEqualsASCII(parsed_scheme, url::kHttpsScheme)) {
-    // See if we know how to handle the URL internally.  There are some schemes
-    // that we convert to other things before they reach the renderer or else
-    // the renderer handles internally without reaching the net::URLRequest
-    // logic.  They thus won't be listed as "handled protocols", but we should
-    // still claim to handle them.
-    if (ProfileIOData::IsHandledProtocol(base::UTF16ToASCII(parsed_scheme)) ||
-        LowerCaseEqualsASCII(parsed_scheme, content::kViewSourceScheme) ||
-        LowerCaseEqualsASCII(parsed_scheme, url::kJavaScriptScheme) ||
-        LowerCaseEqualsASCII(parsed_scheme, url::kDataScheme))
+      !LowerCaseEqualsASCII(parsed_scheme_utf8, url::kHttpScheme) &&
+      !LowerCaseEqualsASCII(parsed_scheme_utf8, url::kHttpsScheme)) {
+    // See if we know how to handle the URL internally, i.e. it's a scheme built
+    // into Chrome itself.  Most of these are known to ProfileIOData.  There are
+    // also some schemes that we convert to other things before they reach the
+    // renderer or else the renderer handles internally without reaching the
+    // net::URLRequest logic.  They thus won't be listed as "handled protocols",
+    // but we should still claim to handle them.
+    if (base::IsStringASCII(parsed_scheme_utf8) &&
+        (ProfileIOData::IsHandledProtocol(parsed_scheme_utf8) ||
+         LowerCaseEqualsASCII(parsed_scheme_utf8, content::kViewSourceScheme) ||
+         LowerCaseEqualsASCII(parsed_scheme_utf8, url::kJavaScriptScheme) ||
+         LowerCaseEqualsASCII(parsed_scheme_utf8, url::kDataScheme)))
       return metrics::OmniboxInputType::URL;
 
-    // Not an internal protocol.  Check and see if the user has explicitly
-    // opened this scheme as a URL before, or if the "scheme" is actually a
-    // username.  We need to do this after the check above because some
+    // Also check for schemes registered via registerProtocolHandler(), which
+    // can be handled by web pages/apps.
+    ProtocolHandlerRegistry* registry = profile ?
+        ProtocolHandlerRegistryFactory::GetForProfile(profile) : NULL;
+    if (registry && registry->IsHandledProtocol(parsed_scheme_utf8))
+      return metrics::OmniboxInputType::URL;
+
+    // Not an internal protocol; check if it's an external protocol, i.e. one
+    // that's registered on the user's OS and will shell out to another program.
+    //
+    // We need to do this after the checks above because some internally
     // handlable schemes (e.g. "javascript") may be treated as "blocked" by the
     // external protocol handler because we don't want pages to open them, but
     // users still can.
+    //
     // Note that the protocol handler needs to be informed that omnibox input
     // should always be considered "user gesture-triggered", lest it always
     // return BLOCK.
-    ExternalProtocolHandler::BlockState block_state =
-        ExternalProtocolHandler::GetBlockState(
-            base::UTF16ToUTF8(parsed_scheme), true);
+    const ExternalProtocolHandler::BlockState block_state =
+        ExternalProtocolHandler::GetBlockState(parsed_scheme_utf8, true);
     switch (block_state) {
       case ExternalProtocolHandler::DONT_BLOCK:
         return metrics::OmniboxInputType::URL;
@@ -222,7 +237,7 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
         base::string16 http_scheme;
         GURL http_canonicalized_url;
         metrics::OmniboxInputType::Type http_type =
-            Parse(http_scheme_prefix + text, desired_tld, &http_parts,
+            Parse(http_scheme_prefix + text, desired_tld, profile, &http_parts,
                   &http_scheme, &http_canonicalized_url);
         DCHECK_EQ(std::string(url::kHttpScheme),
                   base::UTF16ToUTF8(http_scheme));
@@ -433,11 +448,12 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
 
 // static
 void AutocompleteInput::ParseForEmphasizeComponents(const base::string16& text,
+                                                    Profile* profile,
                                                     url::Component* scheme,
                                                     url::Component* host) {
   url::Parsed parts;
   base::string16 scheme_str;
-  Parse(text, base::string16(), &parts, &scheme_str, NULL);
+  Parse(text, base::string16(), profile, &parts, &scheme_str, NULL);
 
   *scheme = parts.scheme;
   *host = parts.host;
@@ -450,7 +466,8 @@ void AutocompleteInput::ParseForEmphasizeComponents(const base::string16& text,
     // Obtain the URL prefixed by view-source and parse it.
     base::string16 real_url(text.substr(after_scheme_and_colon));
     url::Parsed real_parts;
-    AutocompleteInput::Parse(real_url, base::string16(), &real_parts, NULL, NULL);
+    AutocompleteInput::Parse(real_url, base::string16(), profile, &real_parts,
+                             NULL, NULL);
     if (real_parts.scheme.is_nonempty() || real_parts.host.is_nonempty()) {
       if (real_parts.scheme.is_nonempty()) {
         *scheme = url::Component(
@@ -475,14 +492,15 @@ void AutocompleteInput::ParseForEmphasizeComponents(const base::string16& text,
 // static
 base::string16 AutocompleteInput::FormattedStringWithEquivalentMeaning(
     const GURL& url,
-    const base::string16& formatted_url) {
+    const base::string16& formatted_url,
+    Profile* profile) {
   if (!net::CanStripTrailingSlash(url))
     return formatted_url;
   const base::string16 url_with_path(formatted_url + base::char16('/'));
-  return (AutocompleteInput::Parse(formatted_url, base::string16(), NULL, NULL,
-                                   NULL) ==
-          AutocompleteInput::Parse(url_with_path, base::string16(), NULL, NULL,
-                                   NULL)) ?
+  return (AutocompleteInput::Parse(formatted_url, base::string16(), profile,
+                                   NULL, NULL, NULL) ==
+          AutocompleteInput::Parse(url_with_path, base::string16(), profile,
+                                   NULL, NULL, NULL)) ?
       formatted_url : url_with_path;
 }
 

@@ -139,7 +139,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
     omnibox_view->model()->SetInputInProgress(true);
     autocomplete_controller->Start(AutocompleteInput(
         base::ASCIIToUTF16("chrome"), base::string16::npos, base::string16(),
-        GURL(), metrics::OmniboxEventProto::NTP, true, false, true, false));
+        GURL(), metrics::OmniboxEventProto::NTP, true, false, true, false,
+        profile()));
 
     EXPECT_TRUE(autocomplete_controller->done());
     EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());

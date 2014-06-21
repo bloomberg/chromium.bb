@@ -177,8 +177,8 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
                                match.contents.size(),
                                true);
   match.fill_into_edit =
-      AutocompleteInput::FormattedStringWithEquivalentMeaning(url,
-                                                              match.contents);
+      AutocompleteInput::FormattedStringWithEquivalentMeaning(
+          url, match.contents, profile_);
   if (inline_autocomplete_offset != base::string16::npos) {
     // |inline_autocomplete_offset| may be beyond the end of the
     // |fill_into_edit| if the user has typed an URL with a scheme and the

@@ -134,8 +134,7 @@ class OmniboxViewViews
   virtual bool IsImeShowingPopup() const OVERRIDE;
   virtual void ShowImeIfNeeded() OVERRIDE;
   virtual void OnMatchOpened(const AutocompleteMatch& match,
-                             Profile* profile,
-                             content::WebContents* web_contents) const OVERRIDE;
+                             content::WebContents* web_contents) OVERRIDE;
   virtual int GetOmniboxTextLength() const OVERRIDE;
   virtual void EmphasizeURLComponents() OVERRIDE;
 

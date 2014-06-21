@@ -209,7 +209,7 @@ const AutocompleteInput ZeroSuggestProvider::GetInput(bool is_keyword) const {
   return AutocompleteInput(
       base::string16(), base::string16::npos, base::string16(),
       GURL(current_query_), current_page_classification_, true, false, false,
-      true);
+      true, profile_);
 }
 
 BaseSearchProvider::Results* ZeroSuggestProvider::GetResultsToFill(
@@ -291,7 +291,7 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
       net::kFormatUrlOmitAll, net::UnescapeRule::SPACES, NULL, NULL, NULL);
   match.fill_into_edit +=
       AutocompleteInput::FormattedStringWithEquivalentMeaning(navigation.url(),
-          match.contents);
+          match.contents, profile_);
 
   AutocompleteMatch::ClassifyLocationInString(base::string16::npos, 0,
       match.contents.length(), ACMatchClassification::URL,
@@ -376,9 +376,10 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
         profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
     for (size_t i = 0; i < most_visited_urls_.size(); i++) {
       const history::MostVisitedURL& url = most_visited_urls_[i];
-      NavigationResult nav(*this, url.url, AutocompleteMatchType::NAVSUGGEST,
-          url.title, std::string(), false, relevance, true,
-          current_query_string16, languages);
+      NavigationResult nav(*this, profile_, url.url,
+                           AutocompleteMatchType::NAVSUGGEST, url.title,
+                           std::string(), false, relevance, true,
+                           current_query_string16, languages);
       matches_.push_back(NavigationToMatch(nav));
       --relevance;
     }

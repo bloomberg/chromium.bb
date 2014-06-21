@@ -83,7 +83,7 @@ void KeywordProviderTest::RunTest(
     AutocompleteInput input(keyword_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, true,
-                            false, true, true);
+                            false, true, true, NULL);
     kw_provider_->Start(input, false);
     EXPECT_TRUE(kw_provider_->done());
     matches = kw_provider_->matches();
@@ -322,10 +322,10 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
       base::string16::npos },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
-    AutocompleteInput input(ASCIIToUTF16(cases[i].text),
-                            cases[i].cursor_position, base::string16(), GURL(),
-                            metrics::OmniboxEventProto::INVALID_SPEC, false,
-                            false, cases[i].allow_exact_keyword_match, true);
+    AutocompleteInput input(
+        ASCIIToUTF16(cases[i].text), cases[i].cursor_position, base::string16(),
+        GURL(), metrics::OmniboxEventProto::INVALID_SPEC, false, false,
+        cases[i].allow_exact_keyword_match, true, NULL);
     const TemplateURL* url =
         KeywordProvider::GetSubstitutingTemplateURLForInput(model_.get(),
                                                             &input);

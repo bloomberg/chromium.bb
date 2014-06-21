@@ -16,8 +16,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
 
   // The results depend on the TemplateURLService being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
+  Profile* profile = browser()->profile();
   ui_test_utils::WaitForTemplateURLServiceToLoad(
-      TemplateURLServiceFactory::GetForProfile(browser()->profile()));
+      TemplateURLServiceFactory::GetForProfile(profile));
 
   LocationBar* location_bar = GetLocationBar(browser());
   OmniboxView* omnibox_view = location_bar->GetOmniboxView();
@@ -41,11 +42,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
   // TODO: Rather than send this second request by talking to the controller
   // directly, figure out how to send it via the proper calls to
   // location_bar or location_bar->().
-  autocomplete_controller->Start(
-      AutocompleteInput(base::ASCIIToUTF16("keyword command"),
-                        base::string16::npos, base::string16(), GURL(),
-                        metrics::OmniboxEventProto::NTP, true, false, true,
-                        true));
+  autocomplete_controller->Start(AutocompleteInput(
+      base::ASCIIToUTF16("keyword command"), base::string16::npos,
+      base::string16(), GURL(), metrics::OmniboxEventProto::NTP, true, false,
+      true, true, profile));
   location_bar->AcceptInput();
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());

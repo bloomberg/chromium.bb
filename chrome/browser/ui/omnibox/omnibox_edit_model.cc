@@ -581,17 +581,13 @@ void OmniboxEditModel::StartAutocomplete(
       delegate_->GetURL() : GURL();
   bool keyword_is_selected = KeywordIsSelected();
   input_ = AutocompleteInput(
-      user_text_,
-      cursor_position,
-      base::string16(),
-      current_url,
+      user_text_, cursor_position, base::string16(), current_url,
       ClassifyPage(),
       prevent_inline_autocomplete || just_deleted_text_ ||
-      (has_selected_text && inline_autocomplete_text_.empty()) ||
-      (paste_state_ != NONE),
-      keyword_is_selected,
-      keyword_is_selected || allow_exact_keyword_match_,
-      true);
+          (has_selected_text && inline_autocomplete_text_.empty()) ||
+          (paste_state_ != NONE),
+      keyword_is_selected, keyword_is_selected || allow_exact_keyword_match_,
+      true, profile_);
 
   omnibox_controller_->StartAutocomplete(input_);
 }
@@ -650,11 +646,11 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     input_ = AutocompleteInput(
       has_temporary_text_ ?
           UserTextFromDisplayText(view_->GetText())  : input_.text(),
-      input_.cursor_position(), base::ASCIIToUTF16("com"),
-      GURL(), input_.current_page_classification(),
+      input_.cursor_position(), base::ASCIIToUTF16("com"), GURL(),
+      input_.current_page_classification(),
       input_.prevent_inline_autocomplete(), input_.prefer_keyword(),
-      input_.allow_exact_keyword_match(),
-      input_.want_asynchronous_matches());
+      input_.allow_exact_keyword_match(), input_.want_asynchronous_matches(),
+      profile_);
     AutocompleteMatch url_match(
         autocomplete_controller()->history_url_provider()->SuggestExactInput(
             input_.text(), input_.canonicalized_url(), false));
@@ -947,7 +943,8 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
     // |permanent_text_| is empty.
     autocomplete_controller()->StartZeroSuggest(AutocompleteInput(
         permanent_text_, base::string16::npos, base::string16(),
-        delegate_->GetURL(), ClassifyPage(), false, false, true, true));
+        delegate_->GetURL(), ClassifyPage(), false, false, true, true,
+        profile_));
   }
 
   if (user_input_in_progress_ || !in_revert_)

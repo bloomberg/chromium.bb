@@ -574,7 +574,8 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
     match.fill_into_edit =
         AutocompleteInput::FormattedStringWithEquivalentMeaning(destination_url,
-                                                                display_string);
+                                                                display_string,
+                                                                profile_);
     match.allowed_to_be_default_match = true;
     // NOTE: Don't set match.inline_autocompletion to something non-empty here;
     // it's surprising and annoying.
@@ -1112,10 +1113,12 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
       ~((params.trim_http && !history_match.match_in_scheme) ?
           0 : net::kFormatUrlOmitHTTP);
   match.fill_into_edit =
-      AutocompleteInput::FormattedStringWithEquivalentMeaning(info.url(),
+      AutocompleteInput::FormattedStringWithEquivalentMeaning(
+          info.url(),
           net::FormatUrl(info.url(), languages, format_types,
                          net::UnescapeRule::SPACES, NULL, NULL,
-                         &inline_autocomplete_offset));
+                         &inline_autocomplete_offset),
+          profile_);
   if (!params.prevent_inline_autocomplete &&
       (inline_autocomplete_offset != base::string16::npos)) {
     DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());

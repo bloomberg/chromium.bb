@@ -39,7 +39,7 @@ class BuiltinProviderTest : public testing::Test {
       const AutocompleteInput input(cases[i].input, base::string16::npos,
                                     base::string16(), GURL(),
                                     metrics::OmniboxEventProto::INVALID_SPEC,
-                                    true, false, true, true);
+                                    true, false, true, true, NULL);
       provider_->Start(input, false);
       EXPECT_TRUE(provider_->done());
       matches = provider_->matches();

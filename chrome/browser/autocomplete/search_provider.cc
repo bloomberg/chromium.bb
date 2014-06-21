@@ -1100,10 +1100,12 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   size_t inline_autocomplete_offset = (prefix == NULL) ?
       base::string16::npos : (match_start + input.length());
   match.fill_into_edit +=
-      AutocompleteInput::FormattedStringWithEquivalentMeaning(navigation.url(),
+      AutocompleteInput::FormattedStringWithEquivalentMeaning(
+          navigation.url(),
           net::FormatUrl(navigation.url(), languages, format_types,
                          net::UnescapeRule::SPACES, NULL, NULL,
-                         &inline_autocomplete_offset));
+                         &inline_autocomplete_offset),
+          profile_);
   // Preserve the forced query '?' prefix in |match.fill_into_edit|.
   // Otherwise, user edits to a suggestion would show non-Search results.
   if (input_.type() == metrics::OmniboxInputType::FORCED_QUERY) {

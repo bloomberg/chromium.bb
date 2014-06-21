@@ -169,17 +169,12 @@ void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
   ResetController();
   time_omnibox_started_ = base::Time::Now();
   input_ = AutocompleteInput(
-      input_string.To<base::string16>(),
-      cursor_position,
-      base::string16(),  // user's desired tld (top-level domain)
+      input_string.To<base::string16>(), cursor_position, base::string16(),
       GURL(),
       static_cast<metrics::OmniboxEventProto::PageClassification>(
           page_classification),
-      prevent_inline_autocomplete,
-      prefer_keyword,
-      true,  // allow exact keyword matches
-      true);
-  controller_->Start(input_);  // want all matches
+      prevent_inline_autocomplete, prefer_keyword, true, true, profile_);
+  controller_->Start(input_);
 }
 
 void OmniboxUIHandler::ResetController() {

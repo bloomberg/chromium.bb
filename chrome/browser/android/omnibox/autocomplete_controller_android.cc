@@ -79,23 +79,17 @@ class ZeroSuggestPrefetcher : public AutocompleteControllerDelegate {
   base::OneShotTimer<ZeroSuggestPrefetcher> expire_timer_;
 };
 
-ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile) : controller_(
-    new AutocompleteController(profile, this,
-                               AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
+ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
+    : controller_(new AutocompleteController(
+          profile, this, AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
   // Creating an arbitrary fake_request_source to avoid passing in an invalid
   // AutocompleteInput object.
   base::string16 fake_request_source(base::ASCIIToUTF16(
       "http://www.foobarbazblah.com"));
   controller_->StartZeroSuggest(AutocompleteInput(
-      fake_request_source,
-      base::string16::npos,
-      base::string16(),
-      GURL(fake_request_source),
-      OmniboxEventProto::INVALID_SPEC,
-      false,
-      false,
-      true,
-      true));
+      fake_request_source, base::string16::npos, base::string16(),
+      GURL(fake_request_source), OmniboxEventProto::INVALID_SPEC, false, false,
+      true, true, profile));
   // Delete ourselves after 10s. This is enough time to cache results or
   // give up if the results haven't been received.
   expire_timer_.Start(FROM_HERE,
@@ -146,15 +140,10 @@ void AutocompleteControllerAndroid::Start(JNIEnv* env,
   base::string16 text = ConvertJavaStringToUTF16(env, j_text);
   OmniboxEventProto::PageClassification page_classification =
       OmniboxEventProto::OTHER;
-  input_ = AutocompleteInput(text,
-                             base::string16::npos,
-                             desired_tld,
-                             current_url,
-                             page_classification,
-                             prevent_inline_autocomplete,
-                             prefer_keyword,
-                             allow_exact_keyword_match,
-                             want_asynchronous_matches);
+  input_ = AutocompleteInput(
+      text, base::string16::npos, desired_tld, current_url, page_classification,
+      prevent_inline_autocomplete, prefer_keyword, allow_exact_keyword_match,
+      want_asynchronous_matches, profile_);
   autocomplete_controller_->Start(input_);
 }
 
@@ -187,7 +176,7 @@ void AutocompleteControllerAndroid::StartZeroSuggest(
   input_ = AutocompleteInput(
       omnibox_text, base::string16::npos, base::string16(), current_url,
       ClassifyPage(current_url, is_query_in_omnibox, focused_from_fakebox),
-      false, false, true, true);
+      false, false, true, true, profile_);
   autocomplete_controller_->StartZeroSuggest(input_);
 }
 

@@ -405,7 +405,8 @@ void AutocompleteProviderTest::RunQuery(const base::string16 query) {
   result_.Reset();
   controller_->Start(AutocompleteInput(
       query, base::string16::npos, base::string16(), GURL(),
-      metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true));
+      metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true,
+      &profile_));
 
   if (!controller_->done())
     // The message loop will terminate when all autocomplete input has been
@@ -424,7 +425,7 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
   controller_->Start(AutocompleteInput(
       base::ASCIIToUTF16("k test"), base::string16::npos, base::string16(),
       GURL(), metrics::OmniboxEventProto::INVALID_SPEC, true, false,
-      allow_exact_keyword_match, false));
+      allow_exact_keyword_match, false, &profile_));
   EXPECT_TRUE(controller_->done());
   EXPECT_EQ(AutocompleteProvider::TYPE_SEARCH,
       controller_->result().default_match()->provider->type());

@@ -55,6 +55,7 @@ class AutocompleteClassifier : public KeyedService {
   // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
+  Profile* profile_;
   scoped_ptr<AutocompleteController> controller_;
 
   // Are we currently in Classify? Used to verify Classify isn't invoked

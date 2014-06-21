@@ -92,7 +92,7 @@ void ExtensionAppProviderTest::RunTest(
     AutocompleteInput input(keyword_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, true,
-                            false, true, true);
+                            false, true, true, profile_.get());
     app_provider_->Start(input, false);
     EXPECT_TRUE(app_provider_->done());
     matches = app_provider_->matches();
@@ -143,7 +143,7 @@ TEST_F(ExtensionAppProviderTest, CreateMatchSanitize) {
   AutocompleteInput input(ASCIIToUTF16("Test"), base::string16::npos,
                           base::string16(), GURL(),
                           metrics::OmniboxEventProto::INVALID_SPEC, true, true,
-                          true, false);
+                          true, false, profile_.get());
   base::string16 url(ASCIIToUTF16("http://example.com"));
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     ExtensionAppProvider::ExtensionApp extension_app =
