@@ -126,7 +126,8 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_AttributesTest) {
           VirtualKeyboardBrowserTestConfig());
 }
 
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, TypingTest) {
+// crbug.com/387372. This test started failing at Blink r176582.
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_TypingTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("typing_test.js")),
           VirtualKeyboardBrowserTestConfig());
 }
