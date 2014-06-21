@@ -50,6 +50,7 @@ static_library("renderer") {
     "//third_party/npapi",
     "//third_party/widevine/cdm:version_h",
     "//ui/surface",
+    "//v8:v8",
     "//webkit/child",
     "//webkit/common",
     "//webkit:resources",
