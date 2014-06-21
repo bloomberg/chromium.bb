@@ -193,9 +193,6 @@ ForwardingSchemaRegistry::ForwardingSchemaRegistry(SchemaRegistry* wrapped)
   schema_map_ = wrapped_->schema_map();
   wrapped_->AddObserver(this);
   wrapped_->AddInternalObserver(this);
-  // This registry is always ready.
-  for (int i = 0; i < POLICY_DOMAIN_SIZE; ++i)
-    SetReady(static_cast<PolicyDomain>(i));
 }
 
 ForwardingSchemaRegistry::~ForwardingSchemaRegistry() {
@@ -208,7 +205,10 @@ ForwardingSchemaRegistry::~ForwardingSchemaRegistry() {
 void ForwardingSchemaRegistry::RegisterComponents(
     PolicyDomain domain,
     const ComponentMap& components) {
-  if (wrapped_)
+  // POLICY_DOMAIN_CHROME is skipped to avoid spurious updated when a new
+  // Profile is created. If the ForwardingSchemaRegistry is meant to be used
+  // outside device-level accounts then this should become configurable.
+  if (wrapped_ && domain != POLICY_DOMAIN_CHROME)
     wrapped_->RegisterComponents(domain, components);
   // Ignore otherwise.
 }

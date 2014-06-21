@@ -413,12 +413,29 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
   Mock::VerifyAndClearExpectations(&service_observer_);
   Mock::VerifyAndClearExpectations(&mock_device_management_service_);
   EXPECT_TRUE(request.has_policy_request());
-  EXPECT_EQ(1, request.policy_request().request_size());
+  ASSERT_EQ(2, request.policy_request().request_size());
+
+  const em::PolicyFetchRequest* public_account =
+      &request.policy_request().request(0);
+  const em::PolicyFetchRequest* extensions =
+      &request.policy_request().request(1);
+  // The order is not guarateed.
+  if (extensions->policy_type() ==
+      dm_protocol::kChromePublicAccountPolicyType) {
+    const em::PolicyFetchRequest* tmp = public_account;
+    public_account = extensions;
+    extensions = tmp;
+  }
+
   EXPECT_EQ(dm_protocol::kChromePublicAccountPolicyType,
-            request.policy_request().request(0).policy_type());
-  EXPECT_FALSE(request.policy_request().request(0).has_machine_id());
-  EXPECT_EQ(kAccount1,
-            request.policy_request().request(0).settings_entity_id());
+            public_account->policy_type());
+  EXPECT_FALSE(public_account->has_machine_id());
+  EXPECT_EQ(kAccount1, public_account->settings_entity_id());
+
+  EXPECT_EQ(dm_protocol::kChromeExtensionPolicyType,
+            extensions->policy_type());
+  EXPECT_FALSE(extensions->has_machine_id());
+  EXPECT_FALSE(extensions->has_settings_entity_id());
 
   ASSERT_TRUE(broker->core()->store());
   EXPECT_EQ(CloudPolicyStore::STATUS_OK,

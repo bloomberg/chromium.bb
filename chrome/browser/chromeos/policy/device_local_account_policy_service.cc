@@ -28,6 +28,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
@@ -125,6 +126,7 @@ DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
       user_id_(account.user_id),
       component_policy_cache_path_(component_policy_cache_path),
       store_(store.Pass()),
+      extension_tracker_(account, store_.get(), &schema_registry_),
       external_data_manager_(external_data_manager),
       core_(PolicyNamespaceKey(dm_protocol::kChromePublicAccountPolicyType,
                                store_->account_id()),
@@ -142,6 +144,9 @@ DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
 
   // Unblock the |schema_registry_| so that the |component_policy_service_|
   // starts using it.
+  schema_registry_.RegisterComponent(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, ""),
+      g_browser_process->browser_policy_connector()->GetChromeSchema());
   schema_registry_.SetReady(POLICY_DOMAIN_CHROME);
   schema_registry_.SetReady(POLICY_DOMAIN_EXTENSIONS);
 }

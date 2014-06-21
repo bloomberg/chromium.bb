@@ -269,6 +269,11 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, UpdateExtensionPolicy) {
 IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, InstallNewExtension) {
   EXPECT_TRUE(test_server_.UpdatePolicyData(
       dm_protocol::kChromeExtensionPolicyType, kTestExtension2, kTestPolicy2));
+  // Installing a new extension doesn't trigger another policy fetch because
+  // the server always sends down the list of all extensions that have policy.
+  // Fetch now that the configuration has been updated and before installing
+  // the extension.
+  RefreshPolicies();
 
   ExtensionTestMessageListener result_listener("ok", true);
   result_listener.set_failure_message("fail");

@@ -240,14 +240,6 @@ TEST_F(SchemaMapTest, LegacyComponents) {
                                base::Value::CreateStringValue("value 1"),
                                NULL);
 
-  // Known components without a schema are not filtered.
-  PolicyNamespace without_schema_ns(POLICY_DOMAIN_EXTENSIONS, "without-schema");
-  bundle.Get(without_schema_ns).Set("Schemaless",
-                                    POLICY_LEVEL_MANDATORY,
-                                    POLICY_SCOPE_USER,
-                                    base::Value::CreateStringValue("value 2"),
-                                    NULL);
-
   // The Chrome namespace isn't filtered.
   PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, "");
   bundle.Get(chrome_ns).Set("ChromePolicy",
@@ -258,6 +250,14 @@ TEST_F(SchemaMapTest, LegacyComponents) {
 
   PolicyBundle expected_bundle;
   expected_bundle.MergeFrom(bundle);
+
+  // Known components without a schema are filtered out completely.
+  PolicyNamespace without_schema_ns(POLICY_DOMAIN_EXTENSIONS, "without-schema");
+  bundle.Get(without_schema_ns).Set("Schemaless",
+                                    POLICY_LEVEL_MANDATORY,
+                                    POLICY_SCOPE_USER,
+                                    base::Value::CreateStringValue("value 2"),
+                                    NULL);
 
   // Unknown policies of known components with a schema are removed.
   bundle.Get(extension_ns).Set("Surprise",

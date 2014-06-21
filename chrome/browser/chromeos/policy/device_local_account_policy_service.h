@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
+#include "chrome/browser/chromeos/policy/device_local_account_extension_tracker.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -118,6 +119,7 @@ class DeviceLocalAccountPolicyBroker
   const base::FilePath component_policy_cache_path_;
   SchemaRegistry schema_registry_;
   const scoped_ptr<DeviceLocalAccountPolicyStore> store_;
+  DeviceLocalAccountExtensionTracker extension_tracker_;
   scoped_refptr<DeviceLocalAccountExternalDataManager> external_data_manager_;
   scoped_refptr<chromeos::DeviceLocalAccountExternalPolicyLoader>
       extension_loader_;

@@ -573,19 +573,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   virtual ~SessionManagerClientStubImpl() {}
 
   // SessionManagerClient overrides
-  virtual void Init(dbus::Bus* bus) OVERRIDE {
-    // Make sure that there are no keys left over from a previous browser run.
-    base::FilePath user_policy_key_dir;
-    if (PathService::Get(chromeos::DIR_USER_POLICY_KEYS,
-                         &user_policy_key_dir)) {
-      base::WorkerPool::PostTask(
-          FROM_HERE,
-          base::Bind(base::IgnoreResult(&base::DeleteFile),
-                     user_policy_key_dir, true),
-          false);
-    }
-  }
-
+  virtual void Init(dbus::Bus* bus) OVERRIDE {}
   virtual void SetStubDelegate(StubDelegate* delegate) OVERRIDE {
     delegate_ = delegate;
   }

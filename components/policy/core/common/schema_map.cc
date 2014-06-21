@@ -54,8 +54,18 @@ void SchemaMap::FilterBundle(PolicyBundle* bundle) const {
     // then its policies aren't filtered. This behavior is enabled to allow a
     // graceful update of the Legacy Browser Support extension; it'll be removed
     // in a future release. http://crbug.com/240704
-    if (!schema->valid())
+    static const char kLegacyBrowserSupportExtensionId[] =
+        "heildphpnddilhkemkielfhnkaagiabh";
+    if (it->first.domain == POLICY_DOMAIN_EXTENSIONS &&
+        it->first.component_id == kLegacyBrowserSupportExtensionId) {
       continue;
+    }
+
+    if (!schema->valid()) {
+      // Don't serve unknown policies.
+      it->second->Clear();
+      continue;
+    }
 
     PolicyMap* map = it->second;
     for (PolicyMap::const_iterator it_map = map->begin();

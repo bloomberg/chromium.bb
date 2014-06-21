@@ -252,10 +252,8 @@ TEST(SchemaRegistryTest, ForwardingSchemaRegistry) {
   forwarding.AddObserver(&observer);
 
   EXPECT_FALSE(registry->IsReady());
-  // The ForwardingSchemaRegistry is always ready, even if the wrapped registry
-  // isn't.
-  EXPECT_TRUE(forwarding.IsReady());
-  // But they alreday have the same SchemaMap.
+  EXPECT_FALSE(forwarding.IsReady());
+  // They always have the same SchemaMap.
   EXPECT_TRUE(SchemaMapEquals(registry->schema_map(), forwarding.schema_map()));
 
   EXPECT_CALL(observer, OnSchemaRegistryUpdated(true));
@@ -270,12 +268,32 @@ TEST(SchemaRegistryTest, ForwardingSchemaRegistry) {
   Mock::VerifyAndClearExpectations(&observer);
   EXPECT_TRUE(SchemaMapEquals(registry->schema_map(), forwarding.schema_map()));
 
-  // No notifications expected for this call.
+  // No notifications expected for these calls.
   EXPECT_FALSE(registry->IsReady());
-  registry->SetReady(POLICY_DOMAIN_CHROME);
+  EXPECT_FALSE(forwarding.IsReady());
+
+#if defined(ENABLE_EXTENSIONS)
   registry->SetReady(POLICY_DOMAIN_EXTENSIONS);
+  EXPECT_FALSE(registry->IsReady());
+  EXPECT_FALSE(forwarding.IsReady());
+#endif
+
+  registry->SetReady(POLICY_DOMAIN_CHROME);
   EXPECT_TRUE(registry->IsReady());
+  // The ForwardingSchemaRegistry becomes ready independently of the wrapped
+  // registry.
+  EXPECT_FALSE(forwarding.IsReady());
+
   EXPECT_TRUE(SchemaMapEquals(registry->schema_map(), forwarding.schema_map()));
+  Mock::VerifyAndClearExpectations(&observer);
+
+  forwarding.SetReady(POLICY_DOMAIN_EXTENSIONS);
+  EXPECT_FALSE(forwarding.IsReady());
+  Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(observer, OnSchemaRegistryReady());
+  forwarding.SetReady(POLICY_DOMAIN_CHROME);
+  EXPECT_TRUE(forwarding.IsReady());
   Mock::VerifyAndClearExpectations(&observer);
 
   // Keep the same SchemaMap when the original registry is gone.

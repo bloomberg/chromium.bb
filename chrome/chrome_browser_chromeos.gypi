@@ -798,6 +798,8 @@
         'browser/chromeos/policy/device_local_account_external_data_manager.h',
         'browser/chromeos/policy/device_local_account_external_data_service.cc',
         'browser/chromeos/policy/device_local_account_external_data_service.h',
+        'browser/chromeos/policy/device_local_account_extension_tracker.cc',
+        'browser/chromeos/policy/device_local_account_extension_tracker.h',
         'browser/chromeos/policy/device_local_account_policy_provider.cc',
         'browser/chromeos/policy/device_local_account_policy_provider.h',
         'browser/chromeos/policy/device_local_account_policy_service.cc',
