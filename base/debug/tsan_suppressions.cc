@@ -281,8 +281,6 @@ char kTSanDefaultSuppressions[] =
 
 // http://crbug.com/374135
 "race:media::AlsaWrapper::PcmWritei\n"
-"deadlock:media::AudioOutputDispatcherImpl::StopStream\n"
-"deadlock:media::AudioStreamHandler::AudioStreamContainer::OnMoreData\n"
 
 // False positive in libc's tzset_internal, http://crbug.com/379738.
 "race:tzset_internal\n"

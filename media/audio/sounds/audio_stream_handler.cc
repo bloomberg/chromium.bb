@@ -37,12 +37,11 @@ class AudioStreamHandler::AudioStreamContainer
     : public AudioOutputStream::AudioSourceCallback {
  public:
   AudioStreamContainer(const WavAudioHandler& wav_audio)
-      : stream_(NULL),
-        wav_audio_(wav_audio),
+      : started_(false),
+        stream_(NULL),
         cursor_(0),
-        started_(false),
-        delayed_stop_posted_(false) {
-  }
+        delayed_stop_posted_(false),
+        wav_audio_(wav_audio) {}
 
   virtual ~AudioStreamContainer() {
     DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
@@ -58,8 +57,8 @@ class AudioStreamHandler::AudioStreamContainer
                                    p.sample_rate(),
                                    p.bits_per_sample(),
                                    kDefaultFrameCount);
-      stream_ = AudioManager::Get()->MakeAudioOutputStreamProxy(
-          params, std::string());
+      stream_ = AudioManager::Get()->MakeAudioOutputStreamProxy(params,
+                                                                std::string());
       if (!stream_ || !stream_->Open()) {
         LOG(ERROR) << "Failed to open an output stream.";
         return;
@@ -71,8 +70,8 @@ class AudioStreamHandler::AudioStreamContainer
       base::AutoLock al(state_lock_);
 
       delayed_stop_posted_ = false;
-      stop_closure_.Reset(base::Bind(
-          &AudioStreamContainer::StopStream, base::Unretained(this)));
+      stop_closure_.Reset(base::Bind(&AudioStreamContainer::StopStream,
+                                     base::Unretained(this)));
 
       if (started_) {
         if (wav_audio_.AtEnd(cursor_))
@@ -81,9 +80,9 @@ class AudioStreamHandler::AudioStreamContainer
       }
 
       cursor_ = 0;
-      started_ = true;
     }
 
+    started_ = true;
     if (g_audio_source_for_testing)
       stream_->Start(g_audio_source_for_testing);
     else
@@ -99,6 +98,7 @@ class AudioStreamHandler::AudioStreamContainer
     if (stream_)
       stream_->Close();
     stream_ = NULL;
+    stop_closure_.Cancel();
   }
 
  private:
@@ -131,24 +131,25 @@ class AudioStreamHandler::AudioStreamContainer
   void StopStream() {
     DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
 
-    base::AutoLock al(state_lock_);
-
     if (stream_ && started_) {
+      // Do not hold the |state_lock_| while stopping the output stream.
       stream_->Stop();
       if (g_observer_for_testing)
         g_observer_for_testing->OnStop(cursor_);
     }
+
     started_ = false;
   }
 
+  // Must only be accessed on the AudioManager::GetTaskRunner() thread.
+  bool started_;
   AudioOutputStream* stream_;
 
-  const WavAudioHandler wav_audio_;
-
+  // All variables below must be accessed under |state_lock_| when |started_|.
   base::Lock state_lock_;
   size_t cursor_;
-  bool started_;
   bool delayed_stop_posted_;
+  const WavAudioHandler wav_audio_;
   base::CancelableClosure stop_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioStreamContainer);
