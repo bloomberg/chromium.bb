@@ -307,6 +307,12 @@ cvox.LibLouis.Translator.prototype.translate = function(text, callback) {
  */
 cvox.LibLouis.Translator.prototype.backTranslate =
     function(cells, callback) {
+  if (cells.byteLength == 0) {
+    // liblouis doesn't handle empty input, so handle that trivially
+    // here.
+    callback('');
+    return;
+  }
   var message = {
     'table_name': this.tableName_,
     'cells': cvox.LibLouis.Translator.encodeHexString_(cells)

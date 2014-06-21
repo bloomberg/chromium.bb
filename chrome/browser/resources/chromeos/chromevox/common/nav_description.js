@@ -24,7 +24,8 @@ goog.require('cvox.CursorSelection');
  *          annotation: (undefined|string),
  *          earcons: (undefined|Array.<number>),
  *          personality: (undefined|Object),
- *          hint: (undefined|string)}} kwargs The arguments for this
+ *          hint: (undefined|string),
+            category: (undefined|string)}} kwargs The arguments for this
  *  description.
  *  context The context, for example descriptions of objects
  *     that were crossed into, like "Toolbar" or "Menu Bar" or "List with
@@ -37,6 +38,7 @@ goog.require('cvox.CursorSelection');
  *     with the spoken description of this object.
  *  personality Optional TTS personality to use for the text.
  *  hint Optional Hint text (.e.g. aria-describedby).
+ *  category Optional category (for speech queueing behavior).
  * @constructor
  */
 cvox.NavDescription = function(kwargs) {
@@ -47,6 +49,7 @@ cvox.NavDescription = function(kwargs) {
   this.earcons = kwargs.earcons ? kwargs.earcons : [];
   this.personality = kwargs.personality;
   this.hint = kwargs.hint ? kwargs.hint : '';
+  this.category = kwargs.category ? kwargs.category : null;
 };
 
 
@@ -69,7 +72,9 @@ cvox.NavDescription.prototype.toString = function() {
   return 'NavDescription(context="' + this.context + '" ' +
          ' text="' + this.text + '" ' +
          ' userValue="' + this.userValue + '" ' +
-         ' annotation="' + this.annotation + '")';
+         ' annotation="' + this.annotation +
+         (this.category ? '" category="' + this.category + '")' : '') +
+         '")';
 };
 
 
@@ -135,6 +140,9 @@ cvox.NavDescription.prototype.speak = function(
     }
     if (i == length - 1 && endCallback) {
       speakArgs[i][2]['endCallback'] = endCallback;
+    }
+    if (this.category) {
+      speakArgs[i][2]['category'] = this.category;
     }
     cvox.ChromeVox.tts.speak.apply(cvox.ChromeVox.tts, speakArgs[i]);
   }

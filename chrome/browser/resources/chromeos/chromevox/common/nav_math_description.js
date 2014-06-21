@@ -23,6 +23,7 @@ goog.require('cvox.NavDescription');
  *          earcons: (undefined|Array.<number>),
  *          personality: (undefined|Object),
  *          hint: (undefined|string),
+ *          category: (undefined|string),
  *          domain: (undefined|string),
  *          style: (undefined|string)}} kwargs The arguments for
  * the specialised math navigationdescription. See arguments of nav

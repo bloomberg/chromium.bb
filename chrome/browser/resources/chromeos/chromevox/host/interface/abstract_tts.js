@@ -194,6 +194,12 @@ cvox.AbstractTts.prototype.mergeProperties = function(properties) {
     mergeRelativeProperty(tts.RATE, tts.RELATIVE_RATE);
   }
 
+  for (p in properties) {
+    if (!mergedProperties.hasOwnProperty(p)) {
+      mergedProperties[p] = properties[p];
+    }
+  }
+
   return mergedProperties;
 };
 
@@ -425,6 +431,14 @@ cvox.AbstractTts.QUEUE_MODE_FLUSH = 0;
  * @type {number}
  */
 cvox.AbstractTts.QUEUE_MODE_QUEUE = 1;
+
+
+/**
+ * Speech queue mode that flushes all utterances of the same category
+ * (as set by properties['category']).
+ * @type {number}
+ */
+cvox.AbstractTts.QUEUE_MODE_CATEGORY_FLUSH = 2;
 
 
 /**

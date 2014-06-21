@@ -98,6 +98,13 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, AddBookmark) {
 
   SendKeyPress(ui::VKEY_RETURN);
 
+  EXPECT_TRUE(MatchPattern(monitor.GetNextUtterance(), "*oolbar*"));
+  // Wait for active window change to be announced to avoid interference from
+  // that below.
+  while (monitor.GetNextUtterance() != "window about blank tab") {
+    // Do nothing.
+  }
+
   // Focus bookmarks bar and listen for "foo".
   chrome::ExecuteCommand(browser(), IDC_FOCUS_BOOKMARKS);
   while (true) {

@@ -638,13 +638,25 @@ cvox.NavigationManager.prototype.ensureNotSubnavigating = function() {
  * @param {number} initialQueueMode The initial queue mode.
  * @param {Function} completionFunction Function to call when finished speaking.
  * @param {Object=} opt_personality Optional personality for all descriptions.
+ * @param {string=} opt_category Optional category for all descriptions.
  */
 cvox.NavigationManager.prototype.speakDescriptionArray = function(
-    descriptionArray, initialQueueMode, completionFunction, opt_personality) {
+    descriptionArray,
+    initialQueueMode,
+    completionFunction,
+    opt_personality,
+    opt_category) {
   if (opt_personality) {
     descriptionArray.every(function(desc) {
       if (!desc.personality) {
         desc.personality = opt_personality;
+      }
+    });
+  }
+  if (opt_category) {
+    descriptionArray.every(function(desc) {
+      if (!desc.category) {
+        desc.category = opt_category;
       }
     });
   }
@@ -722,7 +734,11 @@ cvox.NavigationManager.prototype.finishNavCommand = function(
         opt_prefix, queueMode, cvox.AbstractTts.PERSONALITY_ANNOTATION);
     queueMode = cvox.AbstractTts.QUEUE_MODE_QUEUE;
   }
-  this.speakDescriptionArray(descriptionArray, queueMode, opt_callback || null);
+  this.speakDescriptionArray(descriptionArray,
+                             queueMode,
+                             opt_callback || null,
+                             null,
+                             'nav');
 
   this.getBraille().write();
 

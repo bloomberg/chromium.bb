@@ -77,7 +77,6 @@ cvox.BrailleUtil.TEMPLATE = {
  * Attached to the value region of a braille spannable.
  * @param {number} offset The offset of the span into the value.
  * @constructor
- * @struct
  */
 cvox.BrailleUtil.ValueSpan = function(offset) {
   /**
@@ -91,7 +90,7 @@ cvox.BrailleUtil.ValueSpan = function(offset) {
 /**
  * Creates a value span from a json serializable object.
  * @param {!Object} obj The json serializable object to convert.
- * @return {!cvox.BrailleUtil.ValueSpan}
+ * @return {!cvox.BrailleUtil.ValueSpan} The value span.
  */
 cvox.BrailleUtil.ValueSpan.fromJson = function(obj) {
   return new cvox.BrailleUtil.ValueSpan(obj.offset);
@@ -100,7 +99,7 @@ cvox.BrailleUtil.ValueSpan.fromJson = function(obj) {
 
 /**
  * Converts this object to a json serializable object.
- * @return {!Object}
+ * @return {!Object} The JSON representation.
  */
 cvox.BrailleUtil.ValueSpan.prototype.toJson = function() {
   return this;
@@ -117,7 +116,6 @@ cvox.Spannable.registerSerializableSpan(
 /**
  * Attached to the selected text within a value.
  * @constructor
- * @struct
  */
 cvox.BrailleUtil.ValueSelectionSpan = function() {
 };
@@ -383,10 +381,10 @@ cvox.BrailleUtil.createValue = function(text, opt_selStart, opt_selEnd,
  *                  activated, relative to the start of braille.
  */
 cvox.BrailleUtil.click = function(braille, opt_displayPosition) {
+  var handled = false;
   var spans = braille.text.getSpans(opt_displayPosition || 0);
   var node = spans.filter(function(n) { return n instanceof Node; })[0];
   if (node) {
-    cvox.Focuser.setFocus(node);
     if (goog.isDef(opt_displayPosition) &&
         (cvox.DomUtil.isInputTypeText(node) ||
             node instanceof HTMLTextAreaElement)) {
@@ -395,17 +393,24 @@ cvox.BrailleUtil.click = function(braille, opt_displayPosition) {
             return s instanceof cvox.BrailleUtil.ValueSpan;
           })[0];
       if (valueSpan) {
+        if (document.activeElement !== node) {
+          cvox.Focuser.setFocus(node);
+        }
         var cursorPosition = opt_displayPosition -
             braille.text.getSpanStart(valueSpan) +
             valueSpan.offset;
         cvox.ChromeVoxEventWatcher.setUpTextHandler();
         node.selectionStart = node.selectionEnd = cursorPosition;
         cvox.ChromeVoxEventWatcher.handleTextChanged(true);
+        handled = true;
       }
     }
   }
-  cvox.DomUtil.clickElem(node ||
-      cvox.ChromeVox.navigationManager.getCurrentNode(), false, false);
+  if (!handled) {
+    cvox.DomUtil.clickElem(
+        node || cvox.ChromeVox.navigationManager.getCurrentNode(),
+        false, false, false, true);
+  }
 };
 
 

@@ -36,3 +36,21 @@ chrome.brailleDisplayPrivate.onKeyEvent;
  * @param {ArrayBuffer} cells
  */
 chrome.brailleDisplayPrivate.writeDots = function(cells) {};
+
+/**
+ * @const
+ */
+chrome.virtualKeyboardPrivate = {};
+
+/**
+ * @typedef {{type: string, charValue: number, keyCode: number,
+ *            keyName: string, modifiers: (number|undefined)}}
+ */
+chrome.virtualKeyboardPrivate.VirtualKeyboardEvent;
+
+/**
+ * @param {chrome.virtualKeyboardPrivate.VirtualKeyboardEvent} keyEvent
+ * @param {Function=} opt_callback
+ */
+chrome.virtualKeyboardPrivate.sendKeyEvent =
+    function(keyEvent, opt_callback) {};

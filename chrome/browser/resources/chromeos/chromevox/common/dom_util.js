@@ -1471,9 +1471,12 @@ cvox.DomUtil.isAttachedToDocument = function(targetNode) {
  * @param {boolean} callOnClickDirectly Specifies whether or not to directly
  * invoke the onclick method if there is one.
  * @param {boolean=} opt_double True to issue a double click.
+ * @param {boolean=} opt_handleOwnEvents Whether to handle the generated
+ *     events through the normal event processing.
  */
 cvox.DomUtil.clickElem = function(
-    targetNode, shiftKey, callOnClickDirectly, opt_double) {
+    targetNode, shiftKey, callOnClickDirectly, opt_double,
+    opt_handleOwnEvents) {
   // If there is an activeDescendant of the targetNode, then that is where the
   // click should actually be targeted.
   var activeDescendant = cvox.AriaUtil.getActiveDescendant(targetNode);
@@ -1510,8 +1513,9 @@ cvox.DomUtil.clickElem = function(
   var evtType = opt_double ? 'dblclick' : 'mousedown';
   evt.initMouseEvent(evtType, true, true, document.defaultView,
                      1, 0, 0, 0, 0, false, false, shiftKey, false, 0, null);
-  // Mark any events we generate so we don't try to process our own events.
-  evt.fromCvox = true;
+  // Unless asked not to, Mark any events we generate so we don't try to
+  // process our own events.
+  evt.fromCvox = !opt_handleOwnEvents;
   try {
     targetNode.dispatchEvent(evt);
   } catch (e) {}
@@ -1519,8 +1523,7 @@ cvox.DomUtil.clickElem = function(
   evt = document.createEvent('MouseEvents');
   evt.initMouseEvent('mouseup', true, true, document.defaultView,
                      1, 0, 0, 0, 0, false, false, shiftKey, false, 0, null);
-  // Mark any events we generate so we don't try to process our own events.
-  evt.fromCvox = true;
+  evt.fromCvox = !opt_handleOwnEvents;
   try {
     targetNode.dispatchEvent(evt);
   } catch (e) {}
@@ -1528,8 +1531,7 @@ cvox.DomUtil.clickElem = function(
   evt = document.createEvent('MouseEvents');
   evt.initMouseEvent('click', true, true, document.defaultView,
                      1, 0, 0, 0, 0, false, false, shiftKey, false, 0, null);
-  // Mark any events we generate so we don't try to process our own events.
-  evt.fromCvox = true;
+  evt.fromCvox = !opt_handleOwnEvents;
   try {
     targetNode.dispatchEvent(evt);
   } catch (e) {}

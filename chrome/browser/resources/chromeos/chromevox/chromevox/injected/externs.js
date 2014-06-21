@@ -8,23 +8,6 @@ Node.prototype.role;
 Element.prototype.detachEvent;
 
 /**
- * @param {Function} callback
- * @constructor
- */
-function WebKitMutationObserver(callback) {}
-
-
-/**
- * @param {Node} target
- * @param {Object} params
- */
-WebKitMutationObserver.prototype.observe = function(target, params) {
-};
-
-WebKitMutationObserver.prototype.disconnect = function() {
-};
-
-/**
  * @type {boolean}
  */
 document.webkitHidden;

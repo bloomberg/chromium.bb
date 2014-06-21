@@ -402,6 +402,14 @@ cvox.LiveRegions.announceChange = function(
     return;
   }
 
+  // Set a category on the NavDescriptions - that way live regions
+  // interrupt other live regions but not anything else.
+  navDescriptions.every(function(desc) {
+    if (!desc.category) {
+      desc.category = 'live';
+    }
+  });
+
   handler(assertive, navDescriptions);
 };
 

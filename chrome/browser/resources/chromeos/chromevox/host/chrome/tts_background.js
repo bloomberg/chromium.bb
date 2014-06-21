@@ -16,6 +16,25 @@ goog.require('cvox.ChromeVox');
 goog.require('cvox.MathMap');
 goog.require('goog.i18n.MessageFormat');
 
+
+/**
+ * @constructor
+ * @param {string} textString The string of text to be spoken.
+ * @param {Object} properties Speech properties to use for this utterance.
+ */
+cvox.Utterance = function(textString, properties) {
+  this.textString = textString;
+  this.properties = properties;
+  this.id = cvox.Utterance.nextUtteranceId_++;
+};
+
+/**
+ * The next utterance id to use.
+ * @type {number}
+ * @private
+ */
+cvox.Utterance.nextUtteranceId_ = 1;
+
 /**
  * @constructor
  * @param {boolean=} opt_enableMath Whether to process math. Used when running
@@ -132,8 +151,19 @@ cvox.TtsBackground = function(opt_enableMath) {
    */
   this.capturingTtsEventListeners_ = [];
 
-  /** @type {boolean} @private */
-  this.doNotInterrupt_ = false;
+  /**
+   * The current utterance.
+   * @type {cvox.Utterance}
+   * @private
+   */
+  this.currentUtterance_ = null;
+
+  /**
+   * The utterance queue.
+   * @type {Array.<cvox.Utterance>}
+   * @private
+   */
+  this.utteranceQueue_ = [];
 };
 goog.inherits(cvox.TtsBackground, cvox.ChromeTtsBase);
 
@@ -146,6 +176,26 @@ goog.inherits(cvox.TtsBackground, cvox.ChromeTtsBase);
  * @const
  */
 cvox.TtsBackground.PHONETIC_DELAY_MS_ = 1000;
+
+/**
+ * The list of properties allowed to be passed to the chrome.tts.speak API.
+ * Anything outside this list will be stripped.
+ * @type {Array.<string>}
+ * @private
+ * @const
+ */
+cvox.TtsBackground.ALLOWED_PROPERTIES_ = [
+    'desiredEventTypes',
+    'enqueue',
+    'extensionId',
+    'gender',
+    'lang',
+    'onEvent',
+    'pitch',
+    'rate',
+    'requiredEventTypes',
+    'voiceName',
+    'volume'];
 
 /**
  * Sets the current voice to the one that the user selected on the options page
@@ -174,16 +224,9 @@ cvox.TtsBackground.prototype.speak = function(
   if (!properties) {
     properties = {};
   }
-
-  // Create a snapshot of the callbacks to use since there is a possibility that
-  // we will be overwriting properties[callbacks] in the splitTextString loop
-  // later on. Without the snapshot, if the properties[callbacks] are
-  // overwritten, the callbacks will not be called by 'onEvent' - this then
-  // results in a memory leak as calling the callbacks is what deletes their
-  // associated function in the functionmap on the content script side of
-  // cvox.ChromeTts.
-  var startCallback = properties['startCallback'];
-  var endCallback = properties['endCallback'];
+  if (queueMode === undefined) {
+    queueMode = cvox.AbstractTts.QUEUE_MODE_QUEUE;
+  }
 
   // Chunk to improve responsiveness. Use a replace/split pattern in order to
   // retain the original punctuation.
@@ -193,11 +236,17 @@ cvox.TtsBackground.prototype.speak = function(
   // recurse when there are more than 2 split items. This should result in only
   // one recursive call.
   if (splitTextString.length > 2) {
+    var startCallback = properties['startCallback'];
+    var endCallback = properties['endCallback'];
     for (var i = 0; i < splitTextString.length; i++) {
-      properties['startCallback'] = i == 0 ? startCallback : null;
-      properties['endCallback'] =
+      var propertiesCopy = {};
+      for (var p in properties) {
+        propertiesCopy[p] = properties[p];
+      }
+      propertiesCopy['startCallback'] = i == 0 ? startCallback : null;
+      propertiesCopy['endCallback'] =
           i == (splitTextString.length - 1) ? endCallback : null;
-      this.speak(splitTextString[i], queueMode, properties);
+      this.speak(splitTextString[i], queueMode, propertiesCopy);
       queueMode = cvox.AbstractTts.QUEUE_MODE_QUEUE;
     }
     return this;
@@ -213,11 +262,17 @@ cvox.TtsBackground.prototype.speak = function(
   // this pattern which stops ChromeVox speech.
   if (!textString || !textString.match(/\w+/g)) {
     // We still want to callback for listeners in our content script.
-    if (startCallback) {
-      startCallback();
+    if (properties['startCallback']) {
+      try {
+        properties['startCallback']();
+      } catch (e) {
+      }
     }
-    if (endCallback) {
-      endCallback();
+    if (properties['endCallback']) {
+      try {
+        properties['endCallback']();
+      } catch (e) {
+      }
     }
     if (queueMode === cvox.AbstractTts.QUEUE_MODE_FLUSH) {
       this.stop();
@@ -225,13 +280,7 @@ cvox.TtsBackground.prototype.speak = function(
     return this;
   }
 
-  this.doNotInterrupt_ =
-      goog.isDef(properties['doNotInterrupt']) ? properties['doNotInterrupt'] :
-          this.doNotInterrupt_;
-
   var mergedProperties = this.mergeProperties(properties);
-  mergedProperties['enqueue'] = this.doNotInterrupt_ ||
-      (queueMode === cvox.AbstractTts.QUEUE_MODE_QUEUE);
 
   if (this.currentVoice && (this.currentVoice == localStorage['voiceName'])) {
     mergedProperties['voiceName'] = this.currentVoice;
@@ -241,35 +290,178 @@ cvox.TtsBackground.prototype.speak = function(
     this.setPreferredVoice_();
   }
 
-  mergedProperties['onEvent'] = goog.bind(function(event) {
-    this.lastEventType = event['type'];
+  if (queueMode == cvox.AbstractTts.QUEUE_MODE_CATEGORY_FLUSH &&
+      !mergedProperties['category']) {
+    queueMode = cvox.AbstractTts.QUEUE_MODE_FLUSH;
+  }
 
-    switch (event.type) {
-      case 'start':
-        this.capturingTtsEventListeners_.forEach(function(listener) {
-          listener.onTtsStart();
-        });
-        if (startCallback) {
-          startCallback();
-        }
-        break;
-      case 'end':
-        this.capturingTtsEventListeners_.forEach(function(listener) {
-          listener.onTtsEnd();
-        });
-      // Intentionally falls through.
-      case 'interrupted':
-        if (endCallback) {
-          endCallback();
-        }
-        this.doNotInterrupt_ = false;
-        break;
-      case 'error':
-        this.onError_(event['errorMessage']);
-        break;
+  var utterance = new cvox.Utterance(textString, mergedProperties);
+  this.speakUsingQueue_(utterance, queueMode);
+};
+
+/**
+ * Use the speech queue to handle the given speech request.
+ * @param {cvox.Utterance} utterance The utterance to speak.
+ * @param {number} queueMode The queue mode.
+ * @private
+ */
+cvox.TtsBackground.prototype.speakUsingQueue_ = function(utterance, queueMode) {
+  // First, take care of removing the current utterance and flushing
+  // anything from the queue we need to. If we remove the current utterance,
+  // make a note that we're going to stop speech.
+  if (queueMode == cvox.AbstractTts.QUEUE_MODE_FLUSH ||
+      queueMode == cvox.AbstractTts.QUEUE_MODE_CATEGORY_FLUSH) {
+    if (this.shouldCancel_(this.currentUtterance_, utterance, queueMode)) {
+      this.cancelUtterance_(this.currentUtterance_);
+      this.currentUtterance_ = null;
     }
+    var i = 0;
+    while (i < this.utteranceQueue_.length) {
+      if (this.shouldCancel_(
+              this.utteranceQueue_[i], utterance, queueMode)) {
+        this.cancelUtterance_(this.utteranceQueue_[i]);
+        this.utteranceQueue_.splice(i, 1);
+      } else {
+        i++;
+      }
+    }
+  }
+
+  // Next, add the new utterance to the queue.
+  this.utteranceQueue_.push(utterance);
+
+  // Now start speaking the next item in the queue.
+  this.startSpeakingNextItemInQueue_();
+};
+
+/**
+ * If nothing is speaking, pop the first item off the speech queue and
+ * start speaking it. This is called when a speech request is made and
+ * when the current utterance finishes speaking.
+ * @private
+ */
+cvox.TtsBackground.prototype.startSpeakingNextItemInQueue_ = function() {
+  if (this.currentUtterance_) {
+    return;
+  }
+
+  if (this.utteranceQueue_.length == 0) {
+    return;
+  }
+
+  this.currentUtterance_ = this.utteranceQueue_.shift();
+  var utteranceId = this.currentUtterance_.id;
+
+  this.currentUtterance_.properties['onEvent'] = goog.bind(function(event) {
+    this.onTtsEvent_(event, utteranceId);
   }, this);
-  chrome.tts.speak(textString, mergedProperties);
+
+  var validatedProperties = {};
+  for (var i = 0; i < cvox.TtsBackground.ALLOWED_PROPERTIES_.length; i++) {
+    var p = cvox.TtsBackground.ALLOWED_PROPERTIES_[i];
+    if (this.currentUtterance_.properties[p]) {
+      validatedProperties[p] = this.currentUtterance_.properties[p];
+    }
+  }
+
+  chrome.tts.speak(this.currentUtterance_.textString,
+                   validatedProperties);
+};
+
+/**
+ * Called when we get a speech event from Chrome. We ignore any event
+ * that doesn't pertain to the current utterance, but when speech starts
+ * or ends we optionally call callback functions, and start speaking the
+ * next utterance if there's another one enqueued.
+ * @param {Object} event The TTS event from chrome.
+ * @param {number} utteranceId The id of the associated utterance.
+ * @private
+ */
+cvox.TtsBackground.prototype.onTtsEvent_ = function(event, utteranceId) {
+  this.lastEventType = event['type'];
+
+  // Ignore events sent on utterances other than the current one.
+  if (!this.currentUtterance_ ||
+      utteranceId != this.currentUtterance_.id) {
+    return;
+  }
+
+  var utterance = this.currentUtterance_;
+
+  switch (event.type) {
+    case 'start':
+      this.capturingTtsEventListeners_.forEach(function(listener) {
+        listener.onTtsStart();
+      });
+      if (utterance.properties['startCallback']) {
+        try {
+          utterance.properties['startCallback']();
+        } catch (e) {
+        }
+      }
+      break;
+    case 'end':
+      this.capturingTtsEventListeners_.forEach(function(listener) {
+        listener.onTtsEnd();
+      });
+    // Intentionally falls through.
+    case 'interrupted':
+      this.cancelUtterance_(utterance);
+      this.currentUtterance_ = null;
+      this.startSpeakingNextItemInQueue_();
+      break;
+    case 'error':
+      this.onError_(event['errorMessage']);
+      this.startSpeakingNextItemInQueue_();
+      break;
+  }
+};
+
+/**
+ * Determines if |utteranceToCancel| should be canceled (interrupted if
+ * currently speaking, or removed from the queue if not), given the new
+ * utterance we want to speak and the queue mode. If the queue mode is
+ * QUEUE or FLUSH, the logic is straightforward. If the queue mode is
+ * CATEGORY_FLUSH, we only flush utterances with the same category.
+ *
+ * @param {cvox.Utterance} utteranceToCancel The utterance in question.
+ * @param {cvox.Utterance} newUtterance The new utterance we're enqueueing.
+ * @param {number} queueMode The queue mode.
+ * @return {boolean} True if this utterance should be canceled.
+ * @private
+ */
+cvox.TtsBackground.prototype.shouldCancel_ =
+    function(utteranceToCancel, newUtterance, queueMode) {
+  if (!utteranceToCancel) {
+    return false;
+  }
+  if (utteranceToCancel.properties['doNotInterrupt']) {
+    return false;
+  }
+  switch (queueMode) {
+    case cvox.AbstractTts.QUEUE_MODE_QUEUE:
+      return false;
+    case cvox.AbstractTts.QUEUE_MODE_FLUSH:
+      return true;
+    case cvox.AbstractTts.QUEUE_MODE_CATEGORY_FLUSH:
+      return (utteranceToCancel.properties['category'] ==
+          newUtterance.properties['category']);
+  }
+};
+
+/**
+ * Do any cleanup necessary to cancel an utterance, like callings its
+ * callback function if any.
+ * @param {cvox.Utterance} utterance The utterance to cancel.
+ * @private
+ */
+cvox.TtsBackground.prototype.cancelUtterance_ = function(utterance) {
+  if (utterance && utterance.properties['endCallback']) {
+    try {
+      utterance.properties['endCallback']();
+    } catch (e) {
+    }
+  }
 };
 
 /** @override */
@@ -288,6 +480,15 @@ cvox.TtsBackground.prototype.isSpeaking = function() {
 /** @override */
 cvox.TtsBackground.prototype.stop = function() {
   goog.base(this, 'stop');
+
+  this.cancelUtterance_(this.currentUtterance_);
+  this.currentUtterance_ = null;
+
+  for (var i = 0; i < this.utteranceQueue_.length; i++) {
+    this.cancelUtterance_(this.utteranceQueue_[i]);
+  }
+  this.utteranceQueue_.length = 0;
+
   chrome.tts.stop();
 };
 
@@ -308,6 +509,7 @@ cvox.TtsBackground.prototype.onError_ = function(errorMessage) {
 
 /**
  * Converts an engine property value to a percentage from 0.00 to 1.00.
+ * @param {string} property The property to convert.
  * @return {?number} The percentage of the property.
  */
 cvox.TtsBackground.prototype.propertyToPercentage = function(property) {
