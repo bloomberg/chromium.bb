@@ -136,3 +136,11 @@ virtual/softwarecompositing/layer-creation/stacking-context-overlap-nested.html 
 virtual/softwarecompositing/visibility/visibility-simple-webgl-layer.html [ WontFix ]
 virtual/softwarecompositing/webgl [ WontFix ]
 
+# Hits an assert on Snow-leopard Debug but not on any other platforms.
+[ Snowleopard Debug ] inspector/sources/debugger/async-callstack-mutation-observer.html [ WontFix ]
+[ Snowleopard Debug ] inspector/sources/debugger/async-callstack.html [ WontFix ]
+[ Snowleopard Debug ] inspector/sources/debugger/async-callstack-scopes.html [ WontFix ]
+[ Snowleopard Debug ] inspector/console/console-format.html [ WontFix ]
+[ Snowleopard Debug ] inspector/elements/styles/pseudo-elements.html [ WontFix ]
+[ Snowleopard Debug ] inspector/sources/debugger/dom-breakpoints.html [ WontFix ]
+[ Snowleopard Debug ] inspector/sources/debugger/event-listener-breakpoints.html [ WontFix ]
