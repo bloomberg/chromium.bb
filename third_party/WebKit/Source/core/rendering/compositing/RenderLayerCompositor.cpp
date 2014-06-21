@@ -231,7 +231,6 @@ void RenderLayerCompositor::didLayout()
     // track which RenderLayers moved during layout and only dirty those
     // specific RenderLayers.
     rootRenderLayer()->setNeedsCompositingInputsUpdate();
-    setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 }
 
 #if ASSERT_ENABLED

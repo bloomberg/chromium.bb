@@ -1138,6 +1138,8 @@ void RenderLayer::setNeedsCompositingInputsUpdate()
 
     for (RenderLayer* current = this; current && !current->m_childNeedsCompositingInputsUpdate; current = current->parent())
         current->m_childNeedsCompositingInputsUpdate = true;
+
+    compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 }
 
 void RenderLayer::updateCompositingInputs(const CompositingInputs& compositingInputs)
@@ -1369,6 +1371,8 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
     child->m_parent = this;
 
     setNeedsCompositingInputsUpdate();
+
+    // FIXME: Why do we need to explicitly set CompositingUpdateRebuildTree?
     compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 
     if (child->stackingNode()->isNormalFlowOnly())
@@ -3142,7 +3146,6 @@ RenderLayer* RenderLayer::hitTestChildLayerColumns(RenderLayer* childLayer, Rend
 void RenderLayer::blockSelectionGapsBoundsChanged()
 {
     setNeedsCompositingInputsUpdate();
-    compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 }
 
 void RenderLayer::addBlockSelectionGapsBounds(const LayoutRect& bounds)

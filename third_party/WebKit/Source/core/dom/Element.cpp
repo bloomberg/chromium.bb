@@ -1699,7 +1699,6 @@ void Element::setNeedsCompositingUpdate()
     if (!renderer->hasLayer())
         return;
     renderer->layer()->setNeedsCompositingInputsUpdate();
-    document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 }
 
 void Element::setCustomElementDefinition(PassRefPtr<CustomElementDefinition> definition)

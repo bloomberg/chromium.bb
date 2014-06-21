@@ -1435,7 +1435,6 @@ void RenderLayerScrollableArea::updateCompositingLayersAfterScroll()
             compositor->setNeedsCompositingUpdate(CompositingUpdateAfterGeometryChange);
         } else {
             layer()->setNeedsCompositingInputsUpdate();
-            compositor->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
         }
     }
 }

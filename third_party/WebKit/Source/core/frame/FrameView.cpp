@@ -1678,7 +1678,6 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded()
         if (RenderView* renderView = this->renderView()) {
             renderView->layer()->updateLayerPositionsAfterDocumentScroll();
             renderView->layer()->setNeedsCompositingInputsUpdate();
-            renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
         }
     }
 }
