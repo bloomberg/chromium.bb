@@ -37,10 +37,10 @@ namespace blink {
 
 struct WebTimeRange {
     WebTimeRange() : start(0), end(0) { }
-    WebTimeRange(float s, float e) : start(s), end(e) { }
+    WebTimeRange(double s, double e) : start(s), end(e) { }
 
-    float start;
-    float end;
+    double start;
+    double end;
 };
 
 typedef WebVector<WebTimeRange> WebTimeRanges;
