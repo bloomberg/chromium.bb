@@ -10,8 +10,8 @@
 namespace switches {
 
 bool IsTextInputFocusManagerEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTextInputFocusManager);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTextInputFocusManager);
 }
 
 bool IsTouchDragDropEnabled() {
