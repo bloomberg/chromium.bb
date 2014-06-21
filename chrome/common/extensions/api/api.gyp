@@ -220,7 +220,7 @@
         'root_namespace': 'extensions::api',
       },
       'dependencies': [
-        # Different APIs include some headers crom chrome/common that in turn
+        # Different APIs include some headers from chrome/common that in turn
         # include generated headers from these targets.
         # TODO(brettw) this should be made unnecessary if possible.
         '<(DEPTH)/components/components.gyp:component_metrics_proto',
