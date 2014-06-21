@@ -54,6 +54,12 @@ function setupEvents() {
     $('error-code').classList.remove('hidden');
   }
 
+  if (ssl && $('clock-link')) {
+    $('clock-link').addEventListener('click', function(event) {
+      sendCommand(CMD_CLOCK);
+    });
+  }
+
   $('details-button').addEventListener('click', function(event) {
     var hiddenDetails = $('details').classList.toggle('hidden');
     $('details-button').innerText = hiddenDetails ?

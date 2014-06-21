@@ -39,11 +39,12 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
   // are defined in chrome/browser/resources/ssl/ssl_errors_common.js.
   // DO NOT reorder or change these without also changing the JavaScript!
   enum SSLBlockingPageCommands {
-   CMD_DONT_PROCEED = 0,
-   CMD_PROCEED = 1,
-   CMD_MORE = 2,
-   CMD_RELOAD = 3,
-   CMD_HELP = 4
+    CMD_DONT_PROCEED = 0,
+    CMD_PROCEED = 1,
+    CMD_MORE = 2,
+    CMD_RELOAD = 3,
+    CMD_HELP = 4,
+    CMD_CLOCK = 5
   };
 
   SSLBlockingPage(

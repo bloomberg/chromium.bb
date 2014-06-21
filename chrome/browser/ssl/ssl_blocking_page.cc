@@ -4,14 +4,17 @@
 
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 
+#include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/i18n/time_formatting.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -31,6 +34,7 @@
 #include "content/public/common/ssl_status.h"
 #include "grit/app_locale_settings.h"
 #include "grit/browser_resources.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_errors.h"
@@ -174,6 +178,45 @@ void RecordSSLBlockingPageDetailedStats(
       break;
     }
   }
+}
+
+// Events for UMA. Do not reorder or change!
+enum SSLInterstitialCause {
+  CLOCK_PAST,
+  CLOCK_FUTURE,
+  UNUSED_INTERSTITIAL_CAUSE_ENTRY,
+};
+
+void RecordSSLInterstitialCause(bool overridable, SSLInterstitialCause event) {
+  if (overridable) {
+    UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.cause.overridable",
+                              event,
+                              UNUSED_INTERSTITIAL_CAUSE_ENTRY);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.cause.nonoverridable",
+                              event,
+                              UNUSED_INTERSTITIAL_CAUSE_ENTRY);
+  }
+}
+
+// The cause of most clock errors (CMOS battery causing clock reset) will
+// fall backwards, not forwards. IsErrorProbablyCausedByClock therefore only
+// returns true for clocks set early, and histograms clocks set far into the
+// future to see if there are more future-clocks than expected.
+bool IsErrorProbablyCausedByClock(bool overridable, int cert_info) {
+  if (SSLErrorInfo::NetErrorToErrorType(cert_info) !=
+      SSLErrorInfo::CERT_DATE_INVALID) {
+    return false;
+  }
+  const base::Time current_time = base::Time::NowFromSystemTime();
+  const base::Time build_time = base::GetBuildTime();
+  if (current_time < build_time - base::TimeDelta::FromDays(2)) {
+    RecordSSLInterstitialCause(overridable, CLOCK_PAST);
+    return true;
+  }
+  if (current_time > build_time + base::TimeDelta::FromDays(365))
+    RecordSSLInterstitialCause(overridable, CLOCK_FUTURE);
+  return false;
 }
 
 }  // namespace
@@ -421,9 +464,18 @@ std::string SSLBlockingPage::GetHTMLContentsV2() {
       "tabTitle", l10n_util::GetStringUTF16(IDS_SSL_V2_TITLE));
   load_time_data.SetString(
       "heading", l10n_util::GetStringUTF16(IDS_SSL_V2_HEADING));
-  load_time_data.SetString(
-      "primaryParagraph",
-      l10n_util::GetStringFUTF16(IDS_SSL_V2_PRIMARY_PARAGRAPH, url));
+  if (IsErrorProbablyCausedByClock(
+          overridable_ && !strict_enforcement_, cert_error_)) {
+    load_time_data.SetString("primaryParagraph",
+                             l10n_util::GetStringFUTF16(
+                                 IDS_SSL_CLOCK_ERROR,
+                                 url,
+                                 base::TimeFormatShortDate(base::Time::Now())));
+  } else {
+    load_time_data.SetString(
+        "primaryParagraph",
+        l10n_util::GetStringFUTF16(IDS_SSL_V2_PRIMARY_PARAGRAPH, url));
+  }
   load_time_data.SetString(
      "openDetails",
      l10n_util::GetStringUTF16(IDS_SSL_V2_OPEN_DETAILS_BUTTON));
@@ -524,10 +576,14 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
       break;
     }
     case CMD_HELP: {
-      // The interstitial can't open a popup or navigate itself.
-      // TODO(felt): We're going to need a new help page.
       content::NavigationController::LoadURLParams help_page_params(GURL(
           "https://support.google.com/chrome/answer/4454607"));
+      web_contents_->GetController().LoadURLWithParams(help_page_params);
+      break;
+    }
+    case CMD_CLOCK: {
+      content::NavigationController::LoadURLParams help_page_params(GURL(
+          "https://support.google.com/chrome/?p=ui_system_clock"));
       web_contents_->GetController().LoadURLWithParams(help_page_params);
       break;
     }

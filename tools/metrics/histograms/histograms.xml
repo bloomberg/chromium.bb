@@ -9170,6 +9170,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="interstitial.ssl.cause.nonoverridable"
+    enum="SSLNonAttackCauses">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    Possible non-attack causes of the non-overridable SSL interstitial.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.ssl.cause.overridable" enum="SSLNonAttackCauses">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    Possible non-attack causes of the overridable SSL interstitial.
+  </summary>
+</histogram>
+
 <histogram name="interstitial.ssl_accept_time" units="milliseconds">
   <obsolete>
     Removed on 8/1/13.
@@ -44774,6 +44789,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="7" label="CERT_WEAK_SIGNATURE_ALGORITHM"/>
   <int value="8" label="CERT_WEAK_KEY"/>
   <int value="9" label="UNKNOWN"/>
+</enum>
+
+<enum name="SSLNonAttackCauses" type="int">
+  <int value="0" label="CLOCK_PAST: System clock set early"/>
+  <int value="1" label="CLOCK_FUTURE: System clock set late"/>
 </enum>
 
 <enum name="SSLResponseTypesV2" type="int">
