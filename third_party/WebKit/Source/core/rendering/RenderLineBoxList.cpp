@@ -292,7 +292,11 @@ void RenderLineBoxList::dirtyLinesFromChangedChild(RenderObject* container, Rend
     // parent's first line box.
     RootInlineBox* box = 0;
     RenderObject* curr = 0;
+    ListHashSet<RenderObject*, 16> potentialLineBreakObjects;
+    potentialLineBreakObjects.add(child);
     for (curr = child->previousSibling(); curr; curr = curr->previousSibling()) {
+        potentialLineBreakObjects.add(curr);
+
         if (curr->isFloatingOrOutOfFlowPositioned())
             continue;
 
@@ -345,14 +349,10 @@ void RenderLineBoxList::dirtyLinesFromChangedChild(RenderObject* container, Rend
         if (adjacentBox)
             adjacentBox->markDirty();
         adjacentBox = box->nextRootBox();
-        // If |child| has been inserted before the first element in the linebox, but after collapsed leading
-        // space, the search for |child|'s linebox will go past the leading space to the previous linebox and select that
-        // one as |box|. If we hit that situation here, dirty the |box| actually containing the child too.
-        bool insertedAfterLeadingSpace = box->lineBreakObj() == child->previousSibling();
-        if (adjacentBox && (adjacentBox->lineBreakObj() == child || child->isBR() || (curr && curr->isBR())
-            || insertedAfterLeadingSpace || isIsolated(container->style()->unicodeBidi()))) {
+        // If |child| or any of its immediately previous siblings with culled lineboxes is the object after a line-break in |box| or the linebox after it
+        // then that means |child| actually sits on the linebox after |box| (or is its line-break object) and so we need to dirty it as well.
+        if (adjacentBox && (potentialLineBreakObjects.contains(box->lineBreakObj()) || potentialLineBreakObjects.contains(adjacentBox->lineBreakObj()) || child->isBR() || isIsolated(container->style()->unicodeBidi())))
             adjacentBox->markDirty();
-        }
     }
 }
 
