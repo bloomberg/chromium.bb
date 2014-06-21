@@ -355,7 +355,7 @@
             '../third_party/mach_override/mach_override.gyp:mach_override',
           ],
         }],
-        ['enable_printing==1', {
+        ['enable_printing!=0', {
           'sources': [
             '<@(chrome_renderer_printing_sources)',
           ]
