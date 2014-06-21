@@ -26,6 +26,7 @@ namespace {
 const char kErrorAdapterNotInitialized[] =
     "Could not initialize Bluetooth adapter";
 const char kErrorAlreadyConnected[] = "Already connected";
+const char kErrorInProgress[] = "In progress";
 const char kErrorNotConnected[] = "Not connected";
 const char kErrorNotFound[] = "Instance not found";
 const char kErrorOperationFailed[] = "Operation failed";
@@ -46,6 +47,8 @@ std::string StatusToString(BluetoothLowEnergyEventRouter::Status status) {
       return kErrorAlreadyConnected;
     case BluetoothLowEnergyEventRouter::kStatusErrorNotConnected:
       return kErrorNotConnected;
+    case BluetoothLowEnergyEventRouter::kStatusErrorInProgress:
+      return kErrorInProgress;
     case BluetoothLowEnergyEventRouter::kStatusSuccess:
       NOTREACHED();
       break;

@@ -222,12 +222,14 @@ void BluetoothLowEnergyEventRouter::Connect(
     return;
   }
 
-  if (connecting_devices_.count(device_address) != 0) {
+  const std::string extension_id = extension->id();
+  const std::string connect_id = extension_id + device_address;
+
+  if (connecting_devices_.count(connect_id) != 0) {
     error_callback.Run(kStatusErrorInProgress);
     return;
   }
 
-  const std::string extension_id = extension->id();
   BluetoothLowEnergyConnection* conn =
       FindConnection(extension_id, device_address);
   if (conn) {
@@ -248,7 +250,7 @@ void BluetoothLowEnergyEventRouter::Connect(
     return;
   }
 
-  connecting_devices_.insert(device_address);
+  connecting_devices_.insert(connect_id);
   device->CreateGattConnection(
       base::Bind(&BluetoothLowEnergyEventRouter::OnCreateGattConnection,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -258,6 +260,7 @@ void BluetoothLowEnergyEventRouter::Connect(
                  callback),
       base::Bind(&BluetoothLowEnergyEventRouter::OnConnectError,
                  weak_ptr_factory_.GetWeakPtr(),
+                 extension_id,
                  device_address,
                  error_callback));
 }
@@ -274,12 +277,14 @@ void BluetoothLowEnergyEventRouter::Disconnect(
     return;
   }
 
-  if (disconnecting_devices_.count(device_address) != 0) {
+  const std::string extension_id = extension->id();
+  const std::string disconnect_id = extension_id + device_address;
+
+  if (disconnecting_devices_.count(disconnect_id) != 0) {
     error_callback.Run(kStatusErrorInProgress);
     return;
   }
 
-  const std::string& extension_id = extension->id();
   BluetoothLowEnergyConnection* conn =
       FindConnection(extension_id, device_address);
   if (!conn || !conn->GetConnection()->IsConnected()) {
@@ -288,7 +293,7 @@ void BluetoothLowEnergyEventRouter::Disconnect(
     return;
   }
 
-  disconnecting_devices_.insert(device_address);
+  disconnecting_devices_.insert(disconnect_id);
   conn->GetConnection()->Disconnect(
       base::Bind(&BluetoothLowEnergyEventRouter::OnDisconnect,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -1124,7 +1129,9 @@ void BluetoothLowEnergyEventRouter::OnCreateGattConnection(
   DCHECK(connection.get());
   DCHECK(!FindConnection(extension_id, device_address));
   DCHECK_EQ(device_address, connection->GetDeviceAddress());
-  DCHECK_NE(0U, connecting_devices_.count(device_address));
+
+  const std::string connect_id = extension_id + device_address;
+  DCHECK_NE(0U, connecting_devices_.count(connect_id));
 
   BluetoothLowEnergyConnection* conn = new BluetoothLowEnergyConnection(
       persistent, extension_id, connection.Pass());
@@ -1132,7 +1139,7 @@ void BluetoothLowEnergyEventRouter::OnCreateGattConnection(
       GetConnectionResourceManager(browser_context_);
   manager->Add(conn);
 
-  connecting_devices_.erase(device_address);
+  connecting_devices_.erase(connect_id);
   callback.Run();
 }
 
@@ -1141,13 +1148,16 @@ void BluetoothLowEnergyEventRouter::OnDisconnect(
     const std::string& device_address,
     const base::Closure& callback) {
   VLOG(2) << "GATT connection terminated.";
-  DCHECK_NE(0U, disconnecting_devices_.count(device_address));
+
+  const std::string disconnect_id = extension_id + device_address;
+  DCHECK_NE(0U, disconnecting_devices_.count(disconnect_id));
+
   if (!RemoveConnection(extension_id, device_address)) {
     VLOG(1) << "The connection was removed before disconnect completed, id: "
             << extension_id << ", device: " << device_address;
   }
 
-  disconnecting_devices_.erase(device_address);
+  disconnecting_devices_.erase(disconnect_id);
   callback.Run();
 }
 
@@ -1158,13 +1168,16 @@ void BluetoothLowEnergyEventRouter::OnError(
 }
 
 void BluetoothLowEnergyEventRouter::OnConnectError(
+    const std::string& extension_id,
     const std::string& device_address,
     const ErrorCallback& error_callback,
     BluetoothDevice::ConnectErrorCode error_code) {
   VLOG(2) << "Failed to create GATT connection: " << error_code;
-  DCHECK_NE(0U, connecting_devices_.count(device_address));
 
-  connecting_devices_.erase(device_address);
+  const std::string connect_id = extension_id + device_address;
+  DCHECK_NE(0U, connecting_devices_.count(connect_id));
+
+  connecting_devices_.erase(connect_id);
   error_callback.Run(kStatusErrorFailed);
 }
 

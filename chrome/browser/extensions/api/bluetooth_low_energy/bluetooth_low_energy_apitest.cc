@@ -1117,4 +1117,44 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReconnectAfterDisconnected) {
   event_router()->DeviceRemoved(mock_adapter_, device0_.get());
 }
 
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ConnectInProgress) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  event_router()->DeviceAdded(mock_adapter_, device0_.get());
+
+  EXPECT_CALL(*mock_adapter_, GetDevice(kTestLeDeviceAddress0))
+      .WillRepeatedly(Return(device0_.get()));
+
+  BluetoothDevice::GattConnectionCallback connect_callback;
+  base::Closure disconnect_callback;
+
+  testing::NiceMock<MockBluetoothGattConnection>* conn =
+      new testing::NiceMock<MockBluetoothGattConnection>(
+          kTestLeDeviceAddress0);
+  scoped_ptr<BluetoothGattConnection> conn_ptr(conn);
+  EXPECT_CALL(*conn, Disconnect(_))
+      .Times(1)
+      .WillOnce(SaveArg<0>(&disconnect_callback));
+
+  EXPECT_CALL(*device0_, CreateGattConnection(_, _))
+      .Times(1)
+      .WillOnce(SaveArg<0>(&connect_callback));
+
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "bluetooth_low_energy/connect_in_progress")));
+
+  listener.WaitUntilSatisfied();
+  connect_callback.Run(conn_ptr.Pass());
+
+  listener.Reset();
+  listener.WaitUntilSatisfied();
+  disconnect_callback.Run();
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+}
+
 }  // namespace

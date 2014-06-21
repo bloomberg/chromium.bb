@@ -293,7 +293,8 @@ class BluetoothLowEnergyEventRouter
   void OnError(const ErrorCallback& error_callback);
 
   // Called by BluetoothDevice in response to a call to CreateGattConnection.
-  void OnConnectError(const std::string& device_address,
+  void OnConnectError(const std::string& extension_id,
+                      const std::string& device_address,
                       const ErrorCallback& error_callback,
                       device::BluetoothDevice::ConnectErrorCode error_code);
 
@@ -337,7 +338,8 @@ class BluetoothLowEnergyEventRouter
   // Bluetooth adapter of the system.
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
-  // Set of device addresses to which a connect/disconnect is currently pending.
+  // Set of extension ID + device addresses to which a connect/disconnect is
+  // currently pending.
   std::set<std::string> connecting_devices_;
   std::set<std::string> disconnecting_devices_;
 
