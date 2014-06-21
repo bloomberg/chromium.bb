@@ -234,7 +234,7 @@ void ShellDesktopController::CreateRootWindow() {
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
   // TODO(mukai): Set up input method.
 
-  host_.reset(aura::WindowTreeHost::Create(gfx::Rect(size)));
+  host_.reset(test_screen_->CreateHostForPrimaryDisplay());
   host_->InitHost();
   aura::client::SetWindowTreeClient(host_->window(), this);
   root_window_event_filter_.reset(new wm::CompoundEventFilter);
