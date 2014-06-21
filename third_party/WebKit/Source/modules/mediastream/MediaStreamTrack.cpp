@@ -29,6 +29,7 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/events/Event.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
 #include "modules/mediastream/MediaStreamTrackSourcesRequestImpl.h"

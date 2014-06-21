@@ -34,6 +34,7 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
+#include "core/events/Event.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReader.h"

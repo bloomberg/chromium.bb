@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "core/testing/NullExecutionContext.h"
+
+#include "core/events/Event.h"
 
 namespace WebCore {
 

@@ -27,6 +27,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/events/Event.h"
 #include "core/events/EventSender.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"

@@ -30,6 +30,7 @@
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/XLinkNames.h"
 #include "core/dom/Document.h"
+#include "core/events/Event.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventSender.h"
 #include "core/svg/SVGDocumentExtensions.h"

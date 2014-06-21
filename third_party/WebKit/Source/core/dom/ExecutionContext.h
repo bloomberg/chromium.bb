@@ -32,7 +32,6 @@
 #include "core/dom/ExecutionContextClient.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/dom/SecurityContext.h"
-#include "core/events/ErrorEvent.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/frame/DOMTimer.h"
@@ -52,6 +51,7 @@ namespace WebCore {
 
 class ContextLifecycleNotifier;
 class LocalDOMWindow;
+class ErrorEvent;
 class EventListener;
 class EventQueue;
 class EventTarget;

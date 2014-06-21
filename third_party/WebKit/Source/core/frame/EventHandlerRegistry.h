@@ -5,11 +5,13 @@
 #ifndef EventHandlerRegistry_h
 #define EventHandlerRegistry_h
 
-#include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
 #include "wtf/HashCountedSet.h"
 
 namespace WebCore {
+
+class Document;
+class EventTarget;
 
 typedef HashCountedSet<EventTarget*> EventTargetSet;
 

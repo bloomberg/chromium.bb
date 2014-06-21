@@ -30,6 +30,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/events/Event.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/frame/FrameView.h"
 #include "core/rendering/RenderBlock.h"

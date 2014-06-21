@@ -34,6 +34,7 @@
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/Document.h"
+#include "core/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
 #include "modules/notifications/NotificationClient.h"

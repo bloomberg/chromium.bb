@@ -6,6 +6,7 @@
 #include "core/frame/DeviceSingleWindowEventController.h"
 
 #include "core/dom/Document.h"
+#include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/page/Page.h"
 

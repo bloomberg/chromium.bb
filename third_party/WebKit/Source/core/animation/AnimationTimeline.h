@@ -34,7 +34,6 @@
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationPlayer.h"
 #include "core/dom/Element.h"
-#include "core/events/Event.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"

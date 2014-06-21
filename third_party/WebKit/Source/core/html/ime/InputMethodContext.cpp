@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
 #include "core/editing/InputMethodController.h"
+#include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
 
 namespace WebCore {

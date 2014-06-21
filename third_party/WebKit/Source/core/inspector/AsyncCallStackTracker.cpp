@@ -34,6 +34,7 @@
 #include "bindings/v8/V8RecursionScope.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/events/Event.h"
 #include "core/events/EventTarget.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "core/xml/XMLHttpRequestUpload.h"

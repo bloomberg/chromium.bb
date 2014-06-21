@@ -31,6 +31,7 @@
 #include "core/dom/AddConsoleMessageTask.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/events/ErrorEvent.h"
 #include "core/events/EventTarget.h"
 #include "core/html/PublicURLManager.h"
 #include "core/inspector/InspectorInstrumentation.h"
