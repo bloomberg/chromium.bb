@@ -10,31 +10,17 @@
 var CORRUPT_sign = false;
 
 /**
- * @param {!GnubbyFactory} factory Factory for gnubby instances
- * @param {Countdown} timer Timer after whose expiration the caller is no longer
- *     interested in the result of a sign request.
- * @param {function(number, boolean)} errorCb Called when a sign request fails
- *     with an error code and whether any gnubbies were found.
- * @param {function(SignHelperChallenge, string, string=)} successCb Called with
- *     the signature produced by a successful sign request.
- * @param {string=} opt_logMsgUrl A URL to post log messages to.
+ * @param {!GnubbyFactory} gnubbyFactory Factory for gnubby instances
+ * @param {!CountdownFactory} timerFactory A factory to create timers.
  * @constructor
  * @implements {SignHelper}
  */
-function UsbSignHelper(factory, timer, errorCb, successCb, opt_logMsgUrl) {
+function UsbSignHelper(gnubbyFactory, timerFactory) {
   /** @private {!GnubbyFactory} */
-  this.factory_ = factory;
-  /** @private {Countdown} */
-  this.timer_ = timer;
-  /** @private {function(number, boolean)} */
-  this.errorCb_ = errorCb;
-  /** @private {function(SignHelperChallenge, string, string=)} */
-  this.successCb_ = successCb;
-  /** @private {string|undefined} */
-  this.logMsgUrl_ = opt_logMsgUrl;
+  this.gnubbyFactory_ = gnubbyFactory;
+  /** @private {!CountdownFactory} */
+  this.timerFactory_ = timerFactory;
 
-  /** @private {Array.<SignHelperChallenge>} */
-  this.pendingChallenges_ = [];
   /** @private {Array.<usbGnubby>} */
   this.waitingForTouchGnubbies_ = [];
 
@@ -42,123 +28,95 @@ function UsbSignHelper(factory, timer, errorCb, successCb, opt_logMsgUrl) {
   this.notified_ = false;
   /** @private {boolean} */
   this.signerComplete_ = false;
+  /** @private {boolean} */
+  this.anyGnubbiesFound_ = false;
 }
 
 /**
+ * Default timeout value in case the caller never provides a valid timeout.
+ * @const
+ */
+UsbSignHelper.DEFAULT_TIMEOUT_MILLIS = 30 * 1000;
+
+/**
  * Attempts to sign the provided challenges.
- * @param {Array.<SignHelperChallenge>} challenges Challenges to sign
+ * @param {SignHelperRequest} request The sign request.
+ * @param {function(SignHelperReply, string=)} cb Called with the result of the
+ *     sign request and an optional source for the sign result.
  * @return {boolean} whether this set of challenges was accepted.
  */
-UsbSignHelper.prototype.doSign = function(challenges) {
-  if (!challenges.length) {
+UsbSignHelper.prototype.doSign = function(request, cb) {
+  if (this.cb_) {
+    // Can only handle one request.
+    return false;
+  }
+  /** @private {function(SignHelperReply, string=)} */
+  this.cb_ = cb;
+  if (!request.signData || !request.signData.length) {
     // Fail a sign request with an empty set of challenges, and pretend to have
     // alerted the caller in case the enumerate is still pending.
     this.notified_ = true;
     return false;
-  } else {
-    this.pendingChallenges_ = challenges;
-    this.getSomeGnubbies_();
-    return true;
   }
-};
-
-/**
- * Enumerates gnubbies, and begins processing challenges upon enumeration if
- * any gnubbies are found.
- * @private
- */
-UsbSignHelper.prototype.getSomeGnubbies_ = function() {
-  this.factory_.enumerate(this.enumerateCallback.bind(this));
-};
-
-/**
- * Called with the result of enumerating gnubbies.
- * @param {number} rc the result of the enumerate.
- * @param {Array.<llGnubbyDeviceId>} indexes Indexes of found gnubbies
- */
-UsbSignHelper.prototype.enumerateCallback = function(rc, indexes) {
-  if (rc) {
-    this.notifyError_(rc, false);
-    return;
-  }
-  if (!indexes.length) {
-    this.notifyError_(DeviceStatusCodes.WRONG_DATA_STATUS, false);
-    return;
-  }
-  if (this.timer_.expired()) {
-    this.notifyError_(DeviceStatusCodes.TIMEOUT_STATUS, true);
-    return;
-  }
-  this.gotSomeGnubbies_(indexes);
-};
-
-/**
- * Called with the result of enumerating gnubby indexes.
- * @param {Array.<llGnubbyDeviceId>} indexes Indexes of found gnubbies
- * @private
- */
-UsbSignHelper.prototype.gotSomeGnubbies_ = function(indexes) {
+  var timeoutMillis =
+      request.timeout ?
+      request.timeout * 1000 :
+      UsbSignHelper.DEFAULT_TIMEOUT_MILLIS;
   /** @private {MultipleGnubbySigner} */
   this.signer_ = new MultipleGnubbySigner(
-      this.factory_,
-      indexes,
+      this.gnubbyFactory_,
+      this.timerFactory_,
       false /* forEnroll */,
       this.signerCompleted_.bind(this),
       this.signerFoundGnubby_.bind(this),
-      this.timer_,
-      this.logMsgUrl_);
-  this.signer_.addEncodedChallenges(this.pendingChallenges_, true);
+      timeoutMillis,
+      request.logMsgUrl);
+  return this.signer_.doSign(request.signData);
 };
 
+
 /**
- * Called when a MultipleGnubbySigner completes its sign request.
- * @param {boolean} anySucceeded whether any sign attempt completed
- *     successfully.
- * @param {number=} errorCode an error code from a failing gnubby, if one was
- *     found.
+ * Called when a MultipleGnubbySigner completes.
+ * @param {boolean} anyPending Whether any gnubbies are pending.
  * @private
  */
-UsbSignHelper.prototype.signerCompleted_ = function(anySucceeded, errorCode) {
+UsbSignHelper.prototype.signerCompleted_ = function(anyPending) {
   this.signerComplete_ = true;
-  // The signer is not created unless some gnubbies were enumerated, so
-  // anyGnubbies is mostly always true. The exception is when the last gnubby is
-  // removed, handled shortly.
-  var anyGnubbies = true;
-  if (!anySucceeded) {
-    if (!errorCode) {
-      errorCode = DeviceStatusCodes.WRONG_DATA_STATUS;
-    } else if (errorCode == -llGnubby.GONE) {
-      // If the last gnubby was removed, report as though no gnubbies were
-      // found.
-      errorCode = DeviceStatusCodes.WRONG_DATA_STATUS;
-      anyGnubbies = false;
-    }
-    this.notifyError_(errorCode, anyGnubbies);
-  } else if (this.anyTimeout_) {
-    // Some previously succeeding gnubby timed out: return its error code.
-    this.notifyError_(this.timeoutError_, anyGnubbies);
+  if (!this.anyGnubbiesFound_ || anyPending) {
+    this.notifyError_(DeviceStatusCodes.TIMEOUT_STATUS);
+  } else if (this.signerError_ !== undefined) {
+    this.notifyError_(this.signerError_);
   } else {
-    // Do nothing: signerFoundGnubby_ will have been called with each
-    // succeeding gnubby.
+    // Do nothing: signerFoundGnubby_ will have returned results from other
+    // gnubbies.
   }
 };
 
 /**
- * Called when a MultipleGnubbySigner finds a gnubby that has successfully
- * signed, or can successfully sign, one of the challenges.
- * @param {number} code Status code
+ * Called when a MultipleGnubbySigner finds a gnubby that has completed signing
+ * its challenges.
  * @param {MultipleSignerResult} signResult Signer result object
+ * @param {boolean} moreExpected Whether the signer expects to produce more
+ *     results.
  * @private
  */
-UsbSignHelper.prototype.signerFoundGnubby_ = function(code, signResult) {
-  var gnubby = signResult['gnubby'];
-  var challenge = signResult['challenge'];
-  var info = new Uint8Array(signResult['info']);
-  if (code == DeviceStatusCodes.OK_STATUS && info.length > 0 && info[0]) {
+UsbSignHelper.prototype.signerFoundGnubby_ =
+    function(signResult, moreExpected) {
+  this.anyGnubbiesFound_ = true;
+  if (!signResult.code) {
+    var gnubby = signResult['gnubby'];
+    var challenge = signResult['challenge'];
+    var info = new Uint8Array(signResult['info']);
     this.notifySuccess_(gnubby, challenge, info);
+  } else if (!moreExpected) {
+    // If the signer doesn't expect more results, return the error directly to
+    // the caller.
+    this.notifyError_(signResult.code);
   } else {
-    this.waitingForTouchGnubbies_.push(gnubby);
-    this.retrySignIfNotTimedOut_(gnubby, challenge, code);
+    // Record the last error, to report from the complete callback if no other
+    // eligible gnubbies are found.
+    /** @private {number} */
+    this.signerError_ = signResult.code;
   }
 };
 
@@ -181,119 +139,35 @@ UsbSignHelper.prototype.notifySuccess_ = function(gnubby, challenge, info) {
     CORRUPT_sign = false;
     info[info.length - 1] = info[info.length - 1] ^ 0xff;
   }
-  var encodedChallenge = {};
-  encodedChallenge['challengeHash'] = B64_encode(challenge['challengeHash']);
-  encodedChallenge['appIdHash'] = B64_encode(challenge['appIdHash']);
-  encodedChallenge['keyHandle'] = B64_encode(challenge['keyHandle']);
-  this.successCb_(
-      /** @type {SignHelperChallenge} */ (encodedChallenge), B64_encode(info),
-      'USB');
+  var responseData = {
+    'appIdHash': B64_encode(challenge['appIdHash']),
+    'challengeHash': B64_encode(challenge['challengeHash']),
+    'keyHandle': B64_encode(challenge['keyHandle']),
+    'signatureData': B64_encode(info)
+  };
+  var reply = {
+    'type': 'sign_helper_reply',
+    'code': DeviceStatusCodes.OK_STATUS,
+    'responseData': responseData
+  };
+  this.cb_(reply, 'USB');
 };
 
 /**
  * Reports error to the caller.
  * @param {number} code error to report
- * @param {boolean} anyGnubbies If any gnubbies were found
  * @private
  */
-UsbSignHelper.prototype.notifyError_ = function(code, anyGnubbies) {
+UsbSignHelper.prototype.notifyError_ = function(code) {
   if (this.notified_)
     return;
   this.notified_ = true;
   this.close();
-  this.errorCb_(code, anyGnubbies);
-};
-
-/**
- * Retries signing a particular challenge on a gnubby.
- * @param {usbGnubby} gnubby Gnubby instance
- * @param {SignHelperChallenge} challenge Challenge to retry
- * @private
- */
-UsbSignHelper.prototype.retrySign_ = function(gnubby, challenge) {
-  var challengeHash = challenge['challengeHash'];
-  var appIdHash = challenge['appIdHash'];
-  var keyHandle = challenge['keyHandle'];
-  gnubby.sign(challengeHash, appIdHash, keyHandle,
-      this.signCallback_.bind(this, gnubby, challenge));
-};
-
-/**
- * Called when a gnubby completes a sign request.
- * @param {usbGnubby} gnubby Gnubby instance
- * @param {SignHelperChallenge} challenge Challenge to retry
- * @param {number} code Previous status code
- * @private
- */
-UsbSignHelper.prototype.retrySignIfNotTimedOut_ =
-    function(gnubby, challenge, code) {
-  if (this.timer_.expired()) {
-    // Store any timeout error code, to be returned from the complete
-    // callback if no other eligible gnubbies are found.
-    /** @private {boolean} */
-    this.anyTimeout_ = true;
-    /** @private {number} */
-    this.timeoutError_ = code;
-    this.removePreviouslyEligibleGnubby_(gnubby, code);
-  } else {
-    window.setTimeout(this.retrySign_.bind(this, gnubby, challenge), 200);
-  }
-};
-
-/**
- * Removes a gnubby that was waiting for touch from the list, with the given
- * error code. If this is the last gnubby, notifies the caller of the error.
- * @param {usbGnubby} gnubby Gnubby instance
- * @param {number} code Previous status code
- * @private
- */
-UsbSignHelper.prototype.removePreviouslyEligibleGnubby_ =
-    function(gnubby, code) {
-  // Close this gnubby.
-  gnubby.closeWhenIdle();
-  var index = this.waitingForTouchGnubbies_.indexOf(gnubby);
-  if (index >= 0) {
-    this.waitingForTouchGnubbies_.splice(index, 1);
-  }
-  if (!this.waitingForTouchGnubbies_.length && this.signerComplete_ &&
-      !this.notified_) {
-    // Last sign attempt is complete: return this error.
-    console.log(UTIL_fmt('timeout or error (' + code.toString(16) +
-        ') signing'));
-    // If the last device is gone, report as if no gnubbies were found.
-    if (code == -llGnubby.GONE) {
-      this.notifyError_(DeviceStatusCodes.WRONG_DATA_STATUS, false);
-      return;
-    }
-    this.notifyError_(code, true);
-  }
-};
-
-/**
- * Called when a gnubby completes a sign request.
- * @param {usbGnubby} gnubby Gnubby instance
- * @param {SignHelperChallenge} challenge Challenge signed
- * @param {number} code Status code
- * @param {ArrayBuffer=} infoArray Result data
- * @private
- */
-UsbSignHelper.prototype.signCallback_ =
-    function(gnubby, challenge, code, infoArray) {
-  if (this.notified_) {
-    // Individual sign completed after previous success or failure. Disregard.
-    return;
-  }
-  var info = new Uint8Array(infoArray || []);
-  if (code == DeviceStatusCodes.OK_STATUS && info.length > 0 && info[0]) {
-    this.notifySuccess_(gnubby, challenge, info);
-  } else if (code == DeviceStatusCodes.OK_STATUS ||
-      code == DeviceStatusCodes.WAIT_TOUCH_STATUS ||
-      code == DeviceStatusCodes.BUSY_STATUS) {
-    this.retrySignIfNotTimedOut_(gnubby, challenge, code);
-  } else {
-    console.log(UTIL_fmt('got error ' + code.toString(16) + ' signing'));
-    this.removePreviouslyEligibleGnubby_(gnubby, code);
-  }
+  var reply = {
+    'type': 'sign_helper_reply',
+    'code': code
+  };
+  this.cb_(reply);
 };
 
 /**
@@ -312,28 +186,20 @@ UsbSignHelper.prototype.close = function() {
 
 /**
  * @param {!GnubbyFactory} gnubbyFactory Factory to create gnubbies.
+ * @param {!CountdownFactory} timerFactory A factory to create timers.
  * @constructor
  * @implements {SignHelperFactory}
  */
-function UsbSignHelperFactory(gnubbyFactory) {
+function UsbSignHelperFactory(gnubbyFactory, timerFactory) {
   /** @private {!GnubbyFactory} */
   this.gnubbyFactory_ = gnubbyFactory;
+  /** @private {!CountdownFactory} */
+  this.timerFactory_ = timerFactory;
 }
 
 /**
- * @param {Countdown} timer Timer after whose expiration the caller is no longer
- *     interested in the result of a sign request.
- * @param {function(number, boolean)} errorCb Called when a sign request fails
- *     with an error code and whether any gnubbies were found.
- * @param {function(SignHelperChallenge, string)} successCb Called with the
- *     signature produced by a successful sign request.
- * @param {string=} opt_logMsgUrl A URL to post log messages to.
  * @return {UsbSignHelper} the newly created helper.
  */
-UsbSignHelperFactory.prototype.createHelper =
-    function(timer, errorCb, successCb, opt_logMsgUrl) {
-  var helper =
-      new UsbSignHelper(this.gnubbyFactory_, timer, errorCb, successCb,
-          opt_logMsgUrl);
-  return helper;
+UsbSignHelperFactory.prototype.createHelper = function() {
+  return new UsbSignHelper(this.gnubbyFactory_, this.timerFactory_);
 };

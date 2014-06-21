@@ -17,10 +17,12 @@ function SignHelper() {}
 
 /**
  * Attempts to sign the provided challenges.
- * @param {Array.<SignHelperChallenge>} challenges the new challenges to sign.
- * @return {boolean} whether the challenges were successfully added.
+ * @param {SignHelperRequest} request The sign request.
+ * @param {function(SignHelperReply, string=)} cb Called with the result of the
+ *     sign request and an optional source for the sign result.
+ * @return {boolean} Whether the challenges were successfully added.
  */
-SignHelper.prototype.doSign = function(challenges) {};
+SignHelper.prototype.doSign = function(request, cb) {};
 
 /** Closes this helper. */
 SignHelper.prototype.close = function() {};
@@ -33,14 +35,6 @@ function SignHelperFactory() {}
 
 /**
  * Creates a new sign helper.
- * @param {Countdown} timer Timer after whose expiration the caller is no longer
- *     interested in the result of a sign request.
- * @param {function(number, boolean)} errorCb Called when a sign request fails
- *     with an error code and whether any gnubbies were found.
- * @param {function(SignHelperChallenge, string, string=)} successCb Called with
- *     the signature produced by a successful sign request.
- * @param {string=} opt_logMsgUrl A URL to post log messages to.
  * @return {SignHelper} The newly created helper.
  */
-SignHelperFactory.prototype.createHelper =
-    function(timer, errorCb, successCb, opt_logMsgUrl) {};
+SignHelperFactory.prototype.createHelper = function() {};

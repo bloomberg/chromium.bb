@@ -21,7 +21,7 @@ function Countdown() {}
  */
 Countdown.prototype.setTimeout = function(timeoutMillis, cb) {};
 
-/** Clears this timer's timeout. */
+/** Clears this timer's timeout. Timers that are cleared become expired. */
 Countdown.prototype.clearTimeout = function() {};
 
 /**
@@ -38,6 +38,20 @@ Countdown.prototype.expired = function() {};
  * @return {!Countdown} new clone.
  */
 Countdown.prototype.clone = function(cb) {};
+
+/**
+ * A factory to create countdown timers.
+ * @interface
+ */
+function CountdownFactory() {}
+
+/**
+ * Creates a new timer.
+ * @param {number} timeoutMillis How long, in milliseconds, the countdown lasts.
+ * @param {function()=} opt_cb Called back when the countdown expires.
+ * @return {Countdown} The timer.
+ */
+CountdownFactory.prototype.createTimer = function(timeoutMillis, opt_cb) {};
 
 /**
  * Constructs a new timer.  The timer has a very limited resolution, and does
@@ -83,12 +97,13 @@ CountdownTimer.prototype.setTimeout = function(timeoutMillis, cb) {
   return true;
 };
 
-/** Clears this timer's timeout. */
+/** Clears this timer's timeout. Timers that are cleared become expired. */
 CountdownTimer.prototype.clearTimeout = function() {
   if (this.timeoutId) {
     window.clearTimeout(this.timeoutId);
     this.timeoutId = undefined;
   }
+  this.remainingMillis = 0;
 };
 
 /**
@@ -122,4 +137,23 @@ CountdownTimer.prototype.timerTick = function() {
       this.cb();
     }
   }
+};
+
+/**
+ * A factory for creating CountdownTimers.
+ * @constructor
+ * @implements {CountdownFactory}
+ */
+function CountdownTimerFactory() {
+}
+
+/**
+ * Creates a new timer.
+ * @param {number} timeoutMillis How long, in milliseconds, the countdown lasts.
+ * @param {function()=} opt_cb Called back when the countdown expires.
+ * @return {Countdown} The timer.
+ */
+CountdownTimerFactory.prototype.createTimer =
+    function(timeoutMillis, opt_cb) {
+  return new CountdownTimer(timeoutMillis, opt_cb);
 };

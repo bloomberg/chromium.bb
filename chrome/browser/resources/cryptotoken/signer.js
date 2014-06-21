@@ -16,13 +16,10 @@ var signRequestQueue = new OriginKeyedRequestQueue();
  * @param {MessageSender} sender The sender of the message.
  * @param {Object} request The web page's sign request.
  * @param {Function} sendResponse Called back with the result of the sign.
- * @param {boolean} toleratesMultipleResponses Whether the sendResponse
- *     callback can be called more than once, e.g. for progress updates.
  * @return {Closeable} Request handler that should be closed when the browser
  *     message channel is closed.
  */
-function handleSignRequest(factory, sender, request, sendResponse,
-    toleratesMultipleResponses) {
+function handleSignRequest(factory, sender, request, sendResponse) {
   var sentResponse = false;
   function sendResponseOnce(r) {
     if (queuedSignRequest) {
@@ -238,8 +235,6 @@ function Signer(helperFactory, timer, origin, errorCb, successCb,
 
   /** @private {boolean} */
   this.challengesSet_ = false;
-  /** @private {Array.<SignHelperChallenge>} */
-  this.pendingChallenges_ = [];
   /** @private {boolean} */
   this.done_ = false;
 
@@ -255,9 +250,7 @@ function Signer(helperFactory, timer, origin, errorCb, successCb,
   // Protect against helper failure with a watchdog.
   this.createWatchdog_(timer);
   /** @private {SignHelper} */
-  this.helper_ = helperFactory.createHelper(
-      timer, this.helperError_.bind(this), this.helperSuccess_.bind(this),
-          this.logMsgUrl_);
+  this.helper_ = helperFactory.createHelper();
 }
 
 /**
@@ -296,32 +289,48 @@ Signer.prototype.setChallenges = function(signData) {
 };
 
 /**
- * Adds new challenges to the challenges being signed.
- * @param {SignData} signData Challenges to add.
- * @param {boolean} finalChallenges Whether these are the final challenges.
- * @return {boolean} Whether the challenge could be added.
+ * Checks the app ids of incoming requests.
+ * @private
  */
-Signer.prototype.addChallenges = function(signData, finalChallenges) {
-  var newChallenges = this.encodeSignChallenges_(signData);
-  for (var i = 0; i < newChallenges.length; i++) {
-    this.pendingChallenges_.push(newChallenges[i]);
+Signer.prototype.checkAppIds_ = function() {
+  var appIds = getDistinctAppIds(this.signData_);
+  if (!appIds || !appIds.length) {
+    this.notifyError_(GnubbyCodeTypes.BAD_REQUEST);
+    return;
   }
-  if (!finalChallenges) {
-    return true;
-  }
-  return this.helper_.doSign(this.pendingChallenges_);
+  /** @private {!AppIdChecker} */
+  this.appIdChecker_ = new AppIdChecker(this.timer_.clone(), this.origin_,
+      /** @type {!Array.<string>} */ (appIds), this.allowHttp_,
+      this.logMsgUrl_);
+  this.appIdChecker_.doCheck(this.appIdChecked_.bind(this));
 };
 
 /**
- * Creates challenges for helper from challenges.
- * @param {Array.<SignChallenge>} challenges Challenges to add.
- * @return {Array.<SignHelperChallenge>} Encoded challenges
+ * Called with the result of checking app ids.  When the app ids are valid,
+ * adds the sign challenges to those being signed.
+ * @param {boolean} result Whether the app ids are valid.
  * @private
  */
-Signer.prototype.encodeSignChallenges_ = function(challenges) {
-  var newChallenges = [];
-  for (var i = 0; i < challenges.length; i++) {
-    var incomingChallenge = challenges[i];
+Signer.prototype.appIdChecked_ = function(result) {
+  if (!result) {
+    this.notifyError_(GnubbyCodeTypes.BAD_APP_ID);
+    return;
+  }
+  if (!this.doSign_()) {
+    this.notifyError_(GnubbyCodeTypes.BAD_REQUEST);
+    return;
+  }
+};
+
+/**
+ * Begins signing this signer's challenges.
+ * @return {boolean} Whether the challenge could be added.
+ * @private
+ */
+Signer.prototype.doSign_ = function() {
+  var encodedChallenges = [];
+  for (var i = 0; i < this.signData_.length; i++) {
+    var incomingChallenge = this.signData_[i];
     var serverChallenge = incomingChallenge['challenge'];
     var appId = incomingChallenge['appId'];
     var encodedKeyHandle = incomingChallenge['keyHandle'];
@@ -336,94 +345,12 @@ Signer.prototype.encodeSignChallenges_ = function(challenges) {
     this.browserData_[key] = browserData;
     this.serverChallenges_[key] = incomingChallenge;
 
-    newChallenges.push(encodedChallenge);
+    encodedChallenges.push(encodedChallenge);
   }
-  return newChallenges;
-};
-
-/**
- * Checks the app ids of incoming requests, and, when this signer is enforcing
- * that app ids are valid, adds successful challenges to those being signed.
- * @private
- */
-Signer.prototype.checkAppIds_ = function() {
-  // Check the incoming challenges' app ids.
-  /** @private {Array.<[string, Array.<Request>]>} */
-  this.orderedRequests_ = requestsByAppId(this.signData_);
-  if (!this.orderedRequests_.length) {
-    // Safety check: if the challenges are somehow empty, the helper will never
-    // be fed any data, so the request could never be satisfied. You lose.
-    this.notifyError_(GnubbyCodeTypes.BAD_REQUEST);
-    return;
-  }
-  /** @private {number} */
-  this.fetchedAppIds_ = 0;
-  /** @private {number} */
-  this.validAppIds_ = 0;
-  for (var i = 0, appIdRequestsPair; i < this.orderedRequests_.length; i++) {
-    var appIdRequestsPair = this.orderedRequests_[i];
-    var appId = appIdRequestsPair[0];
-    var requests = appIdRequestsPair[1];
-    if (appId == this.origin_) {
-      // Trivially allowed.
-      this.fetchedAppIds_++;
-      this.validAppIds_++;
-      this.addChallenges(requests,
-          this.fetchedAppIds_ == this.orderedRequests_.length);
-    } else {
-      var start = new Date();
-      fetchAllowedOriginsForAppId(appId, this.allowHttp_,
-          this.fetchedAllowedOriginsForAppId_.bind(this, appId, start,
-              requests));
-    }
-  }
-};
-
-/**
- * Called with the result of an app id fetch.
- * @param {string} appId the app id that was fetched.
- * @param {Date} start the time the fetch request started.
- * @param {Array.<SignChallenge>} challenges Challenges for this app id.
- * @param {number} rc The HTTP response code for the app id fetch.
- * @param {!Array.<string>} allowedOrigins The origins allowed for this app id.
- * @private
- */
-Signer.prototype.fetchedAllowedOriginsForAppId_ = function(appId, start,
-    challenges, rc, allowedOrigins) {
-  var end = new Date();
-  logFetchAppIdResult(appId, end - start, allowedOrigins, this.logMsgUrl_);
-  if (rc != 200 && !(rc >= 400 && rc < 500)) {
-    if (this.timer_.expired()) {
-      // Act as though the helper timed out.
-      this.helperError_(DeviceStatusCodes.TIMEOUT_STATUS, false);
-    } else {
-      start = new Date();
-      fetchAllowedOriginsForAppId(appId, this.allowHttp_,
-          this.fetchedAllowedOriginsForAppId_.bind(this, appId, start,
-              challenges));
-    }
-    return;
-  }
-  this.fetchedAppIds_++;
-  var finalChallenges = (this.fetchedAppIds_ == this.orderedRequests_.length);
-  if (isValidAppIdForOrigin(appId, this.origin_, allowedOrigins)) {
-    this.validAppIds_++;
-    this.addChallenges(challenges, finalChallenges);
-  } else {
-    logInvalidOriginForAppId(this.origin_, appId, this.logMsgUrl_);
-    // If this is the final request, sign the valid challenges.
-    if (finalChallenges) {
-      if (!this.helper_.doSign(this.pendingChallenges_)) {
-        this.notifyError_(GnubbyCodeTypes.BAD_REQUEST);
-        return;
-      }
-    }
-  }
-  if (finalChallenges && !this.validAppIds_) {
-    // If all app ids are invalid, notify the caller, otherwise implicitly
-    // allow the helper to report whether any of the valid challenges succeeded.
-    this.notifyError_(GnubbyCodeTypes.BAD_APP_ID);
-  }
+  var timeoutSeconds = this.timer_.millisecondsUntilExpired() / 1000.0;
+  var request = makeSignHelperRequest(encodedChallenges, timeoutSeconds,
+      this.logMsgUrl_);
+  return this.helper_.doSign(request, this.helperComplete_.bind(this));
 };
 
 /**
@@ -439,7 +366,12 @@ Signer.prototype.timeout_ = function() {
 
 /** Closes this signer. */
 Signer.prototype.close = function() {
-  if (this.helper_) this.helper_.close();
+  if (this.appIdChecker_) {
+    this.appIdChecker_.close();
+  }
+  if (this.helper_) {
+    this.helper_.close();
+  }
 };
 
 /**
@@ -473,27 +405,19 @@ Signer.prototype.notifySuccess_ = function(challenge, info, browserData) {
 /**
  * Maps a sign helper's error code namespace to the page's error code namespace.
  * @param {number} code Error code from DeviceStatusCodes namespace.
- * @param {boolean} anyGnubbies Whether any gnubbies were found.
  * @return {number} A GnubbyCodeTypes error code.
  * @private
  */
-Signer.mapError_ = function(code, anyGnubbies) {
+Signer.mapError_ = function(code) {
   var reportedError;
   switch (code) {
     case DeviceStatusCodes.WRONG_DATA_STATUS:
-      reportedError = anyGnubbies ? GnubbyCodeTypes.NONE_PLUGGED_ENROLLED :
-          GnubbyCodeTypes.NO_GNUBBIES;
+      reportedError = GnubbyCodeTypes.NONE_PLUGGED_ENROLLED;
       break;
 
-    case DeviceStatusCodes.OK_STATUS:
-      // If the error callback is called with OK, it means the signature was
-      // empty, which we treat the same as...
+    case DeviceStatusCodes.TIMEOUT_STATUS:
     case DeviceStatusCodes.WAIT_TOUCH_STATUS:
       reportedError = GnubbyCodeTypes.WAIT_TOUCH;
-      break;
-
-    case DeviceStatusCodes.BUSY_STATUS:
-      reportedError = GnubbyCodeTypes.BUSY;
       break;
 
     default:
@@ -504,41 +428,34 @@ Signer.mapError_ = function(code, anyGnubbies) {
 };
 
 /**
- * Called by the helper upon error.
- * @param {number} code Error code
- * @param {boolean} anyGnubbies If any gnubbies were found
+ * Called by the helper upon completion.
+ * @param {SignHelperReply} reply The result of the sign request.
+ * @param {string=} opt_source The source of the sign result.
  * @private
  */
-Signer.prototype.helperError_ = function(code, anyGnubbies) {
-  this.clearTimeout_();
-  var reportedError = Signer.mapError_(code, anyGnubbies);
-  console.log(UTIL_fmt('helper reported ' + code.toString(16) +
-      ', returning ' + reportedError));
-  this.notifyError_(reportedError);
-};
-
-/**
- * Called by helper upon success.
- * @param {SignHelperChallenge} challenge The challenge that was signed.
- * @param {string} info The sign result.
- * @param {string=} opt_source The source, if any, if the signature.
- * @private
- */
-Signer.prototype.helperSuccess_ = function(challenge, info, opt_source) {
-  // Got a good reply, kill timer.
+Signer.prototype.helperComplete_ = function(reply, opt_source) {
   this.clearTimeout_();
 
-  if (this.logMsgUrl_ && opt_source) {
-    var logMsg = 'signed&source=' + opt_source;
-    logMessage(logMsg, this.logMsgUrl_);
+  if (reply.code) {
+    var reportedError = Signer.mapError_(reply.code);
+    console.log(UTIL_fmt('helper reported ' + reply.code.toString(16) +
+        ', returning ' + reportedError));
+    this.notifyError_(reportedError);
+  } else {
+    if (this.logMsgUrl_ && opt_source) {
+      var logMsg = 'signed&source=' + opt_source;
+      logMessage(logMsg, this.logMsgUrl_);
+    }
+
+    var key =
+        reply.responseData['keyHandle'] + reply.responseData['challengeHash'];
+    var browserData = this.browserData_[key];
+    // Notify with server-provided challenge, not the encoded one: the
+    // server-provided challenge contains additional fields it relies on.
+    var serverChallenge = this.serverChallenges_[key];
+    this.notifySuccess_(serverChallenge, reply.responseData.signatureData,
+        browserData);
   }
-
-  var key = challenge['keyHandle'] + challenge['challengeHash'];
-  var browserData = this.browserData_[key];
-  // Notify with server-provided challenge, not the encoded one: the
-  // server-provided challenge contains additional fields it relies on.
-  var serverChallenge = this.serverChallenges_[key];
-  this.notifySuccess_(serverChallenge, info, browserData);
 };
 
 /**

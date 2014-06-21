@@ -159,6 +159,7 @@
       <include name="IDR_CRYPTOTOKEN_MULTIPLESIGNER_JS" file="cryptotoken/multiplesigner.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_USBSIGNHELPER_JS" file="cryptotoken/usbsignhelper.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_WEBREQUEST_JS" file="cryptotoken/webrequest.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_APPID_JS" file="cryptotoken/appid.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_BACKGROUND_JS" file="cryptotoken/background.js" type="BINDATA" />
     </includes>
   </release>

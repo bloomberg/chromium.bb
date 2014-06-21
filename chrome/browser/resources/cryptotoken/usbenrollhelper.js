@@ -8,38 +8,17 @@
 'use strict';
 
 /**
- * @param {!GnubbyFactory} factory A factory for Gnubby instances
- * @param {!Countdown} timer A timer for enroll timeout
- * @param {function(number, boolean)} errorCb Called when an enroll request
- *     fails with an error code and whether any gnubbies were found.
- * @param {function(string, string)} successCb Called with the result of a
- *     successful enroll request, along with the version of the gnubby that
- *     provided it.
- * @param {(function(number, boolean)|undefined)} opt_progressCb Called with
- *     progress updates to the enroll request.
- * @param {string=} opt_logMsgUrl A URL to post log messages to.
+ * @param {!GnubbyFactory} gnubbyFactory A factory for Gnubby instances.
+ * @param {!CountdownFactory} timerFactory A factory to create timers.
  * @constructor
  * @implements {EnrollHelper}
  */
-function UsbEnrollHelper(factory, timer, errorCb, successCb, opt_progressCb,
-    opt_logMsgUrl) {
+function UsbEnrollHelper(gnubbyFactory, timerFactory) {
   /** @private {!GnubbyFactory} */
-  this.factory_ = factory;
-  /** @private {!Countdown} */
-  this.timer_ = timer;
-  /** @private {function(number, boolean)} */
-  this.errorCb_ = errorCb;
-  /** @private {function(string, string)} */
-  this.successCb_ = successCb;
-  /** @private {(function(number, boolean)|undefined)} */
-  this.progressCb_ = opt_progressCb;
-  /** @private {string|undefined} */
-  this.logMsgUrl_ = opt_logMsgUrl;
+  this.gnubbyFactory_ = gnubbyFactory;
+  /** @private {!CountdownFactory} */
+  this.timerFactory_ = timerFactory;
 
-  /** @private {Array.<SignHelperChallenge>} */
-  this.signChallenges_ = [];
-  /** @private {boolean} */
-  this.signChallengesFinal_ = false;
   /** @private {Array.<usbGnubby>} */
   this.waitingForTouchGnubbies_ = [];
 
@@ -47,31 +26,41 @@ function UsbEnrollHelper(factory, timer, errorCb, successCb, opt_progressCb,
   this.closed_ = false;
   /** @private {boolean} */
   this.notified_ = false;
-  /** @private {number|undefined} */
-  this.lastProgressUpdate_ = undefined;
   /** @private {boolean} */
   this.signerComplete_ = false;
-  this.getSomeGnubbies_();
 }
 
 /**
- * Attempts to enroll using the provided data.
- * @param {Object} enrollChallenges a map of version string to enroll
- *     challenges.
- * @param {Array.<SignHelperChallenge>} signChallenges a list of sign
- *     challenges for already enrolled gnubbies, to prevent double-enrolling a
- *     device.
+ * Default timeout value in case the caller never provides a valid timeout.
+ * @const
  */
-UsbEnrollHelper.prototype.doEnroll =
-    function(enrollChallenges, signChallenges) {
-  this.enrollChallenges = enrollChallenges;
-  this.signChallengesFinal_ = true;
-  if (this.signer_) {
-    this.signer_.addEncodedChallenges(
-        signChallenges, this.signChallengesFinal_);
-  } else {
-    this.signChallenges_ = signChallenges;
-  }
+UsbEnrollHelper.DEFAULT_TIMEOUT_MILLIS = 30 * 1000;
+
+/**
+ * Attempts to enroll using the provided data.
+ * @param {EnrollHelperRequest} request The enroll request.
+ * @param {function(EnrollHelperReply)} cb Called back with the result of the
+ *     enroll request.
+ */
+UsbEnrollHelper.prototype.doEnroll = function(request, cb) {
+  var timeoutMillis =
+      request.timeout ?
+      request.timeout * 1000 :
+      UsbEnrollHelper.DEFAULT_TIMEOUT_MILLIS;
+  /** @private {Countdown} */
+  this.timer_ = this.timerFactory_.createTimer(timeoutMillis);
+  this.enrollChallenges = request.enrollChallenges;
+  /** @private {function(EnrollHelperReply)} */
+  this.cb_ = cb;
+  this.signer_ = new MultipleGnubbySigner(
+      this.gnubbyFactory_,
+      this.timerFactory_,
+      true /* forEnroll */,
+      this.signerCompleted_.bind(this),
+      this.signerFoundGnubby_.bind(this),
+      timeoutMillis,
+      request.logMsgUrl);
+  this.signer_.doSign(request.signData);
 };
 
 /** Closes this helper. */
@@ -88,110 +77,15 @@ UsbEnrollHelper.prototype.close = function() {
 };
 
 /**
- * Enumerates gnubbies, and begins processing challenges upon enumeration if
- * any gnubbies are found.
- * @private
- */
-UsbEnrollHelper.prototype.getSomeGnubbies_ = function() {
-  this.factory_.enumerate(this.enumerateCallback_.bind(this));
-};
-
-/**
- * Called with the result of enumerating gnubbies.
- * @param {number} rc the result of the enumerate.
- * @param {Array.<llGnubbyDeviceId>} indexes Device ids of enumerated gnubbies
- * @private
- */
-UsbEnrollHelper.prototype.enumerateCallback_ = function(rc, indexes) {
-  if (rc) {
-    // Enumerate failure is rare enough that it might be worth reporting
-    // directly, rather than trying again.
-    this.errorCb_(rc, false);
-    return;
-  }
-  if (!indexes.length) {
-    this.maybeReEnumerateGnubbies_();
-    return;
-  }
-  if (this.timer_.expired()) {
-    this.errorCb_(DeviceStatusCodes.TIMEOUT_STATUS, true);
-    return;
-  }
-  this.gotSomeGnubbies_(indexes);
-};
-
-/**
- * If there's still time, re-enumerates devices and try with them. Otherwise
- * reports an error and, implicitly, stops the enroll operation.
- * @private
- */
-UsbEnrollHelper.prototype.maybeReEnumerateGnubbies_ = function() {
-  var errorCode = DeviceStatusCodes.WRONG_DATA_STATUS;
-  var anyGnubbies = false;
-  // If there's still time and we're still going, retry enumerating.
-  if (!this.closed_ && !this.timer_.expired()) {
-    this.notifyProgress_(errorCode, anyGnubbies);
-    var self = this;
-    // Use a delayed re-enumerate to prevent hammering the system unnecessarily.
-    window.setTimeout(function() {
-      if (self.timer_.expired()) {
-        self.notifyError_(errorCode, anyGnubbies);
-      } else {
-        self.getSomeGnubbies_();
-      }
-    }, 200);
-  } else {
-    this.notifyError_(errorCode, anyGnubbies);
-  }
-};
-
-/**
- * Called with the result of enumerating gnubby indexes.
- * @param {Array.<llGnubbyDeviceId>} indexes Device ids of enumerated gnubbies
- * @private
- */
-UsbEnrollHelper.prototype.gotSomeGnubbies_ = function(indexes) {
-  this.signer_ = new MultipleGnubbySigner(
-      this.factory_,
-      indexes,
-      true /* forEnroll */,
-      this.signerCompleted_.bind(this),
-      this.signerFoundGnubby_.bind(this),
-      this.timer_,
-      this.logMsgUrl_);
-  if (this.signChallengesFinal_) {
-    this.signer_.addEncodedChallenges(
-        this.signChallenges_, this.signChallengesFinal_);
-    this.pendingSignChallenges_ = [];
-  }
-};
-
-/**
  * Called when a MultipleGnubbySigner completes its sign request.
- * @param {boolean} anySucceeded whether any sign attempt completed
- *     successfully.
- * @param {number=} errorCode an error code from a failing gnubby, if one was
- *     found.
+ * @param {boolean} anyPending Whether any gnubbies are pending.
  * @private
  */
-UsbEnrollHelper.prototype.signerCompleted_ = function(anySucceeded, errorCode) {
+UsbEnrollHelper.prototype.signerCompleted_ = function(anyPending) {
   this.signerComplete_ = true;
-  // The signer is not created unless some gnubbies were enumerated, so
-  // anyGnubbies is mostly always true. The exception is when the last gnubby is
-  // removed, handled shortly.
-  var anyGnubbies = true;
-  if (!anySucceeded) {
-    if (errorCode == -llGnubby.GONE) {
-      // If the last gnubby was removed, report as though no gnubbies were
-      // found.
-      this.maybeReEnumerateGnubbies_();
-    } else {
-      if (!errorCode) errorCode = DeviceStatusCodes.WRONG_DATA_STATUS;
-      this.notifyError_(errorCode, anyGnubbies);
-    }
-  } else if (this.anyTimeout) {
-    // Some previously succeeding gnubby timed out: return its error code.
-    this.notifyError_(this.timeoutError, anyGnubbies);
+  if (!this.anyGnubbiesFound_ || this.anyTimeout_ || anyPending ||
+      this.timer_.expired()) {
+    this.notifyError_(DeviceStatusCodes.TIMEOUT_STATUS);
   } else {
     // Do nothing: signerFoundGnubby will have been called with each succeeding
     // gnubby.
@@ -200,23 +94,22 @@ UsbEnrollHelper.prototype.signerCompleted_ = function(anySucceeded, errorCode) {
 
 /**
  * Called when a MultipleGnubbySigner finds a gnubby that can enroll.
- * @param {number} code Status code
  * @param {MultipleSignerResult} signResult Signature results
+ * @param {boolean} moreExpected Whether the signer expects to report
+ *     results from more gnubbies.
  * @private
  */
-UsbEnrollHelper.prototype.signerFoundGnubby_ = function(code, signResult) {
-  var gnubby = signResult['gnubby'];
-  this.waitingForTouchGnubbies_.push(gnubby);
-  this.notifyProgress_(DeviceStatusCodes.WAIT_TOUCH_STATUS, true);
-  if (code == DeviceStatusCodes.WRONG_DATA_STATUS) {
-    if (signResult['challenge']) {
-      // If the signer yielded a busy open, indicate waiting for touch
-      // immediately, rather than attempting enroll. This allows the UI to
-      // update, since a busy open is a potentially long operation.
-      this.notifyError_(DeviceStatusCodes.WAIT_TOUCH_STATUS, true);
-    } else {
-      this.matchEnrollVersionToGnubby_(gnubby);
-    }
+UsbEnrollHelper.prototype.signerFoundGnubby_ =
+    function(signResult, moreExpected) {
+  if (!signResult.code) {
+    // If the signer reports a gnubby can sign, report this immediately to the
+    // caller, as the gnubby is already enrolled.
+    this.notifyError_(signResult.code);
+  } else if (signResult.code == DeviceStatusCodes.WRONG_DATA_STATUS) {
+    this.anyGnubbiesFound_ = true;
+    var gnubby = signResult['gnubby'];
+    this.waitingForTouchGnubbies_.push(gnubby);
+    this.matchEnrollVersionToGnubby_(gnubby);
   }
 };
 
@@ -270,9 +163,15 @@ UsbEnrollHelper.prototype.removeWaitingGnubby_ = function(gnubby) {
  */
 UsbEnrollHelper.prototype.removeWrongVersionGnubby_ = function(gnubby) {
   this.removeWaitingGnubby_(gnubby);
-  if (!this.waitingForTouchGnubbies_.length && this.signerComplete_) {
-    // Whoops, this was the last gnubby: indicate there are none.
-    this.notifyError_(DeviceStatusCodes.WRONG_DATA_STATUS, false);
+  if (!this.waitingForTouchGnubbies_.length) {
+    // Whoops, this was the last gnubby.
+    this.anyGnubbiesFound_ = false;
+    if (this.timer_.expired()) {
+      this.notifyError_(DeviceStatusCodes.TIMEOUT_STATUS);
+    } else {
+      // TODO: add method to MultipleGnubbySigner to signal gnubby
+      // gone?
+    }
   }
 };
 
@@ -329,9 +228,14 @@ UsbEnrollHelper.prototype.enrollCallback_ =
         // Close this gnubby.
         this.removeWaitingGnubby_(gnubby);
         if (!this.waitingForTouchGnubbies_.length) {
-          // Last enroll attempt is complete and last gnubby is gone: retry if
-          // possible.
-          this.maybeReEnumerateGnubbies_();
+          // Last enroll attempt is complete and last gnubby is gone.
+          this.anyGnubbiesFound_ = false;
+          if (this.timer_.expired()) {
+            this.notifyError_(DeviceStatusCodes.TIMEOUT_STATUS);
+          } else {
+            // TODO: add method to MultipleGnubbySigner to signal
+            // gnubby gone.
+          }
         }
       break;
 
@@ -339,24 +243,22 @@ UsbEnrollHelper.prototype.enrollCallback_ =
     case DeviceStatusCodes.BUSY_STATUS:
     case DeviceStatusCodes.TIMEOUT_STATUS:
       if (this.timer_.expired()) {
-        // Store any timeout error code, to be returned from the complete
-        // callback if no other eligible gnubbies are found.
-        this.anyTimeout = true;
-        this.timeoutError = code;
+        // Record that at least one gnubby timed out, to return a timeout status
+        // from the complete callback if no other eligible gnubbies are found.
+        /** @private {boolean} */
+        this.anyTimeout_ = true;
         // Close this gnubby.
         this.removeWaitingGnubby_(gnubby);
-        if (!this.waitingForTouchGnubbies_.length && !this.notified_) {
+        if (!this.waitingForTouchGnubbies_.length) {
           // Last enroll attempt is complete: return this error.
           console.log(UTIL_fmt('timeout (' + code.toString(16) +
               ') enrolling'));
-          this.notifyError_(code, true);
+          this.notifyError_(DeviceStatusCodes.TIMEOUT_STATUS);
         }
       } else {
-        // Notify caller of waiting for touch events.
-        if (code == DeviceStatusCodes.WAIT_TOUCH_STATUS) {
-          this.notifyProgress_(code, true);
-        }
-        window.setTimeout(this.tryEnroll_.bind(this, gnubby, version), 200);
+        this.timerFactory_.createTimer(
+            UsbEnrollHelper.ENUMERATE_DELAY_INTERVAL_MILLIS,
+            this.tryEnroll_.bind(this, gnubby, version));
       }
       break;
 
@@ -367,22 +269,32 @@ UsbEnrollHelper.prototype.enrollCallback_ =
 
     default:
       console.log(UTIL_fmt('Failed to enroll gnubby: ' + code));
-      this.notifyError_(code, true);
+      this.notifyError_(code);
       break;
   }
 };
 
 /**
- * @param {number} code Status code
- * @param {boolean} anyGnubbies If any gnubbies were found
+ * How long to delay between repeated enroll attempts, in milliseconds.
+ * @const
+ */
+UsbEnrollHelper.ENUMERATE_DELAY_INTERVAL_MILLIS = 200;
+
+/**
+ * Notifies the callback with an error code.
+ * @param {number} code The error code to report.
  * @private
  */
-UsbEnrollHelper.prototype.notifyError_ = function(code, anyGnubbies) {
+UsbEnrollHelper.prototype.notifyError_ = function(code) {
   if (this.notified_ || this.closed_)
     return;
   this.notified_ = true;
   this.close();
-  this.errorCb_(code, anyGnubbies);
+  var reply = {
+    'type': 'enroll_helper_reply',
+    'code': code
+  };
+  this.cb_(reply);
 };
 
 /**
@@ -395,47 +307,32 @@ UsbEnrollHelper.prototype.notifySuccess_ = function(version, info) {
     return;
   this.notified_ = true;
   this.close();
-  this.successCb_(version, info);
+  var reply = {
+    'type': 'enroll_helper_reply',
+    'code': DeviceStatusCodes.OK_STATUS,
+    'version': version,
+    'enrollData': info
+  };
+  this.cb_(reply);
 };
 
 /**
- * @param {number} code Status code
- * @param {boolean} anyGnubbies If any gnubbies were found
- * @private
- */
-UsbEnrollHelper.prototype.notifyProgress_ = function(code, anyGnubbies) {
-  if (this.lastProgressUpdate_ == code || this.notified_ || this.closed_)
-    return;
-  this.lastProgressUpdate_ = code;
-  if (this.progressCb_) this.progressCb_(code, anyGnubbies);
-};
-
-/**
- * @param {!GnubbyFactory} gnubbyFactory factory to create gnubbies.
+ * @param {!GnubbyFactory} gnubbyFactory Factory to create gnubbies.
+ * @param {!CountdownFactory} timerFactory Used to create timers to reenumerate
+ *     gnubbies.
  * @constructor
  * @implements {EnrollHelperFactory}
  */
-function UsbEnrollHelperFactory(gnubbyFactory) {
+function UsbEnrollHelperFactory(gnubbyFactory, timerFactory) {
   /** @private {!GnubbyFactory} */
   this.gnubbyFactory_ = gnubbyFactory;
+  /** @private {!CountdownFactory} */
+  this.timerFactory_ = timerFactory;
 }
 
 /**
- * @param {!Countdown} timer Timeout timer
- * @param {function(number, boolean)} errorCb Called when an enroll request
- *     fails with an error code and whether any gnubbies were found.
- * @param {function(string, string)} successCb Called with the result of a
- *     successful enroll request, along with the version of the gnubby that
- *     provided it.
- * @param {(function(number, boolean)|undefined)} opt_progressCb Called with
- *     progress updates to the enroll request.
- * @param {string=} opt_logMsgUrl A URL to post log messages to.
  * @return {UsbEnrollHelper} the newly created helper.
  */
-UsbEnrollHelperFactory.prototype.createHelper =
-    function(timer, errorCb, successCb, opt_progressCb, opt_logMsgUrl) {
-  var helper =
-      new UsbEnrollHelper(this.gnubbyFactory_, timer, errorCb, successCb,
-          opt_progressCb, opt_logMsgUrl);
-  return helper;
+UsbEnrollHelperFactory.prototype.createHelper = function() {
+  return new UsbEnrollHelper(this.gnubbyFactory_, this.timerFactory_);
 };

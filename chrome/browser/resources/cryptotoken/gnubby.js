@@ -42,7 +42,20 @@ usbGnubby.setGnubbies = function(gnubbies) {
  *     result of enumerating.
  */
 usbGnubby.prototype.enumerate = function(cb) {
-  if (!cb) cb = usbGnubby.defaultCallback;
+  if (!cb) {
+    cb = function(rc, indexes) {
+      var msg = 'defaultEnumerateCallback(' + rc;
+      if (indexes) {
+        msg += ', [';
+        for (var i = 0; i < indexes.length; i++) {
+          msg += JSON.stringify(indexes[i]);
+        }
+        msg += ']';
+      }
+      msg += ')';
+      console.log(UTIL_fmt(msg));
+    };
+  }
   if (this.closed) {
     cb(-llGnubby.NODEVICE);
     return;

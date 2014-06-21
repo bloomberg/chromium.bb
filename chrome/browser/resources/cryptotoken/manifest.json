@@ -51,6 +51,7 @@
       "multiplesigner.js",
       "usbsignhelper.js",
       "webrequest.js",
+      "appid.js",
       "background.js"
     ],
     "persistent": false

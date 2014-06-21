@@ -10,92 +10,106 @@
 'use strict';
 
 /**
- * Creates a new sign handler with an array of gnubby indexes.
- * @param {!GnubbyFactory} factory Used to create and open the gnubbies.
- * @param {Array.<llGnubbyDeviceId>} gnubbyIndexes Which gnubbies to open.
+ * @typedef {{
+ *   code: number,
+ *   gnubbyId: llGnubbyDeviceId,
+ *   challenge: (SignHelperChallenge|undefined),
+ *   info: (ArrayBuffer|undefined)
+ * }}
+ */
+var MultipleSignerResult;
+
+/**
+ * Creates a new sign handler that manages signing with all the available
+ * gnubbies.
+ * @param {!GnubbyFactory} gnubbyFactory Used to create and open the gnubbies.
+ * @param {!CountdownFactory} timerFactory Used to create timers to reenumerate
+ *     gnubbies.
  * @param {boolean} forEnroll Whether this signer is signing for an attempted
  *     enroll operation.
- * @param {function(boolean, (number|undefined))} completedCb Called when this
- *     signer completes sign attempts, i.e. no further results should be
- *     expected.
- * @param {function(number, MultipleSignerResult)} gnubbyFoundCb Called with
- *     each gnubby/challenge that yields a successful result.
- * @param {Countdown=} opt_timer An advisory timer, beyond whose expiration the
+ * @param {function(boolean)} allCompleteCb Called when this signer completes
+ *     sign attempts, i.e. no further results will be produced. The parameter
+ *     indicates whether any gnubbies are present that have not yet produced a
+ *     final result.
+ * @param {function(MultipleSignerResult, boolean)} gnubbyCompleteCb
+ *     Called with each gnubby/challenge that yields a final result, along with
+ *     whether this signer expects to produce more results. The boolean is a
+ *     hint rather than a promise: it's possible for this signer to produce
+ *     further results after saying it doesn't expect more, or to fail to
+ *     produce further results after saying it does.
+ * @param {number} timeoutMillis A timeout value, beyond whose expiration the
  *     signer will not attempt any new operations, assuming the caller is no
  *     longer interested in the outcome.
  * @param {string=} opt_logMsgUrl A URL to post log messages to.
  * @constructor
  */
-function MultipleGnubbySigner(factory, gnubbyIndexes, forEnroll, completedCb,
-    gnubbyFoundCb, opt_timer, opt_logMsgUrl) {
+function MultipleGnubbySigner(gnubbyFactory, timerFactory, forEnroll,
+    allCompleteCb, gnubbyCompleteCb, timeoutMillis, opt_logMsgUrl) {
   /** @private {!GnubbyFactory} */
-  this.factory_ = factory;
-  /** @private {Array.<llGnubbyDeviceId>} */
-  this.gnubbyIndexes_ = gnubbyIndexes;
+  this.gnubbyFactory_ = gnubbyFactory;
+  /** @private {!CountdownFactory} */
+  this.timerFactory_ = timerFactory;
   /** @private {boolean} */
   this.forEnroll_ = forEnroll;
-  /** @private {function(boolean, (number|undefined))} */
-  this.completedCb_ = completedCb;
-  /** @private {function(number, MultipleSignerResult)} */
-  this.gnubbyFoundCb_ = gnubbyFoundCb;
-  /** @private {Countdown|undefined} */
-  this.timer_ = opt_timer;
+  /** @private {function(boolean)} */
+  this.allCompleteCb_ = allCompleteCb;
+  /** @private {function(MultipleSignerResult, boolean)} */
+  this.gnubbyCompleteCb_ = gnubbyCompleteCb;
   /** @private {string|undefined} */
   this.logMsgUrl_ = opt_logMsgUrl;
 
   /** @private {Array.<SignHelperChallenge>} */
   this.challenges_ = [];
   /** @private {boolean} */
-  this.challengesFinal_ = false;
-
-  // Create a signer for each gnubby.
+  this.challengesSet_ = false;
   /** @private {boolean} */
-  this.anySucceeded_ = false;
+  this.complete_ = false;
   /** @private {number} */
   this.numComplete_ = 0;
-  /** @private {Array.<SingleGnubbySigner>} */
-  this.signers_ = [];
-  /** @private {Array.<boolean>} */
-  this.stillGoing_ = [];
-  /** @private {Array.<number>} */
-  this.errorStatus_ = [];
-  for (var i = 0; i < gnubbyIndexes.length; i++) {
-    this.addGnubby(gnubbyIndexes[i]);
-  }
+  /** @private {!Object.<string, GnubbyTracker>} */
+  this.gnubbies_ = {};
+  /** @private {Countdown} */
+  this.timer_ = timerFactory.createTimer(
+      timeoutMillis, this.timeout_.bind(this));
+  /** @private {Countdown} */
+  this.reenumerateTimer_ = timerFactory.createTimer(timeoutMillis);
 }
 
 /**
- * Attempts to open this signer's gnubbies, if they're not already open.
- * (This is implicitly done by addChallenges.)
+ * @typedef {{
+ *   index: string,
+ *   signer: SingleGnubbySigner,
+ *   stillGoing: boolean,
+ *   errorStatus: number
+ * }}
  */
-MultipleGnubbySigner.prototype.open = function() {
-  for (var i = 0; i < this.signers_.length; i++) {
-    this.signers_[i].open();
-  }
-};
+var GnubbyTracker;
 
 /**
  * Closes this signer's gnubbies, if any are open.
  */
 MultipleGnubbySigner.prototype.close = function() {
-  for (var i = 0; i < this.signers_.length; i++) {
-    this.signers_[i].close();
+  for (var k in this.gnubbies_) {
+    this.gnubbies_[k].signer.close();
+  }
+  this.reenumerateTimer_.clearTimeout();
+  this.timer_.clearTimeout();
+  if (this.reenumerateIntervalTimer_) {
+    this.reenumerateIntervalTimer_.clearTimeout();
   }
 };
 
 /**
- * Adds challenges to the set of challenges being tried by this signer.
- * The challenges are an array of challenge objects, where each challenge
- * object's values are base64-encoded.
- * If the signer is currently idle, begins signing the new challenges.
- *
- * @param {Array} challenges Encoded challenges
- * @param {boolean} finalChallenges True iff there are no more challenges to add
+ * Begins signing the given challenges.
+ * @param {Array.<SignHelperChallenge>} challenges The challenges to sign.
  * @return {boolean} whether the challenges were successfully added.
  */
-MultipleGnubbySigner.prototype.addEncodedChallenges =
-    function(challenges, finalChallenges) {
-  var decodedChallenges = [];
+MultipleGnubbySigner.prototype.doSign = function(challenges) {
+  if (this.challengesSet_) {
+    // Can't add new challenges once they're finalized.
+    return false;
+  }
+
   if (challenges) {
     for (var i = 0; i < challenges.length; i++) {
       var decodedChallenge = {};
@@ -107,165 +121,215 @@ MultipleGnubbySigner.prototype.addEncodedChallenges =
       if (challenge['version']) {
         decodedChallenge['version'] = challenge['version'];
       }
-      decodedChallenges.push(decodedChallenge);
+      this.challenges_.push(decodedChallenge);
     }
   }
-  return this.addChallenges(decodedChallenges, finalChallenges);
+  this.challengesSet_ = true;
+  this.enumerateGnubbies_();
+  return true;
 };
 
 /**
- * Adds challenges to the set of challenges being tried by this signer.
- * If the signer is currently idle, begins signing the new challenges.
- *
- * @param {Array.<SignHelperChallenge>} challenges Challenges to add
- * @param {boolean} finalChallenges True iff there are no more challnges to add
- * @return {boolean} whether the challenges were successfully added.
+ * Enumerates gnubbies.
+ * @private
  */
-MultipleGnubbySigner.prototype.addChallenges =
-    function(challenges, finalChallenges) {
-  if (this.challengesFinal_) {
-    // Can't add new challenges once they're finalized.
-    return false;
-  }
+MultipleGnubbySigner.prototype.enumerateGnubbies_ = function() {
+  this.gnubbyFactory_.enumerate(this.enumerateCallback_.bind(this));
+};
 
-  if (challenges) {
-    for (var i = 0; i < challenges.length; i++) {
-      this.challenges_.push(challenges[i]);
-    }
+/**
+ * Called with the result of enumerating gnubbies.
+ * @param {number} rc The return code from enumerating.
+ * @param {Array.<llGnubbyDeviceId>} ids The gnubbies enumerated.
+ * @private
+ */
+MultipleGnubbySigner.prototype.enumerateCallback_ = function(rc, ids) {
+  if (this.complete_) {
+    return;
   }
-  this.challengesFinal_ = finalChallenges;
+  if (rc || !ids || !ids.length) {
+    this.maybeReEnumerateGnubbies_(true);
+    return;
+  }
+  for (var i = 0; i < ids.length; i++) {
+    this.addGnubby_(ids[i]);
+  }
+  this.maybeReEnumerateGnubbies_(false);
+};
 
-  for (var i = 0; i < this.signers_.length; i++) {
-    this.stillGoing_[i] =
-        this.signers_[i].addChallenges(challenges, finalChallenges);
-    this.errorStatus_[i] = 0;
+/**
+ * How frequently to reenumerate gnubbies when none are found, in milliseconds.
+ * @const
+ */
+MultipleGnubbySigner.ACTIVE_REENUMERATE_INTERVAL_MILLIS = 200;
+
+/**
+ * How frequently to reenumerate gnubbies when some are found, in milliseconds.
+ * @const
+ */
+MultipleGnubbySigner.PASSIVE_REENUMERATE_INTERVAL_MILLIS = 3000;
+
+/**
+ * Reenumerates gnubbies if there's still time.
+ * @param {boolean} activeScan Whether to poll more aggressively, e.g. if
+ *     there are no devices present.
+ * @private
+ */
+MultipleGnubbySigner.prototype.maybeReEnumerateGnubbies_ =
+    function(activeScan) {
+  if (this.reenumerateTimer_.expired()) {
+    // If the timer is expired, timeout_ will be called, and there's no
+    // additional work to do here.
+    return;
   }
-  return true;
+  // Reenumerate more aggressively if there are no gnubbies present than if
+  // there are any.
+  var reenumerateTimeoutMillis;
+  if (activeScan) {
+    reenumerateTimeoutMillis =
+        MultipleGnubbySigner.ACTIVE_REENUMERATE_INTERVAL_MILLIS;
+  } else {
+    reenumerateTimeoutMillis =
+        MultipleGnubbySigner.PASSIVE_REENUMERATE_INTERVAL_MILLIS;
+  }
+  if (reenumerateTimeoutMillis >
+      this.reenumerateTimer_.millisecondsUntilExpired()) {
+    reenumerateTimeoutMillis =
+        this.reenumerateTimer_.millisecondsUntilExpired();
+  }
+  /** @private {Countdown} */
+  this.reenumerateIntervalTimer_ =
+      this.timerFactory_.createTimer(reenumerateTimeoutMillis,
+          this.enumerateGnubbies_.bind(this));
 };
 
 /**
  * Adds a new gnubby to this signer's list of gnubbies. (Only possible while
- * this signer is still signing: without this restriction, the morePossible
- * indication in the callbacks could become violated.) If this signer has
- * challenges to sign, begins signing on the new gnubby with them.
- * @param {llGnubbyDeviceId} gnubbyIndex The index of the gnubby to add.
+ * this signer is still signing: without this restriction, the completed
+ * callback could be called more than once, in violation of its contract.)
+ * If this signer has challenges to sign, begins signing on the new gnubby with
+ * them.
+ * @param {llGnubbyDeviceId} gnubbyId The id of the gnubby to add.
  * @return {boolean} Whether the gnubby was added successfully.
+ * @private
  */
-MultipleGnubbySigner.prototype.addGnubby = function(gnubbyIndex) {
-  if (this.numComplete_ && this.numComplete_ == this.signers_.length)
+MultipleGnubbySigner.prototype.addGnubby_ = function(gnubbyId) {
+  var index = JSON.stringify(gnubbyId);
+  if (this.gnubbies_.hasOwnProperty(index)) {
+    // Can't add the same gnubby twice.
     return false;
-
-  var index = this.signers_.length;
-  this.signers_.push(
-      new SingleGnubbySigner(
-          this.factory_,
-          gnubbyIndex,
-          this.forEnroll_,
-          this.signFailedCallback_.bind(this, index),
-          this.signSucceededCallback_.bind(this, index),
-          this.timer_ ? this.timer_.clone() : null,
-          this.logMsgUrl_));
-  this.stillGoing_.push(false);
-
-  if (this.challenges_.length) {
-    this.stillGoing_[index] =
-        this.signers_[index].addChallenges(this.challenges_,
-            this.challengesFinal_);
+  }
+  var tracker = {
+      index: index,
+      errorStatus: 0,
+      stillGoing: false,
+      signer: null
+  };
+  tracker.signer = new SingleGnubbySigner(
+      this.gnubbyFactory_,
+      gnubbyId,
+      this.forEnroll_,
+      this.signCompletedCallback_.bind(this, tracker),
+      this.timer_.clone(),
+      this.logMsgUrl_);
+  this.gnubbies_[index] = tracker;
+  this.gnubbies_[index].stillGoing =
+      tracker.signer.doSign(this.challenges_);
+  if (!this.gnubbies_[index].errorStatus) {
+    this.gnubbies_[index].errorStatus = 0;
   }
   return true;
 };
 
 /**
- * Called by a SingleGnubbySigner upon failure, i.e. unsuccessful completion of
- * all its sign operations.
- * @param {number} index the index of the gnubby whose result this is
- * @param {number} code the result code of the sign operation
+ * Called by a SingleGnubbySigner upon completion.
+ * @param {GnubbyTracker} tracker The tracker object of the gnubby whose result
+ *     this is.
+ * @param {SingleSignerResult} result The result of the sign operation.
  * @private
  */
-MultipleGnubbySigner.prototype.signFailedCallback_ = function(index, code) {
+MultipleGnubbySigner.prototype.signCompletedCallback_ =
+    function(tracker, result) {
   console.log(
-      UTIL_fmt('failure. gnubby ' + index + ' got code ' + code.toString(16)));
-  if (!this.stillGoing_[index]) {
-    console.log(UTIL_fmt('gnubby ' + index + ' no longer running!'));
+      UTIL_fmt(result.code ? 'failure.' : 'success!' +
+          ' gnubby ' + tracker.index +
+          ' got code ' + result.code.toString(16)));
+  if (!tracker.stillGoing) {
+    console.log(UTIL_fmt('gnubby ' + tracker.index + ' no longer running!'));
     // Shouldn't ever happen? Disregard.
     return;
   }
-  this.stillGoing_[index] = false;
-  this.errorStatus_[index] = code;
-  this.numComplete_++;
-  var morePossible = this.numComplete_ < this.signers_.length;
-  if (!morePossible)
-    this.notifyComplete_();
-};
-
-/**
- * Called by a SingleGnubbySigner upon success.
- * @param {number} index the index of the gnubby whose result this is
- * @param {usbGnubby} gnubby the underlying gnubby that succeded.
- * @param {number} code the result code of the sign operation
- * @param {SingleSignerResult=} signResult Result object
- * @private
- */
-MultipleGnubbySigner.prototype.signSucceededCallback_ =
-    function(index, gnubby, code, signResult) {
-  console.log(UTIL_fmt('success! gnubby ' + index + ' got code ' +
-      code.toString(16)));
-  if (!this.stillGoing_[index]) {
-    console.log(UTIL_fmt('gnubby ' + index + ' no longer running!'));
-    // Shouldn't ever happen? Disregard.
-    return;
-  }
-  this.anySucceeded_ = true;
-  this.stillGoing_[index] = false;
-  this.notifySuccess_(code, gnubby, index, signResult);
-  this.numComplete_++;
-  var morePossible = this.numComplete_ < this.signers_.length;
-  if (!morePossible)
-    this.notifyComplete_();
-};
-
-/**
- * @private
- */
-MultipleGnubbySigner.prototype.notifyComplete_ = function() {
-  // See if any of the signers failed with a strange error. If so, report a
-  // single error to the caller, partly as a diagnostic aid and partly to
-  // distinguish real failures from wrong data.
-  var funnyBusiness;
-  for (var i = 0; i < this.errorStatus_.length; i++) {
-    if (this.errorStatus_[i] &&
-        this.errorStatus_[i] != DeviceStatusCodes.WRONG_DATA_STATUS &&
-        this.errorStatus_[i] != DeviceStatusCodes.WAIT_TOUCH_STATUS) {
-      funnyBusiness = this.errorStatus_[i];
+  tracker.stillGoing = false;
+  tracker.errorStatus = result.code;
+  var moreExpected = this.tallyCompletedGnubby_();
+  switch (result.code) {
+    case DeviceStatusCodes.GONE_STATUS:
+      // Squelch removed gnubbies: the caller can't act on them.
       break;
-    }
+
+    default:
+      // Report any other results directly to the caller.
+      this.notifyGnubbyComplete_(tracker, result, moreExpected);
+      break;
   }
-  if (funnyBusiness) {
-    console.warn(UTIL_fmt('all done (success: ' + this.anySucceeded_ + ', ' +
-        'funny error = ' + funnyBusiness + ')'));
-  } else {
-    console.log(UTIL_fmt('all done (success: ' + this.anySucceeded_ + ')'));
-  }
-  this.completedCb_(this.anySucceeded_, funnyBusiness);
 };
 
 /**
- * @param {number} code Success status code
- * @param {usbGnubby} gnubby The gnubby that succeeded
- * @param {number} gnubbyIndex The gnubby's index
- * @param {SingleSignerResult=} singleSignerResult Result object
+ * Counts another gnubby has having completed, and returns whether more results
+ * are expected.
+ * @return {boolean} Whether more gnubbies are still running.
  * @private
  */
-MultipleGnubbySigner.prototype.notifySuccess_ =
-    function(code, gnubby, gnubbyIndex, singleSignerResult) {
-  console.log(UTIL_fmt('success (' + code.toString(16) + ')'));
+MultipleGnubbySigner.prototype.tallyCompletedGnubby_ = function() {
+  this.numComplete_++;
+  return this.anyPending_();
+};
+
+/**
+ * @return {boolean} Whether more gnubbies are still running.
+ * @private
+ */
+MultipleGnubbySigner.prototype.anyPending_ = function() {
+  return this.numComplete_ < Object.keys(this.gnubbies_).length;
+};
+
+/**
+ * Called upon timeout.
+ * @private
+ */
+MultipleGnubbySigner.prototype.timeout_ = function() {
+  if (this.complete_) return;
+  this.complete_ = true;
+  // Defer notifying the caller that all are complete, in case the caller is
+  // doing work in response to a gnubbyFound callback and has an inconsistent
+  // view of the state of this signer.
+  var self = this;
+  var anyPending = this.anyPending_();
+  window.setTimeout(function() {
+    self.allCompleteCb_(anyPending);
+  }, 0);
+};
+
+/**
+ * @param {GnubbyTracker} tracker The tracker object of the gnubby whose result
+ *     this is.
+ * @param {SingleSignerResult} result Result object.
+ * @param {boolean} moreExpected Whether more gnubbies may still produce an
+ *     outcome.
+ * @private
+ */
+MultipleGnubbySigner.prototype.notifyGnubbyComplete_ =
+    function(tracker, result, moreExpected) {
+  console.log(UTIL_fmt('gnubby ' + tracker.index + ' complete (' +
+      result.code.toString(16) + ')'));
   var signResult = {
-    'gnubby': gnubby,
-    'gnubbyIndex': gnubbyIndex
+    'code': result.code,
+    'gnubby': result.gnubby,
+    'gnubbyId': tracker.signer.getDeviceId()
   };
-  if (singleSignerResult && singleSignerResult['challenge'])
-    signResult['challenge'] = singleSignerResult['challenge'];
-  if (singleSignerResult && singleSignerResult['info'])
-    signResult['info'] = singleSignerResult['info'];
-  this.gnubbyFoundCb_(code, signResult);
+  if (result['challenge'])
+    signResult['challenge'] = result['challenge'];
+  if (result['info'])
+    signResult['info'] = result['info'];
+  this.gnubbyCompleteCb_(signResult, moreExpected);
 };
