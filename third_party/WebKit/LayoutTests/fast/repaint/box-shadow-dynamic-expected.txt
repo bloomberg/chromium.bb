@@ -1,19 +1,19 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (repaint rects
-        (rect 28.00 190.00 30.00 50.00)
-        (rect 28.00 190.00 30.00 30.00)
-        (rect 28.00 70.00 30.00 70.00)
-        (rect 28.00 70.00 30.00 50.00)
-        (rect 18.00 225.00 55.00 20.00)
-        (rect 18.00 125.00 55.00 20.00)
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [28, 190, 30, 50],
+        [28, 190, 30, 30],
+        [28, 70, 30, 70],
+        [28, 70, 30, 50],
+        [18, 225, 55, 20],
+        [18, 125, 55, 20]
+      ]
+    }
+  ]
+}
 
