@@ -230,12 +230,12 @@ UserView::UserView(SystemTrayItem* owner,
   AddUserCard(login);
 }
 
-UserView::~UserView() {}
+UserView::~UserView() {
+  RemoveAddUserMenuOption();
+}
 
 void UserView::MouseMovedOutOfHost() {
-  popup_message_.reset();
-  mouse_watcher_.reset();
-  add_menu_option_.reset();
+  RemoveAddUserMenuOption();
 }
 
 TrayUser::TestState UserView::GetStateForTest() const {
@@ -321,6 +321,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == logout_button_) {
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(
         ash::UMA_STATUS_AREA_SIGN_OUT);
+    RemoveAddUserMenuOption();
     Shell::GetInstance()->system_tray_delegate()->SignOut();
   } else if (sender == user_card_view_ && !multiprofile_index_ &&
              IsMultiAccountSupportedAndUserActive()) {
@@ -330,6 +331,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
     if (!multiprofile_index_) {
       ToggleAddUserMenuOption();
     } else {
+      RemoveAddUserMenuOption();
       SwitchUser(multiprofile_index_);
       // Since the user list is about to change the system menu should get
       // closed.
@@ -337,6 +339,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
     }
   } else if (add_menu_option_.get() &&
              sender == add_menu_option_->GetContentsView()) {
+    RemoveAddUserMenuOption();
     // Let the user add another account to the session.
     MultiProfileUMA::RecordSigninUser(MultiProfileUMA::SIGNIN_USER_BY_TRAY);
     Shell::GetInstance()->system_tray_delegate()->ShowUserLogin();
@@ -344,6 +347,15 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   } else {
     NOTREACHED();
   }
+}
+
+void UserView::OnWillChangeFocus(View* focused_before, View* focused_now) {
+  if (focused_now)
+    RemoveAddUserMenuOption();
+}
+
+void UserView::OnDidChangeFocus(View* focused_before, View* focused_now) {
+  // Nothing to do here.
 }
 
 void UserView::AddLogoutButton(user::LoginStatus login) {
@@ -404,15 +416,40 @@ void UserView::AddUserCard(user::LoginStatus login) {
       user_card_view_->SetBorder(views::Border::CreateEmptyBorder(
           0, kTrayUserTileHoverBorderInset, 0, 0));
     }
+    gfx::Insets insets = gfx::Insets(1, 1, 1, 1);
+    views::View* contents_view = user_card_view_;
+    ButtonFromView* button = NULL;
     if (!for_detailed_view_) {
-      user_card_view_ =
-          new ButtonFromView(user_card_view_, this, !multiprofile_index_);
+      if (multiprofile_index_) {
+        // Since the activation border needs to be drawn around the tile, we
+        // have to put the tile into another view which fills the menu panel,
+        // but keeping the offsets of the content.
+        contents_view = new views::View();
+        contents_view->SetBorder(views::Border::CreateEmptyBorder(
+            kTrayPopupUserCardVerticalPadding,
+            kTrayPopupPaddingHorizontal,
+            kTrayPopupUserCardVerticalPadding,
+            kTrayPopupPaddingHorizontal));
+        contents_view->SetLayoutManager(new views::FillLayout());
+        SetBorder(views::Border::CreateEmptyBorder(0, 0, 0, 0));
+        contents_view->AddChildView(user_card_view_);
+        insets = gfx::Insets(1, 1, 1, 3);
+      }
+      button = new ButtonFromView(contents_view,
+                                  this,
+                                  !multiprofile_index_,
+                                  insets);
+      // TODO(skuhne): For accessibility we need to call |SetAccessibleName|
+      // with a useful name (string freeze for M37 has passed).
     } else {
       // We want user card for detailed view to have exactly the same look
       // as user card for default view. That's why we wrap it in a button
-      // without click listener and special hover behaviour.
-      user_card_view_ = new ButtonFromView(user_card_view_, NULL, false);
+      // without click listener and special hover behavior.
+      button = new ButtonFromView(contents_view, NULL, false, insets);
     }
+    // A click on the button should not trigger a focus change.
+    button->set_request_focus_on_press(false);
+    user_card_view_ = button;
     is_user_card_button_ = true;
   }
   AddChildViewAt(user_card_view_, 0);
@@ -424,9 +461,7 @@ void UserView::AddUserCard(user::LoginStatus login) {
 
 void UserView::ToggleAddUserMenuOption() {
   if (add_menu_option_.get()) {
-    popup_message_.reset();
-    mouse_watcher_.reset();
-    add_menu_option_.reset();
+    RemoveAddUserMenuOption();
     return;
   }
 
@@ -462,9 +497,14 @@ void UserView::ToggleAddUserMenuOption() {
       Shell::GetInstance()->session_state_delegate();
   add_user_disabled_ = delegate->NumberOfLoggedInUsers() >=
                        delegate->GetMaximumNumberOfLoggedInUsers();
-  ButtonFromView* button = add_user_disabled_
-                               ? new ButtonFromView(add_user_view, NULL, false)
-                               : new ButtonFromView(add_user_view, this, true);
+  ButtonFromView* button = new ButtonFromView(
+      add_user_view,
+      add_user_disabled_ ? NULL : this,
+      !add_user_disabled_,
+      gfx::Insets(1, 1, 1, 1));
+  button->set_request_focus_on_press(false);
+  button->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
   button->ForceBorderVisible(true);
   add_menu_option_->SetContentsView(button);
 
@@ -478,6 +518,12 @@ void UserView::ToggleAddUserMenuOption() {
         views::BubbleBorder::TOP_LEFT,
         gfx::Size(parent()->bounds().width() - kPopupMessageOffset, 0),
         2 * kPopupMessageOffset));
+  } else {
+    // We activate the entry automatically if invoked with focus.
+    if (user_card_view_->HasFocus()) {
+      button->GetFocusManager()->SetFocusedView(button);
+      user_card_view_->GetFocusManager()->SetFocusedView(button);
+    }
   }
   // Find the screen area which encloses both elements and sets then a mouse
   // watcher which will close the "menu".
@@ -486,6 +532,19 @@ void UserView::ToggleAddUserMenuOption() {
   mouse_watcher_.reset(
       new views::MouseWatcher(new UserViewMouseWatcherHost(area), this));
   mouse_watcher_->Start();
+  // Install a listener to focus changes so that we can remove the card when
+  // the focus gets changed.
+  user_card_view_->GetFocusManager()->AddFocusChangeListener(this);
+}
+
+void UserView::RemoveAddUserMenuOption() {
+  if (!add_menu_option_.get())
+    return;
+  user_card_view_->GetFocusManager()->RemoveFocusChangeListener(this);
+  user_card_view_->GetFocusManager()->ClearFocus();
+  popup_message_.reset();
+  mouse_watcher_.reset();
+  add_menu_option_.reset();
 }
 
 }  // namespace tray

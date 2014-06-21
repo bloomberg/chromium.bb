@@ -11,6 +11,7 @@
 #include "ash/system/user/tray_user.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/view.h"
@@ -30,7 +31,8 @@ namespace tray {
 // The view of a user item in system tray bubble.
 class UserView : public views::View,
                  public views::ButtonListener,
-                 public views::MouseWatcherListener {
+                 public views::MouseWatcherListener,
+                 public views::FocusChangeListener {
  public:
   UserView(SystemTrayItem* owner,
            ash::user::LoginStatus login,
@@ -54,12 +56,21 @@ class UserView : public views::View,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
+  // Overridden from views::FocusChangeListener:
+  virtual void OnWillChangeFocus(View* focused_before,
+                                 View* focused_now) OVERRIDE;
+  virtual void OnDidChangeFocus(View* focused_before,
+                                View* focused_now) OVERRIDE;
+
   void AddLogoutButton(user::LoginStatus login);
   void AddUserCard(user::LoginStatus login);
 
   // Create the menu option to add another user. If |disabled| is set the user
   // cannot actively click on the item.
   void ToggleAddUserMenuOption();
+
+  // Removes the add user menu option.
+  void RemoveAddUserMenuOption();
 
   MultiProfileIndex multiprofile_index_;
   // The view of the user card.
