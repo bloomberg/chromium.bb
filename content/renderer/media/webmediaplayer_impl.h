@@ -163,7 +163,7 @@ class WebMediaPlayerImpl
   //   2) Compositing not available
   void InvalidateOnMainThread();
 
-  void OnPipelineSeek(media::PipelineStatus status);
+  void OnPipelineSeeked(bool time_changed, media::PipelineStatus status);
   void OnPipelineEnded();
   void OnPipelineError(media::PipelineStatus error);
   void OnPipelineMetadata(media::PipelineMetadata metadata);
