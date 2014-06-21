@@ -18,7 +18,7 @@ class PixelTestsPage(page_module.Page):
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
     action_runner.WaitForJavaScriptCondition(
-        'domAutomationController._finished', timeout=30)
+        'domAutomationController._finished', timeout_in_seconds=30)
 
 
 class PixelTestsPageSet(page_set_module.PageSet):

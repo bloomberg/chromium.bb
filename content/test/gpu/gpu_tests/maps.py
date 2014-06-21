@@ -84,7 +84,8 @@ class MapsPage(page.Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.WaitForJavaScriptCondition('window.testDone', timeout=180)
+    action_runner.WaitForJavaScriptCondition(
+        'window.testDone', timeout_in_seconds=180)
 
 
 class Maps(cloud_storage_test_base.TestBase):

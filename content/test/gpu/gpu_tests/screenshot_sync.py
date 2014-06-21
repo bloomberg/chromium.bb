@@ -39,7 +39,7 @@ class ScreenshotSyncPage(page.Page):
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
     action_runner.WaitForJavaScriptCondition(
-        'window.__testComplete', timeout=120)
+        'window.__testComplete', timeout_in_seconds=120)
 
 
 class ScreenshotSyncProcess(test.Test):

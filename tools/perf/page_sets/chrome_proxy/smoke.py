@@ -94,7 +94,7 @@ class Page6(SmokePage):
       name='safebrowsing')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self, timeout_seconds=5)
+    action_runner.NavigateToPage(self, timeout_in_seconds=5)
 
 
 class SmokePageSet(page_set_module.PageSet):
