@@ -71,7 +71,7 @@
             android:id="@+id/close_button"
             android:contentDescription="@string/infobar_close"
             android:adjustViewBounds="true"
-            android:src="@drawable/dismiss"
+            android:src="@drawable/infobar_close_button"
             android:background="@drawable/app_banner_button_close"
             android:padding="@dimen/app_banner_close_button_padding"
             android:layout_width="wrap_content"

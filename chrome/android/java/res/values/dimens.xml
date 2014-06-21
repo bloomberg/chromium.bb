@@ -27,21 +27,21 @@
     <dimen name="edge_swipe_in_additional_slop">50dp</dimen>
     <dimen name="edge_swipe_out_slop">18dp</dimen>
     
-        <!-- Infobar dimensions -->
-    <!-- Text size of the InfoBar message. -->
+    <!-- Infobar dimensions -->
+    <!-- Text size of the infobar message. -->
     <dimen name="infobar_text_size">16sp</dimen>
-    <!-- Text size of text inside InfoBar buttons. -->
+    <!-- Text size of text inside infobar buttons. -->
     <dimen name="infobar_button_text_size">16sp</dimen>
-    <!-- Minimum dimension (height or width) of the upper row of an InfoBar. -->
+    <!-- Minimum dimension (height or width) of the upper row of an infobar. -->
     <dimen name="infobar_min_size">60dp</dimen>
-    <!-- Margin between items in an InfoBar. -->
+    <!-- Margin between items in an infobar. -->
     <dimen name="infobar_margin">10dp</dimen>
     <!-- Left/right padding for infobar button text. -->
     <dimen name="infobar_button_horizontal_padding">30dp</dimen>
     <!-- Minimum height for a touch target. -->
     <dimen name="infobar_touch_target_height">40dp</dimen>
-    <!-- Dimension (height or width) of the InfoBar icon. -->
-    <dimen name="infobar_icon_size">31dp</dimen>
+    <!-- Height and width of the infobar icon. -->
+    <dimen name="infobar_icon_size">36dp</dimen>
 
     <!-- App banner dimensions -->
     <dimen name="app_banner_max_width">424dp</dimen>

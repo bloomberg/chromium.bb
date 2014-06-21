@@ -20,8 +20,8 @@ public class SavePasswordInfoBar extends ConfirmInfoBar {
     public SavePasswordInfoBar(long nativeInfoBar, SavePasswordInfoBarDelegate delegate,
             int iconDrawableId, String message, String primaryButtonText,
             String secondaryButtonText) {
-        super(nativeInfoBar, null, InfoBar.BACKGROUND_TYPE_WARNING, iconDrawableId,
-                message, null, primaryButtonText, secondaryButtonText);
+        super(nativeInfoBar, null, iconDrawableId, message,
+                null, primaryButtonText, secondaryButtonText);
         mNativeInfoBar = nativeInfoBar;
         mDelegate = delegate;
     }

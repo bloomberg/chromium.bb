@@ -5,10 +5,9 @@
 -->
 
 <resources>
-    <!-- Colors were copied from browser/views/infobars/infobars.cc -->
-    <color name="infobar_text">#000000</color>
-    <color name="infobar_info_background_separator">#afafaf</color>
-    <color name="infobar_warning_background_separator">#ccb771</color>
+    <color name="infobar_text">#333</color>
+    <color name="infobar_background">#fff</color>
+    <color name="infobar_background_separator">#afafaf</color>
 
     <!-- Tab Switcher Colors -->
     <color name="tab_switcher_background">#111111</color>

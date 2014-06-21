@@ -45,8 +45,7 @@ public class TranslateInfoBar extends TwoButtonInfoBar implements SubPanelListen
             int infoBarType, int sourceLanguageIndex, int targetLanguageIndex,
             boolean autoTranslatePair, boolean shouldShowNeverBar,
             boolean triggeredFromMenu, String[] languages) {
-        super(null, BACKGROUND_TYPE_INFO,
-                R.drawable.infobar_translate);
+        super(null, R.drawable.infobar_translate);
         mTranslateDelegate = delegate;
         mOptions = new TranslateOptions(sourceLanguageIndex, targetLanguageIndex, languages,
                 autoTranslatePair, triggeredFromMenu);

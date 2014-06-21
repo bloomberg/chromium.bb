@@ -40,7 +40,6 @@ public abstract class InfoBar implements InfoBarView {
     public static final int BACKGROUND_TYPE_INFO = 0;
     public static final int BACKGROUND_TYPE_WARNING = 1;
 
-    private final int mBackgroundType;
     private final int mIconDrawableId;
 
     private InfoBarListeners.Dismiss mListener;
@@ -66,13 +65,11 @@ public abstract class InfoBar implements InfoBarView {
 
     /**
      * @param listener Listens to when buttons have been clicked on the InfoBar.
-     * @param backgroundType Background type to use (INFO or WARNING).
      * @param iconDrawableId ID of the resource to use for the Icon.  If 0, no icon will be shown.
      */
-    public InfoBar(InfoBarListeners.Dismiss listener, int backgroundType, int iconDrawableId) {
+    public InfoBar(InfoBarListeners.Dismiss listener, int iconDrawableId) {
         mListener = listener;
         mId = generateId();
-        mBackgroundType = backgroundType;
         mIconDrawableId = iconDrawableId;
         mExpireOnNavigation = true;
     }
@@ -92,17 +89,19 @@ public abstract class InfoBar implements InfoBarView {
     /**
      * Change the pointer to the native-side counterpart of this InfoBar.  Native-side code is
      * responsible for managing the cleanup of the pointer.
-     * @param nativeInfoBarPtr Pointer to the NativeInfoBar.
+     * @param newInfoBarPtr Pointer to the NativeInfoBar.
      */
     protected void replaceNativePointer(long newInfoBarPtr) {
         mNativeInfoBarPtr = newInfoBarPtr;
     }
 
-    // Determine if the infobar should be dismissed when |url| is loaded.  Calling
-    // setExpireOnNavigation(true/false) causes this method always to return true/false.
-    // This only applies to java-only infobars. C++ infobars will use the same logic
-    // as other platforms so they are not attempted to be dismissed twice.
-    // It should really be removed once all infobars have a C++ counterpart.
+    /**
+     * Determine if the infobar should be dismissed when |url| is loaded. Calling
+     * setExpireOnNavigation(true/false) causes this method always to return true/false.
+     * This only applies to java-only infobars. C++ infobars will use the same logic
+     * as other platforms so they are not attempted to be dismissed twice.
+     * It should really be removed once all infobars have a C++ counterpart.
+     */
     public final boolean shouldExpire(String url) {
         return mExpireOnNavigation && mNativeInfoBarPtr == 0;
     }
@@ -147,7 +146,7 @@ public abstract class InfoBar implements InfoBarView {
      */
     protected final View createView() {
         assert mContext != null;
-        return new InfoBarLayout(mContext, this, mBackgroundType, mIconDrawableId);
+        return new InfoBarLayout(mContext, this, mIconDrawableId);
     }
 
     /**
@@ -178,8 +177,8 @@ public abstract class InfoBar implements InfoBarView {
 
     protected ContentWrapperView getContentWrapper(boolean createIfNotFound) {
         if (mContentView == null && createIfNotFound) {
-            mContentView = new ContentWrapperView(getContext(), this, mBackgroundType,
-                    createView(), getInfoBarContainer().areInfoBarsOnTop());
+            mContentView = new ContentWrapperView(getContext(), this, createView(),
+                    getInfoBarContainer().areInfoBarsOnTop());
             mContentView.setFocusable(false);
         }
         return mContentView;

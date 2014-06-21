@@ -36,11 +36,8 @@ public class ConfirmInfoBarDelegate {
             String linkText, String buttonOk, String buttonCancel) {
         int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
 
-        // Apparently, yellow was the popular choice at the time these InfoBars were implemented
-        // because they stuck out more (hence the BACKGROUND_TYPE_WARNING) default.
-        ConfirmInfoBar infoBar = new ConfirmInfoBar(nativeInfoBar, null,
-                InfoBar.BACKGROUND_TYPE_WARNING, drawableId, message, linkText, buttonOk,
-                buttonCancel);
+        ConfirmInfoBar infoBar = new ConfirmInfoBar(nativeInfoBar, null, drawableId, message,
+                linkText, buttonOk, buttonCancel);
         return infoBar;
     }
 }

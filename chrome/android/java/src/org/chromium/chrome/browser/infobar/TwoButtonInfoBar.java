@@ -15,7 +15,11 @@ import org.chromium.chrome.R;
 public abstract class TwoButtonInfoBar extends InfoBar {
     public TwoButtonInfoBar(InfoBarListeners.Dismiss dismissListener, int backgroundType,
             int iconDrawableId) {
-        super(dismissListener, backgroundType, iconDrawableId);
+        super(dismissListener, iconDrawableId);
+    }
+
+    public TwoButtonInfoBar(InfoBarListeners.Dismiss dismissListener, int iconDrawableId) {
+        super(dismissListener, iconDrawableId);
     }
 
     /**

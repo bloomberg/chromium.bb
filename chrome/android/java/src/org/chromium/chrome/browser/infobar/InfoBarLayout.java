@@ -107,26 +107,18 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
      * Constructs the layout for the specified InfoBar.
      * @param context The context used to render.
      * @param infoBarView InfoBarView that listens to events.
-     * @param backgroundType Type of InfoBar background being shown.
      * @param iconResourceId ID of the icon to use for the InfoBar.
      */
-    public InfoBarLayout(Context context, InfoBarView infoBarView, int backgroundType,
-            int iconResourceId) {
+    public InfoBarLayout(Context context, InfoBarView infoBarView, int iconResourceId) {
         super(context);
         mIndicesOfRows = new ArrayList<Integer>();
         mLayoutRTL = LocalizationUtils.isLayoutRtl();
         mInfoBarView = infoBarView;
 
         // Determine what backgrounds we'll be needing for the buttons.
-        if (backgroundType == InfoBar.BACKGROUND_TYPE_INFO) {
-            mBackgroundFloating = R.drawable.infobar_button_normal_floating;
-            mBackgroundFullLeft = R.drawable.infobar_button_normal_full_left;
-            mBackgroundFullRight = R.drawable.infobar_button_normal_full_right;
-        } else {
-            mBackgroundFloating = R.drawable.infobar_button_warning_floating;
-            mBackgroundFullLeft = R.drawable.infobar_button_warning_full_left;
-            mBackgroundFullRight = R.drawable.infobar_button_warning_full_right;
-        }
+        mBackgroundFloating = R.drawable.infobar_button_normal_floating;
+        mBackgroundFullLeft = R.drawable.infobar_button_normal_full_left;
+        mBackgroundFullRight = R.drawable.infobar_button_normal_full_right;
 
         // Grab the dimensions.
         mDimensionMinSize =
@@ -144,7 +136,7 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
 
         // Set up the close button.
         mCloseButton.setId(R.id.infobar_close_button);
-        mCloseButton.setImageResource(R.drawable.dismiss);
+        mCloseButton.setImageResource(R.drawable.infobar_close_button);
         mCloseButton.setBackgroundResource(R.drawable.infobar_close_bg);
         mCloseButton.setOnClickListener(this);
 

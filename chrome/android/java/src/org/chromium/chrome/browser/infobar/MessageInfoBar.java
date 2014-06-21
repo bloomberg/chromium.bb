@@ -22,7 +22,7 @@ public class MessageInfoBar extends InfoBar {
      * @return the infobar.
      */
     public static MessageInfoBar createInfoBar(CharSequence title) {
-        return new MessageInfoBar(null, 0, title, BACKGROUND_TYPE_INFO);
+        return new MessageInfoBar(null, 0, title);
     }
 
     /**
@@ -32,7 +32,7 @@ public class MessageInfoBar extends InfoBar {
      * @return the infobar.
      */
     public static MessageInfoBar createInfoBar(int iconResourceId, CharSequence title) {
-        return new MessageInfoBar(null, iconResourceId, title, BACKGROUND_TYPE_INFO);
+        return new MessageInfoBar(null, iconResourceId, title);
     }
 
     /**
@@ -52,12 +52,17 @@ public class MessageInfoBar extends InfoBar {
      */
     public static MessageInfoBar createWarningInfoBar(InfoBarListeners.Dismiss listener,
             CharSequence title) {
-        return new MessageInfoBar(listener, R.drawable.warning, title, BACKGROUND_TYPE_WARNING);
+        return new MessageInfoBar(listener, R.drawable.infobar_warning, title);
     }
 
     protected MessageInfoBar(InfoBarListeners.Dismiss listener, int iconResourceId,
             CharSequence title, int backgroundType) {
-        super(listener, backgroundType, iconResourceId);
+        this(listener, iconResourceId, title);
+    }
+
+    protected MessageInfoBar(InfoBarListeners.Dismiss listener, int iconResourceId,
+            CharSequence title) {
+        super(listener, iconResourceId);
         mTitle = title;
     }
 

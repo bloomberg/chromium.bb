@@ -33,21 +33,25 @@ public class ConfirmInfoBar extends TwoButtonInfoBar {
     public ConfirmInfoBar(InfoBarListeners.Confirm confirmListener, int backgroundType,
             int iconDrawableId, String message, String primaryButtonText,
             String secondaryButtonText) {
-        this(confirmListener, backgroundType, iconDrawableId, message, null, primaryButtonText,
+        this(confirmListener, iconDrawableId, message, primaryButtonText, secondaryButtonText);
+    }
+
+    public ConfirmInfoBar(InfoBarListeners.Confirm confirmListener, int iconDrawableId,
+            String message, String primaryButtonText, String secondaryButtonText) {
+        this(confirmListener, iconDrawableId, message, null, primaryButtonText,
                 secondaryButtonText);
     }
 
-    public ConfirmInfoBar(InfoBarListeners.Confirm confirmListener, int backgroundType,
-            int iconDrawableId, String message, String linkText, String primaryButtonText,
-            String secondaryButtonText) {
-        this(0, confirmListener, backgroundType, iconDrawableId, message, linkText,
-                primaryButtonText, secondaryButtonText);
+    public ConfirmInfoBar(InfoBarListeners.Confirm confirmListener, int iconDrawableId,
+            String message, String linkText, String primaryButtonText, String secondaryButtonText) {
+        this(0, confirmListener, iconDrawableId, message, linkText, primaryButtonText,
+                secondaryButtonText);
     }
 
     public ConfirmInfoBar(long nativeInfoBar, InfoBarListeners.Confirm confirmListener,
-            int backgroundType, int iconDrawableId, String message, String linkText,
-            String primaryButtonText, String secondaryButtonText) {
-        super(confirmListener, backgroundType, iconDrawableId);
+            int iconDrawableId, String message, String linkText, String primaryButtonText,
+            String secondaryButtonText) {
+        super(confirmListener, iconDrawableId);
         mMessage = message;
         mLinkText = linkText;
         mPrimaryButtonText = primaryButtonText;
