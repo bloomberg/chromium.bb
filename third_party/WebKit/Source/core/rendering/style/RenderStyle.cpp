@@ -25,8 +25,8 @@
 
 #include <algorithm>
 #include "core/css/resolver/StyleResolver.h"
+#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderTheme.h"
-#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/AppliedTextDecoration.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/QuotesData.h"
@@ -1188,7 +1188,7 @@ Length RenderStyle::lineHeight() const
     // too, though this involves messily poking into CalcExpressionLength.
     float multiplier = textAutosizingMultiplier();
     if (multiplier > 1 && lh.isFixed())
-        return Length(TextAutosizer::computeAutosizedFontSize(lh.value(), multiplier), Fixed);
+        return Length(FastTextAutosizer::computeAutosizedFontSize(lh.value(), multiplier), Fixed);
 
     return lh;
 }
@@ -1245,7 +1245,7 @@ void RenderStyle::setFontSize(float size)
 
     float multiplier = textAutosizingMultiplier();
     if (multiplier > 1) {
-        float autosizedFontSize = TextAutosizer::computeAutosizedFontSize(size, multiplier);
+        float autosizedFontSize = FastTextAutosizer::computeAutosizedFontSize(size, multiplier);
         desc.setComputedSize(std::min(maximumAllowedFontSize, autosizedFontSize));
     }
 
