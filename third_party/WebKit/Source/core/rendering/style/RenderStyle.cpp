@@ -423,14 +423,6 @@ bool RenderStyle::diffNeedsFullLayoutAndRepaint(const RenderStyle& other) const
     //   instead of forced full repaint.
 
     if (m_box.get() != other.m_box.get()) {
-        if (m_box->width() != other.m_box->width()
-            || m_box->minWidth() != other.m_box->minWidth()
-            || m_box->maxWidth() != other.m_box->maxWidth()
-            || m_box->height() != other.m_box->height()
-            || m_box->minHeight() != other.m_box->minHeight()
-            || m_box->maxHeight() != other.m_box->maxHeight())
-            return true;
-
         if (m_box->verticalAlign() != other.m_box->verticalAlign())
             return true;
 
@@ -614,6 +606,16 @@ bool RenderStyle::diffNeedsFullLayoutAndRepaint(const RenderStyle& other) const
 
 bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
 {
+    if (m_box.get() != other.m_box.get()) {
+        if (m_box->width() != other.m_box->width()
+            || m_box->minWidth() != other.m_box->minWidth()
+            || m_box->maxWidth() != other.m_box->maxWidth()
+            || m_box->height() != other.m_box->height()
+            || m_box->minHeight() != other.m_box->minHeight()
+            || m_box->maxHeight() != other.m_box->maxHeight())
+            return true;
+    }
+
     return false;
 }
 

@@ -1731,7 +1731,7 @@ bool RenderObject::invalidatePaintAfterLayoutIfNeeded(const RenderLayerModelObje
         invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom), invalidationReason);
 
     // FIXME: This is a limitation of our visual overflow being a single rectangle.
-    if (!style()->boxShadow() && !style()->hasBorderImageOutsets() && !style()->hasOutline())
+    if (!style()->hasBorder() && !style()->boxShadow() && !style()->hasBorderImageOutsets() && !style()->hasOutline())
         return false;
 
     // We didn't move, but we did change size. Invalidate the delta, which will consist of possibly

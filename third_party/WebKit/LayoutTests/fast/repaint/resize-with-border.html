@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script src="resources/text-based-repaint.js"></script>
+<script>
+function repaintTest()
+{
+    document.getElementById('div').style.width = '400px';
+}
+window.onload = runRepaintTest;
+</script>
+<style>
+body {
+    margin: 0;
+}
+div {
+    width: 200px;
+    height: 200px;
+    border: green 10px solid;
+}
+</style>
+<div id="div"></div>
