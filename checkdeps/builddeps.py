@@ -111,7 +111,8 @@ def _GitSourceDirectories(base_directory):
   base_dir_norm = NormalizePath(base_directory)
   git_source_directories = set([base_dir_norm])
 
-  git_ls_files_cmd = ['git', 'ls-files']
+  git_cmd = 'git.bat' if os.name == 'nt' else 'git'
+  git_ls_files_cmd = [git_cmd, 'ls-files']
   # FIXME: Use a context manager in Python 3.2+
   popen = subprocess.Popen(git_ls_files_cmd,
                            stdout=subprocess.PIPE,
