@@ -72,7 +72,7 @@ HidConnectionLinux::HidConnectionLinux(HidDeviceInfo device_info,
 
   if (fcntl(device_file.GetPlatformFile(), F_SETFL,
             fcntl(device_file.GetPlatformFile(), F_GETFL) | O_NONBLOCK)) {
-    PLOG(ERROR) << "Failed to set non-blocking flag to device file.";
+    PLOG(ERROR) << "Failed to set non-blocking flag to device file";
     return;
   }
   device_file_ = device_file.Pass();
@@ -103,6 +103,7 @@ void HidConnectionLinux::OnFileCanReadWithoutBlocking(int fd) {
     if (errno == EAGAIN) {
       return;
     }
+    VPLOG(1) << "Read failed";
     Disconnect();
     return;
   }
@@ -147,6 +148,7 @@ void HidConnectionLinux::Write(uint8_t report_id,
   int bytes_written = HANDLE_EINTR(
       write(device_file_.GetPlatformFile(), buffer->data(), buffer->size()));
   if (bytes_written < 0) {
+    VPLOG(1) << "Write failed";
     Disconnect();
     callback.Run(false, 0);
   } else {
@@ -170,10 +172,12 @@ void HidConnectionLinux::GetFeatureReport(
   int result = ioctl(device_file_.GetPlatformFile(),
                      HIDIOCGFEATURE(buffer->size()),
                      buffer->data());
-  if (result < 0)
+  if (result < 0) {
+    VPLOG(1) << "Failed to get feature report";
     callback.Run(false, 0);
-  else
+  } else {
     callback.Run(true, result);
+  }
 }
 
 void HidConnectionLinux::SendFeatureReport(
@@ -186,10 +190,12 @@ void HidConnectionLinux::SendFeatureReport(
   int result = ioctl(device_file_.GetPlatformFile(),
                      HIDIOCSFEATURE(buffer->size()),
                      buffer->data());
-  if (result < 0)
+  if (result < 0) {
+    VPLOG(1) << "Failed to send feature report";
     callback.Run(false, 0);
-  else
+  } else {
     callback.Run(true, result);
+  }
 }
 
 void HidConnectionLinux::ProcessReadQueue() {

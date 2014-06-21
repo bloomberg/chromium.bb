@@ -130,7 +130,7 @@ void HidServiceLinux::OnDeviceAdded(udev_device* device) {
   int desc_size = 0;
   int res = ioctl(device_file.GetPlatformFile(), HIDIOCGRDESCSIZE, &desc_size);
   if (res < 0) {
-    LOG(ERROR) << "HIDIOCGRDESCSIZE failed.";
+    PLOG(ERROR) << "Failed to get report descriptor size";
     device_file.Close();
     return;
   }
@@ -140,7 +140,7 @@ void HidServiceLinux::OnDeviceAdded(udev_device* device) {
 
   res = ioctl(device_file.GetPlatformFile(), HIDIOCGRDESC, &rpt_desc);
   if (res < 0) {
-    LOG(ERROR) << "HIDIOCGRDESC failed.";
+    PLOG(ERROR) << "Failed to get report descriptor";
     device_file.Close();
     return;
   }
