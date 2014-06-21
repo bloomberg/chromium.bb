@@ -47,12 +47,6 @@ class WebIDBDatabase {
 public:
     virtual ~WebIDBDatabase() { }
 
-    // FIXME: Remove once Chromium is updated to use the new enums.
-    typedef WebIDBTransactionMode TransactionMode;
-    static const WebIDBTransactionMode TransactionReadOnly = WebIDBTransactionModeReadOnly;
-    static const WebIDBTransactionMode TransactionReadWrite = WebIDBTransactionModeReadWrite;
-    static const WebIDBTransactionMode TransactionVersionChange = WebIDBTransactionModeVersionChange;
-
     virtual void createObjectStore(long long transactionId, long long objectStoreId, const WebString& name, const WebIDBKeyPath&, bool autoIncrement) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void deleteObjectStore(long long transactionId, long long objectStoreId) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void createTransaction(long long id, WebIDBDatabaseCallbacks*, const WebVector<long long>& scope, blink::WebIDBTransactionMode) { BLINK_ASSERT_NOT_REACHED(); }
@@ -64,19 +58,6 @@ public:
 
     virtual void createIndex(long long transactionId, long long objectStoreId, long long indexId, const WebString& name, const WebIDBKeyPath&, bool unique, bool multiEntry) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void deleteIndex(long long transactionId, long long objectStoreId, long long indexId) { BLINK_ASSERT_NOT_REACHED(); }
-
-    // FIXME: Remove once Chromium is updated to use the new enums.
-    typedef WebIDBTaskType TaskType;
-    static const WebIDBTaskType NormalTask = WebIDBTaskTypeNormal;
-    static const WebIDBTaskType PreemptiveTask = WebIDBTaskTypePreemptive;
-    static const WebIDBTaskType TaskTypeLast = WebIDBTaskTypeLast;
-
-    // FIXME: Remove once Chromium is updated to use the new enums.
-    typedef WebIDBPutMode PutMode;
-    static const WebIDBPutMode AddOrUpdate = WebIDBPutModeAddOrUpdate;
-    static const WebIDBPutMode AddOnly = WebIDBPutModeAddOnly;
-    static const WebIDBPutMode CursorUpdate = WebIDBPutModeCursorUpdate;
-    static const WebIDBPutMode PutModeLast = WebIDBPutModeLast;
 
     static const long long minimumIndexId = 30;
 

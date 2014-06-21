@@ -39,14 +39,6 @@ class WebIDBCursor {
 public:
     virtual ~WebIDBCursor() { }
 
-    // FIXME: Remove once Chromium is updated to use the new enums.
-    typedef WebIDBCursorDirection Direction;
-    static const WebIDBCursorDirection Next = WebIDBCursorDirectionNext;
-    static const WebIDBCursorDirection NextNoDuplicate =WebIDBCursorDirectionNextNoDuplicate;
-    static const WebIDBCursorDirection Prev = WebIDBCursorDirectionPrev;
-    static const WebIDBCursorDirection PrevNoDuplicate =WebIDBCursorDirectionPrevNoDuplicate;
-    static const WebIDBCursorDirection DirectionLast =WebIDBCursorDirectionLast;
-
     virtual void advance(unsigned long, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void continueFunction(const WebIDBKey&, const WebIDBKey& primaryKey, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void postSuccessHandlerCallback() { } // Only used in frontend.
