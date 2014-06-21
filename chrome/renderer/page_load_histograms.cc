@@ -221,12 +221,17 @@ int GetQueryStringBasedExperiment(const GURL& referrer) {
   return kNoExperiment;
 }
 
-void DumpPerformanceTiming(const WebPerformance& performance,
-                           DocumentState* document_state,
-                           bool data_reduction_proxy_was_used,
-                           bool came_from_websearch,
-                           int websearch_chrome_joint_experiment_id,
-                           bool is_preview) {
+void DumpHistograms(const WebPerformance& performance,
+                    DocumentState* document_state,
+                    bool data_reduction_proxy_was_used,
+                    bool came_from_websearch,
+                    int websearch_chrome_joint_experiment_id,
+                    bool is_preview) {
+  // This function records new histograms based on the Navigation Timing
+  // records. As such, the histograms should not depend on the deprecated timing
+  // information collected in DocumentState. However, here for some reason we
+  // check if document_state->request_time() is null. TODO(ppi): find out why
+  // and remove DocumentState from the parameter list.
   Time request = document_state->request_time();
 
   Time navigation_start = Time::FromDoubleT(performance.navigationStart());
@@ -458,54 +463,17 @@ enum AbandonType {
   ABANDON_TYPE_MAX = 0x10
 };
 
-}  // namespace
-
-PageLoadHistograms::PageLoadHistograms(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view) {
-}
-
-void PageLoadHistograms::Dump(WebFrame* frame) {
-  // We only dump histograms for main frames.
-  // In the future, it may be interesting to tag subframes and dump them too.
-  if (!frame || frame->parent())
-    return;
-
-  // Only dump for supported schemes.
-  URLPattern::SchemeMasks scheme_type =
-      GetSupportedSchemeType(frame->document().url());
-  if (scheme_type == 0)
-    return;
-
-  // Ignore multipart requests.
-  if (frame->dataSource()->response().isMultipartPayload())
-    return;
-
-  DocumentState* document_state =
-      DocumentState::FromDataSource(frame->dataSource());
-
-  bool data_reduction_proxy_was_used = DataReductionProxyWasUsed(frame);
-  bool came_from_websearch =
-      IsFromGoogleSearchResult(frame->document().url(),
-                               GURL(frame->document().referrer()));
-  int websearch_chrome_joint_experiment_id = kNoExperiment;
-  bool is_preview = false;
-  if (came_from_websearch) {
-    websearch_chrome_joint_experiment_id =
-        GetQueryStringBasedExperiment(GURL(frame->document().referrer()));
-    is_preview = ViaHeaderContains(frame, "1.1 Google Instant Proxy Preview");
-  }
-
-  // Times based on the Web Timing metrics.
-  // http://www.w3.org/TR/navigation-timing/
-  // TODO(tonyg, jar): We are in the process of vetting these metrics against
-  // the existing ones. Once we understand any differences, we will standardize
-  // on a single set of metrics.
-  DumpPerformanceTiming(frame->performance(), document_state,
-                        data_reduction_proxy_was_used,
-                        came_from_websearch,
-                        websearch_chrome_joint_experiment_id,
-                        is_preview);
-
+// These histograms are based on the timing information collected in
+// DocumentState. They should be transitioned to equivalents based on the
+// Navigation Timing records (see DumpPerformanceTiming()) or dropped if not
+// needed. Please do not add new metrics based on DocumentState.
+void DumpDeprecatedHistograms(const WebPerformance& performance,
+                              DocumentState* document_state,
+                              bool data_reduction_proxy_was_used,
+                              bool came_from_websearch,
+                              int websearch_chrome_joint_experiment_id,
+                              bool is_preview,
+                              URLPattern::SchemeMasks scheme_type) {
   // If we've already dumped, do nothing.
   // This simple bool works because we only dump for the main frame.
   if (document_state->load_histograms_recorded())
@@ -520,7 +488,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   // The PLT.MissingStart histogram should help us troubleshoot and then we can
   // remove this.
   Time navigation_start =
-      Time::FromDoubleT(frame->performance().navigationStart());
+      Time::FromDoubleT(performance.navigationStart());
   int missing_start_type = 0;
   missing_start_type |= start.is_null() ? START_MISSING : 0;
   missing_start_type |= commit.is_null() ? COMMIT_MISSING : 0;
@@ -539,9 +507,8 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
 
   // TODO(tonyg, jar): We suspect a bug in abandonment counting, this temporary
   // histogram should help us to troubleshoot.
-  Time load_event_start =
-      Time::FromDoubleT(frame->performance().loadEventStart());
-  Time load_event_end = Time::FromDoubleT(frame->performance().loadEventEnd());
+  Time load_event_start = Time::FromDoubleT(performance.loadEventStart());
+  Time load_event_end = Time::FromDoubleT(performance.loadEventEnd());
   int abandon_type = 0;
   abandon_type |= finish_doc.is_null() ? FINISH_DOC_MISSING : 0;
   abandon_type |= finish_all_loads.is_null() ? FINISH_ALL_LOADS_MISSING : 0;
@@ -798,6 +765,61 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
                                 abandoned_page ? 1 : 0, 2);
     }
   }
+}
+
+}  // namespace
+
+PageLoadHistograms::PageLoadHistograms(content::RenderView* render_view)
+    : content::RenderViewObserver(render_view) {
+}
+
+void PageLoadHistograms::Dump(WebFrame* frame) {
+  // We only dump histograms for main frames.
+  // In the future, it may be interesting to tag subframes and dump them too.
+  if (!frame || frame->parent())
+    return;
+
+  // Only dump for supported schemes.
+  URLPattern::SchemeMasks scheme_type =
+      GetSupportedSchemeType(frame->document().url());
+  if (scheme_type == 0)
+    return;
+
+  // Ignore multipart requests.
+  if (frame->dataSource()->response().isMultipartPayload())
+    return;
+
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+
+  bool data_reduction_proxy_was_used = DataReductionProxyWasUsed(frame);
+  bool came_from_websearch =
+      IsFromGoogleSearchResult(frame->document().url(),
+                               GURL(frame->document().referrer()));
+  int websearch_chrome_joint_experiment_id = kNoExperiment;
+  bool is_preview = false;
+  if (came_from_websearch) {
+    websearch_chrome_joint_experiment_id =
+        GetQueryStringBasedExperiment(GURL(frame->document().referrer()));
+    is_preview = ViaHeaderContains(frame, "1.1 Google Instant Proxy Preview");
+  }
+
+  // Metrics based on the timing information recorded for the Navigation Timing
+  // API - http://www.w3.org/TR/navigation-timing/.
+  DumpHistograms(frame->performance(), document_state,
+                 data_reduction_proxy_was_used,
+                 came_from_websearch,
+                 websearch_chrome_joint_experiment_id,
+                 is_preview);
+
+  // Old metrics based on the timing information stored in DocumentState. These
+  // are deprecated and should go away.
+  DumpDeprecatedHistograms(frame->performance(), document_state,
+                           data_reduction_proxy_was_used,
+                           came_from_websearch,
+                           websearch_chrome_joint_experiment_id,
+                           is_preview,
+                           scheme_type);
 
   // Log the PLT to the info log.
   LogPageLoadTime(document_state, frame->dataSource());
