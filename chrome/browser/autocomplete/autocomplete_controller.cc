@@ -51,9 +51,11 @@ void AutocompleteMatchToAssistedQuery(
 
   // If provider is TYPE_ZERO_SUGGEST, set the subtype accordingly.
   // Type will be set in the switch statement below where we'll enter one of
-  // SEARCH_SUGGEST or NAVSUGGEST.
+  // SEARCH_SUGGEST or NAVSUGGEST. This subtype indicates context-aware zero
+  // suggest.
   if (provider &&
-      (provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
+      (provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST) &&
+      (match != AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED)) {
     DCHECK((match == AutocompleteMatchType::SEARCH_SUGGEST) ||
            (match == AutocompleteMatchType::NAVSUGGEST));
     *subtype = 66;
@@ -74,7 +76,7 @@ void AutocompleteMatchToAssistedQuery(
       return;
     }
     case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED: {
-      *subtype = 35;
+      *subtype = 39;
       return;
     }
     case AutocompleteMatchType::SEARCH_SUGGEST_PROFILE: {
