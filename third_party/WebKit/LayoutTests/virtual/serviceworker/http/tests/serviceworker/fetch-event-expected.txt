@@ -1,9 +1,0 @@
-
-This is a testharness.js-based test.
-PASS Service Worker responds to fetch event with blob body 
-PASS Service Worker does not respond to fetch event 
-PASS Service Worker responds to fetch event with null response body 
-PASS Service Worker rejects fetch event 
-PASS Service Worker fetches other file in fetch event 
-Harness: the test ran to completion.
-

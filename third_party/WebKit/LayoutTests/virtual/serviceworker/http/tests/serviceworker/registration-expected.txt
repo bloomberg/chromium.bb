@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS Registering normal pattern 
-PASS Registering scope outside domain 
-PASS Registering script outside domain 
-PASS Registering non-existent script 
-Harness: the test ran to completion.
-

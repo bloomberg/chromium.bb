@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS postMessage to a ServiceWorker (and back via MessagePort) 
-Harness: the test ran to completion.
-

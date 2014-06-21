@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS activation occurs after registration 
-Harness: the test ran to completion.
-

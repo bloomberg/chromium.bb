@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Interfaces and attributes of ServiceWorkerContainer 
-PASS Interfaces and attributes in ServiceWorkerGlobalScope 
-Harness: the test ran to completion.
-

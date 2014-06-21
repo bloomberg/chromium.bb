@@ -3,7 +3,12 @@ Test that a registered Service Worker with an event handler is not garbage colle
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-FAIL Could not register worker: NotSupportedError: Service Worker support is disabled.
+PASS swObservation.wasCollected is false
+PASS swObservation.wasCollected is false
+PASS swObservation.wasCollected is false
+PASS swObservation.wasCollected is false
+PASS swObservation.wasCollected is false
+PASS swObservation.wasCollected is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

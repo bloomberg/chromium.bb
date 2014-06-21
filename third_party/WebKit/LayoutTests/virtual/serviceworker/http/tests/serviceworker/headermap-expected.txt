@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS HeaderMap in ServiceWorkerGlobalScope 
-Harness: the test ran to completion.
-

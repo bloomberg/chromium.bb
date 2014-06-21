@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Service Worker state property and "statechange" event 
-Harness: the test ran to completion.
-
