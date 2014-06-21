@@ -52,7 +52,8 @@ bool LaunchEphemeralApp(
   // The EphemeralAppLauncher will handle launching of an existing app or
   // installing and launching a new ephemeral app.
   scoped_refptr<EphemeralAppLauncher> installer =
-      EphemeralAppLauncher::CreateForLink(app_id, source);
+      EphemeralAppLauncher::CreateForWebContents(
+          app_id, source, EphemeralAppLauncher::LaunchCallback());
   installer->Start();
   return true;
 }

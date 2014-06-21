@@ -966,6 +966,7 @@
         'browser/extensions/extension_garbage_collector_chromeos_unittest.cc',
         'browser/extensions/extension_gcm_app_handler_unittest.cc',
         'browser/extensions/extension_icon_manager_unittest.cc',
+        'browser/extensions/extension_install_checker_unittest.cc',
         'browser/extensions/extension_message_bubble_controller_unittest.cc',
         'browser/extensions/extension_prefs_unittest.cc',
         'browser/extensions/extension_prefs_unittest.h',

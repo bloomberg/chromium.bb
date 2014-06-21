@@ -1,0 +1,10 @@
+{
+  "name": "Simple Test App",
+  "manifest_version": 2,
+  "version": "1",
+  "app": {
+    "background": {
+      "scripts": ["main.js"]
+    }
+  }
+}

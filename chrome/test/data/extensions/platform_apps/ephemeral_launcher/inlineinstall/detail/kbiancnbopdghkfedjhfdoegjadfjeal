@@ -1,0 +1,6 @@
+{
+  "users": "371,674",
+  "average_rating": 4.36,
+  "rating_count": 788,
+  "manifest": "{\"name\":\"Simple Test App\",\"manifest_version\":2,\"version\":\"1\",\"app\": {\"background\":{\"scripts\":[\"main.js\"]}}}"
+}

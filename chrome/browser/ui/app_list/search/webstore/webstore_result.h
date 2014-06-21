@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/install_observer.h"
+#include "chrome/browser/extensions/webstore_install_result.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "url/gurl.h"
@@ -48,6 +49,8 @@ class WebstoreResult : public ChromeSearchResult,
 
   void StartInstall(bool launch_ephemeral_app);
   void InstallCallback(bool success, const std::string& error);
+  void LaunchCallback(extensions::webstore_install::Result result,
+                      const std::string& error);
 
   // Start observing both InstallObserver and ExtensionRegistryObserver.
   void StartObserving();

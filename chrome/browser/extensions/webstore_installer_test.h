@@ -8,14 +8,14 @@
 #include <string>
 
 #include "base/files/scoped_temp_dir.h"
-#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
 #include "url/gurl.h"
 
 namespace base {
 class CommandLine;
 }  // namespace base
 
-class WebstoreInstallerTest : public InProcessBrowserTest {
+class WebstoreInstallerTest : public ExtensionBrowserTest {
  public:
   WebstoreInstallerTest(const std::string& webstore_domain,
                         const std::string& test_data_path,
@@ -44,6 +44,14 @@ class WebstoreInstallerTest : public InProcessBrowserTest {
 
   // Runs a test without waiting for any results from the renderer.
   void RunTestAsync(const std::string& test_function_name);
+
+  // Configures command line switches to simulate a user accepting the install
+  // prompt.
+  void AutoAcceptInstall();
+
+  // Configures command line switches to simulate a user cancelling the install
+  // prompt.
+  void AutoCancelInstall();
 
   std::string webstore_domain_;
   std::string test_data_path_;

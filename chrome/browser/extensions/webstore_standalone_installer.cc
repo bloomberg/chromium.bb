@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
 
 #include "base/values.h"
+#include "base/version.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -44,12 +45,6 @@ WebstoreStandaloneInstaller::WebstoreStandaloneInstaller(
       rating_count_(0) {
 }
 
-WebstoreStandaloneInstaller::~WebstoreStandaloneInstaller() {}
-
-//
-// Private interface implementation.
-//
-
 void WebstoreStandaloneInstaller::BeginInstall() {
   // Add a ref to keep this alive for WebstoreDataFetcher.
   // All code paths from here eventually lead to either CompleteInstall or
@@ -57,7 +52,7 @@ void WebstoreStandaloneInstaller::BeginInstall() {
   AddRef();
 
   if (!Extension::IdIsValid(id_)) {
-    CompleteInstall(kInvalidWebstoreItemId);
+    CompleteInstall(webstore_install::INVALID_ID, kInvalidWebstoreItemId);
     return;
   }
 
@@ -72,10 +67,62 @@ void WebstoreStandaloneInstaller::BeginInstall() {
   webstore_data_fetcher_->Start();
 }
 
-bool WebstoreStandaloneInstaller::CheckInstallValid(
-    const base::DictionaryValue& manifest,
-    std::string* error) {
-  return true;
+//
+// Private interface implementation.
+//
+
+WebstoreStandaloneInstaller::~WebstoreStandaloneInstaller() {
+}
+
+void WebstoreStandaloneInstaller::AbortInstall() {
+  callback_.Reset();
+  // Abort any in-progress fetches.
+  if (webstore_data_fetcher_) {
+    webstore_data_fetcher_.reset();
+    Release();  // Matches the AddRef in BeginInstall.
+  }
+}
+
+void WebstoreStandaloneInstaller::CompleteInstall(
+    webstore_install::Result result,
+    const std::string& error) {
+  if (!callback_.is_null())
+    callback_.Run(result == webstore_install::SUCCESS, error);
+  Release();  // Matches the AddRef in BeginInstall.
+}
+
+void WebstoreStandaloneInstaller::ProceedWithInstallPrompt() {
+  install_prompt_ = CreateInstallPrompt();
+  if (install_prompt_) {
+    ShowInstallUI();
+    // Control flow finishes up in InstallUIProceed or InstallUIAbort.
+  } else {
+    InstallUIProceed();
+  }
+}
+
+scoped_refptr<const Extension>
+WebstoreStandaloneInstaller::GetLocalizedExtensionForDisplay() {
+  if (!localized_extension_for_display_.get()) {
+    DCHECK(manifest_.get());
+    if (!manifest_.get())
+      return NULL;
+
+    std::string error;
+    localized_extension_for_display_ =
+        ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
+            manifest_.get(),
+            Extension::REQUIRE_KEY | Extension::FROM_WEBSTORE,
+            id_,
+            localized_name_,
+            localized_description_,
+            &error);
+  }
+  return localized_extension_for_display_.get();
+}
+
+void WebstoreStandaloneInstaller::OnManifestParsed() {
+  ProceedWithInstallPrompt();
 }
 
 scoped_ptr<ExtensionInstallPrompt>
@@ -99,7 +146,8 @@ WebstoreStandaloneInstaller::CreateApproval() const {
 
 void WebstoreStandaloneInstaller::OnWebstoreRequestFailure() {
   OnWebStoreDataFetcherDone();
-  CompleteInstall(kWebstoreRequestError);
+  CompleteInstall(webstore_install::WEBSTORE_REQUEST_ERROR,
+                  kWebstoreRequestError);
 }
 
 void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
@@ -107,19 +155,19 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
   OnWebStoreDataFetcherDone();
 
   if (!CheckRequestorAlive()) {
-    CompleteInstall(std::string());
+    CompleteInstall(webstore_install::ABORTED, std::string());
     return;
   }
 
   std::string error;
 
   if (!CheckInlineInstallPermitted(*webstore_data, &error)) {
-    CompleteInstall(error);
+    CompleteInstall(webstore_install::NOT_PERMITTED, error);
     return;
   }
 
   if (!CheckRequestorPermitted(*webstore_data, &error)) {
-    CompleteInstall(error);
+    CompleteInstall(webstore_install::NOT_PERMITTED, error);
     return;
   }
 
@@ -129,7 +177,8 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
       !webstore_data->GetString(kUsersKey, &localized_user_count_) ||
       !webstore_data->GetDouble(kAverageRatingKey, &average_rating_) ||
       !webstore_data->GetInteger(kRatingCountKey, &rating_count_)) {
-    CompleteInstall(kInvalidWebstoreResponseError);
+    CompleteInstall(webstore_install::INVALID_WEBSTORE_RESPONSE,
+                    kInvalidWebstoreResponseError);
     return;
   }
 
@@ -139,7 +188,8 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
 
   if (average_rating_ < ExtensionInstallPrompt::kMinExtensionRating ||
       average_rating_ > ExtensionInstallPrompt::kMaxExtensionRating) {
-    CompleteInstall(kInvalidWebstoreResponseError);
+    CompleteInstall(webstore_install::INVALID_WEBSTORE_RESPONSE,
+                    kInvalidWebstoreResponseError);
     return;
   }
 
@@ -149,7 +199,8 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
       (webstore_data->HasKey(kLocalizedDescriptionKey) &&
       !webstore_data->GetString(
           kLocalizedDescriptionKey, &localized_description_))) {
-    CompleteInstall(kInvalidWebstoreResponseError);
+    CompleteInstall(webstore_install::INVALID_WEBSTORE_RESPONSE,
+                    kInvalidWebstoreResponseError);
     return;
   }
 
@@ -158,13 +209,15 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
   if (webstore_data->HasKey(kIconUrlKey)) {
     std::string icon_url_string;
     if (!webstore_data->GetString(kIconUrlKey, &icon_url_string)) {
-      CompleteInstall(kInvalidWebstoreResponseError);
+      CompleteInstall(webstore_install::INVALID_WEBSTORE_RESPONSE,
+                      kInvalidWebstoreResponseError);
       return;
     }
     icon_url = GURL(extension_urls::GetWebstoreLaunchURL()).Resolve(
         icon_url_string);
     if (!icon_url.is_valid()) {
-      CompleteInstall(kInvalidWebstoreResponseError);
+      CompleteInstall(webstore_install::INVALID_WEBSTORE_RESPONSE,
+                      kInvalidWebstoreResponseError);
       return;
     }
   }
@@ -187,7 +240,7 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
 void WebstoreStandaloneInstaller::OnWebstoreResponseParseFailure(
     const std::string& error) {
   OnWebStoreDataFetcherDone();
-  CompleteInstall(error);
+  CompleteInstall(webstore_install::INVALID_WEBSTORE_RESPONSE, error);
 }
 
 void WebstoreStandaloneInstaller::OnWebstoreParseSuccess(
@@ -197,39 +250,38 @@ void WebstoreStandaloneInstaller::OnWebstoreParseSuccess(
   CHECK_EQ(id_, id);
 
   if (!CheckRequestorAlive()) {
-    CompleteInstall(std::string());
+    CompleteInstall(webstore_install::ABORTED, std::string());
     return;
   }
 
   manifest_.reset(manifest);
   icon_ = icon;
 
-  std::string error;
-  if (!CheckInstallValid(*manifest, &error)) {
-    DCHECK(!error.empty());
-    CompleteInstall(error);
-    return;
-  }
-
-  install_prompt_ = CreateInstallPrompt();
-  if (install_prompt_) {
-    ShowInstallUI();
-    // Control flow finishes up in InstallUIProceed or InstallUIAbort.
-  } else {
-    InstallUIProceed();
-  }
+  OnManifestParsed();
 }
 
 void WebstoreStandaloneInstaller::OnWebstoreParseFailure(
     const std::string& id,
     InstallHelperResultCode result_code,
     const std::string& error_message) {
-  CompleteInstall(error_message);
+  webstore_install::Result install_result = webstore_install::UNKNOWN_ERROR;
+  switch (result_code) {
+    case WebstoreInstallHelper::Delegate::MANIFEST_ERROR:
+      install_result = webstore_install::INVALID_MANIFEST;
+      break;
+    case WebstoreInstallHelper::Delegate::ICON_ERROR:
+      install_result = webstore_install::ICON_ERROR;
+      break;
+    default:
+      break;
+  }
+
+  CompleteInstall(install_result, error_message);
 }
 
 void WebstoreStandaloneInstaller::InstallUIProceed() {
   if (!CheckRequestorAlive()) {
-    CompleteInstall(std::string());
+    CompleteInstall(webstore_install::ABORTED, std::string());
     return;
   }
 
@@ -237,28 +289,47 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
 
   ExtensionService* extension_service =
       ExtensionSystem::Get(profile_)->extension_service();
-  const Extension* extension =
+  const Extension* installed_extension =
       extension_service->GetExtensionById(id_, true /* include disabled */);
-  if (extension) {
-    std::string install_result;  // Empty string for install success.
+  if (installed_extension) {
+    std::string install_message;
+    webstore_install::Result install_result = webstore_install::SUCCESS;
+    bool done = true;
 
     if (ExtensionPrefs::Get(profile_)->IsExtensionBlacklisted(id_)) {
       // Don't install a blacklisted extension.
-      install_result = kExtensionIsBlacklisted;
-    } else if (util::IsEphemeralApp(extension->id(), profile_) &&
+      install_result = webstore_install::BLACKLISTED;
+      install_message = kExtensionIsBlacklisted;
+    } else if (util::IsEphemeralApp(installed_extension->id(), profile_) &&
                !approval->is_ephemeral) {
-      // If the target extension has already been installed ephemerally, it can
-      // be promoted to a regular installed extension and downloading from the
-      // Web Store is not necessary.
-      extension_service->PromoteEphemeralApp(extension, false);
+      // If the target extension has already been installed ephemerally and is
+      // up to date, it can be promoted to a regular installed extension and
+      // downloading from the Web Store is not necessary.
+      const Extension* extension_to_install = GetLocalizedExtensionForDisplay();
+      if (!extension_to_install) {
+        CompleteInstall(webstore_install::INVALID_MANIFEST,
+                        kInvalidManifestError);
+        return;
+      }
+
+      if (installed_extension->version()->CompareTo(
+              *extension_to_install->version()) < 0) {
+        // If the existing extension is out of date, proceed with the install
+        // to update the extension.
+        done = false;
+      } else {
+        extension_service->PromoteEphemeralApp(installed_extension, false);
+      }
     } else if (!extension_service->IsExtensionEnabled(id_)) {
       // If the extension is installed but disabled, and not blacklisted,
       // enable it.
       extension_service->EnableExtension(id_);
     }  // else extension is installed and enabled; no work to be done.
 
-    CompleteInstall(install_result);
-    return;
+    if (done) {
+      CompleteInstall(install_result, install_message);
+      return;
+    }
   }
 
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
@@ -272,60 +343,47 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
 }
 
 void WebstoreStandaloneInstaller::InstallUIAbort(bool user_initiated) {
-  CompleteInstall(kUserCancelledError);
+  CompleteInstall(webstore_install::USER_CANCELLED, kUserCancelledError);
 }
 
 void WebstoreStandaloneInstaller::OnExtensionInstallSuccess(
     const std::string& id) {
   CHECK_EQ(id_, id);
-  CompleteInstall(std::string());
+  CompleteInstall(webstore_install::SUCCESS, std::string());
 }
 
 void WebstoreStandaloneInstaller::OnExtensionInstallFailure(
     const std::string& id,
     const std::string& error,
-    WebstoreInstaller::FailureReason cancelled) {
+    WebstoreInstaller::FailureReason reason) {
   CHECK_EQ(id_, id);
-  CompleteInstall(error);
-}
 
-void WebstoreStandaloneInstaller::AbortInstall() {
-  callback_.Reset();
-  // Abort any in-progress fetches.
-  if (webstore_data_fetcher_) {
-    webstore_data_fetcher_.reset();
-    Release();  // Matches the AddRef in BeginInstall.
+  webstore_install::Result install_result = webstore_install::UNKNOWN_ERROR;
+  switch (reason) {
+    case WebstoreInstaller::FAILURE_REASON_CANCELLED:
+      install_result = webstore_install::USER_CANCELLED;
+      break;
+    case WebstoreInstaller::FAILURE_REASON_DEPENDENCY_NOT_FOUND:
+    case WebstoreInstaller::FAILURE_REASON_DEPENDENCY_NOT_SHARED_MODULE:
+      install_result = webstore_install::MISSING_DEPENDENCIES;
+      break;
+    default:
+      break;
   }
-}
 
-void WebstoreStandaloneInstaller::InvokeCallback(const std::string& error) {
-  if (!callback_.is_null())
-    callback_.Run(error.empty(), error);
-}
-
-void WebstoreStandaloneInstaller::CompleteInstall(const std::string& error) {
-  InvokeCallback(error);
-  Release();  // Matches the AddRef in BeginInstall.
+  CompleteInstall(install_result, error);
 }
 
 void WebstoreStandaloneInstaller::ShowInstallUI() {
-  std::string error;
-  localized_extension_for_display_ =
-      ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
-          manifest_.get(),
-          Extension::REQUIRE_KEY | Extension::FROM_WEBSTORE,
-          id_,
-          localized_name_,
-          localized_description_,
-          &error);
-  if (!localized_extension_for_display_.get()) {
-    CompleteInstall(kInvalidManifestError);
+  const Extension* localized_extension = GetLocalizedExtensionForDisplay();
+  if (!localized_extension) {
+    CompleteInstall(webstore_install::INVALID_MANIFEST, kInvalidManifestError);
     return;
   }
 
   install_ui_ = CreateInstallUI();
   install_ui_->ConfirmStandaloneInstall(
-      this, localized_extension_for_display_.get(), &icon_, install_prompt_);
+      this, localized_extension, &icon_, install_prompt_);
 }
 
 void WebstoreStandaloneInstaller::OnWebStoreDataFetcherDone() {

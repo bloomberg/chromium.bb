@@ -24,6 +24,11 @@ namespace extensions {
 
 
 // Holds common methods and data of extension installers.
+//
+// NOTE: This class is deprecated and has been replaced by
+// ExtensionInstallChecker.
+// TODO(tmdiep): CrxInstaller and UnpackedInstaller should be refactored to use
+// this class (crbug.com/386404).
 class ExtensionInstaller {
  public:
   typedef base::Callback<void(std::vector<std::string>)> RequirementsCallback;

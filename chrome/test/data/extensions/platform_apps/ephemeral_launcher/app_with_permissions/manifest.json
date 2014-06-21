@@ -1,0 +1,11 @@
+{
+  "name": "Test App With Permissions",
+  "manifest_version": 2,
+  "version": "1",
+  "app": {
+    "background": {
+      "scripts": ["main.js"]
+    }
+  },
+  "permissions": ["audioCapture"]
+}

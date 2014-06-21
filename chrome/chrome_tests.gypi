@@ -884,6 +884,7 @@
         'browser/apps/drive/drive_app_provider_browsertest.cc',
         'browser/apps/ephemeral_app_browsertest.cc',
         'browser/apps/ephemeral_app_browsertest.h',
+        'browser/apps/ephemeral_app_launcher_browsertest.cc',
         'browser/apps/ephemeral_app_service_browsertest.cc',
         'browser/apps/event_page_browsertest.cc',
         'browser/apps/speech_recognition_browsertest.cc',
