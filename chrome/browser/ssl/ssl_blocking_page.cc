@@ -61,6 +61,41 @@ using content::NavigationEntry;
 
 namespace {
 
+// Constants for the M37 Finch trial.
+const char kInterstitialTrialName[] = "SSLInterstitialVersion";
+const char kCondV1[] = "V1";
+const char kCondV1LayoutV2Text[] = "V1LayoutV2Text";
+const char kCondV2[] = "V2";  // Also the default.
+const char kCondV2Guard[] = "V2WithGuard";
+const char kCondV2Yellow[] = "V2Yellow";
+
+const char* GetTrialCondition() {
+  CommandLine* cli = CommandLine::ForCurrentProcess();
+  if (cli->HasSwitch(switches::kSSLInterstitialV1))
+    return kCondV1;
+  if (cli->HasSwitch(switches::kSSLInterstitialV2))
+    return kCondV2;
+  if (cli->HasSwitch(switches::kSSLInterstitialV1WithV2Text))
+    return kCondV1LayoutV2Text;
+  if (cli->HasSwitch(switches::kSSLInterstitialV2Guard))
+    return kCondV2Guard;
+  if (cli->HasSwitch(switches::kSSLInterstitialV2Yellow))
+    return kCondV2Yellow;
+
+  std::string name(base::FieldTrialList::FindFullName(kInterstitialTrialName));
+  if (name == kCondV1)
+    return kCondV1;
+  if (name == kCondV2)
+    return kCondV2;
+  if (name == kCondV1LayoutV2Text)
+    return kCondV1LayoutV2Text;
+  if (name == kCondV2Guard)
+    return kCondV2Guard;
+  if (name == kCondV2Yellow)
+    return kCondV2Yellow;
+  return kCondV2;
+}
+
 // Events for UMA. Do not reorder or change!
 enum SSLBlockingPageEvent {
   SHOW_ALL,
@@ -243,7 +278,8 @@ SSLBlockingPage::SSLBlockingPage(
       captive_portal_detection_enabled_(false),
       captive_portal_probe_completed_(false),
       captive_portal_no_response_(false),
-      captive_portal_detected_(false) {
+      captive_portal_detected_(false),
+      trial_condition_(GetTrialCondition()) {
   Profile* profile = Profile::FromBrowserContext(
       web_contents->GetBrowserContext());
   // For UMA stats.
@@ -298,11 +334,8 @@ SSLBlockingPage::~SSLBlockingPage() {
 }
 
 std::string SSLBlockingPage::GetHTMLContents() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSSLInterstitialVersionV1) ||
-      base::FieldTrialList::FindFullName("SSLInterstitialVersion") == "V1") {
+  if (trial_condition_ == kCondV1 || trial_condition_ == kCondV1LayoutV2Text)
     return GetHTMLContentsV1();
-  }
   return GetHTMLContentsV2();
 }
 
@@ -316,25 +349,51 @@ std::string SSLBlockingPage::GetHTMLContentsV1() {
             SSLErrorInfo::NetErrorToErrorType(cert_error_),
             ssl_info_.cert.get(),
             request_url_);
-
     resource_id = IDR_SSL_ROAD_BLOCK_HTML;
-    strings.SetString("headLine", error_info.title());
-    strings.SetString("description", error_info.details());
-    strings.SetString("moreInfoTitle",
-        l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_TITLE));
-    SetExtraInfo(&strings, error_info.extra_information());
-
-    strings.SetString(
-        "exit", l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_PAGE_EXIT));
-    strings.SetString(
-        "title", l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_PAGE_TITLE));
-    strings.SetString(
-        "proceed", l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_PAGE_PROCEED));
-    strings.SetString(
-        "reasonForNotProceeding", l10n_util::GetStringUTF16(
-            IDS_SSL_OVERRIDABLE_PAGE_SHOULD_NOT_PROCEED));
-    strings.SetString("errorType", "overridable");
     strings.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
+    strings.SetString("errorType", "overridable");
+    if (trial_condition_ == kCondV1LayoutV2Text) {
+      base::string16 url(ASCIIToUTF16(request_url_.host()));
+      strings.SetString(
+          "headLine", l10n_util::GetStringUTF16(IDS_SSL_V2_HEADING));
+      strings.SetString(
+          "description",
+          l10n_util::GetStringFUTF16(IDS_SSL_V2_PRIMARY_PARAGRAPH, url));
+      strings.SetString(
+          "moreInfoTitle",
+          l10n_util::GetStringUTF16(IDS_SSL_V2_OPEN_DETAILS_BUTTON));
+      strings.SetString("moreInfo1", error_info.details());
+      strings.SetString("moreInfo2", base::string16());
+      strings.SetString("moreInfo3", base::string16());
+      strings.SetString("moreInfo4", base::string16());
+      strings.SetString("moreInfo5", base::string16());
+      strings.SetString(
+          "exit",
+          l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_SAFETY_BUTTON));
+      strings.SetString(
+          "title", l10n_util::GetStringUTF16(IDS_SSL_V2_TITLE));
+      strings.SetString(
+          "proceed",
+          l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_PROCEED_LINK_TEXT));
+      strings.SetString("reasonForNotProceeding", base::string16());
+    } else {
+      strings.SetString("headLine", error_info.title());
+      strings.SetString("description", error_info.details());
+      strings.SetString("moreInfoTitle",
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_TITLE));
+      SetExtraInfo(&strings, error_info.extra_information());
+
+      strings.SetString(
+          "exit", l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_PAGE_EXIT));
+      strings.SetString(
+          "title", l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_PAGE_TITLE));
+      strings.SetString(
+          "proceed",
+          l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_PAGE_PROCEED));
+      strings.SetString("reasonForNotProceeding",
+          l10n_util::GetStringUTF16(
+              IDS_SSL_OVERRIDABLE_PAGE_SHOULD_NOT_PROCEED));
+    }
   } else {
     // Let's build the blocking error page.
     resource_id = IDR_SSL_BLOCKING_HTML;
@@ -455,6 +514,7 @@ std::string SSLBlockingPage::GetHTMLContentsV2() {
   if (base::i18n::IsRTL())
     base::i18n::WrapStringWithLTRFormatting(&url);
   webui::SetFontAndTextDirection(&load_time_data);
+  load_time_data.SetString("trialCondition", trial_condition_);
 
   // Shared values for both the overridable and non-overridable versions.
   load_time_data.SetBoolean("ssl", true);

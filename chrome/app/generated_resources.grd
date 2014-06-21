@@ -9329,6 +9329,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SSL_OVERRIDABLE_PROCEED_PARAGRAPH" desc="The text for the paragraph at the bottom with the proceed link.">
         <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>Proceed to <ph name="SITE">$1<ex>example.com</ex></ph> (unsafe)<ph name="END_LINK">&lt;/a&gt;</ph>
       </message>
+      <message name="IDS_SSL_OVERRIDABLE_PROCEED_LINK_TEXT" desc="Just the proceed link text.">
+        Proceed to the site (unsafe)
+      </message>
 
       <!-- SSL Interstitial V2: Non-overridable -->
       <message name="IDS_SSL_NONOVERRIDABLE_RELOAD_BUTTON" desc="The text for the button that reloads the page.">
@@ -14419,6 +14422,12 @@ Do you accept?
     </message>
     <message name="IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V2_COLORFUL" desc="The new interstitial, with a colorful background">
       New version, with colorful background
+    </message>
+    <message name="IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V1_V2" desc="The old layout, with the new text">
+      Old layout with new text
+    </message>
+    <message name="IDS_FLAGS_SSL_INTERSTITIAL_VERSION_GUARD" desc="The new version, with a guard">
+      New version, with guard image
     </message>
 
     <!-- Malware interstitial V3 experiment -->

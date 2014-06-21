@@ -13,9 +13,10 @@ function setupEvents() {
 
   if (ssl) {
     $('body').classList.add('ssl');
+    setupSSLFinchTrial();  /* From ssl_errors_common.js. */
   } else {
     $('body').classList.add('safe-browsing');
-    setupMalwareFinchExperiment();
+    setupMalwareFinchExperiment();  /* From safe_browsing_v3.js. */
   }
 
   $('primary-button').addEventListener('click', function() {

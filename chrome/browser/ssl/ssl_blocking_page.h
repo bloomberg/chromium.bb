@@ -122,7 +122,7 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
   bool captive_portal_detected_;
 
   // For the FieldTrial: this contains the name of the condition.
-  std::string trialCondition_;
+  std::string trial_condition_;
 
   content::NotificationRegistrar registrar_;
 

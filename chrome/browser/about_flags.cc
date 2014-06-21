@@ -424,11 +424,15 @@ const Experiment::Choice kAnswersInSuggestChoices[] = {
 const Experiment::Choice kSSLInterstitialVersions[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V1,
-    switches::kSSLInterstitialVersionV1, "" },
+    switches::kSSLInterstitialV1, "" },
   { IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V2_GRAY,
-    switches::kSSLInterstitialVersionV2Gray, "" },
+    switches::kSSLInterstitialV2, "" },
   { IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V2_COLORFUL,
-    switches::kSSLInterstitialVersionV2Colorful, "" },
+    switches::kSSLInterstitialV2Yellow, "" },
+  { IDS_FLAGS_SSL_INTERSTITIAL_VERSION_GUARD,
+    switches::kSSLInterstitialV2Guard, "" },
+  { IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V1_V2,
+    switches::kSSLInterstitialV1WithV2Text, "" },
 };
 
 // Using independent flags (instead of flag=value flags) to be able to

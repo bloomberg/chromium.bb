@@ -17,6 +17,11 @@ body.safe-browsing {
   color: white;
 }
 
+body.yellow {
+  background-color: rgb(255, 220, 59);
+  color: black;
+}
+
 button {
   background: rgb(76, 142, 250);
   border: 0;
@@ -114,11 +119,8 @@ h2 {
   -webkit-margin-start: 32px;
 }
 
-.safe-browsing a,
-.safe-browsing #details,
-.safe-browsing #details-button,
-.safe-browsing h1,
-.safe-browsing h2 {
+.safe-browsing :-webkit-any(
+    a, #details, #details-button, h1, h2, .small-link) {
   color: white;
 }
 
@@ -138,8 +140,8 @@ h2 {
 
 .safe-browsing .icon {
   background-image: -webkit-image-set(
-      url('../safe_browsing/images/1x/stop_sign.png') 1x,
-      url('../safe_browsing/images/2x/stop_sign.png') 2x);
+      url(../safe_browsing/images/1x/stop_sign.png) 1x,
+      url(../safe_browsing/images/2x/stop_sign.png) 2x);
 }
 
 .small-link {
@@ -149,8 +151,16 @@ h2 {
 
 .ssl .icon {
   background-image: -webkit-image-set(
-      url('images/1x/brokenssl_red.png') 1x,
-      url('images/2x/brokenssl_red.png') 2x);
+      url(images/1x/brokenssl_red.png) 1x,
+      url(images/2x/brokenssl_red.png) 2x);
+}
+
+.ssl-guard #icon {
+  background-image: -webkit-image-set(
+      url(images/1x/brokenssl_guard.png) 1x,
+      url(images/2x/brokenssl_guard.png) 2x);
+  height: 104px;
+  width: 94px;
 }
 
 .styled-checkbox {
@@ -193,6 +203,17 @@ h2 {
 
 .styled-checkbox input[type=checkbox]:checked + label::after {
   opacity: 1;
+}
+
+.yellow :-webkit-any(
+    a, #details, #details-button, h1, .small-link) {
+  color: black;
+}
+
+.yellow .icon {
+  background-image: -webkit-image-set(
+      url(images/1x/brokenssl_yellow.png) 1x,
+      url(images/2x/brokenssl_yellow.png) 2x);
 }
 
 @media (max-width: 700px) {
