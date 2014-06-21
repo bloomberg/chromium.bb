@@ -1636,7 +1636,7 @@ bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, Excep
         return 0;
     }
 
-    element1->document().updateLayout();
+    element1->document().view()->updateLayoutAndStyleForPainting();
 
     RenderObject* renderer1 = element1->renderer();
     RenderObject* renderer2 = element2->renderer();

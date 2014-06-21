@@ -30,6 +30,16 @@ static bool hasStackingContextBeforeAncestor(const RenderLayer* child, const Ren
     return false;
 }
 
+static const RenderLayer* findParentLayerOnContainingBlockChain(const RenderObject* object)
+{
+    for (const RenderObject* current = object; current; current = current->containingBlock()) {
+        if (current->hasLayer())
+            return static_cast<const RenderLayerModelObject*>(current)->layer();
+    }
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
 void CompositingInputsUpdater::update(RenderLayer* layer, UpdateType updateType, AncestorInfo info)
 {
     if (!layer->childNeedsCompositingInputsUpdate() && updateType != ForceUpdate)
@@ -65,17 +75,32 @@ void CompositingInputsUpdater::update(RenderLayer* layer, UpdateType updateType,
             properties.transformAncestor = parent->hasTransform() ? parent : parent->compositingInputs().transformAncestor;
             properties.filterAncestor = parent->hasFilter() ? parent : parent->compositingInputs().filterAncestor;
 
-            if (info.ancestorScrollingLayer) {
-                const RenderObject* container = layer->renderer()->containingBlock();
+            if (info.lastScrollingAncestor) {
+                const RenderObject* containingBlock = layer->renderer()->containingBlock();
+                const RenderLayer* parentLayerOnContainingBlockChain = findParentLayerOnContainingBlockChain(containingBlock);
+
+                properties.ancestorScrollingLayer = parentLayerOnContainingBlockChain->compositingInputs().ancestorScrollingLayer;
+                if (parentLayerOnContainingBlockChain->scrollsOverflow())
+                    properties.ancestorScrollingLayer = parentLayerOnContainingBlockChain;
 
                 if (layer->renderer()->isOutOfFlowPositioned() && !layer->subtreeIsInvisible()) {
-                    const RenderObject* scroller = info.ancestorScrollingLayer->renderer();
-                    properties.isUnclippedDescendant = scroller != container && scroller->isDescendantOf(container);
+                    // FIXME: Why do we care about the lastScrollingAncestor in tree order? We're
+                    // trying to tell CC that this layer isn't clipped by its apparent scrolling
+                    // ancestor, but we present the tree to CC in stacking order rather than tree
+                    // order. That would seem to imply that we'd be interested in the lastScrollingAncestor
+                    // in stacking order.
+                    const RenderObject* scroller = info.lastScrollingAncestor->renderer();
+                    // FIXME: Why do we only walk up one step in the containing block chain?
+                    // If there's a scroller between my containing block parent and my containing
+                    // block grandparent, doesn't that make me an unclipped descendant?
+                    properties.isUnclippedDescendant = scroller != containingBlock && scroller->isDescendantOf(containingBlock);
                 }
 
-                const RenderLayer* containerLayer = container->enclosingLayer();
-                if (!containerLayer->stackingNode()->isStackingContext()) {
-                    const RenderLayer* scrollParent = containerLayer->scrollsOverflow() ? containerLayer : containerLayer->compositingInputs().inheritedScrollParent;
+                const RenderLayer* containingBlockEnclosingLayer = containingBlock->enclosingLayer();
+                if (!containingBlockEnclosingLayer->stackingNode()->isStackingContext()) {
+                    const RenderLayer* scrollParent = containingBlockEnclosingLayer->compositingInputs().inheritedScrollParent;
+                    if (containingBlockEnclosingLayer->scrollsOverflow())
+                        scrollParent = containingBlockEnclosingLayer;
 
                     // We need to ensure that there's no stacking context between us and our scroll parent.
                     // Sadly, we may have jumped over this stacking context since we're operating in terms
@@ -91,7 +116,7 @@ void CompositingInputsUpdater::update(RenderLayer* layer, UpdateType updateType,
     }
 
     if (layer->scrollsOverflow())
-        info.ancestorScrollingLayer = layer;
+        info.lastScrollingAncestor = layer;
 
     for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling())
         update(child, updateType, info);

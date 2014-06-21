@@ -225,9 +225,6 @@ public:
     // Ancestor compositing layer, excluding this.
     RenderLayer* ancestorCompositingLayer() const { return enclosingCompositingLayer(ExcludeSelf); }
 
-    // Ancestor scrolling layer at or above our containing block.
-    RenderLayer* ancestorScrollingLayer() const;
-
     RenderLayer* enclosingFilterLayer(IncludeSelfOrNot = IncludeSelf) const;
     bool hasAncestorWithFilterOutsets() const;
 
@@ -455,6 +452,7 @@ public:
             : opacityAncestor(0)
             , transformAncestor(0)
             , filterAncestor(0)
+            , ancestorScrollingLayer(0)
             , inheritedScrollParent(0)
             , isUnclippedDescendant(false)
         { }
@@ -463,6 +461,7 @@ public:
         const RenderLayer* opacityAncestor;
         const RenderLayer* transformAncestor;
         const RenderLayer* filterAncestor;
+        const RenderLayer* ancestorScrollingLayer;
         const RenderLayer* inheritedScrollParent;
         unsigned isUnclippedDescendant : 1;
     };

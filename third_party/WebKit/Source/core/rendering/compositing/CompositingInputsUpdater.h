@@ -16,12 +16,17 @@ private:
     struct AncestorInfo {
         AncestorInfo()
             : enclosingCompositedLayer(0)
-            , ancestorScrollingLayer(0)
+            , lastScrollingAncestor(0)
         {
         }
 
         RenderLayer* enclosingCompositedLayer;
-        RenderLayer* ancestorScrollingLayer;
+        // Notice that lastScrollingAncestor isn't the same thing as
+        // ancestorScrollingLayer. The former is just the nearest scrolling
+        // along the RenderLayer::parent() chain. The latter is the layer that
+        // actually controls the scrolling of this layer, which we find on the
+        // containing block chain.
+        RenderLayer* lastScrollingAncestor;
     };
 
 public:

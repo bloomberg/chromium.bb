@@ -341,7 +341,7 @@ bool RenderLayer::scrollsWithRespectTo(const RenderLayer* other) const
 {
     if (scrollsWithViewport() != other->scrollsWithViewport())
         return true;
-    return ancestorScrollingLayer() != other->ancestorScrollingLayer();
+    return compositingInputs().ancestorScrollingLayer != other->compositingInputs().ancestorScrollingLayer;
 }
 
 void RenderLayer::updateLayerPositionsAfterDocumentScroll()
@@ -1055,17 +1055,6 @@ RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(IncludeSelfOrNot i
     for (const RenderLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
         if (curr->isRepaintContainer())
             return const_cast<RenderLayer*>(curr);
-    }
-
-    return 0;
-}
-
-RenderLayer* RenderLayer::ancestorScrollingLayer() const
-{
-    for (RenderObject* container = renderer()->containingBlock(); container; container = container->containingBlock()) {
-        RenderLayer* currentLayer = container->enclosingLayer();
-        if (currentLayer->scrollsOverflow())
-            return currentLayer;
     }
 
     return 0;
