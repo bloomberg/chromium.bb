@@ -1,19 +1,19 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 30.00 30.00)
-          (bounds 240.00 240.00)
-          (drawsContent 1)
-          (backgroundColor #008000)
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [30, 30],
+          "bounds": [240, 240],
+          "drawsContent": true,
+          "backgroundColor": "#008000"
+        }
+      ]
+    }
+  ]
+}
 

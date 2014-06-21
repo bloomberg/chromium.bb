@@ -1,46 +1,46 @@
 This layer should not have backing store.
 This layer should not have backing store.
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 8.00 8.00)
-          (bounds 342.00 240.00)
-          (children 1
-            (GraphicsLayer
-              (position 1.00 1.00)
-              (bounds 340.00 238.00)
-              (children 1
-                (GraphicsLayer
-                  (position 20.00 38.00)
-                  (bounds 342.00 180.00)
-                  (children 1
-                    (GraphicsLayer
-                      (position 1.00 1.00)
-                      (bounds 340.00 178.00)
-                      (children 1
-                        (GraphicsLayer
-                          (position 30.00 48.00)
-                          (bounds 100.00 100.00)
-                          (contentsOpaque 1)
-                          (drawsContent 1)
-                          (backgroundColor #C0C0C0)
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [342, 240],
+          "children": [
+            {
+              "position": [1, 1],
+              "bounds": [340, 238],
+              "children": [
+                {
+                  "position": [20, 38],
+                  "bounds": [342, 180],
+                  "children": [
+                    {
+                      "position": [1, 1],
+                      "bounds": [340, 178],
+                      "children": [
+                        {
+                          "position": [30, 48],
+                          "bounds": [100, 100],
+                          "contentsOpaque": true,
+                          "drawsContent": true,
+                          "backgroundColor": "#C0C0C0"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

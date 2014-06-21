@@ -18,149 +18,159 @@ filter change with composited child
 
 filter change with non-composited child
 
-(GraphicsLayer
-  (bounds 785.00 1812.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 785.00 1812.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 10
-        (GraphicsLayer
-          (position 8.00 80.00)
-          (bounds 100.00 100.00)
-          (children 1
-            (GraphicsLayer
-              (bounds 100.00 100.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 152.00 152.00)
-                  (contentsOpaque 1)
-                  (drawsContent 1)
-                  (backgroundColor #FFFF00)
-                )
-              )
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 260.00)
-          (bounds 100.00 100.00)
-          (drawsContent 1)
-          (repaint rects
-            (rect 0.00 0.00 100.00 100.00)
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 799.00)
-          (bounds 100.00 100.00)
-          (opacity 0.50)
-          (children 1
-            (GraphicsLayer
-              (bounds 100.00 100.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 152.00 152.00)
-                  (contentsOpaque 1)
-                  (drawsContent 1)
-                  (backgroundColor #FFFF00)
-                )
-              )
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 979.00)
-          (bounds 100.00 100.00)
-          (opacity 0.50)
-          (drawsContent 1)
-          (repaint rects
-            (rect 0.00 0.00 100.00 100.00)
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 1159.00)
-          (bounds 100.00 100.00)
-          (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 20.00 1.00])
-          (children 1
-            (GraphicsLayer
-              (bounds 100.00 100.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 152.00 152.00)
-                  (contentsOpaque 1)
-                  (drawsContent 1)
-                  (backgroundColor #FFFF00)
-                )
-              )
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 1339.00)
-          (bounds 100.00 100.00)
-          (drawsContent 1)
-          (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 20.00 1.00])
-          (repaint rects
-            (rect 0.00 0.00 100.00 100.00)
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 1519.00)
-          (bounds 100.00 100.00)
-          (drawsContent 1)
-          (repaint rects
-            (rect 0.00 0.00 100.00 100.00)
-          )
-          (children 1
-            (GraphicsLayer
-              (bounds 100.00 100.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 152.00 152.00)
-                  (contentsOpaque 1)
-                  (drawsContent 1)
-                  (backgroundColor #FFFF00)
-                )
-              )
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 1699.00)
-          (bounds 100.00 100.00)
-          (drawsContent 1)
-          (repaint rects
-            (rect 0.00 0.00 100.00 100.00)
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 440.00)
-          (bounds 100.00 100.00)
-          (children 1
-            (GraphicsLayer
-              (bounds 100.00 100.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 152.00 152.00)
-                  (contentsOpaque 1)
-                  (drawsContent 1)
-                  (backgroundColor #FFFF00)
-                )
-              )
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 620.00)
-          (bounds 100.00 100.00)
-          (drawsContent 1)
-          (repaint rects
-            (rect 0.00 0.00 100.00 100.00)
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [785, 1812],
+  "children": [
+    {
+      "bounds": [785, 1812],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 80],
+          "bounds": [100, 100],
+          "children": [
+            {
+              "bounds": [100, 100],
+              "children": [
+                {
+                  "bounds": [152, 152],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#FFFF00"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [8, 260],
+          "bounds": [100, 100],
+          "drawsContent": true,
+          "repaintRects": [
+            [0, 0, 100, 100]
+          ]
+        },
+        {
+          "position": [8, 799],
+          "bounds": [100, 100],
+          "opacity": 0.5,
+          "children": [
+            {
+              "bounds": [100, 100],
+              "children": [
+                {
+                  "bounds": [152, 152],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#FFFF00"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [8, 979],
+          "bounds": [100, 100],
+          "opacity": 0.5,
+          "drawsContent": true,
+          "repaintRects": [
+            [0, 0, 100, 100]
+          ]
+        },
+        {
+          "position": [8, 1159],
+          "bounds": [100, 100],
+          "transform": [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 20, 1]
+          ],
+          "children": [
+            {
+              "bounds": [100, 100],
+              "children": [
+                {
+                  "bounds": [152, 152],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#FFFF00"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [8, 1339],
+          "bounds": [100, 100],
+          "drawsContent": true,
+          "transform": [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 20, 1]
+          ],
+          "repaintRects": [
+            [0, 0, 100, 100]
+          ]
+        },
+        {
+          "position": [8, 1519],
+          "bounds": [100, 100],
+          "drawsContent": true,
+          "repaintRects": [
+            [0, 0, 100, 100]
+          ],
+          "children": [
+            {
+              "bounds": [100, 100],
+              "children": [
+                {
+                  "bounds": [152, 152],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#FFFF00"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [8, 1699],
+          "bounds": [100, 100],
+          "drawsContent": true,
+          "repaintRects": [
+            [0, 0, 100, 100]
+          ]
+        },
+        {
+          "position": [8, 440],
+          "bounds": [100, 100],
+          "children": [
+            {
+              "bounds": [100, 100],
+              "children": [
+                {
+                  "bounds": [152, 152],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#FFFF00"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [8, 620],
+          "bounds": [100, 100],
+          "drawsContent": true,
+          "repaintRects": [
+            [0, 0, 100, 100]
+          ]
+        }
+      ]
+    }
+  ]
+}
 

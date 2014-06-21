@@ -1,31 +1,31 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 8.00 8.00)
-              (bounds 500.00 500.00)
-            )
-            (GraphicsLayer
-              (position 55.00 55.00)
-              (bounds 500.00 500.00)
-              (drawsContent 1)
-              (repaint rects
-                (rect 55.00 55.00 500.00 500.00)
-                (rect 0.00 0.00 500.00 500.00)
-                (rect 0.00 0.00 50.00 50.00)
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [500, 500]
+            },
+            {
+              "position": [55, 55],
+              "bounds": [500, 500],
+              "drawsContent": true,
+              "repaintRects": [
+                [55, 55, 500, 500],
+                [0, 0, 500, 500],
+                [0, 0, 50, 50]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

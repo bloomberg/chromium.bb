@@ -1,45 +1,45 @@
 Should be compositedShould not be composited
 Should be composited
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 2
-        (GraphicsLayer
-          (position 8.00 8.00)
-          (bounds 262.00 212.00)
-          (drawsContent 1)
-          (children 1
-            (GraphicsLayer
-              (children 2
-                (GraphicsLayer
-                  (position 6.00 6.00)
-                  (bounds 250.00 50.00)
-                  (contentsOpaque 1)
-                  (drawsContent 1)
-                  (backgroundColor #C0C0C0)
-                )
-                (GraphicsLayer
-                  (position 11.00 21.00)
-                  (bounds 100.00 100.00)
-                  (drawsContent 1)
-                )
-              )
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 18.00 230.00)
-          (bounds 100.00 100.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [262, 212],
+          "drawsContent": true,
+          "children": [
+            {
+              "children": [
+                {
+                  "position": [6, 6],
+                  "bounds": [250, 50],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#C0C0C0"
+                },
+                {
+                  "position": [11, 21],
+                  "bounds": [100, 100],
+                  "drawsContent": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [18, 230],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        }
+      ]
+    }
+  ]
+}
 

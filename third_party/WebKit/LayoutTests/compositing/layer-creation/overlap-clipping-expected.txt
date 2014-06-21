@@ -1,41 +1,41 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 2
-        (GraphicsLayer
-          (position 50.00 50.00)
-          (bounds 100.00 100.00)
-          (children 1
-            (GraphicsLayer
-              (bounds 500.00 100.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #008000)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 50.00 200.00)
-              (bounds 500.00 100.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #008000)
-            )
-            (GraphicsLayer
-              (position 450.00 200.00)
-              (bounds 100.00 100.00)
-              (drawsContent 1)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [50, 50],
+          "bounds": [100, 100],
+          "children": [
+            {
+              "bounds": [500, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#008000"
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [50, 200],
+              "bounds": [500, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#008000"
+            },
+            {
+              "position": [450, 200],
+              "bounds": [100, 100],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

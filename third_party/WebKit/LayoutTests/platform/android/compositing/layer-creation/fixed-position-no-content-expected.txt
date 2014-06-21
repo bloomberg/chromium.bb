@@ -1,0 +1,11 @@
+(GraphicsLayer
+  (bounds 785.00 1021.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 785.00 1021.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+    )
+  )
+)
+

@@ -1,176 +1,181 @@
 
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 2
-        (GraphicsLayer
-          (position -12.00 -12.00)
-          (bounds 370.00 220.00)
-          (drawsContent 1)
-          (children 1
-            (GraphicsLayer
-              (position 35.00 35.00)
-              (children 2
-                (GraphicsLayer
-                  (bounds 285.00 150.00)
-                  (children 1
-                    (GraphicsLayer
-                      (children 1
-                        (GraphicsLayer
-                          (bounds 285.00 193.00)
-                          (children 1
-                            (GraphicsLayer
-                              (bounds 285.00 193.00)
-                              (drawsContent 1)
-                              (children 1
-                                (GraphicsLayer
-                                  (position 8.00 8.00)
-                                  (bounds 252.00 172.00)
-                                  (drawsContent 1)
-                                  (children 1
-                                    (GraphicsLayer
-                                      (position 1.00 1.00)
-                                      (children 1
-                                        (GraphicsLayer
-                                          (bounds 250.00 170.00)
-                                          (children 1
-                                            (GraphicsLayer
-                                              (children 1
-                                                (GraphicsLayer
-                                                  (bounds 250.00 230.00)
-                                                  (children 1
-                                                    (GraphicsLayer
-                                                      (bounds 250.00 230.00)
-                                                      (drawsContent 1)
-                                                      (children 1
-                                                        (GraphicsLayer
-                                                          (position 18.00 10.00)
-                                                          (bounds 210.00 210.00)
-                                                          (contentsOpaque 1)
-                                                          (drawsContent 1)
-                                                          (backgroundColor #0000FF)
-                                                        )
-                                                      )
-                                                    )
-                                                  )
-                                                )
-                                              )
-                                            )
-                                          )
-                                        )
-                                      )
-                                    )
-                                  )
-                                )
-                              )
-                            )
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-                (GraphicsLayer
-                  (position 285.00 0.00)
-                  (bounds 15.00 150.00)
-                  (drawsContent 1)
-                )
-              )
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 18.00 203.00)
-          (bounds 210.00 210.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
-          (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 1.00 1.00])
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [-12, -12],
+          "bounds": [370, 220],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [35, 35],
+              "children": [
+                {
+                  "bounds": [285, 150],
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [285, 193],
+                          "children": [
+                            {
+                              "bounds": [285, 193],
+                              "drawsContent": true,
+                              "children": [
+                                {
+                                  "position": [8, 8],
+                                  "bounds": [252, 172],
+                                  "drawsContent": true,
+                                  "children": [
+                                    {
+                                      "position": [1, 1],
+                                      "children": [
+                                        {
+                                          "bounds": [250, 170],
+                                          "children": [
+                                            {
+                                              "children": [
+                                                {
+                                                  "bounds": [250, 230],
+                                                  "children": [
+                                                    {
+                                                      "bounds": [250, 230],
+                                                      "drawsContent": true,
+                                                      "children": [
+                                                        {
+                                                          "position": [18, 10],
+                                                          "bounds": [210, 210],
+                                                          "contentsOpaque": true,
+                                                          "drawsContent": true,
+                                                          "backgroundColor": "#0000FF"
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "position": [285, 0],
+                  "bounds": [15, 150],
+                  "drawsContent": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [18, 203],
+          "bounds": [210, 210],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF",
+          "transform": [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 1, 1]
+          ]
+        }
+      ]
+    }
+  ]
+}
 
 
 --------
 Frame: '-->'
 --------
-(GraphicsLayer
-  (bounds 285.00 193.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 285.00 193.00)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 8.00 8.00)
-          (bounds 252.00 172.00)
-          (drawsContent 1)
-          (children 1
-            (GraphicsLayer
-              (position 1.00 1.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 250.00 170.00)
-                  (children 1
-                    (GraphicsLayer
-                      (children 1
-                        (GraphicsLayer
-                          (bounds 250.00 230.00)
-                          (children 1
-                            (GraphicsLayer
-                              (bounds 250.00 230.00)
-                              (drawsContent 1)
-                              (children 1
-                                (GraphicsLayer
-                                  (position 18.00 10.00)
-                                  (bounds 210.00 210.00)
-                                  (contentsOpaque 1)
-                                  (drawsContent 1)
-                                  (backgroundColor #0000FF)
-                                )
-                              )
-                            )
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [285, 193],
+  "children": [
+    {
+      "bounds": [285, 193],
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [252, 172],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [1, 1],
+              "children": [
+                {
+                  "bounds": [250, 170],
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [250, 230],
+                          "children": [
+                            {
+                              "bounds": [250, 230],
+                              "drawsContent": true,
+                              "children": [
+                                {
+                                  "position": [18, 10],
+                                  "bounds": [210, 210],
+                                  "contentsOpaque": true,
+                                  "drawsContent": true,
+                                  "backgroundColor": "#0000FF"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
 
 --------
 Frame: '/-->'
 --------
-(GraphicsLayer
-  (bounds 250.00 230.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 250.00 230.00)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 18.00 10.00)
-          (bounds 210.00 210.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [250, 230],
+  "children": [
+    {
+      "bounds": [250, 230],
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 10],
+          "bounds": [210, 210],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        }
+      ]
+    }
+  ]
+}
 

@@ -1,69 +1,69 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 4
-        (GraphicsLayer
-          (position 8.00 13.00)
-          (bounds 100.00 100.00)
-          (children 1
-            (GraphicsLayer
-              (bounds 100.00 100.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 10.00 10.00)
-                )
-              )
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 13.00)
-          (bounds 100.00 100.00)
-          (children 1
-            (GraphicsLayer
-              (bounds 100.00 100.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 10.00 10.00)
-                )
-              )
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 13.00)
-          (bounds 100.00 100.00)
-          (children 1
-            (GraphicsLayer
-              (bounds 100.00 100.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 10.00 10.00)
-                )
-              )
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 8.00 13.00)
-          (bounds 100.00 100.00)
-          (children 1
-            (GraphicsLayer
-              (bounds 100.00 100.00)
-              (children 1
-                (GraphicsLayer
-                  (bounds 10.00 10.00)
-                )
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 13],
+          "bounds": [100, 100],
+          "children": [
+            {
+              "bounds": [100, 100],
+              "children": [
+                {
+                  "bounds": [10, 10]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [8, 13],
+          "bounds": [100, 100],
+          "children": [
+            {
+              "bounds": [100, 100],
+              "children": [
+                {
+                  "bounds": [10, 10]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [8, 13],
+          "bounds": [100, 100],
+          "children": [
+            {
+              "bounds": [100, 100],
+              "children": [
+                {
+                  "bounds": [10, 10]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [8, 13],
+          "bounds": [100, 100],
+          "children": [
+            {
+              "bounds": [100, 100],
+              "children": [
+                {
+                  "bounds": [10, 10]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

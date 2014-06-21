@@ -1,63 +1,63 @@
 CASE 1, original layer tree
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 50.00 50.00)
-              (bounds 100.00 100.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 130.00 130.00)
-              (bounds 100.00 100.00)
-              (drawsContent 1)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [50, 50],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [130, 130],
+              "bounds": [100, 100],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 CASE 2, change color of "inner" to red
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 50.00 50.00)
-              (bounds 100.00 100.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 130.00 130.00)
-              (bounds 100.00 100.00)
-              (drawsContent 1)
-              (repaint rects
-                (rect 10.00 10.00 50.00 50.00)
-                (rect 10.00 10.00 50.00 50.00)
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [50, 50],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [130, 130],
+              "bounds": [100, 100],
+              "drawsContent": true,
+              "repaintRects": [
+                [10, 10, 50, 50],
+                [10, 10, 50, 50]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

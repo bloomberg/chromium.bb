@@ -2,48 +2,48 @@ A <video> should not have a layer until playback begins.
 This test can not be run manually, it requires testRunner.layerTreeAsText.
 
 Case: No src, no poster
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true
+    }
+  ]
+}
 
 
 Case: Displaying poster
-(GraphicsLayer
-  (bounds 785.00 605.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 785.00 605.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-    )
-  )
-)
+{
+  "bounds": [785, 605],
+  "children": [
+    {
+      "bounds": [785, 605],
+      "contentsOpaque": true,
+      "drawsContent": true
+    }
+  ]
+}
 
 
 Case: Displaying movie
-(GraphicsLayer
-  (bounds 785.00 813.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 785.00 813.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 8.00 8.00)
-          (bounds 352.00 288.00)
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [785, 813],
+  "children": [
+    {
+      "bounds": [785, 813],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [352, 288]
+        }
+      ]
+    }
+  ]
+}
 
 
 

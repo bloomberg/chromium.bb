@@ -1,11 +1,11 @@
-(GraphicsLayer
-  (bounds 800.00 4021.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 4021.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-    )
-  )
-)
+{
+  "bounds": [800, 4021],
+  "children": [
+    {
+      "bounds": [800, 4021],
+      "contentsOpaque": true,
+      "drawsContent": true
+    }
+  ]
+}
 

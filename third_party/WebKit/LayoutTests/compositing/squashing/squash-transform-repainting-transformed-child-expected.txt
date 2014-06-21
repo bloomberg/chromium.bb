@@ -1,98 +1,98 @@
 CASE 1, original layer tree
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 100.00 100.00)
-              (bounds 100.00 100.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 4.00 4.00)
-              (bounds 276.00 276.00)
-              (drawsContent 1)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [100, 100],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [4, 4],
+              "bounds": [276, 276],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 CASE 2, hovering over the outer div
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 100.00 100.00)
-              (bounds 100.00 100.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 4.00 4.00)
-              (bounds 276.00 276.00)
-              (drawsContent 1)
-              (repaint rects
-                (rect 1.00 1.00 130.00 130.00)
-                (rect 1.00 1.00 130.00 130.00)
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [100, 100],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [4, 4],
+              "bounds": [276, 276],
+              "drawsContent": true,
+              "repaintRects": [
+                [1, 1, 130, 130],
+                [1, 1, 130, 130]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 CASE 3, hovering over the inner div
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 100.00 100.00)
-              (bounds 100.00 100.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-            )
-            (GraphicsLayer
-              (position 4.00 4.00)
-              (bounds 276.00 276.00)
-              (drawsContent 1)
-              (repaint rects
-                (rect 18.00 21.00 86.00 86.00)
-                (rect 18.00 21.00 86.00 86.00)
-                (rect 1.00 1.00 130.00 130.00)
-                (rect 1.00 1.00 130.00 130.00)
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [100, 100],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [4, 4],
+              "bounds": [276, 276],
+              "drawsContent": true,
+              "repaintRects": [
+                [18, 21, 86, 86],
+                [18, 21, 86, 86],
+                [1, 1, 130, 130],
+                [1, 1, 130, 130]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

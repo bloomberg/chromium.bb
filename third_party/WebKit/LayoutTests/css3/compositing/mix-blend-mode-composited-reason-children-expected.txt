@@ -1,54 +1,54 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (children 1
-        (GraphicsLayer
-          (bounds 800.00 600.00)
-          (drawsContent 1)
-          (children 2
-            (GraphicsLayer
-              (position 8.00 8.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #FF0000)
-              (children 2
-                (GraphicsLayer
-                  (bounds 160.00 90.00)
-                  (isolate 1)
-                  (contentsOpaque 1)
-                  (drawsContent 1)
-                  (backgroundColor #008000)
-                  (children 1
-                    (GraphicsLayer
-                      (bounds 160.00 90.00)
-                      (blendMode multiply)
-                      (contentsOpaque 1)
-                      (drawsContent 1)
-                      (backgroundColor #0000FF)
-                      (children 1
-                        (GraphicsLayer
-                          (bounds 160.00 90.00)
-                        )
-                      )
-                    )
-                  )
-                )
-                (GraphicsLayer
-                  (drawsContent 1)
-                )
-              )
-            )
-            (GraphicsLayer
-              (bounds 800.00 600.00)
-              (drawsContent 1)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "children": [
+        {
+          "bounds": [800, 600],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [8, 8],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#FF0000",
+              "children": [
+                {
+                  "bounds": [160, 90],
+                  "isolate": true,
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#008000",
+                  "children": [
+                    {
+                      "bounds": [160, 90],
+                      "blendMode": "multiply",
+                      "contentsOpaque": true,
+                      "drawsContent": true,
+                      "backgroundColor": "#0000FF",
+                      "children": [
+                        {
+                          "bounds": [160, 90]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "drawsContent": true
+                }
+              ]
+            },
+            {
+              "bounds": [800, 600],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

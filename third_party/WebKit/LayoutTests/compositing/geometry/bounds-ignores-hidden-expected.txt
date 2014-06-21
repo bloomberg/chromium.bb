@@ -1,27 +1,27 @@
 
-(GraphicsLayer
-  (bounds 44990.00 15063.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 44990.00 15063.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 10.00 10.00)
-          (transformOrigin -10.00 -10.00)
-          (bounds 50.00 50.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (children 1
-            (GraphicsLayer
-              (bounds 50.00 50.00)
-              (drawsContent 1)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [44990, 15063],
+  "children": [
+    {
+      "bounds": [44990, 15063],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [10, 10],
+          "transformOrigin": [-10, -10],
+          "bounds": [50, 50],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "children": [
+            {
+              "bounds": [50, 50],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

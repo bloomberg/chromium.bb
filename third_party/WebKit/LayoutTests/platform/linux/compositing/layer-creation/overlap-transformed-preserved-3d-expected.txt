@@ -1,0 +1,246 @@
+123456Before:
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [108, 108],
+          "children": [
+            {
+              "shouldFlattenTransform": false,
+              "transform": [
+                [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [-0.25, -0.25, 1, -0.005],
+                [0, 0, 0, 1]
+              ],
+              "children": [
+                {
+                  "transformOrigin": [50, 50],
+                  "shouldFlattenTransform": false,
+                  "3dRenderingContext": 1,
+                  "transform": [
+                    [0.353553390593274, 0.25, -0.5, 0],
+                    [0, 0.353553390593274, 0.707106781186548, 0],
+                    [0.353553390593274, -0.25, 0.5, 0],
+                    [0, 0, 0, 1]
+                  ],
+                  "children": [
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [1, 0, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 50, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [6.12303176911189e-17, 0, -1, 0],
+                        [0, 1, 0, 0],
+                        [1, 0, 6.12303176911189e-17, 0],
+                        [50, 0, 3.06151588455594e-15, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [-1, 0, -1.22460635382238e-16, 0],
+                        [0, 1, 0, 0],
+                        [1.22460635382238e-16, 0, -1, 0],
+                        [6.12303176911189e-15, 0, -50, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [-1.83690953073357e-16, 0, 1, 0],
+                        [0, 1, 0, 0],
+                        [-1, 0, -1.83690953073357e-16, 0],
+                        [-50, 0, -9.18454765366783e-15, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [1, 0, 0, 0],
+                        [0, 6.12303176911189e-17, 1, 0],
+                        [0, -1, 6.12303176911189e-17, 0],
+                        [0, -50, 3.06151588455594e-15, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [1, 0, 0, 0],
+                        [0, 6.12303176911189e-17, -1, 0],
+                        [0, 1, 6.12303176911189e-17, 0],
+                        [0, 50, 3.06151588455594e-15, 1]
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+After:
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [108, 108],
+          "children": [
+            {
+              "shouldFlattenTransform": false,
+              "transform": [
+                [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [-0.25, -0.25, 1, -0.005],
+                [0, 0, 0, 1]
+              ],
+              "children": [
+                {
+                  "transformOrigin": [50, 50],
+                  "shouldFlattenTransform": false,
+                  "3dRenderingContext": 1,
+                  "transform": [
+                    [0.707106781186548, 0.5, -0.5, 0],
+                    [0, 0.707106781186548, 0.707106781186548, 0],
+                    [0.707106781186548, -0.5, 0.5, 0],
+                    [0, 0, 0, 1]
+                  ],
+                  "children": [
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [1, 0, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 50, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [6.12303176911189e-17, 0, -1, 0],
+                        [0, 1, 0, 0],
+                        [1, 0, 6.12303176911189e-17, 0],
+                        [50, 0, 3.06151588455594e-15, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [-1, 0, -1.22460635382238e-16, 0],
+                        [0, 1, 0, 0],
+                        [1.22460635382238e-16, 0, -1, 0],
+                        [6.12303176911189e-15, 0, -50, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [-1.83690953073357e-16, 0, 1, 0],
+                        [0, 1, 0, 0],
+                        [-1, 0, -1.83690953073357e-16, 0],
+                        [-50, 0, -9.18454765366783e-15, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [1, 0, 0, 0],
+                        [0, 6.12303176911189e-17, 1, 0],
+                        [0, -1, 6.12303176911189e-17, 0],
+                        [0, -50, 3.06151588455594e-15, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [1, 0, 0, 0],
+                        [0, 6.12303176911189e-17, -1, 0],
+                        [0, 1, 6.12303176911189e-17, 0],
+                        [0, 50, 3.06151588455594e-15, 1]
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [100, 150],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#808080"
+            },
+            {
+              "position": [8, 8],
+              "bounds": [300, 300],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,34 +1,39 @@
 This layer should not be composited.
 This layer should not be composited.
 This layer should be composited.
-(GraphicsLayer
-  (bounds 785.00 618.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 785.00 618.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 18.00 394.00)
-          (bounds 342.00 182.00)
-          (shouldFlattenTransform 0)
-          (3dRenderingContext 1)
-          (drawsContent 1)
-          (children 1
-            (GraphicsLayer
-              (position 31.00 51.00)
-              (bounds 100.00 100.00)
-              (contentsOpaque 1)
-              (3dRenderingContext 1)
-              (drawsContent 1)
-              (backgroundColor #C0C0C0)
-              (transform [0.98 0.00 -0.17 0.00] [0.00 1.00 0.00 0.00] [0.17 0.00 0.98 0.00] [0.00 0.00 0.00 1.00])
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [785, 618],
+  "children": [
+    {
+      "bounds": [785, 618],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 394],
+          "bounds": [342, 182],
+          "shouldFlattenTransform": false,
+          "3dRenderingContext": 1,
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [31, 51],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "3dRenderingContext": 1,
+              "drawsContent": true,
+              "backgroundColor": "#C0C0C0",
+              "transform": [
+                [0.984807753012208, 0, -0.17364817766693, 0],
+                [0, 1, 0, 0],
+                [0.17364817766693, 0, 0.984807753012208, 0],
+                [0, 0, 0, 1]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

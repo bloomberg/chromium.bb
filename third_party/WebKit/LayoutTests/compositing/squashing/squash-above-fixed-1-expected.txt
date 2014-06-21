@@ -3,177 +3,177 @@ The gray div is a composited fixed-position element, and the cyan/lime elements 
 This scenario tests (1) that content repaints correctly as layers pop in and out of squashing, and (2) that the positioning of the squashing layer remains correct (i.e. scrolls properly) when the squashing layer is on top of a fixed-position composited layer.
 
 CASE 1, original layer tree:
-(GraphicsLayer
-  (bounds 785.00 1400.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 785.00 1400.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 2
-        (GraphicsLayer
-          (position 100.00 150.00)
-          (bounds 300.00 300.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #D3D3D3)
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 0.00 100.00)
-              (bounds 200.00 100.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #00FF00)
-            )
-            (GraphicsLayer
-              (position 0.00 200.00)
-              (bounds 200.00 300.00)
-              (drawsContent 1)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [785, 1400],
+  "children": [
+    {
+      "bounds": [785, 1400],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [100, 150],
+          "bounds": [300, 300],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#D3D3D3"
+        },
+        {
+          "children": [
+            {
+              "position": [0, 100],
+              "bounds": [200, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#00FF00"
+            },
+            {
+              "position": [0, 200],
+              "bounds": [200, 300],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
-(GraphicsLayer
-  (bounds 785.00 1400.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 785.00 1400.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (repaint rects
-        (rect 0.00 500.00 200.00 100.00)
-        (rect 0.00 400.00 200.00 100.00)
-        (rect 0.00 300.00 200.00 100.00)
-        (rect 0.00 200.00 200.00 100.00)
-        (rect 0.00 100.00 200.00 100.00)
-      )
-      (children 2
-        (GraphicsLayer
-          (position 100.00 230.00)
-          (bounds 300.00 300.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #D3D3D3)
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 0.00 200.00)
-              (bounds 200.00 100.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #00FFFF)
-              (repaint rects
-                (rect 0.00 0.00 200.00 100.00)
-              )
-            )
-            (GraphicsLayer
-              (position 0.00 300.00)
-              (bounds 200.00 300.00)
-              (drawsContent 1)
-              (repaint rects
-                (rect 0.00 200.00 200.00 100.00)
-                (rect 0.00 100.00 200.00 100.00)
-                (rect 0.00 0.00 200.00 100.00)
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [785, 1400],
+  "children": [
+    {
+      "bounds": [785, 1400],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 500, 200, 100],
+        [0, 400, 200, 100],
+        [0, 300, 200, 100],
+        [0, 200, 200, 100],
+        [0, 100, 200, 100]
+      ],
+      "children": [
+        {
+          "position": [100, 230],
+          "bounds": [300, 300],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#D3D3D3"
+        },
+        {
+          "children": [
+            {
+              "position": [0, 200],
+              "bounds": [200, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#00FFFF",
+              "repaintRects": [
+                [0, 0, 200, 100]
+              ]
+            },
+            {
+              "position": [0, 300],
+              "bounds": [200, 300],
+              "drawsContent": true,
+              "repaintRects": [
+                [0, 200, 200, 100],
+                [0, 100, 200, 100],
+                [0, 0, 200, 100]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 CASE 3, scrolling y to 120, no repaints expected:
-(GraphicsLayer
-  (bounds 785.00 1400.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 785.00 1400.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 2
-        (GraphicsLayer
-          (position 100.00 270.00)
-          (bounds 300.00 300.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #D3D3D3)
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 0.00 200.00)
-              (bounds 200.00 100.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #00FFFF)
-            )
-            (GraphicsLayer
-              (position 0.00 300.00)
-              (bounds 200.00 300.00)
-              (drawsContent 1)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [785, 1400],
+  "children": [
+    {
+      "bounds": [785, 1400],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [100, 270],
+          "bounds": [300, 300],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#D3D3D3"
+        },
+        {
+          "children": [
+            {
+              "position": [0, 200],
+              "bounds": [200, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#00FFFF"
+            },
+            {
+              "position": [0, 300],
+              "bounds": [200, 300],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
-(GraphicsLayer
-  (bounds 785.00 1400.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 785.00 1400.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (repaint rects
-        (rect 0.00 600.00 200.00 100.00)
-        (rect 0.00 500.00 200.00 100.00)
-        (rect 0.00 400.00 200.00 100.00)
-        (rect 0.00 300.00 200.00 100.00)
-        (rect 0.00 200.00 200.00 100.00)
-      )
-      (children 2
-        (GraphicsLayer
-          (position 100.00 320.00)
-          (bounds 300.00 300.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #D3D3D3)
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 0.00 300.00)
-              (bounds 200.00 100.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #00FF00)
-              (repaint rects
-                (rect 0.00 0.00 200.00 100.00)
-              )
-            )
-            (GraphicsLayer
-              (position 0.00 400.00)
-              (bounds 200.00 300.00)
-              (drawsContent 1)
-              (repaint rects
-                (rect 0.00 200.00 200.00 100.00)
-                (rect 0.00 100.00 200.00 100.00)
-                (rect 0.00 0.00 200.00 100.00)
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [785, 1400],
+  "children": [
+    {
+      "bounds": [785, 1400],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 600, 200, 100],
+        [0, 500, 200, 100],
+        [0, 400, 200, 100],
+        [0, 300, 200, 100],
+        [0, 200, 200, 100]
+      ],
+      "children": [
+        {
+          "position": [100, 320],
+          "bounds": [300, 300],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#D3D3D3"
+        },
+        {
+          "children": [
+            {
+              "position": [0, 300],
+              "bounds": [200, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#00FF00",
+              "repaintRects": [
+                [0, 0, 200, 100]
+              ]
+            },
+            {
+              "position": [0, 400],
+              "bounds": [200, 300],
+              "drawsContent": true,
+              "repaintRects": [
+                [0, 200, 200, 100],
+                [0, 100, 200, 100],
+                [0, 0, 200, 100]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 

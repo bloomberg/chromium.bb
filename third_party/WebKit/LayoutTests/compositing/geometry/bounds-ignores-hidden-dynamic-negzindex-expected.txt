@@ -1,53 +1,53 @@
 
 
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 3
-        (GraphicsLayer
-          (transformOrigin 50.00 50.00)
-          (bounds 500.00 250.00)
-          (drawsContent 1)
-          (children 1
-            (GraphicsLayer
-              (bounds 500.00 250.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 0.00 250.00)
-              (transformOrigin 50.00 50.00)
-              (bounds 150.00 150.00)
-              (drawsContent 1)
-              (children 1
-                (GraphicsLayer
-                  (bounds 150.00 150.00)
-                  (drawsContent 1)
-                )
-              )
-            )
-            (GraphicsLayer
-              (bounds 792.00 100.00)
-              (drawsContent 1)
-            )
-          )
-        )
-        (GraphicsLayer
-          (position 0.00 250.00)
-          (bounds 100.00 100.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #008000)
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "transformOrigin": [50, 50],
+          "bounds": [500, 250],
+          "drawsContent": true,
+          "children": [
+            {
+              "bounds": [500, 250],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [0, 250],
+              "transformOrigin": [50, 50],
+              "bounds": [150, 150],
+              "drawsContent": true,
+              "children": [
+                {
+                  "bounds": [150, 150],
+                  "drawsContent": true
+                }
+              ]
+            },
+            {
+              "bounds": [792, 100],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [0, 250],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#008000"
+        }
+      ]
+    }
+  ]
+}
 

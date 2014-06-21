@@ -2,74 +2,84 @@ This content is in the parent
 Box should switch between perspective and flat
 
 First dump layer tree:
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true
+    }
+  ]
+}
 
 Second dump layer tree:
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 8.00 8.00)
-          (bounds 342.00 292.00)
-          (drawsContent 1)
-          (children 1
-            (GraphicsLayer
-              (position 31.00 41.00)
-              (bounds 250.00 220.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
-              (children 1
-                (GraphicsLayer
-                  (position 10.00 10.00)
-                  (bounds 200.00 200.00)
-                  (contentsOpaque 1)
-                  (drawsContent 1)
-                  (backgroundColor #FFFF00)
-                  (transform [0.87 0.50 0.00 0.00] [-0.50 0.87 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 0.00 1.00])
-                  (children 1
-                    (GraphicsLayer
-                      (position 100.00 0.00)
-                      (bounds 250.00 100.00)
-                      (contentsOpaque 1)
-                      (drawsContent 1)
-                      (backgroundColor #008000)
-                      (transform [0.50 0.00 -0.87 0.00] [0.00 1.00 0.00 0.00] [0.87 0.00 0.50 -0.00] [-30.00 30.00 100.00 0.75])
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [342, 292],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [31, 41],
+              "bounds": [250, 220],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF",
+              "children": [
+                {
+                  "position": [10, 10],
+                  "bounds": [200, 200],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#FFFF00",
+                  "transform": [
+                    [0.866025403784439, 0.5, 0, 0],
+                    [-0.5, 0.866025403784439, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1]
+                  ],
+                  "children": [
+                    {
+                      "position": [100, 0],
+                      "bounds": [250, 100],
+                      "contentsOpaque": true,
+                      "drawsContent": true,
+                      "backgroundColor": "#008000",
+                      "transform": [
+                        [0.5, 0, -0.866025403784439, 0.0021650635094611],
+                        [0, 1, 0, 0],
+                        [0.866025403784439, 0, 0.5, -0.00125],
+                        [-30, 30, 100, 0.75]
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
 Third dump layer tree:
-(GraphicsLayer
-  (bounds 1032.00 1286.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 1032.00 1286.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-    )
-  )
-)
+{
+  "bounds": [785, 1446],
+  "children": [
+    {
+      "bounds": [785, 1446],
+      "contentsOpaque": true,
+      "drawsContent": true
+    }
+  ]
+}
 

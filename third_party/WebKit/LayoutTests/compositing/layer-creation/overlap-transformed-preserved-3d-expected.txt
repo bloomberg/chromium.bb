@@ -1,166 +1,246 @@
 123456Before:
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 1
-        (GraphicsLayer
-          (position 108.00 108.00)
-          (children 1
-            (GraphicsLayer
-              (shouldFlattenTransform 0)
-              (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [-0.25 -0.25 1.00 -0.01] [0.00 0.00 0.00 1.00])
-              (children 1
-                (GraphicsLayer
-                  (transformOrigin 50.00 50.00)
-                  (shouldFlattenTransform 0)
-                  (3dRenderingContext 1)
-                  (transform [0.35 0.25 -0.50 0.00] [0.00 0.35 0.71 0.00] [0.35 -0.25 0.50 0.00] [0.00 0.00 0.00 1.00])
-                  (children 6
-                    (GraphicsLayer
-                      (bounds 100.00 100.00)
-                      (3dRenderingContext 1)
-                      (drawsContent 1)
-                      (backgroundColor #00FF00CC)
-                      (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 50.00 1.00])
-                    )
-                    (GraphicsLayer
-                      (bounds 100.00 100.00)
-                      (3dRenderingContext 1)
-                      (drawsContent 1)
-                      (backgroundColor #00FF00CC)
-                      (transform [0.00 0.00 -1.00 0.00] [0.00 1.00 0.00 0.00] [1.00 0.00 0.00 0.00] [50.00 0.00 0.00 1.00])
-                    )
-                    (GraphicsLayer
-                      (bounds 100.00 100.00)
-                      (3dRenderingContext 1)
-                      (drawsContent 1)
-                      (backgroundColor #00FF00CC)
-                      (transform [-1.00 0.00 -0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 -1.00 0.00] [0.00 0.00 -50.00 1.00])
-                    )
-                    (GraphicsLayer
-                      (bounds 100.00 100.00)
-                      (3dRenderingContext 1)
-                      (drawsContent 1)
-                      (backgroundColor #00FF00CC)
-                      (transform [-0.00 0.00 1.00 0.00] [0.00 1.00 0.00 0.00] [-1.00 0.00 -0.00 0.00] [-50.00 0.00 -0.00 1.00])
-                    )
-                    (GraphicsLayer
-                      (bounds 100.00 100.00)
-                      (3dRenderingContext 1)
-                      (drawsContent 1)
-                      (backgroundColor #00FF00CC)
-                      (transform [1.00 0.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 -1.00 0.00 0.00] [0.00 -50.00 0.00 1.00])
-                    )
-                    (GraphicsLayer
-                      (bounds 100.00 100.00)
-                      (3dRenderingContext 1)
-                      (drawsContent 1)
-                      (backgroundColor #00FF00CC)
-                      (transform [1.00 0.00 0.00 0.00] [0.00 0.00 -1.00 0.00] [0.00 1.00 0.00 0.00] [0.00 50.00 0.00 1.00])
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [108, 108],
+          "children": [
+            {
+              "shouldFlattenTransform": false,
+              "transform": [
+                [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [-0.25, -0.25, 1, -0.005],
+                [0, 0, 0, 1]
+              ],
+              "children": [
+                {
+                  "transformOrigin": [50, 50],
+                  "shouldFlattenTransform": false,
+                  "3dRenderingContext": 1,
+                  "transform": [
+                    [0.353553390593274, 0.25, -0.5, 0],
+                    [0, 0.353553390593274, 0.707106781186548, 0],
+                    [0.353553390593274, -0.25, 0.5, 0],
+                    [0, 0, 0, 1]
+                  ],
+                  "children": [
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [1, 0, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 50, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [6.12323399573677e-17, 0, -1, 0],
+                        [0, 1, 0, 0],
+                        [1, 0, 6.12323399573677e-17, 0],
+                        [50, 0, 3.06161699786838e-15, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [-1, 0, -1.22464679914735e-16, 0],
+                        [0, 1, 0, 0],
+                        [1.22464679914735e-16, 0, -1, 0],
+                        [6.12323399573677e-15, 0, -50, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [-1.83697019872103e-16, 0, 1, 0],
+                        [0, 1, 0, 0],
+                        [-1, 0, -1.83697019872103e-16, 0],
+                        [-50, 0, -9.18485099360515e-15, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [1, 0, 0, 0],
+                        [0, 6.12323399573677e-17, 1, 0],
+                        [0, -1, 6.12323399573677e-17, 0],
+                        [0, -50, 3.06161699786838e-15, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [1, 0, 0, 0],
+                        [0, 6.12323399573677e-17, -1, 0],
+                        [0, 1, 6.12323399573677e-17, 0],
+                        [0, 50, 3.06161699786838e-15, 1]
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
 After:
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (children 2
-        (GraphicsLayer
-          (position 108.00 108.00)
-          (children 1
-            (GraphicsLayer
-              (shouldFlattenTransform 0)
-              (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [-0.25 -0.25 1.00 -0.01] [0.00 0.00 0.00 1.00])
-              (children 1
-                (GraphicsLayer
-                  (transformOrigin 50.00 50.00)
-                  (shouldFlattenTransform 0)
-                  (3dRenderingContext 1)
-                  (transform [0.71 0.50 -0.50 0.00] [0.00 0.71 0.71 0.00] [0.71 -0.50 0.50 0.00] [0.00 0.00 0.00 1.00])
-                  (children 6
-                    (GraphicsLayer
-                      (bounds 100.00 100.00)
-                      (3dRenderingContext 1)
-                      (drawsContent 1)
-                      (backgroundColor #00FF00CC)
-                      (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 50.00 1.00])
-                    )
-                    (GraphicsLayer
-                      (bounds 100.00 100.00)
-                      (3dRenderingContext 1)
-                      (drawsContent 1)
-                      (backgroundColor #00FF00CC)
-                      (transform [0.00 0.00 -1.00 0.00] [0.00 1.00 0.00 0.00] [1.00 0.00 0.00 0.00] [50.00 0.00 0.00 1.00])
-                    )
-                    (GraphicsLayer
-                      (bounds 100.00 100.00)
-                      (3dRenderingContext 1)
-                      (drawsContent 1)
-                      (backgroundColor #00FF00CC)
-                      (transform [-1.00 0.00 -0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 -1.00 0.00] [0.00 0.00 -50.00 1.00])
-                    )
-                    (GraphicsLayer
-                      (bounds 100.00 100.00)
-                      (3dRenderingContext 1)
-                      (drawsContent 1)
-                      (backgroundColor #00FF00CC)
-                      (transform [-0.00 0.00 1.00 0.00] [0.00 1.00 0.00 0.00] [-1.00 0.00 -0.00 0.00] [-50.00 0.00 -0.00 1.00])
-                    )
-                    (GraphicsLayer
-                      (bounds 100.00 100.00)
-                      (3dRenderingContext 1)
-                      (drawsContent 1)
-                      (backgroundColor #00FF00CC)
-                      (transform [1.00 0.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 -1.00 0.00 0.00] [0.00 -50.00 0.00 1.00])
-                    )
-                    (GraphicsLayer
-                      (bounds 100.00 100.00)
-                      (3dRenderingContext 1)
-                      (drawsContent 1)
-                      (backgroundColor #00FF00CC)
-                      (transform [1.00 0.00 0.00 0.00] [0.00 0.00 -1.00 0.00] [0.00 1.00 0.00 0.00] [0.00 50.00 0.00 1.00])
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-        (GraphicsLayer
-          (children 2
-            (GraphicsLayer
-              (position 8.00 8.00)
-              (bounds 100.00 150.00)
-              (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #808080)
-            )
-            (GraphicsLayer
-              (position 8.00 8.00)
-              (bounds 300.00 300.00)
-              (drawsContent 1)
-            )
-          )
-        )
-      )
-    )
-  )
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [108, 108],
+          "children": [
+            {
+              "shouldFlattenTransform": false,
+              "transform": [
+                [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [-0.25, -0.25, 1, -0.005],
+                [0, 0, 0, 1]
+              ],
+              "children": [
+                {
+                  "transformOrigin": [50, 50],
+                  "shouldFlattenTransform": false,
+                  "3dRenderingContext": 1,
+                  "transform": [
+                    [0.707106781186548, 0.5, -0.5, 0],
+                    [0, 0.707106781186548, 0.707106781186548, 0],
+                    [0.707106781186548, -0.5, 0.5, 0],
+                    [0, 0, 0, 1]
+                  ],
+                  "children": [
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [1, 0, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 50, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [6.12323399573677e-17, 0, -1, 0],
+                        [0, 1, 0, 0],
+                        [1, 0, 6.12323399573677e-17, 0],
+                        [50, 0, 3.06161699786838e-15, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [-1, 0, -1.22464679914735e-16, 0],
+                        [0, 1, 0, 0],
+                        [1.22464679914735e-16, 0, -1, 0],
+                        [6.12323399573677e-15, 0, -50, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [-1.83697019872103e-16, 0, 1, 0],
+                        [0, 1, 0, 0],
+                        [-1, 0, -1.83697019872103e-16, 0],
+                        [-50, 0, -9.18485099360515e-15, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [1, 0, 0, 0],
+                        [0, 6.12323399573677e-17, 1, 0],
+                        [0, -1, 6.12323399573677e-17, 0],
+                        [0, -50, 3.06161699786838e-15, 1]
+                      ]
+                    },
+                    {
+                      "bounds": [100, 100],
+                      "3dRenderingContext": 1,
+                      "drawsContent": true,
+                      "backgroundColor": "#00FF00CC",
+                      "transform": [
+                        [1, 0, 0, 0],
+                        [0, 6.12323399573677e-17, -1, 0],
+                        [0, 1, 6.12323399573677e-17, 0],
+                        [0, 50, 3.06161699786838e-15, 1]
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [100, 150],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#808080"
+            },
+            {
+              "position": [8, 8],
+              "bounds": [300, 300],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
