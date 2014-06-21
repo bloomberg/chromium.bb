@@ -1,33 +1,33 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/field_trial_helper.h"
+#include "base/android/field_trial_list.h"
 
 #include <jni.h>
 
 #include "base/android/jni_string.h"
 #include "base/metrics/field_trial.h"
-#include "jni/FieldTrialHelper_jni.h"
+#include "jni/FieldTrialList_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 
-static jstring GetFieldTrialFullName(JNIEnv* env,
-                                     jclass clazz,
-                                     jstring jtrial_name) {
+static jstring FindFullName(JNIEnv* env,
+                            jclass clazz,
+                            jstring jtrial_name) {
   std::string trial_name(ConvertJavaStringToUTF8(env, jtrial_name));
   return ConvertUTF8ToJavaString(
       env,
       base::FieldTrialList::FindFullName(trial_name)).Release();
 }
 
-namespace chrome {
+namespace base {
 namespace android {
 
-bool RegisterFieldTrialHelper(JNIEnv* env) {
+bool RegisterFieldTrialList(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
 }  // namespace android
-}  // namespace chrome
+}  // namespace base

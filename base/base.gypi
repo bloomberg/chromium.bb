@@ -39,6 +39,8 @@
           'android/cpu_features.cc',
           'android/event_log.cc',
           'android/event_log.h',
+          'android/field_trial_list.cc',
+          'android/field_trial_list.h',
           'android/fifo_utils.cc',
           'android/fifo_utils.h',
           'android/important_file_writer_android.cc',

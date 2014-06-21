@@ -16,7 +16,6 @@
 #include "chrome/browser/android/dev_tools_server.h"
 #include "chrome/browser/android/dom_distiller/feedback_reporter_android.h"
 #include "chrome/browser/android/favicon_helper.h"
-#include "chrome/browser/android/field_trial_helper.h"
 #include "chrome/browser/android/foreign_session_helper.h"
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/logo_bridge.h"
@@ -133,7 +132,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
       RegisterExternalPrerenderHandlerAndroid },
   { "FaviconHelper", FaviconHelper::RegisterFaviconHelper },
   { "FeedbackReporter", dom_distiller::android::RegisterFeedbackReporter },
-  { "FieldTrialHelper", RegisterFieldTrialHelper },
   { "ForeignSessionHelper",
     ForeignSessionHelper::RegisterForeignSessionHelper },
   { "InfoBarContainer", RegisterInfoBarContainer },
