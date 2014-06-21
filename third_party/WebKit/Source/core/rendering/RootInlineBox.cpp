@@ -37,14 +37,11 @@ namespace WebCore {
 
 struct SameSizeAsRootInlineBox : public InlineFlowBox {
     unsigned unsignedVariable;
-    LayoutUnit layoutVariables[5];
     void* pointers[4];
+    LayoutUnit layoutVariables[5];
 };
 
-// FIXME(eae): Figure out why this fails on 64bit Windows builds.
-#if !OS(WIN)
 COMPILE_ASSERT(sizeof(RootInlineBox) == sizeof(SameSizeAsRootInlineBox), RootInlineBox_should_stay_small);
-#endif
 
 typedef WTF::HashMap<const RootInlineBox*, EllipsisBox*> EllipsisBoxMap;
 static EllipsisBoxMap* gEllipsisBoxMap = 0;
