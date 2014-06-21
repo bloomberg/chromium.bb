@@ -35,7 +35,6 @@ class KeyboardControllerProxyStub : public keyboard::KeyboardControllerProxy {
 
   aura::test::TestWindowDelegate delegate_;
   scoped_ptr<aura::Window> keyboard_;
-  scoped_ptr<ui::InputMethod> input_method_;
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerProxyStub);
 };
 

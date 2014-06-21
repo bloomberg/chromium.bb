@@ -8,6 +8,7 @@
 #include "ash/shell_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/mock_input_method.h"
+#include "ui/wm/core/input_method_event_filter.h"
 
 using namespace content;
 
@@ -37,9 +38,7 @@ BrowserContext* KeyboardControllerProxyStub::GetBrowserContext() {
 }
 
 ui::InputMethod* KeyboardControllerProxyStub::GetInputMethod() {
-  if (!input_method_)
-    input_method_.reset(new ui::MockInputMethod(NULL));
-  return input_method_.get();
+  return Shell::GetInstance()->input_method_filter()->input_method();
 }
 
 void KeyboardControllerProxyStub::RequestAudioInput(
