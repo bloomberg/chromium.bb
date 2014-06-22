@@ -23,6 +23,7 @@ worker.postMessage("eval WorkerLocation");
 worker.postMessage("eval typeof location");
 worker.postMessage("eval location");
 worker.postMessage("eval location.href");
+worker.postMessage("eval location.origin");
 worker.postMessage("eval location.protocol");
 worker.postMessage("eval location.host");
 worker.postMessage("eval location.hostname");

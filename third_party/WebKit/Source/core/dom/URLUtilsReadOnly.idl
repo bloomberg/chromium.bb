@@ -32,8 +32,7 @@
     // stringifier readonly attribute DOMString href;
     readonly attribute DOMString href;
     [NotEnumerable, ImplementedAs=href] DOMString toString();
-    // Not yet implemented.
-    // readonly attribute DOMString origin;
+    readonly attribute DOMString origin;
 
     readonly attribute DOMString protocol;
     readonly attribute DOMString host;
