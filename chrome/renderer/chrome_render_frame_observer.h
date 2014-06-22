@@ -22,7 +22,6 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver {
  private:
   // RenderFrameObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidChangeName(const base::string16& name) OVERRIDE;
 
   // IPC handlers
   void OnSetIsPrerendering(bool is_prerendering);

@@ -15,7 +15,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 
 using blink::WebElement;
@@ -27,9 +26,9 @@ namespace {
 // |thumbnail_min_area_pixels|, we return the image unmodified.  Otherwise, we
 // scale down the image so that the width and height do not exceed
 // |thumbnail_max_size_pixels|, preserving the original aspect ratio.
-SkBitmap Downscale(blink::WebImage image,
+SkBitmap Downscale(const blink::WebImage& image,
                    int thumbnail_min_area_pixels,
-                   gfx::Size thumbnail_max_size_pixels) {
+                   const gfx::Size& thumbnail_max_size_pixels) {
   if (image.isNull())
     return SkBitmap();
 
@@ -88,14 +87,6 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void ChromeRenderFrameObserver::DidChangeName(
-    const base::string16& name) {
-  Send(new ChromeViewHostMsg_UpdateFrameName(
-      routing_id(),
-      !render_frame()->GetWebFrame()->parent(),
-      base::UTF16ToUTF8(name)));
 }
 
 void ChromeRenderFrameObserver::OnSetIsPrerendering(bool is_prerendering) {

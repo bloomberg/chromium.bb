@@ -26,6 +26,7 @@ class ChromeExtensionsRenderFrameObserver
                                            const base::string16& stack_trace,
                                            int32 line_number,
                                            int32 severity_level) OVERRIDE;
+  virtual void DidChangeName(const base::string16& name) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsRenderFrameObserver);
 };

@@ -53,10 +53,13 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
                                         bool is_new_navigation) OVERRIDE;
   virtual void Navigate(const GURL& url) OVERRIDE;
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   void OnWebUIJavaScript(const base::string16& javascript);
-  void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
+#endif
+#if defined(ENABLE_EXTENSIONS)
   void OnSetName(const std::string& name);
   void OnSetVisuallyDeemphasized(bool deemphasized);
+#endif
 #if defined(OS_ANDROID)
   void OnUpdateTopControlsState(content::TopControlsState constraints,
                                 content::TopControlsState current,
@@ -65,6 +68,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   void OnRetrieveMetaTagContent(const GURL& expected_url,
                                 const std::string tag_name);
 #endif
+  void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
   void OnSetWindowFeatures(const blink::WebWindowFeatures& window_features);
 
   void CapturePageInfoLater(int page_id,

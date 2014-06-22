@@ -7,7 +7,9 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
+#include "content/public/renderer/render_frame.h"
 #include "extensions/common/stack_frame.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace extensions {
 
@@ -92,6 +94,14 @@ void ChromeExtensionsRenderFrameObserver::DetailedConsoleMessageAdded(
       line_number);
   Send(new ChromeViewHostMsg_DetailedConsoleMessageAdded(
       routing_id(), trimmed_message, source, stack_trace, severity_level));
+}
+
+void ChromeExtensionsRenderFrameObserver::DidChangeName(
+    const base::string16& name) {
+  Send(new ChromeViewHostMsg_UpdateFrameName(
+      routing_id(),
+      !render_frame()->GetWebFrame()->parent(),
+      base::UTF16ToUTF8(name)));
 }
 
 }  // namespace extensions

@@ -208,15 +208,19 @@ IPC_MESSAGE_CONTROL3(ChromeViewMsg_SetCacheCapacities,
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_ClearCache,
                      bool /* on_navigation */)
 
+#if defined(ENABLE_EXTENSIONS)
 // Set the top-level frame to the provided name.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetName,
                     std::string /* frame_name */)
+#endif
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 // For WebUI testing, this message requests JavaScript to be executed at a time
 // which is late enough to not be thrown out, and early enough to be before
 // onload events are fired.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_WebUIJavaScript,
                     base::string16  /* javascript */)
+#endif
 
 // Set the content setting rules stored by the renderer.
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetContentSettingRules,
@@ -277,10 +281,12 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_ChromeIdentityCheckResult,
 
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxToggleVoiceSearch)
 
+#if defined(ENABLE_EXTENSIONS)
 // Toggles visual muting of the render view area. This is on when a constrained
 // window is showing.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetVisuallyDeemphasized,
                     bool /* deemphazied */)
+#endif
 
 // Sent on process startup to indicate whether this process is running in
 // incognito mode.
@@ -444,6 +450,7 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_GetPluginInfo,
                             std::string /* mime_type */,
                             ChromeViewHostMsg_GetPluginInfo_Output /* output */)
 
+#if defined(ENABLE_PEPPER_CDMS)
 // Returns whether any internal plugin supporting |mime_type| is registered
 // Does not determine whether the plugin can actually be instantiated
 // (e.g. whether it is allowed or has all its dependencies).
@@ -456,11 +463,14 @@ IPC_SYNC_MESSAGE_CONTROL1_3(
     bool /* registered */,
     std::vector<base::string16> /* additional_param_names */,
     std::vector<base::string16> /* additional_param_values */)
+#endif
 
+#if defined(ENABLE_EXTENSIONS)
 // Informs the browser of updated frame names.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_UpdateFrameName,
                     bool /* is_top_level */,
                     std::string /* name */)
+#endif
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 // Tells the browser to search for a plug-in that can handle the given MIME
