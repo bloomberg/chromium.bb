@@ -729,6 +729,10 @@ void InspectorResourceAgent::setCacheDisabled(ErrorString*, bool cacheDisabled)
     }
 }
 
+void InspectorResourceAgent::emulateNetworkConditions(ErrorString*, bool, double, double, double)
+{
+}
+
 void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, const String& frameId, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtr<LoadResourceForFrontendCallback> prpCallback)
 {
     RefPtr<LoadResourceForFrontendCallback> callback = prpCallback;

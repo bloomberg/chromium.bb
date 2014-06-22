@@ -137,6 +137,7 @@ public:
 
     virtual void canClearBrowserCache(ErrorString*, bool*) OVERRIDE;
     virtual void canClearBrowserCookies(ErrorString*, bool*) OVERRIDE;
+    virtual void emulateNetworkConditions(ErrorString*, bool, double, double, double) OVERRIDE;
     virtual void setCacheDisabled(ErrorString*, bool cacheDisabled) OVERRIDE;
 
     virtual void loadResourceForFrontend(ErrorString*, const String& frameId, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtr<LoadResourceForFrontendCallback>) OVERRIDE;
