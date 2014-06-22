@@ -5,14 +5,13 @@
 #ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_DEFAULT_H_
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_DEFAULT_H_
 
-#include "base/base_export.h"
 #include "base/message_loop/message_pump.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 
 namespace base {
 
-class BASE_EXPORT MessagePumpDefault : public MessagePump {
+class MessagePumpDefault : public MessagePump {
  public:
   MessagePumpDefault();
   virtual ~MessagePumpDefault();
