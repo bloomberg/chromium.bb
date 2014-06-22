@@ -30,6 +30,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
@@ -103,10 +104,30 @@ void PopulateUsers(const ProfileInfoCache& profile_info,
 
 AppListViewDelegate::AppListViewDelegate(Profile* profile,
                                          AppListControllerDelegate* controller)
-    : controller_(controller), profile_(profile), model_(NULL) {
+    : controller_(controller),
+      profile_(profile),
+      model_(NULL),
+      scoped_observer_(this) {
   CHECK(controller_);
+  // The SigninManagerFactor and the SigninManagers are observed to keep the
+  // profile switcher menu up to date, with the correct list of profiles and the
+  // correct email address (or none for signed out users) for each.
+  SigninManagerFactory::GetInstance()->AddObserver(this);
 
+  // Start observing all already-created SigninManagers.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
+  std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
+  for (std::vector<Profile*>::iterator i = profiles.begin();
+       i != profiles.end();
+       ++i) {
+    SigninManagerBase* manager =
+        SigninManagerFactory::GetForProfileIfExists(*i);
+    if (manager) {
+      DCHECK(!scoped_observer_.IsObserving(manager));
+      scoped_observer_.Add(manager);
+    }
+  }
+
   profile_manager->GetProfileInfoCache().AddObserver(this);
 
   app_list::StartPageService* service =
@@ -133,6 +154,10 @@ AppListViewDelegate::~AppListViewDelegate() {
   g_browser_process->
       profile_manager()->GetProfileInfoCache().RemoveObserver(this);
 
+  SigninManagerFactory* factory = SigninManagerFactory::GetInstance();
+  if (factory)
+    factory->RemoveObserver(this);
+
   // Ensure search controller is released prior to speech_ui_.
   search_controller_.reset();
 }
@@ -153,6 +178,29 @@ void AppListViewDelegate::OnHotwordRecognized() {
   DCHECK_EQ(app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING,
             speech_ui_->state());
   ToggleSpeechRecognition();
+}
+
+void AppListViewDelegate::SigninManagerCreated(SigninManagerBase* manager) {
+  scoped_observer_.Add(manager);
+}
+
+void AppListViewDelegate::SigninManagerShutdown(SigninManagerBase* manager) {
+  if (scoped_observer_.IsObserving(manager))
+    scoped_observer_.Remove(manager);
+}
+
+void AppListViewDelegate::GoogleSigninFailed(
+    const GoogleServiceAuthError& error) {
+  OnProfileChanged();
+}
+
+void AppListViewDelegate::GoogleSigninSucceeded(const std::string& username,
+                                                const std::string& password) {
+  OnProfileChanged();
+}
+
+void AppListViewDelegate::GoogleSignedOut(const std::string& username) {
+  OnProfileChanged();
 }
 
 void AppListViewDelegate::OnProfileChanged() {

@@ -10,7 +10,6 @@ class AppListModel;
 }
 
 class AppListService;
-class Profile;
 
 namespace test {
 
@@ -19,9 +18,6 @@ app_list::AppListModel* GetAppListModel(AppListService* service);
 
 // Gets the app list service for the desktop type currently being tested.
 AppListService* GetAppListService();
-
-// Simulate a Chrome sign-in for the given |profile|.
-void SigninProfile(Profile* profile);
 
 }  // namespace test
 

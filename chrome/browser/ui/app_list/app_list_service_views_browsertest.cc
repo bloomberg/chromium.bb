@@ -74,7 +74,6 @@ class AppListControllerAppInfoDialogBrowserTest : public ExtensionBrowserTest {
 IN_PROC_BROWSER_TEST_F(AppListControllerAppInfoDialogBrowserTest,
                        DISABLED_DoShowAppInfoFlow) {
   // Install an extension to open the dialog for.
-  test::SigninProfile(browser()->profile());
   base::FilePath test_extension_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_extension_path));
   test_extension_path = test_extension_path.AppendASCII("extensions")

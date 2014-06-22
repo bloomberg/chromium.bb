@@ -12,9 +12,12 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/search/hotword_client.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "ui/app_list/app_list_view_delegate.h"
 
 class AppListControllerDelegate;
@@ -40,7 +43,9 @@ class AppSyncUIStateWatcher;
 class AppListViewDelegate : public app_list::AppListViewDelegate,
                             public app_list::StartPageObserver,
                             public HotwordClient,
-                            public ProfileInfoCacheObserver {
+                            public ProfileInfoCacheObserver,
+                            public SigninManagerBase::Observer,
+                            public SigninManagerFactory::Observer {
  public:
   AppListViewDelegate(Profile* profile,
                       AppListControllerDelegate* controller);
@@ -100,6 +105,16 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual void OnHotwordStateChanged(bool started) OVERRIDE;
   virtual void OnHotwordRecognized() OVERRIDE;
 
+  // Overridden from SigninManagerFactory::Observer:
+  virtual void SigninManagerCreated(SigninManagerBase* manager) OVERRIDE;
+  virtual void SigninManagerShutdown(SigninManagerBase* manager) OVERRIDE;
+
+  // Overridden from SigninManagerBase::Observer:
+  virtual void GoogleSigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void GoogleSigninSucceeded(const std::string& username,
+                                     const std::string& password) OVERRIDE;
+  virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
+
   // Overridden from ProfileInfoCacheObserver:
   virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE;
   virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
@@ -129,6 +144,10 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
 #endif
 
   ObserverList<app_list::AppListViewDelegateObserver> observers_;
+
+  // Used to track the SigninManagers that this instance is observing so that
+  // this instance can be removed as an observer on its destruction.
+  ScopedObserver<SigninManagerBase, AppListViewDelegate> scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewDelegate);
 };

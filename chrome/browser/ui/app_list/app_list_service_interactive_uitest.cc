@@ -91,8 +91,6 @@ IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest, MAYBE_ShowAndDismiss) {
 IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest,
                        MAYBE_SwitchAppListProfiles) {
   InitSecondProfile();
-  test::SigninProfile(browser()->profile());
-  test::SigninProfile(profile2_);
 
   AppListService* service = test::GetAppListService();
   ASSERT_TRUE(service);
@@ -127,8 +125,6 @@ IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest,
 IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest,
                        MAYBE_SwitchAppListProfilesDuringSearch) {
   InitSecondProfile();
-  test::SigninProfile(browser()->profile());
-  test::SigninProfile(profile2_);
 
   AppListService* service = test::GetAppListService();
   ASSERT_TRUE(service);
