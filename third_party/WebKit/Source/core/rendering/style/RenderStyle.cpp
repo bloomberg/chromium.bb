@@ -423,9 +423,6 @@ bool RenderStyle::diffNeedsFullLayoutAndRepaint(const RenderStyle& other) const
     //   instead of forced full repaint.
 
     if (m_box.get() != other.m_box.get()) {
-        if (m_box->verticalAlign() != other.m_box->verticalAlign())
-            return true;
-
         if (m_box->boxSizing() != other.m_box->boxSizing())
             return true;
     }
@@ -562,8 +559,7 @@ bool RenderStyle::diffNeedsFullLayoutAndRepaint(const RenderStyle& other) const
         || noninherited_flags._unicodeBidi != other.noninherited_flags._unicodeBidi
         || noninherited_flags._position != other.noninherited_flags._position
         || noninherited_flags._floating != other.noninherited_flags._floating
-        || noninherited_flags._originalDisplay != other.noninherited_flags._originalDisplay
-        || noninherited_flags._vertical_align != other.noninherited_flags._vertical_align)
+        || noninherited_flags._originalDisplay != other.noninherited_flags._originalDisplay)
         return true;
 
     if (noninherited_flags._effectiveDisplay >= FIRST_TABLE_DISPLAY && noninherited_flags._effectiveDisplay <= LAST_TABLE_DISPLAY) {
@@ -614,7 +610,13 @@ bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
             || m_box->minHeight() != other.m_box->minHeight()
             || m_box->maxHeight() != other.m_box->maxHeight())
             return true;
+
+        if (m_box->verticalAlign() != other.m_box->verticalAlign())
+            return true;
     }
+
+    if (noninherited_flags._vertical_align != other.noninherited_flags._vertical_align)
+        return true;
 
     return false;
 }
