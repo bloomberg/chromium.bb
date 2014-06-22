@@ -118,6 +118,7 @@ PpapiWebKitPlatformSupportImpl::SandboxSupport::getFallbackFontForCharacter(
   if (iter != unicode_font_families_.end()) {
     fallbackFont->name = iter->second.name;
     fallbackFont->filename = iter->second.filename;
+    fallbackFont->fontconfigInterfaceId = iter->second.fontconfigInterfaceId;
     fallbackFont->ttcIndex = iter->second.ttcIndex;
     fallbackFont->isBold = iter->second.isBold;
     fallbackFont->isItalic = iter->second.isItalic;

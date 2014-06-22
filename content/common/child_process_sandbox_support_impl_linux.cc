@@ -36,6 +36,7 @@ void GetFallbackFontForCharacter(int32_t character,
 
   std::string family_name;
   std::string filename;
+  int fontconfigInterfaceId = 0;
   int ttcIndex = 0;
   bool isBold = false;
   bool isItalic = false;
@@ -44,11 +45,13 @@ void GetFallbackFontForCharacter(int32_t character,
     PickleIterator pickle_iter(reply);
     if (reply.ReadString(&pickle_iter, &family_name) &&
         reply.ReadString(&pickle_iter, &filename) &&
+        reply.ReadInt(&pickle_iter, &fontconfigInterfaceId) &&
         reply.ReadInt(&pickle_iter, &ttcIndex) &&
         reply.ReadBool(&pickle_iter, &isBold) &&
         reply.ReadBool(&pickle_iter, &isItalic)) {
       fallbackFont->name = family_name;
       fallbackFont->filename = filename;
+      fallbackFont->fontconfigInterfaceId = fontconfigInterfaceId;
       fallbackFont->ttcIndex = ttcIndex;
       fallbackFont->isBold = isBold;
       fallbackFont->isItalic = isItalic;

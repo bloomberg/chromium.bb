@@ -331,6 +331,9 @@ void SandboxIPCHandler::HandleGetFallbackFontForChar(
   blink::WebFallbackFont fallbackFont;
   WebFontInfo::fallbackFontForChar(c, preferred_locale.c_str(), &fallbackFont);
 
+  int pathIndex = FindOrAddPath(SkString(fallbackFont.filename.data()));
+  fallbackFont.fontconfigInterfaceId = pathIndex;
+
   Pickle reply;
   if (fallbackFont.name.data()) {
     reply.WriteString(fallbackFont.name.data());
@@ -342,6 +345,7 @@ void SandboxIPCHandler::HandleGetFallbackFontForChar(
   } else {
     reply.WriteString(std::string());
   }
+  reply.WriteInt(fallbackFont.fontconfigInterfaceId);
   reply.WriteInt(fallbackFont.ttcIndex);
   reply.WriteBool(fallbackFont.isBold);
   reply.WriteBool(fallbackFont.isItalic);
