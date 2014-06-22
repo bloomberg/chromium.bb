@@ -33,10 +33,15 @@ bool AppWindowDesktopWindowTreeHostWin::GetClientAreaInsets(
   if (!app_window_->glass_frame_view())
     return false;
 
-  // This tells Windows that the whole of the window is a client area, meaning
-  // Chrome will draw it. Windows still fills in the glass bits because of the
+  // This tells Windows that most of the window is a client area, meaning Chrome
+  // will draw it. Windows still fills in the glass bits because of the
   // DwmExtendFrameIntoClientArea call in |UpdateDWMFrame|.
-  insets->Set(0, 0, 0, 0);
+  // The 1 pixel edge is left on the sides and bottom as without this
+  //   * windows paint in a more standard way, and
+  //   * get weird black bars at the top when maximized in multiple monitor
+  //     configurations.
+  int border_thickness = 1;
+  insets->Set(0, border_thickness, border_thickness, border_thickness);
   return true;
 }
 
