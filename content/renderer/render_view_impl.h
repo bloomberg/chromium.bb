@@ -38,7 +38,6 @@
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
-#include "content/renderer/renderer_date_time_picker.h"
 #include "content/renderer/stats_collection_observer.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -61,6 +60,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/renderer/android/content_detector.h"
+#include "content/renderer/android/renderer_date_time_picker.h"
 #include "third_party/WebKit/public/web/WebContentDetectionResult.h"
 #endif
 
@@ -81,10 +81,6 @@ struct ViewMsg_StopFinding_Params;
 namespace base {
 class CommandLine;
 }
-
-namespace ui {
-struct SelectedFileInfo;
-}  // namespace ui
 
 namespace blink {
 class WebApplicationCacheHost;
@@ -118,6 +114,10 @@ struct WebWindowFeatures;
 #if defined(OS_ANDROID)
 class WebHitTestResult;
 #endif
+}  // namespace blink
+
+namespace ui {
+struct SelectedFileInfo;
 }
 
 namespace webkit_glue {

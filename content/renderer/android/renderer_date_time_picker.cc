@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/renderer_date_time_picker.h"
+#include "content/renderer/android/renderer_date_time_picker.h"
 
 #include "base/strings/string_util.h"
 #include "content/common/view_messages.h"
@@ -84,17 +84,13 @@ bool RendererDateTimePicker::OnMessageReceived(
 void RendererDateTimePicker::OnReplaceDateTime(double value) {
   if (chooser_completion_)
     chooser_completion_->didChooseValue(value);
-#if defined(OS_ANDROID)
   static_cast<RenderViewImpl*>(render_view())->DismissDateTimeDialog();
-#endif
 }
 
 void RendererDateTimePicker::OnCancel() {
   if (chooser_completion_)
     chooser_completion_->didCancelChooser();
-#if defined(OS_ANDROID)
   static_cast<RenderViewImpl*>(render_view())->DismissDateTimeDialog();
-#endif
 }
 
 }  // namespace content

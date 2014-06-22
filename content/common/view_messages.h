@@ -505,8 +505,15 @@ IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.
 
+#if defined(OS_ANDROID)
 // Tells the renderer to cancel an opened date/time dialog.
 IPC_MESSAGE_ROUTED0(ViewMsg_CancelDateTimeDialog)
+
+// Replaces a date time input field.
+IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceDateTime,
+                    double /* dialog_value */)
+
+#endif
 
 // Get all savable resource links from current webpage, include main
 // frame and sub-frame.
@@ -632,10 +639,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_Find,
 // window (and what action to take regarding the selection).
 IPC_MESSAGE_ROUTED1(ViewMsg_StopFinding,
                     content::StopFindAction /* action */)
-
-// Replaces a date time input field.
-IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceDateTime,
-                    double /* dialog_value */)
 
 // Copies the image at location x, y to the clipboard (if there indeed is an
 // image at that location).
