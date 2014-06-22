@@ -25,7 +25,6 @@
       'tabs.json',
       'types.json',
       'web_navigation.json',
-      'webview.json',
       'windows.json',
     ],
 

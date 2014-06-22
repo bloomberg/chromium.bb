@@ -4,18 +4,20 @@
 
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_factory.h"
 
+#include "chrome/browser/renderer_context_menu/context_menu_content_type.h"
+#include "content/public/browser/web_contents.h"
+
+#if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/guest_view/web_view/context_menu_content_type_web_view.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
-#include "chrome/browser/renderer_context_menu/context_menu_content_type.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_app_mode.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_extension_popup.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_panel.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_platform_app.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
+#endif
 
 ContextMenuContentTypeFactory::ContextMenuContentTypeFactory() {
 }
@@ -27,6 +29,7 @@ ContextMenuContentTypeFactory::~ContextMenuContentTypeFactory() {
 ContextMenuContentType* ContextMenuContentTypeFactory::Create(
     content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
+#if defined(ENABLE_EXTENSIONS)
   if (WebViewGuest::FromWebContents(web_contents))
     return new ContextMenuContentTypeWebView(web_contents, params);
 
@@ -43,6 +46,7 @@ ContextMenuContentType* ContextMenuContentTypeFactory::Create(
 
   if (view_type == extensions::VIEW_TYPE_PANEL)
     return new ContextMenuContentTypePanel(web_contents, params);
+#endif
 
   return new ContextMenuContentType(web_contents, params, true);
 }
