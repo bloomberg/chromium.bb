@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Use the <code>chrome.shell</code> API to watch for launch events and create
-// windows. The <code>createWindow</code> API is a subset of
+// Use the <code>chrome.shell</code> API to create windows. The
+// <code>createWindow</code> API is a subset of
 // <code>chrome.app.window.create</code>.
 namespace shell {
 
@@ -32,10 +32,5 @@ namespace shell {
     // (i.e. JavaScript 'window' object).
     [nocompile] static AppWindow currentWindow();
     [nocompile, nodoc] static void initializeAppWindow();
-  };
-
-  interface Events {
-    // Fired when the app is launched at app_shell startup.
-    static void onLaunched(optional object launchDataPlaceholder);
   };
 };

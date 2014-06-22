@@ -5,10 +5,8 @@
 // Stub for app_shell.
 var createWindow =
     chrome.shell ? chrome.shell.createWindow : chrome.app.window.create;
-var onLaunched =
-    chrome.shell ? chrome.shell.onLaunched : chrome.app.runtime.onLaunched;
 
-onLaunched.addListener(function() {
+chrome.app.runtime.onLaunched.addListener(function() {
   createWindow('hello.html', {
     'innerBounds': {
       'width': 400,

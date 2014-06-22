@@ -131,8 +131,6 @@
         'browser/shell_network_controller_chromeos.h',
         'browser/shell_runtime_api_delegate.cc',
         'browser/shell_runtime_api_delegate.h',
-        'common/shell_app_runtime.cc',
-        'common/shell_app_runtime.h',
         'common/shell_content_client.cc',
         'common/shell_content_client.h',
         'common/shell_extensions_client.cc',

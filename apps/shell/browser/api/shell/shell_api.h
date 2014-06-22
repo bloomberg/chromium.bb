@@ -10,23 +10,7 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 
-namespace extensions {
-class EventRouter;
-class Extension;
-}
-
 namespace apps {
-
-// Utilities for the chrome.shell API.
-class ShellAPI {
- public:
-  // Dispatches the onLaunched event.
-  static void DispatchOnLaunchedEvent(extensions::EventRouter* event_router,
-                                      const extensions::Extension* extension);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ShellAPI);
-};
 
 // Implementation of the chrome.shell.createWindow() function for app_shell.
 // Opens a fullscreen window and invokes the window callback to allow access to

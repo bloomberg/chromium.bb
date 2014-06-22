@@ -11,13 +11,10 @@
 // have chrome.app APIs.
 // Checking for "chrome.app.runtime" availability allows testing in a regular
 // web page (like tests/manual.html).
-if (typeof chrome !== 'undefined' &&
-    (chrome.shell || (chrome.app && chrome.app.runtime))) {
+if (typeof chrome !== 'undefined' && chrome.app && chrome.app.runtime) {
   // Compatibility for running under app_shell, which does not have app.window.
   var createWindow =
       chrome.shell ? chrome.shell.createWindow : chrome.app.window.create;
-  var onLaunched =
-      chrome.shell ? chrome.shell.onLaunched : chrome.app.runtime.onLaunched;
 
   var showCalculatorWindow = function () {
     createWindow('calculator.html', {
@@ -33,7 +30,7 @@ if (typeof chrome !== 'undefined' &&
     });
   }
 
-  onLaunched.addListener(showCalculatorWindow);
+  chrome.app.runtime.onLaunched.addListener(showCalculatorWindow);
 }
 
 function Controller(model, view) {
