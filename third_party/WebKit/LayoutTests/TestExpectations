@@ -1087,7 +1087,6 @@ crbug.com/310875 compositing/repaint/resize-repaint.html [ NeedsRebaseline ]
 crbug.com/310875 fast/repaint/background-resize-height.html [ NeedsRebaseline ]
 crbug.com/310875 fast/repaint/background-resize-width.html [ NeedsRebaseline ]
 crbug.com/310875 fast/repaint/table-section-repaint.html [ NeedsRebaseline ]
-crbug.com/310875 virtual/softwarecompositing/repaint/resize-repaint.html [ NeedsRebaseline ]
 
 crbug.com/380151 fast/events/only-valid-drop-targets-receive-file-drop.html [ Failure Pass ]
 
