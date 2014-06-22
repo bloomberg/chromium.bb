@@ -308,7 +308,7 @@ void RuleSet::addChildRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRuleB
 
 void RuleSet::addRulesFromSheet(StyleSheetContents* sheet, const MediaQueryEvaluator& medium, AddRuleFlags addRuleFlags)
 {
-    TRACE_EVENT0("webkit", "RuleSet::addRulesFromSheet");
+    TRACE_EVENT0("blink", "RuleSet::addRulesFromSheet");
 
     ASSERT(sheet);
 

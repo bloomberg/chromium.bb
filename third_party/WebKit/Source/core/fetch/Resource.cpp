@@ -200,7 +200,7 @@ void Resource::checkNotify()
 
 void Resource::appendData(const char* data, int length)
 {
-    TRACE_EVENT0("webkit", "Resource::appendData");
+    TRACE_EVENT0("blink", "Resource::appendData");
     ASSERT(!m_resourceToRevalidate);
     ASSERT(!errorOccurred());
     if (m_options.dataBufferingPolicy == DoNotBufferData)

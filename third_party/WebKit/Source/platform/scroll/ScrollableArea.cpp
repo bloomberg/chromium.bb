@@ -164,7 +164,7 @@ void ScrollableArea::notifyScrollPositionChanged(const IntPoint& position)
 
 void ScrollableArea::scrollPositionChanged(const IntPoint& position)
 {
-    TRACE_EVENT0("webkit", "ScrollableArea::scrollPositionChanged");
+    TRACE_EVENT0("blink", "ScrollableArea::scrollPositionChanged");
 
     IntPoint oldPosition = scrollPosition();
     // Tell the derived class to scroll its contents.

@@ -318,7 +318,7 @@ const AtomicString& StyleSheetContents::determineNamespace(const AtomicString& p
 
 void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cachedStyleSheet, const SecurityOrigin* securityOrigin)
 {
-    TRACE_EVENT0("webkit", "StyleSheetContents::parseAuthorStyleSheet");
+    TRACE_EVENT0("blink", "StyleSheetContents::parseAuthorStyleSheet");
 
     bool quirksMode = isQuirksModeBehavior(m_parserContext.mode());
 

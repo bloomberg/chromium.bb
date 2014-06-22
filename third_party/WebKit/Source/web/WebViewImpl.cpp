@@ -776,7 +776,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
 
 void WebViewImpl::transferActiveWheelFlingAnimation(const WebActiveWheelFlingParameters& parameters)
 {
-    TRACE_EVENT0("webkit", "WebViewImpl::transferActiveWheelFlingAnimation");
+    TRACE_EVENT0("blink", "WebViewImpl::transferActiveWheelFlingAnimation");
     ASSERT(!m_gestureAnimation);
     m_positionOnFlingStart = parameters.point;
     m_globalPositionOnFlingStart = parameters.globalPoint;
@@ -831,7 +831,7 @@ void WebViewImpl::enableFakePageScaleAnimationForTesting(bool enable)
 void WebViewImpl::setShowFPSCounter(bool show)
 {
     if (m_layerTreeView) {
-        TRACE_EVENT0("webkit", "WebViewImpl::setShowFPSCounter");
+        TRACE_EVENT0("blink", "WebViewImpl::setShowFPSCounter");
         m_layerTreeView->setShowFPSCounter(show);
     }
     m_showFPSCounter = show;
@@ -840,7 +840,7 @@ void WebViewImpl::setShowFPSCounter(bool show)
 void WebViewImpl::setShowPaintRects(bool show)
 {
     if (m_layerTreeView) {
-        TRACE_EVENT0("webkit", "WebViewImpl::setShowPaintRects");
+        TRACE_EVENT0("blink", "WebViewImpl::setShowPaintRects");
         m_layerTreeView->setShowPaintRects(show);
     }
     m_showPaintRects = show;
@@ -856,7 +856,7 @@ void WebViewImpl::setShowDebugBorders(bool show)
 void WebViewImpl::setContinuousPaintingEnabled(bool enabled)
 {
     if (m_layerTreeView) {
-        TRACE_EVENT0("webkit", "WebViewImpl::setContinuousPaintingEnabled");
+        TRACE_EVENT0("blink", "WebViewImpl::setContinuousPaintingEnabled");
         m_layerTreeView->setContinuousPaintingEnabled(enabled);
     }
     m_continuousPaintingEnabled = enabled;
@@ -1690,7 +1690,7 @@ void WebViewImpl::didExitFullScreen()
 
 void WebViewImpl::animate(double monotonicFrameBeginTime)
 {
-    TRACE_EVENT0("webkit", "WebViewImpl::animate");
+    TRACE_EVENT0("blink", "WebViewImpl::animate");
 
     if (!monotonicFrameBeginTime)
         monotonicFrameBeginTime = monotonicallyIncreasingTime();
@@ -1724,7 +1724,7 @@ void WebViewImpl::animate(double monotonicFrameBeginTime)
 
 void WebViewImpl::layout()
 {
-    TRACE_EVENT0("webkit", "WebViewImpl::layout");
+    TRACE_EVENT0("blink", "WebViewImpl::layout");
     PageWidgetDelegate::layout(m_page.get());
     updateLayerTreeBackgroundColor();
 
@@ -3925,7 +3925,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         if (m_pageOverlays)
             m_pageOverlays->update();
     } else {
-        TRACE_EVENT0("webkit", "WebViewImpl::setIsAcceleratedCompositingActive(true)");
+        TRACE_EVENT0("blink", "WebViewImpl::setIsAcceleratedCompositingActive(true)");
 
         m_client->initializeLayerTreeView();
         m_layerTreeView = m_client->layerTreeView();
@@ -4004,7 +4004,7 @@ void WebViewImpl::applyScrollAndScale(const WebSize& scrollDelta, float pageScal
     // TODO(bokan): Old pinch path only - virtual viewport pinch scrolls are automatically updated via GraphicsLayer::DidScroll.
     // this should be removed once old pinch is removed.
     if (pageScaleDelta == 1) {
-        TRACE_EVENT_INSTANT2("webkit", "WebViewImpl::applyScrollAndScale::scrollBy", "x", scrollDelta.width, "y", scrollDelta.height);
+        TRACE_EVENT_INSTANT2("blink", "WebViewImpl::applyScrollAndScale::scrollBy", "x", scrollDelta.width, "y", scrollDelta.height);
         WebSize webScrollOffset = mainFrame()->scrollOffset();
         IntPoint scrollOffset(webScrollOffset.width + scrollDelta.width, webScrollOffset.height + scrollDelta.height);
         updateMainFrameScrollPosition(scrollOffset, false);

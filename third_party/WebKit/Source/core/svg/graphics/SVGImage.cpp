@@ -375,7 +375,7 @@ bool SVGImage::hasAnimations() const
 
 bool SVGImage::dataChanged(bool allDataReceived)
 {
-    TRACE_EVENT0("webkit", "SVGImage::dataChanged");
+    TRACE_EVENT0("blink", "SVGImage::dataChanged");
 
     // Don't do anything if is an empty image.
     if (!data()->size())

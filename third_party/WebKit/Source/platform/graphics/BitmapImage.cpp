@@ -204,7 +204,7 @@ bool BitmapImage::getHotSpot(IntPoint& hotSpot) const
 
 bool BitmapImage::dataChanged(bool allDataReceived)
 {
-    TRACE_EVENT0("webkit", "BitmapImage::dataChanged");
+    TRACE_EVENT0("blink", "BitmapImage::dataChanged");
 
     // Clear all partially-decoded frames. For most image formats, there is only
     // one frame, but at least GIF and ICO can have more. With GIFs, the frames

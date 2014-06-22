@@ -1673,7 +1673,7 @@ void Document::updateDistributionIfNeeded()
 
     if (!childNeedsDistributionRecalc())
         return;
-    TRACE_EVENT0("webkit", "Document::updateDistributionIfNeeded");
+    TRACE_EVENT0("blink", "Document::updateDistributionIfNeeded");
     recalcDistribution();
 }
 
@@ -1685,7 +1685,7 @@ void Document::updateStyleInvalidationIfNeeded()
         return;
     if (!childNeedsStyleInvalidation())
         return;
-    TRACE_EVENT0("webkit", "Document::updateStyleInvalidationIfNeeded");
+    TRACE_EVENT0("blink", "Document::updateStyleInvalidationIfNeeded");
     ASSERT(styleResolver());
 
     styleResolver()->ruleFeatureSet().styleInvalidator().invalidate(*this);
@@ -1826,7 +1826,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
     // Script can run below in WidgetUpdates, so protect the LocalFrame.
     RefPtr<LocalFrame> protect(m_frame);
 
-    TRACE_EVENT0("webkit", "Document::updateRenderTree");
+    TRACE_EVENT0("blink", "Document::updateRenderTree");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "UpdateRenderTree");
 
     m_styleRecalcElementCounter = 0;
@@ -1880,7 +1880,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
 
 void Document::updateStyle(StyleRecalcChange change)
 {
-    TRACE_EVENT0("webkit", "Document::updateStyle");
+    TRACE_EVENT0("blink", "Document::updateStyle");
 
     ScriptForbiddenScope forbidScript;
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;

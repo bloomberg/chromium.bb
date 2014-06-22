@@ -1654,7 +1654,7 @@ void WebLocalFrameImpl::didChangeContentsSize(const IntSize& size)
 
 void WebLocalFrameImpl::createFrameView()
 {
-    TRACE_EVENT0("webkit", "WebLocalFrameImpl::createFrameView");
+    TRACE_EVENT0("blink", "WebLocalFrameImpl::createFrameView");
 
     ASSERT(frame()); // If frame() doesn't exist, we probably didn't init properly.
 

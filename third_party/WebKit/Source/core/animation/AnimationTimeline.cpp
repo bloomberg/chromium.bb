@@ -95,7 +95,7 @@ void AnimationTimeline::wake()
 
 void AnimationTimeline::serviceAnimations(TimingUpdateReason reason)
 {
-    TRACE_EVENT0("webkit", "AnimationTimeline::serviceAnimations");
+    TRACE_EVENT0("blink", "AnimationTimeline::serviceAnimations");
 
     m_timing->cancelWake();
 

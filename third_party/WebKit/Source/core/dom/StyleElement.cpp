@@ -62,7 +62,7 @@ StyleElement::~StyleElement()
 
 void StyleElement::processStyleSheet(Document& document, Element* element)
 {
-    TRACE_EVENT0("webkit", "StyleElement::processStyleSheet");
+    TRACE_EVENT0("blink", "StyleElement::processStyleSheet");
     ASSERT(element);
     ASSERT(element->inDocument());
 

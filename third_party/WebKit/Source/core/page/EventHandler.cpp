@@ -448,7 +448,7 @@ void EventHandler::selectClosestWordOrLinkFromMouseEvent(const MouseEventWithHit
 
 bool EventHandler::handleMousePressEventDoubleClick(const MouseEventWithHitTestResults& event)
 {
-    TRACE_EVENT0("webkit", "EventHandler::handleMousePressEventDoubleClick");
+    TRACE_EVENT0("blink", "EventHandler::handleMousePressEventDoubleClick");
 
     if (event.event().button() != LeftButton)
         return false;
@@ -468,7 +468,7 @@ bool EventHandler::handleMousePressEventDoubleClick(const MouseEventWithHitTestR
 
 bool EventHandler::handleMousePressEventTripleClick(const MouseEventWithHitTestResults& event)
 {
-    TRACE_EVENT0("webkit", "EventHandler::handleMousePressEventTripleClick");
+    TRACE_EVENT0("blink", "EventHandler::handleMousePressEventTripleClick");
 
     if (event.event().button() != LeftButton)
         return false;
@@ -495,7 +495,7 @@ static int textDistance(const Position& start, const Position& end)
 
 bool EventHandler::handleMousePressEventSingleClick(const MouseEventWithHitTestResults& event)
 {
-    TRACE_EVENT0("webkit", "EventHandler::handleMousePressEventSingleClick");
+    TRACE_EVENT0("blink", "EventHandler::handleMousePressEventSingleClick");
 
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
     Node* innerNode = event.targetNode();
@@ -574,7 +574,7 @@ static inline bool canMouseDownStartSelect(Node* node)
 
 bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& event)
 {
-    TRACE_EVENT0("webkit", "EventHandler::handleMousePressEvent");
+    TRACE_EVENT0("blink", "EventHandler::handleMousePressEvent");
 
     // Reset drag state.
     dragState().m_dragSrc = nullptr;
@@ -640,7 +640,7 @@ bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& eve
 
 bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& event)
 {
-    TRACE_EVENT0("webkit", "EventHandler::handleMouseDraggedEvent");
+    TRACE_EVENT0("blink", "EventHandler::handleMouseDraggedEvent");
 
     if (!m_mousePressed)
         return false;
@@ -841,7 +841,7 @@ bool EventHandler::panScrollInProgress() const
 
 HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTestRequest::HitTestRequestType hitType, const LayoutSize& padding)
 {
-    TRACE_EVENT0("webkit", "EventHandler::hitTestResultAtPoint");
+    TRACE_EVENT0("blink", "EventHandler::hitTestResultAtPoint");
 
     // We always send hitTestResultAtPoint to the main frame if we have one,
     // otherwise we might hit areas that are obscured by higher frames.
@@ -1207,7 +1207,7 @@ static LayoutPoint documentPointForWindowPoint(LocalFrame* frame, const IntPoint
 
 bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 {
-    TRACE_EVENT0("webkit", "EventHandler::handleMousePressEvent");
+    TRACE_EVENT0("blink", "EventHandler::handleMousePressEvent");
 
     RefPtr<FrameView> protector(m_frame->view());
 
@@ -1351,7 +1351,7 @@ ScrollableArea* EventHandler::associatedScrollableArea(const RenderLayer* layer)
 
 bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
 {
-    TRACE_EVENT0("webkit", "EventHandler::handleMouseMoveEvent");
+    TRACE_EVENT0("blink", "EventHandler::handleMouseMoveEvent");
 
     RefPtr<FrameView> protector(m_frame->view());
     MaximumDurationTracker maxDurationTracker(&m_maxMouseMovedDuration);
@@ -1380,7 +1380,7 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
 
 void EventHandler::handleMouseLeaveEvent(const PlatformMouseEvent& event)
 {
-    TRACE_EVENT0("webkit", "EventHandler::handleMouseLeaveEvent");
+    TRACE_EVENT0("blink", "EventHandler::handleMouseLeaveEvent");
 
     RefPtr<FrameView> protector(m_frame->view());
     handleMouseMoveOrLeaveEvent(event);
@@ -1508,7 +1508,7 @@ static Node* parentForClickEvent(const Node& node)
 
 bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
 {
-    TRACE_EVENT0("webkit", "EventHandler::handleMouseReleaseEvent");
+    TRACE_EVENT0("blink", "EventHandler::handleMouseReleaseEvent");
 
     RefPtr<FrameView> protector(m_frame->view());
 
@@ -3397,7 +3397,7 @@ HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const Layout
 
 bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 {
-    TRACE_EVENT0("webkit", "EventHandler::handleTouchEvent");
+    TRACE_EVENT0("blink", "EventHandler::handleTouchEvent");
 
     const Vector<PlatformTouchPoint>& points = event.touchPoints();
 

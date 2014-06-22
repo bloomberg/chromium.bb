@@ -44,7 +44,7 @@ static HashSet<Node*>* gNodesDispatchingSimulatedClicks = 0;
 
 bool EventDispatcher::dispatchEvent(Node* node, PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator)
 {
-    TRACE_EVENT0("webkit", "EventDispatcher::dispatchEvent");
+    TRACE_EVENT0("blink", "EventDispatcher::dispatchEvent");
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
     if (!mediator->event())
         return true;
@@ -105,7 +105,7 @@ void EventDispatcher::dispatchSimulatedClick(Node* node, Event* underlyingEvent,
 
 bool EventDispatcher::dispatch()
 {
-    TRACE_EVENT0("webkit", "EventDispatcher::dispatch");
+    TRACE_EVENT0("blink", "EventDispatcher::dispatch");
 
 #ifndef NDEBUG
     ASSERT(!m_eventDispatched);

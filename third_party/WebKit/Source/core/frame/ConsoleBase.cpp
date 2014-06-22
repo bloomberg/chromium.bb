@@ -124,12 +124,12 @@ void ConsoleBase::profileEnd(ScriptState* scriptState, const String& title)
 void ConsoleBase::time(const String& title)
 {
     InspectorInstrumentation::consoleTime(context(), title);
-    TRACE_EVENT_COPY_ASYNC_BEGIN0("webkit.console", title.utf8().data(), this);
+    TRACE_EVENT_COPY_ASYNC_BEGIN0("blink.console", title.utf8().data(), this);
 }
 
 void ConsoleBase::timeEnd(ScriptState* scriptState, const String& title)
 {
-    TRACE_EVENT_COPY_ASYNC_END0("webkit.console", title.utf8().data(), this);
+    TRACE_EVENT_COPY_ASYNC_END0("blink.console", title.utf8().data(), this);
     InspectorInstrumentation::consoleTimeEnd(context(), title, scriptState);
 }
 

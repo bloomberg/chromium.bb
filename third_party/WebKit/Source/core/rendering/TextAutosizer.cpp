@@ -196,7 +196,7 @@ void TextAutosizer::recalculateMultipliers()
 
 bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
 {
-    TRACE_EVENT0("webkit", "TextAutosizer: check if needed");
+    TRACE_EVENT0("blink", "TextAutosizer: check if needed");
 
     if (!isApplicable() || layoutRoot->view()->document().printing())
         return false;
@@ -232,7 +232,7 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
         std::numeric_limits<float>::infinity()) == 1.0f)
         return false;
 
-    TRACE_EVENT0("webkit", "TextAutosizer: process root cluster");
+    TRACE_EVENT0("blink", "TextAutosizer: process root cluster");
     UseCounter::count(*m_document, UseCounter::TextAutosizing);
 
     TextAutosizingClusterInfo clusterInfo(cluster);

@@ -350,7 +350,7 @@ void ImageResource::appendData(const char* data, int length)
 
 void ImageResource::updateImage(bool allDataReceived)
 {
-    TRACE_EVENT0("webkit", "ImageResource::updateImage");
+    TRACE_EVENT0("blink", "ImageResource::updateImage");
 
     if (m_data)
         createImage();

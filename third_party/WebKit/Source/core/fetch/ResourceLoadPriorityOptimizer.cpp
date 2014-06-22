@@ -78,7 +78,7 @@ void ResourceLoadPriorityOptimizer::removeRenderObject(RenderObject* renderer)
 
 void ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities()
 {
-    TRACE_EVENT0("webkit", "ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities");
+    TRACE_EVENT0("blink", "ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities");
 
     m_imageResources.clear();
 

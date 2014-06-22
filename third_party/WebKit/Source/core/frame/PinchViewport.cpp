@@ -77,7 +77,7 @@ void PinchViewport::setSize(const IntSize& size)
     if (m_size == size)
         return;
 
-    TRACE_EVENT2("webkit", "PinchViewport::setSize", "width", size.width(), "height", size.height());
+    TRACE_EVENT2("blink", "PinchViewport::setSize", "width", size.width(), "height", size.height());
     m_size = size;
 
     // Make sure we clamp the offset to within the new bounds.
@@ -100,7 +100,7 @@ void PinchViewport::reset()
 
 void PinchViewport::mainFrameDidChangeSize()
 {
-    TRACE_EVENT0("webkit", "PinchViewport::mainFrameDidChangeSize");
+    TRACE_EVENT0("blink", "PinchViewport::mainFrameDidChangeSize");
 
     // In unit tests we may not have initialized the layer tree.
     if (m_innerViewportScrollLayer)
@@ -211,7 +211,7 @@ void PinchViewport::setScale(float scale)
 //
 void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, GraphicsLayerFactory* graphicsLayerFactory)
 {
-    TRACE_EVENT1("webkit", "PinchViewport::attachToLayerTree", "currentLayerTreeRoot", (bool)currentLayerTreeRoot);
+    TRACE_EVENT1("blink", "PinchViewport::attachToLayerTree", "currentLayerTreeRoot", (bool)currentLayerTreeRoot);
     if (!currentLayerTreeRoot) {
         m_innerViewportScrollLayer->removeAllChildren();
         return;
@@ -310,7 +310,7 @@ void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
 
 void PinchViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView) const
 {
-    TRACE_EVENT0("webkit", "PinchViewport::registerLayersWithTreeView");
+    TRACE_EVENT0("blink", "PinchViewport::registerLayersWithTreeView");
     ASSERT(layerTreeView);
     ASSERT(m_frameHost.page().mainFrame());
     ASSERT(m_frameHost.page().mainFrame()->isLocalFrame());

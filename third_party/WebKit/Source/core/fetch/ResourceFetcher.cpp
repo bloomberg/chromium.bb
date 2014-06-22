@@ -668,7 +668,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
 {
     ASSERT(request.options().synchronousPolicy == RequestAsynchronously || type == Resource::Raw);
 
-    TRACE_EVENT0("webkit", "ResourceFetcher::requestResource");
+    TRACE_EVENT0("blink", "ResourceFetcher::requestResource");
 
     KURL url = request.resourceRequest().url();
 
