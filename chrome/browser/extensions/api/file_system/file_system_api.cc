@@ -6,7 +6,6 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
-#include "apps/browser/file_handler_util.h"
 #include "apps/saved_files_service.h"
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -34,6 +33,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/granted_file_entry.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
@@ -324,13 +324,12 @@ void FileSystemEntryFunction::AddEntryToResponse(
     const base::FilePath& path,
     const std::string& id_override) {
   DCHECK(response_);
-  apps::file_handler_util::GrantedFileEntry file_entry =
-      extensions::app_file_handler_util::CreateFileEntry(
-          GetProfile(),
-          GetExtension(),
-          render_view_host_->GetProcess()->GetID(),
-          path,
-          is_directory_);
+  GrantedFileEntry file_entry = app_file_handler_util::CreateFileEntry(
+      GetProfile(),
+      GetExtension(),
+      render_view_host_->GetProcess()->GetID(),
+      path,
+      is_directory_);
   base::ListValue* entries;
   bool success = response_->GetList("entries", &entries);
   DCHECK(success);

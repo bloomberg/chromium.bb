@@ -799,7 +799,6 @@
         'test/perf/perf_test.gyp:*',
         'test_support_common',
         'test_support_sync_integration',
-        '../apps/common/api/api.gyp:apps_api',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',

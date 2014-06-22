@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 
-#include "apps/common/api/generated_api.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/version.h"
@@ -265,7 +264,6 @@ void ChromeExtensionsBrowserClient::RegisterExtensionFunctions(
 
   // Generated APIs from lower-level modules.
   extensions::core_api::GeneratedFunctionRegistry::RegisterAll(registry);
-  apps::api::GeneratedFunctionRegistry::RegisterAll(registry);
 
   // Generated APIs from Chrome.
   extensions::api::GeneratedFunctionRegistry::RegisterAll(registry);

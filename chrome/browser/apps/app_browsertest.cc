@@ -4,7 +4,6 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
-#include "apps/common/api/app_runtime.h"
 #include "apps/launcher.h"
 #include "apps/ui/native_app_window.h"
 #include "base/bind.h"
@@ -43,6 +42,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/common/api/app_runtime.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -60,7 +60,7 @@ using apps::AppWindowRegistry;
 using content::WebContents;
 using web_modal::WebContentsModalDialogManager;
 
-namespace app_runtime = apps::api::app_runtime;
+namespace app_runtime = extensions::core_api::app_runtime;
 
 namespace extensions {
 

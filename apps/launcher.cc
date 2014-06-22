@@ -4,9 +4,6 @@
 
 #include "apps/launcher.h"
 
-#include "apps/browser/api/app_runtime/app_runtime_api.h"
-#include "apps/browser/file_handler_util.h"
-#include "apps/common/api/app_runtime.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -22,12 +19,15 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/api/app_runtime/app_runtime_api.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/granted_file_entry.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
@@ -42,20 +42,21 @@
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #endif
 
-namespace app_runtime = apps::api::app_runtime;
+namespace app_runtime = extensions::core_api::app_runtime;
 
-using apps::file_handler_util::GrantedFileEntry;
 using content::BrowserThread;
-using extensions::app_file_handler_util::PrepareFilesForWritableApp;
-using extensions::app_file_handler_util::FileHandlerForId;
-using extensions::app_file_handler_util::FileHandlerCanHandleFile;
-using extensions::app_file_handler_util::FirstFileHandlerForFile;
+using extensions::AppRuntimeEventRouter;
 using extensions::app_file_handler_util::CreateFileEntry;
+using extensions::app_file_handler_util::FileHandlerCanHandleFile;
+using extensions::app_file_handler_util::FileHandlerForId;
+using extensions::app_file_handler_util::FirstFileHandlerForFile;
 using extensions::app_file_handler_util::HasFileSystemWritePermission;
+using extensions::app_file_handler_util::PrepareFilesForWritableApp;
 using extensions::EventRouter;
 using extensions::Extension;
 using extensions::ExtensionHost;
 using extensions::ExtensionSystem;
+using extensions::GrantedFileEntry;
 
 namespace apps {
 
@@ -86,7 +87,7 @@ bool DoMakePathAbsolute(const base::FilePath& current_directory,
 // load or obtain file launch data.
 void LaunchPlatformAppWithNoData(Profile* profile, const Extension* extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  AppEventRouter::DispatchOnLaunchedEvent(profile, extension);
+  AppRuntimeEventRouter::DispatchOnLaunchedEvent(profile, extension);
 }
 
 // Class to handle launching of platform apps to open specific paths.
@@ -366,7 +367,7 @@ class PlatformAppPathLauncher
                           false));
     }
 
-    AppEventRouter::DispatchOnLaunchedEventWithFileEntries(
+    AppRuntimeEventRouter::DispatchOnLaunchedEventWithFileEntries(
         profile_, extension_, handler_id_, mime_types_, file_entries);
   }
 
@@ -464,7 +465,7 @@ void RestartPlatformApp(Profile* profile, const Extension* extension) {
                                 app_runtime::OnRestarted::kEventName);
 
   if (listening_to_restart) {
-    AppEventRouter::DispatchOnRestartedEvent(profile, extension);
+    AppRuntimeEventRouter::DispatchOnRestartedEvent(profile, extension);
     return;
   }
 
@@ -485,7 +486,7 @@ void LaunchPlatformAppWithUrl(Profile* profile,
                               const std::string& handler_id,
                               const GURL& url,
                               const GURL& referrer_url) {
-  AppEventRouter::DispatchOnLaunchedEventWithUrl(
+  AppRuntimeEventRouter::DispatchOnLaunchedEventWithUrl(
       profile, extension, handler_id, url, referrer_url);
 }
 

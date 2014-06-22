@@ -23,6 +23,7 @@
         'conditions': [
           ['enable_extensions==1', {
             'schema_files': [
+              'app_runtime.idl',
               'dns.idl',
               'extensions_manifest_types.json',
               'runtime.json',

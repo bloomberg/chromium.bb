@@ -64,7 +64,6 @@ static_library("common") {
 
   if (!is_ios) {
     deps += [
-      "//apps/common/api:apps_api",
       "//chrome/common/extensions/api",
       #'<(DEPTH)/components/components.gyp:autofill_core_common',  TODO(GYP)
       #'<(DEPTH)/components/components.gyp:autofill_content_common',  TODO(GYP)

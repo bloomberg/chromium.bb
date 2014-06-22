@@ -348,7 +348,6 @@
         }],
         ['OS != "ios"', {
           'dependencies': [
-            '<(DEPTH)/apps/common/api/api.gyp:apps_api',
             '<(DEPTH)/chrome/common/extensions/api/api.gyp:chrome_api',
             '<(DEPTH)/components/components.gyp:autofill_core_common',
             '<(DEPTH)/components/components.gyp:autofill_content_common',

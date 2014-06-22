@@ -19,7 +19,6 @@ group("root") {
     # This is a temporary test of the not-yet-complete NaCl cross-compilation.
     #"//base(//build/toolchain/nacl:x86_newlib)",
 
-    "//apps/common/api:apps_api",
     "//cc",
     "//chrome/common",
     "//chrome/renderer",

@@ -6,6 +6,7 @@ import("//extensions/generated_extensions_api.gni")
 
 generated_extensions_api("extensions_api") {
   sources = [
+    "app_runtime.idl",
     "dns.idl",
     "extensions_manifest_types.json",
     "socket.idl",

@@ -4,7 +4,6 @@
 
 #include "chrome/common/extensions/chrome_extensions_client.h"
 
-#include "apps/common/api/generated_schemas.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
@@ -217,8 +216,7 @@ bool ChromeExtensionsClient::IsAPISchemaGenerated(
     const std::string& name) const {
   // Test from most common to least common.
   return api::GeneratedSchemas::IsGenerated(name) ||
-         core_api::GeneratedSchemas::IsGenerated(name) ||
-         apps::api::GeneratedSchemas::IsGenerated(name);
+         core_api::GeneratedSchemas::IsGenerated(name);
 }
 
 base::StringPiece ChromeExtensionsClient::GetAPISchema(
@@ -227,10 +225,7 @@ base::StringPiece ChromeExtensionsClient::GetAPISchema(
   if (api::GeneratedSchemas::IsGenerated(name))
     return api::GeneratedSchemas::Get(name);
 
-  if (core_api::GeneratedSchemas::IsGenerated(name))
-    return core_api::GeneratedSchemas::Get(name);
-
-  return apps::api::GeneratedSchemas::Get(name);
+  return core_api::GeneratedSchemas::Get(name);
 }
 
 void ChromeExtensionsClient::RegisterAPISchemaResources(

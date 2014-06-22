@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_BROWSER_FILE_HANDLER_UTIL_H_
-#define APPS_BROWSER_FILE_HANDLER_UTIL_H_
+#ifndef EXTENSIONS_BROWSER_GRANTED_FILE_ENTRY_H_
+#define EXTENSIONS_BROWSER_GRANTED_FILE_ENTRY_H_
 
 #include <string>
 
-namespace apps {
-namespace file_handler_util {
+namespace extensions {
 
 // Refers to a file entry that a renderer has been given access to.
 struct GrantedFileEntry {
@@ -20,7 +19,6 @@ struct GrantedFileEntry {
   std::string registered_name;
 };
 
-}  // namespace file_handler_util
-}  // namespace apps
+}  // namespace extensions
 
-#endif  // APPS_BROWSER_FILE_HANDLER_UTIL_H_
+#endif  // EXTENSIONS_BROWSER_GRANTED_FILE_ENTRY_H_
