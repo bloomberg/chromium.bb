@@ -73,10 +73,7 @@ filter change with non-composited child
           "position": [8, 979],
           "bounds": [100, 100],
           "opacity": 0.5,
-          "drawsContent": true,
-          "repaintRects": [
-            [0, 0, 100, 100]
-          ]
+          "drawsContent": true
         },
         {
           "position": [8, 1159],
@@ -110,18 +107,12 @@ filter change with non-composited child
             [0, 1, 0, 0],
             [0, 0, 1, 0],
             [0, 0, 20, 1]
-          ],
-          "repaintRects": [
-            [0, 0, 100, 100]
           ]
         },
         {
           "position": [8, 1519],
           "bounds": [100, 100],
           "drawsContent": true,
-          "repaintRects": [
-            [0, 0, 100, 100]
-          ],
           "children": [
             {
               "bounds": [100, 100],
@@ -139,10 +130,7 @@ filter change with non-composited child
         {
           "position": [8, 1699],
           "bounds": [100, 100],
-          "drawsContent": true,
-          "repaintRects": [
-            [0, 0, 100, 100]
-          ]
+          "drawsContent": true
         },
         {
           "position": [8, 440],
@@ -164,10 +152,7 @@ filter change with non-composited child
         {
           "position": [8, 620],
           "bounds": [100, 100],
-          "drawsContent": true,
-          "repaintRects": [
-            [0, 0, 100, 100]
-          ]
+          "drawsContent": true
         }
       ]
     }

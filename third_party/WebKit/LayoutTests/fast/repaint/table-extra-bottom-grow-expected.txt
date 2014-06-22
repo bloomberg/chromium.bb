@@ -4,10 +4,7 @@
     {
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "repaintRects": [
-        [58, 130, 50, 100]
-      ]
+      "drawsContent": true
     }
   ]
 }
