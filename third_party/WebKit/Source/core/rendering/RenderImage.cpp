@@ -51,6 +51,8 @@
 
 namespace WebCore {
 
+float deviceScaleFactor(LocalFrame*);
+
 using namespace HTMLNames;
 
 RenderImage::RenderImage(Element* element)

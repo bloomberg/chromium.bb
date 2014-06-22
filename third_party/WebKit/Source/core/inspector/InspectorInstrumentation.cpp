@@ -43,6 +43,7 @@
 #include "core/inspector/InspectorTimelineAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/WorkerInspectorController.h"
+#include "core/page/Page.h"
 #include "core/workers/WorkerGlobalScope.h"
 
 namespace WebCore {

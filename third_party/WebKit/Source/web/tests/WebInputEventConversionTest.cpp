@@ -41,6 +41,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebSettings.h"

@@ -28,7 +28,6 @@
 #include "core/dom/MutationObserverRegistration.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/TagCollection.h"
-#include "core/page/Page.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"

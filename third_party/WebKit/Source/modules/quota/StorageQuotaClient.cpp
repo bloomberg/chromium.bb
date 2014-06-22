@@ -32,6 +32,7 @@
 #include "StorageQuotaClient.h"
 
 #include "core/dom/Document.h"
+#include "core/page/Page.h"
 #include "core/workers/WorkerGlobalScope.h"
 
 namespace WebCore {

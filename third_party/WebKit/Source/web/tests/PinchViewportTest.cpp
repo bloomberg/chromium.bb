@@ -8,6 +8,7 @@
 
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"

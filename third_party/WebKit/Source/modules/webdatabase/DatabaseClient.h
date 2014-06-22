@@ -31,7 +31,6 @@
 #ifndef DatabaseClient_h
 #define DatabaseClient_h
 
-#include "core/page/Page.h"
 #include "core/workers/WorkerClients.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -41,6 +40,7 @@ namespace WebCore {
 class Database;
 class ExecutionContext;
 class InspectorDatabaseAgent;
+class Page;
 class WorkerClients;
 
 class GC_PLUGIN_IGNORE("http://crbug.com/367712") DatabaseClient;

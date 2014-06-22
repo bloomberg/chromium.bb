@@ -40,6 +40,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/frame/FrameView.h"
+#include "core/page/Page.h"
 #include "platform/Timer.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebFindOptions.h"

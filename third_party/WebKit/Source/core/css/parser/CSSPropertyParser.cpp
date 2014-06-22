@@ -68,6 +68,7 @@
 #include "core/css/Rect.h"
 #include "core/css/RuntimeCSSEnabled.h"
 #include "core/css/parser/CSSParserIdioms.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/RenderTheme.h"

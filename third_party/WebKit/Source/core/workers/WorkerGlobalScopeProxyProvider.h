@@ -31,14 +31,13 @@
 #ifndef WorkerGlobalScopeProxyProvider_h
 #define WorkerGlobalScopeProxyProvider_h
 
-#include "core/page/Page.h"
 #include "platform/Supplementable.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
-
 namespace WebCore {
 
+class Page;
 class WorkerGlobalScopeProxy;
 class Worker;
 

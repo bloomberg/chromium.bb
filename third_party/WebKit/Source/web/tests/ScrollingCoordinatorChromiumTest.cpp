@@ -26,6 +26,7 @@
 
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
+#include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"

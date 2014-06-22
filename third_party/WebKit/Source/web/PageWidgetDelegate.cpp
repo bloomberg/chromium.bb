@@ -35,6 +35,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/graphics/GraphicsContext.h"

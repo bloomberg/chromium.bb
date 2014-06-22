@@ -42,6 +42,7 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "platform/KeyboardCodes.h"

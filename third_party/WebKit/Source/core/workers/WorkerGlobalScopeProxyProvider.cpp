@@ -31,6 +31,8 @@
 #include "config.h"
 #include "core/workers/WorkerGlobalScopeProxyProvider.h"
 
+#include "core/page/Page.h"
+
 namespace WebCore {
 
 WorkerGlobalScopeProxyProvider* WorkerGlobalScopeProxyProvider::from(Page& page)
