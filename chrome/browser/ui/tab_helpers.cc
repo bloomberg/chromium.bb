@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -61,6 +60,10 @@
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/tab_helper.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -124,7 +127,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents,
       autofill::ChromeAutofillClient::FromWebContents(web_contents));
   CoreTabHelper::CreateForWebContents(web_contents);
-  extensions::TabHelper::CreateForWebContents(web_contents);
   FaviconTabHelper::CreateForWebContents(web_contents);
   FindTabHelper::CreateForWebContents(web_contents);
   HistoryTabHelper::CreateForWebContents(web_contents);
@@ -173,6 +175,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalTabHelper::CreateForWebContents(web_contents);
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+  extensions::TabHelper::CreateForWebContents(web_contents);
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)

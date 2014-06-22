@@ -1028,6 +1028,8 @@
             'browser/extensions/menu_manager.h',
             'browser/extensions/menu_manager_factory.cc',
             'browser/extensions/menu_manager_factory.h',
+            'browser/extensions/tab_helper.cc',
+            'browser/extensions/tab_helper.h',
           ],
           'sources/': [
             # Handle files in browser/extensions/api. Exclude everything by default, white list

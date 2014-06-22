@@ -40,9 +40,14 @@ class ExtensionRegistry;
 // It writes to an ActivityDatabase on a separate thread to record the activity.
 // Each profile has different extensions, so we keep a different database for
 // each profile.
+//
+// TODO(thestig) Remove ENABLE_EXTENSIONS checks when ActivityLog is no longer
+// built on platforms that do not support extensions.
 class ActivityLog : public BrowserContextKeyedAPI,
                     public ApiActivityMonitor,
+#if defined(ENABLE_EXTENSIONS)
                     public TabHelper::ScriptExecutionObserver,
+#endif
                     public ExtensionRegistryObserver {
  public:
   // Observers can listen for activity events. There is probably only one
@@ -144,6 +149,7 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // ExtensionSystem/ExtensionService are done with their own setup.
   void StartObserving();
 
+#if defined(ENABLE_EXTENSIONS)
   // TabHelper::ScriptExecutionObserver implementation.
   // Fires when a ContentScript is executed.
   virtual void OnScriptsExecuted(
@@ -151,6 +157,7 @@ class ActivityLog : public BrowserContextKeyedAPI,
       const ExecutingScriptsMap& extension_ids,
       int32 page_id,
       const GURL& on_url) OVERRIDE;
+#endif
 
   // At the moment, ActivityLog will use only one policy for summarization.
   // These methods are used to choose and set the most appropriate policy.

@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
@@ -13,6 +12,10 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/tab_helper.h"
+#endif
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
@@ -45,9 +48,13 @@ Profile* TabContentsSyncedTabDelegate::profile() const {
 }
 
 std::string TabContentsSyncedTabDelegate::GetExtensionAppId() const {
+#if defined(ENABLE_EXTENSIONS)
   const scoped_refptr<const extensions::Extension> extension_app(
       extensions::TabHelper::FromWebContents(web_contents_)->extension_app());
-  return (extension_app.get() ? extension_app->id() : std::string());
+  if (extension_app.get())
+    return extension_app->id();
+#endif
+  return std::string();
 }
 
 int TabContentsSyncedTabDelegate::GetCurrentEntryIndex() const {

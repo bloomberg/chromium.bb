@@ -13,8 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
-#include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
@@ -38,6 +36,11 @@
 
 #if defined(OS_WIN)
 #include "ui/gfx/icon_util.h"
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #endif
 
 using content::BrowserThread;
@@ -237,6 +240,7 @@ ShortcutLocations::ShortcutLocations()
       in_quick_launch_bar(false) {
 }
 
+#if defined(TOOLKIT_VIEWS)
 void GetShortcutInfoForTab(content::WebContents* web_contents,
                            ShortcutInfo* info) {
   DCHECK(info);  // Must provide a valid info.
@@ -260,6 +264,7 @@ void GetShortcutInfoForTab(content::WebContents* web_contents,
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   info->profile_path = profile->GetPath();
 }
+#endif
 
 #if !defined(OS_WIN)
 void UpdateShortcutForTabContents(content::WebContents* web_contents) {}

@@ -16,7 +16,6 @@
     # should be eliminated. See crbug.com/305852.
     'android_schema_files': [
       'activity_log_private.json',
-      'events.json',
       'file_system.idl',
       'manifest_types.json',
       'permissions.json',
