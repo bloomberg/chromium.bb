@@ -2529,6 +2529,24 @@ TEST_F(ViewportTest, viewport137)
     EXPECT_TRUE(page->viewportDescription().userZoom);
 }
 
+TEST_F(ViewportTest, viewport138)
+{
+    registerMockedHttpURLLoad("viewport/viewport-138.html");
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-138.html", true, 0, 0, setViewportSettings);
+
+    Page* page = webViewHelper.webViewImpl()->page();
+    PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+
+    EXPECT_NEAR(123.0f, constraints.layoutSize.width(), 0.01);
+    EXPECT_NEAR(135.3f, constraints.layoutSize.height(), 0.01);
+    EXPECT_NEAR(2.60f, constraints.initialScale, 0.01f);
+    EXPECT_NEAR(2.60f, constraints.minimumScale, 0.01f);
+    EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
+    EXPECT_TRUE(page->viewportDescription().userZoom);
+}
+
 TEST_F(ViewportTest, viewportLegacyHandheldFriendly)
 {
     UseMockScrollbarSettings mockScrollbarSettings;

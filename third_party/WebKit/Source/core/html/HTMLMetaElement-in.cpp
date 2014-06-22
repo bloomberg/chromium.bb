@@ -72,13 +72,12 @@ void HTMLMetaElement::parseContentAttribute(const String& content, KeyValuePairC
     bool error = false;
 
     // Tread lightly in this code -- it was specifically designed to mimic Win IE's parsing behavior.
-    int keyBegin, keyEnd;
-    int valueBegin, valueEnd;
+    unsigned keyBegin, keyEnd;
+    unsigned valueBegin, valueEnd;
 
-    int i = 0;
-    int length = content.length();
     String buffer = content.lower();
-    while (i < length) {
+    unsigned length = buffer.length();
+    for (unsigned i = 0; i < length; /* no increment here */) {
         // skip to first non-separator, but don't skip past the end of the string
         while (isSeparator(buffer[i])) {
             if (i >= length)
@@ -90,6 +89,8 @@ void HTMLMetaElement::parseContentAttribute(const String& content, KeyValuePairC
         // skip to first separator
         while (!isSeparator(buffer[i])) {
             error |= isInvalidSeparator(buffer[i]);
+            if (i >= length)
+                break;
             i++;
         }
         keyEnd = i;
@@ -113,6 +114,8 @@ void HTMLMetaElement::parseContentAttribute(const String& content, KeyValuePairC
         // skip to first separator
         while (!isSeparator(buffer[i])) {
             error |= isInvalidSeparator(buffer[i]);
+            if (i >= length)
+                break;
             i++;
         }
         valueEnd = i;
