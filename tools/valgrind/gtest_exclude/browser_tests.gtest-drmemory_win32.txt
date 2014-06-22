@@ -13,6 +13,7 @@ Act*
 Ad*
 All*
 AppA*
+AppB*
 AppL*
 AppW*
 Autofill*
@@ -36,6 +37,7 @@ ChromeC*
 ChromeR*
 Con*UITest.*
 Con*.Re*
+Con*.Se*
 Context*
 # D*
 Dec*
@@ -61,23 +63,27 @@ FileSys*
 Find*
 Fl*
 # G*
+Gcm*.R*
+GetA*.I*
 # H*
 Hot*
 # I*
 # J*
 # K*
 # L*
-M*
-N*
-O*
-P*
-Q*
-R*
-S*
-T*
-U*
-V*
-W*
-X*
-Y*
-Z*
+Lan*
+Loc*
+# M*
+# N*
+# O*
+# P*
+# Q*
+# R*
+# S*
+# T*
+# U*
+# V*
+# W*
+# X*
+# Y*
+# Z*
