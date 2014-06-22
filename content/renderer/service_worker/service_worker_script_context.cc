@@ -135,6 +135,7 @@ void ServiceWorkerScriptContext::OnFetchEvent(
     webRequest.setHeader(blink::WebString::fromUTF8(it->first),
                          blink::WebString::fromUTF8(it->second));
   }
+  webRequest.setIsReload(request.is_reload);
   proxy_->dispatchFetchEvent(request_id, webRequest);
 }
 

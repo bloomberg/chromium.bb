@@ -380,7 +380,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ServiceWorkerFetchRequest request(
         embedded_test_server()->GetURL("/service_worker/empty.html"),
         "GET",
-        std::map<std::string, std::string>());
+        std::map<std::string, std::string>(),
+        false);
     version_->SetStatus(ServiceWorkerVersion::ACTIVE);
     version_->DispatchFetchEvent(
         request, CreateResponseReceiver(BrowserThread::UI, done,

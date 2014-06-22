@@ -36,15 +36,16 @@ const static int64 kInvalidServiceWorkerResponseId = -1;
 // we'll probably want to have response struct/class too.
 struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   ServiceWorkerFetchRequest();
-  ServiceWorkerFetchRequest(
-      const GURL& url,
-      const std::string& method,
-      const std::map<std::string, std::string>& headers);
+  ServiceWorkerFetchRequest(const GURL& url,
+                            const std::string& method,
+                            const std::map<std::string, std::string>& headers,
+                            bool is_reload);
   ~ServiceWorkerFetchRequest();
 
   GURL url;
   std::string method;
   std::map<std::string, std::string> headers;
+  bool is_reload;
 };
 
 // Indicates how the service worker handled a fetch event.
