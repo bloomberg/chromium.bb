@@ -161,12 +161,14 @@
       'renderer/worker_permission_client_proxy.h',
     ],
     'chrome_renderer_webrtc_sources': [
-      'renderer/extensions/cast_streaming_native_handler.cc',
-      'renderer/extensions/cast_streaming_native_handler.h',
       'renderer/media/chrome_webrtc_log_message_delegate.cc',
       'renderer/media/chrome_webrtc_log_message_delegate.h',
       'renderer/media/webrtc_logging_message_filter.cc',
       'renderer/media/webrtc_logging_message_filter.h',
+    ],
+    'chrome_renderer_webrtc_extensions_sources': [
+      'renderer/extensions/cast_streaming_native_handler.cc',
+      'renderer/extensions/cast_streaming_native_handler.h',
     ],
     'chrome_renderer_extensions_sources': [
       'renderer/extensions/chrome_extensions_render_frame_observer.cc',
@@ -340,6 +342,11 @@
         ['enable_webrtc==1', {
           'sources': [
             '<@(chrome_renderer_webrtc_sources)',
+          ],
+        }],
+        ['enable_extensions==1 and enable_webrtc==1', {
+          'sources': [
+            '<@(chrome_renderer_webrtc_extensions_sources)',
           ],
         }],
         ['enable_spellcheck==1', {
