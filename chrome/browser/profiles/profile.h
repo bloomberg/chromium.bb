@@ -325,12 +325,6 @@ class Profile : public content::BrowserContext {
   virtual void ClearNetworkingHistorySince(base::Time time,
                                            const base::Closure& completion) = 0;
 
-  // Clears browsing data stored in the Domain Reliability Monitor. (See
-  // profile_impl_io_data.h for details.)
-  virtual void ClearDomainReliabilityMonitor(
-      domain_reliability::DomainReliabilityClearMode mode,
-      const base::Closure& competion) = 0;
-
   // Returns the home page for this profile.
   virtual GURL GetHomePage() = 0;
 

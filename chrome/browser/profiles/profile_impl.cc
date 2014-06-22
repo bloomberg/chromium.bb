@@ -36,6 +36,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/dom_distiller/lazy_dom_distiller_service.h"
+#include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -81,6 +82,8 @@
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/dom_distiller/content/dom_distiller_viewer_source.h"
+#include "components/domain_reliability/monitor.h"
+#include "components/domain_reliability/service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/metrics/metrics_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -603,9 +606,8 @@ void ProfileImpl::DoFinalInit() {
   io_data_.Init(cookie_path, server_bound_cert_path, cache_path,
                 cache_max_size, media_cache_path, media_cache_max_size,
                 extensions_cookie_path, GetPath(), infinite_cache_path,
-                predictor_,
-                session_cookie_mode,
-                GetSpecialStoragePolicy());
+                predictor_, session_cookie_mode, GetSpecialStoragePolicy(),
+                CreateDomainReliabilityMonitor());
 
 #if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
@@ -1199,12 +1201,6 @@ void ProfileImpl::ClearNetworkingHistorySince(
   io_data_.ClearNetworkingHistorySince(time, completion);
 }
 
-void ProfileImpl::ClearDomainReliabilityMonitor(
-    domain_reliability::DomainReliabilityClearMode mode,
-    const base::Closure& completion) {
-  io_data_.ClearDomainReliabilityMonitor(mode, completion);
-}
-
 GURL ProfileImpl::GetHomePage() {
   // --homepage overrides any preferences.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -1314,4 +1310,16 @@ PrefProxyConfigTracker* ProfileImpl::CreateProxyConfigTracker() {
 #endif  // defined(OS_CHROMEOS)
   return ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(
       GetPrefs(), g_browser_process->local_state());
+}
+
+scoped_ptr<domain_reliability::DomainReliabilityMonitor>
+ProfileImpl::CreateDomainReliabilityMonitor() {
+  domain_reliability::DomainReliabilityService* service =
+      domain_reliability::DomainReliabilityServiceFactory::GetInstance()->
+          GetForBrowserContext(this);
+  if (!service)
+    return scoped_ptr<domain_reliability::DomainReliabilityMonitor>();
+
+  return service->CreateMonitor(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 }

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/domain_reliability/service_factory.h"
 
+#include "base/command_line.h"
+#include "base/metrics/field_trial.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/domain_reliability/service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -14,6 +17,15 @@ namespace {
 
 // Identifies Chrome as the source of Domain Reliability uploads it sends.
 const char* kDomainReliabilityUploadReporterString = "chrome";
+
+bool IsDomainReliabilityMonitoringEnabled() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableDomainReliability))
+    return false;
+  if (command_line->HasSwitch(switches::kEnableDomainReliability))
+    return true;
+  return base::FieldTrialList::FindFullName("DomRel-Enable") == "enable";
+}
 
 }  // namespace
 
@@ -41,8 +53,8 @@ DomainReliabilityServiceFactory::~DomainReliabilityServiceFactory() {}
 
 KeyedService* DomainReliabilityServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  // TODO(ttuttle): Remove when we start using the factory.
-  NOTREACHED();
+  if (!IsDomainReliabilityMonitoringEnabled())
+    return NULL;
 
   return DomainReliabilityService::Create(
       kDomainReliabilityUploadReporterString);

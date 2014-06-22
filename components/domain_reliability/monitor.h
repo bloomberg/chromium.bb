@@ -75,10 +75,6 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
       scoped_ptr<const DomainReliabilityConfig> config);
 
   size_t contexts_size_for_testing() const { return contexts_.size(); }
-  bool was_cleared_for_testing() const { return was_cleared_; }
-  DomainReliabilityClearMode cleared_mode_for_testing() const {
-    return cleared_mode_;
-  }
 
  private:
   friend class DomainReliabilityMonitorTest;
@@ -119,9 +115,6 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
   DomainReliabilityDispatcher dispatcher_;
   scoped_ptr<DomainReliabilityUploader> uploader_;
   ContextMap contexts_;
-
-  bool was_cleared_;
-  DomainReliabilityClearMode cleared_mode_;
 
   base::WeakPtrFactory<DomainReliabilityMonitor> weak_factory_;
 

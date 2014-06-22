@@ -22,7 +22,7 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
 
   // DomainReliabilityService implementation:
 
-  virtual scoped_ptr<DomainReliabilityMonitor> Init(
+  virtual scoped_ptr<DomainReliabilityMonitor> CreateMonitor(
       scoped_refptr<base::SequencedTaskRunner> network_task_runner) OVERRIDE {
     DCHECK(!network_task_runner_);
 
@@ -46,8 +46,6 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
                    clear_mode),
         callback);
   }
-
-  virtual void Shutdown() OVERRIDE {}
 
  private:
   std::string upload_reporter_string_;

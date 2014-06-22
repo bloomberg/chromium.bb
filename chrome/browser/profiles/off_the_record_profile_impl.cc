@@ -470,16 +470,6 @@ void OffTheRecordProfileImpl::ClearNetworkingHistorySince(
   }
 }
 
-void OffTheRecordProfileImpl::ClearDomainReliabilityMonitor(
-    domain_reliability::DomainReliabilityClearMode mode,
-    const base::Closure& completion) {
-  // Incognito profiles don't have Domain Reliability Monitors, so there's
-  // nothing to do here.
-  if (!completion.is_null()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, completion);
-  }
-}
-
 GURL OffTheRecordProfileImpl::GetHomePage() {
   return profile_->GetHomePage();
 }

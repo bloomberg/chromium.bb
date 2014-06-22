@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #endif
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
@@ -54,7 +55,7 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/domain_reliability/monitor.h"
+#include "components/domain_reliability/service.h"
 #include "components/password_manager/core/browser/password_store.h"
 #if defined(OS_CHROMEOS)
 #include "chromeos/attestation/attestation_constants.h"
@@ -678,17 +679,22 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
                  base::Unretained(this)));
 
   if (remove_mask & (REMOVE_COOKIES | REMOVE_HISTORY)) {
-    domain_reliability::DomainReliabilityClearMode mode;
-    if (remove_mask & REMOVE_COOKIES)
-      mode = domain_reliability::CLEAR_CONTEXTS;
-    else
-      mode = domain_reliability::CLEAR_BEACONS;
+    domain_reliability::DomainReliabilityService* service =
+      domain_reliability::DomainReliabilityServiceFactory::
+          GetForBrowserContext(profile_);
+    if (service) {
+      domain_reliability::DomainReliabilityClearMode mode;
+      if (remove_mask & REMOVE_COOKIES)
+        mode = domain_reliability::CLEAR_CONTEXTS;
+      else
+        mode = domain_reliability::CLEAR_BEACONS;
 
-    waiting_for_clear_domain_reliability_monitor_ = true;
-    profile_->ClearDomainReliabilityMonitor(
-        mode,
-        base::Bind(&BrowsingDataRemover::OnClearedDomainReliabilityMonitor,
-                   base::Unretained(this)));
+      waiting_for_clear_domain_reliability_monitor_ = true;
+      service->ClearBrowsingData(
+          mode,
+          base::Bind(&BrowsingDataRemover::OnClearedDomainReliabilityMonitor,
+                     base::Unretained(this)));
+    }
   }
 }
 

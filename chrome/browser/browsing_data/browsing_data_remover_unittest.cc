@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
+#include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -45,6 +46,7 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "components/domain_reliability/monitor.h"
+#include "components/domain_reliability/service.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
@@ -68,6 +70,8 @@ using domain_reliability::CLEAR_BEACONS;
 using domain_reliability::CLEAR_CONTEXTS;
 using domain_reliability::DomainReliabilityClearMode;
 using domain_reliability::DomainReliabilityMonitor;
+using domain_reliability::DomainReliabilityService;
+using domain_reliability::DomainReliabilityServiceFactory;
 using testing::_;
 using testing::Invoke;
 using testing::WithArgs;
@@ -579,27 +583,110 @@ class RemoveLocalStorageTester {
   DISALLOW_COPY_AND_ASSIGN(RemoveLocalStorageTester);
 };
 
-class TestingProfileWithDomainReliabilityMonitor : public TestingProfile {
+class MockDomainReliabilityService : public DomainReliabilityService {
  public:
-  TestingProfileWithDomainReliabilityMonitor() :
-      TestingProfile(),
-      upload_reporter_string_("test-reporter"),
-      monitor_(upload_reporter_string_) {
-    monitor_.Init(GetRequestContext());
+  MockDomainReliabilityService() : clear_count_(0) {}
+
+  virtual ~MockDomainReliabilityService() {}
+
+  virtual scoped_ptr<DomainReliabilityMonitor> CreateMonitor(
+      scoped_refptr<base::SequencedTaskRunner> network_task_runner) OVERRIDE {
+    NOTREACHED();
+    return scoped_ptr<DomainReliabilityMonitor>();
   }
 
-  virtual void ClearDomainReliabilityMonitor(
-      DomainReliabilityClearMode mode,
-      const base::Closure& completion) OVERRIDE {
-    monitor_.ClearBrowsingData(mode);
-    completion.Run();
+  virtual void ClearBrowsingData(DomainReliabilityClearMode clear_mode,
+                                 const base::Closure& callback) OVERRIDE {
+    clear_count_++;
+    last_clear_mode_ = clear_mode;
+    callback.Run();
   }
 
-  DomainReliabilityMonitor* monitor() { return &monitor_; }
+  int clear_count() const { return clear_count_; }
+
+  DomainReliabilityClearMode last_clear_mode() const {
+    return last_clear_mode_;
+  }
 
  private:
-  std::string upload_reporter_string_;
-  DomainReliabilityMonitor monitor_;
+  unsigned clear_count_;
+  DomainReliabilityClearMode last_clear_mode_;
+};
+
+struct TestingDomainReliabilityServiceFactoryUserData
+    : public base::SupportsUserData::Data {
+  TestingDomainReliabilityServiceFactoryUserData(
+      content::BrowserContext* context,
+      MockDomainReliabilityService* service)
+      : context(context),
+        service(service),
+        attached(false) {}
+  virtual ~TestingDomainReliabilityServiceFactoryUserData() {}
+
+  content::BrowserContext* const context;
+  MockDomainReliabilityService* const service;
+  bool attached;
+
+  static const void* kKey;
+};
+
+// static
+const void* TestingDomainReliabilityServiceFactoryUserData::kKey =
+    &TestingDomainReliabilityServiceFactoryUserData::kKey;
+
+KeyedService* TestingDomainReliabilityServiceFactoryFunction(
+    content::BrowserContext* context) {
+  const void* kKey = TestingDomainReliabilityServiceFactoryUserData::kKey;
+
+  TestingDomainReliabilityServiceFactoryUserData* data =
+      static_cast<TestingDomainReliabilityServiceFactoryUserData*>(
+          context->GetUserData(kKey));
+  EXPECT_TRUE(data);
+  EXPECT_EQ(data->context, context);
+  EXPECT_FALSE(data->attached);
+
+  data->attached = true;
+  return data->service;
+}
+
+class ClearDomainReliabilityTester {
+ public:
+  explicit ClearDomainReliabilityTester(TestingProfile* profile) :
+      profile_(profile),
+      mock_service_(new MockDomainReliabilityService()) {
+    AttachService();
+  }
+
+  unsigned clear_count() { return mock_service_->clear_count(); }
+
+  DomainReliabilityClearMode last_clear_mode() {
+    return mock_service_->last_clear_mode();
+  }
+
+ private:
+  void AttachService() {
+    const void* kKey = TestingDomainReliabilityServiceFactoryUserData::kKey;
+
+    // Attach kludgey UserData struct to profile.
+    TestingDomainReliabilityServiceFactoryUserData* data =
+        new TestingDomainReliabilityServiceFactoryUserData(profile_,
+                                                           mock_service_);
+    EXPECT_FALSE(profile_->GetUserData(kKey));
+    profile_->SetUserData(kKey, data);
+
+    // Set and use factory that will attach service stuffed in kludgey struct.
+    DomainReliabilityServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile_,
+        &TestingDomainReliabilityServiceFactoryFunction);
+
+    // Verify and detach kludgey struct.
+    EXPECT_EQ(data, profile_->GetUserData(kKey));
+    EXPECT_TRUE(data->attached);
+    profile_->RemoveUserData(kKey);
+  }
+
+  TestingProfile* profile_;
+  MockDomainReliabilityService* mock_service_;
 };
 
 // Test Class ----------------------------------------------------------------
@@ -705,14 +792,6 @@ class BrowsingDataRemoverTest : public testing::Test,
             details).ptr()));
 
     registrar_.RemoveAll();
-  }
-
-  DomainReliabilityMonitor *UseProfileWithDomainReliabilityMonitor() {
-    TestingProfileWithDomainReliabilityMonitor* new_profile =
-        new TestingProfileWithDomainReliabilityMonitor();
-    DomainReliabilityMonitor* monitor = new_profile->monitor();
-    profile_.reset(new_profile);
-    return monitor;
   }
 
  protected:
@@ -1656,42 +1735,55 @@ TEST_F(BrowsingDataRemoverTest, ContentProtectionPlatformKeysRemoval) {
 #endif
 
 TEST_F(BrowsingDataRemoverTest, DomainReliability_Null) {
-  DomainReliabilityMonitor* monitor = UseProfileWithDomainReliabilityMonitor();
-  EXPECT_FALSE(monitor->was_cleared_for_testing());
+  ClearDomainReliabilityTester tester(GetProfile());
+
+  EXPECT_EQ(0u, tester.clear_count());
 }
 
 TEST_F(BrowsingDataRemoverTest, DomainReliability_Beacons) {
-  DomainReliabilityMonitor* monitor = UseProfileWithDomainReliabilityMonitor();
+  ClearDomainReliabilityTester tester(GetProfile());
+
   BlockUntilBrowsingDataRemoved(
       BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_HISTORY, false);
-  EXPECT_TRUE(monitor->was_cleared_for_testing());
-  EXPECT_EQ(CLEAR_BEACONS, monitor->cleared_mode_for_testing());
-}
-
-TEST_F(BrowsingDataRemoverTest, DomainReliability_Beacons_ProtectedOrigins) {
-  DomainReliabilityMonitor* monitor = UseProfileWithDomainReliabilityMonitor();
-  BlockUntilBrowsingDataRemoved(
-      BrowsingDataRemover::EVERYTHING,
-      BrowsingDataRemover::REMOVE_HISTORY, true);
-  EXPECT_TRUE(monitor->was_cleared_for_testing());
-  EXPECT_EQ(CLEAR_BEACONS, monitor->cleared_mode_for_testing());
+  EXPECT_EQ(1u, tester.clear_count());
+  EXPECT_EQ(CLEAR_BEACONS, tester.last_clear_mode());
 }
 
 TEST_F(BrowsingDataRemoverTest, DomainReliability_Contexts) {
-  DomainReliabilityMonitor* monitor = UseProfileWithDomainReliabilityMonitor();
+  ClearDomainReliabilityTester tester(GetProfile());
+
   BlockUntilBrowsingDataRemoved(
       BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_COOKIES, false);
-  EXPECT_TRUE(monitor->was_cleared_for_testing());
-  EXPECT_EQ(CLEAR_CONTEXTS, monitor->cleared_mode_for_testing());
+  EXPECT_EQ(1u, tester.clear_count());
+  EXPECT_EQ(CLEAR_CONTEXTS, tester.last_clear_mode());
 }
 
-TEST_F(BrowsingDataRemoverTest, DomainReliability_Contexts_ProtectedOrigins) {
-  DomainReliabilityMonitor* monitor = UseProfileWithDomainReliabilityMonitor();
+TEST_F(BrowsingDataRemoverTest, DomainReliability_ContextsWin) {
+  ClearDomainReliabilityTester tester(GetProfile());
+
+  BlockUntilBrowsingDataRemoved(
+      BrowsingDataRemover::EVERYTHING,
+      BrowsingDataRemover::REMOVE_HISTORY |
+      BrowsingDataRemover::REMOVE_COOKIES, false);
+  EXPECT_EQ(1u, tester.clear_count());
+  EXPECT_EQ(CLEAR_CONTEXTS, tester.last_clear_mode());
+}
+
+TEST_F(BrowsingDataRemoverTest, DomainReliability_ProtectedOrigins) {
+  ClearDomainReliabilityTester tester(GetProfile());
+
   BlockUntilBrowsingDataRemoved(
       BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_COOKIES, true);
-  EXPECT_TRUE(monitor->was_cleared_for_testing());
-  EXPECT_EQ(CLEAR_CONTEXTS, monitor->cleared_mode_for_testing());
+  EXPECT_EQ(1u, tester.clear_count());
+  EXPECT_EQ(CLEAR_CONTEXTS, tester.last_clear_mode());
+}
+
+TEST_F(BrowsingDataRemoverTest, DomainReliability_NoMonitor) {
+  BlockUntilBrowsingDataRemoved(
+      BrowsingDataRemover::EVERYTHING,
+      BrowsingDataRemover::REMOVE_HISTORY |
+      BrowsingDataRemover::REMOVE_COOKIES, false);
 }

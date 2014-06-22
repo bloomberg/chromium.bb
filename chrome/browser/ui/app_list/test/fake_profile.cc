@@ -188,11 +188,6 @@ void FakeProfile::ClearNetworkingHistorySince(
     const base::Closure& completion) {
 }
 
-void FakeProfile::ClearDomainReliabilityMonitor(
-    domain_reliability::DomainReliabilityClearMode mode,
-    const base::Closure& completion) {
-}
-
 GURL FakeProfile::GetHomePage() {
   return GURL();
 }

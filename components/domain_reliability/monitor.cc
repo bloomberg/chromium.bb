@@ -27,8 +27,6 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
       scheduler_params_(
           DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults()),
       dispatcher_(time_.get()),
-      was_cleared_(false),
-      cleared_mode_(MAX_CLEAR_MODE),
       weak_factory_(this) {}
 
 DomainReliabilityMonitor::DomainReliabilityMonitor(
@@ -39,8 +37,6 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
       scheduler_params_(
           DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults()),
       dispatcher_(time_.get()),
-      was_cleared_(false),
-      cleared_mode_(MAX_CLEAR_MODE),
       weak_factory_(this) {}
 
 DomainReliabilityMonitor::~DomainReliabilityMonitor() {
@@ -108,9 +104,6 @@ void DomainReliabilityMonitor::OnCompleted(net::URLRequest* request,
 void DomainReliabilityMonitor::ClearBrowsingData(
    DomainReliabilityClearMode mode) {
   DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());
-
-  was_cleared_ = true;
-  cleared_mode_ = mode;
 
   switch (mode) {
     case CLEAR_BEACONS: {
