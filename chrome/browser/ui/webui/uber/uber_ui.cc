@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
 
-#include "base/command_line.h"
 #include "base/stl_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,12 +20,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
-using base::ASCIIToUTF16;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::RenderViewHost;
@@ -49,39 +47,27 @@ content::WebUIDataSource* CreateUberHTMLSource() {
   // Hack alert: continue showing "Loading..." until a real title is set.
   source->AddLocalizedString("pageTitle", IDS_TAB_LOADING_TITLE);
 
-  source->AddString("extensionsFrameURL",
-                    ASCIIToUTF16(chrome::kChromeUIExtensionsFrameURL));
-  source->AddString("extensionsHost",
-                    ASCIIToUTF16(chrome::kChromeUIExtensionsHost));
-  source->AddString("helpFrameURL",
-                    ASCIIToUTF16(chrome::kChromeUIHelpFrameURL));
-  source->AddString("helpHost",
-                    ASCIIToUTF16(chrome::kChromeUIHelpHost));
-  source->AddString("historyFrameURL",
-                    ASCIIToUTF16(chrome::kChromeUIHistoryFrameURL));
-  source->AddString("historyHost",
-                    ASCIIToUTF16(chrome::kChromeUIHistoryHost));
-  source->AddString("settingsFrameURL",
-                    ASCIIToUTF16(chrome::kChromeUISettingsFrameURL));
-  source->AddString("settingsHost",
-                    ASCIIToUTF16(chrome::kChromeUISettingsHost));
+  source->AddString("extensionsFrameURL", chrome::kChromeUIExtensionsFrameURL);
+  source->AddString("extensionsHost", chrome::kChromeUIExtensionsHost);
+  source->AddString("helpFrameURL", chrome::kChromeUIHelpFrameURL);
+  source->AddString("helpHost", chrome::kChromeUIHelpHost);
+  source->AddString("historyFrameURL", chrome::kChromeUIHistoryFrameURL);
+  source->AddString("historyHost", chrome::kChromeUIHistoryHost);
+  source->AddString("settingsFrameURL", chrome::kChromeUISettingsFrameURL);
+  source->AddString("settingsHost", chrome::kChromeUISettingsHost);
 
   return source;
 }
 
 // Determines whether the user has an active extension of the given type.
-bool HasExtensionType(Profile* profile, const char* extensionType) {
-  const extensions::ExtensionSet* extensionSet =
-      profile->GetExtensionService()->extensions();
-
-  for (extensions::ExtensionSet::const_iterator iter = extensionSet->begin();
-       iter != extensionSet->end(); ++iter) {
-    extensions::URLOverrides::URLOverrideMap map =
+bool HasExtensionType(Profile* profile, const std::string& extension_type) {
+  const extensions::ExtensionSet& extension_set =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
+  for (extensions::ExtensionSet::const_iterator iter = extension_set.begin();
+       iter != extension_set.end(); ++iter) {
+    const extensions::URLOverrides::URLOverrideMap& map =
         extensions::URLOverrides::GetChromeURLOverrides(iter->get());
-    extensions::URLOverrides::URLOverrideMap::const_iterator result =
-        map.find(std::string(extensionType));
-
-    if (result != map.end())
+    if (ContainsKey(map, extension_type))
       return true;
   }
 
@@ -105,30 +91,25 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
 #endif  // defined(OS_CHROMEOS)
 
   // Group settings and help separately if settings in a window is enabled.
-  base::string16 settings_group(ASCIIToUTF16("settings_group"));
-  base::string16 other_group(ASCIIToUTF16(
-      ::switches::SettingsWindowEnabled() ? "other_group" : "settings_group"));
-  source->AddString("extensionsHost",
-                    ASCIIToUTF16(chrome::kChromeUIExtensionsHost));
+  std::string settings_group("settings_group");
+  std::string other_group(
+      ::switches::SettingsWindowEnabled() ? "other_group" : "settings_group");
+  source->AddString("extensionsHost", chrome::kChromeUIExtensionsHost);
   source->AddLocalizedString("extensionsDisplayName",
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
   source->AddString("extensionsGroup", other_group);
-  source->AddString("helpHost",
-                    ASCIIToUTF16(chrome::kChromeUIHelpHost));
+  source->AddString("helpHost", chrome::kChromeUIHelpHost);
   source->AddLocalizedString("helpDisplayName", IDS_ABOUT_TITLE);
   source->AddString("helpGroup", settings_group);
-  source->AddString("historyHost",
-                    ASCIIToUTF16(chrome::kChromeUIHistoryHost));
+  source->AddString("historyHost", chrome::kChromeUIHistoryHost);
   source->AddLocalizedString("historyDisplayName", IDS_HISTORY_TITLE);
   source->AddString("historyGroup", other_group);
-  source->AddString("settingsHost",
-                    ASCIIToUTF16(chrome::kChromeUISettingsHost));
+  source->AddString("settingsHost", chrome::kChromeUISettingsHost);
   source->AddLocalizedString("settingsDisplayName", IDS_SETTINGS_TITLE);
   source->AddString("settingsGroup", settings_group);
-  bool overridesHistory = HasExtensionType(profile,
-      chrome::kChromeUIHistoryHost);
-  source->AddString("overridesHistory",
-                    ASCIIToUTF16(overridesHistory ? "yes" : "no"));
+  bool overridesHistory =
+      HasExtensionType(profile, chrome::kChromeUIHistoryHost);
+  source->AddString("overridesHistory", overridesHistory ? "yes" : "no");
   source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyFrameSrc("frame-src chrome:;");
 
@@ -167,7 +148,7 @@ void UberUI::RegisterSubpage(const std::string& page_url,
 }
 
 content::WebUI* UberUI::GetSubpage(const std::string& page_url) {
-  if (!sub_uis_.count(page_url))
+  if (!ContainsKey(sub_uis_, page_url))
     return NULL;
   return sub_uis_[page_url];
 }
@@ -212,9 +193,8 @@ UberFrameUI::UberFrameUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::WebUIDataSource::Add(profile, CreateUberFrameHTMLSource(profile));
 
   // Register as an observer for when extensions are loaded and unloaded.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+      content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::Source<Profile>(profile));
 }
@@ -222,7 +202,8 @@ UberFrameUI::UberFrameUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 UberFrameUI::~UberFrameUI() {
 }
 
-void UberFrameUI::Observe(int type, const content::NotificationSource& source,
+void UberFrameUI::Observe(int type,
+                          const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
   switch (type) {
     // We listen for notifications that indicate an extension has been loaded

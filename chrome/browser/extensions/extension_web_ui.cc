@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/favicon/favicon_service.h"
@@ -155,9 +154,8 @@ ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
     : WebUIController(web_ui),
       url_(url) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  ExtensionService* service = profile->GetExtensionService();
-  const Extension* extension =
-      service->extensions()->GetExtensionOrAppByURL(url);
+  const Extension* extension = extensions::ExtensionRegistry::Get(
+      profile)->enabled_extensions().GetExtensionOrAppByURL(url);
   DCHECK(extension);
 
   // The base class defaults to enabling WebUI bindings, but we don't need
@@ -407,14 +405,8 @@ void ExtensionWebUI::GetFaviconForURL(
     Profile* profile,
     const GURL& page_url,
     const favicon_base::FaviconResultsCallback& callback) {
-  // Even when the extensions service is enabled by default, it's still
-  // disabled in incognito mode.
-  ExtensionService* service = profile->GetExtensionService();
-  if (!service) {
-    RunFaviconCallbackAsync(callback, gfx::Image());
-    return;
-  }
-  const Extension* extension = service->extensions()->GetByID(page_url.host());
+  const Extension* extension = extensions::ExtensionRegistry::Get(
+      profile)->enabled_extensions().GetByID(page_url.host());
   if (!extension) {
     RunFaviconCallbackAsync(callback, gfx::Image());
     return;

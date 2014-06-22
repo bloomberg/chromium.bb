@@ -665,17 +665,20 @@ void BackgroundModeManager::OnBackgroundAppInstalled(
 void BackgroundModeManager::CheckReloadStatus(
     const Extension* extension,
     bool* is_being_reloaded) {
-    // Walk the BackgroundModeData for all profiles to see if one of their
-    // extensions is being reloaded.
-    for (BackgroundModeInfoMap::const_iterator it =
-             background_mode_data_.begin();
-         it != background_mode_data_.end();
-         ++it) {
-      Profile* profile = it->first;
-      // If the extension is being reloaded, no need to show a notification.
-      if (profile->GetExtensionService()->IsBeingReloaded(extension->id()))
-        *is_being_reloaded = true;
+  // Walk the BackgroundModeData for all profiles to see if one of their
+  // extensions is being reloaded.
+  for (BackgroundModeInfoMap::const_iterator it =
+           background_mode_data_.begin();
+       it != background_mode_data_.end();
+       ++it) {
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(it->first)->extension_service();
+    // If the extension is being reloaded, no need to show a notification.
+    if (service->IsBeingReloaded(extension->id())) {
+      *is_being_reloaded = true;
+      return;
     }
+  }
 }
 
 void BackgroundModeManager::CreateStatusTrayIcon() {

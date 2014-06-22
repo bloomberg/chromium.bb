@@ -40,6 +40,8 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
 #if defined(OS_CHROMEOS)
@@ -499,8 +501,8 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
   std::vector<ExtensionBasicInfo> extension_infos;
   extension_infos.push_back(ExtensionBasicInfo(extension));
 
-  ExtensionService* extension_service =
-      browser()->profile()->GetExtensionService();
+  ExtensionService* extension_service = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service();
 
   extensions::CrxInstaller* crx_installer = NULL;
 
@@ -508,12 +510,13 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
   content::WindowedNotificationObserver windowed_observer(
       chrome::NOTIFICATION_CRX_INSTALLER_DONE,
       content::Source<extensions::CrxInstaller>(crx_installer));
-  ASSERT_TRUE(extension_service->
-      UpdateExtension(extension->id(), path_v2_, true, &crx_installer));
+  ASSERT_TRUE(extension_service->UpdateExtension(
+      extension->id(), path_v2_, true, &crx_installer));
   windowed_observer.Wait();
 
-  extension = extension_service->GetExtensionById(
-      extension_infos[0].id, false); // don't include disabled extensions.
+  extension = extensions::ExtensionRegistry::Get(
+      browser()->profile())->enabled_extensions().GetByID(
+          extension_infos[0].id);
 
   // The total series of events for this process will be:
   //   Extension Install - install version 1

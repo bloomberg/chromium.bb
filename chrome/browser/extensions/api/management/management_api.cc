@@ -287,11 +287,11 @@ void AddExtensionInfo(const ExtensionSet& extensions,
 } // namespace
 
 ExtensionService* ManagementFunction::service() {
-  return GetProfile()->GetExtensionService();
+  return extensions::ExtensionSystem::Get(GetProfile())->extension_service();
 }
 
 ExtensionService* AsyncManagementFunction::service() {
-  return GetProfile()->GetExtensionService();
+  return extensions::ExtensionSystem::Get(GetProfile())->extension_service();
 }
 
 bool ManagementGetAllFunction::RunSync() {
@@ -665,7 +665,6 @@ void ManagementUninstallFunctionBase::Finish(bool should_uninstall) {
         keys::kUninstallCanceledError, extension_id_);
     SendResponse(false);
   }
-
 }
 
 void ManagementUninstallFunctionBase::ExtensionUninstallAccepted() {

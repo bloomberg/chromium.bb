@@ -10,7 +10,6 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -20,6 +19,7 @@
 #include "components/feedback/feedback_data.h"
 #include "components/feedback/feedback_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_registry.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -74,13 +74,12 @@ ResettableSettingsSnapshot::ResettableSettingsSnapshot(
   if (dse)
     dse_url_ = dse->url();
 
-  ExtensionService* extension_service = profile->GetExtensionService();
-  DCHECK(extension_service);
-  const extensions::ExtensionSet* enabled_ext = extension_service->extensions();
-  enabled_extensions_.reserve(enabled_ext->size());
+  const extensions::ExtensionSet& enabled_ext =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
+  enabled_extensions_.reserve(enabled_ext.size());
 
-  for (extensions::ExtensionSet::const_iterator it = enabled_ext->begin();
-       it != enabled_ext->end(); ++it)
+  for (extensions::ExtensionSet::const_iterator it = enabled_ext.begin();
+       it != enabled_ext.end(); ++it)
     enabled_extensions_.push_back(std::make_pair((*it)->id(), (*it)->name()));
 
   // ExtensionSet is sorted but it seems to be an implementation detail.

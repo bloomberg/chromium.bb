@@ -107,15 +107,15 @@ void ProfileResetter::Reset(
     Resettable flag;
     void (ProfileResetter::*method)();
   } flagToMethod[] = {
-        {DEFAULT_SEARCH_ENGINE, &ProfileResetter::ResetDefaultSearchEngine},
-        {HOMEPAGE, &ProfileResetter::ResetHomepage},
-        {CONTENT_SETTINGS, &ProfileResetter::ResetContentSettings},
-        {COOKIES_AND_SITE_DATA, &ProfileResetter::ResetCookiesAndSiteData},
-        {EXTENSIONS, &ProfileResetter::ResetExtensions},
-        {STARTUP_PAGES, &ProfileResetter::ResetStartupPages},
-        {PINNED_TABS, &ProfileResetter::ResetPinnedTabs},
-        {SHORTCUTS, &ProfileResetter::ResetShortcuts},
-    };
+    {DEFAULT_SEARCH_ENGINE, &ProfileResetter::ResetDefaultSearchEngine},
+    {HOMEPAGE, &ProfileResetter::ResetHomepage},
+    {CONTENT_SETTINGS, &ProfileResetter::ResetContentSettings},
+    {COOKIES_AND_SITE_DATA, &ProfileResetter::ResetCookiesAndSiteData},
+    {EXTENSIONS, &ProfileResetter::ResetExtensions},
+    {STARTUP_PAGES, &ProfileResetter::ResetStartupPages},
+    {PINNED_TABS, &ProfileResetter::ResetPinnedTabs},
+    {SHORTCUTS, &ProfileResetter::ResetShortcuts},
+  };
 
   ResettableFlags reset_triggered_for_flags = 0;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(flagToMethod); ++i) {
@@ -269,7 +269,8 @@ void ProfileResetter::ResetExtensions() {
   std::vector<std::string> brandcode_extensions;
   master_settings_->GetExtensions(&brandcode_extensions);
 
-  ExtensionService* extension_service = profile_->GetExtensionService();
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   DCHECK(extension_service);
   extension_service->DisableUserExtensions(brandcode_extensions);
 

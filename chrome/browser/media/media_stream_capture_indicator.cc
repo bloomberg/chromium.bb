@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
@@ -25,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -45,16 +45,9 @@ const extensions::Extension* GetExtension(WebContents* web_contents) {
   if (!web_contents)
     return NULL;
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (!profile)
-    return NULL;
-
-  ExtensionService* extension_service = profile->GetExtensionService();
-  if (!extension_service)
-    return NULL;
-
-  return extension_service->extensions()->GetExtensionOrAppByURL(
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(web_contents->GetBrowserContext());
+  return registry->enabled_extensions().GetExtensionOrAppByURL(
       web_contents->GetURL());
 }
 

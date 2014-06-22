@@ -8,7 +8,6 @@
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -27,13 +26,14 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/wm/core/window_animations.h"
 
 using extensions::Extension;
+using extensions::ExtensionRegistry;
 
 namespace {
 
@@ -287,13 +287,10 @@ bool AppShortcutLauncherItemController::WebContentMatchesApp(
     Browser* browser) {
   // If the browser is an app window and the app name matches the extension.
   if (browser->is_app()) {
-    const extensions::Extension* browser_extension = NULL;
-    const ExtensionService* extension_service =
-        browser->profile()->GetExtensionService();
-    if (extension_service) {
-      browser_extension = extension_service->GetInstalledExtension(
-          web_app::GetExtensionIdFromApplicationName(browser->app_name()));
-    }
+    const extensions::Extension* browser_extension =
+        ExtensionRegistry::Get(browser->profile())->GetExtensionById(
+            web_app::GetExtensionIdFromApplicationName(browser->app_name()),
+            ExtensionRegistry::EVERYTHING);
     return browser_extension == extension;
   }
 

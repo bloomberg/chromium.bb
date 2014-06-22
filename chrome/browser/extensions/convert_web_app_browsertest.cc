@@ -21,6 +21,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -62,8 +63,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, DISABLED_Basic) {
     return;
 #endif
 
-  browser()->profile()->GetExtensionService()->set_show_extensions_prompts(
-      false);
+  ExtensionService* service =
+      ExtensionSystem::Get(browser()->profile())->extension_service();
+  service->set_show_extensions_prompts(false);
 
   content::NotificationRegistrar registrar;
   registrar.Add(this,

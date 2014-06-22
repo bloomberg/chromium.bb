@@ -8,7 +8,6 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
@@ -19,6 +18,7 @@
 #include "content/public/common/console_message_level.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
@@ -40,6 +40,7 @@ const char kOnResume[] = "ttsEngine.onResume";
 };  // namespace tts_engine_events
 
 namespace {
+
 void WarnIfMissingPauseOrResumeListener(
     Profile* profile, EventRouter* event_router, std::string extension_id) {
   bool has_onpause = event_router->ExtensionHasEventListener(
@@ -57,21 +58,21 @@ void WarnIfMissingPauseOrResumeListener(
       host->render_view_host()->GetRoutingID(),
       content::CONSOLE_MESSAGE_LEVEL_WARNING,
       constants::kErrorMissingPauseOrResume));
-};
-}  // anonymous namespace
+}
+
+}  // namespace
 
 void GetExtensionVoices(Profile* profile, std::vector<VoiceData>* out_voices) {
-  ExtensionService* service = profile->GetExtensionService();
-  DCHECK(service);
   EventRouter* event_router = EventRouter::Get(profile);
   DCHECK(event_router);
 
   bool is_offline = (net::NetworkChangeNotifier::GetConnectionType() ==
                      net::NetworkChangeNotifier::CONNECTION_NONE);
 
-  const extensions::ExtensionSet* extensions = service->extensions();
+  const extensions::ExtensionSet& extensions =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   extensions::ExtensionSet::const_iterator iter;
-  for (iter = extensions->begin(); iter != extensions->end(); ++iter) {
+  for (iter = extensions.begin(); iter != extensions.end(); ++iter) {
     const Extension* extension = iter->get();
 
     if (!event_router->ExtensionHasEventListener(

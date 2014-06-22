@@ -11,11 +11,12 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_system.h"
 
 namespace extensions {
 
 class ExtensionFunctionalTest : public ExtensionBrowserTest {
-public:
+ public:
   void InstallExtensionSilently(ExtensionService* service,
                                 const char* filename) {
     service->set_show_extensions_prompts(false);
@@ -50,16 +51,19 @@ public:
         last_loaded_extension_id(), false);
     EXPECT_TRUE(extension != NULL);
   }
+
+  ExtensionService* GetExtensionService() {
+    return ExtensionSystem::Get(profile())->extension_service();
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
                        PRE_TestAdblockExtensionCrash) {
-  ExtensionService* service = profile()->GetExtensionService();
-  InstallExtensionSilently(service, "adblock.crx");
+  InstallExtensionSilently(GetExtensionService(), "adblock.crx");
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestAdblockExtensionCrash) {
-  ExtensionService* service = profile()->GetExtensionService();
+  ExtensionService* service = GetExtensionService();
   // Verify that the extension is enabled and allowed in incognito
   // is disabled.
   EXPECT_TRUE(service->IsExtensionEnabled(last_loaded_extension_id()));
@@ -67,11 +71,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestAdblockExtensionCrash) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestSetExtensionsState) {
-  ExtensionService* service = profile()->GetExtensionService();
-  InstallExtensionSilently(service, "google_talk.crx");
+  InstallExtensionSilently(GetExtensionService(), "google_talk.crx");
 
   // Disable the extension and verify.
   util::SetIsIncognitoEnabled(last_loaded_extension_id(), profile(), false);
+  ExtensionService* service = GetExtensionService();
   service->DisableExtension(last_loaded_extension_id(),
                             Extension::DISABLE_USER_ACTION);
   EXPECT_FALSE(service->IsExtensionEnabled(last_loaded_extension_id()));

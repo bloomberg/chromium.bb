@@ -79,6 +79,7 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "net/base/escape.h"
@@ -518,7 +519,8 @@ void OpenCurrentURL(Browser* browser) {
       TabStripModel::ADD_FORCE_INDEX | TabStripModel::ADD_INHERIT_OPENER;
   Navigate(&params);
 
-  DCHECK(browser->profile()->GetExtensionService());
+  DCHECK(extensions::ExtensionSystem::Get(
+      browser->profile())->extension_service());
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(browser->profile())
           ->enabled_extensions().GetAppByURL(url);

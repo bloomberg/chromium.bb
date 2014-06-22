@@ -219,7 +219,7 @@ SkBitmap* TabHelper::GetExtensionAppIcon() {
 }
 
 void TabHelper::FinishCreateBookmarkApp(
-    const extensions::Extension* extension,
+    const Extension* extension,
     const WebApplicationInfo& web_app_info) {
   pending_web_app_action_ = NONE;
 
@@ -370,7 +370,8 @@ void TabHelper::OnDidGetApplicationInfo(int32 page_id,
         web_app_info_.title = base::UTF8ToUTF16(web_app_info_.app_url.spec());
 
       bookmark_app_helper_.reset(new BookmarkAppHelper(
-          profile_->GetExtensionService(), web_app_info_, web_contents()));
+          ExtensionSystem::Get(profile_)->extension_service(),
+          web_app_info_, web_contents()));
       bookmark_app_helper_->Create(base::Bind(
           &TabHelper::FinishCreateBookmarkApp, base::Unretained(this)));
       break;
@@ -499,15 +500,9 @@ const Extension* TabHelper::GetExtension(const std::string& extension_app_id) {
   if (extension_app_id.empty())
     return NULL;
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  ExtensionService* extension_service = profile->GetExtensionService();
-  if (!extension_service || !extension_service->is_ready())
-    return NULL;
-
-  const Extension* extension =
-      extension_service->GetExtensionById(extension_app_id, false);
-  return extension;
+  content::BrowserContext* context = web_contents()->GetBrowserContext();
+  return ExtensionRegistry::Get(context)->enabled_extensions().GetByID(
+      extension_app_id);
 }
 
 void TabHelper::UpdateExtensionAppIcon(const Extension* extension) {
@@ -519,7 +514,7 @@ void TabHelper::UpdateExtensionAppIcon(const Extension* extension) {
   if (extension) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    extensions::ImageLoader* loader = extensions::ImageLoader::Get(profile);
+    ImageLoader* loader = ImageLoader::Get(profile);
     loader->LoadImageAsync(
         extension,
         IconsInfo::GetIconResource(extension,

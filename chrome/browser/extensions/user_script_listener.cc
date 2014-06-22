@@ -6,13 +6,13 @@
 
 #include "base/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/url_pattern.h"
 #include "net/url_request/url_request.h"
@@ -232,10 +232,11 @@ void UserScriptListener::Observe(int type,
         return;  // no patterns to delete for this extension.
 
       // Clear all our patterns and reregister all the still-loaded extensions.
+      const ExtensionSet& extensions =
+          ExtensionRegistry::Get(profile)->enabled_extensions();
       URLPatterns new_patterns;
-      ExtensionService* service = profile->GetExtensionService();
-      for (ExtensionSet::const_iterator it = service->extensions()->begin();
-           it != service->extensions()->end(); ++it) {
+      for (ExtensionSet::const_iterator it = extensions.begin();
+           it != extensions.end(); ++it) {
         if (it->get() != unloaded_extension)
           CollectURLPatterns(it->get(), &new_patterns);
       }

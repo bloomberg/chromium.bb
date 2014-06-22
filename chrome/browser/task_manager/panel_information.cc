@@ -16,6 +16,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -53,9 +54,10 @@ PanelResource::PanelResource(Panel* panel)
         panel->GetWebContents()->GetRenderProcessHost()->GetHandle(),
         panel->GetWebContents()->GetRenderViewHost()),
       panel_(panel) {
-  ExtensionService* service = panel_->profile()->GetExtensionService();
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(panel_->profile());
   message_prefix_id_ = util::GetMessagePrefixID(
-      service->extensions()->GetByID(panel_->extension_id())->is_app(),
+      registry->enabled_extensions().GetByID(panel_->extension_id())->is_app(),
       true,  // is_extension
       panel_->profile()->IsOffTheRecord(),
       false,   // is_prerender

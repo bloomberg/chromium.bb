@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
@@ -394,7 +395,7 @@ class ExtensionMessageBubbleTest : public testing::Test {
             CommandLine::ForCurrentProcess(),
             base::FilePath(),
             false);
-    service_ = profile_->GetExtensionService();
+    service_ = ExtensionSystem::Get(profile())->extension_service();
     service_->Init();
   }
 

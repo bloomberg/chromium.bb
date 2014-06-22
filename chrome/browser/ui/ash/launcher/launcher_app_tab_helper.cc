@@ -69,10 +69,8 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
 
 const extensions::Extension* GetExtensionByID(Profile* profile,
                                               const std::string& id) {
-  ExtensionService* extension_service = profile->GetExtensionService();
-  if (!extension_service || !extension_service->extensions_enabled())
-    return NULL;
-  return extension_service->GetInstalledExtension(id);
+  return extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+      id, extensions::ExtensionRegistry::EVERYTHING);
 }
 
 }  // namespace

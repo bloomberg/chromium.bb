@@ -568,8 +568,9 @@ void ExtensionSettingsHandler::RegisterMessages() {
   // Don't override an |extension_service_| or |management_policy_| injected
   // for testing.
   if (!extension_service_) {
-    extension_service_ = Profile::FromWebUI(web_ui())->GetOriginalProfile()->
-        GetExtensionService();
+    Profile* profile = Profile::FromWebUI(web_ui())->GetOriginalProfile();
+    extension_service_ =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
   }
   if (!management_policy_) {
     management_policy_ = ExtensionSystem::Get(

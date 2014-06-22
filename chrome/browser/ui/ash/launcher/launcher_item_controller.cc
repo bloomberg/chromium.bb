@@ -6,9 +6,9 @@
 
 #include "base/basictypes.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 LauncherItemController::LauncherItemController(
@@ -31,12 +31,17 @@ const std::string& LauncherItemController::app_id() const {
 }
 
 base::string16 LauncherItemController::GetAppTitle() const {
+  base::string16 title;
   if (app_id_.empty())
-    return base::string16();
+    return title;
+
   const extensions::Extension* extension =
-      launcher_controller_->profile()->GetExtensionService()->
-      GetInstalledExtension(app_id_);
-  return extension ? base::UTF8ToUTF16(extension->name()) : base::string16();
+      extensions::ExtensionRegistry::Get(
+          launcher_controller_->profile())->GetExtensionById(
+              app_id_, extensions::ExtensionRegistry::EVERYTHING);
+  if (extension)
+    title = base::UTF8ToUTF16(extension->name());
+  return title;
 }
 
 ash::ShelfItemType LauncherItemController::GetShelfItemType() const {

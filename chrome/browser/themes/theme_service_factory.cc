@@ -6,13 +6,13 @@
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "extensions/browser/extension_registry.h"
 
 #if defined(USE_AURA) && defined(USE_X11) && !defined(OS_CHROMEOS)
 #include "chrome/browser/themes/theme_service_aurax11.h"
@@ -32,7 +32,8 @@ const extensions::Extension* ThemeServiceFactory::GetThemeForProfile(
   if (id == ThemeService::kDefaultThemeID)
     return NULL;
 
-  return profile->GetExtensionService()->GetExtensionById(id, false);
+  return extensions::ExtensionRegistry::Get(
+      profile)->enabled_extensions().GetByID(id);
 }
 
 // static

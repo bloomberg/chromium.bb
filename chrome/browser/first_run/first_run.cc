@@ -62,6 +62,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_system.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "url/gurl.h"
 
@@ -137,8 +138,10 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
                        const content::NotificationDetails& details) OVERRIDE {
     // After processing the notification we always delete ourselves.
     if (type == chrome::NOTIFICATION_EXTENSIONS_READY) {
-      DoExtensionWork(
-          content::Source<Profile>(source).ptr()->GetExtensionService());
+      Profile* profile = content::Source<Profile>(source).ptr();
+      ExtensionService* service =
+          extensions::ExtensionSystem::Get(profile)->extension_service();
+      DoExtensionWork(service);
     }
     delete this;
   }

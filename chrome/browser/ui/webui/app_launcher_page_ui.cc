@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/browser/extension_system.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,7 +43,8 @@ AppLauncherPageUI::AppLauncherPageUI(content::WebUI* web_ui)
     web_ui->AddMessageHandler(new NTPLoginHandler());
 
   if (!GetProfile()->IsOffTheRecord()) {
-    ExtensionService* service = GetProfile()->GetExtensionService();
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(GetProfile())->extension_service();
     // We should not be launched without an ExtensionService.
     DCHECK(service);
     web_ui->AddMessageHandler(new AppLauncherHandler(service));

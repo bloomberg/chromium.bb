@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_manager.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
@@ -63,10 +62,8 @@ scoped_ptr<base::ListValue> WatchedGalleryIdsToValue(
 // Looks up an extension by ID. Does not include disabled extensions.
 const Extension* GetExtensionById(Profile* profile,
                                   const std::string& extension_id) {
-  ExtensionService* service = profile->GetExtensionService();
-  if (!service)
-    return NULL;
-  return service->GetExtensionById(extension_id, false);
+  return ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
+      extension_id);
 }
 
 }  // namespace

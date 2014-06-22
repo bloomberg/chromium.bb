@@ -48,7 +48,8 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
   virtual size_t CountBalloons() = 0;
 
   ExtensionService* GetExtensionService() {
-    return browser()->profile()->GetExtensionService();
+    return extensions::ExtensionSystem::Get(browser()->profile())->
+        extension_service();
   }
 
   extensions::ProcessManager* GetProcessManager() {
@@ -127,8 +128,7 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
   std::string second_extension_id_;
 };
 
-class MAYBE_ExtensionCrashRecoveryTest
-    : public ExtensionCrashRecoveryTestBase {
+class MAYBE_ExtensionCrashRecoveryTest : public ExtensionCrashRecoveryTestBase {
  protected:
   virtual void AcceptNotification(size_t index) OVERRIDE {
     message_center::MessageCenter* message_center =
@@ -136,8 +136,8 @@ class MAYBE_ExtensionCrashRecoveryTest
     ASSERT_GT(message_center->NotificationCount(), index);
     message_center::NotificationList::Notifications::reverse_iterator it =
         message_center->GetVisibleNotifications().rbegin();
-    for (size_t i=0; i < index; ++i)
-      it++;
+    for (size_t i = 0; i < index; ++i)
+      ++it;
     std::string id = (*it)->id();
     message_center->ClickOnNotification(id);
     WaitForExtensionLoad();
@@ -149,7 +149,8 @@ class MAYBE_ExtensionCrashRecoveryTest
     ASSERT_GT(message_center->NotificationCount(), index);
     message_center::NotificationList::Notifications::reverse_iterator it =
         message_center->GetVisibleNotifications().rbegin();
-    for (size_t i=0; i < index; i++) { it++; }
+    for (size_t i = 0; i < index; ++i)
+      ++it;
     ASSERT_TRUE(g_browser_process->notification_ui_manager()->
         CancelById((*it)->id()));
   }

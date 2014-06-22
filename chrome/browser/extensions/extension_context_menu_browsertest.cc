@@ -5,7 +5,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,7 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/context_menu_params.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/switches.h"
@@ -67,10 +66,11 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
   // Returns a pointer to the currently loaded extension with |name|, or null
   // if not found.
   const extensions::Extension* GetExtensionNamed(const std::string& name) {
-    const extensions::ExtensionSet* extensions =
-        browser()->profile()->GetExtensionService()->extensions();
-    for (extensions::ExtensionSet::const_iterator i = extensions->begin();
-         i != extensions->end(); ++i) {
+    const extensions::ExtensionSet& extensions =
+        extensions::ExtensionRegistry::Get(
+            browser()->profile())->enabled_extensions();
+    for (extensions::ExtensionSet::const_iterator i = extensions.begin();
+         i != extensions.end(); ++i) {
       if ((*i)->name() == name) {
         return i->get();
       }
@@ -140,8 +140,8 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
     ASSERT_EQ(!enabled, menu->IsCommandIdEnabled(command_id));
   }
 
- bool MenuHasExtensionItemWithLabel(TestRenderViewContextMenu* menu,
-                                    const std::string& label) {
+  bool MenuHasExtensionItemWithLabel(TestRenderViewContextMenu* menu,
+                                     const std::string& label) {
     base::string16 label16 = base::UTF8ToUTF16(label);
     std::map<int, MenuItem::Id>::iterator i;
     for (i = menu->extension_items().extension_item_map_.begin();

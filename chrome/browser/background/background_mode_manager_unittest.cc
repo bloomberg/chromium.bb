@@ -19,6 +19,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -107,6 +108,7 @@ class TestBackgroundModeManager : public BackgroundModeManager {
   }
   bool HaveStatusTray() const { return have_status_tray_; }
   bool IsLaunchOnStartup() const { return launch_on_startup_; }
+
  private:
   bool enabled_;
   int app_count_;
@@ -509,7 +511,8 @@ TEST_F(BackgroundModeManagerTest, BackgroundMenuGeneration) {
           CommandLine::ForCurrentProcess(),
           base::FilePath(),
           false);
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   service->Init();
 
   service->AddComponentExtension(component_extension);
@@ -646,7 +649,8 @@ TEST_F(BackgroundModeManagerTest, BackgroundMenuGenerationMultipleProfile) {
           CommandLine::ForCurrentProcess(),
           base::FilePath(),
           false);
-  ExtensionService* service1 = profile1->GetExtensionService();
+  ExtensionService* service1 =
+      extensions::ExtensionSystem::Get(profile1)->extension_service();
   service1->Init();
 
   service1->AddComponentExtension(component_extension);
@@ -659,7 +663,8 @@ TEST_F(BackgroundModeManagerTest, BackgroundMenuGenerationMultipleProfile) {
           CommandLine::ForCurrentProcess(),
           base::FilePath(),
           false);
-  ExtensionService* service2 = profile2->GetExtensionService();
+  ExtensionService* service2 =
+      extensions::ExtensionSystem::Get(profile2)->extension_service();
   service2->Init();
 
   service2->AddComponentExtension(component_extension);

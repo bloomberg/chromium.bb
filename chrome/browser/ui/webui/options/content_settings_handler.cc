@@ -22,7 +22,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -42,6 +41,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -233,13 +233,10 @@ void AddExceptionForHostedApp(const std::string& url_pattern,
 // adds their web extent and launch URL to the |exceptions| list.
 void AddExceptionsGrantedByHostedApps(
     Profile* profile, AppFilter app_filter, base::ListValue* exceptions) {
-  const ExtensionService* extension_service = profile->GetExtensionService();
-  // After ExtensionSystem::Init has been called at the browser's start,
-  // GetExtensionService() should not return NULL, so this is safe:
-  const extensions::ExtensionSet* extensions = extension_service->extensions();
-
-  for (extensions::ExtensionSet::const_iterator extension = extensions->begin();
-       extension != extensions->end(); ++extension) {
+  const extensions::ExtensionSet& extensions =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
+  for (extensions::ExtensionSet::const_iterator extension = extensions.begin();
+       extension != extensions.end(); ++extension) {
     if (!app_filter(*extension->get(), profile))
       continue;
 

@@ -78,7 +78,6 @@ class ChromeLauncherControllerUserSwitchObserver {
   virtual ~ChromeLauncherControllerUserSwitchObserver() {}
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerUserSwitchObserver);
 };
 
@@ -474,7 +473,7 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   // Returns the shelf item status for the given |app_id|, which can be either
   // STATUS_ACTIVE (if the app is active), STATUS_RUNNING (if there is such an
   // app) or STATUS_CLOSED.
-  ash::ShelfItemStatus GetAppState(const::std::string& app_id);
+  ash::ShelfItemStatus GetAppState(const std::string& app_id);
 
   // Creates an app launcher to insert at |index|. Note that |index| may be
   // adjusted by the model to meet ordering constraints.

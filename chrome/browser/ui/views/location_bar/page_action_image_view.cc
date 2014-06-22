@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/events/event.h"
@@ -41,8 +41,9 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
       current_tab_id_(-1),
       preview_enabled_(false),
       popup_(NULL) {
-  const Extension* extension = owner_->profile()->GetExtensionService()->
-      GetExtensionById(page_action->extension_id(), false);
+  const Extension* extension = extensions::ExtensionRegistry::Get(
+      owner_->profile())->enabled_extensions().GetByID(
+          page_action->extension_id());
   DCHECK(extension);
 
   icon_factory_.reset(
@@ -149,8 +150,9 @@ void PageActionImageView::ShowContextMenuForView(
     View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
-  const Extension* extension = owner_->profile()->GetExtensionService()->
-      GetExtensionById(page_action()->extension_id(), false);
+  const Extension* extension = extensions::ExtensionRegistry::Get(
+      owner_->profile())->enabled_extensions().GetByID(
+          page_action()->extension_id());
   if (!extension->ShowConfigureContextMenus())
     return;
 

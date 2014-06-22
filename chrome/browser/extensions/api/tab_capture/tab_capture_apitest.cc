@@ -4,30 +4,27 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
 #include "base/strings/stringprintf.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/test/base/test_switches.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/content_switches.h"
-#include "extensions/common/feature_switch.h"
-#include "extensions/common/features/base_feature_provider.h"
-#include "extensions/common/features/complex_feature.h"
-#include "extensions/common/features/feature.h"
-#include "extensions/common/features/simple_feature.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/switches.h"
-#include "ui/compositor/compositor_switches.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "chrome/test/base/test_switches.h"
+#endif
+
+namespace extensions {
 
 namespace {
 
@@ -37,7 +34,7 @@ class TabCaptureApiTest : public ExtensionApiTest {
  public:
   void AddExtensionToCommandLineWhitelist() {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID, kExtensionId);
+        switches::kWhitelistedExtensionID, kExtensionId);
   }
 };
 
@@ -49,12 +46,10 @@ class TabCaptureApiPixelTest : public TabCaptureApiTest {
   }
 };
 
-}  // namespace
-
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(::switches::kAshBrowserTests))
     return;
 #endif
 
@@ -163,12 +158,10 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ActiveTabPermission) {
 
   // Grant permission and make sure capture succeeds.
   EXPECT_TRUE(before_grant_permission.WaitUntilSatisfied());
-  ExtensionService* extension_service =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext())
-          ->GetExtensionService();
-  const extensions::Extension* extension =
-      extension_service->GetExtensionById(kExtensionId, false);
-  extensions::TabHelper::FromWebContents(web_contents)
+  const Extension* extension = ExtensionRegistry::Get(
+      web_contents->GetBrowserContext())->enabled_extensions().GetByID(
+          kExtensionId);
+  TabHelper::FromWebContents(web_contents)
       ->active_tab_permission_granter()->GrantIfRequested(extension);
   before_grant_permission.Reply("");
 
@@ -259,12 +252,11 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
                                 NEW_FOREGROUND_TAB,
                                 content::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents = browser()->OpenURL(params);
-  ExtensionService* extension_service =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext())
-          ->GetExtensionService();
-  extensions::TabHelper::FromWebContents(web_contents)
-      ->active_tab_permission_granter()->GrantIfRequested(
-            extension_service->GetExtensionById(kExtensionId, false));
+  const Extension* extension = ExtensionRegistry::Get(
+      web_contents->GetBrowserContext())->enabled_extensions().GetByID(
+          kExtensionId);
+  TabHelper::FromWebContents(web_contents)
+      ->active_tab_permission_granter()->GrantIfRequested(extension);
   before_open_tab.Reply("");
 
   ResultCatcher catcher;
@@ -297,3 +289,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_Constraints) {
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "constraints.html"))
       << message_;
 }
+
+}  // namespace
+
+}  // namespace extensions

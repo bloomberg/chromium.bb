@@ -11,7 +11,6 @@
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/background_contents.h"
@@ -23,6 +22,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
@@ -144,7 +144,8 @@ scoped_ptr<RendererResource> BackgroundInformation::MakeResource(
     WebContents* web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  ExtensionService* extension_service = profile->GetExtensionService();
+  const extensions::ExtensionSet& extensions_set =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   BackgroundContentsService* background_contents_service =
       BackgroundContentsServiceFactory::GetForProfile(profile);
   std::vector<BackgroundContents*> contents =
@@ -155,14 +156,12 @@ scoped_ptr<RendererResource> BackgroundInformation::MakeResource(
     if ((*iterator)->web_contents() == web_contents) {
       base::string16 application_name;
       // Lookup the name from the parent extension.
-      if (extension_service) {
-        const base::string16& application_id =
-            background_contents_service->GetParentApplicationId(*iterator);
-        const Extension* extension = extension_service->GetExtensionById(
-            base::UTF16ToUTF8(application_id), false);
-        if (extension)
-          application_name = base::UTF8ToUTF16(extension->name());
-      }
+      const base::string16& application_id =
+          background_contents_service->GetParentApplicationId(*iterator);
+      const Extension* extension =
+          extensions_set.GetByID(base::UTF16ToUTF8(application_id));
+      if (extension)
+        application_name = base::UTF8ToUTF16(extension->name());
       return scoped_ptr<RendererResource>(
           new BackgroundContentsResource(*iterator, application_name));
     }

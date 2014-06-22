@@ -90,11 +90,14 @@ namespace developer_private = api::developer_private;
 
 namespace {
 
-const base::FilePath::CharType kUnpackedAppsFolder[]
-    = FILE_PATH_LITERAL("apps_target");
+const char kUnpackedAppsFolder[] = "apps_target";
+
+ExtensionService* GetExtensionService(Profile* profile) {
+  return ExtensionSystem::Get(profile)->extension_service();
+}
 
 ExtensionUpdater* GetExtensionUpdater(Profile* profile) {
-    return profile->GetExtensionService()->updater();
+  return GetExtensionService(profile)->updater();
 }
 
 GURL GetImageURLFromData(const std::string& contents) {
@@ -583,7 +586,7 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
         BackgroundInfo::HasGeneratedBackgroundPage(extension)));
   }
 
-  ExtensionService* service = GetProfile()->GetExtensionService();
+  ExtensionService* service = GetExtensionService(GetProfile());
   // Repeat for the incognito process, if applicable. Don't try to get
   // app windows for incognito process.
   if (service->profile()->HasOffTheRecordProfile() &&
@@ -724,8 +727,8 @@ bool DeveloperPrivateReloadFunction::RunSync() {
   scoped_ptr<Reload::Params> params(Reload::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  ExtensionService* service = GetProfile()->GetExtensionService();
   CHECK(!params->item_id.empty());
+  ExtensionService* service = GetExtensionService(GetProfile());
   service->ReloadExtension(params->item_id);
   return true;
 }
@@ -765,12 +768,12 @@ DeveloperPrivateReloadFunction::~DeveloperPrivateReloadFunction() {}
 
 // This is called when the user clicks "Revoke File Access."
 void DeveloperPrivateShowPermissionsDialogFunction::InstallUIProceed() {
-  apps::SavedFilesService::Get(GetProfile())
-      ->ClearQueue(GetProfile()->GetExtensionService()->GetExtensionById(
-            extension_id_, true));
-  if (apps::AppRestoreService::Get(GetProfile())
-          ->IsAppRestorable(extension_id_))
-    apps::AppLoadService::Get(GetProfile())->RestartApplication(extension_id_);
+  Profile* profile = GetProfile();
+  const Extension* extension = ExtensionRegistry::Get(
+      profile)->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
+  apps::SavedFilesService::Get(profile)->ClearQueue(extension);
+  if (apps::AppRestoreService::Get(profile)->IsAppRestorable(extension_id_))
+    apps::AppLoadService::Get(profile)->RestartApplication(extension_id_);
   SendResponse(true);
   Release();
 }
@@ -796,8 +799,8 @@ bool DeveloperPrivateEnableFunction::RunSync() {
   std::string extension_id = params->item_id;
 
   const Extension* extension =
-      ExtensionRegistry::Get(GetProfile())
-          ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
+      ExtensionRegistry::Get(GetProfile())->GetExtensionById(
+          extension_id, ExtensionRegistry::EVERYTHING);
   if (!extension) {
     LOG(ERROR) << "Did not find extension with id " << extension_id;
     return false;
@@ -857,8 +860,7 @@ void DeveloperPrivateEnableFunction::OnRequirementsChecked(
     const std::string& extension_id,
     std::vector<std::string> requirements_errors) {
   if (requirements_errors.empty()) {
-    ExtensionService* service = GetProfile()->GetExtensionService();
-    service->EnableExtension(extension_id);
+    GetExtensionService(GetProfile())->EnableExtension(extension_id);
   } else {
     ExtensionErrorReporter::GetInstance()->ReportError(
         base::UTF8ToUTF16(JoinString(requirements_errors, ' ')),
@@ -881,12 +883,8 @@ bool DeveloperPrivateInspectFunction::RunSync() {
   if (render_process_id == -1) {
     // This is a lazy background page. Identify if it is a normal
     // or incognito background page.
-    ExtensionService* service = GetProfile()->GetExtensionService();
-    if (options.incognito)
-      service = ExtensionSystem::Get(
-          service->profile()->GetOffTheRecordProfile())->extension_service();
-    const Extension* extension = service->extensions()->GetByID(
-        options.extension_id);
+    const Extension* extension = ExtensionRegistry::Get(
+        GetProfile())->enabled_extensions().GetByID(options.extension_id);
     DCHECK(extension);
     // Wakes up the background page and  opens the inspect window.
     devtools_util::InspectBackgroundPage(extension, GetProfile());
@@ -926,7 +924,7 @@ bool DeveloperPrivateLoadUnpackedFunction::RunAsync() {
 
 void DeveloperPrivateLoadUnpackedFunction::FileSelected(
     const base::FilePath& path) {
-  ExtensionService* service = GetProfile()->GetExtensionService();
+  ExtensionService* service = GetExtensionService(GetProfile());
   UnpackedInstaller::Create(service)->Load(path);
   DeveloperPrivateAPI::Get(GetProfile())->SetLastUnpackedDirectory(path);
   SendResponse(true);
@@ -1094,7 +1092,7 @@ bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
     project_base_url_ = directory_url_str.substr(0, pos + 1);
 
     base::FilePath project_path(GetProfile()->GetPath());
-    project_path = project_path.Append(kUnpackedAppsFolder);
+    project_path = project_path.AppendASCII(kUnpackedAppsFolder);
     project_path = project_path.Append(
         base::FilePath::FromUTF8Unsafe(project_name));
 
@@ -1121,7 +1119,7 @@ bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
 }
 
 void DeveloperPrivateLoadDirectoryFunction::Load() {
-  ExtensionService* service = GetProfile()->GetExtensionService();
+  ExtensionService* service = GetExtensionService(GetProfile());
   UnpackedInstaller::Create(service)->Load(project_base_path_);
 
   // TODO(grv) : The unpacked installer should fire an event when complete
@@ -1134,7 +1132,7 @@ void DeveloperPrivateLoadDirectoryFunction::ClearExistingDirectoryContent(
     const base::FilePath& project_path) {
 
   // Clear the project directory before copying new files.
-  base::DeleteFile(project_path, true/*recursive*/);
+  base::DeleteFile(project_path, true /*recursive*/);
 
   pending_copy_operations_count_ = 1;
 

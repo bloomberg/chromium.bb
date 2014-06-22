@@ -37,6 +37,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_system.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "net/dns/mock_host_resolver.h"
@@ -222,7 +223,7 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
   }
 
   ExtensionService* service() {
-    return browser()->profile()->GetExtensionService();
+    return ExtensionSystem::Get(browser()->profile())->extension_service();
   }
 
   FakeSigninManagerForTesting* signin_manager_;
@@ -275,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
 }
 
 // Test having the default download directory missing.
- IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MissingDownloadDir) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MissingDownloadDir) {
   // Set a non-existent directory as the download path.
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());

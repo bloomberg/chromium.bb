@@ -23,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
@@ -62,8 +63,9 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, Install) {
 
   RunTest("runTest");
 
-  const extensions::Extension* extension = browser()->profile()->
-      GetExtensionService()->GetExtensionById(kTestExtensionId, false);
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(
+          browser()->profile())->enabled_extensions().GetByID(kTestExtensionId);
   EXPECT_TRUE(extension);
 }
 

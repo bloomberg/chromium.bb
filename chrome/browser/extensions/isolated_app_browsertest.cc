@@ -5,8 +5,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -18,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
@@ -28,8 +27,10 @@
 using content::ExecuteScript;
 using content::ExecuteScriptAndExtractString;
 using content::NavigationController;
-using content::WebContents;
 using content::RenderViewHost;
+using content::WebContents;
+
+namespace extensions {
 
 namespace {
 
@@ -107,34 +108,28 @@ class IsolatedAppTest : public ExtensionBrowserTest {
     return actual_cookie.find(cookie) != std::string::npos;
   }
 
-  const extensions::Extension* GetInstalledApp(WebContents* contents) {
-    const extensions::Extension* installed_app = NULL;
-    Profile* profile =
-        Profile::FromBrowserContext(contents->GetBrowserContext());
-    ExtensionService* service = profile->GetExtensionService();
-    if (service) {
-      std::set<std::string> extension_ids =
-          extensions::ProcessMap::Get(profile)->GetExtensionsInProcess(
-              contents->GetRenderViewHost()->GetProcess()->GetID());
-      for (std::set<std::string>::iterator iter = extension_ids.begin();
-           iter != extension_ids.end(); ++iter) {
-        installed_app = service->extensions()->GetByID(*iter);
-        if (installed_app && installed_app->is_app())
-          return installed_app;
-      }
+  const Extension* GetInstalledApp(WebContents* contents) {
+    content::BrowserContext* browser_context = contents->GetBrowserContext();
+    ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
+    std::set<std::string> extension_ids =
+        ProcessMap::Get(browser_context)->GetExtensionsInProcess(
+            contents->GetRenderViewHost()->GetProcess()->GetID());
+    for (std::set<std::string>::iterator iter = extension_ids.begin();
+         iter != extension_ids.end(); ++iter) {
+      const Extension* installed_app =
+          registry->enabled_extensions().GetByID(*iter);
+      if (installed_app && installed_app->is_app())
+        return installed_app;
     }
     return NULL;
   }
 
  private:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        extensions::switches::kEnableExperimentalExtensionApis);
+    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
 };
-
-}  // namespace
 
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
   host_resolver()->AddRule("*", "127.0.0.1");
@@ -304,7 +299,6 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_CookieIsolation) {
   EXPECT_TRUE(HasCookie(tab0, "app1=3"));
   EXPECT_FALSE(HasCookie(tab0, "app2"));
   EXPECT_FALSE(HasCookie(tab0, "normalPage"));
-
 }
 
 // This test is disabled due to being flaky. http://crbug.com/145588
@@ -595,3 +589,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_SessionStorage) {
       kRetrieveSessionStorage.c_str(), &result));
   EXPECT_EQ("ss_normal", result);
 }
+
+}  // namespace
+
+}  // namespace extensions

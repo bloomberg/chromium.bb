@@ -4,19 +4,21 @@
 
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+
+namespace extensions {
 
 namespace {
 
 const char kCroshExtensionEntryPoint[] = "/html/crosh.html";
 
-const extensions::Extension* GetTerminalExtension(Profile* profile) {
+const Extension* GetTerminalExtension(Profile* profile) {
   // Search order for terminal extensions.
   // We prefer hterm-dev, then hterm, then the builtin crosh extension.
-  static const char* kPossibleAppIds[] = {
+  static const char* const kPossibleAppIds[] = {
     extension_misc::kHTermDevAppId,
     extension_misc::kHTermAppId,
     extension_misc::kCroshBuiltinAppId,
@@ -25,10 +27,11 @@ const extensions::Extension* GetTerminalExtension(Profile* profile) {
   // The hterm-dev should be first in the list.
   DCHECK_EQ(kPossibleAppIds[0], extension_misc::kHTermDevAppId);
 
-  ExtensionService* service = profile->GetExtensionService();
-  for (size_t x = 0; x < arraysize(kPossibleAppIds); ++x) {
-    const extensions::Extension* extension = service->GetExtensionById(
-        kPossibleAppIds[x], false);
+  const ExtensionSet& extensions =
+      ExtensionRegistry::Get(profile)->enabled_extensions();
+  for (size_t i = 0; i < arraysize(kPossibleAppIds); ++i) {
+    const extensions::Extension* extension =
+        extensions.GetByID(kPossibleAppIds[i]);
     if (extension)
       return extension;
   }
@@ -38,14 +41,12 @@ const extensions::Extension* GetTerminalExtension(Profile* profile) {
 
 }  // namespace
 
-namespace extensions {
-
 GURL TerminalExtensionHelper::GetCroshExtensionURL(Profile* profile) {
+  GURL url;
   const extensions::Extension* extension = GetTerminalExtension(profile);
-  if (!extension)
-    return GURL();
-
-  return extension->GetResourceURL(kCroshExtensionEntryPoint);
+  if (extension)
+    url = extension->GetResourceURL(kCroshExtensionEntryPoint);
+  return url;
 }
 
 }  // namespace extensions

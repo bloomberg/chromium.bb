@@ -22,6 +22,7 @@
 #include "content/test/net/url_request_prepackaged_interceptor.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "net/url_request/url_fetcher.h"
 #include "sync/protocol/extension_specifics.pb.h"
@@ -41,22 +42,24 @@ class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     EXPECT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
-    service_ = browser()->profile()->GetExtensionService();
+    service_ = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
     registry_ = ExtensionRegistry::Get(browser()->profile());
-    base::FilePath pem_path = test_data_dir_.
-        AppendASCII("permissions_increase").AppendASCII("permissions.pem");
+    const base::FilePath test_dir =
+        test_data_dir_.AppendASCII("permissions_increase");
+    const base::FilePath pem_path = test_dir.AppendASCII("permissions.pem");
     path_v1_ = PackExtensionWithOptions(
-        test_data_dir_.AppendASCII("permissions_increase").AppendASCII("v1"),
+        test_dir.AppendASCII("v1"),
         scoped_temp_dir_.path().AppendASCII("permissions1.crx"),
         pem_path,
         base::FilePath());
     path_v2_ = PackExtensionWithOptions(
-        test_data_dir_.AppendASCII("permissions_increase").AppendASCII("v2"),
+        test_dir.AppendASCII("v2"),
         scoped_temp_dir_.path().AppendASCII("permissions2.crx"),
         pem_path,
         base::FilePath());
     path_v3_ = PackExtensionWithOptions(
-        test_data_dir_.AppendASCII("permissions_increase").AppendASCII("v3"),
+        test_dir.AppendASCII("v3"),
         scoped_temp_dir_.path().AppendASCII("permissions3.crx"),
         pem_path,
         base::FilePath());

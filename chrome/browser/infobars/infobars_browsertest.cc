@@ -18,6 +18,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_system.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 class InfoBarsTest : public InProcessBrowserTest {
@@ -33,8 +34,8 @@ class InfoBarsTest : public InProcessBrowserTest {
     base::FilePath path = ui_test_utils::GetTestFilePath(
         base::FilePath().AppendASCII("extensions"),
         base::FilePath().AppendASCII(filename));
-    Profile* profile = browser()->profile();
-    ExtensionService* service = profile->GetExtensionService();
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+        browser()->profile())->extension_service();
 
     content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,

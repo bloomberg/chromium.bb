@@ -455,7 +455,8 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     Extension::InitFromValueFlags creation_flags,
     bool install_immediately,
     bool is_ephemeral) {
-  ExtensionService* service = profile()->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile())->extension_service();
   service->set_show_extensions_prompts(false);
   size_t num_before = service->extensions()->size();
 

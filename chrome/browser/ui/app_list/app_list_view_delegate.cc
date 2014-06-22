@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/hotword_service.h"
@@ -34,6 +33,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/browser/extension_registry.h"
 #include "grit/theme_resources.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
@@ -260,10 +260,9 @@ void AppListViewDelegate::GetShortcutPathForApp(
     const std::string& app_id,
     const base::Callback<void(const base::FilePath&)>& callback) {
 #if defined(OS_WIN)
-  ExtensionService* service = profile_->GetExtensionService();
-  DCHECK(service);
   const extensions::Extension* extension =
-      service->GetInstalledExtension(app_id);
+      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
+          app_id, extensions::ExtensionRegistry::EVERYTHING);
   if (!extension) {
     callback.Run(base::FilePath());
     return;
@@ -357,10 +356,10 @@ gfx::ImageSkia AppListViewDelegate::GetWindowIcon() {
 }
 
 void AppListViewDelegate::OpenSettings() {
-  ExtensionService* service = profile_->GetExtensionService();
-  DCHECK(service);
-  const extensions::Extension* extension = service->GetInstalledExtension(
-      extension_misc::kSettingsAppId);
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
+          extension_misc::kSettingsAppId,
+          extensions::ExtensionRegistry::EVERYTHING);
   DCHECK(extension);
   controller_->ActivateApp(profile_,
                            extension,

@@ -38,6 +38,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/browser/extension_system.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -91,7 +92,8 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   // thumbnails, but also clicks on recently bookmarked.
   web_ui->SetLinkTransitionType(content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
-  if (!GetProfile()->IsOffTheRecord()) {
+  Profile* profile = GetProfile();
+  if (!profile->IsOffTheRecord()) {
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
     web_ui->AddMessageHandler(new MetricsHandler());
     web_ui->AddMessageHandler(new MostVisitedHandler());
@@ -103,14 +105,15 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
       web_ui->AddMessageHandler(new SuggestionsHandler());
     web_ui->AddMessageHandler(new NewTabPageSyncHandler());
 
-    ExtensionService* service = GetProfile()->GetExtensionService();
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
     // We might not have an ExtensionService (on ChromeOS when not logged in
     // for example).
     if (service)
       web_ui->AddMessageHandler(new AppLauncherHandler(service));
   }
 
-  if (NTPLoginHandler::ShouldShow(GetProfile()))
+  if (NTPLoginHandler::ShouldShow(profile))
     web_ui->AddMessageHandler(new NTPLoginHandler());
 
 #if defined(ENABLE_THEMES)
@@ -120,8 +123,8 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new ThemeHandler());
 #endif
 
-  scoped_ptr<NewTabHTMLSource> html_source(new NewTabHTMLSource(
-      GetProfile()->GetOriginalProfile()));
+  scoped_ptr<NewTabHTMLSource> html_source(
+      new NewTabHTMLSource(profile->GetOriginalProfile()));
 
   // These two resources should be loaded only if suggestions NTP is enabled.
   html_source->AddResource("suggestions_page.css", "text/css",
@@ -131,9 +134,9 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
         IDR_SUGGESTIONS_PAGE_JS);
   }
   // content::URLDataSource assumes the ownership of the html_source.
-  content::URLDataSource::Add(GetProfile(), html_source.release());
+  content::URLDataSource::Add(profile, html_source.release());
 
-  pref_change_registrar_.Init(GetProfile()->GetPrefs());
+  pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(prefs::kShowBookmarkBar,
                              base::Bind(&NewTabUI::OnShowBookmarkBarChanged,
                                         base::Unretained(this)));

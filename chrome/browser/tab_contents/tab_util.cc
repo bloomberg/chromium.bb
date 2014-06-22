@@ -4,13 +4,13 @@
 
 #include "chrome/browser/tab_contents/tab_util.h"
 
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "url/gurl.h"
 
 using content::RenderViewHost;
@@ -25,7 +25,6 @@ content::WebContents* GetWebContentsByID(int render_process_id,
       RenderViewHost::FromID(render_process_id, render_view_id);
   if (!render_view_host)
     return NULL;
-
   return WebContents::FromRenderViewHost(render_view_host);
 }
 
@@ -33,11 +32,10 @@ SiteInstance* GetSiteInstanceForNewTab(Profile* profile,
                                        const GURL& url) {
   // If |url| is a WebUI or extension, we set the SiteInstance up front so that
   // we don't end up with an extra process swap on the first navigation.
-  ExtensionService* service = profile->GetExtensionService();
   if (ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
           profile, url) ||
-      (service &&
-       service->extensions()->GetHostedAppByURL(url))) {
+      extensions::ExtensionRegistry::Get(
+          profile)->enabled_extensions().GetHostedAppByURL(url)) {
     return SiteInstance::CreateForURL(profile, url);
   }
 

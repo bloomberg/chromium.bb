@@ -32,7 +32,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_creator.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -89,7 +88,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -188,9 +186,8 @@ bool GetAppLaunchContainer(
     const Extension** out_extension,
     extensions::LaunchContainer* out_launch_container) {
 
-  ExtensionService* extensions_service = profile->GetExtensionService();
-  const Extension* extension =
-      extensions_service->GetExtensionById(app_id, false);
+  const Extension* extension = extensions::ExtensionRegistry::Get(
+      profile)->enabled_extensions().GetByID(app_id);
   // The extension with id |app_id| may have been uninstalled.
   if (!extension)
     return false;
@@ -224,7 +221,7 @@ void RecordCmdLineAppHistogram(extensions::Manifest::Type app_type) {
 
 void RecordAppLaunches(Profile* profile,
                        const std::vector<GURL>& cmd_line_urls,
-                       StartupTabs& autolaunch_tabs) {
+                       const StartupTabs& autolaunch_tabs) {
   const extensions::ExtensionSet& extensions =
       extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   for (size_t i = 0; i < cmd_line_urls.size(); ++i) {
