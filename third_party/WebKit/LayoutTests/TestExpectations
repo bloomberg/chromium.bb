@@ -88,6 +88,7 @@ crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-absolute-overflow.h
 crbug.com/338794 compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
 crbug.com/338794 virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
+crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
 crbug.com/338794 crbug.com/192172 virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
 crbug.com/338794 crbug.com/192172 virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
 crbug.com/338794 crbug.com/192172 virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ]
