@@ -74,16 +74,39 @@ Hot*
 Lan*
 Loc*
 # M*
+Media*AppBrowserTest.*Me*
 # N*
+NaClB*NewlibExtension.*
+NetInternals*.netInternalsTestViewPassTwice
+Noti*.*Gesture
 # O*
+OptionsWebUIExt*.*
+OutOfProcessPPAPITe*.Post*
+OutOfProcessPPAPITe*.View_*
 # P*
+PasswordManagerBro*
+PlatformAppBro*.LaunchNe*
+PlatformAppBro*.M*
+PolicyTest.H*
+Port*
+Print*Web*.TestP*
+Print*Web*.Bl*
 # Q*
 # R*
 # S*
+Scr*
+Socket*ApiTest.*Multicast
+Socket*ApiTest.*Extension
+SRC_ClearKey_Pref*.Frame*
+SyncFile*.GetFile*
+SyncInt*.Se*
 # T*
+TranslateBubble*.CloseB*
 # U*
 # V*
 # W*
+WebstoreInline*
+WebstoreStartupInstall*
 # X*
 # Y*
 # Z*
