@@ -88,6 +88,7 @@ public:
     virtual void reattach(const WebString& hostId, const WebString& savedState) OVERRIDE;
     virtual void detach() OVERRIDE;
     virtual void didNavigate() OVERRIDE;
+    virtual void continueProgram() OVERRIDE;
     virtual void didBeginFrame(int frameId) OVERRIDE;
     virtual void didCancelFrame() OVERRIDE;
     virtual void willComposite() OVERRIDE;

@@ -55,6 +55,7 @@ public:
     virtual void detach() = 0;
 
     virtual void didNavigate() = 0;
+    virtual void continueProgram() = 0;
 
     virtual void dispatchOnInspectorBackend(const WebString& message) = 0;
 

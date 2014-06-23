@@ -261,6 +261,11 @@ void WebDevToolsAgentImpl::didNavigate()
     ClientMessageLoopAdapter::didNavigate();
 }
 
+void WebDevToolsAgentImpl::continueProgram()
+{
+    ClientMessageLoopAdapter::didNavigate();
+}
+
 void WebDevToolsAgentImpl::didBeginFrame(int frameId)
 {
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "BeginMainThreadFrame", "layerTreeId", m_layerTreeId);
