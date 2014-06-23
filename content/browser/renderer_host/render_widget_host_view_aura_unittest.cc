@@ -776,11 +776,11 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
   EXPECT_TRUE(view_->has_composition_text_);
   {
     const IPC::Message* msg =
-      sink_->GetFirstMessageMatching(ViewMsg_ImeSetComposition::ID);
+      sink_->GetFirstMessageMatching(InputMsg_ImeSetComposition::ID);
     ASSERT_TRUE(msg != NULL);
 
-    ViewMsg_ImeSetComposition::Param params;
-    ViewMsg_ImeSetComposition::Read(msg, &params);
+    InputMsg_ImeSetComposition::Param params;
+    InputMsg_ImeSetComposition::Read(msg, &params);
     // composition text
     EXPECT_EQ(composition_text.text, params.a);
     // underlines

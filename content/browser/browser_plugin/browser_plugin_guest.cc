@@ -435,6 +435,12 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
 bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
+    IPC_MESSAGE_HANDLER(InputHostMsg_ImeCancelComposition,
+                        OnImeCancelComposition)
+#if defined(OS_MACOSX) || defined(USE_AURA)
+    IPC_MESSAGE_HANDLER(InputHostMsg_ImeCompositionRangeChanged,
+                        OnImeCompositionRangeChanged)
+#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
                         OnHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnLockMouse)
@@ -449,12 +455,6 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
                         OnTextInputStateChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCancelComposition,
-                        OnImeCancelComposition)
-#if defined(OS_MACOSX) || defined(USE_AURA)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCompositionRangeChanged,
-                        OnImeCompositionRangeChanged)
-#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnUnlockMouse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -541,19 +541,19 @@ void BrowserPluginGuest::OnImeSetComposition(
     const std::vector<blink::WebCompositionUnderline>& underlines,
     int selection_start,
     int selection_end) {
-  Send(new ViewMsg_ImeSetComposition(routing_id(),
-                                     base::UTF8ToUTF16(text), underlines,
-                                     selection_start, selection_end));
+  Send(new InputMsg_ImeSetComposition(routing_id(),
+                                      base::UTF8ToUTF16(text), underlines,
+                                      selection_start, selection_end));
 }
 
 void BrowserPluginGuest::OnImeConfirmComposition(
     int instance_id,
     const std::string& text,
     bool keep_selection) {
-  Send(new ViewMsg_ImeConfirmComposition(routing_id(),
-                                         base::UTF8ToUTF16(text),
-                                         gfx::Range::InvalidRange(),
-                                         keep_selection));
+  Send(new InputMsg_ImeConfirmComposition(routing_id(),
+                                          base::UTF8ToUTF16(text),
+                                          gfx::Range::InvalidRange(),
+                                          keep_selection));
 }
 
 void BrowserPluginGuest::OnExtendSelectionAndDelete(

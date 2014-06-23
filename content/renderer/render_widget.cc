@@ -573,6 +573,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(InputMsg_HandleInputEvent, OnHandleInputEvent)
     IPC_MESSAGE_HANDLER(InputMsg_CursorVisibilityChange,
                         OnCursorVisibilityChange)
+    IPC_MESSAGE_HANDLER(InputMsg_ImeSetComposition, OnImeSetComposition)
+    IPC_MESSAGE_HANDLER(InputMsg_ImeConfirmComposition, OnImeConfirmComposition)
     IPC_MESSAGE_HANDLER(InputMsg_MouseCaptureLost, OnMouseCaptureLost)
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(InputMsg_SyntheticGestureCompleted,
@@ -589,8 +591,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_CandidateWindowUpdated,
                         OnCandidateWindowUpdated)
     IPC_MESSAGE_HANDLER(ViewMsg_CandidateWindowHidden, OnCandidateWindowHidden)
-    IPC_MESSAGE_HANDLER(ViewMsg_ImeSetComposition, OnImeSetComposition)
-    IPC_MESSAGE_HANDLER(ViewMsg_ImeConfirmComposition, OnImeConfirmComposition)
     IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnRepaint)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
@@ -1424,7 +1424,7 @@ void RenderWidget::OnImeSetComposition(
     // If we failed to set the composition text, then we need to let the browser
     // process to cancel the input method's ongoing composition session, to make
     // sure we are in a consistent state.
-    Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
+    Send(new InputHostMsg_ImeCancelComposition(routing_id()));
   }
 #if defined(OS_MACOSX) || defined(USE_AURA)
   UpdateCompositionInfo(true);
@@ -1782,7 +1782,7 @@ void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
     return;
   composition_character_bounds_ = character_bounds;
   composition_range_ = range;
-  Send(new ViewHostMsg_ImeCompositionRangeChanged(
+  Send(new InputHostMsg_ImeCompositionRangeChanged(
       routing_id(), composition_range_, composition_character_bounds_));
 }
 
@@ -1857,7 +1857,7 @@ void RenderWidget::resetInputMethod() {
     // If a composition text exists, then we need to let the browser process
     // to cancel the input method's ongoing composition session.
     if (webwidget_->confirmComposition())
-      Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
+      Send(new InputHostMsg_ImeCancelComposition(routing_id()));
   }
 
 #if defined(OS_MACOSX) || defined(USE_AURA)

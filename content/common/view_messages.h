@@ -735,20 +735,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_CandidateWindowShown)
 IPC_MESSAGE_ROUTED0(ViewMsg_CandidateWindowUpdated)
 IPC_MESSAGE_ROUTED0(ViewMsg_CandidateWindowHidden)
 
-// This message sends a string being composed with an input method.
-IPC_MESSAGE_ROUTED4(
-    ViewMsg_ImeSetComposition,
-    base::string16, /* text */
-    std::vector<blink::WebCompositionUnderline>, /* underlines */
-    int, /* selectiont_start */
-    int /* selection_end */)
-
-// This message confirms an ongoing composition.
-IPC_MESSAGE_ROUTED3(ViewMsg_ImeConfirmComposition,
-                    base::string16 /* text */,
-                    gfx::Range /* replacement_range */,
-                    bool /* keep_selection */)
-
 // Used to notify the render-view that we have received a target URL. Used
 // to prevent target URLs spamming the browser.
 IPC_MESSAGE_ROUTED0(ViewMsg_UpdateTargetURL_ACK)
@@ -1433,9 +1419,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_OpenDateTimeDialog,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_TextInputStateChanged,
                     ViewHostMsg_TextInputState_Params /* input state params */)
 
-// Required for cancelling an ongoing input method composition.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_ImeCancelComposition)
-
 // Sent when the renderer changes the zoom level for a particular url, so the
 // browser can update its records.  If the view is a plugin doc, then url is
 // used to update the zoom level for all pages in that site.  Otherwise, the
@@ -1715,15 +1698,6 @@ IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_AllocTransportDIB,
 // renderer is finished with them.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_FreeTransportDIB,
                      TransportDIB::Id /* DIB id */)
-#endif
-
-#if defined(OS_MACOSX) || defined(USE_AURA)
-// On Mac and Aura IME can request composition character bounds
-// synchronously (see crbug.com/120597). This IPC message sends the character
-// bounds after every composition change to always have correct bound info.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeCompositionRangeChanged,
-                    gfx::Range /* composition range */,
-                    std::vector<gfx::Rect> /* character bounds */)
 #endif
 
 // Adding a new message? Stick to the sort order above: first platform

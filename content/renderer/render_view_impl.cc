@@ -1540,7 +1540,7 @@ void RenderViewImpl::FrameDidStopLoading(WebFrame* frame) {
 }
 
 void RenderViewImpl::didCancelCompositionOnSelectionChange() {
-  Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
+  Send(new InputHostMsg_ImeCancelComposition(routing_id()));
 }
 
 bool RenderViewImpl::handleCurrentKeyboardEvent() {
