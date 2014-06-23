@@ -14,20 +14,20 @@ namespace cast {
 namespace transport {
 
 TransportEncryptionHandler::TransportEncryptionHandler()
-    : key_(), encryptor_(), iv_mask_(), initialized_(false) {}
+    : key_(), encryptor_(), iv_mask_(), is_activated_(false) {}
 
 TransportEncryptionHandler::~TransportEncryptionHandler() {}
 
 bool TransportEncryptionHandler::Initialize(std::string aes_key,
                                             std::string aes_iv_mask) {
-  initialized_ = false;
+  is_activated_ = false;
   if (aes_iv_mask.size() == kAesKeySize && aes_key.size() == kAesKeySize) {
     iv_mask_ = aes_iv_mask;
     key_.reset(
         crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, aes_key));
     encryptor_.reset(new crypto::Encryptor());
     encryptor_->Init(key_.get(), crypto::Encryptor::CTR, std::string());
-    initialized_ = true;
+    is_activated_ = true;
   } else if (aes_iv_mask.size() != 0 || aes_key.size() != 0) {
     DCHECK_EQ(aes_iv_mask.size(), 0u)
         << "Invalid Crypto configuration: aes_iv_mask.size";
@@ -41,7 +41,7 @@ bool TransportEncryptionHandler::Initialize(std::string aes_key,
 bool TransportEncryptionHandler::Encrypt(uint32 frame_id,
                                          const base::StringPiece& data,
                                          std::string* encrypted_data) {
-  if (!initialized_)
+  if (!is_activated_)
     return false;
   if (!encryptor_->SetCounter(GetAesNonce(frame_id, iv_mask_))) {
     NOTREACHED() << "Failed to set counter";
@@ -57,7 +57,7 @@ bool TransportEncryptionHandler::Encrypt(uint32 frame_id,
 bool TransportEncryptionHandler::Decrypt(uint32 frame_id,
                                          const base::StringPiece& ciphertext,
                                          std::string* plaintext) {
-  if (!initialized_) {
+  if (!is_activated_) {
     return false;
   }
   if (!encryptor_->SetCounter(transport::GetAesNonce(frame_id, iv_mask_))) {

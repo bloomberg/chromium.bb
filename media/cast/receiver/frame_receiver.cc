@@ -239,7 +239,7 @@ void FrameReceiver::EmitAvailableEncodedFrames() {
     }
 
     // Decrypt the payload data in the frame, if crypto is being used.
-    if (decryptor_.initialized()) {
+    if (decryptor_.is_activated()) {
       std::string decrypted_data;
       if (!decryptor_.Decrypt(encoded_frame->frame_id,
                               encoded_frame->data,

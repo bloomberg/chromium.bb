@@ -37,16 +37,13 @@ class TransportEncryptionHandler : public base::NonThreadSafe {
                const base::StringPiece& ciphertext,
                std::string* plaintext);
 
-  // TODO(miu): This naming is very misleading.  It should be called
-  // is_activated() since Initialize() without keys (i.e., cypto is disabled)
-  // may have succeeded.
-  bool initialized() const { return initialized_; }
+  bool is_activated() const { return is_activated_; }
 
  private:
   scoped_ptr<crypto::SymmetricKey> key_;
   scoped_ptr<crypto::Encryptor> encryptor_;
   std::string iv_mask_;
-  bool initialized_;
+  bool is_activated_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportEncryptionHandler);
 };

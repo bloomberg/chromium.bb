@@ -128,7 +128,7 @@ namespace {
 void EncryptAndSendFrame(const EncodedFrame& frame,
                          TransportEncryptionHandler* encryptor,
                          RtpSender* sender) {
-  if (encryptor->initialized()) {
+  if (encryptor->is_activated()) {
     EncodedFrame encrypted_frame;
     frame.CopyMetadataTo(&encrypted_frame);
     if (encryptor->Encrypt(frame.frame_id, frame.data, &encrypted_frame.data)) {
