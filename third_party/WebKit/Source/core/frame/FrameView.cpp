@@ -1059,6 +1059,8 @@ void FrameView::gatherDebugLayoutRects(RenderObject* layoutRoot)
         return;
     if (!layoutRoot->enclosingLayer()->hasCompositedLayerMapping())
         return;
+    // For access to compositedLayerMapping().
+    DisableCompositingQueryAsserts disabler;
     GraphicsLayer* graphicsLayer = layoutRoot->enclosingLayer()->compositedLayerMapping()->mainGraphicsLayer();
     if (!graphicsLayer)
         return;
