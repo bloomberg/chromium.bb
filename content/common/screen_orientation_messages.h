@@ -7,7 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/public/platform/WebLockOrientationCallback.h"
+#include "third_party/WebKit/public/platform/WebLockOrientationError.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 
@@ -23,9 +23,9 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationLockType,
                               blink::WebScreenOrientationLockDefault,
                               blink::WebScreenOrientationLockPortrait)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(
-      blink::WebLockOrientationCallback::ErrorType,
-      blink::WebLockOrientationCallback::ErrorTypeNotAvailable,
-      blink::WebLockOrientationCallback::ErrorTypeCanceled)
+      blink::WebLockOrientationError,
+      blink::WebLockOrientationErrorNotAvailable,
+      blink::WebLockOrientationErrorCanceled)
 
 // The browser process informs the renderer process that the screen orientation
 // has changed. |orientation| contains the new screen orientation in degrees.
@@ -48,7 +48,7 @@ IPC_MESSAGE_ROUTED3(ScreenOrientationMsg_LockSuccess,
 // process can associate the response to the right request.
 IPC_MESSAGE_ROUTED2(ScreenOrientationMsg_LockError,
                     int, /* request_id */
-                    blink::WebLockOrientationCallback::ErrorType /* error */);
+                    blink::WebLockOrientationError /* error */);
 
 // The renderer process requests the browser process to lock the screen
 // orientation to the specified |orientations|. The request contains a

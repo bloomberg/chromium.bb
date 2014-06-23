@@ -54,7 +54,7 @@ void ScreenOrientationDispatcherHost::OnLockRequest(
     render_frame_host->Send(new ScreenOrientationMsg_LockError(
         render_frame_host->GetRoutingID(),
         request_id,
-        blink::WebLockOrientationCallback::ErrorTypeNotAvailable));
+        blink::WebLockOrientationErrorNotAvailable));
     return;
   }
 

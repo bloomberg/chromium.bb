@@ -44,8 +44,7 @@ void ScreenOrientationDispatcher::OnLockSuccess(
 }
 
 void ScreenOrientationDispatcher::OnLockError(
-    int request_id,
-    blink::WebLockOrientationCallback::ErrorType error) {
+    int request_id, blink::WebLockOrientationError error) {
   blink::WebLockOrientationCallback* callback =
       pending_callbacks_.Lookup(request_id);
   if (!callback)
@@ -57,8 +56,7 @@ void ScreenOrientationDispatcher::OnLockError(
 void ScreenOrientationDispatcher::CancelPendingLocks() {
   for (CallbackMap::Iterator<blink::WebLockOrientationCallback>
        iterator(&pending_callbacks_); !iterator.IsAtEnd(); iterator.Advance()) {
-    iterator.GetCurrentValue()->onError(
-        blink::WebLockOrientationCallback::ErrorTypeCanceled);
+    iterator.GetCurrentValue()->onError(blink::WebLockOrientationErrorCanceled);
     pending_callbacks_.Remove(iterator.GetCurrentKey());
   }
 }

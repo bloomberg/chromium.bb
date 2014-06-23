@@ -34,7 +34,7 @@ class MockLockOrientationCallback :
     bool failed_;
     unsigned angle_;
     blink::WebScreenOrientationType orientation_;
-    blink::WebLockOrientationCallback::ErrorType error_;
+    blink::WebLockOrientationError error_;
   };
 
   explicit MockLockOrientationCallback(LockOrientationResultHolder* results)
@@ -47,8 +47,7 @@ class MockLockOrientationCallback :
     results_->orientation_ = orientation;
   }
 
-  virtual void onError(
-      blink::WebLockOrientationCallback::ErrorType error) {
+  virtual void onError(blink::WebLockOrientationError error) {
     results_->failed_ = true;
     results_->error_ = error;
   }
@@ -124,8 +123,7 @@ TEST_F(ScreenOrientationDispatcherTest, CancelPending_Unlocking) {
 
   EXPECT_FALSE(callback_results.succeeded_);
   EXPECT_TRUE(callback_results.failed_);
-  EXPECT_EQ(blink::WebLockOrientationCallback::ErrorTypeCanceled,
-            callback_results.error_);
+  EXPECT_EQ(blink::WebLockOrientationErrorCanceled, callback_results.error_);
 }
 
 // Test that calling lockOrientation() twice cancel the first lockOrientation().
@@ -141,20 +139,19 @@ TEST_F(ScreenOrientationDispatcherTest, CancelPending_DoubleLock) {
 
   EXPECT_FALSE(callback_results.succeeded_);
   EXPECT_TRUE(callback_results.failed_);
-  EXPECT_EQ(blink::WebLockOrientationCallback::ErrorTypeCanceled,
-            callback_results.error_);
+  EXPECT_EQ(blink::WebLockOrientationErrorCanceled, callback_results.error_);
 }
 
 // Test that when a LockError message is received, the request is set as failed
 // with the correct values.
 TEST_F(ScreenOrientationDispatcherTest, LockRequest_Error) {
-  std::list<blink::WebLockOrientationCallback::ErrorType> errors;
-  errors.push_back(blink::WebLockOrientationCallback::ErrorTypeNotAvailable);
+  std::list<blink::WebLockOrientationError> errors;
+  errors.push_back(blink::WebLockOrientationErrorNotAvailable);
   errors.push_back(
-      blink::WebLockOrientationCallback::ErrorTypeFullScreenRequired);
-  errors.push_back(blink::WebLockOrientationCallback::ErrorTypeCanceled);
+      blink::WebLockOrientationErrorFullScreenRequired);
+  errors.push_back(blink::WebLockOrientationErrorCanceled);
 
-  for (std::list<blink::WebLockOrientationCallback::ErrorType>::const_iterator
+  for (std::list<blink::WebLockOrientationError>::const_iterator
           it = errors.begin(); it != errors.end(); ++it) {
     MockLockOrientationCallback::LockOrientationResultHolder callback_results;
     LockOrientation(blink::WebScreenOrientationLockPortraitPrimary,
@@ -234,9 +231,7 @@ TEST_F(ScreenOrientationDispatcherTest, ErrorForUnknownRequest) {
 
   int request_id = GetFirstLockRequestIdFromSink();
   OnMessageReceived(ScreenOrientationMsg_LockError(
-      routing_id(),
-      request_id + 1,
-      blink::WebLockOrientationCallback::ErrorTypeCanceled));
+      routing_id(), request_id + 1, blink::WebLockOrientationErrorCanceled));
 
   EXPECT_FALSE(callback_results.succeeded_);
   EXPECT_FALSE(callback_results.failed_);
@@ -270,8 +265,7 @@ TEST_F(ScreenOrientationDispatcherTest, RaceScenario) {
   // First request is still rejected.
   EXPECT_FALSE(callback_results1.succeeded_);
   EXPECT_TRUE(callback_results1.failed_);
-  EXPECT_EQ(blink::WebLockOrientationCallback::ErrorTypeCanceled,
-            callback_results1.error_);
+  EXPECT_EQ(blink::WebLockOrientationErrorCanceled, callback_results1.error_);
 
   // Second request is still pending.
   EXPECT_FALSE(callback_results2.succeeded_);

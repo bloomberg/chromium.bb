@@ -45,7 +45,7 @@ class CONTENT_EXPORT ScreenOrientationDispatcher :
                      unsigned angle,
                      blink::WebScreenOrientationType orientation);
   void OnLockError(int request_id,
-                   blink::WebLockOrientationCallback::ErrorType error);
+                   blink::WebLockOrientationError error);
 
   void CancelPendingLocks();
 
