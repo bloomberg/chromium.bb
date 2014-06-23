@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/common/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,10 +19,14 @@ namespace system {
 namespace {
 
 TEST(PlatformHandleDispatcherTest, Basic) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
   static const char kHelloWorld[] = "hello world";
 
   base::FilePath unused;
-  base::ScopedFILE fp(CreateAndOpenTemporaryFile(&unused));
+  base::ScopedFILE fp(CreateAndOpenTemporaryFileInDir(temp_dir.path(),
+                                                      &unused));
   ASSERT_TRUE(fp);
   EXPECT_EQ(sizeof(kHelloWorld),
             fwrite(kHelloWorld, 1, sizeof(kHelloWorld), fp.get()));
@@ -57,10 +62,14 @@ TEST(PlatformHandleDispatcherTest, Basic) {
 }
 
 TEST(PlatformHandleDispatcherTest, CreateEquivalentDispatcherAndClose) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
   static const char kFooBar[] = "foo bar";
 
   base::FilePath unused;
-  base::ScopedFILE fp(CreateAndOpenTemporaryFile(&unused));
+  base::ScopedFILE fp(CreateAndOpenTemporaryFileInDir(temp_dir.path(),
+                                                      &unused));
   EXPECT_EQ(sizeof(kFooBar), fwrite(kFooBar, 1, sizeof(kFooBar), fp.get()));
 
   scoped_refptr<PlatformHandleDispatcher> dispatcher(

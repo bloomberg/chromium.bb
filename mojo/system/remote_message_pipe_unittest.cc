@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -706,6 +707,9 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
 #define MAYBE_PlatformHandlePassing DISABLED_PlatformHandlePassing
 #endif
 TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
   static const char kHello[] = "hello";
   static const char kWorld[] = "world";
   Waiter waiter;
@@ -720,7 +724,8 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   ConnectMessagePipes(mp0, mp1);
 
   base::FilePath unused;
-  base::ScopedFILE fp(CreateAndOpenTemporaryFile(&unused));
+  base::ScopedFILE fp(CreateAndOpenTemporaryFileInDir(temp_dir.path(),
+                                                      &unused));
   EXPECT_EQ(sizeof(kHello), fwrite(kHello, 1, sizeof(kHello), fp.get()));
   // We'll try to pass this dispatcher, which will cause a |PlatformHandle| to
   // be passed.

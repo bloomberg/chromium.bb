@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -504,6 +505,9 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckPlatformHandleFile) {
 #define MAYBE_PlatformHandlePassing DISABLED_PlatformHandlePassing
 #endif
 TEST_F(MultiprocessMessagePipeTest, MAYBE_PlatformHandlePassing) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
   helper()->StartChild("CheckPlatformHandleFile");
 
   scoped_refptr<MessagePipe> mp(new MessagePipe(
@@ -512,7 +516,8 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_PlatformHandlePassing) {
   Init(mp);
 
   base::FilePath unused;
-  base::ScopedFILE fp(CreateAndOpenTemporaryFile(&unused));
+  base::ScopedFILE fp(CreateAndOpenTemporaryFileInDir(temp_dir.path(),
+                                                      &unused));
   const std::string world("world");
   ASSERT_EQ(fwrite(&world[0], 1, world.size(), fp.get()), world.size());
   fflush(fp.get());
