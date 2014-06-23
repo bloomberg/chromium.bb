@@ -19,6 +19,7 @@
 #include "third_party/libjingle/source/talk/base/network.h"
 #include "third_party/libjingle/source/talk/p2p/base/constants.h"
 #include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
+#include "third_party/libjingle/source/talk/p2p/base/port.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
 #include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
 
@@ -249,6 +250,14 @@ void LibjingleStreamTransport::DoStart() {
 void LibjingleStreamTransport::AddRemoteCandidate(
     const cricket::Candidate& candidate) {
   DCHECK(CalledOnValidThread());
+
+  // To enforce the no-relay setting, it's not enough to not produce relay
+  // candidates. It's also necessary to discard remote relay candidates.
+  bool relay_allowed = (network_settings_.flags &
+                        NetworkSettings::NAT_TRAVERSAL_RELAY) != 0;
+  if (!relay_allowed && candidate.type() == cricket::RELAY_PORT_TYPE)
+    return;
+
   if (channel_) {
     channel_->OnCandidate(candidate);
   } else {
