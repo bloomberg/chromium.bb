@@ -330,7 +330,7 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
       </if>
       <if expr="chromeos">
         <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
-          Google ChromeOS does not support launching an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
+          Google Chrome OS does not support launching an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
         </message>
       </if>
       <!-- Strings used to warn that an OS is not supported -->
