@@ -6,10 +6,10 @@
 #define COMPONENTS_NACL_RENDERER_MANIFEST_SERVICE_CHANNEL_H_
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "ipc/ipc_listener.h"
@@ -28,7 +28,7 @@ namespace nacl {
 
 class ManifestServiceChannel : public IPC::Listener {
  public:
-  typedef base::Callback<void(const base::PlatformFile&)> OpenResourceCallback;
+  typedef base::Callback<void(base::File)> OpenResourceCallback;
 
   class Delegate {
    public:
@@ -38,7 +38,7 @@ class ManifestServiceChannel : public IPC::Listener {
     virtual void StartupInitializationComplete() = 0;
 
     // Called when irt_open_resource() is invoked in the NaCl plugin.
-    // Upon completion, callback is invoked with the platform file.
+    // Upon completion, callback is invoked with the file.
     virtual void OpenResource(
         const std::string& key,
         const OpenResourceCallback& callback) = 0;
@@ -62,8 +62,7 @@ class ManifestServiceChannel : public IPC::Listener {
   void OnStartupInitializationComplete();
   void OnOpenResource(const std::string& key, IPC::Message* reply);
 #if !defined(OS_WIN)
-  void DidOpenResource(
-      IPC::Message* reply, const base::PlatformFile& platform_file);
+  void DidOpenResource(IPC::Message* reply, base::File file);
 #endif
 
   base::Callback<void(int32_t)> connected_callback_;

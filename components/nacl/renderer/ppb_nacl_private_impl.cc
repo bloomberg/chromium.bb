@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/cpu.h"
+#include "base/files/file.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -211,7 +212,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
     if (!ManifestResolveKey(pp_instance_, false, key, &url, &pnacl_options)) {
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(callback, PP_kInvalidFileHandle));
+          base::Bind(callback, base::Passed(base::File())));
       return;
     }
 
@@ -232,10 +233,10 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
       int32_t pp_error,
       const PP_NaClFileInfo& file_info) {
     if (pp_error != PP_OK) {
-      callback.Run(base::kInvalidPlatformFileValue);
+      callback.Run(base::File());
       return;
     }
-    callback.Run(file_info.handle);
+    callback.Run(base::File(file_info.handle));
   }
 
   void Quit() {
