@@ -107,4 +107,12 @@ test(function() {
     assert_equals(url.href, 'invalid');
 }, 'host property invalid URL');
 
+test(function() {
+    var url = new URL('http://www.domain.com/');
+    assert_equals(url.host, 'www.domain.com');
+
+    url.host = 'www.bo\udc01\ud802gus.org';
+    assert_equals(url.host, '');
+}, 'hostname with unmatched surrogates');
+
 </script>

@@ -48,4 +48,12 @@ test(function() {
     assert_equals(url.href, 'invalid');
 }, 'hash property invalid URL');
 
+test(function() {
+    var url = new URL('http://www.domain.com/');
+    assert_equals(url.hash, '');
+
+    url.hash = '\udc01\ud802a';
+    assert_equals(url.hash, '#\ufffd\ufffda');
+}, 'hash with unmatched surrogates');
+
 </script>

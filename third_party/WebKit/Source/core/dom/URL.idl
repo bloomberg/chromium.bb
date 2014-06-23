@@ -27,9 +27,9 @@
 // http://url.spec.whatwg.org/#url
 
 [
-    Constructor(DOMString url),
-    Constructor(DOMString url, DOMString base),
-    Constructor(DOMString url, URL base),
+    Constructor(ScalarValueString url),
+    Constructor(ScalarValueString url, ScalarValueString base),
+    Constructor(ScalarValueString url, URL base),
     Exposed=Window&Worker,
     ImplementedAs=DOMURL,
     RaisesException=Constructor,

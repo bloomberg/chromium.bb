@@ -21,6 +21,10 @@ test(function() {
 
     var base = new URL('http://www.domain.com/a/b');
     assert_equals(new URL('b/c', base).toString(), 'http://www.domain.com/a/b/c');
+
+    // Unmatched surrogate handling
+    var encodedReplacementCharacter = encodeURIComponent('\ufffd');
+    assert_equals(new URL('b/c', 'http://www.domain.com/\ud801/b').toString(), 'http://www.domain.com/' + encodedReplacementCharacter + '/b/c');
 }, 'Valid URLs');
 
 test(function() {

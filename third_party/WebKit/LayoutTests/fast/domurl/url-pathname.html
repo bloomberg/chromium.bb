@@ -51,4 +51,12 @@ test(function() {
     assert_equals(url.href, 'invalid');
 }, 'pathname property invalid URL');
 
+test(function() {
+    var url = new URL('http://www.domain.com/');
+    assert_equals(url.pathname, '/');
+
+    url.pathname = '\udc01\ud802a';
+    assert_equals(url.pathname, '/' + encodeURIComponent('\ufffd\ufffda'));
+}, 'pathname with unmatched surrogates');
+
 </script>
