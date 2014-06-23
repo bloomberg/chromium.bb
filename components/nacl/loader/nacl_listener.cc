@@ -470,9 +470,7 @@ void NaClListener::StartNonSfi(const nacl::NaClStartParams& params) {
   CHECK(params.debug_stub_server_bound_socket.fd == -1);
 
   CHECK(!params.uses_irt);
-  // TODO(hidehiko): Currently imc bootstrap handle is still sent to the
-  // plugin. Get rid of this.
-  CHECK(params.handles.size() == 1);
+  CHECK(params.handles.empty());
 
   CHECK(params.nexe_file != IPC::InvalidPlatformFileForTransit());
   nacl::nonsfi::MainStart(
