@@ -75,7 +75,7 @@ void RegisterAppTask::RunExclusive(const SyncStatusCallback& callback) {
   if (candidate.active()) {
     DCHECK(candidate.tracker_kind() == TRACKER_KIND_APP_ROOT ||
            candidate.tracker_kind() == TRACKER_KIND_DISABLED_APP_ROOT);
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    callback.Run(SYNC_STATUS_OK);
     return;
   }
 

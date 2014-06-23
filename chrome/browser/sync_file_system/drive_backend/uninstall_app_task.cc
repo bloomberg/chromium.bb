@@ -36,7 +36,7 @@ UninstallAppTask::~UninstallAppTask() {
 
 void UninstallAppTask::RunExclusive(const SyncStatusCallback& callback) {
   if (!IsContextReady()) {
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_FAILED));
+    callback.Run(SYNC_STATUS_FAILED);
     return;
   }
 
@@ -51,7 +51,7 @@ void UninstallAppTask::RunExclusive(const SyncStatusCallback& callback) {
   if (!metadata_database()->FindTrackersByParentAndTitle(
           sync_root_tracker_id, app_id_, &trackers) ||
       !trackers.has_active()) {
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    callback.Run(SYNC_STATUS_OK);
     return;
   }
 
