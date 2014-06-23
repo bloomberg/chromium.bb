@@ -154,4 +154,19 @@ void ModelThreadSyncEntity::ReceiveCommitResponse(const std::string& id,
   base_version_ = response_version;
 }
 
+void ModelThreadSyncEntity::ClearTransientSyncState() {
+  // If we have any unacknowledged commit requests outstatnding, they've been
+  // dropped and we should forget about them.
+  commit_requested_sequence_number_ = acked_sequence_number_;
+}
+
+void ModelThreadSyncEntity::ClearSyncState() {
+  base_version_ = kUncommittedVersion;
+  is_dirty_ = true;
+  sequence_number_ = 1;
+  commit_requested_sequence_number_ = 0;
+  acked_sequence_number_ = 0;
+  id_.clear();
+}
+
 }  // namespace syncer

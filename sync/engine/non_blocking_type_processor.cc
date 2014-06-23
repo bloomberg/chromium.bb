@@ -62,6 +62,8 @@ void NonBlockingTypeProcessor::Disable() {
   DCHECK(CalledOnValidThread());
   is_preferred_ = false;
   Disconnect();
+
+  ClearSyncState();
 }
 
 void NonBlockingTypeProcessor::Disconnect() {
@@ -76,6 +78,8 @@ void NonBlockingTypeProcessor::Disconnect() {
 
   weak_ptr_factory_for_sync_.InvalidateWeakPtrs();
   core_interface_.reset();
+
+  ClearTransientSyncState();
 }
 
 base::WeakPtr<NonBlockingTypeProcessor>
@@ -225,6 +229,22 @@ void NonBlockingTypeProcessor::OnUpdateReceived(
     FlushPendingCommitRequests();
 
   // TODO: Inform the model of the new or updated data.
+}
+
+void NonBlockingTypeProcessor::ClearTransientSyncState() {
+  for (EntityMap::iterator it = entities_.begin(); it != entities_.end();
+       ++it) {
+    it->second->ClearTransientSyncState();
+  }
+}
+
+void NonBlockingTypeProcessor::ClearSyncState() {
+  for (EntityMap::iterator it = entities_.begin(); it != entities_.end();
+       ++it) {
+    it->second->ClearSyncState();
+  }
+
+  data_type_state_ = DataTypeState();
 }
 
 }  // namespace syncer

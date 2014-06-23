@@ -106,6 +106,12 @@ class SYNC_EXPORT_PRIVATE ModelThreadSyncEntity {
                              int64 sequence_number,
                              int64 response_version);
 
+  // Clears any in-memory sync state associated with outstanding commits.
+  void ClearTransientSyncState();
+
+  // Clears all sync state.  Invoked when a user signs out.
+  void ClearSyncState();
+
  private:
   ModelThreadSyncEntity(int64 sequence_number,
                         int64 commit_requested_sequence_number,

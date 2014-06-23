@@ -86,6 +86,15 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
   // Sends all commit requests that are due to be sent to the sync thread.
   void FlushPendingCommitRequests();
 
+  // Clears any state related to outstanding communications with the
+  // NonBlockingTypeProcessorCore.  Used when we want to disconnect from
+  // the current core.
+  void ClearTransientSyncState();
+
+  // Clears any state related to our communications with the current sync
+  // account.  Useful when a user signs out of the current account.
+  void ClearSyncState();
+
   ModelType type_;
   DataTypeState data_type_state_;
 

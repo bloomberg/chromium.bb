@@ -33,8 +33,8 @@ void InjectableSyncCoreProxy::ConnectTypeToCore(
 }
 
 void InjectableSyncCoreProxy::Disconnect(syncer::ModelType type) {
-  // This mock object is not meant for connect and disconnect tests.
-  NOTREACHED() << "Not implemented";
+  // This should delete the core, but we don't own it.
+  processor_core_ = NULL;
 }
 
 scoped_ptr<SyncCoreProxy> InjectableSyncCoreProxy::Clone() const {

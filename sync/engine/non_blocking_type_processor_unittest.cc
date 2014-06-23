@@ -51,6 +51,17 @@ class NonBlockingTypeProcessorTest : public ::testing::Test {
   // Initialize to a "ready-to-commit" state.
   void InitializeToReadyState();
 
+  // Disconnect the NonBlockingTypeProcessorCore from our
+  // NonBlockingTypeProcessor.
+  void Disconnect();
+
+  // Disable sync for this NonBlockingTypeProcessor.  Should cause sync state
+  // to be discarded.
+  void Disable();
+
+  // Re-enable sync after Disconnect() or Disable().
+  void ReEnable();
+
   // Local data modification.  Emulates signals from the model thread.
   void WriteItem(const std::string& tag, const std::string& value);
   void DeleteItem(const std::string& tag);
@@ -114,6 +125,31 @@ void NonBlockingTypeProcessorTest::InitializeToReadyState() {
   // the |processor_|.
   FirstTimeInitialize();
   OnInitialSyncDone();
+}
+
+void NonBlockingTypeProcessorTest::Disconnect() {
+  processor_->Disconnect();
+  injectable_sync_core_proxy_.reset();
+  mock_processor_core_ = NULL;
+}
+
+void NonBlockingTypeProcessorTest::Disable() {
+  processor_->Disable();
+  injectable_sync_core_proxy_.reset();
+  mock_processor_core_ = NULL;
+}
+
+void NonBlockingTypeProcessorTest::ReEnable() {
+  DCHECK(!processor_->IsConnected());
+
+  // Prepare a new NonBlockingTypeProcesorCore instance, just as we would
+  // if this happened in the real world.
+  mock_processor_core_ = new MockNonBlockingTypeProcessorCore();
+  injectable_sync_core_proxy_.reset(
+      new InjectableSyncCoreProxy(mock_processor_core_));
+
+  // Re-enable sync with the new NonBlockingTypeProcessorCore.
+  processor_->Enable(injectable_sync_core_proxy_->Clone());
 }
 
 void NonBlockingTypeProcessorTest::WriteItem(const std::string& tag,
@@ -351,6 +387,78 @@ TEST_F(NonBlockingTypeProcessorTest, NoCommitsUntilInitialSyncDone) {
   EXPECT_TRUE(HasCommitRequestForTag("tag1"));
 }
 
-// TODO(rlarocque): Add more testing of non_unique_name fields.
+// Test proper handling of disconnect and reconnect.
+//
+// Creates items in various states of commit and verifies they re-attempt to
+// commit on reconnect.
+TEST_F(NonBlockingTypeProcessorTest, Disconnect) {
+  InitializeToReadyState();
+
+  // The first item is fully committed.
+  WriteItem("tag1", "value1");
+  ASSERT_TRUE(HasCommitRequestForTag("tag1"));
+  SuccessfulCommitResponse(GetLatestCommitRequestForTag("tag1"));
+
+  // The second item has a commit request in progress.
+  WriteItem("tag2", "value2");
+  EXPECT_TRUE(HasCommitRequestForTag("tag2"));
+
+  Disconnect();
+
+  // The third item is added after disconnection.
+  WriteItem("tag3", "value3");
+
+  ReEnable();
+
+  EXPECT_EQ(1U, GetNumCommitRequestLists());
+  EXPECT_EQ(2U, GetNthCommitRequestList(0).size());
+
+  // The first item was already in sync.
+  EXPECT_FALSE(HasCommitRequestForTag("tag1"));
+
+  // The second item's commit was interrupted and should be retried.
+  EXPECT_TRUE(HasCommitRequestForTag("tag2"));
+
+  // The third item's commit was not started until the reconnect.
+  EXPECT_TRUE(HasCommitRequestForTag("tag3"));
+}
+
+// Test proper handling of disable and re-enable.
+//
+// Creates items in various states of commit and verifies they re-attempt to
+// commit on re-enable.
+TEST_F(NonBlockingTypeProcessorTest, Disable) {
+  InitializeToReadyState();
+
+  // The first item is fully committed.
+  WriteItem("tag1", "value1");
+  ASSERT_TRUE(HasCommitRequestForTag("tag1"));
+  SuccessfulCommitResponse(GetLatestCommitRequestForTag("tag1"));
+
+  // The second item has a commit request in progress.
+  WriteItem("tag2", "value2");
+  EXPECT_TRUE(HasCommitRequestForTag("tag2"));
+
+  Disable();
+
+  // The third item is added after disable.
+  WriteItem("tag3", "value3");
+
+  // Now we re-enable.
+  ReEnable();
+
+  // There should be nothing to commit right away, since we need to
+  // re-initialize the client state first.
+  EXPECT_EQ(0U, GetNumCommitRequestLists());
+
+  // Once we're ready to commit, all three local items should consider
+  // themselves uncommitted and pending for commit.
+  OnInitialSyncDone();
+  EXPECT_EQ(1U, GetNumCommitRequestLists());
+  EXPECT_EQ(3U, GetNthCommitRequestList(0).size());
+  EXPECT_TRUE(HasCommitRequestForTag("tag1"));
+  EXPECT_TRUE(HasCommitRequestForTag("tag2"));
+  EXPECT_TRUE(HasCommitRequestForTag("tag3"));
+}
 
 }  // namespace syncer
