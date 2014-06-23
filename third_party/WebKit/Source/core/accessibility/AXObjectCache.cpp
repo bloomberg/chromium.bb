@@ -820,20 +820,6 @@ void AXObjectCache::handleScrollbarUpdate(ScrollView* view)
     }
 }
 
-void AXObjectCache::handleLayoutComplete(RenderObject* renderer)
-{
-    if (!renderer)
-        return;
-
-    m_computedObjectAttributeCache->clear();
-
-    // Create the AXObject if it didn't yet exist - that's always safe at the end of a layout, and it
-    // allows an AX notification to be sent when a page has its first layout, rather than when the
-    // document first loads.
-    if (AXObject* obj = getOrCreate(renderer))
-        postNotification(obj, obj->document(), AXLayoutComplete, true);
-}
-
 void AXObjectCache::handleAriaExpandedChange(Node* node)
 {
     if (AXObject* obj = getOrCreate(node))
