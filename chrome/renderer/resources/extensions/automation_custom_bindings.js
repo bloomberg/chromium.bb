@@ -12,7 +12,8 @@ var eventBindings = require('event_bindings');
 var Event = eventBindings.Event;
 var forEach = require('utils').forEach;
 var lastError = require('lastError');
-var schema = requireNative('automationInternal').GetSchemaAdditions();
+var schema =
+    requireNative('automationInternal').GetSchemaAdditions();
 
 // TODO(aboxhall): Look into using WeakMap
 var idToAutomationRootNode = {};
@@ -86,7 +87,7 @@ automation.registerCustomHook(function(bindingsAPI) {
   });
 });
 
-// Listen to the automationInternal.onAccessibilityEvent event, which is
+// Listen to the automationInternal.onaccessibilityEvent event, which is
 // essentially a proxy for the AccessibilityHostMsg_Events IPC from the
 // renderer.
 automationInternal.onAccessibilityEvent.addListener(function(data) {
@@ -101,8 +102,7 @@ automationInternal.onAccessibilityEvent.addListener(function(data) {
     targetTree = new AutomationRootNode(pid, rid);
     idToAutomationRootNode[id] = targetTree;
   }
-  if (!privates(targetTree).impl.onAccessibilityEvent(data))
-    return;
+  privates(targetTree).impl.update(data);
   var eventType = data.eventType;
   if (eventType == 'loadComplete' || eventType == 'layoutComplete') {
     // If the tree wasn't available when getTree() was called, the callback will
@@ -118,15 +118,6 @@ automationInternal.onAccessibilityEvent.addListener(function(data) {
   }
 });
 
-automationInternal.onAccessibilityTreeDestroyed.addListener(function(pid, rid) {
-  var id = createAutomationRootNodeID(pid, rid);
-  var targetTree = idToAutomationRootNode[id];
-  if (targetTree)
-    privates(targetTree).impl.destroy();
-  else
-    console.log('no targetTree to destroy');
-  delete idToAutomationRootNode[id];
-});
 exports.binding = automation.generate();
 
 // Add additional accessibility bindings not specified in the automation IDL.

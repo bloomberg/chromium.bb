@@ -19,7 +19,6 @@ var allTests = [
       {enabled: true, focusable: true, readOnly: true},
       rootNode.state);
     var children = rootNode.children();
-    assertEq(RoleType.rootWebArea, rootNode.role);
     assertEq(1, children.length);
     var body = children[0];
     assertEq('body', body.attributes.htmlTag);

@@ -17,8 +17,7 @@ namespace content {
 // |WebContentsObserver::AccessibilityEventReceived| method.
 struct CONTENT_EXPORT AXEventNotificationDetails {
  public:
-  AXEventNotificationDetails(int node_id_to_clear,
-                             const std::vector<ui::AXNodeData>& nodes,
+  AXEventNotificationDetails(const std::vector<ui::AXNodeData>& nodes,
                              ui::AXEvent event_type,
                              int id,
                              int process_id,
@@ -26,7 +25,6 @@ struct CONTENT_EXPORT AXEventNotificationDetails {
 
   ~AXEventNotificationDetails();
 
-  int node_id_to_clear;
   std::vector<ui::AXNodeData> nodes;
   ui::AXEvent event_type;
   int id;

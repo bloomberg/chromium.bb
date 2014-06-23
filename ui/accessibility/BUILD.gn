@@ -37,17 +37,6 @@ component("accessibility") {
   ]
 }
 
-source_set("accessibility_test_support") {
-  sources = [
-    "tree_generator.cc",
-    "tree_generator.h"
-  ]
-
-  deps = [
-    ":accessibility"
-  ]
-}
-
 test("accessibility_unittests") {
   sources = [
     "ax_generated_tree_unittest.cc",
@@ -57,7 +46,6 @@ test("accessibility_unittests") {
 
   deps = [
     ":accessibility",
-    ":accessibility_test_support",
     "//base",
     "//base/test:run_all_unittests",
     "//testing/gtest",

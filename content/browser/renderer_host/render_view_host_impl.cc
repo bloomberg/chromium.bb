@@ -1548,8 +1548,7 @@ void RenderViewHostImpl::OnAccessibilityEvents(
     std::vector<AXEventNotificationDetails> details;
     for (unsigned int i = 0; i < params.size(); ++i) {
       const AccessibilityHostMsg_EventParams& param = params[i];
-      AXEventNotificationDetails detail(param.update.node_id_to_clear,
-                                        param.update.nodes,
+      AXEventNotificationDetails detail(param.update.nodes,
                                         param.event_type,
                                         param.id,
                                         GetProcess()->GetID(),
