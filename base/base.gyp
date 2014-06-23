@@ -1006,11 +1006,9 @@
           ],
         }],
       ],
-      'cflags!': [
-        '-fsanitize=address',
-        '-fsanitize=thread',
-        '-fsanitize=memory',
-        '-fsanitize-memory-track-origins',
+      'cflags/': [
+        ['exclude', '-fsanitize='],
+        ['exclude', '-fsanitize-'],
       ],
       'direct_dependent_settings': {
         'ldflags': [
