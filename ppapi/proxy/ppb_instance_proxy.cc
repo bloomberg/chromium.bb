@@ -216,37 +216,28 @@ PP_Bool PPB_Instance_Proxy::BindGraphics(PP_Instance instance,
                                          PP_Resource device) {
   // If device is 0, pass a null HostResource. This signals the host to unbind
   // all devices.
-  HostResource host_resource;
   PP_Resource pp_resource = 0;
   if (device) {
     Resource* resource =
         PpapiGlobals::Get()->GetResourceTracker()->GetResource(device);
     if (!resource || resource->pp_instance() != instance)
       return PP_FALSE;
-    host_resource = resource->host_resource();
-    pp_resource = resource->pp_resource();
-  } else {
-    // Passing 0 means unbinding all devices.
-    dispatcher()->Send(new PpapiHostMsg_PPBInstance_BindGraphics(
-        API_ID_PPB_INSTANCE, instance, 0));
-    return PP_TRUE;
+    // We need to pass different resource to Graphics 2D, 3D and Compositor
+    // right now.  Once 3D is migrated to the new design, we should be able to
+    // unify this.
+    if (resource->AsPPB_Graphics3D_API()) {
+      pp_resource = resource->host_resource().host_resource();
+    } else if (resource->AsPPB_Graphics2D_API() ||
+               resource->AsPPB_Compositor_API()) {
+      pp_resource = resource->pp_resource();
+    } else {
+      // A bad resource.
+      return PP_FALSE;
+    }
   }
-
-  // We need to pass different resource to Graphics 2D and 3D right now.  Once
-  // 3D is migrated to the new design, we should be able to unify this.
-  EnterResourceNoLock<PPB_Compositor_API> enter_compositor(device, false);
-  EnterResourceNoLock<PPB_Graphics2D_API> enter_2d(device, false);
-  EnterResourceNoLock<PPB_Graphics3D_API> enter_3d(device, false);
-  if (enter_compositor.succeeded() || enter_2d.succeeded()) {
-    dispatcher()->Send(new PpapiHostMsg_PPBInstance_BindGraphics(
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_BindGraphics(
         API_ID_PPB_INSTANCE, instance, pp_resource));
-    return PP_TRUE;
-  } else if (enter_3d.succeeded()) {
-    dispatcher()->Send(new PpapiHostMsg_PPBInstance_BindGraphics(
-        API_ID_PPB_INSTANCE, instance, host_resource.host_resource()));
-    return PP_TRUE;
-  }
-  return PP_FALSE;
+  return PP_TRUE;
 }
 
 PP_Bool PPB_Instance_Proxy::IsFullFrame(PP_Instance instance) {
