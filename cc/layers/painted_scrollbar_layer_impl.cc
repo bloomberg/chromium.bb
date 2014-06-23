@@ -8,11 +8,11 @@
 
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/quad_sink.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "cc/trees/occlusion_tracker.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace cc {
@@ -69,7 +69,8 @@ bool PaintedScrollbarLayerImpl::WillDraw(DrawMode draw_mode,
 }
 
 void PaintedScrollbarLayerImpl::AppendQuads(
-    QuadSink* quad_sink,
+    RenderPass* render_pass,
+    const OcclusionTracker<LayerImpl>& occlusion_tracker,
     AppendQuadsData* append_quads_data) {
   bool premultipled_alpha = true;
   bool flipped = false;
@@ -78,15 +79,16 @@ void PaintedScrollbarLayerImpl::AppendQuads(
   gfx::Rect bounds_rect(bounds());
   gfx::Rect content_bounds_rect(content_bounds());
 
-  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+  SharedQuadState* shared_quad_state =
+      render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
 
   AppendDebugBorderQuad(
-      quad_sink, content_bounds(), shared_quad_state, append_quads_data);
+      render_pass, content_bounds(), shared_quad_state, append_quads_data);
 
   gfx::Rect thumb_quad_rect = ComputeThumbQuadRect();
-  gfx::Rect visible_thumb_quad_rect =
-      quad_sink->UnoccludedContentRect(thumb_quad_rect, draw_transform());
+  gfx::Rect visible_thumb_quad_rect = occlusion_tracker.UnoccludedContentRect(
+      thumb_quad_rect, draw_transform());
 
   ResourceProvider::ResourceId thumb_resource_id =
       layer_tree_impl()->ResourceIdForUIResource(thumb_ui_resource_id_);
@@ -108,12 +110,12 @@ void PaintedScrollbarLayerImpl::AppendQuads(
                  SK_ColorTRANSPARENT,
                  opacity,
                  flipped);
-    quad_sink->Append(quad.PassAs<DrawQuad>());
+    render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
   }
 
   gfx::Rect track_quad_rect = content_bounds_rect;
-  gfx::Rect visible_track_quad_rect =
-      quad_sink->UnoccludedContentRect(track_quad_rect, draw_transform());
+  gfx::Rect visible_track_quad_rect = occlusion_tracker.UnoccludedContentRect(
+      track_quad_rect, draw_transform());
   if (track_resource_id && !visible_track_quad_rect.IsEmpty()) {
     gfx::Rect opaque_rect(contents_opaque() ? track_quad_rect : gfx::Rect());
     const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -129,7 +131,7 @@ void PaintedScrollbarLayerImpl::AppendQuads(
                  SK_ColorTRANSPARENT,
                  opacity,
                  flipped);
-    quad_sink->Append(quad.PassAs<DrawQuad>());
+    render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
   }
 }
 

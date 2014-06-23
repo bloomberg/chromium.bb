@@ -12,7 +12,6 @@
 #include "cc/debug/frame_rate_counter.h"
 #include "cc/debug/paint_time_counter.h"
 #include "cc/debug/traced_value.h"
-#include "cc/layers/quad_sink.h"
 #include "cc/output/renderer.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/memory_history.h"
@@ -105,12 +104,15 @@ bool HeadsUpDisplayLayerImpl::WillDraw(DrawMode draw_mode,
   return LayerImpl::WillDraw(draw_mode, resource_provider);
 }
 
-void HeadsUpDisplayLayerImpl::AppendQuads(QuadSink* quad_sink,
-                                          AppendQuadsData* append_quads_data) {
+void HeadsUpDisplayLayerImpl::AppendQuads(
+    RenderPass* render_pass,
+    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    AppendQuadsData* append_quads_data) {
   if (!hud_resource_->id())
     return;
 
-  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+  SharedQuadState* shared_quad_state =
+      render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
 
   gfx::Rect quad_rect(content_bounds());
@@ -133,7 +135,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(QuadSink* quad_sink,
                SK_ColorTRANSPARENT,
                vertex_opacity,
                flipped);
-  quad_sink->Append(quad.PassAs<DrawQuad>());
+  render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
 }
 
 void HeadsUpDisplayLayerImpl::UpdateHudTexture(
@@ -587,7 +589,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawPaintTimeDisplay(
 
 void HeadsUpDisplayLayerImpl::DrawDebugRect(
     SkCanvas* canvas,
-    SkPaint& paint,
+    SkPaint* paint,
     const DebugRect& rect,
     SkColor stroke_color,
     SkColor fill_color,
@@ -596,14 +598,14 @@ void HeadsUpDisplayLayerImpl::DrawDebugRect(
   gfx::Rect debug_layer_rect = gfx::ScaleToEnclosingRect(
       rect.rect, 1.0 / contents_scale_x(), 1.0 / contents_scale_y());
   SkIRect sk_rect = RectToSkIRect(debug_layer_rect);
-  paint.setColor(fill_color);
-  paint.setStyle(SkPaint::kFill_Style);
-  canvas->drawIRect(sk_rect, paint);
+  paint->setColor(fill_color);
+  paint->setStyle(SkPaint::kFill_Style);
+  canvas->drawIRect(sk_rect, *paint);
 
-  paint.setColor(stroke_color);
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(SkFloatToScalar(stroke_width));
-  canvas->drawIRect(sk_rect, paint);
+  paint->setColor(stroke_color);
+  paint->setStyle(SkPaint::kStroke_Style);
+  paint->setStrokeWidth(SkFloatToScalar(stroke_width));
+  canvas->drawIRect(sk_rect, *paint);
 
   if (label_text.length()) {
     const int kFontHeight = 12;
@@ -723,7 +725,7 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
     }
 
     DrawDebugRect(canvas,
-                  paint,
+                  &paint,
                   debug_rects[i],
                   stroke_color,
                   fill_color,
@@ -739,7 +741,7 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
     fade_step_--;
     for (size_t i = 0; i < paint_rects_.size(); ++i) {
       DrawDebugRect(canvas,
-                    paint,
+                    &paint,
                     paint_rects_[i],
                     DebugColors::PaintRectBorderColor(fade_step_),
                     DebugColors::PaintRectFillColor(fade_step_),

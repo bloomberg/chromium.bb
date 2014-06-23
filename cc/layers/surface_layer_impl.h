@@ -25,7 +25,8 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
-  virtual void AppendQuads(QuadSink* quad_sink,
+  virtual void AppendQuads(RenderPass* render_pass,
+                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
                            AppendQuadsData* append_quads_data) OVERRIDE;
 
  protected:

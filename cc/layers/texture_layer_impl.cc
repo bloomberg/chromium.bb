@@ -7,13 +7,13 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "cc/layers/quad_sink.h"
 #include "cc/output/renderer.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/scoped_resource.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/occlusion_tracker.h"
 
 namespace cc {
 
@@ -139,15 +139,18 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
          LayerImpl::WillDraw(draw_mode, resource_provider);
 }
 
-void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
-                                   AppendQuadsData* append_quads_data) {
+void TextureLayerImpl::AppendQuads(
+    RenderPass* render_pass,
+    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    AppendQuadsData* append_quads_data) {
   DCHECK(external_texture_resource_ || valid_texture_copy_);
 
-  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+  SharedQuadState* shared_quad_state =
+      render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
 
   AppendDebugBorderQuad(
-      quad_sink, content_bounds(), shared_quad_state, append_quads_data);
+      render_pass, content_bounds(), shared_quad_state, append_quads_data);
 
   SkColor bg_color = blend_background_color_ ?
       background_color() : SK_ColorTRANSPARENT;
@@ -155,7 +158,7 @@ void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   gfx::Rect quad_rect(content_bounds());
   gfx::Rect opaque_rect = opaque ? quad_rect : gfx::Rect();
-  gfx::Rect visible_quad_rect = quad_sink->UnoccludedContentRect(
+  gfx::Rect visible_quad_rect = occlusion_tracker.UnoccludedContentRect(
       quad_rect, draw_properties().target_space_transform);
   if (visible_quad_rect.IsEmpty())
     return;
@@ -174,7 +177,7 @@ void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
                bg_color,
                vertex_opacity_,
                flipped_);
-  quad_sink->Append(quad.PassAs<DrawQuad>());
+  render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
 }
 
 Region TextureLayerImpl::VisibleContentOpaqueRegion() const {

@@ -34,7 +34,8 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   virtual void ReleaseResources() OVERRIDE;
   virtual bool WillDraw(DrawMode draw_mode,
                         ResourceProvider* resource_provider) OVERRIDE;
-  virtual void AppendQuads(QuadSink* quad_sink,
+  virtual void AppendQuads(RenderPass* render_pass,
+                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
                            AppendQuadsData* append_quads_data) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
 
@@ -62,7 +63,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
  private:
   void ClearChildId();
 
-  void AppendRainbowDebugBorder(QuadSink* quad_sink,
+  void AppendRainbowDebugBorder(RenderPass* render_pass,
                                 AppendQuadsData* append_quads_data);
 
   void SetRenderPasses(
@@ -76,7 +77,8 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
       RenderPass::Id* output_render_pass_id) const;
 
   void AppendRenderPassQuads(
-      QuadSink* quad_sink,
+      RenderPass* render_pass,
+      const OcclusionTracker<LayerImpl>& occlusion_tracker,
       AppendQuadsData* append_quads_data,
       const RenderPass* delegated_render_pass,
       const gfx::Size& frame_size) const;

@@ -35,7 +35,8 @@ class FakePictureLayerImpl : public PictureLayerImpl {
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
-  virtual void AppendQuads(QuadSink* quad_sink,
+  virtual void AppendQuads(RenderPass* render_pass,
+                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
                            AppendQuadsData* append_quads_data) OVERRIDE;
   virtual gfx::Size CalculateTileSize(
       const gfx::Size& content_bounds) const OVERRIDE;

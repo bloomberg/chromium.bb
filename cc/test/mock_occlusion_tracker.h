@@ -41,6 +41,9 @@ class MockOcclusionTracker : public OcclusionTracker<LayerType> {
         LayerType>::stack_[OcclusionTracker<LayerType>::stack_.size() - 2]
         .occlusion_from_inside_target = occluded;
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockOcclusionTracker);
 };
 
 }  // namespace cc

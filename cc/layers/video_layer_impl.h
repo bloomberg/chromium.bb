@@ -33,7 +33,8 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual bool WillDraw(DrawMode draw_mode,
                         ResourceProvider* resource_provider) OVERRIDE;
-  virtual void AppendQuads(QuadSink* quad_sink,
+  virtual void AppendQuads(RenderPass* render_pass,
+                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
                            AppendQuadsData* append_quads_data) OVERRIDE;
   virtual void DidDraw(ResourceProvider* resource_provider) OVERRIDE;
   virtual void DidBecomeActive() OVERRIDE;

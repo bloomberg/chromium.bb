@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/layers/quad_sink.h"
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "cc/trees/occlusion_tracker.h"
 
 namespace cc {
 
@@ -94,16 +94,19 @@ bool SolidColorScrollbarLayerImpl::IsThumbResizable() const {
   return true;
 }
 
-void SolidColorScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
-                           AppendQuadsData* append_quads_data) {
-  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+void SolidColorScrollbarLayerImpl::AppendQuads(
+    RenderPass* render_pass,
+    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    AppendQuadsData* append_quads_data) {
+  SharedQuadState* shared_quad_state =
+      render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
 
   AppendDebugBorderQuad(
-      quad_sink, content_bounds(), shared_quad_state, append_quads_data);
+      render_pass, content_bounds(), shared_quad_state, append_quads_data);
 
   gfx::Rect thumb_quad_rect(ComputeThumbQuadRect());
-  gfx::Rect visible_quad_rect = quad_sink->UnoccludedContentRect(
+  gfx::Rect visible_quad_rect = occlusion_tracker.UnoccludedContentRect(
       thumb_quad_rect, draw_properties().target_space_transform);
   if (visible_quad_rect.IsEmpty())
     return;
@@ -111,7 +114,7 @@ void SolidColorScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
   quad->SetNew(
       shared_quad_state, thumb_quad_rect, visible_quad_rect, color_, false);
-  quad_sink->Append(quad.PassAs<DrawQuad>());
+  render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
 }
 
 }  // namespace cc

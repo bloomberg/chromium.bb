@@ -175,6 +175,10 @@ SharedQuadState* RenderPass::CreateAndAppendSharedQuadState() {
 }
 
 void RenderPass::AppendDrawQuad(scoped_ptr<DrawQuad> draw_quad) {
+  DCHECK(!shared_quad_state_list.empty());
+  DCHECK(!draw_quad->rect.IsEmpty());
+  DCHECK(!draw_quad->visible_rect.IsEmpty());
+
   quad_list.push_back(draw_quad.Pass());
 }
 

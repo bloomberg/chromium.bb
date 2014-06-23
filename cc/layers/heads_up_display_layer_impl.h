@@ -39,7 +39,8 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
 
   virtual bool WillDraw(DrawMode draw_mode,
                         ResourceProvider* resource_provider) OVERRIDE;
-  virtual void AppendQuads(QuadSink* quad_sink,
+  virtual void AppendQuads(RenderPass* render_pass,
+                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
                            AppendQuadsData* append_quads_data) OVERRIDE;
   void UpdateHudTexture(DrawMode draw_mode,
                         ResourceProvider* resource_provider);
@@ -110,7 +111,7 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
                               int top,
                               int right) const;
   void DrawDebugRect(SkCanvas* canvas,
-                     SkPaint& paint,
+                     SkPaint* paint,
                      const DebugRect& rect,
                      SkColor stroke_color,
                      SkColor fill_color,

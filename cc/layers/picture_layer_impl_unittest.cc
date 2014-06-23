@@ -11,6 +11,7 @@
 
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/quads/draw_quad.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -20,7 +21,6 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/layer_test_common.h"
-#include "cc/test/mock_quad_culler.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -1212,7 +1212,6 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
 TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
   MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
-  MockQuadCuller quad_culler(render_pass.get(), &occlusion_tracker);
 
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
@@ -1233,11 +1232,11 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
 
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_RESOURCELESS_SOFTWARE, NULL);
-  active_layer_->AppendQuads(&quad_culler, &data);
+  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
   active_layer_->DidDraw(NULL);
 
-  ASSERT_EQ(1U, quad_culler.quad_list().size());
-  EXPECT_EQ(DrawQuad::PICTURE_CONTENT, quad_culler.quad_list()[0]->material);
+  ASSERT_EQ(1U, render_pass->quad_list.size());
+  EXPECT_EQ(DrawQuad::PICTURE_CONTENT, render_pass->quad_list[0]->material);
 }
 
 TEST_F(PictureLayerImplTest, MarkRequiredNullTiles) {
@@ -2719,7 +2718,6 @@ TEST_F(NoLowResPictureLayerImplTest, ReleaseResources) {
 TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
   MockOcclusionTracker<LayerImpl> occlusion_tracker;
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
-  MockQuadCuller quad_culler(render_pass.get(), &occlusion_tracker);
 
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1000, 2000);
@@ -2744,24 +2742,24 @@ TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
                               SK_MScalar1 / max_contents_scale);
 
   AppendQuadsData data;
-  active_layer_->AppendQuads(&quad_culler, &data);
+  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
 
   // SharedQuadState should have be of size 1, as we are doing AppenQuad once.
-  EXPECT_EQ(1u, quad_culler.shared_quad_state_list().size());
+  EXPECT_EQ(1u, render_pass->shared_quad_state_list.size());
   // The content_to_target_transform should be scaled by the
   // MaximumTilingContentsScale on the layer.
   EXPECT_EQ(scaled_draw_transform.ToString(),
-            quad_culler.shared_quad_state_list()[0]
+            render_pass->shared_quad_state_list[0]
                 ->content_to_target_transform.ToString());
   // The content_bounds should be scaled by the
   // MaximumTilingContentsScale on the layer.
   EXPECT_EQ(gfx::Size(2500u, 5000u).ToString(),
-            quad_culler.shared_quad_state_list()[0]->content_bounds.ToString());
+            render_pass->shared_quad_state_list[0]->content_bounds.ToString());
   // The visible_content_rect should be scaled by the
   // MaximumTilingContentsScale on the layer.
   EXPECT_EQ(
       gfx::Rect(0u, 0u, 2500u, 5000u).ToString(),
-      quad_culler.shared_quad_state_list()[0]->visible_content_rect.ToString());
+      render_pass->shared_quad_state_list[0]->visible_content_rect.ToString());
 }
 
 TEST_F(PictureLayerImplTest, UpdateTilesForMasksWithNoVisibleContent) {

@@ -15,7 +15,6 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_renderer_client.h"
-#include "cc/test/mock_quad_culler.h"
 #include "cc/test/pixel_test.h"
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"

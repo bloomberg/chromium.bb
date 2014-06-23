@@ -14,7 +14,6 @@
 #include "cc/debug/micro_benchmark_impl.h"
 #include "cc/debug/traced_value.h"
 #include "cc/layers/append_quads_data.h"
-#include "cc/layers/quad_sink.h"
 #include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
@@ -22,6 +21,7 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/tile_manager.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/occlusion_tracker.h"
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
@@ -135,8 +135,10 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   needs_push_properties_ = true;
 }
 
-void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
-                                   AppendQuadsData* append_quads_data) {
+void PictureLayerImpl::AppendQuads(
+    RenderPass* render_pass,
+    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    AppendQuadsData* append_quads_data) {
   DCHECK(!needs_post_commit_initialization_);
 
   float max_contents_scale = MaximumTilingContentsScale();
@@ -150,7 +152,9 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
       gfx::ScaleToEnclosingRect(visible_content_rect(), max_contents_scale);
   scaled_visible_content_rect.Intersect(gfx::Rect(scaled_content_bounds));
 
-  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+  SharedQuadState* shared_quad_state =
+      render_pass->CreateAndAppendSharedQuadState();
+  PopulateSharedQuadState(shared_quad_state);
   shared_quad_state->SetAll(scaled_draw_transform,
                             scaled_content_bounds,
                             scaled_visible_content_rect,
@@ -164,7 +168,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   if (current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     AppendDebugBorderQuad(
-        quad_sink,
+        render_pass,
         scaled_content_bounds,
         shared_quad_state,
         append_quads_data,
@@ -173,8 +177,8 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
     gfx::Rect geometry_rect = rect;
     gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
-    gfx::Rect visible_geometry_rect =
-        quad_sink->UnoccludedContentRect(geometry_rect, draw_transform());
+    gfx::Rect visible_geometry_rect = occlusion_tracker.UnoccludedContentRect(
+        geometry_rect, draw_transform());
     if (visible_geometry_rect.IsEmpty())
       return;
 
@@ -193,13 +197,13 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                  quad_content_rect,
                  max_contents_scale,
                  pile_);
-    quad_sink->Append(quad.PassAs<DrawQuad>());
+    render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
     append_quads_data->num_missing_tiles++;
     return;
   }
 
   AppendDebugBorderQuad(
-      quad_sink, scaled_content_bounds, shared_quad_state, append_quads_data);
+      render_pass, scaled_content_bounds, shared_quad_state, append_quads_data);
 
   if (ShowDebugBorders()) {
     for (PictureLayerTilingSet::CoverageIterator iter(
@@ -244,7 +248,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                                 visible_geometry_rect,
                                 color,
                                 width);
-      quad_sink->Append(debug_border_quad.PassAs<DrawQuad>());
+      render_pass->AppendDrawQuad(debug_border_quad.PassAs<DrawQuad>());
     }
   }
 
@@ -259,8 +263,8 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
        iter;
        ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
-    gfx::Rect visible_geometry_rect =
-        quad_sink->UnoccludedContentRect(geometry_rect, draw_transform());
+    gfx::Rect visible_geometry_rect = occlusion_tracker.UnoccludedContentRect(
+        geometry_rect, draw_transform());
     if (visible_geometry_rect.IsEmpty())
       continue;
 
@@ -341,7 +345,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
         SkColor color = DebugColors::DefaultCheckerboardColor();
         quad->SetNew(
             shared_quad_state, geometry_rect, visible_geometry_rect, color);
-        quad_sink->Append(quad.PassAs<DrawQuad>());
+        render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
       } else {
         SkColor color = SafeOpaqueBackgroundColor();
         scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
@@ -350,7 +354,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                      visible_geometry_rect,
                      color,
                      false);
-        quad_sink->Append(quad.PassAs<DrawQuad>());
+        render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
       }
 
       append_quads_data->num_missing_tiles++;
@@ -361,7 +365,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
       continue;
     }
 
-    quad_sink->Append(draw_quad.Pass());
+    render_pass->AppendDrawQuad(draw_quad.Pass());
 
     if (iter->priority(ACTIVE_TREE).resolution != HIGH_RESOLUTION) {
       append_quads_data->approximated_visible_content_area +=

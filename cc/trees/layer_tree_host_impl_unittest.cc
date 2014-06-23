@@ -20,7 +20,6 @@
 #include "cc/layers/io_surface_layer_impl.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
-#include "cc/layers/quad_sink.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/solid_color_layer_impl.h"
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
@@ -1654,10 +1653,11 @@ class DidDrawCheckLayer : public LayerImpl {
     return LayerImpl::WillDraw(draw_mode, provider);
   }
 
-  virtual void AppendQuads(QuadSink* quad_sink,
+  virtual void AppendQuads(RenderPass* render_pass,
+                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
                            AppendQuadsData* append_quads_data) OVERRIDE {
     append_quads_called_ = true;
-    LayerImpl::AppendQuads(quad_sink, append_quads_data);
+    LayerImpl::AppendQuads(render_pass, occlusion_tracker, append_quads_data);
   }
 
   virtual void DidDraw(ResourceProvider* provider) OVERRIDE {
@@ -1875,9 +1875,10 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
                                          resource_provider));
   }
 
-  virtual void AppendQuads(QuadSink* quad_sink,
+  virtual void AppendQuads(RenderPass* render_pass,
+                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
                            AppendQuadsData* append_quads_data) OVERRIDE {
-    LayerImpl::AppendQuads(quad_sink, append_quads_data);
+    LayerImpl::AppendQuads(render_pass, occlusion_tracker, append_quads_data);
     if (had_incomplete_tile_)
       append_quads_data->had_incomplete_tile = true;
     if (tile_missing_)
@@ -3482,7 +3483,8 @@ class BlendStateCheckLayer : public LayerImpl {
                                                           resource_provider));
   }
 
-  virtual void AppendQuads(QuadSink* quad_sink,
+  virtual void AppendQuads(RenderPass* render_pass,
+                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
                            AppendQuadsData* append_quads_data) OVERRIDE {
     quads_appended_ = true;
 
@@ -3493,7 +3495,8 @@ class BlendStateCheckLayer : public LayerImpl {
       opaque_rect = opaque_content_rect_;
     gfx::Rect visible_quad_rect = quad_rect_;
 
-    SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+    SharedQuadState* shared_quad_state =
+        render_pass->CreateAndAppendSharedQuadState();
     PopulateSharedQuadState(shared_quad_state);
 
     scoped_ptr<TileDrawQuad> test_blending_draw_quad = TileDrawQuad::Create();
@@ -3508,7 +3511,7 @@ class BlendStateCheckLayer : public LayerImpl {
     test_blending_draw_quad->visible_rect = quad_visible_rect_;
     EXPECT_EQ(blend_, test_blending_draw_quad->ShouldDrawWithBlending());
     EXPECT_EQ(has_render_surface_, !!render_surface());
-    quad_sink->Append(test_blending_draw_quad.PassAs<DrawQuad>());
+    render_pass->AppendDrawQuad(test_blending_draw_quad.PassAs<DrawQuad>());
   }
 
   void SetExpectation(bool blend, bool has_render_surface) {
@@ -4240,9 +4243,11 @@ class FakeLayerWithQuads : public LayerImpl {
     return scoped_ptr<LayerImpl>(new FakeLayerWithQuads(tree_impl, id));
   }
 
-  virtual void AppendQuads(QuadSink* quad_sink,
+  virtual void AppendQuads(RenderPass* render_pass,
+                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
                            AppendQuadsData* append_quads_data) OVERRIDE {
-    SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+    SharedQuadState* shared_quad_state =
+        render_pass->CreateAndAppendSharedQuadState();
     PopulateSharedQuadState(shared_quad_state);
 
     SkColor gray = SkColorSetRGB(100, 100, 100);
@@ -4251,7 +4256,7 @@ class FakeLayerWithQuads : public LayerImpl {
     scoped_ptr<SolidColorDrawQuad> my_quad = SolidColorDrawQuad::Create();
     my_quad->SetNew(
         shared_quad_state, quad_rect, visible_quad_rect, gray, false);
-    quad_sink->Append(my_quad.PassAs<DrawQuad>());
+    render_pass->AppendDrawQuad(my_quad.PassAs<DrawQuad>());
   }
 
  private:

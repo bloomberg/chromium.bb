@@ -17,7 +17,6 @@
 #include "cc/input/layer_scroll_offset_delegate.h"
 #include "cc/layers/layer_utils.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
-#include "cc/layers/quad_sink.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -288,14 +287,14 @@ void LayerImpl::GetDebugBorderProperties(SkColor* color, float* width) const {
 }
 
 void LayerImpl::AppendDebugBorderQuad(
-    QuadSink* quad_sink,
+    RenderPass* render_pass,
     const gfx::Size& content_bounds,
     const SharedQuadState* shared_quad_state,
     AppendQuadsData* append_quads_data) const {
   SkColor color;
   float width;
   GetDebugBorderProperties(&color, &width);
-  AppendDebugBorderQuad(quad_sink,
+  AppendDebugBorderQuad(render_pass,
                         content_bounds,
                         shared_quad_state,
                         append_quads_data,
@@ -303,7 +302,7 @@ void LayerImpl::AppendDebugBorderQuad(
                         width);
 }
 
-void LayerImpl::AppendDebugBorderQuad(QuadSink* quad_sink,
+void LayerImpl::AppendDebugBorderQuad(RenderPass* render_pass,
                                       const gfx::Size& content_bounds,
                                       const SharedQuadState* shared_quad_state,
                                       AppendQuadsData* append_quads_data,
@@ -318,7 +317,7 @@ void LayerImpl::AppendDebugBorderQuad(QuadSink* quad_sink,
       DebugBorderDrawQuad::Create();
   debug_border_quad->SetNew(
       shared_quad_state, quad_rect, visible_quad_rect, color, width);
-  quad_sink->Append(debug_border_quad.PassAs<DrawQuad>());
+  render_pass->AppendDrawQuad(debug_border_quad.PassAs<DrawQuad>());
 }
 
 bool LayerImpl::HasDelegatedContent() const {

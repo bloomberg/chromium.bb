@@ -5,8 +5,8 @@
 #include "cc/layers/surface_layer_impl.h"
 
 #include "cc/debug/debug_colors.h"
-#include "cc/layers/quad_sink.h"
 #include "cc/quads/surface_draw_quad.h"
+#include "cc/trees/occlusion_tracker.h"
 
 namespace cc {
 
@@ -36,25 +36,28 @@ void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer_impl->SetSurfaceId(surface_id_);
 }
 
-void SurfaceLayerImpl::AppendQuads(QuadSink* quad_sink,
-                                   AppendQuadsData* append_quads_data) {
-  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+void SurfaceLayerImpl::AppendQuads(
+    RenderPass* render_pass,
+    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    AppendQuadsData* append_quads_data) {
+  SharedQuadState* shared_quad_state =
+      render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
 
   AppendDebugBorderQuad(
-      quad_sink, content_bounds(), shared_quad_state, append_quads_data);
+      render_pass, content_bounds(), shared_quad_state, append_quads_data);
 
   if (surface_id_.is_null())
     return;
 
   scoped_ptr<SurfaceDrawQuad> quad = SurfaceDrawQuad::Create();
   gfx::Rect quad_rect(content_bounds());
-  gfx::Rect visible_quad_rect = quad_sink->UnoccludedContentRect(
+  gfx::Rect visible_quad_rect = occlusion_tracker.UnoccludedContentRect(
       quad_rect, draw_properties().target_space_transform);
   if (visible_quad_rect.IsEmpty())
     return;
   quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect, surface_id_);
-  quad_sink->Append(quad.PassAs<DrawQuad>());
+  render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
 }
 
 void SurfaceLayerImpl::GetDebugBorderProperties(SkColor* color,

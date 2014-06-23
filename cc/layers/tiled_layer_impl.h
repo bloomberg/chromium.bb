@@ -28,7 +28,8 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
 
   virtual bool WillDraw(DrawMode draw_mode,
                         ResourceProvider* resource_provider) OVERRIDE;
-  virtual void AppendQuads(QuadSink* quad_sink,
+  virtual void AppendQuads(RenderPass* render_pass,
+                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
                            AppendQuadsData* append_quads_data) OVERRIDE;
 
   virtual ResourceProvider::ResourceId ContentsResourceId() const OVERRIDE;

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "cc/layers/quad_sink.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
@@ -15,6 +14,7 @@
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/proxy.h"
 #include "media/base/video_frame.h"
 
@@ -124,22 +124,25 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
   return true;
 }
 
-void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
-                                 AppendQuadsData* append_quads_data) {
+void VideoLayerImpl::AppendQuads(
+    RenderPass* render_pass,
+    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    AppendQuadsData* append_quads_data) {
   DCHECK(frame_.get());
 
-  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+  SharedQuadState* shared_quad_state =
+      render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
 
   AppendDebugBorderQuad(
-      quad_sink, content_bounds(), shared_quad_state, append_quads_data);
+      render_pass, content_bounds(), shared_quad_state, append_quads_data);
 
   gfx::Rect quad_rect(content_bounds());
   gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
   gfx::Rect visible_rect = frame_->visible_rect();
   gfx::Size coded_size = frame_->coded_size();
 
-  gfx::Rect visible_quad_rect = quad_sink->UnoccludedContentRect(
+  gfx::Rect visible_quad_rect = occlusion_tracker.UnoccludedContentRect(
       quad_rect, draw_properties().target_space_transform);
   if (visible_quad_rect.IsEmpty())
     return;
@@ -178,7 +181,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                            SK_ColorTRANSPARENT,
                            opacity,
                            flipped);
-      quad_sink->Append(texture_quad.PassAs<DrawQuad>());
+      render_pass->AppendDrawQuad(texture_quad.PassAs<DrawQuad>());
       break;
     }
     case VideoFrameExternalResources::YUV_RESOURCE: {
@@ -203,7 +206,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
           frame_resources_[2],
           frame_resources_.size() > 3 ? frame_resources_[3] : 0,
           color_space);
-      quad_sink->Append(yuv_video_quad.PassAs<DrawQuad>());
+      render_pass->AppendDrawQuad(yuv_video_quad.PassAs<DrawQuad>());
       break;
     }
     case VideoFrameExternalResources::RGB_RESOURCE: {
@@ -227,7 +230,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                            SK_ColorTRANSPARENT,
                            opacity,
                            flipped);
-      quad_sink->Append(texture_quad.PassAs<DrawQuad>());
+      render_pass->AppendDrawQuad(texture_quad.PassAs<DrawQuad>());
       break;
     }
     case VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE: {
@@ -245,7 +248,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
           visible_quad_rect,
           frame_resources_[0],
           scale * provider_client_impl_->stream_texture_matrix());
-      quad_sink->Append(stream_video_quad.PassAs<DrawQuad>());
+      render_pass->AppendDrawQuad(stream_video_quad.PassAs<DrawQuad>());
       break;
     }
     case VideoFrameExternalResources::IO_SURFACE: {
@@ -261,7 +264,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                               visible_rect.size(),
                               frame_resources_[0],
                               IOSurfaceDrawQuad::UNFLIPPED);
-      quad_sink->Append(io_surface_quad.PassAs<DrawQuad>());
+      render_pass->AppendDrawQuad(io_surface_quad.PassAs<DrawQuad>());
       break;
     }
 #if defined(VIDEO_HOLE)
@@ -286,7 +289,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                                     false,
                                     SK_ColorTRANSPARENT,
                                     true);
-      quad_sink->Append(solid_color_draw_quad.PassAs<DrawQuad>());
+      render_pass->AppendDrawQuad(solid_color_draw_quad.PassAs<DrawQuad>());
       break;
     }
 #endif  // defined(VIDEO_HOLE)

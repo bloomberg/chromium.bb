@@ -7,9 +7,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
-#include "cc/layers/quad_sink.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/occlusion_tracker.h"
 #include "ui/gfx/rect_f.h"
 
 namespace cc {
@@ -91,13 +91,16 @@ bool UIResourceLayerImpl::WillDraw(DrawMode draw_mode,
   return LayerImpl::WillDraw(draw_mode, resource_provider);
 }
 
-void UIResourceLayerImpl::AppendQuads(QuadSink* quad_sink,
-                                     AppendQuadsData* append_quads_data) {
-  SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
+void UIResourceLayerImpl::AppendQuads(
+    RenderPass* render_pass,
+    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    AppendQuadsData* append_quads_data) {
+  SharedQuadState* shared_quad_state =
+      render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
 
   AppendDebugBorderQuad(
-      quad_sink, content_bounds(), shared_quad_state, append_quads_data);
+      render_pass, content_bounds(), shared_quad_state, append_quads_data);
 
   if (!ui_resource_id_)
     return;
@@ -118,7 +121,7 @@ void UIResourceLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   gfx::Rect quad_rect(bounds());
   gfx::Rect opaque_rect(opaque ? quad_rect : gfx::Rect());
-  gfx::Rect visible_quad_rect = quad_sink->UnoccludedContentRect(
+  gfx::Rect visible_quad_rect = occlusion_tracker.UnoccludedContentRect(
       quad_rect, draw_properties().target_space_transform);
   if (visible_quad_rect.IsEmpty())
     return;
@@ -135,7 +138,7 @@ void UIResourceLayerImpl::AppendQuads(QuadSink* quad_sink,
                SK_ColorTRANSPARENT,
                vertex_opacity_,
                flipped);
-  quad_sink->Append(quad.PassAs<DrawQuad>());
+  render_pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
 }
 
 const char* UIResourceLayerImpl::LayerTypeAsString() const {

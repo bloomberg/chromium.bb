@@ -22,7 +22,8 @@ namespace cc {
 
 class DamageTracker;
 class DelegatedRendererLayerImpl;
-class QuadSink;
+template <typename LayerType>
+class OcclusionTracker;
 class RenderPassSink;
 class LayerImpl;
 template <typename LayerType>
@@ -135,7 +136,8 @@ class CC_EXPORT RenderSurfaceImpl {
   RenderPass::Id RenderPassId();
 
   void AppendRenderPasses(RenderPassSink* pass_sink);
-  void AppendQuads(QuadSink* quad_sink,
+  void AppendQuads(RenderPass* render_pass,
+                   const OcclusionTracker<LayerImpl>& occlusion_tracker,
                    AppendQuadsData* append_quads_data,
                    bool for_replica,
                    RenderPass::Id render_pass_id);

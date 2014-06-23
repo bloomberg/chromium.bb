@@ -48,7 +48,8 @@ namespace cc {
 class LayerTreeHostImpl;
 class LayerTreeImpl;
 class MicroBenchmarkImpl;
-class QuadSink;
+template <typename LayerType>
+class OcclusionTracker;
 class Renderer;
 class ScrollbarAnimationController;
 class ScrollbarLayerImplBase;
@@ -177,7 +178,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // returns true.
   virtual bool WillDraw(DrawMode draw_mode,
                         ResourceProvider* resource_provider);
-  virtual void AppendQuads(QuadSink* quad_sink,
+  virtual void AppendQuads(RenderPass* render_pass,
+                           const OcclusionTracker<LayerImpl>& occlusion_tracker,
                            AppendQuadsData* append_quads_data) {}
   virtual void DidDraw(ResourceProvider* resource_provider);
 
@@ -539,11 +541,11 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // Get the color and size of the layer's debug border.
   virtual void GetDebugBorderProperties(SkColor* color, float* width) const;
 
-  void AppendDebugBorderQuad(QuadSink* quad_sink,
+  void AppendDebugBorderQuad(RenderPass* render_pass,
                              const gfx::Size& content_bounds,
                              const SharedQuadState* shared_quad_state,
                              AppendQuadsData* append_quads_data) const;
-  void AppendDebugBorderQuad(QuadSink* quad_sink,
+  void AppendDebugBorderQuad(RenderPass* render_pass,
                              const gfx::Size& content_bounds,
                              const SharedQuadState* shared_quad_state,
                              AppendQuadsData* append_quads_data,
