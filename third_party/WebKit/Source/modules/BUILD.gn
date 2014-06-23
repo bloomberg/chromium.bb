@@ -53,7 +53,7 @@ source_set("modules") {
 
 # GYP version: WebKit/Source/modules/modules.gyp:modules (FetchPolyfill action)
 make_file_arrays("modules_fetch_polyfill") {
-  filename = "FetchPolyfill"
+  filename = "modules/FetchPolyfill"
   resources = [
     "serviceworkers/polyfills/fetchPolyfill.js",
   ]
@@ -62,7 +62,7 @@ make_file_arrays("modules_fetch_polyfill") {
 
 # GYP version: WebKit/Source/modules/modules.gyp:modules (CachePolyfill action)
 make_file_arrays("modules_cache_polyfill") {
-  filename = "CachePolyfill"
+  filename = "modules/CachePolyfill"
   resources = [
     "serviceworkers/polyfills/cachePolyfill.js",
   ]
@@ -71,7 +71,7 @@ make_file_arrays("modules_cache_polyfill") {
 
 # GYP version: WebKit/Source/modules/modules.gyp:modules (CacheStoragePolyfill action)
 make_file_arrays("modules_cache_storage_polyfill") {
-  filename = "CacheStoragePolyfill"
+  filename = "modules/CacheStoragePolyfill"
   resources = [
     "serviceworkers/polyfills/cacheStoragePolyfill.js",
   ]

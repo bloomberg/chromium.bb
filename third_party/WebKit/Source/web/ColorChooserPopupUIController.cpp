@@ -26,13 +26,13 @@
 #include "config.h"
 #include "web/ColorChooserPopupUIController.h"
 
-#include "ColorSuggestionPicker.h"
-#include "PickerCommon.h"
 #include "core/frame/FrameView.h"
 #include "platform/ColorChooserClient.h"
 #include "platform/geometry/IntRect.h"
 #include "public/web/WebColorChooser.h"
 #include "web/ChromeClientImpl.h"
+#include "web/ColorSuggestionPicker.h"
+#include "web/PickerCommon.h"
 #include "web/WebViewImpl.h"
 
 using namespace WebCore;

@@ -29,6 +29,9 @@
 #
 
 {
+    'variables': {
+      'blink_web_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/web',
+    },
     'includes': [
         '../bindings/bindings.gypi',
         '../core/core.gypi',
@@ -216,14 +219,14 @@
                         '<@(resources)',
                     ],
                     'outputs': [
-                        '<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.h',
-                        '<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.cpp',
+                        '<(blink_web_output_dir)/PickerCommon.h',
+                        '<(blink_web_output_dir)/PickerCommon.cpp',
                         ],
                     'action': [
                         'python',
                         '../build/scripts/make-file-arrays.py',
-                        '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.h',
-                        '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.cpp',
+                        '--out-h=<(blink_web_output_dir)/PickerCommon.h',
+                        '--out-cpp=<(blink_web_output_dir)/PickerCommon.cpp',
                         '<@(resources)',
                     ],
                 },
@@ -244,14 +247,14 @@
                         '<@(resources)'
                     ],
                     'outputs': [
-                        '<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.h',
-                        '<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
+                        '<(blink_web_output_dir)/CalendarPicker.h',
+                        '<(blink_web_output_dir)/CalendarPicker.cpp',
                     ],
                     'action': [
                         'python',
                         '../build/scripts/make-file-arrays.py',
-                        '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.h',
-                        '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
+                        '--out-h=<(blink_web_output_dir)/CalendarPicker.h',
+                        '--out-cpp=<(blink_web_output_dir)/CalendarPicker.cpp',
                         '<@(resources)',
                     ],
                },
@@ -269,14 +272,14 @@
                         '<@(resources)',
                     ],
                     'outputs': [
-                        '<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.h',
-                        '<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.cpp',
+                        '<(blink_web_output_dir)/ColorSuggestionPicker.h',
+                        '<(blink_web_output_dir)/ColorSuggestionPicker.cpp',
                     ],
                     'action': [
                         'python',
                         '../build/scripts/make-file-arrays.py',
-                        '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.h',
-                        '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.cpp',
+                        '--out-h=<(blink_web_output_dir)/ColorSuggestionPicker.h',
+                        '--out-cpp=<(blink_web_output_dir)/ColorSuggestionPicker.cpp',
                         '<@(resources)',
                     ],
                 },
