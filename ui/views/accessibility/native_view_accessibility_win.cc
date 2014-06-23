@@ -30,9 +30,6 @@
 namespace views {
 namespace {
 
-// A version of the OBJID_CLIENT constant that works in 64-bit mode too.
-static const LPARAM kObjIdClient = static_cast<ULONG>(OBJID_CLIENT);
-
 class AccessibleWebViewRegistry {
  public:
   static AccessibleWebViewRegistry* GetInstance();

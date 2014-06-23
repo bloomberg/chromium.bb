@@ -25,9 +25,6 @@ namespace content {
 // accessibility support.
 const int kIdScreenReaderHoneyPot = 1;
 
-// A version of the OBJID_CLIENT constant that works in 64-bit mode too.
-static const LPARAM kObjIdClient = static_cast<ULONG>(OBJID_CLIENT);
-
 LegacyRenderWidgetHostHWND::~LegacyRenderWidgetHostHWND() {
   ::DestroyWindow(hwnd());
 }
@@ -138,14 +135,18 @@ LRESULT LegacyRenderWidgetHostHWND::OnEraseBkGnd(UINT message,
 LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
                                                 WPARAM w_param,
                                                 LPARAM l_param) {
-  if (kIdScreenReaderHoneyPot == l_param) {
+  // Only the lower 32 bits of l_param are valid when checking the object id
+  // because it sometimes gets sign-extended incorrectly (but not always).
+  DWORD obj_id = static_cast<DWORD>(static_cast<DWORD_PTR>(l_param));
+
+  if (kIdScreenReaderHoneyPot == obj_id) {
     // When an MSAA client has responded to our fake event on this id,
     // enable screen reader support.
     BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
     return static_cast<LRESULT>(0L);
   }
 
-  if (kObjIdClient != l_param || !manager_)
+  if (OBJID_CLIENT != obj_id || !manager_)
     return static_cast<LRESULT>(0L);
 
   base::win::ScopedComPtr<IAccessible> root(
