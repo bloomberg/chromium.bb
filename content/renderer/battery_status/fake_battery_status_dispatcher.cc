@@ -21,14 +21,8 @@ void FakeBatteryStatusDispatcher::SetListener(
 
 void FakeBatteryStatusDispatcher::PostBatteryStatusChange(
     const blink::WebBatteryStatus& status) {
-  if (!listener_)
-    return;
-
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&blink::WebBatteryStatusListener::updateBatteryStatus,
-                 base::Unretained(listener_),
-                 status));
+  if (listener_)
+    listener_->updateBatteryStatus(status);
 }
 
 }  // namespace content
