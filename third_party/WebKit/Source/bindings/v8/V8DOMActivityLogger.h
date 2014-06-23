@@ -47,7 +47,6 @@ public:
     virtual void logSetter(const String& apiName, const v8::Handle<v8::Value>& newValue) { }
     virtual void logSetter(const String& apiName, const v8::Handle<v8::Value>& newValue, const v8::Handle<v8::Value>& oldValue) { }
     virtual void logMethod(const String& apiName, int argc, const v8::Handle<v8::Value>* argv) { }
-    virtual void logEvent(const String& eventName, int argc, const String* argv) { }
 
     // Associates a logger with the world identified by worldId (worlId may be 0
     // identifying the main world) and extension ID. Extension ID is used to
@@ -63,12 +62,6 @@ public:
     static void setActivityLogger(int worldId, const String&, PassOwnPtr<V8DOMActivityLogger>);
     static V8DOMActivityLogger* activityLogger(int worldId, const String& extensionId);
     static V8DOMActivityLogger* activityLogger(int worldId, const KURL&);
-
-    // Returns activity logger for current V8 context or 0.
-    static V8DOMActivityLogger* currentActivityLogger();
-    // Returns activity logger for current V8 context if the context belongs to
-    // an isolated world or 0.
-    static V8DOMActivityLogger* currentActivityLoggerIfIsolatedWorld();
 
 };
 

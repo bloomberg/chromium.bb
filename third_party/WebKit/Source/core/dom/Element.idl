@@ -141,7 +141,7 @@
     [RuntimeEnabled=Touch] attribute EventHandler ontouchstart;
     attribute EventHandler onwebkitfullscreenchange;
     attribute EventHandler onwebkitfullscreenerror;
-    attribute EventHandler onwheel;
+    [LogActivity=SetterOnly] attribute EventHandler onwheel;
 };
 
 Element implements ParentNode;

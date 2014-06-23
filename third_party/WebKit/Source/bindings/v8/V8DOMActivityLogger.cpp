@@ -69,34 +69,4 @@ V8DOMActivityLogger* V8DOMActivityLogger::activityLogger(int worldId, const KURL
     return activityLogger(worldId, url.host());
 }
 
-V8DOMActivityLogger* V8DOMActivityLogger::currentActivityLogger()
-{
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    if (!isolate->InContext())
-        return 0;
-
-    V8PerContextData* contextData = ScriptState::current(isolate)->perContextData();
-    if (!contextData)
-        return 0;
-
-    return contextData->activityLogger();
-}
-
-V8DOMActivityLogger* V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld()
-{
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    if (!isolate->InContext())
-        return 0;
-
-    ScriptState* scriptState = ScriptState::current(isolate);
-    if (!scriptState->world().isIsolatedWorld())
-        return 0;
-
-    V8PerContextData* contextData = scriptState->perContextData();
-    if (!contextData)
-        return 0;
-
-    return contextData->activityLogger();
-}
-
 } // namespace WebCore

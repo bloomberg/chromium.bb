@@ -69,14 +69,6 @@ public:
         m_domActivityLogger->logMethod(WebString(apiName), argc, argv, getURL(), getTitle());
     }
 
-    virtual void logEvent(const String& eventName, int argc, const String* argv) OVERRIDE
-    {
-        Vector<WebString> webStringArgv;
-        for (int i = 0; i < argc; i++)
-            webStringArgv.append(argv[i]);
-        m_domActivityLogger->logEvent(WebString(eventName), argc, webStringArgv.data(), getURL(), getTitle());
-    }
-
 private:
     WebURL getURL()
     {

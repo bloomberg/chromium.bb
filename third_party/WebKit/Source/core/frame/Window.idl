@@ -193,7 +193,7 @@
     attribute EventHandler onwebkitanimationiteration;
     attribute EventHandler onwebkitanimationstart;
     attribute EventHandler onwebkittransitionend;
-    attribute EventHandler onwheel;
+    [LogActivity=SetterOnly] attribute EventHandler onwheel;
 
     [MeasureAs=WindowCaptureEvents] void captureEvents();
     [MeasureAs=WindowReleaseEvents] void releaseEvents();

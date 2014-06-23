@@ -264,7 +264,6 @@
       'win/WebFontRendering.cpp',
     ],
     'web_unittest_files': [
-      'tests/ActivityLoggerTest.cpp',
       'tests/AssociatedURLLoaderTest.cpp',
       'tests/ChromeClientImplTest.cpp',
       'tests/CustomEventTest.cpp',
