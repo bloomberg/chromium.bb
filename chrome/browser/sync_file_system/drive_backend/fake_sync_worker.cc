@@ -178,26 +178,6 @@ void FakeSyncWorker::OnNetworkChanged(
   network_available_ = new_network_availability;
 }
 
-drive::DriveServiceInterface* FakeSyncWorker::GetDriveService() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  return NULL;
-}
-
-drive::DriveUploaderInterface* FakeSyncWorker::GetDriveUploader() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  return NULL;
-}
-
-MetadataDatabase* FakeSyncWorker::GetMetadataDatabase() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  return NULL;
-}
-
-SyncTaskManager* FakeSyncWorker::GetSyncTaskManager() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  return NULL;
-}
-
 void FakeSyncWorker::DetachFromSequence() {
   sequence_checker_.DetachFromSequence();
 }

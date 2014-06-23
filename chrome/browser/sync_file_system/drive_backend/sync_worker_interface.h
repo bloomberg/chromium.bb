@@ -106,11 +106,6 @@ class SyncWorkerInterface {
   virtual void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) = 0;
 
-  virtual drive::DriveServiceInterface* GetDriveService() = 0;
-  virtual drive::DriveUploaderInterface* GetDriveUploader() = 0;
-  virtual MetadataDatabase* GetMetadataDatabase() = 0;
-  virtual SyncTaskManager* GetSyncTaskManager() = 0;
-
   virtual void DetachFromSequence() = 0;
 
   virtual void AddObserver(Observer* observer) = 0;

@@ -359,26 +359,6 @@ void SyncWorker::OnNetworkChanged(
   network_available_ = new_network_availability;
 }
 
-drive::DriveServiceInterface* SyncWorker::GetDriveService() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  return context_->GetDriveService();
-}
-
-drive::DriveUploaderInterface* SyncWorker::GetDriveUploader() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  return context_->GetDriveUploader();
-}
-
-MetadataDatabase* SyncWorker::GetMetadataDatabase() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  return context_->GetMetadataDatabase();
-}
-
-SyncTaskManager* SyncWorker::GetSyncTaskManager() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  return task_manager_.get();
-}
-
 void SyncWorker::DetachFromSequence() {
   task_manager_->DetachFromSequence();
   context_->DetachFromSequence();
@@ -746,6 +726,21 @@ void SyncWorker::UpdateServiceState(RemoteServiceState state,
   FOR_EACH_OBSERVER(
       Observer, observers_,
       UpdateServiceState(GetCurrentState(), description));
+}
+
+drive::DriveServiceInterface* SyncWorker::GetDriveService() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  return context_->GetDriveService();
+}
+
+drive::DriveUploaderInterface* SyncWorker::GetDriveUploader() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  return context_->GetDriveUploader();
+}
+
+MetadataDatabase* SyncWorker::GetMetadataDatabase() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  return context_->GetMetadataDatabase();
 }
 
 }  // namespace drive_backend

@@ -90,29 +90,18 @@ class SyncWorker : public SyncWorkerInterface,
   virtual scoped_ptr<base::ListValue> DumpDatabase() OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;
   virtual void PromoteDemotedChanges() OVERRIDE;
-
   virtual void ApplyLocalChange(
       const FileChange& local_change,
       const base::FilePath& local_path,
       const SyncFileMetadata& local_metadata,
       const fileapi::FileSystemURL& url,
       const SyncStatusCallback& callback) OVERRIDE;
-
   virtual void OnNotificationReceived() OVERRIDE;
-
   virtual void OnReadyToSendRequests() OVERRIDE;
   virtual void OnRefreshTokenInvalid() OVERRIDE;
-
   virtual void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
-
-  virtual drive::DriveServiceInterface* GetDriveService() OVERRIDE;
-  virtual drive::DriveUploaderInterface* GetDriveUploader() OVERRIDE;
-  virtual MetadataDatabase* GetMetadataDatabase() OVERRIDE;
-  virtual SyncTaskManager* GetSyncTaskManager() OVERRIDE;
-
   virtual void DetachFromSequence() OVERRIDE;
-
   virtual void AddObserver(Observer* observer) OVERRIDE;
 
  private:
@@ -161,6 +150,10 @@ class SyncWorker : public SyncWorkerInterface,
                                             bool used_network);
   void UpdateServiceState(RemoteServiceState state,
                           const std::string& description);
+
+  drive::DriveServiceInterface* GetDriveService();
+  drive::DriveUploaderInterface* GetDriveUploader();
+  MetadataDatabase* GetMetadataDatabase();
 
   base::FilePath base_dir_;
 

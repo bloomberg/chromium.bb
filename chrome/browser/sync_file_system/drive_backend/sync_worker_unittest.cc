@@ -144,7 +144,7 @@ class SyncWorkerTest : public testing::Test,
   }
 
   SyncTaskManager* GetSyncTaskManager() {
-    return sync_worker_->GetSyncTaskManager();
+    return sync_worker_->task_manager_.get();
   }
 
   void CheckServiceState(SyncStatusCode expected_sync_status,

@@ -85,10 +85,6 @@ class FakeSyncWorker : public SyncWorkerInterface {
   virtual void OnRefreshTokenInvalid() OVERRIDE;
   virtual void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
-  virtual drive::DriveServiceInterface* GetDriveService() OVERRIDE;
-  virtual drive::DriveUploaderInterface* GetDriveUploader() OVERRIDE;
-  virtual MetadataDatabase* GetMetadataDatabase() OVERRIDE;
-  virtual SyncTaskManager* GetSyncTaskManager() OVERRIDE;
   virtual void DetachFromSequence() OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
 
