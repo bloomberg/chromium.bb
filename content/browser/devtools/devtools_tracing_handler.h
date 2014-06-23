@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_TRACING_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_TRACING_HANDLER_H_
 
+#include <set>
+#include <string>
+
 #include "base/memory/weak_ptr.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/public/browser/tracing_controller.h"
@@ -37,6 +40,11 @@ class DevToolsTracingHandler : public DevToolsProtocol::Handler {
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> OnEnd(
       scoped_refptr<DevToolsProtocol::Command> command);
+
+  scoped_refptr<DevToolsProtocol::Response> OnGetCategories(
+      scoped_refptr<DevToolsProtocol::Command> command);
+  void OnCategoriesReceived(scoped_refptr<DevToolsProtocol::Command> command,
+                            const std::set<std::string>& category_set);
 
   TracingController::Options TraceOptionsFromString(const std::string& options);
 
