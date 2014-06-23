@@ -112,8 +112,12 @@ Error JSPipeEventEmitter::Read_Locked(char* data, size_t len, int* out_bytes) {
 
 Error JSPipeEventEmitter::SendWriteMessage(const void* buf, size_t count) {
   TRACE("SendWriteMessage [%" PRIuS "] total=%" PRIuS, count, bytes_sent_);
-  if (!var_iface_ || !buffer_iface_)
+  if (!var_iface_ || !buffer_iface_) {
+    ERROR("Got NULL interface(s): %s%s",
+          var_iface_ ? "" : "Var ",
+          buffer_iface_ ? "" : "ArrayBuffer");
     return EIO;
+  }
 
   // Copy payload data in a new ArrayBuffer
   PP_Var buffer = buffer_iface_->Create(count);
@@ -126,16 +130,23 @@ Error JSPipeEventEmitter::SendWriteMessage(const void* buf, size_t count) {
 }
 
 Error JSPipeEventEmitter::SetName(const char* name) {
-  if (var_iface_ == NULL)
+  if (var_iface_ == NULL) {
+    // No error here: many of the tests trigger this message.
+    LOG_TRACE("Got NULL interface: Var");
     return EIO;
+  }
 
   // name can only be set once
-  if (!name_.empty())
+  if (!name_.empty()) {
+    LOG_ERROR("Attempting to set name more than once.");
     return EIO;
+  }
 
   // new name must not be empty
-  if (!name || strlen(name) == 0)
+  if (!name || strlen(name) == 0) {
+    LOG_ERROR("Empty name is invalid.");
     return EIO;
+  }
 
   TRACE("set name: %s", name);
   name_ = name;
@@ -144,8 +155,18 @@ Error JSPipeEventEmitter::SetName(const char* name) {
 }
 
 Error JSPipeEventEmitter::SendMessageToJS(PP_Var operation, PP_Var payload) {
-  if (!ppapi_ || !messaging_iface_ || !var_iface_ || !dict_iface_)
+  if (!ppapi_) {
+    LOG_ERROR("ppapi_ is NULL.");
     return EIO;
+  }
+
+  if (!messaging_iface_ || !var_iface_ || !dict_iface_) {
+    LOG_ERROR("Got NULL interface(s): %s%s%s",
+              messaging_iface_ ? "" : "Messaging ",
+              dict_iface_ ? "" : "Dictionary ",
+              var_iface_ ? "" : "Var");
+    return EIO;
+  }
 
   // Create dict object which will be sent to JavaScript.
   PP_Var dict = dict_iface_->Create();
@@ -180,7 +201,7 @@ size_t JSPipeEventEmitter::HandleJSWrite(const char* data, size_t len) {
 
 void JSPipeEventEmitter::HandleJSAck(size_t byte_count) {
   if (byte_count > bytes_sent_) {
-    ERROR("HandleAck unexpected byte count: %" PRIuS, byte_count);
+    ERROR("Unexpected byte count: %" PRIuS, byte_count);
     return;
   }
 
@@ -192,12 +213,14 @@ void JSPipeEventEmitter::HandleJSAck(size_t byte_count) {
 Error JSPipeEventEmitter::HandleJSWrite(struct PP_Var message) {
   TRACE("HandleJSWrite");
   if (message.type != PP_VARTYPE_ARRAY_BUFFER) {
-    TRACE("HandleJSWrite expected ArrayBuffer but got %d.", message.type);
+    ERROR("Expected ArrayBuffer but got %d.", message.type);
     return EINVAL;
   }
   uint32_t length;
-  if (buffer_iface_->ByteLength(message, &length) != PP_TRUE)
+  if (buffer_iface_->ByteLength(message, &length) != PP_TRUE) {
+    ERROR("ArrayBuffer.ByteLength returned PP_FALSE");
     return EINVAL;
+  }
 
   char* buffer = (char*)buffer_iface_->Map(message);
 
@@ -205,7 +228,7 @@ Error JSPipeEventEmitter::HandleJSWrite(struct PP_Var message) {
   size_t wrote = HandleJSWrite(buffer, length);
   buffer_iface_->Unmap(message);
   if (wrote != length) {
-    LOG_ERROR("Only wrote %d of %d bytes to pipe", (int)wrote, (int)length);
+    ERROR("Only wrote %d of %d bytes to pipe", (int)wrote, (int)length);
     return EIO;
   }
   TRACE("done HandleWrite: %d", length);
@@ -214,7 +237,7 @@ Error JSPipeEventEmitter::HandleJSWrite(struct PP_Var message) {
 
 Error JSPipeEventEmitter::HandleJSAck(PP_Var message) {
   if (message.type != PP_VARTYPE_INT32) {
-    TRACE("HandleAck integer object expected but got %d.", message.type);
+    ERROR("Integer object expected but got %d.", message.type);
     return EINVAL;
   }
   HandleJSAck(message.value.as_int);
@@ -234,20 +257,24 @@ int JSPipeEventEmitter::VarStrcmp(PP_Var a, PP_Var b) {
 Error JSPipeEventEmitter::HandleJSMessage(struct PP_Var message) {
   Error err = 0;
   if (!messaging_iface_ || !var_iface_ || !dict_iface_ || !buffer_iface_) {
-    TRACE("HandleJSMessage: missing PPAPI interfaces");
+    ERROR("Got NULL interface(s): %s%s%s%s",
+          messaging_iface_ ? "" : "Messaging ",
+          var_iface_ ? "" : "Var ",
+          dict_iface_ ? "" : "Dictionary ",
+          buffer_iface_ ? "" : "ArrayBuffer");
     return ENOSYS;
   }
 
   // Verify that we have an array with size two.
   if (message.type != PP_VARTYPE_DICTIONARY) {
-    TRACE("HandleJSMessage passed non-dictionary var");
+    ERROR("Expected Dictionary but got %d.", message.type);
     return EINVAL;
   }
 
 #ifndef NDEBUG
   PP_Var pipe_name_var = dict_iface_->Get(message, pipe_key_);
   if (VarStrcmp(pipe_name_var, pipe_name_var_)) {
-    TRACE("HandleJSMessage wrong pipe name");
+    ERROR("Wrong pipe name.");
     return EINVAL;
   }
   var_iface_->Release(pipe_name_var);
@@ -255,7 +282,7 @@ Error JSPipeEventEmitter::HandleJSMessage(struct PP_Var message) {
 
   PP_Var operation_var = dict_iface_->Get(message, operation_key_);
   if (operation_var.type != PP_VARTYPE_STRING) {
-    TRACE("HandleJSMessage invalid operation");
+    ERROR("Expected String but got %d.", operation_var.type);
     err = EINVAL;
   } else {
     uint32_t length;
@@ -270,7 +297,7 @@ Error JSPipeEventEmitter::HandleJSMessage(struct PP_Var message) {
     } else if (message_type == kOperationNameAck) {
       err = HandleJSAck(payload);
     } else {
-      TRACE("Unknown message type: %s", message_type.c_str());
+      ERROR("Unknown message type: %s", message_type.c_str());
       err = EINVAL;
     }
     var_iface_->Release(payload);

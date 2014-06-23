@@ -41,7 +41,7 @@ Error Html5Fs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
   if (error)
     return error;
 
-  PP_Resource fileref = ppapi()->GetFileRefInterface()->Create(
+  PP_Resource fileref = file_ref_iface_->Create(
       filesystem_resource_, GetFullPath(path).Join().c_str());
   if (!fileref)
     return ENOENT;
@@ -77,12 +77,12 @@ Error Html5Fs::Mkdir(const Path& path, int permissions) {
 
   ScopedResource fileref_resource(
       ppapi(),
-      ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
-                                             GetFullPath(path).Join().c_str()));
+      file_ref_iface_->Create(filesystem_resource_,
+                              GetFullPath(path).Join().c_str()));
   if (!fileref_resource.pp_resource())
     return ENOENT;
 
-  int32_t result = ppapi()->GetFileRefInterface()->MakeDirectory(
+  int32_t result = file_ref_iface_->MakeDirectory(
       fileref_resource.pp_resource(), PP_FALSE, PP_BlockUntilComplete());
   if (result != PP_OK)
     return PPErrorToErrno(result);
@@ -105,15 +105,15 @@ Error Html5Fs::RemoveInternal(const Path& path, int remove_type) {
 
   ScopedResource fileref_resource(
       ppapi(),
-      ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
-                                             GetFullPath(path).Join().c_str()));
+      file_ref_iface_->Create(filesystem_resource_,
+                              GetFullPath(path).Join().c_str()));
   if (!fileref_resource.pp_resource())
     return ENOENT;
 
   // Check file type
   if (remove_type != REMOVE_ALL) {
     PP_FileInfo file_info;
-    int32_t query_result = ppapi()->GetFileRefInterface()->Query(
+    int32_t query_result = file_ref_iface_->Query(
         fileref_resource.pp_resource(), &file_info, PP_BlockUntilComplete());
     if (query_result != PP_OK) {
       LOG_ERROR("Error querying file type");
@@ -134,8 +134,8 @@ Error Html5Fs::RemoveInternal(const Path& path, int remove_type) {
     }
   }
 
-  int32_t result = ppapi()->GetFileRefInterface()->Delete(
-      fileref_resource.pp_resource(), PP_BlockUntilComplete());
+  int32_t result = file_ref_iface_->Delete(fileref_resource.pp_resource(),
+                                           PP_BlockUntilComplete());
   if (result != PP_OK)
     return PPErrorToErrno(result);
 
@@ -149,24 +149,19 @@ Error Html5Fs::Rename(const Path& path, const Path& newpath) {
 
   const char* oldpath_full = GetFullPath(path).Join().c_str();
   ScopedResource fileref_resource(
-      ppapi(),
-      ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
-                                             oldpath_full));
+      ppapi(), file_ref_iface_->Create(filesystem_resource_, oldpath_full));
   if (!fileref_resource.pp_resource())
     return ENOENT;
 
   const char* newpath_full = GetFullPath(newpath).Join().c_str();
   ScopedResource new_fileref_resource(
-      ppapi(),
-      ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
-                                             newpath_full));
+      ppapi(), file_ref_iface_->Create(filesystem_resource_, newpath_full));
   if (!new_fileref_resource.pp_resource())
     return ENOENT;
 
-  int32_t result =
-      ppapi()->GetFileRefInterface()->Rename(fileref_resource.pp_resource(),
-                                             new_fileref_resource.pp_resource(),
-                                             PP_BlockUntilComplete());
+  int32_t result = file_ref_iface_->Rename(fileref_resource.pp_resource(),
+                                           new_fileref_resource.pp_resource(),
+                                           PP_BlockUntilComplete());
   if (result != PP_OK)
     return PPErrorToErrno(result);
 
@@ -174,7 +169,10 @@ Error Html5Fs::Rename(const Path& path, const Path& newpath) {
 }
 
 Html5Fs::Html5Fs()
-    : filesystem_resource_(0),
+    : filesystem_iface_(NULL),
+      file_ref_iface_(NULL),
+      file_io_iface_(NULL),
+      filesystem_resource_(0),
       filesystem_open_has_result_(false),
       filesystem_open_error_(0) {
 }
@@ -184,8 +182,25 @@ Error Html5Fs::Init(const FsInitArgs& args) {
   if (error)
     return error;
 
-  if (!args.ppapi)
+  if (!args.ppapi) {
+    LOG_ERROR("ppapi is NULL.");
     return ENOSYS;
+  }
+
+  core_iface_ = ppapi()->GetCoreInterface();
+  filesystem_iface_ = ppapi()->GetFileSystemInterface();
+  file_io_iface_ = ppapi()->GetFileIoInterface();
+  file_ref_iface_ = ppapi()->GetFileRefInterface();
+
+  if (!(core_iface_ && filesystem_iface_ && file_io_iface_ &&
+        file_ref_iface_)) {
+    LOG_ERROR("Got NULL interface(s): %s%s%s%s",
+              core_iface_ ? "" : "Core ",
+              filesystem_iface_ ? "" : "FileSystem ",
+              file_ref_iface_ ? "" : "FileRef",
+              file_io_iface_ ? "" : "FileIo ");
+    return ENOSYS;
+  }
 
   pthread_cond_init(&filesystem_open_cond_, NULL);
 
@@ -203,14 +218,14 @@ Error Html5Fs::Init(const FsInitArgs& args) {
       } else if (iter->second == "") {
         filesystem_type = PP_FILESYSTEMTYPE_LOCALPERSISTENT;
       } else {
-        LOG_ERROR("html5fs: unknown type: '%s'", iter->second.c_str());
+        LOG_ERROR("Unknown filesystem type: '%s'", iter->second.c_str());
         return EINVAL;
       }
     } else if (iter->first == "expected_size") {
       expected_size = strtoull(iter->second.c_str(), NULL, 10);
     } else if (iter->first == "filesystem_resource") {
       PP_Resource resource = strtoull(iter->second.c_str(), NULL, 10);
-      if (!ppapi_->GetFileSystemInterface()->IsFileSystem(resource))
+      if (!filesystem_iface_->IsFileSystem(resource))
         return EINVAL;
 
       filesystem_resource_ = resource;
@@ -218,7 +233,7 @@ Error Html5Fs::Init(const FsInitArgs& args) {
     } else if (iter->first == "SOURCE") {
       prefix_ = iter->second;
     } else {
-      LOG_ERROR("html5fs: bad param: %s", iter->first.c_str());
+      LOG_ERROR("Invalid mount param: %s", iter->first.c_str());
       return EINVAL;
     }
   }
@@ -230,22 +245,22 @@ Error Html5Fs::Init(const FsInitArgs& args) {
   }
 
   // Initialize filesystem.
-  filesystem_resource_ = ppapi_->GetFileSystemInterface()->Create(
-      ppapi_->GetInstance(), filesystem_type);
+  filesystem_resource_ =
+      filesystem_iface_->Create(ppapi_->GetInstance(), filesystem_type);
   if (filesystem_resource_ == 0)
     return ENOSYS;
 
   // We can't block the main thread, so make an asynchronous call if on main
   // thread. If we are off-main-thread, then don't make an asynchronous call;
   // otherwise we require a message loop.
-  bool main_thread = ppapi_->GetCoreInterface()->IsMainThread();
+  bool main_thread = core_iface_->IsMainThread();
   PP_CompletionCallback cc =
       main_thread ? PP_MakeCompletionCallback(
                         &Html5Fs::FilesystemOpenCallbackThunk, this)
                   : PP_BlockUntilComplete();
 
-  int32_t result = ppapi_->GetFileSystemInterface()->Open(
-      filesystem_resource_, expected_size, cc);
+  int32_t result =
+      filesystem_iface_->Open(filesystem_resource_, expected_size, cc);
 
   if (!main_thread) {
     filesystem_open_has_result_ = true;

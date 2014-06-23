@@ -10,6 +10,8 @@
 
 #include <algorithm>
 
+#include "nacl_io/log.h"
+
 #include "sdk_util/macros.h"
 
 namespace nacl_io {
@@ -63,12 +65,16 @@ Error GetDentsHelper::GetDents(size_t offs,
   *out_bytes = 0;
 
   // If the buffer pointer is invalid, fail
-  if (NULL == pdir)
+  if (NULL == pdir) {
+    LOG_TRACE("dirent pointer is NULL.");
     return EINVAL;
+  }
 
   // If the buffer is too small, fail
-  if (size < sizeof(dirent))
+  if (size < sizeof(dirent)) {
+    LOG_TRACE("dirent buffer size is too small: %d < %d", size, sizeof(dirent));
     return EINVAL;
+  }
 
   // Force size to a multiple of dirent
   size -= size % sizeof(dirent);

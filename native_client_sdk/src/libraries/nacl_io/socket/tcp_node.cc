@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include "nacl_io/kernel_handle.h"
+#include "nacl_io/log.h"
 #include "nacl_io/pepper_interface.h"
 #include "nacl_io/socket/tcp_node.h"
 #include "nacl_io/stream/stream_fs.h"
@@ -287,8 +288,10 @@ Error TcpNode::Init(int open_flags) {
   if (err != 0)
     return err;
 
-  if (TCPInterface() == NULL)
+  if (TCPInterface() == NULL) {
+    LOG_ERROR("Got NULL interface: TCP");
     return EACCES;
+  }
 
   if (socket_resource_ != 0) {
     // TCP sockets that are contructed with an existing socket_resource_
@@ -299,8 +302,10 @@ Error TcpNode::Init(int open_flags) {
   } else {
     socket_resource_ =
         TCPInterface()->Create(filesystem_->ppapi()->GetInstance());
-    if (0 == socket_resource_)
+    if (0 == socket_resource_) {
+      LOG_ERROR("Unable to create TCP resource.");
       return EACCES;
+    }
     SetStreamFlags(SSF_CAN_CONNECT);
   }
 
@@ -483,6 +488,7 @@ Error TcpNode::Shutdown(int how) {
   AUTO_LOCK(node_lock_);
   if (!IsConnected())
     return ENOTCONN;
+
   {
     AUTO_LOCK(emitter_->GetLock());
     emitter_->SetError_Locked();

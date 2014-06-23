@@ -46,6 +46,11 @@ class Html5Fs : public Filesystem {
   void FilesystemOpenCallback(int32_t result);
   Path GetFullPath(const Path& path);
 
+  CoreInterface* core_iface_;
+  FileSystemInterface* filesystem_iface_;
+  FileRefInterface* file_ref_iface_;
+  FileIoInterface* file_io_iface_;
+
   PP_Resource filesystem_resource_;
   bool filesystem_open_has_result_;  // protected by lock_.
   Error filesystem_open_error_;      // protected by lock_.

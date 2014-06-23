@@ -17,12 +17,6 @@
 #include "nacl_io/pepper_interface.h"
 #include "sdk_util/macros.h"
 
-#define TRACE(format, ...) \
-  LOG_TRACE("%s:%d: " format, __FILE__, __LINE__, ##__VA_ARGS__)
-#define ERROR(format, ...) \
-  LOG_ERROR("%s:%d: " format, __FILE__, __LINE__, ##__VA_ARGS__)
-
-
 namespace nacl_io {
 
 JsFsNode::JsFsNode(Filesystem* filesystem, int32_t fd)
@@ -72,7 +66,7 @@ Error JsFsNode::GetStat(struct stat* stat) {
 
   ScopedVar response(ppapi_);
   if (!SendRequestAndWait(&response, "%s%d", "cmd", "fstat", "fildes", fd_)) {
-    ERROR("Failed to send request.");
+    LOG_ERROR("Failed to send request.");
     return EINVAL;
   }
 
@@ -127,7 +121,7 @@ const char* format = "%d%lld%d%d%d%d%lld%lld%d%d%lld%lld%lld";
     return error;
 
   if (result != 13) {
-    ERROR(
+    LOG_ERROR(
         "Expected \"st_*\" and \"error\" fields in response (should be 13 "
         "total).");
     return EINVAL;
@@ -155,7 +149,7 @@ Error JsFsNode::FSync() {
 
   ScopedVar response(ppapi_);
   if (!SendRequestAndWait(&response, "%s%d", "cmd", "fsync", "fildes", fd_)) {
-    ERROR("Failed to send request.");
+    LOG_ERROR("Failed to send request.");
     return EINVAL;
   }
 
@@ -168,7 +162,7 @@ Error JsFsNode::FTruncate(off_t length) {
   ScopedVar response(ppapi_);
   if (!SendRequestAndWait(&response,
       "%s%d%lld", "cmd", "ftruncate", "fildes", fd_, "length", length)) {
-    ERROR("Failed to send request.");
+    LOG_ERROR("Failed to send request.");
     return EINVAL;
   }
 
@@ -189,7 +183,7 @@ Error JsFsNode::Read(const HandleAttr& attr,
                           "fildes", fd_,
                           "nbyte", count,
                           "offset", attr.offs)) {
-    ERROR("Failed to send request.");
+    LOG_ERROR("Failed to send request.");
     return EINVAL;
   }
 
@@ -204,18 +198,18 @@ Error JsFsNode::Read(const HandleAttr& attr,
     return error;
 
   if (result != 2) {
-    ERROR("Expected \"error\" and \"buf\" fields in response.");
+    LOG_ERROR("Expected \"error\" and \"buf\" fields in response.");
     return EINVAL;
   }
 
   if (buf_var.type != PP_VARTYPE_ARRAY_BUFFER) {
-    ERROR("Expected \"buf\" to be an ArrayBuffer.");
+    LOG_ERROR("Expected \"buf\" to be an ArrayBuffer.");
     return EINVAL;
   }
 
   uint32_t src_buf_len;
   if (!buffer_iface_->ByteLength(buf_var, &src_buf_len)) {
-    ERROR("Unable to get byteLength of \"buf\".");
+    LOG_ERROR("Unable to get byteLength of \"buf\".");
     return EINVAL;
   }
 
@@ -224,7 +218,7 @@ Error JsFsNode::Read(const HandleAttr& attr,
 
   void* src_buf = buffer_iface_->Map(buf_var);
   if (src_buf == NULL) {
-    ERROR("Unable to map \"buf\".");
+    LOG_ERROR("Unable to map \"buf\".");
     return EINVAL;
   }
 
@@ -248,13 +242,13 @@ Error JsFsNode::Write(const HandleAttr& attr,
   ScopedVar scoped_buf_var(ppapi_, buf_var);
 
   if (buf_var.type != PP_VARTYPE_ARRAY_BUFFER) {
-    ERROR("Unable to create \"buf\" var.");
+    LOG_ERROR("Unable to create \"buf\" var.");
     return EINVAL;
   }
 
   void* dst_buf = buffer_iface_->Map(buf_var);
   if (dst_buf == NULL) {
-    ERROR("Unable to map \"buf\".");
+    LOG_ERROR("Unable to map \"buf\".");
     return EINVAL;
   }
 
@@ -269,7 +263,7 @@ Error JsFsNode::Write(const HandleAttr& attr,
                           "buf", &buf_var,
                           "nbyte", count,
                           "offset", attr.offs)) {
-    ERROR("Failed to send request.");
+    LOG_ERROR("Failed to send request.");
     return EINVAL;
   }
 
@@ -282,7 +276,7 @@ Error JsFsNode::Write(const HandleAttr& attr,
     return error;
 
   if (result != 2) {
-    ERROR("Expected \"error\" and \"nwrote\" fields in response.");
+    LOG_ERROR("Expected \"error\" and \"nwrote\" fields in response.");
     return EINVAL;
   }
 
@@ -308,7 +302,7 @@ Error JsFsNode::GetDents(size_t offs,
                           "fildes", fd_,
                           "offs", first,
                           "count", last - first)) {
-    ERROR("Failed to send request.");
+    LOG_ERROR("Failed to send request.");
     return EINVAL;
   }
 
@@ -323,12 +317,12 @@ Error JsFsNode::GetDents(size_t offs,
     return error;
 
   if (result != 2) {
-    ERROR("Expected \"error\" and \"dirents\" fields in response.");
+    LOG_ERROR("Expected \"error\" and \"dirents\" fields in response.");
     return EINVAL;
   }
 
   if (dirents_var.type != PP_VARTYPE_ARRAY) {
-    ERROR("Expected \"dirents\" to be an Array.");
+    LOG_ERROR("Expected \"dirents\" to be an Array.");
     return EINVAL;
   }
 
@@ -350,7 +344,7 @@ Error JsFsNode::GetDents(size_t offs,
     ScopedVar scoped_d_name_var(ppapi_, d_name_var);
 
     if (result != 2) {
-      ERROR("Expected dirent[%d] to have \"d_ino\" and \"d_name\".", i);
+      LOG_ERROR("Expected dirent[%d] to have \"d_ino\" and \"d_name\".", i);
       free(dirents);
       return EINVAL;
     }

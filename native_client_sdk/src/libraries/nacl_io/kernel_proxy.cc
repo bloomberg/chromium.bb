@@ -418,8 +418,10 @@ Error KernelProxy::MountInternal(const char* source,
 
   // Find a factory of that type
   FsFactoryMap_t::iterator factory = factories_.find(filesystemtype);
-  if (factory == factories_.end())
+  if (factory == factories_.end()) {
+    LOG_ERROR("Unknown filesystem type: %s", filesystemtype);
     return ENODEV;
+  }
 
   // Create a map of settings
   StringMap_t smap;
@@ -459,8 +461,10 @@ Error KernelProxy::MountInternal(const char* source,
 
   if (create_fs_node) {
     error = CreateFsNode(fs);
-    if (error)
+    if (error) {
+      DetachFsAtPath(abs_path, &fs);
       return error;
+    }
   }
 
   *out_filesystem = fs;
@@ -840,22 +844,26 @@ int KernelProxy::access(const char* path, int amode) {
 }
 
 int KernelProxy::readlink(const char* path, char* buf, size_t count) {
+  LOG_TRACE("readlink is not implemented.");
   errno = EINVAL;
   return -1;
 }
 
 int KernelProxy::utimes(const char* filename, const struct timeval times[2]) {
+  LOG_TRACE("utimes is not implemented.");
   errno = EINVAL;
   return -1;
 }
 
 // TODO(noelallen): Needs implementation.
 int KernelProxy::link(const char* oldpath, const char* newpath) {
+  LOG_TRACE("link is not implemented.");
   errno = EINVAL;
   return -1;
 }
 
 int KernelProxy::symlink(const char* oldpath, const char* newpath) {
+  LOG_TRACE("symlink is not implemented.");
   errno = EINVAL;
   return -1;
 }
@@ -1001,6 +1009,7 @@ int KernelProxy::kill(pid_t pid, int sig) {
       break;
 
     default:
+      LOG_TRACE("Unsupported signal: %d", sig);
       errno = EINVAL;
       return -1;
   }
@@ -1044,6 +1053,7 @@ int KernelProxy::sigaction(int signum,
       if (action && action->sa_handler != SIG_DFL) {
         // Trying to set this action to anything other than SIG_DFL
         // is not yet supported.
+        LOG_TRACE("sigaction on signal %d != SIG_DFL not supported.", sig);
         errno = EINVAL;
         return -1;
       }
@@ -1057,6 +1067,7 @@ int KernelProxy::sigaction(int signum,
     // KILL and STOP cannot be handled
     case SIGKILL:
     case SIGSTOP:
+      LOG_TRACE("sigaction on SIGKILL/SIGSTOP not supported.");
       errno = EINVAL;
       return -1;
   }
@@ -1109,6 +1120,9 @@ int KernelProxy::select(int nfds,
     if ((timeout->tv_sec < 0) || (timeout->tv_sec >= (INT_MAX / 1000)) ||
         (timeout->tv_usec < 0) || (timeout->tv_usec >= 1000000) || (ms < 0) ||
         (ms >= INT_MAX)) {
+      LOG_TRACE("Invalid timeout: tv_sec=%d tv_usec=%d.",
+                timeout->tv_sec,
+                timeout->tv_usec);
       errno = EINVAL;
       return -1;
     }

@@ -151,6 +151,9 @@ Error KernelHandle::VFcntl(int request, int* result, va_list args) {
       handle_attr_.flags |= flags;
       return 0;
     }
+    default:
+      LOG_ERROR("Unsupported fcntl: %#x", request);
+      break;
   }
   return ENOSYS;
 }

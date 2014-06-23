@@ -11,6 +11,7 @@
 #include <string>
 
 #include "nacl_io/dir_node.h"
+#include "nacl_io/log.h"
 #include "nacl_io/node.h"
 #include "nacl_io/osstat.h"
 #include "nacl_io/path.h"
@@ -40,6 +41,7 @@ void Filesystem::Destroy() {
 
 Error Filesystem::OpenResource(const Path& path, ScopedNode* out_node) {
   out_node->reset(NULL);
+  LOG_TRACE("Can't open resource: %s", path.Join().c_str());
   return EINVAL;
 }
 
@@ -54,6 +56,7 @@ void Filesystem::OnNodeDestroyed(Node* node) {
 }
 
 Error Filesystem::Filesystem_VIoctl(int request, va_list args) {
+  LOG_ERROR("Unsupported ioctl: %#x", request);
   return EINVAL;
 }
 

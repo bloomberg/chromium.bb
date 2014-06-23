@@ -9,18 +9,38 @@
 
 #define LOG_PREFIX "nacl_io: "
 
+#if defined(NDEBUG)
+
+#define LOG_TRACE(format, ...)
+#define LOG_ERROR(format, ...)
+#define LOG_WARN(format, ...)
+
+#else
+
 #if NACL_IO_LOGGING
+
 #define LOG_TRACE(format, ...) \
   nacl_io_log(LOG_PREFIX format "\n", ##__VA_ARGS__)
+
 #else
+
 #define LOG_TRACE(format, ...)
+
 #endif
 
-#define LOG_ERROR(format, ...) \
-  nacl_io_log(LOG_PREFIX "error: " format "\n", ##__VA_ARGS__)
+#define LOG_ERROR(format, ...)                         \
+  nacl_io_log(LOG_PREFIX "%s:%d: error: " format "\n", \
+              __FILE__,                                \
+              __LINE__,                                \
+              ##__VA_ARGS__)
 
-#define LOG_WARN(format, ...) \
-  nacl_io_log(LOG_PREFIX "warning: " format "\n", ##__VA_ARGS__)
+#define LOG_WARN(format, ...)                            \
+  nacl_io_log(LOG_PREFIX "%s:%d: warning: " format "\n", \
+              __FILE__,                                  \
+              __LINE__,                                  \
+              ##__VA_ARGS__)
+
+#endif
 
 EXTERN_C_BEGIN
 

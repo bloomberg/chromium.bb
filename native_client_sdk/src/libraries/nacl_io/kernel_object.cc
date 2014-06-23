@@ -16,6 +16,7 @@
 
 #include "nacl_io/filesystem.h"
 #include "nacl_io/kernel_handle.h"
+#include "nacl_io/log.h"
 #include "nacl_io/node.h"
 
 #include "sdk_util/auto_lock.h"
@@ -35,8 +36,10 @@ Error KernelObject::AttachFsAtPath(const ScopedFilesystem& fs,
   std::string abs_path = GetAbsParts(path).Join();
 
   AUTO_LOCK(fs_lock_);
-  if (filesystems_.find(abs_path) != filesystems_.end())
+  if (filesystems_.find(abs_path) != filesystems_.end()) {
+    LOG_ERROR("Can't mount at %s, it is already mounted.", path.c_str());
     return EBUSY;
+  }
 
   filesystems_[abs_path] = fs;
   return 0;
@@ -48,12 +51,16 @@ Error KernelObject::DetachFsAtPath(const std::string& path,
 
   AUTO_LOCK(fs_lock_);
   FsMap_t::iterator it = filesystems_.find(abs_path);
-  if (filesystems_.end() == it)
+  if (filesystems_.end() == it) {
+    LOG_TRACE("Can't unmount at %s, nothing is mounted.", path.c_str());
     return EINVAL;
+  }
 
   // It is only legal to unmount if there are no open references
-  if (it->second->RefCount() != 1)
+  if (it->second->RefCount() != 1) {
+    LOG_TRACE("Can't unmount at %s, refcount is != 1.", path.c_str());
     return EBUSY;
+  }
 
   *out_fs = it->second;
 

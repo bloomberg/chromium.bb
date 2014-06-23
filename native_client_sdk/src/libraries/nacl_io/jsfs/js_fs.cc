@@ -18,11 +18,6 @@
 #include "nacl_io/pepper_interface.h"
 #include "sdk_util/macros.h"
 
-#define TRACE(format, ...) \
-  LOG_TRACE("%s:%d: " format, __FILE__, __LINE__, ##__VA_ARGS__)
-#define ERROR(format, ...) \
-  LOG_ERROR("%s:%d: " format, __FILE__, __LINE__, ##__VA_ARGS__)
-
 namespace nacl_io {
 
 JsFs::JsFs()
@@ -49,12 +44,12 @@ Error JsFs::Init(const FsInitArgs& args) {
 
   if (!messaging_iface_ || !array_iface_ || !buffer_iface_ || !dict_iface_ ||
       !var_iface_) {
-    ERROR("Got 1+ NULL interface(s): %s%s%s%s%s",
-          messaging_iface_ ? "" : "Messaging ",
-          array_iface_ ? "" : "VarArray ",
-          buffer_iface_ ? "" : "VarArrayBuffer ",
-          dict_iface_ ? "" : "VarDictionary ",
-          var_iface_ ? "" : "Var ");
+    LOG_ERROR("Got 1+ NULL interface(s): %s%s%s%s%s",
+              messaging_iface_ ? "" : "Messaging ",
+              array_iface_ ? "" : "VarArray ",
+              buffer_iface_ ? "" : "VarArrayBuffer ",
+              dict_iface_ ? "" : "VarDictionary ",
+              var_iface_ ? "" : "Var ");
     return ENOSYS;
   }
 
@@ -69,13 +64,13 @@ bool JsFs::SetDictVar(PP_Var dict, const char* key, PP_Var value) {
   PP_Var key_var = var_iface_->VarFromUtf8(key, strlen(key));
   ScopedVar scoped_key(ppapi_, key_var);
   if (key_var.type != PP_VARTYPE_STRING) {
-    ERROR("Unable to create string key \"%s\".", key);
+    LOG_ERROR("Unable to create string key \"%s\".", key);
     return false;
   }
 
   PP_Bool success = dict_iface_->Set(dict, key_var, value);
   if (!success) {
-    ERROR("Unable to set \"%s\" key of dictionary.", key);
+    LOG_ERROR("Unable to set \"%s\" key of dictionary.", key);
     return false;
   }
 
@@ -86,7 +81,7 @@ PP_Var JsFs::GetDictVar(PP_Var dict, const char* key) {
   PP_Var key_var = var_iface_->VarFromUtf8(key, strlen(key));
   ScopedVar scoped_key(ppapi_, key_var);
   if (key_var.type != PP_VARTYPE_STRING) {
-    ERROR("Unable to create string key \"%s\".", key);
+    LOG_ERROR("Unable to create string key \"%s\".", key);
     return PP_MakeUndefined();
   }
 
@@ -136,7 +131,7 @@ bool JsFs::GetVarInt64(PP_Var var, int64_t* out_value) {
     case PP_VARTYPE_ARRAY: {
       uint32_t len = array_iface_->GetLength(var);
       if (len != 2) {
-        ERROR("Expected int64 array type to have 2 elements, not %d", len);
+        LOG_ERROR("Expected int64 array type to have 2 elements, not %d", len);
         return false;
       }
 
@@ -190,7 +185,7 @@ PP_Var JsFs::VMakeRequest(RequestId request_id,
         const char* value = va_arg(args, const char*);
         value_var = var_iface_->VarFromUtf8(value, strlen(value));
         if (value_var.type != PP_VARTYPE_STRING) {
-          ERROR("Unable to create \"%s\" string var.", value);
+          LOG_ERROR("Unable to create \"%s\" string var.", value);
           return PP_MakeNull();
         }
         break;
@@ -214,18 +209,18 @@ PP_Var JsFs::VMakeRequest(RequestId request_id,
           // Send as an array of two ints: [high int32, low int32].
           value_var = array_iface_->Create();
           if (!array_iface_->SetLength(value_var, 2)) {
-            ERROR("Unable to set length of s64 array.");
+            LOG_ERROR("Unable to set length of s64 array.");
             return PP_MakeNull();
           }
 
           if (!array_iface_->Set(value_var, 0, PP_MakeInt32(value >> 32))) {
-            ERROR("Unable to set of high int32 of s64 array.");
+            LOG_ERROR("Unable to set of high int32 of s64 array.");
             return PP_MakeNull();
           }
 
           if (!array_iface_->Set(
                   value_var, 1, PP_MakeInt32(value & 0xffffffff))) {
-            ERROR("Unable to set of low int32 of s64 array.");
+            LOG_ERROR("Unable to set of low int32 of s64 array.");
             return PP_MakeNull();
           }
         }
@@ -233,7 +228,7 @@ PP_Var JsFs::VMakeRequest(RequestId request_id,
         break;
       }
       default:
-        ERROR("Unknown format specifier %%\"%s\"", p);
+        LOG_ERROR("Unknown format specifier %%\"%s\"", p);
         assert(0);
         return PP_MakeNull();
     }
@@ -292,7 +287,7 @@ bool JsFs::SendRequestAndWait(ScopedVar* out_response,
 Error JsFs::ErrorFromResponse(const ScopedVar& response) {
   int32_t error;
   if (ScanVar(response.pp_var(), "%d", "error", &error) != 1) {
-    ERROR("Expected \"error\" field in response.");
+    LOG_ERROR("Expected \"error\" field in response.");
     return EINVAL;
   }
 
@@ -309,7 +304,7 @@ int JsFs::ScanVar(PP_Var var, const char* format, ...) {
 
 int JsFs::VScanVar(PP_Var dict_var, const char* format, va_list args) {
   if (dict_var.type != PP_VARTYPE_DICTIONARY) {
-    ERROR("Expected var of type dictionary, not %d.", dict_var.type);
+    LOG_ERROR("Expected var of type dictionary, not %d.", dict_var.type);
     return 0;
   }
 
@@ -333,7 +328,7 @@ int JsFs::VScanVar(PP_Var dict_var, const char* format, va_list args) {
       case 'd': {
         int32_t* value = va_arg(args, int32_t*);
         if (!GetVarInt32(value_var, value)) {
-          ERROR("Expected int32_t value for key \"%s\"", key);
+          LOG_ERROR("Expected int32_t value for key \"%s\"", key);
           ok = false;
         }
         break;
@@ -341,7 +336,7 @@ int JsFs::VScanVar(PP_Var dict_var, const char* format, va_list args) {
       case 'u': {
         uint32_t* value = va_arg(args, uint32_t*);
         if (!GetVarUint32(value_var, value)) {
-          ERROR("Expected uint32_t value for key \"%s\"", key);
+          LOG_ERROR("Expected uint32_t value for key \"%s\"", key);
           ok = false;
         }
         break;
@@ -355,7 +350,7 @@ int JsFs::VScanVar(PP_Var dict_var, const char* format, va_list args) {
 
         int64_t* value = va_arg(args, int64_t*);
         if (!GetVarInt64(value_var, value)) {
-          ERROR("Expected int64_t value for key \"%s\"", key);
+          LOG_ERROR("Expected int64_t value for key \"%s\"", key);
           ok = false;
         }
         break;
@@ -366,7 +361,7 @@ int JsFs::VScanVar(PP_Var dict_var, const char* format, va_list args) {
         break;
       }
       default:
-        ERROR("Unknown format specifier %%\"%s\"", p);
+        LOG_ERROR("Unknown format specifier %%\"%s\"", p);
         assert(0);
         ok = false;
         break;
@@ -402,7 +397,7 @@ Error JsFs::Access(const Path& path, int a_mode) {
                           "cmd", "access",
                           "path", path.Join().c_str(),
                           "amode", a_mode)) {
-    ERROR("Failed to send request.");
+    LOG_ERROR("Failed to send request.");
     return EINVAL;
   }
 
@@ -416,7 +411,7 @@ Error JsFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
                           "cmd", "open",
                           "path", path.Join().c_str(),
                           "oflag", open_flags)) {
-    ERROR("Failed to send request.");
+    LOG_ERROR("Failed to send request.");
     return EINVAL;
   }
 
@@ -427,7 +422,7 @@ Error JsFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
     return error;
 
   if (result != 2) {
-    ERROR("Expected \"error\" and \"fd\" fields in response.");
+    LOG_ERROR("Expected \"error\" and \"fd\" fields in response.");
     return EINVAL;
   }
 
@@ -439,7 +434,7 @@ Error JsFs::Unlink(const Path& path) {
   ScopedVar response(ppapi_);
   if (!SendRequestAndWait(
           &response, "%s%s", "cmd", "unlink", "path", path.Join().c_str())) {
-    ERROR("Failed to send request.");
+    LOG_ERROR("Failed to send request.");
     return EINVAL;
   }
 
@@ -452,7 +447,7 @@ Error JsFs::Mkdir(const Path& path, int perm) {
                           "cmd", "mkdir",
                           "path", path.Join().c_str(),
                           "mode", perm)) {
-    ERROR("Failed to send request.");
+    LOG_ERROR("Failed to send request.");
     return EINVAL;
   }
 
@@ -463,7 +458,7 @@ Error JsFs::Rmdir(const Path& path) {
   ScopedVar response(ppapi_);
   if (!SendRequestAndWait(
           &response, "%s%s", "cmd", "rmdir", "path", path.Join().c_str())) {
-    ERROR("Failed to send request.");
+    LOG_ERROR("Failed to send request.");
     return EINVAL;
   }
 
@@ -474,7 +469,7 @@ Error JsFs::Remove(const Path& path) {
   ScopedVar response(ppapi_);
   if (!SendRequestAndWait(
           &response, "%s%s", "cmd", "remove", "path", path.Join().c_str())) {
-    ERROR("Failed to send request.");
+    LOG_ERROR("Failed to send request.");
     return EINVAL;
   }
 
@@ -487,7 +482,7 @@ Error JsFs::Rename(const Path& path, const Path& newpath) {
                           "cmd", "rename",
                           "old", path.Join().c_str(),
                           "new", newpath.Join().c_str())) {
-    ERROR("Failed to send request.");
+    LOG_ERROR("Failed to send request.");
     return EINVAL;
   }
 
@@ -496,7 +491,7 @@ Error JsFs::Rename(const Path& path, const Path& newpath) {
 
 Error JsFs::Filesystem_VIoctl(int request, va_list args) {
   if (request != NACL_IOC_HANDLEMESSAGE) {
-    ERROR("Unknown ioctl: %#x", request);
+    LOG_ERROR("Unknown ioctl: %#x", request);
     return EINVAL;
   }
 
@@ -506,7 +501,7 @@ Error JsFs::Filesystem_VIoctl(int request, va_list args) {
 
   RequestId response_id;
   if (ScanVar(response, "%d", "id", &response_id) != 1) {
-    TRACE("ioctl with no \"id\", ignoring.\n");
+    LOG_TRACE("ioctl with no \"id\", ignoring.\n");
     return EINVAL;
   }
 

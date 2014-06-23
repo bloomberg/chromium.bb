@@ -89,8 +89,11 @@ Error TtyNode::Write(const HandleAttr& attr,
   *out_bytes = 0;
 
   // No handler registered.
-  if (output_handler_.handler == NULL)
+  if (output_handler_.handler == NULL) {
+    // No error here; many of the tests trigger this message.
+    LOG_TRACE("No output handler registered.");
     return EIO;
+  }
 
   int rtn = output_handler_.handler(
       static_cast<const char*>(buf), count, output_handler_.user_data);
@@ -170,19 +173,19 @@ Error TtyNode::Echo(const char* string, int count) {
 
 Error TtyNode::ProcessInput(PP_Var message) {
   if (message.type != PP_VARTYPE_STRING) {
-    LOG_ERROR("ProcessInput: expected VarString but got %d.", message.type);
+    LOG_ERROR("Expected VarString but got %d.", message.type);
     return EINVAL;
   }
 
   PepperInterface* ppapi = filesystem_->ppapi();
   if (!ppapi) {
-    LOG_ERROR("ProcessInput: ppapi is NULL.");
+    LOG_ERROR("ppapi is NULL.");
     return EINVAL;
   }
 
   VarInterface* var_iface = ppapi->GetVarInterface();
   if (!var_iface) {
-    LOG_ERROR("ProcessInput: Var interface pointer is NULL.");
+    LOG_ERROR("Got NULL interface: Var");
     return EINVAL;
   }
 
@@ -265,8 +268,10 @@ Error TtyNode::VIoctl(int request, va_list args) {
         output_handler_.handler = NULL;
         return 0;
       }
-      if (output_handler_.handler != NULL)
+      if (output_handler_.handler != NULL) {
+        LOG_ERROR("Output handler already set.");
         return EALREADY;
+      }
       output_handler_ = *arg;
       return 0;
     }

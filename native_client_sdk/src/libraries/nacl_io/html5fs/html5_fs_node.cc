@@ -76,8 +76,8 @@ Error Html5FsNode::FSync() {
   if (IsaDir())
     return 0;
 
-  int32_t result = filesystem_->ppapi()->GetFileIoInterface()->Flush(
-      fileio_resource_, PP_BlockUntilComplete());
+  int32_t result =
+      file_io_iface_->Flush(fileio_resource_, PP_BlockUntilComplete());
   if (result != PP_OK)
     return PPErrorToErrno(result);
   return 0;
@@ -100,17 +100,15 @@ Error Html5FsNode::GetDents(size_t offs,
 
   OutputBuffer output_buf = {NULL, 0};
   PP_ArrayOutput output = {&GetOutputBuffer, &output_buf};
-  int32_t result =
-      filesystem_->ppapi()->GetFileRefInterface()->ReadDirectoryEntries(
-          fileref_resource_, output, PP_BlockUntilComplete());
+  int32_t result = file_ref_iface_->ReadDirectoryEntries(
+      fileref_resource_, output, PP_BlockUntilComplete());
   if (result != PP_OK)
     return PPErrorToErrno(result);
 
   PP_DirectoryEntry* entries = static_cast<PP_DirectoryEntry*>(output_buf.data);
 
   for (int i = 0; i < output_buf.element_count; ++i) {
-    PP_Var file_name_var = filesystem_->ppapi()->GetFileRefInterface()->GetName(
-        entries[i].file_ref);
+    PP_Var file_name_var = file_ref_iface_->GetName(entries[i].file_ref);
 
     // Release the file reference.
     filesystem_->ppapi()->ReleaseResource(entries[i].file_ref);
@@ -119,8 +117,8 @@ Error Html5FsNode::GetDents(size_t offs,
       continue;
 
     uint32_t file_name_length;
-    const char* file_name = filesystem_->ppapi()->GetVarInterface()->VarToUtf8(
-        file_name_var, &file_name_length);
+    const char* file_name =
+        var_iface_->VarToUtf8(file_name_var, &file_name_length);
 
     if (file_name) {
       file_name_length =
@@ -131,7 +129,7 @@ Error Html5FsNode::GetDents(size_t offs,
       helper.AddDirent(1, file_name, file_name_length);
     }
 
-    filesystem_->ppapi()->GetVarInterface()->Release(file_name_var);
+    var_iface_->Release(file_name_var);
   }
 
   // Release the output buffer.
@@ -144,8 +142,8 @@ Error Html5FsNode::GetStat(struct stat* stat) {
   AUTO_LOCK(node_lock_);
 
   PP_FileInfo info;
-  int32_t result = filesystem_->ppapi()->GetFileRefInterface()->Query(
-      fileref_resource_, &info, PP_BlockUntilComplete());
+  int32_t result =
+      file_ref_iface_->Query(fileref_resource_, &info, PP_BlockUntilComplete());
   if (result != PP_OK)
     return PPErrorToErrno(result);
 
@@ -181,12 +179,11 @@ Error Html5FsNode::Read(const HandleAttr& attr,
   if (IsaDir())
     return EISDIR;
 
-  int32_t result = filesystem_->ppapi()->GetFileIoInterface()->Read(
-      fileio_resource_,
-      attr.offs,
-      static_cast<char*>(buf),
-      static_cast<int32_t>(count),
-      PP_BlockUntilComplete());
+  int32_t result = file_io_iface_->Read(fileio_resource_,
+                                        attr.offs,
+                                        static_cast<char*>(buf),
+                                        static_cast<int32_t>(count),
+                                        PP_BlockUntilComplete());
   if (result < 0)
     return PPErrorToErrno(result);
 
@@ -198,7 +195,7 @@ Error Html5FsNode::FTruncate(off_t size) {
   if (IsaDir())
     return EISDIR;
 
-  int32_t result = filesystem_->ppapi()->GetFileIoInterface()->SetLength(
+  int32_t result = file_io_iface_->SetLength(
       fileio_resource_, size, PP_BlockUntilComplete());
   if (result != PP_OK)
     return PPErrorToErrno(result);
@@ -214,12 +211,11 @@ Error Html5FsNode::Write(const HandleAttr& attr,
   if (IsaDir())
     return EISDIR;
 
-  int32_t result = filesystem_->ppapi()->GetFileIoInterface()->Write(
-      fileio_resource_,
-      attr.offs,
-      static_cast<const char*>(buf),
-      static_cast<int32_t>(count),
-      PP_BlockUntilComplete());
+  int32_t result = file_io_iface_->Write(fileio_resource_,
+                                         attr.offs,
+                                         static_cast<const char*>(buf),
+                                         static_cast<int32_t>(count),
+                                         PP_BlockUntilComplete());
   if (result < 0)
     return PPErrorToErrno(result);
 
@@ -240,8 +236,8 @@ Error Html5FsNode::GetSize(off_t* out_size) {
   AUTO_LOCK(node_lock_);
 
   PP_FileInfo info;
-  int32_t result = filesystem_->ppapi()->GetFileIoInterface()->Query(
-      fileio_resource_, &info, PP_BlockUntilComplete());
+  int32_t result =
+      file_io_iface_->Query(fileio_resource_, &info, PP_BlockUntilComplete());
   if (result != PP_OK)
     return PPErrorToErrno(result);
 
@@ -260,23 +256,38 @@ Error Html5FsNode::Init(int open_flags) {
   if (error)
     return error;
 
+  file_io_iface_ = filesystem_->ppapi()->GetFileIoInterface();
+  file_ref_iface_ = filesystem_->ppapi()->GetFileRefInterface();
+  var_iface_ = filesystem_->ppapi()->GetVarInterface();
+
+  if (!(file_io_iface_ && file_ref_iface_ && var_iface_)) {
+    LOG_ERROR("Got NULL interface(s): %s%s%s",
+              file_ref_iface_ ? "" : "FileRef",
+              file_io_iface_ ? "" : "FileIo ",
+              var_iface_ ? "" : "Var ");
+    return EIO;
+  }
+
   // First query the FileRef to see if it is a file or directory.
   PP_FileInfo file_info;
-  int32_t query_result = filesystem_->ppapi()->GetFileRefInterface()->Query(
+  int32_t query_result = file_ref_iface_->Query(
       fileref_resource_, &file_info, PP_BlockUntilComplete());
   // If this is a directory, do not get a FileIO.
   if (query_result == PP_OK && file_info.type == PP_FILETYPE_DIRECTORY)
     return 0;
 
-  FileIoInterface* file_io = filesystem_->ppapi()->GetFileIoInterface();
-  fileio_resource_ = file_io->Create(filesystem_->ppapi()->GetInstance());
-  if (!fileio_resource_)
-    return ENOSYS;
+  fileio_resource_ =
+      file_io_iface_->Create(filesystem_->ppapi()->GetInstance());
+  if (!fileio_resource_) {
+    LOG_ERROR("Couldn't create FileIo resource.");
+    return EIO;
+  }
 
-  int32_t open_result = file_io->Open(fileio_resource_,
-                                      fileref_resource_,
-                                      OpenFlagsToPPAPIOpenFlags(open_flags),
-                                      PP_BlockUntilComplete());
+  int32_t open_result =
+      file_io_iface_->Open(fileio_resource_,
+                           fileref_resource_,
+                           OpenFlagsToPPAPIOpenFlags(open_flags),
+                           PP_BlockUntilComplete());
   if (open_result != PP_OK)
     return PPErrorToErrno(open_result);
   return 0;
@@ -286,7 +297,7 @@ void Html5FsNode::Destroy() {
   FSync();
 
   if (fileio_resource_) {
-    filesystem_->ppapi()->GetFileIoInterface()->Close(fileio_resource_);
+    file_io_iface_->Close(fileio_resource_);
     filesystem_->ppapi()->ReleaseResource(fileio_resource_);
   }
 
