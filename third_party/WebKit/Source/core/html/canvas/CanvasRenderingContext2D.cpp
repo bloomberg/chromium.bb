@@ -2393,6 +2393,7 @@ void CanvasRenderingContext2D::addHitRegion(const Dictionary& options, Exception
         // However, we have no way to get the region from canvas state stack by now.
         // See http://crbug.com/387057
         exceptionState.throwDOMException(NotSupportedError, "The specified path has no pixels.");
+        return;
     }
 
     passOptions.path = specifiedPath;
