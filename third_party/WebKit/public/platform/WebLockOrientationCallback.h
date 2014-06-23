@@ -17,20 +17,10 @@ namespace blink {
 // failure.
 class WebLockOrientationCallback {
 public:
-    enum ErrorType {
-        ErrorTypeNotAvailable, // If locking isn't available on the platform.
-        ErrorTypeFullScreenRequired, // If fullscreen is required to lock.
-        ErrorTypeCanceled, // If another lock/unlock got called before that one ended.
-    };
-
     virtual ~WebLockOrientationCallback() { }
 
     virtual void onSuccess(unsigned angle, WebScreenOrientationType) = 0;
-
-    // FIXME: those methods are defined and not virtual pure to not break the
-    // embedder during the transition period.
-    virtual void onError(ErrorType) { }
-    virtual void onError(WebLockOrientationError) { }
+    virtual void onError(WebLockOrientationError) = 0;
 };
 
 } // namespace blink

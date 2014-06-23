@@ -29,29 +29,6 @@ void LockOrientationCallback::onSuccess(unsigned angle, blink::WebScreenOrientat
     m_resolver->resolve(ScreenOrientation::orientationTypeToString(type));
 }
 
-void LockOrientationCallback::onError(ErrorType error)
-{
-    ExceptionCode code = 0;
-    String msg = "";
-
-    switch (error) {
-    case ErrorTypeNotAvailable:
-        code = NotSupportedError;
-        msg = "lockOrientation() is not available on this device.";
-        break;
-    case ErrorTypeFullScreenRequired:
-        code = SecurityError;
-        msg = "The page needs to be fullscreen in order to call lockOrientation().";
-        break;
-    case ErrorTypeCanceled:
-        code = AbortError;
-        msg = "A call to lockOrientation() or unlockOrientation() canceled this call.";
-        break;
-    }
-
-    m_resolver->reject(DOMException::create(code, msg));
-}
-
 void LockOrientationCallback::onError(blink::WebLockOrientationError error)
 {
     ExceptionCode code = 0;
