@@ -18,15 +18,14 @@ AppL*
 AppW*
 Autofill*
 # B*
-BackgroundApp*.R*
-Bluetooth*
-BitmapFetcher*
-BookmarksT*
-BrowserAcc*
-BrowserActionA*.*
-BrowserCloseM*
-BrowserN*
-BrowserT*
+Bac*App*.R*
+Blue*
+Bit*
+Bo*sT*
+Br*erA*
+Br*erC*
+Br*erN*
+Br*erT*
 # C*
 Cap*
 Cas*
@@ -45,7 +44,7 @@ Dev*
 Dns*
 DoNot*
 Down*Ext*.*
-DownloadTest.*
+Do*adTest.*
 Drive*
 # E*
 ECK*
@@ -67,7 +66,9 @@ Gcm*.R*
 GetA*.I*
 # H*
 Hot*
+His*Br*
 # I*
+IE*
 # J*
 # K*
 # L*
@@ -77,39 +78,46 @@ Loc*
 Media*AppB*
 Mock*
 MSC_C*
+MSE*
 Man*t.*
 # N*
 NaCl*libEx*
 NetIn*
 Noti*
+NoSe*
 # O*
 Opt*WebUI*
 Out*PPAPITe*
 # P*
 Pas*erBro*
+Pe*
 Plat*Bro*
 PolicyT*.H*
 Port*
 Print*
 Prer*get
+PPAPI*ib*
 # Q*
 # R*
 # S*
+Sa*
 Set*
 Scr*
 Soc*
+Spee*
 SRC*.Frame*
 SyncF*
 SyncInt*.Se*
 # T*
 Tab*
+Tas*
 Tran*Bu*
 # U*
 # V*
 # W*
 WebViewT*
 webRtcB*
-WebUIAs*
+WebUIA*
 WebC*
 WebstoreIn*
 WebstoreSt*
