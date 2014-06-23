@@ -6,7 +6,7 @@
 Import('env')
 
 # This component implements NaCl IRT interfaces in terms of POSIX APIs.
-if not env.Bit('posix'):
+if not env.Bit('posix') and not env.Bit('nonsfi_nacl'):
   Return()
 
 # Since we are only targeting Unix, not Windows/MSVC, we can use C99

@@ -30,6 +30,16 @@ readonly SCONS_EVERYTHING=""
 readonly SCONS_S_M="small_tests medium_tests"
 readonly SCONS_S_M_IRT="small_tests_irt medium_tests_irt"
 
+# This uses the newlib-based nonsfi_loader, for which only a subset of
+# the tests works so far.
+# TODO(hamaji): Enable more tests.
+readonly SCONS_NONSFI_NEWLIB_TESTS="\
+    run_hello_world_test_irt \
+    run_float_test_irt \
+    run_malloc_realloc_calloc_free_test_irt \
+    run_dup_test_irt"
+# This uses the host-libc-based nonsfi_loader, for which only a subset of
+# the tests works so far.
 # Using skip_nonstable_bitcode=1 here disables the tests for zero-cost C++
 # exception handling, which don't pass for Non-SFI mode yet because we
 # don't build libgcc_eh for Non-SFI mode.
@@ -43,7 +53,9 @@ readonly SCONS_NONSFI_TESTS="\
     run_syscall_test_irt \
     run_getpid_test_irt \
     toolchain_tests_irt \
-    skip_nonstable_bitcode=1"
+    skip_nonstable_bitcode=1 \
+    use_newlib_nonsfi_loader=0"
+readonly SCONS_NONSFI_NEWLIB="nonsfi_nacl=1 ${SCONS_NONSFI_NEWLIB_TESTS}"
 readonly SCONS_NONSFI="nonsfi_nacl=1 ${SCONS_NONSFI_TESTS}"
 # Extra non-IRT-using test to run for x86-32 and ARM on toolchain bots.
 # TODO(mseaborn): Run this on the main bots after the toolchain revision is
@@ -333,6 +345,7 @@ mode-buildbot-arm() {
     "toolchain_tests"
 
   # Test Non-SFI Mode.
+  scons-stage-irt "arm" "${qemuflags}" "${SCONS_NONSFI_NEWLIB}"
   scons-stage-irt "arm" "${qemuflags}" "${SCONS_NONSFI}"
 }
 
@@ -357,6 +370,7 @@ mode-buildbot-arm-hw() {
     "toolchain_tests"
 
   # Test Non-SFI Mode.
+  scons-stage-irt "arm" "${hwflags}" "${SCONS_NONSFI_NEWLIB}"
   scons-stage-irt "arm" "${hwflags}" "${SCONS_NONSFI}"
 }
 
@@ -380,6 +394,7 @@ mode-trybot-qemu() {
   scons-stage-noirt "arm" "${qemuflags} pnacl_generate_pexe=0" "nonpexe_tests"
 
   # Test Non-SFI Mode.
+  scons-stage-irt "arm" "${qemuflags}" "${SCONS_NONSFI_NEWLIB}"
   scons-stage-irt "arm" "${qemuflags}" "${SCONS_NONSFI}"
 }
 
