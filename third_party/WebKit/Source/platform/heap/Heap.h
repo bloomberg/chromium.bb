@@ -2329,15 +2329,6 @@ struct IfWeakMember<WeakMember<T> > {
     static bool isDead(Visitor* visitor, const WeakMember<T>& t) { return !visitor->isAlive(t.get()); }
 };
 
-#if COMPILER(CLANG)
-// Clang does not export the symbols that we have explicitly asked it
-// to export. This forces it to export all the methods from ThreadHeap.
-template<> void ThreadHeap<FinalizedHeapObjectHeader>::addPageToHeap(const GCInfo*);
-template<> void ThreadHeap<HeapObjectHeader>::addPageToHeap(const GCInfo*);
-extern template class PLATFORM_EXPORT ThreadHeap<FinalizedHeapObjectHeader>;
-extern template class PLATFORM_EXPORT ThreadHeap<HeapObjectHeader>;
-#endif
-
 }
 
 #endif // Heap_h
