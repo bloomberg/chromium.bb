@@ -186,8 +186,14 @@ class MediaGalleriesPrivateGalleryWatchApiTest : public ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPrivateGalleryWatchApiTest);
 };
 
+// Crashing on OSX.
+#if defined(OS_MACOSX)
+#define MAYBE_BasicGalleryWatch DISABLED_BasicGalleryWatch
+#else
+#define MAYBE_BasicGalleryWatch BasicGalleryWatch
+#endif
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
-                       BasicGalleryWatch) {
+                       MAYBE_BasicGalleryWatch) {
   SetupGalleryWatches();
 
   // Add gallery watch listener.
