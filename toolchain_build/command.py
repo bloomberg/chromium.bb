@@ -248,8 +248,6 @@ def Copy(src, dst, run_cond=None):
   def copy(subst, src, dst):
     shutil.copyfile(subst.SubstituteAbsPaths(src),
                     subst.SubstituteAbsPaths(dst))
-    shutil.copytree(subst.SubstituteAbsPaths(src),
-                    subst.SubstituteAbsPaths(dst))
   return Runnable(run_cond, copy, src, dst)
 
 
