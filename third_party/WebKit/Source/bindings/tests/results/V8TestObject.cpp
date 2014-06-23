@@ -6988,7 +6988,7 @@ static void voidMethodDefaultNullableStringArgMethod(const v8::FunctionCallbackI
     TestObject* impl = V8TestObject::toNative(info.Holder());
     V8StringResource<> defaultStringArg;
     {
-        TOSTRING_VOID_INTERNAL(defaultStringArg, info[0]);
+        TOSTRING_VOID_INTERNAL(defaultStringArg, argumentOrNull(info, 0));
     }
     impl->voidMethodDefaultNullableStringArg(defaultStringArg);
 }

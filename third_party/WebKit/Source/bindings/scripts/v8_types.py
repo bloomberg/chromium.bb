@@ -167,7 +167,7 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False, used_as
 
     if base_idl_type in NON_WRAPPER_TYPES:
         return 'RefPtr<%s>' % base_idl_type
-    if base_idl_type in ('DOMString', 'ByteString', 'ScalarValueString'):
+    if idl_type.is_string_type:
         if not used_as_argument:
             return 'String'
         return 'V8StringResource<%s>' % string_mode()
@@ -417,8 +417,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index):
 
     if 'EnforceRange' in extended_attributes:
         arguments = ', '.join([v8_value, 'EnforceRange', 'exceptionState'])
-    elif (idl_type.is_integer_type or  # NormalConversion
-          idl_type.name in ('ByteString', 'ScalarValueString')):
+    elif idl_type.may_raise_exception_on_conversion:
         arguments = ', '.join([v8_value, 'exceptionState'])
     else:
         arguments = v8_value
@@ -466,8 +465,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     args = [variable_name, cpp_value]
     if idl_type.base_type == 'DOMString' and not idl_type.array_or_sequence_type:
         macro = 'TOSTRING_VOID'
-    elif (idl_type.is_integer_type or
-          idl_type.name in ('ByteString', 'ScalarValueString')):
+    elif idl_type.may_raise_exception_on_conversion:
         macro = 'TONATIVE_VOID_EXCEPTIONSTATE'
         args.append('exceptionState')
     else:
@@ -550,7 +548,7 @@ def v8_conversion_type(idl_type, extended_attributes):
         return 'int'
     if base_idl_type in CPP_UNSIGNED_TYPES:
         return 'unsigned'
-    if base_idl_type in ('DOMString', 'ByteString', 'ScalarValueString'):
+    if idl_type.is_string_type:
         if 'TreatReturnedNullStringAs' not in extended_attributes:
             return base_idl_type
         treat_returned_null_string_as = extended_attributes['TreatReturnedNullStringAs']

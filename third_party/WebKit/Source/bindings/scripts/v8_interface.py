@@ -738,7 +738,7 @@ def resolution_tests_methods(effective_overloads):
     # only needed if distinguishing between primitive types.)
     if len([idl_type.is_primitive_type for idl_type in idl_types]) > 1:
         # (Only needed if match in step 11, otherwise redundant.)
-        if any(idl_type.name == 'String' or idl_type.is_enum
+        if any(idl_type.is_string_type or idl_type.is_enum
                for idl_type in idl_types):
             # 10. Otherwise: if V is a Number value, and there is an entry in S
             # that has one of the following types at position i of its type
@@ -760,15 +760,12 @@ def resolution_tests_methods(effective_overloads):
     # 11. Otherwise: if there is an entry in S that has one of the following
     # types at position i of its type list,
     # • DOMString
+    # • ByteString
+    # • ScalarValueString [a DOMString typedef, per definition.]
     # • an enumeration type
-    # * ByteString
-    # Blink: ScalarValueString is a pending Web IDL addition
     try:
         method = next(method for idl_type, method in idl_types_methods
-                      if idl_type.name in ('String',
-                                           'ByteString',
-                                           'ScalarValueString') or
-                      idl_type.is_enum)
+                      if idl_type.is_string_type or idl_type.is_enum)
         yield 'true', method
     except StopIteration:
         pass
@@ -855,7 +852,7 @@ def generate_constructor(interface, constructor):
             interface.extended_attributes.get('RaisesException') == 'Constructor' or
             any(argument for argument in constructor.arguments
                 if argument.idl_type.name == 'SerializedScriptValue' or
-                   argument.idl_type.is_integer_type),
+                   argument.idl_type.may_raise_exception_on_conversion),
         'is_constructor': True,
         'is_named_constructor': False,
         'number_of_required_arguments':
