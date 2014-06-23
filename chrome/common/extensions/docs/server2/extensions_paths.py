@@ -7,11 +7,9 @@ from posixpath import join
 
 # Extensions-related paths within the Chromium repository.
 
-APPS = 'apps/common/'
 EXTENSIONS = 'extensions/common/'
 CHROME_EXTENSIONS = 'chrome/common/extensions/'
 
-APPS_API = join(APPS, 'api/')
 EXTENSIONS_API = join(EXTENSIONS, 'api/')
 CHROME_API = join(CHROME_EXTENSIONS, 'api/')
 
@@ -19,7 +17,6 @@ CHROME_API = join(CHROME_EXTENSIONS, 'api/')
 API_PATHS = (
   CHROME_API,
   EXTENSIONS_API,
-  APPS_API,
 )
 
 DOCS = join(CHROME_EXTENSIONS, 'docs/')
