@@ -397,10 +397,7 @@ bool WindowsCreateFunction::RunSync() {
       case windows::Create::Params::CreateData::TYPE_PANEL:
       case windows::Create::Params::CreateData::TYPE_DETACHED_PANEL: {
         extension_id = GetExtension()->id();
-        bool use_panels = false;
-#if !defined(OS_ANDROID)
-        use_panels = PanelManager::ShouldUsePanels(extension_id);
-#endif
+        bool use_panels = PanelManager::ShouldUsePanels(extension_id);
         if (use_panels) {
           create_panel = true;
           // Non-ash supports both docked and detached panel types.
@@ -1035,7 +1032,7 @@ bool TabsHighlightFunction::RunSync() {
 
 bool TabsHighlightFunction::HighlightTab(TabStripModel* tabstrip,
                                          ui::ListSelectionModel* selection,
-                                         int *active_index,
+                                         int* active_index,
                                          int index) {
   // Make sure the index is in range.
   if (!tabstrip->ContainsIndex(index)) {
@@ -1285,7 +1282,7 @@ bool TabsMoveFunction::RunSync() {
 }
 
 bool TabsMoveFunction::MoveTab(int tab_id,
-                               int *new_index,
+                               int* new_index,
                                int iteration,
                                base::ListValue* tab_values,
                                int* window_id) {

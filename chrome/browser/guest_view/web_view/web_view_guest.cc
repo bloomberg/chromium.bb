@@ -112,9 +112,6 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
       return "killed";
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
-#if defined(OS_ANDROID)
-    case base::TERMINATION_STATUS_OOM_PROTECTED:
-#endif
       return "crashed";
     case base::TERMINATION_STATUS_MAX_ENUM:
       break;
@@ -189,7 +186,7 @@ void AttachWebViewHelpers(WebContents* contents) {
 WebViewGuest::WebViewGuest(int guest_instance_id,
                            WebContents* guest_web_contents,
                            const std::string& embedder_extension_id)
-   :  GuestView<WebViewGuest>(guest_instance_id),
+    : GuestView<WebViewGuest>(guest_instance_id),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)),
       pending_context_menu_request_id_(0),

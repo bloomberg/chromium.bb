@@ -861,6 +861,7 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
     // |bucket_id| strings we construct here, so we hash it to save space.
     buckets->push_back(GetBucket(base::SHA1HashString(bucket_id)));
   }
+
  private:
   BrowserContext* browser_context_;
 };
@@ -894,6 +895,7 @@ class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
       buckets->push_back(GetBucket(base::SHA1HashString(bucket_id)));
     }
   }
+
  private:
   BrowserContext* browser_context_;
 };
@@ -1083,10 +1085,6 @@ bool BookmarksImportFunction::RunOnReady() {
 void BookmarksImportFunction::FileSelected(const base::FilePath& path,
                                            int index,
                                            void* params) {
-#if !defined(OS_ANDROID)
-  // Android does not have support for the standard importers.
-  // TODO(jgreenwald): remove ifdef once extensions are no longer built on
-  // Android.
   // Deletes itself.
   ExternalProcessImporterHost* importer_host = new ExternalProcessImporterHost;
   importer::SourceProfile source_profile;
@@ -1099,7 +1097,6 @@ void BookmarksImportFunction::FileSelected(const base::FilePath& path,
 
   importer::LogImporterUseToMetrics("BookmarksAPI",
                                     importer::TYPE_BOOKMARKS_FILE);
-#endif
   Release();  // Balanced in BookmarksIOFunction::SelectFile()
 }
 
@@ -1111,12 +1108,9 @@ bool BookmarksExportFunction::RunOnReady() {
 void BookmarksExportFunction::FileSelected(const base::FilePath& path,
                                            int index,
                                            void* params) {
-#if !defined(OS_ANDROID)
-  // Android does not have support for the standard exporter.
   // TODO(jgreenwald): remove ifdef once extensions are no longer built on
   // Android.
   bookmark_html_writer::WriteBookmarks(GetProfile(), path, NULL);
-#endif
   Release();  // Balanced in BookmarksIOFunction::SelectFile()
 }
 

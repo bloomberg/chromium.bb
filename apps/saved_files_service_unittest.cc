@@ -16,8 +16,6 @@
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if !defined(OS_ANDROID)
-
 #define TRACE_CALL(expression) \
   do {                         \
     SCOPED_TRACE(#expression); \
@@ -235,4 +233,3 @@ TEST_F(SavedFilesServiceUnitTest, SequenceNumberCompactionTest) {
   service_->Clear(extension_->id());
   TRACE_CALL(CheckRangeEnqueuedInOrder(0, 4));
 }
-#endif

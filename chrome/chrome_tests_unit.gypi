@@ -2131,7 +2131,6 @@
             'browser/web_applications/web_app_unittest.cc',
             'common/extensions/sync_type_unittest.cc',
             'common/extensions/permissions/permission_set_unittest.cc',
-            'renderer/extensions/chrome_v8_context_set_unittest.cc',
             'renderer/extensions/event_unittest.cc',
             'renderer/extensions/extension_localization_peer_unittest.cc',
             'renderer/extensions/json_schema_unittest.cc',

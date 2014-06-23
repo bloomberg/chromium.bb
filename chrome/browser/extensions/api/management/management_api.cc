@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/api/management.h"
@@ -53,10 +54,6 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
 #include "ui/gfx/favicon_size.h"
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
-#endif
 
 using base::IntToString;
 using content::BrowserThread;
@@ -284,14 +281,14 @@ void AddExtensionInfo(const ExtensionSet& extensions,
   }
 }
 
-} // namespace
+}  // namespace
 
 ExtensionService* ManagementFunction::service() {
-  return extensions::ExtensionSystem::Get(GetProfile())->extension_service();
+  return ExtensionSystem::Get(GetProfile())->extension_service();
 }
 
 ExtensionService* AsyncManagementFunction::service() {
-  return extensions::ExtensionSystem::Get(GetProfile())->extension_service();
+  return ExtensionSystem::Get(GetProfile())->extension_service();
 }
 
 bool ManagementGetAllFunction::RunSync() {
@@ -504,11 +501,9 @@ bool ManagementLaunchAppFunction::RunSync() {
       GetLaunchContainer(ExtensionPrefs::Get(GetProfile()), extension);
   OpenApplication(AppLaunchParams(
       GetProfile(), extension, launch_container, NEW_FOREGROUND_TAB));
-#if !defined(OS_ANDROID)
   CoreAppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_EXTENSION_API,
       extension->GetType());
-#endif
 
   return true;
 }
@@ -554,7 +549,7 @@ bool ManagementSetEnabledFunction::RunAsync() {
         error_ = keys::kGestureNeededForEscalationError;
         return false;
       }
-      AddRef(); // Matched in InstallUIProceed/InstallUIAbort
+      AddRef();  // Matched in InstallUIProceed/InstallUIAbort
       install_prompt_.reset(
           new ExtensionInstallPrompt(GetAssociatedWebContents()));
       install_prompt_->ConfirmReEnable(this, extension);
@@ -614,7 +609,7 @@ bool ManagementUninstallFunctionBase::Uninstall(
 
   if (auto_confirm_for_test == DO_NOT_SKIP) {
     if (show_confirm_dialog) {
-      AddRef(); // Balanced in ExtensionUninstallAccepted/Canceled
+      AddRef();  // Balanced in ExtensionUninstallAccepted/Canceled
       extension_uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
           GetProfile(), GetCurrentBrowser(), this));
       if (extension_id() != target_extension_id) {

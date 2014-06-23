@@ -415,7 +415,6 @@ void SendOnMessageEventOnUI(
   extensions::EventFilteringInfo event_filtering_info;
 
   std::string event_name;
-#if defined(ENABLE_EXTENSIONS)
   // The instance ID uniquely identifies a <webview> instance within an embedder
   // process. We use a filter here so that only event listeners for a particular
   // <webview> will fire.
@@ -425,11 +424,6 @@ void SendOnMessageEventOnUI(
   } else {
     event_name = declarative_keys::kOnMessage;
   }
-#else
-  // TODO(thestig) Remove this once the WebRequestAPI code is disabled.
-  // http://crbug.com/305852
-  NOTREACHED();
-#endif
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
       event_name,

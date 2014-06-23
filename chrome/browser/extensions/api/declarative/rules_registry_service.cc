@@ -87,7 +87,6 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
       base::Bind(&RegisterToExtensionWebRequestEventRouterOnIO,
           profile_, webview_key, web_request_rules_registry));
 
-#if defined(ENABLE_EXTENSIONS)
   // Only create a ContentRulesRegistry for regular pages and not webviews.
   if (!IsWebView(webview_key)) {
     RulesCacheDelegate* content_rules_cache_delegate =
@@ -98,7 +97,6 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
     RegisterRulesRegistry(content_rules_registry);
     content_rules_registry_ = content_rules_registry.get();
   }
-#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 void RulesRegistryService::Shutdown() {

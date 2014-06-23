@@ -79,7 +79,6 @@ const BookmarkNode* GetNodeFromString(BookmarkModel* model,
 bool GetNodesFromVector(BookmarkModel* model,
                         const std::vector<std::string>& id_strings,
                         std::vector<const BookmarkNode*>* nodes) {
-
   if (id_strings.empty())
     return false;
 
@@ -759,9 +758,7 @@ bool BookmarkManagerPrivateRemoveTreesFunction::RunOnReady() {
 
   BookmarkModel* model = GetBookmarkModel();
   ChromeBookmarkClient* client = GetChromeBookmarkClient();
-#if !defined(OS_ANDROID)
   bookmarks::ScopedGroupBookmarkActions group_deletes(model);
-#endif
   int64 id;
   for (size_t i = 0; i < params->id_list.size(); ++i) {
     if (!GetBookmarkIdAsInt64(params->id_list[i], &id))
@@ -774,25 +771,18 @@ bool BookmarkManagerPrivateRemoveTreesFunction::RunOnReady() {
 }
 
 bool BookmarkManagerPrivateUndoFunction::RunOnReady() {
-#if !defined(OS_ANDROID)
   BookmarkUndoServiceFactory::GetForProfile(GetProfile())->undo_manager()->
       Undo();
-#endif
-
   return true;
 }
 
 bool BookmarkManagerPrivateRedoFunction::RunOnReady() {
-#if !defined(OS_ANDROID)
   BookmarkUndoServiceFactory::GetForProfile(GetProfile())->undo_manager()->
       Redo();
-#endif
-
   return true;
 }
 
 bool BookmarkManagerPrivateGetUndoInfoFunction::RunOnReady() {
-#if !defined(OS_ANDROID)
   UndoManager* undo_manager =
       BookmarkUndoServiceFactory::GetForProfile(GetProfile())->undo_manager();
 
@@ -801,13 +791,10 @@ bool BookmarkManagerPrivateGetUndoInfoFunction::RunOnReady() {
   result.label = base::UTF16ToUTF8(undo_manager->GetUndoLabel());
 
   results_ = UndoInfo::Results::Create(result);
-#endif  // !defined(OS_ANDROID)
-
   return true;
 }
 
 bool BookmarkManagerPrivateGetRedoInfoFunction::RunOnReady() {
-#if !defined(OS_ANDROID)
   UndoManager* undo_manager =
       BookmarkUndoServiceFactory::GetForProfile(GetProfile())->undo_manager();
 
@@ -816,8 +803,6 @@ bool BookmarkManagerPrivateGetRedoInfoFunction::RunOnReady() {
   result.label = base::UTF16ToUTF8(undo_manager->GetRedoLabel());
 
   results_ = RedoInfo::Results::Create(result);
-#endif  // !defined(OS_ANDROID)
-
   return true;
 }
 
