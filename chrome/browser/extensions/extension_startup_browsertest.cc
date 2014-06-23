@@ -64,7 +64,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 #if defined(OFFICIAL_BUILD) && defined(OS_WIN)
       // In Windows official builds, it is not possible to disable settings
       // authentication.
-      unauthenticated_load_allowed_ = true;
+      unauthenticated_load_allowed_ = false;
 #endif
     } else {
       base::FilePath::StringType paths = JoinString(load_extensions_, ',');
