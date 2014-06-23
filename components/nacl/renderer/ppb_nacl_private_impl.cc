@@ -296,6 +296,7 @@ int32_t FileDownloaderToPepperError(FileDownloader::Status status) {
 void LaunchSelLdr(PP_Instance instance,
                   PP_Bool main_service_runtime,
                   const char* alleged_url,
+                  const PP_NaClFileInfo* nexe_file_info,
                   PP_Bool uses_irt,
                   PP_Bool uses_ppapi,
                   PP_Bool uses_nonsfi_mode,
@@ -330,6 +331,9 @@ void LaunchSelLdr(PP_Instance instance,
   if (uses_ppapi) {
     routing_id = GetRoutingID(instance);
     if (!routing_id) {
+      if (nexe_file_info->handle != PP_kInvalidFileHandle) {
+        base::ClosePlatformFile(nexe_file_info->handle);
+      }
       ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
           FROM_HERE,
           base::Bind(callback.func, callback.user_data,
@@ -352,15 +356,19 @@ void LaunchSelLdr(PP_Instance instance,
   std::string error_message_string;
   NaClLaunchResult launch_result;
 
+  content::RendererPpapiHost* host =
+      content::RendererPpapiHost::GetForPPInstance(instance);
   if (!sender->Send(new NaClHostMsg_LaunchNaCl(
-          NaClLaunchParams(instance_info.url.spec(),
-                           routing_id,
-                           perm_bits,
-                           PP_ToBool(uses_irt),
-                           PP_ToBool(uses_nonsfi_mode),
-                           PP_ToBool(enable_dyncode_syscalls),
-                           PP_ToBool(enable_exception_handling),
-                           PP_ToBool(enable_crash_throttling)),
+          NaClLaunchParams(
+              instance_info.url.spec(),
+              host->ShareHandleWithRemote(nexe_file_info->handle, true),
+              routing_id,
+              perm_bits,
+              PP_ToBool(uses_irt),
+              PP_ToBool(uses_nonsfi_mode),
+              PP_ToBool(enable_dyncode_syscalls),
+              PP_ToBool(enable_exception_handling),
+              PP_ToBool(enable_crash_throttling)),
           &launch_result,
           &error_message_string))) {
     ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(

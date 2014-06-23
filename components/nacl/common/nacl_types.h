@@ -12,6 +12,7 @@
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_platform_file.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -42,6 +43,8 @@ struct NaClStartParams {
   NaClStartParams();
   ~NaClStartParams();
 
+  IPC::PlatformFileForTransit nexe_file;
+
   std::vector<FileDescriptor> handles;
   FileDescriptor debug_stub_server_bound_socket;
 
@@ -68,7 +71,10 @@ struct NaClStartParams {
 // nacl_host_messages.h.
 struct NaClLaunchParams {
   NaClLaunchParams();
-  NaClLaunchParams(const std::string& u, int r, uint32 p,
+  NaClLaunchParams(const std::string& manifest_url,
+                   const IPC::PlatformFileForTransit& nexe_file,
+                   int render_view_id,
+                   uint32 permission_bits,
                    bool uses_irt,
                    bool uses_nonsfi_mode,
                    bool enable_dyncode_syscalls,
@@ -78,6 +84,7 @@ struct NaClLaunchParams {
   ~NaClLaunchParams();
 
   std::string manifest_url;
+  IPC::PlatformFileForTransit nexe_file;
   int render_view_id;
   uint32 permission_bits;
   bool uses_irt;

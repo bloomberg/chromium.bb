@@ -18,6 +18,7 @@ class SelLdrLauncherChrome : public nacl::SelLdrLauncherBase {
   virtual void Start(PP_Instance instance,
                      bool main_service_runtime,
                      const char* url,
+                     const PP_NaClFileInfo* file_info,
                      bool uses_irt,
                      bool uses_ppapi,
                      bool uses_nonsfi_mode,

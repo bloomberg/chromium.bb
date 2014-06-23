@@ -437,6 +437,11 @@ bool ServiceRuntime::SetupCommandChannel() {
   NaClLog(4, "ServiceRuntime::SetupCommand (this=%p, subprocess=%p)\n",
           static_cast<void*>(this),
           static_cast<void*>(subprocess_.get()));
+  if (uses_nonsfi_mode_) {
+    // In non-SFI mode, no SRPC is used. Just skips and returns success.
+    return true;
+  }
+
   if (!subprocess_->SetupCommand(&command_channel_)) {
     if (main_service_runtime_) {
       ErrorInfo error_info;
@@ -451,6 +456,12 @@ bool ServiceRuntime::SetupCommandChannel() {
 
 void ServiceRuntime::LoadModule(PP_NaClFileInfo file_info,
                                 pp::CompletionCallback callback) {
+  if (uses_nonsfi_mode_) {
+    // In non-SFI mode, loading is done a part of LaunchSelLdr.
+    DidLoadModule(callback, PP_OK);
+    return;
+  }
+
   NaClFileInfo nacl_file_info;
   nacl_file_info.desc = ConvertFileDescriptor(file_info.handle, true);
   nacl_file_info.file_token.lo = file_info.token_lo;
@@ -610,6 +621,7 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
   tmp_subprocess->Start(plugin_->pp_instance(),
                         main_service_runtime_,
                         params.url.c_str(),
+                        &params.file_info,
                         params.uses_irt,
                         params.uses_ppapi,
                         uses_nonsfi_mode_,

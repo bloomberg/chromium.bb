@@ -36,6 +36,8 @@
 #include "components/nacl/loader/nonsfi/irt_random.h"
 #include "components/nacl/loader/nonsfi/nonsfi_main.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "ppapi/nacl_irt/plugin_startup.h"
 #endif
 
@@ -468,9 +470,15 @@ void NaClListener::StartNonSfi(const nacl::NaClStartParams& params) {
   CHECK(params.debug_stub_server_bound_socket.fd == -1);
 
   CHECK(!params.uses_irt);
+  // TODO(hidehiko): Currently imc bootstrap handle is still sent to the
+  // plugin. Get rid of this.
   CHECK(params.handles.size() == 1);
-  int imc_bootstrap_handle = nacl::ToNativeHandle(params.handles[0]);
-  nacl::nonsfi::MainStart(imc_bootstrap_handle);
+
+  CHECK(params.nexe_file != IPC::InvalidPlatformFileForTransit());
+  nacl::nonsfi::MainStart(
+      NaClDescIoDescFromDescAllocCtor(
+          IPC::PlatformFileForTransitToPlatformFile(params.nexe_file),
+          NACL_ABI_O_RDONLY));
 #endif  // defined(OS_LINUX)
 }
 

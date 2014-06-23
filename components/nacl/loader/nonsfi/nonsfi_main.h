@@ -5,14 +5,13 @@
 #ifndef COMPONENTS_NACL_LOADER_NONSFI_NONSFI_MAIN_H_
 #define COMPONENTS_NACL_LOADER_NONSFI_NONSFI_MAIN_H_
 
-#include "native_client/src/include/portability.h"
-#include "native_client/src/public/imc_types.h"
+struct NaClDesc;
 
 namespace nacl {
 namespace nonsfi {
 
-// Launch NaCl with Non SFI mode.
-void MainStart(NaClHandle imc_bootstrap_handle);
+// Launch NaCl with Non SFI mode. This takes the ownership of |nexe_file|.
+void MainStart(NaClDesc* nexe_file);
 
 }  // namespace nonsfi
 }  // namespace nacl

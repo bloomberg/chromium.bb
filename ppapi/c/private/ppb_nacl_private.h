@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed Jun 18 19:15:01 2014. */
+/* From private/ppb_nacl_private.idl modified Mon Jun 23 12:23:23 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -230,6 +230,9 @@ struct PPB_NaCl_Private_1_0 {
    * indicates that the nexe run by sel_ldr will use the PPAPI APIs.
    * This implies that LaunchSelLdr is run from the main thread.  If a nexe
    * does not need PPAPI, then it can run off the main thread.
+   * The |nexe_file_info| is currently used only in non-SFI mode. It is the
+   * file handle for the main nexe file, which should be initially loaded.
+   * LaunchSelLdr takes the ownership of the file handle.
    * The |uses_irt| flag indicates whether the IRT should be loaded in this
    * NaCl process.  This is true for ABI stable nexes.
    * The |uses_nonsfi_mode| flag indicates whether or not nonsfi-mode should
@@ -246,6 +249,7 @@ struct PPB_NaCl_Private_1_0 {
       PP_Instance instance,
       PP_Bool main_service_runtime,
       const char* alleged_url,
+      const struct PP_NaClFileInfo* nexe_file_info,
       PP_Bool uses_irt,
       PP_Bool uses_ppapi,
       PP_Bool uses_nonsfi_mode,

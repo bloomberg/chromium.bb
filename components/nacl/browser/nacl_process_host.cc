@@ -249,6 +249,7 @@ unsigned NaClProcessHost::keepalive_throttle_interval_milliseconds_ =
     ppapi::kKeepaliveThrottleIntervalDefaultMilliseconds;
 
 NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
+                                 base::File nexe_file,
                                  ppapi::PpapiPermissions permissions,
                                  int render_view_id,
                                  uint32 permission_bits,
@@ -260,6 +261,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
                                  bool off_the_record,
                                  const base::FilePath& profile_directory)
     : manifest_url_(manifest_url),
+      nexe_file_(nexe_file.Pass()),
       permissions_(permissions),
 #if defined(OS_WIN)
       process_launched_by_broker_(false),
@@ -447,6 +449,9 @@ void NaClProcessHost::Launch(
       return;
     }
   }
+
+  // TODO(hidehiko): We no longer use imc socket channel for non-SFI mode.
+  // Do not create it.
 
   // Rather than creating a socket pair in the renderer, and passing
   // one side through the browser to sel_ldr, socket pairs are created
@@ -812,9 +817,20 @@ bool NaClProcessHost::StartNaClExecution() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
 
   NaClStartParams params;
+
   // Enable PPAPI proxy channel creation only for renderer processes.
   params.enable_ipc_proxy = enable_ppapi_proxy();
-  if (!uses_nonsfi_mode_) {
+  if (uses_nonsfi_mode_) {
+    // Currently, non-SFI mode is supported only on Linux.
+#if defined(OS_LINUX)
+    // nexe_file_ still keeps the ownership at this moment, because |params|
+    // may just be destroyed before sending IPC is properly processed.
+    // Note that although we set auto_close=true for FileDescriptor's
+    // constructor, it is not automatically handled in its destructor as RAII.
+    params.nexe_file =
+        base::FileDescriptor(nexe_file_.GetPlatformFile(), true);
+#endif
+  } else {
     params.validation_cache_enabled = nacl_browser->ValidationCacheIsEnabled();
     params.validation_cache_key = nacl_browser->GetValidationCacheKey();
     params.version = NaClBrowser::GetDelegate()->GetVersionString();
@@ -875,9 +891,14 @@ bool NaClProcessHost::StartNaClExecution() {
   }
 #endif
 
-  process_->Send(new NaClProcessMsg_Start(params));
-
+  // Here we are about to send the IPC, so release file descriptors to delegate
+  // the ownership to the message.
+  if (uses_nonsfi_mode_) {
+    nexe_file_.TakePlatformFile();
+  }
   internal_->socket_for_sel_ldr = NACL_INVALID_HANDLE;
+
+  process_->Send(new NaClProcessMsg_Start(params));
   return true;
 }
 

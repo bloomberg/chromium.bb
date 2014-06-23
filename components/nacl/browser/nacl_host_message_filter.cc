@@ -143,6 +143,8 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
     ppapi::PpapiPermissions permissions) {
   NaClProcessHost* host = new NaClProcessHost(
       GURL(launch_params.manifest_url),
+      base::File(
+          IPC::PlatformFileForTransitToPlatformFile(launch_params.nexe_file)),
       permissions,
       launch_params.render_view_id,
       launch_params.permission_bits,

@@ -41,6 +41,12 @@ const int64_t kTimeSmallMin = 1;         // in ms
 const int64_t kTimeSmallMax = 20000;     // in ms
 const uint32_t kTimeSmallBuckets = 100;
 
+const PP_NaClFileInfo kInvalidNaClFileInfo = {
+  PP_kInvalidFileHandle,
+  0,  // token_lo
+  0,  // token_hi
+};
+
 }  // namespace
 
 void Plugin::ShutDownSubprocesses() {
@@ -167,7 +173,20 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
   pp::Var manifest_base_url =
       pp::Var(pp::PASS_REF, nacl_interface_->GetManifestBaseURL(pp_instance()));
   std::string manifest_base_url_str = manifest_base_url.AsString();
+
+  PP_NaClFileInfo file_info_for_srpc = kInvalidNaClFileInfo;
+  PP_NaClFileInfo file_info_for_ipc = kInvalidNaClFileInfo;
+  if (uses_nonsfi_mode) {
+    // In non-SFI mode, LaunchSelLdr is used to pass the nexe file's descriptor
+    // to the NaCl loader process.
+    file_info_for_ipc = file_info;
+  } else {
+    // Otherwise (i.e. in SFI-mode), LoadModule SRPC is still being used.
+    file_info_for_srpc = file_info;
+  }
+
   SelLdrStartParams params(manifest_base_url_str,
+                           file_info_for_ipc,
                            true /* uses_irt */,
                            true /* uses_ppapi */,
                            enable_dyncode_syscalls,
@@ -191,7 +210,7 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
   // callback here for |callback|.
   pp::CompletionCallback callback = callback_factory_.NewCallback(
       &Plugin::LoadNexeAndStart,
-      service_runtime, file_info, pp::CompletionCallback());
+      service_runtime, file_info_for_srpc, pp::CompletionCallback());
   StartSelLdrOnMainThread(
       static_cast<int32_t>(PP_OK), service_runtime, params, callback);
 }
@@ -246,7 +265,14 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
   // TODO(sehr): define new UMA stats for translator related nexe events.
   // NOTE: The PNaCl translator nexes are not built to use the IRT.  This is
   // done to save on address space and swap space.
+  //
+  // Currently, this works only in SFI-mode. So, LoadModule SRPC is still used.
+  // So, pass kInvalidNaClFileInfo here, and instead |file_handle| is passed
+  // to LoadNaClModuleFromBackgroundThread() below.
+  // TODO(teravest, hidehiko): Pass file_handle to params, so that LaunchSelLdr
+  // will look at the info.
   SelLdrStartParams params(helper_url,
+                           kInvalidNaClFileInfo,
                            false /* uses_irt */,
                            false /* uses_ppapi */,
                            false /* enable_dyncode_syscalls */,

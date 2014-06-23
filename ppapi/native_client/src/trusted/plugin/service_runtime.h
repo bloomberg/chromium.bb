@@ -42,12 +42,14 @@ class ServiceRuntime;
 // creation templates aren't overwhelmed with too many parameters.
 struct SelLdrStartParams {
   SelLdrStartParams(const nacl::string& url,
+                    const PP_NaClFileInfo& file_info,
                     bool uses_irt,
                     bool uses_ppapi,
                     bool enable_dyncode_syscalls,
                     bool enable_exception_handling,
                     bool enable_crash_throttling)
       : url(url),
+        file_info(file_info),
         uses_irt(uses_irt),
         uses_ppapi(uses_ppapi),
         enable_dyncode_syscalls(enable_dyncode_syscalls),
@@ -55,6 +57,7 @@ struct SelLdrStartParams {
         enable_crash_throttling(enable_crash_throttling) {
   }
   nacl::string url;
+  PP_NaClFileInfo file_info;
   bool uses_irt;
   bool uses_ppapi;
   bool enable_dev_interfaces;
