@@ -56,6 +56,23 @@ TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(
                          input->flags,
                          input->key_data->is_char));
       break;
+    case ui::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_DRAGGED:
+    case ui::ET_MOUSE_RELEASED:
+    case ui::ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_ENTERED:
+    case ui::ET_MOUSE_EXITED: {
+      const gfx::PointF location(TypeConverter<PointPtr, gfx::Point>::ConvertTo(
+                                     input->location));
+      // TODO: last flags isn't right. Need to send changed_flags.
+      ui_event.reset(new ui::MouseEvent(
+                         static_cast<ui::EventType>(input->action),
+                         location,
+                         location,
+                         input->flags,
+                         input->flags));
+      break;
+    }
     default:
       // TODO: support other types.
       // NOTIMPLEMENTED();
