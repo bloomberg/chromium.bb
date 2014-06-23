@@ -135,6 +135,8 @@ bool ImageTransportSurfaceFBO::SwapBuffers() {
 
   DCHECK(!is_swap_buffers_pending_);
   is_swap_buffers_pending_ = true;
+
+  storage_provider_->WillSwapBuffers();
   return true;
 }
 
@@ -158,6 +160,8 @@ bool ImageTransportSurfaceFBO::PostSubBuffer(
 
   DCHECK(!is_swap_buffers_pending_);
   is_swap_buffers_pending_ = true;
+
+  storage_provider_->WillSwapBuffers();
   return true;
 }
 
@@ -321,8 +325,8 @@ void ImageTransportSurfaceFBO::CreateFramebuffer() {
   }
 
   bool allocated_color_buffer = storage_provider_->AllocateColorBufferStorage(
-      static_cast<CGLContextObj>(context_->GetHandle()),
-      rounded_size_);
+      static_cast<CGLContextObj>(context_->GetHandle()), texture_id_,
+      rounded_size_, scale_factor_);
   if (!allocated_color_buffer) {
     DLOG(ERROR) << "Failed to allocate color buffer storage.";
     DestroyFramebuffer();

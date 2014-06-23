@@ -30,6 +30,7 @@
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/base/cocoa/base_view.h"
+#include "ui/base/cocoa/remote_layer_api.h"
 
 struct ViewHostMsg_TextInputState_Params;
 
@@ -419,6 +420,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // The background CoreAnimation layer which is hosted by |cocoa_view_|.
   // The compositing or software layers will be added as sublayers to this.
   base::scoped_nsobject<CALayer> background_layer_;
+
+  // The CoreAnimation layer hosted by the GPU process.
+  base::scoped_nsobject<CALayerHost> remote_layer_host_;
 
   // The CoreAnimation layer for software compositing. This should be NULL
   // when software compositing is not in use.

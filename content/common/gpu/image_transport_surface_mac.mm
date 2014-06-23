@@ -6,6 +6,7 @@
 
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/image_transport_surface_iosurface_mac.h"
+#include "content/common/gpu/image_transport_surface_calayer_mac.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -48,6 +49,8 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
   switch (gfx::GetGLImplementation()) {
     case gfx::kGLImplementationDesktopGL:
     case gfx::kGLImplementationAppleGL:
+      // TODO(ccameron): If the remote layer API is supported on this system,
+      // use a CALayerStorageProvider instead of an IOSurfaceStorageProvider.
       return scoped_refptr<gfx::GLSurface>(new ImageTransportSurfaceFBO(
           new IOSurfaceStorageProvider, manager, stub, surface_handle.handle));
     default:

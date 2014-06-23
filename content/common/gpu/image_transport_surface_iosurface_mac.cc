@@ -5,6 +5,7 @@
 #include "content/common/gpu/image_transport_surface_iosurface_mac.h"
 
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/surface_handle_types_mac.h"
 
 namespace content {
 namespace {
@@ -51,8 +52,8 @@ gfx::Size IOSurfaceStorageProvider::GetRoundedSize(gfx::Size size) {
 }
 
 bool IOSurfaceStorageProvider::AllocateColorBufferStorage(
-    CGLContextObj context,
-    gfx::Size size) {
+    CGLContextObj context, GLuint texture,
+    gfx::Size pixel_size, float scale_factor) {
   // Allocate a new IOSurface, which is the GPU resource that can be
   // shared across processes.
   base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
@@ -62,10 +63,10 @@ bool IOSurfaceStorageProvider::AllocateColorBufferStorage(
                                              &kCFTypeDictionaryValueCallBacks));
   AddIntegerValue(properties,
                   kIOSurfaceWidth,
-                  size.width());
+                  pixel_size.width());
   AddIntegerValue(properties,
                   kIOSurfaceHeight,
-                  size.height());
+                  pixel_size.height());
   AddIntegerValue(properties,
                   kIOSurfaceBytesPerElement, 4);
   AddBooleanValue(properties,
@@ -74,7 +75,7 @@ bool IOSurfaceStorageProvider::AllocateColorBufferStorage(
   // synchronizing with the browser process because they are
   // ultimately reference counted by the operating system.
   io_surface_.reset(IOSurfaceCreate(properties));
-  io_surface_handle_ = IOSurfaceGetID(io_surface_);
+  io_surface_id_ = IOSurfaceGetID(io_surface_);
 
   // Don't think we need to identify a plane.
   GLuint plane = 0;
@@ -82,8 +83,8 @@ bool IOSurfaceStorageProvider::AllocateColorBufferStorage(
       context,
       GL_TEXTURE_RECTANGLE_ARB,
       GL_RGBA,
-      size.width(),
-      size.height(),
+      pixel_size.width(),
+      pixel_size.height(),
       GL_BGRA,
       GL_UNSIGNED_INT_8_8_8_8_REV,
       io_surface_.get(),
@@ -99,11 +100,14 @@ bool IOSurfaceStorageProvider::AllocateColorBufferStorage(
 
 void IOSurfaceStorageProvider::FreeColorBufferStorage() {
   io_surface_.reset();
-  io_surface_handle_ = 0;
+  io_surface_id_ = 0;
 }
 
 uint64 IOSurfaceStorageProvider::GetSurfaceHandle() const {
-  return io_surface_handle_;
+  return SurfaceHandleFromIOSurfaceID(io_surface_id_);
+}
+
+void IOSurfaceStorageProvider::WillSwapBuffers() {
 }
 
 }  //  namespace content

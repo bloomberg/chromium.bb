@@ -12,6 +12,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/surface_handle_types_mac.h"
 
 namespace {
 
@@ -21,9 +22,9 @@ void OnNativeSurfaceBuffersSwappedOnUIThread(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   gfx::AcceleratedWidget native_widget =
       content::GpuSurfaceTracker::Get()->AcquireNativeWidget(params.surface_id);
-  IOSurfaceID io_surface_handle = static_cast<IOSurfaceID>(
+  IOSurfaceID io_surface_id = content::IOSurfaceIDFromSurfaceHandle(
       params.surface_handle);
-  [native_widget gotAcceleratedIOSurfaceFrame:io_surface_handle
+  [native_widget gotAcceleratedIOSurfaceFrame:io_surface_id
                           withOutputSurfaceID:params.surface_id
                                 withPixelSize:params.size
                               withScaleFactor:params.scale_factor];

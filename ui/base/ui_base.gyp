@@ -107,6 +107,8 @@
         'cocoa/nib_loading.mm',
         'cocoa/nsgraphics_context_additions.h',
         'cocoa/nsgraphics_context_additions.mm',
+        'cocoa/remote_layer_api.h',
+        'cocoa/remote_layer_api.mm',
         'cocoa/tracking_area.h',
         'cocoa/tracking_area.mm',
         'cocoa/underlay_opengl_hosting_window.h',

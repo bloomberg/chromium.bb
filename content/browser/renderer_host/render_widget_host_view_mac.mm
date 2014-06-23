@@ -44,6 +44,7 @@
 #include "content/common/accessibility_messages.h"
 #include "content/common/edit_command.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/surface_handle_types_mac.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/webplugin_geometry.h"
@@ -474,6 +475,10 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   background_layer_.reset([[CALayer alloc] init]);
   [background_layer_
       setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
+  [background_layer_
+      setAutoresizingMask:kCALayerWidthSizable|kCALayerHeightSizable];
+  [background_layer_ setGeometryFlipped:YES];
+  [background_layer_ setContentsGravity:kCAGravityTopLeft];
   [cocoa_view_ setLayer:background_layer_];
   [cocoa_view_ setWantsLayer:YES];
 
@@ -1666,16 +1671,48 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
       "RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped");
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  IOSurfaceID io_surface_handle =
-      static_cast<IOSurfaceID>(params.surface_handle);
   AddPendingSwapAck(params.route_id,
                     gpu_host_id,
                     compositing_iosurface_ ?
                         compositing_iosurface_->GetRendererID() : 0);
-  CompositorSwapBuffers(io_surface_handle,
-                        params.size,
-                        params.scale_factor,
-                        params.latency_info);
+
+  switch (GetSurfaceHandleType(params.surface_handle)) {
+    case kSurfaceHandleTypeIOSurface: {
+      IOSurfaceID io_surface_id = IOSurfaceIDFromSurfaceHandle(
+          params.surface_handle);
+
+      CompositorSwapBuffers(io_surface_id,
+                            params.size,
+                            params.scale_factor,
+                            params.latency_info);
+    } break;
+    case kSurfaceHandleTypeCAContext: {
+      // Disable the fade-out animation as the layer is added.
+      ScopedCAActionDisabler disabler;
+
+      CAContextID context_id = CAContextIDFromSurfaceHandle(
+          params.surface_handle);
+
+      // If if the layer has changed put the new layer in the hierarchy and
+      // take the old one out.
+      if ([remote_layer_host_ contextId] != context_id) {
+        [remote_layer_host_ removeFromSuperlayer];
+
+        remote_layer_host_.reset([[CALayerHost alloc] init]);
+        [remote_layer_host_ setContextId:context_id];
+        [remote_layer_host_
+            setAutoresizingMask:kCALayerMaxXMargin|kCALayerMaxYMargin];
+        [background_layer_ addSublayer:remote_layer_host_];
+      }
+
+      // Ack the frame immediately. Any GPU back pressure will be applied by
+      // the remote layer from within the GPU process.
+      SendPendingSwapAck();
+    } break;
+    default:
+      LOG(ERROR) << "Invalid surface handle type.";
+      break;
+  }
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
@@ -1685,13 +1722,11 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
       "RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer");
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  IOSurfaceID io_surface_handle =
-      static_cast<IOSurfaceID>(params.surface_handle);
   AddPendingSwapAck(params.route_id,
                     gpu_host_id,
                     compositing_iosurface_ ?
                         compositing_iosurface_->GetRendererID() : 0);
-  CompositorSwapBuffers(io_surface_handle,
+  CompositorSwapBuffers(IOSurfaceIDFromSurfaceHandle(params.surface_handle),
                         params.surface_size,
                         params.surface_scale_factor,
                         params.latency_info);
@@ -2213,12 +2248,8 @@ void RenderWidgetHostViewMac::LayoutLayers() {
       0,
       compositing_iosurface_->dip_io_surface_size().width(),
       compositing_iosurface_->dip_io_surface_size().height());
-    CGPoint layer_position = CGPointMake(
-      0,
-      CGRectGetHeight(new_background_frame) - CGRectGetHeight(layer_bounds));
     bool bounds_changed = !CGRectEqualToRect(
         layer_bounds, [compositing_iosurface_layer_ bounds]);
-    [compositing_iosurface_layer_ setPosition:layer_position];
     [compositing_iosurface_layer_ setBounds:layer_bounds];
 
     // If the bounds changed, then draw the frame immediately, to ensure that
