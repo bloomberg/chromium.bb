@@ -48,8 +48,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   class Listener {
    public:
     virtual ~Listener() {}
-    virtual void OnStarted() = 0;
-    virtual void OnStopped() = 0;
+    virtual void OnStarted() {}
+    virtual void OnStopped() {}
+    virtual void OnPausedAfterDownload() {}
     virtual void OnReportException(const base::string16& error_message,
                                    int line_number,
                                    int column_number,
@@ -74,6 +75,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   void Start(int64 service_worker_version_id,
              const GURL& scope,
              const GURL& script_url,
+             bool pause_after_download,
              const std::vector<int>& possible_process_ids,
              const StatusCallback& callback);
 
@@ -86,6 +88,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // Sends |message| to the embedded worker running in the child process.
   // It is invalid to call this while the worker is not in RUNNING status.
   ServiceWorkerStatusCode SendMessage(const IPC::Message& message);
+
+  void ResumeAfterDownload();
 
   // Add or remove |process_id| to the internal process set where this
   // worker can be started.
@@ -136,7 +140,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   void SendStartWorker(scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
                        const StatusCallback& callback,
                        int worker_devtools_agent_route_id,
-                       bool pause_on_start);
+                       bool wait_for_debugger);
 
   // Called back from Registry when the worker instance has ack'ed that
   // it finished loading the script.
@@ -151,6 +155,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // child process.
   // This will change the internal status from STARTING to RUNNING.
   void OnStarted(int thread_id);
+
+  void OnPausedAfterDownload();
 
   // Called back from Registry when the worker instance has ack'ed that
   // its WorkerGlobalScope is actually stopped in the child process.

@@ -118,6 +118,20 @@ void EmbeddedWorkerRegistry::OnWorkerStopped(
   found->second->OnStopped();
 }
 
+void EmbeddedWorkerRegistry::OnPausedAfterDownload(
+    int process_id, int embedded_worker_id) {
+  WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
+  if (found == worker_map_.end()) {
+    LOG(ERROR) << "Worker " << embedded_worker_id << " not registered";
+    return;
+  }
+  if (found->second->process_id() != process_id) {
+    LOG(ERROR) << "Incorrect embedded_worker_id";
+    return;
+  }
+  found->second->OnPausedAfterDownload();
+}
+
 void EmbeddedWorkerRegistry::OnReportException(
     int embedded_worker_id,
     const base::string16& error_message,

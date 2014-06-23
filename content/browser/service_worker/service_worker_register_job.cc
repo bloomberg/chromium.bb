@@ -237,10 +237,13 @@ void ServiceWorkerRegisterJob::UpdateAndContinue(
   set_pending_version(new ServiceWorkerVersion(
       registration(), context_->storage()->NewVersionId(), context_));
 
-  // TODO(michaeln): Start the worker into a paused state where the
-  // script resource is downloaded but not yet evaluated.
+  // TODO(michaeln): Pause after downloading when performing an update.
+  bool pause_after_download = false;
+  if (pause_after_download)
+    pending_version()->embedded_worker()->AddListener(this);
   pending_version()->StartWorkerWithCandidateProcesses(
       pending_process_ids_,
+      pause_after_download,
       base::Bind(&ServiceWorkerRegisterJob::OnStartWorkerFinished,
                  weak_factory_.GetWeakPtr()));
 }
@@ -253,12 +256,6 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
     Complete(status);
     return;
   }
-
-  // TODO(michaeln): Compare the old and new script.
-  // If different unpause the worker and continue with
-  // the job. If the same ResolvePromise with the current
-  // version and complete the job, throwing away the new version
-  // since there's nothing new.
 
   // "Resolve promise with serviceWorker."
   // Although the spec doesn't set waitingWorker until after resolving the
@@ -396,6 +393,8 @@ void ServiceWorkerRegisterJob::CompleteInternal(
     context_->storage()->NotifyDoneInstallingRegistration(
         registration(), pending_version(), status);
   }
+  if (pending_version())
+    pending_version()->embedded_worker()->RemoveListener(this);
 }
 
 void ServiceWorkerRegisterJob::ResolvePromise(
@@ -413,6 +412,20 @@ void ServiceWorkerRegisterJob::ResolvePromise(
     it->Run(status, registration, version);
   }
   callbacks_.clear();
+}
+
+void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
+  // TODO(michaeln): Compare the old and new script.
+  // If different unpause the worker and continue with
+  // the job. If the same ResolvePromise with the current
+  // version and complete the job, throwing away the new version
+  // since there's nothing new.
+  pending_version()->embedded_worker()->RemoveListener(this);
+  pending_version()->embedded_worker()->ResumeAfterDownload();
+}
+
+bool ServiceWorkerRegisterJob::OnMessageReceived(const IPC::Message& message) {
+  return false;
 }
 
 // static

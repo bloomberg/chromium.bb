@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_register_job_base.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -31,7 +32,9 @@ class ServiceWorkerStorage;
 //  - firing the 'activate' event at the ServiceWorkerVersion
 //  - waiting for older ServiceWorkerVersions to deactivate
 //  - designating the new version to be the 'active' version
-class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
+class ServiceWorkerRegisterJob
+    : public ServiceWorkerRegisterJobBase,
+      public EmbeddedWorkerInstance::Listener {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status,
                               ServiceWorkerRegistration* registration,
@@ -110,6 +113,10 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void ResolvePromise(ServiceWorkerStatusCode status,
                       ServiceWorkerRegistration* registration,
                       ServiceWorkerVersion* version);
+
+  // EmbeddedWorkerInstance::Listener override of OnPausedAfterDownload.
+  virtual void OnPausedAfterDownload() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Associates a waiting version to documents matched with a scope of the
   // version.

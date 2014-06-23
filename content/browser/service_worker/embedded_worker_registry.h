@@ -65,6 +65,7 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   void OnWorkerScriptLoadFailed(int process_id, int embedded_worker_id);
   void OnWorkerStarted(int process_id, int thread_id, int embedded_worker_id);
   void OnWorkerStopped(int process_id, int embedded_worker_id);
+  void OnPausedAfterDownload(int process_id, int embedded_worker_id);
   void OnReportException(int embedded_worker_id,
                          const base::string16& error_message,
                          int line_number,

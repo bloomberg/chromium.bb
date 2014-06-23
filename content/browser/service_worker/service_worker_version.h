@@ -125,6 +125,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This returns OK (success) if the worker is already running.
   void StartWorkerWithCandidateProcesses(
       const std::vector<int>& potential_process_ids,
+      bool pause_after_download,
       const StatusCallback& callback);
 
   // Starts an embedded worker for this version.

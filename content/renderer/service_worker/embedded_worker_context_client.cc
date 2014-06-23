@@ -120,6 +120,10 @@ blink::WebURL EmbeddedWorkerContextClient::scope() const {
   return service_worker_scope_;
 }
 
+void EmbeddedWorkerContextClient::didPauseAfterDownload() {
+  Send(new EmbeddedWorkerHostMsg_DidPauseAfterDownload(embedded_worker_id_));
+}
+
 void EmbeddedWorkerContextClient::getClients(
     blink::WebServiceWorkerClientsCallbacks* callbacks) {
   DCHECK(script_context_);

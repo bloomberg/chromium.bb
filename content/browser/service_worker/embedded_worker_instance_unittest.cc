@@ -74,6 +74,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
       service_worker_version_id,
       scope,
       url,
+      false,
       std::vector<int>(),
       base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
   run_loop.Run();
@@ -118,6 +119,7 @@ TEST_F(EmbeddedWorkerInstanceTest, InstanceDestroyedBeforeStartFinishes) {
       service_worker_version_id,
       scope,
       url,
+      false,
       available_process,
       base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
   // But destroy it before it gets a chance to complete.

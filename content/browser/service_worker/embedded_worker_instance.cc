@@ -56,7 +56,7 @@ void RegisterToWorkerDevToolsManager(
     const ServiceWorkerContextCore* const service_worker_context,
     int64 service_worker_version_id,
     const base::Callback<void(int worker_devtools_agent_route_id,
-                              bool pause_on_start)>& callback) {
+                              bool wait_for_debugger)>& callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
@@ -68,11 +68,11 @@ void RegisterToWorkerDevToolsManager(
     return;
   }
   int worker_devtools_agent_route_id = MSG_ROUTING_NONE;
-  bool pause_on_start = false;
+  bool wait_for_debugger = false;
   if (RenderProcessHost* rph = RenderProcessHost::FromID(process_id)) {
     // |rph| may be NULL in unit tests.
     worker_devtools_agent_route_id = rph->GetNextRoutingID();
-    pause_on_start =
+    wait_for_debugger =
         EmbeddedWorkerDevToolsManager::GetInstance()->ServiceWorkerCreated(
             process_id,
             worker_devtools_agent_route_id,
@@ -82,7 +82,7 @@ void RegisterToWorkerDevToolsManager(
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(callback, worker_devtools_agent_route_id, pause_on_start));
+      base::Bind(callback, worker_devtools_agent_route_id, wait_for_debugger));
 }
 
 }  // namespace
@@ -100,6 +100,7 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
 void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
                                    const GURL& scope,
                                    const GURL& script_url,
+                                   bool pause_after_download,
                                    const std::vector<int>& possible_process_ids,
                                    const StatusCallback& callback) {
   if (!context_) {
@@ -115,7 +116,8 @@ void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
   params->scope = scope;
   params->script_url = script_url;
   params->worker_devtools_agent_route_id = MSG_ROUTING_NONE;
-  params->pause_on_start = false;
+  params->pause_after_download = pause_after_download;
+  params->wait_for_debugger = false;
   context_->process_manager()->AllocateWorkerProcess(
       embedded_worker_id_,
       SortProcesses(possible_process_ids),
@@ -134,6 +136,13 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
   if (status == SERVICE_WORKER_OK)
     status_ = STOPPING;
   return status;
+}
+
+void EmbeddedWorkerInstance::ResumeAfterDownload() {
+  DCHECK_EQ(STARTING, status_);
+  registry_->Send(
+      process_id_,
+      new EmbeddedWorkerMsg_ResumeAfterDownload(embedded_worker_id_));
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerInstance::SendMessage(
@@ -225,10 +234,10 @@ void EmbeddedWorkerInstance::SendStartWorker(
     scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
     const StatusCallback& callback,
     int worker_devtools_agent_route_id,
-    bool pause_on_start) {
+    bool wait_for_debugger) {
   worker_devtools_agent_route_id_ = worker_devtools_agent_route_id;
   params->worker_devtools_agent_route_id = worker_devtools_agent_route_id;
-  params->pause_on_start = pause_on_start;
+  params->wait_for_debugger = wait_for_debugger;
   registry_->SendStartWorker(params.Pass(), callback, process_id_);
 }
 
@@ -260,6 +269,14 @@ void EmbeddedWorkerInstance::OnStopped() {
   thread_id_ = -1;
   worker_devtools_agent_route_id_ = MSG_ROUTING_NONE;
   FOR_EACH_OBSERVER(Listener, listener_list_, OnStopped());
+}
+
+void EmbeddedWorkerInstance::OnPausedAfterDownload() {
+  // Stop can be requested before getting this far.
+  if (status_ == STOPPING)
+    return;
+  DCHECK(status_ == STARTING);
+  FOR_EACH_OBSERVER(Listener, listener_list_, OnPausedAfterDownload());
 }
 
 bool EmbeddedWorkerInstance::OnMessageReceived(const IPC::Message& message) {

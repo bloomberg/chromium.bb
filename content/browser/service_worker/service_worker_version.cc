@@ -149,11 +149,12 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
 }
 
 void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
-  StartWorkerWithCandidateProcesses(std::vector<int>(), callback);
+  StartWorkerWithCandidateProcesses(std::vector<int>(), false, callback);
 }
 
 void ServiceWorkerVersion::StartWorkerWithCandidateProcesses(
     const std::vector<int>& possible_process_ids,
+    bool pause_after_download,
     const StatusCallback& callback) {
   switch (running_status()) {
     case RUNNING:
@@ -170,6 +171,7 @@ void ServiceWorkerVersion::StartWorkerWithCandidateProcesses(
             version_id_,
             scope_,
             script_url_,
+            pause_after_download,
             possible_process_ids,
             base::Bind(&ServiceWorkerVersion::RunStartWorkerCallbacksOnError,
                        weak_factory_.GetWeakPtr()));
