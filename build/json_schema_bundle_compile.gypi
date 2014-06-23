@@ -17,8 +17,7 @@
   },
   'actions': [
     {
-      # GN version: //build/json_schema.gni
-      #             (json_schema_bundle_compile templates)
+      # GN version: //extensions/generated_extensions_api.gni
       'action_name': 'genapi_bundle',
       'inputs': [
         '<(api_gen_dir)/cc_generator.py',

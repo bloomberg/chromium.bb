@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//build/json_schema.gni")
+import("//extensions/generated_extensions_api.gni")
 
 gypi_values = exec_script(
     "//build/gypi_to_gn.py",
@@ -11,62 +11,44 @@ gypi_values = exec_script(
     "scope",
     [ "api.gyp" ])
 
-# GYP version: chrome/common/extensions/api/api.gyp:chrome_api
-group("api") {
-  # The GYP version has one target that does both the bundling and compiling
-  # over the same set of sources. In GN these actions are separate.
-  deps = [
-    ":api_bundle",
-    ":api_compile",
-  ]
-}
-
 # Common sources that are both bundled and compiled.
-if (is_android) {
-  # Should be eliminated. See crbug.com/305852.
-  schema_sources = gypi_values.android_schema_files
-} else {
-  schema_sources = gypi_values.main_schema_files
-  if (is_chromeos) {
-    schema_sources += gypi_values.chromeos_schema_files
-    if (is_chrome_branded) {
-      schema_sources += gypi_values.chromeos_branded_schema_files
+# GYP version: chrome/common/extensions/api/api.gyp:chrome_api
+generated_extensions_api("api") {
+  if (is_android) {
+    # Should be eliminated. See crbug.com/305852.
+    sources = gypi_values.android_schema_files
+  } else {
+    sources = gypi_values.main_schema_files
+    if (is_chromeos) {
+      sources += gypi_values.chromeos_schema_files
+      if (is_chrome_branded) {
+        sources += gypi_values.chromeos_branded_schema_files
+      }
+    }
+    if (enable_webrtc) {
+      sources += gypi_values.webrtc_schema_files
     }
   }
-  if (enable_webrtc) {
-    schema_sources += gypi_values.webrtc_schema_files
-  }
-}
 
-schema_deps = [
-  # Different APIs include some headers from chrome/common that in turn
-  # include generated headers from these targets.
-  # TODO(brettw) this should be made unnecessary if possible.
-  "//components/metrics/proto",
-  "//device/serial",
-
-  "//content/public/browser",
-  "//skia",
-  "//sync",
-]
-if (is_chromeos) {
-  # deps += [ "<(DEPTH)/chrome/chrome.gyp:drive_proto" ]  TODO)GYP)
-}
-
-json_schema_bundle("api_bundle") {
-  visibility = ":api"
-  sources = schema_sources
   if (!is_android) {
-    sources += gypi_values.main_non_compiled_schema_files
+    uncompiled_sources = gypi_values.main_non_compiled_schema_files
   }
 
+  impl_dir = "//chrome/browser/extensions/api"
   root_namespace = "extensions::api"
-  deps = schema_deps + [ ":api_compile" ]
-}
 
-json_schema_compile("api_compile") {
-  visibility = ":*"
-  sources = schema_sources
-  root_namespace = "extensions::api"
-  deps = schema_deps
+  deps = [
+    # Different APIs include some headers from chrome/common that in turn
+    # include generated headers from these targets.
+    # TODO(brettw) this should be made unnecessary if possible.
+    "//components/metrics/proto",
+    "//device/serial",
+
+    "//content/public/browser",
+    "//skia",
+    "//sync",
+  ]
+  if (is_chromeos) {
+    # deps += [ "<(DEPTH)/chrome/chrome.gyp:drive_proto" ]  TODO)GYP)
+  }
 }
