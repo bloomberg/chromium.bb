@@ -458,7 +458,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(SkCanvas* canvas,
                                                   int right,
                                                   int top,
                                                   int width) const {
-  if (!memory_entry_.total_bytes_used)
+  if (!memory_entry_.bytes_total())
     return SkRect::MakeEmpty();
 
   const int kPadding = 4;
@@ -468,7 +468,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(SkCanvas* canvas,
   const int left = bounds().width() - width - right;
   const SkRect area = SkRect::MakeXYWH(left, top, width, height);
 
-  const double kMegabyte = 1024.0 * 1024.0;
+  const double megabyte = 1024.0 * 1024.0;
 
   SkPaint paint = CreatePaint();
   DrawGraphBackground(canvas, &paint, area);
@@ -487,14 +487,20 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(SkCanvas* canvas,
            kFontHeight,
            title_pos);
 
-  std::string text = base::StringPrintf(
-      "%6.1f MB used", memory_entry_.total_bytes_used / kMegabyte);
+  std::string text =
+      base::StringPrintf("%6.1f MB used",
+                         (memory_entry_.bytes_unreleasable +
+                          memory_entry_.bytes_allocated) / megabyte);
   DrawText(canvas, &paint, text, SkPaint::kRight_Align, kFontHeight, stat1_pos);
 
-  if (!memory_entry_.had_enough_memory)
+  if (memory_entry_.bytes_over) {
     paint.setColor(SK_ColorRED);
-  text = base::StringPrintf("%6.1f MB max ",
-                            memory_entry_.total_budget_in_bytes / kMegabyte);
+    text = base::StringPrintf("%6.1f MB over",
+                              memory_entry_.bytes_over / megabyte);
+  } else {
+    text = base::StringPrintf("%6.1f MB max ",
+                              memory_entry_.total_budget_in_bytes / megabyte);
+  }
   DrawText(canvas, &paint, text, SkPaint::kRight_Align, kFontHeight, stat2_pos);
 
   return area;

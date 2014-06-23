@@ -21,6 +21,7 @@
 #include "cc/resources/managed_tile_state.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/picture_pile_impl.h"
+#include "cc/resources/prioritized_tile_set.h"
 #include "cc/resources/rasterizer.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/tile.h"
@@ -198,8 +199,10 @@ class CC_EXPORT TileManager : public RasterizerClient,
       ManagedTileState::TileVersion& tile_version =
           mts.tile_versions[HIGH_QUALITY_RASTER_MODE];
 
-      tile_version.resource_ =
-          resource_pool_->AcquireResource(tiles[i]->size());
+      tile_version.resource_ = resource_pool_->AcquireResource(gfx::Size(1, 1));
+
+      bytes_releasable_ += BytesConsumedIfAllocated(tiles[i]);
+      ++resources_releasable_;
     }
   }
 
@@ -214,7 +217,12 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
   void SetGlobalStateForTesting(
       const GlobalStateThatImpactsTilePriority& state) {
-    global_state_ = state;
+    // Soft limit is used for resource pool such that
+    // memory returns to soft limit after going over.
+    if (state != global_state_) {
+      global_state_ = state;
+      prioritized_tiles_dirty_ = true;
+    }
   }
 
   void SetRasterizerForTesting(Rasterizer* rasterizer);
@@ -228,10 +236,13 @@ class CC_EXPORT TileManager : public RasterizerClient,
               Rasterizer* rasterizer,
               RenderingStatsInstrumentation* rendering_stats_instrumentation);
 
+  // Methods called by Tile
+  friend class Tile;
+  void DidChangeTilePriority(Tile* tile);
+
   void CleanUpReleasedTiles();
 
   // Overriden from RefCountedManager<Tile>:
-  friend class Tile;
   virtual void Release(Tile* tile) OVERRIDE;
 
   // Overriden from RasterizerClient:
@@ -246,30 +257,11 @@ class CC_EXPORT TileManager : public RasterizerClient,
   virtual void ScheduleTasks(
       const TileVector& tiles_that_need_to_be_rasterized);
 
-  void AssignGpuMemoryToTiles(TileVector* tiles_that_need_to_be_rasterized);
+  void AssignGpuMemoryToTiles(PrioritizedTileSet* tiles,
+                              TileVector* tiles_that_need_to_be_rasterized);
+  void GetTilesWithAssignedBins(PrioritizedTileSet* tiles);
 
  private:
-  class MemoryUsage {
-   public:
-    MemoryUsage();
-    MemoryUsage(int64 memory_bytes, int resource_count);
-
-    static MemoryUsage FromConfig(const gfx::Size& size, ResourceFormat format);
-    static MemoryUsage FromTile(const Tile* tile);
-
-    MemoryUsage& operator+=(const MemoryUsage& other);
-    MemoryUsage& operator-=(const MemoryUsage& other);
-    MemoryUsage operator-(const MemoryUsage& other);
-
-    bool Exceeds(const MemoryUsage& limit) const;
-
-    int64 memory_bytes() const { return memory_bytes_; }
-
-   private:
-    int64 memory_bytes_;
-    int resource_count_;
-  };
-
   void OnImageDecodeTaskCompleted(int layer_id,
                                   SkPixelRef* pixel_ref,
                                   bool was_canceled);
@@ -279,6 +271,11 @@ class CC_EXPORT TileManager : public RasterizerClient,
                              const PicturePileImpl::Analysis& analysis,
                              bool was_canceled);
 
+  inline size_t BytesConsumedIfAllocated(const Tile* tile) const {
+    return Resource::MemorySizeBytes(tile->size(),
+                                     resource_pool_->resource_format());
+  }
+
   void FreeResourceForTile(Tile* tile, RasterMode mode);
   void FreeResourcesForTile(Tile* tile);
   void FreeUnusedResourcesForTile(Tile* tile);
@@ -286,16 +283,8 @@ class CC_EXPORT TileManager : public RasterizerClient,
   scoped_refptr<ImageDecodeTask> CreateImageDecodeTask(Tile* tile,
                                                        SkPixelRef* pixel_ref);
   scoped_refptr<RasterTask> CreateRasterTask(Tile* tile);
+  void UpdatePrioritizedTileSetIfNeeded();
 
-  bool FreeTileResourcesUntilUsageIsWithinLimit(EvictionTileIterator* iterator,
-                                                const MemoryUsage& limit,
-                                                MemoryUsage* usage);
-  bool FreeTileResourcesWithLowerPriorityUntilUsageIsWithinLimit(
-      EvictionTileIterator* iterator,
-      const MemoryUsage& limit,
-      const TilePriority& other_priority,
-      MemoryUsage* usage);
-  bool TilePriorityViolatesMemoryPolicy(const TilePriority& priority);
   bool IsReadyToActivate() const;
   void CheckIfReadyToActivate();
 
@@ -308,8 +297,16 @@ class CC_EXPORT TileManager : public RasterizerClient,
   typedef base::hash_map<Tile::Id, Tile*> TileMap;
   TileMap tiles_;
 
-  bool all_tiles_that_need_to_be_rasterized_are_scheduled_;
+  PrioritizedTileSet prioritized_tiles_;
+  bool prioritized_tiles_dirty_;
 
+  bool all_tiles_that_need_to_be_rasterized_have_memory_;
+  bool all_tiles_required_for_activation_have_memory_;
+
+  size_t bytes_releasable_;
+  size_t resources_releasable_;
+
+  bool ever_exceeded_memory_budget_;
   MemoryHistory::Entry memory_stats_from_last_assign_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
