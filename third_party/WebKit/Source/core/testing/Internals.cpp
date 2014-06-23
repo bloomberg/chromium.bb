@@ -2373,6 +2373,8 @@ void Internals::setNetworkConnectionInfo(const String& type, ExceptionState& exc
         webtype = blink::ConnectionTypeOther;
     } else if (type == "none") {
         webtype = blink::ConnectionTypeNone;
+    } else if (type == "unknown") {
+        webtype = blink::ConnectionTypeUnknown;
     } else {
         exceptionState.throwDOMException(NotFoundError, ExceptionMessages::failedToEnumerate("connection type", type));
         return;

@@ -28,6 +28,8 @@ String connectionTypeToString(blink::WebConnectionType type)
         return "other";
     case blink::ConnectionTypeNone:
         return "none";
+    case blink::ConnectionTypeUnknown:
+        return "unknown";
     }
     ASSERT_NOT_REACHED();
     return "none";

@@ -1,0 +1,16 @@
+Tests that all connection types of NetInfo are supported.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS connection.type is types[count]
+PASS connection.type is types[count]
+PASS connection.type is types[count]
+PASS connection.type is types[count]
+PASS connection.type is types[count]
+PASS connection.type is types[count]
+PASS connection.type is types[count]
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

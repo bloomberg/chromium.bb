@@ -41,7 +41,8 @@ enum WebConnectionType {
     ConnectionTypeWifi,
     ConnectionTypeOther,
     ConnectionTypeNone,
-    ConnectionTypeLast = ConnectionTypeNone
+    ConnectionTypeUnknown,
+    ConnectionTypeLast = ConnectionTypeUnknown
 };
 
 } // namespace blink
