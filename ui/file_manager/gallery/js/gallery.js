@@ -596,6 +596,7 @@ Gallery.prototype.onKeyDown_ = function(event) {
 
     case 'U+007F':  // Delete
     case 'Shift-U+0033':  // Shift+'3' (Delete key might be missing).
+    case 'U+0044':  // 'd'
       this.delete_();
       break;
   }
