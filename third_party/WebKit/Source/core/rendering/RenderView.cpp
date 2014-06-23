@@ -404,7 +404,7 @@ void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
             break;
         }
 
-        if (layer->enclosingCompositingLayerForRepaint()) {
+        if (layer->enclosingCompositingLayerForPaintInvalidation()) {
             frameView()->setCannotBlitToWindow();
             break;
         }
@@ -798,7 +798,7 @@ void RenderView::getSelection(RenderObject*& startRenderer, int& startOffset, Re
 
 void RenderView::clearSelection()
 {
-    layer()->repaintBlockSelectionGaps();
+    layer()->invalidatePaintForBlockSelectionGaps();
     setSelection(0, -1, 0, -1, RepaintNewMinusOld);
 }
 

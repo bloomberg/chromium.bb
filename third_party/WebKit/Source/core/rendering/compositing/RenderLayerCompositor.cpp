@@ -501,7 +501,7 @@ void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)
 // This method assumes that layout is up-to-date, unlike repaintOnCompositingChange().
 void RenderLayerCompositor::repaintInCompositedAncestor(RenderLayer* layer, const LayoutRect& rect)
 {
-    RenderLayer* compositedAncestor = layer->enclosingCompositingLayerForRepaint(ExcludeSelf);
+    RenderLayer* compositedAncestor = layer->enclosingCompositingLayerForPaintInvalidation(ExcludeSelf);
     if (!compositedAncestor)
         return;
     ASSERT(compositedAncestor->compositingState() == PaintsIntoOwnBacking || compositedAncestor->compositingState() == PaintsIntoGroupedBacking);

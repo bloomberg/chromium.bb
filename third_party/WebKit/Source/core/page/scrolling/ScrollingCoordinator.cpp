@@ -424,7 +424,7 @@ static const RenderLayer* enclosingCompositedLayer(const RenderLayer* layer)
 {
     RenderLayer* compositedLayer = 0;
     while (!compositedLayer) {
-        compositedLayer = layer->enclosingCompositingLayerForRepaint();
+        compositedLayer = layer->enclosingCompositingLayerForPaintInvalidation();
         if (!compositedLayer) {
             RenderObject* owner = layer->renderer()->frame()->ownerRenderer();
             if (!owner)

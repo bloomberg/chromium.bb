@@ -149,12 +149,12 @@ public:
     RenderLayerCompositor* compositor() const;
 
     // Notification from the renderer that its content changed (e.g. current frame of image changed).
-    // Allows updates of layer content without repainting.
+    // Allows updates of layer content without invalidating paint.
     void contentChanged(ContentChangeType);
 
     enum UpdateLayerPositionsFlag {
-        CheckForRepaint = 1 << 0,
-        NeedsFullRepaintInBacking = 1 << 1,
+        CheckForPaintInvalidation = 1 << 0,
+        NeedsFullPaintInvalidationInBacking = 1 << 1,
         UpdatePagination = 1 << 2,
     };
     typedef unsigned UpdateLayerPositionsFlags;
@@ -164,7 +164,7 @@ public:
     void updateLayerPositionsAfterDocumentScroll();
 
     // FIXME: Should updateLayerPositions be private?
-    void updateLayerPositionRecursive(UpdateLayerPositionsFlags = CheckForRepaint);
+    void updateLayerPositionRecursive(UpdateLayerPositionsFlags = CheckForPaintInvalidation);
 
     bool isPaginated() const { return m_isPaginated; }
     RenderLayer* enclosingPaginationLayer() const { return m_enclosingPaginationLayer; }
@@ -177,7 +177,7 @@ public:
     void blockSelectionGapsBoundsChanged();
     void addBlockSelectionGapsBounds(const LayoutRect&);
     void clearBlockSelectionGapsBounds();
-    void repaintBlockSelectionGaps();
+    void invalidatePaintForBlockSelectionGaps();
     IntRect blockSelectionGapsBounds() const;
     bool hasBlockSelectionGapBounds() const;
 
@@ -218,10 +218,10 @@ public:
 
     RenderLayer* enclosingOverflowClipLayer(IncludeSelfOrNot = IncludeSelf) const;
 
-    bool isRepaintContainer() const;
+    bool isPaintInvalidationContainer() const;
     // Enclosing compositing layer; if includeSelf is true, may return this.
     RenderLayer* enclosingCompositingLayer(IncludeSelfOrNot = IncludeSelf) const;
-    RenderLayer* enclosingCompositingLayerForRepaint(IncludeSelfOrNot = IncludeSelf) const;
+    RenderLayer* enclosingCompositingLayerForPaintInvalidation(IncludeSelfOrNot = IncludeSelf) const;
     // Ancestor compositing layer, excluding this.
     RenderLayer* ancestorCompositingLayer() const { return enclosingCompositingLayer(ExcludeSelf); }
 
@@ -296,7 +296,7 @@ public:
     // FIXME: reflections should force transform-style to be flat in the style: https://bugs.webkit.org/show_bug.cgi?id=106959
     bool shouldPreserve3D() const { return !renderer()->hasReflection() && renderer()->style()->transformStyle3D() == TransformStyle3DPreserve3D; }
 
-    void filterNeedsRepaint();
+    void filterNeedsPaintInvalidation();
     bool hasFilter() const { return renderer()->hasFilter(); }
 
     bool paintsWithBlendMode() const;
@@ -338,16 +338,16 @@ public:
 
     RenderLayer* clipParent() const;
 
-    // Computes the position of the given render object in the space of |repaintContainer|.
-    // FIXME: invert the logic to have repaint containers take care of painting objects into them, rather than the reverse.
+    // Computes the position of the given render object in the space of |paintInvalidationContainer|.
+    // FIXME: invert the logic to have paint invalidation containers take care of painting objects into them, rather than the reverse.
     // This will allow us to clean up this static method messiness.
-    static LayoutPoint positionFromPaintInvalidationContainer(const RenderObject*, const RenderLayerModelObject* repaintContainer);
+    static LayoutPoint positionFromPaintInvalidationContainer(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer);
 
-    // Adjusts the given rect (in the coordinate space of the RenderObject) to the coordinate space of |repaintContainer|'s GraphicsLayer backing.
-    static void mapRectToRepaintBacking(const RenderObject*, const RenderLayerModelObject* repaintContainer, LayoutRect&);
+    // Adjusts the given rect (in the coordinate space of the RenderObject) to the coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
+    static void mapRectToPaintInvalidationBacking(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&);
 
-    // Computes the bounding repaint rect for |renderObject|, in the coordinate space of |repaintContainer|'s GraphicsLayer backing.
-    static LayoutRect computeRepaintRect(const RenderObject*, const RenderLayer* repaintContainer);
+    // Computes the bounding paint invalidation rect for |renderObject|, in the coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
+    static LayoutRect computePaintInvalidationRect(const RenderObject*, const RenderLayer* paintInvalidationContainer);
 
     bool paintsWithTransparency(PaintBehavior paintBehavior) const
     {

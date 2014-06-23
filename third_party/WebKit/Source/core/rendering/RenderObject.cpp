@@ -1439,7 +1439,7 @@ const RenderLayerModelObject* RenderObject::enclosingCompositedContainer() const
         // FIXME: CompositingState is not necessarily up to date for many callers of this function.
         DisableCompositingQueryAsserts disabler;
 
-        if (RenderLayer* compositingLayer = enclosingLayer()->enclosingCompositingLayerForRepaint())
+        if (RenderLayer* compositingLayer = enclosingLayer()->enclosingCompositingLayerForPaintInvalidation())
             container = compositingLayer->renderer();
     }
     return container;
@@ -1467,7 +1467,7 @@ const RenderLayerModelObject* RenderObject::adjustCompositedContainerForSpecialA
 
 bool RenderObject::isPaintInvalidationContainer() const
 {
-    return hasLayer() && toRenderLayerModelObject(this)->layer()->isRepaintContainer();
+    return hasLayer() && toRenderLayerModelObject(this)->layer()->isPaintInvalidationContainer();
 }
 
 template<typename T> PassRefPtr<JSONValue> jsonObjectForRect(const T& rect)
@@ -1553,7 +1553,7 @@ LayoutRect RenderObject::boundsRectForPaintInvalidation(const RenderLayerModelOb
 {
     if (!paintInvalidationContainer)
         return computePaintInvalidationRect(paintInvalidationContainer);
-    return RenderLayer::computeRepaintRect(this, paintInvalidationContainer->layer());
+    return RenderLayer::computePaintInvalidationRect(this, paintInvalidationContainer->layer());
 }
 
 void RenderObject::invalidatePaintRectangle(const LayoutRect& r) const
@@ -1573,7 +1573,7 @@ void RenderObject::invalidatePaintRectangle(const LayoutRect& r) const
     }
 
     const RenderLayerModelObject* paintInvalidationContainer = containerForPaintInvalidation();
-    RenderLayer::mapRectToRepaintBacking(this, paintInvalidationContainer, dirtyRect);
+    RenderLayer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect);
     invalidatePaintUsingContainer(paintInvalidationContainer, pixelSnappedIntRect(dirtyRect), InvalidationPaintRectangle);
 }
 

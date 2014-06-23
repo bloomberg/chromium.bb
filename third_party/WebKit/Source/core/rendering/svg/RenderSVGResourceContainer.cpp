@@ -133,7 +133,7 @@ void RenderSVGResourceContainer::markAllClientLayersForInvalidation()
 {
     HashSet<RenderLayer*>::iterator layerEnd = m_clientLayers.end();
     for (HashSet<RenderLayer*>::iterator it = m_clientLayers.begin(); it != layerEnd; ++it)
-        (*it)->filterNeedsRepaint();
+        (*it)->filterNeedsPaintInvalidation();
 }
 
 void RenderSVGResourceContainer::markClientForInvalidation(RenderObject* client, InvalidationMode mode)

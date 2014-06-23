@@ -281,7 +281,7 @@ void RenderLayer::updateLayerPositionRecursive(UpdateLayerPositionsFlags flags)
         m_enclosingPaginationLayer = 0;
     }
 
-    repainter().repaintAfterLayout(flags & CheckForRepaint);
+    repainter().repaintAfterLayout(flags & CheckForPaintInvalidation);
 
     // Go ahead and update the reflection's position and size.
     if (m_reflectionInfo)
@@ -300,7 +300,7 @@ void RenderLayer::updateLayerPositionRecursive(UpdateLayerPositionsFlags flags)
 
     // FIXME: why isn't FrameView just calling RenderLayerCompositor::repaintCompositedLayers? Does it really impact
     // performance?
-    if ((flags & NeedsFullRepaintInBacking) && hasCompositedLayerMapping() && !compositedLayerMapping()->paintsIntoCompositedAncestor()) {
+    if ((flags & NeedsFullPaintInvalidationInBacking) && hasCompositedLayerMapping() && !compositedLayerMapping()->paintsIntoCompositedAncestor()) {
         compositedLayerMapping()->setContentsNeedDisplay();
         // This code is called when the FrameView wants to repaint the entire frame. This includes squashing content.
         compositedLayerMapping()->setSquashingContentsNeedDisplay();
@@ -607,14 +607,14 @@ static RenderLayerModelObject* getTransformedAncestor(const RenderLayerModelObje
     return transformedAncestor;
 }
 
-LayoutPoint RenderLayer::positionFromPaintInvalidationContainer(const RenderObject* renderObject, const RenderLayerModelObject* repaintContainer)
+LayoutPoint RenderLayer::positionFromPaintInvalidationContainer(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer)
 {
-    if (!repaintContainer || !repaintContainer->groupedMapping())
-        return renderObject->positionFromPaintInvalidationContainer(repaintContainer);
+    if (!paintInvalidationContainer || !paintInvalidationContainer->groupedMapping())
+        return renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer);
 
-    RenderLayerModelObject* transformedAncestor = getTransformedAncestor(repaintContainer);
+    RenderLayerModelObject* transformedAncestor = getTransformedAncestor(paintInvalidationContainer);
     if (!transformedAncestor)
-        return renderObject->positionFromPaintInvalidationContainer(repaintContainer);
+        return renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer);
 
     // If the transformedAncestor is actually the RenderView, we might get
     // confused and think that we can use LayoutState. Ideally, we'd made
@@ -623,18 +623,18 @@ LayoutPoint RenderLayer::positionFromPaintInvalidationContainer(const RenderObje
     ForceHorriblySlowRectMapping slowRectMapping(*transformedAncestor);
 
     LayoutPoint point = renderObject->positionFromPaintInvalidationContainer(transformedAncestor);
-    point.moveBy(-repaintContainer->groupedMapping()->squashingOffsetFromTransformedAncestor());
+    point.moveBy(-paintInvalidationContainer->groupedMapping()->squashingOffsetFromTransformedAncestor());
     return point;
 }
 
-void RenderLayer::mapRectToRepaintBacking(const RenderObject* renderObject, const RenderLayerModelObject* repaintContainer, LayoutRect& rect)
+void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect)
 {
-    if (!repaintContainer->groupedMapping()) {
-        renderObject->mapRectToPaintInvalidationBacking(repaintContainer, rect);
+    if (!paintInvalidationContainer->groupedMapping()) {
+        renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
         return;
     }
 
-    RenderLayerModelObject* transformedAncestor = getTransformedAncestor(repaintContainer);
+    RenderLayerModelObject* transformedAncestor = getTransformedAncestor(paintInvalidationContainer);
     if (!transformedAncestor)
         return;
 
@@ -648,21 +648,21 @@ void RenderLayer::mapRectToRepaintBacking(const RenderObject* renderObject, cons
     // layer. This is because all layers that squash together need to repaint w.r.t. a single container that is
     // an ancestor of all of them, in order to properly take into account any local transforms etc.
     // FIXME: remove this special-case code that works around the repainting code structure.
-    renderObject->mapRectToPaintInvalidationBacking(repaintContainer, rect);
+    renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
 
     // |repaintContainer| may have a local 2D transform on it, so take that into account when mapping into the space of the
     // transformed ancestor.
-    rect = LayoutRect(repaintContainer->localToContainerQuad(FloatRect(rect), transformedAncestor).boundingBox());
+    rect = LayoutRect(paintInvalidationContainer->localToContainerQuad(FloatRect(rect), transformedAncestor).boundingBox());
 
-    rect.moveBy(-repaintContainer->groupedMapping()->squashingOffsetFromTransformedAncestor());
+    rect.moveBy(-paintInvalidationContainer->groupedMapping()->squashingOffsetFromTransformedAncestor());
 }
 
-LayoutRect RenderLayer::computeRepaintRect(const RenderObject* renderObject, const RenderLayer* repaintContainer)
+LayoutRect RenderLayer::computePaintInvalidationRect(const RenderObject* renderObject, const RenderLayer* paintInvalidationContainer)
 {
-    if (!repaintContainer->groupedMapping())
-        return renderObject->computePaintInvalidationRect(repaintContainer->renderer());
-    LayoutRect rect = renderObject->clippedOverflowRectForPaintInvalidation(repaintContainer->renderer());
-    mapRectToRepaintBacking(repaintContainer->renderer(), repaintContainer->renderer(), rect);
+    if (!paintInvalidationContainer->groupedMapping())
+        return renderObject->computePaintInvalidationRect(paintInvalidationContainer->renderer());
+    LayoutRect rect = renderObject->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer->renderer());
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer->renderer(), paintInvalidationContainer->renderer(), rect);
     return rect;
 }
 
@@ -1019,7 +1019,7 @@ const RenderLayer* RenderLayer::compositingContainer() const
     return 0;
 }
 
-bool RenderLayer::isRepaintContainer() const
+bool RenderLayer::isPaintInvalidationContainer() const
 {
     return compositingState() == PaintsIntoOwnBacking || compositingState() == PaintsIntoGroupedBacking;
 }
@@ -1027,7 +1027,7 @@ bool RenderLayer::isRepaintContainer() const
 // FIXME: having two different functions named enclosingCompositingLayer and enclosingCompositingLayerForRepaint
 // is error-prone and misleading for reading code that uses these functions - especially compounded with
 // the includeSelf option. It is very likely that we don't even want either of these functions; A layer
-// should be told explicitly which GraphicsLayer is the repaintContainer for a RenderLayer, and
+// should be told explicitly which GraphicsLayer is the paint invalidation container for a RenderLayer, and
 // any other use cases should probably have an API between the non-compositing and compositing sides of code.
 RenderLayer* RenderLayer::enclosingCompositingLayer(IncludeSelfOrNot includeSelf) const
 {
@@ -1044,15 +1044,15 @@ RenderLayer* RenderLayer::enclosingCompositingLayer(IncludeSelfOrNot includeSelf
     return 0;
 }
 
-RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(IncludeSelfOrNot includeSelf) const
+RenderLayer* RenderLayer::enclosingCompositingLayerForPaintInvalidation(IncludeSelfOrNot includeSelf) const
 {
     ASSERT(isAllowedToQueryCompositingState());
 
-    if ((includeSelf == IncludeSelf) && isRepaintContainer())
+    if ((includeSelf == IncludeSelf) && isPaintInvalidationContainer())
         return const_cast<RenderLayer*>(this);
 
     for (const RenderLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
-        if (curr->isRepaintContainer())
+        if (curr->isPaintInvalidationContainer())
             return const_cast<RenderLayer*>(curr);
     }
 
@@ -3100,10 +3100,10 @@ void RenderLayer::clearBlockSelectionGapsBounds()
     blockSelectionGapsBoundsChanged();
 }
 
-void RenderLayer::repaintBlockSelectionGaps()
+void RenderLayer::invalidatePaintForBlockSelectionGaps()
 {
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
-        child->repaintBlockSelectionGaps();
+        child->invalidatePaintForBlockSelectionGaps();
 
     if (m_blockSelectionGapsBounds.isEmpty())
         return;
@@ -3713,7 +3713,7 @@ void RenderLayer::updateOrRemoveFilterEffectRenderer()
         filterInfo->setRenderer(nullptr);
 }
 
-void RenderLayer::filterNeedsRepaint()
+void RenderLayer::filterNeedsPaintInvalidation()
 {
     {
         DeprecatedScheduleStyleRecalcDuringLayout marker(renderer()->document().lifecycle());

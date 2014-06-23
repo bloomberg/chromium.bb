@@ -97,7 +97,7 @@ static const double resourcePriorityUpdateDelayAfterScroll = 0.250;
 
 static RenderLayer::UpdateLayerPositionsFlags updateLayerPositionFlags(RenderLayer* layer, bool isRelayoutingSubtree, bool didFullPaintInvalidation)
 {
-    RenderLayer::UpdateLayerPositionsFlags flags = didFullPaintInvalidation ? RenderLayer::NeedsFullRepaintInBacking : RenderLayer::CheckForRepaint;
+    RenderLayer::UpdateLayerPositionsFlags flags = didFullPaintInvalidation ? RenderLayer::NeedsFullPaintInvalidationInBacking : RenderLayer::CheckForPaintInvalidation;
 
     if (isRelayoutingSubtree && (layer->isPaginated() || layer->enclosingPaginationLayer()))
         flags |= RenderLayer::UpdatePagination;
@@ -689,7 +689,7 @@ bool FrameView::isEnclosedInCompositingLayer() const
     DisableCompositingQueryAsserts disabler;
 
     RenderObject* frameOwnerRenderer = m_frame->ownerRenderer();
-    if (frameOwnerRenderer && frameOwnerRenderer->enclosingLayer()->enclosingCompositingLayerForRepaint())
+    if (frameOwnerRenderer && frameOwnerRenderer->enclosingLayer()->enclosingCompositingLayerForPaintInvalidation())
         return true;
 
     if (FrameView* parentView = parentFrameView())

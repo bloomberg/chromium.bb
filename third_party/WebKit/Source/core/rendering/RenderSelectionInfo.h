@@ -67,7 +67,7 @@ public:
             m_rect = o->selectionRectForPaintInvalidation(m_repaintContainer, clipToVisibleContent);
             // FIXME: groupedMapping() leaks the squashing abstraction. See RenderBlockSelectionInfo for more details.
             if (m_repaintContainer && m_repaintContainer->groupedMapping())
-                RenderLayer::mapRectToRepaintBacking(m_repaintContainer, m_repaintContainer, m_rect);
+                RenderLayer::mapRectToPaintInvalidationBacking(m_repaintContainer, m_repaintContainer, m_rect);
         } else {
             m_rect = LayoutRect();
         }
@@ -101,10 +101,10 @@ public:
     {
         LayoutRect repaintRect = enclosingIntRect(m_rects);
         // FIXME: this is leaking the squashing abstraction. However, removing the groupedMapping() condiitional causes
-        // RenderBox::mapRectToRepaintBacking to get called, which makes rect adjustments even if you pass the same
+        // RenderBox::mapRectToPaintInvalidationBacking to get called, which makes rect adjustments even if you pass the same
         // repaintContainer as the render object. Find out why it does that and fix.
         if (m_repaintContainer && m_repaintContainer->groupedMapping())
-            RenderLayer::mapRectToRepaintBacking(m_repaintContainer, m_repaintContainer, repaintRect);
+            RenderLayer::mapRectToPaintInvalidationBacking(m_repaintContainer, m_repaintContainer, repaintRect);
         m_object->invalidatePaintUsingContainer(m_repaintContainer, enclosingIntRect(repaintRect), InvalidationSelection);
     }
 
