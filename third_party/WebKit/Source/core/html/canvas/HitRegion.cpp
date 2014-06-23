@@ -117,6 +117,7 @@ void HitRegionManager::removeAllHitRegions()
 {
     m_hitRegionList.clear();
     m_hitRegionIdMap.clear();
+    m_hitRegionControlMap.clear();
 }
 
 HitRegion* HitRegionManager::getHitRegionById(const String& id) const
