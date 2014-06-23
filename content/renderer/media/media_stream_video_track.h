@@ -41,12 +41,12 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   static MediaStreamVideoTrack* GetVideoTrack(
       const blink::WebMediaStreamTrack& track);
 
-  // Constructor for local video tracks.
-   MediaStreamVideoTrack(
-       MediaStreamVideoSource* source,
-       const blink::WebMediaConstraints& constraints,
-       const MediaStreamVideoSource::ConstraintsCallback& callback,
-       bool enabled);
+  // Constructor for video tracks.
+  MediaStreamVideoTrack(
+      MediaStreamVideoSource* source,
+      const blink::WebMediaConstraints& constraints,
+      const MediaStreamVideoSource::ConstraintsCallback& callback,
+      bool enabled);
   virtual ~MediaStreamVideoTrack();
 
   virtual void SetEnabled(bool enabled) OVERRIDE;
@@ -79,6 +79,8 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   void AddSink(MediaStreamVideoSink* sink,
                const VideoCaptureDeliverFrameCB& callback);
   void RemoveSink(MediaStreamVideoSink* sink);
+
+  std::vector<MediaStreamVideoSink*> sinks_;
 
   // |FrameDeliverer| is an internal helper object used for delivering video
   // frames on the IO-thread using callbacks to all registered tracks.

@@ -4,85 +4,148 @@
 
 #include "content/renderer/media/media_stream_video_track.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "content/renderer/media/video_frame_deliverer.h"
 #include "media/base/bind_to_current_loop.h"
 
 namespace content {
 
-// Helper class used for delivering video frames to MediaStreamSinks on the
-// IO-thread.
-// Frames are delivered to an instance of this class from a
-// MediaStreamVideoSource on the IO-thread to the method DeliverFrameOnIO.
+namespace {
+void ResetCallback(scoped_ptr<VideoCaptureDeliverFrameCB> callback) {
+  // |callback| will be deleted when this exits.
+}
+}  // namespace
+
+// MediaStreamVideoTrack::FrameDeliverer is a helper class used for registering
+// VideoCaptureDeliverFrameCB on the main render thread to receive video frames
+// on the IO-thread.
 // Frames are only delivered to the sinks if the track is enabled.
-class MediaStreamVideoTrack::FrameDeliverer : public VideoFrameDeliverer {
+class MediaStreamVideoTrack::FrameDeliverer
+    : public base::RefCountedThreadSafe<FrameDeliverer> {
  public:
   FrameDeliverer(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
-      bool enabled)
-      : VideoFrameDeliverer(io_message_loop_proxy),
-        enabled_(enabled) {
-  }
+      const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
+      bool enabled);
 
-  // Add |sink| to receive state changes on the main render thread.
-  // Video frames will be delivered to |callback| on the IO thread.
-  void AddSink(MediaStreamVideoSink* sink,
-               const VideoCaptureDeliverFrameCB& callback) {
-    DCHECK(thread_checker().CalledOnValidThread());
-    DCHECK(std::find(sinks_.begin(), sinks_.end(), sink) == sinks_.end());
-    sinks_.push_back(sink);
-    AddCallback(sink, callback);
-  }
+  void SetEnabled(bool enabled);
 
-  void RemoveSink(MediaStreamVideoSink* sink) {
-    DCHECK(thread_checker().CalledOnValidThread());
-    std::vector<MediaStreamVideoSink*>::iterator it =
-        std::find(sinks_.begin(), sinks_.end(), sink);
-    DCHECK(it != sinks_.end());
-    sinks_.erase(it);
-    RemoveCallback(sink);
-  }
+  // Add |callback| to receive video frames on the IO-thread.
+  // Must be called on the main render thread.
+  void AddCallback(void* id, const VideoCaptureDeliverFrameCB& callback);
 
-  void SetEnabled(bool enabled) {
-    DCHECK(thread_checker().CalledOnValidThread());
-    io_message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&MediaStreamVideoTrack::FrameDeliverer::SetEnabledOnIO,
-                   this, enabled));
-  }
+  // Removes |callback| associated with |id| from receiving video frames if |id|
+  // has been added. It is ok to call RemoveCallback even if the |id| has not
+  // been added. Note that the added callback will be reset on the main thread.
+  // Must be called on the main render thread.
+  void RemoveCallback(void* id);
 
-  virtual void DeliverFrameOnIO(
-      const scoped_refptr<media::VideoFrame>& frame,
-      const media::VideoCaptureFormat& format,
-      const base::TimeTicks& estimated_capture_time) OVERRIDE {
-    DCHECK(io_message_loop()->BelongsToCurrentThread());
-    if (!enabled_)
-      return;
-    VideoFrameDeliverer::DeliverFrameOnIO(frame, format,
-                                          estimated_capture_time);
-  }
-
-  const std::vector<MediaStreamVideoSink*>& sinks() const { return sinks_; }
-
- protected:
-  virtual ~FrameDeliverer() {
-    DCHECK(sinks_.empty());
-  }
-
-  void SetEnabledOnIO(bool enabled) {
-    DCHECK(io_message_loop()->BelongsToCurrentThread());
-    enabled_ = enabled;
-  }
+  // Triggers all registered callbacks with |frame|, |format| and
+  // |estimated_capture_time| as parameters. Must be called on the IO-thread.
+  void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
+                        const media::VideoCaptureFormat& format,
+                        const base::TimeTicks& estimated_capture_time);
 
  private:
-  // The below members are used on the main render thread.
-  std::vector<MediaStreamVideoSink*> sinks_;
+  friend class base::RefCountedThreadSafe<FrameDeliverer>;
+  virtual ~FrameDeliverer();
+  void AddCallbackOnIO(void* id, const VideoCaptureDeliverFrameCB& callback);
+  void RemoveCallbackOnIO(
+      void* id, const scoped_refptr<base::MessageLoopProxy>& message_loop);
 
-  // The below parameters are used on the IO-thread.
+  void SetEnabledOnIO(bool enabled);
+
+  // Used to DCHECK that AddCallback and RemoveCallback are called on the main
+  // render thread.
+  base::ThreadChecker thread_checker_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+
   bool enabled_;
+
+  typedef std::pair<void*, VideoCaptureDeliverFrameCB> VideoIdCallbackPair;
+  std::vector<VideoIdCallbackPair> callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
 };
+
+MediaStreamVideoTrack::FrameDeliverer::FrameDeliverer(
+    const scoped_refptr<base::MessageLoopProxy>& io_message_loop, bool enabled)
+    : io_message_loop_(io_message_loop),
+      enabled_(enabled) {
+  DCHECK(io_message_loop_);
+}
+
+MediaStreamVideoTrack::FrameDeliverer::~FrameDeliverer() {
+  DCHECK(callbacks_.empty());
+}
+
+void MediaStreamVideoTrack::FrameDeliverer::AddCallback(
+    void* id,
+    const VideoCaptureDeliverFrameCB& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  io_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&FrameDeliverer::AddCallbackOnIO,
+                 this, id, callback));
+}
+
+void MediaStreamVideoTrack::FrameDeliverer::AddCallbackOnIO(
+    void* id,
+    const VideoCaptureDeliverFrameCB& callback) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  callbacks_.push_back(std::make_pair(id, callback));
+}
+
+void MediaStreamVideoTrack::FrameDeliverer::RemoveCallback(void* id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  io_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&FrameDeliverer::RemoveCallbackOnIO,
+                 this, id, base::MessageLoopProxy::current()));
+}
+
+void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
+    void* id, const scoped_refptr<base::MessageLoopProxy>& message_loop) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  std::vector<VideoIdCallbackPair>::iterator it = callbacks_.begin();
+  for (; it != callbacks_.end(); ++it) {
+    if (it->first == id) {
+      // Callback is copied to heap and then deleted on the target thread.
+      scoped_ptr<VideoCaptureDeliverFrameCB> callback;
+      callback.reset(new VideoCaptureDeliverFrameCB(it->second));
+      callbacks_.erase(it);
+      message_loop->PostTask(
+          FROM_HERE, base::Bind(&ResetCallback, base::Passed(&callback)));
+      return;
+    }
+  }
+}
+
+void MediaStreamVideoTrack::FrameDeliverer::SetEnabled(bool enabled) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  io_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&FrameDeliverer::SetEnabledOnIO,
+                 this, enabled));
+}
+
+void MediaStreamVideoTrack::FrameDeliverer::SetEnabledOnIO(bool enabled) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  enabled_ = enabled;
+}
+
+void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
+    const scoped_refptr<media::VideoFrame>& frame,
+    const media::VideoCaptureFormat& format,
+    const base::TimeTicks& estimated_capture_time) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  if (!enabled_)
+    return;
+  for (std::vector<VideoIdCallbackPair>::iterator it = callbacks_.begin();
+       it != callbacks_.end(); ++it) {
+    it->second.Run(frame, format, estimated_capture_time);
+  }
+}
 
 // static
 blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
@@ -126,6 +189,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
 
 MediaStreamVideoTrack::~MediaStreamVideoTrack() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sinks_.empty());
   Stop();
   DVLOG(3) << "~MediaStreamVideoTrack()";
 }
@@ -133,12 +197,18 @@ MediaStreamVideoTrack::~MediaStreamVideoTrack() {
 void MediaStreamVideoTrack::AddSink(
     MediaStreamVideoSink* sink, const VideoCaptureDeliverFrameCB& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  frame_deliverer_->AddSink(sink, callback);
+  DCHECK(std::find(sinks_.begin(), sinks_.end(), sink) == sinks_.end());
+  sinks_.push_back(sink);
+  frame_deliverer_->AddCallback(sink, callback);
 }
 
 void MediaStreamVideoTrack::RemoveSink(MediaStreamVideoSink* sink) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  frame_deliverer_->RemoveSink(sink);
+  std::vector<MediaStreamVideoSink*>::iterator it =
+      std::find(sinks_.begin(), sinks_.end(), sink);
+  DCHECK(it != sinks_.end());
+  sinks_.erase(it);
+  frame_deliverer_->RemoveCallback(sink);
 }
 
 void MediaStreamVideoTrack::SetEnabled(bool enabled) {
@@ -146,9 +216,8 @@ void MediaStreamVideoTrack::SetEnabled(bool enabled) {
   MediaStreamTrack::SetEnabled(enabled);
 
   frame_deliverer_->SetEnabled(enabled);
-  const std::vector<MediaStreamVideoSink*>& sinks = frame_deliverer_->sinks();
-  for (std::vector<MediaStreamVideoSink*>::const_iterator it = sinks.begin();
-       it != sinks.end(); ++it) {
+  for (std::vector<MediaStreamVideoSink*>::const_iterator it = sinks_.begin();
+       it != sinks_.end(); ++it) {
     (*it)->OnEnabledChanged(enabled);
   }
 }
@@ -165,9 +234,8 @@ void MediaStreamVideoTrack::Stop() {
 void MediaStreamVideoTrack::OnReadyStateChanged(
     blink::WebMediaStreamSource::ReadyState state) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const std::vector<MediaStreamVideoSink*>& sinks = frame_deliverer_->sinks();
-  for (std::vector<MediaStreamVideoSink*>::const_iterator it = sinks.begin();
-       it != sinks.end(); ++it) {
+  for (std::vector<MediaStreamVideoSink*>::const_iterator it = sinks_.begin();
+       it != sinks_.end(); ++it) {
     (*it)->OnReadyStateChanged(state);
   }
 }

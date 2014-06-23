@@ -683,8 +683,6 @@
       'renderer/media/rtc_video_encoder_factory.h',
       'renderer/media/rtc_video_renderer.cc',
       'renderer/media/rtc_video_renderer.h',
-      'renderer/media/video_frame_deliverer.cc',
-      'renderer/media/video_frame_deliverer.h',
       'renderer/media/video_source_handler.cc',
       'renderer/media/video_source_handler.h',
       'renderer/media/video_track_adapter.cc',
