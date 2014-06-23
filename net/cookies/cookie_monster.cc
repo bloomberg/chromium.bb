@@ -217,7 +217,7 @@ void SortLeastRecentlyAccessed(
 // Predicate to support PartitionCookieByPriority().
 struct CookiePriorityEqualsTo
     : std::unary_function<const CookieMonster::CookieMap::iterator, bool> {
-  CookiePriorityEqualsTo(CookiePriority priority)
+  explicit CookiePriorityEqualsTo(CookiePriority priority)
     : priority_(priority) {}
 
   bool operator()(const CookieMonster::CookieMap::iterator it) const {
@@ -845,7 +845,6 @@ class CookieMonster::DeleteSessionCookiesTask : public DeleteTask<int> {
   virtual ~DeleteSessionCookiesTask() {}
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(DeleteSessionCookiesTask);
 };
 
@@ -1264,7 +1263,7 @@ bool CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie) {
   return false;
 }
 
-void CookieMonster::SetCookieableSchemes(const char* schemes[],
+void CookieMonster::SetCookieableSchemes(const char* const schemes[],
                                          size_t num_schemes) {
   base::AutoLock autolock(lock_);
 
@@ -1668,7 +1667,7 @@ int CookieMonster::TrimDuplicateCookiesForKey(
 }
 
 // Note: file must be the last scheme.
-const char* CookieMonster::kDefaultCookieableSchemes[] =
+const char* const CookieMonster::kDefaultCookieableSchemes[] =
     { "http", "https", "ws", "wss", "file" };
 const int CookieMonster::kDefaultCookieableSchemesCount =
     arraysize(kDefaultCookieableSchemes);

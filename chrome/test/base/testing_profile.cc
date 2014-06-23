@@ -136,8 +136,8 @@ class TestExtensionURLRequestContext : public net::URLRequestContext {
     net::CookieMonster* cookie_monster =
         content::CreateCookieStore(content::CookieStoreConfig())->
             GetCookieMonster();
-    const char* schemes[] = {extensions::kExtensionScheme};
-    cookie_monster->SetCookieableSchemes(schemes, 1);
+    const char* const schemes[] = {extensions::kExtensionScheme};
+    cookie_monster->SetCookieableSchemes(schemes, arraysize(schemes));
     set_cookie_store(cookie_monster);
   }
 

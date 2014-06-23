@@ -293,9 +293,11 @@ void OffTheRecordProfileIOData::
       content::CreateCookieStore(content::CookieStoreConfig())->
           GetCookieMonster();
   // Enable cookies for devtools and extension URLs.
-  const char* schemes[] = {content::kChromeDevToolsScheme,
-                           extensions::kExtensionScheme};
-  extensions_cookie_store->SetCookieableSchemes(schemes, 2);
+  const char* const schemes[] = {
+      content::kChromeDevToolsScheme,
+      extensions::kExtensionScheme
+  };
+  extensions_cookie_store->SetCookieableSchemes(schemes, arraysize(schemes));
   extensions_context->set_cookie_store(extensions_cookie_store);
 
   scoped_ptr<net::URLRequestJobFactoryImpl> extensions_job_factory(

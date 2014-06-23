@@ -564,9 +564,12 @@ void ProfileImplIOData::
   net::CookieStore* extensions_cookie_store =
       content::CreateCookieStore(cookie_config);
   // Enable cookies for devtools and extension URLs.
-  const char* schemes[] = {content::kChromeDevToolsScheme,
-                           extensions::kExtensionScheme};
-  extensions_cookie_store->GetCookieMonster()->SetCookieableSchemes(schemes, 2);
+  const char* const schemes[] = {
+      content::kChromeDevToolsScheme,
+      extensions::kExtensionScheme
+  };
+  extensions_cookie_store->GetCookieMonster()->SetCookieableSchemes(
+      schemes, arraysize(schemes));
   extensions_context->set_cookie_store(extensions_cookie_store);
 
   scoped_ptr<net::URLRequestJobFactoryImpl> extensions_job_factory(

@@ -208,7 +208,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Resets the list of cookieable schemes to the supplied schemes.
   // If this this method is called, it must be called before first use of
   // the instance (i.e. as part of the instance initialization process).
-  void SetCookieableSchemes(const char* schemes[], size_t num_schemes);
+  void SetCookieableSchemes(const char* const schemes[], size_t num_schemes);
 
   // Resets the list of cookieable schemes to kDefaultCookieableSchemes with or
   // without 'file' being included.
@@ -304,7 +304,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   bool IsCookieableScheme(const std::string& scheme);
 
   // The default list of schemes the cookie monster can handle.
-  static const char* kDefaultCookieableSchemes[];
+  static const char* const kDefaultCookieableSchemes[];
   static const int kDefaultCookieableSchemesCount;
 
   // Copies all keys for the given |key| to another cookie monster |other|.
