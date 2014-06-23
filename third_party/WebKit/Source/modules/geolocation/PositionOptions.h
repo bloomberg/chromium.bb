@@ -38,23 +38,8 @@ public:
     void trace(Visitor*) { }
 
     bool enableHighAccuracy() const { return m_highAccuracy; }
-    void setEnableHighAccuracy(bool enable) { m_highAccuracy = enable; }
-    unsigned timeout() const
-    {
-        return m_timeout;
-    }
-    void setTimeout(unsigned timeout)
-    {
-        m_timeout = timeout;
-    }
-    unsigned maximumAge() const
-    {
-        return m_maximumAge;
-    }
-    void setMaximumAge(unsigned age)
-    {
-        m_maximumAge = age;
-    }
+    unsigned timeout() const { return m_timeout; }
+    unsigned maximumAge() const { return m_maximumAge; }
 
 private:
     explicit PositionOptions(const Dictionary&);
