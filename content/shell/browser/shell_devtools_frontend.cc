@@ -46,7 +46,7 @@ GURL GetDevToolsPathAsURL(const std::string& settings,
 
   GURL result = net::FilePathToFileURL(dev_tools_path);
   if (!settings.empty())
-      result = GURL(base::StringPrintf("%s?settings=%s",
+      result = GURL(base::StringPrintf("%s?settings=%s&experiments=true",
                                        result.spec().c_str(),
                                        settings.c_str()));
   return result;
