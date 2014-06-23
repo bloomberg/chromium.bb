@@ -4136,7 +4136,33 @@
             'ldflags': [
               '-Wl,--disable-new-dtags',
             ],
-          }]
+          }],
+          ['gcc_version>=48', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'cflags_cc': [
+                  '-std=gnu++11',
+                  # See comment for -Wno-c++11-narrowing.
+                  '-Wno-narrowing',
+                  # TODO(thakis): Remove, http://crbug.com/263960
+                  '-Wno-literal-suffix',
+                ],
+              }],
+            ],
+          }],
+          ['host_gcc_version>=48', {
+            'target_conditions': [
+              ['_toolset=="host"', {
+                'cflags_cc': [
+                  '-std=gnu++11',
+                  # See comment for -Wno-c++11-narrowing.
+                  '-Wno-narrowing',
+                  # TODO(thakis): Remove, http://crbug.com/263960
+                  '-Wno-literal-suffix',
+                ],
+              }],
+            ],
+          }],
         ],
       },
     }],

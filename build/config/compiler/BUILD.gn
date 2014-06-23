@@ -105,6 +105,11 @@ config("compiler") {
   } else if (is_posix) {
     # Non-Mac Posix compiler flags setup.
     # -----------------------------------
+    if (gcc_version >= 48) {
+      cflags_cc += [
+        "-std=gnu++11",
+      ]
+    }
 
     # CPU architecture. We may or may not be doing a cross compile now, so for
     # simplicity we always explicitly set the architecture.
@@ -572,6 +577,7 @@ config("default_warnings") {
       "-Wno-missing-field-initializers",  # "struct foo f = {0};"
       "-Wno-unused-parameter",  # Unused function parameters.
     ]
+    cflags_cc = []
 
     if (is_mac) {
       cflags += [
@@ -604,6 +610,20 @@ config("default_warnings") {
         # Clang spots more unused functions.
         "-Wno-unused-function",
       ]
+
+      if (!is_mac && !is_ios) {
+        cflags_cc += [
+          "-Wno-reserved-user-defined-literal",
+        ]
+      }
+    }
+    if (gcc_version >= 48) {
+      cflags_cc += [
+        # See comment for -Wno-c++11-narrowing.
+        "-Wno-narrowing",
+        # TODO(thakis): Remove, http://crbug.com/263960
+        "-Wno-literal-suffix",
+      ]
     }
 
     # Suppress warnings about ABI changes on ARM (Clang doesn't give this
@@ -621,7 +641,7 @@ config("default_warnings") {
         "-Wno-ignored-qualifiers",
         "-Wno-type-limits",
       ]
-      cflags_cc = [
+      cflags_cc += [
         # Disabling c++0x-compat should be handled in WebKit, but
         # this currently doesn't work because gcc_version is not set
         # correctly when building with the Android build system.
