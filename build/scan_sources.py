@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from optparse import OptionParser
 import os
 import re
 import sys
@@ -263,20 +262,25 @@ class WorkQueue(object):
 def DoMain(argv):
   """Entry point used by gyp's pymod_do_main feature."""
   global debug
-  parser = OptionParser()
-  parser.add_option('-I', dest='includes', action='append',
-                    help='Set include path.')
-  parser.add_option('-D', dest='debug', action='store_true',
-                    help='Enable debugging output.', default=False)
-  (options, files) = parser.parse_args(argv)
-
-  if options.debug:
-    debug = True
 
   resolver = Resolver()
-  if options.includes:
-    if not resolver.AddDirectories(options.includes):
-      return (-1, None)
+  files = []
+
+  arg_type = ''
+  for arg in argv:
+    if arg in ['-I', '-S']:
+      arg_type = arg
+    elif arg == '-D':
+      debug = True
+    elif arg_type == '-I':
+      # Skip generated include directories. These files may not exist and
+      # there should be explicit dependency on the target that generates
+      # these files.
+      if arg.startswith('$!PRODUCT_DIR'):
+        continue
+      resolver.AddDirectories([arg])
+    elif arg_type == '-S':
+      files.append(arg)
 
   workQ = WorkQueue(resolver)
   for filename in files:

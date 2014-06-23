@@ -90,15 +90,6 @@
           ],
           'sources': [],
           'link_flags': [],
-          'get_sources': [
-            'scan_sources',
-            # This is needed to open the .c filenames, which are given
-            # relative to the .gyp file.
-            '-I.',
-            # This is needed to open the .h filenames, which are given
-            # relative to the native_client directory's parent.
-            '-I<(DEPTH)',
-          ],
         },
       },
     }],
@@ -144,15 +135,6 @@
            ],
            'sources': [],
            'link_flags': [],
-           'get_sources': [
-             'scan_sources',
-             # This is needed to open the .c filenames, which are given
-             # relative to the .gyp file.
-             '-I.',
-             # This is needed to open the .h filenames, which are given
-             # relative to the native_client directory's parent.
-             '-I<(DEPTH)',
-           ],
          },
        },
     }],
@@ -194,15 +176,6 @@
            ],
            'sources': [],
            'link_flags': [],
-           'get_sources': [
-             'scan_sources',
-             # This is needed to open the .c filenames, which are given
-             # relative to the .gyp file.
-             '-I.',
-             # This is needed to open the .h filenames, which are given
-             # relative to the native_client directory's parent.
-             '-I<(DEPTH)',
-           ],
          },
        },
     }],
@@ -226,7 +199,7 @@
                  'description': 'building >(out_newlib64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
@@ -270,7 +243,7 @@
                  'description': 'building >(out_newlib64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
@@ -314,7 +287,7 @@
                  'description': 'building >(out_newlib64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
@@ -362,7 +335,7 @@
                  'description': 'building >(out_newlib64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
@@ -407,7 +380,7 @@
                  'description': 'building >(out_newlib32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
@@ -451,7 +424,7 @@
                  'description': 'building >(out_newlib32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
@@ -495,7 +468,7 @@
                  'description': 'building >(out_newlib32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
@@ -542,7 +515,7 @@
                  'description': 'building >(out_newlib32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
@@ -592,7 +565,7 @@
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
-                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
@@ -636,7 +609,7 @@
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
-                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
@@ -679,7 +652,7 @@
                 'description': 'building >(out_bionic_arm)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
-                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_bionic_arm)',
                    '^(source_list_bionic_arm)',
@@ -723,7 +696,7 @@
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
-                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
@@ -770,7 +743,7 @@
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
-                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
@@ -820,7 +793,7 @@
                 'description': 'building >(out_newlib_mips)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
-                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
@@ -864,7 +837,7 @@
                 'description': 'building >(out_newlib_mips)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
-                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
@@ -908,7 +881,7 @@
                 'description': 'building >(out_newlib_mips)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
-                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
@@ -955,7 +928,7 @@
                 'description': 'building >(out_newlib_mips)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
-                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
@@ -1005,7 +978,7 @@
                  'description': 'building >(out_glibc64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
                     '^(source_list_glibc64)',
@@ -1049,7 +1022,7 @@
                  'description': 'building >(out_glibc32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
                     '^(source_list_glibc32)',
@@ -1093,7 +1066,7 @@
                  'description': 'building >(out_glibc64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
                     '^(source_list_glibc64)',
@@ -1137,7 +1110,7 @@
                  'description': 'building >(out_glibc32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
                     '^(source_list_glibc32)',
@@ -1181,7 +1154,7 @@
                  'description': 'building >(out_glibc64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
                     '^(source_list_glibc64)',
@@ -1225,7 +1198,7 @@
                  'description': 'building >(out_glibc32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
                     '^(source_list_glibc32)',
@@ -1333,7 +1306,7 @@
              'description': 'building >(out_pnacl_newlib)',
              'inputs': [
                '<(DEPTH)/native_client/build/build_nexe.py',
-               '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+               '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                '>@(extra_deps)',
                '>@(extra_deps_pnacl_newlib)',
                '^(source_list_pnacl_newlib)',
@@ -1504,7 +1477,7 @@
              'description': 'building >(out_pnacl_newlib)',
              'inputs': [
                '<(DEPTH)/native_client/build/build_nexe.py',
-               '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+               '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                '>@(extra_deps)',
                '>@(extra_deps_pnacl_newlib)',
                '^(source_list_pnacl_newlib)',
@@ -1553,7 +1526,7 @@
                 'description': 'building >(out_pnacl_newlib_arm)',
                 'inputs': [
                   '<(DEPTH)/native_client/build/build_nexe.py',
-                  '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                  '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                   '>@(extra_deps)',
                   '>@(extra_deps_pnacl_newlib)',
                   '^(source_list_pnacl_newlib_arm)',
@@ -1603,7 +1576,7 @@
                  'description': 'building >(out_pnacl_newlib_x86_64)',
                  'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
-                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_pnacl_newlib)',
                    '^(source_list_pnacl_newlib_x86_64)',
@@ -1648,7 +1621,7 @@
                  'description': 'building >(out_pnacl_newlib_x86_32)',
                  'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
-                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_pnacl_newlib)',
                    '^(source_list_pnacl_newlib_x86_32)',
@@ -1697,7 +1670,7 @@
                  'description': 'building >(out_pnacl_newlib_x86_32_nonsfi)',
                  'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
-                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_pnacl_newlib)',
                    '^(source_list_pnacl_newlib_x86_32_nonsfi)',
@@ -1746,7 +1719,7 @@
                 'description': 'building >(out_pnacl_newlib_mips)',
                 'inputs': [
                   '<(DEPTH)/native_client/build/build_nexe.py',
-                  '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                  '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                   '>@(extra_deps)',
                   '>@(extra_deps_pnacl_newlib)',
                   '^(source_list_pnacl_newlib_mips)',
