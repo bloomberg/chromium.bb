@@ -194,7 +194,7 @@ base::string16 FullWallet::GetInfo(const std::string& app_locale,
              base::IntToString16(expiration_year());
 
     case CREDIT_CARD_TYPE: {
-      std::string internal_type =
+      const char* const internal_type =
           CreditCard::GetCreditCardType(base::ASCIIToUTF16(GetPan()));
       if (internal_type == kGenericCard)
         return base::string16();

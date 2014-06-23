@@ -10486,8 +10486,20 @@ Chrome ran out of memory.
         <message name="IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_EXPIRATION_DATE" desc="Message displayed to user when credit card expiration date validation fails.">
           The card is expired. Please check the date or enter a new card.
         </message>
-        <message name="IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_CREDIT_CARD_TYPE" desc="Message displayed to user when a site doesn't accept the credit card type they've entered.">
-          Sorry, this site doesn't accept this brand of card.
+        <message name="IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_GENERIC_CARD" desc="Message displayed to user when a site doesn't accept the credit card type they've entered.">
+          This site doesn't accept this brand of card.
+        </message>
+        <message name="IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_AMEX" desc="Message displayed to user when a site doesn't accept American Express.">
+          This site doesn't accept American Express.
+        </message>
+        <message name="IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_DISCOVER" desc="Message displayed to user when a site doesn't accept Discover.">
+          This site doesn't accept Discover.
+        </message>
+        <message name="IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_MASTERCARD" desc="Message displayed to user when a site doesn't accept MasterCard.">
+          This site doesn't accept MasterCard.
+        </message>
+        <message name="IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_VISA" desc="Message displayed to user when a site doesn't accept Visa.">
+          This site doesn't accept Visa.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_PHONE_NUMBER" desc="Message displayed to user when phone number validation fails.">
           Invalid phone number. Please check and try again.

@@ -3509,8 +3509,18 @@ base::string16 AutofillDialogControllerImpl::CreditCardNumberValidityMessage(
   if (!IsPayingWithWallet() &&
       ShouldDisallowCcType(CreditCard::TypeForDisplay(
           CreditCard::GetCreditCardType(number)))) {
-    return l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_CREDIT_CARD_TYPE);
+    int ids = IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_GENERIC_CARD;
+    const char* const type = CreditCard::GetCreditCardType(number);
+    if (type == kAmericanExpressCard)
+      ids = IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_AMEX;
+    else if (type == kDiscoverCard)
+      ids = IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_DISCOVER;
+    else if (type == kMasterCard)
+      ids = IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_MASTERCARD;
+    else if (type == kVisaCard)
+      ids = IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_VISA;
+
+    return l10n_util::GetStringUTF16(ids);
   }
 
   base::string16 message;

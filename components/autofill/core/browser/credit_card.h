@@ -43,7 +43,7 @@ class CreditCard : public AutofillDataModel {
   // This function performs no additional validation checks on the |number|.
   // Hence, the returned type for both the valid card "4111-1111-1111-1111" and
   // the invalid card "4garbage" will be Visa, which has an IIN of 4.
-  static std::string GetCreditCardType(const base::string16& number);
+  static const char* GetCreditCardType(const base::string16& number);
 
   // FormGroup:
   virtual void GetMatchingTypes(

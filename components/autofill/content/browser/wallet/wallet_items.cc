@@ -245,7 +245,7 @@ bool WalletItems::HasRequiredAction(RequiredAction action) const {
 
 bool WalletItems::SupportsCard(const base::string16& card_number,
                                base::string16* message) const {
-  std::string card_type = CreditCard::GetCreditCardType(card_number);
+  const char* const card_type = CreditCard::GetCreditCardType(card_number);
 
   if (card_type == kVisaCard ||
       card_type == kMasterCard ||

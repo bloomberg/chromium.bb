@@ -185,7 +185,7 @@ int CreditCard::IconResourceId(const std::string& type) {
 }
 
 // static
-std::string CreditCard::GetCreditCardType(const base::string16& number) {
+const char* CreditCard::GetCreditCardType(const base::string16& number) {
   // Credit card number specifications taken from:
   // http://en.wikipedia.org/wiki/Credit_card_numbers,
   // http://en.wikipedia.org/wiki/List_of_Issuer_Identification_Numbers,

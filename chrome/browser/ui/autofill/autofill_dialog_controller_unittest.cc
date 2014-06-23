@@ -51,11 +51,13 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/component_scaled_resources.h"
+#include "grit/components_strings.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_validator.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
@@ -557,15 +559,16 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(0);
   }
 
-  void ValidateCCNumber(DialogSection section,
-                        const std::string& cc_number,
-                        bool should_pass) {
+  base::string16 ValidateCCNumber(DialogSection section,
+                                  const std::string& cc_number,
+                                  bool should_pass) {
     FieldValueMap outputs;
     outputs[ADDRESS_BILLING_COUNTRY] = ASCIIToUTF16("United States");
     outputs[CREDIT_CARD_NUMBER] = UTF8ToUTF16(cc_number);
     ValidityMessages messages =
         controller()->InputsAreValid(section, outputs);
     EXPECT_EQ(should_pass, !messages.HasSureError(CREDIT_CARD_NUMBER));
+    return messages.GetMessageOrDefault(CREDIT_CARD_NUMBER).text;
   }
 
   void SubmitWithWalletItems(scoped_ptr<wallet::WalletItems> wallet_items) {
@@ -931,9 +934,17 @@ TEST_F(AutofillDialogControllerTest, CreditCardNumberValidation) {
   ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberVisa, true);
   ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberMaster, true);
   ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberDiscover, true);
-  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberAmex, false);
-  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberIncomplete, false);
-  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberInvalid, false);
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_AUTOFILL_CREDIT_CARD_NOT_SUPPORTED_BY_WALLET_FOR_MERCHANT),
+            ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberAmex, false));
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_NUMBER),
+      ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberIncomplete, false));
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_NUMBER),
+      ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberInvalid, false));
 
   // Setup some wallet state on a merchant for which Wallet supports AMEX.
   controller()->OnDidGetWalletItems(
@@ -3453,7 +3464,9 @@ TEST_F(AutofillDialogControllerTest, LimitedCcChoices) {
   controller()->Show();
 
   // MC is not valid because it's missing from FormData.
-  ValidateCCNumber(SECTION_CC, kTestCCNumberMaster, false);
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_MASTERCARD),
+            ValidateCCNumber(SECTION_CC, kTestCCNumberMaster, false));
   ValidateCCNumber(SECTION_CC, kTestCCNumberVisa, true);
 
   CreditCard visa_card(test::GetVerifiedCreditCard());

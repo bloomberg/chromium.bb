@@ -59,7 +59,7 @@ bool IsValidCreditCardNumber(const base::string16& text) {
   // defined sizes.
   // [1] http://www.merriampark.com/anatomycc.htm
   // [2] http://en.wikipedia.org/wiki/Bank_card_number
-  const std::string type = CreditCard::GetCreditCardType(text);
+  const char* const type = CreditCard::GetCreditCardType(text);
   if (type == kAmericanExpressCard && number.size() != 15)
     return false;
   if (type == kDinersCard && number.size() != 14)
@@ -120,7 +120,7 @@ bool IsValidCreditCardSecurityCode(const base::string16& text) {
 
 bool IsValidCreditCardSecurityCode(const base::string16& code,
                                    const base::string16& number) {
-  std::string type = CreditCard::GetCreditCardType(number);
+  const char* const type = CreditCard::GetCreditCardType(number);
   size_t required_length = 3;
   if (type == kAmericanExpressCard)
     required_length = 4;
