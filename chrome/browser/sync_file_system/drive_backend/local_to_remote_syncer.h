@@ -13,7 +13,6 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/sync_action.h"
-#include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "google_apis/drive/gdata_errorcode.h"
 
@@ -63,8 +62,8 @@ class LocalToRemoteSyncer : public SyncTask {
   void HandleConflict(scoped_ptr<SyncTaskToken> token);
   void HandleExistingRemoteFile(scoped_ptr<SyncTaskToken> token);
 
-  void DeleteRemoteFile(const SyncStatusCallback& callback);
-  void DidDeleteRemoteFile(const SyncStatusCallback& callback,
+  void DeleteRemoteFile(scoped_ptr<SyncTaskToken> token);
+  void DidDeleteRemoteFile(scoped_ptr<SyncTaskToken> token,
                            google_apis::GDataErrorCode error);
 
   void UploadExistingFile(scoped_ptr<SyncTaskToken> token);

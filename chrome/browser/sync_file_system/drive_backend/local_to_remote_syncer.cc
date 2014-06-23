@@ -182,9 +182,7 @@ void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
     token->RecordLog("Detected non-folder file in its path.");
 
     retry_on_success_ = true;
-    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::Passed(&token)));
+    DeleteRemoteFile(token.Pass());
     return;
   }
 
@@ -300,9 +298,7 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
 
   if (local_is_missing_) {
     // Local file deletion for existing remote file.
-    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::Passed(&token)));
+    DeleteRemoteFile(token.Pass());
     return;
   }
 
@@ -324,9 +320,7 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     // Assuming this case as local folder deletion + local file creation, delete
     // the remote folder and upload the file.
     retry_on_success_ = true;
-    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::Passed(&token)));
+    DeleteRemoteFile(token.Pass());
     return;
   }
 
@@ -336,9 +330,7 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
     // Assuming this case as local file deletion + local folder creation, delete
     // the remote file and create a remote folder.
     retry_on_success_ = true;
-    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::SyncCompleted,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::Passed(&token)));
+    DeleteRemoteFile(token.Pass());
     return;
   }
 
@@ -347,8 +339,7 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
   SyncCompleted(token.Pass(), SYNC_STATUS_OK);
 }
 
-void LocalToRemoteSyncer::DeleteRemoteFile(
-    const SyncStatusCallback& callback) {
+void LocalToRemoteSyncer::DeleteRemoteFile(scoped_ptr<SyncTaskToken> token) {
   DCHECK(remote_file_tracker_);
   DCHECK(remote_file_tracker_->has_synced_details());
 
@@ -357,19 +348,18 @@ void LocalToRemoteSyncer::DeleteRemoteFile(
       remote_file_tracker_->file_id(),
       remote_file_tracker_->synced_details().etag(),
       base::Bind(&LocalToRemoteSyncer::DidDeleteRemoteFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
 }
 
 void LocalToRemoteSyncer::DidDeleteRemoteFile(
-    const SyncStatusCallback& callback,
+    scoped_ptr<SyncTaskToken> token,
     google_apis::GDataErrorCode error) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK &&
       error != google_apis::HTTP_NOT_FOUND &&
       error != google_apis::HTTP_PRECONDITION &&
       error != google_apis::HTTP_CONFLICT) {
-    callback.Run(status);
+    SyncCompleted(token.Pass(), status);
     return;
   }
 
@@ -379,10 +369,13 @@ void LocalToRemoteSyncer::DidDeleteRemoteFile(
   // resolution, ignore the local deletion.
   if (error == google_apis::HTTP_NOT_FOUND) {
     metadata_database()->UpdateByDeletedRemoteFile(
-        remote_file_tracker_->file_id(), callback);
+        remote_file_tracker_->file_id(),
+        base::Bind(&LocalToRemoteSyncer::SyncCompleted,
+                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
     return;
   }
-  callback.Run(SYNC_STATUS_OK);
+
+  SyncCompleted(token.Pass(), SYNC_STATUS_OK);
 }
 
 void LocalToRemoteSyncer::UploadExistingFile(scoped_ptr<SyncTaskToken> token) {
