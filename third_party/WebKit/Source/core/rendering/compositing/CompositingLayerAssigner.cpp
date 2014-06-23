@@ -38,6 +38,7 @@ static uint64_t gSquashingSparsityTolerance = 6;
 CompositingLayerAssigner::CompositingLayerAssigner(RenderLayerCompositor* compositor)
     : m_compositor(compositor)
     , m_layerSquashingEnabled(compositor->layerSquashingEnabled())
+    , m_layersChanged(false)
 {
 }
 
@@ -45,10 +46,10 @@ CompositingLayerAssigner::~CompositingLayerAssigner()
 {
 }
 
-void CompositingLayerAssigner::assign(RenderLayer* updateRoot, bool& layersChanged, Vector<RenderLayer*>& layersNeedingRepaint)
+void CompositingLayerAssigner::assign(RenderLayer* updateRoot, Vector<RenderLayer*>& layersNeedingRepaint)
 {
     SquashingState squashingState;
-    assignLayersToBackingsInternal(updateRoot, squashingState, layersChanged, layersNeedingRepaint);
+    assignLayersToBackingsInternal(updateRoot, squashingState, layersNeedingRepaint);
     if (squashingState.hasMostRecentMapping)
         squashingState.mostRecentMapping->finishAccumulatingSquashingLayers(squashingState.nextSquashedLayerIndex);
 }
@@ -162,7 +163,7 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     return CompositingReasonNone;
 }
 
-bool CompositingLayerAssigner::updateSquashingAssignment(RenderLayer* layer, SquashingState& squashingState, const CompositingStateTransitionType compositedLayerUpdate,
+void CompositingLayerAssigner::updateSquashingAssignment(RenderLayer* layer, SquashingState& squashingState, const CompositingStateTransitionType compositedLayerUpdate,
     Vector<RenderLayer*>& layersNeedingRepaint)
 {
     // NOTE: In the future as we generalize this, the background of this layer may need to be assigned to a different backing than
@@ -177,7 +178,7 @@ bool CompositingLayerAssigner::updateSquashingAssignment(RenderLayer* layer, Squ
         bool changedSquashingLayer =
             squashingState.mostRecentMapping->updateSquashingLayerAssignment(layer, squashingState.mostRecentMapping->owningLayer(), squashingState.nextSquashedLayerIndex);
         if (!changedSquashingLayer)
-            return true;
+            return;
 
         // If we've modified the collection of squashed layers, we must update
         // the graphics layer geometry.
@@ -187,10 +188,8 @@ bool CompositingLayerAssigner::updateSquashingAssignment(RenderLayer* layer, Squ
 
         // Issue a repaint, since |layer| may have been added to an already-existing squashing layer.
         layersNeedingRepaint.append(layer);
-
-        return true;
-    }
-    if (compositedLayerUpdate == RemoveFromSquashingLayer) {
+        m_layersChanged = true;
+    } else if (compositedLayerUpdate == RemoveFromSquashingLayer) {
         if (layer->groupedMapping()) {
             // Before removing |layer| from an already-existing squashing layer that may have other content, issue a repaint.
             m_compositor->repaintOnCompositingChange(layer);
@@ -200,20 +199,18 @@ bool CompositingLayerAssigner::updateSquashingAssignment(RenderLayer* layer, Squ
 
         // If we need to repaint, do so now that we've removed it from a squashed layer.
         layersNeedingRepaint.append(layer);
+        m_layersChanged = true;
 
         layer->setLostGroupedMapping(false);
-        return true;
     }
-
-    return false;
 }
 
-void CompositingLayerAssigner::assignLayersToBackingsForReflectionLayer(RenderLayer* reflectionLayer, bool& layersChanged, Vector<RenderLayer*>& layersNeedingRepaint)
+void CompositingLayerAssigner::assignLayersToBackingsForReflectionLayer(RenderLayer* reflectionLayer, Vector<RenderLayer*>& layersNeedingRepaint)
 {
     CompositingStateTransitionType compositedLayerUpdate = computeCompositedLayerUpdate(reflectionLayer);
     if (compositedLayerUpdate != NoCompositingStateChange) {
         layersNeedingRepaint.append(reflectionLayer);
-        layersChanged = true;
+        m_layersChanged = true;
         m_compositor->allocateOrClearCompositedLayerMapping(reflectionLayer, compositedLayerUpdate);
     }
     m_compositor->updateDirectCompositingReasons(reflectionLayer);
@@ -221,7 +218,7 @@ void CompositingLayerAssigner::assignLayersToBackingsForReflectionLayer(RenderLa
         reflectionLayer->compositedLayerMapping()->updateGraphicsLayerConfiguration(GraphicsLayerUpdater::ForceUpdate);
 }
 
-void CompositingLayerAssigner::assignLayersToBackingsInternal(RenderLayer* layer, SquashingState& squashingState, bool& layersChanged, Vector<RenderLayer*>& layersNeedingRepaint)
+void CompositingLayerAssigner::assignLayersToBackingsInternal(RenderLayer* layer, SquashingState& squashingState, Vector<RenderLayer*>& layersNeedingRepaint)
 {
     if (m_layerSquashingEnabled && requiresSquashing(layer->compositingReasons())) {
         CompositingReasons reasonsPreventingSquashing = getReasonsPreventingSquashing(layer, squashingState);
@@ -233,17 +230,16 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(RenderLayer* layer
 
     if (m_compositor->allocateOrClearCompositedLayerMapping(layer, compositedLayerUpdate)) {
         layersNeedingRepaint.append(layer);
-        layersChanged = true;
+        m_layersChanged = true;
     }
 
     // FIXME: special-casing reflection layers here is not right.
     if (layer->reflectionInfo())
-        assignLayersToBackingsForReflectionLayer(layer->reflectionInfo()->reflectionLayer(), layersChanged, layersNeedingRepaint);
+        assignLayersToBackingsForReflectionLayer(layer->reflectionInfo()->reflectionLayer(), layersNeedingRepaint);
 
     // Add this layer to a squashing backing if needed.
     if (m_layerSquashingEnabled) {
-        if (updateSquashingAssignment(layer, squashingState, compositedLayerUpdate, layersNeedingRepaint))
-            layersChanged = true;
+        updateSquashingAssignment(layer, squashingState, compositedLayerUpdate, layersNeedingRepaint);
 
         const bool layerIsSquashed = compositedLayerUpdate == PutInSquashingLayer || (compositedLayerUpdate == NoCompositingStateChange && layer->groupedMapping());
         if (layerIsSquashed) {
@@ -257,7 +253,7 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(RenderLayer* layer
     if (layer->stackingNode()->isStackingContext()) {
         RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), NegativeZOrderChildren);
         while (RenderLayerStackingNode* curNode = iterator.next())
-            assignLayersToBackingsInternal(curNode->layer(), squashingState, layersChanged, layersNeedingRepaint);
+            assignLayersToBackingsInternal(curNode->layer(), squashingState, layersNeedingRepaint);
     }
 
     if (m_layerSquashingEnabled) {
@@ -270,7 +266,7 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(RenderLayer* layer
 
     RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
     while (RenderLayerStackingNode* curNode = iterator.next())
-        assignLayersToBackingsInternal(curNode->layer(), squashingState, layersChanged, layersNeedingRepaint);
+        assignLayersToBackingsInternal(curNode->layer(), squashingState, layersNeedingRepaint);
 
     if (squashingState.hasMostRecentMapping && &squashingState.mostRecentMapping->owningLayer() == layer)
         squashingState.haveAssignedBackingsToEntireSquashingLayerSubtree = true;

@@ -40,7 +40,9 @@ public:
     explicit CompositingLayerAssigner(RenderLayerCompositor*);
     ~CompositingLayerAssigner();
 
-    void assign(RenderLayer* updateRoot, bool& layersChanged, Vector<RenderLayer*>& layersNeedingRepaint);
+    void assign(RenderLayer* updateRoot, Vector<RenderLayer*>& layersNeedingRepaint);
+
+    bool layersChanged() const { return m_layersChanged; }
 
     // FIXME: This function should be private. We should remove the one caller
     // once we've fixed the compositing chicken/egg issues.
@@ -77,15 +79,16 @@ private:
         uint64_t totalAreaOfSquashedRects;
     };
 
-    void assignLayersToBackingsInternal(RenderLayer*, SquashingState&, bool& layersChanged, Vector<RenderLayer*>& layersNeedingRepaint);
-    void assignLayersToBackingsForReflectionLayer(RenderLayer* reflectionLayer, bool& layersChanged, Vector<RenderLayer*>& layersNeedingRepaint);
+    void assignLayersToBackingsInternal(RenderLayer*, SquashingState&, Vector<RenderLayer*>& layersNeedingRepaint);
+    void assignLayersToBackingsForReflectionLayer(RenderLayer* reflectionLayer, Vector<RenderLayer*>& layersNeedingRepaint);
     CompositingReasons getReasonsPreventingSquashing(const RenderLayer*, const SquashingState&);
     bool squashingWouldExceedSparsityTolerance(const RenderLayer* candidate, const SquashingState&);
-    bool updateSquashingAssignment(RenderLayer*, SquashingState&, CompositingStateTransitionType, Vector<RenderLayer*>& layersNeedingRepaint);
+    void updateSquashingAssignment(RenderLayer*, SquashingState&, CompositingStateTransitionType, Vector<RenderLayer*>& layersNeedingRepaint);
     bool needsOwnBacking(const RenderLayer*) const;
 
     RenderLayerCompositor* m_compositor;
     bool m_layerSquashingEnabled;
+    bool m_layersChanged;
 };
 
 } // namespace WebCore
