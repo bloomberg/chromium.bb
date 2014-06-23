@@ -395,7 +395,7 @@ class GitWrapper(SCMWrapper):
       if deps_revision and deps_revision.startswith('branch-heads/'):
         deps_branch = deps_revision.replace('branch-heads/', '')
         self._Capture(['branch', deps_branch, deps_revision])
-        self._Capture(['checkout', '--quiet', deps_branch])
+        self._Checkout(options, deps_branch, quiet=True)
       if file_list is not None:
         files = self._Capture(['ls-files']).splitlines()
         file_list.extend([os.path.join(self.checkout_path, f) for f in files])
@@ -500,10 +500,12 @@ class GitWrapper(SCMWrapper):
       else:
         # 'git checkout' may need to overwrite existing untracked files. Allow
         # it only when nuclear options are enabled.
-        if options.force and options.delete_unversioned_trees:
-          self._Capture(['checkout', '--force', '--quiet', '%s' % revision])
-        else:
-          self._Capture(['checkout', '--quiet', '%s' % revision])
+        self._Checkout(
+            options,
+            revision,
+            force=(options.force and options.delete_unversioned_trees),
+            quiet=True,
+        )
       if not printed_path:
         self.Print('_____ %s%s' % (self.relpath, rev_str), timestamp=False)
     elif current_type == 'hash':
@@ -842,8 +844,7 @@ class GitWrapper(SCMWrapper):
         self.Print('_____ removing non-empty tmp dir %s' % tmp_dir)
       gclient_utils.rmtree(tmp_dir)
     self._UpdateBranchHeads(options, fetch=True)
-    self._Run(['checkout', '--quiet', revision.replace('refs/heads/', '')],
-              options)
+    self._Checkout(options, revision.replace('refs/heads/', ''), quiet=True)
     if self._GetCurrentBranch() is None:
       # Squelch git's very verbose detached HEAD warning and use our own
       self.Print(
@@ -1015,6 +1016,26 @@ class GitWrapper(SCMWrapper):
     kwargs.setdefault('stderr', subprocess2.PIPE)
     env = scm.GIT.ApplyEnvVars(kwargs)
     return subprocess2.check_output(['git'] + args, env=env, **kwargs).strip()
+
+  def _Checkout(self, options, ref, force=False, quiet=None):
+    """Performs a 'git-checkout' operation.
+
+    Args:
+      options: The configured option set
+      ref: (str) The branch/commit to checkout
+      quiet: (bool/None) Whether or not the checkout shoud pass '--quiet'; if
+          'None', the behavior is inferred from 'options.verbose'.
+    Returns: (str) The output of the checkout operation
+    """
+    if quiet is None:
+      quiet = (not options.verbose)
+    checkout_args = ['checkout']
+    if force:
+      checkout_args.append('--force')
+    if quiet:
+      checkout_args.append('--quiet')
+    checkout_args.append(ref)
+    return self._Capture(checkout_args)
 
   def _UpdateBranchHeads(self, options, fetch=False):
     """Adds, and optionally fetches, "branch-heads" refspecs if requested."""
