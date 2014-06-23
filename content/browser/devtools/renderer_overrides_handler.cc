@@ -263,20 +263,6 @@ void RendererOverridesHandler::ParseCaptureParameters(
     *scale = 0.1;
 }
 
-base::DictionaryValue* RendererOverridesHandler::CreateScreenshotResponse(
-    const std::vector<unsigned char>& png_data) {
-  std::string base_64_data;
-  base::Base64Encode(
-      base::StringPiece(reinterpret_cast<const char*>(&png_data[0]),
-                        png_data.size()),
-      &base_64_data);
-
-  base::DictionaryValue* response = new base::DictionaryValue();
-  response->SetString(
-      devtools::Page::captureScreenshot::kResponseData, base_64_data);
-  return response;
-}
-
 // DOM agent handlers  --------------------------------------------------------
 
 scoped_refptr<DevToolsProtocol::Response>
@@ -470,43 +456,37 @@ RendererOverridesHandler::PageNavigateToHistoryEntry(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageCaptureScreenshot(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  RenderViewHost* host = agent_->GetRenderViewHost();
+  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
+      agent_->GetRenderViewHost());
   if (!host->GetView())
     return command->InternalErrorResponse("Unable to access the view");
 
-  gfx::Rect view_bounds = host->GetView()->GetViewBounds();
-  gfx::Rect snapshot_bounds(view_bounds.size());
-  gfx::Size snapshot_size = snapshot_bounds.size();
-
-  std::vector<unsigned char> png_data;
-  if (ui::GrabViewSnapshot(host->GetView()->GetNativeView(),
-                           &png_data,
-                           snapshot_bounds)) {
-    if (png_data.size())
-      return command->SuccessResponse(CreateScreenshotResponse(png_data));
-    else
-      return command->InternalErrorResponse("Unable to capture screenshot");
-  }
-
-  ui::GrabViewSnapshotAsync(
-      host->GetView()->GetNativeView(),
-      snapshot_bounds,
-      base::ThreadTaskRunnerHandle::Get(),
+  host->GetSnapshotFromBrowser(
       base::Bind(&RendererOverridesHandler::ScreenshotCaptured,
-                 weak_factory_.GetWeakPtr(), command));
+          weak_factory_.GetWeakPtr(), command));
   return command->AsyncResponsePromise();
 }
 
 void RendererOverridesHandler::ScreenshotCaptured(
     scoped_refptr<DevToolsProtocol::Command> command,
-    scoped_refptr<base::RefCountedBytes> png_data) {
-  if (png_data) {
-    SendAsyncResponse(
-        command->SuccessResponse(CreateScreenshotResponse(png_data->data())));
-  } else {
+    const unsigned char* png_data,
+    size_t png_size) {
+  if (!png_data || !png_size) {
     SendAsyncResponse(
         command->InternalErrorResponse("Unable to capture screenshot"));
+    return;
   }
+
+  std::string base_64_data;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(png_data), png_size),
+      &base_64_data);
+
+  base::DictionaryValue* response = new base::DictionaryValue();
+  response->SetString(devtools::Page::screencastFrame::kParamData,
+                      base_64_data);
+
+  SendAsyncResponse(command->SuccessResponse(response));
 }
 
 scoped_refptr<DevToolsProtocol::Response>

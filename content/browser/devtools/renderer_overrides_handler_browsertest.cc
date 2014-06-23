@@ -2,37 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include "base/base64.h"
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
-#include "content/browser/devtools/renderer_overrides_handler.h"
+#include "content/browser/devtools/devtools_protocol.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
-#include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/compositor/compositor_switches.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace content {
 
-class RendererOverridesHandlerTest : public ContentBrowserTest {
+class RendererOverridesHandlerTest : public ContentBrowserTest,
+                                     public DevToolsClientHost {
  protected:
-  scoped_refptr<DevToolsProtocol::Response> SendCommand(
-      const std::string& method,
-      base::DictionaryValue* params) {
-    scoped_ptr<RendererOverridesHandler> handler(CreateHandler());
-    scoped_refptr<DevToolsProtocol::Command> command(
-        DevToolsProtocol::CreateCommand(1, method, params));
-    return handler->HandleCommand(command);
-  }
-
-  void SendAsyncCommand(const std::string& method,
-                        base::DictionaryValue* params) {
-    scoped_ptr<RendererOverridesHandler> handler(CreateHandler());
-    scoped_refptr<DevToolsProtocol::Command> command(
-        DevToolsProtocol::CreateCommand(1, method, params));
-    scoped_refptr<DevToolsProtocol::Response> response =
-        handler->HandleCommand(command);
-    EXPECT_TRUE(response->is_async_promise());
+  void SendCommand(const std::string& method,
+                   base::DictionaryValue* params) {
+    EXPECT_TRUE(DevToolsManager::GetInstance()->DispatchOnInspectorBackend(this,
+        DevToolsProtocol::CreateCommand(1, method, params)->Serialize()));
     base::MessageLoop::current()->Run();
   }
 
@@ -64,30 +57,40 @@ class RendererOverridesHandlerTest : public ContentBrowserTest {
   scoped_ptr<base::DictionaryValue> result_;
 
  private:
-  RendererOverridesHandler* CreateHandler() {
-    RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
-    DevToolsAgentHost* agent = DevToolsAgentHost::GetOrCreateFor(rvh).get();
-    scoped_ptr<RendererOverridesHandler> handler(
-        new RendererOverridesHandler(agent));
-    handler->SetNotifier(base::Bind(
-        &RendererOverridesHandlerTest::OnMessageSent, base::Unretained(this)));
-    return handler.release();
+  virtual void SetUpOnMainThread() OVERRIDE {
+    DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
+        DevToolsAgentHost::GetOrCreateFor(
+            shell()->web_contents()->GetRenderViewHost()).get(),
+        this);
   }
 
-  void OnMessageSent(const std::string& message) {
+  virtual void TearDownOnMainThread() OVERRIDE {
+    DevToolsManager::GetInstance()->ClientHostClosing(this);
+  }
+
+  virtual void DispatchOnInspectorFrontend(
+      const std::string& message) OVERRIDE {
     scoped_ptr<base::DictionaryValue> root(
         static_cast<base::DictionaryValue*>(base::JSONReader::Read(message)));
     base::DictionaryValue* result;
-    root->GetDictionary("result", &result);
+    EXPECT_TRUE(root->GetDictionary("result", &result));
     result_.reset(result->DeepCopy());
     base::MessageLoop::current()->QuitNow();
+  }
+
+  virtual void InspectedContentsClosing() OVERRIDE {
+    EXPECT_TRUE(false);
+  }
+
+  virtual void ReplacedWithAnotherClient() OVERRIDE {
+    EXPECT_TRUE(false);
   }
 };
 
 IN_PROC_BROWSER_TEST_F(RendererOverridesHandlerTest, QueryUsageAndQuota) {
   base::DictionaryValue* params = new base::DictionaryValue();
   params->SetString("securityOrigin", "http://example.com");
-  SendAsyncCommand("Page.queryUsageAndQuota", params);
+  SendCommand("Page.queryUsageAndQuota", params);
 
   EXPECT_TRUE(HasValue("quota.persistent"));
   EXPECT_TRUE(HasValue("quota.temporary"));
@@ -96,6 +99,40 @@ IN_PROC_BROWSER_TEST_F(RendererOverridesHandlerTest, QueryUsageAndQuota) {
   EXPECT_TRUE(HasListItem("usage.temporary", "id", "indexeddatabase"));
   EXPECT_TRUE(HasListItem("usage.temporary", "id", "filesystem"));
   EXPECT_TRUE(HasListItem("usage.persistent", "id", "filesystem"));
+}
+
+class CaptureScreenshotTest : public RendererOverridesHandlerTest {
+ private:
+#if !defined(OS_ANDROID)
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
+  }
+#endif
+};
+
+// Does not link on Android
+#if defined(OS_ANDROID)
+#define MAYBE_CaptureScreenshot DISABLED_CaptureScreenshot
+#else
+#define MAYBE_CaptureScreenshot CaptureScreenshot
+#endif
+IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, MAYBE_CaptureScreenshot) {
+  shell()->LoadURL(GURL("about:blank"));
+  EXPECT_TRUE(content::ExecuteScript(
+      shell()->web_contents()->GetRenderViewHost(),
+      "document.body.style.background = '#123456'"));
+  SendCommand("Page.captureScreenshot", new base::DictionaryValue());
+  std::string base64;
+  EXPECT_TRUE(result_->GetString("data", &base64));
+  std::string png;
+  EXPECT_TRUE(base::Base64Decode(base64, &png));
+  SkBitmap bitmap;
+  gfx::PNGCodec::Decode(reinterpret_cast<const unsigned char*>(png.data()),
+                        png.size(), &bitmap);
+  SkColor color(bitmap.getColor(0, 0));
+  EXPECT_TRUE(std::abs(0x12-(int)SkColorGetR(color)) <= 1);
+  EXPECT_TRUE(std::abs(0x34-(int)SkColorGetG(color)) <= 1);
+  EXPECT_TRUE(std::abs(0x56-(int)SkColorGetB(color)) <= 1);
 }
 
 }  // namespace content

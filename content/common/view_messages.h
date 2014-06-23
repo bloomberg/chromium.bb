@@ -992,6 +992,10 @@ IPC_MESSAGE_ROUTED2(ViewMsg_ReclaimCompositorResources,
 
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)
 
+// Sent by the browser to ask the renderer to redraw.
+IPC_MESSAGE_ROUTED1(ViewMsg_ForceRedraw,
+                    int /* request_id */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
