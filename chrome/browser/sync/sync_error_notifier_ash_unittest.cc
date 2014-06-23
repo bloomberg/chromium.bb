@@ -22,7 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/notification.h"
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_WIN)
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/gfx/screen.h"
@@ -45,7 +45,7 @@ static const char kTestAccountId[] = "testuser@test.com";
 static const std::string kNotificationId =
     "chrome://settings/sync/testuser@test.com";
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_WIN)
 class ScreenTypeDelegateDesktop : public gfx::ScreenTypeDelegate {
  public:
   ScreenTypeDelegateDesktop() {}
@@ -109,8 +109,8 @@ class SyncErrorNotifierTest : public AshTestBase  {
     // Set up a desktop screen for Windows to hold native widgets, used when
     // adding desktop widgets (i.e., message center notifications).
 #if defined(OS_WIN)
-    aura::TestScreen* test_screen = aura::TestScreen::Create(gfx::Size());
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen);
+    test_screen_.reset(aura::TestScreen::Create(gfx::Size()));
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
     gfx::Screen::SetScreenTypeDelegate(new ScreenTypeDelegateDesktop);
 #endif
 
@@ -131,6 +131,9 @@ class SyncErrorNotifierTest : public AshTestBase  {
   virtual void TearDown() OVERRIDE {
     error_notifier_->Shutdown();
     service_.reset();
+#if defined(OS_WIN)
+    test_screen_.reset();
+#endif
     profile_manager_.reset();
 
     AshTestBase::TearDown();
@@ -165,6 +168,9 @@ class SyncErrorNotifierTest : public AshTestBase  {
     }
   }
 
+#if defined(OS_WIN)
+  scoped_ptr<gfx::Screen> test_screen_;
+#endif
   scoped_ptr<TestingProfileManager> profile_manager_;
   scoped_ptr<SyncErrorController> error_controller_;
   scoped_ptr<SyncErrorNotifier> error_notifier_;

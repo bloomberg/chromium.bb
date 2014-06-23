@@ -412,6 +412,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 
 #if defined(OS_CHROMEOS)
 wm::WMTestHelper* Shell::wm_test_helper_ = NULL;
+gfx::Screen* Shell::test_screen_ = NULL;
 #endif
 views::ViewsDelegate* Shell::views_delegate_ = NULL;
 
@@ -423,8 +424,8 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
 #endif
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Initialize();
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
-                                 aura::TestScreen::Create(gfx::Size()));
+  test_screen_ = aura::TestScreen::Create(gfx::Size());
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_);
   wm_test_helper_ = new wm::WMTestHelper(default_window_size,
                                          GetContextFactory());
 #else
@@ -438,6 +439,9 @@ void Shell::PlatformExit() {
 #if defined(OS_CHROMEOS)
   delete wm_test_helper_;
   wm_test_helper_ = NULL;
+
+  delete test_screen_;
+  test_screen_ = NULL;
 #endif
   delete views_delegate_;
   views_delegate_ = NULL;

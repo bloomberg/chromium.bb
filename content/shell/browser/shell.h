@@ -22,6 +22,9 @@
 #include "base/android/scoped_java_ref.h"
 #elif defined(USE_AURA)
 #if defined(OS_CHROMEOS)
+namespace gfx {
+class Screen;
+}
 namespace wm {
 class WMTestHelper;
 }
@@ -236,6 +239,7 @@ class Shell : public WebContentsDelegate,
 #elif defined(USE_AURA)
 #if defined(OS_CHROMEOS)
   static wm::WMTestHelper* wm_test_helper_;
+  static gfx::Screen* test_screen_;
 #endif
 #if defined(TOOLKIT_VIEWS)
   static views::ViewsDelegate* views_delegate_;

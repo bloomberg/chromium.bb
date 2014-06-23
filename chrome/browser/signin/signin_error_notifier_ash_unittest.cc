@@ -24,7 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/notification.h"
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_WIN)
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/gfx/screen.h"
@@ -45,7 +45,7 @@ static const std::string kNotificationId =
     "chrome://settings/signin/testuser@test.com";
 }
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_WIN)
 class ScreenTypeDelegateDesktop : public gfx::ScreenTypeDelegate {
  public:
   ScreenTypeDelegateDesktop() {}
@@ -79,8 +79,8 @@ class SigninErrorNotifierTest : public AshTestBase {
 
     // Set up screen for Windows.
 #if defined(OS_WIN)
-    aura::TestScreen* test_screen = aura::TestScreen::Create(gfx::Size());
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen);
+    test_screen_.reset(aura::TestScreen::Create(gfx::Size()));
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
     gfx::Screen::SetScreenTypeDelegate(new ScreenTypeDelegateDesktop);
 #endif
 
@@ -92,6 +92,9 @@ class SigninErrorNotifierTest : public AshTestBase {
   }
 
   virtual void TearDown() OVERRIDE {
+#if defined(OS_WIN)
+    test_screen_.reset();
+#endif
     profile_manager_.reset();
 
     AshTestBase::TearDown();
@@ -105,6 +108,9 @@ class SigninErrorNotifierTest : public AshTestBase {
     *message = notification->message();
   }
 
+#if defined(OS_WIN)
+  scoped_ptr<gfx::Screen> test_screen_;
+#endif
   scoped_ptr<TestingProfileManager> profile_manager_;
   scoped_ptr<TestingProfile> profile_;
   SigninErrorController* error_controller_;

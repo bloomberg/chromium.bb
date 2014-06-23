@@ -47,6 +47,7 @@ class ViewsContentClientMainPartsChromeOS
 
  private:
   // Enable a minimal set of views::corewm to be initialized.
+  scoped_ptr<gfx::Screen> test_screen_;
   scoped_ptr< ::wm::WMTestHelper> wm_test_helper_;
   scoped_ptr< ::wm::NestedAcceleratorController> nested_accelerator_controller_;
 
@@ -63,8 +64,8 @@ void ViewsContentClientMainPartsChromeOS::PreMainMessageLoopRun() {
   ViewsContentClientMainPartsAura::PreMainMessageLoopRun();
 
   gfx::Size host_size(800, 600);
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
-                                 aura::TestScreen::Create(host_size));
+  test_screen_.reset(aura::TestScreen::Create(host_size));
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
   // Set up basic pieces of views::corewm.
   wm_test_helper_.reset(
       new ::wm::WMTestHelper(host_size, content::GetContextFactory()));
@@ -85,6 +86,7 @@ void ViewsContentClientMainPartsChromeOS::PostMainMessageLoopRun() {
   aura::client::SetDispatcherClient(wm_test_helper_->host()->window(), NULL);
   nested_accelerator_controller_.reset();
   wm_test_helper_.reset();
+  test_screen_.reset();
 
   ViewsContentClientMainPartsAura::PostMainMessageLoopRun();
 }
