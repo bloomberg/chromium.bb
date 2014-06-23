@@ -67,7 +67,8 @@ std::string ChromeChannelFeatureFilter::Parse(
   // The "trunk" channel uses VersionInfo::CHANNEL_UNKNOWN, so we need to keep
   // track of whether the channel has been set or not separately.
   channel_has_been_set_ |= value->HasKey(kFeatureChannelKey);
-  if (!channel_has_been_set_ && feature()->dependencies().empty()) {
+
+  if (!channel_has_been_set_ && !feature()->HasDependencies()) {
     return feature()->name() +
            ": Must supply a value for channel or dependencies.";
   }

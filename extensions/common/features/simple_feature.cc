@@ -7,6 +7,7 @@
 #include <map>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/lazy_instance.h"
@@ -14,11 +15,32 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "extensions/common/extension_api.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/switches.h"
 
 namespace extensions {
 
 namespace {
+
+Feature::Availability IsAvailableToManifestForBind(
+    const std::string& extension_id,
+    Manifest::Type type,
+    Manifest::Location location,
+    int manifest_version,
+    Feature::Platform platform,
+    const Feature* feature) {
+  return feature->IsAvailableToManifest(
+      extension_id, type, location, manifest_version, platform);
+}
+
+Feature::Availability IsAvailableToContextForBind(const Extension* extension,
+                                                  Feature::Context context,
+                                                  const GURL& url,
+                                                  Feature::Platform platform,
+                                                  const Feature* feature) {
+  return feature->IsAvailableToContext(extension, context, url, platform);
+}
 
 struct Mappings {
   Mappings() {
@@ -234,6 +256,10 @@ SimpleFeature::SimpleFeature()
 
 SimpleFeature::~SimpleFeature() {}
 
+bool SimpleFeature::HasDependencies() {
+  return !dependencies_.empty();
+}
+
 void SimpleFeature::AddFilter(scoped_ptr<SimpleFeatureFilter> filter) {
   filters_.push_back(make_linked_ptr(filter.release()));
 }
@@ -343,7 +369,12 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
       return availability;
   }
 
-  return CreateAvailability(IS_AVAILABLE, type);
+  return CheckDependencies(base::Bind(&IsAvailableToManifestForBind,
+                                      extension_id,
+                                      type,
+                                      location,
+                                      manifest_version,
+                                      platform));
 }
 
 Feature::Availability SimpleFeature::IsAvailableToContext(
@@ -376,7 +407,8 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
       return availability;
   }
 
-  return CreateAvailability(IS_AVAILABLE);
+  return CheckDependencies(base::Bind(
+      &IsAvailableToContextForBind, extension, context, url, platform));
 }
 
 std::string SimpleFeature::GetAvailabilityMessage(
@@ -520,6 +552,22 @@ bool SimpleFeature::MatchesManifestLocation(
   }
   NOTREACHED();
   return false;
+}
+
+Feature::Availability SimpleFeature::CheckDependencies(
+    const base::Callback<Availability(const Feature*)>& checker) const {
+  for (std::set<std::string>::const_iterator it = dependencies_.begin();
+       it != dependencies_.end();
+       ++it) {
+    Feature* dependency =
+        ExtensionAPI::GetSharedInstance()->GetFeatureDependency(*it);
+    if (!dependency)
+      return CreateAvailability(NOT_PRESENT);
+    Availability dependency_availability = checker.Run(dependency);
+    if (!dependency_availability.is_available())
+      return dependency_availability;
+  }
+  return CreateAvailability(IS_AVAILABLE);
 }
 
 }  // namespace extensions

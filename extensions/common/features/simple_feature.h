@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,8 +20,6 @@
 #include "extensions/common/manifest.h"
 
 namespace extensions {
-
-class ComplexFeature;
 
 class SimpleFeature : public Feature {
  public:
@@ -56,6 +55,11 @@ class SimpleFeature : public Feature {
   std::set<std::string>* blacklist() { return &blacklist_; }
   std::set<std::string>* whitelist() { return &whitelist_; }
   std::set<Manifest::Type>* extension_types() { return &extension_types_; }
+
+  // Dependency resolution is a property of Features that is preferrably
+  // handled internally to avoid temptation, but FeatureFilters may need
+  // to know if there are any at all.
+  bool HasDependencies();
 
   // Adds a filter to this feature. The feature takes ownership of the filter.
   void AddFilter(scoped_ptr<SimpleFeatureFilter> filter);
@@ -122,12 +126,16 @@ class SimpleFeature : public Feature {
  private:
   bool MatchesManifestLocation(Manifest::Location manifest_location) const;
 
+  Availability CheckDependencies(
+      const base::Callback<Availability(const Feature*)>& checker) const;
+
   // For clarity and consistency, we handle the default value of each of these
   // members the same way: it matches everything. It is up to the higher level
   // code that reads Features out of static data to validate that data and set
   // sensible defaults.
   std::set<std::string> blacklist_;
   std::set<std::string> whitelist_;
+  std::set<std::string> dependencies_;
   std::set<Manifest::Type> extension_types_;
   std::set<Context> contexts_;
   URLPatternSet matches_;

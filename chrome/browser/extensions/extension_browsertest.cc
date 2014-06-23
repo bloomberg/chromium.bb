@@ -182,8 +182,8 @@ ExtensionBrowserTest::LoadExtensionWithInstallParam(
         install_warnings_message += "  " + it->message + "\n";
       }
 
-      EXPECT_TRUE(extension->install_warnings().empty()) <<
-          install_warnings_message;
+      EXPECT_EQ(0u, extension->install_warnings().size())
+          << install_warnings_message;
       return NULL;
     }
   }

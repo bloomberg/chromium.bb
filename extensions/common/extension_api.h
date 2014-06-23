@@ -51,9 +51,20 @@ class ExtensionAPI {
   // Splits a name like "permission:bookmark" into ("permission", "bookmark").
   // The first part refers to a type of feature, for example "manifest",
   // "permission", or "api". The second part is the full name of the feature.
+  //
+  // TODO(kalman): ExtensionAPI isn't really the right place for this function.
   static void SplitDependencyName(const std::string& full_name,
                                   std::string* feature_type,
                                   std::string* feature_name);
+
+  class OverrideSharedInstanceForTest {
+   public:
+    explicit OverrideSharedInstanceForTest(ExtensionAPI* testing_api);
+    ~OverrideSharedInstanceForTest();
+
+   private:
+    ExtensionAPI* original_api_;
+  };
 
   // Creates a completely clean instance. Configure using RegisterSchema() and
   // RegisterDependencyProvider before use.
@@ -68,19 +79,19 @@ class ExtensionAPI {
   void RegisterDependencyProvider(const std::string& name,
                                   const FeatureProvider* provider);
 
-  // Returns true if the API feature |api| and all of its dependencies are
-  // available in |context|.
+  // Returns true if the API item called |api_full_name| and all of its
+  // dependencies are available in |context|.
+  //
+  // |api_full_name| can be either a namespace name (like "bookmarks") or a
+  // member name (like "bookmarks.create").
   //
   // Depending on the configuration of |api| (in _api_features.json), either
   // |extension| or |url| (or both) may determine its availability, but this is
   // up to the configuration of the individual feature.
-  Feature::Availability IsAvailable(const Feature& api,
-                                    const Extension* extension,
-                                    Feature::Context context,
-                                    const GURL& url);
-  // Same as the previous overload, but takes a feature name instead of an
-  // object. |api_full_name| can be either a namespace name (like "bookmarks")
-  // or a member name (like "bookmarks.create").
+  //
+  // TODO(kalman): This is just an unnecessary combination of finding a Feature
+  // then calling Feature::IsAvailableToContext(..) on it. Just provide that
+  // FindFeature function and let callers compose if they want.
   Feature::Availability IsAvailable(const std::string& api_full_name,
                                     const Extension* extension,
                                     Feature::Context context,
@@ -115,6 +126,10 @@ class ExtensionAPI {
   std::string GetAPINameFromFullName(const std::string& full_name,
                                      std::string* child_name);
 
+  // Gets a feature from any dependency provider registered with ExtensionAPI.
+  // Returns NULL if the feature could not be found.
+  Feature* GetFeatureDependency(const std::string& dependency_name);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionAPITest, DefaultConfigurationFeatures);
   FRIEND_TEST_ALL_PREFIXES(ExtensionAPITest, TypesHaveNamespace);
@@ -123,10 +138,6 @@ class ExtensionAPI {
   void InitDefaultConfiguration();
 
   bool default_configuration_initialized_;
-
-  // Gets a feature from any dependency provider registered with ExtensionAPI.
-  // Returns NULL if the feature could not be found.
-  Feature* GetFeatureDependency(const std::string& dependency_name);
 
   // Loads a schema.
   void LoadSchema(const std::string& name, const base::StringPiece& schema);

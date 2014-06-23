@@ -68,20 +68,18 @@ TEST(ExtensionAPITest, SplitDependencyName) {
     std::string input;
     std::string expected_feature_type;
     std::string expected_feature_name;
-  } test_data[] = {
-    { "", "api", "" },  // assumes "api" when no type is present
-    { "foo", "api", "foo" },
-    { "foo:", "foo", "" },
-    { ":foo", "", "foo" },
-    { "foo:bar", "foo", "bar" },
-    { "foo:bar.baz", "foo", "bar.baz" }
-  };
+  } test_data[] = {{"", "api", ""},  // assumes "api" when no type is present
+                   {"foo", "api", "foo"},
+                   {"foo:", "foo", ""},
+                   {":foo", "", "foo"},
+                   {"foo:bar", "foo", "bar"},
+                   {"foo:bar.baz", "foo", "bar.baz"}};
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
     std::string feature_type;
     std::string feature_name;
-    ExtensionAPI::SplitDependencyName(test_data[i].input, &feature_type,
-                                      &feature_name);
+    ExtensionAPI::SplitDependencyName(
+        test_data[i].input, &feature_type, &feature_name);
     EXPECT_EQ(test_data[i].expected_feature_type, feature_type) << i;
     EXPECT_EQ(test_data[i].expected_feature_name, feature_name) << i;
   }
@@ -244,11 +242,19 @@ TEST(ExtensionAPITest, APIFeatures) {
         api.RegisterSchemaResource(iter.key(), 0);
     }
 
-    EXPECT_EQ(test_data[i].expect_is_available,
-              api.IsAvailable(test_data[i].api_full_name,
-                              NULL,
-                              test_data[i].context,
-                              test_data[i].url).is_available()) << i;
+    ExtensionAPI::OverrideSharedInstanceForTest scope(&api);
+    bool expected = test_data[i].expect_is_available;
+    Feature::Availability availability =
+        api.IsAvailable(test_data[i].api_full_name,
+                        NULL,
+                        test_data[i].context,
+                        test_data[i].url);
+    EXPECT_EQ(expected, availability.is_available())
+        << base::StringPrintf("Test %d: Feature '%s' was %s: %s",
+                              static_cast<int>(i),
+                              test_data[i].api_full_name.c_str(),
+                              expected ? "not available" : "available",
+                              availability.message().c_str());
   }
 }
 
