@@ -128,6 +128,19 @@
       'webapp/browser_test/invalid_pin_browser_test.js',
       'webapp/browser_test/update_pin_browser_test.js',
     ],
+    # These product files are excluded from our JavaScript unittest
+    'remoting_webapp_unittest_exclude_files': [
+      # event_handlers.js is where the onLoad handler is defined, which
+      # makes it the entry point of the webapp.
+      'webapp/event_handlers.js',
+    ],
+    # The unit test cases for the webapp
+    'remoting_webapp_unittest_cases': [
+      'webapp/unittests/test_eventSource.js',
+    ],
+    'remoting_webapp_unittest_template_main':
+      'webapp/html/template_unittest.html',
+
     # The JavaScript files required by main.html.
     'remoting_webapp_main_html_js_files': [
       # Include the core files first as it is required by the other files.

@@ -7,6 +7,7 @@
 """
 
 from HTMLParser import HTMLParser
+import argparse
 import os
 import re
 import sys
@@ -31,8 +32,11 @@ class HtmlChecker(HTMLParser):
 
 
 class GenerateWebappHtml:
-  def __init__(self, template_files, js_files):
+  def __init__(self, template_files, js_files, instrumented_js_files):
+
     self.js_files = js_files
+    self.instrumented_js_files = instrumented_js_files
+
 
     self.templates_expected = set()
     for template in template_files:
@@ -44,6 +48,10 @@ class GenerateWebappHtml:
     for js_path in sorted(self.js_files):
       js_file = os.path.basename(js_path)
       output.write('    <script src="' + js_file + '"></script>\n')
+
+    for js_path in sorted(self.instrumented_js_files):
+      js_file = os.path.basename(js_path)
+      output.write('    <script src="' + js_file + '" data-cover></script>\n')
 
   def verifyTemplateList(self):
     """Verify that all the expected templates were found."""
@@ -61,11 +69,11 @@ class GenerateWebappHtml:
     return False
 
   def processTemplate(self, output, template_file, indent):
-    with open(template_file, 'r') as input:
+    with open(template_file, 'r') as input_template:
       first_line = True
       skip_header_comment = False
 
-      for line in input:
+      for line in input_template:
         # If the first line is the start of a copyright notice, then
         # skip over the entire comment.
         # This will remove the copyright info from the included files,
@@ -101,50 +109,54 @@ class GenerateWebappHtml:
           output.write((' ' * indent) + line)
 
 
-def show_usage():
-  print ('Usage: %s <output-file> <input-template> '
-         '[--templates <template-files...>] '
-         '[--js <js-files...>]' % sys.argv[0])
-  print 'where:'
-  print '  <output-file> Path to HTML output file'
-  print '  <input-template> Path to input template'
-  print '  <template-files> The html template files used by <input-template>'
-  print '  <js-files> The Javascript files to include in HTML <head>'
+def parseArgs():
+  parser = argparse.ArgumentParser()
+  parser.add_argument(
+    '--js', nargs='+', help='The Javascript files to include in HTML <head>')
+  parser.add_argument(
+    '--templates',
+    nargs='*',
+    default=[],
+    help='The html template files used by input-template')
+  parser.add_argument(
+    '--exclude-js',
+    nargs='*',
+    default=[],
+    help='The Javascript files to exclude from <--js> and <--instrumentedjs>')
+  parser.add_argument(
+    '--instrument-js',
+    nargs='*',
+    default=[],
+    help='Javascript to include and instrument for code coverage')
+  parser.add_argument('output_file')
+  parser.add_argument('input_template')
+  return parser.parse_args(sys.argv[1:])
 
 
 def main():
-  if len(sys.argv) < 4:
-    show_usage()
-    error('Not enough arguments')
+  args = parseArgs()
 
-  out_file = sys.argv[1]
-  main_template_file = sys.argv[2]
+  out_file = args.output_file
+  js_files = set(args.js) - set(args.exclude_js)
 
-  template_files = []
-  js_files = []
-  for arg in sys.argv[3:]:
-    if arg == '--js' or arg == '--template':
-      arg_type = arg
-    elif arg_type == '--js':
-      js_files.append(arg)
-    elif arg_type == '--template':
-      template_files.append(arg)
-    else:
-      error('Unrecognized argument: %s' % arg)
+  # Create the output directory if it does not exist.
+  out_directory = os.path.dirname(out_file)
+  if not os.path.exists(out_directory):
+    os.makedirs(out_directory)
 
   # Generate the main HTML file from the templates.
   with open(out_file, 'w') as output:
-    gen = GenerateWebappHtml(template_files, js_files)
-    gen.processTemplate(output, main_template_file, 0)
+    gen = GenerateWebappHtml(args.templates, js_files, args.instrument_js)
+    gen.processTemplate(output, args.input_template, 0)
 
     # Verify that all the expected templates were found.
     if not gen.verifyTemplateList():
       error('Extra templates specified')
 
   # Verify that the generated HTML file is valid.
-  with open(out_file, 'r') as input:
+  with open(out_file, 'r') as input_html:
     parser = HtmlChecker()
-    parser.feed(input.read())
+    parser.feed(input_html.read())
 
 
 if __name__ == '__main__':
