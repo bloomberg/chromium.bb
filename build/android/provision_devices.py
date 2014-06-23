@@ -72,7 +72,7 @@ def PushAndLaunchAdbReboot(devices, target):
   LaunchHostHeartbeat()
 
 
-def _ConfigureLocalProperties(device):
+def _ConfigureLocalProperties(device, is_perf):
   """Set standard readonly testing device properties prior to reboot."""
   local_props = [
       'ro.monkey=1',
@@ -80,6 +80,9 @@ def _ConfigureLocalProperties(device):
       'ro.audio.silent=1',
       'ro.setupwizard.mode=DISABLED',
       ]
+  if not is_perf:
+    local_props.append('%s=all' % android_commands.JAVA_ASSERT_PROPERTY)
+    local_props.append('debug.checkjni=1')
   device.old_interface.SetProtectedFileContents(
       constants.DEVICE_LOCAL_PROPERTIES_PATH,
       '\n'.join(local_props))
@@ -121,6 +124,7 @@ def WipeDeviceData(device):
 
 
 def ProvisionDevices(options):
+  is_perf = 'perf' in os.environ.get('BUILDBOT_BUILDERNAME', '').lower()
   # TODO(jbudorick): Parallelize provisioning of all attached devices after
   # switching from AndroidCommands.
   if options.device is not None:
@@ -145,14 +149,14 @@ def ProvisionDevices(options):
   for device_serial in devices:
     device = device_utils.DeviceUtils(device_serial)
     device.old_interface.EnableAdbRoot()
-    _ConfigureLocalProperties(device)
+    _ConfigureLocalProperties(device, is_perf)
     device_settings_map = device_settings.DETERMINISTIC_DEVICE_SETTINGS
     if options.disable_location:
       device_settings_map.update(device_settings.DISABLE_LOCATION_SETTING)
     else:
       device_settings_map.update(device_settings.ENABLE_LOCATION_SETTING)
     device_settings.ConfigureContentSettingsDict(device, device_settings_map)
-    if 'perf' in os.environ.get('BUILDBOT_BUILDERNAME', '').lower():
+    if is_perf:
       # TODO(tonyg): We eventually want network on. However, currently radios
       # can cause perfbots to drain faster than they charge.
       device_settings.ConfigureContentSettingsDict(
