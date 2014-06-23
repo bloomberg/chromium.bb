@@ -20,35 +20,41 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
 
-namespace {
 const bool kAsyncCall = true;
 const bool kSyncCall = false;
-}  // namespace
 
 namespace chrome {
 
 // Class to catch events from the BitmapFetcher for testing.
 class BitmapFetcherTestDelegate : public BitmapFetcherDelegate {
  public:
-  explicit BitmapFetcherTestDelegate(bool async)
-      : called_(false), success_(false), async_(async) {}
+  explicit BitmapFetcherTestDelegate(bool async) : called_(false),
+                                                   success_(false),
+                                                   async_(async) {}
 
-  virtual ~BitmapFetcherTestDelegate() { EXPECT_TRUE(called_); }
+  virtual ~BitmapFetcherTestDelegate() {
+    EXPECT_TRUE(called_);
+  }
 
   // Method inherited from BitmapFetcherDelegate.
   virtual void OnFetchComplete(const GURL url,
                                const SkBitmap* bitmap) OVERRIDE {
     called_ = true;
     url_ = url;
-    if (NULL != bitmap) {
+    if (bitmap) {
       success_ = true;
       bitmap->deepCopyTo(&bitmap_);
     }
-    // For async calls, we need to quit the message loop so the test can
-    // continue.
-    if (async_) {
-      base::MessageLoop::current()->Quit();
-    }
+    // For async calls, we need to quit the run loop so the test can continue.
+    if (async_)
+      run_loop_.Quit();
+  }
+
+  // Waits until OnFetchComplete() is called. Should only be used for
+  // async tests.
+  void Wait() {
+    ASSERT_TRUE(async_);
+    run_loop_.Run();
   }
 
   GURL url() const { return url_; }
@@ -56,6 +62,7 @@ class BitmapFetcherTestDelegate : public BitmapFetcherDelegate {
   const SkBitmap& bitmap() const { return bitmap_; }
 
  private:
+  base::RunLoop run_loop_;
   bool called_;
   GURL url_;
   bool success_;
@@ -68,25 +75,21 @@ class BitmapFetcherTestDelegate : public BitmapFetcherDelegate {
 class BitmapFetcherBrowserTest : public InProcessBrowserTest {
  public:
   virtual void SetUp() OVERRIDE {
-    url_fetcher_factory_.reset(new net::FakeURLFetcherFactory(NULL));
+    url_fetcher_factory_.reset(
+        new net::FakeURLFetcherFactory(&url_fetcher_impl_factory_));
     InProcessBrowserTest::SetUp();
   }
 
  protected:
+  net::URLFetcherImplFactory url_fetcher_impl_factory_;
   scoped_ptr<net::FakeURLFetcherFactory> url_fetcher_factory_;
 };
-
-#if defined(OS_WIN)
-#define MAYBE_StartTest DISABLED_StartTest
-#else
-#define MAYBE_StartTest StartTest
-#endif
 
 // WARNING:  These tests work with --single_process, but not
 // --single-process.  The reason is that the sandbox does not get created
 // for us by the test process if --single-process is used.
 
-IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, MAYBE_StartTest) {
+IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, StartTest) {
   GURL url("http://example.com/this-should-work");
 
   // Put some realistic looking bitmap data into the url_fetcher.
@@ -121,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, MAYBE_StartTest) {
       net::LOAD_NORMAL);
 
   // Blocks until test delegate is notified via a callback.
-  content::RunMessageLoop();
+  delegate.Wait();
 
   ASSERT_TRUE(delegate.success());
 
@@ -174,19 +177,12 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnURLFetchFailureTest) {
       net::LOAD_NORMAL);
 
   // Blocks until test delegate is notified via a callback.
-  content::RunMessageLoop();
+  delegate.Wait();
 
   EXPECT_FALSE(delegate.success());
 }
 
-// Flaky on Win XP Debug: crbug.com/316488
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_HandleImageFailedTest DISABLED_HandleImageFailedTest
-#else
-#define MAYBE_HandleImageFailedTest HandleImageFailedTest
-#endif
-
-IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, MAYBE_HandleImageFailedTest) {
+IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, HandleImageFailedTest) {
   GURL url("http://example.com/this-should-be-a-decode-failure");
   BitmapFetcherTestDelegate delegate(kAsyncCall);
   BitmapFetcher fetcher(url, &delegate);
@@ -202,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, MAYBE_HandleImageFailedTest) {
       net::LOAD_NORMAL);
 
   // Blocks until test delegate is notified via a callback.
-  content::RunMessageLoop();
+  delegate.Wait();
 
   EXPECT_FALSE(delegate.success());
 }
