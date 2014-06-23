@@ -109,8 +109,9 @@ KURL MemoryCache::removeFragmentIdentifierIfNeeded(const KURL& originalURL)
 void MemoryCache::add(Resource* resource)
 {
     ASSERT(WTF::isMainThread());
+    ASSERT(resource->url().isValid());
     RELEASE_ASSERT(!m_resources.contains(resource->url()));
-    m_resources.set(resource->url(), MemoryCacheEntry::create(resource));
+    m_resources.set(resource->url().string(), MemoryCacheEntry::create(resource));
     update(resource, 0, resource->size(), true);
 
     WTF_LOG(ResourceLoading, "MemoryCache::add Added '%s', resource %p\n", resource->url().string().latin1().data(), resource);

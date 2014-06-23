@@ -123,7 +123,7 @@ TEST_F(MemoryCacheTest, VeryLargeResourceAccounting)
     const size_t resourceSize2 = sizeMax / 20;
     memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
     ResourcePtr<FakeResource> cachedResource =
-        new FakeResource(ResourceRequest(""), Resource::Raw);
+        new FakeResource(ResourceRequest("http://test/resource"), Resource::Raw);
     cachedResource->fakeEncodedSize(resourceSize1);
 
     ASSERT_EQ(0u, memoryCache()->deadSize());
@@ -154,7 +154,7 @@ TEST_F(MemoryCacheTest, DeadResourceEviction)
     memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
 
     Resource* cachedResource =
-        new Resource(ResourceRequest(""), Resource::Raw);
+        new Resource(ResourceRequest("http://test/resource"), Resource::Raw);
     const char data[5] = "abcd";
     cachedResource->appendData(data, 3);
     // The resource size has to be nonzero for this test to be meaningful, but
@@ -187,7 +187,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
         new Resource(ResourceRequest("hhtp://foo"), Resource::Raw);
     cachedDeadResource->appendData(data, 3);
     ResourcePtr<Resource> cachedLiveResource =
-        new FakeDecodedResource(ResourceRequest(""), Resource::Raw);
+        new FakeDecodedResource(ResourceRequest("http://test/resource"), Resource::Raw);
     MockImageResourceClient client;
     cachedLiveResource->addClient(&client);
     cachedLiveResource->appendData(data, 4);
@@ -262,7 +262,7 @@ TEST_F(MemoryCacheTest, ClientRemoval)
     resource1->addClient(&client1);
     resource1->appendData(data, 4);
     ResourcePtr<Resource> resource2 =
-        new FakeDecodedResource(ResourceRequest(""), Resource::Raw);
+        new FakeDecodedResource(ResourceRequest("http://test/resource"), Resource::Raw);
     MockImageResourceClient client2;
     resource2->addClient(&client2);
     resource2->appendData(data, 4);
@@ -311,7 +311,7 @@ TEST_F(MemoryCacheTest, DecodeCacheOrder)
     ResourcePtr<FakeDecodedResource> cachedImageLowPriority =
         new FakeDecodedResource(ResourceRequest("http://foo.com"), Resource::Raw);
     ResourcePtr<FakeDecodedResource> cachedImageHighPriority =
-        new FakeDecodedResource(ResourceRequest(""), Resource::Raw);
+        new FakeDecodedResource(ResourceRequest("http://test/resource"), Resource::Raw);
 
     MockImageResourceClient clientLowPriority;
     MockImageResourceClient clientHighPriority;
@@ -370,15 +370,15 @@ TEST_F(MemoryCacheTest, DecodeCacheOrder)
 
 TEST_F(MemoryCacheTest, MultipleReplace)
 {
-    ResourcePtr<FakeResource> resource1 = new FakeResource(ResourceRequest(""), Resource::Raw);
+    ResourcePtr<FakeResource> resource1 = new FakeResource(ResourceRequest("http://test/resource"), Resource::Raw);
     memoryCache()->add(resource1.get());
 
-    ResourcePtr<FakeResource> resource2 = new FakeResource(ResourceRequest(""), Resource::Raw);
+    ResourcePtr<FakeResource> resource2 = new FakeResource(ResourceRequest("http://test/resource"), Resource::Raw);
     memoryCache()->replace(resource2.get(), resource1.get());
     EXPECT_TRUE(memoryCache()->contains(resource2.get()));
     EXPECT_FALSE(memoryCache()->contains(resource1.get()));
 
-    ResourcePtr<FakeResource> resource3 = new FakeResource(ResourceRequest(""), Resource::Raw);
+    ResourcePtr<FakeResource> resource3 = new FakeResource(ResourceRequest("http://test/resource"), Resource::Raw);
     memoryCache()->replace(resource3.get(), resource2.get());
     EXPECT_TRUE(memoryCache()->contains(resource3.get()));
     EXPECT_FALSE(memoryCache()->contains(resource2.get()));
@@ -386,16 +386,16 @@ TEST_F(MemoryCacheTest, MultipleReplace)
 
 TEST_F(MemoryCacheTest, RemoveDuringRevalidation)
 {
-    ResourcePtr<FakeResource> resource1 = new FakeResource(ResourceRequest(""), Resource::Raw);
+    ResourcePtr<FakeResource> resource1 = new FakeResource(ResourceRequest("http://test/resource"), Resource::Raw);
     memoryCache()->add(resource1.get());
 
-    ResourcePtr<FakeResource> resource2 = new FakeResource(ResourceRequest(""), Resource::Raw);
+    ResourcePtr<FakeResource> resource2 = new FakeResource(ResourceRequest("http://test/resource"), Resource::Raw);
     memoryCache()->remove(resource1.get());
     memoryCache()->add(resource2.get());
     EXPECT_TRUE(memoryCache()->contains(resource2.get()));
     EXPECT_FALSE(memoryCache()->contains(resource1.get()));
 
-    ResourcePtr<FakeResource> resource3 = new FakeResource(ResourceRequest(""), Resource::Raw);
+    ResourcePtr<FakeResource> resource3 = new FakeResource(ResourceRequest("http://test/resource"), Resource::Raw);
     memoryCache()->remove(resource2.get());
     memoryCache()->add(resource3.get());
     EXPECT_TRUE(memoryCache()->contains(resource3.get()));
