@@ -45,6 +45,14 @@ scoped_ptr<RequestValue> RequestValue::CreateForReadFileSuccess(
   return result.Pass();
 }
 
+scoped_ptr<RequestValue> RequestValue::CreateForOperationSuccess(
+    scoped_ptr<extensions::api::file_system_provider_internal::
+                   OperationRequestedSuccess::Params> params) {
+  scoped_ptr<RequestValue> result(new RequestValue);
+  result->operation_success_params_ = params.Pass();
+  return result.Pass();
+}
+
 scoped_ptr<RequestValue> RequestValue::CreateForOperationError(
     scoped_ptr<extensions::api::file_system_provider_internal::
                    OperationRequestedError::Params> params) {

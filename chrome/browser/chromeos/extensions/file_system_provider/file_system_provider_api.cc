@@ -122,28 +122,6 @@ bool FileSystemProviderInternalReadDirectoryRequestedSuccessFunction::
 }
 
 bool
-FileSystemProviderInternalOpenFileRequestedSuccessFunction::RunWhenValid() {
-  using api::file_system_provider_internal::OpenFileRequestedSuccess::Params;
-  scoped_ptr<Params> params(Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  FulfillRequest(scoped_ptr<RequestValue>(new RequestValue()),
-                 false /* has_more */);
-  return true;
-}
-
-bool
-FileSystemProviderInternalCloseFileRequestedSuccessFunction::RunWhenValid() {
-  using api::file_system_provider_internal::CloseFileRequestedSuccess::Params;
-  scoped_ptr<Params> params(Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  FulfillRequest(scoped_ptr<RequestValue>(new RequestValue()),
-                 false /* has_more */);
-  return true;
-}
-
-bool
 FileSystemProviderInternalReadFileRequestedSuccessFunction::RunWhenValid() {
   using api::file_system_provider_internal::ReadFileRequestedSuccess::Params;
   scoped_ptr<Params> params(Params::Create(*args_));
@@ -151,7 +129,19 @@ FileSystemProviderInternalReadFileRequestedSuccessFunction::RunWhenValid() {
 
   const bool has_more = params->has_more;
   FulfillRequest(RequestValue::CreateForReadFileSuccess(params.Pass()),
-      has_more);
+                 has_more);
+  return true;
+}
+
+bool
+FileSystemProviderInternalOperationRequestedSuccessFunction::RunWhenValid() {
+  using api::file_system_provider_internal::OperationRequestedSuccess::Params;
+  scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  FulfillRequest(scoped_ptr<RequestValue>(
+                     RequestValue::CreateForOperationSuccess(params.Pass())),
+                 false /* has_more */);
   return true;
 }
 

@@ -40,6 +40,10 @@ class RequestValue {
       scoped_ptr<extensions::api::file_system_provider_internal::
                      ReadFileRequestedSuccess::Params> params);
 
+  static scoped_ptr<RequestValue> CreateForOperationSuccess(
+      scoped_ptr<extensions::api::file_system_provider_internal::
+                     OperationRequestedSuccess::Params> params);
+
   static scoped_ptr<RequestValue> CreateForOperationError(
       scoped_ptr<extensions::api::file_system_provider_internal::
                      OperationRequestedError::Params> params);
@@ -71,6 +75,12 @@ class RequestValue {
   }
 
   const extensions::api::file_system_provider_internal::
+      OperationRequestedSuccess::Params*
+      operation_success_params() const {
+    return operation_success_params_.get();
+  }
+
+  const extensions::api::file_system_provider_internal::
       OperationRequestedError::Params*
       operation_error_params() const {
     return operation_error_params_.get();
@@ -89,6 +99,8 @@ class RequestValue {
       read_directory_success_params_;
   scoped_ptr<extensions::api::file_system_provider_internal::
                  ReadFileRequestedSuccess::Params> read_file_success_params_;
+  scoped_ptr<extensions::api::file_system_provider_internal::
+                 OperationRequestedSuccess::Params> operation_success_params_;
   scoped_ptr<extensions::api::file_system_provider_internal::
                  OperationRequestedError::Params> operation_error_params_;
   scoped_ptr<std::string> testing_params_;

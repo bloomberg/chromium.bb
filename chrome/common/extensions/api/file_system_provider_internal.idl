@@ -28,18 +28,6 @@ namespace fileSystemProviderInternal {
         fileSystemProvider.EntryMetadata[] entries,
         boolean hasMore);
 
-    // Internal. Success callback of the <code>onOpenFileRequested</code> event.
-    // Must be called, when opening succeeds.
-    static void openFileRequestedSuccess(
-        DOMString fileSystemId,
-        long requestId);
-
-    // Internal. Success callback of the <code>onCloseFileRequested</code>
-    // event. Must be called, when closing succeeds.
-    static void closeFileRequestedSuccess(
-        DOMString fileSystemId,
-        long requestId);
-
     // Internal. Success callback of the <code>onReadFileRequested</code>
     // event. Can be called multiple times per request.
     static void readFileRequestedSuccess(
@@ -47,6 +35,12 @@ namespace fileSystemProviderInternal {
         long requestId,
         ArrayBuffer data,
         boolean hasMore);
+
+    // Internal. Success callback of all of the operation requests, which do not
+    // return any value. Must be called in case of a success.
+    static void operationRequestedSuccess(
+        DOMString fileSystemId,
+        long requestId);
 
     // Internal. Error callback of all of the operation requests. Must be called
     // if an operation fails.

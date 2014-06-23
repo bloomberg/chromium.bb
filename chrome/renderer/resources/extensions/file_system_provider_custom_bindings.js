@@ -160,7 +160,7 @@ eventBindings.registerArgumentMassager(
     function(args, dispatch) {
       var options = args[0];
       var onSuccessCallback = function() {
-        fileSystemProviderInternal.openFileRequestedSuccess(
+        fileSystemProviderInternal.operationRequestedSuccess(
             options.fileSystemId, options.requestId);
       };
       var onErrorCallback = function(error) {
@@ -175,7 +175,7 @@ eventBindings.registerArgumentMassager(
     function(args, dispatch) {
       var options = args[0];
       var onSuccessCallback = function() {
-        fileSystemProviderInternal.closeFileRequestedSuccess(
+        fileSystemProviderInternal.operationRequestedSuccess(
             options.fileSystemId, options.requestId);
       };
       var onErrorCallback = function(error) {
