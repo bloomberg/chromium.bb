@@ -475,34 +475,6 @@ int Position::renderedOffset() const
     return result;
 }
 
-// return first preceding DOM position rendered at a different location, or "this"
-Position Position::previousCharacterPosition(EAffinity affinity) const
-{
-    if (isNull())
-        return Position();
-
-    Node* fromRootEditableElement = deprecatedNode()->rootEditableElement();
-
-    bool atStartOfLine = isStartOfLine(VisiblePosition(*this, affinity));
-    bool rendered = isCandidate();
-
-    Position currentPos = *this;
-    while (!currentPos.atStartOfTree()) {
-        currentPos = currentPos.previous();
-
-        if (currentPos.deprecatedNode()->rootEditableElement() != fromRootEditableElement)
-            return *this;
-
-        if (atStartOfLine || !rendered) {
-            if (currentPos.isCandidate())
-                return currentPos;
-        } else if (rendersInDifferentPosition(currentPos))
-            return currentPos;
-    }
-
-    return *this;
-}
-
 // Whether or not [node, 0] and [node, lastOffsetForEditing(node)] are their own VisiblePositions.
 // If true, adjacent candidates are visually distinct.
 // FIXME: Disregard nodes with renderers that have no height, as we do in isCandidate.
@@ -1024,45 +996,6 @@ bool Position::rendersInDifferentPosition(const Position &pos) const
     }
 
     return true;
-}
-
-// This assumes that it starts in editable content.
-Position Position::leadingWhitespacePosition(EAffinity affinity, bool considerNonCollapsibleWhitespace) const
-{
-    ASSERT(isEditablePosition(*this, ContentIsEditable, DoNotUpdateStyle));
-    if (isNull())
-        return Position();
-
-    if (isHTMLBRElement(*upstream().deprecatedNode()))
-        return Position();
-
-    Position prev = previousCharacterPosition(affinity);
-    if (prev != *this && prev.deprecatedNode()->inSameContainingBlockFlowElement(deprecatedNode()) && prev.deprecatedNode()->isTextNode()) {
-        String string = toText(prev.deprecatedNode())->data();
-        UChar c = string[prev.deprecatedEditingOffset()];
-        if (considerNonCollapsibleWhitespace ? (isSpaceOrNewline(c) || c == noBreakSpace) : isCollapsibleWhitespace(c))
-            if (isEditablePosition(prev))
-                return prev;
-    }
-
-    return Position();
-}
-
-// This assumes that it starts in editable content.
-Position Position::trailingWhitespacePosition(EAffinity, bool considerNonCollapsibleWhitespace) const
-{
-    ASSERT(isEditablePosition(*this, ContentIsEditable, DoNotUpdateStyle));
-    if (isNull())
-        return Position();
-
-    VisiblePosition v(*this);
-    UChar c = v.characterAfter();
-    // The space must not be in another paragraph and it must be editable.
-    if (!isEndOfParagraph(v) && v.next(CannotCrossEditingBoundary).isNotNull())
-        if (considerNonCollapsibleWhitespace ? (isSpaceOrNewline(c) || c == noBreakSpace) : isCollapsibleWhitespace(c))
-            return *this;
-
-    return Position();
 }
 
 void Position::getInlineBoxAndOffset(EAffinity affinity, InlineBox*& inlineBox, int& caretOffset) const

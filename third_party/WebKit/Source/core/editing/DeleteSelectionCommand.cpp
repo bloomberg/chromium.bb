@@ -211,19 +211,19 @@ void DeleteSelectionCommand::initializePositionData()
     }
 
     // Handle leading and trailing whitespace, as well as smart delete adjustments to the selection
-    m_leadingWhitespace = m_upstreamStart.leadingWhitespacePosition(m_selectionToDelete.affinity());
-    m_trailingWhitespace = m_downstreamEnd.trailingWhitespacePosition(VP_DEFAULT_AFFINITY);
+    m_leadingWhitespace = leadingWhitespacePosition(m_upstreamStart, m_selectionToDelete.affinity());
+    m_trailingWhitespace = trailingWhitespacePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY);
 
     if (m_smartDelete) {
 
         // skip smart delete if the selection to delete already starts or ends with whitespace
         Position pos = VisiblePosition(m_upstreamStart, m_selectionToDelete.affinity()).deepEquivalent();
-        bool skipSmartDelete = pos.trailingWhitespacePosition(VP_DEFAULT_AFFINITY, true).isNotNull();
+        bool skipSmartDelete = trailingWhitespacePosition(pos, VP_DEFAULT_AFFINITY, ConsiderNonCollapsibleWhitespace).isNotNull();
         if (!skipSmartDelete)
-            skipSmartDelete = m_downstreamEnd.leadingWhitespacePosition(VP_DEFAULT_AFFINITY, true).isNotNull();
+            skipSmartDelete = leadingWhitespacePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY, ConsiderNonCollapsibleWhitespace).isNotNull();
 
         // extend selection upstream if there is whitespace there
-        bool hasLeadingWhitespaceBeforeAdjustment = m_upstreamStart.leadingWhitespacePosition(m_selectionToDelete.affinity(), true).isNotNull();
+        bool hasLeadingWhitespaceBeforeAdjustment = leadingWhitespacePosition(m_upstreamStart, m_selectionToDelete.affinity(), ConsiderNonCollapsibleWhitespace).isNotNull();
         if (!skipSmartDelete && hasLeadingWhitespaceBeforeAdjustment) {
             VisiblePosition visiblePos = VisiblePosition(m_upstreamStart, VP_DEFAULT_AFFINITY).previous();
             pos = visiblePos.deepEquivalent();
@@ -231,20 +231,20 @@ void DeleteSelectionCommand::initializePositionData()
             // positions based on this change.
             m_upstreamStart = pos.upstream();
             m_downstreamStart = pos.downstream();
-            m_leadingWhitespace = m_upstreamStart.leadingWhitespacePosition(visiblePos.affinity());
+            m_leadingWhitespace = leadingWhitespacePosition(m_upstreamStart, visiblePos.affinity());
 
             setStartingSelectionOnSmartDelete(m_upstreamStart, m_upstreamEnd);
         }
 
         // trailing whitespace is only considered for smart delete if there is no leading
         // whitespace, as in the case where you double-click the first word of a paragraph.
-        if (!skipSmartDelete && !hasLeadingWhitespaceBeforeAdjustment && m_downstreamEnd.trailingWhitespacePosition(VP_DEFAULT_AFFINITY, true).isNotNull()) {
+        if (!skipSmartDelete && !hasLeadingWhitespaceBeforeAdjustment && trailingWhitespacePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY, ConsiderNonCollapsibleWhitespace).isNotNull()) {
             // Expand out one character downstream for smart delete and recalculate
             // positions based on this change.
             pos = VisiblePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY).next().deepEquivalent();
             m_upstreamEnd = pos.upstream();
             m_downstreamEnd = pos.downstream();
-            m_trailingWhitespace = m_downstreamEnd.trailingWhitespacePosition(VP_DEFAULT_AFFINITY);
+            m_trailingWhitespace = trailingWhitespacePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY);
 
             setStartingSelectionOnSmartDelete(m_downstreamStart, m_downstreamEnd);
         }

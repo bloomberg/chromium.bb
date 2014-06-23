@@ -170,11 +170,6 @@ public:
     bool atStartOfTree() const;
     bool atEndOfTree() const;
 
-    // FIXME: Make these non-member functions and put them somewhere in the editing directory.
-    // These aren't really basic "position" operations. More high level editing helper functions.
-    Position leadingWhitespacePosition(EAffinity, bool considerNonCollapsibleWhitespace = false) const;
-    Position trailingWhitespacePosition(EAffinity, bool considerNonCollapsibleWhitespace = false) const;
-
     // These return useful visually equivalent positions.
     Position upstream(EditingBoundaryCrossingRule = CannotCrossEditingBoundary) const;
     Position downstream(EditingBoundaryCrossingRule = CannotCrossEditingBoundary) const;
@@ -210,8 +205,6 @@ private:
     int offsetForPositionAfterAnchor() const;
 
     int renderedOffset() const;
-
-    Position previousCharacterPosition(EAffinity) const;
 
     static AnchorType anchorTypeForLegacyEditingPosition(Node* anchorNode, int offset);
 

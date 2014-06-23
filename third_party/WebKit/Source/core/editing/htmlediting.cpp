@@ -883,6 +883,73 @@ bool isNodeRendered(const Node *node)
     return renderer->style()->visibility() == VISIBLE;
 }
 
+// return first preceding DOM position rendered at a different location, or "this"
+static Position previousCharacterPosition(const Position& position, EAffinity affinity)
+{
+    if (position.isNull())
+        return Position();
+
+    Node* fromRootEditableElement = position.anchorNode()->rootEditableElement();
+
+    bool atStartOfLine = isStartOfLine(VisiblePosition(position, affinity));
+    bool rendered = position.isCandidate();
+
+    Position currentPos = position;
+    while (!currentPos.atStartOfTree()) {
+        currentPos = currentPos.previous();
+
+        if (currentPos.anchorNode()->rootEditableElement() != fromRootEditableElement)
+            return position;
+
+        if (atStartOfLine || !rendered) {
+            if (currentPos.isCandidate())
+                return currentPos;
+        } else if (position.rendersInDifferentPosition(currentPos)) {
+            return currentPos;
+        }
+    }
+
+    return position;
+}
+
+// This assumes that it starts in editable content.
+Position leadingWhitespacePosition(const Position& position, EAffinity affinity, WhitespacePositionOption option)
+{
+    ASSERT(isEditablePosition(position, ContentIsEditable, DoNotUpdateStyle));
+    if (position.isNull())
+        return Position();
+
+    if (isHTMLBRElement(*position.upstream().anchorNode()))
+        return Position();
+
+    Position prev = previousCharacterPosition(position, affinity);
+    if (prev != position && prev.anchorNode()->inSameContainingBlockFlowElement(position.anchorNode()) && prev.anchorNode()->isTextNode()) {
+        String string = toText(prev.anchorNode())->data();
+        UChar previousCharacter = string[prev.deprecatedEditingOffset()];
+        bool isSpace = option == ConsiderNonCollapsibleWhitespace ? (isSpaceOrNewline(previousCharacter) || previousCharacter == noBreakSpace) : isCollapsibleWhitespace(previousCharacter);
+        if (isSpace && isEditablePosition(prev))
+            return prev;
+    }
+
+    return Position();
+}
+
+// This assumes that it starts in editable content.
+Position trailingWhitespacePosition(const Position& position, EAffinity, WhitespacePositionOption option)
+{
+    ASSERT(isEditablePosition(position, ContentIsEditable, DoNotUpdateStyle));
+    if (position.isNull())
+        return Position();
+
+    VisiblePosition visiblePosition(position);
+    UChar characterAfterVisiblePosition = visiblePosition.characterAfter();
+    bool isSpace = option == ConsiderNonCollapsibleWhitespace ? (isSpaceOrNewline(characterAfterVisiblePosition) || characterAfterVisiblePosition == noBreakSpace) : isCollapsibleWhitespace(characterAfterVisiblePosition);
+    // The space must not be in another paragraph and it must be editable.
+    if (isSpace && !isEndOfParagraph(visiblePosition) && visiblePosition.next(CannotCrossEditingBoundary).isNotNull())
+        return position;
+    return Position();
+}
+
 unsigned numEnclosingMailBlockquotes(const Position& p)
 {
     unsigned num = 0;
