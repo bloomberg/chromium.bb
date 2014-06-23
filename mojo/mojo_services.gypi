@@ -359,7 +359,7 @@
           'dependencies': [
             'mojo_run_all_unittests',
           ],
-        }]
+        }],
       ],
     },
     {
@@ -514,6 +514,13 @@
             'services/public/cpp/view_manager/lib/view_manager_test_suite.cc',
             'services/public/cpp/view_manager/lib/view_manager_test_suite.h',
             'services/public/cpp/view_manager/lib/view_manager_unittests.cc',
+          ],
+          'conditions': [
+            ['OS=="linux"', {
+              'dependencies': [
+                '../third_party/mesa/mesa.gyp:osmesa',
+              ],
+            }],
           ],
         },
         {
