@@ -6,6 +6,18 @@ import "../network/url_loader.mojom"
 
 module mojo.navigation {
 
+// Expresses a preference for where a navigation will be performed.
+enum Target {
+  // No preference
+  DEFAULT,
+
+  // In the same ViewManager node that the navigation was initiated
+  SOURCE_NODE,
+
+  // In a new ViewManager node
+  NEW_NODE
+};
+
 struct NavigationDetails {
   string url;
   // TODO(aa): method, data, etc.
@@ -20,7 +32,8 @@ struct ResponseDetails {
 
 // Embedders that support navigation of implement this interface.
 interface NavigatorHost {
-  RequestNavigate(uint32 source_node_id, NavigationDetails details);
+  RequestNavigate(uint32 source_node_id, Target target,
+                  NavigationDetails details);
 };
 
 // Applications implement this interface to support navigation of their views

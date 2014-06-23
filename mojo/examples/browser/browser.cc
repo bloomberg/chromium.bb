@@ -105,6 +105,7 @@ class Browser : public Application,
           navigation::NavigationDetails::New());
       nav_details->url = url.spec();
       navigator_host_->RequestNavigate(view_manager_->GetRoots().front()->id(),
+                                       navigation::NEW_NODE,
                                        nav_details.Pass());
     }
     return false;

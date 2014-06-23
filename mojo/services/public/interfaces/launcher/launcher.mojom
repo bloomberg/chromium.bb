@@ -6,7 +6,6 @@ import "../navigation/navigation.mojom"
 
 module mojo.launcher {
 
-[Client=LauncherClient]
 interface Launcher {
   // Determines the correct handler application that can render a given URL.
   //
@@ -14,23 +13,18 @@ interface Launcher {
   // because we already have an application locally that has said it can handle
   // the URL. Other times, we will actually fetch |url| to examine its
   // content-type and/or sniff it to determine the correct handler.
-  Launch(string url);
-};
-
-[Client=Launcher]
-interface LauncherClient {
-  // Called when a handler has been resolved in response to Launch(). Receiving
-  // application should connect to the application at |handler_url| and navigate
-  // it to |view_url|.
   //
-  // Note: |view_url| might not be the same as the URL that was initially
-  // requested, e.g., in the case of redirects. Applications should always
-  // navigate to view_url, not the initial URL.
+  // When the caller receives the result, it should connect to the application
+  // at |handler_url| and navigate it to |view_url|.
+  //
+  // Note: |view_url| might not be the same as |url|, e.g., in the case of
+  // redirects. Applications should navigate to view_url, not |url| or
+  // response->url.
   //
   // Note: |response| can be NULL in the case where a request was not needed to
   // determine the correct handler.
-  OnLaunch(string handler_url, string view_url,
-           mojo.navigation.ResponseDetails response);
+  Launch(string url) => (string handler_url, string view_url,
+                         mojo.navigation.ResponseDetails response);
 };
 
 }

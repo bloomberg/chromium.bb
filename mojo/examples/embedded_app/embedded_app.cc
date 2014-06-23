@@ -77,6 +77,7 @@ class EmbeddedApp : public Application,
     // embedder should be able to specify the SP embeddee receives, then
     // communication can be anonymous.
     ConnectTo<IWindowManager>("mojo:mojo_window_manager", &window_manager_);
+    ConnectTo("mojo:mojo_window_manager", &navigator_host_);
     AddService<Navigator>(this);
   }
 
@@ -93,8 +94,18 @@ class EmbeddedApp : public Application,
 
   // Overridden from ViewObserver:
   virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
-    if (event->action == ui::ET_MOUSE_RELEASED)
-      window_manager_->CloseWindow(view->node()->id());
+    if (event->action == ui::ET_MOUSE_RELEASED) {
+      if (event->flags & ui::EF_LEFT_MOUSE_BUTTON) {
+        window_manager_->CloseWindow(view->node()->id());
+      } else if (event->flags & ui::EF_RIGHT_MOUSE_BUTTON) {
+        navigation::NavigationDetailsPtr nav_details(
+            navigation::NavigationDetails::New());
+        nav_details->url = "http://ranchtastic.com/s6.png";
+        navigator_host_->RequestNavigate(view->node()->id(),
+                                         navigation::SOURCE_NODE,
+                                         nav_details.Pass());
+      }
+    }
   }
 
   // Overridden from NodeObserver:
@@ -133,6 +144,7 @@ class EmbeddedApp : public Application,
 
   view_manager::ViewManager* view_manager_;
   IWindowManagerPtr window_manager_;
+  navigation::NavigatorHostPtr navigator_host_;
   std::map<Node*, View*> views_to_reap_;
 
   typedef std::map<view_manager::Id, Node*> RootMap;

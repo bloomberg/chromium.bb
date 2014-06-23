@@ -15,6 +15,13 @@
 namespace mojo {
 namespace launcher {
 
+namespace {
+
+typedef mojo::Callback<void(String handler_url, String view_url,
+    navigation::ResponseDetailsPtr response)> LaunchCallback;
+
+}
+
 class LauncherApp;
 
 class LauncherConnection : public InterfaceImpl<Launcher> {
@@ -24,7 +31,8 @@ class LauncherConnection : public InterfaceImpl<Launcher> {
 
  private:
   // Overridden from Launcher:
-  virtual void Launch(const String& url) OVERRIDE;
+  virtual void Launch(const String& url,
+                      const LaunchCallback& callback) OVERRIDE;
 
   LauncherApp* app_;
 
@@ -34,7 +42,7 @@ class LauncherConnection : public InterfaceImpl<Launcher> {
 class LaunchInstance : public URLLoaderClient {
  public:
   LaunchInstance(LauncherApp* app,
-                 LauncherClient* client,
+                 const LaunchCallback& callback,
                  const String& url);
   virtual ~LaunchInstance() {}
 
@@ -76,7 +84,7 @@ class LaunchInstance : public URLLoaderClient {
 
   LauncherApp* app_;
   bool destroy_scheduled_;
-  LauncherClient* client_;
+  const LaunchCallback callback_;
   URLLoaderPtr url_loader_;
   ScopedDataPipeConsumerHandle response_body_stream_;
 
@@ -118,27 +126,27 @@ class LauncherApp : public Application {
   DISALLOW_COPY_AND_ASSIGN(LauncherApp);
 };
 
-void LauncherConnection::Launch(const String& url_string) {
+void LauncherConnection::Launch(const String& url_string,
+                                const LaunchCallback& callback) {
   GURL url(url_string.To<std::string>());
 
   // For Mojo URLs, the handler can always be found at the origin.
   // TODO(aa): Return error for invalid URL?
   if (url.is_valid() && url.SchemeIs("mojo")) {
-    client()->OnLaunch(url_string,
-                       url.GetOrigin().spec(),
-                       navigation::ResponseDetailsPtr());
+    callback.Run(url.GetOrigin().spec(), url_string,
+                 navigation::ResponseDetailsPtr());
     return;
   }
 
-  new LaunchInstance(app_, client(), url_string);
+  new LaunchInstance(app_, callback, url_string);
 }
 
 LaunchInstance::LaunchInstance(LauncherApp* app,
-                               LauncherClient* client,
+                               const LaunchCallback& callback,
                                const String& url)
     : app_(app),
       destroy_scheduled_(false),
-      client_(client) {
+      callback_(callback) {
   url_loader_ = app_->CreateURLLoader();
   url_loader_.set_client(this);
 
@@ -162,7 +170,7 @@ void LaunchInstance::OnReceivedResponse(URLResponsePtr response) {
     nav_response->response = response.Pass();
     nav_response->response_body_stream = response_body_stream_.Pass();
     String response_url = nav_response->response->url;
-    client_->OnLaunch(response_url, handler_url, nav_response.Pass());
+    callback_.Run(handler_url, response_url, nav_response.Pass());
   }
 }
 

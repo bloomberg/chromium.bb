@@ -67,6 +67,7 @@ class NavigatorHost : public InterfaceImpl<navigation::NavigatorHost> {
  private:
   virtual void RequestNavigate(
       uint32 source_node_id,
+      navigation::Target target,
       navigation::NavigationDetailsPtr nav_details) OVERRIDE;
   WindowManager* window_manager_;
   DISALLOW_COPY_AND_ASSIGN(NavigatorHost);
@@ -74,8 +75,7 @@ class NavigatorHost : public InterfaceImpl<navigation::NavigatorHost> {
 
 class WindowManager : public Application,
                       public ViewObserver,
-                      public ViewManagerDelegate,
-                      public InterfaceImpl<launcher::LauncherClient> {
+                      public ViewManagerDelegate {
  public:
   WindowManager() : launcher_ui_(NULL), view_manager_(NULL) {}
   virtual ~WindowManager() {}
@@ -92,12 +92,15 @@ class WindowManager : public Application,
 
   void RequestNavigate(
     uint32 source_node_id,
+    navigation::Target target,
     navigation::NavigationDetailsPtr nav_details) {
-    if (!launcher_.get()) {
+    if (!launcher_.get())
       ConnectTo("mojo:mojo_launcher", &launcher_);
-      launcher_.set_client(this);
-    }
-    launcher_->Launch(nav_details->url);
+    launcher_->Launch(nav_details->url,
+                      base::Bind(&WindowManager::OnLaunch,
+                                 base::Unretained(this),
+                                 source_node_id,
+                                 target));
   }
 
  private:
@@ -148,14 +151,22 @@ class WindowManager : public Application,
     CreateLauncherUI();
   }
 
-  // Overridden from LauncherClient:
   virtual void OnLaunch(
-      const mojo::String& requested_url, const mojo::String& handler_url,
-      navigation::ResponseDetailsPtr response) OVERRIDE {
+      uint32 source_node_id,
+      navigation::Target target,
+      const mojo::String& handler_url,
+      const mojo::String& view_url,
+      navigation::ResponseDetailsPtr response) {
     navigation::NavigationDetailsPtr nav_details(
         navigation::NavigationDetails::New());
-    nav_details->url = requested_url;
-    CreateWindow(handler_url, nav_details.Pass(), response.Pass());
+    nav_details->url = view_url;
+    if (target == navigation::SOURCE_NODE) {
+      Node* node = view_manager_->GetNodeById(source_node_id);
+      DCHECK(node);
+      Embed(node, handler_url, nav_details.Pass(), response.Pass());
+    } else {
+      CreateWindow(handler_url, nav_details.Pass(), response.Pass());
+    }
   }
 
   void CreateLauncherUI() {
@@ -186,15 +197,19 @@ class WindowManager : public Application,
     Node* embedded = Node::Create(view_manager_);
     node->AddChild(embedded);
     embedded->SetBounds(bounds);
-    embedded->Embed(url);
+    Embed(embedded, url, nav_details.Pass(), response.Pass());
+    return embedded;
+  }
 
+  void Embed(Node* node, const std::string& app_url,
+             navigation::NavigationDetailsPtr nav_details,
+             navigation::ResponseDetailsPtr response) {
+    node->Embed(app_url);
     if (nav_details.get()) {
       navigation::NavigatorPtr navigator;
-      ConnectTo(url, &navigator);
-      navigator->Navigate(embedded->id(), nav_details.Pass(), response.Pass());
+      ConnectTo(app_url, &navigator);
+      navigator->Navigate(node->id(), nav_details.Pass(), response.Pass());
     }
-
-    return embedded;
   }
 
   launcher::LauncherPtr launcher_;
@@ -212,8 +227,9 @@ void WindowManagerConnection::CloseWindow(Id node_id) {
 
 void NavigatorHost::RequestNavigate(
     uint32 source_node_id,
+    navigation::Target target,
     navigation::NavigationDetailsPtr nav_details) {
-  window_manager_->RequestNavigate(source_node_id, nav_details.Pass());
+  window_manager_->RequestNavigate(source_node_id, target, nav_details.Pass());
 }
 
 }  // namespace examples
