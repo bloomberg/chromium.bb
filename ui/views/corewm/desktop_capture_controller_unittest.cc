@@ -34,11 +34,10 @@ class DesktopCaptureControllerTest : public ViewsTestBase {
 
   virtual void SetUp() OVERRIDE {
     gfx::GLSurface::InitializeOneOffForTests();
-    base::FilePath pak_dir;
-    PathService::Get(base::DIR_MODULE, &pak_dir);
-    base::FilePath pak_file;
-    pak_file = pak_dir.Append(FILE_PATH_LITERAL("ui_test.pak"));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
+    ui::RegisterPathProvider();
+    base::FilePath ui_test_pak_path;
+    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 
     ViewsTestBase::SetUp();
   }
