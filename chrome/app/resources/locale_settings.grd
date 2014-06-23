@@ -354,7 +354,7 @@
       <!-- The URL for Google Chrome privacy policy. -->
       <if expr="is_ios">
         <message name="IDS_PRIVACY_POLICY_URL" translateable="false">
-          http://www.google.com/chrome/intl/[GRITLANGCODE]/privacy.html
+          http://www.google.com/intl/[GRITLANGCODE]/chrome/browser/privacy/
         </message>
       </if>
 
