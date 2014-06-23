@@ -37,7 +37,8 @@ class TestRunner(instr_test_runner.TestRunner):
         coverage_dir=None,
         test_apk=None,
         test_apk_path=None,
-        test_apk_jar_path=None)
+        test_apk_jar_path=None,
+        test_support_apk_path=None)
     super(TestRunner, self).__init__(instrumentation_options, device,
                                      shard_index, test_pkg)
 
