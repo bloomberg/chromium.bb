@@ -16,7 +16,7 @@ class MouseEventHitRegion {
 public:
     static String region(MouseEvent& event, bool& isNull)
     {
-        if (!isHTMLCanvasElement(event.target()->toNode())) {
+        if (!event.target() || !isHTMLCanvasElement(event.target()->toNode())) {
             isNull = true;
             return String();
         }
