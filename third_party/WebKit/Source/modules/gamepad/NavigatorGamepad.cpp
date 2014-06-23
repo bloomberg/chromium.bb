@@ -228,4 +228,13 @@ void NavigatorGamepad::didRemoveAllEventListeners(LocalDOMWindow*)
     m_hasEventListener = false;
 }
 
+void NavigatorGamepad::pageVisibilityChanged()
+{
+    // Inform the embedder whether it needs to provide gamepad data for us.
+    if (page()->visibilityState() == PageVisibilityStateVisible && (m_hasEventListener || m_gamepads || m_webkitGamepads))
+        startUpdating();
+    else
+        stopUpdating();
+}
+
 } // namespace WebCore
