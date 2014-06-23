@@ -650,7 +650,7 @@ FileOperationManager.CopyTask.prototype.run = function(
       return;
 
     // Accumulates newly processed bytes.
-    var size = opt_size || processedEntry.size;
+    var size = opt_size !== undefined ? opt_size : processedEntry.size;
     this.processedBytes += size - processedEntry.processedBytes;
     processedEntry.processedBytes = size;
 
