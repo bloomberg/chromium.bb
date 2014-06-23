@@ -81,8 +81,7 @@ static void {{cpp_class}}ConstructorGetter(v8::Local<v8::String>, const v8::Prop
 {##############################################################################}
 {% block replaceable_attribute_setter_and_callback %}
 {% if has_replaceable_attributes or has_constructor_attributes %}
-{# FIXME: rename to ForceSetAttributeOnThis, since also used for Constructors #}
-static void {{cpp_class}}ReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void {{cpp_class}}ForceSetAttributeOnThis(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     {% if is_check_security %}
     {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
@@ -98,10 +97,9 @@ static void {{cpp_class}}ReplaceableAttributeSetter(v8::Local<v8::String> name, 
         v8::Handle<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
 }
 
-{# FIXME: rename to ForceSetAttributeOnThisCallback, since also used for Constructors #}
-static void {{cpp_class}}ReplaceableAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void {{cpp_class}}ForceSetAttributeOnThisCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    {{cpp_class}}V8Internal::{{cpp_class}}ReplaceableAttributeSetter(name, v8Value, info);
+    {{cpp_class}}V8Internal::{{cpp_class}}ForceSetAttributeOnThis(name, v8Value, info);
 }
 
 {% endif %}

@@ -381,8 +381,7 @@ def setter_callback_name(interface, attribute):
     if (('Replaceable' in extended_attributes and
          'PutForwards' not in extended_attributes) or
         is_constructor_attribute(attribute)):
-        # FIXME: rename to ForceSetAttributeOnThisCallback, since also used for Constructors
-        return '{0}V8Internal::{0}ReplaceableAttributeSetterCallback'.format(cpp_class_name)
+        return '{0}V8Internal::{0}ForceSetAttributeOnThisCallback'.format(cpp_class_name)
     if attribute.is_read_only and 'PutForwards' not in extended_attributes:
         return '0'
     return '%sV8Internal::%sAttributeSetterCallback' % (cpp_class_name, attribute.name)
