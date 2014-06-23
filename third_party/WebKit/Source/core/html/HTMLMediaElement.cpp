@@ -1175,7 +1175,7 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
     // element. (In the other cases, such as explicit seeks, relevant events get
     // fired as part of the overall process of changing the current playback
     // position.)
-    if (!m_seeking && m_lastSeekTime <= lastTime)
+    if (!m_seeking && m_lastSeekTime < lastTime)
         scheduleTimeupdateEvent(true);
 
     // Explicitly cache vector sizes, as their content is constant from here.
