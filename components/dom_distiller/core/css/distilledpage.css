@@ -1,19 +1,237 @@
 /* Copyright 2014 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
-@charset "utf-8";
-/* Document */
-body{font-family:'Open Sans',sans-serif;font-size:18px;line-height:1.4;}
-/* Don't let images or video bleed out of viewport. */
-img,video{max-width:100%;}
-/* Margin */
-.margin-x-narrow{width:95%;}
-.margin-narrow{width:85%;}
-.margin-medium{width:75%;}
-.margin-wide{width:55%;}
-.margin-x-wide{width:35%;}
-/* Override html styling attributes */
-table,tr,td{background-color:transparent!important;}
 
-.hidden{display:none}
-.visible{display:block}
+/* Set the global 'box-sizing' state to 'border-box'.
+ * *::after and *::before used to select psuedo-elements not selectable by *. */
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+/* Remove all margins and padding from certain element and add word wrap. */
+
+blockquote,
+body,
+caption,
+dd,
+dl,
+fieldset,
+figure,
+form,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hr,
+legend,
+ol,
+p,
+pre,
+ul,
+table,
+td,
+th {
+  margin: 0;
+  padding: 0;
+  word-wrap: break-word;
+}
+
+/* Prevent 'sub' and 'sup' affecting 'line-height'. */
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sup {
+  top: -0.5em;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+/* Remove most spacing between table cells. */
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+td,
+th {
+  padding: 0;
+}
+
+/* Base typography. */
+
+body,
+html {
+  color: #333;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* Define vertical rhythm (baseline grid of 4px). */
+
+blockquote,
+caption,
+code,
+dd,
+dl,
+fieldset,
+figure,
+form,
+hr,
+legend,
+ol,
+p,
+pre,
+q,
+table,
+td,
+th,
+ul {
+  margin-bottom: 1rem;
+}
+
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: 1.296rem;
+  margin-bottom: 0.444rem;
+}
+
+/* Content. */
+
+/* Margins for Show Original link. */
+
+#showOriginal {
+  margin: auto 1.296rem 1.296rem 1.296rem;
+}
+
+#content {
+  margin-top: 1.296rem;
+}
+
+/* Main margins. */
+
+#mainContent {
+  margin: 1.296rem 1.296rem auto;
+}
+
+a {
+  color: #222;
+}
+
+blockquote {
+  border-left: 4px solid #eee;
+  padding-left: 1em;
+}
+
+cite {
+  color: rgba(0, 0, 0, .54);
+  font-style: italic;
+}
+
+hr {
+  background-color: #e4dfdf;
+  border: none;
+  height: 1px;
+  margin: inherit auto;
+  width: 75%;
+}
+
+h1 {
+  font-size: 1.7rem;
+  line-height: 1.9rem;
+  margin-bottom: 0.444rem;
+}
+
+q {
+  color: #222;
+  display:block;
+  font-size: 1.5rem;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.444;
+}
+
+embed,
+img,
+object,
+video {
+  max-width: 100%;
+}
+
+/* TODO(sunangel): make images zoomable. */
+
+img {
+  display: block;
+  height: auto;
+  margin: 0 auto 0.6rem auto;
+}
+
+/* TODO(nyquist): set these classes directly in the dom distiller. */
+
+embed+[class*='caption'],
+figcaption,
+img+[class*='caption'],
+object+[class*='caption'],
+video+[class*='caption'] {
+  color: rgba(0,0,0,.54);
+  display: table;
+  font-style: italic;
+  margin: 0 auto;
+}
+
+ol,
+ul {
+  margin-left: 1.296rem;
+}
+
+code,
+pre {
+  background-color: #f8f8f8;
+  border: 1px solid #eee;
+  border-radius: 2px;
+}
+
+code {
+  display: block;
+  padding: .4444rem;
+}
+
+pre code {
+  border: none;
+  padding: 0;
+}
+
+pre {
+  line-height: 1.296rem;
+  overflow-x: scroll;
+  padding: .5em;
+}
+
+/* TODO(sunangel): Create loading indicator graphic to replace "Loading...". */
+#loadingIndicator {
+  display: table;
+  margin: 0 auto;
+}
+
+.hidden {
+  display: hidden;
+}
