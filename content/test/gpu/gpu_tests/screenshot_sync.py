@@ -16,6 +16,7 @@ from telemetry.page.actions.all_page_actions import *
 data_path = os.path.join(
     util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
 
+@test.Disabled('mac')
 class _ScreenshotSyncValidator(page_test.PageTest):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
@@ -25,6 +26,7 @@ class _ScreenshotSyncValidator(page_test.PageTest):
     if not test_success:
       message = tab.EvaluateJavaScript('window.__testMessage')
       raise page_test.Failure(message)
+
 
 @test.Disabled('mac')
 class ScreenshotSyncPage(page.Page):
@@ -42,6 +44,7 @@ class ScreenshotSyncPage(page.Page):
         'window.__testComplete', timeout_in_seconds=120)
 
 
+@test.Disabled('mac')
 class ScreenshotSyncProcess(test.Test):
   """Tests that screenhots are properly synchronized with the frame one which
   they were requested"""
