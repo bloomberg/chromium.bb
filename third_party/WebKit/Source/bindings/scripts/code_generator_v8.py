@@ -129,28 +129,28 @@ class CodeGeneratorV8(object):
         if interface.is_callback:
             header_template_filename = 'callback_interface.h'
             cpp_template_filename = 'callback_interface.cpp'
-            generate_contents = v8_callback_interface.generate_callback_interface
+            interface_context = v8_callback_interface.callback_interface_context
         else:
             header_template_filename = 'interface.h'
             cpp_template_filename = 'interface.cpp'
-            generate_contents = v8_interface.generate_interface
+            interface_context = v8_interface.interface_context
         header_template = self.jinja_env.get_template(header_template_filename)
         cpp_template = self.jinja_env.get_template(cpp_template_filename)
 
-        # Generate contents (input parameters for Jinja)
-        template_contents = generate_contents(interface)
-        template_contents['code_generator'] = module_pyname
+        # Compute context (input values for Jinja)
+        template_context = interface_context(interface)
+        template_context['code_generator'] = module_pyname
 
         # Add includes for interface itself and any dependencies
         interface_info = self.interfaces_info[interface_name]
-        template_contents['header_includes'].add(interface_info['include_path'])
-        template_contents['header_includes'] = sorted(template_contents['header_includes'])
+        template_context['header_includes'].add(interface_info['include_path'])
+        template_context['header_includes'] = sorted(template_context['header_includes'])
         includes.update(interface_info.get('dependencies_include_paths', []))
-        template_contents['cpp_includes'] = sorted(includes)
+        template_context['cpp_includes'] = sorted(includes)
 
         # Render Jinja templates
-        header_text = header_template.render(template_contents)
-        cpp_text = cpp_template.render(template_contents)
+        header_text = header_template.render(template_context)
+        cpp_text = cpp_template.render(template_context)
         return header_text, cpp_text
 
 

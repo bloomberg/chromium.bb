@@ -25,7 +25,7 @@ namespace WebCore {
 {
 }
 
-{% for method in methods if not method.custom %}
+{% for method in methods if not method.is_custom %}
 {{method.cpp_type}} {{v8_class}}::{{method.name}}({{method.argument_declarations | join(', ')}})
 {
     {% set return_default = 'return true'

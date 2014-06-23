@@ -41,7 +41,7 @@ import v8_utilities
 from v8_utilities import capitalize, cpp_name, has_extended_attribute, has_extended_attribute_value, scoped_name, strip_suffix, uncapitalize
 
 
-def generate_attribute(interface, attribute):
+def attribute_context(interface, attribute):
     idl_type = attribute.idl_type
     base_idl_type = idl_type.base_type
     extended_attributes = attribute.extended_attributes
@@ -89,7 +89,7 @@ def generate_attribute(interface, attribute):
         attribute.name == 'onerror'):
         includes.add('bindings/v8/V8ErrorHandler.h')
 
-    contents = {
+    context = {
         'access_control_list': access_control_list(attribute),
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
@@ -156,27 +156,27 @@ def generate_attribute(interface, attribute):
     }
 
     if is_constructor_attribute(attribute):
-        generate_constructor_getter(interface, attribute, contents)
-        return contents
+        constructor_getter_context(interface, attribute, context)
+        return context
     if not has_custom_getter:
-        generate_getter(interface, attribute, contents)
+        getter_context(interface, attribute, context)
     if (not has_custom_setter and
         (not attribute.is_read_only or 'PutForwards' in extended_attributes)):
-        generate_setter(interface, attribute, contents)
+        setter_context(interface, attribute, context)
 
-    return contents
+    return context
 
 
 ################################################################################
 # Getter
 ################################################################################
 
-def generate_getter(interface, attribute, contents):
+def getter_context(interface, attribute, context):
     idl_type = attribute.idl_type
     base_idl_type = idl_type.base_type
     extended_attributes = attribute.extended_attributes
 
-    cpp_value = getter_expression(interface, attribute, contents)
+    cpp_value = getter_expression(interface, attribute, context)
     # Normally we can inline the function call into the return statement to
     # avoid the overhead of using a Ref<> temporary, but for some cases
     # (nullable types, EventHandler, [CachedAttribute], or if there are
@@ -188,19 +188,19 @@ def generate_getter(interface, attribute, contents):
         base_idl_type == 'EventHandler' or
         'CachedAttribute' in extended_attributes or
         'ReflectOnly' in extended_attributes or
-        contents['is_getter_raises_exception']):
-        contents['cpp_value_original'] = cpp_value
+        context['is_getter_raises_exception']):
+        context['cpp_value_original'] = cpp_value
         cpp_value = 'v8Value'
         # EventHandler has special handling
         if base_idl_type != 'EventHandler' and idl_type.is_interface_type:
             release = True
 
     def v8_set_return_value_statement(for_main_world=False):
-        if contents['is_keep_alive_for_gc']:
+        if context['is_keep_alive_for_gc']:
             return 'v8SetReturnValue(info, wrapper)'
         return idl_type.v8_set_return_value(cpp_value, extended_attributes=extended_attributes, script_wrappable='impl', release=release, for_main_world=for_main_world)
 
-    contents.update({
+    context.update({
         'cpp_value': cpp_value,
         'cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(cpp_value=cpp_value, creation_context='info.Holder()'),
         'v8_set_return_value_for_main_world': v8_set_return_value_statement(for_main_world=True),
@@ -208,7 +208,7 @@ def generate_getter(interface, attribute, contents):
     })
 
 
-def getter_expression(interface, attribute, contents):
+def getter_expression(interface, attribute, context):
     arguments = []
     this_getter_base_name = getter_base_name(interface, attribute, arguments)
     getter_name = scoped_name(interface, attribute, this_getter_base_name)
@@ -221,9 +221,9 @@ def getter_expression(interface, attribute, contents):
     if ('PartialInterfaceImplementedAs' in attribute.extended_attributes and
         not attribute.is_static):
         arguments.append('*impl')
-    if attribute.idl_type.is_nullable and not contents['has_type_checking_nullable']:
+    if attribute.idl_type.is_nullable and not context['has_type_checking_nullable']:
         arguments.append('isNull')
-    if contents['is_getter_raises_exception']:
+    if context['is_getter_raises_exception']:
         arguments.append('exceptionState')
     return '%s(%s)' % (getter_name, ', '.join(arguments))
 
@@ -281,7 +281,7 @@ def is_keep_alive_for_gc(interface, attribute):
 # Setter
 ################################################################################
 
-def generate_setter(interface, attribute, contents):
+def setter_context(interface, attribute, context):
     def target_attribute():
         target_interface_name = attribute.idl_type.base_type
         target_attribute_name = extended_attributes['PutForwards']
@@ -301,13 +301,13 @@ def generate_setter(interface, attribute, contents):
         # Use target attribute in place of original attribute
         attribute = target_attribute()
 
-    contents.update({
-        'cpp_setter': setter_expression(interface, attribute, contents),
+    context.update({
+        'cpp_setter': setter_expression(interface, attribute, context),
         'v8_value_to_local_cpp_value': attribute.idl_type.v8_value_to_local_cpp_value(extended_attributes, 'v8Value', 'cppValue'),
     })
 
 
-def setter_expression(interface, attribute, contents):
+def setter_expression(interface, attribute, context):
     extended_attributes = attribute.extended_attributes
     arguments = v8_utilities.call_with_arguments(
         extended_attributes.get('SetterCallWith') or
@@ -325,7 +325,7 @@ def setter_expression(interface, attribute, contents):
     idl_type = attribute.idl_type
     if idl_type.base_type == 'EventHandler':
         getter_name = scoped_name(interface, attribute, cpp_name(attribute))
-        contents['event_handler_getter_expression'] = '%s(%s)' % (
+        context['event_handler_getter_expression'] = '%s(%s)' % (
             getter_name, ', '.join(arguments))
         if (interface.name in ['Window', 'WorkerGlobalScope'] and
             attribute.name == 'onerror'):
@@ -338,7 +338,7 @@ def setter_expression(interface, attribute, contents):
         arguments.append('WTF::getPtr(cppValue)')
     else:
         arguments.append('cppValue')
-    if contents['is_setter_raises_exception']:
+    if context['is_setter_raises_exception']:
         arguments.append('exceptionState')
 
     return '%s(%s)' % (setter_name, ', '.join(arguments))
@@ -430,5 +430,5 @@ def is_constructor_attribute(attribute):
     return attribute.idl_type.base_type.endswith('Constructor')
 
 
-def generate_constructor_getter(interface, attribute, contents):
-    contents['needs_constructor_getter_callback'] = contents['measure_as'] or contents['deprecate_as']
+def constructor_getter_context(interface, attribute, context):
+    context['needs_constructor_getter_callback'] = context['measure_as'] or context['deprecate_as']

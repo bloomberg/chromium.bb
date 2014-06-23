@@ -67,7 +67,7 @@ def argument_needs_try_catch(argument):
         (base_type == 'DOMString' and not argument.is_variadic))
 
 
-def generate_method(interface, method):
+def method_context(interface, method):
     arguments = method.arguments
     extended_attributes = method.extended_attributes
     idl_type = method.idl_type
@@ -111,7 +111,7 @@ def generate_method(interface, method):
 
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
-        'arguments': [generate_argument(interface, method, argument, index)
+        'arguments': [argument_context(interface, method, argument, index)
                       for index, argument in enumerate(arguments)],
         'arguments_need_try_catch': arguments_need_try_catch,
         'conditional_string': v8_utilities.conditional_string(method),
@@ -170,7 +170,7 @@ def generate_method(interface, method):
     }
 
 
-def generate_argument(interface, method, argument, index):
+def argument_context(interface, method, argument, index):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     this_cpp_value = cpp_value(interface, method, index)

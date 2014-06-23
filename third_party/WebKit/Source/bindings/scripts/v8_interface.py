@@ -67,7 +67,7 @@ INTERFACE_CPP_INCLUDES = frozenset([
 ])
 
 
-def generate_interface(interface):
+def interface_context(interface):
     includes.clear()
     includes.update(INTERFACE_CPP_INCLUDES)
     header_includes = set(INTERFACE_H_INCLUDES)
@@ -139,7 +139,7 @@ def generate_interface(interface):
 
     this_gc_type = gc_type(interface)
 
-    template_contents = {
+    context = {
         'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class': cpp_name(interface),
         'gc_type': this_gc_type,
@@ -175,14 +175,14 @@ def generate_interface(interface):
     }
 
     # Constructors
-    constructors = [generate_constructor(interface, constructor)
+    constructors = [constructor_context(interface, constructor)
                     for constructor in interface.constructors
                     # FIXME: shouldn't put named constructors with constructors
                     # (currently needed for Perl compatibility)
                     # Handle named constructors separately
                     if constructor.name == 'Constructor']
     if len(constructors) > 1:
-        template_contents['constructor_overloads'] = generate_overloads(constructors)
+        context['constructor_overloads'] = overloads_context(constructors)
 
     # [CustomConstructor]
     custom_constructors = [{  # Only needed for computing interface length
@@ -200,14 +200,14 @@ def generate_interface(interface):
             includes.add('bindings/v8/SerializedScriptValue.h')
 
     # [NamedConstructor]
-    named_constructor = generate_named_constructor(interface)
+    named_constructor = named_constructor_context(interface)
 
     if (constructors or custom_constructors or has_event_constructor or
         named_constructor):
         includes.add('bindings/v8/V8ObjectConstructor.h')
         includes.add('core/frame/LocalDOMWindow.h')
 
-    template_contents.update({
+    context.update({
         'any_type_attributes': any_type_attributes,
         'constructors': constructors,
         'has_custom_constructor': bool(custom_constructors),
@@ -223,15 +223,16 @@ def generate_interface(interface):
     })
 
     # Constants
-    template_contents.update({
-        'constants': [generate_constant(constant) for constant in interface.constants],
+    context.update({
+        'constants': [constant_context(constant)
+                      for constant in interface.constants],
         'do_not_check_constants': 'DoNotCheckConstants' in extended_attributes,
     })
 
     # Attributes
-    attributes = [v8_attributes.generate_attribute(interface, attribute)
+    attributes = [v8_attributes.attribute_context(interface, attribute)
                   for attribute in interface.attributes]
-    template_contents.update({
+    context.update({
         'attributes': attributes,
         'has_accessors': any(attribute['is_expose_js_accessors'] for attribute in attributes),
         'has_attribute_configuration': any(
@@ -246,10 +247,10 @@ def generate_interface(interface):
     })
 
     # Methods
-    methods = [v8_methods.generate_method(interface, method)
+    methods = [v8_methods.method_context(interface, method)
                for method in interface.operations
                if method.name]  # Skip anonymous special operations (methods)
-    generate_method_overloads(methods)
+    compute_method_overloads_context(methods)
 
     per_context_enabled_methods = []
     custom_registration_methods = []
@@ -293,7 +294,7 @@ def generate_interface(interface):
         method['length'] = (method['overloads']['minarg'] if 'overloads' in method else
                             method['number_of_required_arguments'])
 
-    template_contents.update({
+    context.update({
         'custom_registration_methods': custom_registration_methods,
         'has_origin_safe_method_setter': any(
             method['is_check_security_for_frame'] and not method['is_read_only']
@@ -303,7 +304,7 @@ def generate_interface(interface):
         'methods': methods,
     })
 
-    template_contents.update({
+    context.update({
         'indexed_property_getter': indexed_property_getter(interface),
         'indexed_property_setter': indexed_property_setter(interface),
         'indexed_property_deleter': indexed_property_deleter(interface),
@@ -313,11 +314,11 @@ def generate_interface(interface):
         'named_property_deleter': named_property_deleter(interface),
     })
 
-    return template_contents
+    return context
 
 
 # [DeprecateAs], [Reflect], [RuntimeEnabled]
-def generate_constant(constant):
+def constant_context(constant):
     # (Blink-only) string literals are unquoted in tokenizer, must be re-quoted
     # in C++.
     if constant.idl_type.name == 'String':
@@ -340,17 +341,17 @@ def generate_constant(constant):
 # Overloads
 ################################################################################
 
-def generate_method_overloads(methods):
+def compute_method_overloads_context(methods):
     # Regular methods
-    generate_overloads_by_type([method for method in methods
-                                if not method['is_static']])
+    compute_method_overloads_context_by_type([method for method in methods
+                                              if not method['is_static']])
     # Static methods
-    generate_overloads_by_type([method for method in methods
-                                if method['is_static']])
+    compute_method_overloads_context_by_type([method for method in methods
+                                              if method['is_static']])
 
 
-def generate_overloads_by_type(methods):
-    """Generates |method.overload*| template values.
+def compute_method_overloads_context_by_type(methods):
+    """Computes |method.overload*| template values.
 
     Called separately for static and non-static (regular) methods,
     as these are overloaded separately.
@@ -363,7 +364,7 @@ def generate_overloads_by_type(methods):
     for name, overloads in method_overloads_by_name(methods):
         # Resolution function is generated after last overloaded function;
         # package necessary information into |method.overloads| for that method.
-        overloads[-1]['overloads'] = generate_overloads(overloads)
+        overloads[-1]['overloads'] = overloads_context(overloads)
         overloads[-1]['overloads']['name'] = name
 
 
@@ -381,7 +382,7 @@ def method_overloads_by_name(methods):
     return sort_and_groupby(overloaded_methods, itemgetter('name'))
 
 
-def generate_overloads(overloads):
+def overloads_context(overloads):
     """Returns |overloads| template values for a single name.
 
     Sets |method.overload_index| in place for |method| in |overloads|
@@ -834,12 +835,12 @@ def sort_and_groupby(l, key=None):
 ################################################################################
 
 # [Constructor]
-def generate_constructor(interface, constructor):
+def constructor_context(interface, constructor):
     arguments_need_try_catch = any(v8_methods.argument_needs_try_catch(argument)
                                    for argument in constructor.arguments)
 
     return {
-        'arguments': [v8_methods.generate_argument(interface, constructor, argument, index)
+        'arguments': [v8_methods.argument_context(interface, constructor, argument, index)
                       for index, argument in enumerate(constructor.arguments)],
         'arguments_need_try_catch': arguments_need_try_catch,
         'cpp_type': cpp_template_type(
@@ -861,7 +862,7 @@ def generate_constructor(interface, constructor):
 
 
 # [NamedConstructor]
-def generate_named_constructor(interface):
+def named_constructor_context(interface):
     extended_attributes = interface.extended_attributes
     if 'NamedConstructor' not in extended_attributes:
         return None
@@ -870,12 +871,12 @@ def generate_named_constructor(interface):
     # for Perl compatibility
     idl_constructor = interface.constructors[-1]
     assert idl_constructor.name == 'NamedConstructor'
-    constructor = generate_constructor(interface, idl_constructor)
-    constructor.update({
+    context = constructor_context(interface, idl_constructor)
+    context.update({
         'name': extended_attributes['NamedConstructor'],
         'is_named_constructor': True,
     })
-    return constructor
+    return context
 
 
 def number_of_required_arguments(constructor):
