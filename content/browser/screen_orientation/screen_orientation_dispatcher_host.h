@@ -5,7 +5,10 @@
 #ifndef CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_HOST_H_
 
+#include "base/id_map.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/WebKit/public/platform/WebLockOrientationError.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 
@@ -28,9 +31,12 @@ class CONTENT_EXPORT ScreenOrientationDispatcherHost
   virtual bool OnMessageReceived(const IPC::Message&,
                                  RenderFrameHost* render_frame_host) OVERRIDE;
 
-  void OnOrientationChange(blink::WebScreenOrientationType orientation);
+  void NotifyLockSuccess(int request_id,
+                         int angle,
+                         blink::WebScreenOrientationType type);
+  void NotifyLockError(int request_id, blink::WebLockOrientationError error);
 
-  void SetProviderForTests(ScreenOrientationProvider* provider);
+  void OnOrientationChange(blink::WebScreenOrientationType orientation);
 
  private:
   void OnLockRequest(RenderFrameHost* render_frame_host,
@@ -38,9 +44,22 @@ class CONTENT_EXPORT ScreenOrientationDispatcherHost
                      int request_id);
   void OnUnlockRequest(RenderFrameHost* render_frame_host);
 
-  static ScreenOrientationProvider* CreateProvider();
+  // Returns a RenderFrameHost if the request_id is still valid and the
+  // associated RenderFrameHost still exists. Returns NULL otherwise.
+  RenderFrameHost* GetRenderFrameHostForRequestID(int request_id);
+
+  void ResetCurrentLock();
 
   scoped_ptr<ScreenOrientationProvider> provider_;
+
+  struct LockInformation {
+    LockInformation(int request_id, int process_id, int routing_id);
+    int request_id;
+    int process_id;
+    int routing_id;
+  };
+  // current_lock_ will be NULL if there are no current lock.
+  LockInformation* current_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationDispatcherHost);
 };

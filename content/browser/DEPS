@@ -39,6 +39,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebIDBDatabaseException.h",
   "+third_party/WebKit/public/platform/WebIDBTypes.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
+  "+third_party/WebKit/public/platform/WebLockOrientationError.h",
   "+third_party/WebKit/public/platform/WebScreenOrientationLockType.h",
   "+third_party/WebKit/public/platform/WebScreenOrientationType.h",
   "+third_party/WebKit/public/platform/WebScreenInfo.h",

@@ -9,19 +9,43 @@
 
 namespace content {
 
+class ScreenOrientationDispatcherHost;
+class WebContents;
+
 // Interface that needs to be implemented by any backend that wants to handle
 // screen orientation lock/unlock.
 class ScreenOrientationProvider {
  public:
   // Lock the screen orientation to |orientations|.
   virtual void LockOrientation(
+      int request_id,
       blink::WebScreenOrientationLockType orientations) = 0;
 
   // Unlock the screen orientation.
   virtual void UnlockOrientation() = 0;
 
   virtual ~ScreenOrientationProvider() {}
+
+ protected:
+  friend class ScreenOrientationDispatcherHost;
+
+  static ScreenOrientationProvider* Create(
+      ScreenOrientationDispatcherHost* dispatcher_host,
+      WebContents* web_contents);
+
+  ScreenOrientationProvider() {}
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenOrientationProvider);
 };
+
+#if !defined(OS_ANDROID)
+// static
+ScreenOrientationProvider* ScreenOrientationProvider::Create(
+    ScreenOrientationDispatcherHost* dispatcher_host,
+    WebContents* web_contents) {
+  return NULL;
+}
+#endif // !defined(OS_ANDROID)
 
 } // namespace content
 
