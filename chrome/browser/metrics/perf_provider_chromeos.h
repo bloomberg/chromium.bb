@@ -15,6 +15,8 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/login_state.h"
 #include "components/metrics/proto/sampled_profile.pb.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace metrics {
 
@@ -24,7 +26,8 @@ class WindowedIncognitoObserver;
 // performance profiling infrastructure built into the linux kernel. For more
 // information, see: https://perf.wiki.kernel.org/index.php/Main_Page.
 class PerfProvider : public base::NonThreadSafe,
-                     public chromeos::PowerManagerClient::Observer {
+                     public chromeos::PowerManagerClient::Observer,
+                     public content::NotificationObserver {
  public:
   PerfProvider();
   virtual ~PerfProvider();
@@ -58,6 +61,12 @@ class PerfProvider : public base::NonThreadSafe,
   // Turns on perf collection. Resets the timer that's used to schedule
   // collections.
   void OnUserLoggedIn();
+
+  // Called when a session restore has finished.
+  // Inherited from content::NotificationObserver.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Turns off perf collection. Does not delete any data that was already
   // collected and stored in |cached_perf_data_|.
@@ -99,6 +108,13 @@ class PerfProvider : public base::NonThreadSafe,
 
   // Record of the start of the upcoming profiling interval.
   base::TimeTicks next_profiling_interval_start_;
+
+  // Used to register objects of this class as observers to be notified of
+  // session restore events.
+  content::NotificationRegistrar session_restore_registrar_;
+
+  // Tracks the last time a session restore was collected.
+  base::TimeTicks last_session_restore_collection_time_;
 
   // To pass around the "this" pointer across threads safely.
   base::WeakPtrFactory<PerfProvider> weak_factory_;
