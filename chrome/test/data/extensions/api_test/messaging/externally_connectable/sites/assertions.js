@@ -85,7 +85,7 @@ if (parent == window) {
   tabLocationHref = document.location.href;
 } else {
   window.addEventListener('message', function listener(event) {
-    window.removeEventListener(listener);
+    window.removeEventListener('message', listener);
     tabLocationHref = event.data;
   });
 }
