@@ -380,6 +380,8 @@ class BlinkIDLParser(IDLParser):
     def __init__(self,
                  # common parameters
                  debug=False,
+                 # local parameters
+                 rewrite_tables=False,
                  # idl_parser parameters
                  lexer=None, verbose=False, mute_error=False,
                  # yacc parameters
@@ -394,6 +396,11 @@ class BlinkIDLParser(IDLParser):
             write_tables = True
         if outputdir:
             picklefile = picklefile or os.path.join(outputdir, 'parsetab.pickle')
+            if rewrite_tables:
+                try:
+                    os.unlink(picklefile)
+                except OSError:
+                    pass
 
         lexer = lexer or BlinkIDLLexer(debug=debug,
                                        outputdir=outputdir,
@@ -439,7 +446,10 @@ def main(argv):
     except IndexError as err:
         print 'Usage: %s OUTPUT_DIR' % argv[0]
         return 1
-    parser = BlinkIDLParser(outputdir=outputdir)
+    # Important: rewrite_tables=True causes the cache file to be deleted if it
+    # exists, thus making sure that PLY doesn't load it instead of regenerating
+    # the parse table.
+    parser = BlinkIDLParser(outputdir=outputdir, rewrite_tables=True)
 
 
 if __name__ == '__main__':
