@@ -18,32 +18,15 @@ import subprocess
 import sys
 
 
-def RunGN(sourceroot):
-  # The binaries in platform-specific subdirectories in src/tools/gn/bin.
-  gnpath = os.path.join(sourceroot,
-                        'tools', 'gn', 'bin', gclient_utils.GetMacWinOrLinux(),
-                        'gn' + gclient_utils.GetExeSuffix())
-  return subprocess.call([gnpath] + sys.argv[1:])
-
-
 def main(args):
-  for arg in sys.argv:
-    if arg.startswith('--root='):
-      sourceroot = arg.replace('--root=', '')
-      dotfile_path = os.path.join(sourceroot, '.gn')
-      if not os.path.exists(dotfile_path):
-        print >> sys.stderr, 'gn.py: "%s" not found, exiting.' % dotfile_path
-        sys.exit(1)
-      return RunGN(sourceroot)
-
-  sourceroot = gclient_utils.FindFileUpwards('.gn')
-  if not sourceroot:
-    print >> sys.stderr, ('gn.py: No .gn file found in any parent of '
-                          'the current path.')
-    print >> sys.stderr, ('\nYou need to either be inside a checkout, '
-                          'or use --root to specify the checkout root.')
+  bin_path = gclient_utils.GetBuildtoolsPlatformBinaryPath()
+  if not bin_path:
+    print >> sys.stderr, ('gn.py: Could not find checkout in any parent of '
+                          'the current path.\nThis must be run inside a '
+                          'checkout.')
     sys.exit(1)
-  return RunGN(sourceroot)
+  gn_path = os.path.join(bin_path, 'gn' + gclient_utils.GetExeSuffix())
+  return subprocess.call([gn_path] + sys.argv[1:])
 
 
 if __name__ == '__main__':

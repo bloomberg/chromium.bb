@@ -650,6 +650,37 @@ def GetMacWinOrLinux():
   raise Error('Unknown platform: ' + sys.platform)
 
 
+def GetBuildtoolsPath():
+  """Returns the full path to the buildtools directory.
+  This is based on the root of the checkout containing the current directory."""
+  gclient_root = FindGclientRoot(os.getcwd())
+  if not gclient_root:
+    return None
+  return os.path.join(gclient_root, 'src', 'buildtools')
+
+
+def GetBuildtoolsPlatformBinaryPath():
+  """Returns the full path to the binary directory for the current platform."""
+  # Mac and Windows just have one directory, Linux has two according to whether
+  # it's 32 or 64 bits.
+  buildtools_path = GetBuildtoolsPath()
+  if not buildtools_path:
+    return None
+
+  if sys.platform.startswith(('cygwin', 'win')):
+    subdir = 'win'
+  elif sys.platform == 'darwin':
+    subdir = 'mac'
+  elif sys.platform.startswith('linux'):
+    if sys.maxsize > 2**32:
+      subdir = 'linux64'
+    else:
+      subdir = 'linux32'
+  else:
+    raise Error('Unknown platform: ' + sys.platform)
+  return os.path.join(buildtools_path, subdir)
+
+
 def GetExeSuffix():
   """Returns '' or '.exe' depending on how executables work on this platform."""
   if sys.platform.startswith(('cygwin', 'win')):
