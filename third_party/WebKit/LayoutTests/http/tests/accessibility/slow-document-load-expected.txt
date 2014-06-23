@@ -3,7 +3,7 @@ This tests that accessibility events will be fired after the first layout, rathe
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS elapsedTime is >= 900
+PASS elapsedTime is >= 1000
 PASS gotLayoutCompleteBeforeOneSecond is true
 PASS successfullyParsed is true
 

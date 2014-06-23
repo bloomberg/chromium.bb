@@ -19,13 +19,13 @@ if (window.testRunner && window.accessibilityController) {
 
     accessibilityController.addNotificationListener(function (target, notification) {
         elapsedTime = new Date() - startTime;
-        if (notification == "LayoutComplete" && elapsedTime < 900) {
+        if (notification == "LayoutComplete" && elapsedTime < 1000) {
             gotLayoutCompleteBeforeOneSecond = true;
         }
 
         if (notification == "LoadComplete") {
             accessibilityController.removeNotificationListener();
-            shouldBeGreaterThanOrEqual("elapsedTime", "900");
+            shouldBeGreaterThanOrEqual("elapsedTime", "1000");
             shouldBeTrue("gotLayoutCompleteBeforeOneSecond");
             finishJSTest();
         }
@@ -38,11 +38,7 @@ setTimeout(function() {
 }, 10);
 </script>
 
-<!-- This is a cgi script that waits 1 second before loading.
-     In practice, it seems to sometimes load after slightly less
-     time, like 996 ms, so that's why we use 900 ms as the threshold
-     in the tests, above.
- -->
+<!-- This is a cgi script that waits 1 second before loading. -->
 <script src="slow-loading-script.cgi"></script>
 
 </body>
