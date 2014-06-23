@@ -412,6 +412,10 @@ def HostTools(host, options):
               command.Command(MakeCommand(host) + [
                   'VERBOSE=1',
                   'NACL_SANDBOX=0',
+                  # Override LLVM's repository detection; we want it to show our
+                  # real URLs and not the git cache.
+                  'LLVM_REPOSITORY=' + GIT_BASE_URL + GIT_REPOS['llvm'],
+                  'CLANG_REPOSITORY_STRING='+ GIT_BASE_URL + GIT_REPOS['clang'],
                   'all']),
               command.Command(MAKE_DESTDIR_CMD + ['install']),
               command.Remove(*[os.path.join('%(output)s', 'lib', f) for f in
