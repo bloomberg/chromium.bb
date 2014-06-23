@@ -25,7 +25,8 @@ def Setup(test_options):
     os.makedirs(test_options.coverage_dir)
 
   test_pkg = test_package.TestPackage(test_options.test_apk_path,
-                                      test_options.test_apk_jar_path)
+                                      test_options.test_apk_jar_path,
+                                      test_options.test_support_apk_path)
   tests = test_pkg.GetAllMatchingTests(
       test_options.annotations,
       test_options.exclude_annotations,

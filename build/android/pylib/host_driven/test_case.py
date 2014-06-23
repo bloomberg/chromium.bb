@@ -157,7 +157,8 @@ class HostDrivenTestCase(object):
 
     test_pkg = test_package.TestPackage(
         self.instrumentation_options.test_apk_path,
-        self.instrumentation_options.test_apk_jar_path)
+        self.instrumentation_options.test_apk_jar_path,
+        self.instrumentation_options.test_support_apk_path)
 
     start_ms = int(time.time()) * 1000
     done = False

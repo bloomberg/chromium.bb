@@ -11,7 +11,7 @@ from pylib.utils import apk_helper
 
 
 class TestPackage(test_jar.TestJar):
-  def __init__(self, apk_path, jar_path):
+  def __init__(self, apk_path, jar_path, test_support_apk_path):
     test_jar.TestJar.__init__(self, jar_path)
 
     if not os.path.exists(apk_path):
@@ -19,6 +19,7 @@ class TestPackage(test_jar.TestJar):
     self._apk_path = apk_path
     self._apk_name = os.path.splitext(os.path.basename(apk_path))[0]
     self._package_name = apk_helper.GetPackageName(self._apk_path)
+    self._test_support_apk_path = test_support_apk_path
 
   def GetApkPath(self):
     """Returns the absolute path to the APK."""
@@ -35,4 +36,7 @@ class TestPackage(test_jar.TestJar):
   # Override.
   def Install(self, device):
     device.Install(self.GetApkPath())
+    if (self._test_support_apk_path and
+        os.path.exists(self._test_support_apk_path)):
+      device.Install(self._test_support_apk_path)
 

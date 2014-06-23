@@ -277,6 +277,10 @@ def ProcessInstrumentationOptions(options, error_func):
       constants.SDK_BUILD_TEST_JAVALIB_DIR,
       '%s.jar' %  options.test_apk)
 
+  options.test_support_apk_path = '%sSupport%s' % (
+        os.path.splitext(options.test_apk_path))
+
+
   return instrumentation_test_options.InstrumentationOptions(
       options.tool,
       options.cleanup_test_files,
@@ -291,7 +295,9 @@ def ProcessInstrumentationOptions(options, error_func):
       options.coverage_dir,
       options.test_apk,
       options.test_apk_path,
-      options.test_apk_jar_path)
+      options.test_apk_jar_path,
+      options.test_support_apk_path
+      )
 
 
 def AddUIAutomatorTestOptions(option_parser):
