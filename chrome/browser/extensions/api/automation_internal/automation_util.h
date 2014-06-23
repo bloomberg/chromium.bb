@@ -29,6 +29,10 @@ void DispatchAccessibilityEventsToAutomation(
     const std::vector<content::AXEventNotificationDetails>& details,
     content::BrowserContext* browser_context);
 
+void DispatchTreeDestroyedEventToAutomation(
+    int process_id,
+    int routing_id,
+    content::BrowserContext* browser_context);
 }  // namespace automation_util
 
 }  // namespace extensions

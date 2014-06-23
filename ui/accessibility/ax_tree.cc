@@ -153,7 +153,7 @@ bool AXTree::UpdateNode(
   // of the tree is being swapped, or we're out of sync with the source
   // and this is a serious error.
   AXNode* node = GetFromId(src.id);
-  AXNode* new_node = NULL;
+  AXNode* new_root = NULL;
   if (node) {
     update_state->pending_nodes.erase(node);
     node->SetData(src);
@@ -163,8 +163,8 @@ bool AXTree::UpdateNode(
           "%d is not in the tree and not the new root", src.id);
       return false;
     }
-    new_node = CreateNode(NULL, src.id, 0);
-    node = new_node;
+    new_root = CreateNode(NULL, src.id, 0);
+    node = new_root;
     update_state->new_nodes.insert(node);
     node->SetData(src);
   }
@@ -175,8 +175,8 @@ bool AXTree::UpdateNode(
   // First, delete nodes that used to be children of this node but aren't
   // anymore.
   if (!DeleteOldChildren(node, src.child_ids)) {
-    if (new_node)
-      DestroyNodeAndSubtree(new_node);
+    if (new_root)
+      DestroyNodeAndSubtree(new_root);
     return false;
   }
 

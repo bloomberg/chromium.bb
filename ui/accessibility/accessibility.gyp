@@ -46,6 +46,18 @@
       ]
     },
     {
+      'target_name': 'accessibility_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        'accessibility'
+      ],
+      'sources': [
+        'tree_generator.cc',
+        'tree_generator.h'
+      ]
+    },
+    {
       'target_name': 'accessibility_unittests',
       'type': 'executable',
       'dependencies': [
@@ -55,6 +67,7 @@
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         'accessibility',
+        'accessibility_test_support',
         'ax_gen',
       ],
       'sources': [

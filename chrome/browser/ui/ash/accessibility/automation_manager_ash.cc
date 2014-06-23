@@ -103,7 +103,8 @@ void AutomationManagerAsh::SendEvent(BrowserContext* context,
   // Route this event to special process/routing ids recognized by the
   // Automation API as the desktop tree.
   // TODO(dtseng): Would idealy define these special desktop constants in idl.
-  content::AXEventNotificationDetails detail(update.nodes,
+  content::AXEventNotificationDetails detail(update.node_id_to_clear,
+                                             update.nodes,
                                              event_type,
                                              aura_obj->GetID(),
                                              0, /* process_id */
