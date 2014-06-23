@@ -638,13 +638,37 @@ TEST_F(TileManagerTileIteratorTest, RasterTileIterator) {
   // Renew all of the tile priorities.
   gfx::Rect viewport(50, 50, 100, 100);
   pending_layer_->HighResTiling()->UpdateTilePriorities(
-      PENDING_TREE, viewport, 1.0f, 1.0);
+      PENDING_TREE,
+      viewport,
+      1.0f,
+      1.0,
+      NULL,
+      pending_layer_->render_target(),
+      pending_layer_->draw_transform());
   pending_layer_->LowResTiling()->UpdateTilePriorities(
-      PENDING_TREE, viewport, 1.0f, 1.0);
+      PENDING_TREE,
+      viewport,
+      1.0f,
+      1.0,
+      NULL,
+      pending_layer_->render_target(),
+      pending_layer_->draw_transform());
   active_layer_->HighResTiling()->UpdateTilePriorities(
-      ACTIVE_TREE, viewport, 1.0f, 1.0);
+      ACTIVE_TREE,
+      viewport,
+      1.0f,
+      1.0,
+      NULL,
+      active_layer_->render_target(),
+      active_layer_->draw_transform());
   active_layer_->LowResTiling()->UpdateTilePriorities(
-      ACTIVE_TREE, viewport, 1.0f, 1.0);
+      ACTIVE_TREE,
+      viewport,
+      1.0f,
+      1.0,
+      NULL,
+      active_layer_->render_target(),
+      active_layer_->draw_transform());
 
   // Populate all tiles directly from the tilings.
   all_tiles.clear();
@@ -815,13 +839,37 @@ TEST_F(TileManagerTileIteratorTest, EvictionTileIterator) {
   // Renew all of the tile priorities.
   gfx::Rect viewport(50, 50, 100, 100);
   pending_layer_->HighResTiling()->UpdateTilePriorities(
-      PENDING_TREE, viewport, 1.0f, 1.0);
+      PENDING_TREE,
+      viewport,
+      1.0f,
+      1.0,
+      NULL,
+      pending_layer_->render_target(),
+      pending_layer_->draw_transform());
   pending_layer_->LowResTiling()->UpdateTilePriorities(
-      PENDING_TREE, viewport, 1.0f, 1.0);
+      PENDING_TREE,
+      viewport,
+      1.0f,
+      1.0,
+      NULL,
+      pending_layer_->render_target(),
+      pending_layer_->draw_transform());
   active_layer_->HighResTiling()->UpdateTilePriorities(
-      ACTIVE_TREE, viewport, 1.0f, 1.0);
+      ACTIVE_TREE,
+      viewport,
+      1.0f,
+      1.0,
+      NULL,
+      active_layer_->render_target(),
+      active_layer_->draw_transform());
   active_layer_->LowResTiling()->UpdateTilePriorities(
-      ACTIVE_TREE, viewport, 1.0f, 1.0);
+      ACTIVE_TREE,
+      viewport,
+      1.0f,
+      1.0,
+      NULL,
+      active_layer_->render_target(),
+      active_layer_->draw_transform());
 
   // Populate all tiles directly from the tilings.
   all_tiles.clear();

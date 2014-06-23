@@ -79,6 +79,7 @@ class CC_EXPORT LayerTreeSettings {
   bool use_rgba_4444_textures;
   bool touch_hit_testing;
   size_t texture_id_allocation_chunk_size;
+  bool use_occlusion_for_tile_prioritization;
 
   LayerTreeDebugState initial_debug_state;
 };

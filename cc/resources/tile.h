@@ -128,6 +128,9 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
     return managed_state_.tile_versions[mode];
   }
 
+  void set_is_occluded(bool is_occluded) { is_occluded_ = is_occluded; }
+  bool is_occluded() const { return is_occluded_; }
+
  private:
   friend class TileManager;
   friend class PrioritizedTileSet;
@@ -157,6 +160,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   gfx::Rect content_rect_;
   float contents_scale_;
   gfx::Rect opaque_rect_;
+  bool is_occluded_;
 
   TilePriority priority_[NUM_TREES];
   ManagedTileState managed_state_;

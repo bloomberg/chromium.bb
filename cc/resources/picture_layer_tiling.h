@@ -20,6 +20,8 @@
 
 namespace cc {
 
+template <typename LayerType>
+class OcclusionTracker;
 class PictureLayerTiling;
 
 class CC_EXPORT PictureLayerTilingClient {
@@ -206,10 +208,14 @@ class CC_EXPORT PictureLayerTiling {
 
   void Reset();
 
-  void UpdateTilePriorities(WhichTree tree,
-                            const gfx::Rect& visible_layer_rect,
-                            float layer_contents_scale,
-                            double current_frame_time_in_seconds);
+  void UpdateTilePriorities(
+      WhichTree tree,
+      const gfx::Rect& visible_layer_rect,
+      float layer_contents_scale,
+      double current_frame_time_in_seconds,
+      const OcclusionTracker<LayerImpl>* occlusion_tracker,
+      const LayerImpl* render_target,
+      const gfx::Transform& draw_transform);
 
   // Copies the src_tree priority into the dst_tree priority for all tiles.
   // The src_tree priority is reset to the lowest priority possible.  This

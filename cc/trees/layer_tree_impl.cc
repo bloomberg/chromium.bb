@@ -24,6 +24,7 @@
 #include "cc/resources/ui_resource_request.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
+#include "cc/trees/occlusion_tracker.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -486,6 +487,14 @@ bool LayerTreeImpl::UpdateDrawProperties() {
                  IsActiveTree(),
                  "SourceFrameNumber",
                  source_frame_number_);
+    scoped_ptr<OcclusionTracker<LayerImpl> > occlusion_tracker;
+    if (settings().use_occlusion_for_tile_prioritization) {
+      occlusion_tracker.reset(new OcclusionTracker<LayerImpl>(
+          root_layer()->render_surface()->content_rect()));
+      occlusion_tracker->set_minimum_tracking_size(
+          settings().minimum_occlusion_tracking_size);
+    }
+
     // LayerIterator is used here instead of CallFunctionForSubtree to only
     // UpdateTilePriorities on layers that will be visible (and thus have valid
     // draw properties) and not because any ordering is required.
@@ -495,17 +504,27 @@ bool LayerTreeImpl::UpdateDrawProperties() {
              LayerIteratorType::Begin(&render_surface_layer_list_);
          it != end;
          ++it) {
+      if (occlusion_tracker)
+        occlusion_tracker->EnterLayer(it);
+
       LayerImpl* layer = *it;
       if (it.represents_itself())
-        layer->UpdateTiles();
+        layer->UpdateTiles(occlusion_tracker.get());
 
-      if (!it.represents_contributing_render_surface())
+      if (!it.represents_contributing_render_surface()) {
+        if (occlusion_tracker)
+          occlusion_tracker->LeaveLayer(it);
         continue;
+      }
 
       if (layer->mask_layer())
-        layer->mask_layer()->UpdateTiles();
+        layer->mask_layer()->UpdateTiles(occlusion_tracker.get());
       if (layer->replica_layer() && layer->replica_layer()->mask_layer())
-        layer->replica_layer()->mask_layer()->UpdateTiles();
+        layer->replica_layer()->mask_layer()->UpdateTiles(
+            occlusion_tracker.get());
+
+      if (occlusion_tracker)
+        occlusion_tracker->LeaveLayer(it);
     }
   }
 

@@ -63,7 +63,8 @@ LayerTreeSettings::LayerTreeSettings()
       ignore_root_layer_flings(false),
       use_rgba_4444_textures(false),
       touch_hit_testing(true),
-      texture_id_allocation_chunk_size(64) {
+      texture_id_allocation_chunk_size(64),
+      use_occlusion_for_tile_prioritization(false) {
 }
 
 LayerTreeSettings::~LayerTreeSettings() {}

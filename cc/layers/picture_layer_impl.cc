@@ -393,10 +393,17 @@ void PictureLayerImpl::AppendQuads(
   CleanUpTilingsOnActiveLayer(seen_tilings);
 }
 
-void PictureLayerImpl::UpdateTiles() {
+void PictureLayerImpl::UpdateTiles(
+    const OcclusionTracker<LayerImpl>* occlusion_tracker) {
   TRACE_EVENT0("cc", "PictureLayerImpl::UpdateTiles");
 
   DoPostCommitInitializationIfNeeded();
+
+  // TODO(danakj): We should always get an occlusion tracker when we are using
+  // occlusion, so update this check when we don't use a pending tree in the
+  // browser compositor.
+  DCHECK(!occlusion_tracker ||
+         layer_tree_impl()->settings().use_occlusion_for_tile_prioritization);
 
   if (layer_tree_impl()->device_viewport_valid_for_tile_management()) {
     visible_rect_for_tile_priority_ = visible_content_rect();
@@ -435,13 +442,14 @@ void PictureLayerImpl::UpdateTiles() {
   // non-updated tree which will then be updated immediately afterwards.
   should_update_tile_priorities_ = true;
 
-  UpdateTilePriorities();
+  UpdateTilePriorities(occlusion_tracker);
 
   if (layer_tree_impl()->IsPendingTree())
     MarkVisibleResourcesAsRequired();
 }
 
-void PictureLayerImpl::UpdateTilePriorities() {
+void PictureLayerImpl::UpdateTilePriorities(
+    const OcclusionTracker<LayerImpl>* occlusion_tracker) {
   TRACE_EVENT0("cc", "PictureLayerImpl::UpdateTilePriorities");
 
   double current_frame_time_in_seconds =
@@ -483,7 +491,10 @@ void PictureLayerImpl::UpdateTilePriorities() {
     tilings_->tiling_at(i)->UpdateTilePriorities(tree,
                                                  visible_layer_rect,
                                                  MaximumTilingContentsScale(),
-                                                 current_frame_time_in_seconds);
+                                                 current_frame_time_in_seconds,
+                                                 occlusion_tracker,
+                                                 render_target(),
+                                                 draw_transform());
   }
 
   // Tile priorities were modified.
@@ -714,7 +725,11 @@ void PictureLayerImpl::SyncTiling(
   // we can create tiles for this tiling immediately.
   if (!layer_tree_impl()->needs_update_draw_properties() &&
       should_update_tile_priorities_) {
-    UpdateTilePriorities();
+    // TODO(danakj): Add a DCHECK() that we are not using occlusion tracking
+    // when we stop using the pending tree in the browser compositor. If we want
+    // to support occlusion tracking here, we need to dirty the draw properties
+    // or save occlusion as a draw property.
+    UpdateTilePriorities(NULL);
   }
 }
 
@@ -875,6 +890,10 @@ bool PictureLayerImpl::MarkVisibleTilesAsRequired(
     Tile* tile = *iter;
     // A null tile (i.e. missing recording) can just be skipped.
     if (!tile)
+      continue;
+
+    // If the tile is occluded, don't mark it as required for activation.
+    if (tile->is_occluded())
       continue;
 
     // If the missing region doesn't cover it, this tile is fully
@@ -1451,7 +1470,8 @@ PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator(
 
   IteratorType index = stages_[current_stage_].iterator_type;
   TilePriority::PriorityBin tile_type = stages_[current_stage_].tile_type;
-  if (!iterators_[index] || iterators_[index].get_type() != tile_type)
+  if (!iterators_[index] || iterators_[index].get_type() != tile_type ||
+      (*iterators_[index])->is_occluded())
     ++(*this);
 }
 
@@ -1471,6 +1491,10 @@ operator++() {
   if (iterators_[index])
     ++iterators_[index];
 
+  while (iterators_[index] && iterators_[index].get_type() == tile_type &&
+         (*iterators_[index])->is_occluded())
+    ++iterators_[index];
+
   if (iterators_[index] && iterators_[index].get_type() == tile_type)
     return *this;
 
@@ -1481,7 +1505,8 @@ operator++() {
     index = stages_[current_stage_].iterator_type;
     tile_type = stages_[current_stage_].tile_type;
 
-    if (iterators_[index] && iterators_[index].get_type() == tile_type)
+    if (iterators_[index] && iterators_[index].get_type() == tile_type &&
+        !(*iterators_[index])->is_occluded())
       break;
     ++current_stage_;
   }

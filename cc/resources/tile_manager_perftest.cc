@@ -277,7 +277,7 @@ class TileManagerPerfTest : public testing::Test {
     do {
       host_impl_.UpdateCurrentFrameTime();
       for (unsigned i = 0; i < layers.size(); ++i)
-        layers[i]->UpdateTiles();
+        layers[i]->UpdateTiles(NULL);
 
       GlobalStateThatImpactsTilePriority global_state(GlobalStateForTest());
       tile_manager()->ManageTiles(global_state);

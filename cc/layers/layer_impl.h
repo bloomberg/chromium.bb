@@ -190,7 +190,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual RenderPass::Id FirstContributingRenderPassId() const;
   virtual RenderPass::Id NextContributingRenderPassId(RenderPass::Id id) const;
 
-  virtual void UpdateTiles() {}
+  virtual void UpdateTiles(
+      const OcclusionTracker<LayerImpl>* occlusion_tracker) {}
   virtual void NotifyTileStateChanged(const Tile* tile) {}
 
   virtual ScrollbarLayerImplBase* ToScrollbarLayer();
