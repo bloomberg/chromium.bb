@@ -217,7 +217,7 @@ def interface_context(interface):
         'is_constructor_call_with_document': has_extended_attribute_value(
             interface, 'ConstructorCallWith', 'Document'),  # [ConstructorCallWith=Document]
         'is_constructor_call_with_execution_context': has_extended_attribute_value(
-            interface, 'ConstructorCallWith', 'ExecutionContext'),  # [ConstructorCallWith=ExeuctionContext]
+            interface, 'ConstructorCallWith', 'ExecutionContext'),  # [ConstructorCallWith=ExecutionContext]
         'is_constructor_raises_exception': extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
         'named_constructor': named_constructor,
     })
