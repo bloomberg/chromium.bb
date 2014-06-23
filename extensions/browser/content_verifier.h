@@ -67,31 +67,6 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier> {
   bool ShouldVerifyAnyPaths(const Extension* extension,
                             const std::set<base::FilePath>& relative_paths);
 
-  // Note that it is important for these to appear in increasing "severity"
-  // order, because we use this to let command line flags increase, but not
-  // decrease, the mode you're running in compared to the experiment group.
-  enum Mode {
-    // Do not try to fetch content hashes if they are missing, and do not
-    // enforce them if they are present.
-    NONE = 0,
-
-    // If content hashes are missing, try to fetch them, but do not enforce.
-    BOOTSTRAP,
-
-    // If hashes are present, enforce them. If they are missing, try to fetch
-    // them.
-    ENFORCE,
-
-    // Treat the absence of hashes the same as a verification failure.
-    ENFORCE_STRICT
-  };
-
-  static Mode GetMode();
-
-  // The mode we're running in - set once at creation.
-  const Mode mode_;
-
-  // The associated BrowserContext.
   content::BrowserContext* context_;
 
   scoped_ptr<ContentVerifierDelegate> delegate_;

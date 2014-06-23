@@ -52,6 +52,9 @@ class ExtensionAssetsManagerChromeOS : public ExtensionAssetsManager {
   // Return shared install dir.
   static base::FilePath GetSharedInstallDir();
 
+  // Return true if |extension| was installed to shared location.
+  static bool IsSharedInstall(const Extension* extension);
+
   // Cleans up shared extensions list in preferences and returns list of
   // extension IDs and version paths that are in use in |live_extension_paths|.
   // Files on disk are not removed. Must be called on UI thread.
@@ -73,7 +76,8 @@ class ExtensionAssetsManagerChromeOS : public ExtensionAssetsManager {
 
   // Return |true| if |extension| can be installed in a shared place for all
   // users on the device.
-  static bool CanShareAssets(const Extension* extension);
+  static bool CanShareAssets(const Extension* extension,
+                             const base::FilePath& unpacked_extension_root);
 
   // Called on the UI thread to check if a given version of the |extension|
   // already exists at the shared location.

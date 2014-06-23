@@ -19,6 +19,8 @@
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
@@ -142,7 +144,7 @@ void ExtensionAssetsManagerChromeOS::InstallExtension(
     const base::FilePath& local_install_dir,
     Profile* profile,
     InstallExtensionCallback callback) {
-  if (!CanShareAssets(extension)) {
+  if (!CanShareAssets(extension, unpacked_extension_root)) {
     InstallLocalExtension(extension->id(),
                           extension->VersionString(),
                           unpacked_extension_root,
@@ -187,6 +189,12 @@ base::FilePath ExtensionAssetsManagerChromeOS::GetSharedInstallDir() {
     return *g_shared_install_dir_override;
   else
     return base::FilePath(kSharedExtensionsDir);
+}
+
+// static
+bool ExtensionAssetsManagerChromeOS::IsSharedInstall(
+    const Extension* extension) {
+  return GetSharedInstallDir().IsParent(extension->path());
 }
 
 // static
@@ -242,9 +250,16 @@ base::SequencedTaskRunner* ExtensionAssetsManagerChromeOS::GetFileTaskRunner(
 
 // static
 bool ExtensionAssetsManagerChromeOS::CanShareAssets(
-    const Extension* extension) {
+    const Extension* extension,
+    const base::FilePath& unpacked_extension_root) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableExtensionAssetsSharing)) {
+    return false;
+  }
+
+  GURL update_url = ManifestURL::GetUpdateURL(extension);
+  if (!update_url.is_empty() &&
+      !extension_urls::IsWebstoreUpdateUrl(update_url)) {
     return false;
   }
 

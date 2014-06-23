@@ -4,12 +4,12 @@
 
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/content_verify_job.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "extensions/common/switches.h"
 
 namespace extensions {
 

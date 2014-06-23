@@ -665,6 +665,16 @@ const char kEnableWebSocketOverSpdy[]       = "enable-websocket-over-spdy";
 // numbers.
 const char kExplicitlyAllowedPorts[]        = "explicitly-allowed-ports";
 
+// Values for the kExtensionContentVerification flag.
+// See ContentVerifierDelegate::Mode for more explanation.
+const char kExtensionContentVerificationBootstrap[] = "bootstrap";
+const char kExtensionContentVerificationEnforceStrict[] = "enforce_strict";
+const char kExtensionContentVerificationEnforce[] = "enforce";
+
+// Name of the command line flag to force content verification to be on in one
+// of various modes.
+const char kExtensionContentVerification[] = "extension-content-verification";
+
 // Turns on extension install verification if it would not otherwise have been
 // turned on.
 const char kExtensionsInstallVerification[] = "extensions-install-verification";

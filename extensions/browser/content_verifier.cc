@@ -6,31 +6,21 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/metrics/field_trial.h"
+#include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_switches.h"
 #include "extensions/browser/content_hash_fetcher.h"
 #include "extensions/browser/content_hash_reader.h"
 #include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_l10n_util.h"
-#include "extensions/common/switches.h"
-
-namespace {
-
-const char kExperimentName[] = "ExtensionContentVerification";
-
-}  // namespace
 
 namespace extensions {
 
 ContentVerifier::ContentVerifier(content::BrowserContext* context,
                                  ContentVerifierDelegate* delegate)
-    : mode_(GetMode()),
-      context_(context),
+    : context_(context),
       delegate_(delegate),
       fetcher_(new ContentHashFetcher(
           context,
@@ -42,8 +32,7 @@ ContentVerifier::~ContentVerifier() {
 }
 
 void ContentVerifier::Start() {
-  if (mode_ >= BOOTSTRAP)
-    fetcher_->Start();
+  fetcher_->Start();
 }
 
 void ContentVerifier::Shutdown() {
@@ -55,9 +44,6 @@ ContentVerifyJob* ContentVerifier::CreateJobFor(
     const std::string& extension_id,
     const base::FilePath& extension_root,
     const base::FilePath& relative_path) {
-  if (mode_ < BOOTSTRAP || !delegate_)
-    return NULL;
-
   ExtensionRegistry* registry = ExtensionRegistry::Get(context_);
   const Extension* extension =
       registry->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
@@ -90,17 +76,21 @@ void ContentVerifier::VerifyFailed(const std::string& extension_id,
 
   VLOG(1) << "VerifyFailed " << extension_id << " reason:" << reason;
 
-  if (!delegate_ || !fetcher_.get() || mode_ < ENFORCE)
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context_);
+  const Extension* extension =
+      registry->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
+
+  if (!delegate_ || !extension)
+    return;
+
+  ContentVerifierDelegate::Mode mode = delegate_->ShouldBeVerified(*extension);
+  if (mode < ContentVerifierDelegate::ENFORCE)
     return;
 
   if (reason == ContentVerifyJob::MISSING_ALL_HASHES) {
     // If we failed because there were no hashes yet for this extension, just
     // request some.
-    ExtensionRegistry* registry = ExtensionRegistry::Get(context_);
-    const Extension* extension =
-        registry->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
-    if (extension)
-      fetcher_->DoFetch(extension, true /* force */);
+    fetcher_->DoFetch(extension, true /* force */);
   } else {
     delegate_->VerifyFailed(extension_id);
   }
@@ -113,16 +103,17 @@ void ContentVerifier::OnFetchComplete(
     const std::set<base::FilePath>& hash_mismatch_paths) {
   VLOG(1) << "OnFetchComplete " << extension_id << " success:" << success;
 
-  if (!delegate_ || mode_ < ENFORCE)
-    return;
-
-  if (!success && mode_ < ENFORCE_STRICT)
-    return;
-
   ExtensionRegistry* registry = ExtensionRegistry::Get(context_);
   const Extension* extension =
       registry->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
-  if (!extension)
+  if (!delegate_ || !extension)
+    return;
+
+  ContentVerifierDelegate::Mode mode = delegate_->ShouldBeVerified(*extension);
+  if (mode < ContentVerifierDelegate::ENFORCE)
+    return;
+
+  if (!success && mode < ContentVerifierDelegate::ENFORCE_STRICT)
     return;
 
   if ((was_force_check && !success) ||
@@ -133,8 +124,11 @@ void ContentVerifier::OnFetchComplete(
 bool ContentVerifier::ShouldVerifyAnyPaths(
     const Extension* extension,
     const std::set<base::FilePath>& relative_paths) {
-  if (!extension || !extension->version() ||
-      !delegate_->ShouldBeVerified(*extension))
+  if (!extension || !extension->version())
+    return false;
+
+  ContentVerifierDelegate::Mode mode = delegate_->ShouldBeVerified(*extension);
+  if (mode < ContentVerifierDelegate::ENFORCE)
     return false;
 
   // Images used in the browser get transcoded during install, so skip
@@ -178,54 +172,6 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
     return true;
   }
   return false;
-}
-
-// static
-ContentVerifier::Mode ContentVerifier::GetMode() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-  Mode experiment_value = NONE;
-  const std::string group = base::FieldTrialList::FindFullName(kExperimentName);
-  if (group == "EnforceStrict")
-    experiment_value = ENFORCE_STRICT;
-  else if (group == "Enforce")
-    experiment_value = ENFORCE;
-  else if (group == "Bootstrap")
-    experiment_value = BOOTSTRAP;
-
-  // The field trial value that normally comes from the server can be
-  // overridden on the command line, which we don't want to allow since malware
-  // can set chrome command line flags. There isn't currently a way to find out
-  // what the server-provided value is in this case, so we conservatively
-  // default to the strictest mode if we detect our experiment name being
-  // overridden.
-  if (command_line->HasSwitch(::switches::kForceFieldTrials)) {
-    std::string forced_trials =
-        command_line->GetSwitchValueASCII(::switches::kForceFieldTrials);
-    if (forced_trials.find(kExperimentName) != std::string::npos)
-      experiment_value = ENFORCE_STRICT;
-  }
-
-  Mode cmdline_value = NONE;
-  if (command_line->HasSwitch(switches::kExtensionContentVerification)) {
-    std::string switch_value = command_line->GetSwitchValueASCII(
-        switches::kExtensionContentVerification);
-    if (switch_value == switches::kExtensionContentVerificationBootstrap)
-      cmdline_value = BOOTSTRAP;
-    else if (switch_value == switches::kExtensionContentVerificationEnforce)
-      cmdline_value = ENFORCE;
-    else if (switch_value ==
-             switches::kExtensionContentVerificationEnforceStrict)
-      cmdline_value = ENFORCE_STRICT;
-    else
-      // If no value was provided (or the wrong one), just default to enforce.
-      cmdline_value = ENFORCE;
-  }
-
-  // We don't want to allow the command-line flags to eg disable enforcement if
-  // the experiment group says it should be on, or malware may just modify the
-  // command line flags. So return the more restrictive of the 2 values.
-  return std::max(experiment_value, cmdline_value);
 }
 
 }  // namespace extensions

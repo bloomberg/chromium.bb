@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_tokenizer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
@@ -71,11 +72,19 @@
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/login_state.h"
 #endif
 
 using content::BrowserThread;
+
+namespace {
+
+const char kContentVerificationExperimentName[] =
+    "ExtensionContentVerification";
+
+}  // namespace
 
 namespace extensions {
 
@@ -151,15 +160,20 @@ namespace {
 class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
  public:
   explicit ContentVerifierDelegateImpl(ExtensionService* service)
-      : service_(service->AsWeakPtr()) {}
+      : service_(service->AsWeakPtr()), default_mode_(GetDefaultMode()) {}
 
   virtual ~ContentVerifierDelegateImpl() {}
 
-  virtual bool ShouldBeVerified(const Extension& extension) OVERRIDE {
+  virtual Mode ShouldBeVerified(const Extension& extension) OVERRIDE {
+#if defined(OS_CHROMEOS)
+    if (ExtensionAssetsManagerChromeOS::IsSharedInstall(&extension))
+      return ContentVerifierDelegate::ENFORCE_STRICT;
+#endif
+
     if (!extension.is_extension() && !extension.is_legacy_packaged_app())
-      return false;
+      return ContentVerifierDelegate::NONE;
     if (!Manifest::IsAutoUpdateableLocation(extension.location()))
-      return false;
+      return ContentVerifierDelegate::NONE;
 
     if (!ManifestURL::UpdatesFromGallery(&extension)) {
       // It's possible that the webstore update url was overridden for testing
@@ -167,10 +181,10 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
       // to be from the store as well.
       GURL default_webstore_url = extension_urls::GetDefaultWebstoreUpdateUrl();
       if (ManifestURL::GetUpdateURL(&extension) != default_webstore_url)
-        return false;
+        return ContentVerifierDelegate::NONE;
     }
 
-    return true;
+    return default_mode_;
   }
 
   virtual const ContentVerifierKey& PublicKey() OVERRIDE {
@@ -209,8 +223,58 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
       service_->DisableExtension(extension_id, Extension::DISABLE_CORRUPTED);
   }
 
+  static Mode GetDefaultMode() {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+    Mode experiment_value = NONE;
+    const std::string group = base::FieldTrialList::FindFullName(
+        kContentVerificationExperimentName);
+    if (group == "EnforceStrict")
+      experiment_value = ContentVerifierDelegate::ENFORCE_STRICT;
+    else if (group == "Enforce")
+      experiment_value = ContentVerifierDelegate::ENFORCE;
+    else if (group == "Bootstrap")
+      experiment_value = ContentVerifierDelegate::BOOTSTRAP;
+
+    // The field trial value that normally comes from the server can be
+    // overridden on the command line, which we don't want to allow since
+    // malware can set chrome command line flags. There isn't currently a way
+    // to find out what the server-provided value is in this case, so we
+    // conservatively default to the strictest mode if we detect our experiment
+    // name being overridden.
+    if (command_line->HasSwitch(switches::kForceFieldTrials)) {
+      std::string forced_trials =
+          command_line->GetSwitchValueASCII(switches::kForceFieldTrials);
+      if (forced_trials.find(kContentVerificationExperimentName) !=
+              std::string::npos)
+        experiment_value = ContentVerifierDelegate::ENFORCE_STRICT;
+    }
+
+    Mode cmdline_value = NONE;
+    if (command_line->HasSwitch(switches::kExtensionContentVerification)) {
+      std::string switch_value = command_line->GetSwitchValueASCII(
+          switches::kExtensionContentVerification);
+      if (switch_value == switches::kExtensionContentVerificationBootstrap)
+        cmdline_value = ContentVerifierDelegate::BOOTSTRAP;
+      else if (switch_value == switches::kExtensionContentVerificationEnforce)
+        cmdline_value = ContentVerifierDelegate::ENFORCE;
+      else if (switch_value ==
+              switches::kExtensionContentVerificationEnforceStrict)
+        cmdline_value = ContentVerifierDelegate::ENFORCE_STRICT;
+      else
+        // If no value was provided (or the wrong one), just default to enforce.
+        cmdline_value = ContentVerifierDelegate::ENFORCE;
+    }
+
+    // We don't want to allow the command-line flags to eg disable enforcement
+    // if the experiment group says it should be on, or malware may just modify
+    // the command line flags. So return the more restrictive of the 2 values.
+    return std::max(experiment_value, cmdline_value);
+  }
+
  private:
   base::WeakPtr<ExtensionService> service_;
+  ContentVerifierDelegate::Mode default_mode_;
   DISALLOW_COPY_AND_ASSIGN(ContentVerifierDelegateImpl);
 };
 
@@ -252,7 +316,13 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
     install_verifier_->Init();
     content_verifier_ = new ContentVerifier(
         profile_, new ContentVerifierDelegateImpl(extension_service_.get()));
-    content_verifier_->Start();
+    ContentVerifierDelegate::Mode mode =
+        ContentVerifierDelegateImpl::GetDefaultMode();
+#if defined(OS_CHROMEOS)
+    mode = std::max(mode, ContentVerifierDelegate::BOOTSTRAP);
+#endif
+    if (mode > ContentVerifierDelegate::BOOTSTRAP)
+      content_verifier_->Start();
     info_map()->SetContentVerifier(content_verifier_.get());
 
     management_policy_.reset(new ManagementPolicy);

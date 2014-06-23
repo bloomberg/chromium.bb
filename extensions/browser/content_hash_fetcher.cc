@@ -428,8 +428,7 @@ void ContentHashFetcher::Start() {
 }
 
 void ContentHashFetcher::DoFetch(const Extension* extension, bool force) {
-  if (!extension || !delegate_->ShouldBeVerified(*extension))
-    return;
+  DCHECK(extension);
 
   IdAndVersion key(extension->id(), extension->version()->GetString());
   JobMap::iterator found = jobs_.find(key);

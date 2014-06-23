@@ -398,14 +398,14 @@ const Experiment::Choice kEnableSyncAppListChoices[] = {
 const Experiment::Choice kExtensionContentVerificationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_BOOTSTRAP,
-    extensions::switches::kExtensionContentVerification,
-    extensions::switches::kExtensionContentVerificationBootstrap },
+    switches::kExtensionContentVerification,
+    switches::kExtensionContentVerificationBootstrap },
   { IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_ENFORCE,
-    extensions::switches::kExtensionContentVerification,
-    extensions::switches::kExtensionContentVerificationEnforce },
+    switches::kExtensionContentVerification,
+    switches::kExtensionContentVerificationEnforce },
   { IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_ENFORCE_STRICT,
-    extensions::switches::kExtensionContentVerification,
-    extensions::switches::kExtensionContentVerificationEnforceStrict },
+    switches::kExtensionContentVerification,
+    switches::kExtensionContentVerificationEnforceStrict },
 };
 
 #if defined(OS_ANDROID)
