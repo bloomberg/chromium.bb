@@ -5,7 +5,8 @@
     "image": {
       "types": [
         "image/*"
-      ]
+      ],
+      "title": "Test editor"
     }
   },
   "app": {

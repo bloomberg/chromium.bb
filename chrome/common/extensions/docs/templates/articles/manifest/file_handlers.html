@@ -2,7 +2,8 @@
 
 <p>
 Used by <a href="../app_lifecycle#eventpage">packaged apps</a>
-to specify what types of files the app can handle. An app can have multiple <code>file_handlers</code>, with each one having an identifier, a list of MIME types and/or a list of file extensions that can be handled. Here's an example of specifying file handlers:
+to specify what types of files the app can handle. An app can have multiple <code>file_handlers</code>, with each one having an identifier, a list of MIME types and/or a list of file extensions that can be handled, and
+a title. Here's an example of specifying file handlers:
 </p>
 
 <pre data-filename="manifest.json">
@@ -11,6 +12,7 @@ to specify what types of files the app can handle. An app can have multiple <cod
     "types": [
       "text/*"
     ],
+    "title": "Text editor"
   },
   "image": {
     "types": [
@@ -20,11 +22,13 @@ to specify what types of files the app can handle. An app can have multiple <cod
     "extensions": [
       "tiff"
     ],
+    "title": "Image editor"
   },
   "any": {
     "extensions": [
       "*"
     ],
+    "title": "Any file type editor"
   }
 }
 </pre>

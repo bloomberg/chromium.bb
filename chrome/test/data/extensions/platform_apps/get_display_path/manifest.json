@@ -5,7 +5,8 @@
     "text": {
       "types": [
         "text/*"
-      ]
+      ],
+      "title": "Test editor"
     }
   },
   "permissions": [

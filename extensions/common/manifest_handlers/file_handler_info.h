@@ -21,6 +21,9 @@ struct FileHandlerInfo {
   // The id of this handler.
   std::string id;
 
+  // The title of this handler.
+  std::string title;
+
   // File extensions associated with this handler.
   std::set<std::string> extensions;
 

@@ -40,7 +40,9 @@
         "ogv",
         "ogx",
         "webm"
-      ]
+      ],
+      // TODO(yoshiki): localize this.
+      "title": "Watch"
     }
   },
   "app": {

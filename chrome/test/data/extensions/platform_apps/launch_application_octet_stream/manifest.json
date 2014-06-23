@@ -5,7 +5,8 @@
     "unknown": {
       "types": [
         "application/octet-stream"
-      ]
+      ],
+      "title": "Test editor"
     }
   },
   "app": {

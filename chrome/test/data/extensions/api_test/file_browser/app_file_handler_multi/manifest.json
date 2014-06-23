@@ -11,7 +11,8 @@
   },
   "file_handlers": {
     "textAction": {
-      "extensions": ["txt"]
+      "extensions": ["txt"],
+      "title": "foo action handler"
     }
   },
   "permissions": [

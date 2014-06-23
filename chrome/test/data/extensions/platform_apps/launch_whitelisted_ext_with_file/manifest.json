@@ -6,7 +6,8 @@
     "text": {
       "extensions": [
         "txt"
-      ]
+      ],
+      "title": "Test editor"
     }
   },
   "background": {

@@ -12,17 +12,7 @@
       "types": [
         "text/*"
       ],
-      "title": "Text editor"
-    },
-    "image": {
-      "types": [
-        "image/*"
-      ],
-      "extensions": [
-        ".png",
-        ".gif"
-      ],
-      "title": "Image editor"
+      "title": 1337
     }
   }
 }
