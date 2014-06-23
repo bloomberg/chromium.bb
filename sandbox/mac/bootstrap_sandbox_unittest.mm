@@ -11,9 +11,11 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/mach_logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/process/kill.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #import "testing/gtest_mac.h"
@@ -410,6 +412,106 @@ MULTIPROCESS_TEST_MAIN(DefaultRuleAllow) {
   strncpy(msg.buf, kSubstituteAck, sizeof(msg.buf));
 
   CHECK_EQ(KERN_SUCCESS, mach_msg_send(&msg.header));
+
+  return 0;
+}
+
+TEST_F(BootstrapSandboxTest, ChildOutliveSandbox) {
+  const int kTestPolicyId = 1;
+  mach_port_t task = mach_task_self();
+
+  // Create a server port.
+  mach_port_t port;
+  ASSERT_EQ(KERN_SUCCESS, mach_port_allocate(task, MACH_PORT_RIGHT_RECEIVE,
+      &port));
+  base::mac::ScopedMachReceiveRight scoped_port_recv(port);
+
+  ASSERT_EQ(KERN_SUCCESS, mach_port_insert_right(task, port, port,
+      MACH_MSG_TYPE_MAKE_SEND));
+  base::mac::ScopedMachSendRight scoped_port_send(port);
+
+  // Set up the policy and register the port.
+  BootstrapSandboxPolicy policy(BaselinePolicy());
+  policy.rules["sync"] = Rule(port);
+  sandbox_->RegisterSandboxPolicy(kTestPolicyId, policy);
+
+  // Launch the child.
+  sandbox_->PrepareToForkWithPolicy(kTestPolicyId);
+  base::LaunchOptions options;
+  options.replacement_bootstrap_name = sandbox_->server_bootstrap_name();
+  base::ProcessHandle pid =
+      SpawnChildWithOptions("ChildOutliveSandbox", options);
+  ASSERT_GT(pid, 0);
+  sandbox_->FinishedFork(pid);
+
+  // Synchronize with the child.
+  mach_msg_empty_rcv_t rcv_msg;
+  bzero(&rcv_msg, sizeof(rcv_msg));
+  kern_return_t kr = mach_msg(&rcv_msg.header, MACH_RCV_MSG, 0,
+      sizeof(rcv_msg), port,
+      TestTimeouts::tiny_timeout().InMilliseconds(), MACH_PORT_NULL);
+  ASSERT_EQ(KERN_SUCCESS, kr) << mach_error_string(kr);
+
+  // Destroy the sandbox.
+  sandbox_.reset();
+
+  // Synchronize again with the child.
+  mach_msg_empty_send_t send_msg;
+  bzero(&send_msg, sizeof(send_msg));
+  send_msg.header.msgh_size = sizeof(send_msg);
+  send_msg.header.msgh_remote_port = rcv_msg.header.msgh_remote_port;
+  send_msg.header.msgh_bits =
+      MACH_MSGH_BITS_REMOTE(MACH_MSG_TYPE_MOVE_SEND_ONCE);
+  kr = mach_msg(&send_msg.header, MACH_SEND_MSG, send_msg.header.msgh_size, 0,
+      MACH_PORT_NULL, TestTimeouts::tiny_timeout().InMilliseconds(),
+      MACH_PORT_NULL);
+  EXPECT_EQ(KERN_SUCCESS, kr) << mach_error_string(kr);
+
+  int code = 0;
+  EXPECT_TRUE(base::WaitForExitCode(pid, &code));
+  EXPECT_EQ(0, code);
+}
+
+MULTIPROCESS_TEST_MAIN(ChildOutliveSandbox) {
+  // Get the synchronization channel.
+  mach_port_t port = MACH_PORT_NULL;
+  CHECK_EQ(KERN_SUCCESS, bootstrap_look_up(bootstrap_port, "sync", &port));
+
+  // Create a reply port.
+  mach_port_t reply_port;
+  CHECK_EQ(KERN_SUCCESS, mach_port_allocate(mach_task_self(),
+      MACH_PORT_RIGHT_RECEIVE, &reply_port));
+  base::mac::ScopedMachReceiveRight scoped_reply_port(reply_port);
+
+  // Send a message to shutdown the sandbox.
+  mach_msg_empty_send_t send_msg;
+  bzero(&send_msg, sizeof(send_msg));
+  send_msg.header.msgh_size = sizeof(send_msg);
+  send_msg.header.msgh_local_port = reply_port;
+  send_msg.header.msgh_remote_port = port;
+  send_msg.header.msgh_bits = MACH_MSGH_BITS(MACH_MSG_TYPE_MOVE_SEND,
+                                             MACH_MSG_TYPE_MAKE_SEND_ONCE);
+  kern_return_t kr = mach_msg_send(&send_msg.header);
+  MACH_CHECK(kr == KERN_SUCCESS, kr) << "mach_msg_send";
+
+  // Flood the server's message queue with messages. There should be some
+  // pending when the sandbox is destroyed.
+  for (int i = 0; i < 20; ++i) {
+    mach_port_t tmp = MACH_PORT_NULL;
+    std::string name = base::StringPrintf("test.%d", i);
+    bootstrap_look_up(bootstrap_port, const_cast<char*>(name.c_str()), &tmp);
+  }
+
+  // Ack that the sandbox has been shutdown.
+  mach_msg_empty_rcv_t rcv_msg;
+  bzero(&rcv_msg, sizeof(rcv_msg));
+  rcv_msg.header.msgh_size = sizeof(rcv_msg);
+  rcv_msg.header.msgh_local_port = reply_port;
+  kr = mach_msg_receive(&rcv_msg.header);
+  MACH_CHECK(kr == KERN_SUCCESS, kr) << "mach_msg_receive";
+
+  // Try to message the sandbox.
+  bootstrap_look_up(bootstrap_port, "test", &port);
 
   return 0;
 }

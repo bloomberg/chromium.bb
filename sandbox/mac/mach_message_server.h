@@ -79,6 +79,10 @@ class MachMessageServer {
   // A MACH_RECV dispatch source for the server_port_.
   dispatch_source_t server_source_;
 
+  // Semaphore used to wait on the |server_source_|'s cancellation in the
+  // destructor.
+  dispatch_semaphore_t source_canceled_;
+
   // The size of the two message buffers below.
   const mach_msg_size_t buffer_size_;
 

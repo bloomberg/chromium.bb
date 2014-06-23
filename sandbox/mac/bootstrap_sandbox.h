@@ -84,10 +84,6 @@ class SANDBOX_EXPORT BootstrapSandbox {
  private:
   BootstrapSandbox();
 
-  // A Mach IPC message server that is used to intercept and filter bootstrap
-  // requests.
-  scoped_ptr<LaunchdInterceptionServer> server_;
-
   // The name in the system bootstrap server by which the |server_|'s port
   // is known.
   const std::string server_bootstrap_name_;
@@ -107,6 +103,10 @@ class SANDBOX_EXPORT BootstrapSandbox {
 
   // The association between process ID and sandbox policy ID.
   std::map<base::ProcessHandle, int> sandboxed_processes_;
+
+  // A Mach IPC message server that is used to intercept and filter bootstrap
+  // requests.
+  scoped_ptr<LaunchdInterceptionServer> server_;
 };
 
 }  // namespace sandbox

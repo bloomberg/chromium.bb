@@ -23,6 +23,7 @@ MachMessageServer::MachMessageServer(
       server_port_(server_receive_right),
       server_queue_(NULL),
       server_source_(NULL),
+      source_canceled_(dispatch_semaphore_create(0)),
       buffer_size_(
           mach_vm_round_page(buffer_size + sizeof(mach_msg_audit_trailer_t))),
       did_forward_message_(false) {
@@ -30,8 +31,13 @@ MachMessageServer::MachMessageServer(
 }
 
 MachMessageServer::~MachMessageServer() {
-  if (server_source_)
+  if (server_source_) {
+    dispatch_source_cancel(server_source_);
     dispatch_release(server_source_);
+
+    dispatch_semaphore_wait(source_canceled_, DISPATCH_TIME_FOREVER);
+    dispatch_release(source_canceled_);
+  }
   if (server_queue_)
     dispatch_release(server_queue_);
 }
@@ -80,6 +86,9 @@ bool MachMessageServer::Initialize() {
   server_source_ = dispatch_source_create(DISPATCH_SOURCE_TYPE_MACH_RECV,
       server_port_.get(), 0, server_queue_);
   dispatch_source_set_event_handler(server_source_, ^{ ReceiveMessage(); });
+  dispatch_source_set_cancel_handler(server_source_, ^{
+      dispatch_semaphore_signal(source_canceled_);
+  });
   dispatch_resume(server_source_);
 
   return true;
