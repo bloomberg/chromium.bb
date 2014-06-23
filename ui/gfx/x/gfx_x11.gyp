@@ -12,6 +12,7 @@
 
   'targets': [
     {
+      # GN version: //ui/gfx/x
       'target_name': 'gfx_x11',
       'type': '<(component)',
       'dependencies': [

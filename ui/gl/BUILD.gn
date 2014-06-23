@@ -172,7 +172,7 @@ component("gl") {
     ]
 
     deps += [
-      "//ui/gfx:gfx_x11",
+      "//ui/gfx/x",
     ]
   }
   if (is_win) {

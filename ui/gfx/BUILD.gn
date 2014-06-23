@@ -337,7 +337,7 @@ component("gfx") {
 
   if (use_x11) {
     deps += [
-      ":gfx_x11",
+      "//ui/gfx/x",
     ]
   } else {
     sources -= [
@@ -417,30 +417,5 @@ if (is_android) {
       "../android/java/src/org/chromium/ui/gfx/ViewConfigurationHelper.java",
     ]
     jni_package = "gfx"
-  }
-}
-
-if (use_x11) {
-  component("gfx_x11") {
-    sources = [
-      "x/x11_atom_cache.cc",
-      "x/x11_atom_cache.h",
-      "x/x11_connection.cc",
-      "x/x11_connection.h",
-      "x/x11_error_tracker.cc",
-      "x/x11_error_tracker.h",
-      "x/x11_switches.cc",
-      "x/x11_switches.h",
-      "x/x11_types.cc",
-      "x/x11_types.h",
-    ]
-
-    defines = [ "GFX_IMPLEMENTATION" ]
-    configs += [ "//build/config/linux:x11" ]
-
-    deps = [
-      ":gfx_export",
-      "//base"
-    ]
   }
 }
