@@ -14,7 +14,6 @@
 
 class GURL;
 class SkBitmap;
-struct ExtensionMsg_ExecuteCode_Params;
 struct ExtensionMsg_ExternalConnectionInfo;
 
 namespace base {
@@ -54,18 +53,12 @@ class ExtensionHelper
  private:
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void DidFinishLoad(blink::WebLocalFrame* frame) OVERRIDE;
   virtual void DidCreateDocumentElement(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void DidStartProvisionalLoad(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void FrameDetached(blink::WebFrame* frame) OVERRIDE;
   virtual void DidMatchCSS(
       blink::WebLocalFrame* frame,
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors)
       OVERRIDE;
-  virtual void DidCreateDataSource(blink::WebLocalFrame* frame,
-                                   blink::WebDataSource* ds) OVERRIDE;
   virtual void DraggableRegionsChanged(blink::WebFrame* frame) OVERRIDE;
 
   void OnExtensionResponse(int request_id, bool success,
@@ -86,14 +79,12 @@ class ExtensionHelper
                                  const Message& message);
   void OnExtensionDispatchOnDisconnect(int port_id,
                                        const std::string& error_message);
-  void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
   void OnNotifyRendererViewType(ViewType view_type);
   void OnSetTabId(int tab_id);
   void OnUpdateBrowserWindowId(int window_id);
   void OnAddMessageToConsole(content::ConsoleMessageLevel level,
                              const std::string& message);
   void OnAppWindowClosed();
-  void OnGrantContentScriptPermission(int request_id);
 
   Dispatcher* dispatcher_;
 

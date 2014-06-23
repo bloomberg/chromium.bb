@@ -219,7 +219,7 @@ void ActiveScriptController::RunPendingForExtension(
   LocationBarController::NotifyChange(web_contents());
 }
 
-void ActiveScriptController::OnRequestContentScriptPermission(
+void ActiveScriptController::OnRequestScriptInjectionPermission(
     const std::string& extension_id,
     int page_id,
     int request_id) {
@@ -251,29 +251,28 @@ void ActiveScriptController::OnRequestContentScriptPermission(
     RequestScriptInjection(
         extension,
         page_id,
-        base::Bind(&ActiveScriptController::GrantContentScriptPermission,
+        base::Bind(&ActiveScriptController::PermitScriptInjection,
                    base::Unretained(this),
                    request_id));
   } else {
-    GrantContentScriptPermission(request_id);
+    PermitScriptInjection(request_id);
   }
 }
 
-void ActiveScriptController::GrantContentScriptPermission(int request_id) {
+void ActiveScriptController::PermitScriptInjection(int request_id) {
   content::RenderViewHost* render_view_host =
       web_contents()->GetRenderViewHost();
   if (render_view_host) {
-    render_view_host->Send(new ExtensionMsg_GrantContentScriptPermission(
-                               render_view_host->GetRoutingID(),
-                               request_id));
+    render_view_host->Send(new ExtensionMsg_PermitScriptInjection(
+        render_view_host->GetRoutingID(), request_id));
   }
 }
 
 bool ActiveScriptController::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ActiveScriptController, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestContentScriptPermission,
-                        OnRequestContentScriptPermission)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestScriptInjectionPermission,
+                        OnRequestScriptInjectionPermission)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

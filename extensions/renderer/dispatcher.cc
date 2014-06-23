@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/dispatcher.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
@@ -66,11 +67,12 @@
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
+#include "extensions/renderer/script_injection.h"
+#include "extensions/renderer/script_injection_manager.h"
 #include "extensions/renderer/send_request_natives.h"
 #include "extensions/renderer/set_icon_natives.h"
 #include "extensions/renderer/test_features_native_handler.h"
 #include "extensions/renderer/user_gestures_native_handler.h"
-#include "extensions/renderer/user_script_slave.h"
 #include "extensions/renderer/utils_native_handler.h"
 #include "extensions/renderer/v8_context_native_handler.h"
 #include "grit/extensions_renderer_resources.h"
@@ -177,7 +179,8 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       content_watcher_(new ContentWatcher()),
       source_map_(&ResourceBundle::GetSharedInstance()),
       v8_schema_registry_(new V8SchemaRegistry),
-      is_webkit_initialized_(false) {
+      is_webkit_initialized_(false),
+      user_script_set_observer_(this) {
   const CommandLine& command_line = *(CommandLine::ForCurrentProcess());
   is_extension_process_ =
       command_line.HasSwitch(extensions::switches::kExtensionProcess) ||
@@ -190,12 +193,19 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
 
   RenderThread::Get()->RegisterExtension(SafeBuiltins::CreateV8Extension());
 
-  user_script_slave_.reset(new UserScriptSlave(&extensions_));
+  user_script_set_.reset(new UserScriptSet(&extensions_));
+  script_injection_manager_.reset(
+      new ScriptInjectionManager(&extensions_, user_script_set_.get()));
+  user_script_set_observer_.Add(user_script_set_.get());
   request_sender_.reset(new RequestSender(this));
   PopulateSourceMap();
 }
 
 Dispatcher::~Dispatcher() {
+}
+
+void Dispatcher::OnRenderViewCreated(content::RenderView* render_view) {
+  script_injection_manager_->OnRenderViewCreated(render_view);
 }
 
 bool Dispatcher::IsExtensionActive(const std::string& extension_id) const {
@@ -209,7 +219,7 @@ bool Dispatcher::IsExtensionActive(const std::string& extension_id) const {
 std::string Dispatcher::GetExtensionID(const WebFrame* frame, int world_id) {
   if (world_id != 0) {
     // Isolated worlds (content script).
-    return user_script_slave_->GetExtensionIdForIsolatedWorld(world_id);
+    return ScriptInjection::GetExtensionIdForIsolatedWorld(world_id);
   }
 
   // TODO(kalman): Delete this check.
@@ -466,7 +476,6 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePermissions, OnUpdatePermissions)
   IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateTabSpecificPermissions,
                       OnUpdateTabSpecificPermissions)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateUserScripts, OnUpdateUserScripts)
   IPC_MESSAGE_HANDLER(ExtensionMsg_UsingWebRequestAPI, OnUsingWebRequestAPI)
   IPC_MESSAGE_FORWARD(ExtensionMsg_WatchPages,
                       content_watcher_.get(),
@@ -695,7 +704,7 @@ void Dispatcher::OnUnloaded(const std::string& id) {
   // If the extension is later reloaded with a different set of permissions,
   // we'd like it to get a new isolated world ID, so that it can pick up the
   // changed origin whitelist.
-  user_script_slave_->RemoveIsolatedWorld(id);
+  ScriptInjection::RemoveIsolatedWorld(id);
 
   // Invalidate all of the contexts that were removed.
   // TODO(kalman): add an invalidation observer interface to ScriptContext.
@@ -767,34 +776,19 @@ void Dispatcher::OnUpdateTabSpecificPermissions(
       this, page_id, tab_id, extension_id, origin_set);
 }
 
-void Dispatcher::OnUpdateUserScripts(
-    base::SharedMemoryHandle scripts,
-    const std::set<std::string>& extension_ids) {
-  if (!base::SharedMemory::IsHandleValid(scripts)) {
-    NOTREACHED() << "Bad scripts handle";
-    return;
-  }
-
-  for (std::set<std::string>::const_iterator iter = extension_ids.begin();
-       iter != extension_ids.end();
-       ++iter) {
-    if (!Extension::IdIsValid(*iter)) {
-      NOTREACHED() << "Invalid extension id: " << *iter;
-      return;
-    }
-  }
-
-  user_script_slave_->UpdateScripts(scripts, extension_ids);
-  UpdateActiveExtensions();
-}
-
 void Dispatcher::OnUsingWebRequestAPI(bool webrequest_used) {
   delegate_->HandleWebRequestAPIUsage(webrequest_used);
 }
 
+void Dispatcher::OnUserScriptsUpdated(
+      const std::set<std::string>& changed_extensions,
+      const std::vector<UserScript*>& scripts) {
+  UpdateActiveExtensions();
+}
+
 void Dispatcher::UpdateActiveExtensions() {
   std::set<std::string> active_extensions = active_extension_ids_;
-  user_script_slave_->GetActiveExtensions(&active_extensions);
+  user_script_set_->GetActiveExtensionIds(&active_extensions);
   delegate_->OnActiveExtensionsUpdated(active_extensions);
 }
 

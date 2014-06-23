@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This contains unprivileged javascript APIs for extensions and apps.  It
-// can be loaded by any extension-related context, such as content scripts or
-// background pages. See user_script_slave.cc for script that is loaded by
-// content scripts only.
+// chrome.runtime.messaging API implementation.
 
   // TODO(kalman): factor requiring chrome out of here.
   var chrome = requireNative('chrome').GetChrome();

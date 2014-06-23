@@ -435,6 +435,7 @@ void ChromeContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   new extensions::ExtensionHelper(render_view, extension_dispatcher_.get());
   new extensions::ChromeExtensionHelper(render_view);
+  extension_dispatcher_->OnRenderViewCreated(render_view);
   new PageLoadHistograms(render_view);
 #if defined(ENABLE_PRINTING)
   new printing::PrintWebViewHelper(render_view);

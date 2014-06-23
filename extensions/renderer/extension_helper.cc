@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/extension_helper.h"
 
-#include "base/lazy_instance.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "extensions/common/api/messaging/message.h"
@@ -13,13 +12,10 @@
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/messaging_bindings.h"
-#include "extensions/renderer/user_script_scheduler.h"
-#include "extensions/renderer/user_script_slave.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using content::ConsoleMessageLevel;
@@ -28,19 +24,11 @@ using blink::WebDataSource;
 using blink::WebFrame;
 using blink::WebLocalFrame;
 using blink::WebURLRequest;
-using blink::WebScopedUserGesture;
 using blink::WebView;
 
 namespace extensions {
 
 namespace {
-// Keeps a mapping from the frame pointer to a UserScriptScheduler object.
-// We store this mapping per process, because a frame can jump from one
-// document to another with adoptNode, and so having the object be a
-// RenderViewObserver means it might miss some notifications after it moves.
-typedef std::map<WebFrame*, UserScriptScheduler*> SchedulerMap;
-static base::LazyInstance<SchedulerMap> g_schedulers =
-    LAZY_INSTANCE_INITIALIZER;
 
 // A RenderViewVisitor class that iterates through the set of available
 // views, looking for a view of the given type, in the given browser window
@@ -149,7 +137,6 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnExtensionDeliverMessage)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect,
                         OnExtensionDispatchOnDisconnect)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_ExecuteCode, OnExecuteCode)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetTabId, OnSetTabId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
                         OnUpdateBrowserWindowId)
@@ -159,42 +146,13 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
                         OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ExtensionMsg_AppWindowClosed,
                         OnAppWindowClosed)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_GrantContentScriptPermission,
-                        OnGrantContentScriptPermission)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void ExtensionHelper::DidFinishDocumentLoad(WebLocalFrame* frame) {
-  dispatcher_->user_script_slave()->InjectScripts(
-      frame, UserScript::DOCUMENT_END);
-
-  SchedulerMap::iterator i = g_schedulers.Get().find(frame);
-  if (i != g_schedulers.Get().end())
-    i->second->DidFinishDocumentLoad();
-}
-
-void ExtensionHelper::DidFinishLoad(blink::WebLocalFrame* frame) {
-  SchedulerMap::iterator i = g_schedulers.Get().find(frame);
-  if (i != g_schedulers.Get().end())
-    i->second->DidFinishLoad();
-}
-
 void ExtensionHelper::DidCreateDocumentElement(WebLocalFrame* frame) {
-  dispatcher_->user_script_slave()->InjectScripts(
-      frame, UserScript::DOCUMENT_START);
-  SchedulerMap::iterator i = g_schedulers.Get().find(frame);
-  if (i != g_schedulers.Get().end())
-    i->second->DidCreateDocumentElement();
-
   dispatcher_->DidCreateDocumentElement(frame);
-}
-
-void ExtensionHelper::DidStartProvisionalLoad(blink::WebLocalFrame* frame) {
-  SchedulerMap::iterator i = g_schedulers.Get().find(frame);
-  if (i != g_schedulers.Get().end())
-    i->second->DidStartProvisionalLoad();
 }
 
 void ExtensionHelper::DraggableRegionsChanged(blink::WebFrame* frame) {
@@ -210,35 +168,12 @@ void ExtensionHelper::DraggableRegionsChanged(blink::WebFrame* frame) {
   Send(new ExtensionHostMsg_UpdateDraggableRegions(routing_id(), regions));
 }
 
-void ExtensionHelper::FrameDetached(WebFrame* frame) {
-  // This could be called before DidCreateDataSource, in which case the frame
-  // won't be in the map.
-  SchedulerMap::iterator i = g_schedulers.Get().find(frame);
-  if (i == g_schedulers.Get().end())
-    return;
-
-  delete i->second;
-  g_schedulers.Get().erase(i);
-
-  dispatcher_->user_script_slave()->FrameDetached(frame);
-}
-
 void ExtensionHelper::DidMatchCSS(
     blink::WebLocalFrame* frame,
     const blink::WebVector<blink::WebString>& newly_matching_selectors,
     const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
   dispatcher_->DidMatchCSS(
       frame, newly_matching_selectors, stopped_matching_selectors);
-}
-
-void ExtensionHelper::DidCreateDataSource(WebLocalFrame* frame,
-                                          WebDataSource* ds) {
-  // Check first if we created a scheduler for the frame, since this function
-  // gets called for navigations within the document.
-  if (g_schedulers.Get().count(frame))
-    return;
-
-  g_schedulers.Get()[frame] = new UserScriptScheduler(frame, dispatcher_);
 }
 
 void ExtensionHelper::OnExtensionResponse(int request_id,
@@ -289,28 +224,6 @@ void ExtensionHelper::OnExtensionDispatchOnDisconnect(
       dispatcher_->script_context_set(), port_id, error_message, render_view());
 }
 
-void ExtensionHelper::OnExecuteCode(
-    const ExtensionMsg_ExecuteCode_Params& params) {
-  WebView* webview = render_view()->GetWebView();
-  WebFrame* main_frame = webview->mainFrame();
-  if (!main_frame) {
-    base::ListValue val;
-    Send(new ExtensionHostMsg_ExecuteCodeFinished(routing_id(),
-                                                  params.request_id,
-                                                  "No main frame",
-                                                  -1,
-                                                  GURL(std::string()),
-                                                  val));
-    return;
-  }
-
-  // chrome.tabs.executeScript() only supports execution in either the top frame
-  // or all frames.  We handle both cases in the top frame.
-  SchedulerMap::iterator i = g_schedulers.Get().find(main_frame);
-  if (i != g_schedulers.Get().end())
-    i->second->ExecuteCode(params);
-}
-
 void ExtensionHelper::OnNotifyRendererViewType(ViewType type) {
   view_type_ = type;
 }
@@ -340,11 +253,6 @@ void ExtensionHelper::OnAppWindowClosed() {
     return;
   script_context->module_system()->CallModuleMethod("app.window",
                                                     "onAppWindowClosed");
-}
-
-void ExtensionHelper::OnGrantContentScriptPermission(int request_id) {
-  dispatcher_->user_script_slave()->OnContentScriptGrantedPermission(
-      render_view(), request_id);
 }
 
 }  // namespace extensions
