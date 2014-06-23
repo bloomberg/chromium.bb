@@ -180,7 +180,7 @@ def argument_context(interface, method, argument, index):
 
     return {
         'cpp_type': idl_type.cpp_type_args(extended_attributes=extended_attributes,
-                                           used_as_argument=True,
+                                           raw_type=True,
                                            used_as_variadic_argument=argument.is_variadic),
         'cpp_value': this_cpp_value,
         # FIXME: check that the default value's type is compatible with the argument's

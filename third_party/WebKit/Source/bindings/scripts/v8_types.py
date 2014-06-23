@@ -119,7 +119,7 @@ CPP_SPECIAL_CONVERSION_RULES = {
 }
 
 
-def cpp_type(idl_type, extended_attributes=None, used_as_argument=False, used_as_variadic_argument=False, used_in_cpp_sequence=False):
+def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_argument=False, used_as_variadic_argument=False, used_in_cpp_sequence=False):
     """Returns C++ type corresponding to IDL type.
 
     |idl_type| argument is of type IdlType, while return value is a string
@@ -127,8 +127,12 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False, used_as
     Args:
         idl_type:
             IdlType
-        used_as_argument:
+        raw_type:
             bool, True if idl_type's raw/primitive C++ type should be returned.
+        used_as_argument:
+            bool, True if the C++ type is used as an argument of a method.
+        used_as_variadic_argument:
+            bool, True if the C++ type is used as a variadic argument of a method.
         used_in_cpp_sequence:
             bool, True if the C++ type is used as an element of an array or sequence.
     """
@@ -166,26 +170,26 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False, used_as
         return CPP_SPECIAL_CONVERSION_RULES[base_idl_type]
 
     if base_idl_type in NON_WRAPPER_TYPES:
-        return 'RefPtr<%s>' % base_idl_type
+        return ('PassRefPtr<%s>' if used_as_argument else 'RefPtr<%s>') % base_idl_type
     if idl_type.is_string_type:
-        if not used_as_argument:
+        if not raw_type:
             return 'String'
         return 'V8StringResource<%s>' % string_mode()
 
-    if idl_type.is_typed_array_type and used_as_argument:
+    if idl_type.is_typed_array_type and raw_type:
         return base_idl_type + '*'
     if idl_type.is_interface_type:
         implemented_as_class = idl_type.implemented_as
-        if used_as_argument:
+        if raw_type:
             return implemented_as_class + '*'
         new_type = 'Member' if used_in_cpp_sequence else 'RawPtr'
-        ptr_type = cpp_ptr_type('RefPtr', new_type, idl_type.gc_type)
+        ptr_type = cpp_ptr_type(('PassRefPtr' if used_as_argument else 'RefPtr'), new_type, idl_type.gc_type)
         return cpp_template_type(ptr_type, implemented_as_class)
     # Default, assume native type is a pointer with same type name as idl type
     return base_idl_type + '*'
 
 
-def cpp_type_union(idl_type, extended_attributes=None, used_as_argument=False):
+def cpp_type_union(idl_type, extended_attributes=None):
     return (member_type.cpp_type for member_type in idl_type.member_types)
 
 
@@ -392,19 +396,22 @@ V8_VALUE_TO_CPP_VALUE = {
     'unsigned long long': 'toUInt64({arguments})',
     # Interface types
     'CompareHow': 'static_cast<Range::CompareHow>({v8_value}->Int32Value())',
-    'Dictionary': 'Dictionary({v8_value}, info.GetIsolate())',
+    'Dictionary': 'Dictionary({v8_value}, {isolate})',
     'EventTarget': 'V8DOMWrapper::isDOMWrapper({v8_value}) ? toWrapperTypeInfo(v8::Handle<v8::Object>::Cast({v8_value}))->toEventTarget(v8::Handle<v8::Object>::Cast({v8_value})) : 0',
-    'MediaQueryListListener': 'MediaQueryListListener::create(ScriptState::current(info.GetIsolate()), ScriptValue(ScriptState::current(info.GetIsolate()), {v8_value}))',
-    'NodeFilter': 'toNodeFilter({v8_value}, info.Holder(), ScriptState::current(info.GetIsolate()))',
-    'Promise': 'ScriptPromise::cast(ScriptState::current(info.GetIsolate()), {v8_value})',
-    'SerializedScriptValue': 'SerializedScriptValue::create({v8_value}, info.GetIsolate())',
-    'ScriptValue': 'ScriptValue(ScriptState::current(info.GetIsolate()), {v8_value})',
-    'Window': 'toDOMWindow({v8_value}, info.GetIsolate())',
-    'XPathNSResolver': 'toXPathNSResolver({v8_value}, info.GetIsolate())',
+    'MediaQueryListListener': 'MediaQueryListListener::create(ScriptState::current({isolate}), ScriptValue(ScriptState::current({isolate}), {v8_value}))',
+    'NodeFilter': 'toNodeFilter({v8_value}, info.Holder(), ScriptState::current({isolate}))',
+    'Promise': 'ScriptPromise::cast(ScriptState::current({isolate}), {v8_value})',
+    'SerializedScriptValue': 'SerializedScriptValue::create({v8_value}, {isolate})',
+    'ScriptValue': 'ScriptValue(ScriptState::current({isolate}), {v8_value})',
+    'Window': 'toDOMWindow({v8_value}, {isolate})',
+    'XPathNSResolver': 'toXPathNSResolver({v8_value}, {isolate})',
 }
 
 
-def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index):
+def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolate='info.GetIsolate()'):
+    if idl_type.name == 'void':
+        return ''
+
     # Composite types
     array_or_sequence_type = idl_type.array_or_sequence_type
     if array_or_sequence_type:
@@ -430,12 +437,12 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index):
             'V8{idl_type}::toNative(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')
     else:
         cpp_expression_format = (
-            'V8{idl_type}::toNativeWithTypeCheck(info.GetIsolate(), {v8_value})')
+            'V8{idl_type}::toNativeWithTypeCheck({isolate}, {v8_value})')
 
-    return cpp_expression_format.format(arguments=arguments, idl_type=base_idl_type, v8_value=v8_value)
+    return cpp_expression_format.format(arguments=arguments, idl_type=base_idl_type, v8_value=v8_value, isolate=isolate)
 
 
-def v8_value_to_cpp_value_array_or_sequence(array_or_sequence_type, v8_value, index):
+def v8_value_to_cpp_value_array_or_sequence(array_or_sequence_type, v8_value, index, isolate='info.GetIsolate()'):
     # Index is None for setters, index (starting at 0) for method arguments,
     # and is used to provide a human-readable exception message
     if index is None:
@@ -446,19 +453,19 @@ def v8_value_to_cpp_value_array_or_sequence(array_or_sequence_type, v8_value, in
         array_or_sequence_type.name != 'Dictionary'):
         this_cpp_type = None
         ref_ptr_type = cpp_ptr_type('RefPtr', 'Member', array_or_sequence_type.gc_type)
-        expression_format = '(to{ref_ptr_type}NativeArray<{array_or_sequence_type}, V8{array_or_sequence_type}>({v8_value}, {index}, info.GetIsolate()))'
+        expression_format = '(to{ref_ptr_type}NativeArray<{array_or_sequence_type}, V8{array_or_sequence_type}>({v8_value}, {index}, {isolate}))'
         add_includes_for_type(array_or_sequence_type)
     else:
         ref_ptr_type = None
         this_cpp_type = array_or_sequence_type.cpp_type
-        expression_format = 'toNativeArray<{cpp_type}>({v8_value}, {index}, info.GetIsolate())'
-    expression = expression_format.format(array_or_sequence_type=array_or_sequence_type.name, cpp_type=this_cpp_type, index=index, ref_ptr_type=ref_ptr_type, v8_value=v8_value)
+        expression_format = 'toNativeArray<{cpp_type}>({v8_value}, {index}, {isolate})'
+    expression = expression_format.format(array_or_sequence_type=array_or_sequence_type.name, cpp_type=this_cpp_type, index=index, ref_ptr_type=ref_ptr_type, v8_value=v8_value, isolate=isolate)
     return expression
 
 
 def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None, declare_variable=True):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
-    this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, used_as_argument=True)
+    this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, raw_type=True)
 
     idl_type = idl_type.preprocessed_type
     cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index)

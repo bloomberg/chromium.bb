@@ -114,7 +114,7 @@ def interface_context(interface):
     set_wrapper_reference_to_list = [{
         'name': argument.name,
         # FIXME: properly should be:
-        # 'cpp_type': argument.idl_type.cpp_type_args(used_as_argument=True),
+        # 'cpp_type': argument.idl_type.cpp_type_args(raw_type=True),
         # (if type is non-wrapper type like NodeFilter, normally RefPtr)
         # Raw pointers faster though, and NodeFilter hacky anyway.
         'cpp_type': argument.idl_type.implemented_as + '*',

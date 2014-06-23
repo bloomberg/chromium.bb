@@ -51,6 +51,7 @@ enum WorldIdConstants {
     // Embedder isolated worlds can use IDs in [1, 1<<29).
     EmbedderWorldIdLimit = (1 << 29),
     ScriptPreprocessorIsolatedWorldId,
+    PrivateScriptIsolatedWorldId,
     IsolatedWorldIdLimit,
     WorkerWorldId,
     TestingWorldId,
@@ -62,6 +63,7 @@ public:
     static PassRefPtr<DOMWrapperWorld> create(int worldId = -1, int extensionGroup = -1);
 
     static const int mainWorldExtensionGroup = 0;
+    static const int privateScriptIsolatedWorldExtensionGroup = 1;
     static PassRefPtr<DOMWrapperWorld> ensureIsolatedWorld(int worldId, int extensionGroup);
     ~DOMWrapperWorld();
     void dispose();
@@ -87,6 +89,7 @@ public:
     }
 
     static DOMWrapperWorld& mainWorld();
+    static DOMWrapperWorld& privateScriptIsolatedWorld();
 
     // Associates an isolated world (see above for description) with a security
     // origin. XMLHttpRequest instances used in that world will be considered
@@ -106,6 +109,7 @@ public:
     bool isolatedWorldHasContentSecurityPolicy();
 
     bool isMainWorld() const { return m_worldId == MainWorldId; }
+    bool isPrivateScriptIsolatedWorld() const { return m_worldId == PrivateScriptIsolatedWorldId; }
     bool isWorkerWorld() const { return m_worldId == WorkerWorldId; }
     bool isIsolatedWorld() const { return MainWorldId < m_worldId  && m_worldId < IsolatedWorldIdLimit; }
 

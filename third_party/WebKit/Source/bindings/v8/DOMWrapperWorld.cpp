@@ -67,6 +67,17 @@ DOMWrapperWorld& DOMWrapperWorld::mainWorld()
     return *cachedMainWorld;
 }
 
+DOMWrapperWorld& DOMWrapperWorld::privateScriptIsolatedWorld()
+{
+    ASSERT(isMainThread());
+    DEFINE_STATIC_LOCAL(RefPtr<DOMWrapperWorld>, cachedPrivateScriptIsolatedWorld, ());
+    if (!cachedPrivateScriptIsolatedWorld) {
+        cachedPrivateScriptIsolatedWorld = DOMWrapperWorld::create(PrivateScriptIsolatedWorldId, privateScriptIsolatedWorldExtensionGroup);
+        isolatedWorldCount++;
+    }
+    return *cachedPrivateScriptIsolatedWorld;
+}
+
 typedef HashMap<int, DOMWrapperWorld*> WorldMap;
 static WorldMap& isolatedWorldMap()
 {

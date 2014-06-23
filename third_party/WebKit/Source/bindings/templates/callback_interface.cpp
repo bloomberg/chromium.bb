@@ -57,6 +57,7 @@ namespace WebCore {
     {% if method.arguments %}
     v8::Handle<v8::Value> argv[] = { {{method.arguments | join(', ', 'handle')}} };
     {% else %}
+    {# Empty array initializers are illegal, and don't compile in MSVC. #}
     v8::Handle<v8::Value> *argv = 0;
     {% endif %}
 

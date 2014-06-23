@@ -60,11 +60,11 @@ def cpp_type(idl_type):
         return 'const String&'
     if idl_type_name == 'void':
         return 'void'
-    # Callbacks use raw pointers, so used_as_argument=True
-    usual_cpp_type = idl_type.cpp_type_args(used_as_argument=True)
-    if usual_cpp_type.startswith(('Vector', 'HeapVector', 'WillBeHeapVector')):
-        return 'const %s&' % usual_cpp_type
-    return usual_cpp_type
+    # Callbacks use raw pointers, so raw_type=True
+    raw_cpp_type = idl_type.cpp_type_args(raw_type=True)
+    if raw_cpp_type.startswith(('Vector', 'HeapVector', 'WillBeHeapVector')):
+        return 'const %s&' % raw_cpp_type
+    return raw_cpp_type
 
 IdlType.callback_cpp_type = property(cpp_type)
 
@@ -115,10 +115,6 @@ def arguments_context(arguments, call_with_this_handle):
     def argument_context(argument):
         return {
             'handle': '%sHandle' % argument.name,
-            # FIXME: setting creation_context=v8::Handle<v8::Object>() is
-            # wrong, as toV8 then implicitly uses the current context, which
-            # causes leaks between isolated worlds if a different context is
-            # used.
             'cpp_value_to_v8_value': argument.idl_type.cpp_value_to_v8_value(
                 argument.name, isolate='isolate',
                 creation_context='m_scriptState->context()->Global()'),
